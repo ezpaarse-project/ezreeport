@@ -15,10 +15,10 @@ git clone https://github.com/ezpaarse-project/reporting.git
 ## Services
 
 - src/report:
-  - TODO
+  - Generate PDF reports with HTTP API. Also run cronjob to regullary generate reports
 - src/redis:
-  - TODO
+  - Handle email queues
 - src/mail:
-  - TODO
+  - Handle email management
 - src/db:
-  - TODO
+  - Keeps templates (even custom ones) & scheduled tasks
