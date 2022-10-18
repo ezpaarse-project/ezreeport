@@ -1,1 +1,46 @@
 version: "3.8"
+
+services:
+  db:
+    image: postgres:15.0
+    environment:
+      - POSTGRES_PASSWORD=changeme
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.0.5
+    command: redis-server --save 60 1 --requirepass changeme
+    volumes:
+      - ./data/redis:/data
+    ports:
+      - 6379:6379
+    restart: unless-stopped
+
+  report:
+    image: node:16.18.0
+    working_dir: /report
+    volumes:
+      - ./src/report:/report
+    command: "npm run dev"
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+
+  mail:
+    image: node:16.18.0
+    working_dir: /mail
+    volumes:
+      - ./src/mail:/mail
+    command: "npm run dev"
+    ports:
+      - 8000:8000
+    depends_on:
+      - redis
+    restart: unless-stopped

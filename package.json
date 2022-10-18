@@ -1,0 +1,21 @@
+{
+  "name": "reporting",
+  "version": "1.0.0",
+  "description": "Reporting service for ezMESURE/ezCOUNTER",
+  "scripts": {
+    "start:prod": "docker compose up --build -d",
+    "stop:prod": "docker compose down",
+    "start:debug": "docker compose -f docker-compose.debug.yml up --build -d",
+    "stop:debug": "docker compose -f docker-compose.debug.yml down"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ezpaarse-project/reporting.git"
+  },
+  "author": "oxypomme",
+  "license": "CeCILL",
+  "bugs": {
+    "url": "https://github.com/ezpaarse-project/reporting/issues"
+  },
+  "homepage": "https://github.com/ezpaarse-project/reporting#readme"
+}

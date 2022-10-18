@@ -1,1 +1,44 @@
 version: "3.8"
+
+services:
+  db:
+    image: postgres:15.0
+    environment:
+      - POSTGRES_PASSWORD=changeme
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.0.5
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - ./data/redis:/home/data
+    restart: unless-stopped
+
+  report:
+    image: node:16.18.0
+    environment:
+      - NODE_ENV=production
+      - REDIS_PASSWORD
+    build:
+      context: ./src/report
+    command: "npm run start"
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+
+  mail:
+    image: node:16.18.0
+    environment:
+      - NODE_ENV=production
+      - REDIS_PASSWORD
+    build:
+      context: ./src/mail
+    command: "npm run start"
+    depends_on:
+      - redis
+    restart: unless-stopped
