@@ -3,5 +3,8 @@
   "eslint.validate": [
     "javascript",
     "typescript"
+  ],
+  "conventionalCommits.scopes": [
+    "mail"
   ]
 }
