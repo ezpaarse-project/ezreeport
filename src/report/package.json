@@ -5,7 +5,8 @@
   "main": "app.ts",
   "scripts": {
     "start": "ts-node --transpile-only app.ts",
-    "dev": "nodemon"
+    "dev": "nodemon --exec \"node --inspect=0.0.0.0 -r ts-node/register app.ts\"",
+    "test-config": "ts-node --showConfig"
   },
   "repository": {
     "type": "git",
@@ -18,13 +19,17 @@
   },
   "homepage": "https://github.com/ezpaarse-project/reporting#readme",
   "dependencies": {
+    "@elastic/elasticsearch": "^7.17.0",
+    "config": "^3.3.8",
     "date-fns": "^2.29.3",
     "express": "^4.18.2",
+    "http-status-codes": "^2.2.0",
     "ts-node": "^10.9.1",
     "winston": "^3.8.2",
     "winston-daily-rotate-file": "^4.7.1"
   },
   "devDependencies": {
+    "@types/config": "^3.3.0",
     "@types/express": "^4.17.14",
     "@typescript-eslint/eslint-plugin": "^5.40.1",
     "@typescript-eslint/parser": "^5.40.1",

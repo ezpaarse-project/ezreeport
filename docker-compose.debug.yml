@@ -10,14 +10,21 @@ services:
     ports:
       - 5432:5432
     restart: unless-stopped
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - 5050:80
 
   redis:
     image: redis:7.0.5
-    command: redis-server --save 60 1 --requirepass changeme
+    command: redis-server --save 60 1 --requirepass ${EZMESURE_REDIS_PASSWORD:-changeme}
     volumes:
       - ./data/redis:/data
     ports:
-      - 6379:6379
+      - 6389:6379
     restart: unless-stopped
 
   report:
@@ -28,6 +35,18 @@ services:
     command: "npm run dev"
     ports:
       - 8080:8080
+      - 9230:9229 # Debug port
+    environment:
+      - REDIS_HOST
+      - REDIS_PORT
+      - REDIS_PASSWORD
+      - LOG_LEVEL
+      - ELASTIC_SCHEME
+      - ELASTIC_HOST
+      - ELASTIC_PORT
+      - ELASTIC_API_KEY
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - db
       - redis
@@ -40,7 +59,8 @@ services:
       - ./src/mail:/mail
     command: "npm run dev"
     ports:
-      - 8000:8000
+      - 8081:8080
+      - 9231:9229 # Debug port
     depends_on:
       - redis
     # restart: unless-stopped

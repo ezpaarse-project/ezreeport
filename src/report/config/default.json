@@ -1,0 +1,13 @@
+{
+  "elasticsearch": {
+    "scheme": "https",
+    "host": "localhost",
+    "port": 9200,
+    "apiKey": "changeme"
+  },
+  "redis": {
+    "host": "redis",
+    "port": "6379",
+    "password": "changeme"
+  }
+}
