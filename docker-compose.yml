@@ -21,6 +21,7 @@ services:
     environment:
       - NODE_ENV=production
       - REDIS_PASSWORD
+      - LOG_LEVEL
     build:
       context: ./src/report
     command: "npm run start"

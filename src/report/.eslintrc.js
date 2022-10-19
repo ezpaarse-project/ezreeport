@@ -12,5 +12,6 @@ module.exports = {
     project: 'src/report/tsconfig.json',
   },
   rules: {
+    "import/extensions": "off"
   },
 };
