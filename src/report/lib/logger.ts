@@ -10,9 +10,7 @@ const logger = winston.createLogger({
     winston.format.timestamp(),
     winston.format.printf(formatter),
   ),
-  transports: [
-    new winston.transports.DailyRotateFile({ filename: 'logs/report_%DATE%.log' }),
-  ],
+  transports: [],
 });
 
 if (process.env.NODE_ENV !== 'production') {
@@ -23,6 +21,8 @@ if (process.env.NODE_ENV !== 'production') {
       winston.format.printf(formatter),
     ),
   }));
+} else {
+  logger.add(new winston.transports.DailyRotateFile({ filename: 'logs/report_%DATE%.log' }));
 }
 
 export default logger;
