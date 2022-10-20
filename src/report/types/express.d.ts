@@ -11,7 +11,16 @@ declare namespace Express {
     }
   }
   export interface Response {
-    sendJson: (content: any) => void;
+    /**
+     * Send formatted data as success.
+     *
+     * @param content The content
+     * @param code The HTTP code of the response. `200` by default.
+     */
+    sendJson: (content: any, code = 200) => void;
+    /**
+     * Send formatted error
+     */
     errorJson: (error: CustomError | Error) => void;
   }
 }
