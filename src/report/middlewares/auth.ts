@@ -1,55 +1,73 @@
 import type { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { verify } from 'jsonwebtoken';
+import config from '../lib/config';
 import { getElasticClient } from '../lib/elastic';
 import { CustomError } from '../types/errors';
+
+const { secret: jwtSecret } = config.get('ezmesure');
 
 /**
  * Roles names
  */
 export enum Roles {
-  READ_WRITE = 'ez-reporting',
-  READ = 'ez-reporting-read-only',
+  READ_WRITE = 'ezreporting',
+  READ = 'ezreporting-readonly',
 }
 
 /**
  * Roles priority, higher means more perms
  */
 const ROLES_PRIORITIES = {
-  'ez-reporting': 2,
-  'ez-reporting-read-only': 1,
+  [Roles.READ_WRITE]: 2,
+  [Roles.READ]: 1,
 } as const;
 
 /**
- * Check if current user have the rights scopes
+ * Check if current user have the rights scopes.
+ *
+ * Adds `req.user` with `username` & `email` from Elastic user.
  *
  * @param minRole The minimum role required.
  *
  * @returns Express middleware
  */
 const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) => {
+  let username = '';
   try {
-    // TODO: maybe more secure
+    // Getting given JWT
     const token = req.headers.authorization ?? '';
-    const regRes = /Username (?<username>.*)/i.exec(token);
+    const regRes = /Bearer (?<token>.*)/i.exec(token);
     // If no username given/found
-    if (!regRes || !regRes.groups || !regRes.groups.username) {
+    if (!regRes || !regRes.groups || !regRes.groups.token) {
       throw new CustomError(`'${req.method} ${req.url}' requires auth`, StatusCodes.UNAUTHORIZED);
     }
 
-    const username = Buffer.from(regRes.groups.username, 'base64').toString();
+    const jwt = verify(regRes.groups.token, jwtSecret, { algorithms: ['HS256'] });
 
+    if (typeof jwt === 'string') {
+      throw new CustomError('JWT malformed', StatusCodes.BAD_REQUEST);
+    }
+
+    username = jwt.username;
+  } catch (error) {
+    res.errorJson(error);
+  }
+
+  try {
     const elastic = await getElasticClient();
     const response = await elastic.security.getUser<Record<string, ElasticUser | undefined>>({
       username,
     });
     const { body: { [username]: user } } = response;
 
-    if (user) {
+    if (user && user.enabled) {
+      req.user = { username: user.username, email: user.email };
       // Calculating higher role of user (kinda weird tbh)
       const maxRole = user.roles.reduce((max, role) => {
         const r = role as keyof typeof ROLES_PRIORITIES;
-        if (role.startsWith('ez-reporting') && ROLES_PRIORITIES[r] > max) {
-          return ROLES_PRIORITIES[r];
+        if (ROLES_PRIORITIES[r] > max) {
+          return ROLES_PRIORITIES[r] ?? 0;
         }
         return max;
       }, 0);

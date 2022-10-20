@@ -40,11 +40,12 @@ services:
       - REDIS_HOST
       - REDIS_PORT
       - REDIS_PASSWORD
-      - LOG_LEVEL
       - ELASTIC_SCHEME
       - ELASTIC_HOST
       - ELASTIC_PORT
       - ELASTIC_API_KEY
+      - LOG_LEVEL
+      - EZMESURE_AUTH_SECRET
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
