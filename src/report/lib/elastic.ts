@@ -31,7 +31,7 @@ export const getElasticClient = async () => {
         timeout: '5s',
       });
 
-      if (status !== 'yellow' && status !== 'green') {
+      if (status === 'yellow' || status === 'green') {
         break;
       }
     } catch (error) {
