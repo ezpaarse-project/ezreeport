@@ -1,0 +1,35 @@
+{
+  "openapi": "3.0.0",
+  "x-stoplight": {
+    "id": "08wxz99j4pjvw"
+  },
+  "info": {
+    "title": "Report API",
+    "version": "1.0",
+    "contact": {
+      "name": "ezTeam",
+      "url": "https://github.com/ezpaarse-project",
+      "email": "ezpaarse@couperin.org"
+    },
+    "license": {
+      "name": "CeCILL",
+      "url": "https://github.com/ezpaarse-project/reporting/blob/master/LICENSE.txt"
+    },
+    "description": "Reporting service for ezMESURE/ezCOUNTER"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080"
+    }
+  ],
+  "paths": {},
+  "components": {
+    "schemas": {},
+    "securitySchemes": {
+      "ezmesure-jwt": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
