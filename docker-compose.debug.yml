@@ -4,7 +4,9 @@ services:
   db:
     image: postgres:15.0
     environment:
-      - POSTGRES_PASSWORD=changeme
+      - POSTGRES_USER=${DATABASE_USER:-postgres}
+      - POSTGRES_DB=${DATABASE_USER:-postgres}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD:-changeme}
     volumes:
       - ./data/db:/var/lib/postgresql/data
     ports:
@@ -20,7 +22,7 @@ services:
 
   redis:
     image: redis:7.0.5
-    command: redis-server --save 60 1 --requirepass ${EZMESURE_REDIS_PASSWORD:-changeme}
+    command: redis-server --save 60 1 --requirepass ${REDIS_PASSWORD:-changeme}
     volumes:
       - ./data/redis:/data
     ports:
@@ -44,8 +46,9 @@ services:
       - ELASTIC_HOST
       - ELASTIC_PORT
       - ELASTIC_API_KEY
-      - LOG_LEVEL
+      - DATABASE_URL
       - EZMESURE_AUTH_SECRET
+      - LOG_LEVEL
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:

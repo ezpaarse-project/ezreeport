@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "Reporting service for ezMESURE/ezCOUNTER",
   "scripts": {
-    "start:prod": "docker compose up --build -d",
-    "stop:prod": "docker compose down",
+    "install": "node setup.js",
+    "start": "docker compose up --build -d",
+    "stop": "docker compose down",
     "start:debug": "docker compose -f docker-compose.debug.yml up --build -d",
     "stop:debug": "docker compose -f docker-compose.debug.yml down"
   },
