@@ -7,7 +7,8 @@ declare namespace Express {
      */
     user?: {
       email: string,
-      username: string
+      username: string,
+      roles: string[]
     }
   }
   export interface Response {

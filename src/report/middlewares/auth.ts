@@ -11,14 +11,16 @@ const { secret: jwtSecret } = config.get('ezmesure');
  * Roles names
  */
 export enum Roles {
+  SUPER_USER = 'superuser',
   READ_WRITE = 'ezreporting',
-  READ = 'ezreporting-readonly',
+  READ = 'ezreporting_read_only',
 }
 
 /**
  * Roles priority, higher means more perms
  */
 const ROLES_PRIORITIES = {
+  [Roles.SUPER_USER]: 9999,
   [Roles.READ_WRITE]: 2,
   [Roles.READ]: 1,
 } as const;
@@ -62,12 +64,15 @@ const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) =>
     const { body: { [username]: user } } = response;
 
     if (user && user.enabled) {
-      req.user = { username: user.username, email: user.email };
+      req.user = { username: user.username, email: user.email, roles: [] };
       // Calculating higher role of user (kinda weird tbh)
       const maxRole = user.roles.reduce((max, role) => {
         const r = role as keyof typeof ROLES_PRIORITIES;
-        if (ROLES_PRIORITIES[r] > max) {
-          return ROLES_PRIORITIES[r] ?? 0;
+        if (ROLES_PRIORITIES[r] && req.user) {
+          req.user.roles.push(r);
+          if (ROLES_PRIORITIES[r] > max) {
+            return ROLES_PRIORITIES[r] ?? 0;
+          }
         }
         return max;
       }, 0);
