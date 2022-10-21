@@ -10,14 +10,14 @@ const port = 8080;
 
 app.use(loggerMiddleware, formatMiddleware);
 
-app.use('/openapi.json', (_req, res) => res.json(openapi));
-app.use('/', swaggerUi.serve, swaggerUi.setup(openapi));
+app.use('/doc/openapi.json', (_req, res) => res.json(openapi));
+app.use('/doc', swaggerUi.serve, swaggerUi.setup(openapi));
 
 /**
  * 404 Fallback
  */
 app.use('*', (req, res) => {
-  res.sendStatus(404);
+  res.sendJson(null, 404);
 });
 
 app.listen(port, () => {
