@@ -42,18 +42,20 @@ const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) =>
     const regRes = /Bearer (?<token>.*)/i.exec(token);
     // If no username given/found
     if (!regRes || !regRes.groups || !regRes.groups.token) {
-      throw new CustomError(`'${req.method} ${req.url}' requires auth`, StatusCodes.UNAUTHORIZED);
+      throw new CustomError(`'${req.method} ${req.originalUrl}' requires auth`, StatusCodes.UNAUTHORIZED);
     }
 
     const jwt = verify(regRes.groups.token, jwtSecret, { algorithms: ['HS256'] });
 
     if (typeof jwt === 'string') {
-      throw new CustomError('JWT malformed', StatusCodes.BAD_REQUEST);
+      throw new Error("result can't be string");
     }
 
     username = jwt.username;
   } catch (error) {
-    res.errorJson(error);
+    res.errorJson(
+      new CustomError(`JWT malformed: ${(error as Error).message}`, StatusCodes.BAD_REQUEST),
+    );
   }
 
   try {
@@ -84,7 +86,7 @@ const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) =>
       }
     }
 
-    throw new CustomError(`User '${username}' doesn't have the rights to acces to '${req.method} ${req.url}'`, StatusCodes.FORBIDDEN);
+    throw new CustomError(`User '${username}' doesn't have the rights to access to '${req.method} ${req.originalUrl}'`, StatusCodes.FORBIDDEN);
   } catch (error) {
     res.errorJson(error);
   }

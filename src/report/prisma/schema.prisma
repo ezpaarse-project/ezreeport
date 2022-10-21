@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  username     String    @id
+  organisation String
+  tasks        Task[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
+
+  @@index([organisation])
+}
+
+model Task {
+  id           String     @id @default(uuid())
+  owner        User       @relation(fields: [userUsername], references: [username])
+  userUsername String
+  layout       Json
+  targets      String[]
+  recurrence   Recurrence
+  lastRun      DateTime?
+  enabled      Boolean    @default(true)
+  history      Json       @default("[]")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime?  @updatedAt
+}
+
+enum Recurrence {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  BIENNIAL
+  YEARLY
+}

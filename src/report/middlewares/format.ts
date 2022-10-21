@@ -9,12 +9,10 @@ const middleware: RequestHandler = (_req, res, next) => {
   res.sendJson = (content: any, code = StatusCodes.OK) => {
     res.status(code).json({
       status: {
-        status: {
-          code,
-          message: getReasonPhrase(code),
-        },
-        content,
+        code,
+        message: getReasonPhrase(code),
       },
+      content,
     });
   };
   res.errorJson = (error: CustomError | Error) => {
