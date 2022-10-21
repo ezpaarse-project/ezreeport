@@ -4,7 +4,9 @@ services:
   db:
     image: postgres:15.0
     environment:
-      - POSTGRES_PASSWORD=changeme
+      - POSTGRES_USER=${DATABASE_USER:-postgres}
+      - POSTGRES_DB=${DATABASE_USER:-postgres}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD:-changeme}
     volumes:
       - ./data/db:/var/lib/postgresql/data
     ports:
@@ -13,11 +15,11 @@ services:
 
   redis:
     image: redis:7.0.5
-    command: redis-server --save 60 1 --requirepass changeme
+    command: redis-server --save 60 1 --requirepass ${REDIS_PASSWORD:-changeme}
     volumes:
       - ./data/redis:/data
     ports:
-      - 6379:6379
+      - 6389:6379
     restart: unless-stopped
 
   report:
@@ -28,6 +30,7 @@ services:
     command: "npm run dev"
     ports:
       - 8080:8080
+      - 9230:9229 # Debug port
     depends_on:
       - db
       - redis
@@ -40,7 +43,20 @@ services:
       - ./src/mail:/mail
     command: "npm run dev"
     ports:
-      - 8000:8000
+      - 8081:8080
+      - 9231:9229 # Debug port
+    environment:
+      - REDIS_HOST
+      - REDIS_PORT
+      - REDIS_PASSWORD
+      - DATABASE_PROTOCOL
+      - DATABASE_USER
+      - DATABASE_PASSWORD
+      - DATABASE_HOST
+      - DATABASE_PORT
+      - DATABASE_DB
+      - DATABASE_URL
+      - LOG_LEVEL
     depends_on:
       - redis
     restart: unless-stopped

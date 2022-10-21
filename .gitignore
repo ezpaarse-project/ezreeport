@@ -1,6 +1,6 @@
 ## Custom config
 
-reporting.local.env.sh
+*.local.env.sh
 data
 
 ## Default config (https://github.com/github/gitignore/blob/main/Node.gitignore)

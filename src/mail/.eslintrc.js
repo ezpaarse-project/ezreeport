@@ -12,5 +12,6 @@ module.exports = {
     project: 'src/mail/tsconfig.json'
   },
   rules: {
+    "import/extensions": "off"
   },
 };

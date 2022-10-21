@@ -10,6 +10,7 @@ Reporting service for ezMESURE/ezCOUNTER
 
 ```bash
 git clone https://github.com/ezpaarse-project/reporting.git
+npm run install
 ```
 
 ## Services
@@ -22,3 +23,10 @@ git clone https://github.com/ezpaarse-project/reporting.git
   - Handle email management
 - src/db:
   - Keeps templates (even custom ones) & scheduled tasks
+
+## Start
+
+```sh
+source reporting.env.sh
+npm run start
+```
