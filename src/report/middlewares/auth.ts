@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { verify } from 'jsonwebtoken';
 import config from '../lib/config';
 import { getElasticClient } from '../lib/elastic';
-import { CustomError } from '../types/errors';
+import { HTTPError } from '../types/errors';
 
 const { secret: jwtSecret } = config.get('ezmesure');
 
@@ -42,7 +42,7 @@ const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) =>
     const regRes = /Bearer (?<token>.*)/i.exec(token);
     // If no username given/found
     if (!regRes || !regRes.groups || !regRes.groups.token) {
-      throw new CustomError(`'${req.method} ${req.originalUrl}' requires auth`, StatusCodes.UNAUTHORIZED);
+      throw new HTTPError(`'${req.method} ${req.originalUrl}' requires auth`, StatusCodes.UNAUTHORIZED);
     }
 
     const jwt = verify(regRes.groups.token, jwtSecret, { algorithms: ['HS256'] });
@@ -54,7 +54,7 @@ const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) =>
     username = jwt.username;
   } catch (error) {
     res.errorJson(
-      new CustomError(`JWT malformed: ${(error as Error).message}`, StatusCodes.BAD_REQUEST),
+      new HTTPError(`JWT malformed: ${(error as Error).message}`, StatusCodes.BAD_REQUEST),
     );
   }
 
@@ -86,7 +86,7 @@ const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) =>
       }
     }
 
-    throw new CustomError(`User '${username}' doesn't have the rights to access to '${req.method} ${req.originalUrl}'`, StatusCodes.FORBIDDEN);
+    throw new HTTPError(`User '${username}' doesn't have the rights to access to '${req.method} ${req.originalUrl}'`, StatusCodes.FORBIDDEN);
   } catch (error) {
     res.errorJson(error);
   }

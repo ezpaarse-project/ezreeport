@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express';
 import { getReasonPhrase, StatusCodes } from 'http-status-codes';
-import { CustomError } from '../types/errors';
+import { HTTPError } from '../types/errors';
 
 /**
  * API formatter middleware
@@ -16,8 +16,8 @@ const middleware: RequestHandler = (_req, res, next) => {
       meta,
     });
   };
-  res.errorJson = (error: CustomError | Error) => {
-    const err = error instanceof CustomError ? error : new CustomError(error.message, 500);
+  res.errorJson = (error: HTTPError | Error) => {
+    const err = error instanceof HTTPError ? error : new HTTPError(error.message, 500);
     res.sendJson({
       message: error.message,
     }, err.code);

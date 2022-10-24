@@ -1,6 +1,6 @@
 import type { StatusCodes } from 'http-status-codes';
 
-export class CustomError extends Error {
+export class HTTPError extends Error {
   code: StatusCodes;
 
   constructor(message: string, code: StatusCodes) {

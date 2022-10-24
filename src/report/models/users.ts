@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
 import logger from '../lib/logger';
 import prisma from '../lib/prisma';
-import { CustomError } from '../types/errors';
+import { HTTPError } from '../types/errors';
 
 // TODO: More checks to make custom errors
 
@@ -27,7 +27,8 @@ const userSchema = Joi.object({
 const isValidUser = (data: unknown): data is User => {
   const validation = userSchema.validate(data, {});
   if (validation.error != null) {
-    throw new CustomError(`Body is not valid: ${validation.error.message}`, StatusCodes.BAD_REQUEST);
+    // TODO: Not a HTTP error at this point
+    throw new HTTPError(`Body is not valid: ${validation.error.message}`, StatusCodes.BAD_REQUEST);
   }
   return true;
 };
@@ -95,7 +96,8 @@ export const createUser = async (data: unknown): Promise<User> => {
     await prisma.$disconnect();
     return user;
   }
-  throw new CustomError('Body is not valid', StatusCodes.BAD_REQUEST);
+  // TODO: Not a HTTP error at this point
+  throw new HTTPError('Body is not valid', StatusCodes.BAD_REQUEST);
 };
 
 /**
@@ -131,5 +133,6 @@ export const updateUserByUsername = async (username: string, data: unknown): Pro
     await prisma.$disconnect();
     return user;
   }
-  throw new CustomError('Body is not valid', StatusCodes.BAD_REQUEST);
+  // TODO: Not a HTTP error at this point
+  throw new HTTPError('Body is not valid', StatusCodes.BAD_REQUEST);
 };

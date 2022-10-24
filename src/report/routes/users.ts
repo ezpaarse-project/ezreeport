@@ -9,7 +9,7 @@ import {
   // eslint-disable-next-line @typescript-eslint/comma-dangle
   updateUserByUsername
 } from '../models/users';
-import { CustomError } from '../types/errors';
+import { HTTPError } from '../types/errors';
 
 const router = Router();
 
@@ -24,7 +24,7 @@ const checkAuthedUser = (req: Request, username: string) => {
     !req.user
     || (req.user.username !== username && !req.user.roles.includes(Roles.SUPER_USER))
   ) {
-    throw new CustomError(`User '${req.user?.username}' doesn't have the rights to access to '${req.method} ${req.originalUrl}'`, StatusCodes.FORBIDDEN);
+    throw new HTTPError(`User '${req.user?.username}' doesn't have the rights to access to '${req.method} ${req.originalUrl}'`, StatusCodes.FORBIDDEN);
   }
 };
 
@@ -82,7 +82,7 @@ router.get('/:username', checkRight(Roles.READ_WRITE), async (req, res) => {
 
     const user = await getUserByUsername(username);
     if (user === null) {
-      throw new CustomError(`User '${username}' not found`, 404);
+      throw new HTTPError(`User '${username}' not found`, 404);
     }
 
     res.sendJson(user);
