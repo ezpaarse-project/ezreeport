@@ -10,7 +10,7 @@ const middleware: RequestHandler = (req, res, next) => {
 
   res.once('finish', () => {
     const end = new Date();
-    logger.info(`${req.method} ${req.originalUrl} - ${res.statusCode} (${differenceInMilliseconds(end, start)}ms)`);
+    logger.info(`[http] ${req.method} ${req.originalUrl} - ${res.statusCode} (${differenceInMilliseconds(end, start)}ms)`);
   });
 
   next();

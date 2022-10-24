@@ -8,7 +8,8 @@ import openapi from './openapi.json';
 const app = express();
 const port = 8080;
 
-app.use(loggerMiddleware, formatMiddleware);
+app.use(express.json(), loggerMiddleware, formatMiddleware);
+
 
 app.use('/doc/openapi.json', (_req, res) => res.json(openapi));
 app.use('/doc', swaggerUi.serve, swaggerUi.setup(openapi));

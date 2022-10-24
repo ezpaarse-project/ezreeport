@@ -6,13 +6,14 @@ import { CustomError } from '../types/errors';
  * API formatter middleware
  */
 const middleware: RequestHandler = (_req, res, next) => {
-  res.sendJson = (content: any, code = StatusCodes.OK) => {
+  res.sendJson = (content: any, code = StatusCodes.OK, meta?: any) => {
     res.status(code).json({
       status: {
         code,
         message: getReasonPhrase(code),
       },
       content,
+      meta,
     });
   };
   res.errorJson = (error: CustomError | Error) => {
