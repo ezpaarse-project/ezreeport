@@ -22,14 +22,763 @@
       "url": "http://localhost:8080"
     }
   ],
-  "paths": {},
+  "paths": {
+    "/users": {
+      "get": {
+        "summary": "Get all users",
+        "tags": [
+          "users"
+        ],
+        "operationId": "get-users",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "description": "Get all users using Reporting. Only accessible to SUPERUSER.",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        {
+                          "username": "test",
+                          "organisation": "fake-org",
+                          "createdAt": "2022-10-21T07:14:50.897Z",
+                          "updatedAt": "2022-10-21T07:14:45.772Z"
+                        }
+                      ]
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "number"
+                        },
+                        "lastId": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        {
+                          "username": "test",
+                          "organisation": "bibcnrs",
+                          "createdAt": "2022-10-21T11:09:57.927Z",
+                          "updatedAt": null
+                        }
+                      ],
+                      "meta": {
+                        "count": 1,
+                        "lastId": "test"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Auth-400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "example": "test.use"
+            },
+            "in": "query",
+            "name": "previous",
+            "description": "The last id of the previous request."
+          },
+          {
+            "schema": {
+              "type": "number",
+              "default": 15
+            },
+            "in": "query",
+            "name": "count",
+            "description": "Count of objects to return. Can be negative to reverse the list."
+          }
+        ]
+      },
+      "parameters": [],
+      "post": {
+        "summary": "Create a new user",
+        "operationId": "post-users",
+        "description": "Create a new user. Only accessible to SUPERUSER.",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              },
+              "examples": {
+                "Example": {
+                  "value": {
+                    "username": "tom.sublet",
+                    "organisation": "bibcnrs"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        {
+                          "username": "test",
+                          "organisation": "fake-org",
+                          "createdAt": "2022-10-21T07:14:50.897Z",
+                          "updatedAt": "2022-10-21T07:14:45.772Z"
+                        }
+                      ]
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 201,
+                        "message": "Created"
+                      },
+                      "content": {
+                        "username": "tom.sublet",
+                        "organisation": "bibcnrs",
+                        "createdAt": "2022-10-21T12:19:09.748Z",
+                        "updatedAt": "2022-10-21T12:19:09.748Z"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Auth-400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/users/{username}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "username",
+          "in": "path",
+          "required": true,
+          "description": "User's username"
+        }
+      ],
+      "get": {
+        "summary": "Get user by username",
+        "tags": [
+          "users"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "username": "test",
+                        "organisation": "fake-org",
+                        "createdAt": "2022-10-21T07:14:50.897Z",
+                        "updatedAt": "2022-10-21T07:14:45.772Z"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "username": "test",
+                        "organisation": "fake-org",
+                        "createdAt": "2022-10-21T07:14:50.897Z",
+                        "updatedAt": "2022-10-21T07:14:45.772Z"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Auth-400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "get-users-username",
+        "description": "Get user by username. Only accessible to SUPERUSER for other than authenticated user.",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Delete user by username",
+        "operationId": "delete-users-username",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "username": "test3",
+                        "organisation": "",
+                        "createdAt": "2022-10-21T12:23:26.456Z",
+                        "updatedAt": "2022-10-21T12:23:23.164Z"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "username": "test3",
+                        "organisation": "",
+                        "createdAt": "2022-10-21T12:23:26.456Z",
+                        "updatedAt": "2022-10-21T12:23:23.164Z"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Auth-400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "description": "Delete user by username. Only accessible to SUPERUSER for other than authenticated user.",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ]
+      },
+      "put": {
+        "summary": "Update user by username",
+        "operationId": "put-users-username",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/Auth-400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "description": "Update user by username. Only accessible to SUPERUSER for other than authenticated user.",
+        "tags": [
+          "users"
+        ]
+      }
+    }
+  },
   "components": {
-    "schemas": {},
+    "schemas": {
+      "User": {
+        "type": "object",
+        "x-examples": {
+          "Example": {
+            "username": "test",
+            "organisation": "fake-org",
+            "createdAt": "2022-10-21T07:14:50.897Z",
+            "updatedAt": "2022-10-21T07:14:45.772Z"
+          }
+        },
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Elastic username of a user"
+          },
+          "organisation": {
+            "type": "string",
+            "description": "Organisation of a user"
+          }
+        }
+      }
+    },
     "securitySchemes": {
       "ezmesure-jwt": {
         "type": "http",
         "scheme": "bearer"
       }
+    },
+    "requestBodies": {},
+    "responses": {
+      "400": {
+        "description": "Bad Request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "content": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "x-examples": {
+                "example-1": {
+                  "status": {
+                    "code": 400,
+                    "message": "Bad Request"
+                  },
+                  "content": {
+                    "message": "JWT malformed: invalid signature"
+                  }
+                }
+              }
+            },
+            "examples": {
+              "Example": {
+                "value": {
+                  "status": {
+                    "code": 400,
+                    "message": "Bad Request"
+                  },
+                  "content": {
+                    "message": "..."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "401": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "content": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "x-examples": {
+                "example-1": {
+                  "status": {
+                    "code": 401,
+                    "message": "Unauthorized"
+                  },
+                  "content": {
+                    "message": "'GET /users/' requires auth"
+                  }
+                }
+              }
+            },
+            "examples": {
+              "Example": {
+                "value": {
+                  "status": {
+                    "code": 401,
+                    "message": "Unauthorized"
+                  },
+                  "content": {
+                    "message": "'...' requires auth"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "403": {
+        "description": "Forbidden",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "content": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "x-examples": {
+                "example-1": {
+                  "status": {
+                    "code": 403,
+                    "message": "Forbidden"
+                  },
+                  "content": {
+                    "message": "User 'tom.sublet' doesn't have the rights to acces to 'GET /users/'"
+                  }
+                }
+              }
+            },
+            "examples": {
+              "Example": {
+                "value": {
+                  "status": {
+                    "code": 403,
+                    "message": "Forbidden"
+                  },
+                  "content": {
+                    "message": "User '...' doesn't have the rights to access to '...'"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "Example response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "content": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "x-examples": {
+                "example-1": {
+                  "status": {
+                    "code": 404,
+                    "message": "Not Found"
+                  },
+                  "content": {
+                    "message": "User 'testa' not found"
+                  }
+                }
+              }
+            },
+            "examples": {
+              "Example": {
+                "value": {
+                  "status": {
+                    "code": 404,
+                    "message": "Not Found"
+                  },
+                  "content": {
+                    "message": "... '...' not found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "Internal Server Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "content": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "x-examples": {
+                "example-1": {
+                  "status": {
+                    "code": 500,
+                    "message": "Internal Server Error"
+                  },
+                  "content": {
+                    "message": "Unexpected token v in JSON at position 0"
+                  }
+                }
+              }
+            },
+            "examples": {
+              "Example": {
+                "value": {
+                  "status": {
+                    "code": 500,
+                    "message": "Internal Server Error"
+                  },
+                  "content": {
+                    "message": "..."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "users"
+    }
+  ]
 }
