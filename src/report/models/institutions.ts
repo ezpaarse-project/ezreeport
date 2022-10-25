@@ -23,14 +23,14 @@ const trimReadOnlySuffix = (str: string): string => {
 };
 
 /**
- * Find organisation by creator or role in Elastic
+ * Find institution by creator or role in Elastic
  *
  * @param username The username of the possible creatior
- * @param userRoles The possible roles of the organisation
+ * @param userRoles The possible roles of the institution
  *
  * @returns The result of search
  */
-export const findOrgByCreatorOrRole = async (
+export const findInstitutionByCreatorOrRole = async (
   username: string,
   userRoles: string[],
 ): Promise<SearchHit<TypedElasticInstitution>> => {
@@ -57,7 +57,14 @@ export const findOrgByCreatorOrRole = async (
   return result.body.hits.hits[0];
 };
 
-export const findOrgByIds = async (
+/**
+ * Find institutions by ids in Elastic
+ *
+ * @param ids Ids of possible institutions
+ *
+ * @returns  The result of search
+ */
+export const findInstitutionByIds = async (
   ids: string[],
 ): Promise<SearchHit<TypedElasticInstitution>[]> => {
   const elastic = await getElasticClient();

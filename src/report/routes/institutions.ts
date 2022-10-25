@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import checkRight, { Roles } from '../middlewares/auth';
-import { getAllOrgs } from '../models/users';
+import { getAllInstitutions } from '../models/tasks';
 
 const router = Router();
 
@@ -10,13 +10,13 @@ const router = Router();
  *
  * Only accessible to Roles.SUPER_USER
  */
-router.get('/', checkRight(Roles.SUPER_USER), async (req, res) => {
+router.get('/', checkRight(Roles.READ), async (req, res) => {
   try {
     const { offset = '0', count = '15' } = req.query;
     const o = +offset;
     const c = +count;
 
-    const orgs: any = await getAllOrgs({ count: c, offset: o });
+    const orgs = await getAllInstitutions({ count: c, offset: o });
 
     res.sendJson(
       orgs,
