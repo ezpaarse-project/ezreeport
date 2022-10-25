@@ -44,7 +44,7 @@ router.get('/', checkRight(Roles.READ), async (req, res) => {
       {
         // total: undefined,
         count: tasks.length,
-        lastId: tasks[tasks.length - 1]?.id,
+        lastId: tasks.at(-1)?.id,
       },
     );
   } catch (error) {
