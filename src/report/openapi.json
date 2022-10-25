@@ -33,47 +33,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "integer"
-                        },
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    },
-                    "content": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "logo": {
-                            "type": "string"
-                          }
-                        }
-                      }
-                    },
-                    "meta": {
-                      "type": "object",
-                      "properties": {
-                        "count": {
-                          "type": "integer"
-                        },
-                        "offset": {
-                          "type": "integer"
-                        }
-                      }
-                    }
-                  },
                   "x-examples": {
                     "example-1": {
                       "status": {
@@ -92,6 +51,54 @@
                         "offset": 1
                       }
                     }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "description": "Status of the request",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "array",
+                      "description": "Content of the request",
+                      "items": {
+                        "type": "object",
+                        "description": "Institution",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "Id of the institution"
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "Name of the institution"
+                          },
+                          "logo": {
+                            "type": "string",
+                            "description": "LogoId of the institution"
+                          }
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "description": "Pagination data",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "offset": {
+                          "type": "integer"
+                        }
+                      }
+                    }
                   }
                 },
                 "examples": {
@@ -103,9 +110,9 @@
                       },
                       "content": [
                         {
-                          "id": "institution:abba8400-1216-11eb-af77-ff33b5dd411e",
+                          "id": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
                           "name": "Inist-CNRS Bibcnrs",
-                          "logo": "d80d56af8ee12a08a4be022dd544dc2b.png"
+                          "logo": "a00a00aa0aa00a00a0aa000aa000aa0a.png"
                         }
                       ],
                       "meta": {
@@ -140,13 +147,419 @@
         ],
         "tags": [
           "institutions"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          }
         ]
       },
       "parameters": []
+    },
+    "/tasks": {
+      "get": {
+        "summary": "Get all tasks",
+        "tags": [
+          "tasks"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        {
+                          "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                          "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
+                          "layout": {
+                            "...": "..."
+                          },
+                          "targets": [
+                            "..."
+                          ],
+                          "recurrence": "WEEKLY",
+                          "nextRun": "2022-10-31T10:00:00.000Z",
+                          "enabled": true,
+                          "history": [
+                            {
+                              "type": "creation",
+                              "message": "La tâche a été créée par ..."
+                            }
+                          ],
+                          "createdAt": "2022-10-25T11:55:47.375Z",
+                          "updatedAt": "2022-10-25T11:55:47.375Z"
+                        }
+                      ],
+                      "meta": {
+                        "count": 1,
+                        "lastId": "4359c49b-cde2-4330-b9aa-790f8c6cc840"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Task"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "lastId": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        {
+                          "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                          "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
+                          "layout": {
+                            "...": "..."
+                          },
+                          "targets": [
+                            "..."
+                          ],
+                          "recurrence": "WEEKLY",
+                          "nextRun": "2022-10-31T10:00:00.000Z",
+                          "enabled": true,
+                          "history": [
+                            {
+                              "type": "creation",
+                              "message": "La tâche a été créée par ..."
+                            }
+                          ],
+                          "createdAt": "2022-10-25T11:55:47.375Z",
+                          "updatedAt": "2022-10-25T11:55:47.375Z"
+                        }
+                      ],
+                      "meta": {
+                        "count": 1,
+                        "lastId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "get-tasks",
+        "description": "Add new reporting task to the authed user's institution. Accessible to READ.",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/previous"
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          }
+        ]
+      },
+      "post": {
+        "summary": "Add new task",
+        "operationId": "post-tasks",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 201,
+                        "message": "Created"
+                      },
+                      "content": {
+                        "id": "4359c49b-cde2-4330-b9aa-790f8c6cc840",
+                        "institution": "institution:abba8400-1216-11eb-af77-ff33b5dd411e",
+                        "layout": {
+                          "notImplemented": true
+                        },
+                        "targets": [
+                          "tom.sublet@inist.fr"
+                        ],
+                        "recurrence": "WEEKLY",
+                        "nextRun": "2022-10-31T10:00:00.000Z",
+                        "enabled": true,
+                        "history": [
+                          {
+                            "type": "creation",
+                            "message": "La tâche a été créée par tom.sublet"
+                          }
+                        ],
+                        "createdAt": "2022-10-25T11:55:47.375Z",
+                        "updatedAt": "2022-10-25T11:55:47.375Z"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/Task"
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 201,
+                        "message": "Created"
+                      },
+                      "content": {
+                        "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                        "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
+                        "layout": {
+                          "...": "..."
+                        },
+                        "targets": [
+                          "..."
+                        ],
+                        "recurrence": "WEEKLY",
+                        "nextRun": "2022-10-31T10:00:00.000Z",
+                        "enabled": true,
+                        "history": [
+                          {
+                            "type": "creation",
+                            "message": "La tâche a été créée par ..."
+                          }
+                        ],
+                        "createdAt": "2022-10-25T11:55:47.375Z",
+                        "updatedAt": "2022-10-25T11:55:47.375Z"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Task"
+              },
+              "examples": {
+                "Example": {
+                  "value": {
+                    "layout": {
+                      "...": "..."
+                    },
+                    "targets": [
+                      "..."
+                    ],
+                    "recurrence": "WEEKLY",
+                    "nextRun": "2022-10-31T12:00:00+02:00",
+                    "enabled": true
+                  }
+                }
+              }
+            }
+          },
+          "description": ""
+        },
+        "description": "Add new reporting task to the authed user's institution. Accessible to READ_WRITE.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/institution"
+          }
+        ],
+        "tags": [
+          "tasks"
+        ]
+      }
     }
   },
   "components": {
-    "schemas": {},
+    "schemas": {
+      "Task": {
+        "type": "object",
+        "x-examples": {
+          "Example": {
+            "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+            "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
+            "layout": {
+              "...": "..."
+            },
+            "targets": [
+              "..."
+            ],
+            "recurrence": "WEEKLY",
+            "nextRun": "2022-10-31T10:00:00.000Z",
+            "enabled": true,
+            "history": [
+              {
+                "type": "creation",
+                "message": "La tâche a été créée par ..."
+              }
+            ],
+            "createdAt": "2022-10-25T11:55:47.375Z",
+            "updatedAt": "2022-10-25T11:55:47.375Z"
+          }
+        },
+        "description": "Reporting task",
+        "x-tags": [
+          "task"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id of the task",
+            "readOnly": true
+          },
+          "institution": {
+            "type": "string",
+            "description": "Institution concerned by the task",
+            "readOnly": true
+          },
+          "layout": {
+            "type": "object",
+            "description": "Layout of the report"
+          },
+          "targets": {
+            "type": "array",
+            "description": "Emails target",
+            "items": {
+              "type": "string"
+            }
+          },
+          "recurrence": {
+            "type": "string",
+            "enum": [
+              "DAILY",
+              "WEEKLY",
+              "MONTHLY",
+              "QUARTERLY",
+              "BIENNIAL",
+              "YEARLY"
+            ]
+          },
+          "nextRun": {
+            "type": "string",
+            "description": "Next time the task will be run"
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Is the task enabled"
+          },
+          "history": {
+            "type": "array",
+            "description": "History of the task",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            },
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Task created at ...",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Task last updated at ...",
+            "readOnly": true
+          }
+        },
+        "required": [
+          "layout",
+          "targets",
+          "recurrence",
+          "nextRun"
+        ]
+      }
+    },
     "securitySchemes": {
       "ezmesure-jwt": {
         "type": "http",
@@ -430,11 +843,58 @@
           }
         }
       }
+    },
+    "parameters": {
+      "previous": {
+        "name": "previous",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "example": "0000a00a-aaa0-0000-a0aa-000a0a0aa000"
+        },
+        "description": "Previous id of the last request"
+      },
+      "count": {
+        "name": "count",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "pattern": "^[0-9]+",
+          "default": "15"
+        },
+        "description": "Count of object to return"
+      },
+      "offset": {
+        "name": "offset",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "default": "0",
+          "pattern": "^[0-9]+"
+        },
+        "description": "Number of object to skip"
+      },
+      "institution": {
+        "name": "institution",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "example": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a"
+        },
+        "description": "Force institution. Only available for SUPERUSERS, otherwise it'll be ignored."
+      }
     }
   },
   "tags": [
     {
       "name": "institutions"
+    },
+    {
+      "name": "tasks"
     }
   ]
 }
