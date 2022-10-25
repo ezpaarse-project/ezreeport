@@ -84,7 +84,8 @@
                           "type": "number"
                         },
                         "lastId": {
-                          "type": "string"
+                          "type": "string",
+                          "nullable": true
                         }
                       }
                     }

@@ -46,7 +46,7 @@ router.get('/', checkRight(Roles.SUPER_USER), async (req, res) => {
       {
         // total: undefined,
         count: users.length,
-        lastId: users[users.length - 1].username,
+        lastId: users[users.length - 1]?.username,
       },
     );
   } catch (error) {
