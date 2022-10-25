@@ -44,10 +44,10 @@ export const getAllUsers = async (
   try {
     await prisma.$connect();
 
-    // FIXME: cursor still in response
     const users = await prisma.user.findMany({
       take: opts?.count,
-      cursor: opts?.previous ? { username: opts?.previous } : undefined,
+      skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
+      cursor: opts?.previous ? { username: opts.previous } : undefined,
     });
 
     await prisma.$disconnect();
