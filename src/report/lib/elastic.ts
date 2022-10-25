@@ -21,6 +21,8 @@ const client = new Client({
 
 const MAX_TRIES = 10;
 
+export const READONLY_SUFFIX = '_read_only' as const;
+
 export const getElasticClient = async () => {
   let tries = 0;
   while (tries < MAX_TRIES) {

@@ -116,7 +116,7 @@
             }
           },
           "400": {
-            "$ref": "#/components/responses/Auth-400"
+            "$ref": "#/components/responses/400"
           },
           "401": {
             "$ref": "#/components/responses/401"
@@ -236,7 +236,7 @@
             }
           },
           "400": {
-            "$ref": "#/components/responses/Auth-400"
+            "$ref": "#/components/responses/400"
           },
           "401": {
             "$ref": "#/components/responses/401"
@@ -328,7 +328,7 @@
             }
           },
           "400": {
-            "$ref": "#/components/responses/Auth-400"
+            "$ref": "#/components/responses/400"
           },
           "401": {
             "$ref": "#/components/responses/401"
@@ -412,7 +412,7 @@
             }
           },
           "400": {
-            "$ref": "#/components/responses/Auth-400"
+            "$ref": "#/components/responses/400"
           },
           "401": {
             "$ref": "#/components/responses/401"
@@ -445,7 +445,7 @@
             "description": "OK"
           },
           "400": {
-            "$ref": "#/components/responses/Auth-400"
+            "$ref": "#/components/responses/400"
           },
           "401": {
             "$ref": "#/components/responses/401"
@@ -463,6 +463,126 @@
         "description": "Update user by username. Only accessible to SUPERUSER for other than authenticated user.",
         "tags": [
           "users"
+        ]
+      }
+    },
+    "/orgs": {
+      "get": {
+        "summary": "Get all organisations",
+        "tags": [
+          "organisations"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "logo": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "offset": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  },
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        {
+                          "id": "institution:abba8400-1216-11eb-af77-ff33b5dd411e",
+                          "name": "Inist-CNRS Bibcnrs",
+                          "logo": "d80d56af8ee12a08a4be022dd544dc2b.png"
+                        }
+                      ],
+                      "meta": {
+                        "count": 1,
+                        "offset": 1
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        {
+                          "id": "institution:abba8400-1216-11eb-af77-ff33b5dd411e",
+                          "name": "Inist-CNRS Bibcnrs",
+                          "logo": "d80d56af8ee12a08a4be022dd544dc2b.png"
+                        }
+                      ],
+                      "meta": {
+                        "count": 1,
+                        "offset": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "get-orgs",
+        "description": "Get all organisations of users. Only accessible to SUPERUSER.",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
         ]
       }
     }

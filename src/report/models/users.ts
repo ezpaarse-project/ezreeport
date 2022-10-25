@@ -5,6 +5,7 @@ import Joi from 'joi';
 import logger from '../lib/logger';
 import prisma from '../lib/prisma';
 import { HTTPError } from '../types/errors';
+import { findOrgByIds } from './organisations';
 
 // TODO: More checks to make custom errors
 
@@ -56,6 +57,49 @@ export const getAllUsers = async (
 
     await prisma.$disconnect();
     return users;
+  } catch (error) {
+    if (error instanceof PrismaClientValidationError) {
+      logger.error(error.message.trim());
+      throw new Error('An error occured with DB client. See server logs for more information.');
+    } else {
+      throw error;
+    }
+  }
+};
+
+export const getAllOrgs = async (
+  opts?: { count: number, offset: number },
+): Promise<Array<{ id: User['organisation'], name: string, logo: string }>> => {
+  try {
+    await prisma.$connect();
+
+    // Get all orgs id
+    const orgIds = (await prisma.user.groupBy({
+      by: ['organisation'],
+      orderBy: {
+        organisation: 'asc',
+      },
+      where: {
+        NOT: {
+          organisation: '',
+        },
+      },
+      skip: opts?.offset,
+      take: opts?.count,
+    })).map(({ organisation }) => organisation);
+
+    await prisma.$disconnect();
+
+    // Enrich data with elastic
+    const orgs = await findOrgByIds(orgIds);
+
+    return orgs
+      .filter(({ _source }) => _source != null)
+      .map(({ _id: id, _source: { institution } = { institution: { name: '', logoId: '' } } }) => ({
+        id: id.toString(),
+        name: institution?.name,
+        logo: institution?.logoId, // TODO: resolve
+      }));
   } catch (error) {
     if (error instanceof PrismaClientValidationError) {
       logger.error(error.message.trim());

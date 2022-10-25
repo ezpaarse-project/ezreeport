@@ -66,15 +66,12 @@ const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) =>
     const { body: { [username]: user } } = response;
 
     if (user && user.enabled) {
-      req.user = { username: user.username, email: user.email, roles: [] };
+      req.user = { username: user.username, email: user.email, roles: user.roles };
       // Calculating higher role of user (kinda weird tbh)
       const maxRole = user.roles.reduce((max, role) => {
         const r = role as keyof typeof ROLES_PRIORITIES;
-        if (ROLES_PRIORITIES[r] && req.user) {
-          req.user.roles.push(r);
-          if (ROLES_PRIORITIES[r] > max) {
-            return ROLES_PRIORITIES[r] ?? 0;
-          }
+        if (ROLES_PRIORITIES[r] && ROLES_PRIORITIES[r] > max) {
+          return ROLES_PRIORITIES[r] ?? 0;
         }
         return max;
       }, 0);
