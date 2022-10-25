@@ -23,6 +23,21 @@
     }
   ],
   "paths": {
+    "/ping": {
+      "get": {
+        "summary": "Ping API",
+        "tags": [
+          "general"
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "operationId": "ping",
+        "description": "Check if API is up"
+      }
+    },
     "/institutions": {
       "get": {
         "summary": "Get all institutions",
@@ -292,7 +307,7 @@
           }
         },
         "operationId": "get-tasks",
-        "description": "Add new reporting task to the authed user's institution. Accessible to READ.",
+        "description": "Get tasks of the authed user's institution. Accessible to READ.",
         "security": [
           {
             "ezmesure-jwt": []
@@ -451,17 +466,137 @@
         ]
       }
     },
-    "/ping": {
+    "/tasks/{taskId}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "taskId",
+          "in": "path",
+          "required": true
+        }
+      ],
       "get": {
-        "summary": "Ping API",
-        "tags": [],
+        "summary": "Get specific task",
+        "tags": [
+          "tasks"
+        ],
         "responses": {
-          "204": {
-            "description": "No Content"
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "id": "3f419e88-5a82-4c35-8520-a40a4f1742ae",
+                        "institution": "institution:abba8400-1216-11eb-af77-ff33b5dd411e",
+                        "layout": {
+                          "notImplemented": true
+                        },
+                        "targets": [
+                          "tom.sublet@inist.fr"
+                        ],
+                        "recurrence": "WEEKLY",
+                        "nextRun": "2022-10-31T10:00:00.000Z",
+                        "enabled": true,
+                        "history": [
+                          {
+                            "type": "creation",
+                            "message": "La tâche a été créée par tom.sublet"
+                          }
+                        ],
+                        "createdAt": "2022-10-25T12:46:27.264Z",
+                        "updatedAt": "2022-10-25T12:46:27.264Z"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/Task"
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                        "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
+                        "layout": {
+                          "...": "..."
+                        },
+                        "targets": [
+                          "..."
+                        ],
+                        "recurrence": "WEEKLY",
+                        "nextRun": "2022-10-31T10:00:00.000Z",
+                        "enabled": true,
+                        "history": [
+                          {
+                            "type": "creation",
+                            "message": "La tâche a été créée par ..."
+                          }
+                        ],
+                        "createdAt": "2022-10-25T11:55:47.375Z",
+                        "updatedAt": "2022-10-25T11:55:47.375Z"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-ping",
-        "description": "Check if API is up"
+        "operationId": "get-tasks-taskId",
+        "description": "Get specific task of the authed user's institution. Accessible to READ.",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/institution"
+          }
+        ]
       }
     }
   },
@@ -747,7 +882,7 @@
         }
       },
       "404": {
-        "description": "Example response",
+        "description": "Not found",
         "content": {
           "application/json": {
             "schema": {
@@ -903,6 +1038,9 @@
     }
   },
   "tags": [
+    {
+      "name": "general"
+    },
     {
       "name": "institutions"
     },
