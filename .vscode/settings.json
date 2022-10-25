@@ -5,6 +5,11 @@
     "typescript"
   ],
   "conventionalCommits.scopes": [
-    "report"
-  ]
+    "report",
+    "mail",
+    "tests"
+  ],
+  "mochaExplorer.cwd": "tests",
+  "mochaExplorer.files": "src/**/*.spec.ts",
+  "mochaExplorer.require": "ts-node/register",
 }
