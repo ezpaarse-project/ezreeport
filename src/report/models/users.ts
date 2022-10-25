@@ -8,12 +8,14 @@ import { HTTPError } from '../types/errors';
 
 // TODO: More checks to make custom errors
 
+export type InputUser = Omit<User, 'createdAt' | 'updatedAt'>;
+
 /**
  * Joi schema
  */
-const userSchema = Joi.object({
-  username: Joi.string().required(),
-  organisation: Joi.string().required(),
+export const userSchema = Joi.object<InputUser>({
+  username: Joi.string().trim().required(),
+  organisation: Joi.string().trim().required(),
 });
 
 /**
@@ -24,7 +26,7 @@ const userSchema = Joi.object({
  *
  * @throw If input data isn't a User
  */
-const isValidUser = (data: unknown): data is User => {
+const isValidUser = (data: unknown): data is InputUser => {
   const validation = userSchema.validate(data, {});
   if (validation.error != null) {
     // TODO: Not a HTTP error at this point
@@ -35,6 +37,8 @@ const isValidUser = (data: unknown): data is User => {
 
 /**
  * Get all users in DB
+ *
+ * TODO: order by
  *
  * @returns All the users
  */
@@ -68,7 +72,7 @@ export const getAllUsers = async (
  * @param username The username
  * @returns The user
  */
-export const getUserByUsername = async (username: string): Promise<User | null> => {
+export const getUserByUsername = async (username: User['username']): Promise<User | null> => {
   await prisma.$connect();
 
   const user = await prisma.user.findUnique({
@@ -106,7 +110,7 @@ export const createUser = async (data: unknown): Promise<User> => {
  * @param username The username
  * @returns The deleted user
  */
-export const deleteUserByUsername = async (username: string): Promise<User> => {
+export const deleteUserByUsername = async (username: User['username']): Promise<User> => {
   await prisma.$connect();
 
   const user = await prisma.user.delete({
@@ -124,7 +128,7 @@ export const deleteUserByUsername = async (username: string): Promise<User> => {
  * @param data The input data
  * @returns The edited user
  */
-export const updateUserByUsername = async (username: string, data: unknown): Promise<User> => {
+export const updateUserByUsername = async (username: User['username'], data: unknown): Promise<User> => {
   if (isValidUser(data)) {
     await prisma.$connect();
 
