@@ -450,6 +450,19 @@
           "tasks"
         ]
       }
+    },
+    "/ping": {
+      "get": {
+        "summary": "Ping API",
+        "tags": [],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "operationId": "get-ping",
+        "description": "Check if API is up"
+      }
     }
   },
   "components": {

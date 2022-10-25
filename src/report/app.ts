@@ -1,4 +1,5 @@
 import express from 'express';
+import { StatusCodes } from 'http-status-codes';
 import swaggerUi from 'swagger-ui-express';
 import logger from './lib/logger';
 import formatMiddleware from './middlewares/format';
@@ -17,6 +18,10 @@ app.use('/tasks', tasksRouter);
 
 app.use('/doc/openapi.json', (_req, res) => res.json(openapi));
 app.use('/doc', swaggerUi.serve, swaggerUi.setup(openapi));
+
+app.get('/ping', (_req, res) => {
+  res.sendStatus(StatusCodes.NO_CONTENT);
+});
 
 /**
  * 404 Fallback
