@@ -2,6 +2,7 @@ import chai from 'chai';
 import chaiHttp from 'chai-http';
 import chaiLike from 'chai-like';
 import { randomBytes } from 'crypto';
+import type { createTask } from 'reporting-report/models/tasks';
 import config from '../../lib/config';
 
 const { expect } = chai;
@@ -10,6 +11,8 @@ chai.use(chaiHttp);
 chai.use(chaiLike);
 
 const request = chai.request(config.REPORT_API);
+
+type Task = Awaited<ReturnType<typeof createTask>>;
 
 export default () => {
   describe('General', () => {
@@ -34,13 +37,13 @@ export default () => {
   });
 
   describe('Tasks', () => {
-    let task: any = {
+    let task: Task = {
       layout: {},
       targets: ['fake@inist.fr'],
       recurrence: 'WEEKLY',
       nextRun: new Date(2022, 11, 25),
       enabled: false,
-    };
+    } as Task;
 
     describe('POST /tasks', () => {
       it('should return complete task', (done) => {
@@ -53,7 +56,7 @@ export default () => {
             expect(res).to.have.status(201);
             expect(res.body).to.like({
               status: { code: 201, message: 'Created' },
-              content: { ...task, nextRun: task.nextRun.toISOString() },
+              content: { ...task, nextRun: task.nextRun?.toISOString() },
             });
             task = res.body.content;
             done();
@@ -71,7 +74,6 @@ export default () => {
             expect(res).to.have.status(200);
             expect(res.body.status).to.like({ code: 200, message: 'OK' });
             expect(res.body.content).to.be.an('array');
-            type Task = any; // TODO
             const t = res.body.content.find(({ id }: Task) => id === task.id);
             expect(t).to.like(task);
             done();
@@ -105,7 +107,7 @@ export default () => {
           recurrence: 'WEEKLY',
           nextRun: new Date(2022, 10, 25),
           enabled: false,
-        };
+        } as Task;
 
         request.put(`/tasks/${id}`)
           .auth(config.EZMESURE_TOKEN, { type: 'bearer' })
@@ -116,7 +118,7 @@ export default () => {
             expect(res).to.have.status(200);
             expect(res.body).to.like({
               status: { code: 200, message: 'OK' },
-              content: { ...task, nextRun: task.nextRun.toISOString() },
+              content: { ...task, nextRun: task.nextRun?.toISOString() },
             });
             task = res.body.content;
             done();

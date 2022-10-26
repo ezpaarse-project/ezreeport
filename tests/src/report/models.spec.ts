@@ -1,10 +1,15 @@
-import chai from 'chai';
+// import chai from 'chai';
+//! Causes werid TS issues
+// import { getAllTasks } from 'reporting-report/models/tasks';
 
-const { expect } = chai;
+// const { expect } = chai;
 
 export default () => {
-  it('should return 2', (done) => {
-    expect(1 + 1).to.be.equal(2);
-    done();
-  });
+  // describe('Tasks', () => {
+  //   it('should return array', async (done) => {
+  //     const tasks = await getAllTasks();
+  //     expect(tasks).to.be.an('array');
+  //     done();
+  //   });
+  // });
 };
