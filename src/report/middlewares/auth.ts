@@ -53,9 +53,13 @@ const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) =>
 
     username = jwt.username;
   } catch (error) {
-    res.errorJson(
-      new HTTPError(`JWT malformed: ${(error as Error).message}`, StatusCodes.BAD_REQUEST),
-    );
+    if (error instanceof HTTPError) {
+      res.errorJson(error);
+    } else {
+      res.errorJson(
+        new HTTPError(`JWT malformed: ${(error as Error).message}`, StatusCodes.BAD_REQUEST),
+      );
+    }
     return;
   }
 
