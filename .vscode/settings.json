@@ -15,5 +15,8 @@
   ],
   "mochaExplorer.cwd": "tests",
   "mochaExplorer.files": "src/*/index.spec.ts",
-  "mochaExplorer.require": "ts-node/register",
+  "mochaExplorer.require": [
+    "mocha-steps",
+    "ts-node/register"
+  ],
 }
