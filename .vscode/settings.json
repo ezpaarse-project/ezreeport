@@ -1,4 +1,8 @@
 {
+  "files.associations": {
+    ".env.defaults": "dotenv",
+    ".env": "dotenv"
+  },
   "eslint.workingDirectories": [],
   "eslint.validate": [
     "javascript",
