@@ -31,5 +31,5 @@ app.use('*', (req, res) => {
 });
 
 app.listen(port, () => {
-  logger.info(`Service listening on port ${port}`);
+  logger.info(`[http] Service listening on port ${port}`);
 });

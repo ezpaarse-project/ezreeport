@@ -3,8 +3,12 @@ import { StatusCodes } from 'http-status-codes';
 import checkRight, { Roles } from '../middlewares/auth';
 import { findInstitutionByCreatorOrRole } from '../models/institutions';
 import {
+  createTask,
+  deleteTaskById,
+  editTaskById,
+  getAllTasks,
   // eslint-disable-next-line @typescript-eslint/comma-dangle
-  createTask, editTask, getAllTasks, getTaskById
+  getTaskById
 } from '../models/tasks';
 import { HTTPError } from '../types/errors';
 
@@ -119,7 +123,7 @@ router.put('/:task', checkRight(Roles.READ_WRITE), async (req, res) => {
       throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
     }
 
-    const task = await editTask(
+    const task = await editTaskById(
       req.body,
       id,
       req.user?.username ?? 'UNKNOWN_USER',
@@ -141,6 +145,25 @@ router.put('/:task', checkRight(Roles.READ_WRITE), async (req, res) => {
  *
  * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
  */
-router.delete('/:task', checkRight(Roles.READ_WRITE), async (req, res) => { });
+router.delete('/:task', checkRight(Roles.READ_WRITE), async (req, res) => {
+  try {
+    const { task: id } = req.params;
+
+    const institution = await getAuthedInstitution(req);
+    if (!institution && req.user && !req.user.roles.includes(Roles.SUPER_USER)) {
+      throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
+    }
+
+    const task = await deleteTaskById(id, institution);
+
+    if (!task) {
+      throw new HTTPError(`Task with id '${id}' not found for institution '${institution}'`, StatusCodes.NOT_FOUND);
+    } else {
+      res.sendJson(task, StatusCodes.OK);
+    }
+  } catch (error) {
+    res.errorJson(error);
+  }
+});
 
 export default router;

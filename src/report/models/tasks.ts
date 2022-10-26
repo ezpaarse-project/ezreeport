@@ -143,7 +143,7 @@ export const createTask = async (data: unknown, creator: string, institution: Ta
  *
  * @returns The edited task
  */
-export const editTask = async (data: unknown, id: Task['id'], editor: string, institution?: Task['institution']): Promise<Task | null> => {
+export const editTaskById = async (data: unknown, id: Task['id'], editor: string, institution?: Task['institution']): Promise<Task | null> => {
   if (isValidTask(data)) {
     // Check if task exist
     const task = await getTaskById(id, institution);
@@ -170,6 +170,24 @@ export const editTask = async (data: unknown, id: Task['id'], editor: string, in
   }
   // TODO: Not a HTTP error at this point
   throw new HTTPError('Body is not valid', StatusCodes.BAD_REQUEST);
+};
+
+export const deleteTaskById = async (id: Task['id'], institution?: Task['institution']): Promise<Task | null> => {
+  // Check if task exist
+  const task = await getTaskById(id, institution);
+  if (task) {
+    await prisma.$connect();
+
+    const deletedTask = await prisma.task.delete({
+      where: {
+        id,
+      },
+    });
+
+    await prisma.$disconnect();
+    return deletedTask;
+  }
+  return null;
 };
 
 /**
