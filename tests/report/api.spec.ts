@@ -4,7 +4,7 @@ import chaiLike from 'chai-like';
 import { randomBytes } from 'crypto';
 import { step } from 'mocha-steps';
 import type { createTask } from 'reporting-report/models/tasks';
-import config from '../../lib/config';
+import config from '../lib/config';
 
 const { expect } = chai;
 
