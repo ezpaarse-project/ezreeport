@@ -1,4 +1,8 @@
 {
+  "files.associations": {
+    ".env.defaults": "dotenv",
+    ".env": "dotenv"
+  },
   "eslint.workingDirectories": [],
   "eslint.validate": [
     "javascript",
@@ -10,6 +14,9 @@
     "tests"
   ],
   "mochaExplorer.cwd": "tests",
-  "mochaExplorer.files": "src/**/*.spec.ts",
-  "mochaExplorer.require": "ts-node/register",
+  "mochaExplorer.files": "src/*/index.spec.ts",
+  "mochaExplorer.require": [
+    "mocha-steps",
+    "ts-node/register"
+  ],
 }
