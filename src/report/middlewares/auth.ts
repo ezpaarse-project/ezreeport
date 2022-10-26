@@ -56,6 +56,7 @@ const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) =>
     res.errorJson(
       new HTTPError(`JWT malformed: ${(error as Error).message}`, StatusCodes.BAD_REQUEST),
     );
+    return;
   }
 
   try {
