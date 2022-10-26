@@ -2,7 +2,10 @@ import { Router, type Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import checkRight, { Roles } from '../middlewares/auth';
 import { findInstitutionByCreatorOrRole } from '../models/institutions';
-import { createTask, getAllTasks, getTaskById } from '../models/tasks';
+import {
+  // eslint-disable-next-line @typescript-eslint/comma-dangle
+  createTask, editTask, getAllTasks, getTaskById
+} from '../models/tasks';
 import { HTTPError } from '../types/errors';
 
 const router = Router();
@@ -92,10 +95,10 @@ router.get('/:task', checkRight(Roles.READ), async (req, res) => {
     }
 
     const task = await getTaskById(id, institution);
-    if (task) {
-      res.sendJson(task, StatusCodes.OK);
-    } else {
+    if (!task) {
       throw new HTTPError(`Task with id '${id}' not found for institution '${institution}'`, StatusCodes.NOT_FOUND);
+    } else {
+      res.sendJson(task, StatusCodes.OK);
     }
   } catch (error) {
     res.errorJson(error);
@@ -106,9 +109,32 @@ router.get('/:task', checkRight(Roles.READ), async (req, res) => {
  * Update a task
  *
  * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
- * `req.body.owner` is only required if Roles.SUPER_USER
  */
-router.put('/:task', checkRight(Roles.READ_WRITE), async (req, res) => { });
+router.put('/:task', checkRight(Roles.READ_WRITE), async (req, res) => {
+  try {
+    const { task: id } = req.params;
+
+    const institution = await getAuthedInstitution(req);
+    if (!institution && req.user && !req.user.roles.includes(Roles.SUPER_USER)) {
+      throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
+    }
+
+    const task = await editTask(
+      req.body,
+      id,
+      req.user?.username ?? 'UNKNOWN_USER',
+      institution,
+    );
+
+    if (!task) {
+      throw new HTTPError(`Task with id '${id}' not found for institution '${institution}'`, StatusCodes.NOT_FOUND);
+    } else {
+      res.sendJson(task, StatusCodes.OK);
+    }
+  } catch (error) {
+    res.errorJson(error);
+  }
+});
 
 /**
  * Delete a task

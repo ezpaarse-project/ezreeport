@@ -1,5 +1,6 @@
 import { Recurrence, Task } from '@prisma/client';
 import { PrismaClientValidationError } from '@prisma/client/runtime';
+import { formatISO } from 'date-fns';
 import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
 import logger from '../lib/logger';
@@ -121,13 +122,53 @@ export const createTask = async (data: unknown, creator: string, institution: Ta
       data: {
         ...data,
         institution,
-        history: [{ type: 'creation', message: `La tâche a été créée par ${creator}` }],
+        history: [{ type: 'creation', message: `Tâche créée par ${creator}`, date: formatISO(new Date()) }],
       },
     });
 
     await prisma.$disconnect();
     return task;
   }
+  // TODO: Not a HTTP error at this point
+  throw new HTTPError('Body is not valid', StatusCodes.BAD_REQUEST);
+};
+
+/**
+ * Edit task in DB
+ *
+ * @param data The input data
+ * @param id The id of the task
+ * @param editor The user editing the task
+ * @param institution The institution of the task
+ *
+ * @returns The edited task
+ */
+export const editTask = async (data: unknown, id: Task['id'], editor: string, institution?: Task['institution']): Promise<Task | null> => {
+  if (isValidTask(data)) {
+    // Check if task exist
+    const task = await getTaskById(id, institution);
+    if (task) {
+      await prisma.$connect();
+
+      const editedTask = await prisma.task.update({
+        data: {
+          ...data,
+          history: [
+            ...(task.history instanceof Array ? task.history : []),
+            { type: 'edition', message: `Tâche éditée par ${editor}`, date: formatISO(new Date()) },
+          ],
+        },
+        where: {
+          id,
+        },
+      });
+
+      await prisma.$disconnect();
+      return editedTask;
+    }
+    return null;
+  }
+  // TODO: Not a HTTP error at this point
   throw new HTTPError('Body is not valid', StatusCodes.BAD_REQUEST);
 };
 
