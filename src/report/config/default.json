@@ -1,4 +1,5 @@
 {
+  "rootPath": "./",
   "elasticsearch": {
     "scheme": "https",
     "host": "localhost",

@@ -4,12 +4,12 @@ import { existsSync } from 'fs';
 import { readFile, unlink } from 'fs/promises';
 import { jsPDF as PDF } from 'jspdf';
 import { join } from 'path';
-import { ROOT_PATH } from '../app';
 import '../assets/fonts/Roboto-bold.js';
 import '../assets/fonts/Roboto-normal.js';
 import config from './config';
 
 const { logos } = config.get('pdf');
+const ROOT_PATH = config.get('rootPath');
 
 let doc: {
   // Calc at init

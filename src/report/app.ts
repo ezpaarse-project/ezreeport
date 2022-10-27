@@ -8,8 +8,6 @@ import openapi from './openapi.json';
 import orgsRouter from './routes/institutions';
 import tasksRouter from './routes/tasks';
 
-export const ROOT_PATH = __dirname;
-
 const app = express();
 const port = 8080;
 
