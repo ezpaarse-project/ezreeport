@@ -263,6 +263,7 @@
                       "content": [
                         {
                           "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                          "name": "My Super Task",
                           "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
                           "layout": {
                             "...": "..."
@@ -388,6 +389,7 @@
                       },
                       "content": {
                         "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                        "name": "My Super Task",
                         "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
                         "layout": {
                           "...": "..."
@@ -441,6 +443,7 @@
               "examples": {
                 "Example": {
                   "value": {
+                    "name": "My Super Task",
                     "layout": {
                       "...": "..."
                     },
@@ -546,6 +549,7 @@
                       },
                       "content": {
                         "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                        "name": "My Super Task",
                         "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
                         "layout": {
                           "...": "..."
@@ -672,6 +676,7 @@
                       },
                       "content": {
                         "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                        "name": "My Super Task",
                         "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
                         "layout": {
                           "...": "..."
@@ -734,6 +739,7 @@
               "examples": {
                 "Example": {
                   "value": {
+                    "name": "My Super Task",
                     "layout": {
                       "...": "..."
                     },
@@ -819,6 +825,7 @@
                       },
                       "content": {
                         "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                        "name": "My Super Task",
                         "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
                         "layout": {
                           "...": "..."
@@ -885,6 +892,7 @@
         "x-examples": {
           "Example": {
             "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+            "name": "My Super Task",
             "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
             "layout": {
               "...": "..."
@@ -915,6 +923,9 @@
             "type": "string",
             "description": "Id of the task",
             "readOnly": true
+          },
+          "name": {
+            "type": "string"
           },
           "institution": {
             "type": "string",
@@ -980,6 +991,7 @@
           }
         },
         "required": [
+          "name",
           "layout",
           "targets",
           "recurrence",

@@ -12,6 +12,7 @@ datasource db {
 
 model Task {
   id          String     @id @default(uuid())
+  name        String
   institution String
   layout      Json
   targets     String[]

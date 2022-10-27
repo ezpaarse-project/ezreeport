@@ -16,6 +16,7 @@ export type InputTask = Omit<Task, 'institution' | 'history' | 'createdAt' | 'up
  * Joi schema
  */
 export const taskSchema = Joi.object<InputTask>({
+  name: Joi.string().trim().required(),
   layout: Joi.object().required(),
   targets: Joi.array().items(Joi.string().trim().email()).required(),
   recurrence: Joi.string().valid(
