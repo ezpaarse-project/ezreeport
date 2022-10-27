@@ -1,5 +1,17 @@
 import { Recurrence } from '@prisma/client';
-import { add } from 'date-fns';
+import {
+  add,
+  endOfDay,
+  endOfMonth,
+  endOfQuarter,
+  endOfWeek,
+  endOfYear, startOfDay,
+  startOfMonth,
+  startOfQuarter,
+  startOfWeek,
+  // eslint-disable-next-line @typescript-eslint/comma-dangle
+  startOfYear
+} from 'date-fns';
 
 /**
  * Calculate next run date for the task
@@ -9,33 +21,73 @@ import { add } from 'date-fns';
  *
  * @returns The new date of the task
  */
-const calcNextDate = (initial: Date, recurrence: Recurrence) => {
-  let next = new Date(initial);
+export const calcNextDate = (initial: Date, recurrence: Recurrence): Date => {
+  const duration: Duration = {};
 
   switch (recurrence) {
     case Recurrence.DAILY:
-      next = add(next, { days: 1 });
+      duration.days = 1;
       break;
     case Recurrence.WEEKLY:
-      next = add(next, { weeks: 1 });
+      duration.weeks = 1;
       break;
     case Recurrence.MONTHLY:
-      next = add(next, { months: 1 });
+      duration.months = 1;
       break;
     case Recurrence.QUARTERLY:
-      next = add(next, { months: 3 });
+      duration.months = 3;
       break;
     case Recurrence.BIENNIAL:
-      next = add(next, { months: 6 });
+      duration.months = 6;
       break;
     case Recurrence.YEARLY:
-      next = add(next, { years: 1 });
+      duration.years = 1;
       break;
     default:
-      break;
+      throw new Error('Recurrence not found');
   }
 
-  return next;
+  return add(initial, duration);
 };
 
-export default calcNextDate;
+export const calcPeriod = (today: Date, recurrence: Recurrence): { start: Date, end: Date } => {
+  let period;
+
+  switch (recurrence) {
+    case Recurrence.DAILY: {
+      const target = add(today, { days: -1 });
+      period = { start: startOfDay(target), end: endOfDay(target) };
+      break;
+    }
+    case Recurrence.WEEKLY: {
+      const target = add(today, { weeks: -1 });
+      period = { start: startOfWeek(target), end: endOfWeek(target) };
+      break;
+    }
+    case Recurrence.MONTHLY: {
+      const target = add(today, { months: -1 });
+      period = { start: startOfMonth(target), end: endOfMonth(target) };
+      break;
+    }
+    case Recurrence.QUARTERLY: {
+      const target = add(today, { months: -3 });
+      period = { start: startOfQuarter(target), end: endOfQuarter(target) };
+      break;
+    }
+    case Recurrence.BIENNIAL: {
+      throw new Error('Recurrence not implemented yet');
+      const target = add(today, { months: -6 });
+      period = { start: startOfDay(target), end: endOfDay(target) }; // TODO
+      break;
+    }
+    case Recurrence.YEARLY: {
+      const target = add(today, { years: -1 });
+      period = { start: startOfYear(target), end: endOfYear(target) };
+      break;
+    }
+    default:
+      throw new Error('Recurrence not found');
+  }
+
+  return period;
+};

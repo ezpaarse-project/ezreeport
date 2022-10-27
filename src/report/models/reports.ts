@@ -1,8 +1,76 @@
 import type { Task } from '@prisma/client';
-import { parseISO } from 'date-fns';
-import vegaGenerator from '../generators/vega';
+import { format } from 'date-fns';
+import { ImageOptions } from 'jspdf';
+import { join } from 'path';
 import layout from '../layouts/test';
+import config from '../lib/config';
+import {
+  // eslint-disable-next-line @typescript-eslint/comma-dangle
+  addPage, deleteDoc, initDoc, renderDoc, type PDFReportOptions
+} from '../lib/pdf';
+import { addTable } from '../lib/pdf/table';
+import { calcPeriod } from '../lib/recurrence';
+import {
+  // eslint-disable-next-line @typescript-eslint/comma-dangle
+  addVega, createVegaLSpec, createVegaView, isFigureTable, type LayoutVegaFigure
+} from '../lib/vega';
 import { addTaskHistory } from './tasks';
+
+const rootPath = config.get('rootPath');
+const { outDir } = config.get('pdf');
+
+const normaliseFilename = (filename: string): string => filename.toLowerCase().replace(/[/ .]/g, '_');
+
+const generatePdfWithVega = async (
+  figures: LayoutVegaFigure,
+  opts: PDFReportOptions,
+  dataOpts: any = {},
+): Promise<void> => {
+  try {
+    const doc = await initDoc(opts);
+
+    /**
+     * Base options for adding images with jsPDF
+     */
+    const baseImageOptions: Omit<ImageOptions, 'imageData'> = {
+      x: doc.margin.left,
+      y: doc.offset.top,
+      width: doc.width - doc.margin.left - doc.margin.right,
+      height: doc.height - doc.offset.top - doc.offset.bottom,
+    };
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const figure of figures) {
+      // eslint-disable-next-line no-await-in-loop
+      await addPage();
+
+      // eslint-disable-next-line no-await-in-loop
+      const figParams = await figure(opts, dataOpts);
+
+      if (isFigureTable(figParams)) {
+        // eslint-disable-next-line no-await-in-loop
+        await addTable(doc, figParams.data, figParams.params);
+      } else {
+        // Creating figure
+        const fig = createVegaView(
+          createVegaLSpec(figParams.type, figParams.data, {
+            width: baseImageOptions.width,
+            height: baseImageOptions.height,
+            ...figParams.params,
+          }),
+        );
+        // Adding figure to pdf
+        // eslint-disable-next-line no-await-in-loop
+        await addVega(doc, fig, baseImageOptions);
+      }
+    }
+
+    await renderDoc();
+  } catch (error) {
+    await deleteDoc();
+    throw error;
+  }
+};
 
 export const generateReport = async (task: Task, origin: string, writeHistory = true) => {
   const targets = task.targets.filter((email) => email !== '');
@@ -10,14 +78,17 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
     return { success: false, content: "Targets can't be null" };
   }
 
-  const filename = 'Test API';
-  await vegaGenerator(
+  const today = new Date();
+  const filename = `${format(today, 'dd-MM-yyyy')}_${normaliseFilename(task.name)}.pdf`;
+  const period = calcPeriod(today, task.recurrence);
+
+  await generatePdfWithVega(
     layout, // TODO: use task layout. define layout as JSON
     {
-      name: 'Test API',
-      path: 'data/api.pdf',
-      periodStart: parseISO('2021-01-01T00:00:00.000+01:00'),
-      periodEnd: parseISO('2021-12-31T23:59:59.999+01:00'),
+      name: task.name,
+      path: join(rootPath, outDir, filename),
+      periodStart: period.start,
+      periodEnd: period.end,
     },
     {
       index: 'bibcnrs-*-2021',

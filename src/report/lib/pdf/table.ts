@@ -1,6 +1,6 @@
 import autoTable, { type UserOptions } from 'jspdf-autotable';
 import { merge } from 'lodash';
-import type { PDFReport } from '../lib/pdf';
+import type { PDFReport } from '.';
 
 export type TableParams = {
   title: string,

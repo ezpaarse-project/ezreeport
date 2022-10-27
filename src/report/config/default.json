@@ -16,6 +16,7 @@
     "depositorsIndex": "depositors"
   },
   "pdf": {
+    "outDir": "data",
     "logos": [
       {
         "path": "assets/logos/ezmesure.png",

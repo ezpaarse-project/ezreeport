@@ -2,9 +2,9 @@
 import { RequestParams } from '@elastic/elasticsearch';
 import { isAfter, isBefore } from 'date-fns';
 import { merge } from 'lodash';
-import type { LayoutVegaFigure, VegaFigure } from '../generators/vega';
 import { getElasticClient } from '../lib/elastic';
 import type { PDFReportOptions } from '../lib/pdf';
+import type { LayoutVegaFigure, VegaFigure } from '../lib/vega';
 
 // TODO: Md for text
 

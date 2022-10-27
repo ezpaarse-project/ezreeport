@@ -1,5 +1,5 @@
 import { writeFile } from 'fs';
-import { type ImageOptions } from 'jspdf';
+import type { ImageOptions } from 'jspdf';
 import { merge, omit, pick } from 'lodash';
 import {
   // eslint-disable-next-line @typescript-eslint/comma-dangle
@@ -8,18 +8,10 @@ import {
 import { compile, type TopLevelSpec } from 'vega-lite';
 import type { Mark } from 'vega-lite/build/src/mark';
 import type { LayerSpec, UnitSpec } from 'vega-lite/build/src/spec';
-import logger from '../lib/logger';
-import {
-  addPage,
-  deleteDoc,
-  initDoc,
-  renderDoc,
-  type PDFReport,
-  // eslint-disable-next-line @typescript-eslint/comma-dangle
-  type PDFReportOptions
-} from '../lib/pdf';
-import { vega as localeFR } from '../locales/fr-FR.json';
-import { addTable, type TableParams, type TableParamsFnc } from './pdfTable';
+import logger from '../logger';
+import type { PDFReport, PDFReportOptions } from '../pdf';
+import type { TableParams, TableParamsFnc } from '../pdf/table';
+import localeFR from './locales/fr-FR.json';
 
 type LayerType = LayerSpec<any> | UnitSpec<any>;
 
@@ -252,55 +244,4 @@ export const addVega = async (
  * @param figure The figure
  * @returns Is the figure is a table
  */
-const isFigureTable = (figure: AnyVegaFigure): figure is VegaFigure<'table'> => figure.type === 'table';
-
-export default async (
-  figures: LayoutVegaFigure,
-  opts: PDFReportOptions,
-  dataOpts: any = {},
-): Promise<void> => {
-  try {
-    const doc = await initDoc(opts);
-
-    /**
-     * Base options for adding images with jsPDF
-     */
-    const baseImageOptions: Omit<ImageOptions, 'imageData'> = {
-      x: doc.margin.left,
-      y: doc.offset.top,
-      width: doc.width - doc.margin.left - doc.margin.right,
-      height: doc.height - doc.offset.top - doc.offset.bottom,
-    };
-
-    // eslint-disable-next-line no-restricted-syntax
-    for (const figure of figures) {
-      // eslint-disable-next-line no-await-in-loop
-      await addPage();
-
-      // eslint-disable-next-line no-await-in-loop
-      const figParams = await figure(opts, dataOpts);
-
-      if (isFigureTable(figParams)) {
-        // eslint-disable-next-line no-await-in-loop
-        await addTable(doc, figParams.data, figParams.params);
-      } else {
-        // Creating figure
-        const fig = createVegaView(
-          createVegaLSpec(figParams.type, figParams.data, {
-            width: baseImageOptions.width,
-            height: baseImageOptions.height,
-            ...figParams.params,
-          }),
-        );
-        // Adding figure to pdf
-        // eslint-disable-next-line no-await-in-loop
-        await addVega(doc, fig, baseImageOptions);
-      }
-    }
-
-    await renderDoc();
-  } catch (error) {
-    await deleteDoc();
-    throw error;
-  }
-};
+export const isFigureTable = (figure: AnyVegaFigure): figure is VegaFigure<'table'> => figure.type === 'table';

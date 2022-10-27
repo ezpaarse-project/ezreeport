@@ -27,7 +27,7 @@ export const taskSchema = Joi.object<InputTask>({
     Recurrence.BIENNIAL,
     Recurrence.YEARLY,
   ).required(),
-  nextRun: Joi.string().isoDate().required(),
+  nextRun: Joi.string().isoDate().required(), // TODO: check possible
   enabled: Joi.boolean().default(true),
 });
 
