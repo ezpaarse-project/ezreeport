@@ -1,6 +1,7 @@
 import express from 'express';
 import { StatusCodes } from 'http-status-codes';
 import swaggerUi from 'swagger-ui-express';
+import './lib/datefns'; // Should be first because it setup default options before using it in any module
 import logger from './lib/logger';
 import formatMiddleware from './middlewares/format';
 import loggerMiddleware from './middlewares/logger';
