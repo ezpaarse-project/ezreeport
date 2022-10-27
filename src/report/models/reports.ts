@@ -2,7 +2,7 @@ import type { Task } from '@prisma/client';
 import { format } from 'date-fns';
 import type { ImageOptions } from 'jspdf';
 import { join } from 'path';
-import layout from '../layouts/test';
+import testLayout from '../layouts/test';
 import config from '../lib/config';
 import {
   addPage,
@@ -25,12 +25,26 @@ import { addTaskHistory } from './tasks';
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
 
+/**
+ * Put filename in lowercase & remove chars that can cause issues.
+ *
+ * @param filename The original filename
+ *
+ * @returns The normalized filename
+ */
 const normaliseFilename = (filename: string): string => filename.toLowerCase().replace(/[/ .]/g, '_');
 
+/**
+ * Generate PDF report with Vega
+ *
+ * @param layout The layout of the report
+ * @param opts The options passed to the PDF Document
+ * @param dataOpts Data options (usually filters and elastic inde)
+ */
 const generatePdfWithVega = async (
-  figures: LayoutVegaFigure,
+  layout: LayoutVegaFigure,
   opts: PDFReportOptions,
-  dataOpts: any = {},
+  dataOpts: any = {}, // TODO: any ??
 ): Promise<void> => {
   try {
     const doc = await initDoc(opts);
@@ -46,7 +60,7 @@ const generatePdfWithVega = async (
     };
 
     // eslint-disable-next-line no-restricted-syntax
-    for (const figure of figures) {
+    for (const figure of layout) {
       // eslint-disable-next-line no-await-in-loop
       await addPage();
 
@@ -78,6 +92,15 @@ const generatePdfWithVega = async (
   }
 };
 
+/**
+ * Generate report
+ *
+ * @param task The task to generate
+ * @param origin The origin of the generation (can be username, or method (auto, etc.))
+ * @param writeHistory Should write generation in task history
+ *
+ * @returns ...
+ */
 export const generateReport = async (task: Task, origin: string, writeHistory = true) => {
   const targets = task.targets.filter((email) => email !== '');
   if (targets.length <= 0) {
@@ -89,7 +112,7 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
   const period = calcPeriod(today, task.recurrence);
 
   await generatePdfWithVega(
-    layout, // TODO: use task layout. define layout as JSON
+    testLayout, // TODO: use task layout. define layout as JSON
     {
       name: task.name,
       path: join(rootPath, outDir, filename),
