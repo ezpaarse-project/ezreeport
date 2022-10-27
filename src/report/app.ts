@@ -8,6 +8,8 @@ import openapi from './openapi.json';
 import orgsRouter from './routes/institutions';
 import tasksRouter from './routes/tasks';
 
+export const ROOT_PATH = __dirname;
+
 const app = express();
 const port = 8080;
 
@@ -33,3 +35,5 @@ app.use('*', (req, res) => {
 app.listen(port, () => {
   logger.info(`[http] Service listening on port ${port}`);
 });
+
+export default app;

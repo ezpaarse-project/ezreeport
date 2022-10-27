@@ -2,6 +2,7 @@ import { Router, type Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import checkRight, { Roles } from '../middlewares/auth';
 import { findInstitutionByCreatorOrRole } from '../models/institutions';
+import { generateReport } from '../models/reports';
 import {
   createTask,
   deleteTaskById,
@@ -161,6 +162,44 @@ router.delete('/:task', checkRight(Roles.READ_WRITE), async (req, res) => {
     } else {
       res.sendJson(task, StatusCodes.OK);
     }
+  } catch (error) {
+    res.errorJson(error);
+  }
+});
+
+/**
+ * Force generation of report
+ *
+ * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)`
+ */
+router.post('/:task/run', checkRight(Roles.READ_WRITE), async (req, res) => {
+  try {
+    const { task: id } = req.params;
+    let { test_emails: testEmails } = req.query;
+
+    // Transform emails into array if needed
+    if (testEmails != null) {
+      if (!Array.isArray(testEmails)) testEmails = [testEmails.toString()];
+      else testEmails = testEmails.map((email) => email.toString());
+    }
+
+    const institution = await getAuthedInstitution(req);
+    if (!institution && req.user && !req.user.roles.includes(Roles.SUPER_USER)) {
+      throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
+    }
+
+    const task = await getTaskById(id, institution);
+    if (!task) {
+      throw new HTTPError(`Task with id '${id}' not found for institution '${institution}'`, StatusCodes.NOT_FOUND);
+    }
+
+    const reportResult = await generateReport(
+      { ...task, targets: testEmails || task.targets },
+      req.user?.username ?? 'UNKNOWN_USER',
+      testEmails === undefined,
+    );
+
+    res.sendJson(reportResult.content, reportResult.success ? 201 : 500);
   } catch (error) {
     res.errorJson(error);
   }

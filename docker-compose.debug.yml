@@ -23,7 +23,7 @@ services:
     restart: unless-stopped
 
   report:
-    image: node:18.12.0
+    image: node:16.18.0
     working_dir: /report
     volumes:
       - ./src/report:/report

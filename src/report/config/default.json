@@ -12,5 +12,25 @@
   },
   "ezmesure": {
     "secret": "changeme"
+  },
+  "pdf": {
+    "logos": [
+      {
+        "path": "assets/logos/ezmesure.png",
+        "link": "https://ezmesure.couperin.org/kibana/"
+      },
+      {
+        "path": "assets/logos/cnrs.png",
+        "link": "http://www.cnrs.fr/"
+      },
+      {
+        "path": "assets/logos/inist.png",
+        "link": "https://www.inist.fr/"
+      },
+      {
+        "path": "assets/logos/couperin.png",
+        "link": "https://www.couperin.org/"
+      }
+    ]
   }
 }
