@@ -198,7 +198,7 @@ router.post('/:task/run', checkRight(Roles.READ_WRITE), async (req, res) => {
       testEmails === undefined,
     );
 
-    res.sendJson(reportResult.content, reportResult.success ? 201 : 500);
+    res.sendJson(reportResult, reportResult.success ? 201 : 500);
   } catch (error) {
     res.errorJson(error);
   }

@@ -1,6 +1,8 @@
 import type { Task } from '@prisma/client';
 import { format } from 'date-fns';
+import { mkdir, writeFile } from 'fs/promises';
 import type { ImageOptions } from 'jspdf';
+import { merge } from 'lodash';
 import { join } from 'path';
 import testLayout from '../layouts/test';
 import config from '../lib/config';
@@ -102,91 +104,131 @@ const generatePdfWithVega = async (
  * @returns ...
  */
 export const generateReport = async (task: Task, origin: string, writeHistory = true) => {
-  const targets = task.targets.filter((email) => email !== '');
-  if (targets.length <= 0) {
-    return { success: false, content: "Targets can't be null" };
-  }
-
   const today = new Date();
-  // reporting_ezMESURE_6eaa7170-4e56-11eb-8139-2d9f91b04e27_07-10-2022.pdf
-  const filename = `reporting_ezMESURE_${normaliseFilename(task.name)}_${format(today, 'dd-MM-yyyy')}.pdf`;
-  const period = calcPeriod(today, task.recurrence);
+  const todayStr = format(today, 'yyyy/yyyy-MM');
+  const basePath = join(rootPath, outDir, todayStr, '/');
+  // TODO: unique id
+  const filename = `reporting_ezMESURE_${normaliseFilename(task.name)}`;
 
-  await generatePdfWithVega(
-    testLayout, // TODO: use task layout. define layout as JSON
-    {
-      name: task.name,
-      path: join(rootPath, outDir, filename),
-      period,
-    },
-    {
-      index: 'bibcnrs-*-2021',
-      filters: {
-        must_not: [
-          {
-            match_phrase: {
-              mime: {
-                query: 'XLS',
-              },
-            },
-          },
-          {
-            match_phrase: {
-              mime: {
-                query: 'DOC',
-              },
-            },
-          },
-          {
-            match_phrase: {
-              mime: {
-                query: 'MISC',
-              },
-            },
-          },
-          {
-            match_phrase: {
-              index_name: {
-                query: 'bibcnrs-insb-dcm00',
-              },
-            },
-          },
-          {
-            match_phrase: {
-              index_name: {
-                query: 'bibcnrs-insb-dcm30',
-              },
-            },
-          },
-          {
-            match_phrase: {
-              index_name: {
-                query: 'bibcnrs-insb-dcm10',
-              },
-            },
-          },
-          {
-            match_phrase: {
-              index_name: {
-                query: 'bibcnrs-insb-anonyme',
-              },
-            },
-          },
-        ],
+  // TODO: any ??
+  let result: any = {
+    success: true,
+    detail: {
+      task: task.id,
+      files: {
+        detail: `${todayStr}/${filename}.json`,
       },
     },
-  );
-
-  // TODO : email
-
-  if (writeHistory) {
-    await addTaskHistory(task.id, { type: 'generation', message: `Rapport "${filename}" généré par ${origin}` });
-  }
-
-  return {
-    success: true,
-    content: {},
   };
+
+  await mkdir(basePath, { recursive: true });
+
+  try {
+    const targets = task.targets.filter((email) => email !== '');
+    if (targets.length <= 0) {
+      throw new Error("Targets can't be null");
+    }
+
+    const period = calcPeriod(today, task.recurrence);
+
+    await generatePdfWithVega(
+      testLayout, // TODO: use task layout. define layout as JSON
+      {
+        name: task.name,
+        path: join(basePath, `${filename}.pdf`),
+        period,
+      },
+      {
+        index: 'bibcnrs-*-2021',
+        filters: {
+          must_not: [
+            {
+              match_phrase: {
+                mime: {
+                  query: 'XLS',
+                },
+              },
+            },
+            {
+              match_phrase: {
+                mime: {
+                  query: 'DOC',
+                },
+              },
+            },
+            {
+              match_phrase: {
+                mime: {
+                  query: 'MISC',
+                },
+              },
+            },
+            {
+              match_phrase: {
+                index_name: {
+                  query: 'bibcnrs-insb-dcm00',
+                },
+              },
+            },
+            {
+              match_phrase: {
+                index_name: {
+                  query: 'bibcnrs-insb-dcm30',
+                },
+              },
+            },
+            {
+              match_phrase: {
+                index_name: {
+                  query: 'bibcnrs-insb-dcm10',
+                },
+              },
+            },
+            {
+              match_phrase: {
+                index_name: {
+                  query: 'bibcnrs-insb-anonyme',
+                },
+              },
+            },
+          ],
+        },
+      },
+    );
+
+    // TODO : email
+
+    if (writeHistory) {
+      await addTaskHistory(task.id, { type: 'generation-success', message: `Rapport "${todayStr}/${filename}" généré par ${origin}` });
+    }
+
+    result = merge(
+      result,
+      {
+        detail: {
+          files: { report: `${todayStr}/${filename}.pdf` },
+          writedTo: targets,
+          period,
+        },
+      },
+    );
+  } catch (error) {
+    if (writeHistory) {
+      await addTaskHistory(task.id, { type: 'generation-error', message: `Rapport "${todayStr}/${filename}" non généré par ${origin} suite à une erreur` });
+    }
+
+    result = merge(
+      result,
+      {
+        success: false,
+        detail: {
+          error,
+        },
+      },
+    );
+  }
+  await writeFile(join(basePath, `${filename}.json`), JSON.stringify(result), 'utf-8');
+  return result;
 };
 
 export const a = 1;
