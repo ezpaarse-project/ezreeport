@@ -52,6 +52,14 @@ export const calcNextDate = (initial: Date, recurrence: Recurrence): Date => {
   return add(initial, duration);
 };
 
+/**
+ * Get previous period based on Reccurrence
+ *
+ * @param today The today's date
+ * @param recurrence The reccurence
+ *
+ * @returns The period
+ */
 export const calcPeriod = (today: Date, recurrence: Recurrence): Interval => {
   let period;
 
