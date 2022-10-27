@@ -6,6 +6,7 @@ import logger from './lib/logger';
 import formatMiddleware from './middlewares/format';
 import loggerMiddleware from './middlewares/logger';
 import openapi from './openapi.json';
+import filesRouter from './routes/files';
 import tasksRouter from './routes/tasks';
 
 const app = express();
@@ -14,6 +15,7 @@ const port = 8080;
 app.use(express.json(), loggerMiddleware, formatMiddleware);
 
 app.use('/tasks', tasksRouter);
+app.use('/reports', filesRouter);
 
 app.use('/doc/openapi.json', (_req, res) => res.json(openapi));
 app.use('/doc', swaggerUi.serve, swaggerUi.setup(openapi));

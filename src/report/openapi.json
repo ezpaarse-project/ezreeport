@@ -331,7 +331,8 @@
           },
           "name": "taskId",
           "in": "path",
-          "required": true
+          "required": true,
+          "description": "The task id"
         }
       ],
       "get": {
@@ -735,6 +736,140 @@
           "tasks"
         ]
       }
+    },
+    "/tasks/{taskId}/run": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "taskId",
+          "in": "path",
+          "required": true,
+          "description": "The task id"
+        }
+      ],
+      "post": {
+        "summary": "Generate report",
+        "operationId": "post-tasks-taskId-run",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/ReportDetail"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "report"
+        ],
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/institution"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "minItems": 1
+            },
+            "in": "query",
+            "name": "test_emails",
+            "style": "form",
+            "description": "Emails to send instead of task targets. Enables test mode if present."
+          }
+        ],
+        "description": "Trigger generation of report. Accessible to READ_WRITE."
+      }
+    },
+    "/reports/{path}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "path",
+          "in": "path",
+          "required": true,
+          "description": "Path to report"
+        }
+      ],
+      "get": {
+        "summary": "Get specific report",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "Detail about report",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              },
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "description": "The document",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-reports-file",
+        "description": "Get specific report. Accessible to READ.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/institution"
+          }
+        ],
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "tags": [
+          "report"
+        ]
+      }
     }
   },
   "components": {
@@ -842,6 +977,19 @@
             "readOnly": true
           }
         }
+      },
+      "ReportDetail": {
+        "title": "ReportDetail",
+        "x-stoplight": {
+          "id": "u6rz9i3vtghx3"
+        },
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        },
+        "description": "Detail of generated report"
       }
     },
     "securitySchemes": {
@@ -1176,6 +1324,9 @@
   "tags": [
     {
       "name": "general"
+    },
+    {
+      "name": "report"
     },
     {
       "name": "tasks"
