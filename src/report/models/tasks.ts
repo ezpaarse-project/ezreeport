@@ -6,7 +6,6 @@ import Joi from 'joi';
 import logger from '../lib/logger';
 import prisma from '../lib/prisma';
 import { HTTPError } from '../types/errors';
-import { findInstitutionByIds } from './institutions';
 
 // TODO: More checks to make custom errors
 
@@ -221,54 +220,4 @@ export const addTaskHistory = async (id: Task['id'], entry: { type: string, mess
     return editedTask;
   }
   return null;
-};
-
-/**
- * Get all institutions in DB
- *
- * @param opts Pagination options
- *
- * @returns Institution list
- */
-export const getAllInstitutions = async (
-  opts?: { count: number, offset: number },
-): Promise<Array<{ id: Task['institution'], name: string, logo: string }>> => {
-  try {
-    await prisma.$connect();
-
-    // Get all institutions id
-    const institutionsIds = (await prisma.task.groupBy({
-      by: ['institution'],
-      orderBy: {
-        institution: 'asc',
-      },
-      where: {
-        NOT: {
-          institution: '',
-        },
-      },
-      skip: opts?.offset,
-      take: opts?.count,
-    })).map(({ institution }) => institution);
-
-    await prisma.$disconnect();
-
-    // Enrich data with elastic
-    const institutions = await findInstitutionByIds(institutionsIds);
-
-    return institutions
-      .filter(({ _source }) => _source != null)
-      .map(({ _id: id, _source: { institution } = { institution: { name: '', logoId: '' } } }) => ({
-        id: id.toString(),
-        name: institution?.name,
-        logo: institution?.logoId,
-      }));
-  } catch (error) {
-    if (error instanceof PrismaClientValidationError) {
-      logger.error(error.message.trim());
-      throw new Error('An error occured with DB client. See server logs for more information.');
-    } else {
-      throw error;
-    }
-  }
 };
