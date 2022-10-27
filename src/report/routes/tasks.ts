@@ -8,7 +8,6 @@ import {
   deleteTaskById,
   editTaskById,
   getAllTasks,
-  // eslint-disable-next-line @typescript-eslint/comma-dangle
   getTaskById
 } from '../models/tasks';
 import { HTTPError } from '../types/errors';

@@ -1,4 +1,4 @@
-import { Recurrence, Task } from '@prisma/client';
+import { Recurrence, type Task } from '@prisma/client';
 import { PrismaClientValidationError } from '@prisma/client/runtime';
 import { formatISO } from 'date-fns';
 import { StatusCodes } from 'http-status-codes';

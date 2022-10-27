@@ -1,18 +1,24 @@
 import type { Task } from '@prisma/client';
 import { format } from 'date-fns';
-import { ImageOptions } from 'jspdf';
+import type { ImageOptions } from 'jspdf';
 import { join } from 'path';
 import layout from '../layouts/test';
 import config from '../lib/config';
 import {
-  // eslint-disable-next-line @typescript-eslint/comma-dangle
-  addPage, deleteDoc, initDoc, renderDoc, type PDFReportOptions
+  addPage,
+  deleteDoc,
+  initDoc,
+  renderDoc,
+  type PDFReportOptions
 } from '../lib/pdf';
 import { addTable } from '../lib/pdf/table';
 import { calcPeriod } from '../lib/recurrence';
 import {
-  // eslint-disable-next-line @typescript-eslint/comma-dangle
-  addVega, createVegaLSpec, createVegaView, isFigureTable, type LayoutVegaFigure
+  addVega,
+  createVegaLSpec,
+  createVegaView,
+  isFigureTable,
+  type LayoutVegaFigure
 } from '../lib/vega';
 import { addTaskHistory } from './tasks';
 

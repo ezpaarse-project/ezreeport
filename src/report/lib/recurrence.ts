@@ -9,7 +9,6 @@ import {
   startOfMonth,
   startOfQuarter,
   startOfWeek,
-  // eslint-disable-next-line @typescript-eslint/comma-dangle
   startOfYear
 } from 'date-fns';
 

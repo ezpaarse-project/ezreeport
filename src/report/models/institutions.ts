@@ -1,4 +1,4 @@
-import { SearchHit, SearchResponse } from '@elastic/elasticsearch/api/types';
+import type { SearchHit, SearchResponse } from '@elastic/elasticsearch/api/types';
 import config from '../lib/config';
 import { getElasticClient, READONLY_SUFFIX } from '../lib/elastic';
 

@@ -2,8 +2,10 @@ import { writeFile } from 'fs';
 import type { ImageOptions } from 'jspdf';
 import { merge, omit, pick } from 'lodash';
 import {
-  // eslint-disable-next-line @typescript-eslint/comma-dangle
-  expressionFunction, Locale as VegaLocale, parse, View
+  expressionFunction,
+  Locale as VegaLocale,
+  parse,
+  View
 } from 'vega';
 import { compile, type TopLevelSpec } from 'vega-lite';
 import type { Mark } from 'vega-lite/build/src/mark';
