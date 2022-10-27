@@ -11,7 +11,8 @@
     "password": "changeme"
   },
   "ezmesure": {
-    "secret": "changeme"
+    "secret": "changeme",
+    "depositorsIndex": "depositors"
   },
   "pdf": {
     "logos": [

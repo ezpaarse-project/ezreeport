@@ -1,7 +1,10 @@
 import { SearchHit, SearchResponse } from '@elastic/elasticsearch/api/types';
+import config from '../lib/config';
 import { getElasticClient, READONLY_SUFFIX } from '../lib/elastic';
 
 const TYPE = 'institution' as const;
+
+const { depositorsIndex } = config.get('ezmesure');
 
 type TypedElasticInstitution = {
   type: 'institution';
@@ -40,7 +43,7 @@ export const findInstitutionByCreatorOrRole = async (
   const roles = Array.isArray(userRoles) ? userRoles.map(trimReadOnlySuffix) : [];
 
   const result = await elastic.search<SearchResponse<TypedElasticInstitution>>({
-    index: 'depositors', // TODO: config
+    index: depositorsIndex,
     size: 1,
     body: {
       query: {
@@ -70,7 +73,7 @@ export const findInstitutionByIds = async (
   const elastic = await getElasticClient();
 
   const result = await elastic.search<SearchResponse<TypedElasticInstitution>>({
-    index: 'depositors', // TODO: config
+    index: depositorsIndex,
     body: {
       query: {
         terms: {
