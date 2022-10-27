@@ -49,13 +49,9 @@ let doc: {
    */
   name: string;
   /**
-   * Start of period
+   * Period
    */
-  periodStart: Date;
-  /**
-   * End of period
-   */
-  periodEnd: Date;
+  period: Interval;
 
   // Constants
   margin: {
@@ -68,7 +64,7 @@ let doc: {
 
 export type PDFReport = Exclude<typeof doc, undefined>;
 
-export type PDFReportOptions = Pick<PDFReport, 'name' | 'periodStart' | 'periodEnd' | 'path'>;
+export type PDFReportOptions = Pick<PDFReport, 'name' | 'period' | 'path'>;
 
 /**
  * Loads an image with some info
@@ -119,9 +115,9 @@ const printHeader = (): number => {
     .text(
       [
         `Rapport couvrant la période du ${format(
-          doc.periodStart,
+          doc.period.start,
           'dd/MM/yyyy, HH:mm',
-        )} au ${format(doc.periodEnd, 'dd/MM/yyyy, HH:mm')}`,
+        )} au ${format(doc.period.end, 'dd/MM/yyyy, HH:mm')}`,
         `Généré le ${format(doc.today, 'EEEE dd MMMM yyyy')}`,
       ],
       doc.width / 2,

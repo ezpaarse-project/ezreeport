@@ -16,7 +16,7 @@ interface DataOptions {
 const layout: LayoutVegaFigure = [
   // Creating stacked bar figure
   async (
-    { periodStart, periodEnd }: PDFReportOptions,
+    { period }: PDFReportOptions,
     { index, filters }: DataOptions,
   ): Promise<VegaFigure<'bar'>> => {
     const opts: RequestParams.Search = {
@@ -29,8 +29,8 @@ const layout: LayoutVegaFigure = [
             filter: {
               range: {
                 datetime: {
-                  gte: periodStart,
-                  lte: periodEnd,
+                  gte: period.start,
+                  lte: period.end,
                 },
               },
             },
@@ -97,7 +97,7 @@ const layout: LayoutVegaFigure = [
       type: 'bar',
       data: data.filter((v) => {
         const date = new Date(v.key.consult_by_date);
-        return isBefore(periodStart, date) && isAfter(periodEnd, date);
+        return isBefore(period.start, date) && isAfter(period.end, date);
       }),
       params: {
         title: 'Histogramme consultations par instituts',
@@ -130,7 +130,7 @@ const layout: LayoutVegaFigure = [
   },
   // Creating table figure
   async (
-    { periodStart, periodEnd }: PDFReportOptions,
+    { period }: PDFReportOptions,
     { index, filters }: DataOptions,
   ): Promise<VegaFigure<'table'>> => {
     const opts: RequestParams.Search = {
@@ -143,8 +143,8 @@ const layout: LayoutVegaFigure = [
             filter: {
               range: {
                 datetime: {
-                  gte: periodStart,
-                  lte: periodEnd,
+                  gte: period.start,
+                  lte: period.end,
                 },
               },
             },
@@ -196,7 +196,7 @@ const layout: LayoutVegaFigure = [
   },
   // Creating pie figure
   async (
-    { periodStart, periodEnd }: PDFReportOptions,
+    { period }: PDFReportOptions,
     { index, filters }: DataOptions,
   ): Promise<VegaFigure<'arc'>> => {
     const opts: RequestParams.Search = {
@@ -209,8 +209,8 @@ const layout: LayoutVegaFigure = [
             filter: {
               range: {
                 datetime: {
-                  gte: periodStart,
-                  lte: periodEnd,
+                  gte: period.start,
+                  lte: period.end,
                 },
               },
             },

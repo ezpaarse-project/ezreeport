@@ -5,7 +5,10 @@ import {
   endOfMonth,
   endOfQuarter,
   endOfWeek,
-  endOfYear, getDaysInYear, isAfter, startOfDay,
+  endOfYear,
+  getDaysInYear,
+  isAfter,
+  startOfDay,
   startOfMonth,
   startOfQuarter,
   startOfWeek,
@@ -49,7 +52,7 @@ export const calcNextDate = (initial: Date, recurrence: Recurrence): Date => {
   return add(initial, duration);
 };
 
-export const calcPeriod = (today: Date, recurrence: Recurrence): { start: Date, end: Date } => {
+export const calcPeriod = (today: Date, recurrence: Recurrence): Interval => {
   let period;
 
   switch (recurrence) {

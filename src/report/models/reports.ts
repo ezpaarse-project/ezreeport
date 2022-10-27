@@ -117,8 +117,7 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
     {
       name: task.name,
       path: join(rootPath, outDir, filename),
-      periodStart: period.start,
-      periodEnd: period.end,
+      period,
     },
     {
       index: 'bibcnrs-*-2021',
