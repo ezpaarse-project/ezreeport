@@ -177,6 +177,7 @@ export default () => {
       it('should return 404', async () => {
         // Random id
         const res = await request().type('json').send({
+          name: 'test task',
           layout: {},
           targets: ['fake@inist.fr'],
           recurrence: 'WEEKLY',
@@ -221,6 +222,7 @@ export default () => {
     describe('Test course', () => {
       // Create task, check if in get all, edits, check if in get one, delete
       let task = {
+        name: 'test task',
         layout: {},
         targets: ['fake@inist.fr'],
         recurrence: 'WEEKLY',
@@ -258,6 +260,7 @@ export default () => {
       step('PUT /tasks/{taskId}', async () => {
         const { id } = task;
         task = {
+          name: 'test task',
           layout: {},
           targets: ['fake@inist.fr', 'fake2@inist.fr'],
           recurrence: 'WEEKLY',
