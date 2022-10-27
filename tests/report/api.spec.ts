@@ -2,6 +2,7 @@ import chai from 'chai';
 import chaiHttp from 'chai-http';
 import chaiLike from 'chai-like';
 import { randomBytes } from 'crypto';
+import { pick } from 'lodash';
 import { step } from 'mocha-steps';
 import type { createTask } from 'reporting-report/models/tasks';
 import config from '../lib/config';
@@ -254,7 +255,19 @@ export default () => {
         expect(res.body.content).to.be.an('array');
 
         const t = res.body.content.find(({ id }: Task) => id === task.id);
-        expect(t).to.like(task);
+        expect(t).to.like(
+          pick(
+            task,
+            'id',
+            'name',
+            'institution',
+            'recurrence',
+            'nextRun',
+            'enabled',
+            'createdAt',
+            'updatedAt',
+          ),
+        );
       });
 
       step('PUT /tasks/{taskId}', async () => {

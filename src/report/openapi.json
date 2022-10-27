@@ -100,6 +100,7 @@
                     },
                     "content": {
                       "type": "array",
+                      "description": "Tasks here doesn't include \"layout\", \"targets\" & \"history\"",
                       "items": {
                         "$ref": "#/components/schemas/Task"
                       }
@@ -129,22 +130,9 @@
                           "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                           "name": "My Super Task",
                           "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-                          "layout": {
-                            "...": "..."
-                          },
-                          "targets": [
-                            "..."
-                          ],
                           "recurrence": "WEEKLY",
                           "nextRun": "2022-10-31T10:00:00.000Z",
                           "enabled": true,
-                          "history": [
-                            {
-                              "date": "2022-10-25T11:55:47.375Z",
-                              "type": "creation",
-                              "message": "Tâche créée par ..."
-                            }
-                          ],
                           "createdAt": "2022-10-25T11:55:47.375Z",
                           "updatedAt": "2022-10-25T11:55:47.375Z"
                         }
@@ -853,14 +841,7 @@
             "description": "Task last updated at ...",
             "readOnly": true
           }
-        },
-        "required": [
-          "name",
-          "layout",
-          "targets",
-          "recurrence",
-          "nextRun"
-        ]
+        }
       }
     },
     "securitySchemes": {

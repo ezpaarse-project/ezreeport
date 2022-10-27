@@ -1,4 +1,4 @@
-import { Recurrence, type Task } from '@prisma/client';
+import { Recurrence, type Prisma, type Task } from '@prisma/client';
 import { PrismaClientValidationError } from '@prisma/client/runtime';
 import { formatISO } from 'date-fns';
 import { StatusCodes } from 'http-status-codes';
@@ -52,27 +52,33 @@ const isValidTask = (data: unknown): data is InputTask => {
  *
  * TODO: Sort
  *
- * @param opts Pagination options
+ * @param opts Requests options
  * @param institution The institution of the task
  *
  * @returns Tasks list
  */
-export const getAllTasks = async (
-  opts?: { count: number, previous?: Task['id'] },
+export const getAllTasks = async <Keys extends Array<keyof Task>>(
+  opts?: { count: number, previous?: Task['id'], select?: Keys },
   institution?: Task['institution'],
 ): Promise<Task[]> => {
   try {
+    const select = opts?.select && opts.select.reduce<Prisma.TaskSelect>(
+      (previous, key) => ({ ...previous, [key]: true }),
+      {},
+    );
+
     await prisma.$connect();
 
     const tasks = await prisma.task.findMany({
       take: opts?.count,
       skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
       cursor: opts?.previous ? { id: opts.previous } : undefined,
+      select,
       where: institution ? { institution } : undefined,
     });
 
     await prisma.$disconnect();
-    return tasks;
+    return tasks as Task[]; // FIXME: Prisma bug ?
   } catch (error) {
     if (error instanceof PrismaClientValidationError) {
       logger.error(error.message.trim());

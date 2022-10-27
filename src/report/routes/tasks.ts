@@ -43,7 +43,23 @@ router.get('/', checkRight(Roles.READ), async (req, res) => {
     const c = +count;
 
     const institution = await getAuthedInstitution(req);
-    const tasks = await getAllTasks({ count: c, previous: p?.toString() }, institution);
+    const tasks = await getAllTasks(
+      {
+        count: c,
+        previous: p?.toString(),
+        select: [
+          'id',
+          'name',
+          'institution',
+          'recurrence',
+          'nextRun',
+          'enabled',
+          'createdAt',
+          'updatedAt',
+        ],
+      },
+      institution,
+    );
 
     res.sendJson(
       tasks,
