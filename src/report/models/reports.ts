@@ -32,7 +32,7 @@ const { outDir } = config.get('pdf');
  *
  * @returns The normalized filename
  */
-const normaliseFilename = (filename: string): string => filename.toLowerCase().replace(/[/ .]/g, '_');
+const normaliseFilename = (filename: string): string => filename.toLowerCase().replace(/[/ .]/g, '-');
 
 /**
  * Generate PDF report with Vega
@@ -108,7 +108,8 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
   }
 
   const today = new Date();
-  const filename = `${format(today, 'dd-MM-yyyy')}_${normaliseFilename(task.name)}.pdf`;
+  // reporting_ezMESURE_6eaa7170-4e56-11eb-8139-2d9f91b04e27_07-10-2022.pdf
+  const filename = `reporting_ezMESURE_${normaliseFilename(task.name)}_${format(today, 'dd-MM-yyyy')}.pdf`;
   const period = calcPeriod(today, task.recurrence);
 
   await generatePdfWithVega(
