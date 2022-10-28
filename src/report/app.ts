@@ -1,6 +1,8 @@
+import cors from 'cors';
 import express from 'express';
 import { StatusCodes } from 'http-status-codes';
 import swaggerUi from 'swagger-ui-express';
+import config from './lib/config';
 import './lib/datefns'; // Should be first because it setup default options before using it in any module
 import logger from './lib/logger';
 import formatMiddleware from './middlewares/format';
@@ -9,10 +11,28 @@ import openapi from './openapi.json';
 import filesRouter from './routes/files';
 import tasksRouter from './routes/tasks';
 
+const allowedOrigins = (config.get('allowedOrigins')).split(',');
+
 const app = express();
 const port = 8080;
 
-app.use(express.json(), loggerMiddleware, formatMiddleware);
+app.use(
+  cors({
+    origin: (origin, next) => {
+      if (
+        allowedOrigins[0] === '*'
+        || (origin && allowedOrigins.indexOf(origin) !== -1)
+      ) {
+        next(null, true);
+      } else {
+        next(new Error('Not allowed by CORS'));
+      }
+    },
+  }),
+  express.json(),
+  loggerMiddleware,
+  formatMiddleware,
+);
 
 app.use('/tasks', tasksRouter);
 app.use('/reports', filesRouter);

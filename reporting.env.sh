@@ -23,6 +23,8 @@ export DATABASE_URL="$DATABASE_PROTOCOL://$DATABASE_USER:$DATABASE_PASSWORD@$DAT
 
 export EZMESURE_AUTH_SECRET=""
 
+# Comma separated origins (or * to allow all)
+export ALLOWED_ORIGINS="*"
 export LOG_LEVEL=""
 
 if [[ -f $LOCAL_ENV_FILE ]] ; then
