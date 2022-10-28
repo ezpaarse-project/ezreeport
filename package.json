@@ -7,7 +7,11 @@
     "start": "docker compose up --build -d",
     "stop": "docker compose down",
     "start:debug": "docker compose -f docker-compose.debug.yml up --build -d",
-    "stop:debug": "docker compose -f docker-compose.debug.yml down"
+    "stop:debug": "docker compose -f docker-compose.debug.yml down",
+    "lint": "npm run lint:report",
+    "lint:report": "cd src/report && npm run lint",
+    "test": "cd tests && npm run test",
+    "test:report": "cd tests && npm run test:report"
   },
   "repository": {
     "type": "git",

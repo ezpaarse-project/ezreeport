@@ -7,7 +7,9 @@
     "start": "ts-node --transpile-only app.ts",
     "dev": "nodemon app.ts",
     "prisma:gui": "prisma studio",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "lint": "eslint --parser-options=project:./tsconfig.json .",
+    "test": "cd ../../tests/ && npm run test:report"
   },
   "repository": {
     "type": "git",
