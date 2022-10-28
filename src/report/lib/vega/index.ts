@@ -1,6 +1,7 @@
 import { writeFile } from 'fs';
 import type { ImageOptions } from 'jspdf';
 import { merge, omit, pick } from 'lodash';
+import { join } from 'path';
 import {
   expressionFunction,
   Locale as VegaLocale,
@@ -10,10 +11,14 @@ import {
 import { compile, type TopLevelSpec } from 'vega-lite';
 import type { Mark } from 'vega-lite/build/src/mark';
 import type { LayerSpec, UnitSpec } from 'vega-lite/build/src/spec';
+import config from '../config';
 import logger from '../logger';
 import type { PDFReport, PDFReportOptions } from '../pdf';
 import type { TableParams, TableParamsFnc } from '../pdf/table';
 import localeFR from './locales/fr-FR.json';
+
+const rootPath = config.get('rootPath');
+const { outDir } = config.get('pdf');
 
 type LayerType = LayerSpec<any> | UnitSpec<any>;
 
@@ -196,7 +201,7 @@ export const createVegaLSpec = (
 
   if (params.debugExport === true) {
     writeFile(
-      'dist/debug.json',
+      join(rootPath, outDir, 'debug.json'),
       JSON.stringify(omit(spec, 'datasets'), undefined, 4),
       'utf-8',
       (err) => {
