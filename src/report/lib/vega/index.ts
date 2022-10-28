@@ -55,7 +55,7 @@ export interface VegaParams {
     /**
      * Custom formatter
      */
-    format?: (v: number | string) => string;
+    format?: ((v: number | string, params: any) => string) | 'percent';
   };
   /**
    * Spec of the data layer
@@ -102,10 +102,11 @@ export type LayoutVegaFigure = Array<AnyVegaFigureFnc | Promisify<AnyVegaFigureF
  */
 export const createVegaLSpec = (
   type: Mark,
-  data: any,
+  data: any[],
   params: VegaParams,
 ): TopLevelSpec => {
   // TODO: Merge with whole params.spec ?
+
   const spec: TopLevelSpec = {
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     width: params.width,
@@ -149,6 +150,7 @@ export const createVegaLSpec = (
     ),
     config: {
       locale: params.spec.config?.locale ?? (localeFR as VegaLocale),
+      customFormatTypes: true,
     },
   };
 
@@ -188,12 +190,25 @@ export const createVegaLSpec = (
     // Resolve custom format
     if (
       typeof params.dataLabel === 'object'
-      && typeof params.dataLabel.format === 'function'
       && dLLayer.encoding?.text != null
     ) {
+      const dlParams = params.dataLabel;
+      const { field } = dLLayer.encoding.text as any;
+
+      if (dlParams.format === 'percent') {
+        const totalDocs = (data).reduce((prev, value) => prev + value[field], 0);
+
+        dlParams.format = (v) => {
+          const percent = +v / totalDocs;
+          return percent >= 0.02 ? percent.toLocaleString('fr-FR', { style: 'percent', maximumFractionDigits: 2 }) : '';
+        };
+      }
+
+      if (typeof dlParams.format === 'function') {
       expressionFunction('dataLabelFormat', params.dataLabel.format);
       (dLLayer.encoding.text as any).format = '';
       (dLLayer.encoding.text as any).formatType = 'dataLabelFormat';
+      }
     }
 
     spec.layer.push(dLLayer);
