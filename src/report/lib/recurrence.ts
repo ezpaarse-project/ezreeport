@@ -6,7 +6,7 @@ import {
   endOfQuarter,
   endOfWeek,
   endOfYear,
-  getDaysInYear,
+  getYear,
   isAfter,
   startOfDay,
   startOfMonth,
@@ -85,14 +85,14 @@ export const calcPeriod = (today: Date, recurrence: Recurrence): Interval => {
       break;
     }
     case Recurrence.BIENNIAL: {
-      const startYear = startOfYear(today);
-      const midYear = add(startYear, { days: getDaysInYear(today) / 2 });
+      const year = getYear(today);
+      const midYear = new Date(year, 5, 30);
       if (isAfter(today, midYear)) {
         // Target is first half of current year
-        period = { start: startYear, end: midYear };
+        period = { start: startOfYear(midYear), end: midYear };
       } else {
         // Target is second half of previous year
-        const target = add(midYear, { years: -1 });
+        const target = add(midYear, { years: -1, days: 1 });
         period = { start: target, end: endOfYear(target) };
       }
       break;
