@@ -5,7 +5,7 @@
   "main": "app.ts",
   "scripts": {
     "start": "ts-node --transpile-only app.ts",
-    "dev": "nodemon -e ts,json --exec \"node --inspect=0.0.0.0 -r ts-node/register app.ts\"",
+    "dev": "nodemon app.ts",
     "prisma:gui": "prisma studio",
     "prisma:migrate": "prisma migrate dev"
   },
