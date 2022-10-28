@@ -22,6 +22,8 @@ const { outDir } = config.get('pdf');
 
 type LayerType = LayerSpec<any> | UnitSpec<any>;
 
+type FormatFnc = (v: number | string, params: any) => string;
+
 /**
  * Params for createVegaLSpec
  */
@@ -55,7 +57,7 @@ export interface VegaParams {
     /**
      * Custom formatter
      */
-    format?: ((v: number | string, params: any) => string) | 'percent';
+    format?: FormatFnc | 'percent' | { type: 'percent', minValue?: number };
   };
   /**
    * Spec of the data layer
@@ -227,12 +229,18 @@ export const createVegaLSpec = (
       const dlParams = params.dataLabel;
       const { field } = dLLayer.encoding.text as any;
 
-      if (dlParams.format === 'percent') {
+      if (
+        dlParams.format === 'percent'
+        || (typeof dlParams.format !== 'function' && dlParams.format?.type === 'percent')
+      ) {
         const totalDocs = (data).reduce((prev, value) => prev + value[field], 0);
+        const minValue = typeof dlParams.format === 'object' && dlParams.format.minValue !== undefined
+          ? dlParams.format.minValue
+          : 0.02;
 
         dlParams.format = (v) => {
           const percent = +v / totalDocs;
-          return percent >= 0.02 ? percent.toLocaleString('fr-FR', { style: 'percent', maximumFractionDigits: 2 }) : '';
+          return percent >= minValue ? percent.toLocaleString('fr-FR', { style: 'percent', maximumFractionDigits: 2 }) : '';
         };
       }
 
