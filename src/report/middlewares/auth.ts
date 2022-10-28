@@ -41,7 +41,7 @@ const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) =>
     const token = req.headers.authorization ?? '';
     const regRes = /Bearer (?<token>.*)/i.exec(token);
     // If no username given/found
-    if (!regRes || !regRes.groups || !regRes.groups.token) {
+    if (!regRes?.groups?.token) {
       throw new HTTPError(`'${req.method} ${req.originalUrl}' requires auth`, StatusCodes.UNAUTHORIZED);
     }
 
@@ -70,24 +70,20 @@ const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) =>
     });
     const { body: { [username]: user } } = response;
 
-    if (user && user.enabled) {
+    if (user?.enabled) {
       req.user = { username: user.username, email: user.email, roles: user.roles };
-      // Calculating higher role of user (kinda weird tbh)
-      const maxRole = user.roles.reduce((max, role) => {
-        const r = role as keyof typeof ROLES_PRIORITIES;
-        if (ROLES_PRIORITIES[r] && ROLES_PRIORITIES[r] > max) {
-          return ROLES_PRIORITIES[r] ?? 0;
-        }
-        return max;
-      }, 0);
 
-      // If the higher role of user is valid
-      if (maxRole >= ROLES_PRIORITIES[minRole]) {
+      if (
+        // Check if user have enough role to access route
+        user.roles.some(
+          (role) => role in ROLES_PRIORITIES
+            && ROLES_PRIORITIES[role as keyof typeof ROLES_PRIORITIES] >= ROLES_PRIORITIES[minRole],
+        )
+      ) {
         next();
         return;
       }
     }
-
     throw new HTTPError(`User '${username}' doesn't have the rights to access to '${req.method} ${req.originalUrl}'`, StatusCodes.FORBIDDEN);
   } catch (error) {
     res.errorJson(error);
