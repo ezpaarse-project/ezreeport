@@ -145,7 +145,25 @@ export const createVegaLSpec = (
       ),
     ],
     encoding: merge<LayerType['encoding'], LayerType['encoding']>(
-      {},
+      {
+        color: {
+          scale: {
+            // Default colors of Vega (usefull for reference or datalabels)
+            range: [
+              '#4c78a8', // blue
+              '#f58518', // orange
+              '#e45756', // red
+              '#72b7b2', // cyan
+              '#54a24b', // green
+              '#eeca3b', // yellow
+              '#b279a2', // purple
+              '#ff9da6', // pink
+              '#9d755d', // brown
+              '#bab0ac', // grey
+            ],
+          },
+        },
+      },
       params.spec.encoding,
     ),
     config: {
@@ -159,7 +177,6 @@ export const createVegaLSpec = (
   // const xField = spec.encoding?.x ?? spec.layer[0].encoding?.x;
 
   if (params.dataLabel !== undefined) {
-    // TODO: Colors, cf. vega colors (in chart.js)
     const dLLayer = merge<LayerType, LayerType | {}>(
       {
         mark: {
@@ -181,7 +198,21 @@ export const createVegaLSpec = (
               : {}),
             // @ts-expect-error
             legend: null,
-            scale: { range: ['black'] },
+            scale: {
+              // Based on default Vega colors
+              range: [
+                'white', // white on blue
+                'black', // black on orange
+                'white', // white on red
+                'black', // black on cyan
+                'black', // black on green
+                'black', // black on yellow
+                'black', // black on purple
+                'black', // black on pink
+                'white', // white on brown
+                'black', // black on grey
+              ],
+            },
           },
         },
       },
@@ -206,9 +237,9 @@ export const createVegaLSpec = (
       }
 
       if (typeof dlParams.format === 'function') {
-      expressionFunction('dataLabelFormat', params.dataLabel.format);
-      (dLLayer.encoding.text as any).format = '';
-      (dLLayer.encoding.text as any).formatType = 'dataLabelFormat';
+        expressionFunction('dataLabelFormat', params.dataLabel.format);
+        (dLLayer.encoding.text as any).format = '';
+        (dLLayer.encoding.text as any).formatType = 'dataLabelFormat';
       }
     }
 
