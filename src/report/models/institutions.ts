@@ -65,7 +65,7 @@ export const findInstitutionByCreatorOrRole = async (
  *
  * @returns  The result of search
  */
-export const findInstitutionByIds = async (
+/* export */ const findInstitutionByIds = async (
   ids: string[],
 ): Promise<SearchHit<TypedElasticInstitution>[]> => {
   const elastic = await getElasticClient();

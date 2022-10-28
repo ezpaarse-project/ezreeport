@@ -9,7 +9,7 @@ import { HTTPError } from '../types/errors';
 
 // TODO[feat]: More checks to make custom errors
 
-export type InputTask = Omit<Task, 'institution' | 'history' | 'createdAt' | 'updatedAt' | 'id'> & { layout: object };
+type InputTask = Omit<Task, 'institution' | 'history' | 'createdAt' | 'updatedAt' | 'id'> & { layout: object };
 
 /**
  * Joi schema

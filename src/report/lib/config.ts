@@ -1,7 +1,7 @@
 import config from 'config';
 import type defaultConfig from '../config/default.json';
 
-export type Config = typeof defaultConfig;
+type Config = typeof defaultConfig;
 
 export default {
   util: config.util,

@@ -229,5 +229,3 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
   await writeFile(join(basePath, `${filename}.json`), JSON.stringify(result), 'utf-8');
   return result;
 };
-
-export const a = 1;
