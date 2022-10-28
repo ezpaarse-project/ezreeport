@@ -117,9 +117,9 @@ router.get('/:task', checkRight(Roles.READ), async (req, res) => {
     const task = await getTaskById(id, institution);
     if (!task) {
       throw new HTTPError(`Task with id '${id}' not found for institution '${institution}'`, StatusCodes.NOT_FOUND);
-    } else {
-      res.sendJson(task, StatusCodes.OK);
     }
+
+    res.sendJson(task, StatusCodes.OK);
   } catch (error) {
     res.errorJson(error);
   }
@@ -148,9 +148,9 @@ router.put('/:task', checkRight(Roles.READ_WRITE), async (req, res) => {
 
     if (!task) {
       throw new HTTPError(`Task with id '${id}' not found for institution '${institution}'`, StatusCodes.NOT_FOUND);
-    } else {
-      res.sendJson(task, StatusCodes.OK);
     }
+
+    res.sendJson(task, StatusCodes.OK);
   } catch (error) {
     res.errorJson(error);
   }
@@ -174,9 +174,9 @@ router.delete('/:task', checkRight(Roles.READ_WRITE), async (req, res) => {
 
     if (!task) {
       throw new HTTPError(`Task with id '${id}' not found for institution '${institution}'`, StatusCodes.NOT_FOUND);
-    } else {
-      res.sendJson(task, StatusCodes.OK);
     }
+
+    res.sendJson(task, StatusCodes.OK);
   } catch (error) {
     res.errorJson(error);
   }
@@ -208,11 +208,14 @@ router.post('/:task/run', checkRight(Roles.READ_WRITE), async (req, res) => {
       throw new HTTPError(`Task with id '${id}' not found for institution '${institution}'`, StatusCodes.NOT_FOUND);
     }
 
+    // TODO[feat]: Put in job queue to allow parallel process, returns if started or not
     const reportResult = await generateReport(
       { ...task, targets: testEmails || task.targets },
       req.user?.username ?? 'UNKNOWN_USER',
       testEmails === undefined,
     );
+
+    // TODO[feat]: put in queue for email
 
     res.sendJson(reportResult, reportResult.success ? 201 : 500);
   } catch (error) {

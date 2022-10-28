@@ -6,7 +6,7 @@ import { HTTPError } from '../types/errors';
  * API formatter middleware
  */
 const middleware: RequestHandler = (_req, res, next) => {
-  res.sendJson = (content: any, code = StatusCodes.OK, meta?: any) => {
+  res.sendJson = (content: unknown, code = StatusCodes.OK, meta?: unknown) => {
     res.status(code).json({
       status: {
         code,

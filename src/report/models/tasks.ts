@@ -7,7 +7,7 @@ import logger from '../lib/logger';
 import prisma from '../lib/prisma';
 import { HTTPError } from '../types/errors';
 
-// TODO: More checks to make custom errors
+// TODO[feat]: More checks to make custom errors
 
 export type InputTask = Omit<Task, 'institution' | 'history' | 'createdAt' | 'updatedAt' | 'id'> & { layout: object };
 
@@ -26,7 +26,7 @@ export const taskSchema = Joi.object<InputTask>({
     Recurrence.BIENNIAL,
     Recurrence.YEARLY,
   ).required(),
-  nextRun: Joi.string().isoDate().required(), // TODO: check possible
+  nextRun: Joi.string().isoDate().required(), // FIXME: check possible
   enabled: Joi.boolean().default(true),
 });
 
@@ -41,7 +41,7 @@ export const taskSchema = Joi.object<InputTask>({
 const isValidTask = (data: unknown): data is InputTask => {
   const validation = taskSchema.validate(data, {});
   if (validation.error != null) {
-    // TODO: Not a HTTP error at this point
+    // TODO[refactor]: Not a HTTP error at this point
     throw new HTTPError(`Body is not valid: ${validation.error.message}`, StatusCodes.BAD_REQUEST);
   }
   return true;
@@ -50,13 +50,12 @@ const isValidTask = (data: unknown): data is InputTask => {
 /**
  * Gett all tasks in DB
  *
- * TODO: Sort
- *
  * @param opts Requests options
  * @param institution The institution of the task
  *
  * @returns Tasks list
  */
+// TODO[feat]: Sort
 export const getAllTasks = async <Keys extends Array<keyof Task>>(
   opts?: { count: number, previous?: Task['id'], select?: Keys },
   institution?: Task['institution'],
@@ -75,10 +74,10 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
       cursor: opts?.previous ? { id: opts.previous } : undefined,
       select,
       where: institution ? { institution } : undefined,
-    });
+    }) as Task[]; // FIXME: Prisma bug ?
 
     await prisma.$disconnect();
-    return tasks as Task[]; // FIXME: Prisma bug ?
+    return tasks;
   } catch (error) {
     if (error instanceof PrismaClientValidationError) {
       logger.error(error.message.trim());
@@ -121,22 +120,24 @@ export const getTaskById = async (id: Task['id'], institution?: Task['institutio
  * @returns The created task
  */
 export const createTask = async (data: unknown, creator: string, institution: Task['institution']): Promise<Task> => {
-  if (isValidTask(data)) {
-    await prisma.$connect();
-
-    const task = await prisma.task.create({
-      data: {
-        ...data,
-        institution,
-        history: [{ type: 'creation', message: `Tâche créée par ${creator}`, date: formatISO(new Date()) }],
-      },
-    });
-
-    await prisma.$disconnect();
-    return task;
+  // Validate body
+  if (!isValidTask(data)) {
+    // TODO[refactor]: Not a HTTP error at this point
+    throw new HTTPError('Body is not valid', StatusCodes.BAD_REQUEST);
   }
-  // TODO: Not a HTTP error at this point
-  throw new HTTPError('Body is not valid', StatusCodes.BAD_REQUEST);
+
+  await prisma.$connect();
+
+  const task = await prisma.task.create({
+    data: {
+      ...data,
+      institution,
+      history: [{ type: 'creation', message: `Tâche créée par ${creator}`, date: formatISO(new Date()) }],
+    },
+  });
+
+  await prisma.$disconnect();
+  return task;
 };
 
 /**
@@ -150,32 +151,35 @@ export const createTask = async (data: unknown, creator: string, institution: Ta
  * @returns The edited task
  */
 export const editTaskById = async (data: unknown, id: Task['id'], editor: string, institution?: Task['institution']): Promise<Task | null> => {
-  if (isValidTask(data)) {
-    // Check if task exist
-    const task = await getTaskById(id, institution);
-    if (task) {
-      await prisma.$connect();
+  // Validate body
+  if (!isValidTask(data)) {
+    // TODO[refactor]: Not a HTTP error at this point
+    throw new HTTPError('Body is not valid', StatusCodes.BAD_REQUEST);
+  }
 
-      const editedTask = await prisma.task.update({
-        data: {
-          ...data,
-          history: [
-            ...(task.history instanceof Array ? task.history : []),
-            { type: 'edition', message: `Tâche éditée par ${editor}`, date: formatISO(new Date()) },
-          ],
-        },
-        where: {
-          id,
-        },
-      });
-
-      await prisma.$disconnect();
-      return editedTask;
-    }
+  // Check if task exist
+  const task = await getTaskById(id, institution);
+  if (!task) {
     return null;
   }
-  // TODO: Not a HTTP error at this point
-  throw new HTTPError('Body is not valid', StatusCodes.BAD_REQUEST);
+
+  await prisma.$connect();
+
+  const editedTask = await prisma.task.update({
+    data: {
+      ...data,
+      history: [
+        ...(Array.isArray(task.history) ? task.history : []),
+        { type: 'edition', message: `Tâche éditée par ${editor}`, date: formatISO(new Date()) },
+      ],
+    },
+    where: {
+      id,
+    },
+  });
+
+  await prisma.$disconnect();
+  return editedTask;
 };
 
 /**
@@ -189,41 +193,51 @@ export const editTaskById = async (data: unknown, id: Task['id'], editor: string
 export const deleteTaskById = async (id: Task['id'], institution?: Task['institution']): Promise<Task | null> => {
   // Check if task exist
   const task = await getTaskById(id, institution);
-  if (task) {
-    await prisma.$connect();
-
-    const deletedTask = await prisma.task.delete({
-      where: {
-        id,
-      },
-    });
-
-    await prisma.$disconnect();
-    return deletedTask;
+  if (!task) {
+    return null;
   }
-  return null;
+
+  await prisma.$connect();
+
+  const deletedTask = await prisma.task.delete({
+    where: {
+      id,
+    },
+  });
+
+  await prisma.$disconnect();
+  return deletedTask;
 };
 
+/**
+ * Add an entry to task history
+ *
+ * @param id The id of the task
+ * @param entry The new entry in history
+ *
+ * @returns The task
+ */
 export const addTaskHistory = async (id: Task['id'], entry: { type: string, message: string }): Promise<Task | null> => {
   // Check if task exist
   const task = await getTaskById(id);
-  if (task) {
-    await prisma.$connect();
-
-    const editedTask = await prisma.task.update({
-      data: {
-        history: [
-          ...(task.history instanceof Array ? task.history : []),
-          { ...entry, date: formatISO(new Date()) },
-        ],
-      },
-      where: {
-        id,
-      },
-    });
-
-    await prisma.$disconnect();
-    return editedTask;
+  if (!task) {
+    return null;
   }
-  return null;
+
+  await prisma.$connect();
+
+  const editedTask = await prisma.task.update({
+    data: {
+      history: [
+        ...(Array.isArray(task.history) ? task.history : []),
+        { ...entry, date: formatISO(new Date()) },
+      ],
+    },
+    where: {
+      id,
+    },
+  });
+
+  await prisma.$disconnect();
+  return editedTask;
 };

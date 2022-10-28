@@ -24,6 +24,7 @@ module.exports = {
       tuples: 'always-multiline',
       // Expect for imports, because it conflict with VSCode
       imports: 'never',
-    }]
+    }],
+    "@typescript-eslint/no-explicit-any": "warn"
   },
 };

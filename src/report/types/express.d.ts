@@ -19,7 +19,7 @@ declare namespace Express {
      * @param code The HTTP code of the response. `200` by default.
      * @param meta Additional metadata about content
      */
-    sendJson: (content: any, code = 200, meta?: any) => void;
+    sendJson: (content: unknown, code = 200, meta?: unknown) => void;
     /**
      * Send formatted error
      *

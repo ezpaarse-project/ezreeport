@@ -18,9 +18,9 @@ model Task {
   targets     String[]
   recurrence  Recurrence
   nextRun     DateTime?
-  // TODO: add "lastRun" ?
+  // TODO[feat]: add "lastRun"
   enabled     Boolean    @default(true)
-  history     Json       @default("[]")
+  history     Json       @default("[]") // TODO[refactor]: move to table
   createdAt   DateTime   @default(now())
   updatedAt   DateTime?  @updatedAt
 

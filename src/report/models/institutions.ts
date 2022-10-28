@@ -39,9 +39,6 @@ export const findInstitutionByCreatorOrRole = async (
 ): Promise<SearchHit<TypedElasticInstitution>> => {
   const elastic = await getElasticClient();
 
-  // Remove readonly suffix so that we search with the base role
-  const roles = Array.isArray(userRoles) ? userRoles.map(trimReadOnlySuffix) : [];
-
   const result = await elastic.search<SearchResponse<TypedElasticInstitution>>({
     index: depositorsIndex,
     size: 1,
@@ -49,7 +46,8 @@ export const findInstitutionByCreatorOrRole = async (
       query: {
         bool: {
           should: [
-            { bool: { filter: { terms: { [`${TYPE}.role`]: roles } } } },
+            // Remove readonly suffix so that we search with the base role
+            { bool: { filter: { terms: { [`${TYPE}.role`]: userRoles.map(trimReadOnlySuffix) } } } },
             { bool: { filter: { term: { [`${TYPE}.creator`]: username } } } },
           ],
         },

@@ -11,7 +11,7 @@ export type TableParamsFnc = (doc: PDFReport) => TableParams;
 
 export const addTable = async (
   doc: PDFReport,
-  data: any, // TODO: any ??
+  data: any,
   spec: TableParams | TableParamsFnc | Promisify<TableParamsFnc>,
 ): Promise<void> => {
   const { maxLength, title, ...params } = typeof spec === 'function'

@@ -9,7 +9,7 @@ import './fonts/Roboto-bold.js';
 import './fonts/Roboto-normal.js';
 
 const { logos } = config.get('pdf');
-const ROOT_PATH = config.get('rootPath');
+const rootPath = config.get('rootPath');
 
 let doc: {
   // Calc at init
@@ -72,7 +72,7 @@ export type PDFReportOptions = Pick<PDFReport, 'name' | 'period' | 'path'>;
 const loadImageAsset = async (
   path: string,
 ): Promise<{ data: string; width: number; height: number }> => {
-  const data = await readFile(join(ROOT_PATH, path), 'base64');
+  const data = await readFile(join(rootPath, path), 'base64');
   // Waiting Image to "render" to get width & height
   const img = await new Promise<Image>((resolve, reject) => {
     const i = new Image();
@@ -93,7 +93,7 @@ const loadImageAsset = async (
  * @returns The total height of header with MARGIN
  */
 const printHeader = (): number => {
-  if (doc === undefined) throw new Error('jsDoc not initialized');
+  if (!doc) throw new Error('jsDoc not initialized');
 
   let fontSize = 13;
   // "cursor" that will help correct positioning
@@ -133,7 +133,7 @@ const printHeader = (): number => {
  * @returns The total height of footer with margin
  */
 const printFooter = async (): Promise<number> => {
-  if (doc === undefined) throw new Error('jsDoc not initialized');
+  if (!doc) throw new Error('jsDoc not initialized');
 
   const y = doc.height - doc.margin.bottom;
   let x = doc.margin.left;
@@ -216,7 +216,7 @@ export const initDoc = async (params: PDFReportOptions): Promise<PDFReport> => {
  * Print page numbers, export PDF and reset document
  */
 export const renderDoc = async (): Promise<void> => {
-  if (doc === undefined) throw new Error('jsDoc not initialized');
+  if (!doc) throw new Error('jsDoc not initialized');
 
   // Print page numbers
   const totalPageCount = doc.pdf.internal.pages.length - 1;
@@ -235,7 +235,7 @@ export const renderDoc = async (): Promise<void> => {
   }
 
   // Export document
-  await doc.pdf.save(join(ROOT_PATH, doc.path), { returnPromise: true });
+  await doc.pdf.save(join(rootPath, doc.path), { returnPromise: true });
   doc = undefined;
 };
 
@@ -243,14 +243,14 @@ export const renderDoc = async (): Promise<void> => {
  * Delete document if already exists
  */
 export const deleteDoc = async (): Promise<void> => {
-  if (doc !== undefined && existsSync(join(ROOT_PATH, doc.path))) await unlink(doc.path);
+  if (doc && existsSync(join(rootPath, doc.path))) await unlink(doc.path);
 };
 
 /**
  * Shorthand to add a page to the PDF with header + footer
  */
 export const addPage = async (): Promise<void> => {
-  if (doc === undefined) throw new Error('jsDoc not initialized');
+  if (!doc) throw new Error('jsDoc not initialized');
 
   doc.pdf.addPage();
   printHeader();

@@ -27,6 +27,8 @@ import { addTaskHistory } from './tasks';
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
 
+// TODO[feat]: Md for text
+
 /**
  * Put filename in lowercase & remove chars that can cause issues.
  *
@@ -46,7 +48,7 @@ const normaliseFilename = (filename: string): string => filename.toLowerCase().r
 const generatePdfWithVega = async (
   layout: LayoutVegaFigure,
   opts: PDFReportOptions,
-  dataOpts: any = {}, // TODO: any ??
+  dataOpts: any = {},
 ): Promise<void> => {
   try {
     const doc = await initDoc(opts);
@@ -107,10 +109,9 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
   const today = new Date();
   const todayStr = format(today, 'yyyy/yyyy-MM');
   const basePath = join(rootPath, outDir, todayStr, '/');
-  // TODO: unique id
+  // TODO[feat]: unique id to avoid file overriding
   const filename = `reporting_ezMESURE_${normaliseFilename(task.name)}`;
 
-  // TODO: any ??
   let result: any = {
     success: true,
     detail: {
@@ -132,7 +133,7 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
     const period = calcPeriod(today, task.recurrence);
 
     await generatePdfWithVega(
-      testLayout, // TODO: use task layout. define layout as JSON
+      testLayout, // TODO[feat]: use task layout. define layout as JSON
       {
         name: task.name,
         path: join(basePath, `${filename}.pdf`),
@@ -195,8 +196,6 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
         },
       },
     );
-
-    // TODO : email
 
     if (writeHistory) {
       await addTaskHistory(task.id, { type: 'generation-success', message: `Rapport "${todayStr}/${filename}" généré par ${origin}` });

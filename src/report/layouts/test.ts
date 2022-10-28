@@ -6,8 +6,6 @@ import { getElasticClient } from '../lib/elastic';
 import type { PDFReportOptions } from '../lib/pdf';
 import type { LayoutVegaFigure, VegaFigure } from '../lib/vega';
 
-// TODO: Md for text
-
 interface DataOptions {
   index: string;
   filters?: Record<string, any>;

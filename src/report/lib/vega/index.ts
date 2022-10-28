@@ -22,12 +22,14 @@ const { outDir } = config.get('pdf');
 
 type LayerType = LayerSpec<any> | UnitSpec<any>;
 
-type FormatFnc = (v: number | string, params: any) => string;
+type FormatFnc = (v: number | string) => string;
+
+// TODO[type]: Rework types (no more any)
 
 /**
  * Params for createVegaLSpec
  */
-export interface VegaParams {
+interface VegaParams {
   /**
    * Title of the graph
    */
@@ -53,7 +55,7 @@ export interface VegaParams {
     /**
      * Spec of the layer
      */
-    spec: Omit<LayerType, 'mark'> & { mark?: any }; // TODO: FIX
+    spec: Omit<LayerType, 'mark'> & { mark?: any };
     /**
      * Custom formatter
      */
@@ -64,7 +66,7 @@ export interface VegaParams {
    */
   dataLayer?: Omit<LayerType, 'mark'>;
   /**
-   * Should export generated spec (without data) to `/dist/debug.json` ?
+   * Should export generated spec (without data) to debug file ?
    */
   debugExport?: boolean;
 }
@@ -81,7 +83,7 @@ export interface VegaFigure<Type extends Mark | 'table'> {
 /**
  * Global figure definition
  */
-export type AnyVegaFigure = VegaFigure<Mark> | VegaFigure<'table'>;
+type AnyVegaFigure = VegaFigure<Mark> | VegaFigure<'table'>;
 
 type AnyVegaFigureFnc = (
   docOpts: PDFReportOptions,
@@ -107,7 +109,7 @@ export const createVegaLSpec = (
   data: any[],
   params: VegaParams,
 ): TopLevelSpec => {
-  // TODO: Merge with whole params.spec ?
+  // TODO[feat]: Merge with whole params.spec ?
 
   const spec: TopLevelSpec = {
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
@@ -119,7 +121,7 @@ export const createVegaLSpec = (
         text: typeof params.title !== 'object' ? params.title : '',
         anchor: 'start',
         dy: -5,
-        // TODO! Font needs to be installed
+        // FIXME: Font needs to be installed
         font: 'Roboto',
         fontWeight: 400,
       },
@@ -174,12 +176,13 @@ export const createVegaLSpec = (
     },
   };
 
-  // TODO correctly guess value
+  // FIXME: correctly guess value
   const yField = spec.encoding?.y ?? spec.layer[0].encoding?.y;
   // const xField = spec.encoding?.x ?? spec.layer[0].encoding?.x;
 
-  if (params.dataLabel !== undefined) {
+  if (params.dataLabel) {
     const dLLayer = merge<LayerType, LayerType | {}>(
+      // Default config for data labels
       {
         mark: {
           type: 'text',
@@ -195,6 +198,7 @@ export const createVegaLSpec = (
             aggregate: (yField as any)?.aggregate,
           },
           color: {
+            // Get some fields of global color encoding
             ...(params.spec.encoding?.color != null
               ? pick(params.spec.encoding.color, 'field', 'type')
               : {}),
@@ -229,18 +233,21 @@ export const createVegaLSpec = (
       const dlParams = params.dataLabel;
       const { field } = dLLayer.encoding.text as any;
 
+      // Prefine percent format
       if (
         dlParams.format === 'percent'
         || (typeof dlParams.format !== 'function' && dlParams.format?.type === 'percent')
       ) {
-        const totalDocs = (data).reduce((prev, value) => prev + value[field], 0);
-        const minValue = typeof dlParams.format === 'object' && dlParams.format.minValue !== undefined
+        const totalDocs = data.reduce((prev, value) => prev + value[field], 0);
+        const minValue = typeof dlParams.format === 'object' && dlParams.format.minValue
           ? dlParams.format.minValue
           : 0.02;
 
         dlParams.format = (v) => {
-          const percent = +v / totalDocs;
-          return percent >= minValue ? percent.toLocaleString('fr-FR', { style: 'percent', maximumFractionDigits: 2 }) : '';
+          const perc = +v / totalDocs;
+          return perc >= minValue
+            ? perc.toLocaleString('fr-FR', { style: 'percent', maximumFractionDigits: 2 })
+            : '';
         };
       }
 
@@ -254,6 +261,7 @@ export const createVegaLSpec = (
     spec.layer.push(dLLayer);
   }
 
+  // Write generated spec into debug file (without data to gain time & space)
   if (params.debugExport === true) {
     writeFile(
       join(rootPath, outDir, 'debug.json'),

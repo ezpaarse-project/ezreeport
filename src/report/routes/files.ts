@@ -37,12 +37,14 @@ const getAuthedInstitution = async (req: Request): Promise<string | undefined> =
  * Get speficic report
  */
 router.get('/:year/:yearMonth/:file', checkRight(Roles.READ), async (req, res) => {
-  const { year, yearMonth, file } = req.params; // TODO: check if not trying to access other file
+  // FIXME: check if not trying to access other file
+  const { year, yearMonth, file } = req.params;
   const fileWithoutExt = file.replace(/\..*$/, '');
   const basePath = join(rootPath, outDir, year, yearMonth);
 
   try {
-    const detailFile = JSON.parse(await readFile(join(basePath, `${fileWithoutExt}.json`), 'utf-8')) as any; // TODO : any ??
+    // TODO[type]: Check with JOI ?
+    const detailFile = JSON.parse(await readFile(join(basePath, `${fileWithoutExt}.json`), 'utf-8')) as any;
 
     const institution = await getAuthedInstitution(req);
     const task = await getTaskById(detailFile.detail.task, institution);
@@ -52,7 +54,7 @@ router.get('/:year/:yearMonth/:file', checkRight(Roles.READ), async (req, res) =
       if (`${fileWithoutExt}.json` === file) {
         res.send(detailFile);
       } else {
-        // TODO : handle No such file error
+        // FIXME: handle No such file error
         res.send(await readFile(join(basePath, file)));
       }
     } else {
