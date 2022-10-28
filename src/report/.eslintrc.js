@@ -12,8 +12,8 @@ module.exports = {
     project: 'src/report/tsconfig.json',
   },
   rules: {
-    "import/extensions": "off",
-    "@typescript-eslint/comma-dangle": ['error', {
+    'import/extensions': 'off',
+    '@typescript-eslint/comma-dangle': ['error', {
       // Defaulting to airbnb config
       arrays: 'always-multiline',
       objects: 'always-multiline',
@@ -25,6 +25,6 @@ module.exports = {
       // Expect for imports, because it conflict with VSCode
       imports: 'never',
     }],
-    "@typescript-eslint/no-explicit-any": "warn"
+    '@typescript-eslint/no-explicit-any': 'warn',
   },
 };
