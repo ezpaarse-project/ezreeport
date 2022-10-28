@@ -33,6 +33,9 @@ const getAuthedInstitution = async (req: Request): Promise<string | undefined> =
   return undefined;
 };
 
+/**
+ * Get speficic report
+ */
 router.get('/:year/:yearMonth/:file', checkRight(Roles.READ), async (req, res) => {
   const { year, yearMonth, file } = req.params; // TODO: check if not trying to access other file
   const fileWithoutExt = file.replace(/\..*$/, '');
