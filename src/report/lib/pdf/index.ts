@@ -25,9 +25,6 @@ let doc: {
    * Height of document in px
    */
   height: number;
-  /**
-   * Today date
-   */
   today: Date;
   /**
    * Offset is the margin (constant) + other layout elements (like footer or header)
@@ -48,12 +45,12 @@ let doc: {
    * Name of the report
    */
   name: string;
-  /**
-   * Period
-   */
   period: Interval;
 
   // Constants
+  /**
+   * Margin between limit of the page & actual content
+   */
   margin: {
     top: number;
     left: number;
@@ -76,6 +73,7 @@ const loadImageAsset = async (
   path: string,
 ): Promise<{ data: string; width: number; height: number }> => {
   const data = await readFile(join(ROOT_PATH, path), 'base64');
+  // Waiting Image to "render" to get width & height
   const img = await new Promise<Image>((resolve, reject) => {
     const i = new Image();
     i.onload = () => resolve(i);
@@ -141,16 +139,16 @@ const printFooter = async (): Promise<number> => {
   let x = doc.margin.left;
   let minY = y;
 
+  const height = 30; // Wanted height of logos
   // eslint-disable-next-line no-restricted-syntax
   for (const { path, link: url } of logos) {
-    // Scaling down logo while preserving aspect ratio
     const {
       data: imageData,
       height: rawHeight,
       width: rawWidth,
       // eslint-disable-next-line no-await-in-loop
     } = await loadImageAsset(path);
-    const height = 30;
+    // Scaling down logo while preserving aspect ratio
     const width = (height * rawWidth) / rawHeight;
 
     const imgY = y - height / 1.75;
