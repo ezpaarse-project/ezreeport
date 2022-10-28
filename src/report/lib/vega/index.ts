@@ -140,7 +140,7 @@ export const createVegaLSpec = (
     layer: [
       // Default layer with the main chart
       merge<LayerType, LayerType | {}>(
-        { mark: { type, point: true } },
+        { mark: { type, point: true, radius2: (params.height ?? 0) / 5 } },
         params.dataLayer ?? {},
       ),
     ],
@@ -167,6 +167,7 @@ export const createVegaLSpec = (
           align: 'center',
           baseline: 'top',
           dy: 5,
+          radius: type === 'arc' ? (params.height ?? 0) / 2.9 : undefined,
         },
         encoding: {
           text: {
