@@ -20,11 +20,14 @@
   "bugs": {
     "url": "https://github.com/ezpaarse-project/reporting/issues"
   },
+  "engines": {
+    "node": "^18"
+  },
   "homepage": "https://github.com/ezpaarse-project/reporting#readme",
   "dependencies": {
     "@elastic/elasticsearch": "^7.17.0",
     "@prisma/client": "^4.5.0",
-    "canvas": "^2.10.1",
+    "canvas": "^2.10.2",
     "config": "^3.3.8",
     "cors": "^2.8.5",
     "date-fns": "^2.29.3",
