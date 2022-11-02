@@ -1,3 +1,4 @@
+import { registerFont } from 'canvas';
 import { writeFile } from 'fs';
 import type { ImageOptions } from 'jspdf';
 import { merge, omit, pick } from 'lodash';
@@ -19,6 +20,8 @@ import localeFR from './locales/fr-FR.json';
 
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
+registerFont('lib/vega/fonts/Roboto-light.ttf', { family: 'Roboto', weight: 'normal' });
+registerFont('lib/vega/fonts/Roboto-medium.ttf', { family: 'Roboto', weight: 'bold' });
 
 type LayerType = LayerSpec<any> | UnitSpec<any>;
 
@@ -109,7 +112,7 @@ export const createVegaLSpec = (
   data: any[],
   params: VegaParams,
 ): TopLevelSpec => {
-  // TODO[feat]: Merge with whole params.spec ?
+  // TODO?[feat]: Merge with whole params.spec
 
   const spec: TopLevelSpec = {
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
@@ -121,9 +124,6 @@ export const createVegaLSpec = (
         text: typeof params.title !== 'object' ? params.title : '',
         anchor: 'start',
         dy: -5,
-        // FIXME: Font needs to be installed
-        font: 'Roboto',
-        fontWeight: 400,
       },
       typeof params.title === 'object' ? params.title : {},
     ),
@@ -173,6 +173,7 @@ export const createVegaLSpec = (
     config: {
       locale: params.spec.config?.locale ?? (localeFR as VegaLocale),
       customFormatTypes: true,
+      font: 'Roboto',
     },
   };
 
@@ -209,7 +210,7 @@ export const createVegaLSpec = (
               range: [
                 'white', // white on blue
                 'black', // black on orange
-                'white', // white on red
+                'black', // black on red
                 'black', // black on cyan
                 'black', // black on green
                 'black', // black on yellow
