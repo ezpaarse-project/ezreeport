@@ -86,10 +86,14 @@ const generatePdfWithVega = async (
       },
     ];
 
+    let first = true;
     // eslint-disable-next-line no-restricted-syntax
     for (const page of layout) {
-      // eslint-disable-next-line no-await-in-loop
-      await addPage();
+      if (!first) {
+        // eslint-disable-next-line no-await-in-loop
+        await addPage();
+      }
+      first = false;
 
       // eslint-disable-next-line no-await-in-loop
       let figures = await page(opts, dataOpts);
