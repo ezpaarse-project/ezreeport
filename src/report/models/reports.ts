@@ -1,7 +1,6 @@
 import type { Task } from '@prisma/client';
 import { format } from 'date-fns';
 import { mkdir, writeFile } from 'fs/promises';
-import type { ImageOptions } from 'jspdf';
 import { merge } from 'lodash';
 import { join } from 'path';
 import config from '../lib/config';
@@ -53,39 +52,102 @@ const generatePdfWithVega = async (
   try {
     const doc = await initDoc(opts);
 
-    /**
-     * Base options for adding images with jsPDF
-     */
-    const baseImageOptions: Omit<ImageOptions, 'imageData'> = {
+    const viewport = {
       x: doc.margin.left,
       y: doc.offset.top,
       width: doc.width - doc.margin.left - doc.margin.right,
       height: doc.height - doc.offset.top - doc.offset.bottom,
     };
 
+    const slots = [
+      {
+        x: viewport.x,
+        y: viewport.y,
+        width: (viewport.width / 2) - (doc.margin.left / 2),
+        height: (viewport.height / 2) - (doc.margin.top / 2),
+      },
+      {
+        x: viewport.x + viewport.width / 2 + (doc.margin.left / 2),
+        y: viewport.y,
+        width: (viewport.width / 2) - (doc.margin.left / 2),
+        height: (viewport.height / 2) - (doc.margin.top / 2),
+      },
+      {
+        x: viewport.x,
+        y: viewport.y + viewport.height / 2 + (doc.margin.top / 2),
+        width: (viewport.width / 2) - (doc.margin.left / 2),
+        height: (viewport.height / 2) - (doc.margin.top / 2),
+      },
+      {
+        x: viewport.x + viewport.width / 2 + (doc.margin.left / 2),
+        y: viewport.y + viewport.height / 2 + (doc.margin.top / 2),
+        width: (viewport.width / 2) - (doc.margin.left / 2),
+        height: (viewport.height / 2) - (doc.margin.top / 2),
+      },
+    ];
+
     // eslint-disable-next-line no-restricted-syntax
-    for (const figure of layout) {
+    for (const page of layout) {
       // eslint-disable-next-line no-await-in-loop
       await addPage();
 
       // eslint-disable-next-line no-await-in-loop
-      const figParams = await figure(opts, dataOpts);
+      let figures = await page(opts, dataOpts);
+      if (!Array.isArray(figures)) figures = [figures];
 
-      if (isFigureTable(figParams)) {
-        // eslint-disable-next-line no-await-in-loop
-        await addTable(doc, figParams.data, figParams.params);
-      } else {
-        // Creating figure
-        const fig = createVegaView(
-          createVegaLSpec(figParams.type, figParams.data, {
-            width: baseImageOptions.width,
-            height: baseImageOptions.height,
-            ...figParams.params,
-          }),
-        );
-        // Adding figure to pdf
-        // eslint-disable-next-line no-await-in-loop
-        await addVega(doc, fig, baseImageOptions);
+      const figuresCount = Math.min(figures.length, slots.length);
+
+      for (let i = 0; i < figuresCount; i += 1) {
+        const figure = figures[i];
+        const slot = { ...slots[i] };
+
+        // If only one figure, take whole viewport
+        if (figuresCount === 1) {
+          slot.width = viewport.width;
+          slot.height = viewport.height;
+        }
+
+        // If no second row, take whole height
+        if (figuresCount <= slots.length - 2) {
+          slot.height = viewport.height;
+        }
+
+        // If in penultimate slot and last figure, take whole remaining space
+        if (i === slots.length - 2 && i === figuresCount - 1) {
+          slot.width += slots[i + 1].width;
+          slot.height += slots[i + 1].height;
+        }
+
+        if (isFigureTable(figure)) {
+          // Print table
+          const margin: Partial<Record<'top' | 'right' | 'bottom' | 'left', number>> = {};
+          figure.params.tableWidth = slot.width;
+
+          if (slot.x !== viewport.x) {
+            margin.left = slot.x;
+          }
+
+          if (slot.y !== viewport.y) {
+            figure.params.startY = slot.y;
+          }
+
+          figure.params.maxHeight = slot.height;
+
+          // eslint-disable-next-line no-await-in-loop
+          await addTable(doc, figure.data, merge(figure.params, { margin }));
+        } else {
+          // Creating Vega view
+          const view = createVegaView(
+            createVegaLSpec(figure.type, figure.data, {
+              ...figure.params,
+              width: slot.width,
+              height: slot.height,
+            }),
+          );
+          // Adding view to pdf
+          // eslint-disable-next-line no-await-in-loop
+          await addVega(doc, view, slot);
+        }
       }
     }
 
@@ -130,7 +192,8 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
       throw new Error("Targets can't be null");
     }
 
-    const period = calcPeriod(today, task.recurrence);
+    const period = calcPeriod(new Date(2021, 9, 31, 12), task.recurrence);
+    // const period = calcPeriod(today, task.recurrence);
     // TODO[feat]: define layout as JSON. Use JOI
     let baseLayout = [];
     if (typeof task.layout === 'object' && (task.layout as any).extends) {
@@ -226,7 +289,7 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
       {
         success: false,
         detail: {
-          error,
+          error: (error as Error).message,
         },
       },
     );

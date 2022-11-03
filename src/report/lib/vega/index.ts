@@ -16,7 +16,7 @@ import type { UnitSpec } from 'vega-lite/build/src/spec';
 import config from '../config';
 import logger from '../logger';
 import type { PDFReport, PDFReportOptions } from '../pdf';
-import type { TableParams, TableParamsFnc } from '../pdf/table';
+import type { TableParams } from '../pdf/table';
 import localeFR from './locales/fr-FR.json';
 import VegaLogger from './logger';
 
@@ -74,14 +74,13 @@ type VegaParams = {
 
 export type InputVegaParams = Omit<VegaParams, 'width' | 'height'>;
 
-type AnyTableParam = TableParams | TableParamsFnc | Promisify<TableParamsFnc>;
 /**
  * Figure definition
  */
 export interface VegaFigure<Type extends Mark | 'table'> {
   type: Type;
   data: any;
-  params: Type extends Mark ? InputVegaParams : AnyTableParam;
+  params: Type extends Mark ? InputVegaParams : TableParams;
 }
 
 /**
@@ -92,7 +91,7 @@ type AnyVegaFigure = VegaFigure<Mark> | VegaFigure<'table'>;
 type AnyVegaFigureFnc = (
   docOpts: PDFReportOptions,
   dataOpts: any
-) => AnyVegaFigure;
+) => AnyVegaFigure | AnyVegaFigure[];
 
 export type LayoutVegaFigure = Array<AnyVegaFigureFnc | Promisify<AnyVegaFigureFnc>>;
 
