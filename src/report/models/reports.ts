@@ -4,7 +4,6 @@ import { mkdir, writeFile } from 'fs/promises';
 import type { ImageOptions } from 'jspdf';
 import { merge } from 'lodash';
 import { join } from 'path';
-import testLayout from '../layouts/test';
 import config from '../lib/config';
 import {
   addPage,
@@ -28,6 +27,7 @@ const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
 
 // TODO[feat]: Md for text
+// TODO[feat]: Metrics type
 
 /**
  * Put filename in lowercase & remove chars that can cause issues.
@@ -131,9 +131,14 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
     }
 
     const period = calcPeriod(today, task.recurrence);
+    // TODO[feat]: define layout as JSON. Use JOI
+    let baseLayout = [];
+    if (typeof task.layout === 'object' && (task.layout as any).extends) {
+      baseLayout = (await import(`../layouts/${(task.layout as any).extends}`)).default;
+    }
 
     await generatePdfWithVega(
-      testLayout, // TODO[feat]: use task layout. define layout as JSON
+      baseLayout,
       {
         name: task.name,
         path: join(basePath, `${filename}.pdf`),

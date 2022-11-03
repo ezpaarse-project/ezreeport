@@ -43,7 +43,7 @@ router.get('/:year/:yearMonth/:file', checkRight(Roles.READ), async (req, res) =
   const basePath = join(rootPath, outDir, year, yearMonth);
 
   try {
-    // TODO[type]: Check with JOI ?
+    // TODO[type]: Check with JOI
     const detailFile = JSON.parse(await readFile(join(basePath, `${fileWithoutExt}.json`), 'utf-8')) as any;
 
     const institution = await getAuthedInstitution(req);
