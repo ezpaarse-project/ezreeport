@@ -214,6 +214,8 @@ const renderer: marked.RendererObject = {
 
     const element = elements.at(-1);
     if (element) {
+      // FIXME: image with links
+
       element.type = 'link';
       element.meta = {
         ...element.meta,

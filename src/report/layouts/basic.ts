@@ -11,7 +11,17 @@ interface DataOptions {
 }
 
 export default [
-  // Creating stacked bar figure
+  // Intro
+  (): Figure<'md'> => ({
+    type: 'md',
+    data: `### **Rapport hebdomadaire des consultations BibCNRS**
+
+Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts lors de la semaine écoulée.
+
+[![ezmesure](https://blog.ezpaarse.org/wp-content/uploads/2017/11/logo-ezMESURE.png)](https://ezmesure.couperin.org/)
+[![bibcnrs](https://www.inist.fr/wp-content/uploads/2018/07/bibcnrs-logo-visite-e1530711678757.png)](https://bib.cnrs.fr/)`,
+    params: {},
+  }),
 
   // Histogramme consultations
   async (
@@ -141,15 +151,14 @@ export default [
 
     const { body: { aggregations } } = await elasticSearch<ElasticConsultation>(opts);
     if (!aggregations?.consult_by_type) throw new Error('Aggregation(s) not found');
-    const {
-      buckets: data,
-    } = aggregations.consult_by_type as estypes.AggregationsTermsAggregateBase<Bucket>;
+    const { buckets: data } = aggregations.consult_by_type as { buckets: Bucket[] };
 
     // Return params for Vega-lite helper
     return [
       {
         type: 'arc',
         data,
+        // TODO[feat]: custom color for each label, "ARTICLE" graph1 == "ARTICLE" graph 2
         params: {
           title: {
             text: 'Camembert consultations par type',
