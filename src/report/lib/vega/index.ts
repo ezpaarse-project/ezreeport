@@ -38,15 +38,13 @@ scheme('tableau10-labels', [
   'black', // black on grey
 ]);
 
-// TODO[type]: Rework types (no more any)
-
 /**
  * Params for createVegaLSpec
  */
 type Layer = UnitSpec<string>;
 type Title = Exclude<Layer['title'], undefined>;
 type Encoding = Exclude<Layer['encoding'], undefined>;
-// Hide 'mark.type' property
+// Hide 'mark.type' property for overriding it
 type CustomLayer = Omit<Layer, 'mark'> & { mark: Omit<Layer['mark'], 'type'> };
 
 type VegaParams = {
@@ -171,7 +169,7 @@ export const createVegaLSpec = (
       encoding: {
         text: {
         },
-        // FIXME: "WARN Dropping {"legend":null,"scale":{"scheme":"tableau10-labels"}} from channel "color" since it does not contain any data field, datum, value, or signal."
+        // FIXME: WARN Dropping since it does not contain any data field, datum, value, or signal.
         color: {
           legend: null,
           scale: {

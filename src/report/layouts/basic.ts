@@ -167,7 +167,7 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
           type: 'table',
           data,
           params: {
-            title: `Top ${Math.min(data.length, 20)} des consultations par type`,
+            title: ({ length }) => `Top ${length} des consultations par type`,
             maxLength: 20,
             columns: [
               {
@@ -224,7 +224,7 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
         type: 'table',
         data,
         params: {
-          title: `Top ${data.length} des consultations par plateforme`,
+          title: ({ length }) => `Top ${length} des consultations par plateforme`,
           columns: [
             {
               header: 'Plateforme',
@@ -373,7 +373,7 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
         type: 'table',
         data,
         params: {
-          title: `Top ${data.length} des consultations par titre`,
+          title: ({ length }) => `Top ${length} des consultations par titre`,
           columns: [
             {
               header: 'Publication',

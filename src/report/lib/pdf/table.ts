@@ -4,7 +4,7 @@ import type { PDFReport } from '.';
 import logger from '../logger';
 
 export type TableParams = {
-  title: string,
+  title: string | ((data: unknown[]) => string),
   maxLength?: number;
   maxHeight?: number;
 } & Omit<UserOptions, 'body'>;
@@ -39,8 +39,6 @@ export const addTableToPDF = async (
     }
   }
 
-  // TODO[feat]: title can be a function
-
   const options = merge({
     margin: {
       right: doc.margin.right,
@@ -56,12 +54,13 @@ export const addTableToPDF = async (
   }, params);
 
   const y = +(options.startY ?? 0) || options.margin.top;
+  const t = typeof title === 'function' ? title(tableData) : title;
 
   // Table title
   doc.pdf
     .setFont('Roboto', 'bold')
     .setFontSize(fontSize)
-    .text(title, options.margin.left, y - 0.5 * fontSize);
+    .text(t, options.margin.left, y - 0.5 * fontSize);
 
   // Print table
   autoTable(doc.pdf, {
