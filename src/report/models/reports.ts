@@ -5,6 +5,7 @@ import { merge } from 'lodash';
 import { join } from 'path';
 import type { Mark } from 'vega-lite/build/src/mark';
 import config from '../lib/config';
+import { addMdToPDF, MdParams } from '../lib/markdown';
 import {
   addPage,
   deleteDoc,
@@ -25,7 +26,6 @@ import { addTaskHistory } from './tasks';
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
 
-// TODO[feat]: Md for text
 // TODO[feat]: Metrics type
 
 /**
@@ -68,6 +68,14 @@ type LayoutSlot = {
 const isFigureTable = (figure: AnyFigure): figure is Figure<'table'> => figure.type === 'table';
 
 /**
+ * Check if the given figure is a text
+ *
+ * @param figure The figure
+ * @returns Is the figure is a text
+ */
+const isFigureMd = (figure: AnyFigure): figure is Figure<'md'> => figure.type === 'md';
+
+/**
  * Put filename in lowercase & remove chars that can cause issues.
  *
  * @param filename The original filename
@@ -98,6 +106,7 @@ const generatePdfWithVega = async (
       height: doc.height - doc.offset.top - doc.offset.bottom,
     };
 
+    // TODO[feat]: Custom slots
     const slots = Array.from<Partial<LayoutSlot>, LayoutSlot>(
       [
         {},
@@ -174,6 +183,9 @@ const generatePdfWithVega = async (
 
           // eslint-disable-next-line no-await-in-loop
           await addTableToPDF(doc, figure.data, merge(figure.params, { margin }));
+        } else if (isFigureMd(figure)) {
+          // eslint-disable-next-line no-await-in-loop
+          await addMdToPDF(doc, figure.data, figure.params);
         } else {
           // Creating Vega view
           const view = createVegaView(

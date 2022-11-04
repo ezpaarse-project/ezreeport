@@ -30,10 +30,13 @@ export const addTableToPDF = async (
     // default height of a cell is 29
     const maxCells = Math.ceil(maxHeight / 29);
     if (tableData.length > maxCells) {
+      // TODO[feat]: Message ?
       logger.warn(`[pdf] Reducing table "${title}" length from ${tableData.length} to ${maxCells} because table won't fit in slot.`);
       tableData.length = maxCells;
     }
   }
+
+  // TODO[feat]: title can be a function
 
   const fontSize = 10;
   const options = merge({

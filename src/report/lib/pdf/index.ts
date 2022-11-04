@@ -6,6 +6,8 @@ import { jsPDF as PDF } from 'jspdf';
 import { join } from 'path';
 import config from '../config';
 import './fonts/Roboto-bold.js';
+import './fonts/Roboto-bolditalic.js';
+import './fonts/Roboto-italic.js';
 import './fonts/Roboto-normal.js';
 
 const { logos } = config.get('pdf');
