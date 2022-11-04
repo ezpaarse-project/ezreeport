@@ -1,4 +1,4 @@
-import { Client } from '@elastic/elasticsearch';
+import { Client, estypes } from '@elastic/elasticsearch';
 import config from './config';
 import logger from './logger';
 import { sleep } from './utils';
@@ -45,4 +45,11 @@ export const getElasticClient = async () => {
     await sleep(1000);
   }
   return client;
+};
+
+export const elasticSearch = async <ResponseType extends Record<string, unknown>>(
+  params: estypes.SearchRequest,
+) => {
+  const elastic = (await getElasticClient());
+  return elastic.search<estypes.SearchResponse<ResponseType>>(params as Record<string, unknown>);
 };

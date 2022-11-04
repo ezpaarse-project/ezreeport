@@ -1,21 +1,24 @@
-import type { RequestParams } from '@elastic/elasticsearch';
+import { estypes } from '@elastic/elasticsearch';
+import { formatISO } from 'date-fns';
 import { merge } from 'lodash';
-import { getElasticClient } from '../lib/elastic';
+import { elasticSearch, getElasticClient } from '../lib/elastic';
 import type { PDFReportOptions } from '../lib/pdf';
-import type { VegaFigure } from '../lib/vega';
+import type { Figure } from '../models/reports';
 
 interface DataOptions {
   index: string;
-  filters?: Record<string, any>;
+  filters?: any[];
 }
 
 export default [
   // Creating stacked bar figure
+
+  // Histogramme consultations
   async (
     { period }: PDFReportOptions,
     { index, filters }: DataOptions,
-  ): Promise<VegaFigure<'bar'>> => {
-    const opts: RequestParams.Search = {
+  ): Promise<Figure<'bar'>> => {
+    const opts: estypes.SearchRequest = {
       index,
       size: 0,
       body: {
@@ -25,8 +28,8 @@ export default [
             filter: {
               range: {
                 datetime: {
-                  gte: period.start,
-                  lte: period.end,
+                  gte: formatISO(period.start),
+                  lte: formatISO(period.end),
                 },
               },
             },
@@ -44,29 +47,26 @@ export default [
       },
     };
 
-    interface Aggregate {
+    interface Bucket {
       doc_count: number;
       key: { consult_by_date: number; consult_by_portal: string };
     }
 
-    const elastic = await getElasticClient();
-
-    const data: Aggregate[] = [];
-    let after: Aggregate['key'] | undefined;
+    const data: Bucket[] = [];
+    let after: Bucket['key'] | undefined;
     do {
-      const {
-        body: {
-          aggregations: {
-            consult_by_date: { buckets, after_key: afterKey },
-          },
-        },
-        // eslint-disable-next-line no-await-in-loop
-      } = await elastic.search(
+      // eslint-disable-next-line no-await-in-loop
+      const { body: { aggregations } } = await elasticSearch<ElasticConsultation>(
         // Merge base options & pagination
         merge(opts, {
           body: { aggs: { consult_by_date: { after } } },
         }),
       );
+      if (!aggregations?.consult_by_date) throw new Error('Aggregation(s) not found');
+      const {
+        buckets,
+        after_key: afterKey,
+      } = aggregations.consult_by_date as any;
 
       data.push(...buckets);
       after = afterKey;
@@ -102,12 +102,12 @@ export default [
     };
   },
 
-  // Creating pie figure
+  // Consultations par type
   async (
     { period }: PDFReportOptions,
     { index, filters }: DataOptions,
-  ): Promise<VegaFigure<'arc'>> => {
-    const opts: RequestParams.Search = {
+  ): Promise<[Figure<'arc'>, Figure<'table'>]> => {
+    const opts: estypes.SearchRequest = {
       index,
       size: 0,
       body: {
@@ -117,8 +117,8 @@ export default [
             filter: {
               range: {
                 datetime: {
-                  gte: period.start,
-                  lte: period.end,
+                  gte: formatISO(period.start),
+                  lte: formatISO(period.end),
                 },
               },
             },
@@ -134,46 +134,68 @@ export default [
       },
     };
 
-    const elastic = await getElasticClient();
+    type Bucket = {
+      doc_count: number,
+      key: string
+    };
 
+    const { body: { aggregations } } = await elasticSearch<ElasticConsultation>(opts);
+    if (!aggregations?.consult_by_type) throw new Error('Aggregation(s) not found');
     const {
-      body: {
-        aggregations: {
-          consult_by_type: { buckets: data },
-        },
-      },
-    } = await elastic.search(opts);
+      buckets: data,
+    } = aggregations.consult_by_type as estypes.AggregationsTermsAggregateBase<Bucket>;
 
     // Return params for Vega-lite helper
-    return {
-      type: 'arc',
-      data,
-      params: {
-        title: {
-          text: 'Camembert consultations par type',
+    return [
+      {
+        type: 'arc',
+        data,
+        params: {
+          title: {
+            text: 'Camembert consultations par type',
+          },
+          value: {
+            field: 'doc_count',
+          },
+          label: {
+            field: 'key',
+            title: 'Type',
+          },
+          dataLabel: {
+            format: 'percent',
+            showLabel: true,
+          },
+          // debugExport: process.env.NODE_ENV !== 'production',
         },
-        value: {
-          field: 'doc_count',
-        },
-        label: {
-          field: 'key',
-          title: 'Type',
-        },
-        dataLabel: {
-          format: 'percent',
-          showLabel: true,
-        },
-        // debugExport: process.env.NODE_ENV !== 'production',
       },
-    };
+      {
+        type: 'table',
+        data,
+        params: {
+          title: `Top ${Math.min((data as any[]).length, 20)} des consultations par type`,
+          maxLength: 20,
+          columns: [
+            {
+              header: 'Type',
+              dataKey: 'key',
+            },
+            {
+              header: 'Nombre de consultations',
+              dataKey: 'doc_count',
+              // showSum: true // TODO[refactor]: Include param for showing sum
+            },
+          ],
+        },
+      },
+    ];
   },
 
-  // Creating table figure
+  // Consultation par plateforme
   async (
     { period }: PDFReportOptions,
     { index, filters }: DataOptions,
-  ): Promise<VegaFigure<'table'>> => {
-    const opts: RequestParams.Search = {
+  ): Promise<Figure<'table'>> => {
+    const opts: estypes.SearchRequest = {
       index,
       size: 0,
       body: {
@@ -183,81 +205,8 @@ export default [
             filter: {
               range: {
                 datetime: {
-                  gte: period.start,
-                  lte: period.end,
-                },
-              },
-            },
-          },
-        },
-        aggs: {
-          consult_by_type: {
-            terms: {
-              field: 'rtype',
-              size: 10,
-            },
-          },
-        },
-      },
-    };
-
-    const elastic = await getElasticClient();
-
-    const {
-      body: {
-        aggregations: {
-          consult_by_type: { buckets: data },
-        },
-      },
-    } = await elastic.search(opts);
-
-    return {
-      type: 'table',
-      data,
-      params: {
-        title: 'Top 10 des consultations par type',
-        columns: [
-          {
-            header: 'Type',
-            dataKey: 'key',
-          },
-          {
-            header: 'Nombre de consultations',
-            dataKey: 'doc_count',
-            // showSum: true // TODO[refactor]: Include param for showing sum
-          },
-        ],
-        // foot: [
-        //   [
-        //     '',
-        //     // Calc total
-        //     (data as any[]).reduce(
-        //       (prev, { doc_count: docCount }) => prev + docCount,
-        //       0,
-        //     ),
-        //   ],
-        // ],
-      },
-    };
-  },
-
-  // Creating table figure
-  async (
-    { period }: PDFReportOptions,
-    { index, filters }: DataOptions,
-  ): Promise<VegaFigure<'table'>> => {
-    const opts: RequestParams.Search = {
-      index,
-      size: 0,
-      body: {
-        query: {
-          bool: {
-            ...filters,
-            filter: {
-              range: {
-                datetime: {
-                  gte: period.start,
-                  lte: period.end,
+                  gte: formatISO(period.start),
+                  lte: formatISO(period.end),
                 },
               },
             },
@@ -267,7 +216,7 @@ export default [
           consult_by_platform: {
             terms: {
               field: 'platform_name',
-              size: 15,
+              size: 20,
             },
           },
         },
@@ -282,13 +231,13 @@ export default [
           consult_by_platform: { buckets: data },
         },
       },
-    } = await elastic.search(opts);
+    } = await elastic.search(opts as any);
 
     return {
       type: 'table',
       data,
       params: {
-        title: 'Top 15 des consultations par plateforme',
+        title: `Top ${data.length} des consultations par plateforme`,
         columns: [
           {
             header: 'Plateforme',
@@ -314,12 +263,12 @@ export default [
     };
   },
 
-  // Creating pie figure
+  // Consultations DOI
   async (
     { period }: PDFReportOptions,
     { index, filters }: DataOptions,
-  ): Promise<VegaFigure<'arc'>> => {
-    const opts: RequestParams.Search = {
+  ): Promise<Figure<'arc'>> => {
+    const opts: estypes.SearchRequest = {
       index,
       size: 0,
       body: {
@@ -329,8 +278,8 @@ export default [
             filter: {
               range: {
                 datetime: {
-                  gte: period.start,
-                  lte: period.end,
+                  gte: formatISO(period.start),
+                  lte: formatISO(period.end),
                 },
               },
             },
@@ -379,7 +328,7 @@ export default [
           consult_by_doi: { buckets: data },
         },
       },
-    } = await elastic.search(opts);
+    } = await elastic.search(opts as any);
 
     // Return params for Vega-lite helper
     return {
@@ -408,12 +357,12 @@ export default [
     };
   },
 
-  // Creating table figure
+  // Consultations par titre
   async (
     { period }: PDFReportOptions,
     { index, filters }: DataOptions,
-  ): Promise<VegaFigure<'table'>> => {
-    const opts: RequestParams.Search = {
+  ): Promise<Figure<'table'>> => {
+    const opts: estypes.SearchRequest = {
       index,
       size: 0,
       body: {
@@ -423,8 +372,8 @@ export default [
             filter: {
               range: {
                 datetime: {
-                  gte: period.start,
-                  lte: period.end,
+                  gte: formatISO(period.start),
+                  lte: formatISO(period.end),
                 },
               },
             },
@@ -460,9 +409,8 @@ export default [
           consult_by_title: { buckets: data },
         },
       },
-    } = await elastic.search(opts);
+    } = await elastic.search(opts as any);
 
-    // TODO: FINISH
     return {
       type: 'table',
       data: (data as any[]).map(({
@@ -474,7 +422,7 @@ export default [
         count: doc_count,
       })),
       params: {
-        title: 'Top 10 des consultations par titre',
+        title: `Top ${data.length} des consultations par titre`,
         columns: [
           {
             header: 'Publication',
@@ -505,12 +453,12 @@ export default [
     };
   },
 
-  // Creating pie figure
+  // Consultations des 10 années
   async (
     { period }: PDFReportOptions,
     { index, filters }: DataOptions,
-  ): Promise<VegaFigure<'arc'>> => {
-    const opts: RequestParams.Search = {
+  ): Promise<Figure<'arc'>> => {
+    const opts: estypes.SearchRequest = {
       index,
       size: 0,
       body: {
@@ -520,8 +468,8 @@ export default [
             filter: {
               range: {
                 datetime: {
-                  gte: period.start,
-                  lte: period.end,
+                  gte: formatISO(period.start),
+                  lte: formatISO(period.end),
                 },
               },
             },
@@ -546,7 +494,7 @@ export default [
           consult_by_type: { buckets: data },
         },
       },
-    } = await elastic.search(opts);
+    } = await elastic.search(opts as any);
 
     // Return params for Vega-lite helper
     return {
@@ -554,7 +502,7 @@ export default [
       data,
       params: {
         title: {
-          text: 'Camembert des 10 années de publications les plus consultées',
+          text: `Camembert des ${data.length} années de publications les plus consultées`,
         },
         value: {
           field: 'doc_count',
