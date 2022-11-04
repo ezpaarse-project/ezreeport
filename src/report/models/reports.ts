@@ -269,64 +269,7 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
           recurrence: task.recurrence,
           period,
         },
-        // Elastic index & common filter
-        // TODO[feat]: use task filter
-        {
-          index: 'bibcnrs-*-2021',
-          filters: {
-            must_not: [
-              {
-                match_phrase: {
-                  mime: {
-                    query: 'XLS',
-                  },
-                },
-              },
-              {
-                match_phrase: {
-                  mime: {
-                    query: 'DOC',
-                  },
-                },
-              },
-              {
-                match_phrase: {
-                  mime: {
-                    query: 'MISC',
-                  },
-                },
-              },
-              {
-                match_phrase: {
-                  index_name: {
-                    query: 'bibcnrs-insb-dcm00',
-                  },
-                },
-              },
-              {
-                match_phrase: {
-                  index_name: {
-                    query: 'bibcnrs-insb-dcm30',
-                  },
-                },
-              },
-              {
-                match_phrase: {
-                  index_name: {
-                    query: 'bibcnrs-insb-dcm10',
-                  },
-                },
-              },
-              {
-                match_phrase: {
-                  index_name: {
-                    query: 'bibcnrs-insb-anonyme',
-                  },
-                },
-              },
-            ],
-          },
-        },
+        (task.layout as any).data, // { index: string, filters: ... }
       ),
       // Report options
       {

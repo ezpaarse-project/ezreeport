@@ -51,5 +51,6 @@ export const elasticSearch = async <ResponseType extends Record<string, unknown>
   params: estypes.SearchRequest,
 ) => {
   const elastic = (await getElasticClient());
+  // TODO[security]: Add `run_as` (https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
   return elastic.search<estypes.SearchResponse<ResponseType>>(params as Record<string, unknown>);
 };
