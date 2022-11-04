@@ -19,6 +19,7 @@ export const addTableToPDF = async (
   const {
     maxLength, maxHeight, title, ...params
   } = spec;
+  const fontSize = 10;
 
   // Limit data if needed
   const tableData = [...data];
@@ -28,17 +29,18 @@ export const addTableToPDF = async (
 
   if (maxHeight != null && maxHeight > 0) {
     // default height of a cell is 29
-    const maxCells = Math.ceil(maxHeight / 29);
+    // Removing title, header & some space
+    const maxTableHeight = maxHeight - (1.5 * fontSize) - (2 * 29);
+    const maxCells = Math.ceil(maxTableHeight / 29);
     if (tableData.length > maxCells) {
       // TODO[feat]: Message ?
-      logger.warn(`[pdf] Reducing table "${title}" length from ${tableData.length} to ${maxCells} because table won't fit in slot.`);
+      logger.warn(`[pdf] Reducing table length from ${tableData.length} to ${maxCells} because table won't fit in slot.`);
       tableData.length = maxCells;
     }
   }
 
   // TODO[feat]: title can be a function
 
-  const fontSize = 10;
   const options = merge({
     margin: {
       right: doc.margin.right,
