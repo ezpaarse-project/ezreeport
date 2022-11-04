@@ -237,6 +237,7 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
   let result: any = {
     success: true,
     detail: {
+      date: new Date(),
       task: task.id,
       files: {
         detail: `${todayStr}/${filename}.json`,
@@ -252,8 +253,7 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
       throw new Error("Targets can't be null");
     }
 
-    const period = calcPeriod(new Date(2021, 9, 31, 12), task.recurrence);
-    // const period = calcPeriod(today, task.recurrence);
+    const period = calcPeriod(today, task.recurrence);
     // TODO[feat]: define layout as JSON. Use JOI
     let baseLayout: LayoutFnc | undefined;
     if (typeof task.layout === 'object' && (task.layout as any).extends) {
