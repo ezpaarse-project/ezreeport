@@ -367,6 +367,9 @@ export const addMdToPDF = async (
       }
     }
 
+    // Reset colors before generation further pages
+    doc.pdf.setTextColor('black').setDrawColor('black');
+
     elements = undefined;
   } catch (error) {
     elements = undefined;
