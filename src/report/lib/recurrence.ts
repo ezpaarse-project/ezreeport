@@ -108,3 +108,29 @@ export const calcPeriod = (today: Date, recurrence: Recurrence): Interval => {
 
   return period;
 };
+
+/**
+ * Calculate interval needed for Elastic's aggregations
+ *
+ * @param recurrence The recurrence
+ *
+ * @returns The interval
+ */
+export const calcElasticInterval = (recurrence: Recurrence): 'hour' | 'day' | 'month' => {
+  switch (recurrence) {
+    case Recurrence.DAILY:
+      return 'hour';
+
+    case Recurrence.WEEKLY:
+    case Recurrence.MONTHLY:
+      return 'day';
+
+    case Recurrence.QUARTERLY:
+    case Recurrence.BIENNIAL:
+    case Recurrence.YEARLY:
+      return 'month';
+
+    default:
+      throw new Error('Recurrence not found');
+  }
+};

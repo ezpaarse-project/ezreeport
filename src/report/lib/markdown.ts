@@ -37,14 +37,14 @@ let elements: MdElement[] | undefined;
  * Renderer that render Markdown as PDF text. Doesn't output any string.
  */
 const renderer: marked.RendererObject = {
-  code: (code: string, language: string | undefined, isEscaped: boolean) => {
+  code: (_code: string, _language: string | undefined, _isEscaped: boolean) => {
     if (!elements) throw new Error('figure not initialized');
 
     // TODO[feat]: support code blocks
 
     return '';
   },
-  blockquote: (quote: string) => {
+  blockquote: (_quote: string) => {
     if (!elements) throw new Error('figure not initialized');
 
     // TODO[feat]: support quotes
@@ -84,21 +84,21 @@ const renderer: marked.RendererObject = {
 
     return '';
   },
-  list: (body: string, ordered: boolean, start: number) => {
+  list: (_body: string, _ordered: boolean, _start: number) => {
     if (!elements) throw new Error('figure not initialized');
 
     // TODO[feat]: support lists
 
     return '';
   },
-  listitem: (text: string, task: boolean, checked: boolean) => {
+  listitem: (text: string, _task: boolean, _checked: boolean) => {
     if (!elements) throw new Error('figure not initialized');
 
     // TODO[feat]: support lists
 
     return text;
   },
-  checkbox: (checked: boolean) => {
+  checkbox: (_checked: boolean) => {
     if (!elements) throw new Error('figure not initialized');
 
     // TODO[feat]: support checkbox
@@ -124,14 +124,14 @@ const renderer: marked.RendererObject = {
 
     return text;
   },
-  table: (header: string, body: string) => {
+  table: (_header: string, _body: string) => {
     if (!elements) throw new Error('figure not initialized');
 
     // TODO[feat]: support table
 
     return '';
   },
-  tablerow: (content: string) => {
+  tablerow: (_content: string) => {
     if (!elements) throw new Error('figure not initialized');
 
     // TODO[feat]: support table
@@ -139,8 +139,8 @@ const renderer: marked.RendererObject = {
     return '';
   },
   tablecell: (
-    content: string,
-    flags: {
+    _content: string,
+    _flags: {
       header: boolean;
       align: 'center' | 'left' | 'right' | null;
     },
@@ -178,7 +178,7 @@ const renderer: marked.RendererObject = {
     // Returning the space taken by the new text
     return text;
   },
-  codespan: (code: string) => {
+  codespan: (_code: string) => {
     if (!elements) throw new Error('figure not initialized');
 
     // TODO[feat]: support code blocks
@@ -327,7 +327,7 @@ export const addMdToPDF = async (
       switch (type) {
         case 'header': {
           fontSize = 48 / (meta.level ?? 1);
-          // Heading are start from original position
+          // Heading start from original position
           cursor.x = def.cursor.x;
           // Heading have a space before them...
           cursor.y += fontSize + def.fontSize;
@@ -338,6 +338,7 @@ export const addMdToPDF = async (
         }
 
         case 'break': {
+          // Next line will start from original position
           cursor.x = def.cursor.x;
           // Jump to next line (1.25 for next line)
           cursor.y += ((meta.space ?? 0) + 1.25) * def.fontSize;

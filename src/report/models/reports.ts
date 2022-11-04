@@ -1,4 +1,4 @@
-import type { Task } from '@prisma/client';
+import type { Recurrence, Task } from '@prisma/client';
 import { format } from 'date-fns';
 import { mkdir, writeFile } from 'fs/promises';
 import { merge } from 'lodash';
@@ -28,16 +28,20 @@ const { outDir } = config.get('pdf');
 
 // TODO[feat]: Metrics type
 
+type FigureType = Mark | 'table' | 'md';
+
+interface FigureParams extends Record<FigureType, object> {
+  table: TableParams,
+  md: MdParams
+}
+
 /**
  * Figure definition
  */
-export interface Figure<Type extends Mark | 'table' | 'md'> {
+export interface Figure<Type extends FigureType> {
   type: Type;
-  data: Type extends 'md' ? string : any[];
-  params: Type extends Mark ? InputVegaParams
-    : Type extends 'table' ? TableParams
-      : Type extends 'md' ? MdParams
-        : unknown;
+  data: Type extends 'md' ? string : unknown[];
+  params: Type extends Mark ? InputVegaParams : FigureParams[Type];
 }
 
 /**
@@ -45,12 +49,14 @@ export interface Figure<Type extends Mark | 'table' | 'md'> {
  */
 type AnyFigure = Figure<Mark> | Figure<'table'> | Figure<'md'>;
 
-type AnyFigureFnc = (
-  docOpts: PDFReportOptions,
-  dataOpts: any
-) => AnyFigure | AnyFigure[];
+type AnyFigureFnc = (docOpts: PDFReportOptions) => AnyFigure | AnyFigure[];
 
-type LayoutFigure = Array<AnyFigureFnc | Promisify<AnyFigureFnc>>;
+export type Layout = Array<AnyFigureFnc | Promisify<AnyFigureFnc>>;
+
+export type LayoutFnc = (
+  task: { recurrence: Recurrence, period: Interval },
+  dataOpts: any
+) => Layout;
 
 type LayoutSlot = {
   x: number,
@@ -92,9 +98,8 @@ const normaliseFilename = (filename: string): string => filename.toLowerCase().r
  * @param dataOpts Data options (usually filters and elastic inde)
  */
 const generatePdfWithVega = async (
-  layout: LayoutFigure,
+  layout: Layout,
   opts: PDFReportOptions,
-  dataOpts: any = {},
 ): Promise<void> => {
   try {
     const doc = await initDoc(opts);
@@ -140,7 +145,7 @@ const generatePdfWithVega = async (
       first = false;
 
       // eslint-disable-next-line no-await-in-loop
-      let figures = await page(opts, dataOpts);
+      let figures = await page(opts);
       if (!Array.isArray(figures)) figures = [figures];
 
       const figuresCount = Math.min(figures.length, slots.length);
@@ -243,75 +248,87 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
       throw new Error("Targets can't be null");
     }
 
-    const period = calcPeriod(today, task.recurrence);
+    const period = calcPeriod(new Date(2021, 9, 31, 12), task.recurrence);
+    // const period = calcPeriod(today, task.recurrence);
     // TODO[feat]: define layout as JSON. Use JOI
-    let baseLayout = [];
+    let baseLayout: LayoutFnc | undefined;
     if (typeof task.layout === 'object' && (task.layout as any).extends) {
       baseLayout = (await import(`../layouts/${(task.layout as any).extends}`)).default;
     }
+    if (!baseLayout) {
+      throw new Error(`Layout "${(task.layout as any).extends}" not found`);
+    }
 
     await generatePdfWithVega(
-      baseLayout,
+      baseLayout(
+        {
+          recurrence: task.recurrence,
+          period,
+        },
+        // Elastic index & common filter
+        // TODO[feat]: use task filter
+        {
+          index: 'bibcnrs-*-2021',
+          filters: {
+            must_not: [
+              {
+                match_phrase: {
+                  mime: {
+                    query: 'XLS',
+                  },
+                },
+              },
+              {
+                match_phrase: {
+                  mime: {
+                    query: 'DOC',
+                  },
+                },
+              },
+              {
+                match_phrase: {
+                  mime: {
+                    query: 'MISC',
+                  },
+                },
+              },
+              {
+                match_phrase: {
+                  index_name: {
+                    query: 'bibcnrs-insb-dcm00',
+                  },
+                },
+              },
+              {
+                match_phrase: {
+                  index_name: {
+                    query: 'bibcnrs-insb-dcm30',
+                  },
+                },
+              },
+              {
+                match_phrase: {
+                  index_name: {
+                    query: 'bibcnrs-insb-dcm10',
+                  },
+                },
+              },
+              {
+                match_phrase: {
+                  index_name: {
+                    query: 'bibcnrs-insb-anonyme',
+                  },
+                },
+              },
+            ],
+          },
+        },
+      ),
+      // Report options
       {
         name: task.name,
         path: join(basePath, `${filename}.pdf`),
         period,
-      },
-      {
-        index: 'bibcnrs-*-2021',
-        filters: {
-          must_not: [
-            {
-              match_phrase: {
-                mime: {
-                  query: 'XLS',
-                },
-              },
-            },
-            {
-              match_phrase: {
-                mime: {
-                  query: 'DOC',
-                },
-              },
-            },
-            {
-              match_phrase: {
-                mime: {
-                  query: 'MISC',
-                },
-              },
-            },
-            {
-              match_phrase: {
-                index_name: {
-                  query: 'bibcnrs-insb-dcm00',
-                },
-              },
-            },
-            {
-              match_phrase: {
-                index_name: {
-                  query: 'bibcnrs-insb-dcm30',
-                },
-              },
-            },
-            {
-              match_phrase: {
-                index_name: {
-                  query: 'bibcnrs-insb-dcm10',
-                },
-              },
-            },
-            {
-              match_phrase: {
-                index_name: {
-                  query: 'bibcnrs-insb-anonyme',
-                },
-              },
-            },
-          ],
-        },
       },
     );
 
