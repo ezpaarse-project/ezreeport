@@ -1,4 +1,5 @@
 import type { Recurrence, Task } from '@prisma/client';
+import { randomUUID } from 'crypto';
 import { format } from 'date-fns';
 import { mkdir, writeFile } from 'fs/promises';
 import { merge } from 'lodash';
@@ -227,8 +228,11 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
   const today = new Date();
   const todayStr = format(today, 'yyyy/yyyy-MM');
   const basePath = join(rootPath, outDir, todayStr, '/');
-  // TODO[feat]: unique id to avoid file overriding
-  const filename = `reporting_ezMESURE_${normaliseFilename(task.name)}`;
+
+  let filename = `reporting_ezMESURE_${normaliseFilename(task.name)}`;
+  if (process.env.NODE_ENV === 'production' || writeHistory) {
+    filename += `_${randomUUID()}`;
+  }
 
   let result: any = {
     success: true,
