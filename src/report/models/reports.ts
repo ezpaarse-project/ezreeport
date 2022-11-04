@@ -52,39 +52,35 @@ const generatePdfWithVega = async (
   try {
     const doc = await initDoc(opts);
 
-    const viewport = {
+    const viewport: LayoutSlot = {
       x: doc.margin.left,
       y: doc.offset.top,
       width: doc.width - doc.margin.left - doc.margin.right,
       height: doc.height - doc.offset.top - doc.offset.bottom,
     };
 
-    const slots = [
-      {
+    const slots = Array.from<Partial<LayoutSlot>, LayoutSlot>(
+      [
+        {},
+        {
+          x: viewport.x + viewport.width / 2 + (doc.margin.left / 2),
+        },
+        {
+          y: viewport.y + viewport.height / 2 + (doc.margin.top / 2),
+        },
+        {
+          x: viewport.x + viewport.width / 2 + (doc.margin.left / 2),
+          y: viewport.y + viewport.height / 2 + (doc.margin.top / 2),
+        },
+      ],
+      (slot) => ({
         x: viewport.x,
         y: viewport.y,
         width: (viewport.width / 2) - (doc.margin.left / 2),
         height: (viewport.height / 2) - (doc.margin.top / 2),
-      },
-      {
-        x: viewport.x + viewport.width / 2 + (doc.margin.left / 2),
-        y: viewport.y,
-        width: (viewport.width / 2) - (doc.margin.left / 2),
-        height: (viewport.height / 2) - (doc.margin.top / 2),
-      },
-      {
-        x: viewport.x,
-        y: viewport.y + viewport.height / 2 + (doc.margin.top / 2),
-        width: (viewport.width / 2) - (doc.margin.left / 2),
-        height: (viewport.height / 2) - (doc.margin.top / 2),
-      },
-      {
-        x: viewport.x + viewport.width / 2 + (doc.margin.left / 2),
-        y: viewport.y + viewport.height / 2 + (doc.margin.top / 2),
-        width: (viewport.width / 2) - (doc.margin.left / 2),
-        height: (viewport.height / 2) - (doc.margin.top / 2),
-      },
-    ];
+        ...slot,
+      }),
+    );
 
     let first = true;
     // eslint-disable-next-line no-restricted-syntax
