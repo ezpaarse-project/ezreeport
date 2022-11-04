@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { mkdir, writeFile } from 'fs/promises';
 import { merge } from 'lodash';
 import { join } from 'path';
+import type { Mark } from 'vega-lite/build/src/mark';
 import config from '../lib/config';
 import {
   addPage,
@@ -11,14 +12,13 @@ import {
   renderDoc,
   type PDFReportOptions
 } from '../lib/pdf';
-import { addTable } from '../lib/pdf/table';
+import { addTableToPDF, type TableParams } from '../lib/pdf/table';
 import { calcPeriod } from '../lib/recurrence';
 import {
-  addVega,
+  addVegaToPDF,
   createVegaLSpec,
   createVegaView,
-  isFigureTable,
-  type LayoutVegaFigure
+  type InputVegaParams
 } from '../lib/vega';
 import { addTaskHistory } from './tasks';
 
@@ -27,6 +27,45 @@ const { outDir } = config.get('pdf');
 
 // TODO[feat]: Md for text
 // TODO[feat]: Metrics type
+
+/**
+ * Figure definition
+ */
+export interface Figure<Type extends Mark | 'table' | 'md'> {
+  type: Type;
+  data: Type extends 'md' ? string : any[];
+  params: Type extends Mark ? InputVegaParams
+    : Type extends 'table' ? TableParams
+      : Type extends 'md' ? MdParams
+        : unknown;
+}
+
+/**
+ * Global figure definition
+ */
+type AnyFigure = Figure<Mark> | Figure<'table'> | Figure<'md'>;
+
+type AnyFigureFnc = (
+  docOpts: PDFReportOptions,
+  dataOpts: any
+) => AnyFigure | AnyFigure[];
+
+type LayoutFigure = Array<AnyFigureFnc | Promisify<AnyFigureFnc>>;
+
+type LayoutSlot = {
+  x: number,
+  y: number,
+  height: number,
+  width: number
+};
+
+/**
+ * Check if the given figure is a table
+ *
+ * @param figure The figure
+ * @returns Is the figure is a table
+ */
+const isFigureTable = (figure: AnyFigure): figure is Figure<'table'> => figure.type === 'table';
 
 /**
  * Put filename in lowercase & remove chars that can cause issues.
@@ -45,7 +84,7 @@ const normaliseFilename = (filename: string): string => filename.toLowerCase().r
  * @param dataOpts Data options (usually filters and elastic inde)
  */
 const generatePdfWithVega = async (
-  layout: LayoutVegaFigure,
+  layout: LayoutFigure,
   opts: PDFReportOptions,
   dataOpts: any = {},
 ): Promise<void> => {
@@ -134,7 +173,7 @@ const generatePdfWithVega = async (
           figure.params.maxHeight = slot.height;
 
           // eslint-disable-next-line no-await-in-loop
-          await addTable(doc, figure.data, merge(figure.params, { margin }));
+          await addTableToPDF(doc, figure.data, merge(figure.params, { margin }));
         } else {
           // Creating Vega view
           const view = createVegaView(
@@ -146,7 +185,7 @@ const generatePdfWithVega = async (
           );
           // Adding view to pdf
           // eslint-disable-next-line no-await-in-loop
-          await addVega(doc, view, slot);
+          await addVegaToPDF(doc, view, slot);
         }
       }
     }

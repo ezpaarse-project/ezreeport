@@ -15,8 +15,7 @@ import type { Mark, MarkDef } from 'vega-lite/build/src/mark';
 import type { UnitSpec } from 'vega-lite/build/src/spec';
 import config from '../config';
 import logger from '../logger';
-import type { PDFReport, PDFReportOptions } from '../pdf';
-import type { TableParams } from '../pdf/table';
+import type { PDFReport } from '../pdf';
 import localeFR from './locales/fr-FR.json';
 import VegaLogger from './logger';
 
@@ -73,27 +72,6 @@ type VegaParams = {
 };
 
 export type InputVegaParams = Omit<VegaParams, 'width' | 'height'>;
-
-/**
- * Figure definition
- */
-export interface VegaFigure<Type extends Mark | 'table'> {
-  type: Type;
-  data: any;
-  params: Type extends Mark ? InputVegaParams : TableParams;
-}
-
-/**
- * Global figure definition
- */
-type AnyVegaFigure = VegaFigure<Mark> | VegaFigure<'table'>;
-
-type AnyVegaFigureFnc = (
-  docOpts: PDFReportOptions,
-  dataOpts: any
-) => AnyVegaFigure | AnyVegaFigure[];
-
-export type LayoutVegaFigure = Array<AnyVegaFigureFnc | Promisify<AnyVegaFigureFnc>>;
 
 /**
  * Helper to create Vega-lite spec
@@ -323,7 +301,7 @@ export const createVegaView = (spec: TopLevelSpec): View => new View(parse(compi
  * @param fig The Vega View
  * @param options Specific options
  */
-export const addVega = async (
+export const addVegaToPDF = async (
   doc: PDFReport | undefined,
   fig: View,
   options: Omit<ImageOptions, 'imageData'>,
@@ -337,11 +315,3 @@ export const addVega = async (
     imageData: await fig.toImageURL('png', 1.5),
   });
 };
-
-/**
- * Check if the given figure is a table
- *
- * @param figure The figure
- * @returns Is the figure is a table
- */
-export const isFigureTable = (figure: AnyVegaFigure): figure is VegaFigure<'table'> => figure.type === 'table';

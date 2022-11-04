@@ -11,9 +11,9 @@ export type TableParams = {
 
 export type TableParamsFnc = (doc: PDFReport) => TableParams;
 
-export const addTable = async (
+export const addTableToPDF = async (
   doc: PDFReport,
-  data: any,
+  data: any[],
   spec: TableParams,
 ): Promise<void> => {
   const {
@@ -30,7 +30,7 @@ export const addTable = async (
     // default height of a cell is 29
     const maxCells = Math.ceil(maxHeight / 29);
     if (tableData.length > maxCells) {
-      logger.warn(`[pdf] Reducing table length from ${tableData.length} to ${maxCells} because table won't fit in slot.`);
+      logger.warn(`[pdf] Reducing table "${title}" length from ${tableData.length} to ${maxCells} because table won't fit in slot.`);
       tableData.length = maxCells;
     }
   }
