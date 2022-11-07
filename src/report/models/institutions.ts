@@ -1,6 +1,7 @@
-import type { SearchHit, SearchResponse } from '@elastic/elasticsearch/api/types';
+import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
+import type { SearchHit } from '@elastic/elasticsearch/api/types';
 import config from '../lib/config';
-import { getElasticClient, READONLY_SUFFIX } from '../lib/elastic';
+import { elasticSearch, READONLY_SUFFIX } from '../lib/elastic';
 
 const TYPE = 'institution' as const;
 
@@ -36,10 +37,8 @@ const trimReadOnlySuffix = (str: string): string => {
 export const findInstitutionByCreatorOrRole = async (
   username: string,
   userRoles: string[],
-): Promise<SearchHit<TypedElasticInstitution>> => {
-  const elastic = await getElasticClient();
-
-  const result = await elastic.search<SearchResponse<TypedElasticInstitution>>({
+): Promise<ElasticTypes.SearchHit<TypedElasticInstitution>> => {
+  const { body: { hits: { hits } } } = await elasticSearch<TypedElasticInstitution>({
     index: depositorsIndex,
     size: 1,
     body: {
@@ -55,7 +54,7 @@ export const findInstitutionByCreatorOrRole = async (
     },
   });
 
-  return result.body.hits.hits[0];
+  return hits[0];
 };
 
 /**
@@ -65,12 +64,10 @@ export const findInstitutionByCreatorOrRole = async (
  *
  * @returns  The result of search
  */
-/* export */ const findInstitutionByIds = async (
+export const findInstitutionByIds = async (
   ids: string[],
 ): Promise<SearchHit<TypedElasticInstitution>[]> => {
-  const elastic = await getElasticClient();
-
-  const result = await elastic.search<SearchResponse<TypedElasticInstitution>>({
+  const { body: { hits: { hits } } } = await elasticSearch<TypedElasticInstitution>({
     index: depositorsIndex,
     body: {
       query: {
@@ -81,5 +78,6 @@ export const findInstitutionByCreatorOrRole = async (
     },
   });
 
-  return result.body.hits.hits;
+  return hits;
+
 };

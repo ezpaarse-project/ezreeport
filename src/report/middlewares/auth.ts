@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { verify } from 'jsonwebtoken';
 import config from '../lib/config';
 import { getElasticClient } from '../lib/elastic';
+import { findInstitutionByCreatorOrRole, findInstitutionByIds } from '../models/institutions';
 import { HTTPError } from '../types/errors';
 
 const { secret: jwtSecret } = config.get('ezmesure');
@@ -87,6 +88,27 @@ const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) =>
     throw new HTTPError(`User '${username}' doesn't have the rights to access to '${req.method} ${req.originalUrl}'`, StatusCodes.FORBIDDEN);
   } catch (error) {
     res.errorJson(error);
+  }
+};
+
+export const checkInstitution: RequestHandler = async (req, res, next) => {
+  if (req.user) {
+    if (
+      req.user.roles.includes(Roles.SUPER_USER)
+      && (typeof req.query.institution === 'string' || typeof req.query.institution === 'undefined')
+    ) {
+      if (req.query.institution) {
+        const instits = await findInstitutionByIds([req.query.institution]);
+
+        // eslint-disable-next-line no-underscore-dangle
+        req.user.institution = instits[0]._id.toString();
+      }
+      next();
+    } else {
+      const { _id: id } = await findInstitutionByCreatorOrRole(req.user.username, req.user.roles);
+      req.user.institution = id.toString();
+      next();
+    }
   }
 };
 

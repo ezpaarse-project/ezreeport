@@ -1,10 +1,9 @@
-import { Router, type Request } from 'express';
+import { Router } from 'express';
 import { readFile } from 'fs/promises';
 import { StatusCodes } from 'http-status-codes';
 import { join } from 'path';
 import config from '../lib/config';
-import checkRight, { Roles } from '../middlewares/auth';
-import { findInstitutionByCreatorOrRole } from '../models/institutions';
+import checkRight, { checkInstitution, Roles } from '../middlewares/auth';
 import { getTaskById } from '../models/tasks';
 import { HTTPError } from '../types/errors';
 
@@ -14,29 +13,9 @@ const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
 
 /**
- * Get institution of authed user, or given in query param (if user is Roles.SUPER_USER)
- *
- * ! Duplicate of routes/tasks.ts
- *
- * @param req Express request
- *
- * @returns The id of institution
- */
-const getAuthedInstitution = async (req: Request): Promise<string | undefined> => {
-  if (req.user) {
-    if (req.user.roles.includes(Roles.SUPER_USER) && (typeof req.query.institution === 'string' || typeof req.query.institution === 'undefined')) {
-      return req.query.institution;
-    }
-    const { _id: id } = await findInstitutionByCreatorOrRole(req.user.username, req.user.roles);
-    return id.toString();
-  }
-  return undefined;
-};
-
-/**
  * Get speficic report
  */
-router.get('/:year/:yearMonth/:file', checkRight(Roles.READ), async (req, res) => {
+router.get('/:year/:yearMonth/:file', checkRight(Roles.READ), checkInstitution, async (req, res) => {
   // FIXME: check if not trying to access other file
   const { year, yearMonth, file } = req.params;
   const fileWithoutExt = file.replace(/\..*$/, '');
@@ -46,8 +25,7 @@ router.get('/:year/:yearMonth/:file', checkRight(Roles.READ), async (req, res) =
     // TODO[type]: Check with JOI
     const detailFile = JSON.parse(await readFile(join(basePath, `${fileWithoutExt}.json`), 'utf-8')) as any;
 
-    const institution = await getAuthedInstitution(req);
-    const task = await getTaskById(detailFile.detail.task, institution);
+    const task = await getTaskById(detailFile.detail.task, req.user?.institution);
 
     if (task) {
       // Check if file isn't already read

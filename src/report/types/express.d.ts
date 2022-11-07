@@ -3,12 +3,16 @@ declare namespace Express {
     /**
      * User information from Elastic
      *
-     * Added by `middlewares/auth`.
+     * Added by `middlewares/auth::checkRight` & `middlewares/auth::checkInstitution`.
      */
     user?: {
       email: string,
       username: string,
-      roles: string[]
+      roles: string[],
+      /**
+       * Added by `middlewares/auth::checkInstitution`
+       */
+      institution?: string
     }
   }
   export interface Response {
