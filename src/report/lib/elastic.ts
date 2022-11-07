@@ -78,3 +78,18 @@ export const elasticSearch = async <ResponseType extends Record<string, unknown>
     },
   );
 };
+
+/**
+ * Shorthand to check if a pattern, a pattern expression or an alias exist
+ *
+ * @param index The index
+ *
+ * @returns If index exist or not
+ */
+export const elasticCheckIndex = async (index: string): Promise<boolean> => {
+  const elastic = await getElasticClient();
+
+  const { body } = await elastic.indices.exists({ index, allow_no_indices: false });
+
+  return body;
+};

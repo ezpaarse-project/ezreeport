@@ -1,12 +1,13 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { formatISO } from 'date-fns';
 import { merge } from 'lodash';
-import { elasticSearch } from '../lib/elastic';
+import { elasticCheckIndex, elasticSearch } from '../lib/elastic';
 import { calcElasticInterval } from '../lib/recurrence';
 import type { Figure, LayoutFnc } from '../models/reports';
 
 interface DataOptions {
-  index: string;
+  indexPrefix: string; // Provided at runtime
+  indexSuffix: string; // Provided in task
   filters?: ElasticTypes.QueryDslQueryContainer | ElasticTypes.QueryDslQueryContainer[];
 }
 
@@ -15,7 +16,17 @@ type AggregationResult<T extends { key: unknown }> = {
   after_key?: T['key']
 };
 
-const basicLayout: LayoutFnc = ({ period, recurrence }, { index, filters }: DataOptions) => {
+const basicLayout: LayoutFnc = async (
+  { period, recurrence, user },
+  { indexPrefix, indexSuffix, filters }: DataOptions,
+) => {
+  const index = indexPrefix + indexSuffix;
+  // Check if index pattern is valid
+  const indexExist = await elasticCheckIndex(index);
+  if (!indexExist) {
+    throw new Error(`Index "${index}" doesn't exists. Please contact administators.`);
+  }
+
   const baseOpts: ElasticTypes.SearchRequest['body'] = {
     query: {
       bool: {
@@ -79,6 +90,7 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
             opts,
             { body: { aggs: { consult_by_date: { after } } } },
           ),
+          user,
         );
         if (!aggregations?.consult_by_date) throw new Error('Aggregation(s) not found');
 
@@ -133,7 +145,7 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
         },
       };
 
-      const { body: { aggregations } } = await elasticSearch(opts);
+      const { body: { aggregations } } = await elasticSearch(opts, user);
       if (!aggregations?.consult_by_type) throw new Error('Aggregation(s) not found');
       const {
         buckets: data,
@@ -213,7 +225,7 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
         },
       };
 
-      const { body: { aggregations } } = await elasticSearch(opts);
+      const { body: { aggregations } } = await elasticSearch(opts, user);
       if (!aggregations?.consult_by_platform) throw new Error('Aggregation(s) not found');
 
       const {
@@ -282,7 +294,7 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
         },
       };
 
-      const { body: { aggregations } } = await elasticSearch(opts);
+      const { body: { aggregations } } = await elasticSearch(opts, user);
       if (!aggregations?.consult_by_doi) throw new Error('Aggregation(s) not found');
 
       const {
@@ -350,7 +362,7 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
         },
       };
 
-      const { body: { aggregations } } = await elasticSearch(opts);
+      const { body: { aggregations } } = await elasticSearch(opts, user);
       if (!aggregations?.consult_by_title) throw new Error('Aggregation(s) not found');
 
       const {
@@ -410,7 +422,7 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
         },
       };
 
-      const { body: { aggregations } } = await elasticSearch(opts);
+      const { body: { aggregations } } = await elasticSearch(opts, user);
       if (!aggregations?.consult_by_type) throw new Error('Aggregation(s) not found');
 
       const {

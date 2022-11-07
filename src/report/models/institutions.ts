@@ -1,7 +1,9 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import type { SearchHit } from '@elastic/elasticsearch/api/types';
+import { StatusCodes } from 'http-status-codes';
 import config from '../lib/config';
 import { elasticSearch, READONLY_SUFFIX } from '../lib/elastic';
+import { HTTPError } from '../types/errors';
 
 const TYPE = 'institution' as const;
 
@@ -79,5 +81,40 @@ export const findInstitutionByIds = async (
   });
 
   return hits;
+};
 
+export const findInstitutionContact = async (
+  id: string,
+): Promise<SearchHit<Pick<ElasticUser, 'username' | 'email' | 'metadata'>> | undefined> => {
+  const [institution] = await findInstitutionByIds([id]);
+  // eslint-disable-next-line no-underscore-dangle
+  if (!institution?._source) {
+    // TODO[refactor]: Not an HTTP Error at this point
+    throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
+  }
+  const { _source: { institution: { role } } } = institution;
+
+  const { body: { hits: { hits } } } = await elasticSearch<Pick<ElasticUser, 'username' | 'email' | 'metadata'>>({
+    index: '.security',
+    body: {
+      size: 1,
+      fields: [
+        'username',
+        'email',
+        'metadata',
+      ],
+      query: {
+        bool: {
+          filter: [
+            { term: { type: 'user' } },
+            { term: { enabled: true } },
+            { terms: { roles: [role, role + READONLY_SUFFIX] } },
+            { terms: { roles: ['doc_contact', 'tech_contact'] } },
+          ],
+        },
+      },
+    },
+  });
+
+  return hits[0];
 };

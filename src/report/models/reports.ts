@@ -22,7 +22,8 @@ import {
   createVegaView,
   type InputVegaParams
 } from '../lib/vega';
-import { addTaskHistory } from './tasks';
+import { findInstitutionByIds, findInstitutionContact } from './institutions';
+import { addTaskHistory, disableTask } from './tasks';
 
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
@@ -55,9 +56,9 @@ type AnyFigureFnc = (docOpts: PDFReportOptions) => AnyFigure | AnyFigure[];
 export type Layout = Array<AnyFigureFnc | Promisify<AnyFigureFnc>>;
 
 export type LayoutFnc = (
-  task: { recurrence: Recurrence, period: Interval },
+  task: { recurrence: Recurrence, period: Interval, user: string },
   dataOpts: any
-) => Layout;
+) => Layout | Promise<Layout>;
 
 type LayoutSlot = {
   x: number,
@@ -253,6 +254,22 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
       throw new Error("Targets can't be null");
     }
 
+    // Get institution
+    const [institution = { _source: null }] = await findInstitutionByIds([task.institution]);
+    // eslint-disable-next-line no-underscore-dangle
+    if (!institution._source) {
+      throw new Error(`Institution "${task.institution}" not found`);
+    }
+
+    // Get username who will run the requests
+    // eslint-disable-next-line no-underscore-dangle
+    const contact = (await findInstitutionContact(institution._id.toString())) ?? { _source: null };
+    // eslint-disable-next-line no-underscore-dangle
+    if (!contact._source) {
+      throw new Error(`No suitable contact found for your institution "${task.institution}". Please add doc_contact or tech_contact.`);
+    }
+    const { _source: { username: user } } = contact;
+
     const period = calcPeriod(today, task.recurrence);
     // TODO[feat]: define layout as JSON. Use JOI
     let baseLayout: LayoutFnc | undefined;
@@ -264,12 +281,18 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
     }
 
     await generatePdfWithVega(
-      baseLayout(
+      await baseLayout(
         {
           recurrence: task.recurrence,
           period,
+          user,
         },
-        (task.layout as any).data, // { index: string, filters: ... }
+        {
+          // { indexSuffix: string, filters: ... }
+          ...(task.layout as any).data,
+          // eslint-disable-next-line no-underscore-dangle
+          indexPrefix: institution._source?.institution.indexPrefix,
+        },
       ),
       // Report options
       {
@@ -290,12 +313,14 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
           files: { report: `${todayStr}/${filename}.pdf` },
           writedTo: targets,
           period,
+          runAs: user,
         },
       },
     );
   } catch (error) {
+    await disableTask(task.id);
     if (writeHistory) {
-      await addTaskHistory(task.id, { type: 'generation-error', message: `Rapport "${todayStr}/${filename}" non généré par ${origin} suite à une erreur` });
+      await addTaskHistory(task.id, { type: 'generation-error', message: `Rapport "${todayStr}/${filename}" non généré par ${origin} suite à une erreur.` });
     }
 
     result = merge(

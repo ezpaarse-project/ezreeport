@@ -241,3 +241,32 @@ export const addTaskHistory = async (id: Task['id'], entry: { type: string, mess
   await prisma.$disconnect();
   return editedTask;
 };
+
+/**
+ * Disable specific task
+ *
+ * @param id The id of the task
+ *
+ * @returns The edited task, or null if task doesn't exist
+ */
+export const disableTask = async (id: Task['id']): Promise<Task | null> => {
+  // Check if task exist
+  const task = await getTaskById(id);
+  if (!task) {
+    return null;
+  }
+
+  await prisma.$connect();
+
+  const editedTask = await prisma.task.update({
+    data: {
+      enabled: false,
+    },
+    where: {
+      id,
+    },
+  });
+
+  await prisma.$disconnect();
+  return editedTask;
+};

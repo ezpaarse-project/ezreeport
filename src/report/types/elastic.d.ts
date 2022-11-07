@@ -3,7 +3,7 @@ type ElasticUser = {
   roles: string[],
   full_name: string,
   email: string,
-  metadata: Record<string, any>,
+  metadata: Record<string, unknown>,
   enabled: boolean
 };
 
