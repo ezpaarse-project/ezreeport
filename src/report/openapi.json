@@ -132,6 +132,7 @@
                           "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
                           "recurrence": "WEEKLY",
                           "nextRun": "2022-10-31T10:00:00.000Z",
+                          "lastRun": "2022-10-31T10:00:00.000Z",
                           "enabled": true,
                           "createdAt": "2022-10-25T11:55:47.375Z",
                           "updatedAt": "2022-10-25T11:55:47.375Z"
@@ -251,12 +252,36 @@
                         ],
                         "recurrence": "WEEKLY",
                         "nextRun": "2022-10-31T10:00:00.000Z",
+                        "lastRun": "2022-10-31T10:00:00.000Z",
                         "enabled": true,
                         "history": [
                           {
-                            "date": "2022-10-25T11:55:47.375Z",
-                            "type": "creation",
-                            "message": "Tâche créée par ..."
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000000",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "edition",
+                            "message": "Tâche crée par ...",
+                            "date": "2022-11-07T15:06:24.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "edition",
+                            "message": "Tâche éditée par ...",
+                            "date": "2022-11-07T15:08:37.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "generation-error",
+                            "message": "Rapport \"...\" non généré par ... suite à une erreur.",
+                            "date": "2022-11-07T15:16:37.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "generation-success",
+                            "message": "Rapport \"...\" généré par ...",
+                            "date": "2022-11-07T15:17:49.000Z"
                           }
                         ],
                         "createdAt": "2022-10-25T11:55:47.375Z",
@@ -412,12 +437,36 @@
                         ],
                         "recurrence": "WEEKLY",
                         "nextRun": "2022-10-31T10:00:00.000Z",
+                        "lastRun": "2022-10-31T10:00:00.000Z",
                         "enabled": true,
                         "history": [
                           {
-                            "date": "2022-10-25T11:55:47.375Z",
-                            "type": "creation",
-                            "message": "Tâche créée par ..."
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000000",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "edition",
+                            "message": "Tâche crée par ...",
+                            "date": "2022-11-07T15:06:24.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "edition",
+                            "message": "Tâche éditée par ...",
+                            "date": "2022-11-07T15:08:37.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "generation-error",
+                            "message": "Rapport \"...\" non généré par ... suite à une erreur.",
+                            "date": "2022-11-07T15:16:37.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "generation-success",
+                            "message": "Rapport \"...\" généré par ...",
+                            "date": "2022-11-07T15:17:49.000Z"
                           }
                         ],
                         "createdAt": "2022-10-25T11:55:47.375Z",
@@ -539,12 +588,36 @@
                         ],
                         "recurrence": "WEEKLY",
                         "nextRun": "2022-11-28T10:00:00.000Z",
+                        "lastRun": "2022-10-31T10:00:00.000Z",
                         "enabled": true,
                         "history": [
                           {
-                            "date": "2022-10-25T11:55:47.375Z",
-                            "type": "creation",
-                            "message": "Tâche créée par ..."
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000000",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "edition",
+                            "message": "Tâche crée par ...",
+                            "date": "2022-11-07T15:06:24.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "edition",
+                            "message": "Tâche éditée par ...",
+                            "date": "2022-11-07T15:08:37.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "generation-error",
+                            "message": "Rapport \"...\" non généré par ... suite à une erreur.",
+                            "date": "2022-11-07T15:16:37.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "generation-success",
+                            "message": "Rapport \"...\" généré par ...",
+                            "date": "2022-11-07T15:17:49.000Z"
                           }
                         ],
                         "createdAt": "2022-10-25T12:46:27.264Z",
@@ -688,12 +761,36 @@
                         ],
                         "recurrence": "WEEKLY",
                         "nextRun": "2022-11-28T10:00:00.000Z",
+                        "lastRun": "2022-10-31T10:00:00.000Z",
                         "enabled": true,
                         "history": [
                           {
-                            "date": "2022-10-25T11:55:47.375Z",
-                            "type": "creation",
-                            "message": "Tâche créée par ..."
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000000",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "edition",
+                            "message": "Tâche crée par ...",
+                            "date": "2022-11-07T15:06:24.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "edition",
+                            "message": "Tâche éditée par ...",
+                            "date": "2022-11-07T15:08:37.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "generation-error",
+                            "message": "Rapport \"...\" non généré par ... suite à une erreur.",
+                            "date": "2022-11-07T15:16:37.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "generation-success",
+                            "message": "Rapport \"...\" généré par ...",
+                            "date": "2022-11-07T15:17:49.000Z"
                           }
                         ],
                         "createdAt": "2022-10-25T12:46:27.264Z",
@@ -889,12 +986,36 @@
             ],
             "recurrence": "WEEKLY",
             "nextRun": "2022-10-31T10:00:00.000Z",
+            "lastRun": "2022-10-31T10:00:00.000Z",
             "enabled": true,
             "history": [
               {
-                "date": "2022-10-25T11:55:47.375Z",
-                "type": "creation",
-                "message": "Tâche créée par ..."
+                "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000000",
+                "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                "type": "edition",
+                "message": "Tâche crée par ...",
+                "date": "2022-11-07T15:06:24.000Z"
+              },
+              {
+                "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
+                "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                "type": "edition",
+                "message": "Tâche éditée par ...",
+                "date": "2022-11-07T15:08:37.000Z"
+              },
+              {
+                "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
+                "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                "type": "generation-error",
+                "message": "Rapport \"...\" non généré par ... suite à une erreur.",
+                "date": "2022-11-07T15:16:37.000Z"
+              },
+              {
+                "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
+                "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                "type": "generation-success",
+                "message": "Rapport \"...\" généré par ...",
+                "date": "2022-11-07T15:17:49.000Z"
               }
             ],
             "createdAt": "2022-10-25T11:55:47.375Z",
@@ -943,7 +1064,15 @@
           },
           "nextRun": {
             "type": "string",
-            "description": "Next time the task will be run"
+            "description": "Next time the task will be run",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastRun": {
+            "type": "string",
+            "description": "Date of the last run",
+            "format": "date-time",
+            "nullable": true
           },
           "enabled": {
             "type": "boolean",
@@ -954,15 +1083,7 @@
             "type": "array",
             "description": "History of the task",
             "items": {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string"
-                },
-                "message": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/components/schemas/History"
             },
             "readOnly": true
           },
@@ -974,6 +1095,7 @@
           "updatedAt": {
             "type": "string",
             "description": "Task last updated at ...",
+            "nullable": true,
             "readOnly": true
           }
         }
@@ -990,6 +1112,35 @@
           }
         },
         "description": "Detail of generated report"
+      },
+      "History": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          }
+        },
+        "x-examples": {
+          "example-1": {
+            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
+            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+            "type": "generation-success",
+            "message": "Rapport \"...\" généré par ...",
+            "date": "2022-11-07T15:17:49.000Z"
+          }
+        }
       }
     },
     "securitySchemes": {

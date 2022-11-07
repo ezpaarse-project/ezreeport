@@ -11,7 +11,7 @@ import { HTTPError } from '../types/errors';
 
 // TODO[feat]: More checks to make custom errors
 
-type InputTask = Omit<Task, 'institution' | 'history' | 'createdAt' | 'updatedAt' | 'id'> & { layout: object };
+type InputTask = Omit<Task, 'institution' | 'history' | 'createdAt' | 'updatedAt' | 'id' | 'lastRun'> & { layout: object };
 
 /**
  * Joi schema
@@ -270,7 +270,7 @@ export const addTaskHistory = async (id: Task['id'], entry: Pick<History, 'type'
  *
  * @returns The edited task, or null if task doesn't exist
  */
-export const slientEditTaskById = async (id: Task['id'], data: Partial<InputTask>): Promise<Task | null> => {
+export const slientEditTaskById = async (id: Task['id'], data: Partial<InputTask & Pick<Task, 'lastRun'>>): Promise<Task | null> => {
   // Check if task exist
   const task = await getTaskById(id);
   if (!task) {
