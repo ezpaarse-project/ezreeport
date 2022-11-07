@@ -155,13 +155,6 @@ const generatePdfWithVega = async (
       if (!first) {
         // eslint-disable-next-line no-await-in-loop
         await addPage();
-      } else if (debugPages && process.env.NODE_ENV !== 'production') {
-        // eslint-disable-next-line no-restricted-syntax
-        for (const slot of slots) {
-          drawAreaRef(doc.pdf, slot);
-        }
-        // eslint-disable-next-line no-await-in-loop
-        await addPage();
       }
       first = false;
 
@@ -191,7 +184,7 @@ const generatePdfWithVega = async (
           slot.width += slots[i + 1].width + doc.margin.left;
         }
 
-        if (debugPages && process.env.NODE_ENV !== 'production') {
+        if (debugPages) {
           drawAreaRef(doc.pdf, slot);
         }
 
@@ -267,7 +260,12 @@ const generatePdfWithVega = async (
  *
  * @returns ...
  */
-export const generateReport = async (task: Task, origin: string, writeHistory = true) => {
+export const generateReport = async (
+  task: Task,
+  origin: string,
+  writeHistory = true,
+  debug = false,
+) => {
   const today = new Date();
   const todayStr = format(today, 'yyyy/yyyy-MM');
   const basePath = join(rootPath, outDir, todayStr, '/');
@@ -341,7 +339,7 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
         name: task.name,
         path: join(basePath, `${filename}.pdf`),
         period,
-        debugPages: false && process.env.NODE_ENV !== 'production',
+        debugPages: debug,
       },
     );
 

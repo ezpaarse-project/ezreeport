@@ -188,6 +188,7 @@ router.post('/:task/run', checkRight(Roles.READ_WRITE), checkInstitution, async 
       { ...task, targets: testEmails || task.targets },
       req.user.username,
       testEmails === undefined,
+      !!req.query.debug && process.env.NODE_ENV !== 'production',
     );
 
     // TODO[feat]: put in queue for email
