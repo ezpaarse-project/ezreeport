@@ -8,9 +8,13 @@ type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
 type MdType = 'header' | 'text' | 'break' | 'link';
 
-export type MdParams = {
-
+type MdParams = {
+  start: Position
+  width: number,
+  height: number
 };
+
+export type InputMdParams = Omit<MdParams, 'width' | 'height' | 'start'>;
 
 type MdElement = {
   type: MdType
@@ -295,17 +299,21 @@ const printText = (
 
 marked.use({ renderer });
 
+/**
+ * Add text (as Markdown) to PDF
+ *
+ * @param doc The PDF report
+ * @param data The data (the text to show)
+ * @param params Other params
+ */
 export const addMdToPDF = async (
   doc: PDFReport,
   data: string,
-  _params: MdParams,
+  params: MdParams,
 ): Promise<void> => {
   elements = [];
   const def: MdDefault = {
-    cursor: {
-      x: doc.offset.left,
-      y: doc.offset.top,
-    },
+    cursor: { ...params.start },
     font: doc.pdf.getFont(),
     fontSize: doc.pdf.getFontSize(),
   };

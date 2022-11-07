@@ -1,7 +1,13 @@
 import type { Font } from 'jspdf';
 import type { PDFReport } from './pdf';
 
-export type MetricParams = {};
+type MetricParams = {
+  start: Position,
+  width: number,
+  height: number
+};
+
+export type InputMetricParams = Omit<MetricParams, 'width' | 'height' | 'start'>;
 
 export type MetricData = {
   key: string,
@@ -39,13 +45,13 @@ const keyStyle = (pdf: PDFReport['pdf'], def: MetricDefault): PDFReport['pdf'] =
   .setFont(def.font.fontName, def.font.fontStyle);
 
 /**
- * Add metric chart to PDF
+ * Add metric figure to PDF
  *
- * @param doc The PDF document
+ * @param doc The PDF report
  * @param rawData The data
- * @param _params Other params
+ * @param params Other params
  */
-export const addMetricToPDF = (doc: PDFReport, rawData: MetricData[], _params: MetricParams) => {
+export const addMetricToPDF = (doc: PDFReport, rawData: MetricData[], params: MetricParams) => {
   const def: MetricDefault = {
     cursor: {
       x: 0, // will be calculated later
@@ -88,18 +94,10 @@ export const addMetricToPDF = (doc: PDFReport, rawData: MetricData[], _params: M
     { w: 0, h: 0 },
   );
 
-  //! Duplicate
-  const viewport = {
-    x: doc.margin.left,
-    y: doc.offset.top,
-    width: doc.width - doc.margin.left - doc.margin.right,
-    height: doc.height - doc.offset.top - doc.offset.bottom,
-  };
-
   // Set cursor to center the whole area
   const cursor: Position = {
-    x: viewport.x + Math.round(viewport.width / 2) - Math.round(totalSizes.w / 2),
-    y: viewport.y + Math.round(viewport.height / 2) - Math.round(totalSizes.h / 2),
+    x: params.start.x + Math.round(params.width / 2) - Math.round(totalSizes.w / 2),
+    y: params.start.y + Math.round(params.height / 2) - Math.round(totalSizes.h / 2),
   };
   def.cursor = { ...cursor };
 

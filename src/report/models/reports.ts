@@ -6,8 +6,8 @@ import { merge } from 'lodash';
 import { join } from 'path';
 import type { Mark } from 'vega-lite/build/src/mark';
 import config from '../lib/config';
-import { addMdToPDF, type MdParams } from '../lib/markdown';
-import { addMetricToPDF, type MetricData, type MetricParams } from '../lib/metrics';
+import { addMdToPDF, type InputMdParams } from '../lib/markdown';
+import { addMetricToPDF, type InputMetricParams, type MetricData } from '../lib/metrics';
 import {
   addPage,
   deleteDoc,
@@ -34,8 +34,8 @@ type FigureType = Mark | 'table' | 'md' | 'metric';
 
 interface FigureParams extends Record<FigureType, object> {
   table: TableParams,
-  md: MdParams,
-  metric: MetricParams
+  md: InputMdParams,
+  metric: InputMetricParams
 }
 
 interface FigureData extends Record<FigureType, unknown[]> {
@@ -216,11 +216,26 @@ const generatePdfWithVega = async (
         } else if (isFigureMd(figure)) {
           // TODO[feat]: Multiples layout with Md
           // eslint-disable-next-line no-await-in-loop
-          await addMdToPDF(doc, figure.data, figure.params);
+          await addMdToPDF(doc, figure.data, {
+            ...figure.params,
+            start: {
+              x: slot.x,
+              y: slot.y,
+            },
+            width: slot.width,
+            height: slot.height,
+          });
         } else if (isFigureMetric(figure)) {
           // TODO[feat]: Multiples layout with Metrics
-          // eslint-disable-next-line no-await-in-loop
-          addMetricToPDF(doc, figure.data, figure.params);
+          addMetricToPDF(doc, figure.data, {
+            ...figure.params,
+            start: {
+              x: slot.x,
+              y: slot.y,
+            },
+            width: slot.width,
+            height: slot.height,
+          });
         } else {
           // Creating Vega view
           const view = createVegaView(

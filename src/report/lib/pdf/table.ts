@@ -11,6 +11,13 @@ export type TableParams = {
 
 export type TableParamsFnc = (doc: PDFReport) => TableParams;
 
+/**
+ * Add table to PDF
+ *
+ * @param doc The PDF report
+ * @param data The data
+ * @param spec The params given to jspdf-autotable
+ */
 export const addTableToPDF = async (
   doc: PDFReport,
   data: any[],
