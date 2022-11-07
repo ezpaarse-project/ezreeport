@@ -188,8 +188,7 @@ const generatePdfWithVega = async (
 
         // If in penultimate slot and last figure, take whole remaining space
         if (i === slots.length - 2 && i === figuresCount - 1) {
-          slot.width += slots[i + 1].width;
-          slot.height += slots[i + 1].height;
+          slot.width += slots[i + 1].width + doc.margin.left;
         }
 
         if (debugPages && process.env.NODE_ENV !== 'production') {
