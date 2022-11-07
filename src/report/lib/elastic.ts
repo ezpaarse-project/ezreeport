@@ -1,4 +1,4 @@
-import { Client, estypes } from '@elastic/elasticsearch';
+import { Client, estypes as ElasticTypes } from '@elastic/elasticsearch';
 import config from './config';
 import logger from './logger';
 import { sleep } from './utils';
@@ -23,6 +23,11 @@ const MAX_TRIES = 10;
 
 export const READONLY_SUFFIX = '_read_only' as const;
 
+/**
+ * Get elastic client once it's ready
+ *
+ * @returns Elastic client
+ */
 export const getElasticClient = async () => {
   let tries = 0;
   while (tries < MAX_TRIES) {
@@ -47,10 +52,29 @@ export const getElasticClient = async () => {
   return client;
 };
 
+/**
+ * Shorthand to search with elastic
+ *
+ * @param params The search params
+ * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
+ *
+ * @returns The result of the search
+ */
 export const elasticSearch = async <ResponseType extends Record<string, unknown>>(
-  params: estypes.SearchRequest,
+  params: ElasticTypes.SearchRequest,
+  runAs?: string,
 ) => {
-  const elastic = (await getElasticClient());
-  // TODO[security]: Add `run_as` (https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
-  return elastic.search<estypes.SearchResponse<ResponseType>>(params as Record<string, unknown>);
+  const elastic = await getElasticClient();
+
+  const headers: Record<string, unknown> = {};
+  if (runAs) {
+    headers['es-security-runas-user'] = runAs;
+  }
+
+  return elastic.search<ElasticTypes.SearchResponse<ResponseType>>(
+    params as Record<string, unknown>,
+    {
+      headers,
+    },
+  );
 };
