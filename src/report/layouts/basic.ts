@@ -2,7 +2,7 @@ import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { format, formatISO } from 'date-fns';
 import { merge } from 'lodash';
 import { elasticCheckIndex, elasticCount, elasticSearch } from '../lib/elastic';
-import { calcElasticInterval } from '../lib/recurrence';
+import { calcElasticInterval, calcVegaFormat } from '../lib/recurrence';
 import type { Figure, LayoutFnc } from '../models/reports';
 
 interface DataOptions {
@@ -42,7 +42,8 @@ const basicLayout: LayoutFnc = async (
       },
     },
   };
-  const calendarInterval = calcElasticInterval(recurrence);
+  const elasticInterval = calcElasticInterval(recurrence);
+  const vegaFormat = calcVegaFormat(recurrence);
 
   return [
     // Intro
@@ -129,7 +130,7 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
             consult_by_date: {
               date_histogram: {
                 field: 'datetime',
-                calendar_interval: calendarInterval,
+                calendar_interval: elasticInterval,
               },
             },
           },
@@ -178,8 +179,11 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
           },
           label: {
             field: 'key',
-            timeUnit: 'monthdate',
+            timeUnit: vegaFormat.timeUnit,
             title: '',
+            axis: {
+              format: vegaFormat.format,
+            },
           },
           dataLabel: {
             format: 'numeric',

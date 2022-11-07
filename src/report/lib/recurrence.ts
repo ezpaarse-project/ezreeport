@@ -14,6 +14,7 @@ import {
   startOfWeek,
   startOfYear
 } from 'date-fns';
+import { TimeUnit } from 'vega-lite/build/src/timeunit';
 
 /**
  * Calculate next run date for the task
@@ -129,6 +130,33 @@ export const calcElasticInterval = (recurrence: Recurrence): 'hour' | 'day' | 'm
     case Recurrence.BIENNIAL:
     case Recurrence.YEARLY:
       return 'month';
+
+    default:
+      throw new Error('Recurrence not found');
+  }
+};
+
+/**
+ * Calculate format needed for Vega
+ *
+ * @param recurrence The recurrence
+ *
+ * @returns The interval
+ */
+export const calcVegaFormat = (recurrence: Recurrence): { timeUnit: TimeUnit, format?: string } => {
+  // Formats : https://github.com/d3/d3-time-format#locale_format
+  switch (recurrence) {
+    case Recurrence.DAILY:
+      return { timeUnit: 'hours' };
+    case Recurrence.WEEKLY:
+    case Recurrence.MONTHLY:
+      return { timeUnit: 'monthdate', format: '%d %b' };
+      // return { timeUnit: 'yearmonthdate', format: '%d %b %Y' };
+    case Recurrence.QUARTERLY:
+    case Recurrence.BIENNIAL:
+    case Recurrence.YEARLY:
+      // return { timeUnit: 'month' };
+      return { timeUnit: 'yearmonth' };
 
     default:
       throw new Error('Recurrence not found');
