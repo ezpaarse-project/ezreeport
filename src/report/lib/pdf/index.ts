@@ -63,7 +63,7 @@ let doc: {
 
 export type PDFReport = Exclude<typeof doc, undefined>;
 
-export type PDFReportOptions = Pick<PDFReport, 'name' | 'period' | 'path'>;
+export type PDFReportOptions = Pick<PDFReport, 'name' | 'period' | 'path'> & { debugPages?: boolean };
 
 /**
  * Loads an image with some info

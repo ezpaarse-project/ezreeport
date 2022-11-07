@@ -16,6 +16,7 @@ import {
   type PDFReportOptions
 } from '../lib/pdf';
 import { addTableToPDF, type TableParams } from '../lib/pdf/table';
+import { drawAreaRef } from '../lib/pdf/utils';
 import { calcPeriod } from '../lib/recurrence';
 import {
   addVegaToPDF,
@@ -109,11 +110,10 @@ const normaliseFilename = (filename: string): string => filename.toLowerCase().r
  *
  * @param layout The layout of the report
  * @param opts The options passed to the PDF Document
- * @param dataOpts Data options (usually filters and elastic inde)
  */
 const generatePdfWithVega = async (
   layout: Layout,
-  opts: PDFReportOptions,
+  { debugPages, ...opts }: PDFReportOptions,
 ): Promise<void> => {
   try {
     const doc = await initDoc(opts);
@@ -155,6 +155,13 @@ const generatePdfWithVega = async (
       if (!first) {
         // eslint-disable-next-line no-await-in-loop
         await addPage();
+      } else if (debugPages && process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const slot of slots) {
+          drawAreaRef(doc.pdf, slot);
+        }
+        // eslint-disable-next-line no-await-in-loop
+        await addPage();
       }
       first = false;
 
@@ -183,6 +190,10 @@ const generatePdfWithVega = async (
         if (i === slots.length - 2 && i === figuresCount - 1) {
           slot.width += slots[i + 1].width;
           slot.height += slots[i + 1].height;
+        }
+
+        if (debugPages && process.env.NODE_ENV !== 'production') {
+          drawAreaRef(doc.pdf, slot);
         }
 
         if (isFigureTable(figure)) {
@@ -316,6 +327,7 @@ export const generateReport = async (task: Task, origin: string, writeHistory = 
         name: task.name,
         path: join(basePath, `${filename}.pdf`),
         period,
+        debugPages: false && process.env.NODE_ENV !== 'production',
       },
     );
 
