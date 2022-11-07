@@ -1,4 +1,6 @@
-import { Recurrence, type Prisma, type Task } from '@prisma/client';
+import {
+  History, Recurrence, type Prisma, type Task
+} from '@prisma/client';
 import { PrismaClientValidationError } from '@prisma/client/runtime';
 import { formatISO } from 'date-fns';
 import { StatusCodes } from 'http-status-codes';
@@ -104,6 +106,9 @@ export const getTaskById = async (id: Task['id'], institution?: Task['institutio
       id,
       institution,
     },
+    include: {
+      history: true,
+    },
   });
 
   await prisma.$disconnect();
@@ -132,7 +137,9 @@ export const createTask = async (data: unknown, creator: string, institution: Ta
     data: {
       ...data,
       institution,
-      history: [{ type: 'creation', message: `Tâche créée par ${creator}`, date: formatISO(new Date()) }],
+      history: {
+        create: { type: 'creation', message: `Tâche créée par ${creator}` },
+      },
     },
   });
 
@@ -168,13 +175,15 @@ export const editTaskById = async (data: unknown, id: Task['id'], editor: string
   const editedTask = await prisma.task.update({
     data: {
       ...data,
-      history: [
-        ...(Array.isArray(task.history) ? task.history : []),
-        { type: 'edition', message: `Tâche éditée par ${editor}`, date: formatISO(new Date()) },
-      ],
+      history: {
+        create: { type: 'edition', message: `Tâche éditée par ${editor}`, date: formatISO(new Date()) },
+      },
     },
     where: {
       id,
+    },
+    include: {
+      history: true,
     },
   });
 
@@ -203,6 +212,15 @@ export const deleteTaskById = async (id: Task['id'], institution?: Task['institu
     where: {
       id,
     },
+    include: {
+      history: true,
+    },
+  });
+
+  await prisma.history.deleteMany({
+    where: {
+      taskId: id,
+    },
   });
 
   await prisma.$disconnect();
@@ -217,24 +235,26 @@ export const deleteTaskById = async (id: Task['id'], institution?: Task['institu
  *
  * @returns The task
  */
-export const addTaskHistory = async (id: Task['id'], entry: { type: string, message: string }): Promise<Task | null> => {
+export const addTaskHistory = async (id: Task['id'], entry: Pick<History, 'type' | 'message'>): Promise<Task | null> => {
+  await prisma.$connect();
+
   // Check if task exist
   const task = await getTaskById(id);
   if (!task) {
     return null;
   }
 
-  await prisma.$connect();
-
   const editedTask = await prisma.task.update({
     data: {
-      history: [
-        ...(Array.isArray(task.history) ? task.history : []),
-        { ...entry, date: formatISO(new Date()) },
-      ],
+      history: {
+        create: { ...entry, date: formatISO(new Date()) },
+      },
     },
     where: {
       id,
+    },
+    include: {
+      history: true,
     },
   });
 
@@ -243,13 +263,14 @@ export const addTaskHistory = async (id: Task['id'], entry: { type: string, mess
 };
 
 /**
- * Disable specific task
+ * Silently (without writing in history) edit a specific task. Do not use in HTTP methods.
  *
  * @param id The id of the task
+ * @param data The input data
  *
  * @returns The edited task, or null if task doesn't exist
  */
-export const disableTask = async (id: Task['id']): Promise<Task | null> => {
+export const slientEditTaskById = async (id: Task['id'], data: Partial<InputTask>): Promise<Task | null> => {
   // Check if task exist
   const task = await getTaskById(id);
   if (!task) {
@@ -259,9 +280,7 @@ export const disableTask = async (id: Task['id']): Promise<Task | null> => {
   await prisma.$connect();
 
   const editedTask = await prisma.task.update({
-    data: {
-      enabled: false,
-    },
+    data,
     where: {
       id,
     },

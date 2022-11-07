@@ -17,7 +17,7 @@ import {
 } from '../lib/pdf';
 import { addTableToPDF, type TableParams } from '../lib/pdf/table';
 import { drawAreaRef } from '../lib/pdf/utils';
-import { calcPeriod } from '../lib/recurrence';
+import { calcNextDate, calcPeriod } from '../lib/recurrence';
 import {
   addVegaToPDF,
   createVegaLSpec,
@@ -25,7 +25,7 @@ import {
   type InputVegaParams
 } from '../lib/vega';
 import { findInstitutionByIds, findInstitutionContact } from './institutions';
-import { addTaskHistory, disableTask } from './tasks';
+import { addTaskHistory, slientEditTaskById } from './tasks';
 
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
@@ -166,6 +166,7 @@ const generatePdfWithVega = async (
 
       for (let i = 0; i < figuresCount; i += 1) {
         const figure = figures[i];
+        // TODO[feat]: Choose which graph will go in which slot
         const slot = { ...slots[i] };
 
         // If only one figure, take whole viewport
@@ -256,7 +257,8 @@ const generatePdfWithVega = async (
  *
  * @param task The task to generate
  * @param origin The origin of the generation (can be username, or method (auto, etc.))
- * @param writeHistory Should write generation in task history
+ * @param writeHistory Should write generation in task history (also disable first level of debug)
+ * @param debug Enable second level of debug
  *
  * @returns ...
  */
@@ -344,7 +346,14 @@ export const generateReport = async (
     );
 
     if (writeHistory) {
-      await addTaskHistory(task.id, { type: 'generation-success', message: `Rapport "${todayStr}/${filename}" généré par ${origin}` });
+      await slientEditTaskById(
+        task.id,
+        { nextRun: calcNextDate(today, task.recurrence), lastRun: today },
+      );
+      await addTaskHistory(
+        task.id,
+        { type: 'generation-success', message: `Rapport "${todayStr}/${filename}" généré par ${origin}` },
+      );
     }
 
     result = merge(
@@ -359,7 +368,7 @@ export const generateReport = async (
       },
     );
   } catch (error) {
-    await disableTask(task.id);
+    await slientEditTaskById(task.id, { enabled: false });
     if (writeHistory) {
       await addTaskHistory(task.id, { type: 'generation-error', message: `Rapport "${todayStr}/${filename}" non généré par ${origin} suite à une erreur.` });
     }

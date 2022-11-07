@@ -18,13 +18,22 @@ model Task {
   targets     String[]
   recurrence  Recurrence
   nextRun     DateTime?
-  // TODO[feat]: add "lastRun"
+  lastRun     DateTime?
   enabled     Boolean    @default(true)
-  history     Json       @default("[]") // TODO[refactor]: move to table
+  history     History[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime?  @updatedAt
 
   @@index([institution])
+}
+
+model History {
+  id      String   @id @default(uuid())
+  task    Task     @relation(fields: [taskId], references: [id])
+  taskId  String
+  type    String
+  message String
+  date    DateTime @default(now())
 }
 
 enum Recurrence {
