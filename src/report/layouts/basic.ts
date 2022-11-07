@@ -1,7 +1,7 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
-import { formatISO } from 'date-fns';
+import { format, formatISO } from 'date-fns';
 import { merge } from 'lodash';
-import { elasticCheckIndex, elasticSearch } from '../lib/elastic';
+import { elasticCheckIndex, elasticCount, elasticSearch } from '../lib/elastic';
 import { calcElasticInterval } from '../lib/recurrence';
 import type { Figure, LayoutFnc } from '../models/reports';
 
@@ -56,6 +56,67 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
 [![bibcnrs](https://www.inist.fr/wp-content/uploads/2018/07/bibcnrs-logo-visite-e1530711678757.png)](https://bib.cnrs.fr/)`,
       params: {},
     }),
+
+    // Metrics
+    async (): Promise<Figure<'metric'>> => {
+      const opts: ElasticTypes.SearchRequest = {
+        index,
+        size: 0,
+        body: {
+          ...baseOpts,
+          aggs: {
+            platforms: {
+              cardinality: {
+                field: 'portal',
+              },
+            },
+            min_date: {
+              min: {
+                field: 'datetime',
+              },
+            },
+            max_date: {
+              max: {
+                field: 'datetime',
+              },
+            },
+          },
+        },
+      };
+
+      type Aggs = {
+        platforms: { value: number }
+        min_date: { value: number }
+        max_date: { value: number }
+      };
+
+      const { body: { aggregations } } = await elasticSearch(opts, user);
+      if (
+        !aggregations?.platforms
+        || !aggregations?.min_date
+        || !aggregations?.max_date
+      ) {
+        throw new Error('Aggregation(s) not found');
+      }
+      const {
+        platforms,
+        min_date: minDate,
+        max_date: maxDate,
+      } = aggregations as Aggs;
+
+      const { body: { count } } = await elasticCount({ index, body: baseOpts }, user);
+
+      return {
+        type: 'metric',
+        data: [
+          { key: 'Consultations', value: count },
+          { key: 'Plateformes', value: platforms.value },
+          { key: 'Début de période', value: format(minDate.value, 'dd LLL yyyy') },
+          { key: 'Fin de période', value: format(maxDate.value, 'dd LLL yyyy') },
+        ],
+        params: {},
+      };
+    },
 
     // Histogramme consultations
     async (): Promise<Figure<'bar'>> => {

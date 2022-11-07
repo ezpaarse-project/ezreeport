@@ -6,11 +6,6 @@ import type { PDFReport } from './pdf';
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
-type Position = {
-  x: number,
-  y: number
-};
-
 type MdType = 'header' | 'text' | 'break' | 'link';
 
 export type MdParams = {
@@ -29,6 +24,12 @@ type MdElement = {
     title: string,
     space: number
   }>
+};
+
+type MdDefault = {
+  cursor: Position,
+  font: Font,
+  fontSize: number
 };
 
 let elements: MdElement[] | undefined;
@@ -246,14 +247,8 @@ const renderer: marked.RendererObject = {
   },
 };
 
-type MdDefault = {
-  cursor: Position,
-  font: Font,
-  fontSize: number
-};
-
+// TODO[doc]
 /**
- * TODO[doc]
  *
  * @param pdf
  * @param param1

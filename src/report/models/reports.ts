@@ -6,7 +6,8 @@ import { merge } from 'lodash';
 import { join } from 'path';
 import type { Mark } from 'vega-lite/build/src/mark';
 import config from '../lib/config';
-import { addMdToPDF, MdParams } from '../lib/markdown';
+import { addMdToPDF, type MdParams } from '../lib/markdown';
+import { addMetricToPDF, type MetricData, type MetricParams } from '../lib/metrics';
 import {
   addPage,
   deleteDoc,
@@ -28,13 +29,16 @@ import { addTaskHistory, disableTask } from './tasks';
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
 
-// TODO[feat]: Metrics type
-
-type FigureType = Mark | 'table' | 'md';
+type FigureType = Mark | 'table' | 'md' | 'metric';
 
 interface FigureParams extends Record<FigureType, object> {
   table: TableParams,
-  md: MdParams
+  md: MdParams,
+  metric: MetricParams
+}
+
+interface FigureData extends Record<FigureType, unknown[]> {
+  metric: MetricData[]
 }
 
 /**
@@ -42,14 +46,14 @@ interface FigureParams extends Record<FigureType, object> {
  */
 export interface Figure<Type extends FigureType> {
   type: Type;
-  data: Type extends 'md' ? string : unknown[];
+  data: Type extends 'md' ? string : FigureData[Type];
   params: Type extends Mark ? InputVegaParams : FigureParams[Type];
 }
 
 /**
  * Global figure definition
  */
-type AnyFigure = Figure<Mark> | Figure<'table'> | Figure<'md'>;
+type AnyFigure = Figure<Mark> | Figure<'table'> | Figure<'md'> | Figure<'metric'>;
 
 type AnyFigureFnc = (docOpts: PDFReportOptions) => AnyFigure | AnyFigure[];
 
@@ -82,6 +86,14 @@ const isFigureTable = (figure: AnyFigure): figure is Figure<'table'> => figure.t
  * @returns Is the figure is a text
  */
 const isFigureMd = (figure: AnyFigure): figure is Figure<'md'> => figure.type === 'md';
+
+/**
+ * Check if the given figure is a metric
+ *
+ * @param figure The figure
+ * @returns Is the figure is a metric
+ */
+const isFigureMetric = (figure: AnyFigure): figure is Figure<'metric'> => figure.type === 'metric';
 
 /**
  * Put filename in lowercase & remove chars that can cause issues.
@@ -191,8 +203,13 @@ const generatePdfWithVega = async (
           // eslint-disable-next-line no-await-in-loop
           await addTableToPDF(doc, figure.data, merge(figure.params, { margin }));
         } else if (isFigureMd(figure)) {
+          // TODO[feat]: Multiples layout with Md
           // eslint-disable-next-line no-await-in-loop
           await addMdToPDF(doc, figure.data, figure.params);
+        } else if (isFigureMetric(figure)) {
+          // TODO[feat]: Multiples layout with Metrics
+          // eslint-disable-next-line no-await-in-loop
+          addMetricToPDF(doc, figure.data, figure.params);
         } else {
           // Creating Vega view
           const view = createVegaView(
