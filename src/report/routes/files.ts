@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { readFile } from 'fs/promises';
 import { StatusCodes } from 'http-status-codes';
-import { join } from 'path';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import config from '../lib/config';
 import checkRight, { checkInstitution, Roles } from '../middlewares/auth';
 import { getTaskById } from '../models/tasks';

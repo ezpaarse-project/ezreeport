@@ -1,9 +1,9 @@
 import type { Recurrence, Task } from '@prisma/client';
-import { randomUUID } from 'crypto';
 import { format } from 'date-fns';
-import { mkdir, writeFile } from 'fs/promises';
 import { merge } from 'lodash';
-import { join } from 'path';
+import { randomUUID } from 'node:crypto';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import type { Mark } from 'vega-lite/build/src/mark';
 import config from '../lib/config';
 import { addMdToPDF, type InputMdParams } from '../lib/markdown';

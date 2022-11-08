@@ -1,8 +1,8 @@
 import { registerFont } from 'canvas';
-import { writeFile } from 'fs';
 import type { ImageOptions } from 'jspdf';
 import { cloneDeep, merge, omit } from 'lodash';
-import { join } from 'path';
+import { writeFile } from 'node:fs';
+import { join } from 'node:path';
 import {
   expressionFunction,
   Locale as VegaLocale,

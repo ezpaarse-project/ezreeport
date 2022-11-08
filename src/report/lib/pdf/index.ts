@@ -1,9 +1,9 @@
 import { Image } from 'canvas';
 import { format } from 'date-fns';
-import { existsSync } from 'fs';
-import { readFile, unlink } from 'fs/promises';
 import { jsPDF as PDF } from 'jspdf';
-import { join } from 'path';
+import { existsSync } from 'node:fs';
+import { readFile, unlink } from 'node:fs/promises';
+import { join } from 'node:path';
 import config from '../config';
 import './fonts/Roboto-bold.js';
 import './fonts/Roboto-bolditalic.js';
