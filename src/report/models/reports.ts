@@ -49,6 +49,7 @@ export interface Figure<Type extends FigureType> {
   type: Type;
   data: Type extends 'md' ? string : FigureData[Type];
   params: Type extends Mark ? InputVegaParams : FigureParams[Type];
+  slots?: number[]
 }
 
 /**
@@ -64,13 +65,6 @@ export type LayoutFnc = (
   task: { recurrence: Recurrence, period: Interval, user: string },
   dataOpts: any
 ) => Layout | Promise<Layout>;
-
-type LayoutSlot = {
-  x: number,
-  y: number,
-  height: number,
-  width: number
-};
 
 /**
  * Check if the given figure is a table
@@ -118,7 +112,7 @@ const generatePdfWithVega = async (
   try {
     const doc = await initDoc(opts);
 
-    const viewport: LayoutSlot = {
+    const viewport: Area = {
       x: doc.margin.left,
       y: doc.offset.top,
       width: doc.width - doc.margin.left - doc.margin.right,
@@ -126,7 +120,7 @@ const generatePdfWithVega = async (
     };
 
     // TODO[feat]: Custom slots
-    const slots = Array.from<Partial<LayoutSlot>, LayoutSlot>(
+    const slots = Array.from<Partial<Area>, Area>(
       [
         {},
         {
@@ -167,22 +161,44 @@ const generatePdfWithVega = async (
       for (let i = 0; i < figuresCount; i += 1) {
         const figure = figures[i];
         // TODO[feat]: Choose which graph will go in which slot
-        const slot = { ...slots[i] };
+        let slot: Area = {
+          x: 0,
+          y: 0,
+          width: 0,
+          height: 0,
+        };
 
-        // If only one figure, take whole viewport
-        if (figuresCount === 1) {
-          slot.width = viewport.width;
-          slot.height = viewport.height;
-        }
+        if (!figure.slots) {
+          // Auto mode
+          slot = { ...slots[i] };
+          // If only one figure, take whole viewport
+          if (figuresCount === 1) {
+            slot.width = viewport.width;
+            slot.height = viewport.height;
+          }
 
-        // If no second row, take whole height
-        if (figuresCount <= slots.length - 2) {
-          slot.height = viewport.height;
-        }
+          // If no second row, take whole height
+          if (figuresCount <= slots.length - 2) {
+            slot.height = viewport.height;
+          }
 
-        // If in penultimate slot and last figure, take whole remaining space
-        if (i === slots.length - 2 && i === figuresCount - 1) {
-          slot.width += slots[i + 1].width + doc.margin.left;
+          // If in penultimate slot and last figure, take whole remaining space
+          if (i === slots.length - 2 && i === figuresCount - 1) {
+            slot.width += slots[i + 1].width + doc.margin.left;
+          }
+        } else {
+          // Manual mode
+          const wantedSolts = figure.slots.sort();
+          slot = { ...slots[wantedSolts[0]] };
+
+          if (wantedSolts.length === 2) {
+            if (wantedSolts[1] - wantedSolts[0] === 1) {
+              slot.width += slots[wantedSolts[1]].width;
+            }
+            if (wantedSolts[1] - wantedSolts[0] === 2) {
+              slot.height += slots[wantedSolts[1]].height;
+            }
+          }
         }
 
         if (debugPages) {
