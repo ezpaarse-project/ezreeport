@@ -123,7 +123,7 @@ export const calcElasticInterval = (recurrence: Recurrence): 'hour' | 'day' | 'm
       return 'hour';
 
     case Recurrence.WEEKLY:
-    case Recurrence.MONTHLY:
+    case Recurrence.MONTHLY: // TODO or week
       return 'day';
 
     case Recurrence.QUARTERLY:
@@ -150,12 +150,10 @@ export const calcVegaFormat = (recurrence: Recurrence): { timeUnit: TimeUnit, fo
       return { timeUnit: 'hours' };
     case Recurrence.WEEKLY:
     case Recurrence.MONTHLY:
-      return { timeUnit: 'monthdate', format: '%d %b' };
-      // return { timeUnit: 'yearmonthdate', format: '%d %b %Y' };
+      return { timeUnit: 'yearmonthdate', format: '%d %b %Y' };
     case Recurrence.QUARTERLY:
     case Recurrence.BIENNIAL:
     case Recurrence.YEARLY:
-      // return { timeUnit: 'month' };
       return { timeUnit: 'yearmonth' };
 
     default:
