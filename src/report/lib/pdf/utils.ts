@@ -1,6 +1,30 @@
+import { Image } from 'canvas';
 import type jsPDF from 'jspdf';
 
 type Area = { x: number, y: number, width: number, height: number };
+
+/**
+ * Loads an image with some info
+ *
+ * @param data Image src
+ * @return base64 & other usefull information
+ */
+export const loadImageAsset = async (
+  data: string,
+): Promise<{ data: string; width: number; height: number }> => {
+  // Waiting Image to "render" to get width & height
+  const img = await new Promise<Image>((resolve, reject) => {
+    const i = new Image();
+    i.onload = () => resolve(i);
+    i.onerror = reject;
+    i.src = data;
+  });
+  return {
+    data: img.src.toString(),
+    width: img.width,
+    height: img.height,
+  };
+};
 
 /**
  * Print background & markers of an area. Design for debug purposes, do not use in prod.

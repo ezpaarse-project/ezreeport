@@ -1,4 +1,3 @@
-import { Image } from 'canvas';
 import { format } from 'date-fns';
 import { jsPDF as PDF } from 'jspdf';
 import { existsSync } from 'node:fs';
@@ -9,6 +8,7 @@ import './fonts/Roboto-bold.js';
 import './fonts/Roboto-bolditalic.js';
 import './fonts/Roboto-italic.js';
 import './fonts/Roboto-normal.js';
+import { loadImageAsset } from './utils';
 
 const { logos } = config.get('pdf');
 const rootPath = config.get('rootPath');
@@ -66,30 +66,6 @@ export type PDFReport = Exclude<typeof doc, undefined>;
 export type PDFReportOptions = Pick<PDFReport, 'name' | 'period' | 'path'> & { debugPages?: boolean };
 
 /**
- * Loads an image with some info
- *
- * @param path Relative path from /assets
- * @return base64 & other usefull information
- */
-const loadImageAsset = async (
-  path: string,
-): Promise<{ data: string; width: number; height: number }> => {
-  const data = await readFile(join(rootPath, path), 'base64');
-  // Waiting Image to "render" to get width & height
-  const img = await new Promise<Image>((resolve, reject) => {
-    const i = new Image();
-    i.onload = () => resolve(i);
-    i.onerror = reject;
-    i.src = `data:image/png;base64,${data}`;
-  });
-  return {
-    data: img.src.toString(),
-    width: img.width,
-    height: img.height,
-  };
-};
-
-/**
  * Print PDF's header
  *
  * @returns The total height of header with MARGIN
@@ -144,12 +120,14 @@ const printFooter = async (): Promise<number> => {
   const height = 30; // Wanted height of logos
   // eslint-disable-next-line no-restricted-syntax
   for (const { path, link: url } of logos) {
+    // eslint-disable-next-line no-await-in-loop
+    const data = await readFile(join(rootPath, path), 'base64');
     const {
       data: imageData,
       height: rawHeight,
       width: rawWidth,
       // eslint-disable-next-line no-await-in-loop
-    } = await loadImageAsset(path);
+    } = await loadImageAsset(`data:image/png;base64,${data}`);
     // Scaling down logo while preserving aspect ratio
     const width = (height * rawWidth) / rawHeight;
 
