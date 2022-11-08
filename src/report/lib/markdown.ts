@@ -1,12 +1,19 @@
-import { Font } from 'jspdf';
+import type { Font } from 'jspdf';
 import { marked } from 'marked';
+import { lookup } from 'mime-types';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import config from './config';
 import type { PDFReport } from './pdf';
+import { loadImageAsset } from './pdf/utils';
 
 // TODO[feat]: Break lines
 
+const rootPath = config.get('rootPath');
+
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
-type MdType = 'header' | 'text' | 'break' | 'link';
+type MdType = 'header' | 'text' | 'break' | 'link' | 'image';
 
 type MdParams = {
   start: Position
@@ -25,8 +32,9 @@ type MdElement = {
     fontDecoration: 'strike' | 'underline',
     fontColor: string,
     href: string,
+    src: string,
     title: string,
-    space: number
+    space: number,
   }>
 };
 
@@ -72,7 +80,7 @@ const renderer: marked.RendererObject = {
     if (!elements) throw new Error('figure not initialized');
 
     const element = elements.at(-1);
-    if (element) {
+    if (element && element.type === 'text') {
       element.type = 'header';
       element.meta = {
         ...element.meta,
@@ -119,13 +127,18 @@ const renderer: marked.RendererObject = {
   paragraph: (text: string) => {
     if (!elements) throw new Error('figure not initialized');
 
-    elements.push({
-      type: 'break',
-      content: '',
-      meta: {
-        space: 2,
-      },
-    });
+    const element = elements.at(-1);
+    if (element?.type === 'image') {
+      element.meta.space = 1;
+    } else {
+      elements.push({
+        type: 'break',
+        content: '',
+        meta: {
+          space: 2,
+        },
+      });
+    }
 
     return text;
   },
@@ -219,14 +232,25 @@ const renderer: marked.RendererObject = {
 
     const element = elements.at(-1);
     if (element) {
-      // FIXME: image with links
-
-      element.type = 'link';
-      element.meta = {
-        ...element.meta,
-        href: href ?? undefined,
-        title: title ?? undefined,
-      };
+      if (element.type === 'text') {
+        element.type = 'link';
+        element.meta = {
+          ...element.meta,
+          href: href ?? undefined,
+          title: title ?? undefined,
+        };
+      } else if (element.type === 'image') {
+        element.meta.href = href ?? undefined;
+      } else {
+        elements.push({
+          type: 'link',
+          content: '',
+          meta: {
+            href: href ?? undefined,
+            title: title ?? undefined,
+          },
+        });
+      }
     }
 
     return text;
@@ -234,7 +258,14 @@ const renderer: marked.RendererObject = {
   image: (href: string | null, title: string | null, text: string) => {
     if (!elements) throw new Error('figure not initialized');
 
-    // TODO[feat]: support images
+    elements.push({
+      type: 'image',
+      content: '',
+      meta: {
+        title: title ?? undefined,
+        src: href ?? undefined,
+      },
+    });
 
     return text;
   },
@@ -358,6 +389,59 @@ export const addMdToPDF = async (
             .textWithLink(text, cursor.x, cursor.y, { url: meta.href });
           doc.pdf.line(cursor.x - 2, cursor.y + 2, cursor.x + w + 2, cursor.y + 2);
           cursor.x += w;
+          break;
+        }
+
+        case 'image': {
+          if (meta.src) {
+            let imageData = '';
+            if (meta.src.match(/^https?:\/\//i)) {
+              // Remote images
+              // eslint-disable-next-line no-await-in-loop
+              const file = await (await fetch(meta.src)).blob();
+              // eslint-disable-next-line no-await-in-loop
+              const raw = Buffer.from(await file.arrayBuffer()).toString('base64');
+              imageData = `data:${file.type};base64,${raw}`;
+            } else if (meta.src.match(/^data:/i)) {
+              // Inline images
+              imageData = meta.src;
+            } else {
+              // Local images
+              const path = join(rootPath, 'assets', meta.src);
+              const mime = lookup(path);
+              if (!mime) throw new Error("Can't resolve mime type");
+              // eslint-disable-next-line no-await-in-loop
+              const raw = await readFile(path, 'base64');
+              imageData = `data:${mime};base64,${raw}`;
+            }
+
+            if (imageData) {
+              // eslint-disable-next-line no-await-in-loop
+              const { width, height } = await loadImageAsset(imageData);
+              // Max image size while keeping aspect ratio
+              const w = Math.min(width, 200);
+              const h = (height / width) * w;
+              // Images start from original position
+              doc.pdf.addImage({
+                imageData,
+                x: cursor.x,
+                y: cursor.y,
+                width: w,
+                height: h,
+              });
+
+              if (meta.href) {
+                doc.pdf.link(cursor.x, cursor.y, w, h, { url: meta.href });
+              }
+
+              if (meta.space) {
+                cursor.x = def.cursor.x;
+                cursor.y += h;
+              } else {
+                cursor.x += w;
+              }
+            }
+          }
           break;
         }
 
