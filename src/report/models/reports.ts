@@ -30,6 +30,13 @@ import { addTaskHistory, slientEditTaskById } from './tasks';
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
 
+export enum SlotIndex {
+  TOP_LEFT = 0,
+  TOP_RIGHT,
+  BOTTOM_LEFT,
+  BOTTOM_RIGHT,
+}
+
 type FigureType = Mark | 'table' | 'md' | 'metric';
 
 interface FigureParams extends Record<FigureType, object> {
@@ -49,7 +56,7 @@ export interface Figure<Type extends FigureType> {
   type: Type;
   data: Type extends 'md' ? string : FigureData[Type];
   params: Type extends Mark ? InputVegaParams : FigureParams[Type];
-  slots?: number[]
+  slots?: SlotIndex[]
 }
 
 /**
@@ -120,6 +127,7 @@ const generatePdfWithVega = async (
     };
 
     // TODO[feat]: Custom slots
+    const COL_COUNT = 2;
     const slots = Array.from<Partial<Area>, Area>(
       [
         {},
@@ -168,7 +176,7 @@ const generatePdfWithVega = async (
           height: 0,
         };
 
-        if (!figure.slots) {
+        if (!figure.slots || figure.slots.length <= 0) {
           // Auto mode
           slot = { ...slots[i] };
           // If only one figure, take whole viewport
@@ -188,15 +196,33 @@ const generatePdfWithVega = async (
           }
         } else {
           // Manual mode
-          const wantedSolts = figure.slots.sort();
-          slot = { ...slots[wantedSolts[0]] };
+          const indexs = [...figure.slots].sort();
+          slot = { ...slots[indexs[0]] };
 
-          if (wantedSolts.length === 2) {
-            if (wantedSolts[1] - wantedSolts[0] === 1) {
-              slot.width += slots[wantedSolts[1]].width;
+          if (indexs.length === slots.length) {
+            // Whole space
+            slot = { ...viewport };
+          } else if (indexs.length > 1) {
+            if (
+              indexs.every(
+                // On same row
+                (sIndex, j) => Math.floor(sIndex / COL_COUNT) === Math.floor(indexs[0] / COL_COUNT)
+                // Possible (ex: we have 3 cols, and we're asking for col 1 & 3 but not 2)
+                && (j === 0 || sIndex - indexs[j - 1] === 1),
+              )
+            ) {
+              slot.width += slots[1].width + doc.margin.left;
             }
-            if (wantedSolts[1] - wantedSolts[0] === 2) {
-              slot.height += slots[wantedSolts[1]].height;
+
+            if (
+              indexs.every(
+                // Every index on same colon
+                (slotIndex, j) => slotIndex % COL_COUNT === indexs[0] % COL_COUNT
+                // Possible (ex: we have 3 rows, and we're asking for row 1 & 3 but not 2)
+                && (j === 0 || slotIndex - indexs[j - 1] === COL_COUNT),
+              )
+            ) {
+              slot.height += slots[1].height + doc.margin.top;
             }
           }
         }
@@ -328,7 +354,8 @@ export const generateReport = async (
     }
     const { _source: { username: user } } = contact;
 
-    const period = calcPeriod(today, task.recurrence);
+    const period = calcPeriod(new Date(2021, 9, 31, 12), task.recurrence);
+    // const period = calcPeriod(today, task.recurrence);
     // TODO[feat]: define layout as JSON. Use JOI
     let baseLayout: LayoutFnc | undefined;
     if (typeof task.layout === 'object' && (task.layout as any).extends) {
