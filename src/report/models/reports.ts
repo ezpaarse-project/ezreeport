@@ -126,30 +126,52 @@ const generatePdfWithVega = async (
       height: doc.height - doc.offset.top - doc.offset.bottom,
     };
 
-    // TODO[feat]: Custom slots
-    const COL_COUNT = 2;
-    const slots = Array.from<Partial<Area>, Area>(
-      [
-        {},
-        {
-          x: viewport.x + viewport.width / 2 + (doc.margin.left / 2),
-        },
-        {
-          y: viewport.y + viewport.height / 2 + (doc.margin.top / 2),
-        },
-        {
-          x: viewport.x + viewport.width / 2 + (doc.margin.left / 2),
-          y: viewport.y + viewport.height / 2 + (doc.margin.top / 2),
-        },
-      ],
-      (slot) => ({
-        x: viewport.x,
-        y: viewport.y,
-        width: (viewport.width / 2) - (doc.margin.left / 2),
-        height: (viewport.height / 2) - (doc.margin.top / 2),
-        ...slot,
-      }),
-    );
+    // TODO[feat]: Custom slots or grid
+    const GRID = { rows: 2, cols: 2 };
+    const marginSlot = {
+      horizontal: doc.margin.left / 2,
+      vertical: doc.margin.top / 2,
+    };
+
+    // FIXME: WTF + can have space
+    /**
+     * Calculating modififer to apply to margin. Usefull on x/y pos of slots, because else it can
+     * create too little margin.
+     *
+     * The math that function is using is crappy and kinda black magic (ty Geogebra) and should
+     * be reworked at some time.
+     *
+     * @param x The margin you want to apply
+     *
+     * @returns The modifier
+     *
+     * @deprecated Will be removed once a better solution is found
+     */
+    const calcModifier = (x: number) => 1.1607 / (1 - (1.405 * (Math.E ** (-0.604 * x))));
+
+    const slots = Array(GRID.rows * GRID.cols).fill(undefined).map<Area>((_v, i, arr) => {
+      const prev = arr[i - 1] as Area | undefined;
+
+      const modifierH = calcModifier(GRID.cols);
+      const modifierV = calcModifier(GRID.rows);
+
+      const slot = {
+        x: prev ? (prev.x + prev.width + (modifierH * marginSlot.horizontal)) : viewport.x,
+        y: prev?.y ?? viewport.y,
+        width: (viewport.width / GRID.cols) - marginSlot.horizontal,
+        height: (viewport.height / GRID.rows) - (marginSlot.vertical),
+      };
+
+      if (prev && i % GRID.cols === 0) {
+        slot.x = viewport.x;
+        slot.y = prev.y + prev.height + (modifierV * marginSlot.vertical);
+      }
+
+      // To access to previous
+      // eslint-disable-next-line no-param-reassign
+      arr[i] = slot;
+      return slot;
+    });
 
     let first = true;
     // eslint-disable-next-line no-restricted-syntax
@@ -203,10 +225,11 @@ const generatePdfWithVega = async (
             // Whole space
             slot = { ...viewport };
           } else if (indexs.length > 1) {
+            // TODO[feat]: support squares
             if (
               indexs.every(
                 // On same row
-                (sIndex, j) => Math.floor(sIndex / COL_COUNT) === Math.floor(indexs[0] / COL_COUNT)
+                (sIndex, j) => Math.floor(sIndex / GRID.cols) === Math.floor(indexs[0] / GRID.cols)
                 // Possible (ex: we have 3 cols, and we're asking for col 1 & 3 but not 2)
                 && (j === 0 || sIndex - indexs[j - 1] === 1),
               )
@@ -217,9 +240,9 @@ const generatePdfWithVega = async (
             if (
               indexs.every(
                 // Every index on same colon
-                (slotIndex, j) => slotIndex % COL_COUNT === indexs[0] % COL_COUNT
+                (slotIndex, j) => slotIndex % GRID.cols === indexs[0] % GRID.cols
                 // Possible (ex: we have 3 rows, and we're asking for row 1 & 3 but not 2)
-                && (j === 0 || slotIndex - indexs[j - 1] === COL_COUNT),
+                && (j === 0 || slotIndex - indexs[j - 1] === GRID.cols),
               )
             ) {
               slot.height += slots[1].height + doc.margin.top;
