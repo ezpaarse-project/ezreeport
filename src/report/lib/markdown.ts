@@ -42,6 +42,8 @@ type MdDefault = {
   cursor: Position,
   font: Font,
   fontSize: number
+  fontColor: string
+  drawColor: string
 };
 
 let elements: MdElement[] | undefined;
@@ -304,10 +306,10 @@ const printText = (
   pdf
     .setTextColor(meta.fontColor ?? 'black')
     .setFont(defValues.font.fontName, meta.fontStyle ?? defValues.font.fontStyle)
-    .setFontSize(fontSize)
-    .text(text, cursor.x, cursor.y);
+    .setFontSize(fontSize);
 
   const { w, h } = pdf.getTextDimensions(text);
+  pdf.text(text, cursor.x, cursor.y + h);
 
   if (meta.fontDecoration) {
     pdf.setDrawColor(meta.fontColor ?? 'black');
@@ -347,6 +349,8 @@ export const addMdToPDF = async (
     cursor: { ...params.start },
     font: doc.pdf.getFont(),
     fontSize: doc.pdf.getFontSize(),
+    fontColor: doc.pdf.getTextColor(),
+    drawColor: doc.pdf.getDrawColor(),
   };
   const cursor = { ...def.cursor };
 
@@ -363,8 +367,6 @@ export const addMdToPDF = async (
           fontSize = 48 / (meta.level ?? 1);
           // Heading start from original position
           cursor.x = def.cursor.x;
-          // Heading have a space before them...
-          cursor.y += fontSize + def.fontSize;
           printText(doc.pdf, element, cursor, def, fontSize);
           // ... and after them (2 for space and 1.25 for next line)
           cursor.y += 3.25 * def.fontSize;
@@ -454,8 +456,12 @@ export const addMdToPDF = async (
       }
     }
 
-    // Reset colors before generation further pages
-    doc.pdf.setTextColor('black').setDrawColor('black');
+    // Reset colors/fonts before generating further pages
+    doc.pdf
+      .setTextColor(def.fontColor)
+      .setDrawColor(def.drawColor)
+      .setFont(def.font.fontName, def.font.fontStyle)
+      .setFontSize(def.fontSize);
 
     elements = undefined;
   } catch (error) {
