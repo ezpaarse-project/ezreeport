@@ -377,8 +377,7 @@ export const generateReport = async (
     }
     const { _source: { username: user } } = contact;
 
-    const period = calcPeriod(new Date(2021, 9, 31, 12), task.recurrence);
-    // const period = calcPeriod(today, task.recurrence);
+    const period = calcPeriod(today, task.recurrence);
     // TODO[feat]: define layout as JSON. Use JOI
     let baseLayout: LayoutFnc | undefined;
     if (typeof task.layout === 'object' && (task.layout as any).extends) {
