@@ -7,8 +7,6 @@ import config from './config';
 import type { PDFReport } from './pdf';
 import { loadImageAsset } from './pdf/utils';
 
-// TODO[feat]: Break lines
-
 const rootPath = config.get('rootPath');
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
@@ -284,52 +282,6 @@ const renderer: marked.RendererObject = {
   },
 };
 
-// TODO[doc]
-/**
- *
- * @param pdf
- * @param param1
- * @param cursor
- * @param defValues
- * @param fontSize
- * @returns
- */
-const printText = (
-  pdf: PDFReport['pdf'],
-  { content, meta }: MdElement,
-  cursor: Position,
-  defValues: MdDefault,
-  fontSize = defValues.fontSize,
-) => {
-  // TODO[feat]: handle breaks
-  const text = content.replace(/\n/g, '');
-  pdf
-    .setTextColor(meta.fontColor ?? 'black')
-    .setFont(defValues.font.fontName, meta.fontStyle ?? defValues.font.fontStyle)
-    .setFontSize(fontSize);
-
-  const { w, h } = pdf.getTextDimensions(text);
-  pdf.text(text, cursor.x, cursor.y + h);
-
-  if (meta.fontDecoration) {
-    pdf.setDrawColor(meta.fontColor ?? 'black');
-    switch (meta.fontDecoration) {
-      case 'strike':
-        pdf.line(cursor.x - 2, cursor.y - (h / 3), cursor.x + w + 2, cursor.y - (h / 3));
-        break;
-
-      case 'underline': // FIXME: Not handled by marked (?)
-        pdf.line(cursor.x - 2, cursor.y + 2, cursor.x + w + 2, cursor.y + 2);
-        break;
-
-      default:
-        break;
-    }
-  }
-
-  return { width: w, height: h };
-};
-
 marked.use({ renderer });
 
 /**
@@ -354,6 +306,74 @@ export const addMdToPDF = async (
   };
   const cursor = { ...def.cursor };
 
+  /**
+   * Print element at cursor position. Auto breaks text if going to overflow.
+   *
+   * Moves cursor while running.
+   *
+   * @param element The element
+   * @param fontSize The custom fontSize
+   *
+   * @returns The size taken by the text
+   */
+  const printText = (
+    { content, meta, type }: MdElement,
+    fontSize = def.fontSize,
+  ) => {
+    const text = content.replace(/\n/g, '');
+
+    doc.pdf
+      .setTextColor(meta.fontColor ?? 'black')
+      .setFont(def.font.fontName, meta.fontStyle ?? def.font.fontStyle)
+      .setFontSize(fontSize);
+
+    let { w, h } = doc.pdf.getTextDimensions(text);
+
+    const isTooWide = cursor.x + w > params.start.x + params.width;
+    if (!isTooWide) {
+      // Print text
+      const y = cursor.y + fontSize;
+      doc.pdf.text(text, cursor.x, y);
+
+      if (meta.fontDecoration) {
+        doc.pdf.setDrawColor(meta.fontColor ?? 'black');
+        switch (meta.fontDecoration) {
+          case 'strike':
+            doc.pdf.line(cursor.x - 2, y - (h / 3), cursor.x + w + 2, y - (h / 3));
+            break;
+
+          case 'underline': // FIXME: Not handled by marked (?)
+            doc.pdf.line(cursor.x - 2, y + 2, cursor.x + w + 2, y + 2);
+            break;
+
+          default:
+            break;
+        }
+      }
+    } else {
+      // Print word per word to mimic CSS's property `word-break: break-word;`
+      const words = text.split(' ');
+      w = params.width;
+      for (let i = 0; i < words.length; i += 1) {
+        let word = words[i];
+        word = (i !== 0 ? ' ' : '') + word.trim();
+
+        const wordW = doc.pdf.getTextWidth(word);
+        if (cursor.x + wordW > params.start.x + params.width) {
+          cursor.x = params.start.x;
+          cursor.y += 1.5 * fontSize;
+          h += 1.5 * fontSize;
+          word = word.trimStart();
+        }
+
+        const { width: writedW } = printText({ content: word, meta, type }, fontSize);
+        cursor.x += writedW;
+      }
+    }
+
+    return { width: w, height: h, isTooWide };
+  };
+
   try {
     await marked.parse(data, { async: true });
 
@@ -367,9 +387,12 @@ export const addMdToPDF = async (
           fontSize = 48 / (meta.level ?? 1);
           // Heading start from original position
           cursor.x = def.cursor.x;
-          printText(doc.pdf, element, cursor, def, fontSize);
-          // ... and after them (2 for space and 1.25 for next line)
-          cursor.y += 3.25 * def.fontSize;
+          const { height, isTooWide } = printText(element, fontSize);
+          if (isTooWide) {
+            cursor.y += 1.15 * fontSize;
+          } else {
+            cursor.y += 1.15 * height;
+          }
           break;
         }
 
@@ -448,9 +471,11 @@ export const addMdToPDF = async (
         }
 
         default: { // text
-          printText(doc.pdf, element, cursor, def);
-          // Calculate next offset
-          cursor.x += doc.pdf.getTextWidth(content);
+          const { width, isTooWide } = printText(element);
+          if (!isTooWide) {
+            // Calculate next offset
+            cursor.x += width;
+          }
           break;
         }
       }

@@ -169,6 +169,7 @@ router.post('/:task/run', checkRight(Roles.READ_WRITE), checkInstitution, async 
     let { test_emails: testEmails } = req.query;
 
     // Transform emails into array if needed
+    // TODO[refactor]
     if (testEmails != null) {
       if (!Array.isArray(testEmails)) testEmails = [testEmails.toString()];
       else testEmails = testEmails.map((email) => email.toString());
