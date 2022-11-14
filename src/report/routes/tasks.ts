@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { pick } from 'lodash';
 import checkRight, { checkInstitution, Roles } from '../middlewares/auth';
 import { generateReport } from '../models/reports';
 import {
@@ -154,6 +155,73 @@ router.delete('/:task', checkRight(Roles.READ_WRITE), checkInstitution, async (r
     }
 
     res.sendJson(task, StatusCodes.OK);
+  } catch (error) {
+    res.errorJson(error);
+  }
+});
+
+/**
+ * Shorthand to quickly enable a task
+ *
+ * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
+ */
+router.put('/:task/enable', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res) => {
+  try {
+    const { task: id } = req.params;
+
+    if (!req.user || (!req.user.institution && !req.user.roles.includes(Roles.SUPER_USER))) {
+      throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
+    }
+
+    const task = await getTaskById(id, req.user?.institution);
+    if (!task) {
+      throw new HTTPError(`Task with id '${id}' not found for institution '${req.user?.institution}'`, StatusCodes.NOT_FOUND);
+    }
+
+    const editedTask = await editTaskById(
+      {
+        ...pick(task, 'name', 'layout', 'targets', 'recurrence', 'nextRun'),
+        enabled: true,
+      },
+      id,
+      req.user.username,
+      req.user.institution,
+    );
+
+    res.sendJson(editedTask, StatusCodes.OK);
+  } catch (error) {
+    res.errorJson(error);
+  }
+});
+/**
+ * Shorthand to quickly disable a task
+ *
+ * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
+ */
+router.put('/:task/disable', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res) => {
+  try {
+    const { task: id } = req.params;
+
+    if (!req.user || (!req.user.institution && !req.user.roles.includes(Roles.SUPER_USER))) {
+      throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
+    }
+
+    const task = await getTaskById(id, req.user?.institution);
+    if (!task) {
+      throw new HTTPError(`Task with id '${id}' not found for institution '${req.user?.institution}'`, StatusCodes.NOT_FOUND);
+    }
+
+    const editedTask = await editTaskById(
+      {
+        ...pick(task, 'name', 'layout', 'targets', 'recurrence', 'nextRun'),
+        enabled: false,
+      },
+      id,
+      req.user.username,
+      req.user.institution,
+    );
+
+    res.sendJson(editedTask, StatusCodes.OK);
   } catch (error) {
     res.errorJson(error);
   }

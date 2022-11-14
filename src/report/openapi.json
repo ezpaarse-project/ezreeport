@@ -912,6 +912,264 @@
         "description": "Trigger generation of report. Accessible to READ_WRITE."
       }
     },
+    "/tasks/{taskId}/enable": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "taskId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "put": {
+        "summary": "Enable task",
+        "operationId": "put-tasks-taskId-enable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/FullTask"
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                        "name": "My Super Task",
+                        "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
+                        "layout": {
+                          "extends": "basic"
+                        },
+                        "targets": [
+                          "..."
+                        ],
+                        "recurrence": "WEEKLY",
+                        "nextRun": "2022-10-31T10:00:00.000Z",
+                        "lastRun": "2022-10-31T10:00:00.000Z",
+                        "enabled": true,
+                        "history": [
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000000",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "edition",
+                            "message": "Tâche crée par ...",
+                            "date": "2022-11-07T15:06:24.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "edition",
+                            "message": "Tâche éditée par ...",
+                            "date": "2022-11-07T15:08:37.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "generation-error",
+                            "message": "Rapport \"...\" non généré par ... suite à une erreur.",
+                            "date": "2022-11-07T15:16:37.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "generation-success",
+                            "message": "Rapport \"...\" généré par ...",
+                            "date": "2022-11-07T15:17:49.000Z"
+                          }
+                        ],
+                        "createdAt": "2022-10-25T11:55:47.375Z",
+                        "updatedAt": "2022-10-25T11:55:47.375Z"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "tags": [
+          "tasks"
+        ],
+        "description": "Enable task generation. Accessible to READ_WRITE."
+      }
+    },
+    "/tasks/{taskId]/disable": {
+      "put": {
+        "summary": "Disable task",
+        "operationId": "put-tasks-taskId]-disable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/FullTask"
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                        "name": "My Super Task",
+                        "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
+                        "layout": {
+                          "extends": "basic"
+                        },
+                        "targets": [
+                          "..."
+                        ],
+                        "recurrence": "WEEKLY",
+                        "nextRun": "2022-10-31T10:00:00.000Z",
+                        "lastRun": "2022-10-31T10:00:00.000Z",
+                        "enabled": false,
+                        "history": [
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000000",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "edition",
+                            "message": "Tâche crée par ...",
+                            "date": "2022-11-07T15:06:24.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "edition",
+                            "message": "Tâche éditée par ...",
+                            "date": "2022-11-07T15:08:37.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "generation-error",
+                            "message": "Rapport \"...\" non généré par ... suite à une erreur.",
+                            "date": "2022-11-07T15:16:37.000Z"
+                          },
+                          {
+                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
+                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                            "type": "generation-success",
+                            "message": "Rapport \"...\" généré par ...",
+                            "date": "2022-11-07T15:17:49.000Z"
+                          }
+                        ],
+                        "createdAt": "2022-10-25T11:55:47.375Z",
+                        "updatedAt": "2022-10-25T11:55:47.375Z"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "tags": [
+          "tasks"
+        ],
+        "description": "Disable task generation. Accessible to READ_WRITE."
+      }
+    },
     "/reports/{path}": {
       "parameters": [
         {
