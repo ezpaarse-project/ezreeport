@@ -1,9 +1,9 @@
 import chai from 'chai';
 import chaiHttp from 'chai-http';
 import chaiLike from 'chai-like';
-import { randomBytes } from 'crypto';
 import { pick } from 'lodash';
 import { step } from 'mocha-steps';
+import { randomBytes } from 'node:crypto';
 import type { createTask } from 'reporting-report/models/tasks';
 import config from '../lib/config';
 
@@ -179,10 +179,12 @@ export default () => {
         // Random id
         const res = await request().type('json').send({
           name: 'test task',
-          layout: {},
+          layout: {
+            extends: 'basic',
+          },
           targets: ['fake@inist.fr'],
           recurrence: 'WEEKLY',
-          nextRun: new Date(2022, 0, 1),
+          nextRun: new Date(9999, 0, 1),
           enabled: false,
         });
 
@@ -224,12 +226,14 @@ export default () => {
       // Create task, check if in get all, edits, check if in get one, delete
       let task = {
         name: 'test task',
-        layout: {},
+        layout: {
+          extends: 'basic',
+        },
         targets: ['fake@inist.fr'],
         recurrence: 'WEEKLY',
-        nextRun: new Date(2022, 11, 25),
+        nextRun: new Date(9999, 11, 25),
         enabled: false,
-      } as Task;
+      } as unknown as Task;
 
       step('POST /tasks', async () => {
         const res = await agent.post('/tasks')
@@ -274,12 +278,14 @@ export default () => {
         const { id } = task;
         task = {
           name: 'test task',
-          layout: {},
+          layout: {
+            extends: 'basic',
+          },
           targets: ['fake@inist.fr', 'fake2@inist.fr'],
           recurrence: 'WEEKLY',
-          nextRun: new Date(2022, 10, 25),
+          nextRun: new Date(9999, 10, 25),
           enabled: false,
-        } as Task;
+        } as unknown as Task;
 
         const res = await agent.put(`/tasks/${id}`)
           .auth(config.EZMESURE_TOKEN, { type: 'bearer' })
