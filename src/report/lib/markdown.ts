@@ -359,6 +359,10 @@ export const addMdToPDF = async (
         word = (i !== 0 ? ' ' : '') + word.trim();
 
         const wordW = doc.pdf.getTextWidth(word);
+        if (wordW > params.width) {
+          throw new Error(`Word "${word.trim()}" is too long to be printed.`);
+        }
+
         if (cursor.x + wordW > params.start.x + params.width) {
           cursor.x = params.start.x;
           cursor.y += 1.5 * fontSize;
@@ -388,8 +392,9 @@ export const addMdToPDF = async (
           // Heading start from original position
           cursor.x = def.cursor.x;
           const { height, isTooWide } = printText(element, fontSize);
+          cursor.x = def.cursor.x;
           if (isTooWide) {
-            cursor.y += 1.15 * fontSize;
+            cursor.y += 1.5 * fontSize;
           } else {
             cursor.y += 1.15 * height;
           }
