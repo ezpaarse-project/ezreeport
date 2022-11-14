@@ -920,7 +920,8 @@
           },
           "name": "taskId",
           "in": "path",
-          "required": true
+          "required": true,
+          "description": "The task id"
         }
       ],
       "put": {
@@ -1046,7 +1047,7 @@
         "description": "Enable task generation. Accessible to READ_WRITE."
       }
     },
-    "/tasks/{taskId]/disable": {
+    "/tasks/{taskId}/disable": {
       "put": {
         "summary": "Disable task",
         "operationId": "put-tasks-taskId]-disable",
@@ -1168,7 +1169,18 @@
           "tasks"
         ],
         "description": "Disable task generation. Accessible to READ_WRITE."
-      }
+      },
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "taskId",
+          "in": "path",
+          "required": true,
+          "description": "The task id"
+        }
+      ]
     },
     "/reports/{path}": {
       "parameters": [
@@ -1191,10 +1203,145 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "description": "Detail about report",
+                  "x-examples": {
+                    "example-1": {
+                      "success": true,
+                      "detail": {
+                        "date": "2022-11-14T15:02:46.340Z",
+                        "task": "af549626-641b-44ed-9381-f3b751370164",
+                        "files": {
+                          "detail": "2022/2022-11/reporting_ezMESURE_test-api.json",
+                          "report": "2022/2022-11/reporting_ezMESURE_test-api.pdf"
+                        },
+                        "writedTo": [
+                          "tom.sublet@inist.fraaa"
+                        ],
+                        "period": {
+                          "start": "2021-10-18T00:00:00.000Z",
+                          "end": "2021-10-24T23:59:59.999Z"
+                        },
+                        "runAs": "tom.sublet",
+                        "stats": {
+                          "pageCount": 6,
+                          "size": 398460
+                        }
+                      }
+                    }
+                  },
                   "properties": {
                     "success": {
                       "type": "boolean"
+                    },
+                    "detail": {
+                      "type": "object",
+                      "properties": {
+                        "date": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "task": {
+                          "type": "string"
+                        },
+                        "files": {
+                          "type": "object",
+                          "required": [
+                            "detail"
+                          ],
+                          "properties": {
+                            "detail": {
+                              "type": "string"
+                            },
+                            "report": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "writedTo": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "period": {
+                          "type": "object",
+                          "properties": {
+                            "start": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "end": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          },
+                          "required": [
+                            "start",
+                            "end"
+                          ]
+                        },
+                        "runAs": {
+                          "type": "string"
+                        },
+                        "stats": {
+                          "type": "object",
+                          "properties": {
+                            "pageCount": {
+                              "type": "integer"
+                            },
+                            "size": {
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "error": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "date",
+                        "task",
+                        "files"
+                      ]
+                    }
+                  }
+                },
+                "examples": {
+                  "Success": {
+                    "value": {
+                      "success": true,
+                      "detail": {
+                        "date": "2022-11-14T15:02:46.340Z",
+                        "task": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                        "files": {
+                          "detail": "....json",
+                          "report": "....pdf"
+                        },
+                        "writedTo": [
+                          "..."
+                        ],
+                        "period": {
+                          "start": "2021-10-18T00:00:00.000Z",
+                          "end": "2021-10-24T23:59:59.999Z"
+                        },
+                        "runAs": "...",
+                        "stats": {
+                          "pageCount": 6,
+                          "size": 398460
+                        }
+                      }
+                    }
+                  },
+                  "Error": {
+                    "value": {
+                      "success": false,
+                      "detail": {
+                        "date": "2022-11-14T15:16:55.623Z",
+                        "task": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                        "files": {
+                          "detail": "....json"
+                        },
+                        "error": "..."
+                      }
                     }
                   }
                 }

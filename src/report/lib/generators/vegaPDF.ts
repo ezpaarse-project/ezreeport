@@ -8,7 +8,8 @@ import {
   deleteDoc,
   initDoc,
   renderDoc,
-  type PDFReportOptions
+  type PDFReportOptions,
+  type PDFStats
 } from '../pdf';
 import { addTableToPDF } from '../pdf/table';
 import { drawAreaRef } from '../pdf/utils';
@@ -32,7 +33,7 @@ const generatePdfWithVega = async (
     GRID = { rows: 2, cols: 2 },
     ...opts
   }: Options,
-): Promise<void> => {
+): Promise<PDFStats> => {
   try {
     const doc = await initDoc(opts);
 
@@ -225,7 +226,7 @@ const generatePdfWithVega = async (
       }
     }
 
-    await renderDoc();
+    return await renderDoc();
   } catch (error) {
     await deleteDoc();
     throw error;

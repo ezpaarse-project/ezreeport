@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import { jsPDF as PDF } from 'jspdf';
 import { existsSync } from 'node:fs';
-import { readFile, unlink } from 'node:fs/promises';
+import { readFile, stat, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import config from '../config';
 import './fonts/Roboto-bold.js';
@@ -64,6 +64,8 @@ let doc: {
 export type PDFReport = Exclude<typeof doc, undefined>;
 
 export type PDFReportOptions = Pick<PDFReport, 'name' | 'period' | 'path'>;
+
+export type PDFStats = { pageCount: number, path: string, size: number };
 
 /**
  * Print PDF's header
@@ -195,7 +197,7 @@ export const initDoc = async (params: PDFReportOptions): Promise<PDFReport> => {
 /**
  * Print page numbers, export PDF and reset document
  */
-export const renderDoc = async (): Promise<void> => {
+export const renderDoc = async (): Promise<PDFStats> => {
   if (!doc) throw new Error('jsDoc not initialized');
 
   // Print page numbers
@@ -215,8 +217,16 @@ export const renderDoc = async (): Promise<void> => {
   }
 
   // Export document
-  await doc.pdf.save(join(rootPath, doc.path), { returnPromise: true });
+  const path = join(rootPath, doc.path);
+  await doc.pdf.save(path, { returnPromise: true });
+  const { size } = await stat(path);
+
   doc = undefined;
+  return {
+    pageCount: totalPageCount,
+    path,
+    size,
+  };
 };
 
 /**

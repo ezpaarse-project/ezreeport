@@ -1,6 +1,6 @@
 import type { Task } from '@prisma/client';
 import { format } from 'date-fns';
-import { compact, merge } from 'lodash';
+import { compact, merge, omit } from 'lodash';
 import { randomUUID } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -16,7 +16,19 @@ const { outDir } = config.get('pdf');
 
 type ReportResult = {
   success: boolean,
-  detail: any
+  detail: {
+    date: Date,
+    task: Task['id'],
+    files: {
+      detail: string,
+      report?: string
+    },
+    writedTo?: string[],
+    period?: Interval,
+    runAs?: string,
+    stats?: Omit<Awaited<ReturnType<typeof generatePdfWithVega>>, 'path'>,
+    error?: string,
+  }
 };
 
 /**
@@ -88,7 +100,8 @@ export const generateReport = async (
     }
     const { _source: { username: user } } = contact;
 
-    const period = calcPeriod(today, task.recurrence);
+    const period = calcPeriod(new Date(2021, 9, 31, 12), task.recurrence);
+    // const period = calcPeriod(today, task.recurrence);
 
     if (!isValidLayout(task.layout)) {
       // As validation throws an error, this line shouldn't be called
@@ -128,7 +141,7 @@ export const generateReport = async (
       }
     }
 
-    await generatePdfWithVega(
+    const stats = await generatePdfWithVega(
       layout,
       // Report options
       {
@@ -151,7 +164,7 @@ export const generateReport = async (
       );
     }
 
-    result = merge(
+    result = merge<ReportResult, DeepPartial<ReportResult>>(
       result,
       {
         detail: {
@@ -159,6 +172,7 @@ export const generateReport = async (
           writedTo: targets,
           period,
           runAs: user,
+          stats: omit(stats, 'path'),
         },
       },
     );
@@ -168,7 +182,7 @@ export const generateReport = async (
       await addTaskHistory(task.id, { type: 'generation-error', message: `Rapport "${todayStr}/${filename}" non généré par ${origin} suite à une erreur.` });
     }
 
-    result = merge(
+    result = merge<ReportResult, DeepPartial<ReportResult>>(
       result,
       {
         success: false,
