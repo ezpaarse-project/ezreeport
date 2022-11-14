@@ -1,0 +1,61 @@
+import Joi from 'joi';
+import type { Mark } from 'vega-lite/build/src/mark';
+import type { InputMdParams } from '../lib/markdown';
+import type { InputMetricParams, MetricData } from '../lib/metrics';
+import type { PDFReportOptions } from '../lib/pdf';
+import type { TableParams } from '../lib/pdf/table';
+import type { InputVegaParams } from '../lib/vega';
+
+type FigureType = Mark | 'table' | 'md' | 'metric';
+
+interface FigureParams extends Record<FigureType, object> {
+  table: TableParams,
+  md: InputMdParams,
+  metric: InputMetricParams
+}
+
+interface FigureData extends Record<FigureType, unknown[]> {
+  metric: MetricData[]
+}
+
+/**
+ * Figure definition
+ */
+export interface Figure<Type extends FigureType> {
+  type: Type;
+  data: Type extends 'md' ? string : FigureData[Type];
+  params: Type extends Mark ? InputVegaParams : FigureParams[Type];
+  slots?: number[]
+}
+
+/**
+ * Global figure definition
+ */
+export type AnyFigure = Figure<Mark> | Figure<'table'> | Figure<'md'> | Figure<'metric'>;
+
+// TODO[refactor]: Remove type PDF
+export type AnyFigureFnc = (docOpts: PDFReportOptions) => AnyFigure | AnyFigure[];
+
+/**
+ * Check if the given figure is a table
+ *
+ * @param figure The figure
+ * @returns Is the figure is a table
+ */
+export const isFigureTable = (figure: AnyFigure): figure is Figure<'table'> => figure.type === 'table';
+
+/**
+ * Check if the given figure is a text
+ *
+ * @param figure The figure
+ * @returns Is the figure is a text
+ */
+export const isFigureMd = (figure: AnyFigure): figure is Figure<'md'> => figure.type === 'md';
+
+/**
+ * Check if the given figure is a metric
+ *
+ * @param figure The figure
+ * @returns Is the figure is a metric
+ */
+export const isFigureMetric = (figure: AnyFigure): figure is Figure<'metric'> => figure.type === 'metric';

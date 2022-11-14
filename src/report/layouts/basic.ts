@@ -3,7 +3,8 @@ import { format, formatISO } from 'date-fns';
 import { merge } from 'lodash';
 import { elasticCheckIndex, elasticCount, elasticSearch } from '../lib/elastic';
 import { calcElasticInterval, calcVegaFormat } from '../lib/recurrence';
-import type { Figure, LayoutFnc } from '../models/reports';
+import type { Figure } from '../models/figures';
+import type { LayoutFnc } from '../models/layouts';
 
 interface DataOptions {
   indexPrefix: string; // Provided at runtime
