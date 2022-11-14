@@ -193,6 +193,64 @@ export default () => {
       });
     });
 
+    describe('PUT /tasks/{taskId}/enable', () => {
+      const request = () => agent.put(`/tasks/${randomString()}/enable`)
+        .auth(config.EZMESURE_TOKEN, { type: 'bearer' });
+
+      it('should return 400 (jwt)', async () => {
+        // Random JWT
+        const res = await request().auth(randomString(), { type: 'bearer' });
+
+        expect(res).to.have.status(400);
+        expect(res.body.status).to.like({ code: 400, message: 'Bad Request' });
+      });
+
+      it('should return 401', async () => {
+        // No JWT
+        const res = await request().auth('', { type: 'bearer' });
+
+        expect(res).to.have.status(401);
+        expect(res.body.status).to.like({ code: 401, message: 'Unauthorized' });
+      });
+
+      it('should return 404', async () => {
+        // Random id
+        const res = await request();
+
+        expect(res).to.have.status(404);
+        expect(res.body.status).to.like({ code: 404, message: 'Not Found' });
+      });
+    });
+
+    describe('PUT /tasks/{taskId}/disable', () => {
+      const request = () => agent.put(`/tasks/${randomString()}/enable`)
+        .auth(config.EZMESURE_TOKEN, { type: 'bearer' });
+
+      it('should return 400 (jwt)', async () => {
+        // Random JWT
+        const res = await request().auth(randomString(), { type: 'bearer' });
+
+        expect(res).to.have.status(400);
+        expect(res.body.status).to.like({ code: 400, message: 'Bad Request' });
+      });
+
+      it('should return 401', async () => {
+        // No JWT
+        const res = await request().auth('', { type: 'bearer' });
+
+        expect(res).to.have.status(401);
+        expect(res.body.status).to.like({ code: 401, message: 'Unauthorized' });
+      });
+
+      it('should return 404', async () => {
+        // Random id
+        const res = await request();
+
+        expect(res).to.have.status(404);
+        expect(res.body.status).to.like({ code: 404, message: 'Not Found' });
+      });
+    });
+
     describe('DELETE /tasks/{taskId}', () => {
       const request = () => agent.delete(`/tasks/${randomString()}`)
         .auth(config.EZMESURE_TOKEN, { type: 'bearer' });
@@ -295,6 +353,36 @@ export default () => {
         expect(res.body).to.like({
           status: { code: 200, message: 'OK' },
           content: { ...task, nextRun: task.nextRun?.toISOString() },
+        });
+        task = res.body.content;
+      });
+
+      step('PUT /tasks/{taskId}/enable', async () => {
+        const { id, enabled } = task;
+
+        const res = await agent.put(`/tasks/${id}/enable`)
+          .auth(config.EZMESURE_TOKEN, { type: 'bearer' })
+          .type('json').send(task);
+
+        expect(res).to.have.status(200);
+        expect(res.body).to.like({
+          status: { code: 200, message: 'OK' },
+          content: { enabled: !enabled },
+        });
+        task = res.body.content;
+      });
+
+      step('PUT /tasks/{taskId}/disable', async () => {
+        const { id, enabled } = task;
+
+        const res = await agent.put(`/tasks/${id}/disable`)
+          .auth(config.EZMESURE_TOKEN, { type: 'bearer' })
+          .type('json').send(task);
+
+        expect(res).to.have.status(200);
+        expect(res.body).to.like({
+          status: { code: 200, message: 'OK' },
+          content: { enabled: !enabled },
         });
         task = res.body.content;
       });
