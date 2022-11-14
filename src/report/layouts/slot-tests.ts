@@ -1,8 +1,9 @@
-import { Figure, LayoutFnc, SlotIndex } from '../models/reports';
-
 /**
  * ! Remember to generate with /tasks/{id}/run?test_emails[]=<your_mail>&debug=true
  */
+
+import { Figure } from '../models/figures';
+import { LayoutFnc } from '../models/layouts';
 
 const slotTestsLayout: LayoutFnc = () => {
   if (process.env.NODE_ENV !== 'production') {
@@ -27,39 +28,39 @@ const slotTestsLayout: LayoutFnc = () => {
       ],
       (): [Figure<'md'>, Figure<'md'>] => [
         {
-          type: 'md', data: '0 (top-left)', params: {}, slots: [SlotIndex.TOP_LEFT],
+          type: 'md', data: '0 (top-left)', params: {}, slots: [0],
         },
         {
-          type: 'md', data: '3 (bottom-right)', params: {}, slots: [SlotIndex.BOTTOM_RIGHT],
-        },
-      ],
-      (): [Figure<'md'>, Figure<'md'>] => [
-        {
-          type: 'md', data: '1 (top-right)', params: {}, slots: [SlotIndex.TOP_RIGHT],
-        },
-        {
-          type: 'md', data: '2 (bottom-left)', params: {}, slots: [SlotIndex.BOTTOM_LEFT],
+          type: 'md', data: '3 (bottom-right)', params: {}, slots: [3],
         },
       ],
       (): [Figure<'md'>, Figure<'md'>] => [
         {
-          type: 'md', data: '0,1 (top)', params: {}, slots: [SlotIndex.TOP_LEFT, SlotIndex.TOP_RIGHT],
+          type: 'md', data: '1 (top-right)', params: {}, slots: [1],
         },
         {
-          type: 'md', data: '2,3 (bottom)', params: {}, slots: [SlotIndex.BOTTOM_LEFT, SlotIndex.BOTTOM_RIGHT],
+          type: 'md', data: '2 (bottom-left)', params: {}, slots: [2],
         },
       ],
       (): [Figure<'md'>, Figure<'md'>] => [
         {
-          type: 'md', data: '0,2 (left)', params: {}, slots: [SlotIndex.TOP_LEFT, SlotIndex.BOTTOM_LEFT],
+          type: 'md', data: '0,1 (top)', params: {}, slots: [0, 1],
         },
         {
-          type: 'md', data: '1,3 (right)', params: {}, slots: [SlotIndex.TOP_RIGHT, SlotIndex.BOTTOM_RIGHT],
+          type: 'md', data: '2,3 (bottom)', params: {}, slots: [2, 3],
+        },
+      ],
+      (): [Figure<'md'>, Figure<'md'>] => [
+        {
+          type: 'md', data: '0,2 (left)', params: {}, slots: [0, 2],
+        },
+        {
+          type: 'md', data: '1,3 (right)', params: {}, slots: [1, 3],
         },
       ],
       (): [Figure<'md'>] => [
         {
-          type: 'md', data: '0,1,2,3 (all)', params: {}, slots: [SlotIndex.TOP_LEFT, SlotIndex.TOP_RIGHT, SlotIndex.BOTTOM_LEFT, SlotIndex.BOTTOM_RIGHT],
+          type: 'md', data: '0,1,2,3 (all)', params: {}, slots: [0, 1, 2, 3],
         },
       ],
     ];
