@@ -2,8 +2,8 @@
  * ! Remember to generate with /tasks/{id}/run?test_emails[]=<your_mail>&debug=true
  */
 
-import type { Figure } from '../models/figures';
-import type { LayoutFnc } from '../models/layouts';
+import type { Figure } from '../../models/figures';
+import type { LayoutFnc } from '../../models/layouts';
 
 export const GRID = { rows: 2, cols: 2 };
 

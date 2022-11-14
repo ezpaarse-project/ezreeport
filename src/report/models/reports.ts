@@ -8,7 +8,7 @@ import config from '../lib/config';
 import generatePdfWithVega from '../lib/generators/vegaPDF';
 import { calcNextDate, calcPeriod } from '../lib/recurrence';
 import { findInstitutionByIds, findInstitutionContact } from './institutions';
-import { isValidLayout, LayoutFnc } from './layouts';
+import { isValidLayout, type LayoutFnc } from './layouts';
 import { addTaskHistory, slientEditTaskById } from './tasks';
 
 const rootPath = config.get('rootPath');
@@ -95,7 +95,13 @@ export const generateReport = async (
       return {} as ReportResult;
     }
 
-    const { default: baseLayout, GRID } = (await import(`../layouts/${task.layout.extends}`)) as {
+    if (/\.\./i.test(task.layout.extends)) {
+      throw new Error("For security reasons, you can't access to a parent folder");
+    }
+
+    const imported = (await import(`../layouts/${task.layout.extends}`));
+    // eslint-disable-next-line no-underscore-dangle
+    const { default: baseLayout, GRID } = (imported.__esModule ? imported : imported.default) as {
       GRID?: { rows: number, cols: number },
       default?: LayoutFnc
     };
