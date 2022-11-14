@@ -107,7 +107,7 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
  *
  * @returns Task
  */
-export const getTaskById = async (id: Task['id'], institution?: Task['institution']): Promise<Task | null> => {
+export const getTaskById = async (id: Task['id'], institution?: Task['institution']): Promise<(Task & { history: History[] }) | null> => {
   await prisma.$connect();
 
   const task = await prisma.task.findFirst({
@@ -223,12 +223,6 @@ export const deleteTaskById = async (id: Task['id'], institution?: Task['institu
     },
     include: {
       history: true,
-    },
-  });
-
-  await prisma.history.deleteMany({
-    where: {
-      taskId: id,
     },
   });
 
