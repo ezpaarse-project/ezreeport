@@ -11,17 +11,18 @@ import Joi from 'joi';
 import logger from '../lib/logger';
 import prisma from '../lib/prisma';
 import { HTTPError } from '../types/errors';
+import { layoutSchema, type LayoutJSON } from './layouts';
 
 // TODO[feat]: More checks to make custom errors
 
-type InputTask = Omit<Task, 'institution' | 'history' | 'createdAt' | 'updatedAt' | 'id' | 'lastRun'> & { layout: object };
+type InputTask = Omit<Task, 'institution' | 'history' | 'createdAt' | 'updatedAt' | 'id' | 'lastRun'> & { layout: LayoutJSON };
 
 /**
  * Joi schema
  */
-export const taskSchema = Joi.object<InputTask>({
+const taskSchema = Joi.object<InputTask>({
   name: Joi.string().trim().required(),
-  layout: Joi.object().required(),
+  layout: layoutSchema.required(),
   targets: Joi.array().items(Joi.string().trim().email()).required(),
   recurrence: Joi.string().valid(
     Recurrence.DAILY,
@@ -31,7 +32,7 @@ export const taskSchema = Joi.object<InputTask>({
     Recurrence.BIENNIAL,
     Recurrence.YEARLY,
   ).required(),
-  nextRun: Joi.string().isoDate().required(), // FIXME: check possible
+  nextRun: Joi.date().iso().greater('now').required(),
   enabled: Joi.boolean().default(true),
 });
 
@@ -39,7 +40,9 @@ export const taskSchema = Joi.object<InputTask>({
  * Check if input data is a task
  *
  * @param data The input data
- * @returns true or throws an error
+ * @returns `true` if valid
+ *
+ * @throws If not valid
  *
  * @throw If input data isn't a Task
  */
@@ -60,14 +63,14 @@ const isValidTask = (data: unknown): data is InputTask => {
  *
  * @returns Tasks list
  */
-// TODO[feat]: Sort
+// TODO[feat]: Custom sort
 export const getAllTasks = async <Keys extends Array<keyof Task>>(
   opts?: { count: number, previous?: Task['id'], select?: Keys },
   institution?: Task['institution'],
 ): Promise<Task[]> => {
   try {
     const select = opts?.select && opts.select.reduce<Prisma.TaskSelect>(
-      (previous, key) => ({ ...previous, [key]: true }),
+      (prev, key) => ({ ...prev, [key]: true }),
       {},
     );
 
@@ -79,6 +82,9 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
       cursor: opts?.previous ? { id: opts.previous } : undefined,
       select,
       where: institution ? { institution } : undefined,
+      orderBy: {
+        createdAt: 'asc',
+      },
     }) as Task[]; // FIXME: Prisma bug ?
 
     await prisma.$disconnect();

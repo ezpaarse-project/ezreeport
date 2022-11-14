@@ -17,7 +17,7 @@ model Task {
   layout      Json
   targets     String[]
   recurrence  Recurrence
-  nextRun     DateTime?
+  nextRun     DateTime
   lastRun     DateTime?
   enabled     Boolean    @default(true)
   history     History[]

@@ -1,26 +1,69 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { format, formatISO } from 'date-fns';
+import Joi from 'joi';
 import { merge } from 'lodash';
 import { elasticCheckIndex, elasticCount, elasticSearch } from '../lib/elastic';
 import { calcElasticInterval, calcVegaFormat } from '../lib/recurrence';
 import type { Figure } from '../models/figures';
 import type { LayoutFnc } from '../models/layouts';
 
-interface DataOptions {
-  indexPrefix: string; // Provided at runtime
-  indexSuffix: string; // Provided in task
-  filters?: ElasticTypes.QueryDslQueryContainer | ElasticTypes.QueryDslQueryContainer[];
-}
-
 type AggregationResult<T extends { key: unknown }> = {
   buckets: T[];
   after_key?: T['key']
 };
 
+interface DataOptions {
+  indexSuffix: string; // Provided in task
+  filters?: ElasticTypes.QueryDslQueryContainer | ElasticTypes.QueryDslQueryContainer[];
+}
+
+const dataoptsSchema = Joi.object<DataOptions>({
+  indexSuffix: Joi.string().trim().required(),
+  filters: Joi.object(),
+});
+
+/**
+ * Check if input data is data options for Elastic
+ *
+ * @param data The input data
+ * @returns `true` if valid
+ *
+ * @throws If not valid
+ *
+ * @throw If input data isn't a DataOptions
+ */
+const isDataOpts = (data: unknown): data is DataOptions => {
+  const validation = dataoptsSchema.validate(data, {});
+  if (validation.error != null) {
+    throw new Error(`Data options are not valid: ${validation.error.message}`);
+  }
+  return true;
+};
+
+/**
+ * Basic layout, made from weekly BibCNRS
+ *
+ * @param param0 Some task options
+ * @param dataOpts Data options for Elastic
+ *
+ * @returns The layout with data
+ */
 const basicLayout: LayoutFnc = async (
-  { period, recurrence, user },
-  { indexPrefix, indexSuffix, filters }: DataOptions,
+  {
+    period,
+    recurrence,
+    user,
+    institution: { indexPrefix },
+  },
+  dataOpts: unknown,
 ) => {
+  if (!isDataOpts(dataOpts)) {
+    // As validation throws an error, this line shouldn't be called
+    return [];
+  }
+
+  const { indexSuffix, filters } = dataOpts;
+
   const index = indexPrefix + indexSuffix;
   // Check if index pattern is valid
   const indexExist = await elasticCheckIndex(index);
@@ -47,18 +90,6 @@ const basicLayout: LayoutFnc = async (
   const vegaFormat = calcVegaFormat(recurrence);
 
   return [
-    // Intro
-    (): Figure<'md'> => ({
-      type: 'md',
-      data: `### **Rapport hebdomadaire des consultations BibCNRS**
-
-Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts lors de la semaine écoulée.
-
-[![ezmesure](https://blog.ezpaarse.org/wp-content/uploads/2017/11/logo-ezMESURE.png)](https://ezmesure.couperin.org/)
-[![bibcnrs](https://www.inist.fr/wp-content/uploads/2018/07/bibcnrs-logo-visite-e1530711678757.png)](https://bib.cnrs.fr/)`,
-      params: {},
-    }),
-
     // Histogramme consultations
     async (): Promise<[Figure<'metric'>, Figure<'bar'>]> => {
       const opts: ElasticTypes.SearchRequest = {

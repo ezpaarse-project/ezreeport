@@ -229,7 +229,7 @@
                       }
                     },
                     "content": {
-                      "$ref": "#/components/schemas/Task"
+                      "$ref": "#/components/schemas/FullTask"
                     }
                   }
                 },
@@ -245,7 +245,7 @@
                         "name": "My Super Task",
                         "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
                         "layout": {
-                          "...": "..."
+                          "extends": "basic"
                         },
                         "targets": [
                           "..."
@@ -315,14 +315,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Task"
+                "$ref": "#/components/schemas/FullTask"
               },
               "examples": {
                 "Example": {
                   "value": {
                     "name": "My Super Task",
                     "layout": {
-                      "...": "..."
+                      "extends": "basic"
                     },
                     "targets": [
                       "..."
@@ -414,7 +414,7 @@
                       }
                     },
                     "content": {
-                      "$ref": "#/components/schemas/Task"
+                      "$ref": "#/components/schemas/FullTask"
                     }
                   }
                 },
@@ -430,7 +430,7 @@
                         "name": "My Super Task",
                         "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
                         "layout": {
-                          "...": "..."
+                          "extends": "basic"
                         },
                         "targets": [
                           "..."
@@ -565,7 +565,7 @@
                       }
                     },
                     "content": {
-                      "$ref": "#/components/schemas/Task"
+                      "$ref": "#/components/schemas/FullTask"
                     }
                   }
                 },
@@ -581,7 +581,7 @@
                         "name": "My Super Task",
                         "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
                         "layout": {
-                          "...": "..."
+                          "extends": "basic"
                         },
                         "targets": [
                           "..."
@@ -660,14 +660,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Task"
+                "$ref": "#/components/schemas/FullTask"
               },
               "examples": {
                 "Example": {
                   "value": {
                     "name": "My Super Task",
                     "layout": {
-                      "...": "..."
+                      "extends": "basic"
                     },
                     "targets": [
                       "..."
@@ -738,7 +738,7 @@
                       }
                     },
                     "content": {
-                      "$ref": "#/components/schemas/Task"
+                      "$ref": "#/components/schemas/FullTask"
                     }
                   }
                 },
@@ -754,7 +754,7 @@
                         "name": "My Super Task",
                         "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
                         "layout": {
-                          "...": "..."
+                          "extends": "basic"
                         },
                         "targets": [
                           "..."
@@ -978,6 +978,82 @@
             "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
             "name": "My Super Task",
             "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
+            "recurrence": "WEEKLY",
+            "nextRun": "2022-10-31T10:00:00.000Z",
+            "enabled": true,
+            "createdAt": "2022-10-25T11:55:47.375Z",
+            "updatedAt": "2022-10-25T11:55:47.375Z"
+          }
+        },
+        "description": "Reporting task",
+        "x-tags": [
+          "task"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id of the task",
+            "readOnly": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "institution": {
+            "type": "string",
+            "description": "Institution concerned by the task",
+            "readOnly": true
+          },
+          "recurrence": {
+            "type": "string",
+            "enum": [
+              "DAILY",
+              "WEEKLY",
+              "MONTHLY",
+              "QUARTERLY",
+              "BIENNIAL",
+              "YEARLY"
+            ]
+          },
+          "nextRun": {
+            "type": "string",
+            "description": "Next time the task will be run",
+            "format": "date-time"
+          },
+          "lastRun": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Is the task enabled"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Task created at ...",
+            "readOnly": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Task last updated at ...",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "required": [
+          "name",
+          "recurrence",
+          "nextRun"
+        ]
+      },
+      "FullTask": {
+        "x-examples": {
+          "Example": {
+            "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+            "name": "My Super Task",
+            "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
             "layout": {
               "...": "..."
             },
@@ -1026,79 +1102,84 @@
         "x-tags": [
           "task"
         ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Id of the task",
-            "readOnly": true
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Task"
           },
-          "name": {
-            "type": "string"
-          },
-          "institution": {
-            "type": "string",
-            "description": "Institution concerned by the task",
-            "readOnly": true
-          },
-          "layout": {
+          {
             "type": "object",
-            "description": "Layout of the report"
-          },
-          "targets": {
-            "type": "array",
-            "description": "Emails target",
-            "items": {
-              "type": "string"
-            }
-          },
-          "recurrence": {
-            "type": "string",
-            "enum": [
-              "DAILY",
-              "WEEKLY",
-              "MONTHLY",
-              "QUARTERLY",
-              "BIENNIAL",
-              "YEARLY"
-            ]
-          },
-          "nextRun": {
-            "type": "string",
-            "description": "Next time the task will be run",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastRun": {
-            "type": "string",
-            "description": "Date of the last run",
-            "format": "date-time",
-            "nullable": true
-          },
-          "enabled": {
-            "type": "boolean",
-            "default": true,
-            "description": "Is the task enabled"
-          },
-          "history": {
-            "type": "array",
-            "description": "History of the task",
-            "items": {
-              "$ref": "#/components/schemas/History"
+            "properties": {
+              "layout": {
+                "type": "object",
+                "description": "Layout of the report",
+                "required": [
+                  "extends"
+                ],
+                "properties": {
+                  "extends": {
+                    "type": "string",
+                    "description": "Base layout name"
+                  },
+                  "data": {
+                    "type": "object",
+                    "description": "Data options used by \"extends\""
+                  },
+                  "inserts": {
+                    "type": "array",
+                    "description": "Figures to add to \"extends\"",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "at": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Where to insert figure(s)"
+                        },
+                        "figures": {
+                          "oneOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/Figure"
+                              }
+                            },
+                            {
+                              "$ref": "#/components/schemas/Figure"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "at",
+                        "figures"
+                      ]
+                    }
+                  }
+                }
+              },
+              "targets": {
+                "type": "array",
+                "description": "Emails target",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                }
+              },
+              "history": {
+                "type": "array",
+                "description": "History of the task",
+                "items": {
+                  "$ref": "#/components/schemas/History"
+                },
+                "readOnly": true
+              }
             },
-            "readOnly": true
-          },
-          "createdAt": {
-            "type": "string",
-            "description": "Task created at ...",
-            "readOnly": true
-          },
-          "updatedAt": {
-            "type": "string",
-            "description": "Task last updated at ...",
-            "nullable": true,
-            "readOnly": true
+            "required": [
+              "layout",
+              "targets"
+            ]
           }
-        }
+        ]
       },
       "ReportDetail": {
         "title": "ReportDetail",
@@ -1115,6 +1196,16 @@
       },
       "History": {
         "type": "object",
+        "x-examples": {
+          "example-1": {
+            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
+            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+            "type": "generation-success",
+            "message": "Rapport \"...\" généré par ...",
+            "date": "2022-11-07T15:17:49.000Z"
+          }
+        },
+        "description": "Task's history",
         "properties": {
           "id": {
             "type": "string"
@@ -1132,15 +1223,69 @@
             "type": "string"
           }
         },
-        "x-examples": {
-          "example-1": {
-            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
-            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-            "type": "generation-success",
-            "message": "Rapport \"...\" généré par ...",
-            "date": "2022-11-07T15:17:49.000Z"
+        "required": [
+          "id",
+          "taskId",
+          "type",
+          "message",
+          "date"
+        ]
+      },
+      "Figure": {
+        "title": "Figure",
+        "x-stoplight": {
+          "id": "1gq05jmf1edi5"
+        },
+        "type": "object",
+        "description": "Reporting figure",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type of figure"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "string",
+                "properties": {}
+              },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object"
+                    },
+                    {
+                      "type": "array",
+                      "items": {}
+                    },
+                    {
+                      "type": "string",
+                      "properties": {}
+                    },
+                    {
+                      "type": "number",
+                      "properties": {}
+                    }
+                  ]
+                }
+              }
+            ],
+            "description": "Data of figure"
+          },
+          "slots": {
+            "type": "array",
+            "description": "Slot used by figure",
+            "items": {
+              "type": "number"
+            }
           }
-        }
+        },
+        "required": [
+          "type",
+          "data"
+        ]
       }
     },
     "securitySchemes": {
@@ -1474,13 +1619,16 @@
   },
   "tags": [
     {
-      "name": "general"
+      "name": "general",
+      "description": "General routes"
     },
     {
-      "name": "report"
+      "name": "report",
+      "description": "Report routes"
     },
     {
-      "name": "tasks"
+      "name": "tasks",
+      "description": "Task routes"
     }
   ]
 }

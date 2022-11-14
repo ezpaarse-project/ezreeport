@@ -33,6 +33,7 @@ router.get('/', checkRight(Roles.READ), checkInstitution, async (req, res) => {
           'institution',
           'recurrence',
           'nextRun',
+          'lastRun',
           'enabled',
           'createdAt',
           'updatedAt',

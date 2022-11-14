@@ -1,6 +1,6 @@
 import type { Task } from '@prisma/client';
 import { format } from 'date-fns';
-import { merge } from 'lodash';
+import { compact, merge } from 'lodash';
 import { randomUUID } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -67,7 +67,7 @@ export const generateReport = async (
   await mkdir(basePath, { recursive: true });
 
   try {
-    const targets = task.targets.filter((email) => email !== '');
+    const targets = compact(task.targets);
     if (targets.length <= 0) {
       throw new Error("Targets can't be null");
     }
@@ -89,29 +89,38 @@ export const generateReport = async (
     const { _source: { username: user } } = contact;
 
     const period = calcPeriod(today, task.recurrence);
-    // TODO[feat]: define layout as JSON. Use JOI
-    let baseLayout: LayoutFnc | undefined;
-    if (typeof task.layout === 'object' && (task.layout as any).extends) {
-      baseLayout = (await import(`../layouts/${(task.layout as any).extends}`)).default;
+
+    if (!isValidLayout(task.layout)) {
+      // As validation throws an error, this line shouldn't be called
+      return {} as ReportResult;
     }
+
+    const baseLayout: LayoutFnc | undefined = (await import(`../layouts/${task.layout.extends}`)).default;
     if (!baseLayout) {
-      throw new Error(`Layout "${(task.layout as any).extends}" not found`);
+      throw new Error(`Layout "${task.layout.extends}" not found`);
+    }
+
+    const layout = await baseLayout(
+      {
+        recurrence: task.recurrence,
+        // eslint-disable-next-line no-underscore-dangle
+        institution: institution._source?.institution,
+        period,
+        user,
+      },
+      task.layout.data,
+    );
+
+    if (task.layout.inserts) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const { at, figures } of task.layout.inserts) {
+        const fnc = () => figures;
+        layout.splice(at, 0, fnc);
+      }
     }
 
     await generatePdfWithVega(
-      await baseLayout(
-        {
-          recurrence: task.recurrence,
-          period,
-          user,
-        },
-        {
-          // { indexSuffix: string, filters: ... }
-          ...(task.layout as any).data,
-          // eslint-disable-next-line no-underscore-dangle
-          indexPrefix: institution._source?.institution.indexPrefix,
-        },
-      ),
+      layout,
       // Report options
       {
         name: task.name,
