@@ -95,7 +95,10 @@ export const generateReport = async (
       return {} as ReportResult;
     }
 
-    const baseLayout: LayoutFnc | undefined = (await import(`../layouts/${task.layout.extends}`)).default;
+    const { default: baseLayout, GRID } = (await import(`../layouts/${task.layout.extends}`)) as {
+      GRID?: { rows: number, cols: number },
+      default?: LayoutFnc
+    };
     if (!baseLayout) {
       throw new Error(`Layout "${task.layout.extends}" not found`);
     }
@@ -127,6 +130,7 @@ export const generateReport = async (
         path: join(basePath, `${filename}.pdf`),
         period,
         debugPages: debug,
+        GRID,
       },
     );
 

@@ -14,6 +14,11 @@ import { addTableToPDF } from '../pdf/table';
 import { drawAreaRef } from '../pdf/utils';
 import { addVegaToPDF, createVegaLSpec, createVegaView } from '../vega';
 
+type Options = PDFReportOptions & {
+  debugPages?: boolean,
+  GRID?: { rows: number, cols: number },
+};
+
 /**
  * Generate PDF report with Vega
  *
@@ -22,7 +27,11 @@ import { addVegaToPDF, createVegaLSpec, createVegaView } from '../vega';
  */
 const generatePdfWithVega = async (
   layout: Layout,
-  { debugPages, ...opts }: PDFReportOptions,
+  {
+    debugPages,
+    GRID = { rows: 2, cols: 2 },
+    ...opts
+  }: Options,
 ): Promise<void> => {
   try {
     const doc = await initDoc(opts);
@@ -34,8 +43,6 @@ const generatePdfWithVega = async (
       height: doc.height - doc.offset.top - doc.offset.bottom,
     };
 
-    // TODO[feat]: Custom slots or grid
-    const GRID = { rows: 2, cols: 2 };
     const marginSlot = {
       horizontal: doc.margin.left / 2,
       vertical: doc.margin.top / 2,
