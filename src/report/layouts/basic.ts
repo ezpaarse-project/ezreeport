@@ -58,14 +58,20 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
       params: {},
     }),
 
-    // Metrics
-    async (): Promise<Figure<'metric'>> => {
+    // Histogramme consultations
+    async (): Promise<[Figure<'metric'>, Figure<'bar'>]> => {
       const opts: ElasticTypes.SearchRequest = {
         index,
         size: 0,
         body: {
           ...baseOpts,
           aggs: {
+            consult_by_date: {
+              date_histogram: {
+                field: 'datetime',
+                calendar_interval: elasticInterval,
+              },
+            },
             platforms: {
               cardinality: {
                 field: 'portal',
@@ -79,58 +85,6 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
             max_date: {
               max: {
                 field: 'datetime',
-              },
-            },
-          },
-        },
-      };
-
-      type Aggs = {
-        platforms: { value: number }
-        min_date: { value: number }
-        max_date: { value: number }
-      };
-
-      const { body: { aggregations } } = await elasticSearch(opts, user);
-      if (
-        !aggregations?.platforms
-        || !aggregations?.min_date
-        || !aggregations?.max_date
-      ) {
-        throw new Error('Aggregation(s) not found');
-      }
-      const {
-        platforms,
-        min_date: minDate,
-        max_date: maxDate,
-      } = aggregations as Aggs;
-
-      const { body: { count } } = await elasticCount({ index, body: baseOpts }, user);
-
-      return {
-        type: 'metric',
-        data: [
-          { key: 'Consultations', value: count },
-          { key: 'Plateformes', value: platforms.value },
-          { key: 'Début de période', value: format(minDate.value, 'dd LLL yyyy') },
-          { key: 'Fin de période', value: format(maxDate.value, 'dd LLL yyyy') },
-        ],
-        params: {},
-      };
-    },
-
-    // Histogramme consultations
-    async (): Promise<Figure<'bar'>> => {
-      const opts: ElasticTypes.SearchRequest = {
-        index,
-        size: 0,
-        body: {
-          ...baseOpts,
-          aggs: {
-            consult_by_date: {
-              date_histogram: {
-                field: 'datetime',
-                calendar_interval: elasticInterval,
               },
             },
           },
@@ -154,7 +108,14 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
           ),
           user,
         );
-        if (!aggregations?.consult_by_date) throw new Error('Aggregation(s) not found');
+        if (
+          !aggregations?.consult_by_date
+          || !aggregations?.platforms
+          || !aggregations?.min_date
+          || !aggregations?.max_date
+        ) {
+          throw new Error('Aggregation(s) not found');
+        }
 
         const { buckets, after_key: afterKey } = aggregations.consult_by_date as AggregationResult<{
           doc_count: number;
@@ -165,32 +126,94 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
         after = afterKey;
       } while (after != null);
 
-      // Return params for Vega-lite helper
-      return {
-        type: 'bar',
-        data,
-        params: {
-          title: {
-            text: 'Histogramme consultations',
-          },
-          value: {
-            field: 'doc_count',
-            title: 'Nombre de consultations',
-          },
-          label: {
-            field: 'key',
-            timeUnit: vegaFormat.timeUnit,
-            title: '',
-            axis: {
-              format: vegaFormat.format,
+      type Aggs = {
+        platforms: { value: number }
+        min_date: { value: number }
+        max_date: { value: number }
+      };
+
+      const { body: { aggregations } } = await elasticSearch(
+        {
+          index,
+          size: 0,
+          body: {
+            ...baseOpts,
+            aggs: {
+              platforms: {
+                cardinality: {
+                  field: 'portal',
+                },
+              },
+              min_date: {
+                min: {
+                  field: 'datetime',
+                },
+              },
+              max_date: {
+                max: {
+                  field: 'datetime',
+                },
+              },
             },
           },
-          dataLabel: {
-            format: 'numeric',
-          },
-          // debugExport: process.env.NODE_ENV !== 'production',
         },
-      };
+        user,
+      );
+      if (
+        !aggregations?.platforms
+        || !aggregations?.min_date
+        || !aggregations?.max_date
+      ) {
+        throw new Error('Aggregation(s) not found');
+      }
+      const {
+        platforms,
+        min_date: minDate,
+        max_date: maxDate,
+      } = aggregations as Aggs;
+
+      const { body: { count: totalCount } } = await elasticCount({ index, body: baseOpts }, user);
+
+      // Return params for Vega-lite helper
+      return [
+        {
+          type: 'metric',
+          data: [
+            { key: 'Consultations', value: totalCount },
+            { key: 'Plateformes', value: platforms.value },
+            { key: 'Début de période', value: format(minDate.value, 'dd LLL yyyy') },
+            { key: 'Fin de période', value: format(maxDate.value, 'dd LLL yyyy') },
+          ],
+          params: {},
+          slots: [0, 1],
+        },
+        {
+          type: 'bar',
+          data,
+          params: {
+            title: {
+              text: 'Histogramme consultations',
+            },
+            value: {
+              field: 'doc_count',
+              title: 'Nombre de consultations',
+            },
+            label: {
+              field: 'key',
+              timeUnit: vegaFormat.timeUnit,
+              title: '',
+              axis: {
+                format: vegaFormat.format,
+              },
+            },
+            dataLabel: {
+              format: 'numeric',
+            },
+          // debugExport: process.env.NODE_ENV !== 'production',
+          },
+          slots: [2, 3],
+        },
+      ];
     },
 
     // Consultations par type
@@ -232,6 +255,11 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
             label: {
               field: 'key',
               title: 'Type',
+              // legend: {
+              //   // FIXME: not centered
+              //   orient: 'top',
+              // },
+              legend: null,
             },
             dataLabel: {
               format: 'percent',
@@ -257,6 +285,7 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
                 // showSum: true // TODO[refactor]: Include param for showing sum
               },
             ],
+            // TODO[feat]: color for each row
             // foot: [
             //   [
             //     '',
@@ -410,7 +439,7 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
               terms: {
                 field: 'publication_title',
                 order: { _count: 'desc' },
-                size: 10,
+                size: 20,
               },
               aggs: {
                 publisher: {
@@ -508,6 +537,7 @@ Ce rapport est destiné à montrer les consultations de BibCNRS des 10 instituts
           label: {
             field: 'key',
             title: 'Année',
+            legend: null,
           },
           dataLabel: {
             format: 'percent',
