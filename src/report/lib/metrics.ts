@@ -15,7 +15,6 @@ export type MetricData = {
 };
 
 type MetricDefault = {
-  cursor: Position,
   font: Font,
   fontSize: number
 };
@@ -53,22 +52,21 @@ const keyStyle = (pdf: PDFReport['pdf'], def: MetricDefault): PDFReport['pdf'] =
  */
 export const addMetricToPDF = (doc: PDFReport, rawData: MetricData[], params: MetricParams) => {
   const def: MetricDefault = {
-    cursor: {
-      x: 0, // will be calculated later
-      y: 0, // will be calculated later
-    },
     font: doc.pdf.getFont(),
     fontSize: doc.pdf.getFontSize(),
   };
 
-  const margin = { x: doc.margin.left, y: 3 };
-  // Calc size of each text
+  const margin = { x: doc.margin.left, y: doc.margin.top, key: 3 };
+  const cell: Size = { width: 0, height: 0 };
+  // Calc size of each text + size of cell
   const data = rawData.map(({ key, value }) => {
     const str = value.toString();
     const sizes = {
       key: keyStyle(doc.pdf, def).getTextDimensions(key),
       value: valueStyle(doc.pdf, def).getTextDimensions(str),
     };
+    cell.width = Math.max(cell.width, Math.max(sizes.key.w, sizes.value.w));
+    cell.height = Math.max(cell.height, sizes.key.h + sizes.value.h + margin.key);
     return {
       key,
       value: str,
@@ -76,44 +74,70 @@ export const addMetricToPDF = (doc: PDFReport, rawData: MetricData[], params: Me
     };
   });
 
-  // Calc total area
-  const totalSizes = data.reduce(
-    // TODO[feat]: Break if too wide
-    (total, { sizes }) => {
-      const sumSizes = Object.values(sizes).reduce(
-        // For each size of item
-        (sum, { w, h }) => ({ w: Math.max(sum.w, w), h: sum.h + h }),
-        { w: 0, h: 0 },
-      );
-      // For each item
-      return {
-        w: total.w + sumSizes.w + margin.x,
-        h: Math.max(total.h, sumSizes.h) + margin.y,
-      };
-    },
-    { w: 0, h: 0 },
-  );
-
-  // Set cursor to center the whole area
+  const slots: Area[] = [];
   const cursor: Position = {
-    x: params.start.x + Math.round(params.width / 2) - Math.round(totalSizes.w / 2),
-    y: params.start.y + Math.round(params.height / 2) - Math.round(totalSizes.h / 2),
+    x: 0,
+    y: 0,
   };
-  def.cursor = { ...cursor };
 
-  // eslint-disable-next-line no-restricted-syntax
-  for (const { key, value, sizes } of data) {
-    const str = value.toString();
-    // Getting maximum width of key/value
-    const width = Math.max(...Object.values(sizes).map(({ w }) => w));
-    // const height = Object.values(sizes).reduce((sum, { h }) => sum + h, 0);
+  // Calc positions of cells
+  const counts = { rows: 1, cols: 0 };
+  for (let i = 0; i < data.length; i += 1) {
+    if (cursor.x + cell.width >= params.width) {
+      cursor.x = 0;
+      cursor.y += cell.height + margin.y;
+      counts.rows += 1;
+    }
 
-    cursor.y += sizes.value.h;
-    valueStyle(doc.pdf, def).text(str, cursor.x + Math.round(width / 2), cursor.y, { align: 'center' });
-    cursor.y += sizes.key.h + margin.y;
-    keyStyle(doc.pdf, def).text(key, cursor.x + Math.round(width / 2), cursor.y, { align: 'center' });
+    const slot: Area = {
+      ...cell,
+      x: cursor.x,
+      y: cursor.y,
+    };
 
-    cursor.x += width + margin.x;
-    cursor.y = def.cursor.y;
+    cursor.x += cell.width + margin.x;
+
+    slots.push(slot);
   }
+  counts.cols = data.length / counts.rows;
+
+  const totalSize: Size = {
+    width: (counts.cols * cell.width) + ((counts.cols - 1) * margin.x),
+    height: (counts.rows * cell.height) + ((counts.rows - 1) * margin.y),
+  };
+
+  const offset: Position = {
+    x: params.start.x + (params.width / 2) - (totalSize.width / 2),
+    y: params.start.y + (params.height / 2) - (totalSize.height / 2),
+  };
+
+  // Print data
+  for (let i = 0; i < data.length; i += 1) {
+    const { key, value, sizes } = data[i];
+    const slot = {
+      ...slots[i],
+      x: offset.x + slots[i].x,
+      y: offset.y + slots[i].y,
+    };
+
+    let y = slot.y + sizes.value.h - 5;
+    valueStyle(doc.pdf, def).text(
+      value,
+      slot.x + Math.round(slot.width / 2),
+      y,
+      { align: 'center' },
+    );
+    y += sizes.key.h + margin.key;
+    keyStyle(doc.pdf, def).text(
+      key,
+      slot.x + Math.round(slot.width / 2),
+      y,
+      { align: 'center' },
+    );
+  }
+
+  // Reset colors/fonts before generating further pages
+  doc.pdf
+    .setFont(def.font.fontName, def.font.fontStyle)
+    .setFontSize(def.fontSize);
 };
