@@ -1,5 +1,5 @@
 import type { Task } from '@prisma/client';
-import { format } from 'date-fns';
+import { differenceInMilliseconds, format } from 'date-fns';
 import Joi from 'joi';
 import { compact, merge, omit } from 'lodash';
 import { randomUUID } from 'node:crypto';
@@ -20,6 +20,7 @@ type ReportResult = {
   success: boolean,
   detail: {
     date: Date,
+    time: number,
     task: Task['id'],
     files: {
       detail: string,
@@ -37,6 +38,7 @@ const reportresultSchema = Joi.object<ReportResult>({
   success: Joi.boolean().required(),
   detail: Joi.object<ReportResult['detail']>({
     date: Joi.date().iso().required(),
+    time: Joi.number().integer().required(),
     task: Joi.string().uuid().required(),
     files: Joi.object<ReportResult['detail']['files']>({
       detail: Joi.string().required(),
@@ -108,12 +110,13 @@ export const generateReport = async (
     filename += `_${randomUUID()}`;
   }
 
-  logger.info(`[gen] Generation of report ${filename} started`);
+  logger.info(`[gen] Generation of report "${todayStr}/${filename}" started`);
 
   let result: ReportResult = {
     success: true,
     detail: {
       date: new Date(),
+      time: 0,
       task: task.id,
       files: {
         detail: `${todayStr}/${filename}.json`,
@@ -212,6 +215,7 @@ export const generateReport = async (
       result,
       {
         detail: {
+          time: differenceInMilliseconds(new Date(), result.detail.date),
           files: { report: `${todayStr}/${filename}.pdf` },
           writedTo: targets,
           period,
@@ -220,7 +224,7 @@ export const generateReport = async (
         },
       },
     );
-    logger.info(`[gen] Report ${filename} successfully generated`);
+    logger.info(`[gen] Report "${todayStr}/${filename}" successfully generated in ${(result.detail.time / 1000).toFixed(2)}s`);
   } catch (error) {
     await slientEditTaskById(task.id, { enabled: false });
     if (writeHistory) {
@@ -232,11 +236,12 @@ export const generateReport = async (
       {
         success: false,
         detail: {
+          time: differenceInMilliseconds(new Date(), result.detail.date),
           error: (error as Error).message,
         },
       },
     );
-    logger.error(`[gen] Report ${filename} failed to generate with error : ${(error as Error).message}`);
+    logger.error(`[gen] Report "${todayStr}/${filename}" failed to generate in ${(result.detail.time / 1000).toFixed(2)}s with error : ${(error as Error).message}`);
   }
   await writeFile(join(basePath, `${filename}.json`), JSON.stringify(result), 'utf-8');
   return result;

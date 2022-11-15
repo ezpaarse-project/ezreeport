@@ -1239,6 +1239,10 @@
                           "type": "string",
                           "format": "date-time"
                         },
+                        "time": {
+                          "type": "integer",
+                          "description": "Time taken to generate report in ms"
+                        },
                         "task": {
                           "type": "string"
                         },
@@ -1299,6 +1303,7 @@
                       },
                       "required": [
                         "date",
+                        "time",
                         "task",
                         "files"
                       ]
@@ -1311,6 +1316,7 @@
                       "success": true,
                       "detail": {
                         "date": "2022-11-14T15:02:46.340Z",
+                        "time": 1000,
                         "task": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                         "files": {
                           "detail": "....json",
@@ -1336,6 +1342,7 @@
                       "success": false,
                       "detail": {
                         "date": "2022-11-14T15:16:55.623Z",
+                        "time": 1000,
                         "task": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                         "files": {
                           "detail": "....json"
