@@ -100,8 +100,7 @@ export const generateReport = async (
     }
     const { _source: { username: user } } = contact;
 
-    const period = calcPeriod(new Date(2021, 9, 31, 12), task.recurrence);
-    // const period = calcPeriod(today, task.recurrence);
+    const period = calcPeriod(today, task.recurrence);
 
     if (!isValidLayout(task.layout)) {
       // As validation throws an error, this line shouldn't be called
