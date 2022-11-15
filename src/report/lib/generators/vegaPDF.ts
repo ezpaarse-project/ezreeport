@@ -106,7 +106,6 @@ const generatePdfWithVega = async (
 
       for (let i = 0; i < figuresCount; i += 1) {
         const figure = figures[i];
-        // TODO[feat]: Choose which graph will go in which slot
         let slot: Area = {
           x: 0,
           y: 0,
@@ -188,7 +187,6 @@ const generatePdfWithVega = async (
           // eslint-disable-next-line no-await-in-loop
           await addTableToPDF(doc, figure.data, merge(figure.params, { margin }));
         } else if (isFigureMd(figure)) {
-          // TODO[feat]: Multiples layout with Md
           // eslint-disable-next-line no-await-in-loop
           await addMdToPDF(doc, figure.data, {
             ...figure.params,
@@ -200,7 +198,6 @@ const generatePdfWithVega = async (
             height: slot.height,
           });
         } else if (isFigureMetric(figure)) {
-          // TODO[feat]: Multiples layout with Metrics
           addMetricToPDF(doc, figure.data, {
             ...figure.params,
             start: {

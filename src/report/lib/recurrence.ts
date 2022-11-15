@@ -123,7 +123,7 @@ export const calcElasticInterval = (recurrence: Recurrence): 'hour' | 'day' | 'm
       return 'hour';
 
     case Recurrence.WEEKLY:
-    case Recurrence.MONTHLY: // TODO or week
+    case Recurrence.MONTHLY: // TODO: or week
       return 'day';
 
     case Recurrence.QUARTERLY:
