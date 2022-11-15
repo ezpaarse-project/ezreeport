@@ -85,6 +85,14 @@ export const isValidResult = (data: unknown): data is ReportResult => {
  */
 const normaliseFilename = (filename: string): string => filename.toLowerCase().replace(/[/ .]/g, '-');
 
+const defaultEvents = {
+  onCreation: () => {},
+  onLayoutResolved: (_layout: ReturnType<LayoutFnc>) => {},
+  onSlotsResolution: (_slots: Area[]) => {},
+  onFigureAdded: () => {},
+  onPageAdded: () => {},
+};
+
 /**
  * Generate report
  *
@@ -92,6 +100,7 @@ const normaliseFilename = (filename: string): string => filename.toLowerCase().r
  * @param origin The origin of the generation (can be username, or method (auto, etc.))
  * @param writeHistory Should write generation in task history (also disable first level of debug)
  * @param debug Enable second level of debug
+ * @param events Events overrides
  *
  * @returns ...
  */
@@ -100,7 +109,10 @@ export const generateReport = async (
   origin: string,
   writeHistory = true,
   debug = false,
+  events: Partial<typeof defaultEvents> = {},
 ): Promise<ReportResult> => {
+  const e = { ...defaultEvents, ...events };
+
   const today = new Date();
   const todayStr = format(today, 'yyyy/yyyy-MM');
   const basePath = join(rootPath, outDir, todayStr, '/');
@@ -111,6 +123,7 @@ export const generateReport = async (
   }
 
   logger.info(`[gen] Generation of report "${todayStr}/${filename}" started`);
+  e.onCreation();
 
   let result: ReportResult = {
     success: true,
@@ -188,6 +201,8 @@ export const generateReport = async (
       }
     }
 
+    e.onLayoutResolved(layout);
+
     const stats = await generatePdfWithVega(
       layout,
       // Report options
@@ -198,6 +213,7 @@ export const generateReport = async (
         debugPages: debug,
         GRID,
       },
+      e,
     );
 
     if (writeHistory) {

@@ -20,6 +20,12 @@ type Options = PDFReportOptions & {
   GRID?: { rows: number, cols: number },
 };
 
+const defaultEvents = {
+  onSlotsResolution: (_slots: Area[]) => {},
+  onFigureAdded: () => {},
+  onPageAdded: () => {},
+};
+
 /**
  * Generate PDF report with Vega
  *
@@ -33,7 +39,9 @@ const generatePdfWithVega = async (
     GRID = { rows: 2, cols: 2 },
     ...opts
   }: Options,
+  events: Partial<typeof defaultEvents> = {},
 ): Promise<PDFStats> => {
+  const e = { ...defaultEvents, ...events };
   try {
     const doc = await initDoc(opts);
 
@@ -88,6 +96,7 @@ const generatePdfWithVega = async (
       arr[i] = slot;
       return slot;
     });
+    e.onSlotsResolution(slots);
 
     let first = true;
     // eslint-disable-next-line no-restricted-syntax
@@ -220,7 +229,11 @@ const generatePdfWithVega = async (
           // eslint-disable-next-line no-await-in-loop
           await addVegaToPDF(doc, view, slot);
         }
+
+        e.onFigureAdded();
       }
+
+      e.onPageAdded();
     }
 
     return await renderDoc();
