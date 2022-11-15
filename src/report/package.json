@@ -27,6 +27,7 @@
   "dependencies": {
     "@elastic/elasticsearch": "^7.17.0",
     "@prisma/client": "^4.6.1",
+    "bull": "^4.10.1",
     "canvas": "^2.10.2",
     "config": "^3.3.8",
     "cors": "^2.8.5",

@@ -267,5 +267,3 @@ export const generateReport = async (
   await writeFile(join(basePath, `${filename}.json`), JSON.stringify(result), 'utf-8');
   return result;
 };
-
-export default generateReport;

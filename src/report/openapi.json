@@ -834,84 +834,6 @@
         ]
       }
     },
-    "/tasks/{taskId}/run": {
-      "parameters": [
-        {
-          "schema": {
-            "type": "string"
-          },
-          "name": "taskId",
-          "in": "path",
-          "required": true,
-          "description": "The task id"
-        }
-      ],
-      "post": {
-        "summary": "Generate report",
-        "operationId": "post-tasks-taskId-run",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "x-examples": {
-                    "example-1": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": {}
-                    }
-                  },
-                  "properties": {
-                    "status": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "integer"
-                        },
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    },
-                    "content": {
-                      "$ref": "#/components/schemas/ReportDetail"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "report"
-        ],
-        "security": [
-          {
-            "ezmesure-jwt": []
-          }
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/institution"
-          },
-          {
-            "schema": {
-              "type": "array",
-              "minItems": 1
-            },
-            "in": "query",
-            "name": "test_emails",
-            "style": "form",
-            "description": "Emails to send instead of task targets. Enables test mode if present."
-          }
-        ],
-        "description": "Trigger generation of report. Accessible to READ_WRITE."
-      }
-    },
     "/tasks/{taskId}/enable": {
       "parameters": [
         {
@@ -1182,6 +1104,107 @@
         }
       ]
     },
+    "/tasks/{taskId}/run": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "taskId",
+          "in": "path",
+          "required": true,
+          "description": "The task id"
+        }
+      ],
+      "post": {
+        "summary": "Generate report",
+        "operationId": "post-tasks-taskId-run",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Bull's job id"
+                        },
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "task": {
+                              "$ref": "#/components/schemas/FullTask"
+                            },
+                            "origin": {
+                              "type": "string"
+                            },
+                            "writeHistory": {
+                              "type": "boolean"
+                            },
+                            "debug": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "report"
+        ],
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/institution"
+          },
+          {
+            "schema": {
+              "type": "array",
+              "minItems": 1
+            },
+            "in": "query",
+            "name": "test_emails",
+            "style": "form",
+            "description": "Emails to send instead of task targets. Enables test mode if present."
+          }
+        ],
+        "description": "Trigger generation of report. Accessible to READ_WRITE."
+      }
+    },
     "/reports/{path}": {
       "parameters": [
         {
@@ -1390,6 +1413,552 @@
         ],
         "tags": [
           "report"
+        ]
+      }
+    },
+    "/queues": {
+      "get": {
+        "summary": "Get all queues",
+        "tags": [
+          "queue"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        "generation"
+                      ]
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        "generation"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "get-queues",
+        "description": "List all possible queues names. Accessible to READ.",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ]
+      }
+    },
+    "/queues/{queue}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "queue",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "summary": "Get specific queue",
+        "tags": [
+          "queue"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "status": "active",
+                        "jobs": []
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string"
+                        },
+                        "jobs": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Job"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "status": "active",
+                        "jobs": []
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-queues-queue",
+        "description": "Get info about a queue. Only accessible to SUPER_USER.",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ]
+      }
+    },
+    "/queues/{queue}/pause": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "queue",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "put": {
+        "summary": "Pause queue",
+        "operationId": "put-queues-queue-pause",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "status": "active",
+                        "jobs": []
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string"
+                        },
+                        "jobs": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Job"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "status": "paused",
+                        "jobs": []
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "description": "Pause the whole queue. Only accessible to SUPER_USER.",
+        "tags": [
+          "queue"
+        ]
+      }
+    },
+    "/queues/{queue}/resume": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "queue",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "put": {
+        "summary": "Resume queue",
+        "operationId": "put-queues-queue-resume",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "status": "active",
+                        "jobs": []
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string"
+                        },
+                        "jobs": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Job"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "status": "active",
+                        "jobs": []
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Resume the whole queue. Only accessible to SUPER_USER.",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "tags": [
+          "queue"
+        ]
+      }
+    },
+    "/queues/{queue}/{jobId}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "queue",
+          "in": "path",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "jobId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "summary": "Get specifici",
+        "tags": [
+          "queue"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "id": "135",
+                        "data": {},
+                        "progress": 1,
+                        "added": "2022-11-15T11:01:33.179Z",
+                        "started": "2022-11-15T11:01:33.184Z",
+                        "ended": "2022-11-15T11:01:38.320Z",
+                        "attemps": 1,
+                        "status": "completed"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/Job"
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "id": "135",
+                        "data": {
+                          "...": "..."
+                        },
+                        "progress": 1,
+                        "added": "2022-11-15T11:01:33.179Z",
+                        "started": "2022-11-15T11:01:33.184Z",
+                        "ended": "2022-11-15T11:01:38.320Z",
+                        "attemps": 1,
+                        "status": "completed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-queues-queue-jobId",
+        "description": "Get specific job of the authed user's institution. Accessible to READ."
+      }
+    },
+    "/queues/{queue}/{jobId}/retry": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "queue",
+          "in": "path",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "jobId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "post": {
+        "summary": "Retry specific job",
+        "operationId": "post-queues-queue-jobId-retry",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "id": "135",
+                        "data": {
+                          "...": "..."
+                        },
+                        "progress": 1,
+                        "added": "2022-11-15T11:01:33.179Z",
+                        "started": "2022-11-15T11:01:33.184Z",
+                        "ended": "2022-11-15T11:01:38.320Z",
+                        "attemps": 1,
+                        "status": "completed"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/Job"
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "id": "135",
+                        "data": {
+                          "...": "..."
+                        },
+                        "progress": 1,
+                        "added": "2022-11-15T11:01:33.179Z",
+                        "started": "2022-11-15T11:01:33.184Z",
+                        "ended": "2022-11-15T11:01:38.320Z",
+                        "attemps": 1,
+                        "status": "completed"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Retry specific job of the authed user's institution. Accessible to READ_WRITE.",
+        "tags": [
+          "queue"
         ]
       }
     }
@@ -1606,23 +2175,10 @@
           }
         ]
       },
-      "ReportDetail": {
-        "title": "ReportDetail",
-        "x-stoplight": {
-          "id": "u6rz9i3vtghx3"
-        },
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean"
-          }
-        },
-        "description": "Detail of generated report"
-      },
       "History": {
         "type": "object",
         "x-examples": {
-          "example-1": {
+          "Example": {
             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
             "type": "generation-success",
@@ -1719,6 +2275,64 @@
           "type",
           "data"
         ]
+      },
+      "Job": {
+        "type": "object",
+        "x-examples": {
+          "example-1": {
+            "id": "0",
+            "data": {
+              "...": "..."
+            },
+            "progress": 1,
+            "added": "2022-11-15T11:01:33.179Z",
+            "started": "2022-11-15T11:01:33.184Z",
+            "ended": "2022-11-15T11:01:38.320Z",
+            "attemps": 1,
+            "status": "completed"
+          }
+        },
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "task": {
+                "$ref": "#/components/schemas/FullTask"
+              },
+              "origin": {
+                "type": "string"
+              },
+              "writeHistory": {
+                "type": "boolean"
+              },
+              "debug": {
+                "type": "boolean"
+              }
+            }
+          },
+          "progress": {
+            "type": "integer"
+          },
+          "added": {
+            "type": "string"
+          },
+          "started": {
+            "type": "string"
+          },
+          "ended": {
+            "type": "string"
+          },
+          "attemps": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "description": ""
       }
     },
     "securitySchemes": {
@@ -2052,16 +2666,16 @@
   },
   "tags": [
     {
-      "name": "general",
-      "description": "General routes"
+      "name": "general"
     },
     {
-      "name": "report",
-      "description": "Report routes"
+      "name": "queue"
     },
     {
-      "name": "tasks",
-      "description": "Task routes"
+      "name": "report"
+    },
+    {
+      "name": "tasks"
     }
   ]
 }

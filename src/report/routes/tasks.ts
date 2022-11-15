@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { pick } from 'lodash';
+import { addTaskToQueue } from '../lib/bull';
 import checkRight, { checkInstitution, Roles } from '../middlewares/auth';
-import { generateReport } from '../models/reports';
 import {
   createTask,
   deleteTaskById,
@@ -193,6 +193,7 @@ router.put('/:task/enable', checkRight(Roles.READ_WRITE), checkInstitution, asyn
     res.errorJson(error);
   }
 });
+
 /**
  * Shorthand to quickly disable a task
  *
@@ -231,6 +232,8 @@ router.put('/:task/disable', checkRight(Roles.READ_WRITE), checkInstitution, asy
  * Force generation of report
  *
  * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)`
+ * Parameter `test_emails` overrides task emails & enable first level of debug
+ * Parameter `debug` is not accessible in PROD and enable second level of debug
  */
 router.post('/:task/run', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res) => {
   try {
@@ -253,17 +256,17 @@ router.post('/:task/run', checkRight(Roles.READ_WRITE), checkInstitution, async 
       throw new HTTPError(`Task with id '${id}' not found for institution '${req.user.institution}'`, StatusCodes.NOT_FOUND);
     }
 
-    // TODO[feat]: Put in job queue to allow parallel process, returns if started or not
-    const reportResult = await generateReport(
+    const job = await addTaskToQueue(
       { ...task, targets: testEmails || task.targets },
       req.user.username,
       testEmails === undefined,
       !!req.query.debug && process.env.NODE_ENV !== 'production',
     );
 
-    // TODO[feat]: put in queue for email
-
-    res.sendJson(reportResult, reportResult.success ? 201 : 500);
+    res.sendJson({
+      id: job.id,
+      data: job.data,
+    }, 200);
   } catch (error) {
     res.errorJson(error);
   }

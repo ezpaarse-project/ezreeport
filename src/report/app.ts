@@ -3,12 +3,13 @@ import express from 'express';
 import { StatusCodes } from 'http-status-codes';
 import swaggerUi from 'swagger-ui-express';
 import config from './lib/config';
-import './lib/datefns'; // Should be first because it setup default options before using it in any module
+import './lib/datefns'; // Setup default options for date-fns
 import logger from './lib/logger';
 import formatMiddleware from './middlewares/format';
 import loggerMiddleware from './middlewares/logger';
 import openapi from './openapi.json';
 import filesRouter from './routes/files';
+import queuesRouter from './routes/queues';
 import tasksRouter from './routes/tasks';
 
 const allowedOrigins = (config.get('allowedOrigins')).split(',');
@@ -36,6 +37,7 @@ app.use(
 
 app.use('/tasks', tasksRouter);
 app.use('/reports', filesRouter);
+app.use('/queues', queuesRouter);
 
 app.use('/doc/openapi.json', (_req, res) => res.json(openapi));
 app.use('/doc', swaggerUi.serve, swaggerUi.setup(openapi));
