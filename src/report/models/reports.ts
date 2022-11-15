@@ -1,5 +1,6 @@
 import type { Task } from '@prisma/client';
 import { format } from 'date-fns';
+import Joi from 'joi';
 import { compact, merge, omit } from 'lodash';
 import { randomUUID } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -29,6 +30,47 @@ type ReportResult = {
     stats?: Omit<Awaited<ReturnType<typeof generatePdfWithVega>>, 'path'>,
     error?: string,
   }
+};
+
+const reportresultSchema = Joi.object<ReportResult>({
+  success: Joi.boolean().required(),
+  detail: Joi.object<ReportResult['detail']>({
+    date: Joi.date().iso().required(),
+    task: Joi.string().uuid().required(),
+    files: Joi.object<ReportResult['detail']['files']>({
+      detail: Joi.string().required(),
+      report: Joi.string(),
+    }).required(),
+    writedTo: Joi.array().items(Joi.string().email()).min(1),
+    period: Joi.object<ReportResult['detail']['period']>({
+      start: [Joi.date().iso().required(), Joi.number().integer().required()],
+      end: [Joi.date().iso().required(), Joi.number().integer().required()],
+    }),
+    runAs: Joi.string(),
+    stats: Joi.object<ReportResult['detail']['stats']>({
+      pageCount: Joi.number().integer().required(),
+      size: Joi.number().integer().required(),
+    }),
+    error: Joi.string(),
+  }).required(),
+});
+
+/**
+ * Check if input data is a valid LayoutJSON
+ *
+ * @param data The input data
+ * @returns `true` if valid
+ *
+ * @throws If not valid
+ *
+ * @throw If input data isn't a valid LayoutJSON
+ */
+export const isValidResult = (data: unknown): data is ReportResult => {
+  const validation = reportresultSchema.validate(data, {});
+  if (validation.error != null) {
+    throw new Error(`Result is not valid: ${validation.error.message}`);
+  }
+  return true;
 };
 
 /**
