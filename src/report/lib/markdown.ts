@@ -411,13 +411,14 @@ export const addMdToPDF = async (
 
         case 'link': {
           const text = content.replace(/\n/g, '');
+          const y = cursor.y + fontSize;
           const w = doc.pdf
             .setFont(def.font.fontName, meta.fontStyle ?? def.font.fontStyle)
             .setFontSize(fontSize)
             .setTextColor('blue')
             .setDrawColor('blue')
-            .textWithLink(text, cursor.x, cursor.y, { url: meta.href });
-          doc.pdf.line(cursor.x - 2, cursor.y + 2, cursor.x + w + 2, cursor.y + 2);
+            .textWithLink(text, cursor.x, y, { url: meta.href });
+          doc.pdf.line(cursor.x - 2, y + 2, cursor.x + w + 2, y + 2);
           cursor.x += w;
           break;
         }
