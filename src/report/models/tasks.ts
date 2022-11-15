@@ -91,7 +91,7 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
     return tasks;
   } catch (error) {
     if (error instanceof PrismaClientValidationError) {
-      logger.error(error.message.trim());
+      logger.error(`[prisma] ${error.message.trim()}`);
       throw new Error('An error occured with DB client. See server logs for more information.');
     } else {
       throw error;

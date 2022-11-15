@@ -7,6 +7,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import config from '../lib/config';
 import generatePdfWithVega from '../lib/generators/vegaPDF';
+import logger from '../lib/logger';
 import { calcNextDate, calcPeriod } from '../lib/recurrence';
 import { findInstitutionByIds, findInstitutionContact } from './institutions';
 import { isValidLayout, type LayoutFnc } from './layouts';
@@ -106,6 +107,8 @@ export const generateReport = async (
   if (process.env.NODE_ENV === 'production' || writeHistory) {
     filename += `_${randomUUID()}`;
   }
+
+  logger.info(`[gen] Generation of report ${filename} started`);
 
   let result: ReportResult = {
     success: true,
@@ -217,6 +220,7 @@ export const generateReport = async (
         },
       },
     );
+    logger.info(`[gen] Report ${filename} successfully generated`);
   } catch (error) {
     await slientEditTaskById(task.id, { enabled: false });
     if (writeHistory) {
@@ -232,6 +236,7 @@ export const generateReport = async (
         },
       },
     );
+    logger.error(`[gen] Report ${filename} failed to generate with error : ${(error as Error).message}`);
   }
   await writeFile(join(basePath, `${filename}.json`), JSON.stringify(result), 'utf-8');
   return result;

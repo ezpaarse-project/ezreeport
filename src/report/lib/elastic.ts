@@ -42,7 +42,7 @@ export const getElasticClient = async () => {
         break;
       }
     } catch (error) {
-      logger.error(`Can't connect to Elastic : ${error}. ${MAX_TRIES - tries} tries left.`);
+      logger.error(`[elastic] Can't connect to Elastic : ${error}. ${MAX_TRIES - tries} tries left.`);
     }
 
     tries += 1;
