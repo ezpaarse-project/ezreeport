@@ -99,7 +99,7 @@ const generatePdfWithVega = async (
       first = false;
 
       // eslint-disable-next-line no-await-in-loop
-      let figures = await page(opts);
+      let figures = await page();
       if (!Array.isArray(figures)) figures = [figures];
 
       const figuresCount = Math.min(figures.length, slots.length);

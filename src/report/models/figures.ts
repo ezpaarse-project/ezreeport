@@ -2,7 +2,6 @@ import Joi from 'joi';
 import type { Mark } from 'vega-lite/build/src/mark';
 import type { InputMdParams } from '../lib/markdown';
 import type { InputMetricParams, MetricData } from '../lib/metrics';
-import type { PDFReportOptions } from '../lib/pdf';
 import type { TableParams } from '../lib/pdf/table';
 import type { InputVegaParams } from '../lib/vega';
 
@@ -33,8 +32,7 @@ export interface Figure<Type extends FigureType> {
  */
 export type AnyFigure = Figure<Mark> | Figure<'table'> | Figure<'md'> | Figure<'metric'>;
 
-// TODO[refactor]: Remove type PDF
-export type AnyFigureFnc = (docOpts: PDFReportOptions) => AnyFigure | AnyFigure[];
+export type AnyFigureFnc = () => AnyFigure | AnyFigure[];
 
 /**
  * Joi validation
