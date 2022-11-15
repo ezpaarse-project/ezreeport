@@ -1246,6 +1246,10 @@
                         "task": {
                           "type": "string"
                         },
+                        "meta": {
+                          "type": "object",
+                          "nullable": true
+                        },
                         "files": {
                           "type": "object",
                           "required": [
@@ -1318,6 +1322,10 @@
                         "date": "2022-11-14T15:02:46.340Z",
                         "time": 1000,
                         "task": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                        "meta": {
+                          "jobId": "134",
+                          "jobAdded": "2022-11-15T10:43:03.899Z"
+                        },
                         "files": {
                           "detail": "....json",
                           "report": "....pdf"
@@ -1344,6 +1352,11 @@
                         "date": "2022-11-14T15:16:55.623Z",
                         "time": 1000,
                         "task": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                        "meta": {
+                          "jobId": "134",
+                          "jobAttemps": 0,
+                          "jobAdded": "2022-11-15T10:43:03.899Z"
+                        },
                         "files": {
                           "detail": "....json"
                         },
@@ -1614,7 +1627,11 @@
             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
             "type": "generation-success",
             "message": "Rapport \"...\" généré par ...",
-            "date": "2022-11-07T15:17:49.000Z"
+            "date": "2022-11-07T15:17:49.000Z",
+            "meta": {
+              "jobId": "0",
+              "jobAdded": "2022-11-07T15:17:40.000Z"
+            }
           }
         },
         "description": "Task's history",
@@ -1633,6 +1650,10 @@
           },
           "date": {
             "type": "string"
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true
           }
         },
         "required": [

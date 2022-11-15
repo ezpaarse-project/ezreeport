@@ -31,6 +31,7 @@ type ReportResult = {
     runAs?: string,
     stats?: Omit<Awaited<ReturnType<typeof generatePdfWithVega>>, 'path'>,
     error?: string,
+    meta?: unknown
   }
 };
 
@@ -55,6 +56,7 @@ const reportresultSchema = Joi.object<ReportResult>({
       size: Joi.number().integer().required(),
     }),
     error: Joi.string(),
+    meta: Joi.any(),
   }).required(),
 });
 
@@ -101,6 +103,7 @@ const defaultEvents = {
  * @param writeHistory Should write generation in task history (also disable first level of debug)
  * @param debug Enable second level of debug
  * @param events Events overrides
+ * @param meta Additional data
  *
  * @returns ...
  */
@@ -110,6 +113,7 @@ export const generateReport = async (
   writeHistory = true,
   debug = false,
   events: Partial<typeof defaultEvents> = {},
+  meta = {},
 ): Promise<ReportResult> => {
   const e = { ...defaultEvents, ...events };
 
@@ -134,6 +138,7 @@ export const generateReport = async (
       files: {
         detail: `${todayStr}/${filename}.json`,
       },
+      meta,
     },
   };
 
@@ -223,7 +228,7 @@ export const generateReport = async (
       );
       await addTaskHistory(
         task.id,
-        { type: 'generation-success', message: `Rapport "${todayStr}/${filename}" généré par ${origin}` },
+        { type: 'generation-success', message: `Rapport "${todayStr}/${filename}" généré par ${origin}`, meta },
       );
     }
 
@@ -244,7 +249,7 @@ export const generateReport = async (
   } catch (error) {
     await slientEditTaskById(task.id, { enabled: false });
     if (writeHistory) {
-      await addTaskHistory(task.id, { type: 'generation-error', message: `Rapport "${todayStr}/${filename}" non généré par ${origin} suite à une erreur.` });
+      await addTaskHistory(task.id, { type: 'generation-error', message: `Rapport "${todayStr}/${filename}" non généré par ${origin} suite à une erreur.`, meta });
     }
 
     result = merge<ReportResult, DeepPartial<ReportResult>>(

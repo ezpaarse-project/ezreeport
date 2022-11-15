@@ -238,7 +238,7 @@ export const deleteTaskById = async (id: Task['id'], institution?: Task['institu
  *
  * @returns The task
  */
-export const addTaskHistory = async (id: Task['id'], entry: Pick<History, 'type' | 'message'>): Promise<Task | null> => {
+export const addTaskHistory = async (id: Task['id'], entry: Pick<History, 'type' | 'message'> & { meta: object }): Promise<Task | null> => {
   await prisma.$connect();
 
   // Check if task exist
@@ -250,7 +250,7 @@ export const addTaskHistory = async (id: Task['id'], entry: Pick<History, 'type'
   const editedTask = await prisma.task.update({
     data: {
       history: {
-        create: { ...entry, date: formatISO(new Date()) },
+        create: entry,
       },
     },
     where: {

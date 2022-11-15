@@ -33,6 +33,7 @@ model History {
   taskId  String
   type    String
   message String
+  meta    Json?
   date    DateTime @default(now())
 }
 
