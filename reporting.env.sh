@@ -6,6 +6,7 @@ LOCAL_ENV_FILE="$SCRIPT_DIR/reporting.local.env.sh"
 export REDIS_HOST=""
 export REDIS_PORT=""
 export REDIS_PASSWORD=""
+export REDIS_CONCURRENCE=""
 
 export ELASTIC_SCHEME=""
 export ELASTIC_HOST=""
