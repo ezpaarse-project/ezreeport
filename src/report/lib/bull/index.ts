@@ -1,6 +1,8 @@
 import type { Task } from '@prisma/client';
 import Queue, { type Job } from 'bull';
+import { StatusCodes } from 'http-status-codes';
 import { join } from 'path';
+import { HTTPError } from '../../types/errors';
 import config from '../config';
 import logger from '../logger';
 
@@ -88,7 +90,8 @@ const formatJob = async (job: Job<GenerationData>) => ({
  */
 export const pauseQueue = (queue: string) => {
   if (!isQueue(queue)) {
-    throw new Error(`Queue "${queue}" not found`);
+    // TODO[refactor]: Not an HTTP Error at this point
+    throw new HTTPError(`Queue "${queue}" not found`, StatusCodes.NOT_FOUND);
   }
   return queues[queue].pause();
 };
@@ -104,7 +107,8 @@ export const pauseQueue = (queue: string) => {
  */
 export const resumeQueue = (queue: string) => {
   if (!isQueue(queue)) {
-    throw new Error(`Queue "${queue}" not found`);
+    // TODO[refactor]: Not an HTTP Error at this point
+    throw new HTTPError(`Queue "${queue}" not found`, StatusCodes.NOT_FOUND);
   }
   return queues[queue].resume();
 };
@@ -121,7 +125,8 @@ export const resumeQueue = (queue: string) => {
  */
 export const getJobs = async (queue: string) => {
   if (!isQueue(queue)) {
-    throw new Error(`Queue "${queue}" not found`);
+    // TODO[refactor]: Not an HTTP Error at this point
+    throw new HTTPError(`Queue "${queue}" not found`, StatusCodes.NOT_FOUND);
   }
 
   const rawJobs = await queues[queue].getJobs(['active', 'delayed', 'paused', 'waiting']);
@@ -143,7 +148,8 @@ export const getJobs = async (queue: string) => {
  */
 export const getJob = async (queue: string, id: string) => {
   if (!isQueue(queue)) {
-    throw new Error(`Queue "${queue}" not found`);
+    // TODO[refactor]: Not an HTTP Error at this point
+    throw new HTTPError(`Queue "${queue}" not found`, StatusCodes.NOT_FOUND);
   }
 
   const job = await queues[queue].getJob(id);
@@ -167,7 +173,8 @@ export const getJob = async (queue: string, id: string) => {
  */
 export const retryJob = async (queue: string, id: string) => {
   if (!isQueue(queue)) {
-    throw new Error(`Queue "${queue}" not found`);
+    // TODO[refactor]: Not an HTTP Error at this point
+    throw new HTTPError(`Queue "${queue}" not found`, StatusCodes.NOT_FOUND);
   }
 
   const job = await queues[queue].getJob(id);
