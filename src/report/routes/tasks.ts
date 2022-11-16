@@ -256,12 +256,12 @@ router.post('/:task/run', checkRight(Roles.READ_WRITE), checkInstitution, async 
       throw new HTTPError(`Task with id '${id}' not found for institution '${req.user.institution}'`, StatusCodes.NOT_FOUND);
     }
 
-    const job = await addTaskToQueue(
-      { ...task, targets: testEmails || task.targets },
-      req.user.username,
-      testEmails === undefined,
-      !!req.query.debug && process.env.NODE_ENV !== 'production',
-    );
+    const job = await addTaskToQueue({
+      task: { ...task, targets: testEmails || task.targets },
+      origin: req.user.username,
+      writeHistory: testEmails === undefined,
+      debug: !!req.query.debug && process.env.NODE_ENV !== 'production',
+    });
 
     res.sendJson({
       id: job.id,

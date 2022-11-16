@@ -1,4 +1,4 @@
-import type { Task } from '@prisma/client';
+import type { Recurrence, Task } from '@prisma/client';
 import Queue, { type Job } from 'bull';
 import { StatusCodes } from 'http-status-codes';
 import { join } from 'path';
@@ -9,17 +9,63 @@ import logger from '../logger';
 const { concurrence, ...redis } = config.get('redis');
 
 export type GenerationData = {
+  /**
+   * The task
+   */
   task: Task,
+  /**
+   * The origin of the generation (can be username, or method (auto, etc.))
+   */
   origin: string,
+  /**
+   * Should write generation in task history (also disable first level of debug)
+   */
   writeHistory?: boolean,
+  /**
+   * Enable second level of debug
+   */
   debug?: boolean
 };
 
+export type MailData = {
+  /**
+   * If task succeed or failed
+   */
+  success: boolean,
+  /**
+   * The file data (in base64)
+   */
+  file: string,
+  /**
+   * The task's data
+   */
+  task: {
+    recurrence: Recurrence,
+    name: string,
+    targets: string[],
+    institution: string,
+  }
+  /**
+   * The generation date
+   */
+  date: Date,
+  /**
+   * The http url to get the file
+   */
+  url: string,
+};
+
 const generationQueue = new Queue<GenerationData>('report generation', { redis });
+const mailQueue = new Queue<MailData>('mail send', { redis });
 
 generationQueue.on('failed', (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {
-    logger.error(`[bull] ${err.message}`);
+    logger.error(`[bull] [gen] ${err.message}`);
+  }
+});
+mailQueue.on('failed', (job, err) => {
+  if (job.attemptsMade === job.opts.attempts) {
+    logger.error(`[bull] [mail] ${err.message}`);
   }
 });
 
@@ -27,6 +73,7 @@ generationQueue.process(concurrence, join(__dirname, 'jobs/generateReport.ts'));
 
 const queues = {
   generation: generationQueue,
+  mail: mailQueue,
 };
 
 export const queuesNames = Object.keys(queues);
@@ -40,26 +87,25 @@ type Queues = keyof typeof queues;
  *
  * @returns Given name is a valid queue name
  */
-const isQueue = (name: string): name is Queues => queuesNames.includes(name);
+const isQueue = (name: string): name is Queues => Object.keys(queues).includes(name);
 
 /**
  * Add task to generation queue
  *
- * @param task The task
- * @param origin The origin of the generation (can be username, or method (auto, etc.))
- * @param writeHistory Should write generation in task history (also disable first level of debug)
- * @param debug Enable second level of debug
+ * @param data The data
  *
  * @returns When task is placed in queue
  */
-export const addTaskToQueue = (
-  task: Task,
-  origin: string,
-  writeHistory = true,
-  debug = false,
-) => queues.generation.add({
-  task, origin, writeHistory, debug,
-});
+export const addTaskToQueue = (data: GenerationData) => queues.generation.add(data);
+
+/**
+ * Add task to mail queue
+ *
+ * @param data The data
+ *
+ * @returns When task is placed in queue
+ */
+export const addReportToQueue = (data: MailData) => queues.mail.add(data);
 
 /**
  * Format bull job
@@ -68,7 +114,7 @@ export const addTaskToQueue = (
  *
  * @returns formated job
  */
-const formatJob = async (job: Job<GenerationData>) => ({
+const formatJob = async (job: Job<GenerationData | MailData>) => ({
   id: job.id,
   data: job.data,
   progress: job.progress(),

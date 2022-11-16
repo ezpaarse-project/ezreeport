@@ -11,7 +11,7 @@ export default async () => {
     tasks.filter(
       (task) => task.enabled && isBefore(task.nextRun, today),
     ).map(
-      (task) => addTaskToQueue(task, 'daily-cron-job'),
+      (task) => addTaskToQueue({ task, origin: 'daily-cron-job' }),
     ),
   );
 };
