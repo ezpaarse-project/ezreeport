@@ -6,22 +6,12 @@ import {
   pauseQueue,
   queuesNames,
   resumeQueue,
-  retryJob,
-  type Queues
+  retryJob
 } from '../lib/bull';
 import checkRight, { checkInstitution, Roles } from '../middlewares/auth';
 import { HTTPError } from '../types/errors';
 
 const router = Router();
-
-/**
- * Check if given name is a valid queue name
- *
- * @param name Given name
- *
- * @returns Given name is a valid queue name
- */
-const isQueue = (name: string): name is Queues => queuesNames.includes(name);
 
 /**
  * Get all possible queues names (required for further requests)
@@ -40,10 +30,6 @@ router.get('/', checkRight(Roles.READ), async (req, res) => {
 router.get('/:queue', checkRight(Roles.SUPER_USER), async (req, res) => {
   try {
     const { queue } = req.params;
-    if (!isQueue(queue)) {
-      throw new Error(`Queue "${queue}" not found`);
-    }
-
     res.sendJson(await getJobs(queue));
   } catch (error) {
     res.errorJson(error);
@@ -56,10 +42,6 @@ router.get('/:queue', checkRight(Roles.SUPER_USER), async (req, res) => {
 router.put('/:queue/pause', checkRight(Roles.SUPER_USER), async (req, res) => {
   try {
     const { queue } = req.params;
-    if (!isQueue(queue)) {
-      throw new Error(`Queue "${queue}" not found`);
-    }
-
     await pauseQueue(queue);
 
     res.sendJson(await getJobs(queue));
@@ -74,10 +56,6 @@ router.put('/:queue/pause', checkRight(Roles.SUPER_USER), async (req, res) => {
 router.put('/:queue/resume', checkRight(Roles.SUPER_USER), async (req, res) => {
   try {
     const { queue } = req.params;
-    if (!isQueue(queue)) {
-      throw new Error(`Queue "${queue}" not found`);
-    }
-
     await resumeQueue(queue);
 
     res.sendJson(await getJobs(queue));
@@ -94,10 +72,6 @@ router.put('/:queue/resume', checkRight(Roles.SUPER_USER), async (req, res) => {
 router.get('/:queue/:jobId', checkRight(Roles.READ), checkInstitution, async (req, res) => {
   try {
     const { queue, jobId } = req.params;
-    if (!isQueue(queue)) {
-      throw new Error(`Queue "${queue}" not found`);
-    }
-
     const job = await getJob(queue, jobId);
     if (!job) {
       throw new HTTPError(`Job "${jobId}" not found`, StatusCodes.NOT_FOUND);
@@ -123,10 +97,6 @@ router.get('/:queue/:jobId', checkRight(Roles.READ), checkInstitution, async (re
 router.post('/:queue/:jobId/retry', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res) => {
   try {
     const { queue, jobId } = req.params;
-    if (!isQueue(queue)) {
-      throw new Error(`Queue "${queue}" not found`);
-    }
-
     const job = await getJob(queue, jobId);
     if (!job) {
       throw new HTTPError(`Job "${jobId}" not found`, StatusCodes.NOT_FOUND);

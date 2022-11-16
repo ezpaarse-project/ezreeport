@@ -29,7 +29,16 @@ const queues = {
 
 export const queuesNames = Object.keys(queues);
 
-export type Queues = keyof typeof queues;
+type Queues = keyof typeof queues;
+
+/**
+ * Check if given name is a valid queue name
+ *
+ * @param name Given name
+ *
+ * @returns Given name is a valid queue name
+ */
+const isQueue = (name: string): name is Queues => queuesNames.includes(name);
 
 /**
  * Add task to generation queue
@@ -73,18 +82,32 @@ const formatJob = async (job: Job<GenerationData>) => ({
  *
  * @param queue The queue name
  *
+ * @throw If queue not found
+ *
  * @returns When the queue is paused
  */
-export const pauseQueue = (queue: Queues) => queues[queue].pause();
+export const pauseQueue = (queue: string) => {
+  if (!isQueue(queue)) {
+    throw new Error(`Queue "${queue}" not found`);
+  }
+  return queues[queue].pause();
+};
 
 /**
  * Resume the whole queue
  *
  * @param queue The queue name
  *
+ * @throw If queue not found
+ *
  * @returns When the queue is resumed
  */
-export const resumeQueue = (queue: Queues) => queues[queue].resume();
+export const resumeQueue = (queue: string) => {
+  if (!isQueue(queue)) {
+    throw new Error(`Queue "${queue}" not found`);
+  }
+  return queues[queue].resume();
+};
 
 // TODO[feat]: pagination
 /**
@@ -92,9 +115,15 @@ export const resumeQueue = (queue: Queues) => queues[queue].resume();
  *
  * @param queue The queue name
  *
+ * @throw If queue not found
+ *
  * @returns The queue info
  */
-export const getJobs = async (queue: Queues) => {
+export const getJobs = async (queue: string) => {
+  if (!isQueue(queue)) {
+    throw new Error(`Queue "${queue}" not found`);
+  }
+
   const rawJobs = await queues[queue].getJobs(['active', 'delayed', 'paused', 'waiting']);
   return {
     status: await queues[queue].isPaused() ? 'paused' : 'active',
@@ -108,9 +137,15 @@ export const getJobs = async (queue: Queues) => {
  * @param queue The queue name
  * @param id The job id
  *
+ * @throw If queue not found
+ *
  * @returns The job info
  */
-export const getJob = async (queue: Queues, id: string) => {
+export const getJob = async (queue: string, id: string) => {
+  if (!isQueue(queue)) {
+    throw new Error(`Queue "${queue}" not found`);
+  }
+
   const job = await queues[queue].getJob(id);
   if (!job) {
     return null;
@@ -126,10 +161,15 @@ export const getJob = async (queue: Queues, id: string) => {
  * @param id The job id
  *
  * @throw If job wasn't failed
+ * @throw If queue not found
  *
  * @returns The job info
  */
-export const retryJob = async (queue: Queues, id: string) => {
+export const retryJob = async (queue: string, id: string) => {
+  if (!isQueue(queue)) {
+    throw new Error(`Queue "${queue}" not found`);
+  }
+
   const job = await queues[queue].getJob(id);
   if (!job) {
     return null;
