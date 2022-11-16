@@ -1,0 +1,10 @@
+{
+  "rootPath": "./",
+  "allowedOrigins": "*",
+  "redis": {
+    "host": "redis",
+    "port": 6379,
+    "password": "changeme",
+    "concurrence": 5
+  }
+}
