@@ -48,7 +48,7 @@ export type MailData = {
   /**
    * The generation date
    */
-  date: Date,
+  date: string,
   /**
    * The http url to get the file
    */
