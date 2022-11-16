@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "mocha -r ts-node/register tests/*/index.spec.ts"
+    "test": "mocha -r ts-node/register ./*/index.spec.ts",
+    "test:mail": "mocha -r ts-node/register ./mail/index.spec.ts"
   },
   "repository": {
     "type": "git",

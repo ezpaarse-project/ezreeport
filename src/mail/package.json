@@ -5,7 +5,9 @@
   "main": "app.ts",
   "scripts": {
     "start": "ts-node --transpile-only app.ts",
-    "dev": "nodemon"
+    "dev": "nodemon app.ts",
+    "lint": "eslint --parser-options=project:./tsconfig.json .",
+    "test": "cd ../../tests/ && npm run test:mail"
   },
   "repository": {
     "type": "git",
@@ -21,15 +23,15 @@
     "ts-node": "^10.9.1"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.40.1",
-    "@typescript-eslint/parser": "^5.40.1",
-    "eslint": "^8.25.0",
+    "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "@typescript-eslint/parser": "^5.43.0",
+    "eslint": "^8.27.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-airbnb-typescript": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-n": "^15.3.0",
-    "eslint-plugin-promise": "^6.1.0",
+    "eslint-plugin-n": "^15.5.1",
+    "eslint-plugin-promise": "^6.1.1",
     "nodemon": "^2.0.20",
-    "typescript": "^4.8.4"
+    "typescript": "^4.9.3"
   }
 }
