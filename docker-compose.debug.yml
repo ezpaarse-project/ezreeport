@@ -49,14 +49,21 @@ services:
       - REDIS_HOST
       - REDIS_PORT
       - REDIS_PASSWORD
-      - DATABASE_PROTOCOL
-      - DATABASE_USER
-      - DATABASE_PASSWORD
-      - DATABASE_HOST
-      - DATABASE_PORT
-      - DATABASE_DB
-      - DATABASE_URL
+      - SMTP_HOST
+      - SMTP_PORT
+      - SMTP_SECURE
+      - SMTP_IGNORE_TLS
+      - SMTP_REJECT_UNAUTHORIZED
+      - EMAIL_SENDER
+      - EMAIL_ATTEMPTS
+      - EMAIL_ATTEMPTS_INTERVAL
       - LOG_LEVEL
     depends_on:
       - redis
     restart: unless-stopped
+
+  maildev:
+    image: maildev/maildev
+    ports:
+      - 1080:1080 # web interface
+      - 1025:1025

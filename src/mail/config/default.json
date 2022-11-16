@@ -6,5 +6,16 @@
     "port": 6379,
     "password": "changeme",
     "concurrence": 5
+  },
+  "smtp": {
+    "host": "localhost",
+    "port": 25,
+    "secure": false,
+    "ignoreTLS": false
+  },
+  "mail": {
+    "sender": "ezmesure-reporting@couperin.org",
+    "attempts": 5,
+    "interval": 2000
   }
 }
