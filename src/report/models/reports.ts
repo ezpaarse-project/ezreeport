@@ -126,7 +126,7 @@ export const generateReport = async (
     filename += `_${randomUUID()}`;
   }
 
-  logger.info(`[gen] Generation of report "${todayStr}/${filename}" started`);
+  logger.debug(`[gen] Generation of report "${todayStr}/${filename}" started`);
   e.onCreation();
 
   let result: ReportResult = {
