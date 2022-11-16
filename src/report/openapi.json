@@ -1961,6 +1961,319 @@
           "queue"
         ]
       }
+    },
+    "/crons": {
+      "get": {
+        "summary": "Get all crons",
+        "tags": [
+          "cron"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        {
+                          "name": "daily-report",
+                          "running": true,
+                          "lastRun": "2022-11-16T07:21:00.405Z",
+                          "nextRun": "2022-11-16T08:22:00.000+01:00"
+                        }
+                      ]
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Cron"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        {
+                          "name": "daily-report",
+                          "running": true,
+                          "lastRun": "2022-11-16T07:21:00.405Z",
+                          "nextRun": "2022-11-16T08:22:00.000+01:00"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-crons",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "description": "Get all crons. Only accessible to SUPER_USER."
+      }
+    },
+    "/crons/{cron}": {
+      "get": {
+        "summary": "Get specific cron",
+        "tags": [
+          "cron"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "daily-report",
+                        "running": true,
+                        "nextRun": "2022-11-16T09:10:00.000+01:00"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/Cron"
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "daily-report",
+                        "running": true,
+                        "nextRun": "2022-11-16T09:10:00.000+01:00"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-crons-cron]",
+        "description": "Get specific crons. Only accessible to SUPER_USER.",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "cron",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/crons/{cron}/start": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "cron",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "put": {
+        "summary": "Start cron",
+        "operationId": "put-crons-cron-start",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "daily-report",
+                        "running": true,
+                        "nextRun": "2022-11-16T09:10:00.000+01:00"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/Cron"
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "daily-report",
+                        "running": true,
+                        "nextRun": "2022-11-16T09:10:00.000+01:00"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Start specific cron. Only accessible to SUPER_USER.",
+        "tags": [
+          "cron"
+        ]
+      }
+    },
+    "/crons/{cron}/stop": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "cron",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "put": {
+        "summary": "Stop cron",
+        "operationId": "put-crons-cron-stop",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "daily-report",
+                        "running": true,
+                        "nextRun": "2022-11-16T09:10:00.000+01:00"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/Cron"
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "daily-report",
+                        "running": true,
+                        "nextRun": "2022-11-16T09:10:00.000+01:00"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Stop specific cron. Only accessible to SUPER_USER.",
+        "tags": [
+          "cron"
+        ]
+      }
     }
   },
   "components": {
@@ -2333,6 +2646,32 @@
           }
         },
         "description": ""
+      },
+      "Cron": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "running": {
+            "type": "boolean"
+          },
+          "lastRun": {
+            "type": "string"
+          },
+          "nextRun": {
+            "type": "string"
+          }
+        },
+        "x-examples": {
+          "Example": {
+            "name": "daily-report",
+            "running": true,
+            "lastRun": "2022-11-16T07:21:00.405Z",
+            "nextRun": "2022-11-16T08:22:00.000+01:00"
+          }
+        },
+        "description": "Cron job info"
       }
     },
     "securitySchemes": {
@@ -2665,6 +3004,9 @@
     }
   },
   "tags": [
+    {
+      "name": "cron"
+    },
     {
       "name": "general"
     },
