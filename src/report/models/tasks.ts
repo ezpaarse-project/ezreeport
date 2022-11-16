@@ -5,17 +5,18 @@ import {
   type Task
 } from '@prisma/client';
 import { PrismaClientValidationError } from '@prisma/client/runtime';
-import { formatISO } from 'date-fns';
+import { formatISO, isSameDay } from 'date-fns';
 import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
 import logger from '../lib/logger';
 import prisma from '../lib/prisma';
+import { calcNextDate } from '../lib/recurrence';
 import { HTTPError } from '../types/errors';
 import { layoutSchema, type LayoutJSON } from './layouts';
 
 // TODO[feat]: More checks to make custom errors
 
-type InputTask = Omit<Task, 'institution' | 'history' | 'createdAt' | 'updatedAt' | 'id' | 'lastRun'> & { layout: LayoutJSON };
+type InputTask = Pick<Task, 'name' | 'targets' | 'recurrence' | 'enabled' | 'layout'> & { layout: LayoutJSON, nextRun?: Task['nextRun'] | string };
 
 /**
  * Joi schema
@@ -32,7 +33,7 @@ const taskSchema = Joi.object<InputTask>({
     Recurrence.BIENNIAL,
     Recurrence.YEARLY,
   ).required(),
-  nextRun: Joi.date().iso().greater('now').required(),
+  nextRun: Joi.date().iso().greater('now'),
   enabled: Joi.boolean().default(true),
 });
 
@@ -140,11 +141,17 @@ export const createTask = async (data: unknown, creator: string, institution: Ta
     throw new HTTPError('Body is not valid', StatusCodes.BAD_REQUEST);
   }
 
+  let { nextRun } = data;
+  if (!nextRun) {
+    nextRun = calcNextDate(new Date(), data.recurrence);
+  }
+
   await prisma.$connect();
 
   const task = await prisma.task.create({
     data: {
       ...data,
+      nextRun,
       institution,
       history: {
         create: { type: 'creation', message: `Tâche créée par ${creator}` },
@@ -179,11 +186,21 @@ export const editTaskById = async (data: unknown, id: Task['id'], editor: string
     return null;
   }
 
+  let { nextRun } = data;
+  if (
+    data.recurrence !== task.recurrence
+    && (!data.nextRun || isSameDay(new Date(data.nextRun), task.nextRun))
+  ) {
+    // If next run isn't changed but recurrence changed
+    nextRun = calcNextDate(task.lastRun ?? new Date(), data.recurrence);
+  }
+
   await prisma.$connect();
 
   const editedTask = await prisma.task.update({
     data: {
       ...data,
+      nextRun,
       history: {
         create: { type: 'edition', message: `Tâche éditée par ${editor}`, date: formatISO(new Date()) },
       },
