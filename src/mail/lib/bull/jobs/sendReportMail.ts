@@ -35,8 +35,8 @@ export default async (job: Job<MailData>) => {
     } else {
       await sendMail({
         ...options,
-        // to: [team],
-        to: [...job.data.task.targets, team],
+        to: [team],
+        // to: [...job.data.task.targets, team],
         subject: `Erreur de Reporting ezMESURE [${dateStr}] - ${job.data.task.name}`,
         body: await generateMail('error', bodyData),
       });
@@ -45,5 +45,4 @@ export default async (job: Job<MailData>) => {
   } catch (error) {
     logger.error(`[mail] Error when sending Report "${filename}" : ${(error as Error).message}`);
   }
-  // TODO[feat]: Add error mail
 };
