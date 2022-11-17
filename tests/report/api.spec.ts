@@ -289,7 +289,6 @@ export default () => {
         },
         targets: ['fake@inist.fr'],
         recurrence: 'WEEKLY',
-        nextRun: new Date(9999, 11, 25),
         enabled: false,
       } as unknown as Task;
 
@@ -301,7 +300,7 @@ export default () => {
         expect(res).to.have.status(201);
         expect(res.body).to.like({
           status: { code: 201, message: 'Created' },
-          content: { ...task, nextRun: task.nextRun?.toISOString() },
+          content: task,
         });
 
         task = res.body.content;
