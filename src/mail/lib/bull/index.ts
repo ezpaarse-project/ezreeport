@@ -44,9 +44,3 @@ mailQueue.on('failed', (job, err) => {
 });
 
 mailQueue.process(concurrence, join(__dirname, 'jobs/sendReportMail.ts'));
-
-mailQueue.getJobs(['failed']).then((j) => j.map((job) => {
-  const { file, ...data } = job.data;
-  console.log(data);
-  // sendReportMail(job);
-}));
