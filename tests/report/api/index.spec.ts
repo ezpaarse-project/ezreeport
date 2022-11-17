@@ -2,6 +2,7 @@ import chai from 'chai';
 import chaiHttp from 'chai-http';
 import chaiLike from 'chai-like';
 import config from '../../lib/config';
+import cronSpec from './cron.spec';
 import generalTests from './general.spec';
 import queuesTests from './queues.spec';
 import tasksTests from './tasks.spec';
@@ -17,4 +18,6 @@ export default () => {
   describe('Tasks', tasksTests(agent));
 
   describe('Queues', queuesTests(agent));
+
+  describe('Crons', cronSpec(agent));
 };
