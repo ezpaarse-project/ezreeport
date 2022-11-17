@@ -1,7 +1,6 @@
 import { CronJob } from 'cron';
 import { differenceInMilliseconds } from 'date-fns';
-import { StatusCodes } from 'http-status-codes';
-import { HTTPError } from '../../types/errors';
+import { NotFoundError } from '../../types/errors';
 import logger from '../logger';
 import generateDailyReports from './jobs/generateDailyReports';
 
@@ -44,8 +43,7 @@ const isCron = (name: string): name is Crons => Object.keys(crons).includes(name
  */
 export const getCron = (name: string) => {
   if (!isCron(name)) {
-    // TODO[refactor]: Not an HTTP Error at this point
-    throw new HTTPError(`Cron "${name}" not found`, StatusCodes.NOT_FOUND);
+    throw new NotFoundError(`Cron "${name}" not found`);
   }
   const cron = crons[name];
 
@@ -75,8 +73,7 @@ export const getAllCrons = () => Object.keys(crons).map((name) => getCron(name))
  */
 export const startCron = (name: string) => {
   if (!isCron(name)) {
-    // TODO[refactor]: Not an HTTP Error at this point
-    throw new HTTPError(`Cron "${name}" not found`, StatusCodes.NOT_FOUND);
+    throw new NotFoundError(`Cron "${name}" not found`);
   }
 
   crons[name].start();
@@ -93,8 +90,7 @@ export const startCron = (name: string) => {
  */
 export const stopCron = (name: string) => {
   if (!isCron(name)) {
-    // TODO[refactor]: Not an HTTP Error at this point
-    throw new HTTPError(`Cron "${name}" not found`, StatusCodes.NOT_FOUND);
+    throw new NotFoundError(`Cron "${name}" not found`);
   }
 
   crons[name].stop();

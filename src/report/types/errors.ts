@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 import type { StatusCodes } from 'http-status-codes';
 
 export class HTTPError extends Error {
@@ -8,3 +9,7 @@ export class HTTPError extends Error {
     this.code = code;
   }
 }
+
+export class NotFoundError extends Error {}
+
+export class ArgumentError extends Error {}

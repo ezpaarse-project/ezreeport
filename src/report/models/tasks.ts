@@ -6,12 +6,11 @@ import {
 } from '@prisma/client';
 import { PrismaClientValidationError } from '@prisma/client/runtime';
 import { formatISO, isSameDay } from 'date-fns';
-import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
 import logger from '../lib/logger';
 import prisma from '../lib/prisma';
 import { calcNextDate } from '../lib/recurrence';
-import { HTTPError } from '../types/errors';
+import { ArgumentError } from '../types/errors';
 import { layoutSchema, type LayoutJSON } from './layouts';
 
 // TODO[feat]: More checks to make custom errors
@@ -50,8 +49,7 @@ const taskSchema = Joi.object<InputTask>({
 const isValidTask = (data: unknown): data is InputTask => {
   const validation = taskSchema.validate(data, {});
   if (validation.error != null) {
-    // TODO[refactor]: Not a HTTP error at this point
-    throw new HTTPError(`Body is not valid: ${validation.error.message}`, StatusCodes.BAD_REQUEST);
+    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
   }
   return true;
 };
@@ -137,8 +135,8 @@ export const getTaskById = async (id: Task['id'], institution?: Task['institutio
 export const createTask = async (data: unknown, creator: string, institution: Task['institution']): Promise<Task> => {
   // Validate body
   if (!isValidTask(data)) {
-    // TODO[refactor]: Not a HTTP error at this point
-    throw new HTTPError('Body is not valid', StatusCodes.BAD_REQUEST);
+    // As validation throws an error, this line shouldn't be called
+    return {} as Task;
   }
 
   let { nextRun } = data;
@@ -176,8 +174,8 @@ export const createTask = async (data: unknown, creator: string, institution: Ta
 export const editTaskById = async (data: unknown, id: Task['id'], editor: string, institution?: Task['institution']): Promise<Task | null> => {
   // Validate body
   if (!isValidTask(data)) {
-    // TODO[refactor]: Not a HTTP error at this point
-    throw new HTTPError('Body is not valid', StatusCodes.BAD_REQUEST);
+    // As validation throws an error, this line shouldn't be called
+    return null;
   }
 
   // Check if task exist

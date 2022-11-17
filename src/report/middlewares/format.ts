@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express';
 import { getReasonPhrase, StatusCodes } from 'http-status-codes';
-import { HTTPError } from '../types/errors';
+import { ArgumentError, HTTPError, NotFoundError } from '../types/errors';
 
 /**
  * API formatter middleware
@@ -16,11 +16,22 @@ const middleware: RequestHandler = (_req, res, next) => {
       meta,
     });
   };
-  res.errorJson = (error: HTTPError | Error) => {
-    const err = error instanceof HTTPError ? error : new HTTPError(error.message, 500);
-    res.sendJson({
-      message: error.message,
-    }, err.code);
+  res.errorJson = (error: Error) => {
+    const err = error;
+    let code = StatusCodes.INTERNAL_SERVER_ERROR;
+
+    if (err instanceof NotFoundError) {
+      code = StatusCodes.NOT_FOUND;
+    } else if (err instanceof ArgumentError) {
+      code = StatusCodes.BAD_REQUEST;
+    }
+
+    res.sendJson(
+      {
+        message: error.message,
+      },
+      err instanceof HTTPError ? err.code : code,
+    );
   };
 
   next();

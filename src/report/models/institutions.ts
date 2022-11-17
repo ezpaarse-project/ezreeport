@@ -1,9 +1,8 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import type { SearchHit } from '@elastic/elasticsearch/api/types';
-import { StatusCodes } from 'http-status-codes';
 import config from '../lib/config';
 import { elasticSearch, READONLY_SUFFIX } from '../lib/elastic';
-import { HTTPError } from '../types/errors';
+import { NotFoundError } from '../types/errors';
 
 const TYPE = 'institution' as const;
 
@@ -89,8 +88,7 @@ export const findInstitutionContact = async (
   const [institution] = await findInstitutionByIds([id]);
   // eslint-disable-next-line no-underscore-dangle
   if (!institution?._source) {
-    // TODO[refactor]: Not an HTTP Error at this point
-    throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
+    throw new NotFoundError("Can't find your institution.");
   }
   const { _source: { institution: { role } } } = institution;
 
