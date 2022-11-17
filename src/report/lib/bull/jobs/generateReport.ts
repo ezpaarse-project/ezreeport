@@ -52,7 +52,7 @@ module.exports = async (job: Queue.Job<GenerationData>) => {
       targets: task.targets,
       institution: task.institution,
     },
-    date: formatISO(task.lastRun ?? new Date()),
+    date: task.lastRun?.toString() ?? formatISO(new Date()),
   };
   const basePath = join(rootPath, outDir, '/');
 
