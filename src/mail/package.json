@@ -3,7 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "app.ts",
-  "scripts": {},
+  "scripts": {
+    "start": "ts-node --transpile-only app.ts",
+    "dev": "nodemon app.ts",
+    "lint": "eslint --parser-options=project:./tsconfig.json .",
+    "test": "cd ../../tests/ && npm run test:mail"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ezpaarse-project/reporting.git"
@@ -13,5 +18,33 @@
   "bugs": {
     "url": "https://github.com/ezpaarse-project/reporting/issues"
   },
-  "homepage": "https://github.com/ezpaarse-project/reporting#readme"
+  "homepage": "https://github.com/ezpaarse-project/reporting#readme",
+  "dependencies": {
+    "bull": "^4.10.1",
+    "config": "^3.3.8",
+    "date-fns": "^2.29.3",
+    "mjml": "^4.13.0",
+    "nodemailer": "^6.8.0",
+    "nunjucks": "^3.2.3",
+    "ts-node": "^10.9.1",
+    "winston": "^3.8.2",
+    "winston-daily-rotate-file": "^4.7.1"
+  },
+  "devDependencies": {
+    "@types/config": "^3.3.0",
+    "@types/mjml": "^4.7.0",
+    "@types/node": "^18.11.9",
+    "@types/nodemailer": "^6.4.6",
+    "@types/nunjucks": "^3.2.1",
+    "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "@typescript-eslint/parser": "^5.43.0",
+    "eslint": "^8.27.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.5.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "nodemon": "^2.0.20",
+    "typescript": "^4.9.3"
+  }
 }

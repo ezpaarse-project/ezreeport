@@ -59,6 +59,26 @@ services:
     ports:
       - 8081:8080
       - 9231:9229 # Debug port
+    environment:
+      - REDIS_HOST
+      - REDIS_PORT
+      - REDIS_PASSWORD
+      - SMTP_HOST
+      - SMTP_PORT
+      - SMTP_SECURE
+      - SMTP_IGNORE_TLS
+      - SMTP_REJECT_UNAUTHORIZED
+      - EMAIL_SENDER
+      - EMAIL_EZTEAM
+      - EMAIL_ATTEMPTS
+      - EMAIL_ATTEMPTS_INTERVAL
+      - LOG_LEVEL
     depends_on:
       - redis
     # restart: unless-stopped
+
+  maildev:
+    image: maildev/maildev
+    ports:
+      - 1080:1080 # web interface
+      - 1025:1025

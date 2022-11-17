@@ -1,0 +1,34 @@
+{% extends "layout.mjml" %}
+
+{% block title %}
+<mj-title>Rapport ezMESURE du {{ date }} en erreur.</mj-title>
+{% endblock %}
+
+{% block content %}
+
+<mj-section>
+  <mj-column>
+    <mj-text>
+      <p>Bonjour,</p>
+      <p>
+        La génération du rapport <strong>{{ recurrence }}</strong> « <strong>{{ name }}</strong> »
+        a rencontré une erreur le <strong>{{ date }}</strong>. Ce faisant la tâche de reporting a
+        été désactivée, pensez donc à la réactiver une fois l'erreur corrigée.
+      </p>
+      <p>
+        Ce message est envoyé automatiquement par l'application ezMESURE,
+        vous le recevez parce que vous faites partie d'une liste de diffusion de rapports.
+      </p>
+      <p>
+        Vous trouverez le détail de la génération en pièce jointe.
+      </p>
+    </mj-text>
+
+    <mj-text>
+      <p>Cordialement,</p>
+      <p>L'équipe ezMESURE.</p>
+    </mj-text>
+  </mj-column>
+</mj-section>
+
+{% endblock %}

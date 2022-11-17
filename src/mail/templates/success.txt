@@ -1,0 +1,9 @@
+Bonjour,
+Vous trouverez dans ce mail le rapport {{ recurrence }} « {{ name }} », généré le {{ date }}.
+
+Ce message est envoyé automatiquement par l'application ezMESURE, vous le recevez parce que vous faites partie d'une liste de diffusion de rapports.
+
+Vous trouverez le rapport en pièce jointe.
+
+Cordialement,
+L'équipe ezMESURE.
