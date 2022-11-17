@@ -7,7 +7,7 @@ import nunjucks from 'nunjucks';
 import config from './config';
 
 const smtp = config.get('smtp');
-const { sender } = config.get('mail');
+const { sender } = config.get('mail'); // TODO[feat]: some properties are not used
 const rootPath = config.get('rootPath');
 
 const templatesDir = join(rootPath, 'templates');
@@ -17,7 +17,7 @@ nunjucks.configure(templatesDir);
 const images = readdirSync(imagesDir);
 const transporter = createTransport(smtp);
 
-type MailOptions = {
+export type MailOptions = {
   to: string[],
   cc?: string[],
   bcc?: string[],

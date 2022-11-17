@@ -17,6 +17,7 @@
   },
   "email": {
     "sender": "EMAIL_SENDER",
+    "team": "EMAIL_EZTEAM",
     "attempts": "EMAIL_ATTEMPTS",
     "interval": "EMAIL_ATTEMPTS_INTERVAL"
   }

@@ -15,6 +15,7 @@
   },
   "mail": {
     "sender": "ezmesure-reporting@couperin.org",
+    "team": "ezteam@couperin.org",
     "attempts": 5,
     "interval": 2000
   }

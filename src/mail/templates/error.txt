@@ -1,0 +1,9 @@
+Bonjour,
+Soyez informé que la génération du rapport {{ recurrence }} « {{ name }} » a rencontré une erreur le {{ date }}. Ce faisant la tâche de reporting a été désactivée, pensez donc à la réactiver une fois l'erreur corrigée.
+
+Ce message est envoyé automatiquement par l'application ezMESURE, vous le recevez parce que vous faites partie d'une liste de diffusion de rapports.
+
+Vous trouverez le détail de la génération en pièce jointe.
+
+Cordialement,
+L'équipe ezMESURE.
