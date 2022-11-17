@@ -1838,7 +1838,7 @@
         }
       ],
       "get": {
-        "summary": "Get specifici",
+        "summary": "Get specific job",
         "tags": [
           "queue"
         ],

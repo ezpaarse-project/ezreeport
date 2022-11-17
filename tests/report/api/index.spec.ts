@@ -3,6 +3,7 @@ import chaiHttp from 'chai-http';
 import chaiLike from 'chai-like';
 import config from '../../lib/config';
 import generalTests from './general.spec';
+import queuesTests from './queues.spec';
 import tasksTests from './tasks.spec';
 
 chai.use(chaiHttp);
@@ -14,4 +15,6 @@ export default () => {
   describe('General', generalTests(agent));
 
   describe('Tasks', tasksTests(agent));
+
+  describe('Queues', queuesTests(agent));
 };
