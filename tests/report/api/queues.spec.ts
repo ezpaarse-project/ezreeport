@@ -189,7 +189,7 @@ export default (agent: ChaiHttp.Agent) => () => {
 
   describe('Test course', () => {
     // Testing on "mail" queue, because it's the bridge between 2 services (report & mail)
-    const queue = 'mail';
+    const queueName = 'mail';
 
     step('GET /queues', async () => {
       const res = await agent.get('/queues')
@@ -200,13 +200,13 @@ export default (agent: ChaiHttp.Agent) => () => {
 
       expect(res.body.content).to.be.an('array');
 
-      const t = res.body.content.find((q: string) => q === queue);
+      const t = res.body.content.find((q: string) => q === queueName);
       expect(t).to.not.equal(null);
     });
 
-    let obj: any;
+    let queue: { status: 'active' | 'paused', jobs: { id: string }[] } | undefined;
     step('PUT /queue/{queue}/pause', async () => {
-      const res = await agent.put(`/queus/${queue}/pause`)
+      const res = await agent.put(`/queus/${queueName}/pause`)
         .auth(config.EZMESURE_TOKEN, { type: 'bearer' });
 
       expect(res).to.have.status(200);
@@ -214,22 +214,22 @@ export default (agent: ChaiHttp.Agent) => () => {
         status: { code: 200, message: 'OK' },
         content: { status: 'paused' },
       });
-      obj = res.body.content;
+      queue = res.body.content;
     });
 
     step('GET /queue/{queue}', async () => {
-      const res = await agent.get(`/queus/${queue}`)
+      const res = await agent.get(`/queus/${queueName}`)
         .auth(config.EZMESURE_TOKEN, { type: 'bearer' });
 
       expect(res).to.have.status(200);
       expect(res.body).to.like({
         status: { code: 200, message: 'OK' },
-        content: obj,
+        content: queue,
       });
     });
 
     step('PUT /queue/{queue}/resume', async () => {
-      const res = await agent.put(`/queus/${queue}/resume`)
+      const res = await agent.put(`/queus/${queueName}/resume`)
         .auth(config.EZMESURE_TOKEN, { type: 'bearer' });
 
       expect(res).to.have.status(200);
@@ -237,12 +237,12 @@ export default (agent: ChaiHttp.Agent) => () => {
         status: { code: 200, message: 'OK' },
         content: { status: 'active' },
       });
-      obj = res.body.content;
+      queue = res.body.content;
     });
 
     step('GET /queue/{queue}/{jobId}', async () => {
-      const jobId = obj.jobs[0].id;
-      const res = await agent.put(`/queus/${queue}/${jobId}`)
+      const jobId = queue?.jobs[0].id;
+      const res = await agent.put(`/queus/${queueName}/${jobId}`)
         .auth(config.EZMESURE_TOKEN, { type: 'bearer' });
 
       expect(res).to.have.status(200);
