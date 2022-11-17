@@ -1,4 +1,4 @@
-import integrationTests from './api.spec';
+import integrationTests from './api/index.spec';
 import unitTests from './models.spec';
 
 describe('Report', () => {
