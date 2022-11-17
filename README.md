@@ -10,7 +10,7 @@ Reporting service for ezMESURE/ezCOUNTER
 
 ```bash
 git clone https://github.com/ezpaarse-project/reporting.git
-npm run install
+npm run setup
 ```
 
 ## Services
