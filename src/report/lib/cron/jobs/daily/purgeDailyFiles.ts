@@ -5,91 +5,77 @@ import {
   intervalToDuration,
   parseISO
 } from 'date-fns';
-import { readdir, readFile, unlink } from 'fs/promises';
+import { readFile, unlink } from 'fs/promises';
 import { join } from 'node:path';
 import { isValidResult } from '../../../../models/reports';
 import config from '../../../config';
+import glob from '../../../glob';
 import logger from '../../../logger';
+import { formatIntervalAsDuration } from '../../../utils';
 
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
 
-const basePath = join(rootPath, outDir, '/');
+const basePath = join(rootPath, outDir);
 
 export default async () => {
   const start = new Date();
   try {
     const today = endOfDay(start);
-    const years = await readdir(basePath);
 
-    const result = { checked: 0, deleted: 0 };
     // A report path is smothing like <basePath>/<year>/<year>-<month>/<file>.<json|pdf>
-    // For each year
-    await Promise.allSettled(
-      years.map(async (year) => {
+    const detailFiles = await glob(join(basePath, '**/*.json'));
+    // List all files to delete
+    const filesToDelete = (await Promise.allSettled(
+      detailFiles.map(async (filePath) => {
         try {
-          const yearPath = join(basePath, year);
-          const months = await readdir(yearPath);
+          logger.debug(`[cron] [daily-file-purge] Checking "${filePath}"`);
+          const fileContent = JSON.parse(await readFile(filePath, 'utf-8'));
 
-          // For each month
-          return await Promise.allSettled(
-            months.map(async (month) => {
-              try {
-                const monthPath = join(yearPath, month);
-                const files = (await readdir(monthPath)).filter((f) => /\.json$/i.test(f));
+          if (!isValidResult(fileContent)) {
+            return [];
+          }
 
-                // For each report detail
-                return await Promise.allSettled(
-                  files.map(async (file) => {
-                    try {
-                      const filePath = join(monthPath, file);
-                      const strFilePath = join(outDir, year, month, file);
-                      result.checked += 1;
-                      logger.debug(`[cron] [daily-file-purge] Checking "${strFilePath}"`);
-                      const fileContent = JSON.parse(await readFile(filePath, 'utf-8'));
+          const fileDate = parseISO(fileContent.detail.date.toString());
+          if (differenceInMonths(today, fileDate) < 1) {
+            return [];
+          }
 
-                      if (isValidResult(fileContent)) {
-                        const fileDate = parseISO(fileContent.detail.date.toString());
-                        if (differenceInMonths(today, fileDate) >= 1) {
-                          const dur = intervalToDuration({ end: today, start: fileDate });
-                          // For each file
-                          return await Promise.allSettled(
-                            Object.values(fileContent.detail.files)
-                              .map(async (reportFilePath) => {
-                                try {
-                                  await unlink(join(basePath, reportFilePath));
-                                  result.deleted += 1;
-                                  logger.info(`[cron] [daily-file-purge] Deleting "${reportFilePath}" (${formatDuration(dur, { format: ['years', 'months', 'days'] })} old)`);
-                                } catch (error) {
-                                  logger.error(`[cron] [daily-file-purge] Error on file: ${(error as Error).message}`);
-                                  throw error;
-                                }
-                              }),
-                          );
-                        }
-                      }
-                      return await Promise.resolve([]);
-                    } catch (error) {
-                      logger.error(`[cron] [daily-file-purge] Error on report: ${(error as Error).message}`);
-                      throw error;
-                    }
-                  }),
-                );
-              } catch (error) {
-                logger.error(`[cron] [daily-file-purge] Error on month: ${(error as Error).message}`);
-                throw error;
-              }
-            }),
-          );
+          const dur = intervalToDuration({ end: today, start: fileDate });
+          return Object
+            .values(fileContent.detail.files)
+            .map((file) => ({ file: join(basePath, file), dur }));
         } catch (error) {
-          logger.error(`[cron] [daily-file-purge] Error on year: ${(error as Error).message}`);
+          logger.error(`[cron] [daily-file-purge] Error on file "${detailFiles}" : ${(error as Error).message}`);
           throw error;
         }
       }),
-    );
-    logger.info(`[cron] [daily-file-purge] Checked ${result.checked} files, deleted ${result.deleted} files`);
+    )).flatMap((v) => (v.status === 'fulfilled' ? v.value : { file: '', dur: { } }));
+
+    // Actually delete files
+    const deletedFiles = (await Promise.allSettled(
+      filesToDelete.map(async ({ file, dur }) => {
+        try {
+          if (!file) {
+            return '';
+          }
+
+          await unlink(file);
+
+          logger.info(`[cron] [daily-file-purge] Deleted "${file}" (${formatDuration(dur, { format: ['years', 'months', 'days'] })} old)`);
+          return file;
+        } catch (error) {
+          logger.error(`[cron] [daily-file-purge] Error on file deletion "${detailFiles}" : ${(error as Error).message}`);
+          throw error;
+        }
+      }),
+    )).filter((v) => v.status === 'fulfilled' && v.value);
+
+    const dur = formatIntervalAsDuration({ start, end: new Date() }, { format: ['seconds'], zero: true });
+    logger.info(`[cron] [daily-file-purge] In ${dur} : Checked ${detailFiles.length} reports | Deleted ${deletedFiles.length}/${filesToDelete.length} files`);
   } catch (error) {
-    logger.error(`[cron] [daily-file-purge] Error: ${(error as Error).message}`);
+    const dur = formatIntervalAsDuration({ start, end: new Date() }, { format: ['seconds'], zero: true });
+    logger.error(`[cron] [daily-file-purge] Job failed in ${dur} with error: ${(error as Error).message}`);
     throw error;
   }
 };
