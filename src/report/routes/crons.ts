@@ -9,9 +9,9 @@ const router = Router();
 /**
  * Get all possible crons
  */
-router.get('/', checkRight(Roles.SUPER_USER), (req, res) => {
+router.get('/', checkRight(Roles.SUPER_USER), async (req, res) => {
   try {
-    res.sendJson(getAllCrons());
+    res.sendJson(await getAllCrons());
   } catch (error) {
     res.errorJson(error);
   }
@@ -20,10 +20,10 @@ router.get('/', checkRight(Roles.SUPER_USER), (req, res) => {
 /**
  * Get info about specific cron
  */
-router.get('/:cron', checkRight(Roles.SUPER_USER), (req, res) => {
+router.get('/:cron', checkRight(Roles.SUPER_USER), async (req, res) => {
   try {
     const { cron } = req.params;
-    res.sendJson(getCron(cron));
+    res.sendJson(await getCron(cron));
   } catch (error) {
     res.errorJson(error);
   }
@@ -32,10 +32,10 @@ router.get('/:cron', checkRight(Roles.SUPER_USER), (req, res) => {
 /**
  * Start specific cron
  */
-router.put('/:cron/start', checkRight(Roles.SUPER_USER), (req, res) => {
+router.put('/:cron/start', checkRight(Roles.SUPER_USER), async (req, res) => {
   try {
     const { cron } = req.params;
-    res.sendJson(startCron(cron));
+    res.sendJson(await startCron(cron));
   } catch (error) {
     res.errorJson(error);
   }
@@ -44,10 +44,10 @@ router.put('/:cron/start', checkRight(Roles.SUPER_USER), (req, res) => {
 /**
  * Stop specific cron
  */
-router.put('/:cron/stop', checkRight(Roles.SUPER_USER), (req, res) => {
+router.put('/:cron/stop', checkRight(Roles.SUPER_USER), async (req, res) => {
   try {
     const { cron } = req.params;
-    res.sendJson(stopCron(cron));
+    res.sendJson(await stopCron(cron));
   } catch (error) {
     res.errorJson(error);
   }

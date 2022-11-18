@@ -1,3 +1,12 @@
+import { formatDuration, intervalToDuration } from 'date-fns';
+
+type FormatDurationOptions = Parameters<typeof formatDuration>[1];
+
+export const formatIntervalAsDuration = (
+  interval: Interval,
+  options?: FormatDurationOptions,
+) => formatDuration(intervalToDuration(interval), options);
+
 /**
  * Convert string to Base64
  *

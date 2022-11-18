@@ -1,31 +1,22 @@
-import { CronJob } from 'cron';
-import { differenceInMilliseconds } from 'date-fns';
+import Cron from 'bull';
+import { join } from 'node:path';
 import { NotFoundError } from '../../types/errors';
+import config from '../config';
 import logger from '../logger';
-import generateDailyReports from './jobs/generateDailyReports';
-import purgeDailyFiles from './jobs/purgeDailyFiles';
 
-const dailyReports = new CronJob(
-  process.env.NODE_ENV === 'production' ? '0 0 * * *' : '* * * * *',
-  async () => {
-    const start = new Date();
-    logger.debug('[cron] [daily] Cron started');
+const { concurrence, ...redis } = config.get('redis');
 
-    // TODO[feat]: use worker
-    await Promise.allSettled([
-      generateDailyReports(),
-      purgeDailyFiles(),
-    ]);
-
-    logger.info(`[cron] [daily] Cron ended in ${(differenceInMilliseconds(new Date(), start) / 60).toFixed(2)}s`);
-  },
-  null,
-  true,
-  'Europe/Paris',
-);
+const dailyCron = new Cron<null>('daily cron', { prefix: 'cron', redis });
+dailyCron.on('failed', (job, err) => {
+  if (job.attemptsMade === job.opts.attempts) {
+    logger.error(`[cron] "daily" failed with error: ${err.message}`);
+  }
+});
+dailyCron.process(concurrence, join(__dirname, 'jobs/daily/index.ts'));
+dailyCron.add(null, { repeat: { cron: process.env.NODE_ENV === 'production' ? '0 0 * * *' : '* * * * *' } });
 
 const crons = {
-  daily: dailyReports,
+  daily: dailyCron,
 };
 
 type Crons = keyof typeof crons;
@@ -46,17 +37,29 @@ const isCron = (name: string): name is Crons => Object.keys(crons).includes(name
  *
  * @returns The cron info
  */
-export const getCron = (name: string) => {
+export const getCron = async (name: string) => {
   if (!isCron(name)) {
     throw new NotFoundError(`Cron "${name}" not found`);
   }
   const cron = crons[name];
 
+  const lastCompletedJob = (await cron.getJobs(['active', 'completed', 'failed', 'paused']))[0];
+  let lastRun: Date | undefined;
+  if (lastCompletedJob && lastCompletedJob.processedOn) {
+    lastRun = new Date(lastCompletedJob.processedOn);
+  }
+
+  const nextDelayedJob = (await cron.getJobs(['delayed', 'waiting']))[0];
+  let nextRun: Date | undefined;
+  if (nextDelayedJob && nextDelayedJob.opts.delay) {
+    nextRun = new Date(nextDelayedJob.timestamp + nextDelayedJob.opts.delay);
+  }
+
   return {
     name,
-    running: cron.running,
-    lastRun: cron.lastDate(),
-    nextRun: cron.nextDate(),
+    running: !(await cron.isPaused()),
+    lastRun,
+    nextRun,
   };
 };
 
@@ -67,7 +70,7 @@ export const getCron = (name: string) => {
  *
  * @returns The crons info
  */
-export const getAllCrons = () => Object.keys(crons).map((name) => getCron(name));
+export const getAllCrons = () => Promise.all(Object.keys(crons).map((name) => getCron(name)));
 
 /**
  * Start specific cron
@@ -76,12 +79,12 @@ export const getAllCrons = () => Object.keys(crons).map((name) => getCron(name))
  *
  * @returns The cron info
  */
-export const startCron = (name: string) => {
+export const startCron = async (name: string) => {
   if (!isCron(name)) {
     throw new NotFoundError(`Cron "${name}" not found`);
   }
 
-  crons[name].start();
+  await crons[name].resume();
 
   return getCron(name);
 };
@@ -93,12 +96,12 @@ export const startCron = (name: string) => {
  *
  * @returns The cron info
  */
-export const stopCron = (name: string) => {
+export const stopCron = async (name: string) => {
   if (!isCron(name)) {
     throw new NotFoundError(`Cron "${name}" not found`);
   }
 
-  crons[name].stop();
+  await crons[name].pause();
 
   return getCron(name);
 };

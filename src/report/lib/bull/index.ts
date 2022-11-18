@@ -59,12 +59,12 @@ const mailQueue = new Queue<MailData>('mail send', { redis });
 
 generationQueue.on('failed', (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {
-    logger.error(`[bull] [gen] ${err.message}`);
+    logger.error(`[bull] "generation" failed with error: ${err.message}`);
   }
 });
 mailQueue.on('failed', (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {
-    logger.error(`[bull] [mail] ${err.message}`);
+    logger.error(`[bull] "mail" failed with error: ${err.message}`);
   }
 });
 

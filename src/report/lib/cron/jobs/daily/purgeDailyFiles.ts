@@ -5,12 +5,11 @@ import {
   intervalToDuration,
   parseISO
 } from 'date-fns';
-import { enUS } from 'date-fns/locale'; // Needed until cron jobs are in workers
 import { readdir, readFile, unlink } from 'fs/promises';
 import { join } from 'node:path';
-import { isValidResult } from '../../../models/reports';
-import config from '../../config';
-import logger from '../../logger';
+import { isValidResult } from '../../../../models/reports';
+import config from '../../../config';
+import logger from '../../../logger';
 
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
@@ -18,8 +17,9 @@ const { outDir } = config.get('pdf');
 const basePath = join(rootPath, outDir, '/');
 
 export default async () => {
+  const start = new Date();
   try {
-    const today = endOfDay(new Date());
+    const today = endOfDay(start);
     const years = await readdir(basePath);
 
     const result = { checked: 0, deleted: 0 };
@@ -59,7 +59,7 @@ export default async () => {
                                 try {
                                   await unlink(join(basePath, reportFilePath));
                                   result.deleted += 1;
-                                  logger.info(`[cron] [daily-file-purge] Deleting "${reportFilePath}" (${formatDuration(dur, { format: ['years', 'months', 'days'], locale: enUS })} old)`);
+                                  logger.info(`[cron] [daily-file-purge] Deleting "${reportFilePath}" (${formatDuration(dur, { format: ['years', 'months', 'days'] })} old)`);
                                 } catch (error) {
                                   logger.error(`[cron] [daily-file-purge] Error on file: ${(error as Error).message}`);
                                   throw error;
@@ -90,5 +90,6 @@ export default async () => {
     logger.info(`[cron] [daily-file-purge] Checked ${result.checked} files, deleted ${result.deleted} files`);
   } catch (error) {
     logger.error(`[cron] [daily-file-purge] Error: ${(error as Error).message}`);
+    throw error;
   }
 };
