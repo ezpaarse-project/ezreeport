@@ -115,7 +115,11 @@ export const getTaskById = async (id: Task['id'], institution?: Task['institutio
       institution,
     },
     include: {
-      history: true,
+      history: {
+        orderBy: {
+          date: 'asc',
+        },
+      },
     },
   });
 
@@ -153,6 +157,13 @@ export const createTask = async (data: unknown, creator: string, institution: Ta
       institution,
       history: {
         create: { type: 'creation', message: `Tâche créée par ${creator}` },
+      },
+    },
+    include: {
+      history: {
+        orderBy: {
+          date: 'asc',
+        },
       },
     },
   });
@@ -207,7 +218,11 @@ export const editTaskById = async (data: unknown, id: Task['id'], editor: string
       id,
     },
     include: {
-      history: true,
+      history: {
+        orderBy: {
+          date: 'asc',
+        },
+      },
     },
   });
 
@@ -237,7 +252,11 @@ export const deleteTaskById = async (id: Task['id'], institution?: Task['institu
       id,
     },
     include: {
-      history: true,
+      history: {
+        orderBy: {
+          date: 'asc',
+        },
+      },
     },
   });
 
@@ -272,7 +291,11 @@ export const addTaskHistory = async (id: Task['id'], entry: Pick<History, 'type'
       id,
     },
     include: {
-      history: true,
+      history: {
+        orderBy: {
+          date: 'asc',
+        },
+      },
     },
   });
 
