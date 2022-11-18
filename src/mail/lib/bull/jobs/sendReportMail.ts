@@ -10,7 +10,8 @@ const { team } = config.get('mail');
 
 export default async (job: Job<MailData>) => {
   const filename = job.data.url.replace(/^.*\//, '');
-  const dateStr = format(parseISO(job.data.date), 'dd/MM/yyyy');
+  const date = parseISO(job.data.date);
+  const dateStr = format(date, 'dd/MM/yyyy');
 
   try {
     const options: Omit<MailOptions, 'body' | 'subject'> = {
@@ -38,7 +39,7 @@ export default async (job: Job<MailData>) => {
         to: [team],
         // to: [...job.data.task.targets, team],
         subject: `Erreur de Reporting ezMESURE [${dateStr}] - ${job.data.task.name}`,
-        body: await generateMail('error', bodyData),
+        body: await generateMail('error', { ...bodyData, date: format(date, 'dd/MM/yyyy à HH:mm:ss') }),
       });
     }
     logger.info(`[mail] Report "${filename}" sent to [${job.data.task.targets.join(', ')}]`);
