@@ -1,5 +1,5 @@
 import type { Task } from '@prisma/client';
-import { differenceInMilliseconds, format } from 'date-fns';
+import { differenceInMilliseconds, format, parseISO } from 'date-fns';
 import Joi from 'joi';
 import { compact, merge, omit } from 'lodash';
 import { randomUUID } from 'node:crypto';
@@ -166,7 +166,7 @@ export const generateReport = async (
     }
     const { _source: { username: user } } = contact;
 
-    const period = calcPeriod(today, task.recurrence);
+    const period = calcPeriod(parseISO(task.nextRun.toString()), task.recurrence);
 
     if (!isValidLayout(task.layout)) {
       // As validation throws an error, this line shouldn't be called
