@@ -12,8 +12,11 @@ dailyCron.on('failed', (job, err) => {
     logger.error(`[cron] "daily" failed with error: ${err.message}`);
   }
 });
+dailyCron.clean(0, 'delayed').then(() => {
+  // Cleaning next jobs before adding cron to avoid issues
+  dailyCron.add(null, { repeat: { cron: process.env.NODE_ENV === 'production' ? '0 0 * * *' : '* * * * *' } });
+});
 dailyCron.process(concurrence, join(__dirname, 'jobs/daily/index.ts'));
-dailyCron.add(null, { repeat: { cron: process.env.NODE_ENV === 'production' ? '0 0 * * *' : '* * * * *' } });
 
 const crons = {
   daily: dailyCron,
@@ -48,6 +51,9 @@ export const getCron = async (name: string) => {
   if (lastCompletedJob && lastCompletedJob.processedOn) {
     lastRun = new Date(lastCompletedJob.processedOn);
   }
+
+  console.log((await cron.getNextJob()));
+  console.log((await cron.getJobs(['delayed', 'waiting'])).length);
 
   const nextDelayedJob = (await cron.getJobs(['delayed', 'waiting']))[0];
   let nextRun: Date | undefined;
