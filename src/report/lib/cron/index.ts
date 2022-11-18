@@ -3,16 +3,21 @@ import { differenceInMilliseconds } from 'date-fns';
 import { NotFoundError } from '../../types/errors';
 import logger from '../logger';
 import generateDailyReports from './jobs/generateDailyReports';
+import purgeDailyFiles from './jobs/purgeDailyFiles';
 
 const dailyReports = new CronJob(
   process.env.NODE_ENV === 'production' ? '0 0 * * *' : '* * * * *',
   async () => {
     const start = new Date();
-    logger.debug('[cron] [daily-report] Cron started');
+    logger.debug('[cron] [daily] Cron started');
 
-    const { length } = await generateDailyReports();
+    // TODO[feat]: use worker
+    await Promise.allSettled([
+      generateDailyReports(),
+      purgeDailyFiles(),
+    ]);
 
-    logger.info(`[cron] [daily-report] Cron ended in ${(differenceInMilliseconds(new Date(), start) / 60).toFixed(2)}s starting generation of ${length} reports`);
+    logger.info(`[cron] [daily] Cron ended in ${(differenceInMilliseconds(new Date(), start) / 60).toFixed(2)}s`);
   },
   null,
   true,
@@ -20,7 +25,7 @@ const dailyReports = new CronJob(
 );
 
 const crons = {
-  'daily-report': dailyReports,
+  daily: dailyReports,
 };
 
 type Crons = keyof typeof crons;

@@ -41,10 +41,8 @@ export const figureSchema = Joi.object<AnyFigure>({
   type: Joi.string<FigureType>().required(),
   data: [
     Joi.string().required(),
-    // TODO[refactor]: Not any, pls
     Joi.array().items(Joi.any()).required(),
   ],
-  // TODO[refactor]: Not any, pls
   params: Joi.object().required(),
   slots: Joi.array().items(Joi.number()),
 });
