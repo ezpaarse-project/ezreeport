@@ -1,7 +1,7 @@
 import { Client, estypes as ElasticTypes } from '@elastic/elasticsearch';
+import { setTimeout } from 'node:timers/promises';
 import config from './config';
 import logger from './logger';
-import { sleep } from './utils';
 
 const {
   scheme, host, port, apiKey,
@@ -47,7 +47,7 @@ export const getElasticClient = async () => {
 
     tries += 1;
     // eslint-disable-next-line no-await-in-loop
-    await sleep(1000);
+    await setTimeout(1000);
   }
   return client;
 };

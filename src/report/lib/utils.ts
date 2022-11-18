@@ -1,13 +1,4 @@
 /**
- * Await given times
- *
- * @param duration in ms
- */
-export const sleep = (duration: number) => new Promise<void>((resolve) => {
-  setTimeout(resolve, duration);
-});
-
-/**
  * Convert string to Base64
  *
  * @param str Base string to convert
