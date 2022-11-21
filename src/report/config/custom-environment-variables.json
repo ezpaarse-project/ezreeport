@@ -17,6 +17,7 @@
     "depositorsIndex": "EZMESURE_DEPOSITORS_INDEX"
   },
   "crons": {
-    "daily": "CRON_DAILY"
+    "generateReports": "CRON_GENERATE_REPORT",
+    "purgeOldReports": "CRON_PURGE_OLD_REPORT"
   }
 }

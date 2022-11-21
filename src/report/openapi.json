@@ -2112,9 +2112,8 @@
                       },
                       "content": [
                         {
-                          "name": "daily-report",
+                          "name": "generateReports",
                           "running": true,
-                          "lastRun": "2022-11-16T07:21:00.405Z",
                           "nextRun": "2022-11-16T08:22:00.000+01:00"
                         }
                       ]
@@ -2197,7 +2196,7 @@
                         "message": "OK"
                       },
                       "content": {
-                        "name": "daily-report",
+                        "name": "generateReports",
                         "running": true,
                         "nextRun": "2022-11-16T09:10:00.000+01:00"
                       }
@@ -2303,7 +2302,7 @@
                         "message": "OK"
                       },
                       "content": {
-                        "name": "daily-report",
+                        "name": "generateReports",
                         "running": true,
                         "nextRun": "2022-11-16T09:10:00.000+01:00"
                       }
@@ -2400,7 +2399,7 @@
                         "message": "OK"
                       },
                       "content": {
-                        "name": "daily-report",
+                        "name": "generateReports",
                         "running": true,
                         "nextRun": "2022-11-16T09:10:00.000+01:00"
                       }
@@ -2811,6 +2810,14 @@
       },
       "Cron": {
         "type": "object",
+        "x-examples": {
+          "Example": {
+            "name": "daily-report",
+            "running": true,
+            "nextRun": "2022-11-16T08:22:00.000Z"
+          }
+        },
+        "description": "Cron job info",
         "properties": {
           "name": {
             "type": "string"
@@ -2818,22 +2825,10 @@
           "running": {
             "type": "boolean"
           },
-          "lastRun": {
-            "type": "string"
-          },
           "nextRun": {
             "type": "string"
           }
-        },
-        "x-examples": {
-          "Example": {
-            "name": "daily-report",
-            "running": true,
-            "lastRun": "2022-11-16T07:21:00.405Z",
-            "nextRun": "2022-11-16T08:22:00.000+01:00"
-          }
-        },
-        "description": "Cron job info"
+        }
       }
     },
     "securitySchemes": {

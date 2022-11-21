@@ -18,7 +18,8 @@
     "depositorsIndex": "depositors"
   },
   "crons": {
-    "daily": "0 0 * * *"
+    "generateReports": "0 0 * * *",
+    "purgeOldReports": "0 0 * * *"
   },
   "pdf": {
     "outDir": "data",

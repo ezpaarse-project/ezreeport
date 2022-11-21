@@ -43,7 +43,8 @@ services:
       - EZMESURE_AUTH_SECRET
       - LOG_LEVEL
       - ALLOWED_ORIGINS
-      - CRON_DAILY
+      - CRON_GENERATE_REPORT
+      - CRON_PURGE_OLD_REPORT
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
