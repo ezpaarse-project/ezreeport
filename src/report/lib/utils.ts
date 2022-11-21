@@ -1,11 +1,16 @@
-import { formatDuration, intervalToDuration } from 'date-fns';
+import { differenceInMilliseconds } from 'date-fns';
 
-type FormatDurationOptions = Parameters<typeof formatDuration>[1];
+export enum FormatIntervalTarget {
+  Milliseconds = 1,
+  Seconds = 100,
+  Minutes = 6000,
+  Hours = 360000,
+}
 
-export const formatIntervalAsDuration = (
-  interval: Interval,
-  options?: FormatDurationOptions,
-) => formatDuration(intervalToDuration(interval), options);
+export const formatInterval = (
+  { start, end }: Interval,
+  target = FormatIntervalTarget.Seconds,
+) => (differenceInMilliseconds(end, start) / target).toFixed(2);
 
 /**
  * Convert string to Base64

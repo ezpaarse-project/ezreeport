@@ -11,7 +11,7 @@ import { isValidResult } from '../../../../models/reports';
 import config from '../../../config';
 import glob from '../../../glob';
 import logger from '../../../logger';
-import { formatIntervalAsDuration } from '../../../utils';
+import { formatInterval } from '../../../utils';
 
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
@@ -71,11 +71,11 @@ export default async () => {
       }),
     )).filter((v) => v.status === 'fulfilled' && v.value);
 
-    const dur = formatIntervalAsDuration({ start, end: new Date() }, { format: ['seconds'], zero: true });
-    logger.info(`[cron] [daily-file-purge] In ${dur} : Checked ${detailFiles.length} reports | Deleted ${deletedFiles.length}/${filesToDelete.length} files`);
+    const dur = formatInterval({ start, end: new Date() });
+    logger.info(`[cron] [daily-file-purge] In ${dur}s : Checked ${detailFiles.length} reports | Deleted ${deletedFiles.length}/${filesToDelete.length} files`);
   } catch (error) {
-    const dur = formatIntervalAsDuration({ start, end: new Date() }, { format: ['seconds'], zero: true });
-    logger.error(`[cron] [daily-file-purge] Job failed in ${dur} with error: ${(error as Error).message}`);
+    const dur = formatInterval({ start, end: new Date() });
+    logger.error(`[cron] [daily-file-purge] Job failed in ${dur}s with error: ${(error as Error).message}`);
     throw error;
   }
 };
