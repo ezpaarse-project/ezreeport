@@ -17,6 +17,9 @@
     "secret": "changeme",
     "depositorsIndex": "depositors"
   },
+  "crons": {
+    "daily": "0 0 * * *"
+  },
   "pdf": {
     "outDir": "data",
     "logos": [

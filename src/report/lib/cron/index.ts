@@ -5,6 +5,7 @@ import config from '../config';
 import logger from '../logger';
 
 const { concurrence, ...redis } = config.get('redis');
+const { daily } = config.get('crons');
 
 const dailyCron = new Cron<null>('daily cron', { prefix: 'cron', redis });
 dailyCron.on('failed', (job, err) => {
@@ -14,7 +15,7 @@ dailyCron.on('failed', (job, err) => {
 });
 dailyCron.clean(0, 'delayed').then(() => {
   // Cleaning next jobs before adding cron to avoid issues
-  dailyCron.add(null, { repeat: { cron: process.env.NODE_ENV === 'production' ? '0 0 * * *' : '* * * * *' } });
+  dailyCron.add(null, { repeat: { cron: daily } });
 });
 dailyCron.process(concurrence, join(__dirname, 'jobs/daily/index.ts'));
 

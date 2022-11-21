@@ -38,6 +38,7 @@ export EZMESURE_AUTH_SECRET=""
 # Comma separated origins (or * to allow all)
 export ALLOWED_ORIGINS="*"
 export LOG_LEVEL=""
+export CRON_DAILY=""
 
 if [[ -f $LOCAL_ENV_FILE ]] ; then
   source "$LOCAL_ENV_FILE"

@@ -15,5 +15,8 @@
   "ezmesure": {
     "secret": "EZMESURE_AUTH_SECRET",
     "depositorsIndex": "EZMESURE_DEPOSITORS_INDEX"
+  },
+  "crons": {
+    "daily": "CRON_DAILY"
   }
 }
