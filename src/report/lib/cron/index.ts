@@ -14,6 +14,8 @@ export type CronData = {
   timer: string,
 };
 
+const pausedJobs: Partial<Record<Crons, Queue.JobInformation>> = {};
+
 const cronQueue = new Queue<CronData>('daily cron', { prefix: 'cron', redis });
 cronQueue.on('failed', (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {
@@ -70,10 +72,31 @@ cronQueue.on('failed', (job, err) => {
  */
 const isCron = (name: string): name is Crons => Object.keys(cronsTimers).includes(name);
 
+/**
+ * Get specific cron **without** format
+ *
+ * @param name The name of the cron
+ *
+ * @returns The cron info
+ */
+const getRawCron = async (name: string) => {
+  if (!isCron(name)) {
+    throw new NotFoundError(`Cron "${name}" not found`);
+  }
+  let job = (await cronQueue.getRepeatableJobs()).find((j) => (name === j.name));
+  if (!job) {
+    job = pausedJobs[name];
+  }
+  if (!job) {
+    throw new NotFoundError(`Cron "${name}" not found`);
+  }
+  return job;
+};
+
 // TODO[feat]: Paginate
 // TODO[feat]: Filter
 /**
- * Get all crons
+ * Get all crons with format
  *
  * @returns The crons info
  */
@@ -81,32 +104,30 @@ export const getAllCrons = async () => {
   const jobs = await cronQueue.getRepeatableJobs();
   const running = !(await cronQueue.isPaused());
 
-  return jobs.map((j) => ({
+  return [...jobs, ...Object.values(pausedJobs)].map((j) => ({
     name: j.name,
-    running,
+    running: running && !pausedJobs[j.name as Crons],
     // lastRun,
-    nextRun: new Date(j.next),
+    nextRun: !pausedJobs[j.name as Crons] ? new Date(j.next) : null,
   }));
 };
 
 /**
- * Get specific cron
+ * Get specific cron with format
  *
  * @param name The name of the cron
  *
  * @returns The cron info
  */
 export const getCron = async (name: string) => {
-  const job = (await cronQueue.getRepeatableJobs()).find((j) => (name === j.name));
-  if (!job) {
-    throw new NotFoundError(`Cron "${name}" not found`);
-  }
+  const job = await getRawCron(name);
 
+  const running = !(await cronQueue.isPaused()) && !pausedJobs[name as Crons];
   return {
     name: job.name,
-    running: !(await cronQueue.isPaused()),
+    running,
     // lastRun,
-    nextRun: new Date(job.next),
+    nextRun: running ? new Date(job.next) : null,
   };
 };
 
@@ -122,8 +143,15 @@ export const startCron = async (name: string) => {
     throw new NotFoundError(`Cron "${name}" not found`);
   }
 
-  // TODO[feat]: resume only one job ?
-  await cronQueue.resume();
+  const job = pausedJobs[name];
+  if (job) {
+    await cronQueue.add(
+      name,
+      { timer: job.cron },
+      { repeat: { cron: job.cron } },
+    );
+    delete pausedJobs[name];
+  }
 
   return getCron(name);
 };
@@ -140,8 +168,15 @@ export const stopCron = async (name: string) => {
     throw new NotFoundError(`Cron "${name}" not found`);
   }
 
-  // TODO[feat]: pause only one job ?
-  await cronQueue.pause();
+  const job = (await cronQueue.getRepeatableJobs()).find((j) => j.name === name);
+  if (job) {
+    await cronQueue.removeRepeatable(job.name, job);
+    pausedJobs[name] = job;
+  }
 
-  return getCron(name);
+  return {
+    name: pausedJobs[name]?.name,
+    running: !(await cronQueue.isPaused()) && !pausedJobs[name],
+    // lastRun,
+  };
 };
