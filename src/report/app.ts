@@ -56,5 +56,5 @@ app.use('*', (req, res) => {
 });
 
 app.listen(port, () => {
-  logger.info(`[http] Service listening on port ${port}`);
+  logger.info(`[http] Service listening on port ${port} in ${process.uptime().toFixed(2)}s`);
 });
