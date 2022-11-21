@@ -49,9 +49,17 @@ cronQueue.on('failed', (job, err) => {
             { timer },
             { repeat: { cron: timer } },
           );
-          //! DO NOT AWAIT IN ANY CASE
-          cronQueue.process(key, concurrence, join(__dirname, `jobs/${key}.ts`));
-          logger.debug(`[cron] ${job.name} registered for ${timer}`);
+          try {
+            //! TS type is kinda wrong here, it's not a promise
+            cronQueue.process(key, concurrence, join(__dirname, `jobs/${key}.ts`));
+            logger.debug(`[cron] ${job.name} registered for ${timer}`);
+          } catch (error) {
+            logger.error(`[cron] Failed to add process for ${key} (${timer}) with error: ${(error as Error).message}`);
+            if (job.opts.repeat && 'key' in job.opts.repeat) {
+              // @ts-expect-error
+              await cronQueue.removeRepeatableByKey(job.opts.repeat?.key);
+            }
+          }
         },
       ),
     );
