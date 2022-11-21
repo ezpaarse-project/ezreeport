@@ -58,13 +58,14 @@ export default async (job: Queue.Job<CronData>) => {
 
     // Actually delete files
     const deletedFiles = (await Promise.allSettled(
-      filesToDelete.map(async ({ file, dur }) => {
+      filesToDelete.map(async ({ file, dur }, i) => {
         try {
           if (!file) {
             return '';
           }
 
           await unlink(file);
+          await job.progress(i / filesToDelete.length);
 
           logger.info(`[cron] [${job.name}] Deleted "${file}" (${formatDuration(dur, { format: ['years', 'months', 'days'] })} old)`);
           return file;

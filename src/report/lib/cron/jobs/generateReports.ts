@@ -19,7 +19,10 @@ export default async (job: Queue.Job<CronData>) => {
       tasks.filter(
         (task) => task.enabled && isBefore(task.nextRun, today),
       ).map(
-        (task) => addTaskToQueue({ task, origin: 'daily-cron-job' }),
+        async (task, i, arr) => {
+          await addTaskToQueue({ task, origin: 'daily-cron-job' });
+          await job.progress(i / arr.length);
+        },
       ),
     );
     const dur = formatInterval({ start, end: new Date() });
