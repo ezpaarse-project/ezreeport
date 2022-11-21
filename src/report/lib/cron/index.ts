@@ -52,9 +52,6 @@ export const getCron = async (name: string) => {
     lastRun = new Date(lastCompletedJob.processedOn);
   }
 
-  console.log((await cron.getNextJob()));
-  console.log((await cron.getJobs(['delayed', 'waiting'])).length);
-
   const nextDelayedJob = (await cron.getJobs(['delayed', 'waiting']))[0];
   let nextRun: Date | undefined;
   if (nextDelayedJob && nextDelayedJob.opts.delay) {

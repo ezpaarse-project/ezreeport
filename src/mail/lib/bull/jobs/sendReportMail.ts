@@ -36,8 +36,7 @@ export default async (job: Job<MailData>) => {
     } else {
       await sendMail({
         ...options,
-        to: [team],
-        // to: [...job.data.task.targets, team],
+        to: [job.data.contact ?? '', team],
         subject: `Erreur de Reporting ezMESURE [${dateStr}] - ${job.data.task.name}`,
         body: await generateMail('error', { ...bodyData, date: format(date, 'dd/MM/yyyy à HH:mm:ss') }),
       });

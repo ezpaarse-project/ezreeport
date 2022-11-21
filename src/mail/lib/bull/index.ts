@@ -24,7 +24,11 @@ export type MailData = {
     name: string,
     targets: string[],
     institution: string,
-  }
+  },
+  /**
+   * The email of the user that was used for generation
+   */
+  contact?: string,
   /**
    * The generation date
    */

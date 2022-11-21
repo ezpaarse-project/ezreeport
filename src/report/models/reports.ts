@@ -159,6 +159,9 @@ export const generateReport = async (
     }
     const { _source: { username: user } } = contact;
 
+    // eslint-disable-next-line no-underscore-dangle
+    events.emit('contactFound', contact._source);
+
     const period = calcPeriod(parseISO(task.nextRun.toString()), task.recurrence);
 
     if (!isValidLayout(task.layout)) {

@@ -27,6 +27,7 @@ module.exports = async (job: Queue.Job<GenerationData>) => {
 
   let expectedPageCount = 0;
   let actualPageCount = 0;
+  let contact: string | undefined;
 
   const events = new EventEmitter();
   events.on('layoutResolved', async (layout: Layout) => {
@@ -36,6 +37,9 @@ module.exports = async (job: Queue.Job<GenerationData>) => {
     actualPageCount += 1;
 
     await job.progress(actualPageCount / expectedPageCount);
+  });
+  events.on('contactFound', (c: { username: string, email: string, metadata: Record<string, unknown> }) => {
+    contact = c.email;
   });
 
   const res = await generateReport(
@@ -57,6 +61,7 @@ module.exports = async (job: Queue.Job<GenerationData>) => {
       targets: task.targets,
       institution: task.institution,
     },
+    contact,
     date: task.lastRun?.toString() ?? formatISO(new Date()),
   };
   const basePath = join(rootPath, outDir, '/');

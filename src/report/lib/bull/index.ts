@@ -45,6 +45,10 @@ export type MailData = {
     institution: string,
   }
   /**
+   * The email of the user that was used for generation
+   */
+  contact?: string,
+  /**
    * The generation date
    */
   date: string,
