@@ -46,7 +46,7 @@ export default async () => {
             .values(fileContent.detail.files)
             .map((file) => ({ file: join(basePath, file), dur }));
         } catch (error) {
-          logger.error(`[cron] [daily-file-purge] Error on file "${detailFiles}" : ${(error as Error).message}`);
+          logger.error(`[cron] [daily-file-purge] Error on file "${filePath}" : ${(error as Error).message}`);
           throw error;
         }
       }),
@@ -65,7 +65,7 @@ export default async () => {
           logger.info(`[cron] [daily-file-purge] Deleted "${file}" (${formatDuration(dur, { format: ['years', 'months', 'days'] })} old)`);
           return file;
         } catch (error) {
-          logger.error(`[cron] [daily-file-purge] Error on file deletion "${detailFiles}" : ${(error as Error).message}`);
+          logger.error(`[cron] [daily-file-purge] Error on file deletion "${file}" : ${(error as Error).message}`);
           throw error;
         }
       }),
