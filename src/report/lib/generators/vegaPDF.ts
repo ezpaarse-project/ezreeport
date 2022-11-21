@@ -1,3 +1,4 @@
+import EventEmitter from 'events';
 import { merge } from 'lodash';
 import { isFigureMd, isFigureMetric, isFigureTable } from '../../models/figures';
 import type { Layout } from '../../models/layouts';
@@ -20,17 +21,14 @@ type Options = PDFReportOptions & {
   GRID?: { rows: number, cols: number },
 };
 
-const defaultEvents = {
-  onSlotsResolution: (_slots: Area[]) => {},
-  onFigureAdded: () => {},
-  onPageAdded: () => {},
-};
-
 /**
  * Generate PDF report with Vega
  *
  * @param layout The layout of the report
- * @param opts The options passed to the PDF Document
+ * @param opts The options of document (passed to {@link initDoc})
+ * @param events Event handler
+ *
+ * @return Stats about PDF
  */
 const generatePdfWithVega = async (
   layout: Layout,
@@ -39,9 +37,8 @@ const generatePdfWithVega = async (
     GRID = { rows: 2, cols: 2 },
     ...opts
   }: Options,
-  events: Partial<typeof defaultEvents> = {},
+  events: EventEmitter = new EventEmitter(),
 ): Promise<PDFStats> => {
-  const e = { ...defaultEvents, ...events };
   try {
     const doc = await initDoc(opts);
 
@@ -96,7 +93,7 @@ const generatePdfWithVega = async (
       arr[i] = slot;
       return slot;
     });
-    e.onSlotsResolution(slots);
+    events.emit('slotsResolution', slots);
 
     let first = true;
     // eslint-disable-next-line no-restricted-syntax
@@ -230,10 +227,10 @@ const generatePdfWithVega = async (
           await addVegaToPDF(doc, view, slot);
         }
 
-        e.onFigureAdded();
+        events.emit('figureAdded', figure);
       }
 
-      e.onPageAdded();
+      events.emit('pageAdded', figures);
     }
 
     return await renderDoc();

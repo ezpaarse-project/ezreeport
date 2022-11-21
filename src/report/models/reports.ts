@@ -3,6 +3,7 @@ import { differenceInMilliseconds, format, parseISO } from 'date-fns';
 import Joi from 'joi';
 import { compact, merge, omit } from 'lodash';
 import { randomUUID } from 'node:crypto';
+import EventEmitter from 'node:events';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import config from '../lib/config';
@@ -87,14 +88,6 @@ export const isValidResult = (data: unknown): data is ReportResult => {
  */
 const normaliseFilename = (filename: string): string => filename.toLowerCase().replace(/[/ .]/g, '-');
 
-const defaultEvents = {
-  onCreation: () => {},
-  onLayoutResolved: (_layout: ReturnType<LayoutFnc>) => {},
-  onSlotsResolution: (_slots: Area[]) => {},
-  onFigureAdded: () => {},
-  onPageAdded: () => {},
-};
-
 /**
  * Generate report
  *
@@ -102,21 +95,19 @@ const defaultEvents = {
  * @param origin The origin of the generation (can be username, or method (auto, etc.))
  * @param writeHistory Should write generation in task history (also disable first level of debug)
  * @param debug Enable second level of debug
- * @param events Events overrides
  * @param meta Additional data
+ * @param events Event handler (passed to {@link generatePdfWithVega})
  *
- * @returns ...
+ * @returns Job detail
  */
 export const generateReport = async (
   task: Task,
   origin: string,
   writeHistory = true,
   debug = false,
-  events: Partial<typeof defaultEvents> = {},
   meta = {},
+  events: EventEmitter = new EventEmitter(),
 ): Promise<ReportResult> => {
-  const e = { ...defaultEvents, ...events };
-
   const today = new Date();
   const todayStr = format(today, 'yyyy/yyyy-MM');
   const basePath = join(rootPath, outDir, todayStr, '/');
@@ -127,7 +118,7 @@ export const generateReport = async (
   }
 
   logger.debug(`[gen] Generation of report "${todayStr}/${filename}" started`);
-  e.onCreation();
+  events.emit('creation');
 
   let result: ReportResult = {
     success: true,
@@ -158,8 +149,10 @@ export const generateReport = async (
     }
 
     // Get username who will run the requests
-    // eslint-disable-next-line no-underscore-dangle
-    const contact = (await findInstitutionContact(institution._id.toString())) ?? { _source: null };
+    const contact = (
+      // eslint-disable-next-line no-underscore-dangle
+      await findInstitutionContact(institution._id.toString())
+    ) ?? { _source: null };
     // eslint-disable-next-line no-underscore-dangle
     if (!contact._source) {
       throw new Error(`No suitable contact found for your institution "${task.institution}". Please add doc_contact or tech_contact.`);
@@ -169,7 +162,7 @@ export const generateReport = async (
     const period = calcPeriod(parseISO(task.nextRun.toString()), task.recurrence);
 
     if (!isValidLayout(task.layout)) {
-      // As validation throws an error, this line shouldn't be called
+    // As validation throws an error, this line shouldn't be called
       return {} as ReportResult;
     }
 
@@ -199,14 +192,14 @@ export const generateReport = async (
     );
 
     if (task.layout.inserts) {
-      // eslint-disable-next-line no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax
       for (const { at, figures } of task.layout.inserts) {
         const fnc = () => figures;
         layout.splice(at, 0, fnc);
       }
     }
 
-    e.onLayoutResolved(layout);
+    events.emit('layoutResolved', layout);
 
     const stats = await generatePdfWithVega(
       layout,
@@ -218,7 +211,7 @@ export const generateReport = async (
         debugPages: debug,
         GRID,
       },
-      e,
+      events,
     );
 
     if (writeHistory) {
