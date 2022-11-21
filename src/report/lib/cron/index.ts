@@ -87,7 +87,7 @@ const isCron = (name: string): name is Crons => Object.keys(cronsTimers).include
  *
  * @returns The cron info
  */
-const getRawCron = async (name: string) => {
+const getRawCron = async (name: string): Promise<Queue.JobInformation> => {
   if (!isCron(name)) {
     throw new NotFoundError(`Cron "${name}" not found`);
   }
@@ -101,6 +101,11 @@ const getRawCron = async (name: string) => {
   return job;
 };
 
+const getLastRun = async (name: Crons) => {
+  const lastJob = (await cronQueue.getJobs(['completed'])).filter((j) => j.name === name).at(0);
+  return lastJob?.processedOn ? new Date(lastJob.processedOn) : null;
+};
+
 // TODO[feat]: Paginate
 // TODO[feat]: Filter
 /**
@@ -112,12 +117,17 @@ export const getAllCrons = async () => {
   const jobs = await cronQueue.getRepeatableJobs();
   const running = !(await cronQueue.isPaused());
 
-  return [...jobs, ...Object.values(pausedJobs)].map((j) => ({
-    name: j.name,
-    running: running && !pausedJobs[j.name as Crons],
-    // lastRun,
-    nextRun: !pausedJobs[j.name as Crons] ? new Date(j.next) : null,
-  }));
+  return Promise.all(
+    [...jobs, ...Object.values(pausedJobs)].map(async (j) => {
+      const name = j.name as Crons;
+      return {
+        name: j.name,
+        running: running && !pausedJobs[name],
+        lastRun: await getLastRun(name),
+        nextRun: !pausedJobs[name] ? new Date(j.next) : null,
+      };
+    }),
+  );
 };
 
 /**
@@ -134,7 +144,7 @@ export const getCron = async (name: string) => {
   return {
     name: job.name,
     running,
-    // lastRun,
+    lastRun: await getLastRun(name as Crons),
     nextRun: running ? new Date(job.next) : null,
   };
 };
@@ -182,11 +192,7 @@ export const stopCron = async (name: string) => {
     pausedJobs[name] = job;
   }
 
-  return {
-    name: pausedJobs[name]?.name,
-    running: !(await cronQueue.isPaused()) && !pausedJobs[name],
-    // lastRun,
-  };
+  return getCron(name);
 };
 
 /**
@@ -203,5 +209,5 @@ export const forceCron = async (name: string) => {
 
   await cronQueue.add(name, { timer: cronsTimers[name] });
 
-  return getCron(name);
+  return { ...await getCron(name), lastRun: new Date() };
 };

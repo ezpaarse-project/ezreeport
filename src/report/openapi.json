@@ -2198,7 +2198,8 @@
                       "content": {
                         "name": "generateReports",
                         "running": true,
-                        "nextRun": "2022-11-16T09:10:00.000+01:00"
+                        "nextRun": "2022-11-16T09:10:00.000Z",
+                        "lastRun": "2022-11-16T09:09:59.248Z"
                       }
                     }
                   }
@@ -2304,7 +2305,8 @@
                       "content": {
                         "name": "generateReports",
                         "running": true,
-                        "nextRun": "2022-11-16T09:10:00.000+01:00"
+                        "nextRun": "2022-11-16T09:10:00.000Z",
+                        "lastRun": "2022-11-16T09:09:59.248Z"
                       }
                     }
                   }
@@ -2401,7 +2403,8 @@
                       "content": {
                         "name": "generateReports",
                         "running": true,
-                        "nextRun": "2022-11-16T09:10:00.000+01:00"
+                        "nextRun": "2022-11-16T09:10:00.000Z",
+                        "lastRun": "2022-11-16T09:09:59.248Z"
                       }
                     }
                   }
@@ -2498,7 +2501,8 @@
                       "content": {
                         "name": "generateReports",
                         "running": true,
-                        "nextRun": "2022-11-16T09:10:00.000+01:00"
+                        "nextRun": "2022-11-16T09:10:00.000Z",
+                        "lastRun": "2022-11-16T09:09:59.248Z"
                       }
                     }
                   }
@@ -2911,7 +2915,8 @@
           "Example": {
             "name": "daily-report",
             "running": true,
-            "nextRun": "2022-11-16T08:22:00.000Z"
+            "nextRun": "2022-11-16T09:10:00.000Z",
+            "lastRun": "2022-11-16T09:09:59.000Z"
           }
         },
         "description": "Cron job info",
@@ -2924,6 +2929,12 @@
           },
           "nextRun": {
             "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastRun": {
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         }
