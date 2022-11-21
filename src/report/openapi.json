@@ -2435,6 +2435,103 @@
           }
         ]
       }
+    },
+    "/crons/{cron}/force": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "cron",
+          "in": "path",
+          "required": true,
+          "description": "Cron name"
+        }
+      ],
+      "post": {
+        "summary": "Force cron",
+        "operationId": "post-crons-cron-force",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "daily-report",
+                        "running": true,
+                        "nextRun": "2022-11-16T09:10:00.000+01:00"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/Cron"
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "generateReports",
+                        "running": true,
+                        "nextRun": "2022-11-16T09:10:00.000+01:00"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "description": "Force specific cron to run. Only accessible to SUPER_USER.",
+        "tags": [
+          "cron"
+        ],
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -2826,7 +2923,8 @@
             "type": "boolean"
           },
           "nextRun": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           }
         }
       }

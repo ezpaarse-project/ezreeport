@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import {
-  getAllCrons, getCron, startCron, stopCron
+  forceCron,
+  getAllCrons,
+  getCron,
+  startCron,
+  stopCron
 } from '../lib/cron';
 import checkRight, { Roles } from '../middlewares/auth';
 
@@ -48,6 +52,18 @@ router.put('/:cron/stop', checkRight(Roles.SUPER_USER), async (req, res) => {
   try {
     const { cron } = req.params;
     res.sendJson(await stopCron(cron));
+  } catch (error) {
+    res.errorJson(error);
+  }
+});
+
+/**
+ * Force a specific cron to run
+ */
+router.post('/:cron/force', checkRight(Roles.SUPER_USER), async (req, res) => {
+  try {
+    const { cron } = req.params;
+    res.sendJson(await forceCron(cron));
   } catch (error) {
     res.errorJson(error);
   }

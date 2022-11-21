@@ -180,3 +180,20 @@ export const stopCron = async (name: string) => {
     // lastRun,
   };
 };
+
+/**
+ * Force specific cron to run
+ *
+ * @param name The cron name
+ *
+ * @returns The cron info
+ */
+export const forceCron = async (name: string) => {
+  if (!isCron(name)) {
+    throw new NotFoundError(`Cron "${name}" not found`);
+  }
+
+  await cronQueue.add(name, { timer: cronsTimers[name] });
+
+  return getCron(name);
+};
