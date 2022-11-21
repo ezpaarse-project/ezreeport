@@ -32,7 +32,7 @@ cronQueue.on('failed', (job, err) => {
     const jobs = await cronQueue.getRepeatableJobs();
     await Promise.all(
       jobs.map(async (j) => {
-        await cronQueue.removeRepeatable(j);
+        await cronQueue.removeRepeatable(j.name, j);
         logger.debug(`[cron] ${j.name} (${j.cron}) deleted`);
       }),
     );
