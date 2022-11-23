@@ -77,7 +77,63 @@ services:
       - LOG_LEVEL
     depends_on:
       - redis
-    # restart: unless-stopped
+    restart: unless-stopped
+
+  metricbeat:
+    image: docker.elastic.co/beats/metricbeat:7.14.1
+    volumes:
+      - ./src/metrics/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro
+    command: "metricbeat -e"
+    user: root
+    environment:
+      - DATABASE_PROTOCOL
+      - DATABASE_USER
+      - DATABASE_PASSWORD
+      - DATABASE_HOST
+      - DATABASE_PORT
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD
+      - ELASTIC_URL
+      - MONITORING_INDEX_PREFIX
+      - MONITORING_API_KEY
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  heartbeat:
+    image: docker.elastic.co/beats/heartbeat:7.14.1
+    volumes:
+      - ./src/metrics/heartbeat.yml:/usr/share/heartbeat/heartbeat.yml:ro
+    cap_add:
+      - "NET_RAW"
+    user: root
+    environment:
+      - DATABASE_HOST
+      - SMTP_HOST
+      - REDIS_HOST=redis
+      - ELASTIC_URL
+      - MONITORING_INDEX_PREFIX
+      - MONITORING_API_KEY
+      - MONITORING_SCHEDULE
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  apm:
+    image: docker.elastic.co/apm/apm-server:7.14.1
+    cap_add: ["CHOWN", "DAC_OVERRIDE", "SETGID", "SETUID"]
+    cap_drop: ["ALL"]
+    command: "apm-server -e"
+    volumes:
+      - ./src/metrics/apm.yml:/usr/share/apm-server/apm-server.yml:ro
+    environment:
+      - ELASTIC_URL
+      - MONITORING_INDEX_PREFIX
+      - MONITORING_API_KEY
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
 
   maildev:
     image: maildev/maildev

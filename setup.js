@@ -15,7 +15,7 @@ if (fs.existsSync(mainPackageLock)) {
 const localEnv = path.join(__dirname, 'reporting.local.env.sh');
 if (!fs.existsSync(localEnv)) {
   console.log('Creating "reporting.local.env.sh"');
-  fs.writeFileSync(localEnv, 'export DATABASE_URL="$DATABASE_PROTOCOL://$DATABASE_USER:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT/$DATABASE_DB?schema=default"')
+  fs.writeFileSync(localEnv, '#!/bin/bash\n\nexport ELASTIC_URL="$ELASTIC_SCHEME://$ELASTIC_HOST:$ELASTIC_PORT"\n\nexport DATABASE_URL="$DATABASE_PROTOCOL://$DATABASE_USER:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT/$DATABASE_DB?schema=default"')
 }
 
 // Install tests

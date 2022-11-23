@@ -1,0 +1,62 @@
+output.elasticsearch:
+  hosts: "${ELASTIC_URL}"
+  api_key: "${MONITORING_API_KEY}"
+  ssl.verification_mode: "none"
+  index: "${MONITORING_INDEX_PREFIX}heartbeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+
+setup:
+  template:
+    name: "${MONITORING_INDEX_PREFIX}heartbeat"
+    pattern: "${MONITORING_INDEX_PREFIX}heartbeat-*"
+  ilm:
+    rollover_alias: "${MONITORING_INDEX_PREFIX}heartbeat-%{[agent.version]}"
+    policy_name: "${MONITORING_INDEX_PREFIX}heartbeat"
+
+heartbeat.monitors:
+  - name: reporting-report
+    service.name: reporting-report
+    tags: [reporting, "${NODE_ENV:development}"]
+    type: http
+    schedule: '${MONITORING_SCHEDULE}'
+    check.response.status: [204]
+    urls:
+      - http://report:8080/ping
+
+  - name: reporting-apm
+    type: http
+    tags: [reporting, "${NODE_ENV:development}"]
+    schedule: '${MONITORING_SCHEDULE}'
+    urls:
+      - http://apm:8200
+
+  - name: reporting-redis
+    type: icmp
+    tags: [reporting, "${NODE_ENV:development}"]
+    schedule: '${MONITORING_SCHEDULE}'
+    hosts:
+        - ${REDIS_HOST}
+
+  - name: reporting-db
+    type: icmp
+    tags: [reporting, "${NODE_ENV:development}"]
+    schedule: '${MONITORING_SCHEDULE}'
+    hosts:
+        - ${DATABASE_HOST}
+
+  - name: reporting-smtp
+    type: icmp
+    tags: [reporting, "${NODE_ENV:development}"]
+    schedule: '${MONITORING_SCHEDULE}'
+    hosts:
+        - ${SMTP_HOST}
+
+  - name: reporting-mail
+    service.name: reporting-mail
+    tags: [reporting, "${NODE_ENV:development}"]
+    type: icmp
+    schedule: '${MONITORING_SCHEDULE}'
+    hosts:
+        - mail
+
+processors:
+  - add_cloud_metadata: ~

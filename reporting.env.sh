@@ -8,11 +8,11 @@ export REDIS_PORT=""
 export REDIS_PASSWORD=""
 export REDIS_CONCURRENCE=""
 
-export ELASTIC_SCHEME=""
+export ELASTIC_SCHEME="https"
 export ELASTIC_HOST=""
-export ELASTIC_PORT=""
-# API key must have "monitor" and "manage_security" privileges
-export ELASTIC_API_KEY=""
+export ELASTIC_PORT="9200"
+export ELASTIC_API_KEY="" # Base 64
+export ELASTIC_URL="$ELASTIC_SCHEME://$ELASTIC_HOST:$ELASTIC_PORT"
 
 export DATABASE_PROTOCOL="postgresql"
 export DATABASE_USER="postgres"
@@ -35,11 +35,16 @@ export EMAIL_ATTEMPTS_INTERVAL=""
 
 export EZMESURE_AUTH_SECRET=""
 
-# Comma separated origins (or * to allow all)
-export ALLOWED_ORIGINS="*"
-export LOG_LEVEL=""
 export CRON_GENERATE_REPORT=""
 export CRON_PURGE_OLD_REPORT=""
+
+export MONITORING_INDEX_PREFIX="reporting-"
+export MONITORING_API_KEY="" # "Beats" version of ELASTIC_API_KEY
+export MONITORING_SCHEDULE="@every 5s"
+
+export LOG_LEVEL=""
+
+export ALLOWED_ORIGINS="*" # Comma separated origins (or * to allow all)
 
 if [[ -f $LOCAL_ENV_FILE ]] ; then
   source "$LOCAL_ENV_FILE"

@@ -11,7 +11,8 @@
   "conventionalCommits.scopes": [
     "report",
     "mail",
-    "tests"
+    "tests",
+    "metrics"
   ],
   "mochaExplorer.cwd": "tests",
   "mochaExplorer.files": "./*/index.spec.ts",
