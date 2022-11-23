@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import swaggerUi from 'swagger-ui-express';
 import config from './lib/config';
 import './lib/datefns'; // Setup default options for date-fns
+import './lib/elastic/apm'; // Setup Elastic's APM for monitoring
 import logger from './lib/logger';
 import formatMiddleware from './middlewares/format';
 import loggerMiddleware from './middlewares/logger';

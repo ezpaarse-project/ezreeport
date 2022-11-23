@@ -3,6 +3,7 @@ import Queue, { type Job } from 'bull';
 import { join } from 'path';
 import { NotFoundError } from '../../types/errors';
 import config from '../config';
+import { sendError } from '../elastic/apm';
 import logger from '../logger';
 
 const { concurrence, ...redis } = config.get('redis');
@@ -64,6 +65,7 @@ const mailQueue = new Queue<MailData>('mail send', { redis });
 generationQueue.on('failed', (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {
     logger.error(`[bull] "generation" failed with error: ${err.message}`);
+    sendError(err);
   }
 });
 mailQueue.on('failed', (job, err) => {

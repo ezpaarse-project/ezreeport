@@ -2,6 +2,7 @@ import Queue from 'bull';
 import { join } from 'node:path';
 import { NotFoundError } from '../../types/errors';
 import config from '../config';
+import { sendError } from '../elastic/apm';
 import logger from '../logger';
 import { formatInterval } from '../utils';
 
@@ -20,6 +21,7 @@ const cronQueue = new Queue<CronData>('daily cron', { prefix: 'cron', redis });
 cronQueue.on('failed', (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {
     logger.error(`[cron] Failed with error: ${err.message}`);
+    sendError(err);
   }
 });
 

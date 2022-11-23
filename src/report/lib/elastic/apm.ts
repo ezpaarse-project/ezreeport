@@ -1,0 +1,87 @@
+import apm from 'elastic-apm-node';
+import type { Request, Response } from 'express';
+import moduleInfo from '../../package.json';
+import logger from '../logger';
+import { formatInterval } from '../utils';
+
+let started = false;
+const start = () => {
+  const s = new Date();
+  try {
+    logger.debug('[apm] APM Starting');
+    apm.start({
+      serverUrl: 'http://apm:8200',
+      serviceName: moduleInfo.name,
+      serviceVersion: moduleInfo.version,
+      logger: {
+        fatal: (obj, msg, ...args) => {
+          let str = obj.toString();
+          if (typeof obj === 'object' && typeof msg === 'string') {
+            str = msg;
+          }
+          logger.error(`[apm] ${str}`, ...args);
+        },
+        error: (obj, msg, ...args) => {
+          let str = obj.toString();
+          if (typeof obj === 'object' && typeof msg === 'string') {
+            str = msg;
+          }
+          logger.error(`[apm] ${str}`, ...args);
+        },
+        warn: (obj, msg, ...args) => {
+          let str = obj.toString();
+          if (typeof obj === 'object' && typeof msg === 'string') {
+            str = msg;
+          }
+          logger.warn(`[apm] ${str}`, ...args);
+        },
+        info: (obj, msg, ...args) => {
+          let str = obj.toString();
+          if (typeof obj === 'object' && typeof msg === 'string') {
+            str = msg;
+          }
+          logger.info(`[apm] ${str}`, ...args);
+        },
+        debug: (obj, msg, ...args) => {
+          return;
+          let str = obj.toString();
+          if (typeof obj === 'object' && typeof msg === 'string') {
+            str = msg;
+          }
+          logger.debug(`[apm] ${str}`, ...args);
+        },
+        trace: (obj, msg, ...args) => {
+          return;
+          let str = obj.toString();
+          if (typeof obj === 'object' && typeof msg === 'string') {
+            str = msg;
+          }
+          logger.debug(`[apm] ${str}`, ...args);
+        },
+      },
+    });
+    const dur = formatInterval({ start: s, end: new Date() });
+    logger.info(`[apm] APM started in ${dur}s`);
+    started = true;
+  } catch (error) {
+    const dur = formatInterval({ start: s, end: new Date() });
+    logger.error(`[apm] APM init failed in ${dur}s with error: ${(error as Error).message}`);
+    started = false;
+  }
+};
+start();
+
+export const sendError = (error: Error, request?: Request, response?: Response) => {
+  if (!started) {
+    start();
+  }
+  apm.captureError(
+    error,
+    { request, response },
+    (err, _id) => {
+      logger.error(`[apm] APM failed to send error: ${err?.message ?? error.message}`);
+    },
+  );
+};
+
+export default apm;

@@ -9,11 +9,18 @@ import type { Layout } from '../../../models/layouts';
 import { generateReport } from '../../../models/reports';
 import config from '../../config';
 import '../../datefns'; // Setup default options for date-fns
+import apm from '../../elastic/apm'; // Setup Elastic's APM for monitoring
+import logger from '../../logger';
 
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
 
 module.exports = async (job: Queue.Job<GenerationData>) => {
+  const apmtrans = apm.startTransaction('generation', 'job');
+  if (!apmtrans) {
+    logger.warn('[bull] [generation] Can\'t start APM transaction');
+  }
+
   const {
     id: jobId,
     data: {
@@ -66,6 +73,7 @@ module.exports = async (job: Queue.Job<GenerationData>) => {
   };
   const basePath = join(rootPath, outDir, '/');
 
+  apmtrans?.end(res.success ? 'success' : 'error');
   if (res.success && res.detail.files.report) {
     const file = await readFile(join(basePath, res.detail.files.report), 'base64');
 
