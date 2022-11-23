@@ -119,8 +119,8 @@ router.put('/:task', checkRight(Roles.READ_WRITE), checkInstitution, async (req,
     }
 
     const task = await editTaskById(
-      req.body,
       id,
+      req.body,
       req.user.username,
       req.user.institution,
     );
@@ -179,11 +179,12 @@ router.put('/:task/enable', checkRight(Roles.READ_WRITE), checkInstitution, asyn
     }
 
     const editedTask = await editTaskById(
+      id,
+      // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
       {
         ...pick(task, 'name', 'layout', 'targets', 'recurrence', 'nextRun'),
         enabled: true,
       },
-      id,
       req.user.username,
       req.user.institution,
     );
@@ -213,11 +214,12 @@ router.put('/:task/disable', checkRight(Roles.READ_WRITE), checkInstitution, asy
     }
 
     const editedTask = await editTaskById(
+      id,
+      // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
       {
         ...pick(task, 'name', 'layout', 'targets', 'recurrence', 'nextRun'),
         enabled: false,
       },
-      id,
       req.user.username,
       req.user.institution,
     );

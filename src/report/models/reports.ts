@@ -12,7 +12,7 @@ import logger from '../lib/logger';
 import { calcNextDate, calcPeriod } from '../lib/recurrence';
 import { findInstitutionByIds, findInstitutionContact } from './institutions';
 import { isValidLayout, type LayoutFnc } from './layouts';
-import { addTaskHistory, slientEditTaskById } from './tasks';
+import { editTaskByIdWithHistory } from './tasks';
 
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
@@ -162,6 +162,7 @@ export const generateReport = async (
     // eslint-disable-next-line no-underscore-dangle
     events.emit('contactFound', contact._source);
 
+    // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
     const period = calcPeriod(parseISO(task.nextRun.toString()), task.recurrence);
 
     if (!isValidLayout(task.layout)) {
@@ -218,12 +219,9 @@ export const generateReport = async (
     );
 
     if (writeHistory) {
-      await slientEditTaskById(
+      await editTaskByIdWithHistory(
         task.id,
-        { nextRun: calcNextDate(today, task.recurrence), lastRun: today },
-      );
-      await addTaskHistory(
-        task.id,
+        { ...task, nextRun: calcNextDate(today, task.recurrence), lastRun: today },
         { type: 'generation-success', message: `Rapport "${todayStr}/${filename}" généré par ${origin}`, meta },
       );
     }
@@ -243,10 +241,11 @@ export const generateReport = async (
     );
     logger.info(`[gen] Report "${todayStr}/${filename}" successfully generated in ${(result.detail.time / 1000).toFixed(2)}s`);
   } catch (error) {
-    await slientEditTaskById(task.id, { enabled: false });
-    if (writeHistory) {
-      await addTaskHistory(task.id, { type: 'generation-error', message: `Rapport "${todayStr}/${filename}" non généré par ${origin} suite à une erreur.`, meta });
-    }
+    await editTaskByIdWithHistory(
+      task.id,
+      { ...task, enabled: false },
+      writeHistory ? { type: 'generation-error', message: `Rapport "${todayStr}/${filename}" non généré par ${origin} suite à une erreur.`, meta } : false,
+    );
 
     result = merge<ReportResult, DeepPartial<ReportResult>>(
       result,

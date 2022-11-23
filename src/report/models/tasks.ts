@@ -58,7 +58,7 @@ const isValidTask = (data: unknown): data is InputTask => {
  * Gett all tasks in DB
  *
  * @param opts Requests options
- * @param institution The institution of the task
+ * @param institution The institution of the task. If provided, will restrict search to the instituion provided
  *
  * @returns Tasks list
  */
@@ -68,6 +68,7 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
   institution?: Task['institution'],
 ): Promise<Task[]> => {
   try {
+    // TODO[refactor]: any other way ?
     const select = opts?.select && opts.select.reduce<Prisma.TaskSelect>(
       (prev, key) => ({ ...prev, [key]: true }),
       {},
@@ -102,7 +103,7 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
  * Get specific task in DB
  *
  * @param id The id of the task
- * @param institution The institution of the task
+ * @param institution The institution of the task. If provided, will restrict search to the instituion provided
  *
  * @returns Task
  */
@@ -132,7 +133,7 @@ export const getTaskById = async (id: Task['id'], institution?: Task['institutio
  *
  * @param data The input data
  * @param creator The user creating the task
- * @param institution The institution of the task
+ * @param institution The institution of the task. If provided, will restrict search to the instituion provided
  *
  * @returns The created task
  */
@@ -173,68 +174,10 @@ export const createTask = async (data: unknown, creator: string, institution: Ta
 };
 
 /**
- * Edit task in DB
- *
- * @param data The input data
- * @param id The id of the task
- * @param editor The user editing the task
- * @param institution The institution of the task
- *
- * @returns The edited task
- */
-export const editTaskById = async (data: unknown, id: Task['id'], editor: string, institution?: Task['institution']): Promise<Task | null> => {
-  // Validate body
-  if (!isValidTask(data)) {
-    // As validation throws an error, this line shouldn't be called
-    return null;
-  }
-
-  // Check if task exist
-  const task = await getTaskById(id, institution);
-  if (!task) {
-    return null;
-  }
-
-  let { nextRun } = data;
-  if (
-    data.recurrence !== task.recurrence
-    && (!data.nextRun || isSameDay(new Date(data.nextRun), task.nextRun))
-  ) {
-    // If next run isn't changed but recurrence changed
-    nextRun = calcNextDate(task.lastRun ?? new Date(), data.recurrence);
-  }
-
-  await prisma.$connect();
-
-  const editedTask = await prisma.task.update({
-    data: {
-      ...data,
-      nextRun,
-      history: {
-        create: { type: 'edition', message: `Tâche éditée par ${editor}`, date: formatISO(new Date()) },
-      },
-    },
-    where: {
-      id,
-    },
-    include: {
-      history: {
-        orderBy: {
-          date: 'asc',
-        },
-      },
-    },
-  });
-
-  await prisma.$disconnect();
-  return editedTask;
-};
-
-/**
  * Delete specific task in DB
  *
  * @param id The id of the task
- * @param institution The institution of the task
+ * @param institution The institution of the task. If provided, will restrict search to the instituion provided
  *
  * @returns The edited task
  */
@@ -265,68 +208,86 @@ export const deleteTaskById = async (id: Task['id'], institution?: Task['institu
 };
 
 /**
- * Add an entry to task history
- *
- * @param id The id of the task
- * @param entry The new entry in history
- *
- * @returns The task
- */
-export const addTaskHistory = async (id: Task['id'], entry: Pick<History, 'type' | 'message'> & { meta: object }): Promise<Task | null> => {
-  await prisma.$connect();
-
-  // Check if task exist
-  const task = await getTaskById(id);
-  if (!task) {
-    return null;
-  }
-
-  const editedTask = await prisma.task.update({
-    data: {
-      history: {
-        create: entry,
-      },
-    },
-    where: {
-      id,
-    },
-    include: {
-      history: {
-        orderBy: {
-          date: 'asc',
-        },
-      },
-    },
-  });
-
-  await prisma.$disconnect();
-  return editedTask;
-};
-
-/**
- * Silently (without writing in history) edit a specific task. Do not use in HTTP methods.
+ * Edit task in DB with custom history entry
  *
  * @param id The id of the task
  * @param data The input data
+ * @param history The new history entry. If not provided, edit is considered as "silent"
+ * @param institution The institution of the task. If provided, will restrict search to the instituion provided
  *
  * @returns The edited task, or null if task doesn't exist
  */
-export const slientEditTaskById = async (id: Task['id'], data: Partial<InputTask & Pick<Task, 'lastRun'>>): Promise<Task | null> => {
-  // Check if task exist
-  const task = await getTaskById(id);
-  if (!task) {
-    return null;
+export const editTaskByIdWithHistory = async (
+  id: Task['id'],
+  // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
+  data: InputTask & Pick<Task, 'lastRun'>,
+  history?: Omit<History, 'date'>,
+  institution?: Task['institution'],
+)  => {
+    // Check if task exist
+    const task = await getTaskById(id, institution);
+    if (!task) {
+      return null;
+    }
+
+    let { nextRun } = data;
+    if (
+      data.recurrence !== task.recurrence
+      && (!data.nextRun || isSameDay(new Date(data.nextRun), task.nextRun))
+    ) {
+      // If next run isn't changed but recurrence changed
+      nextRun = calcNextDate(task.lastRun ?? new Date(), data.recurrence);
+    }
+  
+    await prisma.$connect();
+  
+    const editedTask = await prisma.task.update({
+      data,
+      where: { id },
+      data: {
+        ...data,
+        nextRun,
+        history: history && { create: { ...history, date: formatISO(new Date()) } },
+      },
+      include: {
+        history: {
+          orderBy: {
+            date: 'asc',
+          },
+        },
+      },
+    });
+  
+    await prisma.$disconnect();
+    return editedTask;
+}
+
+/**
+ * Edit task in DB
+ *
+ * @param data The input data
+ * @param id The id of the task
+ * @param editor The user editing the task. Used for creating default history
+ * @param institution The institution of the task. If provided, will restrict search to the instituion provided
+ *
+ * @returns The edited task, or null if task doesn't exist
+ */
+export const editTaskById = (
+  id: Task['id'],
+  data: unknown,
+  editor: string,
+  institution?: Task['institution'],
+) => {
+  // Validate body
+  if (!isValidTask(data)) {
+    // As validation throws an error, this line shouldn't be called
+    return Promise.resolve(null);
   }
 
-  await prisma.$connect();
-
-  const editedTask = await prisma.task.update({
+  return editTaskByIdWithHistory(
+    id,
     data,
-    where: {
-      id,
-    },
-  });
-
-  await prisma.$disconnect();
-  return editedTask;
-};
+    { type: 'edition', message: `Tâche éditée par ${editor}` },
+    institution
+  );
+}

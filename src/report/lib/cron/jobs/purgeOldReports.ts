@@ -47,6 +47,7 @@ export default async (job: Queue.Job<CronData>) => {
             return [];
           }
 
+          // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
           const fileDate = parseISO(fileContent.detail.date.toString());
           if (differenceInMonths(today, fileDate) < 1) {
             return [];
