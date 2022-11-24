@@ -3,18 +3,18 @@
   "allowedOrigins": "*",
   "elasticsearch": {
     "scheme": "https",
-    "host": "localhost",
+    "host": "host.docker.internal",
     "port": 9200,
-    "apiKey": "changeme"
+    "apiKey": ""
   },
   "redis": {
     "host": "redis",
     "port": 6379,
-    "password": "changeme",
+    "password": "",
     "concurrence": 5
   },
   "ezmesure": {
-    "secret": "changeme",
+    "secret": "",
     "depositorsIndex": "depositors"
   },
   "crons": {

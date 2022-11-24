@@ -4,12 +4,12 @@
   "redis": {
     "host": "redis",
     "port": 6379,
-    "password": "changeme",
+    "password": "",
     "concurrence": 5
   },
   "smtp": {
-    "host": "localhost",
-    "port": 25,
+    "host": "maildev",
+    "port": 1025,
     "secure": false,
     "ignoreTLS": false
   },
@@ -18,5 +18,8 @@
     "team": "ezteam@couperin.org",
     "attempts": 5,
     "interval": 2000
+  },
+  "api": {
+    "domain": "http://report:8080"
   }
 }

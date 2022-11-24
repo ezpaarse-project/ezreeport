@@ -1,5 +1,5 @@
 {
-  "allowedOrigins": "ALLOWED_ORIGINS",
+  "allowedOrigins": "API_ALLOWED_ORIGINS",
   "redis": {
     "host": "REDIS_HOST",
     "port": "REDIS_PORT",
@@ -20,5 +20,8 @@
     "team": "EMAIL_EZTEAM",
     "attempts": "EMAIL_ATTEMPTS",
     "interval": "EMAIL_ATTEMPTS_INTERVAL"
+  },
+  "api": {
+    "domain": "API_DOMAIN"
   }
 }

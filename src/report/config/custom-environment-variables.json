@@ -1,5 +1,5 @@
 {
-  "allowedOrigins": "ALLOWED_ORIGINS",
+  "allowedOrigins": "API_ALLOWED_ORIGINS",
   "elasticsearch": {
     "scheme": "ELASTIC_SCHEME",
     "host": "ELASTIC_HOST",

@@ -4,9 +4,9 @@ services:
   db:
     image: postgres:15.0
     environment:
-      - POSTGRES_USER=${DATABASE_USER:-postgres}
-      - POSTGRES_DB=${DATABASE_USER:-postgres}
-      - POSTGRES_PASSWORD=${DATABASE_PASSWORD:-changeme}
+      - POSTGRES_USER
+      - POSTGRES_DB
+      - POSTGRES_PASSWORD
     volumes:
       - ./data/db:/var/lib/postgresql/data
     ports:
@@ -15,7 +15,7 @@ services:
 
   redis:
     image: redis:7.0.5
-    command: redis-server --save 60 1 --requirepass ${REDIS_PASSWORD:-changeme}
+    command: redis-server --save 60 1 --requirepass ${REDIS_PASSWORD}
     volumes:
       - ./data/redis:/data
     ports:
@@ -41,10 +41,10 @@ services:
       - ELASTIC_API_KEY
       - DATABASE_URL
       - EZMESURE_AUTH_SECRET
-      - LOG_LEVEL
-      - ALLOWED_ORIGINS
+      - API_ALLOWED_ORIGINS
       - CRON_GENERATE_REPORT
       - CRON_PURGE_OLD_REPORT
+      - LOG_LEVEL
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -74,6 +74,7 @@ services:
       - EMAIL_EZTEAM
       - EMAIL_ATTEMPTS
       - EMAIL_ATTEMPTS_INTERVAL
+      - API_DOMAIN
       - LOG_LEVEL
     depends_on:
       - redis
@@ -111,11 +112,12 @@ services:
     environment:
       - DATABASE_HOST
       - SMTP_HOST
-      - REDIS_HOST=redis
+      - REDIS_HOST
       - ELASTIC_URL
       - MONITORING_INDEX_PREFIX
       - MONITORING_API_KEY
       - MONITORING_SCHEDULE
+      - API_DOMAIN
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
@@ -140,3 +142,4 @@ services:
     ports:
       - 1080:1080 # web interface
       - 1025:1025
+    restart: unless-stopped
