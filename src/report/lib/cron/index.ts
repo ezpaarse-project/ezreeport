@@ -24,6 +24,9 @@ cronQueue.on('failed', (job, err) => {
     sendError(err);
   }
 });
+cronQueue.on('error', (err) => {
+  logger.error(`[cron] Failed with error: ${err.message}`);
+});
 
 /**
  * Init crons

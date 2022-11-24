@@ -70,10 +70,16 @@ generationQueue.on('failed', (job, err) => {
     sendError(err);
   }
 });
+generationQueue.on('error', (err) => {
+  logger.error(`[bull] "generation" failed with error: ${err.message}`);
+});
 mailQueue.on('failed', (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {
     logger.error(`[bull] "mail" failed with error: ${err.message}`);
   }
+});
+mailQueue.on('error', (err) => {
+  logger.error(`[bull] "mail" failed with error: ${err.message}`);
 });
 
 generationQueue.process(concurrence, join(__dirname, 'jobs/generateReport.ts'));

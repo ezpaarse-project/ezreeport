@@ -1,4 +1,3 @@
-/* eslint-disable import/no-import-module-exports */
 import type Queue from 'bull';
 import { formatISO } from 'date-fns';
 import EventEmitter from 'node:events';
@@ -15,7 +14,7 @@ import logger from '../../logger';
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
 
-module.exports = async (job: Queue.Job<GenerationData>) => {
+export default async (job: Queue.Job<GenerationData>) => {
   const apmtrans = apm.startTransaction('generation', 'job');
   if (!apmtrans) {
     logger.warn('[bull] [generation] Can\'t start APM transaction');

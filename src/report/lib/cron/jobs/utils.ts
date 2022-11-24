@@ -22,6 +22,7 @@ export const sendError = async (error: Error, origin: string, _timer: string) =>
       success: false,
       file: Buffer.from(errStr).toString('base64'),
       task: {
+        id: '',
         recurrence: Recurrence.DAILY, // TODO[feat]: based on cron
         name: `[CRON] ${origin}`,
         targets: [], // unused because of success: false
