@@ -15,12 +15,13 @@ import { layoutSchema, type LayoutJSON } from './layouts';
 
 // TODO[feat]: More checks to make custom errors
 
-type InputTask = Pick<Task, 'name' | 'targets' | 'recurrence' | 'enabled' | 'layout'> & { layout: LayoutJSON, nextRun?: Task['nextRun'] | string };
+type InputTask = Pick<Prisma.TaskCreateInput, 'name' | 'targets' | 'recurrence' | 'nextRun' | 'enabled'> & { layout: Prisma.InputJsonObject | LayoutJSON };
+type InputHistory = Pick<Prisma.HistoryCreateWithoutTaskInput, 'type' | 'message' | 'meta'>;
 
 /**
  * Joi schema
  */
-const taskSchema = Joi.object<InputTask>({
+const taskSchema = Joi.object<Prisma.TaskCreateInput>({
   name: Joi.string().trim().required(),
   layout: layoutSchema.required(),
   targets: Joi.array().items(Joi.string().trim().email()).required(),
@@ -58,7 +59,8 @@ const isValidTask = (data: unknown): data is InputTask => {
  * Gett all tasks in DB
  *
  * @param opts Requests options
- * @param institution The institution of the task. If provided, will restrict search to the instituion provided
+ * @param institution The institution of the task. If provided,
+ * will restrict search to the instituion provided
  *
  * @returns Tasks list
  */
@@ -66,7 +68,7 @@ const isValidTask = (data: unknown): data is InputTask => {
 export const getAllTasks = async <Keys extends Array<keyof Task>>(
   opts?: { count: number, previous?: Task['id'], select?: Keys },
   institution?: Task['institution'],
-): Promise<Task[]> => {
+): Promise<Pick<Task, Keys[number]>[]> => {
   try {
     // TODO[refactor]: any other way ?
     const select = opts?.select && opts.select.reduce<Prisma.TaskSelect>(
@@ -85,7 +87,7 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
       orderBy: {
         createdAt: 'asc',
       },
-    }) as Task[]; // FIXME: Prisma bug ?
+    }) as Pick<Task, Keys[number]>[];
 
     await prisma.$disconnect();
     return tasks;
@@ -103,7 +105,8 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
  * Get specific task in DB
  *
  * @param id The id of the task
- * @param institution The institution of the task. If provided, will restrict search to the instituion provided
+ * @param institution The institution of the task. If provided,
+ * will restrict search to the instituion provided
  *
  * @returns Task
  */
@@ -133,7 +136,8 @@ export const getTaskById = async (id: Task['id'], institution?: Task['institutio
  *
  * @param data The input data
  * @param creator The user creating the task
- * @param institution The institution of the task. If provided, will restrict search to the instituion provided
+ * @param institution The institution of the task. If provided,
+ * will restrict search to the instituion provided
  *
  * @returns The created task
  */
@@ -154,6 +158,7 @@ export const createTask = async (data: unknown, creator: string, institution: Ta
   const task = await prisma.task.create({
     data: {
       ...data,
+      layout: data.layout as Prisma.InputJsonObject, // Prisma JSON types are kinda weird
       nextRun,
       institution,
       history: {
@@ -177,7 +182,8 @@ export const createTask = async (data: unknown, creator: string, institution: Ta
  * Delete specific task in DB
  *
  * @param id The id of the task
- * @param institution The institution of the task. If provided, will restrict search to the instituion provided
+ * @param institution The institution of the task. If provided,
+ * will restrict search to the instituion provided
  *
  * @returns The edited task
  */
@@ -212,55 +218,55 @@ export const deleteTaskById = async (id: Task['id'], institution?: Task['institu
  *
  * @param id The id of the task
  * @param data The input data
- * @param history The new history entry. If not provided, edit is considered as "silent"
- * @param institution The institution of the task. If provided, will restrict search to the instituion provided
+ * @param entry The new history entry. If not provided, edit is considered as "silent"
+ * @param institution The institution of the task. If provided,
+ * will restrict search to the instituion provided
  *
  * @returns The edited task, or null if task doesn't exist
  */
 export const editTaskByIdWithHistory = async (
   id: Task['id'],
-  // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
-  data: InputTask & Pick<Task, 'lastRun'>,
-  history?: Omit<History, 'date'>,
+  data: InputTask & { lastRun?: Task['lastRun'] },
+  entry?: InputHistory,
   institution?: Task['institution'],
-)  => {
-    // Check if task exist
-    const task = await getTaskById(id, institution);
-    if (!task) {
-      return null;
-    }
+) => {
+  // Check if task exist
+  const task = await getTaskById(id, institution);
+  if (!task) {
+    return null;
+  }
 
-    let { nextRun } = data;
-    if (
-      data.recurrence !== task.recurrence
+  let { nextRun } = data;
+  if (
+    data.recurrence !== task.recurrence
       && (!data.nextRun || isSameDay(new Date(data.nextRun), task.nextRun))
-    ) {
-      // If next run isn't changed but recurrence changed
-      nextRun = calcNextDate(task.lastRun ?? new Date(), data.recurrence);
-    }
-  
-    await prisma.$connect();
-  
-    const editedTask = await prisma.task.update({
-      data,
-      where: { id },
-      data: {
-        ...data,
-        nextRun,
-        history: history && { create: { ...history, date: formatISO(new Date()) } },
-      },
-      include: {
-        history: {
-          orderBy: {
-            date: 'asc',
-          },
+  ) {
+    // If next run isn't changed but recurrence changed
+    nextRun = calcNextDate(task.lastRun ?? new Date(), data.recurrence);
+  }
+
+  await prisma.$connect();
+
+  const editedTask = await prisma.task.update({
+    where: { id },
+    data: {
+      ...data,
+      layout: data.layout as Prisma.InputJsonObject, // Prisma JSON types are kinda weird
+      nextRun,
+      history: entry && { create: { ...entry, date: formatISO(new Date()) } },
+    },
+    include: {
+      history: {
+        orderBy: {
+          date: 'asc',
         },
       },
-    });
-  
-    await prisma.$disconnect();
-    return editedTask;
-}
+    },
+  });
+
+  await prisma.$disconnect();
+  return editedTask;
+};
 
 /**
  * Edit task in DB
@@ -268,7 +274,8 @@ export const editTaskByIdWithHistory = async (
  * @param data The input data
  * @param id The id of the task
  * @param editor The user editing the task. Used for creating default history
- * @param institution The institution of the task. If provided, will restrict search to the instituion provided
+ * @param institution The institution of the task. If provided,
+ * will restrict search to the instituion provided
  *
  * @returns The edited task, or null if task doesn't exist
  */
@@ -288,6 +295,6 @@ export const editTaskById = (
     id,
     data,
     { type: 'edition', message: `Tâche éditée par ${editor}` },
-    institution
+    institution,
   );
-}
+};

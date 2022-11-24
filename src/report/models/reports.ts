@@ -1,4 +1,4 @@
-import type { Task } from '@prisma/client';
+import type { Prisma, Task } from '@prisma/client';
 import { differenceInMilliseconds, format, parseISO } from 'date-fns';
 import Joi from 'joi';
 import { compact, merge, omit } from 'lodash';
@@ -221,7 +221,12 @@ export const generateReport = async (
     if (writeHistory) {
       await editTaskByIdWithHistory(
         task.id,
-        { ...task, nextRun: calcNextDate(today, task.recurrence), lastRun: today },
+        {
+          ...task,
+          layout: task.layout,
+          nextRun: calcNextDate(today, task.recurrence),
+          lastRun: today,
+        },
         { type: 'generation-success', message: `Rapport "${todayStr}/${filename}" généré par ${origin}`, meta },
       );
     }
@@ -243,8 +248,8 @@ export const generateReport = async (
   } catch (error) {
     await editTaskByIdWithHistory(
       task.id,
-      { ...task, enabled: false },
-      writeHistory ? { type: 'generation-error', message: `Rapport "${todayStr}/${filename}" non généré par ${origin} suite à une erreur.`, meta } : false,
+      { ...task, layout: task.layout as Prisma.InputJsonObject, enabled: false },
+      writeHistory ? { type: 'generation-error', message: `Rapport "${todayStr}/${filename}" non généré par ${origin} suite à une erreur.`, meta } : undefined,
     );
 
     result = merge<ReportResult, DeepPartial<ReportResult>>(
