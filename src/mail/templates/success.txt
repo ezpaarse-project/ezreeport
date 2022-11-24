@@ -5,5 +5,7 @@ Ce message est envoyé automatiquement par l'application ezMESURE, vous le recev
 
 Vous trouverez le rapport en pièce jointe.
 
+Si vous ne voulez plus recevoir ce rapport, aller sur {{ unsubscribeLink }} pour vour désinscrire.
+
 Cordialement,
 L'équipe ezMESURE.

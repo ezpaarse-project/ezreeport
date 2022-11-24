@@ -25,6 +25,12 @@
     </mj-text>
 
     <mj-text>
+      <p>
+        Si vous ne voulez plus recevoir ce rapport, <a href="{{ unsubscribeLink }}">cliquez ici</a> pour vous désincrire.
+      </p>
+    </mj-text>
+
+    <mj-text>
       <p>Cordialement,</p>
       <p>L'équipe ezMESURE.</p>
     </mj-text>

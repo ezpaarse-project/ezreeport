@@ -18,9 +18,9 @@ const images = readdirSync(imagesDir);
 const transporter = createTransport(smtp);
 
 export type MailOptions = {
-  to: string[],
-  cc?: string[],
-  bcc?: string[],
+  to: string[] | string,
+  cc?: string[] | string,
+  bcc?: string[] | string,
   subject: string,
   body: {
     html: string,

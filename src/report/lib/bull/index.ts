@@ -27,6 +27,7 @@ export type GenerationData = {
   debug?: boolean
 };
 
+//! Keep in sync with mail service
 export type MailData = {
   /**
    * If task succeed or failed
@@ -40,6 +41,7 @@ export type MailData = {
    * The task's data
    */
   task: {
+    id: string,
     recurrence: Recurrence,
     name: string,
     targets: string[],

@@ -44,8 +44,6 @@ const taskSchema = Joi.object<Prisma.TaskCreateInput>({
  * @returns `true` if valid
  *
  * @throws If not valid
- *
- * @throw If input data isn't a Task
  */
 const isValidTask = (data: unknown): data is InputTask => {
   const validation = taskSchema.validate(data, {});

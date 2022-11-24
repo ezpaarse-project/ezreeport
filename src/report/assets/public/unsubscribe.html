@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporting - Désinscription de "${taskName}"</title>
+  </head>
+
+  <body>
+    <p>
+      Veuillez confirmer les informations suivantes pour vous désincrire
+      de la liste de diffusion de la tâche de reporting :
+      <b>« ${taskName} »</b>
+    </p>
+
+    <form id="unsub-form">
+      <input type="text" name="taskId" value="${taskId}" hidden required>
+      <div>
+        <label for="email">Email: </label>
+        <input type="text" name="email" value="${email}" required>
+      </div>
+      <div>
+        <input type="submit" value="Se désincrire">
+      </div>
+    </form>
+  </body>
+
+  <script>
+    (() => {
+      const form = document.querySelector('#unsub-form');
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+
+          const obj = {};
+          (new FormData(form)).forEach((value, key) => obj[key] = value);
+
+          const resp = await fetch(
+            '/unsubscribe/',
+            {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(obj)
+            }
+          );
+          const res = await resp.json();
+
+          if(res.content.message) {
+            alert('Une erreur est survenue pendant le traitement: ' + res.content.message)
+          } else {
+            alert('Vous avez bien été désincrit. Vous pouvez fermer cette fenêtre.')
+          }
+        })
+      }
+    })()
+  </script>
+</html>

@@ -20,6 +20,7 @@ export type MailData = {
    * The task's data
    */
   task: {
+    id: string,
     recurrence: Recurrence,
     name: string,
     targets: string[],

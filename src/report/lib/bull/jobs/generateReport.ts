@@ -63,6 +63,7 @@ module.exports = async (job: Queue.Job<GenerationData>) => {
 
   const base = {
     task: {
+      id: task.id,
       recurrence: task.recurrence,
       name: task.name,
       targets: task.targets,
