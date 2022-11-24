@@ -1,6 +1,6 @@
 import apm from 'elastic-apm-node';
 import type { Request, Response } from 'express';
-import moduleInfo from '../../package.json';
+import serviceInfo from '../../package.json';
 import logger from '../logger';
 import { formatInterval } from '../utils';
 
@@ -11,8 +11,9 @@ const start = () => {
     logger.debug('[apm] APM Starting');
     apm.start({
       serverUrl: 'http://apm:8200',
-      serviceName: moduleInfo.name,
-      serviceVersion: moduleInfo.version,
+      serviceName: serviceInfo.name,
+      serviceVersion: serviceInfo.version,
+      centralConfig: false,
       logger: {
         fatal: (obj, msg, ...args) => {
           let str = obj.toString();
@@ -60,6 +61,12 @@ const start = () => {
         },
       },
     });
+
+    apm.handleUncaughtExceptions((err) => {
+      logger.error(`\x1b[31m${err.stack}\x1b[0m`);
+      process.exit(1);
+    });
+
     const dur = formatInterval({ start: s, end: new Date() });
     logger.info(`[apm] APM started in ${dur}s`);
     started = true;
