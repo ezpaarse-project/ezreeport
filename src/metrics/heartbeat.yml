@@ -18,9 +18,8 @@ heartbeat.monitors:
     tags: [reporting, "${NODE_ENV:development}"]
     type: http
     schedule: '${MONITORING_SCHEDULE}'
-    check.response.status: [204]
     urls:
-      - http://report:8080/ping
+      - http://report:8080/ping/reporting-report
 
   - name: reporting-apm
     type: http

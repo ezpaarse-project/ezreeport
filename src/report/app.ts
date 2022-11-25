@@ -1,6 +1,5 @@
 import cors from 'cors';
 import express from 'express';
-import { StatusCodes } from 'http-status-codes';
 import swaggerUi from 'swagger-ui-express';
 import config from './lib/config';
 import './lib/datefns'; // Setup default options for date-fns
@@ -11,6 +10,7 @@ import loggerMiddleware from './middlewares/logger';
 import openapi from './openapi.json';
 import cronsRouter from './routes/crons';
 import filesRouter from './routes/files';
+import pingRouter from './routes/ping';
 import queuesRouter from './routes/queues';
 import tasksRouter from './routes/tasks';
 import unsubscribeRouter from './routes/unsubscribe';
@@ -43,13 +43,10 @@ app.use('/reports', filesRouter);
 app.use('/queues', queuesRouter);
 app.use('/crons', cronsRouter);
 app.use('/unsubscribe', unsubscribeRouter);
+app.use('/ping', pingRouter);
 
 app.use('/doc/openapi.json', (_req, res) => res.json(openapi));
 app.use('/doc', swaggerUi.serve, swaggerUi.setup(openapi));
-
-app.get('/ping', (_req, res) => {
-  res.sendStatus(StatusCodes.NO_CONTENT);
-});
 
 /**
  * 404 Fallback

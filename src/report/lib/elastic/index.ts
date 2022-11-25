@@ -53,6 +53,19 @@ export const getElasticClient = async () => {
 };
 
 /**
+ * Ping elastic to check connection
+ *
+ * @returns If elastic is up
+ */
+export const elasticPing = async () => {
+  const elastic = await getElasticClient();
+
+  const { body } = await elastic.ping();
+
+  return body;
+};
+
+/**
  * Shorthand to search with elastic
  *
  * @param params The search params

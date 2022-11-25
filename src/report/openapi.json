@@ -25,17 +25,275 @@
   "paths": {
     "/ping": {
       "get": {
-        "summary": "Ping API",
+        "summary": "Get pingables services",
         "tags": [
           "general"
         ],
         "responses": {
-          "204": {
-            "description": "No Content"
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "current": {
+                          "type": "string"
+                        },
+                        "services": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "current": "reporting-report",
+                        "services": [
+                          "reporting-report",
+                          "elastic"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "current": "reporting-report",
+                        "services": [
+                          "reporting-report",
+                          "elastic"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
           }
         },
         "operationId": "ping",
-        "description": "Check if API is up"
+        "description": "Check services that current one can ping"
+      }
+    },
+    "/ping/all": {
+      "get": {
+        "summary": "Ping all services",
+        "tags": [
+          "general"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        {
+                          "name": "reporting-report",
+                          "success": true,
+                          "time": 3,
+                          "timeout": false
+                        },
+                        {
+                          "name": "elastic",
+                          "success": true,
+                          "time": 14,
+                          "timeout": false
+                        }
+                      ]
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Pong"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        {
+                          "name": "reporting-report",
+                          "success": true,
+                          "time": 3,
+                          "timeout": false
+                        },
+                        {
+                          "name": "elastic",
+                          "success": true,
+                          "time": 14,
+                          "timeout": false
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "get-ping-_all",
+        "description": "Ping all services (himself included)"
+      },
+      "parameters": []
+    },
+    "/ping/{service}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "service",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "summary": "Ping specific service",
+        "tags": [
+          "general"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "time": {
+                          "type": "integer"
+                        },
+                        "timeout": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  },
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "elastic",
+                        "success": true,
+                        "time": 9,
+                        "timeout": false
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "elastic",
+                        "success": true,
+                        "time": 9,
+                        "timeout": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "get-ping-service",
+        "description": "Ping specific service"
       }
     },
     "/tasks": {
@@ -2936,6 +3194,31 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          }
+        }
+      },
+      "Pong": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
+          },
+          "time": {
+            "type": "integer"
+          },
+          "timeout": {
+            "type": "boolean"
+          }
+        },
+        "x-examples": {
+          "example-1": {
+            "name": "reporting-report",
+            "success": true,
+            "time": 3,
+            "timeout": false
           }
         }
       }
