@@ -14,7 +14,7 @@ model Task {
   id          String     @id @default(uuid())
   name        String
   institution String
-  layout      Json
+  template      Json
   targets     String[]
   recurrence  Recurrence
   nextRun     DateTime

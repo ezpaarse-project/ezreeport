@@ -1,7 +1,7 @@
 import EventEmitter from 'events';
 import { merge } from 'lodash';
 import { isFigureMd, isFigureMetric, isFigureTable } from '../../models/figures';
-import type { Layout } from '../../models/layouts';
+import type { Template } from '../../models/templates';
 import { addMdToPDF } from '../markdown';
 import { addMetricToPDF } from '../metrics';
 import {
@@ -24,14 +24,14 @@ type Options = PDFReportOptions & {
 /**
  * Generate PDF report with Vega
  *
- * @param layout The layout of the report
+ * @param template The template of the report
  * @param opts The options of document (passed to {@link initDoc})
  * @param events Event handler
  *
  * @return Stats about PDF
  */
 const generatePdfWithVega = async (
-  layout: Layout,
+  template: Template,
   {
     debugPages,
     GRID = { rows: 2, cols: 2 },
@@ -97,7 +97,7 @@ const generatePdfWithVega = async (
 
     let first = true;
     // eslint-disable-next-line no-restricted-syntax
-    for (const page of layout) {
+    for (const page of template) {
       if (!first) {
         // eslint-disable-next-line no-await-in-loop
         await addPage();

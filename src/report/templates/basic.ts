@@ -5,7 +5,7 @@ import { merge } from 'lodash';
 import { elasticCheckIndex, elasticCount, elasticSearch } from '../lib/elastic';
 import { calcElasticInterval, calcVegaFormat } from '../lib/recurrence';
 import type { Figure } from '../models/figures';
-import type { LayoutFnc } from '../models/layouts';
+import type { TemplateFnc } from '../models/templates';
 
 type AggregationResult<T extends { key: unknown }> = {
   buckets: T[];
@@ -41,14 +41,14 @@ const isDataOpts = (data: unknown): data is DataOptions => {
 };
 
 /**
- * Basic layout, made from weekly BibCNRS
+ * Basic template, made from weekly BibCNRS
  *
  * @param param0 Some task options
  * @param dataOpts Data options for Elastic
  *
- * @returns The layout with data
+ * @returns The template with data
  */
-const basicLayout: LayoutFnc = async (
+const basicTemplate: TemplateFnc = async (
   {
     period,
     recurrence,
@@ -583,4 +583,4 @@ const basicLayout: LayoutFnc = async (
   ];
 };
 
-export default basicLayout;
+export default basicTemplate;

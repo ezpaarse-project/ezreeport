@@ -4,8 +4,8 @@ import EventEmitter from 'node:events';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { addReportToQueue, type GenerationData } from '..';
-import type { Layout } from '../../../models/layouts';
 import { generateReport } from '../../../models/reports';
+import type { Template } from '../../../models/templates';
 import config from '../../config';
 import '../../datefns'; // Setup default options for date-fns
 import apm from '../../elastic/apm'; // Setup Elastic's APM for monitoring
@@ -36,8 +36,8 @@ export default async (job: Queue.Job<GenerationData>) => {
   let contact: string | undefined;
 
   const events = new EventEmitter();
-  events.on('layoutResolved', async (layout: Layout) => {
-    expectedPageCount = layout.length;
+  events.on('templateResolved', async (template: Template) => {
+    expectedPageCount = template.length;
   });
   events.on('pageAdded', async () => {
     actualPageCount += 1;

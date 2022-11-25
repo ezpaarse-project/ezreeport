@@ -29,7 +29,7 @@ let doc: {
   height: number;
   today: Date;
   /**
-   * Offset is the margin (constant) + other layout elements (like footer or header)
+   * Offset is the margin (constant) + other PDF elements (like footer or header)
    */
   offset: {
     top: number;

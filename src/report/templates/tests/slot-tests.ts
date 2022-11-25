@@ -3,11 +3,11 @@
  */
 
 import type { Figure } from '../../models/figures';
-import type { LayoutFnc } from '../../models/layouts';
+import type { TemplateFnc } from '../../models/templates';
 
 export const GRID = { rows: 2, cols: 2 };
 
-const slotTestsLayout: LayoutFnc = () => {
+const slotTestsTemplate: TemplateFnc = () => {
   if (process.env.NODE_ENV !== 'production') {
     return [
       (): [Figure<'md'>] => [
@@ -70,4 +70,4 @@ const slotTestsLayout: LayoutFnc = () => {
   return [];
 };
 
-export default slotTestsLayout;
+export default slotTestsTemplate;

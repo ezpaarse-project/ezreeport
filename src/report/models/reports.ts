@@ -11,8 +11,8 @@ import generatePdfWithVega from '../lib/generators/vegaPDF';
 import logger from '../lib/logger';
 import { calcNextDate, calcPeriod } from '../lib/recurrence';
 import { findInstitutionByIds, findInstitutionContact } from './institutions';
-import { isValidLayout, type LayoutFnc } from './layouts';
 import { editTaskByIdWithHistory } from './tasks';
+import { isValidTemplate, type TemplateFnc } from './templates';
 
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
@@ -62,14 +62,14 @@ const reportresultSchema = Joi.object<ReportResult>({
 });
 
 /**
- * Check if input data is a valid LayoutJSON
+ * Check if input data is a valid TemplateJSON
  *
  * @param data The input data
  * @returns `true` if valid
  *
  * @throws If not valid
  *
- * @throw If input data isn't a valid LayoutJSON
+ * @throw If input data isn't a valid TemplateJSON
  */
 export const isValidResult = (data: unknown): data is ReportResult => {
   const validation = reportresultSchema.validate(data, {});
@@ -165,26 +165,26 @@ export const generateReport = async (
     // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
     const period = calcPeriod(parseISO(task.nextRun.toString()), task.recurrence);
 
-    if (!isValidLayout(task.layout)) {
+    if (!isValidTemplate(task.template)) {
     // As validation throws an error, this line shouldn't be called
       return {} as ReportResult;
     }
 
-    if (/\.\./i.test(task.layout.extends)) {
+    if (/\.\./i.test(task.template.extends)) {
       throw new Error("For security reasons, you can't access to a parent folder");
     }
 
-    const imported = (await import(`../layouts/${task.layout.extends}`));
+    const imported = (await import(`../templates/${task.template.extends}`));
     // eslint-disable-next-line no-underscore-dangle
-    const { default: baseLayout, GRID } = (imported.__esModule ? imported : imported.default) as {
+    const { default: baseTemplate, GRID } = (imported.__esModule ? imported : imported.default) as {
       GRID?: { rows: number, cols: number },
-      default?: LayoutFnc
+      default?: TemplateFnc
     };
-    if (!baseLayout) {
-      throw new Error(`Layout "${task.layout.extends}" not found`);
+    if (!baseTemplate) {
+      throw new Error(`Template "${task.template.extends}" not found`);
     }
 
-    const layout = await baseLayout(
+    const template = await baseTemplate(
       {
         recurrence: task.recurrence,
         // eslint-disable-next-line no-underscore-dangle
@@ -192,21 +192,22 @@ export const generateReport = async (
         period,
         user,
       },
-      task.layout.data,
+      task.template.data,
     );
 
-    if (task.layout.inserts) {
+    if (task.template.inserts) {
     // eslint-disable-next-line no-restricted-syntax
-      for (const { at, figures } of task.layout.inserts) {
+      for (const { at, figures } of task.template.inserts) {
+        // TODO[feat]: No more fnc, handle baseTemplate to extends
         const fnc = () => figures;
-        layout.splice(at, 0, fnc);
+        template.splice(at, 0, fnc);
       }
     }
 
-    events.emit('layoutResolved', layout);
+    events.emit('templateResolved', template);
 
     const stats = await generatePdfWithVega(
-      layout,
+      template,
       // Report options
       {
         name: task.name,
@@ -223,7 +224,7 @@ export const generateReport = async (
         task.id,
         {
           ...task,
-          layout: task.layout,
+          template: task.template,
           nextRun: calcNextDate(today, task.recurrence),
           lastRun: today,
         },
@@ -248,7 +249,7 @@ export const generateReport = async (
   } catch (error) {
     await editTaskByIdWithHistory(
       task.id,
-      { ...task, layout: task.layout as Prisma.InputJsonObject, enabled: false },
+      { ...task, template: task.template as Prisma.InputJsonObject, enabled: false },
       writeHistory ? { type: 'generation-error', message: `Rapport "${todayStr}/${filename}" non généré par ${origin} suite à une erreur.`, meta } : undefined,
     );
 

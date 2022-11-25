@@ -1,0 +1,1 @@
+ALTER TABLE "Task" RENAME "layout" TO "template";

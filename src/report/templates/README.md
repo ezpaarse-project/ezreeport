@@ -1,11 +1,11 @@
-# Reporting Layouts
+# Reporting Templates
 
-Contains all possible layout usable by various tasks
+Contains all possible template usable by various tasks
 
-## How to write a Layout
+## How to write a Template
 
-- Must export a **default function** (`export default () => []` in TS, `exports.default = () => []` in JS). We'll call it the *main* function. It's a function so you can do things before returning the layout (like checking if data's source is available, or setup options used by all pages)
-- The *main* function must returns an **array of functions** (in TS, you can use the type `LayoutFnc` from `models/layouts` to declare your default function) and takes a few parameters.
+- Must export a **default function** (`export default () => []` in TS, `exports.default = () => []` in JS). We'll call it the *main* function. It's a function so you can do things before returning the template (like checking if data's source is available, or setup options used by all pages)
+- The *main* function must returns an **array of functions** (in TS, you can use the type `TemplateFnc` from `models/templates` to declare your default function) and takes a few parameters.
   - The first one is some info about the task (like the period, the recurrence, etc.)
   - The second one is options from `task.data`. **You want to check that data (with [Joi](https://joi.dev/) for example)**
 - Each item of the returned by your *main* function represent a page of the report and **must be a function**. This function **must return an array** of *Figure* or just a *Figure* object. It's a function so you can do things before returning figure(s) (like do some aggregations)
@@ -13,11 +13,11 @@ Contains all possible layout usable by various tasks
   - A *Figure* have `data` property (see [Available Figure types](#available-figure-types) for more info)
   - A *Figure* have `params` (see [Available Figure types](#available-figure-types) for more info)
   - A *Figure* **can** have `slots` property, to position more accurately your figure.
-- You can export other variables as options for the whole layout (`export const myVar = 0` in TS, `exports.myVar = 0` in JS)
+- You can export other variables as options for the whole template (`export const myVar = 0` in TS, `exports.myVar = 0` in JS)
   - You can export `GRID` in order to use a custom grid (Type: `{ rows: number, cols: number }`)
   - Any other export is ignored
-- You can import other layouts (`import myFirstLayout from './first-layout'` in TS, `const myFirstLayout = require('./first-layout')` in JS) to extends them
-- Avoid to add a package for only one layout
+- You can import other templates (`import myFirstTemplate from './first-template'` in TS, `const myFirstTemplate = require('./first-template')` in JS) to extends them
+- Avoid to add a package for only one template
 
 ### Available Figure types
 
@@ -36,25 +36,25 @@ Contains all possible layout usable by various tasks
 
 ## Usage
 
-Just add in your task's layout :
+Just add in your task's template :
 
 ```json
-"extends": "path/to/mySuperLayout"
+"extends": "path/to/mySuperTemplate"
 ```
 
 ## Example
 
-[basic layout](./basic.ts) is a good example in TS. But if you can't open the file, here's a few more simple examples :
+[basic template](./basic.ts) is a good example in TS. But if you can't open the file, here's a few more simple examples :
 
 ### TypeScript
 
 ```ts
 import type { Figure } from '../models/figures';
-import type { LayoutFnc } from '../models/layouts';
+import type { TemplateFnc } from '../models/templates';
 
 export const GRID = { rows: 2, cols: 2 };
 
-const mySuperLayout: LayoutFnc = () => {
+const mySuperTemplate: TemplateFnc = () => {
   return [
     (): [Figure<'md'>] => {
       return [
@@ -64,7 +64,7 @@ const mySuperLayout: LayoutFnc = () => {
   ];
 };
 
-export default mySuperLayout;
+export default mySuperTemplate;
 ```
 
 ### JavaScript
@@ -72,7 +72,7 @@ export default mySuperLayout;
 ```js
 exports.GRID = { rows: 2, cols: 2 };
 
-const mySuperLayout = () => {
+const mySuperTemplate = () => {
   return [
     () => [
       { type: 'md', data: '0,1,2,3 (all) (auto)', params: {} },
@@ -80,5 +80,5 @@ const mySuperLayout = () => {
   ];
 };
 
-exports.default = mySuperLayout;
+exports.default = mySuperTemplate;
 ```

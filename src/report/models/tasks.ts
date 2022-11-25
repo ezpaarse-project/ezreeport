@@ -11,11 +11,11 @@ import logger from '../lib/logger';
 import prisma from '../lib/prisma';
 import { calcNextDate } from '../lib/recurrence';
 import { ArgumentError } from '../types/errors';
-import { layoutSchema, type LayoutJSON } from './layouts';
+import { templateSchema, type TemplateJSON } from './templates';
 
 // TODO[feat]: More checks to make custom errors
 
-type InputTask = Pick<Prisma.TaskCreateInput, 'name' | 'targets' | 'recurrence' | 'nextRun' | 'enabled'> & { layout: Prisma.InputJsonObject | LayoutJSON };
+type InputTask = Pick<Prisma.TaskCreateInput, 'name' | 'targets' | 'recurrence' | 'nextRun' | 'enabled'> & { template: Prisma.InputJsonObject | TemplateJSON };
 type InputHistory = Pick<Prisma.HistoryCreateWithoutTaskInput, 'type' | 'message' | 'meta'>;
 
 /**
@@ -23,7 +23,7 @@ type InputHistory = Pick<Prisma.HistoryCreateWithoutTaskInput, 'type' | 'message
  */
 const taskSchema = Joi.object<Prisma.TaskCreateInput>({
   name: Joi.string().trim().required(),
-  layout: layoutSchema.required(),
+  template: templateSchema.required(),
   targets: Joi.array().items(Joi.string().trim().email()).required(),
   recurrence: Joi.string().valid(
     Recurrence.DAILY,
@@ -156,7 +156,8 @@ export const createTask = async (data: unknown, creator: string, institution: Ta
   const task = await prisma.task.create({
     data: {
       ...data,
-      layout: data.layout as Prisma.InputJsonObject, // Prisma JSON types are kinda weird
+      // TODO[refactor]: Can be removed once template no longer need runtime
+      template: data.template as Prisma.InputJsonObject,
       nextRun,
       institution,
       history: {
@@ -249,7 +250,8 @@ export const editTaskByIdWithHistory = async (
     where: { id },
     data: {
       ...data,
-      layout: data.layout as Prisma.InputJsonObject, // Prisma JSON types are kinda weird
+      // TODO[refactor]: Can be removed once template no longer need runtime
+      template: data.template as Prisma.InputJsonObject,
       nextRun,
       history: entry && { create: { ...entry, date: formatISO(new Date()) } },
     },

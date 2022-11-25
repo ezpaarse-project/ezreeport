@@ -184,9 +184,8 @@ router.put('/:task/enable', checkRight(Roles.READ_WRITE), checkInstitution, asyn
 
     const editedTask = await editTaskById(
       id,
-      // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
       {
-        ...pick(task, 'name', 'layout', 'targets', 'recurrence', 'nextRun'),
+        ...pick(task, 'name', 'template', 'targets', 'recurrence', 'nextRun'),
         enabled: true,
       },
       req.user.username,
@@ -219,9 +218,8 @@ router.put('/:task/disable', checkRight(Roles.READ_WRITE), checkInstitution, asy
 
     const editedTask = await editTaskById(
       id,
-      // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
       {
-        ...pick(task, 'name', 'layout', 'targets', 'recurrence', 'nextRun'),
+        ...pick(task, 'name', 'template', 'targets', 'recurrence', 'nextRun'),
         enabled: false,
       },
       req.user.username,
@@ -335,7 +333,7 @@ router.put('/:task/unsubscribe', async (req, res) => {
 
     await editTaskByIdWithHistory(
       task.id,
-      { ...task, layout: task.layout as Prisma.JsonObject },
+      { ...task, template: task.template as Prisma.JsonObject },
       { type: 'unsubscription', message: `${data.email} s'est désinscrit de la liste de diffusion.` },
     );
 

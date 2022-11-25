@@ -146,7 +146,7 @@ export default (agent: ChaiHttp.Agent) => () => {
       // Random id
       const res = await request().type('json').send({
         name: 'test task',
-        layout: {
+        template: {
           extends: 'basic',
         },
         targets: ['fake@inist.fr'],
@@ -251,7 +251,7 @@ export default (agent: ChaiHttp.Agent) => () => {
     // Create task, check if in get all, edits, check if in get one, delete
     let task = {
       name: 'test task',
-      layout: {
+      template: {
         extends: 'basic',
       },
       targets: ['fake@inist.fr'],
@@ -302,7 +302,7 @@ export default (agent: ChaiHttp.Agent) => () => {
       const { id } = task;
       task = {
         name: 'test task',
-        layout: {
+        template: {
           extends: 'basic',
         },
         targets: ['fake@inist.fr', 'fake2@inist.fr'],

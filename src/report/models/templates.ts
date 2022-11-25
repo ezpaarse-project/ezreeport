@@ -2,9 +2,9 @@ import type { Recurrence } from '@prisma/client';
 import Joi from 'joi';
 import { AnyFigure, AnyFigureFnc, figureSchema } from './figures';
 
-export type Layout = Array<AnyFigureFnc | Promisify<AnyFigureFnc>>;
+export type Template = Array<AnyFigureFnc | Promisify<AnyFigureFnc>>;
 
-export type LayoutFnc = (
+export type TemplateFnc = (
   task: {
     recurrence: Recurrence,
     period: Interval,
@@ -12,18 +12,18 @@ export type LayoutFnc = (
     user: string
   },
   dataOpts: unknown
-) => Layout | Promise<Layout>;
+) => Template | Promise<Template>;
 
-export type LayoutJSON = {
+export type TemplateJSON = {
   extends: string
-  data?: object // Layout dependent
+  data?: object // Template dependent
   inserts?: Array<{
     at: number,
     figures: AnyFigure[] | AnyFigure
   }>
 };
 
-export const layoutSchema = Joi.object<LayoutJSON>({
+export const templateSchema = Joi.object<TemplateJSON>({
   extends: Joi.string().trim().required(),
   data: Joi.object(),
   inserts: Joi.array().items(
@@ -38,19 +38,19 @@ export const layoutSchema = Joi.object<LayoutJSON>({
 });
 
 /**
- * Check if input data is a valid LayoutJSON
+ * Check if input data is a valid TemplateJSON
  *
  * @param data The input data
  * @returns `true` if valid
  *
  * @throws If not valid
  *
- * @throw If input data isn't a valid LayoutJSON
+ * @throw If input data isn't a valid TemplateJSON
  */
-export const isValidLayout = (data: unknown): data is LayoutJSON => {
-  const validation = layoutSchema.validate(data, {});
+export const isValidTemplate = (data: unknown): data is TemplateJSON => {
+  const validation = templateSchema.validate(data, {});
   if (validation.error != null) {
-    throw new Error(`Task's layout is not valid: ${validation.error.message}`);
+    throw new Error(`Task's template is not valid: ${validation.error.message}`);
   }
   return true;
 };
