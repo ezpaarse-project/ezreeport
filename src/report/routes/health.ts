@@ -1,22 +1,25 @@
 import { differenceInMilliseconds } from 'date-fns';
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { setTimeout } from 'timers/promises';
+import { setTimeout } from 'node:timers/promises';
 import { elasticPing } from '../lib/elastic';
 import logger from '../lib/logger';
 import { name as serviceName } from '../package.json';
 import { HTTPError } from '../types/errors';
 
-const MAX_DELAY = 1000;
-
-const pingers: Record<string, () => Promise<boolean>> = {
-  [serviceName]: () => Promise.resolve(true),
+const pingers: Record<string, () => Promise<number | false>> = {
+  [serviceName]: () => Promise.resolve(200),
   // redis: () => {
   // }
-  elastic: async () => elasticPing(),
+  elastic: elasticPing,
 };
 
 type Service = keyof typeof pingers;
+
+type Pong = { name: string } & (
+  { status: boolean, elapsedTime: number, statusCode?: number }
+  | { status: false, error: string }
+);
 
 /**
  * Check if given string is a valid service
@@ -34,27 +37,34 @@ const isService = (data: string): data is Service => Object.keys(pingers).includ
  *
  * @returns Ping result
  */
-const callPing = async (service: Service) => {
+const ping = async (
+  service: Service,
+  timeout = 3000,
+): Promise<Pong> => {
   const start = new Date();
 
   try {
     const res = await Promise.race([
       pingers[service](),
-      setTimeout(MAX_DELAY, false),
+      setTimeout(timeout, false),
     ]);
 
     const ms = differenceInMilliseconds(new Date(), start);
     if (!res) {
-      logger.warn(`[ping] Service "${service}" is not available after ${ms}ms`);
+      logger.warn(`[ping] Service "${service}" is not available after ${ms}/${timeout}ms`);
     }
     return {
       name: service,
-      success: res,
-      time: ms,
-      timeout: ms >= MAX_DELAY,
+      status: !!res,
+      elapsedTime: ms,
+      statusCode: typeof res === 'number' ? res : undefined,
     };
   } catch (error) {
-    return { success: false, error: (error as Error).message };
+    return {
+      name: service,
+      status: false,
+      error: (error as Error).message,
+    };
   }
 };
 
@@ -76,7 +86,7 @@ router.get('/', (_req, res) => {
 router.get('/all', async (_req, res) => {
   try {
     const result = await Promise.all(
-      Object.keys(pingers).map(callPing),
+      Object.keys(pingers).map((s) => ping(s)),
     );
     res.sendJson(result);
   } catch (error) {
@@ -94,7 +104,7 @@ router.get('/:service', async (req, res) => {
     if (!isService(service)) {
       throw new HTTPError(`Service "${service}" not found`, StatusCodes.NOT_FOUND);
     }
-    const result = await callPing(service);
+    const result = await ping(service);
 
     res.sendJson(result);
   } catch (error) {

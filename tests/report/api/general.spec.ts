@@ -4,8 +4,8 @@ import { randomString } from '../../lib/utils';
 const { expect } = chai;
 
 export default (agent: ChaiHttp.Agent) => () => {
-  describe('GET /ping', () => {
-    const request = () => agent.get('/ping');
+  describe('GET /health', () => {
+    const request = () => agent.get('/health');
 
     it('should return 200', async () => {
       const res = await request();
@@ -28,8 +28,8 @@ export default (agent: ChaiHttp.Agent) => () => {
     });
   });
 
-  describe('GET /ping/all', () => {
-    const request = () => agent.get('/ping/all');
+  describe('GET /health/all', () => {
+    const request = () => agent.get('/health/all');
 
     it('should return 200', async () => {
       const res = await request();
@@ -49,15 +49,15 @@ export default (agent: ChaiHttp.Agent) => () => {
       const res = await request();
 
       expect(res.body.content).to.satisfies(
-        (arr: { success: boolean, time: number }[]) => arr.every(
-          ({ success, time }) => success && time < 100,
+        (arr: { satus: boolean, elapsedTime: number }[]) => arr.every(
+          ({ satus, elapsedTime }) => satus && elapsedTime < 200,
         ),
       );
     });
   });
 
-  describe('GET /ping/reporting-report', () => {
-    const request = () => agent.get('/ping/reporting-report');
+  describe('GET /health/reporting-report', () => {
+    const request = () => agent.get('/health/reporting-report');
 
     it('should return 200', async () => {
       const res = await request();

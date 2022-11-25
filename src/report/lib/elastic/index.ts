@@ -60,9 +60,9 @@ const getElasticClient = async () => {
 export const elasticPing = async () => {
   const elastic = await getElasticClient();
 
-  const { body } = await elastic.ping();
+  const { body, statusCode } = await elastic.ping();
 
-  return body;
+  return body && (statusCode || (body ? 200 : 500));
 };
 
 /**

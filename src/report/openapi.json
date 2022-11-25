@@ -172,15 +172,20 @@
                       "content": [
                         {
                           "name": "reporting-report",
-                          "success": true,
-                          "time": 3,
-                          "timeout": false
+                          "status": true,
+                          "elapsedTime": 3,
+                          "statusCode": 200
                         },
                         {
                           "name": "elastic",
-                          "success": true,
-                          "time": 14,
-                          "timeout": false
+                          "status": false,
+                          "elapsedTime": 1000,
+                          "statusCode": null
+                        },
+                        {
+                          "name": "error",
+                          "status": false,
+                          "error": "Internal Server Error"
                         }
                       ]
                     }
@@ -3402,29 +3407,37 @@
         }
       },
       "Pong": {
+        "x-examples": {
+          "Example": {
+            "name": "reporting-report",
+            "status": true,
+            "time": 3
+          }
+        },
+        "description": "Response to a ping/health check",
         "type": "object",
         "properties": {
           "name": {
             "type": "string"
           },
-          "success": {
+          "status": {
             "type": "boolean"
           },
-          "time": {
+          "elapsedTime": {
             "type": "integer"
           },
-          "timeout": {
-            "type": "boolean"
+          "statusCode": {
+            "type": "integer",
+            "nullable": true
+          },
+          "error": {
+            "type": "string"
           }
         },
-        "x-examples": {
-          "example-1": {
-            "name": "reporting-report",
-            "success": true,
-            "time": 3,
-            "timeout": false
-          }
-        }
+        "required": [
+          "name",
+          "status"
+        ]
       }
     },
     "securitySchemes": {

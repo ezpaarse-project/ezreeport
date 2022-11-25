@@ -19,7 +19,7 @@ heartbeat.monitors:
     type: http
     schedule: '${MONITORING_SCHEDULE}'
     urls:
-      - http://report:8080/ping/reporting-report
+      - http://report:8080/health/reporting-report
 
   - name: reporting-apm
     type: http
