@@ -1,5 +1,6 @@
 import cors from 'cors';
 import express from 'express';
+import { StatusCodes } from 'http-status-codes';
 import swaggerUi from 'swagger-ui-express';
 import config from './lib/config';
 import './lib/datefns'; // Setup default options for date-fns
@@ -14,6 +15,7 @@ import pingRouter from './routes/ping';
 import queuesRouter from './routes/queues';
 import tasksRouter from './routes/tasks';
 import unsubscribeRouter from './routes/unsubscribe';
+import { HTTPError } from './types/errors';
 
 const allowedOrigins = (config.get('allowedOrigins')).split(',');
 
@@ -51,8 +53,8 @@ app.use('/doc', swaggerUi.serve, swaggerUi.setup(openapi));
 /**
  * 404 Fallback
  */
-app.use('*', (req, res) => {
-  res.sendJson(null, 404);
+app.use('*', (_req, res) => {
+  res.errorJson(new HTTPError('Route not found', StatusCodes.NOT_FOUND));
 });
 
 app.listen(port, () => {
