@@ -8,6 +8,11 @@ import { ArgumentError, HTTPError, NotFoundError } from '../types/errors';
  */
 const middleware: RequestHandler = (req, res, next) => {
   res.sendJson = (content: unknown, code = StatusCodes.OK, meta?: unknown) => {
+    if (code === StatusCodes.NO_CONTENT || (!content && !meta)) {
+      res.status(StatusCodes.NO_CONTENT).send();
+      return;
+    }
+
     res.status(code).json({
       status: {
         code,
