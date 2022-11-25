@@ -28,7 +28,7 @@ const start = () => {
       logger: {
         fatal: (obj, msg, ...args) => {
           // Skip if not correct loglevel
-          if (LogLevel[logLevel] >= LogLevel.error) return;
+          if (LogLevel[logLevel] <= LogLevel.error) return;
 
           let str = obj.toString();
           if (typeof obj === 'object' && typeof msg === 'string') {
@@ -38,7 +38,7 @@ const start = () => {
         },
         error: (obj, msg, ...args) => {
           // Skip if not correct loglevel
-          if (LogLevel[logLevel] >= LogLevel.error) return;
+          if (LogLevel[logLevel] <= LogLevel.error) return;
 
           let str = obj.toString();
           if (typeof obj === 'object' && typeof msg === 'string') {
@@ -48,7 +48,7 @@ const start = () => {
         },
         warn: (obj, msg, ...args) => {
           // Skip if not correct loglevel
-          if (LogLevel[logLevel] >= LogLevel.warn) return;
+          if (LogLevel[logLevel] <= LogLevel.warn) return;
 
           let str = obj.toString();
           if (typeof obj === 'object' && typeof msg === 'string') {
@@ -69,7 +69,7 @@ const start = () => {
         debug: (obj, msg, ...args) => {
           return; // Disabled because it's spamming the console
           // Skip if not correct loglevel
-          if (LogLevel[logLevel] >= LogLevel.debug) return;
+          if (LogLevel[logLevel] <= LogLevel.debug) return;
 
           let str = obj.toString();
           if (typeof obj === 'object' && typeof msg === 'string') {
@@ -80,7 +80,7 @@ const start = () => {
         trace: (obj, msg, ...args) => {
           return; // Disabled because it's spamming the console
           // Skip if not correct loglevel
-          if (LogLevel[logLevel] >= LogLevel.debug) return;
+          if (LogLevel[logLevel] <= LogLevel.debug) return;
 
           let str = obj.toString();
           if (typeof obj === 'object' && typeof msg === 'string') {

@@ -36,8 +36,8 @@ export EMAIL_ATTEMPTS_INTERVAL=200
 export EZMESURE_AUTH_SECRET="" # ezMesure API key
 export EZMESURE_DEPOSITORS_INDEX="depositors"
 
-export CRON_GENERATE_REPORT="0 0 * * *"
-export CRON_PURGE_OLD_REPORT="0 0 * * *"
+export CRON_GENERATE_REPORT="0 12 * * *"
+export CRON_PURGE_OLD_REPORT="0 12 * * *"
 
 export MONITORING_INDEX_PREFIX="reporting-"
 export MONITORING_API_KEY="" # "Beats" version of ELASTIC_API_KEY
