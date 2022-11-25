@@ -20,4 +20,5 @@
     "mocha-steps",
     "ts-node/register"
   ],
+  "typescript.tsdk": "./src/report/node_modules/typescript/lib"
 }
