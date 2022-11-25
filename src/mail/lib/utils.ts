@@ -1,17 +1,3 @@
-import { differenceInMilliseconds } from 'date-fns';
-
-export enum FormatIntervalTarget {
-  Milliseconds = 1,
-  Seconds = 100,
-  Minutes = 6000,
-  Hours = 360000,
-}
-
-export const formatInterval = (
-  { start, end }: Interval,
-  target = FormatIntervalTarget.Seconds,
-) => (differenceInMilliseconds(end, start) / target).toFixed(2);
-
 /**
  * Type guard for Promise.allSettled
  *

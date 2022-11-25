@@ -14,13 +14,15 @@ import config from '../../config';
 import apm from '../../elastic/apm'; // Setup Elastic's APM for monitoring
 import glob from '../../glob';
 import logger from '../../logger';
-import { formatInterval } from '../../utils';
+import { formatInterval, isFulfilled } from '../../utils';
 import { sendError } from './utils';
 
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
 
 const basePath = join(rootPath, outDir);
+
+type FileCheckResult = { file: string, dur: Duration };
 
 export default async (job: Queue.Job<CronData>) => {
   const start = new Date();
@@ -56,13 +58,13 @@ export default async (job: Queue.Job<CronData>) => {
           const dur = intervalToDuration({ end: today, start: fileDate });
           return Object
             .values(fileContent.detail.files)
-            .map((file) => ({ file: join(basePath, file), dur }));
+            .map((file) => ({ file: join(basePath, file), dur } as FileCheckResult));
         } catch (error) {
           logger.error(`[cron] [${job.name}] Error on file "${filePath}" : ${(error as Error).message}`);
           throw error;
         }
       }),
-    )).flatMap((v) => (v.status === 'fulfilled' ? v.value : { file: '', dur: { } }));
+    )).filter(isFulfilled).flatMap(({ value }) => value);
 
     // Actually delete files
     const deletedFiles = (await Promise.allSettled(
@@ -82,7 +84,7 @@ export default async (job: Queue.Job<CronData>) => {
           throw error;
         }
       }),
-    )).filter((v) => v.status === 'fulfilled' && v.value);
+    )).filter(isFulfilled);
 
     const dur = formatInterval({ start, end: new Date() });
     logger.info(`[cron] [${job.name}] In ${dur}s : Checked ${detailFiles.length} reports | Deleted ${deletedFiles.length}/${filesToDelete.length} files`);

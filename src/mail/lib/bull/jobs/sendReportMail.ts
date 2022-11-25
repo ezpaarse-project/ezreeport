@@ -5,6 +5,7 @@ import config from '../../config';
 import logger from '../../logger';
 import { generateMail, sendMail, type MailOptions } from '../../mail';
 import { recurrenceToStr } from '../../recurrence';
+import { b64ToString, isFulfilled, stringToB64 } from '../../utils';
 
 const { team } = config.get('mail');
 const { domain: APIdomain } = config.get('api');
@@ -18,7 +19,7 @@ export default async (job: Job<MailData>) => {
     const options: Omit<MailOptions, 'to' | 'body' | 'subject'> = {
       attachments: [{
         filename,
-        content: Buffer.from(job.data.file, 'base64'),
+        content: b64ToString(job.data.file),
       }],
     };
     const bodyData = {
@@ -32,8 +33,8 @@ export default async (job: Job<MailData>) => {
       const targets = await Promise.allSettled(
         job.data.task.targets.map(async (to) => {
           try {
-            const taskId64 = Buffer.from(job.data.task.id).toString('base64');
-            const to64 = Buffer.from(to).toString('base64');
+            const taskId64 = stringToB64(job.data.task.id);
+            const to64 = stringToB64(to);
             const unsubId = encodeURIComponent(`${taskId64}:${to64}`);
 
             const unsubscribeLink = `${APIdomain}/unsubscribe/${unsubId}`;
@@ -52,7 +53,7 @@ export default async (job: Job<MailData>) => {
         }),
       );
 
-      const successTargets = targets.map((v) => (v.status === 'fulfilled' ? v.value : '')).filter((v) => v);
+      const successTargets = targets.filter(isFulfilled).map(({ value }) => value);
       if (successTargets.length > 0) {
         logger.info(`[mail] Report "${filename}" sent to [${successTargets.join(', ')}]`);
       } else {
