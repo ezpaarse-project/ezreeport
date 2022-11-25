@@ -1,10 +1,13 @@
 import winston from 'winston';
 import 'winston-daily-rotate-file';
+import config from './config';
+
+const level = config.get('logLevel');
 
 const formatter = (info: winston.Logform.TransformableInfo) => `${info.timestamp} ${info.level}: ${info.message} ${(info.level === 'error' ? `\n\n${info.stack}\n` : '')}`;
 
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || (process.env.NODE_ENV !== 'production' ? 'debug' : 'info'),
+  level,
   exitOnError: false,
   format: winston.format.combine(
     winston.format.timestamp(),

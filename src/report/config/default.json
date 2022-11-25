@@ -1,4 +1,5 @@
 {
+  "logLevel": "debug",
   "rootPath": "./",
   "allowedOrigins": "*",
   "elasticsearch": {
