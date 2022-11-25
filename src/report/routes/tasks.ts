@@ -1,16 +1,20 @@
+import { Prisma } from '@prisma/client';
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import Joi from 'joi';
 import { pick } from 'lodash';
 import { addTaskToQueue } from '../lib/bull';
+import { b64ToString } from '../lib/utils';
 import checkRight, { checkInstitution, Roles } from '../middlewares/auth';
 import {
   createTask,
   deleteTaskById,
   editTaskById,
+  editTaskByIdWithHistory,
   getAllTasks,
   getTaskById
 } from '../models/tasks';
-import { HTTPError } from '../types/errors';
+import { ArgumentError, HTTPError, NotFoundError } from '../types/errors';
 
 const router = Router();
 
@@ -269,6 +273,73 @@ router.post('/:task/run', checkRight(Roles.READ_WRITE), checkInstitution, async 
       id: job.id,
       data: job.data,
     }, 200);
+  } catch (error) {
+    res.errorJson(error);
+  }
+});
+
+type UnsubData = {
+  unsubId: string,
+  email: string
+};
+
+const unsubSchema = Joi.object<UnsubData>({
+  unsubId: Joi.string().required(),
+  email: Joi.string().email().required(),
+});
+
+/**
+ * Check if input data is a unsubscribe data
+ *
+ * @param data The input data
+ * @returns `true` if valid
+ *
+ * @throws If not valid
+ */
+const isValidUnsubData = (data: unknown): data is UnsubData => {
+  const validation = unsubSchema.validate(data, {});
+  if (validation.error != null) {
+    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
+  }
+  return true;
+};
+
+/**
+ * Shorthand to remove given email in given task
+ */
+router.put('/:task/unsubscribe', async (req, res) => {
+  try {
+    const { task: id } = req.params;
+    const data = req.body;
+
+    if (!isValidUnsubData(data)) {
+      // As validation throws an error, this line shouldn't be called
+      return;
+    }
+
+    const [taskId64, to64] = decodeURIComponent(data.unsubId).split(':');
+    if (id !== b64ToString(taskId64) || data.email !== b64ToString(to64)) {
+      throw new ArgumentError('Integrity check failed');
+    }
+
+    const task = await getTaskById(id);
+    if (!task) {
+      throw new NotFoundError(`Task ${id} not found`);
+    }
+
+    const index = task.targets.findIndex((email) => email === data.email);
+    if (index < 0) {
+      throw new ArgumentError(`Email "${data.email}" not found in targets of task "${task.id}"`);
+    }
+    task.targets.splice(index, 1);
+
+    await editTaskByIdWithHistory(
+      task.id,
+      { ...task, layout: task.layout as Prisma.JsonObject },
+      { type: 'unsubscription', message: `${data.email} s'est désinscrit de la liste de diffusion.` },
+    );
+
+    res.sendJson(await getTaskById(task.id));
   } catch (error) {
     res.errorJson(error);
   }

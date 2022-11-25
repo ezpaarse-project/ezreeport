@@ -15,7 +15,7 @@
     </p>
 
     <form id="unsub-form">
-      <input type="text" name="taskId" value="${taskId}" hidden required>
+      <input type="text" name="unsubId" value="${unsubId}" hidden required>
       <div>
         <label for="email">Email: </label>
         <input type="text" name="email" value="${email}" required>
@@ -37,9 +37,9 @@
           (new FormData(form)).forEach((value, key) => obj[key] = value);
 
           const resp = await fetch(
-            '/unsubscribe/',
+            '/tasks/${taskId}/unsubscribe',
             {
-              method: 'POST',
+              method: 'PUT',
               headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
