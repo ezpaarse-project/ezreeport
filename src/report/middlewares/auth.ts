@@ -2,7 +2,7 @@ import type { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { verify } from 'jsonwebtoken';
 import config from '../lib/config';
-import { getElasticClient } from '../lib/elastic';
+import { elasticGetUser } from '../lib/elastic';
 import { findInstitutionByCreatorOrRole, findInstitutionByIds } from '../models/institutions';
 import { HTTPError } from '../types/errors';
 
@@ -65,11 +65,7 @@ const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) =>
   }
 
   try {
-    const elastic = await getElasticClient();
-    const response = await elastic.security.getUser<Record<string, ElasticUser | undefined>>({
-      username,
-    });
-    const { body: { [username]: user } } = response;
+    const { [username]: user } = await elasticGetUser(username);
 
     if (user?.enabled) {
       req.user = { username: user.username, email: user.email, roles: user.roles };

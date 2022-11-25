@@ -28,7 +28,7 @@ export const READONLY_SUFFIX = '_read_only' as const;
  *
  * @returns Elastic client
  */
-export const getElasticClient = async () => {
+const getElasticClient = async () => {
   let tries = 0;
   while (tries < MAX_TRIES) {
     try {
@@ -128,6 +128,25 @@ export const elasticCheckIndex = async (index: string): Promise<boolean> => {
   const elastic = await getElasticClient();
 
   const { body } = await elastic.indices.exists({ index, allow_no_indices: false });
+
+  return body;
+};
+
+/**
+ * Get specific user in elastic security
+ *
+ * @param username The user's username
+ *
+ * @returns The user data
+ */
+export const elasticGetUser = async (
+  username: string,
+): Promise<Record<string, ElasticUser | undefined>> => {
+  const elastic = await getElasticClient();
+
+  const { body } = await elastic.security.getUser<Record<string, ElasticUser | undefined>>({
+    username,
+  });
 
   return body;
 };
