@@ -49,8 +49,8 @@ export default (agent: ChaiHttp.Agent) => () => {
       const res = await request();
 
       expect(res.body.content).to.satisfies(
-        (arr: { satus: boolean, elapsedTime: number }[]) => arr.every(
-          ({ satus, elapsedTime }) => satus && elapsedTime < 200,
+        (arr: { status: boolean, elapsedTime: number }[]) => arr.every(
+          ({ status, elapsedTime }) => status && elapsedTime < 200,
         ),
       );
     });
@@ -69,14 +69,14 @@ export default (agent: ChaiHttp.Agent) => () => {
       // OK
       const res = await request();
 
-      expect(res.body.content).to.be.like({ success: true });
+      expect(res.body.content).to.be.like({ status: true });
     });
 
     it('should return less than 10ms', async () => {
       // OK
       const res = await request();
 
-      expect(res.body.content.time).to.be.lessThanOrEqual(10);
+      expect(res.body.content.elapsedTime).to.be.lessThanOrEqual(10);
     });
   });
 

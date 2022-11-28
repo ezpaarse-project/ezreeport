@@ -23,7 +23,7 @@
     }
   ],
   "paths": {
-    "/ping": {
+    "/health": {
       "get": {
         "summary": "Get pingables services",
         "tags": [
@@ -107,7 +107,7 @@
         "description": "Check services that current one can ping"
       }
     },
-    "/ping/all": {
+    "/health/all": {
       "get": {
         "summary": "Ping all services",
         "tags": [
@@ -203,7 +203,7 @@
       },
       "parameters": []
     },
-    "/ping/{service}": {
+    "/health/{service}": {
       "parameters": [
         {
           "schema": {
