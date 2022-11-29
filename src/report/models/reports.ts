@@ -51,6 +51,7 @@ const reportresultSchema = Joi.object<ReportResult>({
     files: Joi.object<ReportResult['detail']['files']>({
       detail: Joi.string().required(),
       report: Joi.string(),
+      debug: Joi.string(),
     }).required(),
     sendingTo: Joi.array().items(Joi.string().email()).min(1),
     period: Joi.object<ReportResult['detail']['period']>({
@@ -248,6 +249,18 @@ export const generateReport = async (
     );
     template.renderOptions = renderOptions;
     const stats = await renderers[template.renderer ?? 'vega-pdf'](renderOptions, events);
+    logger.debug(`[gen] Template writed to "${namepath}.deb.json"`);
+
+    await writeFile(
+      `${filepath}.deb.json`,
+      JSON.stringify(
+        template,
+        undefined,
+        process.env.NODE_ENV !== 'production' ? 2 : undefined,
+      ),
+      'utf-8',
+    );
+    result.detail.files.debug = `${namepath}.deb.json`;
     logger.debug(`[gen] Template writed to "${namepath}.deb.json"`);
 
     if (writeHistory) {

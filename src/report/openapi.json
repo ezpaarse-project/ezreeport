@@ -1708,6 +1708,9 @@
                             },
                             "report": {
                               "type": "string"
+                            },
+                            "debug": {
+                              "type": "string"
                             }
                           }
                         },
@@ -1789,8 +1792,9 @@
                           "jobAdded": "2022-11-15T10:43:03.899Z"
                         },
                         "files": {
-                          "detail": "....json",
-                          "report": "....pdf"
+                          "detail": "---.det.json",
+                          "report": "---.rep.pdf",
+                          "debug": "---.deb.json"
                         },
                         "sendingTo": [
                           "..."
@@ -1820,7 +1824,7 @@
                           "jobAdded": "2022-11-15T10:43:03.899Z"
                         },
                         "files": {
-                          "detail": "....json"
+                          "detail": "---.json"
                         },
                         "error": {
                           "message": "...",
