@@ -36,8 +36,7 @@ export default async (job: Queue.Job<CronData>) => {
   try {
     const today = endOfDay(start);
 
-    // A report path is smothing like <basePath>/<year>/<year>-<month>/<file>.<json|pdf>
-    const detailFiles = await glob(join(basePath, '**/*.json'));
+    const detailFiles = await glob(join(basePath, '**/*.det.json'));
     // List all files to delete
     const filesToDelete = (await Promise.allSettled(
       detailFiles.map(async (filePath) => {
@@ -60,7 +59,7 @@ export default async (job: Queue.Job<CronData>) => {
             .values(fileContent.detail.files)
             .map((file) => ({ file: join(basePath, file), dur } as FileCheckResult));
         } catch (error) {
-          logger.error(`[cron] [${job.name}] Error on file "${filePath}" : ${(error as Error).message}`);
+          logger.warn(`[cron] [${job.name}] Error on file "${filePath}" : ${(error as Error).message}`);
           throw error;
         }
       }),
@@ -80,7 +79,7 @@ export default async (job: Queue.Job<CronData>) => {
           logger.info(`[cron] [${job.name}] Deleted "${file}" (${formatDuration(dur, { format: ['years', 'months', 'days'] })} old)`);
           return file;
         } catch (error) {
-          logger.error(`[cron] [${job.name}] Error on file deletion "${file}" : ${(error as Error).message}`);
+          logger.warn(`[cron] [${job.name}] Error on file deletion "${file}" : ${(error as Error).message}`);
           throw error;
         }
       }),

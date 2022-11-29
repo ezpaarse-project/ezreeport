@@ -118,18 +118,20 @@ export const generateReport = async (
   if (process.env.NODE_ENV === 'production' || writeHistory) {
     filename += `_${randomUUID()}`;
   }
+  const filepath = join(basePath, filename);
+  const namepath = `${todayStr}/${filename}`;
 
-  logger.debug(`[gen] Generation of report "${todayStr}/${filename}" started`);
+  logger.debug(`[gen] Generation of report "${namepath}" started`);
   events.emit('creation');
 
   let result: ReportResult = {
     success: true,
     detail: {
       date: new Date(),
-      time: 0,
-      task: task.id,
+      took: 0,
+      taskId: task.id,
       files: {
-        detail: `${todayStr}/${filename}.json`,
+        detail: `${namepath}.det.json`,
       },
       meta,
     },
@@ -228,7 +230,7 @@ export const generateReport = async (
         pdf: {
           name: task.name,
           // TODO: .pdf if renderer exports as HTML ?
-          path: join(basePath, `${filename}.pdf`),
+          path: `${filepath}.rep.json`,
           period,
         },
         debug,
@@ -248,7 +250,7 @@ export const generateReport = async (
           nextRun: calcNextDate(today, task.recurrence),
           lastRun: today,
         },
-        { type: 'generation-success', message: `Rapport "${todayStr}/${filename}" généré par ${origin}`, meta },
+        { type: 'generation-success', message: `Rapport "${namepath}" généré par ${origin}`, meta },
       );
     }
 
@@ -256,16 +258,16 @@ export const generateReport = async (
       result,
       {
         detail: {
-          time: differenceInMilliseconds(new Date(), result.detail.date),
-          files: { report: `${todayStr}/${filename}.pdf` },
-          writedTo: targets,
+          files: {
+            report: `${namepath}.rep.pdf`,
+          },
           period,
           runAs: user,
           stats: omit(stats, 'path'),
         },
       },
     );
-    logger.info(`[gen] Report "${todayStr}/${filename}" successfully generated in ${(result.detail.time / 1000).toFixed(2)}s`);
+    logger.info(`[gen] Report "${namepath}" successfully generated in ${(result.detail.took / 1000).toFixed(2)}s`);
   } catch (error) {
     if (writeHistory) {
       await editTaskByIdWithHistory(
@@ -289,8 +291,16 @@ export const generateReport = async (
         },
       },
     );
-    logger.error(`[gen] Report "${todayStr}/${filename}" failed to generate in ${(result.detail.time / 1000).toFixed(2)}s with error : ${(error as Error).message}`);
+    logger.error(`[gen] Report "${namepath}" failed to generate in ${(result.detail.took / 1000).toFixed(2)}s with error : ${(error as Error).message}`);
   }
-  await writeFile(join(basePath, `${filename}.json`), JSON.stringify(result), 'utf-8');
+  await writeFile(
+    `${filepath}.det.json`,
+    JSON.stringify(
+      result,
+      undefined,
+      process.env.NODE_ENV !== 'production' ? 2 : undefined,
+    ),
+    'utf-8',
+  );
   return result;
 };
