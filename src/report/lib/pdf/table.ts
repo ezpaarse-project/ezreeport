@@ -4,12 +4,11 @@ import type { PDFReport } from '.';
 import logger from '../logger';
 
 export type TableParams = {
-  title: string | ((data: unknown[]) => string),
+  title: string,
+  dataKey?: string,
   maxLength?: number;
   maxHeight?: number;
-} & Omit<UserOptions, 'body'>;
-
-export type TableParamsFnc = (doc: PDFReport) => TableParams;
+} & Omit<UserOptions, 'body' | 'didParseCell' | 'willDrawCell' | 'didDrawCell' | 'didDrawPage'>;
 
 /**
  * Add table to PDF
@@ -20,9 +19,17 @@ export type TableParamsFnc = (doc: PDFReport) => TableParams;
  */
 export const addTableToPDF = async (
   doc: PDFReport,
-  data: any[],
+  data: Record<string, any[]> | any[],
   spec: TableParams,
 ): Promise<void> => {
+  if (!Array.isArray(data)) {
+    if (!spec.dataKey) {
+      throw new Error('data is not iterable, and no "dataKey" is present');
+    }
+    // eslint-disable-next-line no-param-reassign
+    data = data[spec.dataKey];
+  }
+
   const {
     maxLength, maxHeight, title, ...params
   } = spec;
@@ -40,7 +47,6 @@ export const addTableToPDF = async (
     const maxTableHeight = maxHeight - (1.5 * fontSize) - (2 * 29);
     const maxCells = Math.ceil(maxTableHeight / 29);
     if (tableData.length > maxCells) {
-      // TODO[feat]: Message ?
       logger.warn(`[pdf] Reducing table length from ${tableData.length} to ${maxCells} because table won't fit in slot.`);
       tableData.length = maxCells;
     }
@@ -61,13 +67,13 @@ export const addTableToPDF = async (
   }, params);
 
   const y = +(options.startY ?? 0) || options.margin.top;
-  const t = typeof title === 'function' ? title(tableData) : title;
 
   // Table title
   doc.pdf
     .setFont('Roboto', 'bold')
     .setFontSize(fontSize)
-    .text(t, options.margin.left, y - 0.5 * fontSize);
+    // TODO[feat]: handlebars
+    .text(title, options.margin.left, y - 0.5 * fontSize);
 
   // Print table
   autoTable(doc.pdf, {

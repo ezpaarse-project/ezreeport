@@ -1,4 +1,4 @@
-import { Client, estypes as ElasticTypes } from '@elastic/elasticsearch';
+import { Client, type estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { setTimeout } from 'node:timers/promises';
 import config from '../config';
 import logger from '../logger';

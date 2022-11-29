@@ -57,6 +57,7 @@ type VegaParams = {
    */
   height: number;
   debugExport?: boolean,
+  dataKey?: string,
   dataLayer?: CustomLayer;
   value: Exclude<Encoding['x' | 'y' | 'theta'], undefined | null> & { field: string };
   label: Exclude<Encoding['x' | 'y' | 'color'], undefined | null> & { field: string },
@@ -81,9 +82,17 @@ export type InputVegaParams = Omit<VegaParams, 'width' | 'height'>;
  */
 export const createVegaLSpec = (
   type: Mark,
-  data: any[],
+  data: Record<string, any[]> | any[],
   params: VegaParams,
 ): TopLevelSpec => {
+  if (!Array.isArray(data)) {
+    if (!params.dataKey) {
+      throw new Error('data is not iterable, and no "dataKey" is present');
+    }
+    // eslint-disable-next-line no-param-reassign
+    data = data[params.dataKey];
+  }
+
   const layers: Layer[] = [];
   // Adding default layer
   const dataLayer = merge<Layer, CustomLayer | {}>(
@@ -268,10 +277,10 @@ export const createVegaLSpec = (
   };
 
   // Write generated spec into debug file (without data to gain time & space)
-  if (params.debugExport === true) {
+  if (params.debugExport === true && process.env.NODE_ENV !== 'production') {
     writeFile(
       join(rootPath, outDir, 'debug.json'),
-      JSON.stringify(omit(spec, 'datasets'), undefined, 4),
+      JSON.stringify(omit(spec, 'datasets'), undefined, 2),
       'utf-8',
       (err) => {
         if (err != null) {

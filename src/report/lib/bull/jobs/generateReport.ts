@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { addReportToQueue, type GenerationData } from '..';
 import { generateReport } from '../../../models/reports';
-import type { Template } from '../../../models/templates';
+import type { AnyTemplate } from '../../../models/templates';
 import config from '../../config';
 import '../../datefns'; // Setup default options for date-fns
 import apm from '../../elastic/apm'; // Setup Elastic's APM for monitoring
@@ -36,8 +36,8 @@ export default async (job: Queue.Job<GenerationData>) => {
   let contact: string | undefined;
 
   const events = new EventEmitter();
-  events.on('templateResolved', async (template: Template) => {
-    expectedPageCount = template.length;
+  events.on('templateResolved', async (template: AnyTemplate) => {
+    expectedPageCount = template.layouts.length;
   });
   events.on('pageAdded', async () => {
     actualPageCount += 1;

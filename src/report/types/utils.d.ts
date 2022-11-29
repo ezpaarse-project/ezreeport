@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Promisify<F extends (...args: any) => any> = (
   ...args: Parameters<F>
 ) => Promise<ReturnType<F>>;
@@ -8,6 +9,12 @@ type DeepPartial<T> = T extends object
     [P in keyof T]?: DeepPartial<T[P]>;
   }
   : T;
+
+type GeneratorParam<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Type extends Record<string, (...args: any[]) => unknown>,
+  Key extends keyof Type,
+> = Exclude<Parameters<Type[Key]>[0], Record<string, unknown>>;
 
 type Position = {
   x: number,

@@ -1,9 +1,15 @@
 import EventEmitter from 'events';
+import Joi from 'joi';
 import { merge } from 'lodash';
-import { isFigureMd, isFigureMetric, isFigureTable } from '../../models/figures';
-import type { Template } from '../../models/templates';
-import { addMdToPDF } from '../markdown';
-import { addMetricToPDF } from '../metrics';
+import {
+  isFigureMd,
+  isFigureMetric,
+  isFigureTable
+} from '../../../models/figures';
+import { layoutSchema, type AnyLayout } from '../../../models/layouts';
+import { ArgumentError } from '../../../types/errors';
+import { addMdToPDF } from '../../markdown';
+import { addMetricToPDF } from '../../metrics';
 import {
   addPage,
   deleteDoc,
@@ -11,14 +17,52 @@ import {
   renderDoc,
   type PDFReportOptions,
   type PDFStats
-} from '../pdf';
-import { addTableToPDF } from '../pdf/table';
-import { drawAreaRef } from '../pdf/utils';
-import { addVegaToPDF, createVegaLSpec, createVegaView } from '../vega';
+} from '../../pdf';
+import { addTableToPDF } from '../../pdf/table';
+import { drawAreaRef } from '../../pdf/utils';
+import { addVegaToPDF, createVegaLSpec, createVegaView } from '../../vega';
 
-type Options = PDFReportOptions & {
-  debugPages?: boolean,
-  GRID?: { rows: number, cols: number },
+interface RenderOptions {
+  pdf: PDFReportOptions
+  grid?: {
+    rows: number,
+    cols: number
+  },
+  layouts: AnyLayout[],
+  debug?: boolean
+}
+
+const optionScehma = Joi.object<RenderOptions>({
+  pdf: Joi.object({
+    name: Joi.string().required(),
+    period: Joi.object({
+      start: Joi.date().required(),
+      end: Joi.date().required(),
+    }).required(),
+    path: Joi.string().required(),
+  }).required(),
+  grid: Joi.object({
+    rows: Joi.number().required(),
+    cols: Joi.number().required(),
+  }),
+  layouts: Joi.array().items(layoutSchema).required(),
+  debug: Joi.boolean(),
+});
+
+/**
+ * Check if input data is fetch options
+ *
+ * @param data The input data
+ * @returns `true` if valid
+ *
+ * @throws If not valid
+ */
+const isRenderOptions = (data: unknown): data is RenderOptions => {
+  const validation = optionScehma.validate(data, {});
+  if (validation.error != null) {
+    throw new ArgumentError(`Fetch options are not valid: ${validation.error.message}`);
+  }
+  return true;
 };
 
 /**
@@ -31,16 +75,18 @@ type Options = PDFReportOptions & {
  * @return Stats about PDF
  */
 const generatePdfWithVega = async (
-  template: Template,
-  {
-    debugPages,
-    GRID = { rows: 2, cols: 2 },
-    ...opts
-  }: Options,
+  options: RenderOptions,
   events: EventEmitter = new EventEmitter(),
 ): Promise<PDFStats> => {
+  // Check options even if type is explicit, because it can be a merge between multiple sources
+  if (!isRenderOptions(options)) {
+    // As validation throws an error, this line shouldn't be called
+    return {} as PDFStats;
+  }
+
   try {
-    const doc = await initDoc(opts);
+    const doc = await initDoc(options.pdf);
+    const GRID = options.grid ?? { rows: 2, cols: 2 };
 
     const viewport: Area = {
       x: doc.margin.left,
@@ -97,16 +143,14 @@ const generatePdfWithVega = async (
 
     let first = true;
     // eslint-disable-next-line no-restricted-syntax
-    for (const page of template) {
+    for (const layout of options.layouts) {
+      const { data, figures } = layout;
+
       if (!first) {
         // eslint-disable-next-line no-await-in-loop
         await addPage();
       }
       first = false;
-
-      // eslint-disable-next-line no-await-in-loop
-      let figures = await page();
-      if (!Array.isArray(figures)) figures = [figures];
 
       const figuresCount = Math.min(figures.length, slots.length);
 
@@ -119,6 +163,7 @@ const generatePdfWithVega = async (
           height: 0,
         };
 
+        // Slot resolution
         if (!figure.slots || figure.slots.length <= 0) {
           // Auto mode
           slot = { ...slots[i] };
@@ -151,8 +196,8 @@ const generatePdfWithVega = async (
               indexs.every(
                 // On same row
                 (sIndex, j) => Math.floor(sIndex / GRID.cols) === Math.floor(indexs[0] / GRID.cols)
-                // Possible (ex: we have 3 cols, and we're asking for col 1 & 3 but not 2)
-                && (j === 0 || sIndex - indexs[j - 1] === 1),
+                  // Possible (ex: we have 3 cols, and we're asking for col 1 & 3 but not 2)
+                  && (j === 0 || sIndex - indexs[j - 1] === 1),
               )
             ) {
               slot.width += slots[1].width + doc.margin.left;
@@ -162,8 +207,8 @@ const generatePdfWithVega = async (
               indexs.every(
                 // Every index on same colon
                 (slotIndex, j) => slotIndex % GRID.cols === indexs[0] % GRID.cols
-                // Possible (ex: we have 3 rows, and we're asking for row 1 & 3 but not 2)
-                && (j === 0 || slotIndex - indexs[j - 1] === GRID.cols),
+                  // Possible (ex: we have 3 rows, and we're asking for row 1 & 3 but not 2)
+                  && (j === 0 || slotIndex - indexs[j - 1] === GRID.cols),
               )
             ) {
               slot.height += slots[1].height + doc.margin.top;
@@ -171,7 +216,7 @@ const generatePdfWithVega = async (
           }
         }
 
-        if (debugPages) {
+        if (options.debug) {
           drawAreaRef(doc.pdf, slot);
         }
 
@@ -190,11 +235,21 @@ const generatePdfWithVega = async (
 
           figure.params.maxHeight = slot.height;
 
+          const figureData = figure.data ?? data;
+          if (!figureData) {
+            throw new Error('No data found');
+          }
+
           // eslint-disable-next-line no-await-in-loop
-          await addTableToPDF(doc, figure.data, merge(figure.params, { margin }));
+          await addTableToPDF(doc, figureData as any[], merge(figure.params, { margin }));
         } else if (isFigureMd(figure)) {
+          const figureData = figure.data ?? data;
+          if (!figureData) {
+            throw new Error('No data found');
+          }
+
           // eslint-disable-next-line no-await-in-loop
-          await addMdToPDF(doc, figure.data, {
+          await addMdToPDF(doc, figureData.toString(), {
             ...figure.params,
             start: {
               x: slot.x,
@@ -204,7 +259,12 @@ const generatePdfWithVega = async (
             height: slot.height,
           });
         } else if (isFigureMetric(figure)) {
-          addMetricToPDF(doc, figure.data, {
+          const figureData = figure.data ?? data;
+          if (!figureData) {
+            throw new Error('No data found');
+          }
+
+          addMetricToPDF(doc, figureData as any[], {
             ...figure.params,
             start: {
               x: slot.x,
@@ -214,14 +274,20 @@ const generatePdfWithVega = async (
             height: slot.height,
           });
         } else {
+          const figureData = figure.data ?? data;
+          if (!figureData) {
+            throw new Error('No data found');
+          }
+
           // Creating Vega view
           const view = createVegaView(
-            createVegaLSpec(figure.type, figure.data, {
+            createVegaLSpec(figure.type, figureData as any[], {
               ...figure.params,
               width: slot.width,
               height: slot.height,
             }),
           );
+
           // Adding view to pdf
           // eslint-disable-next-line no-await-in-loop
           await addVegaToPDF(doc, view, slot);

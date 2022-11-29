@@ -11,11 +11,11 @@ import logger from '../lib/logger';
 import prisma from '../lib/prisma';
 import { calcNextDate } from '../lib/recurrence';
 import { ArgumentError } from '../types/errors';
-import { templateSchema, type TemplateJSON } from './templates';
+import { templateSchema } from './templates';
 
 // TODO[feat]: More checks to make custom errors
 
-type InputTask = Pick<Prisma.TaskCreateInput, 'name' | 'targets' | 'recurrence' | 'nextRun' | 'enabled'> & { template: Prisma.InputJsonObject | TemplateJSON };
+type InputTask = Pick<Prisma.TaskCreateInput, 'name' | 'template' | 'targets' | 'recurrence' | 'nextRun' | 'enabled'>;
 type InputHistory = Pick<Prisma.HistoryCreateWithoutTaskInput, 'type' | 'message' | 'meta'>;
 
 /**
@@ -69,9 +69,9 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
 ): Promise<Pick<Task, Keys[number]>[]> => {
   try {
     // TODO[refactor]: any other way ?
-    const select = opts?.select && opts.select.reduce<Prisma.TaskSelect>(
+    const select = opts?.select && opts.select.reduce(
       (prev, key) => ({ ...prev, [key]: true }),
-      {},
+      {} as Prisma.TaskSelect,
     );
 
     await prisma.$connect();

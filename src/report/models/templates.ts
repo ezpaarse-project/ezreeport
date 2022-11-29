@@ -1,56 +1,140 @@
-import type { Recurrence } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import Joi from 'joi';
-import { AnyFigure, AnyFigureFnc, figureSchema } from './figures';
+import type { Fetchers } from '../lib/generators/fetchers';
+import renderers, { type Renderers } from '../lib/generators/renderers';
+import glob from '../lib/glob';
+import { ArgumentError } from '../types/errors';
+import { layoutSchema, NewLayout } from './layouts';
 
-export type Template = Array<AnyFigureFnc | Promisify<AnyFigureFnc>>;
+/**
+ * Template is the report
+ *
+ *  This interface describe a template in a template file (not in a task's `template` property)
+ */
+export interface NewTemplate<
+ R extends keyof Renderers,
+ F extends keyof Fetchers,
+> {
+  /**
+  * Layouts that compose the template
+  *
+  * @see {NewLayout} for more info
+  */
+  layouts: NewLayout<F>[]
+  /**
+  * Options passed to the fetcher.
+  *
+  * Overrided by layouts `fetchOptions`.
+  * Overrided by default `fetchOptions`.
+  *
+  * @see {fetchers} For more info
+  */
+  fetchOptions?: NewLayout<F>['fetchOptions'],
+  /**
+  * Name of the renderer
+  *
+  * @see {renderers} For more info
+  */
+  renderer?: R,
+  /**
+  * Options passed to the renderer.
+  *
+  * Overrided by default `rendererOptions`.
+  *
+  * @see {renderers} For more info
+  */
+  renderOptions?: |
+  Omit<GeneratorParam<Renderers, R>, 'layouts' | 'pdf'> &
+  { pdf: Omit<GeneratorParam<Renderers, R>['pdf'], 'period'> },
+}
 
-export type TemplateFnc = (
-  task: {
-    recurrence: Recurrence,
-    period: Interval,
-    institution: ElasticInstitution
-    user: string
-  },
-  dataOpts: unknown
-) => Template | Promise<Template>;
+export type AnyTemplate = NewTemplate<keyof Renderers, keyof Fetchers>;
 
-export type TemplateJSON = {
-  extends: string
-  data?: object // Template dependent
-  inserts?: Array<{
-    at: number,
-    figures: AnyFigure[] | AnyFigure
-  }>
-};
-
-export const templateSchema = Joi.object<TemplateJSON>({
-  extends: Joi.string().trim().required(),
-  data: Joi.object(),
-  inserts: Joi.array().items(
-    Joi.object({
-      at: Joi.number().min(0).integer().required(),
-      figures: [
-        figureSchema.required(),
-        Joi.array().items(figureSchema).required(),
-      ],
-    }),
-  ),
+export const templateSchema = Joi.object<AnyTemplate>({
+  layouts: Joi.array().items(layoutSchema).required(),
+  fetchOptions: Joi.object(),
+  renderer: Joi.string().allow(...Object.keys(renderers)),
+  renderOptions: Joi.object(),
 });
 
 /**
- * Check if input data is a valid TemplateJSON
+ * Check if input data is a template file
  *
  * @param data The input data
  * @returns `true` if valid
  *
  * @throws If not valid
- *
- * @throw If input data isn't a valid TemplateJSON
  */
-export const isValidTemplate = (data: unknown): data is TemplateJSON => {
+export const isNewTemplate = (data: unknown): data is AnyTemplate => {
   const validation = templateSchema.validate(data, {});
   if (validation.error != null) {
-    throw new Error(`Task's template is not valid: ${validation.error.message}`);
+    throw new ArgumentError(`Template is not valid: ${validation.error.message}`);
+  }
+  return true;
+};
+
+/**
+* The interface describe options allowed in Task's
+*/
+export interface NewTemplateDB<F extends keyof Fetchers> {
+  /**
+  * Base template file
+  */
+  extends: string
+  /**
+  * Options passed to the fetcher.
+  *
+  * Overrided by layouts `fetchOptions`.
+  * Overrided by function `fetchOptions`.
+  *
+  * @see {fetchers} For more info
+  */
+  fetchOptions?: NewLayout<F>['fetchOptions'],
+  /**
+  * Additional layouts
+  *
+  * @see {NewLayout} for more info
+  */
+  inserts?: (NewLayout<F> & { at: number })[]
+}
+
+/**
+* The interface describe options allowed in Task's but in a format that Prisma understand
+*
+* ! Must be kept in sync with `NewTemplateDB`
+*
+* @see {NewTemplateDB} for more info
+*/
+export interface NewTemplateJSON extends Prisma.JsonObject {
+  extends: string
+  fetchOptions?: Prisma.JsonObject
+  insert?: Prisma.JsonArray
+}
+
+export type AnyTemplateDB = NewTemplateDB<keyof Fetchers>;
+
+const templateDBSchema = Joi.object<AnyTemplateDB>({
+  extends: Joi.string().required(),
+  fetchOptions: Joi.object(),
+  inserts: Joi.array().items(
+    layoutSchema.append({
+      at: Joi.number(),
+    }),
+  ),
+});
+
+/**
+ * Check if input data is a task's template
+ *
+ * @param data The input data
+ * @returns `true` if valid
+ *
+ * @throws If not valid
+ */
+export const isNewTemplateDB = (data: unknown): data is AnyTemplateDB => {
+  const validation = templateDBSchema.validate(data, {});
+  if (validation.error != null) {
+    throw new ArgumentError(`Template is not valid: ${validation.error.message}`);
   }
   return true;
 };

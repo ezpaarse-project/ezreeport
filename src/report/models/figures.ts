@@ -22,7 +22,12 @@ interface FigureData extends Record<FigureType, unknown[]> {
  */
 export interface Figure<Type extends FigureType> {
   type: Type;
-  data: Type extends 'md' ? string : FigureData[Type];
+  /**
+   * Data specific to figure
+   *
+   * Override layout's data
+   */
+  data?: Type extends 'md' ? string : FigureData[Type];
   params: Type extends Mark ? InputVegaParams : FigureParams[Type];
   slots?: number[]
 }

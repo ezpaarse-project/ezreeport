@@ -4,15 +4,17 @@ import Joi from 'joi';
 import { compact, merge, omit } from 'lodash';
 import { randomUUID } from 'node:crypto';
 import EventEmitter from 'node:events';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import config from '../lib/config';
-import generatePdfWithVega from '../lib/generators/vegaPDF';
+import fetchers, { type Fetchers } from '../lib/generators/fetchers';
+import renderers, { type Renderers } from '../lib/generators/renderers';
 import logger from '../lib/logger';
 import { calcNextDate, calcPeriod } from '../lib/recurrence';
+import { ArgumentError } from '../types/errors';
 import { findInstitutionByIds, findInstitutionContact } from './institutions';
 import { editTaskByIdWithHistory } from './tasks';
-import { isValidTemplate, type TemplateFnc } from './templates';
+import { isNewTemplate, isNewTemplateDB } from './templates';
 
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
@@ -62,14 +64,14 @@ const reportresultSchema = Joi.object<ReportResult>({
 });
 
 /**
- * Check if input data is a valid TemplateJSON
+ * Check if input data is a valid ReportResult
  *
  * @param data The input data
  * @returns `true` if valid
  *
  * @throws If not valid
  *
- * @throw If input data isn't a valid TemplateJSON
+ * @throw If input data isn't a valid ReportResult
  */
 export const isValidResult = (data: unknown): data is ReportResult => {
   const validation = reportresultSchema.validate(data, {});
@@ -165,66 +167,84 @@ export const generateReport = async (
     // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
     const period = calcPeriod(parseISO(task.nextRun.toString()), task.recurrence);
 
-    if (!isValidTemplate(task.template)) {
-    // As validation throws an error, this line shouldn't be called
-      return {} as ReportResult;
+    const taskTemplate = task.template;
+    if (!isNewTemplateDB(taskTemplate) || (typeof taskTemplate !== 'object' || Array.isArray(taskTemplate))) {
+      // As validation throws an error, this line should be called only if 2nd assertion fails
+      throw new ArgumentError("Task's template is not an object");
     }
 
-    if (/\.\./i.test(task.template.extends)) {
+    // TODO: Better path check
+    if (/\.\./i.test(taskTemplate.extends)) {
       throw new Error("For security reasons, you can't access to a parent folder");
     }
 
-    const imported = (await import(`../templates/${task.template.extends}`));
-    // eslint-disable-next-line no-underscore-dangle
-    const { default: baseTemplate, GRID } = (imported.__esModule ? imported : imported.default) as {
-      GRID?: { rows: number, cols: number },
-      default?: TemplateFnc
-    };
-    if (!baseTemplate) {
-      throw new Error(`Template "${task.template.extends}" not found`);
+    // Resolve import
+    const template = JSON.parse(await readFile(`./templates/${taskTemplate.extends}.json`, 'utf-8'));
+    if (!isNewTemplate(template)) {
+      // As validation throws an error, this line shouldn't be called
+      return {} as ReportResult;
     }
 
-    const template = await baseTemplate(
-      {
-        recurrence: task.recurrence,
-        // eslint-disable-next-line no-underscore-dangle
-        institution: institution._source?.institution,
-        period,
-        user,
-      },
-      task.template.data,
-    );
-
-    if (task.template.inserts) {
-    // eslint-disable-next-line no-restricted-syntax
-      for (const { at, figures } of task.template.inserts) {
-        // TODO[feat]: No more fnc, handle baseTemplate to extends
-        const fnc = () => figures;
-        template.splice(at, 0, fnc);
+    // Insert task's layouts
+    if (taskTemplate.inserts) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const { at, ...layout } of taskTemplate.inserts) {
+        template.layouts.splice(at, 0, layout);
       }
     }
 
     events.emit('templateResolved', template);
 
-    const stats = await generatePdfWithVega(
-      template,
-      // Report options
-      {
-        name: task.name,
-        path: join(basePath, `${filename}.pdf`),
-        period,
-        debugPages: debug,
-        GRID,
-      },
-      events,
+    // Fetch data
+    await Promise.all(
+      template.layouts.map(async (layout, i) => {
+        if (!layout.data && layout.fetcher !== 'none') {
+          const fetchOptions: GeneratorParam<Fetchers, keyof Fetchers> = merge(
+            template.fetchOptions ?? {},
+            layout.fetchOptions ?? {},
+            {
+              indexSuffix: '',
+              ...(taskTemplate.fetchOptions ?? { }),
+              period,
+              // template,
+              // eslint-disable-next-line no-underscore-dangle
+              indexPrefix: institution._source?.institution.indexPrefix ?? '*',
+              user,
+            },
+          );
+          template.layouts[i].fetchOptions = fetchOptions;
+          template.layouts[i].data = await fetchers[layout.fetcher ?? 'elastic'](fetchOptions, events);
+        }
+      }),
     );
+    // Cleanup resolved resolvedTemplate
+    delete template.fetchOptions;
+    events.emit('templateFetched', template);
+
+    // Render report
+    const renderOptions: GeneratorParam<Renderers, keyof Renderers> = merge(
+      template.renderOptions ?? {},
+      {
+        pdf: {
+          name: task.name,
+          // TODO: .pdf if renderer exports as HTML ?
+          path: join(basePath, `${filename}.pdf`),
+          period,
+        },
+        debug,
+        layouts: template.layouts,
+      },
+    );
+    template.renderOptions = renderOptions;
+    const stats = await renderers[template.renderer ?? 'vega-pdf'](renderOptions, events);
+    logger.debug(`[gen] Template writed to "${namepath}.deb.json"`);
 
     if (writeHistory) {
       await editTaskByIdWithHistory(
         task.id,
         {
           ...task,
-          template: task.template,
+          template: task.template as Prisma.InputJsonObject,
           nextRun: calcNextDate(today, task.recurrence),
           lastRun: today,
         },
@@ -247,11 +267,17 @@ export const generateReport = async (
     );
     logger.info(`[gen] Report "${todayStr}/${filename}" successfully generated in ${(result.detail.time / 1000).toFixed(2)}s`);
   } catch (error) {
-    await editTaskByIdWithHistory(
-      task.id,
-      { ...task, template: task.template as Prisma.InputJsonObject, enabled: false },
-      writeHistory ? { type: 'generation-error', message: `Rapport "${todayStr}/${filename}" non généré par ${origin} suite à une erreur.`, meta } : undefined,
-    );
+    if (writeHistory) {
+      await editTaskByIdWithHistory(
+        task.id,
+        {
+          ...task,
+          template: task.template as Prisma.InputJsonObject,
+          enabled: false,
+        },
+        writeHistory ? { type: 'generation-error', message: `Rapport "${namepath}" non généré par ${origin} suite à une erreur.`, meta } : undefined,
+      );
+    }
 
     result = merge<ReportResult, DeepPartial<ReportResult>>(
       result,

@@ -1,0 +1,66 @@
+{
+  "renderer": "vega-pdf",
+  "renderOptions": {
+    "grid": {
+      "rows": 2,
+      "cols": 2
+    }
+  },
+  "layouts": [
+    {
+      "fetcher": "elastic",
+      "fetchOptions": {
+        "aggs": [
+          {
+            "terms": {
+              "field": "rtype"
+            }
+          }
+        ]
+      },
+      "figures": [
+        {
+          "type": "arc",
+          "params": {
+            "dataKey": "agg0",
+            "title": {
+              "text": "Camembert consultations par type"
+            },
+            "value": {
+              "field": "doc_count"
+            },
+            "label": {
+              "field": "key",
+              "title": "Type",
+              "legend": null
+            },
+            "dataLabel": {
+              "format": "percent",
+              "showLabel": true
+            }
+          },
+          "slots": [0,2]
+        },
+        {
+          "type": "table",
+          "params": {
+            "dataKey": "agg0",
+            "title": "Top {{length}} des consultations par type",
+            "maxLength": 20,
+            "columns": [
+              {
+                "header": "Type",
+                "dataKey": "key"
+              },
+              {
+                "header": "Nombre de consultations",
+                "dataKey": "doc_count"
+              }
+            ]
+          },
+          "slots": [1,3]
+        }
+      ]
+    }
+  ]
+}
