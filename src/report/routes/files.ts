@@ -29,7 +29,7 @@ router.get('/:year/:yearMonth/:filename', checkRight(Roles.READ), checkInstituti
       return;
     }
 
-    const task = await getTaskById(detailFile.detail.task, req.user?.institution);
+    const task = await getTaskById(detailFile.detail.taskId, req.user?.institution);
     if (task) {
       // Check if file isn't already read
       if (`${fileWithoutExt}.det.json` === filename) {

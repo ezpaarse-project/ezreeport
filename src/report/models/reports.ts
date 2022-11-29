@@ -23,17 +23,21 @@ type ReportResult = {
   success: boolean,
   detail: {
     date: Date,
-    time: number,
-    task: Task['id'],
+    took: number,
+    taskId: Task['id'],
     files: {
       detail: string,
-      report?: string
+      report?: string,
+      debug?: string,
     },
-    writedTo?: string[],
+    sendingTo?: string[],
     period?: Interval,
     runAs?: string,
-    stats?: Omit<Awaited<ReturnType<typeof generatePdfWithVega>>, 'path'>,
-    error?: string,
+    stats?: Omit<Awaited<ReturnType<Renderers[keyof Renderers]>>, 'path'>,
+    error?: {
+      message: string,
+      stack: string[]
+    },
     meta?: unknown
   }
 };
@@ -42,13 +46,13 @@ const reportresultSchema = Joi.object<ReportResult>({
   success: Joi.boolean().required(),
   detail: Joi.object<ReportResult['detail']>({
     date: Joi.date().iso().required(),
-    time: Joi.number().integer().required(),
-    task: Joi.string().uuid().required(),
+    took: Joi.number().integer().required(),
+    taskId: Joi.string().uuid().required(),
     files: Joi.object<ReportResult['detail']['files']>({
       detail: Joi.string().required(),
       report: Joi.string(),
     }).required(),
-    writedTo: Joi.array().items(Joi.string().email()).min(1),
+    sendingTo: Joi.array().items(Joi.string().email()).min(1),
     period: Joi.object<ReportResult['detail']['period']>({
       start: [Joi.date().iso().required(), Joi.number().integer().required()],
       end: [Joi.date().iso().required(), Joi.number().integer().required()],
@@ -58,7 +62,10 @@ const reportresultSchema = Joi.object<ReportResult>({
       pageCount: Joi.number().integer().required(),
       size: Joi.number().integer().required(),
     }),
-    error: Joi.string(),
+    error: Joi.object<ReportResult['detail']['error']>({
+      message: Joi.string().required(),
+      stack: Joi.array().items(Joi.string()).required(),
+    }),
     meta: Joi.any(),
   }).required(),
 });
@@ -162,12 +169,14 @@ export const generateReport = async (
       throw new Error(`No suitable contact found for your institution "${task.institution}". Please add doc_contact or tech_contact.`);
     }
     const { _source: { username: user } } = contact;
+    result.detail.runAs = user;
 
     // eslint-disable-next-line no-underscore-dangle
     events.emit('contactFound', contact._source);
 
     // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
     const period = calcPeriod(parseISO(task.nextRun.toString()), task.recurrence);
+    result.detail.period = period;
 
     const taskTemplate = task.template;
     if (!isNewTemplateDB(taskTemplate) || (typeof taskTemplate !== 'object' || Array.isArray(taskTemplate))) {
@@ -258,11 +267,11 @@ export const generateReport = async (
       result,
       {
         detail: {
+          took: differenceInMilliseconds(new Date(), result.detail.date),
           files: {
             report: `${namepath}.rep.pdf`,
           },
-          period,
-          runAs: user,
+          sendingTo: targets,
           stats: omit(stats, 'path'),
         },
       },
@@ -286,8 +295,11 @@ export const generateReport = async (
       {
         success: false,
         detail: {
-          time: differenceInMilliseconds(new Date(), result.detail.date),
-          error: (error as Error).message,
+          took: differenceInMilliseconds(new Date(), result.detail.date),
+          error: {
+            message: (error as Error).message,
+            stack: (error as Error).stack?.split('\n    '),
+          },
         },
       },
     );

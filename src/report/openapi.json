@@ -1686,11 +1686,11 @@
                           "type": "string",
                           "format": "date-time"
                         },
-                        "time": {
+                        "took": {
                           "type": "integer",
                           "description": "Time taken to generate report in ms"
                         },
-                        "task": {
+                        "taskId": {
                           "type": "string"
                         },
                         "meta": {
@@ -1711,7 +1711,7 @@
                             }
                           }
                         },
-                        "writedTo": {
+                        "sendingTo": {
                           "type": "array",
                           "items": {
                             "type": "string"
@@ -1749,13 +1749,28 @@
                           }
                         },
                         "error": {
-                          "type": "string"
+                          "type": "object",
+                          "properties": {
+                            "message": {
+                              "type": "string"
+                            },
+                            "stack": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "required": [
+                            "message",
+                            "stack"
+                          ]
                         }
                       },
                       "required": [
                         "date",
-                        "time",
-                        "task",
+                        "took",
+                        "taskId",
                         "files"
                       ]
                     }
@@ -1767,8 +1782,8 @@
                       "success": true,
                       "detail": {
                         "date": "2022-11-14T15:02:46.340Z",
-                        "time": 1000,
-                        "task": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                        "took": 1000,
+                        "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                         "meta": {
                           "jobId": "134",
                           "jobAdded": "2022-11-15T10:43:03.899Z"
@@ -1777,7 +1792,7 @@
                           "detail": "....json",
                           "report": "....pdf"
                         },
-                        "writedTo": [
+                        "sendingTo": [
                           "..."
                         ],
                         "period": {
@@ -1807,7 +1822,10 @@
                         "files": {
                           "detail": "....json"
                         },
-                        "error": "..."
+                        "error": {
+                          "message": "...",
+                          "stack": []
+                        }
                       }
                     }
                   }
