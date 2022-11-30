@@ -217,6 +217,7 @@ export const generateReport = async (
             {
               indexSuffix: '',
               ...(taskTemplate.fetchOptions ?? { }),
+              recurrence: task.recurrence,
               period,
               // template,
               // eslint-disable-next-line no-underscore-dangle
@@ -243,6 +244,7 @@ export const generateReport = async (
           path: `${filepath}.rep.pdf`,
           period,
         },
+        recurrence: task.recurrence,
         debug,
         layouts: template.layouts,
       },

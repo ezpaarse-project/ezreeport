@@ -9,13 +9,12 @@
   "layouts": [
     {
       "fetchOptions": {
-        "fetchCount": "totalCount",
+        "fetchCount": "total_count",
         "aggs": [
           {
             "name": "consult_by_date",
             "date_histogram": {
-              "field": "datetime",
-              "calendar_interval": "day"
+              "field": "datetime"
             }
           },
           {
@@ -43,7 +42,7 @@
           "type": "metric",
           "params": {
             "labels": {
-              "totalCount": {
+              "total_count": {
                 "text": "Consultations"
               },
               "platforms": {
@@ -83,14 +82,11 @@
             },
             "label": {
               "field": "key",
-              "timeUnit": "yearmonthdate",
-              "title": "",
-              "axis": {
-                "format": "%d %b %Y"
-              }
+              "title": ""
             },
             "dataLabel": {
-              "format": "numeric"
+              "format": "numeric",
+              "minValue": 20
             }
           },
           "slots": [

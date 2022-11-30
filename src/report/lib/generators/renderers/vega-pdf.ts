@@ -1,3 +1,4 @@
+import { Recurrence } from '@prisma/client';
 import EventEmitter from 'events';
 import Joi from 'joi';
 import { merge } from 'lodash';
@@ -29,6 +30,7 @@ interface RenderOptions {
     cols: number
   },
   layouts: AnyLayout[],
+  recurrence: Recurrence,
   debug?: boolean
 }
 
@@ -45,6 +47,14 @@ const optionScehma = Joi.object<RenderOptions>({
     rows: Joi.number().required(),
     cols: Joi.number().required(),
   }),
+  recurrence: Joi.string().valid(
+    Recurrence.DAILY,
+    Recurrence.WEEKLY,
+    Recurrence.MONTHLY,
+    Recurrence.QUARTERLY,
+    Recurrence.BIENNIAL,
+    Recurrence.YEARLY,
+  ).required(),
   layouts: Joi.array().items(layoutSchema).required(),
   debug: Joi.boolean(),
 });
@@ -283,6 +293,7 @@ const generatePdfWithVega = async (
           const view = createVegaView(
             createVegaLSpec(figure.type, figureData as any[], {
               ...figure.params,
+              recurrence: options.recurrence,
               width: slot.width,
               height: slot.height,
             }),

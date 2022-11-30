@@ -1,16 +1,18 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
-import type { Prisma } from '@prisma/client';
+import { Recurrence, type Prisma } from '@prisma/client';
 import { formatISO } from 'date-fns';
 import Joi from 'joi';
 import { cloneDeep } from 'lodash';
 import EventEmitter from 'node:events';
 import { ArgumentError } from '../../../types/errors';
 import { elasticCount, elasticSearch } from '../../elastic';
+import { calcElasticInterval } from '../../recurrence';
 
 type ElasticFilters = ElasticTypes.QueryDslQueryContainer;
 type ElasticAggregation = ElasticTypes.AggregationsAggregationContainer;
 
 interface FetchOptions {
+  recurrence: Recurrence,
   period: Interval,
   filters?: ElasticFilters,
   /**
@@ -24,6 +26,14 @@ interface FetchOptions {
 }
 
 const optionScehma = Joi.object<FetchOptions>({
+  recurrence: Joi.string().valid(
+    Recurrence.DAILY,
+    Recurrence.WEEKLY,
+    Recurrence.MONTHLY,
+    Recurrence.QUARTERLY,
+    Recurrence.BIENNIAL,
+    Recurrence.YEARLY,
+  ).required(),
   period: Joi.object({
     start: Joi.date().required(),
     end: Joi.date().required(),
@@ -88,9 +98,26 @@ export default async (
   // Always true but TypeScript refers to ElasticTypes instead...
   if (opts.body) {
     if (options.aggs) {
+      const calendarInterval = calcElasticInterval(options.recurrence);
       opts.size = 0;
       opts.body.aggs = options.aggs.reduce(
-        (prev, { name: _name, ...v }, i) => ({ ...prev, [aggsNames[i]]: v }),
+        (prev, { name: _name, ...rawAgg }, i) => {
+          let agg = rawAgg;
+          if ('date_histogram' in rawAgg) {
+            agg = {
+              ...agg,
+              date_histogram: {
+                calendar_interval: calendarInterval,
+                ...agg.date_histogram,
+              },
+            };
+          }
+
+          return {
+            ...prev,
+            [aggsNames[i]]: agg,
+          };
+        },
         {} as Record<string, ElasticAggregation>,
       );
     }

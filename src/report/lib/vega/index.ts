@@ -1,3 +1,4 @@
+import { Recurrence } from '@prisma/client';
 import { registerFont } from 'canvas';
 import type { ImageOptions } from 'jspdf';
 import { cloneDeep, merge, omit } from 'lodash';
@@ -16,6 +17,7 @@ import type { UnitSpec } from 'vega-lite/build/src/spec';
 import config from '../config';
 import logger from '../logger';
 import type { PDFReport } from '../pdf';
+import { calcVegaFormat } from '../recurrence';
 import localeFR from './locales/fr-FR.json';
 import VegaLogger from './logger';
 
@@ -44,6 +46,7 @@ scheme('tableau10-labels', [
 type Layer = UnitSpec<string>;
 type Title = Exclude<Layer['title'], undefined>;
 type Encoding = Exclude<Layer['encoding'], undefined>;
+type SubEncoding<T extends keyof Encoding> = Exclude<Encoding[T], undefined | null>;
 // Hide 'mark.type' property for overriding it
 type CustomLayer = Omit<Layer, 'mark'> & { mark: Omit<Layer['mark'], 'type'> };
 
@@ -59,9 +62,10 @@ type VegaParams = {
   debugExport?: boolean,
   dataKey?: string,
   dataLayer?: CustomLayer;
-  value: Exclude<Encoding['x' | 'y' | 'theta'], undefined | null> & { field: string };
-  label: Exclude<Encoding['x' | 'y' | 'color'], undefined | null> & { field: string },
+  value: SubEncoding<'x' | 'y' | 'theta'> & { field: string };
+  label: SubEncoding<'x' | 'y' | 'color'> & { field: string },
   color?: Encoding['color'] & { field: string },
+  recurrence: Recurrence,
   title: Title,
   dataLabel?: {
     format: 'percent' | 'numeric',
@@ -82,16 +86,20 @@ export type InputVegaParams = Omit<VegaParams, 'width' | 'height'>;
  */
 export const createVegaLSpec = (
   type: Mark,
-  data: Record<string, any[]> | any[],
+  inputData: Record<string, any[]> | any[],
   params: VegaParams,
 ): TopLevelSpec => {
-  if (!Array.isArray(data)) {
+  let data = [];
+  if (Array.isArray(inputData)) {
+    data = inputData;
+  } else {
     if (!params.dataKey) {
       throw new Error('data is not iterable, and no "dataKey" is present');
     }
-    // eslint-disable-next-line no-param-reassign
-    data = data[params.dataKey];
+    data = inputData[params.dataKey];
   }
+
+  const timeFormat = calcVegaFormat(params.recurrence);
 
   const layers: Layer[] = [];
   // Adding default layer
@@ -152,8 +160,15 @@ export const createVegaLSpec = (
           ...params.value,
         },
         x: {
+          // @ts-ignore
           type: 'nominal',
+          timeUnit: timeFormat.timeUnit,
           ...params.label,
+          axis: {
+            format: timeFormat.format,
+            // @ts-ignore
+            ...params.label.axis,
+          },
         },
         color: {
           ...params.color,
