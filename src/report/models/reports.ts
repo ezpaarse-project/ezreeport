@@ -251,7 +251,7 @@ export const generateReport = async (
     );
     template.renderOptions = renderOptions;
     const stats = await renderers[template.renderer ?? 'vega-pdf'](renderOptions, events);
-    logger.debug(`[gen] Template writed to "${namepath}.deb.json"`);
+    logger.debug(`[gen] Report wroted to "${namepath}.rep.pdf"`);
 
     await writeFile(
       `${filepath}.deb.json`,
