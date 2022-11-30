@@ -2,9 +2,10 @@ import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import type { Prisma } from '@prisma/client';
 import { formatISO } from 'date-fns';
 import Joi from 'joi';
+import { cloneDeep } from 'lodash';
 import EventEmitter from 'node:events';
 import { ArgumentError } from '../../../types/errors';
-import { elasticSearch } from '../../elastic';
+import { elasticCount, elasticSearch } from '../../elastic';
 
 type ElasticFilters = ElasticTypes.QueryDslQueryContainer;
 type ElasticAggregation = ElasticTypes.AggregationsAggregationContainer;
@@ -18,7 +19,7 @@ interface FetchOptions {
   indexPrefix: string,
   indexSuffix: string,
   user: string,
-  fetchCount?: boolean,
+  fetchCount?: string,
   aggs?: (ElasticAggregation & { name?: string })[];
 }
 
@@ -31,7 +32,7 @@ const optionScehma = Joi.object<FetchOptions>({
   indexPrefix: Joi.string().required(),
   indexSuffix: Joi.string().required(),
   user: Joi.string().required(),
-  fetchCount: Joi.boolean(),
+  fetchCount: Joi.string(),
   aggs: Joi.array(),
 });
 
@@ -61,7 +62,7 @@ export default async (
     return [];
   }
 
-  const opts: ElasticTypes.SearchRequest = {
+  const baseOpts: ElasticTypes.SearchRequest = {
     index: options.indexPrefix + options.indexSuffix,
     body: {
       query: {
@@ -79,6 +80,7 @@ export default async (
       },
     },
   };
+  const opts = cloneDeep(baseOpts);
 
   // Generating names for aggregations if not defined
   const aggsNames = options.aggs?.map(({ name }, i) => name ?? `agg${i}`) ?? [];
@@ -111,6 +113,12 @@ export default async (
         data[name] = aggRes as Prisma.JsonObject;
       }
     }
+  }
+
+  if (options.fetchCount) {
+    const { body: { count } } = await elasticCount(baseOpts, options.user);
+    // eslint-disable-next-line no-underscore-dangle
+    data[options.fetchCount] = count;
   }
 
   return data;
