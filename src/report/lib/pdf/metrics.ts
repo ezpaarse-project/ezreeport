@@ -76,9 +76,7 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
     const dataKeys = Object.keys(inputData);
     const labelKeys = Object.keys(params.labels ?? {});
     // Sort metrics by label position in object
-    dataKeys.sort(
-      (a, b) => labelKeys.findIndex((k) => a === k) - labelKeys.findIndex((k) => b === k),
-    );
+    dataKeys.sort((a, b) => labelKeys.indexOf(a) - labelKeys.indexOf(b));
     // eslint-disable-next-line no-restricted-syntax
     for (const key of dataKeys) {
       const label = (params.labels ?? {})[key];
@@ -96,7 +94,7 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
               value = d.getTime();
             }
 
-            if (!label.format.params || !label.format.params[0]) {
+            if (!label.format.params?.[0]) {
               label.format.params = ['dd/MM/yyyy'];
             }
 

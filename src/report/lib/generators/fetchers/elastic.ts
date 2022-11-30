@@ -2,7 +2,7 @@ import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { Recurrence, type Prisma } from '@prisma/client';
 import { formatISO } from 'date-fns';
 import Joi from 'joi';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, merge } from 'lodash';
 import EventEmitter from 'node:events';
 import { ArgumentError } from '../../../types/errors';
 import { elasticCount, elasticSearch } from '../../elastic';
@@ -93,7 +93,10 @@ export default async (
   const opts = cloneDeep(baseOpts);
 
   // Generating names for aggregations if not defined
-  const aggsNames = options.aggs?.map(({ name }, i) => name ?? `agg${i}`) ?? [];
+  const aggsInfos = options.aggs?.map((agg, i) => ({
+    name: agg.name || `agg${i}`,
+    subAggs: Object.keys(agg.aggs ?? {}),
+  })) ?? [];
 
   // Always true but TypeScript refers to ElasticTypes instead...
   if (opts.body) {
@@ -103,19 +106,14 @@ export default async (
       opts.body.aggs = options.aggs.reduce(
         (prev, { name: _name, ...rawAgg }, i) => {
           let agg = rawAgg;
-          if ('date_histogram' in rawAgg) {
-            agg = {
-              ...agg,
-              date_histogram: {
-                calendar_interval: calendarInterval,
-                ...agg.date_histogram,
-              },
-            };
+          // Add default calendar_interval
+          if (rawAgg.date_histogram) {
+            agg = merge(agg, { date_histogram: { calendar_interval: calendarInterval } });
           }
 
           return {
             ...prev,
-            [aggsNames[i]]: agg,
+            [aggsInfos[i].name]: agg,
           };
         },
         {} as Record<string, ElasticAggregation>,
@@ -128,13 +126,34 @@ export default async (
 
   if (options.aggs) {
     // eslint-disable-next-line no-restricted-syntax
-    for (const name of aggsNames) {
-      if (!body.aggregations || !body.aggregations[name]) {
+    for (const { name, subAggs } of aggsInfos) {
+      if (!body.aggregations?.[name]) {
         throw new Error(`Aggregation "${name}" not found`);
       }
       const aggRes = body.aggregations[name];
 
       if ('buckets' in aggRes) {
+        // Transform object data into arrays
+        if (
+          typeof aggRes.buckets === 'object'
+          && !Array.isArray(aggRes.buckets)
+        ) {
+          aggRes.buckets = Object.entries(aggRes.buckets).map(
+            ([key, value]) => ({ value, key }),
+          );
+        }
+
+        // Simplify access to sub-aggregations' result
+        // eslint-disable-next-line no-restricted-syntax
+        for (const bucket of aggRes.buckets) {
+          // eslint-disable-next-line no-restricted-syntax
+          for (const subAgg of subAggs) {
+            bucket[subAgg] = bucket?.[subAgg]?.hits?.hits?.map?.(
+              //! May fail if hits.hits is not an array !
+              ({ _source }: { _source: unknown }) => _source,
+            );
+          }
+        }
         data[name] = aggRes.buckets;
       } else {
         data[name] = aggRes as Prisma.JsonObject;
