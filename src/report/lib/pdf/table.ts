@@ -1,3 +1,4 @@
+import { compile as handlebars } from 'handlebars';
 import autoTable, { type UserOptions } from 'jspdf-autotable';
 import { merge } from 'lodash';
 import type { PDFReport } from '.';
@@ -74,8 +75,11 @@ export const addTableToPDF = async (
   doc.pdf
     .setFont('Roboto', 'bold')
     .setFontSize(fontSize)
-    // TODO[feat]: handlebars
-    .text(title, options.margin.left, y - 0.5 * fontSize);
+    .text(
+      handlebars(title)({ length: tableData.length }),
+      options.margin.left,
+      y - 0.5 * fontSize,
+    );
 
   // Print table
   autoTable(doc.pdf, {

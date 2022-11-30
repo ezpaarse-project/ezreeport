@@ -1,5 +1,6 @@
 import { Recurrence } from '@prisma/client';
 import { registerFont } from 'canvas';
+import { compile as handlebars } from 'handlebars';
 import type { ImageOptions } from 'jspdf';
 import { cloneDeep, merge, omit } from 'lodash';
 import { writeFile } from 'node:fs';
@@ -264,18 +265,33 @@ export const createVegaLSpec = (
     layers.push(dLLayer);
   }
 
+  const title: Exclude<TopLevelSpec['title'], string | string[] | undefined> = {
+    text: '',
+    ...(typeof params.title === 'object' && !Array.isArray(params.title) ? params.title : {}),
+  };
+  const handlebarsOpts = { length: data.length };
+  if (typeof params.title === 'string') {
+    title.text = handlebars(params.title)(handlebarsOpts);
+  } else if (Array.isArray(params.title)) {
+    title.text = params.title.map((t) => handlebars(t)(handlebarsOpts));
+  } else if (typeof params.title.text === 'string') {
+    title.text = handlebars(params.title.text)(handlebarsOpts);
+  } else if (Array.isArray(params.title.text)) {
+    title.text = params.title.text.map((t) => handlebars(t)(handlebarsOpts));
+  }
+
   const spec: TopLevelSpec = {
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     width: params.width,
     height: params.height,
     background: 'transparent',
-    title: merge<TopLevelSpec['title'], TopLevelSpec['title'] | {}>(
+    title: merge<TopLevelSpec['title'], TopLevelSpec['title']>(
       {
         text: '',
         anchor: 'start',
         dy: -5,
       },
-      params.title,
+      title,
     ),
     // Adding data
     datasets: {
