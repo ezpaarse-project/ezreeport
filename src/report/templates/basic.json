@@ -8,6 +8,99 @@
   },
   "layouts": [
     {
+      "fetchOptions": {
+        "fetchCount": "totalCount",
+        "aggs": [
+          {
+            "name": "consult_by_date",
+            "date_histogram": {
+              "field": "datetime",
+              "calendar_interval": "day"
+            }
+          },
+          {
+            "name": "platforms",
+            "cardinality": {
+              "field": "portal"
+            }
+          },
+          {
+            "name": "min_date",
+            "min": {
+              "field": "datetime"
+            }
+          },
+          {
+            "name": "max_date",
+            "max": {
+              "field": "datetime"
+            }
+          }
+        ]
+      },
+      "figures": [
+        {
+          "type": "metric",
+          "params": {
+            "labels": {
+              "totalCount": {
+                "text": "Consultations"
+              },
+              "platforms": {
+                "text": "Plateformes"
+              },
+              "min_date": {
+                "text": "Début de période",
+                "format": {
+                  "type": "date",
+                  "params": ["dd LLL yyyy"]
+                }
+              },
+              "max_date": {
+                "text": "Fin de période",
+                "format": {
+                  "type": "date",
+                  "params": ["dd LLL yyyy"]
+                }
+              }
+            }
+          },
+          "slots": [
+            0,
+            1
+          ]
+        },
+        {
+          "type": "bar",
+          "params": {
+            "dataKey": "consult_by_date",
+            "title": {
+              "text": "Histogramme consultations"
+            },
+            "value": {
+              "field": "doc_count",
+              "title": "Nombre de consultations"
+            },
+            "label": {
+              "field": "key",
+              "timeUnit": "yearmonthdate",
+              "title": "",
+              "axis": {
+                "format": "%d %b %Y"
+              }
+            },
+            "dataLabel": {
+              "format": "numeric"
+            }
+          },
+          "slots": [
+            2,
+            3
+          ]
+        }
+      ]
+    },
+    {
       "fetcher": "elastic",
       "fetchOptions": {
         "aggs": [
@@ -39,7 +132,10 @@
               "showLabel": true
             }
           },
-          "slots": [0,2]
+          "slots": [
+            0,
+            2
+          ]
         },
         {
           "type": "table",
@@ -58,7 +154,10 @@
               }
             ]
           },
-          "slots": [1,3]
+          "slots": [
+            1,
+            3
+          ]
         }
       ]
     }

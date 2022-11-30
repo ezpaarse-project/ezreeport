@@ -1,15 +1,31 @@
+import { format, isValid, parseISO } from 'date-fns';
 import type { Font } from 'jspdf';
+import type { PDFReport } from '.';
 
 type MetricParams = {
   start: Position,
   width: number,
+  height: number,
+  labels?: Record<string, {
+    text?: string,
+    field?: string,
+    format?: {
+      type: 'date',
+      params?: string[]
+    }
+  } | undefined>
 };
 
 export type InputMetricParams = Omit<MetricParams, 'width' | 'height' | 'start'>;
 
+type BasicMetricData = {
   key: string,
   value: number | string
 };
+
+type ComplexMetricData = Record<string, BasicMetricData['value'] | Record<string, BasicMetricData['value']>>;
+
+export type MetricData = BasicMetricData[] | ComplexMetricData;
 
 type MetricDefault = {
   font: Font,
@@ -44,12 +60,62 @@ const keyStyle = (pdf: PDFReport['pdf'], def: MetricDefault): PDFReport['pdf'] =
  * Add metric figure to PDF
  *
  * @param doc The PDF report
+ * @param inputData The data
  * @param params Other params
  */
+export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: MetricParams) => {
   const def: MetricDefault = {
     font: doc.pdf.getFont(),
     fontSize: doc.pdf.getFontSize(),
   };
+
+  let rawData = [];
+  if (Array.isArray(inputData)) {
+    rawData = inputData;
+  } else {
+    const dataKeys = Object.keys(inputData);
+    const labelKeys = Object.keys(params.labels ?? {});
+    // Sort metrics by label position in object
+    dataKeys.sort(
+      (a, b) => labelKeys.findIndex((k) => a === k) - labelKeys.findIndex((k) => b === k),
+    );
+    // eslint-disable-next-line no-restricted-syntax
+    for (const key of dataKeys) {
+      const label = (params.labels ?? {})[key];
+      let value = inputData[key]; // TODO[feat]: format
+      if (typeof value === 'object') {
+        value = value[label?.field ?? 'value'];
+      }
+
+      if (label?.format) {
+        switch (label.format.type) {
+          case 'date':
+            if (typeof value === 'string') {
+              const d = parseISO(value);
+              if (!isValid(d)) throw new Error('Date is not in ISO format');
+              value = d.getTime();
+            }
+
+            if (!label.format.params || !label.format.params[0]) {
+              label.format.params = ['dd/MM/yyyy'];
+            }
+
+            value = format(value, label.format.params[0]);
+            break;
+
+          default:
+            break;
+        }
+      }
+
+      if (value) {
+        rawData.push({
+          key: label?.text ?? key,
+          value,
+        });
+      }
+    }
+  }
 
   const margin = { x: doc.margin.left, y: doc.margin.top, key: 3 };
   const cell: Size = { width: 0, height: 0 };
