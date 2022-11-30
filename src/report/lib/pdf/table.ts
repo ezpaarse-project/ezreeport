@@ -1,6 +1,6 @@
 import { compile as handlebars } from 'handlebars';
 import autoTable, { type UserOptions } from 'jspdf-autotable';
-import { merge } from 'lodash';
+import { get, merge } from 'lodash';
 import type { PDFReport } from '.';
 import logger from '../logger';
 
@@ -55,6 +55,14 @@ export const addTableToPDF = async (
     }
   }
 
+  // console.log(
+  //   JSON.stringify(
+  //     tableData,
+  //     undefined,
+  //     2,
+  //   ),
+  // );
+
   const options = merge({
     margin: {
       right: doc.margin.right,
@@ -69,7 +77,7 @@ export const addTableToPDF = async (
     rowPageBreak: 'avoid',
   }, params);
 
-  const y = +(options.startY ?? 0) || options.margin.top;
+  const y = options.startY || options.margin.top;
 
   // Table title
   doc.pdf
@@ -85,5 +93,20 @@ export const addTableToPDF = async (
   autoTable(doc.pdf, {
     ...options,
     body: tableData,
+    didParseCell: (hookData) => {
+      // If dataKey is a property path
+      if (
+        hookData.row.section === 'body'
+        && /^\S+\./i.test(hookData.column.dataKey.toString())
+      ) {
+        // eslint-disable-next-line no-param-reassign
+        hookData.cell.text = [
+          get(
+            tableData[hookData.row.index],
+            hookData.column.dataKey,
+          ) ?? '',
+        ];
+      }
+    },
   });
 };
