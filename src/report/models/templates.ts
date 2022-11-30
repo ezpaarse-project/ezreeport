@@ -98,19 +98,6 @@ export interface NewTemplateDB<F extends keyof Fetchers> {
   inserts?: (NewLayout<F> & { at: number })[]
 }
 
-/**
-* The interface describe options allowed in Task's but in a format that Prisma understand
-*
-* ! Must be kept in sync with `NewTemplateDB`
-*
-* @see {NewTemplateDB} for more info
-*/
-export interface NewTemplateJSON extends Prisma.JsonObject {
-  extends: string
-  fetchOptions?: Prisma.JsonObject
-  insert?: Prisma.JsonArray
-}
-
 export type AnyTemplateDB = NewTemplateDB<keyof Fetchers>;
 
 const templateDBSchema = Joi.object<AnyTemplateDB>({
