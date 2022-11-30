@@ -70,9 +70,7 @@
           "type": "bar",
           "params": {
             "dataKey": "consult_by_date",
-            "title": {
-              "text": "Histogramme consultations"
-            },
+            "title": "Histogramme consultations",
             "value": {
               "field": "doc_count",
               "title": "Nombre de consultations"
@@ -108,9 +106,7 @@
           "type": "arc",
           "params": {
             "dataKey": "agg0",
-            "title": {
-              "text": "Camembert consultations par type"
-            },
+            "title": "Camembert consultations par type",
             "value": {
               "field": "doc_count"
             },
@@ -190,7 +186,7 @@
           {
             "filters": {
               "filters": {
-                "with": {
+                "Avec DOI": {
                   "bool": {
                     "must": [
                       {
@@ -202,7 +198,7 @@
                     ]
                   }
                 },
-                "without": {
+                "Sans DOI": {
                   "bool": {
                     "must": [
                       {
@@ -221,22 +217,11 @@
       "figures": [
         {
           "type": "arc",
-          "data": [
-            {
-              "key": "Avec DOI",
-              "doc_count": 0
-            },
-            {
-              "key": "Sans DOI",
-              "doc_count": 0
-            }
-          ],
           "params": {
-            "title": {
-              "text": "Camembert consultations avec ou sans DOI"
-            },
+            "dataKey": "agg0",
+            "title": "Camembert consultations avec ou sans DOI",
             "value": {
-              "field": "doc_count"
+              "field": "value.doc_count"
             },
             "label": {
               "field": "key",
@@ -289,7 +274,7 @@
               },
               {
                 "header": "Editeurs",
-                "dataKey": "publisher"
+                "dataKey": "publisher[0].publisher_name"
               },
               {
                 "header": "Nombre de consultations",
@@ -316,9 +301,7 @@
           "type": "arc",
           "params": {
             "dataKey": "agg0",
-            "title": {
-              "text": "Camembert des {{length}} années de publications les plus consultées"
-            },
+            "title": "Camembert des {{length}} années de publications les plus consultées",
             "value": {
               "field": "doc_count"
             },
