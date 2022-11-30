@@ -285,7 +285,7 @@
             "columns": [
               {
                 "header": "Publication",
-                "dataKey": "title"
+                "dataKey": "key"
               },
               {
                 "header": "Editeurs",
@@ -293,7 +293,7 @@
               },
               {
                 "header": "Nombre de consultations",
-                "dataKey": "count"
+                "dataKey": "doc_count"
               }
             ]
           }

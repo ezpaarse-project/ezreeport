@@ -19,15 +19,17 @@ export type TableParams = {
  */
 export const addTableToPDF = async (
   doc: PDFReport,
-  data: Record<string, any[]> | any[],
+  inputData: Record<string, any[]> | any[],
   spec: TableParams,
 ): Promise<void> => {
-  if (!Array.isArray(data)) {
+  let data = [];
+  if (Array.isArray(inputData)) {
+    data = inputData;
+  } else {
     if (!spec.dataKey) {
       throw new Error('data is not iterable, and no "dataKey" is present');
     }
-    // eslint-disable-next-line no-param-reassign
-    data = data[spec.dataKey];
+    data = inputData[spec.dataKey];
   }
 
   const {
