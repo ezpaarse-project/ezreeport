@@ -8,8 +8,6 @@ import {
 } from '../../../models/figures';
 import { layoutSchema, type AnyLayout } from '../../../models/layouts';
 import { ArgumentError } from '../../../types/errors';
-import { addMdToPDF } from '../../markdown';
-import { addMetricToPDF } from '../../metrics';
 import {
   addPage,
   deleteDoc,
@@ -18,6 +16,8 @@ import {
   type PDFReportOptions,
   type PDFStats
 } from '../../pdf';
+import { addMdToPDF } from '../../pdf/markdown';
+import { addMetricToPDF } from '../../pdf/metrics';
 import { addTableToPDF } from '../../pdf/table';
 import { drawAreaRef } from '../../pdf/utils';
 import { addVegaToPDF, createVegaLSpec, createVegaView } from '../../vega';

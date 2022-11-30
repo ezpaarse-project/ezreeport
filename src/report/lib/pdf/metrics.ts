@@ -1,15 +1,12 @@
 import type { Font } from 'jspdf';
-import type { PDFReport } from './pdf';
 
 type MetricParams = {
   start: Position,
   width: number,
-  height: number
 };
 
 export type InputMetricParams = Omit<MetricParams, 'width' | 'height' | 'start'>;
 
-export type MetricData = {
   key: string,
   value: number | string
 };
@@ -47,10 +44,8 @@ const keyStyle = (pdf: PDFReport['pdf'], def: MetricDefault): PDFReport['pdf'] =
  * Add metric figure to PDF
  *
  * @param doc The PDF report
- * @param rawData The data
  * @param params Other params
  */
-export const addMetricToPDF = (doc: PDFReport, rawData: MetricData[], params: MetricParams) => {
   const def: MetricDefault = {
     font: doc.pdf.getFont(),
     fontSize: doc.pdf.getFontSize(),
