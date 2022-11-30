@@ -240,7 +240,7 @@ export const generateReport = async (
         pdf: {
           name: task.name,
           // TODO: .pdf if renderer exports as HTML ?
-          path: `${filepath}.rep.json`,
+          path: `${filepath}.rep.pdf`,
           period,
         },
         debug,
