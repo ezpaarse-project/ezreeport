@@ -15,13 +15,6 @@ export interface NewTemplate<
  F extends keyof Fetchers,
 > {
   /**
-   * Grid of a page of the report
-   */
-  grid?: {
-    rows: number,
-    cols: number
-  },
-  /**
   * Layouts that compose the template
   *
   * @see {NewLayout} for more info
@@ -57,10 +50,6 @@ export interface NewTemplate<
 export type AnyTemplate = NewTemplate<keyof Renderers, keyof Fetchers>;
 
 export const templateSchema = Joi.object<AnyTemplate>({
-  grid: Joi.object({
-    rows: Joi.number().required(),
-    cols: Joi.number().required(),
-  }),
   layouts: Joi.array().items(layoutSchema).required(),
   fetchOptions: Joi.object(),
   renderer: Joi.string().allow(...Object.keys(renderers)),
