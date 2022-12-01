@@ -22,6 +22,12 @@
     "generateReports": "0 0 * * *",
     "purgeOldReports": "0 0 * * *"
   },
+  "report": {
+    "ttl": {
+      "iterations": 4,
+      "days": 7
+    }
+  },
   "pdf": {
     "outDir": "data",
     "logos": [

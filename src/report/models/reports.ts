@@ -1,5 +1,10 @@
 import type { Prisma, Task } from '@prisma/client';
-import { differenceInMilliseconds, format, parseISO } from 'date-fns';
+import {
+  add,
+  differenceInMilliseconds,
+  format,
+  parseISO
+} from 'date-fns';
 import Joi from 'joi';
 import { compact, merge, omit } from 'lodash';
 import { randomUUID } from 'node:crypto';
@@ -18,11 +23,13 @@ import { isNewTemplate, isNewTemplateDB } from './templates';
 
 const rootPath = config.get('rootPath');
 const { outDir } = config.get('pdf');
+const { ttl } = config.get('report');
 
 type ReportResult = {
   success: boolean,
   detail: {
-    date: Date,
+    createdAt: Date,
+    destroyAt: Date,
     took: number,
     taskId: Task['id'],
     files: {
@@ -45,7 +52,8 @@ type ReportResult = {
 const reportresultSchema = Joi.object<ReportResult>({
   success: Joi.boolean().required(),
   detail: Joi.object<ReportResult['detail']>({
-    date: Joi.date().iso().required(),
+    createdAt: Joi.date().iso().required(),
+    destroyAt: Joi.date().iso().required(),
     took: Joi.number().integer().required(),
     taskId: Joi.string().uuid().required(),
     files: Joi.object<ReportResult['detail']['files']>({
@@ -135,7 +143,8 @@ export const generateReport = async (
   let result: ReportResult = {
     success: true,
     detail: {
-      date: new Date(),
+      createdAt: today,
+      destroyAt: add(today, { days: ttl.days }),
       took: 0,
       taskId: task.id,
       files: {
@@ -178,6 +187,12 @@ export const generateReport = async (
     // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
     const period = calcPeriod(parseISO(task.nextRun.toString()), task.recurrence);
     result.detail.period = period;
+
+    // Re-calc ttl if not in any debug mode
+    if (writeHistory && !debug) {
+      const distance = differenceInMilliseconds(period.end, period.start);
+      result.detail.destroyAt = add(today, { seconds: ttl.iterations * (distance / 1000) });
+    }
 
     const taskTemplate = task.template;
     if (!isNewTemplateDB(taskTemplate) || (typeof taskTemplate !== 'object' || Array.isArray(taskTemplate))) {
@@ -286,7 +301,7 @@ export const generateReport = async (
       result,
       {
         detail: {
-          took: differenceInMilliseconds(new Date(), result.detail.date),
+          took: differenceInMilliseconds(new Date(), result.detail.createdAt),
           files: {
             report: `${namepath}.rep.pdf`,
           },
@@ -314,7 +329,7 @@ export const generateReport = async (
       {
         success: false,
         detail: {
-          took: differenceInMilliseconds(new Date(), result.detail.date),
+          took: differenceInMilliseconds(new Date(), result.detail.createdAt),
           error: {
             message: (error as Error).message,
             stack: (error as Error).stack?.split('\n    '),

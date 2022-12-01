@@ -20,5 +20,11 @@
   "crons": {
     "generateReports": "CRON_GENERATE_REPORT",
     "purgeOldReports": "CRON_PURGE_OLD_REPORT"
+  },
+  "report": {
+    "ttl": {
+      "iterations": "REPORT_ITERATIONS_TO_LIVE",
+      "days": "REPORT_DAYS_TO_LIVE"
+    }
   }
 }

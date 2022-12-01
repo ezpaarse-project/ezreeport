@@ -1,9 +1,9 @@
 import type Queue from 'bull';
 import {
-  differenceInMonths,
   endOfDay,
   formatDuration,
   intervalToDuration,
+  isBefore,
   parseISO
 } from 'date-fns';
 import { readFile, unlink } from 'fs/promises';
@@ -49,12 +49,15 @@ export default async (job: Queue.Job<CronData>) => {
           }
 
           // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
-          const fileDate = parseISO(fileContent.detail.date.toString());
-          if (differenceInMonths(today, fileDate) < 1) {
+          const destroyAt = parseISO(fileContent.detail.destroyAt.toString());
+          if (isBefore(today, destroyAt)) {
             return [];
           }
 
-          const dur = intervalToDuration({ end: today, start: fileDate });
+          const dur = intervalToDuration({
+            start: parseISO(fileContent.detail.createdAt.toString()),
+            end: today,
+          });
           return Object
             .values(fileContent.detail.files)
             .map((file) => ({ file: join(basePath, file), dur } as FileCheckResult));

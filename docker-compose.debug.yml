@@ -44,6 +44,8 @@ services:
       - API_ALLOWED_ORIGINS
       - CRON_GENERATE_REPORT
       - CRON_PURGE_OLD_REPORT
+      - REPORT_ITERATIONS_TO_LIVE
+      - REPORT_DAYS_TO_LIVE
       - LOG_LEVEL
     extra_hosts:
       - "host.docker.internal:host-gateway"
