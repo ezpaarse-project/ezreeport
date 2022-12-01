@@ -15,9 +15,6 @@ interface FetchOptions {
   recurrence: Recurrence,
   period: Interval,
   filters?: ElasticFilters,
-  /**
-   * Test doc
-   */
   indexPrefix: string,
   indexSuffix: string,
   user: string,

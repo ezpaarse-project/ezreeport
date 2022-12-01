@@ -212,7 +212,6 @@ export const generateReport = async (
       template.layouts.map(async (layout, i) => {
         if (
           layout.data
-          || layout.fetcher === 'none'
           || layout.figures.every(({ data }) => !!data)
         ) {
           return;

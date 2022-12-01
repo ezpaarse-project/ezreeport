@@ -1,7 +1,9 @@
 {
-  "grid": {
-    "rows": 2,
-    "cols": 2
+  "renderOptions": {
+    "grid": {
+      "rows": 2,
+      "cols": 2
+    }
   },
   "layouts": [
     {
@@ -17,7 +19,6 @@
       ]
     },
     {
-      "fetcher": "none",
       "figures": [
         { "type": "md", "data": "0 (top-left) (auto)", "params": {} },
         { "type": "md", "data": "1 (top-right) (auto)", "params": {} },

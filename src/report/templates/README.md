@@ -4,35 +4,51 @@ Contains all possible template usable by various tasks
 
 ## How to write a Template
 
-- Must export a **default function** (`export default () => []` in TS, `exports.default = () => []` in JS). We'll call it the *main* function. It's a function so you can do things before returning the template (like checking if data's source is available, or setup options used by all pages)
-- The *main* function must returns an **array of functions** (in TS, you can use the type `TemplateFnc` from `models/templates` to declare your default function) and takes a few parameters.
-  - The first one is some info about the task (like the period, the recurrence, etc.)
-  - The second one is options from `task.data`. **You want to check that data (with [Joi](https://joi.dev/) for example)**
-- Each item of the returned by your *main* function represent a page of the report and **must be a function**. This function **must return an array** of *Figure* or just a *Figure* object. It's a function so you can do things before returning figure(s) (like do some aggregations)
-  - A *Figure* have a `type` property (see [Available Figure types](#available-figure-types) for more info)
-  - A *Figure* have `data` property (see [Available Figure types](#available-figure-types) for more info)
-  - A *Figure* have `params` (see [Available Figure types](#available-figure-types) for more info)
-  - A *Figure* **can** have `slots` property, to position more accurately your figure.
-- You can export other variables as options for the whole template (`export const myVar = 0` in TS, `exports.myVar = 0` in JS)
-  - You can export `GRID` in order to use a custom grid (Type: `{ rows: number, cols: number }`)
-  - Any other export is ignored
-- You can import other templates (`import myFirstTemplate from './first-template'` in TS, `const myFirstTemplate = require('./first-template')` in JS) to extends them
-- Avoid to add a package for only one template
+- Root object describe a report.
+  - *[optional]* `fetchOptions` - Options passed to fetcher (see [available fetchers](#available-fetchers) for more info)
+  - *[optional]* `renderer` - **Default: `"vega-pdf"`** - Name of the renderer. See [available renderers](#available-renderers) for more info.
+  - *[optional]* `renderOptions` - Options passed to renderer (see [available renderers](#available-renderers) for more info)
+  - `layouts` (`Layout[]`) - Pages of the report
+    - *[optional]* `data` - Data passed to figures
+    - *[optional]* `fetcher` - **Default: `"elastic"`** - Name of the fetcher. Ignored if `data` is provided. Merged with root's `fetchOptions`. See [available fetchers](#available-fetchers) for more info.
+    - **[conditional]** `fetchOptions` - Options passed to fetcher. Must be present if `data` is not provided, if `fetcher` is not `none`, and if `data` is not provided **for each** figure. See [available fetchers](#available-fetchers) for more info
+    - `figures` (`Figure[]`) - Describe figure
+      - `type` - Type of figure (see [available Figure](#available-figure) for more info)
+      - *[optional]* `data` - Specific data of figure. (see [available Figure](#available-figure) for more info). Override layout's data.
+      - `params` - Params of figure (see [available Figure](#available-figure) for more info).
+      - `slots` - Slots used by figure. **Only when `"renderer": "vega-pdf"`**.
 
-### Available Figure types
+### Available fetchers
+
+- `elastic`: Fetch data from `ezMesure`'s ElasticSearch
+  - `options` : See [`FetchOptions` in `lib/generators/fetchers/elastic.ts`](../lib/generators/fetchers/elastic.ts#L14)
+    - `recurrence`, `period`, `indexPrefix` and `user` are already passed (and overrided when generation is started)
+
+### Available renderers
+
+- `vega-pdf`: Render data into PDF with Vega
+  - `options` : See [`RenderOptions` in `lib/generators/renderers/vega-pdf.ts`](../lib/generators/renderers/vega-pdf.ts#26)
+    - `pdf`, `recurrence`, `debug` and `layouts` are already passed (and overrided when generation is started)
+
+### Available Figure
 
 - [All vega-lite marks](https://vega.github.io/vega-lite/docs/mark.html#types)
-  - **`data` type:** `any[]` (cf. [vega-lite docs](https://vega.github.io/vega-lite/docs/data.html#inline))
-  - **`params` type:** See [`InputVegaParams` in `lib/vega/index.ts`](../lib/vega/index.ts#L72)
-- table
-  - **`data` type:** `any[]` (cf. [jsPDF-AutoTable](https://github.com/simonbengtsson/jsPDF-AutoTable#content-options))
-  - **`params` type:** `{ title: string|(data) => string, maxLength?: number, maxHeight?: number }` + [other table options](https://github.com/simonbengtsson/jsPDF-AutoTable) (except `body`)
-- md
+  - **`data` type:** `any[] | { [string]: any[] }` (cf. [vega-lite docs](https://vega.github.io/vega-lite/docs/data.html#inline)). If it's an object, `dataKey` must be present in `params`
+  - **`params` type:** See [`InputVegaParams` in `lib/vega/index.ts`](../lib/vega/index.ts#L78)
+- `table`
+  - **`data` type:** `any[] | { [string]: any[] }` (cf. [jsPDF-AutoTable](https://github.com/simonbengtsson/jsPDF-AutoTable#content-options)). If it's an object, `dataKey` must be present in `params`
+  - **`params` type:** `{ title: string, maxLength?: number, maxHeight?: number, dataKey: string }` + [other table options](https://github.com/simonbengtsson/jsPDF-AutoTable) (except `body`)
+- `md`
   - **`data` type**: `string`
   - **`params` type:** `{}`
-- metric
-  - **`data` type**: `{ key: string, value: number|string }[]`
+- `metric`
+  - **`data` type**: `{ key: string, value: number|string, dataKey: string }[]`
   - **`params` type:** `{}`
+
+### Additional notes
+
+- All `title` properties are passed to [handlebars](https://handlebarsjs.com/), so you can template titles (eg: `Best {{ length }} items`). The following options are possible :
+  - `length` - data count
 
 ## Usage
 
@@ -44,41 +60,76 @@ Just add in your task's template :
 
 ## Example
 
-[basic template](./basic.ts) is a good example in TS. But if you can't open the file, here's a few more simple examples :
+[basic template](./basic.json) is a good example. But if you can't open the file, here's a few more simple examples :
 
-### TypeScript
-
-```ts
-import type { Figure } from '../models/figures';
-import type { TemplateFnc } from '../models/templates';
-
-export const GRID = { rows: 2, cols: 2 };
-
-const mySuperTemplate: TemplateFnc = () => {
-  return [
-    (): [Figure<'md'>] => {
-      return [
-        { type: 'md', data: '0,1,2,3 (all) (auto)', params: {} },
-      ];
-    },
-  ];
-};
-
-export default mySuperTemplate;
-```
-
-### JavaScript
-
-```js
-exports.GRID = { rows: 2, cols: 2 };
-
-const mySuperTemplate = () => {
-  return [
-    () => [
-      { type: 'md', data: '0,1,2,3 (all) (auto)', params: {} },
-    ],
-  ];
-};
-
-exports.default = mySuperTemplate;
+```json
+{
+  "layouts": [
+    {
+      "fetchOptions": {
+        "fetchCount": "total_count",
+        "aggs": [
+          {
+            "name": "consult_by_date",
+            "date_histogram": {
+              "field": "datetime"
+            }
+          },
+          {
+            "name": "platforms",
+            "cardinality": {
+              "field": "portal"
+            }
+          },
+          {
+            "name": "min_date",
+            "min": {
+              "field": "datetime"
+            }
+          },
+          {
+            "name": "max_date",
+            "max": {
+              "field": "datetime"
+            }
+          }
+        ]
+      },
+      "figures": [
+        {
+          "type": "metric",
+          "params": {
+            "labels": {
+              "total_count": {
+                "text": "Consultations"
+              },
+              "platforms": {
+                "text": "Plateformes"
+              },
+              "min_date": {
+                "text": "Début de période",
+                "format": {
+                  "type": "date",
+                  "params": [
+                    "dd LLL yyyy"
+                  ]
+                }
+              },
+              "max_date": {
+                "text": "Fin de période",
+                "format": {
+                  "type": "date",
+                  "params": [
+                    "dd LLL yyyy"
+                  ]
+                }
+              }
+            }
+          },
+          "slots": [0, 1]
+        },
+      ]
+    }
+  ]
+}
 ```
