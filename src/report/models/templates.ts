@@ -1,4 +1,3 @@
-import { Prisma } from '@prisma/client';
 import Joi from 'joi';
 import type { Fetchers } from '../lib/generators/fetchers';
 import renderers, { type Renderers } from '../lib/generators/renderers';
@@ -15,6 +14,13 @@ export interface NewTemplate<
  R extends keyof Renderers,
  F extends keyof Fetchers,
 > {
+  /**
+   * Grid of a page of the report
+   */
+  grid?: {
+    rows: number,
+    cols: number
+  },
   /**
   * Layouts that compose the template
   *
@@ -51,6 +57,10 @@ export interface NewTemplate<
 export type AnyTemplate = NewTemplate<keyof Renderers, keyof Fetchers>;
 
 export const templateSchema = Joi.object<AnyTemplate>({
+  grid: Joi.object({
+    rows: Joi.number().required(),
+    cols: Joi.number().required(),
+  }),
   layouts: Joi.array().items(layoutSchema).required(),
   fetchOptions: Joi.object(),
   renderer: Joi.string().allow(...Object.keys(renderers)),

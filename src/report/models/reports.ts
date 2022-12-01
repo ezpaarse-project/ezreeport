@@ -210,24 +210,29 @@ export const generateReport = async (
     // Fetch data
     await Promise.all(
       template.layouts.map(async (layout, i) => {
-        if (!layout.data && layout.fetcher !== 'none') {
-          const fetchOptions: GeneratorParam<Fetchers, keyof Fetchers> = merge(
-            template.fetchOptions ?? {},
-            layout.fetchOptions ?? {},
-            {
-              indexSuffix: '',
-              ...(taskTemplate.fetchOptions ?? { }),
-              recurrence: task.recurrence,
-              period,
-              // template,
-              // eslint-disable-next-line no-underscore-dangle
-              indexPrefix: institution._source?.institution.indexPrefix ?? '*',
-              user,
-            },
-          );
-          template.layouts[i].fetchOptions = fetchOptions;
-          template.layouts[i].data = await fetchers[layout.fetcher ?? 'elastic'](fetchOptions, events);
+        if (
+          layout.data
+          || layout.fetcher === 'none'
+          || layout.figures.every(({ data }) => !!data)
+        ) {
+          return;
         }
+        const fetchOptions: GeneratorParam<Fetchers, keyof Fetchers> = merge(
+          template.fetchOptions ?? {},
+          layout.fetchOptions ?? {},
+          {
+            indexSuffix: '',
+            ...(taskTemplate.fetchOptions ?? { }),
+            recurrence: task.recurrence,
+            period,
+            // template,
+            // eslint-disable-next-line no-underscore-dangle
+            indexPrefix: institution._source?.institution.indexPrefix ?? '*',
+            user,
+          },
+        );
+        template.layouts[i].fetchOptions = fetchOptions;
+        template.layouts[i].data = await fetchers[layout.fetcher ?? 'elastic'](fetchOptions, events);
       }),
     );
     // Cleanup resolved resolvedTemplate
@@ -256,7 +261,7 @@ export const generateReport = async (
     await writeFile(
       `${filepath}.deb.json`,
       JSON.stringify(
-        template,
+        { ...template, renderOptions: { ...omit(template.renderOptions, 'layouts') } },
         undefined,
         process.env.NODE_ENV !== 'production' ? 2 : undefined,
       ),
