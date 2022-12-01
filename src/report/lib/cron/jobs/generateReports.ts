@@ -1,5 +1,5 @@
 import type Queue from 'bull';
-import { endOfDay, isBefore } from 'date-fns';
+import { endOfDay, isBefore, isSameDay } from 'date-fns';
 import type { CronData } from '..';
 import { getAllTasks } from '../../../models/tasks';
 import { addTaskToQueue } from '../../bull';
@@ -18,17 +18,18 @@ export default async (job: Queue.Job<CronData>) => {
   }
 
   try {
-    const tasks = await getAllTasks();
+    const tasks = await getAllTasks({ filter: { enabled: true } });
     // Getting end of today, to ignore hour of task's nextRun
     const today = endOfDay(start);
 
     const { length } = await Promise.all(
-      tasks.filter(
-        // TODO[refactor]: Filter in Prisma query ?
-        (task) => task.enabled && isBefore(task.nextRun, today),
-      ).map(
+      tasks.map(
         async (task, i, arr) => {
-          await addTaskToQueue({ task, origin: 'daily-cron-job' });
+          if (isSameDay(task.nextRun, today)) {
+            await addTaskToQueue({ task, origin: 'daily-cron-job' });
+          } else if (isBefore(task.nextRun, today)) {
+            logger.warn(`[cron] [${job.name}] Task "${task.id}" have a "nextRun" before today. Skipping it.`);
+          }
           await job.progress(i / arr.length);
         },
       ),

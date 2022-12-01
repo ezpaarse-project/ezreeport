@@ -5,13 +5,17 @@ import {
   type Task
 } from '@prisma/client';
 import { PrismaClientValidationError } from '@prisma/client/runtime';
-import { formatISO, isSameDay } from 'date-fns';
+import {
+  endOfDay,
+  formatISO, isBefore,
+  isSameDay
+} from 'date-fns';
 import Joi from 'joi';
 import logger from '../lib/logger';
 import prisma from '../lib/prisma';
 import { calcNextDate } from '../lib/recurrence';
 import { ArgumentError } from '../types/errors';
-import { templateSchema } from './templates';
+import { templateDBSchema } from './templates';
 
 // TODO[feat]: More checks to make custom errors
 
@@ -23,7 +27,7 @@ type InputHistory = Pick<Prisma.HistoryCreateWithoutTaskInput, 'type' | 'message
  */
 const taskSchema = Joi.object<Prisma.TaskCreateInput>({
   name: Joi.string().trim().required(),
-  template: templateSchema.required(),
+  template: templateDBSchema.required(),
   targets: Joi.array().items(Joi.string().trim().email()).required(),
   recurrence: Joi.string().valid(
     Recurrence.DAILY,
@@ -64,7 +68,7 @@ const isValidTask = (data: unknown): data is InputTask => {
  */
 // TODO[feat]: Custom sort
 export const getAllTasks = async <Keys extends Array<keyof Task>>(
-  opts?: { count: number, previous?: Task['id'], select?: Keys },
+  opts?: { count?: number, previous?: Task['id'], select?: Keys, filter?: Omit<Prisma.TaskWhereInput, 'institution'> },
   institution?: Task['institution'],
 ): Promise<Pick<Task, Keys[number]>[]> => {
   try {
@@ -81,7 +85,10 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
       skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
       cursor: opts?.previous ? { id: opts.previous } : undefined,
       select,
-      where: institution ? { institution } : undefined,
+      where: {
+        ...(opts?.filter ?? {}),
+        institution,
+      },
       orderBy: {
         createdAt: 'asc',
       },
@@ -235,13 +242,27 @@ export const editTaskByIdWithHistory = async (
     return null;
   }
 
+  // If next run isn't changed but recurrence changed
   let { nextRun } = data;
   if (
     data.recurrence !== task.recurrence
       && (!data.nextRun || isSameDay(new Date(data.nextRun), task.nextRun))
   ) {
-    // If next run isn't changed but recurrence changed
     nextRun = calcNextDate(task.lastRun ?? new Date(), data.recurrence);
+  }
+
+  // If next run isn't changed but task is re-enabled
+  if (data.enabled && data.enabled !== task.enabled && !data.nextRun) {
+    const today = endOfDay(new Date());
+    nextRun = task.nextRun;
+    while (isBefore(nextRun, today)) {
+      nextRun = calcNextDate(nextRun, task.recurrence);
+    }
+  }
+
+  // Falling back to task's nextRun
+  if (nextRun === '') {
+    nextRun = task.nextRun;
   }
 
   await prisma.$connect();
@@ -250,8 +271,6 @@ export const editTaskByIdWithHistory = async (
     where: { id },
     data: {
       ...data,
-      // TODO[refactor]: Can be removed once template no longer need runtime
-      template: data.template as Prisma.InputJsonObject,
       nextRun,
       history: entry && { create: { ...entry, createdAt: formatISO(new Date()) } },
     },

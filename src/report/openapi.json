@@ -1217,6 +1217,9 @@
           "404": {
             "$ref": "#/components/responses/404"
           },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
           "500": {
             "$ref": "#/components/responses/500"
           }
@@ -1340,6 +1343,9 @@
           },
           "404": {
             "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
           },
           "500": {
             "$ref": "#/components/responses/500"
@@ -3683,6 +3689,61 @@
                   },
                   "content": {
                     "message": "... '...' not found"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "409": {
+        "description": "Example response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "content": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "x-examples": {
+                "example-1": {
+                  "status": {
+                    "code": 409,
+                    "message": "Conflict"
+                  },
+                  "content": {
+                    "message": "Task with id 'af549626-641b-44ed-9381-f3b751370164' is already disabled"
+                  }
+                }
+              }
+            },
+            "examples": {
+              "Example": {
+                "value": {
+                  "status": {
+                    "code": 409,
+                    "message": "Conflict"
+                  },
+                  "content": {
+                    "message": "..."
                   }
                 }
               }

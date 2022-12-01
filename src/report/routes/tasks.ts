@@ -182,13 +182,19 @@ router.put('/:task/enable', checkRight(Roles.READ_WRITE), checkInstitution, asyn
       throw new HTTPError(`Task with id '${id}' not found for institution '${req.user?.institution}'`, StatusCodes.NOT_FOUND);
     }
 
-    const editedTask = await editTaskById(
+    if (task.enabled) {
+      throw new HTTPError(`Task with id '${id}' is already disabled`, StatusCodes.CONFLICT);
+    }
+
+    const editedTask = await editTaskByIdWithHistory(
       id,
       {
-        ...pick(task, 'name', 'template', 'targets', 'recurrence', 'nextRun'),
+        ...pick(task, 'name', 'targets', 'recurrence', 'nextRun'),
+        nextRun: '',
+        template: task.template as Prisma.InputJsonObject,
         enabled: true,
       },
-      req.user.username,
+      { type: 'edition', message: `Tâche activée par ${req.user?.username}` },
       req.user.institution,
     );
 
@@ -216,13 +222,19 @@ router.put('/:task/disable', checkRight(Roles.READ_WRITE), checkInstitution, asy
       throw new HTTPError(`Task with id '${id}' not found for institution '${req.user?.institution}'`, StatusCodes.NOT_FOUND);
     }
 
-    const editedTask = await editTaskById(
+    if (!task.enabled) {
+      throw new HTTPError(`Task with id '${id}' is already disabled`, StatusCodes.CONFLICT);
+    }
+
+    const editedTask = await editTaskByIdWithHistory(
       id,
       {
-        ...pick(task, 'name', 'template', 'targets', 'recurrence', 'nextRun'),
+        ...pick(task, 'name', 'targets', 'recurrence'),
+        nextRun: '',
+        template: task.template as Prisma.InputJsonObject,
         enabled: false,
       },
-      req.user.username,
+      { type: 'edition', message: `Tâche désactivée par ${req.user?.username}` },
       req.user.institution,
     );
 

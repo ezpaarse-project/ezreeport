@@ -49,7 +49,7 @@ export interface NewTemplate<
 
 export type AnyTemplate = NewTemplate<keyof Renderers, keyof Fetchers>;
 
-export const templateSchema = Joi.object<AnyTemplate>({
+const templateSchema = Joi.object<AnyTemplate>({
   layouts: Joi.array().items(layoutSchema).required(),
   fetchOptions: Joi.object(),
   renderer: Joi.string().allow(...Object.keys(renderers)),
@@ -99,7 +99,7 @@ export interface NewTemplateDB<F extends keyof Fetchers> {
 
 export type AnyTemplateDB = NewTemplateDB<keyof Fetchers>;
 
-const templateDBSchema = Joi.object<AnyTemplateDB>({
+export const templateDBSchema = Joi.object<AnyTemplateDB>({
   extends: Joi.string().required(),
   fetchOptions: Joi.object(),
   inserts: Joi.array().items(
