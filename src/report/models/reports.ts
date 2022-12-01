@@ -279,7 +279,7 @@ export const generateReport = async (
           nextRun: calcNextDate(today, task.recurrence),
           lastRun: today,
         },
-        { type: 'generation-success', message: `Rapport "${namepath}" généré par ${origin}`, meta },
+        { type: 'generation-success', message: `Rapport "${namepath}" généré par ${origin}`, data: meta },
       );
     }
 
@@ -306,7 +306,7 @@ export const generateReport = async (
           template: task.template as Prisma.InputJsonObject,
           enabled: false,
         },
-        writeHistory ? { type: 'generation-error', message: `Rapport "${namepath}" non généré par ${origin} suite à une erreur.`, meta } : undefined,
+        writeHistory ? { type: 'generation-error', message: `Rapport "${namepath}" non généré par ${origin} suite à une erreur.`, data: meta } : undefined,
       );
     }
 

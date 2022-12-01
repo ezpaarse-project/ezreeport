@@ -14,7 +14,7 @@ model Task {
   id          String     @id @default(uuid())
   name        String
   institution String
-  template      Json
+  template    Json
   targets     String[]
   recurrence  Recurrence
   nextRun     DateTime
@@ -28,13 +28,13 @@ model Task {
 }
 
 model History {
-  id      String   @id @default(uuid())
-  task    Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  taskId  String
-  type    String
-  message String
-  meta    Json?
-  date    DateTime @default(now())
+  id        String   @id @default(uuid())
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId    String
+  type      String
+  message   String
+  data      Json?
+  createdAt DateTime @default(now())
 }
 
 enum Recurrence {

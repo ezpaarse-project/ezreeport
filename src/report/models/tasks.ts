@@ -16,7 +16,7 @@ import { templateSchema } from './templates';
 // TODO[feat]: More checks to make custom errors
 
 type InputTask = Pick<Prisma.TaskCreateInput, 'name' | 'template' | 'targets' | 'recurrence' | 'nextRun' | 'enabled'>;
-type InputHistory = Pick<Prisma.HistoryCreateWithoutTaskInput, 'type' | 'message' | 'meta'>;
+type InputHistory = Pick<Prisma.HistoryCreateWithoutTaskInput, 'type' | 'message' | 'data'>;
 
 /**
  * Joi schema
@@ -119,7 +119,7 @@ export const getTaskById = async (id: Task['id'], institution?: Task['institutio
     include: {
       history: {
         orderBy: {
-          date: 'asc',
+          createdAt: 'asc',
         },
       },
     },
@@ -167,7 +167,7 @@ export const createTask = async (data: unknown, creator: string, institution: Ta
     include: {
       history: {
         orderBy: {
-          date: 'asc',
+          createdAt: 'asc',
         },
       },
     },
@@ -202,7 +202,7 @@ export const deleteTaskById = async (id: Task['id'], institution?: Task['institu
     include: {
       history: {
         orderBy: {
-          date: 'asc',
+          createdAt: 'asc',
         },
       },
     },
@@ -253,12 +253,12 @@ export const editTaskByIdWithHistory = async (
       // TODO[refactor]: Can be removed once template no longer need runtime
       template: data.template as Prisma.InputJsonObject,
       nextRun,
-      history: entry && { create: { ...entry, date: formatISO(new Date()) } },
+      history: entry && { create: { ...entry, createdAt: formatISO(new Date()) } },
     },
     include: {
       history: {
         orderBy: {
-          date: 'asc',
+          createdAt: 'asc',
         },
       },
     },
