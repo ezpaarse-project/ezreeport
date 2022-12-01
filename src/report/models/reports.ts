@@ -3,6 +3,7 @@ import {
   add,
   differenceInMilliseconds,
   format,
+  formatISO,
   parseISO
 } from 'date-fns';
 import Joi from 'joi';
@@ -293,7 +294,17 @@ export const generateReport = async (
           nextRun: calcNextDate(today, task.recurrence),
           lastRun: today,
         },
-        { type: 'generation-success', message: `Rapport "${namepath}" généré par ${origin}`, data: meta },
+        {
+          type: 'generation-success',
+          message: `Rapport "${namepath}" généré par ${origin}`,
+          data: {
+            ...meta,
+            period: {
+              start: formatISO(period.start),
+              end: formatISO(period.end),
+            },
+          },
+        },
       );
     }
 
