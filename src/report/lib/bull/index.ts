@@ -22,6 +22,10 @@ export type GenerationData = {
    */
   writeHistory?: boolean,
   /**
+   * Period overriding
+   */
+  customPeriod?: { start: string, end: string },
+  /**
    * Enable second level of debug
    */
   debug?: boolean

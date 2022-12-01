@@ -13,3 +13,5 @@ export class HTTPError extends Error {
 export class NotFoundError extends Error {}
 
 export class ArgumentError extends Error {}
+
+export class ConflitError extends Error {}

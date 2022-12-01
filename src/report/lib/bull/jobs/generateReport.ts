@@ -27,6 +27,7 @@ export default async (job: Queue.Job<GenerationData>) => {
       origin,
       writeHistory,
       debug,
+      customPeriod,
     },
     timestamp,
   } = job;
@@ -48,9 +49,11 @@ export default async (job: Queue.Job<GenerationData>) => {
     contact = c.email;
   });
 
+  logger.debug(JSON.stringify(customPeriod));
   const res = await generateReport(
     task,
     origin,
+    customPeriod,
     writeHistory,
     debug,
     {

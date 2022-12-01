@@ -1469,6 +1469,24 @@
             "name": "test_emails",
             "style": "form",
             "description": "Emails to send instead of task targets. Enables test mode if present."
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "in": "query",
+            "name": "period_start",
+            "description": "Override period start. ISO format. Time is ignored."
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "in": "query",
+            "name": "period_end",
+            "description": "Override period end. ISO format. Time is ignored."
           }
         ],
         "description": "Trigger generation of report. Accessible to READ_WRITE."

@@ -2,9 +2,11 @@ import type { Prisma, Task } from '@prisma/client';
 import {
   add,
   differenceInMilliseconds,
+  endOfDay,
   format,
   formatISO,
-  parseISO
+  parseISO,
+  startOfDay
 } from 'date-fns';
 import Joi from 'joi';
 import { compact, merge, omit } from 'lodash';
@@ -17,7 +19,7 @@ import fetchers, { type Fetchers } from '../lib/generators/fetchers';
 import renderers, { type Renderers } from '../lib/generators/renderers';
 import logger from '../lib/logger';
 import { calcNextDate, calcPeriod } from '../lib/recurrence';
-import { ArgumentError } from '../types/errors';
+import { ArgumentError, ConflitError } from '../types/errors';
 import { findInstitutionByIds, findInstitutionContact } from './institutions';
 import { editTaskByIdWithHistory } from './tasks';
 import { isNewTemplate, isNewTemplateDB } from './templates';
@@ -122,6 +124,7 @@ const normaliseFilename = (filename: string): string => filename.toLowerCase().r
 export const generateReport = async (
   task: Task,
   origin: string,
+  customPeriod?: { start: string, end: string },
   writeHistory = true,
   debug = false,
   meta = {},
@@ -186,12 +189,24 @@ export const generateReport = async (
     events.emit('contactFound', contact._source);
 
     // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
-    const period = calcPeriod(parseISO(task.nextRun.toString()), task.recurrence);
+    let period = calcPeriod(parseISO(task.nextRun.toString()), task.recurrence);
+    const distance = differenceInMilliseconds(period.end, period.start);
+
+    if (customPeriod) {
+      const cp = {
+        start: startOfDay(parseISO(customPeriod.start)),
+        end: endOfDay(parseISO(customPeriod.end)),
+      };
+      console.log(differenceInMilliseconds(cp.end, cp.start), distance);
+      if (differenceInMilliseconds(cp.end, cp.start) !== distance) {
+        throw new ConflitError(`Custom period "${customPeriod.start} to ${customPeriod.end}" doesn't match task's recurrence (${task.recurrence} : "${formatISO(period.start)} to ${formatISO(period.end)}")`);
+      }
+      period = cp;
+    }
     result.detail.period = period;
 
     // Re-calc ttl if not in any debug mode
     if (writeHistory && !debug) {
-      const distance = differenceInMilliseconds(period.end, period.start);
       result.detail.destroyAt = add(today, { seconds: ttl.iterations * (distance / 1000) });
     }
 

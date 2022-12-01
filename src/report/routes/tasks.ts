@@ -255,6 +255,10 @@ router.post('/:task/run', checkRight(Roles.READ_WRITE), checkInstitution, async 
   try {
     const { task: id } = req.params;
     let { test_emails: testEmails } = req.query;
+    const {
+      period_start: periodStart,
+      period_end: periodEnd,
+    } = req.query;
 
     // Transform emails into array if needed
     // TODO[refactor]
@@ -272,8 +276,23 @@ router.post('/:task/run', checkRight(Roles.READ_WRITE), checkInstitution, async 
       throw new HTTPError(`Task with id '${id}' not found for institution '${req.user.institution}'`, StatusCodes.NOT_FOUND);
     }
 
+    let customPeriod: { start: string, end: string } | undefined;
+    if (periodStart && periodEnd) {
+      if (Array.isArray(periodStart) || Array.isArray(periodEnd)) {
+        throw new HTTPError("Custom period can't be an array", StatusCodes.BAD_REQUEST);
+      }
+
+      customPeriod = {
+        start: periodStart.toString(),
+        end: periodEnd.toString(),
+      };
+    } else if ((periodStart && !periodEnd) || (!periodStart && periodEnd)) {
+      throw new HTTPError('Missing part of custom period', StatusCodes.BAD_REQUEST);
+    }
+
     const job = await addTaskToQueue({
       task: { ...task, targets: testEmails || task.targets },
+      customPeriod,
       origin: req.user.username,
       writeHistory: testEmails === undefined,
       debug: !!req.query.debug && process.env.NODE_ENV !== 'production',

@@ -1,7 +1,12 @@
 import type { RequestHandler } from 'express';
 import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { sendError } from '../lib/elastic/apm';
-import { ArgumentError, HTTPError, NotFoundError } from '../types/errors';
+import {
+  ArgumentError,
+  ConflitError,
+  HTTPError,
+  NotFoundError
+} from '../types/errors';
 
 /**
  * API formatter middleware
@@ -30,6 +35,8 @@ const middleware: RequestHandler = (req, res, next) => {
       code = StatusCodes.NOT_FOUND;
     } else if (err instanceof ArgumentError) {
       code = StatusCodes.BAD_REQUEST;
+    } else if (err instanceof ConflitError) {
+      code = StatusCodes.CONFLICT;
     }
 
     if (code >= 500) {
