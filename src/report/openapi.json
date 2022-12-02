@@ -1423,6 +1423,9 @@
                           "type": "string",
                           "description": "Bull's job id"
                         },
+                        "queue": {
+                          "type": "string"
+                        },
                         "data": {
                           "type": "object",
                           "properties": {
@@ -3275,6 +3278,110 @@
         ],
         "parameters": [],
         "description": "Get specific defined templated. Accessible to READ_WRITE."
+      }
+    },
+    "/me": {
+      "get": {
+        "summary": "Get user info",
+        "tags": [
+          "general"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "username": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "roles": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "username": "tom.sublet",
+                        "email": "tom.sublet@inist.fr",
+                        "roles": [
+                          "ezreporting",
+                          "ezreporting-readonly",
+                          "bibcnrs",
+                          "tech_contact"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 0,
+                        "message": "string"
+                      },
+                      "content": {
+                        "username": "string",
+                        "email": "string",
+                        "roles": [
+                          "string"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "get-me",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "description": "Get authed user info"
       }
     }
   },

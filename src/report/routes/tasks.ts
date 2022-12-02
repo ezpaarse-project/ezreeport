@@ -300,6 +300,7 @@ router.post('/:task/run', checkRight(Roles.READ_WRITE), checkInstitution, async 
 
     res.sendJson({
       id: job.id,
+      queue: 'generation',
       data: job.data,
     }, 200);
   } catch (error) {

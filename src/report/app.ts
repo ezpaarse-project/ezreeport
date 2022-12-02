@@ -8,6 +8,7 @@ import logger from './lib/logger';
 import formatMiddleware from './middlewares/format';
 import loggerMiddleware from './middlewares/logger';
 import openapi from './openapi.json';
+import authRouter from './routes/auth';
 import cronsRouter from './routes/crons';
 import filesRouter from './routes/files';
 import healthRouter from './routes/health';
@@ -47,6 +48,7 @@ app.use('/queues', queuesRouter);
 app.use('/crons', cronsRouter);
 app.use('/unsubscribe', unsubscribeRouter);
 app.use('/health', healthRouter);
+app.use('/me', authRouter);
 
 app.use('/doc/openapi.json', (_req, res) => res.json(openapi));
 app.use('/doc', swaggerUi.serve, swaggerUi.setup(openapi));
