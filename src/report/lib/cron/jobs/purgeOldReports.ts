@@ -17,10 +17,7 @@ import logger from '../../logger';
 import { formatInterval, isFulfilled } from '../../utils';
 import { sendError } from './utils';
 
-const rootPath = config.get('rootPath');
-const { outDir } = config.get('pdf');
-
-const basePath = join(rootPath, outDir);
+const { outDir } = config.get('report');
 
 type FileCheckResult = { file: string, dur: Duration };
 
@@ -36,7 +33,7 @@ export default async (job: Queue.Job<CronData>) => {
   try {
     const today = endOfDay(start);
 
-    const detailFiles = await glob(join(basePath, '**/*.det.json'));
+    const detailFiles = await glob(join(outDir, '**/*.det.json'));
     // List all files to delete
     const filesToDelete = (await Promise.allSettled(
       detailFiles.map(async (filePath) => {
@@ -60,7 +57,7 @@ export default async (job: Queue.Job<CronData>) => {
           });
           return Object
             .values(fileContent.detail.files)
-            .map((file) => ({ file: join(basePath, file), dur } as FileCheckResult));
+            .map((file) => ({ file: join(outDir, file), dur } as FileCheckResult));
         } catch (error) {
           logger.warn(`[cron] [${job.name}] Error on file "${filePath}" : ${(error as Error).message}`);
           throw error;

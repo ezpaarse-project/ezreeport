@@ -1,5 +1,4 @@
 {
-  "rootPath": "./",
   "allowedOrigins": "*",
   "redis": {
     "host": "redis",

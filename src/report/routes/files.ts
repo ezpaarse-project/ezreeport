@@ -10,20 +10,24 @@ import { HTTPError } from '../types/errors';
 
 const router = Router();
 
-const rootPath = config.get('rootPath');
-const { outDir } = config.get('pdf');
+const { outDir } = config.get('report');
 
 /**
  * Get speficic report
  */
 router.get('/:year/:yearMonth/:filename', checkRight(Roles.READ), checkInstitution, async (req, res) => {
-  // FIXME: check if not trying to access other file
   const { year, yearMonth, filename } = req.params;
-  const fileWithoutExt = filename.replace(/\..*$/, '');
-  const basePath = join(rootPath, outDir, year, yearMonth);
+  const reportFilename = filename.replace(/\..*$/, '');
+  const basePath = join(outDir, year, yearMonth);
 
   try {
-    const detailFile = JSON.parse(await readFile(join(basePath, `${fileWithoutExt}.det.json`), 'utf-8')) as unknown;
+    // Check if not trying to access unwanted file
+    const path = join(basePath, `${reportFilename}.det.json`);
+    if (new RegExp(`^${outDir}/.*\\.det\\.json$`, 'i').test(path) === false) {
+      throw new HTTPError(`File path must be in the "${outDir}" folder. Resolved: "${path}"`, StatusCodes.BAD_REQUEST);
+    }
+
+    const detailFile = JSON.parse(await readFile(path, 'utf-8')) as unknown;
     if (!isValidResult(detailFile)) {
       // As validation throws an error, this line shouldn't be called
       return;
@@ -31,8 +35,8 @@ router.get('/:year/:yearMonth/:filename', checkRight(Roles.READ), checkInstituti
 
     const task = await getTaskById(detailFile.detail.taskId, req.user?.institution);
     if (task) {
-      // Check if file isn't already read
-      if (`${fileWithoutExt}.det.json` === filename) {
+      // Check if wanted file isn't already read
+      if (filename === `${reportFilename}.det.json`) {
         res.send(detailFile);
       } else {
         // FIXME: handle No such file error

@@ -11,8 +11,7 @@ import '../../datefns'; // Setup default options for date-fns
 import apm from '../../elastic/apm'; // Setup Elastic's APM for monitoring
 import logger from '../../logger';
 
-const rootPath = config.get('rootPath');
-const { outDir } = config.get('pdf');
+const { outDir } = config.get('report');
 
 export default async (job: Queue.Job<GenerationData>) => {
   const apmtrans = apm.startTransaction('generation', 'job');
@@ -74,11 +73,10 @@ export default async (job: Queue.Job<GenerationData>) => {
     contact,
     date: task.lastRun?.toString() ?? formatISO(new Date()),
   };
-  const basePath = join(rootPath, outDir, '/');
 
   apmtrans?.end(res.success ? 'success' : 'error');
   if (res.success && res.detail.files.report) {
-    const file = await readFile(join(basePath, res.detail.files.report), 'base64');
+    const file = await readFile(join(outDir, res.detail.files.report), 'base64');
 
     await addReportToQueue({
       ...base,
@@ -87,7 +85,7 @@ export default async (job: Queue.Job<GenerationData>) => {
       url: `/reports/${res.detail.files.report}`,
     });
   } else {
-    const file = await readFile(join(basePath, res.detail.files.detail), 'base64');
+    const file = await readFile(join(outDir, res.detail.files.detail), 'base64');
 
     await addReportToQueue({
       ...base,

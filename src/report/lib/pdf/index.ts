@@ -2,7 +2,6 @@ import { format } from 'date-fns';
 import { jsPDF as PDF } from 'jspdf';
 import { existsSync } from 'node:fs';
 import { readFile, stat, unlink } from 'node:fs/promises';
-import { join } from 'node:path';
 import config from '../config';
 import './fonts/Roboto-bold.js';
 import './fonts/Roboto-bolditalic.js';
@@ -11,7 +10,6 @@ import './fonts/Roboto-normal.js';
 import { loadImageAsset } from './utils';
 
 const { logos } = config.get('pdf');
-const rootPath = config.get('rootPath');
 
 let doc: {
   // Calc at init
@@ -123,7 +121,7 @@ const printFooter = async (): Promise<number> => {
   // eslint-disable-next-line no-restricted-syntax
   for (const { path, link: url } of logos) {
     // eslint-disable-next-line no-await-in-loop
-    const data = await readFile(join(rootPath, path), 'base64');
+    const data = await readFile(path, 'base64');
     const {
       data: imageData,
       height: rawHeight,
@@ -217,7 +215,7 @@ export const renderDoc = async (): Promise<PDFStats> => {
   }
 
   // Export document
-  const path = join(rootPath, doc.path);
+  const { path } = doc;
   await doc.pdf.save(path, { returnPromise: true });
   const { size } = await stat(path);
 
@@ -233,7 +231,7 @@ export const renderDoc = async (): Promise<PDFStats> => {
  * Delete document if already exists
  */
 export const deleteDoc = async (): Promise<void> => {
-  if (doc && existsSync(join(rootPath, doc.path))) await unlink(doc.path);
+  if (doc && existsSync(doc.path)) await unlink(doc.path);
 };
 
 /**

@@ -22,8 +22,7 @@ import { calcVegaFormat } from '../recurrence';
 import localeFR from './locales/fr-FR.json';
 import VegaLogger from './logger';
 
-const rootPath = config.get('rootPath');
-const { outDir } = config.get('pdf');
+const { outDir } = config.get('report');
 
 registerFont('lib/vega/fonts/Roboto-light.ttf', { family: 'Roboto', weight: 'normal' });
 registerFont('lib/vega/fonts/Roboto-medium.ttf', { family: 'Roboto', weight: 'bold' });
@@ -310,7 +309,7 @@ export const createVegaLSpec = (
   // Write generated spec into debug file (without data to gain time & space)
   if (params.debugExport === true && process.env.NODE_ENV !== 'production') {
     writeFile(
-      join(rootPath, outDir, 'debug.json'),
+      join(outDir, 'debug.json'),
       JSON.stringify(omit(spec, 'datasets'), undefined, 2),
       'utf-8',
       (err) => {

@@ -8,13 +8,9 @@ import config from './config';
 
 const smtp = config.get('smtp');
 const { sender } = config.get('mail'); // TODO[feat]: some properties are not used
-const rootPath = config.get('rootPath');
 
-const templatesDir = join(rootPath, 'templates');
-const imagesDir = join(templatesDir, 'images');
-
-nunjucks.configure(templatesDir);
-const images = readdirSync(imagesDir);
+nunjucks.configure('templates');
+const images = readdirSync('templates/images');
 const transporter = createTransport(smtp);
 
 export type MailOptions = {
@@ -33,7 +29,7 @@ export const sendMail = async (options: MailOptions) => {
   const attachments: Mail.Attachment[] = options.attachments ?? [];
 
   attachments.push(
-    ...images.map((img) => ({ path: join(imagesDir, img), cid: img })),
+    ...images.map((img) => ({ path: join('templates/images', img), cid: img })),
   );
 
   return transporter.sendMail({

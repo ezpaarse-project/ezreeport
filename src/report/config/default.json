@@ -1,6 +1,5 @@
 {
   "logLevel": "debug",
-  "rootPath": "./",
   "allowedOrigins": "*",
   "elasticsearch": {
     "scheme": "https",
@@ -23,13 +22,15 @@
     "purgeOldReports": "0 0 * * *"
   },
   "report": {
+    "templatesDir": "templates",
+    "assetsDir": "assets",
+    "outDir": "data",
     "ttl": {
       "iterations": 4,
       "days": 7
     }
   },
   "pdf": {
-    "outDir": "data",
     "logos": [
       {
         "path": "assets/logos/ezmesure.png",

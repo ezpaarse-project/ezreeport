@@ -24,8 +24,8 @@ import { findInstitutionByIds, findInstitutionContact } from './institutions';
 import { editTaskByIdWithHistory } from './tasks';
 import { isNewTemplate, isNewTemplateDB } from './templates';
 
-const rootPath = config.get('rootPath');
-const { outDir } = config.get('pdf');
+const { templatesDir } = config.get('report');
+const { outDir } = config.get('report');
 const { ttl } = config.get('report');
 
 type ReportResult = {
@@ -132,7 +132,7 @@ export const generateReport = async (
 ): Promise<ReportResult> => {
   const today = new Date();
   const todayStr = format(today, 'yyyy/yyyy-MM');
-  const basePath = join(rootPath, outDir, todayStr, '/');
+  const basePath = join(outDir, todayStr, '/');
 
   let filename = `reporting_ezMESURE_${normaliseFilename(task.name)}`;
   if (process.env.NODE_ENV === 'production' || writeHistory) {
@@ -215,13 +215,14 @@ export const generateReport = async (
       throw new ArgumentError("Task's template is not an object");
     }
 
-    // TODO: Better path check
-    if (/\.\./i.test(taskTemplate.extends)) {
-      throw new Error("For security reasons, you can't access to a parent folder");
+    // Check if not trying to access unwanted file
+    const extendsPath = join(templatesDir, `${taskTemplate.extends}.json`);
+    if (new RegExp(`^${templatesDir}/.*\\.json$`, 'i').test(extendsPath) === false) {
+      throw new Error(`Task's layout must be in the "${templatesDir}" folder. Resolved: "${extendsPath}"`);
     }
 
     // Resolve import
-    const template = JSON.parse(await readFile(`./templates/${taskTemplate.extends}.json`, 'utf-8'));
+    const template = JSON.parse(await readFile(extendsPath, 'utf-8'));
     if (!isNewTemplate(template)) {
       // As validation throws an error, this line shouldn't be called
       return {} as ReportResult;

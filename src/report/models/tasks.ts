@@ -11,6 +11,8 @@ import {
   isSameDay
 } from 'date-fns';
 import Joi from 'joi';
+import { join } from 'node:path';
+import config from '../lib/config';
 import logger from '../lib/logger';
 import prisma from '../lib/prisma';
 import { calcNextDate } from '../lib/recurrence';
@@ -18,6 +20,8 @@ import { ArgumentError } from '../types/errors';
 import { templateDBSchema } from './templates';
 
 // TODO[feat]: More checks to make custom errors
+
+const { templatesDir } = config.get('report');
 
 type InputTask = Pick<Prisma.TaskCreateInput, 'name' | 'template' | 'targets' | 'recurrence' | 'nextRun' | 'enabled'>;
 type InputHistory = Pick<Prisma.HistoryCreateWithoutTaskInput, 'type' | 'message' | 'data'>;
@@ -153,6 +157,14 @@ export const createTask = async (data: unknown, creator: string, institution: Ta
     return {} as Task;
   }
 
+  // Check if not trying to access unwanted file
+  if (typeof data.template === 'object' && 'extends' in data.template) {
+    const extendsPath = join(templatesDir, `${data.template.extends}.json`);
+    if (new RegExp(`^${templatesDir}/.*\\.json$`, 'i').test(extendsPath) === false) {
+      throw new ArgumentError(`Task's layout must be in the "${templatesDir}" folder. Resolved: "${extendsPath}"`);
+    }
+  }
+
   let { nextRun } = data;
   if (!nextRun) {
     nextRun = calcNextDate(new Date(), data.recurrence);
@@ -240,6 +252,14 @@ export const editTaskByIdWithHistory = async (
   const task = await getTaskById(id, institution);
   if (!task) {
     return null;
+  }
+
+  // Check if not trying to access unwanted file
+  if (typeof data.template === 'object' && 'extends' in data.template) {
+    const extendsPath = join(templatesDir, `${data.template.extends}.json`);
+    if (new RegExp(`^${templatesDir}/.*\\.json$`, 'i').test(extendsPath) === false) {
+      throw new ArgumentError(`Task's layout must be in the "${templatesDir}" folder. Resolved: "${extendsPath}"`);
+    }
   }
 
   // If next run isn't changed but recurrence changed

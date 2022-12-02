@@ -1,15 +1,11 @@
 import { Router } from 'express';
 import { readFile } from 'fs/promises';
 import Joi from 'joi';
-import { join } from 'node:path';
-import config from '../lib/config';
 import { b64ToString } from '../lib/utils';
 import { getTaskById } from '../models/tasks';
 import { ArgumentError, NotFoundError } from '../types/errors';
 
 const router = Router();
-
-const rootPath = config.get('rootPath');
 
 /**
  * Get unsubscribe static UI
@@ -31,8 +27,7 @@ router.get('/:unsubId', async (req, res) => {
       throw new ArgumentError(`Body is not valid: ${error.message}`);
     }
 
-    const path = join(rootPath, 'assets/public/unsubscribe.html');
-    const template = await readFile(path, 'utf8');
+    const template = await readFile('public/unsubscribe.html', 'utf8');
 
     const html = template
       // eslint-disable-next-line no-template-curly-in-string

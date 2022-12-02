@@ -7,7 +7,7 @@ import type { PDFReport } from '.';
 import config from '../config';
 import { loadImageAsset } from './utils';
 
-const rootPath = config.get('rootPath');
+const { assetsDir } = config.get('report');
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -438,7 +438,10 @@ export const addMdToPDF = async (
               imageData = meta.src;
             } else {
               // Local images
-              const path = join(rootPath, 'assets', meta.src);
+              const path = join('assets', meta.src);
+              if (new RegExp(`^${assetsDir}/.*\\.json$`, 'i').test(path) === false) {
+                throw new Error(`Md's image must be in the "${assetsDir}" folder. Resolved: "${path}"`);
+              }
               const mime = lookup(path);
               if (!mime) throw new Error("Can't resolve mime type");
               // eslint-disable-next-line no-await-in-loop
