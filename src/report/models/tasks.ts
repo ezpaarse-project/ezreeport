@@ -5,14 +5,15 @@ import {
   type Task
 } from '@prisma/client';
 import { PrismaClientValidationError } from '@prisma/client/runtime';
-import {
-  endOfDay,
-  formatISO, isBefore,
-  isSameDay
-} from 'date-fns';
 import Joi from 'joi';
 import { join } from 'node:path';
 import config from '../lib/config';
+import {
+  endOfDay,
+  formatISO,
+  isBefore,
+  isSameDay
+} from '../lib/date-fns';
 import logger from '../lib/logger';
 import prisma from '../lib/prisma';
 import { calcNextDate } from '../lib/recurrence';

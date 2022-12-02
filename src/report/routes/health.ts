@@ -1,7 +1,7 @@
-import { differenceInMilliseconds } from 'date-fns';
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { setTimeout } from 'node:timers/promises';
+import { differenceInMilliseconds } from '../lib/date-fns';
 import { elasticPing } from '../lib/elastic';
 import logger from '../lib/logger';
 import { name as serviceName } from '../package.json';
@@ -46,8 +46,12 @@ const ping = async (
   try {
     const res = await Promise.race([
       pingers[service](),
-      setTimeout(timeout, false),
+      setTimeout(timeout, new Error('timed out')),
     ]);
+
+    if (res instanceof Error) {
+      throw res;
+    }
 
     const ms = differenceInMilliseconds(new Date(), start);
     if (!res) {

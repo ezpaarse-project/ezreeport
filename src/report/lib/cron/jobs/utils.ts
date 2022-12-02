@@ -1,7 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 import { Recurrence } from '@prisma/client';
-import { formatISO } from 'date-fns';
 import { addReportToQueue } from '../../bull';
+import { formatISO } from '../../date-fns';
 import logger from '../../logger';
 
 /**

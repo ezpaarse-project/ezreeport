@@ -185,7 +185,7 @@
                         {
                           "name": "error",
                           "status": false,
-                          "error": "Internal Server Error"
+                          "error": "timed out"
                         }
                       ]
                     }
@@ -280,9 +280,9 @@
                       },
                       "content": {
                         "name": "elastic",
-                        "success": true,
-                        "time": 9,
-                        "timeout": false
+                        "status": true,
+                        "elapsedTime": 35,
+                        "statusCode": 200
                       }
                     }
                   }

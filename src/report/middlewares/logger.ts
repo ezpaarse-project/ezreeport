@@ -1,5 +1,5 @@
-import { differenceInMilliseconds } from 'date-fns';
 import type { RequestHandler } from 'express';
+import { differenceInMilliseconds } from '../lib/date-fns';
 import logger from '../lib/logger';
 
 /**

@@ -1,10 +1,10 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { Recurrence, type Prisma } from '@prisma/client';
-import { formatISO } from 'date-fns';
 import Joi from 'joi';
 import { cloneDeep, merge } from 'lodash';
 import EventEmitter from 'node:events';
 import { ArgumentError } from '../../../types/errors';
+import { formatISO } from '../../date-fns';
 import { elasticCount, elasticSearch } from '../../elastic';
 import { calcElasticInterval } from '../../recurrence';
 

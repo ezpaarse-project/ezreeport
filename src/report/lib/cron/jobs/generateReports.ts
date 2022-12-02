@@ -1,9 +1,9 @@
 import type Queue from 'bull';
-import { endOfDay, isBefore, isSameDay } from 'date-fns';
 import type { CronData } from '..';
 import { getAllTasks } from '../../../models/tasks';
 import { addTaskToQueue } from '../../bull';
-import apm from '../../elastic/apm'; // Setup Elastic's APM for monitoring
+import { endOfDay, isBefore, isSameDay } from '../../date-fns';
+import apm from '../../elastic/apm';
 import logger from '../../logger';
 import { formatInterval } from '../../utils';
 import { sendError } from './utils';
