@@ -24,7 +24,7 @@ import { drawAreaRef } from '../../pdf/utils';
 import { addVegaToPDF, createVegaLSpec, createVegaView } from '../../vega';
 
 interface RenderOptions {
-  pdf: PDFReportOptions
+  doc: PDFReportOptions
   grid?: {
     rows: number,
     cols: number
@@ -35,7 +35,7 @@ interface RenderOptions {
 }
 
 const optionScehma = Joi.object<RenderOptions>({
-  pdf: Joi.object({
+  doc: Joi.object({
     name: Joi.string().required(),
     period: Joi.object({
       start: Joi.date().required(),
@@ -95,7 +95,7 @@ const generatePdfWithVega = async (
   }
 
   try {
-    const doc = await initDoc(options.pdf);
+    const doc = await initDoc({ ...options.doc, path: `${options.doc.path}.pdf` });
     const GRID = options.grid ?? { rows: 2, cols: 2 };
 
     const viewport: Area = {

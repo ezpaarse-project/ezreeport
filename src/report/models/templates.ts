@@ -43,8 +43,8 @@ export interface NewTemplate<
   * @see {renderers} For more info
   */
   renderOptions?: |
-  Omit<GeneratorParam<Renderers, R>, 'layouts' | 'pdf'> &
-  { pdf: Omit<GeneratorParam<Renderers, R>['pdf'], 'period'> },
+  Omit<GeneratorParam<Renderers, R>, 'layouts' | 'doc'> &
+  { doc: Omit<GeneratorParam<Renderers, R>['doc'], 'period'> },
 }
 
 export type AnyTemplate = NewTemplate<keyof Renderers, keyof Fetchers>;

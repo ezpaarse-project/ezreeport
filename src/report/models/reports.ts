@@ -197,7 +197,6 @@ export const generateReport = async (
         start: startOfDay(parseISO(customPeriod.start)),
         end: endOfDay(parseISO(customPeriod.end)),
       };
-      console.log(differenceInMilliseconds(cp.end, cp.start), distance);
       if (differenceInMilliseconds(cp.end, cp.start) !== distance) {
         throw new ConflitError(`Custom period "${customPeriod.start} to ${customPeriod.end}" doesn't match task's recurrence (${task.recurrence} : "${formatISO(period.start)} to ${formatISO(period.end)}")`);
       }
@@ -242,8 +241,7 @@ export const generateReport = async (
     await Promise.all(
       template.layouts.map(async (layout, i) => {
         if (
-          layout.data
-          || layout.figures.every(({ data }) => !!data)
+          layout.data || layout.figures.every(({ data }) => !!data)
         ) {
           return;
         }
@@ -273,10 +271,9 @@ export const generateReport = async (
     const renderOptions: GeneratorParam<Renderers, keyof Renderers> = merge(
       template.renderOptions ?? {},
       {
-        pdf: {
+        doc: {
           name: task.name,
-          // TODO: .pdf if renderer exports as HTML ?
-          path: `${filepath}.rep.pdf`,
+          path: `${filepath}.rep`,
           period,
         },
         recurrence: task.recurrence,

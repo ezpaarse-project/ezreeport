@@ -80,7 +80,7 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
     // eslint-disable-next-line no-restricted-syntax
     for (const key of dataKeys) {
       const label = (params.labels ?? {})[key];
-      let value = inputData[key]; // TODO[feat]: format
+      let value = inputData[key];
       if (typeof value === 'object') {
         value = value[label?.field ?? 'value'];
       }
