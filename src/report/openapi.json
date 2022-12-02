@@ -463,7 +463,7 @@
                           "notImplemented": true
                         },
                         "targets": [
-                          "tom.sublet@inist.fr"
+                          "user@example.com"
                         ],
                         "recurrence": "WEEKLY",
                         "nextRun": "2022-10-31T10:00:00.000Z",
@@ -471,7 +471,7 @@
                         "history": [
                           {
                             "type": "creation",
-                            "message": "La tâche a été créée par tom.sublet"
+                            "message": "La tâche a été créée par ..."
                           }
                         ],
                         "createdAt": "2022-10-25T11:55:47.375Z",
@@ -511,7 +511,7 @@
                           "extends": "basic"
                         },
                         "targets": [
-                          "..."
+                          "user@example.com"
                         ],
                         "recurrence": "WEEKLY",
                         "nextRun": "2022-10-31T10:00:00.000Z",
@@ -523,28 +523,28 @@
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "edition",
                             "message": "Tâche crée par ...",
-                            "date": "2022-11-07T15:06:24.000Z"
+                            "createdAt": "2022-11-07T15:06:24.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "edition",
                             "message": "Tâche éditée par ...",
-                            "date": "2022-11-07T15:08:37.000Z"
+                            "createdAt": "2022-11-07T15:08:37.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "generation-error",
                             "message": "Rapport \"...\" non généré par ... suite à une erreur.",
-                            "date": "2022-11-07T15:16:37.000Z"
+                            "createdAt": "2022-11-07T15:16:37.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "generation-success",
                             "message": "Rapport \"...\" généré par ...",
-                            "date": "2022-11-07T15:17:49.000Z"
+                            "createdAt": "2022-11-07T15:17:49.000Z"
                           }
                         ],
                         "createdAt": "2022-10-25T11:55:47.375Z",
@@ -588,7 +588,7 @@
                       "extends": "basic"
                     },
                     "targets": [
-                      "..."
+                      "user@example.com"
                     ],
                     "recurrence": "WEEKLY",
                     "nextRun": "2022-10-31T12:00:00+02:00",
@@ -648,7 +648,7 @@
                           "notImplemented": true
                         },
                         "targets": [
-                          "tom.sublet@inist.fr"
+                          "user@example.com"
                         ],
                         "recurrence": "WEEKLY",
                         "nextRun": "2022-10-31T10:00:00.000Z",
@@ -656,7 +656,7 @@
                         "history": [
                           {
                             "type": "creation",
-                            "message": "La tâche a été créée par tom.sublet"
+                            "message": "La tâche a été créée par ..."
                           }
                         ],
                         "createdAt": "2022-10-25T12:46:27.264Z",
@@ -696,7 +696,7 @@
                           "extends": "basic"
                         },
                         "targets": [
-                          "..."
+                          "user@example.com"
                         ],
                         "recurrence": "WEEKLY",
                         "nextRun": "2022-10-31T10:00:00.000Z",
@@ -708,28 +708,28 @@
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "edition",
                             "message": "Tâche crée par ...",
-                            "date": "2022-11-07T15:06:24.000Z"
+                            "createdAt": "2022-11-07T15:06:24.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "edition",
                             "message": "Tâche éditée par ...",
-                            "date": "2022-11-07T15:08:37.000Z"
+                            "createdAt": "2022-11-07T15:08:37.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "generation-error",
                             "message": "Rapport \"...\" non généré par ... suite à une erreur.",
-                            "date": "2022-11-07T15:16:37.000Z"
+                            "createdAt": "2022-11-07T15:16:37.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "generation-success",
                             "message": "Rapport \"...\" généré par ...",
-                            "date": "2022-11-07T15:17:49.000Z"
+                            "createdAt": "2022-11-07T15:17:49.000Z"
                           }
                         ],
                         "createdAt": "2022-10-25T11:55:47.375Z",
@@ -794,8 +794,8 @@
                           "notImplemented": true
                         },
                         "targets": [
-                          "tom.sublet@inist.fr",
-                          "oxytom8@gmail.com"
+                          "user@example.com",
+                          "user2@example.com"
                         ],
                         "recurrence": "WEEKLY",
                         "nextRun": "2022-11-28T10:00:00.000Z",
@@ -803,11 +803,11 @@
                         "history": [
                           {
                             "type": "creation",
-                            "message": "La tâche a été créée par tom.sublet"
+                            "message": "La tâche a été créée par ..."
                           },
                           {
                             "type": "edition",
-                            "message": "La tâche a été créée par tom.sublet"
+                            "message": "La tâche a été créée par ..."
                           }
                         ],
                         "createdAt": "2022-10-25T12:46:27.264Z",
@@ -847,7 +847,7 @@
                           "extends": "basic"
                         },
                         "targets": [
-                          "..."
+                          "user@example.com"
                         ],
                         "recurrence": "WEEKLY",
                         "nextRun": "2022-11-28T10:00:00.000Z",
@@ -859,28 +859,28 @@
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "edition",
                             "message": "Tâche crée par ...",
-                            "date": "2022-11-07T15:06:24.000Z"
+                            "createdAt": "2022-11-07T15:06:24.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "edition",
                             "message": "Tâche éditée par ...",
-                            "date": "2022-11-07T15:08:37.000Z"
+                            "createdAt": "2022-11-07T15:08:37.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "generation-error",
                             "message": "Rapport \"...\" non généré par ... suite à une erreur.",
-                            "date": "2022-11-07T15:16:37.000Z"
+                            "createdAt": "2022-11-07T15:16:37.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "generation-success",
                             "message": "Rapport \"...\" généré par ...",
-                            "date": "2022-11-07T15:17:49.000Z"
+                            "createdAt": "2022-11-07T15:17:49.000Z"
                           }
                         ],
                         "createdAt": "2022-10-25T12:46:27.264Z",
@@ -933,7 +933,7 @@
                       "extends": "basic"
                     },
                     "targets": [
-                      "..."
+                      "user@example.com"
                     ],
                     "recurrence": "WEEKLY",
                     "nextRun": "2022-10-31T12:00:00+02:00",
@@ -971,16 +971,16 @@
                           "toDelete": true
                         },
                         "targets": [
-                          "tom.sublet@inist.fr"
+                          "user@example.com"
                         ],
                         "recurrence": "WEEKLY",
                         "nextRun": "2022-10-31T10:00:00.000Z",
                         "enabled": true,
                         "history": [
                           {
-                            "date": "2022-10-26T08:12:12Z",
+                            "createdAt": "2022-10-26T08:12:12Z",
                             "type": "creation",
-                            "message": "Tâche créée par tom.sublet"
+                            "message": "Tâche créée par ..."
                           }
                         ],
                         "createdAt": "2022-10-26T08:12:12.402Z",
@@ -1020,7 +1020,7 @@
                           "extends": "basic"
                         },
                         "targets": [
-                          "..."
+                          "user@example.com"
                         ],
                         "recurrence": "WEEKLY",
                         "nextRun": "2022-11-28T10:00:00.000Z",
@@ -1032,28 +1032,28 @@
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "edition",
                             "message": "Tâche crée par ...",
-                            "date": "2022-11-07T15:06:24.000Z"
+                            "createdAt": "2022-11-07T15:06:24.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "edition",
                             "message": "Tâche éditée par ...",
-                            "date": "2022-11-07T15:08:37.000Z"
+                            "createdAt": "2022-11-07T15:08:37.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "generation-error",
                             "message": "Rapport \"...\" non généré par ... suite à une erreur.",
-                            "date": "2022-11-07T15:16:37.000Z"
+                            "createdAt": "2022-11-07T15:16:37.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "generation-success",
                             "message": "Rapport \"...\" généré par ...",
-                            "date": "2022-11-07T15:17:49.000Z"
+                            "createdAt": "2022-11-07T15:17:49.000Z"
                           }
                         ],
                         "createdAt": "2022-10-25T12:46:27.264Z",
@@ -1160,7 +1160,7 @@
                           "extends": "basic"
                         },
                         "targets": [
-                          "..."
+                          "user@example.com"
                         ],
                         "recurrence": "WEEKLY",
                         "nextRun": "2022-10-31T10:00:00.000Z",
@@ -1172,28 +1172,28 @@
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "edition",
                             "message": "Tâche crée par ...",
-                            "date": "2022-11-07T15:06:24.000Z"
+                            "createdAt": "2022-11-07T15:06:24.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "edition",
                             "message": "Tâche éditée par ...",
-                            "date": "2022-11-07T15:08:37.000Z"
+                            "createdAt": "2022-11-07T15:08:37.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "generation-error",
                             "message": "Rapport \"...\" non généré par ... suite à une erreur.",
-                            "date": "2022-11-07T15:16:37.000Z"
+                            "createdAt": "2022-11-07T15:16:37.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "generation-success",
                             "message": "Rapport \"...\" généré par ...",
-                            "date": "2022-11-07T15:17:49.000Z"
+                            "createdAt": "2022-11-07T15:17:49.000Z"
                           }
                         ],
                         "createdAt": "2022-10-25T11:55:47.375Z",
@@ -1287,7 +1287,7 @@
                           "extends": "basic"
                         },
                         "targets": [
-                          "..."
+                          "user@example.com"
                         ],
                         "recurrence": "WEEKLY",
                         "nextRun": "2022-10-31T10:00:00.000Z",
@@ -1299,28 +1299,28 @@
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "edition",
                             "message": "Tâche crée par ...",
-                            "date": "2022-11-07T15:06:24.000Z"
+                            "createdAt": "2022-11-07T15:06:24.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "edition",
                             "message": "Tâche éditée par ...",
-                            "date": "2022-11-07T15:08:37.000Z"
+                            "createdAt": "2022-11-07T15:08:37.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "generation-error",
                             "message": "Rapport \"...\" non généré par ... suite à une erreur.",
-                            "date": "2022-11-07T15:16:37.000Z"
+                            "createdAt": "2022-11-07T15:16:37.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "generation-success",
                             "message": "Rapport \"...\" généré par ...",
-                            "date": "2022-11-07T15:17:49.000Z"
+                            "createdAt": "2022-11-07T15:17:49.000Z"
                           }
                         ],
                         "createdAt": "2022-10-25T11:55:47.375Z",
@@ -1546,10 +1546,10 @@
                         "name": "My Super Task",
                         "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
                         "layout": {
-                          "...": "..."
+                          "extends": "..."
                         },
                         "targets": [
-                          "..."
+                          "user@example.com"
                         ],
                         "recurrence": "WEEKLY",
                         "nextRun": "2022-10-31T10:00:00.000Z",
@@ -1561,28 +1561,28 @@
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "edition",
                             "message": "Tâche crée par ...",
-                            "date": "2022-11-07T15:06:24.000Z"
+                            "createdAt": "2022-11-07T15:06:24.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "edition",
                             "message": "Tâche éditée par ...",
-                            "date": "2022-11-07T15:08:37.000Z"
+                            "createdAt": "2022-11-07T15:08:37.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "generation-error",
                             "message": "Rapport \"...\" non généré par ... suite à une erreur.",
-                            "date": "2022-11-07T15:16:37.000Z"
+                            "createdAt": "2022-11-07T15:16:37.000Z"
                           },
                           {
                             "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
                             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                             "type": "generation-success",
                             "message": "Rapport \"...\" généré par ...",
-                            "date": "2022-11-07T15:17:49.000Z"
+                            "createdAt": "2022-11-07T15:17:49.000Z"
                           }
                         ],
                         "createdAt": "2022-10-25T11:55:47.375Z",
@@ -1675,23 +1675,24 @@
                 "schema": {
                   "type": "object",
                   "x-examples": {
-                    "example-1": {
+                    "Example": {
                       "success": true,
                       "detail": {
-                        "date": "2022-11-14T15:02:46.340Z",
+                        "createdAt": "2022-11-14T15:02:46.340Z",
+                        "tool": 1000,
                         "task": "af549626-641b-44ed-9381-f3b751370164",
                         "files": {
                           "detail": "2022/2022-11/reporting_ezMESURE_test-api.json",
                           "report": "2022/2022-11/reporting_ezMESURE_test-api.pdf"
                         },
                         "writedTo": [
-                          "tom.sublet@inist.fraaa"
+                          "user@example.com"
                         ],
                         "period": {
                           "start": "2021-10-18T00:00:00.000Z",
                           "end": "2021-10-24T23:59:59.999Z"
                         },
-                        "runAs": "tom.sublet",
+                        "runAs": "user",
                         "stats": {
                           "pageCount": 6,
                           "size": 398460
@@ -1706,7 +1707,7 @@
                     "detail": {
                       "type": "object",
                       "properties": {
-                        "date": {
+                        "createdAt": {
                           "type": "string",
                           "format": "date-time"
                         },
@@ -1795,7 +1796,6 @@
                         }
                       },
                       "required": [
-                        "date",
                         "took",
                         "taskId",
                         "files"
@@ -1808,7 +1808,7 @@
                     "value": {
                       "success": true,
                       "detail": {
-                        "date": "2022-11-14T15:02:46.340Z",
+                        "createdAt": "2022-11-14T15:02:46.340Z",
                         "took": 1000,
                         "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                         "meta": {
@@ -1839,16 +1839,16 @@
                     "value": {
                       "success": false,
                       "detail": {
-                        "date": "2022-11-14T15:16:55.623Z",
-                        "time": 1000,
-                        "task": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+                        "createdAt": "2022-11-14T15:16:55.623Z",
+                        "took": 1000,
+                        "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                         "meta": {
                           "jobId": "134",
                           "jobAttemps": 0,
                           "jobAdded": "2022-11-15T10:43:03.899Z"
                         },
                         "files": {
-                          "detail": "---.json"
+                          "detail": "---.det.json"
                         },
                         "error": {
                           "message": "...",
@@ -3048,6 +3048,234 @@
           "general"
         ]
       }
+    },
+    "/layouts": {
+      "get": {
+        "summary": "Get templates",
+        "tags": [
+          "layouts"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        {
+                          "name": "basic",
+                          "renderer": "vega-pdf",
+                          "pageCount": 6
+                        },
+                        {
+                          "name": "tests/slot-tests",
+                          "renderer": "vega-pdf",
+                          "pageCount": 9
+                        }
+                      ]
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "renderer": {
+                            "type": "string"
+                          },
+                          "pageCount": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        {
+                          "name": "basic",
+                          "renderer": "vega-pdf",
+                          "pageCount": 6
+                        },
+                        {
+                          "name": "tests/slot-tests",
+                          "renderer": "vega-pdf",
+                          "pageCount": 9
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "get-layouts",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "description": "Get all defined templated. Accessible to READ_WRITE."
+      },
+      "parameters": []
+    },
+    "/layouts/{layoutName}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "layoutName",
+          "in": "path",
+          "required": true,
+          "description": "Name of the layout"
+        }
+      ],
+      "get": {
+        "summary": "Get specific layout",
+        "tags": [
+          "layouts"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "tests/slot-tests",
+                        "renderer": "vega-pdf",
+                        "pageCount": 9,
+                        "template": {}
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "renderer": {
+                          "type": "string"
+                        },
+                        "pageCount": {
+                          "type": "integer"
+                        },
+                        "template": {
+                          "$ref": "#/components/schemas/LayoutJSON"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "tests/slot-tests",
+                        "renderer": "vega-pdf",
+                        "pageCount": 9,
+                        "template": {
+                          "figures": []
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "get-layouts-layoutName",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "parameters": [],
+        "description": "Get specific defined templated. Accessible to READ_WRITE."
+      }
     }
   },
   "components": {
@@ -3130,59 +3358,6 @@
         ]
       },
       "FullTask": {
-        "x-examples": {
-          "Example": {
-            "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-            "name": "My Super Task",
-            "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-            "layout": {
-              "...": "..."
-            },
-            "targets": [
-              "..."
-            ],
-            "recurrence": "WEEKLY",
-            "nextRun": "2022-10-31T10:00:00.000Z",
-            "lastRun": "2022-10-31T10:00:00.000Z",
-            "enabled": true,
-            "history": [
-              {
-                "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000000",
-                "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                "type": "edition",
-                "message": "Tâche crée par ...",
-                "date": "2022-11-07T15:06:24.000Z"
-              },
-              {
-                "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
-                "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                "type": "edition",
-                "message": "Tâche éditée par ...",
-                "date": "2022-11-07T15:08:37.000Z"
-              },
-              {
-                "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
-                "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                "type": "generation-error",
-                "message": "Rapport \"...\" non généré par ... suite à une erreur.",
-                "date": "2022-11-07T15:16:37.000Z"
-              },
-              {
-                "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
-                "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                "type": "generation-success",
-                "message": "Rapport \"...\" généré par ...",
-                "date": "2022-11-07T15:17:49.000Z"
-              }
-            ],
-            "createdAt": "2022-10-25T11:55:47.375Z",
-            "updatedAt": "2022-10-25T11:55:47.375Z"
-          }
-        },
-        "description": "Reporting task",
-        "x-tags": [
-          "task"
-        ],
         "allOf": [
           {
             "$ref": "#/components/schemas/Task"
@@ -3201,40 +3376,24 @@
                     "type": "string",
                     "description": "Base layout name"
                   },
-                  "data": {
+                  "fetchOptions": {
                     "type": "object",
                     "description": "Data options used by \"extends\""
                   },
                   "inserts": {
-                    "type": "array",
-                    "description": "Figures to add to \"extends\"",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "at": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "description": "Where to insert figure(s)"
-                        },
-                        "figures": {
-                          "oneOf": [
-                            {
-                              "type": "array",
-                              "items": {
-                                "$ref": "#/components/schemas/Figure"
-                              }
-                            },
-                            {
-                              "$ref": "#/components/schemas/Figure"
-                            }
-                          ]
-                        }
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/LayoutJSON"
                       },
-                      "required": [
-                        "at",
-                        "figures"
-                      ]
-                    }
+                      {
+                        "type": "object",
+                        "properties": {
+                          "at": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    ]
                   }
                 }
               },
@@ -3271,7 +3430,7 @@
             "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
             "type": "generation-success",
             "message": "Rapport \"...\" généré par ...",
-            "date": "2022-11-07T15:17:49.000Z",
+            "createdAt": "2022-11-07T15:17:49.000Z",
             "meta": {
               "jobId": "0",
               "jobAdded": "2022-11-07T15:17:40.000Z"
@@ -3292,10 +3451,11 @@
           "message": {
             "type": "string"
           },
-          "date": {
-            "type": "string"
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
           },
-          "meta": {
+          "data": {
             "type": "object",
             "nullable": true
           }
@@ -3304,8 +3464,7 @@
           "id",
           "taskId",
           "type",
-          "message",
-          "date"
+          "message"
         ]
       },
       "Figure": {
@@ -3484,6 +3643,52 @@
           "name",
           "status"
         ]
+      },
+      "LayoutJSON": {
+        "title": "LayoutJSON",
+        "x-stoplight": {
+          "id": "3pnn0dzy37oau"
+        },
+        "type": "object",
+        "description": "Layout info. Can have more properties",
+        "x-examples": {
+          "Example": {
+            "name": "basic",
+            "renderer": "vega-pdf",
+            "pageCount": 6
+          }
+        },
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "fetcher": {
+            "type": "string"
+          },
+          "fetchOptions": {
+            "type": "object"
+          },
+          "figures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Figure"
+            }
+          }
+        },
+        "required": [
+          "figures"
+        ]
       }
     },
     "securitySchemes": {
@@ -3638,7 +3843,7 @@
                     "message": "Forbidden"
                   },
                   "content": {
-                    "message": "User 'tom.sublet' doesn't have the rights to acces to 'GET /users/'"
+                    "message": "User 'user' doesn't have the rights to acces to 'GET /users/'"
                   }
                 }
               }
@@ -3847,17 +4052,6 @@
         },
         "description": "Count of object to return"
       },
-      "offset": {
-        "name": "offset",
-        "in": "query",
-        "required": false,
-        "schema": {
-          "type": "string",
-          "default": "0",
-          "pattern": "^[0-9]+"
-        },
-        "description": "Number of object to skip"
-      },
       "institution": {
         "name": "institution",
         "in": "query",
@@ -3876,6 +4070,9 @@
     },
     {
       "name": "general"
+    },
+    {
+      "name": "layouts"
     },
     {
       "name": "queue"

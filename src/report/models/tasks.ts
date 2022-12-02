@@ -72,7 +72,12 @@ const isValidTask = (data: unknown): data is InputTask => {
  */
 // TODO[feat]: Custom sort
 export const getAllTasks = async <Keys extends Array<keyof Task>>(
-  opts?: { count?: number, previous?: Task['id'], select?: Keys, filter?: Omit<Prisma.TaskWhereInput, 'institution'> },
+  opts?: {
+    count?: number,
+    previous?: Task['id'],
+    select?: Keys,
+    filter?: Omit<Prisma.TaskWhereInput, 'institution'>
+  },
   institution?: Task['institution'],
 ): Promise<Pick<Task, Keys[number]>[]> => {
   try {
@@ -175,8 +180,6 @@ export const createTask = async (data: unknown, creator: string, institution: Ta
   const task = await prisma.task.create({
     data: {
       ...data,
-      // TODO[refactor]: Can be removed once template no longer need runtime
-      template: data.template as Prisma.InputJsonObject,
       nextRun,
       institution,
       history: {

@@ -24,9 +24,7 @@ import { findInstitutionByIds, findInstitutionContact } from './institutions';
 import { editTaskByIdWithHistory } from './tasks';
 import { isNewTemplate, isNewTemplateDB } from './templates';
 
-const { templatesDir } = config.get('report');
-const { outDir } = config.get('report');
-const { ttl } = config.get('report');
+const { ttl, templatesDir, outDir } = config.get('report');
 
 type ReportResult = {
   success: boolean,

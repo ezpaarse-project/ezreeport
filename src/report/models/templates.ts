@@ -1,9 +1,15 @@
+import { readFile } from 'fs/promises';
 import Joi from 'joi';
+import { join } from 'node:path';
+import config from '../lib/config';
 import type { Fetchers } from '../lib/generators/fetchers';
 import renderers, { type Renderers } from '../lib/generators/renderers';
 import glob from '../lib/glob';
+import { isFulfilled } from '../lib/utils';
 import { ArgumentError } from '../types/errors';
 import { layoutSchema, NewLayout } from './layouts';
+
+const { templatesDir } = config.get('report');
 
 /**
  * Template is the report
@@ -123,4 +129,62 @@ export const isNewTemplateDB = (data: unknown): data is AnyTemplateDB => {
     throw new ArgumentError(`Template is not valid: ${validation.error.message}`);
   }
   return true;
+};
+
+/**
+* Get all template files
+*
+* @returns General info of all templates
+*/
+export const getAllTemplates = async () => {
+  const templates = await glob(`${templatesDir}/**/*.json`);
+
+  const result = await Promise.allSettled(
+    templates.map(async (path) => {
+      // Resolve import
+      const template = JSON.parse(await readFile(path, 'utf-8'));
+      if (!isNewTemplate(template)) {
+        // As validation throws an error, this line shouldn't be called
+        return {};
+      }
+
+      // template.
+      return {
+        name: path
+          .replace(/\.(?!.*\.).*$/, '')
+          .replace(new RegExp(`^.*${templatesDir}/`, 'i'), ''),
+        renderer: template.renderer ?? 'vega-pdf',
+        pageCount: template.layouts.length,
+      };
+    }),
+  );
+
+  return result.filter(isFulfilled).flatMap(({ value }) => value);
+};
+
+/**
+ * Get specific template file
+ *
+ * @returns Full info of template
+ */
+export const getTemplateByName = async (name: string) => {
+  // Check if not trying to access unwanted file
+  const path = join(templatesDir, `${name}.json`);
+  if (new RegExp(`^${templatesDir}/.*\\.json$`, 'i').test(path) === false) {
+    throw new Error(`Task's layout must be in the "${templatesDir}" folder. Resolved: "${path}"`);
+  }
+
+  // Resolve import
+  const template = JSON.parse(await readFile(path, 'utf-8'));
+  if (!isNewTemplate(template)) {
+    // As validation throws an error, this line shouldn't be called
+    return {};
+  }
+
+  return {
+    name,
+    renderer: template.renderer ?? 'vega-pdf',
+    pageCount: template.layouts.length,
+    template,
+  };
 };

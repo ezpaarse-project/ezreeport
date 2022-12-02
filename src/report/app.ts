@@ -14,6 +14,7 @@ import filesRouter from './routes/files';
 import healthRouter from './routes/health';
 import queuesRouter from './routes/queues';
 import tasksRouter from './routes/tasks';
+import templatesRouter from './routes/templates';
 import unsubscribeRouter from './routes/unsubscribe';
 import { HTTPError } from './types/errors';
 
@@ -40,6 +41,7 @@ app.use(
   formatMiddleware,
 );
 
+app.use('/templates', templatesRouter);
 app.use('/tasks', tasksRouter);
 app.use('/reports', filesRouter);
 app.use('/queues', queuesRouter);
