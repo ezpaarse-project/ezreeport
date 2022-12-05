@@ -1676,135 +1676,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "x-examples": {
-                    "Example": {
-                      "success": true,
-                      "detail": {
-                        "createdAt": "2022-11-14T15:02:46.340Z",
-                        "tool": 1000,
-                        "task": "af549626-641b-44ed-9381-f3b751370164",
-                        "files": {
-                          "detail": "2022/2022-11/reporting_ezMESURE_test-api.json",
-                          "report": "2022/2022-11/reporting_ezMESURE_test-api.pdf"
-                        },
-                        "writedTo": [
-                          "user@example.com"
-                        ],
-                        "period": {
-                          "start": "2021-10-18T00:00:00.000Z",
-                          "end": "2021-10-24T23:59:59.999Z"
-                        },
-                        "runAs": "user",
-                        "stats": {
-                          "pageCount": 6,
-                          "size": 398460
-                        }
-                      }
-                    }
-                  },
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "detail": {
-                      "type": "object",
-                      "properties": {
-                        "createdAt": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "took": {
-                          "type": "integer",
-                          "description": "Time taken to generate report in ms"
-                        },
-                        "taskId": {
-                          "type": "string"
-                        },
-                        "meta": {
-                          "type": "object",
-                          "nullable": true
-                        },
-                        "files": {
-                          "type": "object",
-                          "required": [
-                            "detail"
-                          ],
-                          "properties": {
-                            "detail": {
-                              "type": "string"
-                            },
-                            "report": {
-                              "type": "string"
-                            },
-                            "debug": {
-                              "type": "string"
-                            }
-                          }
-                        },
-                        "sendingTo": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        },
-                        "period": {
-                          "type": "object",
-                          "properties": {
-                            "start": {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            "end": {
-                              "type": "string",
-                              "format": "date-time"
-                            }
-                          },
-                          "required": [
-                            "start",
-                            "end"
-                          ]
-                        },
-                        "runAs": {
-                          "type": "string"
-                        },
-                        "stats": {
-                          "type": "object",
-                          "properties": {
-                            "pageCount": {
-                              "type": "integer"
-                            },
-                            "size": {
-                              "type": "integer"
-                            }
-                          }
-                        },
-                        "error": {
-                          "type": "object",
-                          "properties": {
-                            "message": {
-                              "type": "string"
-                            },
-                            "stack": {
-                              "type": "array",
-                              "items": {
-                                "type": "string"
-                              }
-                            }
-                          },
-                          "required": [
-                            "message",
-                            "stack"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "took",
-                        "taskId",
-                        "files"
-                      ]
-                    }
-                  }
+                  "$ref": "#/components/schemas/ReportDetail"
                 },
                 "examples": {
                   "Success": {
@@ -3667,6 +3539,9 @@
               }
             }
           },
+          "result": {
+            "$ref": "#/components/schemas/ReportDetail"
+          },
           "progress": {
             "type": "integer"
           },
@@ -3686,6 +3561,13 @@
             "type": "string"
           }
         },
+        "required": [
+          "id",
+          "data",
+          "added",
+          "attemps",
+          "status"
+        ],
         "description": ""
       },
       "Cron": {
@@ -3796,6 +3678,116 @@
         "required": [
           "figures"
         ]
+      },
+      "ReportDetail": {
+        "title": "ReportDetail",
+        "x-stoplight": {
+          "id": "3szv5zpo21wqn"
+        },
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "detail": {
+            "type": "object",
+            "properties": {
+              "createdAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "took": {
+                "type": "integer",
+                "description": "Time taken to generate report in ms"
+              },
+              "taskId": {
+                "type": "string"
+              },
+              "meta": {
+                "type": "object",
+                "nullable": true
+              },
+              "files": {
+                "type": "object",
+                "required": [
+                  "detail"
+                ],
+                "properties": {
+                  "detail": {
+                    "type": "string"
+                  },
+                  "report": {
+                    "type": "string"
+                  },
+                  "debug": {
+                    "type": "string"
+                  }
+                }
+              },
+              "sendingTo": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "period": {
+                "type": "object",
+                "properties": {
+                  "start": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "end": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "start",
+                  "end"
+                ]
+              },
+              "runAs": {
+                "type": "string"
+              },
+              "stats": {
+                "type": "object",
+                "description": "Stats about report",
+                "properties": {
+                  "pageCount": {
+                    "type": "integer"
+                  },
+                  "size": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "error": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  },
+                  "stack": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "message",
+                  "stack"
+                ]
+              }
+            },
+            "required": [
+              "took",
+              "taskId",
+              "files"
+            ]
+          }
+        }
       }
     },
     "securitySchemes": {
