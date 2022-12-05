@@ -3165,6 +3165,24 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "username": "tom.sublet",
+                        "email": "tom.sublet@inist.fr",
+                        "roles": [
+                          "ezreporting",
+                          "ezreporting-readonly",
+                          "bibcnrs",
+                          "tech_contact"
+                        ]
+                      }
+                    }
+                  },
                   "properties": {
                     "status": {
                       "type": "object",
@@ -3191,25 +3209,10 @@
                           "items": {
                             "type": "string"
                           }
+                        },
+                        "maxRolePriority": {
+                          "type": "number"
                         }
-                      }
-                    }
-                  },
-                  "x-examples": {
-                    "Example 1": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": {
-                        "username": "tom.sublet",
-                        "email": "tom.sublet@inist.fr",
-                        "roles": [
-                          "ezreporting",
-                          "ezreporting-readonly",
-                          "bibcnrs",
-                          "tech_contact"
-                        ]
                       }
                     }
                   }
@@ -3226,7 +3229,8 @@
                         "email": "string",
                         "roles": [
                           "string"
-                        ]
+                        ],
+                        "maxRolePriority": 0
                       }
                     }
                   }

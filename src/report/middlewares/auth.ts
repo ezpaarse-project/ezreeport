@@ -20,11 +20,13 @@ export enum Roles {
 /**
  * Roles priority, higher means more perms
  */
-const ROLES_PRIORITIES = {
+const ROLES_PRIORITIES: Readonly<Record<Roles, number>> = {
   [Roles.SUPER_USER]: 9999,
   [Roles.READ_WRITE]: 2,
   [Roles.READ]: 1,
 } as const;
+
+const isValidRole = (role: string): role is Roles => role in ROLES_PRIORITIES;
 
 /**
  * Check if current user have the rights scopes.
@@ -68,14 +70,20 @@ const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) =>
     const { [username]: user } = await elasticGetUser(username);
 
     if (user?.enabled) {
-      req.user = { username: user.username, email: user.email, roles: user.roles };
+      req.user = {
+        username: user.username,
+        email: user.email,
+        roles: user.roles,
+        maxRolePriority: user.roles.reduce(
+          (prev, role) => (
+            (isValidRole(role) && ROLES_PRIORITIES[role] >= prev) ? ROLES_PRIORITIES[role] : prev
+          ),
+          -1,
+        ),
+      };
 
       if (
-        // Check if user have enough role to access route
-        user.roles.some(
-          (role) => role in ROLES_PRIORITIES
-            && ROLES_PRIORITIES[role as keyof typeof ROLES_PRIORITIES] >= ROLES_PRIORITIES[minRole],
-        )
+        (req?.user?.maxRolePriority ?? -1) >= ROLES_PRIORITIES[minRole]
       ) {
         next();
         return;

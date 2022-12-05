@@ -9,6 +9,7 @@ declare namespace Express {
       email: string,
       username: string,
       roles: string[],
+      maxRolePriority: number,
       /**
        * Added by `middlewares/auth::checkInstitution`
        */
