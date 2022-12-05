@@ -2276,6 +2276,11 @@
           {
             "ezmesure-jwt": []
           }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/institution"
+          }
         ]
       }
     },
@@ -2395,6 +2400,11 @@
         "security": [
           {
             "ezmesure-jwt": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/institution"
           }
         ]
       }

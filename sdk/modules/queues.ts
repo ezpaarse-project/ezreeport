@@ -81,10 +81,15 @@ export const resumeQueue = <Data, Result>(queueName: Job<Data>['queue']) => axio
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
+ * @param institution Force institution
  *
  * @returns Job full info
  */
-export const getJob = <Data, Result>(queueName: Job<Data>['queue'], jobId: Job<Data>['id']) => axios.$get<FullJob<Data, Result>>(`/queues/${queueName}/${jobId}`);
+export const getJob = <Data, Result>(
+  queueName: Job<Data>['queue'],
+  jobId: Job<Data>['id'],
+  institution?: string,
+) => axios.$get<FullJob<Data, Result>>(`/queues/${queueName}/${jobId}`, { params: { institution } });
 
 /**
  * Retry job that failed
@@ -93,7 +98,12 @@ export const getJob = <Data, Result>(queueName: Job<Data>['queue'], jobId: Job<D
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
+ * @param institution Force institution
  *
  * @returns queue info
  */
-export const retryJob = <Data, Result>(queueName: Job<Data>['queue'], jobId: Job<Data>['id']) => axios.$post<FullJob<Data, Result>>(`/queues/${queueName}/${jobId}/retry`);
+export const retryJob = <Data, Result>(
+  queueName: Job<Data>['queue'],
+  jobId: Job<Data>['id'],
+  institution?: string,
+) => axios.$post<FullJob<Data, Result>>(`/queues/${queueName}/${jobId}/retry`, { params: { institution } });
