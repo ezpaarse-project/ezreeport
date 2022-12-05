@@ -296,6 +296,20 @@ export const generateReport = async (
     result.detail.files.debug = `${namepath}.deb.json`;
     logger.debug(`[gen] Template writed to "${namepath}.deb.json"`);
 
+    result = merge<ReportResult, DeepPartial<ReportResult>>(
+      result,
+      {
+        detail: {
+          took: differenceInMilliseconds(new Date(), result.detail.createdAt),
+          files: {
+            report: `${namepath}.rep.pdf`,
+          },
+          sendingTo: targets,
+          stats: omit(stats, 'path'),
+        },
+      },
+    );
+
     if (writeHistory) {
       await editTaskByIdWithHistory(
         task.id,
@@ -310,6 +324,7 @@ export const generateReport = async (
           message: `Rapport "${namepath}" généré par ${origin}`,
           data: {
             ...meta,
+            files: result.detail.files,
             period: {
               start: formatISO(period.start),
               end: formatISO(period.end),
@@ -319,33 +334,8 @@ export const generateReport = async (
       );
     }
 
-    result = merge<ReportResult, DeepPartial<ReportResult>>(
-      result,
-      {
-        detail: {
-          took: differenceInMilliseconds(new Date(), result.detail.createdAt),
-          files: {
-            report: `${namepath}.rep.pdf`,
-          },
-          sendingTo: targets,
-          stats: omit(stats, 'path'),
-        },
-      },
-    );
     logger.info(`[gen] Report "${namepath}" successfully generated in ${(result.detail.took / 1000).toFixed(2)}s`);
   } catch (error) {
-    if (writeHistory) {
-      await editTaskByIdWithHistory(
-        task.id,
-        {
-          ...task,
-          template: task.template as Prisma.InputJsonObject,
-          enabled: false,
-        },
-        writeHistory ? { type: 'generation-error', message: `Rapport "${namepath}" non généré par ${origin} suite à une erreur.`, data: meta } : undefined,
-      );
-    }
-
     result = merge<ReportResult, DeepPartial<ReportResult>>(
       result,
       {
@@ -359,8 +349,28 @@ export const generateReport = async (
         },
       },
     );
+
+    if (writeHistory) {
+      await editTaskByIdWithHistory(
+        task.id,
+        {
+          ...task,
+          template: task.template as Prisma.InputJsonObject,
+          enabled: false,
+        },
+        writeHistory ? {
+          type: 'generation-error',
+          message: `Rapport "${namepath}" non généré par ${origin} suite à une erreur.`,
+          data: {
+            ...meta,
+            files: result.detail.files,
+          },
+        } : undefined,
+      );
+    }
     logger.error(`[gen] Report "${namepath}" failed to generate in ${(result.detail.took / 1000).toFixed(2)}s with error : ${(error as Error).message}`);
   }
+
   await writeFile(
     `${filepath}.det.json`,
     JSON.stringify(
@@ -370,5 +380,6 @@ export const generateReport = async (
     ),
     'utf-8',
   );
+  logger.debug(`[gen] Detail writed to "${namepath}.det.json"`);
   return result;
 };
