@@ -1,6 +1,6 @@
 import axios from '../lib/axios';
 import createEventfullPromise from '../lib/promises';
-import { sleep } from '../lib/utils';
+import { setTimeoutAsync } from '../lib/utils';
 import { FullJob, getJob, Job } from './queues';
 
 interface ReportResult {
@@ -121,7 +121,7 @@ export const listenGeneration = (
         sleepDuration = 250;
       }
       // eslint-disable-next-line no-await-in-loop
-      await sleep(sleepDuration);
+      await setTimeoutAsync(sleepDuration);
     } while (
       (['completed', 'failed', 'stuck']).includes(last.status as string) === false
     );

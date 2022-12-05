@@ -6,12 +6,40 @@ enum Roles {
   READ = 1,
 }
 
-export interface User {
+interface User {
   username: string,
   email: string,
   roles: string[],
   maxRolePriority: Roles
 }
+
+/**
+ * Set API token for ezMESURE to axios
+ *
+ * @param token The API token for ezMESURE
+ */
+export const login = (token: string) => {
+  axios.defaults.headers.common.authorization = `Bearer ${token}`;
+};
+
+/**
+ * Unset API token for ezMESURE from axios
+ */
+export const logout = () => {
+  axios.defaults.headers.common.authorization = undefined;
+};
+
+/**
+ * Check if API token is setup in axios. **DOESN'T CHECK IF JWT IS VALID !**
+ *
+ * @returns If API token is setup
+ */
+export const isLogged = () => {
+  const bearer = axios.defaults.headers.common.authorization;
+  if (!bearer || typeof bearer !== 'string') return false;
+  const [, token] = bearer.split('Bearer ');
+  return !!token;
+};
 
 /**
  * Get authed user info

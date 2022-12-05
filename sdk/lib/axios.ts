@@ -8,9 +8,7 @@ export interface ApiResponse<T> {
   content: T
 }
 
-const agent = axios.create({
-  baseURL: 'http://localhost:8080',
-});
+const agent = axios.create({});
 
 export default Object.assign(
   agent,
