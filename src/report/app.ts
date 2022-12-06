@@ -12,6 +12,7 @@ import openapi from './openapi.json';
 import cronsRouter from './routes/crons';
 import filesRouter from './routes/files';
 import healthRouter from './routes/health';
+import historyRouter from './routes/history';
 import queuesRouter from './routes/queues';
 import tasksRouter from './routes/tasks';
 import templatesRouter from './routes/templates';
@@ -43,6 +44,7 @@ app.use(
 
 app.use('/templates', templatesRouter);
 app.use('/tasks', tasksRouter);
+app.use('/history', historyRouter);
 app.use('/reports', filesRouter);
 app.use('/queues', queuesRouter);
 app.use('/crons', cronsRouter);

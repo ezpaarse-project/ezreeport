@@ -437,6 +437,9 @@
           },
           {
             "$ref": "#/components/parameters/count"
+          },
+          {
+            "$ref": "#/components/parameters/institution"
           }
         ]
       },
@@ -1232,7 +1235,12 @@
         "tags": [
           "tasks"
         ],
-        "description": "Enable task generation. Accessible to READ_WRITE."
+        "description": "Enable task generation. Accessible to READ_WRITE.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/institution"
+          }
+        ]
       }
     },
     "/tasks/{taskId}/disable": {
@@ -1359,7 +1367,12 @@
         "tags": [
           "tasks"
         ],
-        "description": "Disable task generation. Accessible to READ_WRITE."
+        "description": "Disable task generation. Accessible to READ_WRITE.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/institution"
+          }
+        ]
       },
       "parameters": [
         {
@@ -1639,6 +1652,11 @@
         },
         "tags": [
           "tasks"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/institution"
+          }
         ]
       },
       "parameters": [
@@ -2401,6 +2419,11 @@
           {
             "ezmesure-jwt": []
           }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/institution"
+          }
         ]
       }
     },
@@ -2520,6 +2543,11 @@
         "security": [
           {
             "ezmesure-jwt": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/institution"
           }
         ]
       }
@@ -3275,6 +3303,261 @@
         ],
         "parameters": [],
         "description": "Get specific defined templated. Accessible to READ_WRITE."
+      }
+    },
+    "/history": {
+      "get": {
+        "summary": "Get history entries",
+        "tags": [
+          "history"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        {
+                          "id": "8ad0bc3d-2dd4-4d54-892b-868bc20cc14a",
+                          "taskId": "af549626-641b-44ed-9381-f3b751370164",
+                          "type": "edition",
+                          "message": "Tâche activée par tom.sublet",
+                          "data": null,
+                          "createdAt": "2022-12-01T14:08:40.000Z"
+                        },
+                        {
+                          "id": "687ef0ae-e912-421e-a9d9-4c68968045cc",
+                          "taskId": "af549626-641b-44ed-9381-f3b751370164",
+                          "type": "edition",
+                          "message": "Tâche désactivée par tom.sublet",
+                          "data": null,
+                          "createdAt": "2022-12-01T14:08:34.000Z"
+                        },
+                        {
+                          "id": "c3a054a3-24c3-4120-bfa8-939f328a8657",
+                          "taskId": "7398ffd9-ab64-48d0-a854-5f0b28b3dca9",
+                          "type": "generation-error",
+                          "message": "Rapport \"2022/2022-11/reporting_ezMESURE_bibcnrs-*:-report-1-v-2-1_c0192740-ac6d-48cf-b15d-91fbadcf3cbc\" non généré par tom.sublet suite à une erreur.",
+                          "data": {
+                            "jobId": "77",
+                            "jobAdded": "2022-11-24T11:40:34.441Z"
+                          },
+                          "createdAt": "2022-11-24T11:40:37.000Z"
+                        },
+                        {
+                          "id": "2fdd9f4c-1ac5-49a1-b988-c33a590c4c94",
+                          "taskId": "af549626-641b-44ed-9381-f3b751370164",
+                          "type": "unsubscription",
+                          "message": "tom.sublet@inist.test.fr s'est désinscrit de la liste de diffusion.",
+                          "data": null,
+                          "createdAt": "2022-11-24T08:25:44.000Z"
+                        },
+                        {
+                          "id": "75ae6679-df98-45ad-b8da-2d7e62169681",
+                          "taskId": "7398ffd9-ab64-48d0-a854-5f0b28b3dca9",
+                          "type": "generation-error",
+                          "message": "Rapport \"2022/2022-11/reporting_ezMESURE_bibcnrs-*:-report-1-v-2-1_aa6017f8-1b2e-4d11-98ad-43193342b0b7\" non généré par tom.sublet suite à une erreur.",
+                          "data": {
+                            "jobId": "28",
+                            "jobAdded": "2022-11-18T14:45:36.660Z"
+                          },
+                          "createdAt": "2022-11-18T14:45:39.431Z"
+                        },
+                        {
+                          "id": "afc9879b-efe4-4171-93d6-d2ce19683f94",
+                          "taskId": "7398ffd9-ab64-48d0-a854-5f0b28b3dca9",
+                          "type": "generation-success",
+                          "message": "Rapport \"2022/2022-11/reporting_ezMESURE_bibcnrs-*:-report-1-v-2-1_63ddaa82-41b0-4693-a4e9-1f7e9f460b6a\" généré par daily-cron-job",
+                          "data": {
+                            "jobId": "9",
+                            "jobAdded": "2022-11-16T08:35:00.102Z"
+                          },
+                          "createdAt": "2022-11-16T08:35:05.610Z"
+                        },
+                        {
+                          "id": "a877468c-4130-4f30-a429-0852999b259f",
+                          "taskId": "af549626-641b-44ed-9381-f3b751370164",
+                          "type": "generation-success",
+                          "message": "Rapport \"2022/2022-11/reporting_ezMESURE_test-api_8f4d4c51-bfbc-46c7-ae2c-505bab24d052\" généré par daily-cron-job",
+                          "data": {
+                            "jobId": "7",
+                            "jobAdded": "2022-11-16T08:35:00.100Z"
+                          },
+                          "createdAt": "2022-11-16T08:35:05.230Z"
+                        },
+                        {
+                          "id": "e080340c-b217-4113-9615-f0d89d84926d",
+                          "taskId": "696bc968-6155-4258-85be-ef2fa53040a3",
+                          "type": "generation-success",
+                          "message": "Rapport \"2022/2022-11/reporting_ezMESURE_tests-de-slots_7ad82b0f-8ad8-4e35-97d3-52f771f0e110\" généré par daily-cron-job",
+                          "data": {
+                            "jobId": "8",
+                            "jobAdded": "2022-11-16T08:35:00.101Z"
+                          },
+                          "createdAt": "2022-11-16T08:35:03.340Z"
+                        },
+                        {
+                          "id": "b86683b5-e70c-43fe-8f6b-b6a57406e228",
+                          "taskId": "7398ffd9-ab64-48d0-a854-5f0b28b3dca9",
+                          "type": "generation-success",
+                          "message": "Rapport \"2022/2022-11/reporting_ezMESURE_bibcnrs-*:-report-1-v-2-1_e524a804-9d10-46d1-8ae9-6002d278b82e\" généré par auto",
+                          "data": {
+                            "jobId": "5",
+                            "jobAdded": "2022-11-16T06:33:00.089Z"
+                          },
+                          "createdAt": "2022-11-16T06:33:05.551Z"
+                        },
+                        {
+                          "id": "b1800558-1183-40f9-b6a6-683531f28700",
+                          "taskId": "696bc968-6155-4258-85be-ef2fa53040a3",
+                          "type": "generation-success",
+                          "message": "Rapport \"2022/2022-11/reporting_ezMESURE_tests-de-slots_808e7a78-3386-4b6a-bb01-e994da196cab\" généré par auto",
+                          "data": {
+                            "jobId": "4",
+                            "jobAdded": "2022-11-16T06:33:00.089Z"
+                          },
+                          "createdAt": "2022-11-16T06:33:03.267Z"
+                        },
+                        {
+                          "id": "5ae55e48-d4ae-4d1f-a8ed-9d4219f12276",
+                          "taskId": "7398ffd9-ab64-48d0-a854-5f0b28b3dca9",
+                          "type": "generation-success",
+                          "message": "Rapport \"2022/2022-11/reporting_ezMESURE_bibcnrs-*:-report-1-v-2-1_87bb7e0c-d0dc-4204-93a1-73142ad3b9ae\" généré par tom.sublet",
+                          "data": {
+                            "jobId": "143",
+                            "jobAdded": "2022-11-15T13:54:05.851Z",
+                            "jobAttemps": 1
+                          },
+                          "createdAt": "2022-11-15T13:54:11.155Z"
+                        },
+                        {
+                          "id": "4282365e-779f-4d93-9b26-771f73f35472",
+                          "taskId": "7398ffd9-ab64-48d0-a854-5f0b28b3dca9",
+                          "type": "edition",
+                          "message": "Tâche éditée par tom.sublet",
+                          "data": null,
+                          "createdAt": "2022-11-14T14:33:07.000Z"
+                        },
+                        {
+                          "id": "e7eaf700-1a0b-4de5-976c-8bf366fa49f1",
+                          "taskId": "7398ffd9-ab64-48d0-a854-5f0b28b3dca9",
+                          "type": "edition",
+                          "message": "Tâche éditée par tom.sublet",
+                          "data": null,
+                          "createdAt": "2022-11-14T14:32:43.000Z"
+                        },
+                        {
+                          "id": "3d318ebb-110e-48f8-ab9a-c9f63d4f1c60",
+                          "taskId": "7398ffd9-ab64-48d0-a854-5f0b28b3dca9",
+                          "type": "edition",
+                          "message": "Tâche éditée par tom.sublet",
+                          "data": null,
+                          "createdAt": "2022-11-14T09:52:30.000Z"
+                        },
+                        {
+                          "id": "bebec9b2-8c2b-44d0-b740-4c0a766c59bc",
+                          "taskId": "af549626-641b-44ed-9381-f3b751370164",
+                          "type": "generation-error",
+                          "message": "Rapport \"2022/2022-11/reporting_ezMESURE_test-api_fd3526e3-7fc9-48a9-8d30-b6f2f8cfd54d\" non généré par tom.sublet suite à une erreur.",
+                          "data": null,
+                          "createdAt": "2022-11-07T15:16:37.000Z"
+                        }
+                      ],
+                      "meta": {
+                        "count": 15,
+                        "lastId": "bebec9b2-8c2b-44d0-b740-4c0a766c59bc"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/History"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "count": {
+                          "type": "integer"
+                        },
+                        "lastId": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "id": "string",
+                        "taskId": "string",
+                        "type": "string",
+                        "message": "string",
+                        "createdAt": "2019-08-24T14:15:22Z",
+                        "data": {}
+                      },
+                      "meta": {
+                        "count": 1,
+                        "lastId": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "get-history",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "description": "Get history entries of all  tasks. Only accessible to SUPER_USER.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/previous"
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          }
+        ]
       }
     }
   },
@@ -4070,6 +4353,9 @@
     },
     {
       "name": "general"
+    },
+    {
+      "name": "history"
     },
     {
       "name": "layouts"
