@@ -37,8 +37,6 @@ export interface Figure<Type extends FigureType> {
  */
 export type AnyFigure = Figure<Mark> | Figure<'table'> | Figure<'md'> | Figure<'metric'>;
 
-export type AnyFigureFnc = () => AnyFigure | AnyFigure[];
-
 /**
  * Joi validation
  */
