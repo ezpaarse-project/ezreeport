@@ -38,7 +38,7 @@ export default async (job: Queue.Job<GenerationData>) => {
   events.on('templateResolved', async (template: AnyTemplate) => {
     expectedPageCount = template.layouts.length;
   });
-  events.on('pageAdded', async () => {
+  events.on('layoutRendered', async () => {
     actualPageCount += 1;
 
     await job.progress(actualPageCount / expectedPageCount);

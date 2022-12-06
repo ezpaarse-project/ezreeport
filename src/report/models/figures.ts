@@ -37,8 +37,6 @@ export interface Figure<Type extends FigureType> {
  */
 export type AnyFigure = Figure<Mark> | Figure<'table'> | Figure<'md'> | Figure<'metric'>;
 
-export type AnyFigureFnc = () => AnyFigure | AnyFigure[];
-
 /**
  * Joi validation
  */
@@ -51,27 +49,3 @@ export const figureSchema = Joi.object<AnyFigure>({
   params: Joi.object().required(),
   slots: Joi.array().items(Joi.number()),
 });
-
-/**
- * Check if the given figure is a table
- *
- * @param figure The figure
- * @returns Is the figure is a table
- */
-export const isFigureTable = (figure: AnyFigure): figure is Figure<'table'> => figure.type === 'table';
-
-/**
- * Check if the given figure is a text
- *
- * @param figure The figure
- * @returns Is the figure is a text
- */
-export const isFigureMd = (figure: AnyFigure): figure is Figure<'md'> => figure.type === 'md';
-
-/**
- * Check if the given figure is a metric
- *
- * @param figure The figure
- * @returns Is the figure is a metric
- */
-export const isFigureMetric = (figure: AnyFigure): figure is Figure<'metric'> => figure.type === 'metric';

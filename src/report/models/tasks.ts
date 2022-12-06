@@ -63,7 +63,7 @@ const isValidTask = (data: unknown): data is InputTask => {
 };
 
 /**
- * Gett all tasks in DB
+ * Get all tasks in DB
  *
  * @param opts Requests options
  * @param institution The institution of the task. If provided,

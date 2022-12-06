@@ -1,11 +1,4 @@
-import type { Prisma, Task } from '@prisma/client';
-import Joi from 'joi';
-import { compact, merge, omit } from 'lodash';
-import { randomUUID } from 'node:crypto';
-import EventEmitter from 'node:events';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import config from '../lib/config';
+import type { Prisma, Recurrence, Task } from '@prisma/client';
 import {
   add,
   differenceInMilliseconds,
@@ -14,7 +7,14 @@ import {
   formatISO,
   parseISO,
   startOfDay
-} from '../lib/date-fns';
+} from 'date-fns';
+import Joi from 'joi';
+import { compact, merge, omit } from 'lodash';
+import { randomUUID } from 'node:crypto';
+import EventEmitter from 'node:events';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import config from '../lib/config';
 import fetchers, { type Fetchers } from '../lib/generators/fetchers';
 import renderers, { type Renderers } from '../lib/generators/renderers';
 import logger from '../lib/logger';
@@ -22,7 +22,12 @@ import { calcNextDate, calcPeriod } from '../lib/recurrence';
 import { ArgumentError, ConflitError } from '../types/errors';
 import { findInstitutionByIds, findInstitutionContact } from './institutions';
 import { editTaskByIdWithHistory } from './tasks';
-import { isNewTemplate, isNewTemplateDB } from './templates';
+import {
+  isNewTemplate,
+  isNewTemplateDB,
+  type AnyTemplate,
+  type AnyTemplateDB
+} from './templates';
 
 const { ttl, templatesDir, outDir } = config.get('report');
 
@@ -107,6 +112,44 @@ export const isValidResult = (data: unknown): data is ReportResult => {
  */
 const normaliseFilename = (filename: string): string => filename.toLowerCase().replace(/[/ .]/g, '-');
 
+const fetchData = (params: {
+  template: AnyTemplate,
+  taskTemplate: AnyTemplateDB,
+  period: Interval,
+  user: string,
+  institution?: ElasticInstitution,
+  recurrence: Recurrence
+}, events: EventEmitter) => {
+  const {
+    template, taskTemplate, period, user, institution, recurrence,
+  } = params;
+  return Promise.all(
+    template.layouts.map(async (layout, i) => {
+      if (
+        layout.data || layout.figures.every(({ data }) => !!data)
+      ) {
+        return;
+      }
+      const fetchOptions: GeneratorParam<Fetchers, keyof Fetchers> = merge(
+        template.fetchOptions ?? {},
+        layout.fetchOptions ?? {},
+        {
+          indexSuffix: '',
+          ...(taskTemplate.fetchOptions ?? {}),
+          recurrence,
+          period,
+          // template,
+          // eslint-disable-next-line no-underscore-dangle
+          indexPrefix: institution?.indexPrefix ?? '*',
+          user,
+        },
+      );
+      template.layouts[i].fetchOptions = fetchOptions;
+      template.layouts[i].data = await fetchers[layout.fetcher ?? 'elastic'](fetchOptions, events);
+    }),
+  );
+};
+
 /**
  * Generate report
  *
@@ -165,16 +208,18 @@ export const generateReport = async (
     }
 
     // Get institution
-    const [institution = { _source: null }] = await findInstitutionByIds([task.institution]);
+    const [rawInstitution = { _source: null }] = await findInstitutionByIds([task.institution]);
     // eslint-disable-next-line no-underscore-dangle
-    if (!institution._source) {
+    if (!rawInstitution._source) {
       throw new Error(`Institution "${task.institution}" not found`);
     }
+    // eslint-disable-next-line no-underscore-dangle
+    const institution = rawInstitution._source?.institution;
 
     // Get username who will run the requests
     const contact = (
       // eslint-disable-next-line no-underscore-dangle
-      await findInstitutionContact(institution._id.toString())
+      await findInstitutionContact(rawInstitution._id.toString())
     ) ?? { _source: null };
     // eslint-disable-next-line no-underscore-dangle
     if (!contact._source) {
@@ -190,6 +235,7 @@ export const generateReport = async (
     let period = calcPeriod(parseISO(task.nextRun.toString()), task.recurrence);
     const distance = differenceInMilliseconds(period.end, period.start);
 
+    // Parse custom period
     if (customPeriod) {
       const cp = {
         start: startOfDay(parseISO(customPeriod.start)),
@@ -207,6 +253,7 @@ export const generateReport = async (
       result.detail.destroyAt = add(today, { seconds: ttl.iterations * (distance / 1000) });
     }
 
+    // Parse task template
     const taskTemplate = task.template;
     if (!isNewTemplateDB(taskTemplate) || (typeof taskTemplate !== 'object' || Array.isArray(taskTemplate))) {
       // As validation throws an error, this line should be called only if 2nd assertion fails
@@ -236,35 +283,18 @@ export const generateReport = async (
 
     events.emit('templateResolved', template);
 
-    // Fetch data
-    await Promise.all(
-      template.layouts.map(async (layout, i) => {
-        if (
-          layout.data || layout.figures.every(({ data }) => !!data)
-        ) {
-          return;
-        }
-        const fetchOptions: GeneratorParam<Fetchers, keyof Fetchers> = merge(
-          template.fetchOptions ?? {},
-          layout.fetchOptions ?? {},
-          {
-            indexSuffix: '',
-            ...(taskTemplate.fetchOptions ?? { }),
-            recurrence: task.recurrence,
-            period,
-            // template,
-            // eslint-disable-next-line no-underscore-dangle
-            indexPrefix: institution._source?.institution.indexPrefix ?? '*',
-            user,
-          },
-        );
-        template.layouts[i].fetchOptions = fetchOptions;
-        template.layouts[i].data = await fetchers[layout.fetcher ?? 'elastic'](fetchOptions, events);
-      }),
-    );
+    await fetchData({
+      template,
+      taskTemplate,
+      period,
+      recurrence: task.recurrence,
+      institution,
+      user,
+    }, events);
     // Cleanup resolved resolvedTemplate
     delete template.fetchOptions;
     events.emit('templateFetched', template);
+    logger.debug('[gen] Data fetched');
 
     // Render report
     const renderOptions: GeneratorParam<Renderers, keyof Renderers> = merge(
@@ -371,6 +401,7 @@ export const generateReport = async (
     logger.error(`[gen] Report "${namepath}" failed to generate in ${(result.detail.took / 1000).toFixed(2)}s with error : ${(error as Error).message}`);
   }
 
+  // Write result when process is ending
   await writeFile(
     `${filepath}.det.json`,
     JSON.stringify(
