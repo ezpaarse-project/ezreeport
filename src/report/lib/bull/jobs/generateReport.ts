@@ -39,7 +39,7 @@ export default async (job: Queue.Job<GenerationData>) => {
   events.on('templateResolved', async (template: AnyTemplate) => {
     expectedPageCount = template.layouts.length;
   });
-  events.on('pageAdded', async () => {
+  events.on('layoutRendered', async () => {
     actualPageCount += 1;
 
     await job.progress(actualPageCount / expectedPageCount);
@@ -48,7 +48,6 @@ export default async (job: Queue.Job<GenerationData>) => {
     contact = c.email;
   });
 
-  logger.debug(JSON.stringify(customPeriod));
   const res = await generateReport(
     task,
     origin,
