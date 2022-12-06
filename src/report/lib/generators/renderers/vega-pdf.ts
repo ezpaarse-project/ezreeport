@@ -206,10 +206,9 @@ const resolveManualFigureSlot = (params: {
 /**
  * Resolve slot used by current iteration
  *
- * @param params.slots Possible slots (@see {@link generateSlots})
  * @param params
  *
- * @returns
+ * @returns The figure & the slot
  */
 const resolveSlot = (params: {
   /**
@@ -241,18 +240,18 @@ const resolveSlot = (params: {
     slots, viewport, grid, figures, figureIndex, margin,
   } = params;
   const figure = figures[figureIndex];
-  let figureSlot: Area;
+  let slot: Area;
 
   // Slot resolution
   if (figure.slots && figure.slots.length > 0) {
     // Manual mode
     const indices = [...figure.slots].sort();
     // Take first wanted slot by default
-    figureSlot = { ...slots[indices[0]] };
+    slot = { ...slots[indices[0]] };
 
     if (indices.length === slots.length) {
       // Take whole space if all slots are needed
-      figureSlot = { ...viewport };
+      slot = { ...viewport };
     } else if (indices.length > 1) {
       // More complex situations
       const { width, height } = resolveManualFigureSlot({
@@ -262,30 +261,30 @@ const resolveSlot = (params: {
         indices,
       });
 
-      figureSlot.width += width;
-      figureSlot.height += height;
+      slot.width += width;
+      slot.height += height;
     }
   } else {
     // Auto mode
-    figureSlot = { ...slots[figureIndex] };
+    slot = { ...slots[figureIndex] };
     // If only one figure, take whole viewport
     if (figures.length === 1) {
-      figureSlot.width = viewport.width;
-      figureSlot.height = viewport.height;
+      slot.width = viewport.width;
+      slot.height = viewport.height;
     }
 
     // If no second row, take whole height
     if (figures.length <= slots.length - 2) {
-      figureSlot.height = viewport.height;
+      slot.height = viewport.height;
     }
 
     // If in penultimate slot and last figure, take whole remaining space
     if (figureIndex === slots.length - 2 && figureIndex === figures.length - 1) {
-      figureSlot.width += slots[figureIndex + 1].width + margin.horizontal;
+      slot.width += slots[figureIndex + 1].width + margin.horizontal;
     }
   }
   return {
-    figureSlot,
+    slot,
     figure,
   };
 };
@@ -352,7 +351,7 @@ const generatePdfWithVega = async (
       figures.length = Math.min(figures.length, slots.length);
 
       for (let figureIndex = 0; figureIndex < figures.length; figureIndex += 1) {
-        const { figure, figureSlot: slot } = resolveSlot({
+        const { figure, slot } = resolveSlot({
           figureIndex,
           figures,
           grid,
