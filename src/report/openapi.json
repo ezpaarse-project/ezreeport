@@ -3556,6 +3556,9 @@
           },
           {
             "$ref": "#/components/parameters/count"
+          },
+          {
+            "$ref": "#/components/parameters/institution"
           }
         ]
       }
