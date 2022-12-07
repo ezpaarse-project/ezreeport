@@ -1,4 +1,6 @@
 import { parseISO } from 'date-fns';
+import type { PaginatedApiResponse } from '../lib/axios';
+import axios from '../lib/axios';
 
 export interface RawHistory {
   id: string,
@@ -24,3 +26,33 @@ export const parseHistory = (entry: RawHistory): History => ({
   ...entry,
   createdAt: parseISO(entry.createdAt),
 });
+
+/**
+ * Get all available history entries
+ *
+ * Needs `history-get` permission
+ *
+ * @param paginationOpts Options for pagination
+ * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ *
+ * @returns All history entries' info
+ */
+export const getAllEntries = async (
+  paginationOpts?: { previous?: History['id'], count?: number },
+  institution?: string,
+): Promise<PaginatedApiResponse<History[]>> => {
+  const { data: { content, ...response } } = await axios.get<PaginatedApiResponse<RawHistory[]>>(
+    '/history',
+    {
+      params: {
+        institution,
+        ...(paginationOpts ?? {}),
+      },
+    },
+  );
+
+  return {
+    ...response,
+    content: content.map(parseHistory),
+  };
+};
