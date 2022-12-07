@@ -35,7 +35,7 @@ export interface Queue<Data, Result> {
 /**
  * Get all available queues
  *
- * Needs `perms.queues.read_all`
+ * Needs `queues-get` permission
  *
  * @returns All queues' names
  */
@@ -44,7 +44,7 @@ export const getAllQueues = () => axios.$get<string[]>('/queues');
 /**
  * Get queue info
  *
- * Needs `perms.queues.read_one`
+ * Needs `queues-get-queue` permission
  *
  * @param queueName Name of the queue
  *
@@ -55,7 +55,7 @@ export const getQueue = <Data, Result>(queueName: Job<Data>['queue']) => axios.$
 /**
  * Pause queue
  *
- * Needs `perms.queues.update`
+ * Needs `queues-put-queue-pause` permission
  *
  * @param queueName Name of the queue
  *
@@ -66,7 +66,7 @@ export const pauseQueue = <Data, Result>(queueName: Job<Data>['queue']) => axios
 /**
  * Resume queue
  *
- * Needs `perms.queues.update`
+ * Needs `queues-put-queue-resume` permission
  *
  * @param queueName Name of the queue
  *
@@ -77,7 +77,7 @@ export const resumeQueue = <Data, Result>(queueName: Job<Data>['queue']) => axio
 /**
  * Get job info
  *
- * Needs `perms.queues.jobs.read`
+ * Needs `queues-get-queue-jobId` permission
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
@@ -94,7 +94,7 @@ export const getJob = <Data, Result>(
 /**
  * Retry job that failed
  *
- * Needs `perms.queues.jobs.update`
+ * Needs `queues-post-queue-jobId-retry` permission
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue

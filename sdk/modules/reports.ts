@@ -44,7 +44,7 @@ type FullReportJob = FullJob<ReportData, ReportResult>;
 /**
  * Start generation of a report
  *
- * Needs `perms.reports.create`
+ * Needs `tasks-post-task-run` permission
  *
  * @param taskId Id of the task
  * @param params Other params for overriding default
@@ -55,7 +55,14 @@ type FullReportJob = FullJob<ReportData, ReportResult>;
 export const startGeneration = (
   taskId: string,
   params?: {
+    /**
+     * Override targets of task. Also enable first level of debugging
+     * (disable generation history)
+     */
     testEmails?: string[],
+    /**
+     * Override period, must match task's recurrence
+     */
     period?: { start: string, end: string },
   },
   institution?: string,
@@ -75,7 +82,7 @@ export const startGeneration = (
 /**
  * Start generation of a report and track progress
  *
- * Needs `perms.reports.create` & `perms.queues.jobs.read_one`
+ * Needs `tasks-post-task-run` & `queues-get-queue-jobId` permissions
  *
  * @param taskId Id of the task
  * @param params Other params for overriding default
@@ -136,6 +143,8 @@ export const listenGeneration = (
 /**
  * Get report's related file
  *
+ * Needs `reports-get-year-yearMonth-filename` permission
+ *
  * @param pathName Path to the file
  * @param institution Force institution
  *
@@ -148,6 +157,8 @@ const getFile = async <Result>(
 
 /**
  * Get report main file (the result) by giving the report's name
+ *
+ * Needs `reports-get-year-yearMonth-filename` permission
  *
  * @param name Name of the report
  * @param ext The extension of the result (renderer dependent)
@@ -163,6 +174,8 @@ export const getReportFileByName = (
 
 /**
  * Get report main file (the result) by giving job's info
+ *
+ * Needs `reports-get-year-yearMonth-filename` permission
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
@@ -184,6 +197,8 @@ export const getReportFileByJob = async (
 /**
  * Get report detail by giving the report's name
  *
+ * Needs `reports-get-year-yearMonth-filename` permission
+ *
  * @param name Name of the report
  * @param institution Force institution
  *
@@ -196,6 +211,8 @@ export const getReportDetailByName = (
 
 /**
  * Get report detail by giving job's info
+ *
+ * Needs `reports-get-year-yearMonth-filename` permission
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
@@ -217,6 +234,8 @@ export const getReportDetailByJob = async (
 /**
  * Get report debug file by giving the report's name
  *
+ * Needs `reports-get-year-yearMonth-filename` permission
+ *
  * @param name Name of the report
  * @param institution Force institution
  *
@@ -229,6 +248,8 @@ export const getReportDebugByName = (
 
 /**
  * Get report debug file by giving job's info
+ *
+ * Needs `reports-get-year-yearMonth-filename` permission
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
