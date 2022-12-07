@@ -95,7 +95,7 @@ export const startGeneration = (
  *
  * @returns When generation ends, with detail
  */
-export const listenGeneration = (
+export const startAndListenGeneration = (
   ...p: Parameters<typeof startGeneration>
 ) => createEventfullPromise(
   async (events) => {
