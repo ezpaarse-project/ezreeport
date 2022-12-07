@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { setTimeout } from 'node:timers/promises';
 import { differenceInMilliseconds } from '../lib/date-fns';
 import { elasticPing } from '../lib/elastic';
+import { createRoute } from '../lib/express-utils';
 import logger from '../lib/logger';
 import { name as serviceName } from '../package.json';
 import { HTTPError } from '../types/errors';
@@ -74,10 +75,12 @@ const ping = async (
 
 const router = Router();
 
+Object.assign(router, { _permPrefix: 'health' });
+
 /**
  * Get all services that current one can ping (himself included)
  */
-router.get('/', (_req, res) => {
+createRoute(router, 'GET /', (_req, res) => {
   res.sendJson({
     current: serviceName,
     services: Object.keys(pingers),
@@ -87,7 +90,7 @@ router.get('/', (_req, res) => {
 /**
  * Ping all services (himself included)
  */
-router.get('/all', async (_req, res) => {
+createRoute(router, 'GET /all', async (_req, res) => {
   try {
     const result = await Promise.all(
       Object.keys(pingers).map((s) => ping(s)),
@@ -101,7 +104,7 @@ router.get('/all', async (_req, res) => {
 /**
  * Ping specific service
  */
-router.get('/:service', async (req, res) => {
+createRoute(router, 'GET /:service', async (req, res) => {
   try {
     const { service } = req.params;
 

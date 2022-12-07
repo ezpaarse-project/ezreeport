@@ -6,14 +6,17 @@ import {
   startCron,
   stopCron
 } from '../lib/cron';
-import checkRight, { Roles } from '../middlewares/auth';
+import { createSecuredRoute } from '../lib/express-utils';
+import { Roles } from '../models/roles';
 
 const router = Router();
+
+Object.assign(router, { _permPrefix: 'crons' });
 
 /**
  * Get all possible crons
  */
-router.get('/', checkRight(Roles.SUPER_USER), async (req, res) => {
+createSecuredRoute(router, 'GET /', Roles.SUPER_USER, async (req, res) => {
   try {
     res.sendJson(await getAllCrons());
   } catch (error) {
@@ -24,7 +27,7 @@ router.get('/', checkRight(Roles.SUPER_USER), async (req, res) => {
 /**
  * Get info about specific cron
  */
-router.get('/:cron', checkRight(Roles.SUPER_USER), async (req, res) => {
+createSecuredRoute(router, 'GET /:cron', Roles.SUPER_USER, async (req, res) => {
   try {
     const { cron } = req.params;
     res.sendJson(await getCron(cron));
@@ -36,7 +39,7 @@ router.get('/:cron', checkRight(Roles.SUPER_USER), async (req, res) => {
 /**
  * Start specific cron
  */
-router.put('/:cron/start', checkRight(Roles.SUPER_USER), async (req, res) => {
+createSecuredRoute(router, 'PUT /:cron/start', Roles.SUPER_USER, async (req, res) => {
   try {
     const { cron } = req.params;
     res.sendJson(await startCron(cron));
@@ -48,7 +51,7 @@ router.put('/:cron/start', checkRight(Roles.SUPER_USER), async (req, res) => {
 /**
  * Stop specific cron
  */
-router.put('/:cron/stop', checkRight(Roles.SUPER_USER), async (req, res) => {
+createSecuredRoute(router, 'PUT /:cron/stop', Roles.SUPER_USER, async (req, res) => {
   try {
     const { cron } = req.params;
     res.sendJson(await stopCron(cron));
@@ -60,7 +63,7 @@ router.put('/:cron/stop', checkRight(Roles.SUPER_USER), async (req, res) => {
 /**
  * Force a specific cron to run
  */
-router.post('/:cron/force', checkRight(Roles.SUPER_USER), async (req, res) => {
+createSecuredRoute(router, 'POST /:cron/force', Roles.SUPER_USER, async (req, res) => {
   try {
     const { cron } = req.params;
     res.sendJson(await forceCron(cron));

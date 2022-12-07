@@ -4,8 +4,10 @@ import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
 import { pick } from 'lodash';
 import { addTaskToQueue } from '../lib/bull';
+import { createRoute, createSecuredRoute } from '../lib/express-utils';
 import { b64ToString } from '../lib/utils';
-import checkRight, { checkInstitution, Roles } from '../middlewares/auth';
+import { checkInstitution } from '../middlewares/auth';
+import { Roles } from '../models/roles';
 import {
   createTask,
   deleteTaskById,
@@ -18,12 +20,14 @@ import { ArgumentError, HTTPError, NotFoundError } from '../types/errors';
 
 const router = Router();
 
+Object.assign(router, { _permPrefix: 'tasks' });
+
 /**
  * List all active tasks of authed user's institution.
  *
  * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
  */
-router.get('/', checkRight(Roles.READ), checkInstitution, async (req, res) => {
+createSecuredRoute(router, 'GET /', Roles.READ, checkInstitution, async (req, res) => {
   try {
     const { previous: p = undefined, count = '15' } = req.query;
     const c = +count;
@@ -66,7 +70,7 @@ router.get('/', checkRight(Roles.READ), checkInstitution, async (req, res) => {
  *
  * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
  */
-router.post('/', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res) => {
+createSecuredRoute(router, 'POST /', Roles.READ_WRITE, checkInstitution, async (req, res) => {
   try {
     if (!req.user || !req.user.institution) {
       throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
@@ -90,7 +94,7 @@ router.post('/', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res
  *
  * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
  */
-router.get('/:task', checkRight(Roles.READ), checkInstitution, async (req, res) => {
+createSecuredRoute(router, 'GET /:task', Roles.READ, checkInstitution, async (req, res) => {
   try {
     const { task: id } = req.params;
 
@@ -114,7 +118,7 @@ router.get('/:task', checkRight(Roles.READ), checkInstitution, async (req, res) 
  *
  * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
  */
-router.put('/:task', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res) => {
+createSecuredRoute(router, 'PUT /:task', Roles.READ_WRITE, checkInstitution, async (req, res) => {
   try {
     const { task: id } = req.params;
 
@@ -144,7 +148,7 @@ router.put('/:task', checkRight(Roles.READ_WRITE), checkInstitution, async (req,
  *
  * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
  */
-router.delete('/:task', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res) => {
+createSecuredRoute(router, 'DELETE /:task', Roles.READ_WRITE, checkInstitution, async (req, res) => {
   try {
     const { task: id } = req.params;
 
@@ -169,7 +173,7 @@ router.delete('/:task', checkRight(Roles.READ_WRITE), checkInstitution, async (r
  *
  * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
  */
-router.put('/:task/enable', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res) => {
+createSecuredRoute(router, 'PUT /:task/enable', Roles.READ_WRITE, checkInstitution, async (req, res) => {
   try {
     const { task: id } = req.params;
 
@@ -209,7 +213,7 @@ router.put('/:task/enable', checkRight(Roles.READ_WRITE), checkInstitution, asyn
  *
  * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
  */
-router.put('/:task/disable', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res) => {
+createSecuredRoute(router, 'PUT /:task/disable', Roles.READ_WRITE, checkInstitution, async (req, res) => {
   try {
     const { task: id } = req.params;
 
@@ -251,7 +255,7 @@ router.put('/:task/disable', checkRight(Roles.READ_WRITE), checkInstitution, asy
  * Parameter `test_emails` overrides task emails & enable first level of debug
  * Parameter `debug` is not accessible in PROD and enable second level of debug
  */
-router.post('/:task/run', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res) => {
+createSecuredRoute(router, 'POST /:task/run', Roles.READ_WRITE, checkInstitution, async (req, res) => {
   try {
     const { task: id } = req.params;
     let { test_emails: testEmails } = req.query;
@@ -337,7 +341,7 @@ const isValidUnsubData = (data: unknown): data is UnsubData => {
 /**
  * Shorthand to remove given email in given task
  */
-router.put('/:task/unsubscribe', async (req, res) => {
+createRoute(router, 'PUT /:task/unsubscribe', async (req, res) => {
   try {
     const { task: id } = req.params;
     const data = req.body;

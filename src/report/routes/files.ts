@@ -3,19 +3,23 @@ import { StatusCodes } from 'http-status-codes';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import config from '../lib/config';
-import checkRight, { checkInstitution, Roles } from '../middlewares/auth';
+import { createSecuredRoute } from '../lib/express-utils';
+import { checkInstitution } from '../middlewares/auth';
 import { isValidResult } from '../models/reports';
+import { Roles } from '../models/roles';
 import { getTaskById } from '../models/tasks';
 import { HTTPError } from '../types/errors';
 
 const router = Router();
+
+Object.assign(router, { _permPrefix: 'reports' });
 
 const { outDir } = config.get('report');
 
 /**
  * Get speficic report
  */
-router.get('/:year/:yearMonth/:filename', checkRight(Roles.READ), checkInstitution, async (req, res) => {
+createSecuredRoute(router, 'GET /:year/:yearMonth/:filename', Roles.READ, checkInstitution, async (req, res) => {
   const { year, yearMonth, filename } = req.params;
   const reportFilename = filename.replace(/\..*$/, '');
   const basePath = join(outDir, year, yearMonth);

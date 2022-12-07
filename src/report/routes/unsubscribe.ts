@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { readFile } from 'fs/promises';
 import { compile as handlebars } from 'handlebars';
 import Joi from 'joi';
+import { createRoute } from '../lib/express-utils';
 import { b64ToString } from '../lib/utils';
 import { getTaskById } from '../models/tasks';
 import { ArgumentError, NotFoundError } from '../types/errors';
@@ -11,7 +12,7 @@ const router = Router();
 /**
  * Get unsubscribe static UI
  */
-router.get('/:unsubId', async (req, res) => {
+createRoute(router, 'GET /:unsubId', async (req, res) => {
   try {
     const { unsubId } = req.params;
 

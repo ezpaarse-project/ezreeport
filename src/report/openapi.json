@@ -27,7 +27,7 @@
       "get": {
         "summary": "Get pingables services",
         "tags": [
-          "general"
+          "health"
         ],
         "responses": {
           "200": {
@@ -103,7 +103,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "ping",
+        "operationId": "health-get",
         "description": "Check services that current one can ping"
       }
     },
@@ -111,7 +111,7 @@
       "get": {
         "summary": "Ping all services",
         "tags": [
-          "general"
+          "health"
         ],
         "responses": {
           "200": {
@@ -198,7 +198,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-ping-_all",
+        "operationId": "health-get-all",
         "description": "Ping all services (himself included)"
       },
       "parameters": []
@@ -217,7 +217,7 @@
       "get": {
         "summary": "Ping specific service",
         "tags": [
-          "general"
+          "health"
         ],
         "responses": {
           "200": {
@@ -297,7 +297,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-ping-service",
+        "operationId": "health-get-service",
         "description": "Ping specific service"
       }
     },
@@ -424,7 +424,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-tasks",
+        "operationId": "tasks-get",
         "description": "Get tasks of the authed user's institution. Accessible to READ.",
         "security": [
           {
@@ -445,7 +445,7 @@
       },
       "post": {
         "summary": "Add new task",
-        "operationId": "post-tasks",
+        "operationId": "tasks-post",
         "responses": {
           "201": {
             "description": "Created",
@@ -760,7 +760,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-tasks-taskId",
+        "operationId": "tasks-get-taskId",
         "description": "Get specific task of the authed user's institution. Accessible to READ.",
         "security": [
           {
@@ -775,7 +775,7 @@
       },
       "put": {
         "summary": "Update specific task",
-        "operationId": "put-tasks-taskId",
+        "operationId": "tasks-put-taskId",
         "responses": {
           "200": {
             "description": "OK",
@@ -953,7 +953,7 @@
       },
       "delete": {
         "summary": "Delete specific task",
-        "operationId": "delete-tasks-taskId",
+        "operationId": "tasks-delete-taskId",
         "responses": {
           "200": {
             "description": "OK",
@@ -1114,7 +1114,7 @@
       ],
       "put": {
         "summary": "Enable task",
-        "operationId": "put-tasks-taskId-enable",
+        "operationId": "tasks-put-taskId-enable",
         "responses": {
           "200": {
             "description": "OK",
@@ -1246,7 +1246,7 @@
     "/tasks/{taskId}/disable": {
       "put": {
         "summary": "Disable task",
-        "operationId": "put-tasks-taskId]-disable",
+        "operationId": "tasks-put-taskId]-disable",
         "responses": {
           "200": {
             "description": "OK",
@@ -1400,7 +1400,7 @@
       ],
       "post": {
         "summary": "Generate report",
-        "operationId": "post-tasks-taskId-run",
+        "operationId": "tasks-post-task-run",
         "responses": {
           "200": {
             "description": "OK",
@@ -1511,7 +1511,7 @@
     "/tasks/{taskId}/unsubscribe": {
       "put": {
         "summary": "Unsubscribe from task",
-        "operationId": "post-tasks-taskId-unsubscribe",
+        "operationId": "tasks-post-taskId-unsubscribe",
         "responses": {
           "200": {
             "description": "OK",
@@ -1654,7 +1654,7 @@
           }
         },
         "tags": [
-          "tasks"
+          "unsubscribe"
         ],
         "parameters": [
           {
@@ -1762,7 +1762,7 @@
             }
           }
         },
-        "operationId": "get-reports-file",
+        "operationId": "reports-get-year-yearMonth-filename",
         "description": "Get specific report. Accessible to READ.",
         "parameters": [
           {
@@ -1852,7 +1852,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-queues",
+        "operationId": "queues-get",
         "description": "List all possible queues names. Accessible to READ.",
         "security": [
           {
@@ -1958,7 +1958,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-queues-queue",
+        "operationId": "queues-get-queue",
         "description": "Get info about a queue. Only accessible to SUPER_USER.",
         "security": [
           {
@@ -1981,7 +1981,7 @@
       ],
       "put": {
         "summary": "Pause queue",
-        "operationId": "put-queues-queue-pause",
+        "operationId": "queues-put-queue-pause",
         "responses": {
           "200": {
             "description": "OK",
@@ -2087,7 +2087,7 @@
       ],
       "put": {
         "summary": "Resume queue",
-        "operationId": "put-queues-queue-resume",
+        "operationId": "queues-put-queue-resume",
         "responses": {
           "200": {
             "description": "OK",
@@ -2288,7 +2288,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-queues-queue-jobId",
+        "operationId": "queues-get-queue-jobId",
         "description": "Get specific job of the authed user's institution. Accessible to READ.",
         "security": [
           {
@@ -2320,7 +2320,7 @@
       ],
       "post": {
         "summary": "Retry specific job",
-        "operationId": "post-queues-queue-jobId-retry",
+        "operationId": "queues-post-queue-jobId-retry",
         "responses": {
           "200": {
             "description": "OK",
@@ -2499,7 +2499,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-crons",
+        "operationId": "crons-get",
         "security": [
           {
             "ezmesure-jwt": []
@@ -2586,7 +2586,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-crons-cron]",
+        "operationId": "crons-get-cron",
         "description": "Get specific crons. Only accessible to SUPER_USER.",
         "security": [
           {
@@ -2620,7 +2620,7 @@
       ],
       "put": {
         "summary": "Start cron",
-        "operationId": "put-crons-cron-start",
+        "operationId": "crons-put-cron-start",
         "responses": {
           "200": {
             "description": "OK",
@@ -2718,7 +2718,7 @@
       ],
       "put": {
         "summary": "Stop cron",
-        "operationId": "put-crons-cron-stop",
+        "operationId": "crons-put-cron-stop",
         "responses": {
           "200": {
             "description": "OK",
@@ -2816,7 +2816,7 @@
       ],
       "post": {
         "summary": "Force cron",
-        "operationId": "post-crons-cron-force",
+        "operationId": "crons-post-cron-force",
         "responses": {
           "200": {
             "description": "OK",
@@ -2935,18 +2935,18 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-unsubscribe-unsubId",
+        "operationId": "unsubscribe-get-unsubId",
         "description": "Get unsubscribe form to be removed from task targets.",
         "tags": [
-          "general"
+          "unsubscribe"
         ]
       }
     },
-    "/layouts": {
+    "/templates": {
       "get": {
         "summary": "Get templates",
         "tags": [
-          "layouts"
+          "templates"
         ],
         "responses": {
           "200": {
@@ -3044,7 +3044,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-layouts",
+        "operationId": "templates-get",
         "security": [
           {
             "ezmesure-jwt": []
@@ -3054,7 +3054,7 @@
       },
       "parameters": []
     },
-    "/layouts/{layoutName}": {
+    "/templates/{layoutName}": {
       "parameters": [
         {
           "schema": {
@@ -3069,7 +3069,7 @@
       "get": {
         "summary": "Get specific layout",
         "tags": [
-          "layouts"
+          "templates"
         ],
         "responses": {
           "200": {
@@ -3160,14 +3160,14 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-layouts-layoutName",
+        "operationId": "templates-get-name(*)",
         "security": [
           {
             "ezmesure-jwt": []
           }
         ],
         "parameters": [],
-        "description": "Get specific defined templated. Accessible to READ_WRITE."
+        "description": "Get specific defined template. Accessible to READ_WRITE."
       }
     },
     "/history": {
@@ -3408,13 +3408,13 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-history",
+        "operationId": "history-get",
         "security": [
           {
             "ezmesure-jwt": []
           }
         ],
-        "description": "Get history entries of all  tasks. Only accessible to SUPER_USER.",
+        "description": "Get history entries of all tasks. Only accessible to SUPER_USER.",
         "parameters": [
           {
             "$ref": "#/components/parameters/previous"
@@ -3429,7 +3429,7 @@
       "get": {
         "summary": "Get user info",
         "tags": [
-          "general"
+          "auth"
         ],
         "responses": {
           "200": {
@@ -3524,13 +3524,114 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-me",
+        "operationId": "auth-get",
         "security": [
           {
             "ezmesure-jwt": []
           }
         ],
-        "description": "Get authed user info"
+        "description": "Get authed user info. Accessible to READ."
+      }
+    },
+    "/me/permissions": {
+      "get": {
+        "summary": "Check permissions",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "health": true,
+                        "crons": {
+                          "read": false,
+                          "update": false
+                        },
+                        "tasks": {
+                          "customInstitution": false,
+                          "create": true,
+                          "read": true,
+                          "update": true,
+                          "delete": true
+                        },
+                        "reports": {
+                          "create": true,
+                          "read": true
+                        },
+                        "queues": {
+                          "read_all": true,
+                          "read_one": false,
+                          "update": false,
+                          "jobs": {
+                            "read": true,
+                            "update": true
+                          }
+                        },
+                        "layouts": {
+                          "read": true
+                        },
+                        "history": {
+                          "read": false
+                        }
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "auth-get-permissions",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "description": "Check permission of current user. Accessible to READ."
       }
     }
   },
@@ -4442,16 +4543,19 @@
   },
   "tags": [
     {
+      "name": "auth"
+    },
+    {
       "name": "cron"
     },
     {
-      "name": "general"
+      "name": "health"
     },
     {
       "name": "history"
     },
     {
-      "name": "layouts"
+      "name": "templates"
     },
     {
       "name": "queue"
@@ -4461,6 +4565,9 @@
     },
     {
       "name": "tasks"
+    },
+    {
+      "name": "unsubscribe"
     }
   ]
 }

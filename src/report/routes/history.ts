@@ -1,14 +1,17 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import checkRight, { Roles } from '../middlewares/auth';
+import { createSecuredRoute } from '../lib/express-utils';
 import { getAllHistoryEntries } from '../models/history';
+import { Roles } from '../models/roles';
 
 const router = Router();
+
+Object.assign(router, { _permPrefix: 'history' });
 
 /**
  * List all history entries.
  */
-router.get('/', checkRight(Roles.SUPER_USER), async (req, res) => {
+createSecuredRoute(router, 'GET /', Roles.SUPER_USER, async (req, res) => {
   try {
     const { previous: p = undefined, count = '15' } = req.query;
     const c = +count;
