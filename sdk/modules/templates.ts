@@ -1,27 +1,31 @@
 import axios from '../lib/axios';
 
-interface Template {
+export interface Figure {
+  type: string,
+  data: string | unknown[],
+  params: object,
+  slots?: number[]
+}
+
+export interface Layout {
+  data?: unknown
+  fetcher?: string,
+  fetchOptions?: object,
+  figures: Figure[]
+}
+
+export interface Template {
   name: string,
   renderer: string,
   pageCount: number,
 }
 
-interface FullTemplate extends Template {
+export interface FullTemplate extends Template {
   template: {
     renderer?: string,
     renderOptions?: object,
     fetchOptions?: object,
-    layouts: {
-      data?: unknown
-      fetcher?: string,
-      fetchOptions?: object,
-      figures: {
-        type: string,
-        data: string | unknown[],
-        params: object,
-        slots?: number[]
-      }[]
-    }[]
+    layouts: Layout[]
   }
 }
 

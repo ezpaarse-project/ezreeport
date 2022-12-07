@@ -8,6 +8,7 @@ import {
   type RawPeriod
 } from '../lib/utils';
 import { getJob, type FullJob, type Job } from './queues';
+import type { RawFullTask } from './tasks';
 
 interface RawReportResultDetail {
   createdAt: string, // Date
@@ -71,16 +72,16 @@ const parseReportResult = (result: RawReportResult): ReportResult => ({
   detail: parseReportResultDetail(result.detail),
 });
 
-interface ReportData {
-  task: any, // Task
+interface RawReportData {
+  task: RawFullTask, // Task
   origin: string,
   writeHistory?: boolean,
   customPeriod?: RawPeriod, // Period
   debug?: boolean
 }
 
-type ReportJob = Job<ReportData>;
-type FullReportJob = FullJob<ReportData, RawReportResult>;
+type ReportJob = Job<RawReportData>;
+type FullReportJob = FullJob<RawReportData, RawReportResult>;
 
 /**
  * Start generation of a report
@@ -94,7 +95,7 @@ type FullReportJob = FullJob<ReportData, RawReportResult>;
  * @returns Job info to track progress
  */
 export const startGeneration = (
-  taskId: string,
+  taskId: RawFullTask['id'],
   params?: {
     /**
      * Override targets of task. Also enable first level of debugging
@@ -160,7 +161,7 @@ export const startAndListenGeneration = (
         },
         // FIXME: What if param order changes ?
         // eslint-disable-next-line no-await-in-loop
-      } = await getJob<ReportData, RawReportResult>(queue, id, p[2]);
+      } = await getJob<RawReportData, RawReportResult>(queue, id, p[2]);
       last = { progress, status, result };
       events.emit('progress', { progress, status });
 
@@ -227,7 +228,7 @@ export const getReportFileByName = (
 export const getReportFileByJob = async (
   ...p: Parameters<typeof getJob>
 ) => {
-  const { content: { result } } = await getJob<ReportData, RawReportResult>(...p);
+  const { content: { result } } = await getJob<RawReportData, RawReportResult>(...p);
   if (!result) {
     throw new Error('Job have no result');
   }
@@ -267,7 +268,7 @@ export const getReportDetailByName = async (
 export const getReportDetailByJob = async (
   ...p: Parameters<typeof getJob>
 ) => {
-  const { content: { result } } = await getJob<ReportData, RawReportResult>(...p);
+  const { content: { result } } = await getJob<RawReportData, RawReportResult>(...p);
   if (!result) {
     throw new Error('Job have no result');
   }
@@ -305,7 +306,7 @@ export const getReportDebugByName = (
 export const getReportDebugByJob = async (
   ...p: Parameters<typeof getJob>
 ) => {
-  const { content: { result } } = await getJob<ReportData, RawReportResult>(...p);
+  const { content: { result } } = await getJob<RawReportData, RawReportResult>(...p);
   if (!result) {
     throw new Error('Job have no result');
   }
