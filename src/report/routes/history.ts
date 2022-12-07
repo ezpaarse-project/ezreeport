@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import checkRight, { Roles } from '../middlewares/auth';
+import checkRight, { checkInstitution, Roles } from '../middlewares/auth';
 import { getAllHistoryEntries } from '../models/history';
 
 const router = Router();
@@ -8,7 +8,7 @@ const router = Router();
 /**
  * List all history entries.
  */
-router.get('/', checkRight(Roles.SUPER_USER), async (req, res) => {
+router.get('/', checkRight(Roles.SUPER_USER), checkInstitution, async (req, res) => {
   try {
     const { previous: p = undefined, count = '15' } = req.query;
     const c = +count;
