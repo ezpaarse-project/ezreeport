@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { createSecuredRoute } from '../lib/express-utils';
+import { checkInstitution } from '../middlewares/auth';
 import { getAllHistoryEntries } from '../models/history';
 import { Roles } from '../models/roles';
 
@@ -11,7 +12,7 @@ Object.assign(router, { _permPrefix: 'history' });
 /**
  * List all history entries.
  */
-createSecuredRoute(router, 'GET /', Roles.SUPER_USER, async (req, res) => {
+createSecuredRoute(router, 'GET /', Roles.SUPER_USER, checkInstitution, async (req, res) => {
   try {
     const { previous: p = undefined, count = '15' } = req.query;
     const c = +count;
@@ -21,6 +22,7 @@ createSecuredRoute(router, 'GET /', Roles.SUPER_USER, async (req, res) => {
         count: c,
         previous: p?.toString(),
       },
+      req.user?.institution,
     );
 
     res.sendJson(
