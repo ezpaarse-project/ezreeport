@@ -75,7 +75,7 @@ interface ReportData {
   task: any, // Task
   origin: string,
   writeHistory?: boolean,
-  customPeriod?: RawPeriod, // Interval
+  customPeriod?: RawPeriod, // Period
   debug?: boolean
 }
 
