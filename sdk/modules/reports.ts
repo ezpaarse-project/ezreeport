@@ -1,45 +1,86 @@
+import { parseISO } from 'date-fns';
 import axios from '../lib/axios';
 import createEventfullPromise from '../lib/promises';
-import { setTimeoutAsync } from '../lib/utils';
-import { FullJob, getJob, Job } from './queues';
+import {
+  parsePeriod,
+  setTimeoutAsync,
+  type Period,
+  type RawPeriod
+} from '../lib/utils';
+import { getJob, type FullJob, type Job } from './queues';
 
-interface ReportResult {
-  success: boolean,
-  detail: {
-    createdAt: string, // Date
-    destroyAt: string, // Date
-    took: number,
-    taskId: string,
-    files: {
-      detail: string,
-      report?: string,
-      debug?: string,
-    },
-    sendingTo?: string[],
-    period?: {
-      start: string, // Date
-      end: string, // Date
-    },
-    runAs?: string,
-    stats?: object,
-    error?: {
-      message: string,
-      stack: string[]
-    },
-    meta?: unknown
-  }
+interface RawReportResultDetail {
+  createdAt: string, // Date
+  destroyAt: string, // Date
+  took: number,
+  taskId: string,
+  files: {
+    detail: string,
+    report?: string,
+    debug?: string,
+  },
+  sendingTo?: string[],
+  period?: RawPeriod, // Period
+  runAs?: string,
+  stats?: object,
+  error?: {
+    message: string,
+    stack: string[]
+  },
+  meta?: unknown
 }
+
+export interface ReportResultDetail extends Omit<RawReportResultDetail, 'createdAt' | 'destroyAt' | 'period'> {
+  createdAt: Date,
+  destroyAt: Date,
+  period?: Period,
+}
+
+/**
+ * Transform raw data from JSON, to JS usable data
+ *
+ * @param detail Raw result detail
+ *
+ * @returns Parsed result detail
+ */
+const parseReportResultDetail = (detail: RawReportResultDetail): ReportResultDetail => ({
+  ...detail,
+  createdAt: parseISO(detail.createdAt),
+  destroyAt: parseISO(detail.destroyAt),
+  period: detail.period ? parsePeriod(detail.period) : undefined,
+});
+
+interface RawReportResult {
+  success: boolean,
+  detail: RawReportResultDetail // ReportResultDetail
+}
+
+export interface ReportResult extends Omit<RawReportResult, 'detail'> {
+  detail: ReportResultDetail
+}
+
+/**
+ * Transform raw data from JSON, to JS usable data
+ *
+ * @param result Raw result
+ *
+ * @returns Parsed result
+ */
+const parseReportResult = (result: RawReportResult): ReportResult => ({
+  ...result,
+  detail: parseReportResultDetail(result.detail),
+});
 
 interface ReportData {
   task: any, // Task
   origin: string,
   writeHistory?: boolean,
-  customPeriod?: { start: string, end: string },
+  customPeriod?: RawPeriod, // Interval
   debug?: boolean
 }
 
 type ReportJob = Job<ReportData>;
-type FullReportJob = FullJob<ReportData, ReportResult>;
+type FullReportJob = FullJob<ReportData, RawReportResult>;
 
 /**
  * Start generation of a report
@@ -119,7 +160,7 @@ export const startAndListenGeneration = (
         },
         // FIXME: What if param order changes ?
         // eslint-disable-next-line no-await-in-loop
-      } = await getJob<ReportData, ReportResult>(queue, id, p[2]);
+      } = await getJob<ReportData, RawReportResult>(queue, id, p[2]);
       last = { progress, status, result };
       events.emit('progress', { progress, status });
 
@@ -136,7 +177,7 @@ export const startAndListenGeneration = (
     if (!last.result) {
       throw new Error('Generation failed with weird error');
     }
-    return last.result.detail;
+    return parseReportResult(last.result);
   },
 );
 
@@ -186,7 +227,7 @@ export const getReportFileByName = (
 export const getReportFileByJob = async (
   ...p: Parameters<typeof getJob>
 ) => {
-  const { content: { result } } = await getJob<ReportData, ReportResult>(...p);
+  const { content: { result } } = await getJob<ReportData, RawReportResult>(...p);
   if (!result) {
     throw new Error('Job have no result');
   }
@@ -204,10 +245,13 @@ export const getReportFileByJob = async (
  *
  * @returns The detail's content
  */
-export const getReportDetailByName = (
+export const getReportDetailByName = async (
   name: string,
   institution?: string,
-) => getFile<ReportResult>(`${name}.det.json`, institution);
+) => {
+  const res = await getFile<RawReportResult>(`${name}.det.json`, institution);
+  return parseReportResult(res);
+};
 
 /**
  * Get report detail by giving job's info
@@ -223,12 +267,13 @@ export const getReportDetailByName = (
 export const getReportDetailByJob = async (
   ...p: Parameters<typeof getJob>
 ) => {
-  const { content: { result } } = await getJob<ReportData, ReportResult>(...p);
+  const { content: { result } } = await getJob<ReportData, RawReportResult>(...p);
   if (!result) {
     throw new Error('Job have no result');
   }
   // FIXME: What if param order changes ?
-  return getFile<ReportResult>(result.detail?.files.detail ?? '', p[2]);
+  const res = await getFile<RawReportResult>(result.detail?.files.detail ?? '', p[2]);
+  return parseReportResult(res);
 };
 
 /**
@@ -260,7 +305,7 @@ export const getReportDebugByName = (
 export const getReportDebugByJob = async (
   ...p: Parameters<typeof getJob>
 ) => {
-  const { content: { result } } = await getJob<ReportData, ReportResult>(...p);
+  const { content: { result } } = await getJob<ReportData, RawReportResult>(...p);
   if (!result) {
     throw new Error('Job have no result');
   }

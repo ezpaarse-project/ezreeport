@@ -1,4 +1,5 @@
-import axios from '../lib/axios';
+import { parseISO } from 'date-fns';
+import axios, { type ApiResponse } from '../lib/axios';
 
 export interface Job<Data> {
   id: number | string,
@@ -15,7 +16,7 @@ type JobStatus =
   | 'paused'
   | 'stuck';
 
-export interface FullJob<Data, Result> {
+interface RawFullJob<Data, Result> {
   id: Job<Data>['id'],
   data: Job<Data>['data'],
   result?: Result,
@@ -27,10 +28,50 @@ export interface FullJob<Data, Result> {
   status: JobStatus,
 }
 
-export interface Queue<Data, Result> {
+export interface FullJob<Data, Result> extends Omit<RawFullJob<Data, Result>, 'added' | 'started' | 'ended'> {
+  added: Date,
+  started?: Date,
+  ended?: Date,
+}
+
+/**
+ * Transform raw data from JSON, to JS usable data
+ *
+ * @param job Raw job
+ *
+ * @returns Parsed job
+ */
+const parseFullJob = <Data, Result>(
+  job: RawFullJob<Data, Result>,
+): FullJob<Data, Result> => ({
+    ...job,
+    added: parseISO(job.added),
+    started: job.started ? parseISO(job.started) : undefined,
+    ended: job.ended ? parseISO(job.ended) : undefined,
+  });
+
+interface RawQueue<Data, Result> {
   status: 'paused' | 'active',
+  jobs: RawFullJob<Data, Result>[]
+}
+
+export interface Queue<Data, Result> extends Omit<RawQueue<Data, Result>, 'jobs'> {
   jobs: FullJob<Data, Result>[]
 }
+
+/**
+ * Transform raw data from JSON, to JS usable data
+ *
+ * @param queue Raw queue
+ *
+ * @returns Parsed queue
+ */
+const parseQueue = <Data, Result>(
+  queue: RawQueue<Data, Result>,
+): Queue<Data, Result> => ({
+    ...queue,
+    jobs: queue.jobs.map(parseFullJob),
+  });
 
 /**
  * Get all available queues
@@ -50,7 +91,16 @@ export const getAllQueues = () => axios.$get<string[]>('/queues');
  *
  * @returns queue info
  */
-export const getQueue = <Data, Result>(queueName: Job<Data>['queue']) => axios.$get<Queue<Data, Result>>(`/queues/${queueName}`);
+export const getQueue = async <Data, Result>(
+  queueName: Job<Data>['queue'],
+): Promise<ApiResponse<Queue<Data, Result>>> => {
+  const { status, content } = await axios.$get<RawQueue<Data, Result>>(`/queues/${queueName}`);
+
+  return {
+    status,
+    content: parseQueue(content),
+  };
+};
 
 /**
  * Pause queue
@@ -61,7 +111,15 @@ export const getQueue = <Data, Result>(queueName: Job<Data>['queue']) => axios.$
  *
  * @returns queue info
  */
-export const pauseQueue = <Data, Result>(queueName: Job<Data>['queue']) => axios.$put<Queue<Data, Result>>(`/queues/${queueName}/pause`);
+export const pauseQueue = async <Data, Result>(
+  queueName: Job<Data>['queue'],
+): Promise<ApiResponse<Queue<Data, Result>>> => {
+  const { status, content } = await axios.$put<RawQueue<Data, Result>>(`/queues/${queueName}/pause`);
+  return {
+    status,
+    content: parseQueue(content),
+  };
+};
 
 /**
  * Resume queue
@@ -72,7 +130,15 @@ export const pauseQueue = <Data, Result>(queueName: Job<Data>['queue']) => axios
  *
  * @returns queue info
  */
-export const resumeQueue = <Data, Result>(queueName: Job<Data>['queue']) => axios.$put<Queue<Data, Result>>(`/queues/${queueName}/resume`);
+export const resumeQueue = async <Data, Result>(
+  queueName: Job<Data>['queue'],
+): Promise<ApiResponse<Queue<Data, Result>>> => {
+  const { status, content } = await axios.$put<RawQueue<Data, Result>>(`/queues/${queueName}/resume`);
+  return {
+    status,
+    content: parseQueue(content),
+  };
+};
 
 /**
  * Get job info
@@ -85,11 +151,17 @@ export const resumeQueue = <Data, Result>(queueName: Job<Data>['queue']) => axio
  *
  * @returns Job full info
  */
-export const getJob = <Data, Result>(
+export const getJob = async <Data, Result>(
   queueName: Job<Data>['queue'],
   jobId: Job<Data>['id'],
   institution?: string,
-) => axios.$get<FullJob<Data, Result>>(`/queues/${queueName}/${jobId}`, { params: { institution } });
+): Promise<ApiResponse<FullJob<Data, Result>>> => {
+  const { status, content } = await axios.$get<RawFullJob<Data, Result>>(`/queues/${queueName}/${jobId}`, { params: { institution } });
+  return {
+    status,
+    content: parseFullJob(content),
+  };
+};
 
 /**
  * Retry job that failed
@@ -102,8 +174,14 @@ export const getJob = <Data, Result>(
  *
  * @returns queue info
  */
-export const retryJob = <Data, Result>(
+export const retryJob = async <Data, Result>(
   queueName: Job<Data>['queue'],
   jobId: Job<Data>['id'],
   institution?: string,
-) => axios.$post<FullJob<Data, Result>>(`/queues/${queueName}/${jobId}/retry`, { params: { institution } });
+): Promise<ApiResponse<FullJob<Data, Result>>> => {
+  const { status, content } = await axios.$post<RawFullJob<Data, Result>>(`/queues/${queueName}/${jobId}/retry`, { params: { institution } });
+  return {
+    status,
+    content: parseFullJob(content),
+  };
+};

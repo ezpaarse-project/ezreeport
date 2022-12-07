@@ -1,11 +1,30 @@
-import axios from '../lib/axios';
+import { parseISO } from 'date-fns';
+import axios, { type ApiResponse } from '../lib/axios';
 
-interface Cron {
+interface RawCron {
   name: string,
   running: boolean,
   nextRun: string, // Date
   lastRun?: string, // Date
 }
+
+export interface Cron extends Omit<RawCron, 'nextRun' | 'lastRun'> {
+  nextRun: Date,
+  lastRun?: Date,
+}
+
+/**
+ * Transform raw data from JSON, to JS usable data
+ *
+ * @param cron Raw cron
+ *
+ * @returns Parsed cron
+ */
+const parseCron = (cron: RawCron): Cron => ({
+  ...cron,
+  nextRun: parseISO(cron.nextRun),
+  lastRun: cron.lastRun ? parseISO(cron.lastRun) : undefined,
+});
 
 /**
  * Get all available crons
@@ -14,7 +33,13 @@ interface Cron {
  *
  * @returns All crons' info
  */
-export const getAllCrons = () => axios.$get<Cron>('/crons');
+export const getAllCrons = async (): Promise<ApiResponse<Cron[]>> => {
+  const { status, content } = await axios.$get<RawCron[]>('/crons');
+  return {
+    status,
+    content: content.map(parseCron),
+  };
+};
 
 /**
  * Get cron info
@@ -25,7 +50,13 @@ export const getAllCrons = () => axios.$get<Cron>('/crons');
  *
  * @returns Cron's info
  */
-export const getCron = (name: string) => axios.$get<Cron>(`/crons/${name}`);
+export const getCron = async (name: string): Promise<ApiResponse<Cron>> => {
+  const { status, content } = await axios.$get<RawCron>(`/crons/${name}`);
+  return {
+    status,
+    content: parseCron(content),
+  };
+};
 
 /**
  * Start cron
@@ -36,7 +67,13 @@ export const getCron = (name: string) => axios.$get<Cron>(`/crons/${name}`);
  *
  * @returns Cron's info
  */
-export const startCron = (name: string) => axios.$put<Cron>(`/crons/${name}/start`);
+export const startCron = async (name: string) => {
+  const { status, content } = await axios.$put<RawCron>(`/crons/${name}/start`);
+  return {
+    status,
+    content,
+  };
+};
 
 /**
  * Stop cron
@@ -47,7 +84,13 @@ export const startCron = (name: string) => axios.$put<Cron>(`/crons/${name}/star
  *
  * @returns Cron's info
  */
-export const stopCron = (name: string) => axios.$put<Cron>(`/crons/${name}/stop`);
+export const stopCron = async (name: string) => {
+  const { status, content } = await axios.$put<RawCron>(`/crons/${name}/stop`);
+  return {
+    status,
+    content,
+  };
+};
 
 /**
  * Force cron to run
@@ -58,4 +101,10 @@ export const stopCron = (name: string) => axios.$put<Cron>(`/crons/${name}/stop`
  *
  * @returns Cron's info
  */
-export const forceCron = (name: string) => axios.$post<Cron>(`/crons/${name}/force`);
+export const forceCron = async (name: string) => {
+  const { status, content } = await axios.$post<RawCron>(`/crons/${name}/force`);
+  return {
+    status,
+    content,
+  };
+};
