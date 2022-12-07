@@ -8,6 +8,14 @@ export interface ApiResponse<T> {
   content: T
 }
 
+export interface PaginatedApiResponse<T> extends ApiResponse<T> {
+  meta: {
+    count: number,
+    size: number,
+    lastId?: number
+  }
+}
+
 const agent = axios.create({});
 
 export default Object.assign(

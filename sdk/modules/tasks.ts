@@ -1,5 +1,5 @@
 import { parseISO } from 'date-fns';
-import axios, { type ApiResponse } from '../lib/axios';
+import axios, { PaginatedApiResponse, type ApiResponse } from '../lib/axios';
 import { parseHistory, type History, type RawHistory } from './history';
 import type { Layout } from './templates';
 
@@ -102,9 +102,18 @@ export interface InputTask extends Pick<FullTask, 'name' | 'template' | 'targets
  * @returns All tasks' info
  */
 export const getAllTasks = async (
+  paginationOpts?: { previous?: Task['id'], count?: number },
   institution?: string,
 ): Promise<ApiResponse<Task[]>> => {
-  const { content, ...response } = await axios.$get<RawTask[]>('/tasks', { params: { institution } });
+  const { data: { content, ...response } } = await axios.get<PaginatedApiResponse<RawTask[]>>(
+    '/tasks',
+    {
+      params: {
+        institution,
+        ...(paginationOpts ?? {}),
+      },
+    },
+  );
 
   return {
     ...response,
