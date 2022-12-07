@@ -18,6 +18,7 @@ router.get('/', checkRight(Roles.SUPER_USER), checkInstitution, async (req, res)
         count: c,
         previous: p?.toString(),
       },
+      req.user?.institution,
     );
 
     res.sendJson(
