@@ -1,37 +1,33 @@
 import axios from '../lib/axios';
 
-type Pingable = 'reporting-report' | 'elastic';
-
-interface PingResultSuccess<Service extends Pingable> {
-  name: Service,
+interface PingResultSuccess {
+  name: string,
   status: true,
   elapsedTime: number,
   statusCode: number,
 }
 
-interface PingResultFail<Service extends Pingable> {
-  name: Service,
+interface PingResultFail {
+  name: string,
   status: false,
   error: string
 }
 
-export type PingResult<S extends Pingable> = PingResultSuccess<S> | PingResultFail<S>;
-
-export type AnyPingResult = PingResult<Pingable>;
+export type PingResult = PingResultSuccess | PingResultFail;
 
 /**
  * Get all services connected to current
  *
  * @returns The current service & the name of connected ones
  */
-export const getAllConnectedServices = () => axios.$get<{ current: 'reporting-report', services: Pingable[] }>('/health');
+export const getAllConnectedServices = () => axios.$get<{ current: 'reporting-report', services: string[] }>('/health');
 
 /**
  * Check connection for all connected service from current
  *
  * @returns The connection status for all services
  */
-export const checkAllConnectedService = () => axios.$get<PingResult<Pingable>[]>('/health/all');
+export const checkAllConnectedService = () => axios.$get<PingResult[]>('/health/all');
 
 /**
  * Check connection of a specific service from current
@@ -40,7 +36,7 @@ export const checkAllConnectedService = () => axios.$get<PingResult<Pingable>[]>
  *
  * @returns The connection status of the service from current
  */
-export const checkConnectedService = <Service extends Pingable>(service: Service) => axios.$get<PingResult<Service>>(`/health/${service}`);
+export const checkConnectedService = (service: string) => axios.$get<PingResult>(`/health/${service}`);
 
 /**
  * Check connection of current service

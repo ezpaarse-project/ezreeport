@@ -43,8 +43,8 @@ export type AnyFigure = Figure<Mark> | Figure<'table'> | Figure<'md'> | Figure<'
 export const figureSchema = Joi.object<AnyFigure>({
   type: Joi.string<FigureType>().required(),
   data: [
-    Joi.string().required(),
-    Joi.array().items(Joi.any()).required(),
+    Joi.string(),
+    Joi.array().items(Joi.any()),
   ],
   params: Joi.object().required(),
   slots: Joi.array().items(Joi.number()),
