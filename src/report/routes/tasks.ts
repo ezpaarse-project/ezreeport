@@ -53,6 +53,7 @@ router.get('/', checkRight(Roles.READ), checkInstitution, async (req, res) => {
       {
         // total: undefined,
         count: tasks.length,
+        size: c,
         lastId: tasks.at(-1)?.id,
       },
     );

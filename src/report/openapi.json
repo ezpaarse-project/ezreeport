@@ -376,6 +376,9 @@
                         },
                         "lastId": {
                           "type": "string"
+                        },
+                        "size": {
+                          "type": "number"
                         }
                       }
                     }
@@ -403,6 +406,7 @@
                       ],
                       "meta": {
                         "count": 1,
+                        "size": 15,
                         "lastId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000"
                       }
                     }
@@ -3500,6 +3504,10 @@
                         },
                         "lastId": {
                           "type": "string"
+                        },
+                        "size": {
+                          "type": "number",
+                          "description": "Mirror of count parameter"
                         }
                       }
                     }
@@ -3522,7 +3530,8 @@
                       },
                       "meta": {
                         "count": 1,
-                        "lastId": "string"
+                        "lastId": "string",
+                        "size": 15
                       }
                     }
                   }

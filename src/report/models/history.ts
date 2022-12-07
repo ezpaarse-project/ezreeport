@@ -5,6 +5,8 @@ import prisma from '../lib/prisma';
  * Get all history entry in DB
  *
  * @param opts Requests options
+ * @param instituion he institution of the task. If provided,
+ * will restrict search to the instituion provided
  *
  * @returns History entry list
  */

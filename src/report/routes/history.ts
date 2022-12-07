@@ -27,6 +27,7 @@ router.get('/', checkRight(Roles.SUPER_USER), checkInstitution, async (req, res)
       {
         // total: undefined,
         count: entries.length,
+        size: c,
         lastId: entries.at(-1)?.id,
       },
     );
