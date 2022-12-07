@@ -376,6 +376,9 @@
                         },
                         "lastId": {
                           "type": "string"
+                        },
+                        "size": {
+                          "type": "number"
                         }
                       }
                     }
@@ -403,6 +406,7 @@
                       ],
                       "meta": {
                         "count": 1,
+                        "size": 15,
                         "lastId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000"
                       }
                     }
@@ -510,7 +514,7 @@
                         "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                         "name": "My Super Task",
                         "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-                        "layout": {
+                        "template": {
                           "extends": "basic"
                         },
                         "targets": [
@@ -587,7 +591,7 @@
                 "Example": {
                   "value": {
                     "name": "My Super Task",
-                    "layout": {
+                    "template": {
                       "extends": "basic"
                     },
                     "targets": [
@@ -695,7 +699,7 @@
                         "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                         "name": "My Super Task",
                         "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-                        "layout": {
+                        "template": {
                           "extends": "basic"
                         },
                         "targets": [
@@ -846,7 +850,7 @@
                         "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                         "name": "My Super Task",
                         "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-                        "layout": {
+                        "template": {
                           "extends": "basic"
                         },
                         "targets": [
@@ -932,7 +936,7 @@
                 "Example": {
                   "value": {
                     "name": "My Super Task",
-                    "layout": {
+                    "template": {
                       "extends": "basic"
                     },
                     "targets": [
@@ -1019,7 +1023,7 @@
                         "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                         "name": "My Super Task",
                         "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-                        "layout": {
+                        "template": {
                           "extends": "basic"
                         },
                         "targets": [
@@ -1159,7 +1163,7 @@
                         "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                         "name": "My Super Task",
                         "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-                        "layout": {
+                        "template": {
                           "extends": "basic"
                         },
                         "targets": [
@@ -1291,7 +1295,7 @@
                         "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                         "name": "My Super Task",
                         "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-                        "layout": {
+                        "template": {
                           "extends": "basic"
                         },
                         "targets": [
@@ -1561,7 +1565,7 @@
                         "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                         "name": "My Super Task",
                         "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-                        "layout": {
+                        "template": {
                           "extends": "..."
                         },
                         "targets": [
@@ -3067,7 +3071,7 @@
         }
       ],
       "get": {
-        "summary": "Get specific layout",
+        "summary": "Get specific template",
         "tags": [
           "templates"
         ],
@@ -3117,7 +3121,24 @@
                           "type": "integer"
                         },
                         "template": {
-                          "$ref": "#/components/schemas/LayoutJSON"
+                          "type": "object",
+                          "properties": {
+                            "layouts": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/Layout"
+                              }
+                            },
+                            "fetchOptions": {
+                              "type": "object"
+                            },
+                            "renderer": {
+                              "type": "string"
+                            },
+                            "renderOptions": {
+                              "type": "string"
+                            }
+                          }
                         }
                       }
                     }
@@ -3365,6 +3386,10 @@
                         },
                         "lastId": {
                           "type": "string"
+                        },
+                        "size": {
+                          "type": "number",
+                          "description": "Mirror of count parameter"
                         }
                       }
                     }
@@ -3387,7 +3412,8 @@
                       },
                       "meta": {
                         "count": 1,
-                        "lastId": "string"
+                        "lastId": "string",
+                        "size": 15
                       }
                     }
                   }
@@ -3640,6 +3666,51 @@
   },
   "components": {
     "schemas": {
+      "History": {
+        "type": "object",
+        "x-examples": {
+          "Example": {
+            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
+            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
+            "type": "generation-success",
+            "message": "Rapport \"...\" généré par ...",
+            "createdAt": "2022-11-07T15:17:49.000Z",
+            "meta": {
+              "jobId": "0",
+              "jobAdded": "2022-11-07T15:17:40.000Z"
+            }
+          }
+        },
+        "description": "Task's history",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "taskId",
+          "type",
+          "message"
+        ]
+      },
       "Task": {
         "type": "object",
         "x-examples": {
@@ -3725,7 +3796,7 @@
           {
             "type": "object",
             "properties": {
-              "layout": {
+              "template": {
                 "type": "object",
                 "description": "Layout of the report",
                 "required": [
@@ -3736,14 +3807,19 @@
                     "type": "string",
                     "description": "Base layout name"
                   },
+                  "fetcher": {
+                    "type": "string",
+                    "nullable": true
+                  },
                   "fetchOptions": {
                     "type": "object",
-                    "description": "Data options used by \"extends\""
+                    "description": "Data options used by \"extends\"",
+                    "nullable": true
                   },
                   "inserts": {
                     "allOf": [
                       {
-                        "$ref": "#/components/schemas/LayoutJSON"
+                        "$ref": "#/components/schemas/Layout"
                       },
                       {
                         "type": "object",
@@ -3776,55 +3852,10 @@
               }
             },
             "required": [
-              "layout",
+              "template",
               "targets"
             ]
           }
-        ]
-      },
-      "History": {
-        "type": "object",
-        "x-examples": {
-          "Example": {
-            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
-            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-            "type": "generation-success",
-            "message": "Rapport \"...\" généré par ...",
-            "createdAt": "2022-11-07T15:17:49.000Z",
-            "meta": {
-              "jobId": "0",
-              "jobAdded": "2022-11-07T15:17:40.000Z"
-            }
-          }
-        },
-        "description": "Task's history",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "taskId": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          },
-          "message": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "data": {
-            "type": "object",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "taskId",
-          "type",
-          "message"
         ]
       },
       "Figure": {
@@ -3881,6 +3912,52 @@
         "required": [
           "type",
           "data"
+        ]
+      },
+      "Layout": {
+        "title": "Layout",
+        "x-stoplight": {
+          "id": "ee3cc32b28f0d"
+        },
+        "type": "object",
+        "description": "Layout info. Can have more properties",
+        "x-examples": {
+          "Example": {
+            "name": "basic",
+            "renderer": "vega-pdf",
+            "pageCount": 6
+          }
+        },
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "fetcher": {
+            "type": "string"
+          },
+          "fetchOptions": {
+            "type": "object"
+          },
+          "figures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Figure"
+            }
+          }
+        },
+        "required": [
+          "figures"
         ]
       },
       "Job": {
@@ -4013,162 +4090,6 @@
           "name",
           "status"
         ]
-      },
-      "LayoutJSON": {
-        "title": "LayoutJSON",
-        "x-stoplight": {
-          "id": "3pnn0dzy37oau"
-        },
-        "type": "object",
-        "description": "Layout info. Can have more properties",
-        "x-examples": {
-          "Example": {
-            "name": "basic",
-            "renderer": "vega-pdf",
-            "pageCount": 6
-          }
-        },
-        "properties": {
-          "data": {
-            "anyOf": [
-              {
-                "type": "object"
-              },
-              {
-                "type": "array",
-                "items": {}
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "fetcher": {
-            "type": "string"
-          },
-          "fetchOptions": {
-            "type": "object"
-          },
-          "figures": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Figure"
-            }
-          }
-        },
-        "required": [
-          "figures"
-        ]
-      },
-      "ReportDetail": {
-        "title": "ReportDetail",
-        "x-stoplight": {
-          "id": "3szv5zpo21wqn"
-        },
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean"
-          },
-          "detail": {
-            "type": "object",
-            "properties": {
-              "createdAt": {
-                "type": "string",
-                "format": "date-time"
-              },
-              "took": {
-                "type": "integer",
-                "description": "Time taken to generate report in ms"
-              },
-              "taskId": {
-                "type": "string"
-              },
-              "meta": {
-                "type": "object",
-                "nullable": true
-              },
-              "files": {
-                "type": "object",
-                "required": [
-                  "detail"
-                ],
-                "properties": {
-                  "detail": {
-                    "type": "string"
-                  },
-                  "report": {
-                    "type": "string"
-                  },
-                  "debug": {
-                    "type": "string"
-                  }
-                }
-              },
-              "sendingTo": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "period": {
-                "type": "object",
-                "properties": {
-                  "start": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
-                  "end": {
-                    "type": "string",
-                    "format": "date-time"
-                  }
-                },
-                "required": [
-                  "start",
-                  "end"
-                ]
-              },
-              "runAs": {
-                "type": "string"
-              },
-              "stats": {
-                "type": "object",
-                "description": "Stats about report",
-                "properties": {
-                  "pageCount": {
-                    "type": "integer"
-                  },
-                  "size": {
-                    "type": "integer"
-                  }
-                }
-              },
-              "error": {
-                "type": "object",
-                "properties": {
-                  "message": {
-                    "type": "string"
-                  },
-                  "stack": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "required": [
-                  "message",
-                  "stack"
-                ]
-              }
-            },
-            "required": [
-              "took",
-              "taskId",
-              "files"
-            ]
-          }
-        }
       }
     },
     "securitySchemes": {
@@ -4558,9 +4479,6 @@
       "name": "history"
     },
     {
-      "name": "templates"
-    },
-    {
       "name": "queue"
     },
     {
@@ -4570,7 +4488,7 @@
       "name": "tasks"
     },
     {
-      "name": "unsubscribe"
+      "name": "templates"
     }
   ]
 }

@@ -45,7 +45,7 @@ export const layoutSchema = Joi.object<AnyLayout>({
   data: Joi.any(),
   fetcher: Joi.string().allow(...Object.keys(fetchers)),
   fetchOptions: Joi.object(),
-  figures: Joi.array().items(figureSchema),
+  figures: Joi.array().items(figureSchema).required(),
 });
 
 /**

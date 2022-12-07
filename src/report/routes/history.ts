@@ -31,6 +31,7 @@ createSecuredRoute(router, 'GET /', Roles.SUPER_USER, checkInstitution, async (r
       {
         // total: undefined,
         count: entries.length,
+        size: c,
         lastId: entries.at(-1)?.id,
       },
     );

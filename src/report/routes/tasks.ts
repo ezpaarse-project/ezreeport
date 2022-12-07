@@ -57,6 +57,7 @@ createSecuredRoute(router, 'GET /', Roles.READ, checkInstitution, async (req, re
       {
         // total: undefined,
         count: tasks.length,
+        size: c,
         lastId: tasks.at(-1)?.id,
       },
     );
