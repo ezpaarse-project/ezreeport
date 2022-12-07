@@ -34,9 +34,9 @@ const parseCron = (cron: RawCron): Cron => ({
  * @returns All crons' info
  */
 export const getAllCrons = async (): Promise<ApiResponse<Cron[]>> => {
-  const { status, content } = await axios.$get<RawCron[]>('/crons');
+  const { content, ...response } = await axios.$get<RawCron[]>('/crons');
   return {
-    status,
+    ...response,
     content: content.map(parseCron),
   };
 };
@@ -50,10 +50,10 @@ export const getAllCrons = async (): Promise<ApiResponse<Cron[]>> => {
  *
  * @returns Cron's info
  */
-export const getCron = async (name: string): Promise<ApiResponse<Cron>> => {
-  const { status, content } = await axios.$get<RawCron>(`/crons/${name}`);
+export const getCron = async (name: Cron['name']): Promise<ApiResponse<Cron>> => {
+  const { content, ...response } = await axios.$get<RawCron>(`/crons/${name}`);
   return {
-    status,
+    ...response,
     content: parseCron(content),
   };
 };
@@ -67,11 +67,11 @@ export const getCron = async (name: string): Promise<ApiResponse<Cron>> => {
  *
  * @returns Cron's info
  */
-export const startCron = async (name: string) => {
-  const { status, content } = await axios.$put<RawCron>(`/crons/${name}/start`);
+export const startCron = async (name: Cron['name']) => {
+  const { content, ...response } = await axios.$put<RawCron>(`/crons/${name}/start`);
   return {
-    status,
-    content,
+    ...response,
+    content: parseCron(content),
   };
 };
 
@@ -84,11 +84,11 @@ export const startCron = async (name: string) => {
  *
  * @returns Cron's info
  */
-export const stopCron = async (name: string) => {
-  const { status, content } = await axios.$put<RawCron>(`/crons/${name}/stop`);
+export const stopCron = async (name: Cron['name']) => {
+  const { content, ...response } = await axios.$put<RawCron>(`/crons/${name}/stop`);
   return {
-    status,
-    content,
+    ...response,
+    content: parseCron(content),
   };
 };
 
@@ -101,10 +101,10 @@ export const stopCron = async (name: string) => {
  *
  * @returns Cron's info
  */
-export const forceCron = async (name: string) => {
-  const { status, content } = await axios.$post<RawCron>(`/crons/${name}/force`);
+export const forceCron = async (name: Cron['name']) => {
+  const { content, ...response } = await axios.$post<RawCron>(`/crons/${name}/force`);
   return {
-    status,
-    content,
+    ...response,
+    content: parseCron(content),
   };
 };

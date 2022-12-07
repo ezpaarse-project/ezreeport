@@ -20,7 +20,7 @@ export type PingResult = PingResultSuccess | PingResultFail;
  *
  * @returns The current service & the name of connected ones
  */
-export const getAllConnectedServices = () => axios.$get<{ current: 'reporting-report', services: string[] }>('/health');
+export const getAllConnectedServices = () => axios.$get<{ current: 'reporting-report', services: PingResult['name'][] }>('/health');
 
 /**
  * Check connection for all connected service from current
@@ -36,7 +36,7 @@ export const checkAllConnectedService = () => axios.$get<PingResult[]>('/health/
  *
  * @returns The connection status of the service from current
  */
-export const checkConnectedService = (service: string) => axios.$get<PingResult>(`/health/${service}`);
+export const checkConnectedService = (service: PingResult['name']) => axios.$get<PingResult>(`/health/${service}`);
 
 /**
  * Check connection of current service

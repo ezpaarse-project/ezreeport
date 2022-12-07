@@ -89,7 +89,7 @@ type FullReportJob = FullJob<ReportData, RawReportResult>;
  *
  * @param taskId Id of the task
  * @param params Other params for overriding default
- * @param institution Force institution
+ * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
  *
  * @returns Job info to track progress
  */
@@ -104,7 +104,7 @@ export const startGeneration = (
     /**
      * Override period, must match task's recurrence
      */
-    period?: { start: string, end: string },
+    period?: Period,
   },
   institution?: string,
 ) => axios.$post<ReportJob>(
@@ -187,7 +187,7 @@ export const startAndListenGeneration = (
  * Needs `reports-get-year-yearMonth-filename` permission
  *
  * @param pathName Path to the file
- * @param institution Force institution
+ * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
  *
  * @returns The file's content
  */
@@ -203,7 +203,7 @@ const getFile = async <Result>(
  *
  * @param name Name of the report
  * @param ext The extension of the result (renderer dependent)
- * @param institution Force institution
+ * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
  *
  * @returns The report's content
  */
@@ -241,7 +241,7 @@ export const getReportFileByJob = async (
  * Needs `reports-get-year-yearMonth-filename` permission
  *
  * @param name Name of the report
- * @param institution Force institution
+ * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
  *
  * @returns The detail's content
  */
@@ -282,7 +282,7 @@ export const getReportDetailByJob = async (
  * Needs `reports-get-year-yearMonth-filename` permission
  *
  * @param name Name of the report
- * @param institution Force institution
+ * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
  *
  * @returns The debug's content
  */
@@ -298,7 +298,7 @@ export const getReportDebugByName = (
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
- * @param institution Force institution
+ * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
  *
  * @returns The debug's content
  */
