@@ -39,6 +39,7 @@ services:
       - ELASTIC_HOST
       - ELASTIC_PORT
       - ELASTIC_API_KEY
+      - ELASTIC_REQUIRED_STATUS
       - DATABASE_URL
       - EZMESURE_AUTH_SECRET
       - API_ALLOWED_ORIGINS
@@ -47,6 +48,7 @@ services:
       - REPORT_ITERATIONS_TO_LIVE
       - REPORT_DAYS_TO_LIVE
       - LOG_LEVEL
+      - HTTP_PORT
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:

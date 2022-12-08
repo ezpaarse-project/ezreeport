@@ -1,11 +1,30 @@
-import { Client, type estypes as ElasticTypes } from '@elastic/elasticsearch';
+import { Client, estypes, type estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { setTimeout } from 'node:timers/promises';
 import config from '../config';
 import logger from '../logger';
 
 const {
-  scheme, host, port, apiKey,
+  scheme,
+  host,
+  port,
+  apiKey,
+  requiredStatus,
+  maxTries,
 } = config.get('elasticsearch');
+
+enum ElasticStatus {
+  red,
+  yellow,
+  green,
+}
+type KeyofElasticStatus = keyof typeof ElasticStatus;
+
+const isElasticStatus = (
+  status: string,
+): status is KeyofElasticStatus => Object.keys(ElasticStatus).includes(status);
+
+// Parse some env var
+const REQUIRED_STATUS = isElasticStatus(requiredStatus) ? requiredStatus : 'green';
 
 const client = new Client({
   node: {
@@ -19,8 +38,6 @@ const client = new Client({
   },
 });
 
-const MAX_TRIES = 10;
-
 export const READONLY_SUFFIX = '_read_only' as const;
 
 /**
@@ -30,19 +47,23 @@ export const READONLY_SUFFIX = '_read_only' as const;
  */
 const getElasticClient = async () => {
   let tries = 0;
-  while (tries < MAX_TRIES) {
+  while (tries < maxTries) {
     try {
       // eslint-disable-next-line no-await-in-loop
-      const { body: { status } } = await client.cluster.health({
-        wait_for_status: 'yellow',
+      const { body: { status } } = await client.cluster.health<estypes.ClusterHealthResponse>({
+        wait_for_status: REQUIRED_STATUS,
         timeout: '5s',
       });
 
-      if (status === 'yellow' || status === 'green') {
+      if (
+        ElasticStatus[
+          status.toLowerCase() as Lowercase<estypes.HealthStatus>
+        ] >= ElasticStatus[REQUIRED_STATUS]
+      ) {
         break;
       }
     } catch (error) {
-      logger.error(`[elastic] Can't connect to Elastic : ${error}. ${MAX_TRIES - tries} tries left.`);
+      logger.error(`[elastic] Can't connect to Elastic : ${error}. ${maxTries - tries} tries left.`);
     }
 
     tries += 1;

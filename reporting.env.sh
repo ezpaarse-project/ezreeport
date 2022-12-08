@@ -13,6 +13,7 @@ export ELASTIC_HOST="host.docker.internal"
 export ELASTIC_PORT=9200
 export ELASTIC_API_KEY="" # Base 64
 export ELASTIC_URL="$ELASTIC_SCHEME://$ELASTIC_HOST:$ELASTIC_PORT"
+export ELASTIC_REQUIRED_STATUS="green"
 
 export DATABASE_PROTOCOL="postgresql"
 export DATABASE_USER="postgres"
@@ -50,6 +51,7 @@ export REPORT_ITERATIONS_TO_LIVE=2
 export REPORT_DAYS_TO_LIVE=7
 
 export LOG_LEVEL="info"
+export HTTP_PORT=8080
 
 if [[ -f $LOCAL_ENV_FILE ]] ; then
   source "$LOCAL_ENV_FILE"
