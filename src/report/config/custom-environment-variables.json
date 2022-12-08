@@ -1,11 +1,14 @@
 {
   "logLevel": "LOG_LEVEL",
+  "port": "HTTP_PORT",
   "allowedOrigins": "API_ALLOWED_ORIGINS",
   "elasticsearch": {
     "scheme": "ELASTIC_SCHEME",
     "host": "ELASTIC_HOST",
     "port": "ELASTIC_PORT",
-    "apiKey": "ELASTIC_API_KEY"
+    "apiKey": "ELASTIC_API_KEY",
+    "requiredStatus": "ELASTIC_REQUIRED_STATUS",
+    "maxTries": "ELASTIC_MAX_TRIES"
   },
   "redis": {
     "host": "REDIS_HOST",

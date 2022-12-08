@@ -1,11 +1,14 @@
 {
   "logLevel": "debug",
+  "port": 8080,
   "allowedOrigins": "*",
   "elasticsearch": {
     "scheme": "https",
     "host": "host.docker.internal",
     "port": 9200,
-    "apiKey": ""
+    "apiKey": "",
+    "requiredStatus": "green",
+    "maxTries": 10
   },
   "redis": {
     "host": "redis",
