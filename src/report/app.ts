@@ -19,36 +19,48 @@ import templatesRouter from './routes/templates';
 import unsubscribeRouter from './routes/unsubscribe';
 import { HTTPError } from './types/errors';
 
-const app = express();
 const port = config.get('port');
 
-app.use(
-  express.json(),
-  corsMiddleware,
-  loggerMiddleware,
-  formatMiddleware,
-);
+express()
+  /**
+   * General middlewares
+   */
+  .use(
+    express.json(),
+    corsMiddleware,
+    loggerMiddleware,
+    formatMiddleware,
+  )
 
-app.use('/templates', templatesRouter);
-app.use('/tasks', tasksRouter);
-app.use('/history', historyRouter);
-app.use('/reports', filesRouter);
-app.use('/queues', queuesRouter);
-app.use('/crons', cronsRouter);
-app.use('/unsubscribe', unsubscribeRouter);
-app.use('/health', healthRouter);
-app.use('/me', authRouter);
+  /**
+   * Router
+   */
+  .use('/templates', templatesRouter)
+  .use('/tasks', tasksRouter)
+  .use('/history', historyRouter)
+  .use('/reports', filesRouter)
+  .use('/queues', queuesRouter)
+  .use('/crons', cronsRouter)
+  .use('/unsubscribe', unsubscribeRouter)
+  .use('/health', healthRouter)
+  .use('/me', authRouter)
 
-app.use('/doc/openapi.json', (_req, res) => res.json(openapi));
-app.use('/doc', swaggerUi.serve, swaggerUi.setup(openapi));
+  /**
+   * API Docs
+   */
+  .use('/doc/openapi.json', (_req, res) => res.json(openapi))
+  .use('/doc', swaggerUi.serve, swaggerUi.setup(openapi))
 
-/**
- * 404 Fallback
- */
-app.use('*', (_req, res) => {
-  res.errorJson(new HTTPError('Route not found', StatusCodes.NOT_FOUND));
-});
+  /**
+   * 404 Fallback
+   */
+  .use('*', (_req, res) => {
+    res.errorJson(new HTTPError('Route not found', StatusCodes.NOT_FOUND));
+  })
 
-app.listen(port, () => {
-  logger.info(`[http] Service listening on port ${port} in ${process.uptime().toFixed(2)}s`);
-});
+  /**
+   * Start server
+   */
+  .listen(port, () => {
+    logger.info(`[http] Service listening on port ${port} in ${process.uptime().toFixed(2)}s`);
+  });

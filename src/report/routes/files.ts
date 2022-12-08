@@ -9,46 +9,45 @@ import { Roles } from '../models/roles';
 import { getTaskById } from '../models/tasks';
 import { HTTPError } from '../types/errors';
 
-const router = CustomRouter('reports');
-
 const { outDir } = config.get('report');
 
-/**
- * Get speficic report
- */
-router.createSecuredRoute('GET /:year/:yearMonth/:filename', Roles.READ, checkInstitution, async (req, res) => {
-  const { year, yearMonth, filename } = req.params;
-  const reportFilename = filename.replace(/\..*$/, '');
-  const basePath = join(outDir, year, yearMonth);
+const router = CustomRouter('reports')
+  /**
+   * Get speficic report
+   */
+  .createSecuredRoute('GET /:year/:yearMonth/:filename', Roles.READ, checkInstitution, async (req, res) => {
+    const { year, yearMonth, filename } = req.params;
+    const reportFilename = filename.replace(/\..*$/, '');
+    const basePath = join(outDir, year, yearMonth);
 
-  try {
-    // Check if not trying to access unwanted file
-    const path = join(basePath, `${reportFilename}.det.json`);
-    if (new RegExp(`^${outDir}/.*\\.det\\.json$`, 'i').test(path) === false) {
-      throw new HTTPError(`File path must be in the "${outDir}" folder. Resolved: "${path}"`, StatusCodes.BAD_REQUEST);
-    }
-
-    const detailFile = JSON.parse(await readFile(path, 'utf-8')) as unknown;
-    if (!isValidResult(detailFile)) {
-      // As validation throws an error, this line shouldn't be called
-      return;
-    }
-
-    const task = await getTaskById(detailFile.detail.taskId, req.user?.institution);
-    if (task) {
-      // Check if wanted file isn't already read
-      if (filename === `${reportFilename}.det.json`) {
-        res.send(detailFile);
-      } else {
-        // FIXME: handle No such file error
-        res.send(await readFile(join(basePath, filename)));
+    try {
+      // Check if not trying to access unwanted file
+      const path = join(basePath, `${reportFilename}.det.json`);
+      if (new RegExp(`^${outDir}/.*\\.det\\.json$`, 'i').test(path) === false) {
+        throw new HTTPError(`File path must be in the "${outDir}" folder. Resolved: "${path}"`, StatusCodes.BAD_REQUEST);
       }
-    } else {
-      throw new HTTPError(`No report "${year}/${yearMonth}/${filename}" for your organisation`, StatusCodes.NOT_FOUND);
+
+      const detailFile = JSON.parse(await readFile(path, 'utf-8')) as unknown;
+      if (!isValidResult(detailFile)) {
+        // As validation throws an error, this line shouldn't be called
+        return;
+      }
+
+      const task = await getTaskById(detailFile.detail.taskId, req.user?.institution);
+      if (task) {
+        // Check if wanted file isn't already read
+        if (filename === `${reportFilename}.det.json`) {
+          res.send(detailFile);
+        } else {
+          // FIXME: handle No such file error
+          res.send(await readFile(join(basePath, filename)));
+        }
+      } else {
+        throw new HTTPError(`No report "${year}/${yearMonth}/${filename}" for your organisation`, StatusCodes.NOT_FOUND);
+      }
+    } catch (error) {
+      res.errorJson(error);
     }
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+  });
 
 export default router;

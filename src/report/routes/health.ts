@@ -72,48 +72,47 @@ const ping = async (
   }
 };
 
-const router = CustomRouter('health');
+const router = CustomRouter('health')
+  /**
+   * Get all services that current one can ping (himself included)
+   */
+  .createRoute('GET /', (_req, res) => {
+    res.sendJson({
+      current: serviceName,
+      services: Object.keys(pingers),
+    });
+  })
 
-/**
- * Get all services that current one can ping (himself included)
- */
-router.createRoute('GET /', (_req, res) => {
-  res.sendJson({
-    current: serviceName,
-    services: Object.keys(pingers),
-  });
-});
-
-/**
- * Ping all services (himself included)
- */
-router.createRoute('GET /all', async (_req, res) => {
-  try {
-    const result = await Promise.all(
-      Object.keys(pingers).map((s) => ping(s)),
-    );
-    res.sendJson(result);
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
-
-/**
- * Ping specific service
- */
-router.createRoute('GET /:service', async (req, res) => {
-  try {
-    const { service } = req.params;
-
-    if (!isService(service)) {
-      throw new HTTPError(`Service "${service}" not found`, StatusCodes.NOT_FOUND);
+  /**
+   * Ping all services (himself included)
+   */
+  .createRoute('GET /all', async (_req, res) => {
+    try {
+      const result = await Promise.all(
+        Object.keys(pingers).map((s) => ping(s)),
+      );
+      res.sendJson(result);
+    } catch (error) {
+      res.errorJson(error);
     }
-    const result = await ping(service);
+  })
 
-    res.sendJson(result);
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+  /**
+   * Ping specific service
+   */
+  .createRoute('GET /:service', async (req, res) => {
+    try {
+      const { service } = req.params;
+
+      if (!isService(service)) {
+        throw new HTTPError(`Service "${service}" not found`, StatusCodes.NOT_FOUND);
+      }
+      const result = await ping(service);
+
+      res.sendJson(result);
+    } catch (error) {
+      res.errorJson(error);
+    }
+  });
 
 export default router;
