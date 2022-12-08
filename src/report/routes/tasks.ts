@@ -1,10 +1,9 @@
 import { Prisma } from '@prisma/client';
-import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
 import { pick } from 'lodash';
 import { addTaskToQueue } from '../lib/bull';
-import { createRoute, createSecuredRoute } from '../lib/express-utils';
+import { CustomRouter } from '../lib/express-utils';
 import { b64ToString } from '../lib/utils';
 import { checkInstitution } from '../middlewares/auth';
 import { Roles } from '../models/roles';
@@ -18,16 +17,40 @@ import {
 } from '../models/tasks';
 import { ArgumentError, HTTPError, NotFoundError } from '../types/errors';
 
-const router = Router();
+type UnsubData = {
+  unsubId: string,
+  email: string
+};
 
-Object.assign(router, { _permPrefix: 'tasks' });
+const unsubSchema = Joi.object<UnsubData>({
+  unsubId: Joi.string().required(),
+  email: Joi.string().email().required(),
+});
+
+/**
+ * Check if input data is a unsubscribe data
+ *
+ * @param data The input data
+ * @returns `true` if valid
+ *
+ * @throws If not valid
+ */
+const isValidUnsubData = (data: unknown): data is UnsubData => {
+  const validation = unsubSchema.validate(data, {});
+  if (validation.error != null) {
+    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
+  }
+  return true;
+};
+
+const router = CustomRouter('tasks');
 
 /**
  * List all active tasks of authed user's institution.
  *
  * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
  */
-createSecuredRoute(router, 'GET /', Roles.READ, checkInstitution, async (req, res) => {
+router.createSecuredRoute('GET /', Roles.READ, checkInstitution, async (req, res) => {
   try {
     const { previous: p = undefined, count = '15' } = req.query;
     const c = +count;
@@ -71,7 +94,7 @@ createSecuredRoute(router, 'GET /', Roles.READ, checkInstitution, async (req, re
  *
  * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
  */
-createSecuredRoute(router, 'POST /', Roles.READ_WRITE, checkInstitution, async (req, res) => {
+router.createSecuredRoute('POST /', Roles.READ_WRITE, checkInstitution, async (req, res) => {
   try {
     if (!req.user || !req.user.institution) {
       throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
@@ -95,7 +118,7 @@ createSecuredRoute(router, 'POST /', Roles.READ_WRITE, checkInstitution, async (
  *
  * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
  */
-createSecuredRoute(router, 'GET /:task', Roles.READ, checkInstitution, async (req, res) => {
+router.createSecuredRoute('GET /:task', Roles.READ, checkInstitution, async (req, res) => {
   try {
     const { task: id } = req.params;
 
@@ -119,7 +142,7 @@ createSecuredRoute(router, 'GET /:task', Roles.READ, checkInstitution, async (re
  *
  * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
  */
-createSecuredRoute(router, 'PUT /:task', Roles.READ_WRITE, checkInstitution, async (req, res) => {
+router.createSecuredRoute('PUT /:task', Roles.READ_WRITE, checkInstitution, async (req, res) => {
   try {
     const { task: id } = req.params;
 
@@ -149,7 +172,7 @@ createSecuredRoute(router, 'PUT /:task', Roles.READ_WRITE, checkInstitution, asy
  *
  * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
  */
-createSecuredRoute(router, 'DELETE /:task', Roles.READ_WRITE, checkInstitution, async (req, res) => {
+router.createSecuredRoute('DELETE /:task', Roles.READ_WRITE, checkInstitution, async (req, res) => {
   try {
     const { task: id } = req.params;
 
@@ -174,7 +197,7 @@ createSecuredRoute(router, 'DELETE /:task', Roles.READ_WRITE, checkInstitution, 
  *
  * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
  */
-createSecuredRoute(router, 'PUT /:task/enable', Roles.READ_WRITE, checkInstitution, async (req, res) => {
+router.createSecuredRoute('PUT /:task/enable', Roles.READ_WRITE, checkInstitution, async (req, res) => {
   try {
     const { task: id } = req.params;
 
@@ -214,7 +237,7 @@ createSecuredRoute(router, 'PUT /:task/enable', Roles.READ_WRITE, checkInstituti
  *
  * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
  */
-createSecuredRoute(router, 'PUT /:task/disable', Roles.READ_WRITE, checkInstitution, async (req, res) => {
+router.createSecuredRoute('PUT /:task/disable', Roles.READ_WRITE, checkInstitution, async (req, res) => {
   try {
     const { task: id } = req.params;
 
@@ -256,7 +279,7 @@ createSecuredRoute(router, 'PUT /:task/disable', Roles.READ_WRITE, checkInstitut
  * Parameter `test_emails` overrides task emails & enable first level of debug
  * Parameter `debug` is not accessible in PROD and enable second level of debug
  */
-createSecuredRoute(router, 'POST /:task/run', Roles.READ_WRITE, checkInstitution, async (req, res) => {
+router.createSecuredRoute('POST /:task/run', Roles.READ_WRITE, checkInstitution, async (req, res) => {
   try {
     const { task: id } = req.params;
     let { test_emails: testEmails } = req.query;
@@ -313,36 +336,10 @@ createSecuredRoute(router, 'POST /:task/run', Roles.READ_WRITE, checkInstitution
   }
 });
 
-type UnsubData = {
-  unsubId: string,
-  email: string
-};
-
-const unsubSchema = Joi.object<UnsubData>({
-  unsubId: Joi.string().required(),
-  email: Joi.string().email().required(),
-});
-
-/**
- * Check if input data is a unsubscribe data
- *
- * @param data The input data
- * @returns `true` if valid
- *
- * @throws If not valid
- */
-const isValidUnsubData = (data: unknown): data is UnsubData => {
-  const validation = unsubSchema.validate(data, {});
-  if (validation.error != null) {
-    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
-  }
-  return true;
-};
-
 /**
  * Shorthand to remove given email in given task
  */
-createRoute(router, 'PUT /:task/unsubscribe', async (req, res) => {
+router.createRoute('PUT /:task/unsubscribe', async (req, res) => {
   try {
     const { task: id } = req.params;
     const data = req.body;

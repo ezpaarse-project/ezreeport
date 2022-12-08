@@ -1,4 +1,3 @@
-import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import {
   getJob,
@@ -8,19 +7,17 @@ import {
   resumeQueue,
   retryJob
 } from '../lib/bull';
-import { createSecuredRoute } from '../lib/express-utils';
+import { CustomRouter } from '../lib/express-utils';
 import { checkInstitution } from '../middlewares/auth';
 import { Roles } from '../models/roles';
 import { HTTPError } from '../types/errors';
 
-const router = Router();
-
-Object.assign(router, { _permPrefix: 'queues' });
+const router = CustomRouter('queues');
 
 /**
  * Get all possible queues names (required for further requests)
  */
-createSecuredRoute(router, 'GET /', Roles.READ, async (req, res) => {
+router.createSecuredRoute('GET /', Roles.READ, async (req, res) => {
   try {
     res.sendJson(queuesNames);
   } catch (error) {
@@ -31,7 +28,7 @@ createSecuredRoute(router, 'GET /', Roles.READ, async (req, res) => {
 /**
  * Get info about specific queue
  */
-createSecuredRoute(router, 'GET /:queue', Roles.SUPER_USER, async (req, res) => {
+router.createSecuredRoute('GET /:queue', Roles.SUPER_USER, async (req, res) => {
   try {
     const { queue } = req.params;
     res.sendJson(await getJobs(queue));
@@ -43,7 +40,7 @@ createSecuredRoute(router, 'GET /:queue', Roles.SUPER_USER, async (req, res) => 
 /**
  * Pause specific queue
  */
-createSecuredRoute(router, 'PUT /:queue/pause', Roles.SUPER_USER, async (req, res) => {
+router.createSecuredRoute('PUT /:queue/pause', Roles.SUPER_USER, async (req, res) => {
   try {
     const { queue } = req.params;
     await pauseQueue(queue);
@@ -57,7 +54,7 @@ createSecuredRoute(router, 'PUT /:queue/pause', Roles.SUPER_USER, async (req, re
 /**
  * Resume specific queue
  */
-createSecuredRoute(router, 'PUT /:queue/resume', Roles.SUPER_USER, async (req, res) => {
+router.createSecuredRoute('PUT /:queue/resume', Roles.SUPER_USER, async (req, res) => {
   try {
     const { queue } = req.params;
     await resumeQueue(queue);
@@ -73,7 +70,7 @@ createSecuredRoute(router, 'PUT /:queue/resume', Roles.SUPER_USER, async (req, r
  *
  * Can't access to other institution's jobs
  */
-createSecuredRoute(router, 'GET /:queue/:jobId', Roles.READ, checkInstitution, async (req, res) => {
+router.createSecuredRoute('GET /:queue/:jobId', Roles.READ, checkInstitution, async (req, res) => {
   try {
     const { queue, jobId } = req.params;
     const job = await getJob(queue, jobId);
@@ -98,7 +95,7 @@ createSecuredRoute(router, 'GET /:queue/:jobId', Roles.READ, checkInstitution, a
  *
  * Throw an error if job wasn't failed
  */
-createSecuredRoute(router, 'POST /:queue/:jobId/retry', Roles.READ_WRITE, checkInstitution, async (req, res) => {
+router.createSecuredRoute('POST /:queue/:jobId/retry', Roles.READ_WRITE, checkInstitution, async (req, res) => {
   try {
     const { queue, jobId } = req.params;
     const job = await getJob(queue, jobId);

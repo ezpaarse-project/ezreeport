@@ -1,18 +1,21 @@
-import { Router } from 'express';
-import { createSecuredRoute } from '../lib/express-utils';
+import { CustomRouter } from '../lib/express-utils';
 import { getAllowedRoutes, Roles } from '../models/roles';
 
-const router = Router();
+const router = CustomRouter('auth');
 
-Object.assign(router, { _permPrefix: 'auth' });
-
-createSecuredRoute(router, 'GET /', Roles.READ, (req, res) => {
+/**
+   * Get all user info
+   */
+router.createSecuredRoute('GET /', Roles.READ, (req, res) => {
   res.sendJson({
     ...req.user,
   });
 });
 
-createSecuredRoute(router, 'GET /permissions', Roles.READ, (req, res) => {
+/**
+   * Get user's permissions per route
+   */
+router.createSecuredRoute('GET /permissions', Roles.READ, (req, res) => {
   if (req.user) {
     const { maxRolePriority } = req.user;
     res.sendJson(

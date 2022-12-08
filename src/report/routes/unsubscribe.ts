@@ -1,18 +1,17 @@
-import { Router } from 'express';
 import { readFile } from 'fs/promises';
 import { compile as handlebars } from 'handlebars';
 import Joi from 'joi';
-import { createRoute } from '../lib/express-utils';
+import { CustomRouter } from '../lib/express-utils';
 import { b64ToString } from '../lib/utils';
 import { getTaskById } from '../models/tasks';
 import { ArgumentError, NotFoundError } from '../types/errors';
 
-const router = Router();
+const router = CustomRouter('unsub');
 
 /**
  * Get unsubscribe static UI
  */
-createRoute(router, 'GET /:unsubId', async (req, res) => {
+router.createRoute('GET /:unsubId', async (req, res) => {
   try {
     const { unsubId } = req.params;
 
