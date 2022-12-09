@@ -4,6 +4,7 @@ import { setup } from 'reporting-sdk-js';
 import config from '../../lib/config';
 import authTests from './auth.spec';
 import healthTests from './health.spec';
+import historyTests from './history.spec';
 import setupTests from './setup.spec';
 
 chai.use(chaiJsonSchema);
@@ -21,4 +22,6 @@ export default () => {
   describe('health', healthTests);
 
   describe('auth', authTests);
+
+  describe('history', historyTests);
 };
