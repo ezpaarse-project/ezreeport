@@ -2,6 +2,7 @@ import chai from 'chai';
 import chaiJsonSchema from 'chai-json-schema';
 import { setup } from 'reporting-sdk-js';
 import config from '../../lib/config';
+import authTests from './auth.spec';
 import healthTests from './health.spec';
 import setupTests from './setup.spec';
 
@@ -18,4 +19,6 @@ export default () => {
   describe('setup', setupTests);
 
   describe('health', healthTests);
+
+  describe('auth', authTests);
 };
