@@ -76,43 +76,30 @@ const router = CustomRouter('health')
   /**
    * Get all services that current one can ping (himself included)
    */
-  .createRoute('GET /', (_req, res) => {
-    res.sendJson({
-      current: serviceName,
-      services: Object.keys(pingers),
-    });
-  })
+  .createRoute('GET /', (_req, _res) => ({
+    current: serviceName,
+    services: Object.keys(pingers),
+  }))
 
   /**
    * Ping all services (himself included)
    */
-  .createRoute('GET /all', async (_req, res) => {
-    try {
-      const result = await Promise.all(
-        Object.keys(pingers).map((s) => ping(s)),
-      );
-      res.sendJson(result);
-    } catch (error) {
-      res.errorJson(error);
-    }
-  })
+  .createRoute('GET /all', (_req, _res) => Promise.all(
+    Object.keys(pingers).map((s) => ping(s)),
+  ))
 
   /**
    * Ping specific service
    */
-  .createRoute('GET /:service', async (req, res) => {
-    try {
-      const { service } = req.params;
+  .createRoute('GET /:service', async (req, _res) => {
+    const { service } = req.params;
 
-      if (!isService(service)) {
-        throw new HTTPError(`Service "${service}" not found`, StatusCodes.NOT_FOUND);
-      }
-      const result = await ping(service);
-
-      res.sendJson(result);
-    } catch (error) {
-      res.errorJson(error);
+    if (!isService(service)) {
+      throw new HTTPError(`Service "${service}" not found`, StatusCodes.NOT_FOUND);
     }
+    const result = await ping(service);
+
+    return result;
   });
 
 export default router;

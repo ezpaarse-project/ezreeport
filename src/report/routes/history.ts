@@ -8,32 +8,28 @@ const router = CustomRouter('history')
   /**
    * List all history entries.
    */
-  .createSecuredRoute('GET /', Roles.SUPER_USER, checkInstitution, async (req, res) => {
-    try {
-      const { previous: p = undefined, count = '15' } = req.query;
-      const c = +count;
+  .createSecuredRoute('GET /', Roles.SUPER_USER, async (req, _res) => {
+    const { previous: p = undefined, count = '15' } = req.query;
+    const c = +count;
 
-      const entries = await getAllHistoryEntries(
-        {
-          count: c,
-          previous: p?.toString(),
-        },
-        req.user?.institution,
-      );
+    const entries = await getAllHistoryEntries(
+      {
+        count: c,
+        previous: p?.toString(),
+      },
+      req.user?.institution,
+    );
 
-      res.sendJson(
-        entries,
-        StatusCodes.OK,
-        {
-          // total: undefined,
-          count: entries.length,
-          size: c,
-          lastId: entries.at(-1)?.id,
-        },
-      );
-    } catch (error) {
-      res.errorJson(error);
-    }
-  });
+    return {
+      data: entries,
+      code: StatusCodes.OK,
+      meta: {
+        // total: undefined,
+        count: entries.length,
+        size: c,
+        lastId: entries.at(-1)?.id,
+      },
+    };
+  }, checkInstitution);
 
 export default router;

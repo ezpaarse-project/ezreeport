@@ -1,4 +1,12 @@
-import { Router, type RequestHandler, type RouterOptions } from 'express';
+import {
+  Router,
+  type Request,
+  type RequestHandler,
+  type Response,
+  type RouterOptions
+} from 'express';
+import { StatusCodes } from 'http-status-codes';
+import Joi from 'joi';
 import { checkRight } from '../middlewares/auth';
 import { getRoleValue, registerRouteWithRole, Roles } from '../models/roles';
 
@@ -6,48 +14,75 @@ type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 type HTTPPath = `/${string}`;
 type HTTPRoute = `${HTTPMethod} ${HTTPPath}`;
 
+interface HandlerData {
+  data: unknown,
+  code?: StatusCodes,
+  meta?: unknown
+}
+
+const handlerDataSchema = Joi.object<HandlerData>({
+  data: Joi.any().required(),
+  code: Joi.number().allow(...Object.values(StatusCodes)),
+  meta: Joi.any(),
+});
+
+type RouteHandler = (req: Request, res: Response) => unknown | Promise<unknown>;
+
+const isHandlerData = (data: unknown): data is HandlerData => {
+  const validation = handlerDataSchema.validate(data, {});
+  return !!validation.value && !validation.error;
+};
+
 /**
- * Create route
- *
- * @param router The router
- * @param route The name of route
- * @param handlers The handlers
- *
- * @returns The router
+ * @see {@link CustomRouterType.createRoute}
  */
 export const createRoute = <R extends Router>(
   router: R,
   route: HTTPRoute,
-  ...handlers: RequestHandler[]
+  handler: RouteHandler,
+  ...middlewares: RequestHandler[]
 ): R => {
   const [method, path] = route.split(' ', 2);
 
-  const res = router[method.toLowerCase() as Lowercase<HTTPMethod>](
+  const asyncHandler: RequestHandler = (req, res) => {
+    let result: Promise<unknown>;
+    try {
+      // Call handler
+      result = Promise.resolve(handler(req, res));
+    } catch (error) {
+      result = Promise.reject(error);
+    }
+
+    if (result) {
+      result
+        .then((v) => {
+          // If response wasn't already sent
+          if (!res.headersSent) {
+            // Allow handler to just return data instead of HandlerData
+            const val: HandlerData = isHandlerData(v) ? v : { data: v };
+            res.sendJson(val.data, val.code, val.meta);
+          }
+        })
+        .catch((err) => res.errorJson(err));
+    }
+  };
+
+  return router[method.toLowerCase() as Lowercase<HTTPMethod>](
     path,
-    ...handlers,
+    ...middlewares,
+    asyncHandler,
   );
-  return res;
 };
 
 /**
- * Create secured route that will check elastic's role of user.
- *
- * Route is secured by {@link checkRight}, so :
- * - `req.user` with `username` & `email` from Elastic user.
- * - You can safely add `checkInstitution` middleware
- *
- * @param router The router
- * @param route The name of route
- * @param minRole The minimum role
- * @param handlers The handlers
- *
- * @returns The router
+ * @see {@link CustomRouterType.createSecuredRoute}
  */
 export const createSecuredRoute = <R extends Router & { _permPrefix?: string }>(
   router: R,
   route: HTTPRoute,
   minRole: Roles,
-  ...handlers: RequestHandler[]
+  handler: RouteHandler,
+  ...middlewares: RequestHandler[]
 ): R => {
   const [method, path] = route.split(' ', 2);
 
@@ -73,13 +108,15 @@ export const createSecuredRoute = <R extends Router & { _permPrefix?: string }>(
   return createRoute(
     router,
     route,
+    handler,
     checkRight(minRolePriority),
-    ...handlers,
+    ...middlewares,
   );
 };
 
-type ExcludeFirst<T extends unknown[]> = T extends [unknown, ...(infer R)] ? R : [];
-
+/**
+ * Type for CustomRouter (see later)
+ */
 type CustomRouterType = {
   _permPrefix: string,
 
@@ -87,14 +124,17 @@ type CustomRouterType = {
    * Create route
    *
    * @param route The name of route
-   * @param handlers The handlers
+   * @param handler The executor of route. It can directly return data,
+   * or an object like `{ data, code, meta }` where `data` and `meta` **AREN'T PROMISES**
+   * and `code` is a StatusCode.
+   * @param middlewares The middlewares. They're passed to express **BEFORE** `handler`
    *
    * @returns The custom router
    */
-  createRoute(
-    this: Router & CustomRouterType,
+  createRoute<R extends Router & CustomRouterType>(
+    this: R,
     ...params: ExcludeFirst<Parameters<typeof createRoute>>
-  ): Router & CustomRouterType,
+  ): R,
 
   /**
    * Create secured route that will check elastic's role of user.
@@ -105,14 +145,17 @@ type CustomRouterType = {
    *
    * @param route The name of route
    * @param minRole The minimum role
-   * @param handlers The handlers
+   * @param handler The executor of route. It can directly return data,
+   * or an object like `{ data, code, meta }` where `data` and `meta` **AREN'T PROMISES**
+   * and `code` is a StatusCode.
+   * @param middlewares The middlewares. They're passed to express **BEFORE** `handler`
    *
    * @returns The custom router
    */
-  createSecuredRoute(
-    this: Router & CustomRouterType,
+  createSecuredRoute<R extends Router & CustomRouterType>(
+    this: R,
     ...params: ExcludeFirst<Parameters<typeof createSecuredRoute>>
-  ): Router & CustomRouterType,
+  ): R,
 };
 
 /**
@@ -126,9 +169,11 @@ type CustomRouterType = {
 export const CustomRouter = (prefix: string, opts?: RouterOptions): Router & CustomRouterType => {
   const additional: CustomRouterType = {
     _permPrefix: prefix,
+
     createRoute(...params) {
       return createRoute(this, ...params);
     },
+
     createSecuredRoute(...params) {
       return createSecuredRoute(this, ...params);
     },
