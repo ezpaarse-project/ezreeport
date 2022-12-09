@@ -4,9 +4,9 @@
   "description": "",
   "scripts": {
     "test": "mocha -r ts-node/register ./*/index.spec.ts",
-    "test:report": "mocha -r ts-node/register ./report/index.spec.ts",
+    "test:report": "mocha -r ts-node/register ./report/api/index.spec.ts",
     "test:mail": "mocha -r ts-node/register ./mail/index.spec.ts",
-    "test:sdk": "mocha -r ts-node/register ./sdk/index.spec.ts"
+    "test:sdk": "mocha -r ts-node/register ./report/sdk/index.spec.ts"
   },
   "repository": {
     "type": "git",
@@ -20,6 +20,7 @@
   "homepage": "https://github.com/ezpaarse-project/reporting#readme",
   "devDependencies": {
     "@types/assert": "^1.5.6",
+    "@types/chai-json-schema": "^1.4.6",
     "@types/chai-like": "^1.1.1",
     "@types/dotenv-flow": "^3.2.0",
     "@types/lodash": "^4.14.191",
@@ -29,6 +30,7 @@
     "@typescript-eslint/parser": "^5.46.0",
     "chai": "^4.3.7",
     "chai-http": "^4.3.0",
+    "chai-json-schema": "^1.5.1",
     "chai-like": "^1.1.1",
     "dotenv-flow": "^3.2.0",
     "eslint": "^8.29.0",
