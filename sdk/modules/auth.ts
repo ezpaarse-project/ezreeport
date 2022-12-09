@@ -57,4 +57,4 @@ export const getCurrentUser = () => axios.$get<User>('/me');
  *
  * @returns Permissions
  */
-export const getPermissions = () => axios.$get('/me/permissions');
+export const getPermissions = () => axios.$get<Record<string, boolean>>('/me/permissions');

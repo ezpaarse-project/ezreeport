@@ -4,12 +4,12 @@ import axios, { type ApiResponse } from '../lib/axios';
 interface RawCron {
   name: string,
   running: boolean,
-  nextRun: string, // Date
+  nextRun?: string, // Date
   lastRun?: string, // Date
 }
 
 export interface Cron extends Omit<RawCron, 'nextRun' | 'lastRun'> {
-  nextRun: Date,
+  nextRun?: Date,
   lastRun?: Date,
 }
 
@@ -22,7 +22,7 @@ export interface Cron extends Omit<RawCron, 'nextRun' | 'lastRun'> {
  */
 const parseCron = (cron: RawCron): Cron => ({
   ...cron,
-  nextRun: parseISO(cron.nextRun),
+  nextRun: cron.nextRun ? parseISO(cron.nextRun) : undefined,
   lastRun: cron.lastRun ? parseISO(cron.lastRun) : undefined,
 });
 

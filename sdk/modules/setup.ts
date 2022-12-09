@@ -23,4 +23,4 @@ export const unsetURL = () => {
  *
  * @returns If API url is setup
  */
-export const isURLset = () => !axios.defaults.baseURL;
+export const isURLset = () => !!axios.defaults.baseURL;
