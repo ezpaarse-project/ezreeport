@@ -285,6 +285,190 @@ const renderer: marked.RendererObject = {
 marked.use({ renderer });
 
 /**
+ * Print element at cursor position. Auto breaks text if going to overflow.
+ *
+ * Moves cursor while running.
+ *
+ * @param params Various params
+ *
+ * @returns The size taken by the text
+ */
+const printText = (
+  params: {
+    /**
+     * The element
+     */
+    element: MdElement,
+    /**
+     * Default values
+     */
+    def: MdDefault,
+    /**
+     * PDF instance
+     */
+    pdf: PDFReport['pdf'],
+    /**
+     * Start position
+     */
+    start: Position,
+    /**
+     * Current position.
+     *
+     * **Will be modified**
+     */
+    cursor: Position,
+    /**
+     * Maximum width
+     */
+    width: number
+    /**
+     * Override default fontSize
+     */
+    fontSize?: number,
+  },
+) => {
+  const { element: { content, meta }, def, pdf } = params;
+  let { fontSize } = params;
+  if (!fontSize) fontSize = def.fontSize;
+
+  const text = content.replace(/\n/g, '');
+
+  pdf
+    .setTextColor(meta.fontColor ?? 'black')
+    .setFont(def.font.fontName, meta.fontStyle ?? def.font.fontStyle)
+    .setFontSize(fontSize);
+
+  let { w, h } = pdf.getTextDimensions(text);
+
+  const isTooWide = params.cursor.x + w > params.start.x + params.width;
+  if (!isTooWide) {
+    // Print text
+    const y = params.cursor.y + fontSize;
+    pdf.text(text, params.cursor.x, y);
+
+    if (meta.fontDecoration) {
+      pdf.setDrawColor(meta.fontColor ?? 'black');
+      switch (meta.fontDecoration) {
+        case 'strike':
+          pdf.line(params.cursor.x - 2, y - (h / 3), params.cursor.x + w + 2, y - (h / 3));
+          break;
+
+        case 'underline': // FIXME: Not handled by marked (?)
+          pdf.line(params.cursor.x - 2, y + 2, params.cursor.x + w + 2, y + 2);
+          break;
+
+        default:
+          break;
+      }
+    }
+  } else {
+    // Print word per word to mimic CSS's property `word-break: break-word;`
+    const words = text.split(' ');
+    w = params.width;
+    for (let i = 0; i < words.length; i += 1) {
+      let word = words[i];
+      word = (i !== 0 ? ' ' : '') + word.trim();
+
+      const wordW = pdf.getTextWidth(word);
+      if (wordW > params.width) {
+        throw new Error(`Word "${word.trim()}" is too long to be printed.`);
+      }
+
+      if (params.cursor.x + wordW > params.start.x + params.width) {
+        // eslint-disable-next-line no-param-reassign
+        params.cursor.x = params.start.x;
+        // eslint-disable-next-line no-param-reassign
+        params.cursor.y += 1.5 * fontSize;
+        h += 1.5 * fontSize;
+        word = word.trimStart();
+      }
+
+      const { width: writedW } = printText({
+        ...params,
+        element: { ...params.element, content: word },
+      });
+      // eslint-disable-next-line no-param-reassign
+      params.cursor.x += writedW;
+    }
+  }
+
+  return { width: w, height: h, isTooWide };
+};
+
+/**
+ * Print element as a image at cursor position.
+ *
+ * @param params Various params
+ *
+ * @returns The size taken by the image
+ */
+const printImage = async (
+  params: {
+    /**
+     * Metadata of image
+     */
+    meta: { src: string, href?: string }
+    /**
+     * PDF instance
+     */
+    pdf: PDFReport['pdf'],
+    /**
+     * Current position.
+     */
+    cursor: Position,
+  },
+): Promise<Size | undefined> => {
+  const { meta, pdf, cursor } = params;
+
+  let imageData = '';
+  if (meta.src.match(/^https?:\/\//i)) {
+    // Remote images
+    // eslint-disable-next-line no-await-in-loop
+    const file = await (await fetch(meta.src)).blob();
+    // eslint-disable-next-line no-await-in-loop
+    const raw = Buffer.from(await file.arrayBuffer()).toString('base64');
+    imageData = `data:${file.type};base64,${raw}`;
+  } else if (meta.src.match(/^data:/i)) {
+    // Inline images
+    imageData = meta.src;
+  } else {
+    // Local images
+    const path = join('assets', meta.src);
+    if (new RegExp(`^${assetsDir}/.*\\.json$`, 'i').test(path) === false) {
+      throw new Error(`Md's image must be in the "${assetsDir}" folder. Resolved: "${path}"`);
+    }
+    const mime = lookup(path);
+    if (!mime) throw new Error("Can't resolve mime type");
+    // eslint-disable-next-line no-await-in-loop
+    const raw = await readFile(path, 'base64');
+    imageData = `data:${mime};base64,${raw}`;
+  }
+
+  if (imageData) {
+    // eslint-disable-next-line no-await-in-loop
+    const { width, height } = await loadImageAsset(imageData);
+    // Max image size while keeping aspect ratio
+    const w = Math.min(width, 200);
+    const h = (height / width) * w;
+    // Images start from original position
+    pdf.addImage({
+      imageData,
+      x: cursor.x,
+      y: cursor.y,
+      width: w,
+      height: h,
+    });
+
+    if (meta.href) {
+      pdf.link(cursor.x, cursor.y, w, h, { url: meta.href });
+    }
+
+    return { width: w, height: h };
+  }
+  return undefined;
+};
+
+/**
  * Add text (as Markdown) to PDF
  *
  * @param doc The PDF report
@@ -306,78 +490,6 @@ export const addMdToPDF = async (
   };
   const cursor = { ...def.cursor };
 
-  /**
-   * Print element at cursor position. Auto breaks text if going to overflow.
-   *
-   * Moves cursor while running.
-   *
-   * @param element The element
-   * @param fontSize The custom fontSize
-   *
-   * @returns The size taken by the text
-   */
-  const printText = (
-    { content, meta, type }: MdElement,
-    fontSize = def.fontSize,
-  ) => {
-    const text = content.replace(/\n/g, '');
-
-    doc.pdf
-      .setTextColor(meta.fontColor ?? 'black')
-      .setFont(def.font.fontName, meta.fontStyle ?? def.font.fontStyle)
-      .setFontSize(fontSize);
-
-    let { w, h } = doc.pdf.getTextDimensions(text);
-
-    const isTooWide = cursor.x + w > params.start.x + params.width;
-    if (!isTooWide) {
-      // Print text
-      const y = cursor.y + fontSize;
-      doc.pdf.text(text, cursor.x, y);
-
-      if (meta.fontDecoration) {
-        doc.pdf.setDrawColor(meta.fontColor ?? 'black');
-        switch (meta.fontDecoration) {
-          case 'strike':
-            doc.pdf.line(cursor.x - 2, y - (h / 3), cursor.x + w + 2, y - (h / 3));
-            break;
-
-          case 'underline': // FIXME: Not handled by marked (?)
-            doc.pdf.line(cursor.x - 2, y + 2, cursor.x + w + 2, y + 2);
-            break;
-
-          default:
-            break;
-        }
-      }
-    } else {
-      // Print word per word to mimic CSS's property `word-break: break-word;`
-      const words = text.split(' ');
-      w = params.width;
-      for (let i = 0; i < words.length; i += 1) {
-        let word = words[i];
-        word = (i !== 0 ? ' ' : '') + word.trim();
-
-        const wordW = doc.pdf.getTextWidth(word);
-        if (wordW > params.width) {
-          throw new Error(`Word "${word.trim()}" is too long to be printed.`);
-        }
-
-        if (cursor.x + wordW > params.start.x + params.width) {
-          cursor.x = params.start.x;
-          cursor.y += 1.5 * fontSize;
-          h += 1.5 * fontSize;
-          word = word.trimStart();
-        }
-
-        const { width: writedW } = printText({ content: word, meta, type }, fontSize);
-        cursor.x += writedW;
-      }
-    }
-
-    return { width: w, height: h, isTooWide };
-  };
-
   try {
     await marked.parse(data, { async: true });
 
@@ -391,7 +503,15 @@ export const addMdToPDF = async (
           fontSize = 48 / (meta.level ?? 1);
           // Heading start from original position
           cursor.x = def.cursor.x;
-          const { height, isTooWide } = printText(element, fontSize);
+          const { height, isTooWide } = printText({
+            fontSize,
+            element,
+            pdf: doc.pdf,
+            def,
+            start: params.start,
+            width: params.width,
+            cursor,
+          });
           cursor.x = def.cursor.x;
           if (isTooWide) {
             cursor.y += 1.5 * fontSize;
@@ -425,54 +545,19 @@ export const addMdToPDF = async (
 
         case 'image': {
           if (meta.src) {
-            let imageData = '';
-            if (meta.src.match(/^https?:\/\//i)) {
-              // Remote images
-              // eslint-disable-next-line no-await-in-loop
-              const file = await (await fetch(meta.src)).blob();
-              // eslint-disable-next-line no-await-in-loop
-              const raw = Buffer.from(await file.arrayBuffer()).toString('base64');
-              imageData = `data:${file.type};base64,${raw}`;
-            } else if (meta.src.match(/^data:/i)) {
-              // Inline images
-              imageData = meta.src;
-            } else {
-              // Local images
-              const path = join('assets', meta.src);
-              if (new RegExp(`^${assetsDir}/.*\\.json$`, 'i').test(path) === false) {
-                throw new Error(`Md's image must be in the "${assetsDir}" folder. Resolved: "${path}"`);
-              }
-              const mime = lookup(path);
-              if (!mime) throw new Error("Can't resolve mime type");
-              // eslint-disable-next-line no-await-in-loop
-              const raw = await readFile(path, 'base64');
-              imageData = `data:${mime};base64,${raw}`;
-            }
+            // eslint-disable-next-line no-await-in-loop
+            const result = await printImage({
+              meta: { ...meta, src: meta.src ?? '' },
+              pdf: doc.pdf,
+              cursor,
+            });
 
-            if (imageData) {
-              // eslint-disable-next-line no-await-in-loop
-              const { width, height } = await loadImageAsset(imageData);
-              // Max image size while keeping aspect ratio
-              const w = Math.min(width, 200);
-              const h = (height / width) * w;
-              // Images start from original position
-              doc.pdf.addImage({
-                imageData,
-                x: cursor.x,
-                y: cursor.y,
-                width: w,
-                height: h,
-              });
-
-              if (meta.href) {
-                doc.pdf.link(cursor.x, cursor.y, w, h, { url: meta.href });
-              }
-
+            if (result) {
               if (meta.space) {
                 cursor.x = def.cursor.x;
-                cursor.y += h;
+                cursor.y += result.height;
               } else {
-                cursor.x += w;
+                cursor.x += result.width;
               }
             }
           }
@@ -480,7 +565,14 @@ export const addMdToPDF = async (
         }
 
         default: { // text
-          const { width, isTooWide } = printText(element);
+          const { width, isTooWide } = printText({
+            element,
+            pdf: doc.pdf,
+            def,
+            start: params.start,
+            width: params.width,
+            cursor,
+          });
           if (!isTooWide) {
             // Calculate next offset
             cursor.x += width;
