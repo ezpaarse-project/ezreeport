@@ -10,7 +10,10 @@
     "host": "maildev",
     "port": 1025,
     "secure": false,
-    "ignoreTLS": false
+    "tls": {
+      "ignore": false,
+      "rejectUnauthorized": false
+    }
   },
   "mail": {
     "sender": "ezmesure-reporting@couperin.org",

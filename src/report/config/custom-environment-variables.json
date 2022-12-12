@@ -1,20 +1,20 @@
 {
   "logLevel": "LOG_LEVEL",
-  "port": "HTTP_PORT",
+  "port": { "__name": "HTTP_PORT", "__format": "number" },
   "allowedOrigins": "API_ALLOWED_ORIGINS",
   "elasticsearch": {
     "scheme": "ELASTIC_SCHEME",
     "host": "ELASTIC_HOST",
-    "port": "ELASTIC_PORT",
+    "port": { "__name": "ELASTIC_PORT", "__format": "number" },
     "apiKey": "ELASTIC_API_KEY",
     "requiredStatus": "ELASTIC_REQUIRED_STATUS",
-    "maxTries": "ELASTIC_MAX_TRIES"
+    "maxTries": { "__name": "ELASTIC_MAX_TRIES", "__format": "number" }
   },
   "redis": {
     "host": "REDIS_HOST",
-    "port": "REDIS_PORT",
+    "port": { "__name": "REDIS_PORT", "__format": "number" },
     "password": "REDIS_PASSWORD",
-    "concurrence": "REDIS_CONCURRENCE"
+    "concurrence": { "__name": "REDIS_CONCURRENCE", "__format": "number" }
   },
   "ezmesure": {
     "secret": "EZMESURE_AUTH_SECRET",
@@ -26,8 +26,8 @@
   },
   "report": {
     "ttl": {
-      "iterations": "REPORT_ITERATIONS_TO_LIVE",
-      "days": "REPORT_DAYS_TO_LIVE"
+      "iterations": { "__name": "REPORT_ITERATIONS_TO_LIVE", "__format": "number" },
+      "days": { "__name": "REPORT_DAYS_TO_LIVE", "__format": "number" }
     }
   }
 }

@@ -2,24 +2,24 @@
   "allowedOrigins": "API_ALLOWED_ORIGINS",
   "redis": {
     "host": "REDIS_HOST",
-    "port": "REDIS_PORT",
+    "port": { "__name": "REDIS_PASSWORD", "__format": "number" },
     "password": "REDIS_PASSWORD",
-    "concurrence": "REDIS_CONCURRENCE"
+    "concurrence": { "__name": "REDIS_CONCURRENCE", "__format": "number" }
   },
   "smtp": {
     "host": "SMTP_HOST",
-    "port": "SMTP_PORT",
+    "port": { "__name": "SMTP_PORT", "__format": "number" },
     "secure": { "__name": "SMTP_SECURE", "__format": "boolean" },
-    "ignoreTLS": { "__name": "SMTP_IGNORE_TLS", "__format": "boolean" },
     "tls": {
+      "ignore": { "__name": "SMTP_IGNORE_TLS", "__format": "boolean" },
       "rejectUnauthorized": { "__name": "SMTP_REJECT_UNAUTHORIZED", "__format": "boolean" }
     }
   },
   "email": {
     "sender": "EMAIL_SENDER",
     "team": "EMAIL_EZTEAM",
-    "attempts": "EMAIL_ATTEMPTS",
-    "interval": "EMAIL_ATTEMPTS_INTERVAL"
+    "attempts": { "__name": "EMAIL_ATTEMPTS", "__format": "number" },
+    "interval": { "__name": "EMAIL_ATTEMPTS_INTERVAL", "__format": "number" }
   },
   "api": {
     "domain": "API_DOMAIN"
