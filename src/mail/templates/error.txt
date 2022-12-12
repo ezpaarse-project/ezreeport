@@ -3,7 +3,7 @@ La génération du rapport {{ recurrence }} « {{ name }} » a rencontré une er
 
 Ce message est envoyé automatiquement par l'application ezMESURE, vous le recevez parce que vous êtes le correspondant de l'établissement générant la tâche de rapport.
 
-Vous trouverez le détail de la génération en pièce jointe.
+L'erreur retournée est : <em>{{ error }}</em>. Vous trouverez plus d'informations en pièce jointe.
 
 Cordialement,
 L'équipe ezMESURE.

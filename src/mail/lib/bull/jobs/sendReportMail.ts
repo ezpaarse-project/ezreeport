@@ -60,12 +60,22 @@ export default async (job: Job<MailData>) => {
         logger.error(`[mail] Report "${filename}" wasn't sent to anyone (see previous logs)`);
       }
     } else {
+      // TODO[feat]: Ignore team if test report ?
       const to = [job.data.contact ?? '', team];
+
+      let error: string;
+      try {
+        const { detail } = JSON.parse(b64ToString(job.data.file));
+        error = detail.error.message;
+      } catch (err) {
+        error = 'Unknown error, see attachements';
+      }
+
       await sendMail({
         ...options,
         to,
         subject: `Erreur de Reporting ezMESURE [${dateStr}] - ${job.data.task.name}`,
-        body: await generateMail('error', { ...bodyData, date: format(date, 'dd/MM/yyyy à HH:mm:ss') }),
+        body: await generateMail('error', { ...bodyData, error, date: format(date, 'dd/MM/yyyy à HH:mm:ss') }),
       });
       logger.info(`[mail] Error report "${filename}" sent to [${to.filter((v) => v).join(', ')}]`);
     }
