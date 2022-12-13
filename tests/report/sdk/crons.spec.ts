@@ -2,10 +2,11 @@ import chai from 'chai';
 import { step } from 'mocha-steps';
 import { crons } from 'reporting-sdk-js';
 import config from '../../lib/config';
+import type { JsonSchema } from '../../lib/jsonSchema';
 
 const { expect } = chai;
 
-const cronSchema = {
+const cronSchema: JsonSchema<crons.Cron> = {
   type: 'object',
   required: ['name', 'running'],
   properties: {
@@ -30,7 +31,7 @@ export default () => {
   describe('getAllCrons()', () => {
     let res: ReturnType<typeof crons.getAllCrons> | undefined;
 
-    it('should return crons', async () => {
+    it('should return array of cron', async () => {
       if (!res) {
         res = crons.getAllCrons();
       }
@@ -57,7 +58,7 @@ export default () => {
   describe('getCron(<string>)', () => {
     let res: ReturnType<typeof crons.getCron> | undefined;
 
-    it('should return one cron', async () => {
+    it('should return a cron', async () => {
       if (!res) {
         res = crons.getCron(config.SDK_REPORT_CRON);
       }
@@ -79,7 +80,7 @@ export default () => {
   describe('forceCron(<string>)', () => {
     let res: ReturnType<typeof crons.forceCron> | undefined;
 
-    it('should return one cron', async () => {
+    it('should return a cron', async () => {
       if (!res) {
         res = crons.forceCron(config.SDK_REPORT_CRON);
       }

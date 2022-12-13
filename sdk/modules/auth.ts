@@ -6,7 +6,7 @@ enum Roles {
   READ = 1,
 }
 
-interface User {
+export interface User {
   username: string,
   email: string,
   roles: string[],

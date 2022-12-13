@@ -1,6 +1,7 @@
 import chai from 'chai';
 import { health } from 'reporting-sdk-js';
 import config from '../../lib/config';
+import type { JsonSchema } from '../../lib/jsonSchema';
 
 const { expect } = chai;
 
@@ -20,7 +21,7 @@ const pingSuccessSchema = {
   },
 };
 
-const pingResultSchema = {
+const pingResultSchema: JsonSchema<health.PingResult> = {
   type: 'object',
   required: ['name', 'status'],
   properties: {

@@ -22,8 +22,8 @@ interface RawFullJob<Data, Result> {
   result?: Result,
   progress: number,
   added: string, // Date
-  started: string, // Date
-  ended: string, // Date
+  started?: string, // Date
+  ended?: string, // Date
   attemps: number,
   status: JobStatus,
 }

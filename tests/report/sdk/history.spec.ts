@@ -1,13 +1,17 @@
 import chai from 'chai';
 import { history } from 'reporting-sdk-js';
+import type { JsonSchema } from '../../lib/jsonSchema';
 
 const { expect } = chai;
 
-const entrySchema = {
+const entrySchema: JsonSchema<history.History> = {
   type: 'object',
   required: ['id', 'taskId', 'type', 'message', 'createdAt'],
   properties: {
     id: {
+      type: 'string',
+    },
+    type: {
       type: 'string',
     },
     taskId: {

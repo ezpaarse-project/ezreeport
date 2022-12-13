@@ -1,9 +1,10 @@
 import chai from 'chai';
 import { auth } from 'reporting-sdk-js';
+import type { JsonSchema } from '../../lib/jsonSchema';
 
 const { expect } = chai;
 
-const userSchema = {
+const userSchema: JsonSchema<auth.User> = {
   type: 'object',
   required: ['username', 'email', 'roles', 'maxRolePriority'],
   properties: {
