@@ -46,6 +46,7 @@
     "reporting-report": "file:../src/report",
     "reporting-sdk-js": "file:../sdk",
     "ts-node": "^10.9.1",
+    "tv4-formats": "^3.0.4",
     "typescript": "^4.9.4"
   }
 }

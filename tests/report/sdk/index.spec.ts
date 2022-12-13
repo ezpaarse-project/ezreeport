@@ -1,6 +1,7 @@
 import chai from 'chai';
 import chaiJsonSchema from 'chai-json-schema';
 import { setup } from 'reporting-sdk-js';
+import tv4Formats from 'tv4-formats';
 import config from '../../lib/config';
 import authTests from './auth.spec';
 import cronsTests from './crons.spec';
@@ -9,10 +10,7 @@ import historyTests from './history.spec';
 import setupTests from './setup.spec';
 
 chai.use(chaiJsonSchema);
-chai.tv4.addFormat('date-time', (data) => {
-  if (data instanceof Date) return null;
-  return 'not a valid date';
-});
+chai.tv4.addFormat(tv4Formats);
 
 export default () => {
   setup.setURL(config.REPORT_API);
