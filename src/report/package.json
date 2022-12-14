@@ -2,28 +2,30 @@
   "name": "reporting-report",
   "version": "1.0.0",
   "description": "",
-  "main": "app.ts",
-  "scripts": {
-    "start": "ts-node --transpile-only app.ts",
-    "dev": "nodemon app.ts",
-    "prisma:gui": "prisma studio",
-    "prisma:migrate": "prisma migrate dev",
-    "lint": "eslint --parser-options=project:./tsconfig.json .",
-    "test": "cd ../../tests/ && npm run test:report"
+  "homepage": "https://github.com/ezpaarse-project/reporting#readme",
+  "bugs": {
+    "url": "https://github.com/ezpaarse-project/reporting/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ezpaarse-project/reporting.git"
   },
-  "author": "oxypomme",
   "license": "CeCILL",
-  "bugs": {
-    "url": "https://github.com/ezpaarse-project/reporting/issues"
+  "author": "oxypomme",
+  "main": "app.ts",
+  "scripts": {
+    "dev": "nodemon app.ts",
+    "lint": "eslint --fix --parser-options=project:./tsconfig.json .",
+    "prisma:gui": "prisma studio",
+    "prisma:migrate": "prisma migrate dev",
+    "start": "ts-node --transpile-only app.ts",
+    "test": "cd ../../tests/ && npm run test:report"
   },
-  "engines": {
-    "node": "^18"
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --fix --parser-options=project:./tsconfig.json"
+    ]
   },
-  "homepage": "https://github.com/ezpaarse-project/reporting#readme",
   "dependencies": {
     "@elastic/elasticsearch": "^7.17.0",
     "@prisma/client": "^4.7.1",
@@ -75,5 +77,8 @@
     "nodemon": "^2.0.20",
     "prisma-erd-generator": "^1.2.4",
     "typescript": "^4.9.4"
+  },
+  "engines": {
+    "node": "^18"
   }
 }

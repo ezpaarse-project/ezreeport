@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "lint": "eslint --fix --parser-options=project:./tsconfig.json .",
     "test": "mocha -r ts-node/register ./*/index.spec.ts",
     "test:report": "mocha -r ts-node/register ./report/index.spec.ts",
     "test:mail": "mocha -r ts-node/register ./mail/index.spec.ts"
@@ -15,6 +16,11 @@
   "license": "CeCILL",
   "bugs": {
     "url": "https://github.com/ezpaarse-project/reporting/issues"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --fix --parser-options=project:./tsconfig.json"
+    ]
   },
   "homepage": "https://github.com/ezpaarse-project/reporting#readme",
   "devDependencies": {
