@@ -8,6 +8,7 @@ import cronsTests from './crons.spec';
 import healthTests from './health.spec';
 import historyTests from './history.spec';
 import queuesTests from './queues.spec';
+import reportsTests from './reports.spec';
 import setupTests from './setup.spec';
 import tasksTests from './tasks.spec';
 
@@ -35,4 +36,6 @@ export default () => {
   describe('history', historyTests);
 
   describe('tasks', tasksTests);
+
+  describe('reports', reportsTests);
 };

@@ -25,6 +25,9 @@ const userSchema: JsonSchema<auth.User> = {
     maxRolePriority: {
       type: 'number',
     },
+    institution: {
+      type: 'string',
+    },
   },
 };
 
