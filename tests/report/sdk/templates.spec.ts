@@ -1,6 +1,6 @@
 import chai from 'chai';
 import { templates } from 'reporting-sdk-js';
-import type { JsonSchema } from '../../lib/jsonSchema';
+import type { JsonSchema } from '~/lib/jsonSchema';
 
 const { expect } = chai;
 

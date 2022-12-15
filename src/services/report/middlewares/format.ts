@@ -1,12 +1,12 @@
 import type { RequestHandler } from 'express';
 import { getReasonPhrase, StatusCodes } from 'http-status-codes';
-import { sendError } from '../lib/elastic/apm';
+import { sendError } from '~/lib/elastic/apm';
 import {
   ArgumentError,
   ConflitError,
   HTTPError,
   NotFoundError
-} from '../types/errors';
+} from '~/types/errors';
 
 /**
  * API formatter middleware

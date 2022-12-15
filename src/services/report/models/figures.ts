@@ -1,9 +1,9 @@
 import Joi from 'joi';
 import type { Mark } from 'vega-lite/build/src/mark';
-import type { InputMdParams } from '../lib/pdf/markdown';
-import type { InputMetricParams, MetricData } from '../lib/pdf/metrics';
-import type { TableParams } from '../lib/pdf/table';
-import type { InputVegaParams } from '../lib/vega';
+import type { InputMdParams } from '~/lib/pdf/markdown';
+import type { InputMetricParams, MetricData } from '~/lib/pdf/metrics';
+import type { TableParams } from '~/lib/pdf/table';
+import type { InputVegaParams } from '~/lib/vega';
 
 type FigureType = Mark | 'table' | 'md' | 'metric';
 

@@ -7,17 +7,17 @@ import {
 import { PrismaClientValidationError } from '@prisma/client/runtime';
 import Joi from 'joi';
 import { join } from 'node:path';
-import config from '../lib/config';
+import config from '~/lib/config';
 import {
   endOfDay,
   formatISO,
   isBefore,
   isSameDay
-} from '../lib/date-fns';
-import logger from '../lib/logger';
-import prisma from '../lib/prisma';
-import { calcNextDate } from '../lib/recurrence';
-import { ArgumentError } from '../types/errors';
+} from '~/lib/date-fns';
+import logger from '~/lib/logger';
+import prisma from '~/lib/prisma';
+import { calcNextDate } from '~/models/recurrence';
+import { ArgumentError } from '~/types/errors';
 import { templateDBSchema } from './templates';
 
 // TODO[feat]: More checks to make custom errors

@@ -1,8 +1,8 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import type { SearchHit } from '@elastic/elasticsearch/api/types';
-import config from '../lib/config';
-import { elasticSearch, READONLY_SUFFIX } from '../lib/elastic';
-import { NotFoundError } from '../types/errors';
+import config from '~/lib/config';
+import { elasticSearch, READONLY_SUFFIX } from '~/lib/elastic';
+import { NotFoundError } from '~/types/errors';
 
 const TYPE = 'institution' as const;
 

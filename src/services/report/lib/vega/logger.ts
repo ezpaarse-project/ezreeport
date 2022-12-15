@@ -5,7 +5,7 @@ import {
   Warn,
   type LoggerInterface
 } from 'vega';
-import logger from '../logger';
+import logger from '~/lib/logger';
 
 const messagesToString = (messages: readonly string[]): string => messages.join('. ');
 

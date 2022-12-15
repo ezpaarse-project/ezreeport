@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { createTransport } from 'nodemailer';
 import type Mail from 'nodemailer/lib/mailer';
 import nunjucks from 'nunjucks';
-import config from './config';
+import config from '~/lib/config';
 
 const smtp = config.get('smtp');
 const { sender } = config.get('mail'); // TODO[feat]: some properties are not used

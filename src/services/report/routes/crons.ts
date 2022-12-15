@@ -4,9 +4,9 @@ import {
   getCron,
   startCron,
   stopCron
-} from '../lib/cron';
-import { CustomRouter } from '../lib/express-utils';
-import { Roles } from '../models/roles';
+} from '~/lib/cron';
+import { CustomRouter } from '~/lib/express-utils';
+import { Roles } from '~/models/roles';
 
 const router = CustomRouter('crons')
   /**

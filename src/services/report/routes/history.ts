@@ -1,8 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
-import { CustomRouter } from '../lib/express-utils';
-import { checkInstitution } from '../middlewares/auth';
-import { getAllHistoryEntries } from '../models/history';
-import { Roles } from '../models/roles';
+import { CustomRouter } from '~/lib/express-utils';
+import { checkInstitution } from '~/middlewares/auth';
+import { getAllHistoryEntries } from '~/models/history';
+import { Roles } from '~/models/roles';
 
 const router = CustomRouter('history')
   /**

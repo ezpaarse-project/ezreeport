@@ -1,6 +1,6 @@
 import winston from 'winston';
 import 'winston-daily-rotate-file';
-import config from './config';
+import config from '~/lib/config';
 
 const level = config.get('logLevel');
 

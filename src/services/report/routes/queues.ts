@@ -6,11 +6,11 @@ import {
   queuesNames,
   resumeQueue,
   retryJob
-} from '../lib/bull';
-import { CustomRouter } from '../lib/express-utils';
-import { checkInstitution } from '../middlewares/auth';
-import { Roles } from '../models/roles';
-import { HTTPError } from '../types/errors';
+} from '~/lib/bull';
+import { CustomRouter } from '~/lib/express-utils';
+import { checkInstitution } from '~/middlewares/auth';
+import { Roles } from '~/models/roles';
+import { HTTPError } from '~/types/errors';
 
 const router = CustomRouter('queues')
   /**

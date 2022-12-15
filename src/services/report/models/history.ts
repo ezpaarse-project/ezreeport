@@ -1,5 +1,5 @@
 import type { History, Task } from '@prisma/client';
-import prisma from '../lib/prisma';
+import prisma from '~/lib/prisma';
 
 /**
  * Get all history entry in DB

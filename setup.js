@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path')
 const { execSync } = require('node:child_process')
 
-const BASE_PATH = path.join(__dirname, 'src');
+const BASE_PATH = path.join(__dirname, 'src/services');
 const services = fs.readdirSync(BASE_PATH);
 
 // Install main

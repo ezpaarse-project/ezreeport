@@ -1,11 +1,11 @@
 import type Queue from 'bull';
+import { addTaskToQueue } from '~/lib/bull';
+import { endOfDay, isBefore, isSameDay } from '~/lib/date-fns';
+import apm from '~/lib/elastic/apm'; // Setup Elastic's APM for monitoring
+import logger from '~/lib/logger';
+import { formatInterval } from '~/lib/utils';
+import { getAllTasks } from '~/models/tasks';
 import type { CronData } from '..';
-import { getAllTasks } from '../../../models/tasks';
-import { addTaskToQueue } from '../../bull';
-import { endOfDay, isBefore, isSameDay } from '../../date-fns';
-import apm from '../../elastic/apm';
-import logger from '../../logger';
-import { formatInterval } from '../../utils';
 import { sendError } from './utils';
 
 export default async (job: Queue.Job<CronData>) => {

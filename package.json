@@ -14,14 +14,10 @@
   "author": "oxypomme",
   "scripts": {
     "lint": "npm run lint:report && npm run lint:mail",
-    "lint:mail": "cd src/mail && npm run lint",
-    "lint:report": "cd src/report && npm run lint",
+    "lint:mail": "cd src/services/mail && npm run lint",
+    "lint:report": "cd src/services/report && npm run lint",
     "prepare": "husky install",
     "setup": "node setup.js",
-    "start": "docker compose up --build -d",
-    "start:debug": "docker compose -f docker-compose.debug.yml up --build -d",
-    "stop": "docker compose down",
-    "stop:debug": "docker compose -f docker-compose.debug.yml down",
     "test": "cd tests && npm run test",
     "test:mail": "cd tests && npm run test:mail",
     "test:report": "cd tests && npm run test:report"

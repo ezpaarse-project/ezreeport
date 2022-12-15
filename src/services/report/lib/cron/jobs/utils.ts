@@ -1,8 +1,8 @@
 /* eslint-disable import/prefer-default-export */
 import { Recurrence } from '@prisma/client';
-import { addReportToQueue } from '../../bull';
-import { formatISO } from '../../date-fns';
-import logger from '../../logger';
+import { addReportToQueue } from '~/lib/bull';
+import { formatISO } from '~/lib/date-fns';
+import logger from '~/lib/logger';
 
 /**
  * Send generic error as a generation error

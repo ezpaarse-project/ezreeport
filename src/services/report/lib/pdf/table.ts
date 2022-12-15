@@ -1,8 +1,8 @@
 import { compile as handlebars } from 'handlebars';
 import autoTable, { type UserOptions } from 'jspdf-autotable';
 import { get, merge } from 'lodash';
+import logger from '~/lib/logger';
 import type { PDFReport } from '.';
-import logger from '../logger';
 
 export type TableParams = {
   title: string,

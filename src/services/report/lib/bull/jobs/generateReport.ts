@@ -2,13 +2,13 @@ import type Queue from 'bull';
 import EventEmitter from 'node:events';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import config from '~/lib/config';
+import { formatISO } from '~/lib/date-fns';
+import apm from '~/lib/elastic/apm'; // Setup Elastic's APM for monitoring
+import logger from '~/lib/logger';
+import { generateReport } from '~/models/reports';
+import type { AnyTemplate } from '~/models/templates';
 import { addReportToQueue, type GenerationData } from '..';
-import { generateReport } from '../../../models/reports';
-import type { AnyTemplate } from '../../../models/templates';
-import config from '../../config';
-import { formatISO } from '../../date-fns';
-import apm from '../../elastic/apm';
-import logger from '../../logger';
 
 const { outDir } = config.get('report');
 

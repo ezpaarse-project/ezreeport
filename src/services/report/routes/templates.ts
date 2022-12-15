@@ -1,6 +1,6 @@
-import { CustomRouter } from '../lib/express-utils';
-import { Roles } from '../models/roles';
-import { getAllTemplates, getTemplateByName } from '../models/templates';
+import { CustomRouter } from '~/lib/express-utils';
+import { Roles } from '~/models/roles';
+import { getAllTemplates, getTemplateByName } from '~/models/templates';
 
 const router = CustomRouter('templates')
   /**

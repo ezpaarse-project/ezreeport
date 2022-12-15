@@ -1,10 +1,10 @@
 import Queue from 'bull';
 import { join } from 'node:path';
-import { NotFoundError } from '../../types/errors';
-import config from '../config';
-import { sendError } from '../elastic/apm';
-import logger from '../logger';
-import { formatInterval } from '../utils';
+import config from '~/lib/config';
+import { sendError } from '~/lib/elastic/apm';
+import logger from '~/lib/logger';
+import { formatInterval } from '~/lib/utils';
+import { NotFoundError } from '~/types/errors';
 
 const { concurrence, ...redis } = config.get('redis');
 const cronsTimers = config.get('crons');

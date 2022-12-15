@@ -1,6 +1,6 @@
-import { CustomRouter } from '../lib/express-utils';
-import { checkInstitution } from '../middlewares/auth';
-import { getAllowedRoutes, Roles } from '../models/roles';
+import { CustomRouter } from '~/lib/express-utils';
+import { checkInstitution } from '~/middlewares/auth';
+import { getAllowedRoutes, Roles } from '~/models/roles';
 
 const router = CustomRouter('auth');
 

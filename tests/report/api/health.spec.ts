@@ -1,5 +1,5 @@
 import chai from 'chai';
-import { randomString } from '../../lib/utils';
+import { randomString } from '~/lib/utils';
 
 const { expect } = chai;
 

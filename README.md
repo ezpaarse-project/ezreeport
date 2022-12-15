@@ -15,14 +15,12 @@ npm run setup
 
 ## Services
 
-- src/report:
+- src/services/report:
   - Generate PDF reports with HTTP API. Also run cronjob to regullary generate reports
-- src/redis:
-  - Handle email queues
-- src/mail:
+- src/services/mail:
   - Handle email management
-- src/db:
-  - Keeps templates (even custom ones) & scheduled tasks
+- src/services/metric:
+  - Config files for metrics
 
 ## Start
 

@@ -3,10 +3,10 @@ import { Recurrence, type Prisma } from '@prisma/client';
 import Joi from 'joi';
 import { cloneDeep, merge } from 'lodash';
 import EventEmitter from 'node:events';
-import { ArgumentError } from '../../../types/errors';
-import { formatISO } from '../../date-fns';
-import { elasticCount, elasticSearch } from '../../elastic';
-import { calcElasticInterval } from '../../recurrence';
+import { formatISO } from '~/lib/date-fns';
+import { elasticCount, elasticSearch } from '~/lib/elastic';
+import { calcElasticInterval } from '~/models/recurrence';
+import { ArgumentError } from '~/types/errors';
 
 type ElasticFilters = ElasticTypes.QueryDslQueryContainer;
 type ElasticAggregation = ElasticTypes.AggregationsAggregationContainer;

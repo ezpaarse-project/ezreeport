@@ -1,8 +1,8 @@
 import type { Prisma } from '@prisma/client';
 import Joi from 'joi';
-import type { Fetchers } from '../lib/generators/fetchers';
-import fetchers from '../lib/generators/fetchers';
-import { ArgumentError } from '../types/errors';
+import type { Fetchers } from '~/generators/fetchers';
+import fetchers from '~/generators/fetchers';
+import { ArgumentError } from '~/types/errors';
 import { AnyFigure, figureSchema } from './figures';
 
 /**

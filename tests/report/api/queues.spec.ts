@@ -1,7 +1,7 @@
 import chai from 'chai';
 import { step } from 'mocha-steps';
-import config from '../../lib/config';
-import { randomString } from '../../lib/utils';
+import config from '~/lib/config';
+import { randomString } from '~/lib/utils';
 
 const { expect } = chai;
 

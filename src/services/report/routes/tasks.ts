@@ -2,11 +2,11 @@ import type { Prisma } from '@prisma/client';
 import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
 import { pick } from 'lodash';
-import { addTaskToQueue } from '../lib/bull';
-import { CustomRouter } from '../lib/express-utils';
-import { b64ToString } from '../lib/utils';
-import { checkInstitution } from '../middlewares/auth';
-import { Roles } from '../models/roles';
+import { addTaskToQueue } from '~/lib/bull';
+import { CustomRouter } from '~/lib/express-utils';
+import { b64ToString } from '~/lib/utils';
+import { checkInstitution } from '~/middlewares/auth';
+import { Roles } from '~/models/roles';
 import {
   createTask,
   deleteTaskById,
@@ -14,8 +14,8 @@ import {
   editTaskByIdWithHistory,
   getAllTasks,
   getTaskById
-} from '../models/tasks';
-import { ArgumentError, HTTPError, NotFoundError } from '../types/errors';
+} from '~/models/tasks';
+import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';
 
 type UnsubData = {
   unsubId: string,

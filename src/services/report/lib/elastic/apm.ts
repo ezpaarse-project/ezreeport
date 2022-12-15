@@ -1,9 +1,9 @@
 import apm from 'elastic-apm-node';
 import type { Request, Response } from 'express';
-import serviceInfo from '../../package.json';
-import config from '../config';
-import logger from '../logger';
-import { formatInterval } from '../utils';
+import config from '~/lib/config';
+import logger from '~/lib/logger';
+import { formatInterval } from '~/lib/utils';
+import serviceInfo from '~/package.json';
 
 enum LogLevel {
   debug = 0,

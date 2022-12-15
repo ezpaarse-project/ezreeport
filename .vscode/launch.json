@@ -10,7 +10,7 @@
       "name": "Debug mail",
       "port": 9231,
       "remoteRoot": "/mail",
-      "localRoot": "${workspaceFolder}/src/mail"
+      "localRoot": "${workspaceFolder}/src/services/mail"
     },
     {
       "type": "node",
@@ -18,7 +18,7 @@
       "name": "Debug report",
       "port": 9230,
       "remoteRoot": "/report",
-      "localRoot": "${workspaceFolder}/src/report"
+      "localRoot": "${workspaceFolder}/src/services/report"
     }
   ]
 }

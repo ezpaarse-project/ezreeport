@@ -1,7 +1,7 @@
 import chai from 'chai';
 import { health } from 'reporting-sdk-js';
-import config from '../../lib/config';
-import type { JsonSchema } from '../../lib/jsonSchema';
+import config from '~/lib/config';
+import type { JsonSchema } from '~/lib/jsonSchema';
 
 const { expect } = chai;
 

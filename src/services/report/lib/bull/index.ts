@@ -1,10 +1,10 @@
 import type { Recurrence, Task } from '@prisma/client';
 import Queue, { type Job } from 'bull';
 import { join } from 'path';
-import { NotFoundError } from '../../types/errors';
-import config from '../config';
-import { sendError } from '../elastic/apm';
-import logger from '../logger';
+import config from '~/lib/config';
+import { sendError } from '~/lib/elastic/apm';
+import logger from '~/lib/logger';
+import { NotFoundError } from '~/types/errors';
 
 const { concurrence, ...redis } = config.get('redis');
 

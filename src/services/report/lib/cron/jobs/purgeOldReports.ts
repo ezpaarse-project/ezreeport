@@ -1,21 +1,21 @@
 import type Queue from 'bull';
 import { enUS } from 'date-fns/locale';
-import { readFile, unlink } from 'fs/promises';
+import { readFile, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { CronData } from '..';
-import { isValidResult } from '../../../models/reports';
-import config from '../../config';
+import config from '~/lib/config';
 import {
   endOfDay,
   formatDuration,
   intervalToDuration,
   isBefore,
   parseISO
-} from '../../date-fns';
-import apm from '../../elastic/apm'; // Setup Elastic's APM for monitoring
-import glob from '../../glob';
-import logger from '../../logger';
-import { formatInterval, isFulfilled } from '../../utils';
+} from '~/lib/date-fns';
+import apm from '~/lib/elastic/apm'; // Setup Elastic's APM for monitoring
+import glob from '~/lib/glob';
+import logger from '~/lib/logger';
+import { formatInterval, isFulfilled } from '~/lib/utils';
+import { isValidResult } from '~/models/reports';
+import type { CronData } from '..';
 import { sendError } from './utils';
 
 const { outDir } = config.get('report');

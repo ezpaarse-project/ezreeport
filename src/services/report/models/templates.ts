@@ -1,12 +1,12 @@
 import { readFile } from 'fs/promises';
 import Joi from 'joi';
 import { join } from 'node:path';
-import config from '../lib/config';
-import type { Fetchers } from '../lib/generators/fetchers';
-import renderers, { type Renderers } from '../lib/generators/renderers';
-import glob from '../lib/glob';
-import { isFulfilled } from '../lib/utils';
-import { ArgumentError } from '../types/errors';
+import type { Fetchers } from '~/generators/fetchers';
+import renderers, { type Renderers } from '~/generators/renderers';
+import config from '~/lib/config';
+import glob from '~/lib/glob';
+import { isFulfilled } from '~/lib/utils';
+import { ArgumentError } from '~/types/errors';
 import { layoutSchema, NewLayout } from './layouts';
 
 const { templatesDir } = config.get('report');

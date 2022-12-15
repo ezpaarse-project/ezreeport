@@ -5,15 +5,15 @@
     ".eslintrc.js"
   ],
   "ts-node": {
-    "files": true
+    "files": true,
+    "require": ["tsconfig-paths/register"]
   },
   "compilerOptions": {
     "resolveJsonModule": true,
-    // FIXME: Paths throws errors at runtime
     "paths": {
-      // "~/*": [
-      //   "./*"
-      // ]
+      "~/*": [
+        "./*"
+      ]
     }
   }
 }

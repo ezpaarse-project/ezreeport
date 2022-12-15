@@ -1,11 +1,11 @@
 import type { Job } from 'bull';
 import { format, parseISO } from 'date-fns';
+import config from '~/lib/config';
+import logger from '~/lib/logger';
+import { generateMail, sendMail, type MailOptions } from '~/lib/mail';
+import { b64ToString, isFulfilled, stringToB64 } from '~/lib/utils';
+import { recurrenceToStr } from '~/models/recurrence';
 import type { MailData } from '..';
-import config from '../../config';
-import logger from '../../logger';
-import { generateMail, sendMail, type MailOptions } from '../../mail';
-import { recurrenceToStr } from '../../recurrence';
-import { b64ToString, isFulfilled, stringToB64 } from '../../utils';
 
 const { team } = config.get('mail');
 const { domain: APIdomain } = config.get('api');

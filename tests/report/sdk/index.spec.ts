@@ -2,7 +2,7 @@ import chai from 'chai';
 import chaiJsonSchema from 'chai-json-schema';
 import { setup } from 'reporting-sdk-js';
 import tv4Formats from 'tv4-formats';
-import config from '../../lib/config';
+import config from '~/lib/config';
 import authTests from './auth.spec';
 import cronsTests from './crons.spec';
 import healthTests from './health.spec';

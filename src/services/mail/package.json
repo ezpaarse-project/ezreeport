@@ -7,7 +7,7 @@
     "start": "ts-node --transpile-only app.ts",
     "dev": "nodemon app.ts",
     "lint": "eslint --fix --parser-options=project:./tsconfig.json .",
-    "test": "cd ../../tests/ && npm run test:mail"
+    "test": "cd ../../../tests/ && npm run test:mail"
   },
   "repository": {
     "type": "git",
@@ -50,6 +50,7 @@
     "eslint-plugin-n": "^15.6.0",
     "eslint-plugin-promise": "^6.1.1",
     "nodemon": "^2.0.20",
+    "tsconfig-paths": "^4.1.1",
     "typescript": "^4.9.4"
   }
 }

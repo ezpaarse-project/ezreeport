@@ -1,8 +1,8 @@
 import chai from 'chai';
 import { step } from 'mocha-steps';
 import { tasks } from 'reporting-sdk-js';
-import config from '../../lib/config';
-import type { JsonSchema } from '../../lib/jsonSchema';
+import config from '~/lib/config';
+import type { JsonSchema } from '~/lib/jsonSchema';
 import { layoutSchema } from './templates.spec';
 
 const { expect } = chai;

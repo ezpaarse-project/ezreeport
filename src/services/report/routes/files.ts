@@ -1,13 +1,13 @@
 import { StatusCodes } from 'http-status-codes';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import config from '../lib/config';
-import { CustomRouter } from '../lib/express-utils';
-import { checkInstitution } from '../middlewares/auth';
-import { isValidResult } from '../models/reports';
-import { Roles } from '../models/roles';
-import { getTaskById } from '../models/tasks';
-import { HTTPError } from '../types/errors';
+import config from '~/lib/config';
+import { CustomRouter } from '~/lib/express-utils';
+import { checkInstitution } from '~/middlewares/auth';
+import { isValidResult } from '~/models/reports';
+import { Roles } from '~/models/roles';
+import { getTaskById } from '~/models/tasks';
+import { HTTPError } from '~/types/errors';
 
 const { outDir } = config.get('report');
 

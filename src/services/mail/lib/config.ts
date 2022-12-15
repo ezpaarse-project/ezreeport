@@ -1,5 +1,5 @@
 import config from 'config';
-import type defaultConfig from '../config/default.json';
+import type defaultConfig from '~/config/default.json';
 
 type Config = typeof defaultConfig;
 

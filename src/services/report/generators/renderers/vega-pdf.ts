@@ -2,9 +2,6 @@ import { Recurrence } from '@prisma/client';
 import EventEmitter from 'events';
 import Joi from 'joi';
 import { merge } from 'lodash';
-import { type AnyFigure } from '../../../models/figures';
-import { layoutSchema, type AnyLayout } from '../../../models/layouts';
-import { ArgumentError } from '../../../types/errors';
 import {
   addPage,
   deleteDoc,
@@ -12,12 +9,15 @@ import {
   renderDoc,
   type PDFReportOptions,
   type PDFStats
-} from '../../pdf';
-import { addMdToPDF } from '../../pdf/markdown';
-import { addMetricToPDF } from '../../pdf/metrics';
-import { addTableToPDF } from '../../pdf/table';
-import { drawAreaRef } from '../../pdf/utils';
-import { addVegaToPDF, createVegaLSpec, createVegaView } from '../../vega';
+} from '~/lib/pdf';
+import { addMdToPDF } from '~/lib/pdf/markdown';
+import { addMetricToPDF } from '~/lib/pdf/metrics';
+import { addTableToPDF } from '~/lib/pdf/table';
+import { drawAreaRef } from '~/lib/pdf/utils';
+import { addVegaToPDF, createVegaLSpec, createVegaView } from '~/lib/vega';
+import { type AnyFigure } from '~/models/figures';
+import { layoutSchema, type AnyLayout } from '~/models/layouts';
+import { ArgumentError } from '~/types/errors';
 
 interface Grid {
   rows: number,

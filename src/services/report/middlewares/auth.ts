@@ -1,13 +1,11 @@
 import type { RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { verify } from 'jsonwebtoken';
-import config from '../lib/config';
-import { elasticGetUser } from '../lib/elastic';
-import { findInstitutionByCreatorOrRole, findInstitutionByIds } from '../models/institutions';
-import {
-  getMaxRole, Roles, RoleValues
-} from '../models/roles';
-import { HTTPError } from '../types/errors';
+import config from '~/lib/config';
+import { elasticGetUser } from '~/lib/elastic';
+import { findInstitutionByCreatorOrRole, findInstitutionByIds } from '~/models/institutions';
+import { getMaxRole, Roles, RoleValues } from '~/models/roles';
+import { HTTPError } from '~/types/errors';
 
 const { secret: jwtSecret } = config.get('ezmesure');
 

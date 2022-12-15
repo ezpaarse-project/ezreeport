@@ -1,11 +1,11 @@
 import { StatusCodes } from 'http-status-codes';
 import { setTimeout } from 'node:timers/promises';
-import { differenceInMilliseconds } from '../lib/date-fns';
-import { elasticPing } from '../lib/elastic';
-import { CustomRouter } from '../lib/express-utils';
-import logger from '../lib/logger';
-import { name as serviceName } from '../package.json';
-import { HTTPError } from '../types/errors';
+import { differenceInMilliseconds } from '~/lib/date-fns';
+import { elasticPing } from '~/lib/elastic';
+import { CustomRouter } from '~/lib/express-utils';
+import logger from '~/lib/logger';
+import { name as serviceName } from '~/package.json';
+import { HTTPError } from '~/types/errors';
 
 const pingers: Record<string, () => Promise<number | false>> = {
   [serviceName]: () => Promise.resolve(200),

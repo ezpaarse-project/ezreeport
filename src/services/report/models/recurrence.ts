@@ -14,7 +14,7 @@ import {
   startOfQuarter,
   startOfWeek,
   startOfYear
-} from './date-fns';
+} from '~/lib/date-fns';
 
 /**
  * Calculate next run date for the task

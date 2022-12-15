@@ -3,8 +3,8 @@ import { marked } from 'marked';
 import { lookup } from 'mime-types';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import config from '~/lib/config';
 import type { PDFReport } from '.';
-import config from '../config';
 import { loadImageAsset } from './utils';
 
 const { assetsDir } = config.get('report');
