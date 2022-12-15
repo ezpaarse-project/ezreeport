@@ -188,7 +188,7 @@ const router = CustomRouter('tasks')
     }
 
     if (task.enabled) {
-      throw new HTTPError(`Task with id '${id}' is already disabled`, StatusCodes.CONFLICT);
+      throw new HTTPError(`Task with id '${id}' is already enabled`, StatusCodes.CONFLICT);
     }
 
     const editedTask = await editTaskByIdWithHistory(
