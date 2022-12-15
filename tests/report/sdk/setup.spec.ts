@@ -18,6 +18,7 @@ export default () => {
       const isLogged = setup.isLogged();
 
       expect(isLogged).to.be.equal(false);
+      setup.login(config.EZMESURE_TOKEN);
     });
   });
 
@@ -34,6 +35,7 @@ export default () => {
       const isURLset = setup.isURLset();
 
       expect(isURLset).to.be.equal(false);
+      setup.setURL(config.REPORT_API);
     });
   });
 };

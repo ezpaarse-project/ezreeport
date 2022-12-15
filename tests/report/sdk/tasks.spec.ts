@@ -133,37 +133,6 @@ export default () => {
     });
   });
 
-  describe('disableTask(<string>)', () => {
-    let res: ReturnType<typeof tasks.disableTask> | undefined;
-
-    it('should return a full task', async () => {
-      if (!res) {
-        res = tasks.disableTask(config.SDK_REPORT_TASK);
-      }
-      const { content } = await res;
-
-      expect(content).to.be.jsonSchema(fullTaskSchema);
-    });
-
-    it('should return the correct task', async () => {
-      if (!res) {
-        res = tasks.disableTask(config.SDK_REPORT_TASK);
-      }
-      const { content } = await res;
-
-      expect(content.id).to.be.equal(config.SDK_REPORT_TASK);
-    });
-
-    it('should return disabled task', async () => {
-      if (!res) {
-        res = tasks.disableTask(config.SDK_REPORT_TASK);
-      }
-      const { content } = await res;
-
-      expect(content.enabled).to.be.equal(false);
-    });
-  });
-
   describe('Test course', () => {
     const input: tasks.InputTask = {
       name: 'UnitTest task',

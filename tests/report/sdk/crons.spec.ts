@@ -31,19 +31,23 @@ export default () => {
   describe('getAllCrons()', () => {
     let res: ReturnType<typeof crons.getAllCrons> | undefined;
 
-    it('should return array of cron', async () => {
+    // eslint-disable-next-line func-names
+    it('should return array of cron', async function () {
+      this.timeout(5000);
       if (!res) {
         res = crons.getAllCrons();
       }
       const { content } = await res;
 
-      // eslint-disable-next-line no-restricted-syntax
-      for (const cron of content) {
-        expect(cron).to.be.jsonSchema(cronSchema);
-      }
+      expect(content).to.be.jsonSchema({
+        type: 'array',
+        items: cronSchema,
+      });
     });
 
-    it('should return one cron', async () => {
+    // eslint-disable-next-line func-names
+    it('should return one cron', async function () {
+      this.timeout(5000);
       if (!res) {
         res = crons.getAllCrons();
       }
