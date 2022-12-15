@@ -58,7 +58,13 @@ const router = CustomRouter('queues')
       throw new HTTPError(`Job "${jobId}" not found`, StatusCodes.NOT_FOUND);
     }
 
-    if (req.user?.institution !== job.data.task.institution) {
+    if (
+      !req.user
+      || (
+        req.user.institution !== job.data.task.institution
+        && !req.user.roles.includes(Roles.SUPER_USER)
+      )
+    ) {
       throw new HTTPError(`Job "${jobId}" doesn't match your institution "${req.user?.institution}"`, StatusCodes.FORBIDDEN);
     }
 
@@ -79,7 +85,13 @@ const router = CustomRouter('queues')
       throw new HTTPError(`Job "${jobId}" not found`, StatusCodes.NOT_FOUND);
     }
 
-    if (req.user?.institution !== job.data.task.institution) {
+    if (
+      !req.user
+      || (
+        req.user.institution !== job.data.task.institution
+        && !req.user.roles.includes(Roles.SUPER_USER)
+      )
+    ) {
       throw new HTTPError(`Job "${jobId}" doesn't match your institution "${req.user?.institution}"`, StatusCodes.FORBIDDEN);
     }
 
