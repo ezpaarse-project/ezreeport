@@ -11,6 +11,7 @@ export interface User {
   email: string,
   roles: string[],
   maxRolePriority: Roles
+  institution?: string
 }
 
 /**
