@@ -16,11 +16,13 @@
     "lint": "npm run lint:report && npm run lint:mail",
     "lint:mail": "cd src/services/mail && npm run lint",
     "lint:report": "cd src/services/report && npm run lint",
+    "lint:sdk": "cd src/sdk && npm run lint",
     "prepare": "husky install",
     "setup": "node setup.js",
     "test": "cd tests && npm run test",
     "test:mail": "cd tests && npm run test:mail",
-    "test:report": "cd tests && npm run test:report"
+    "test:report": "cd tests && npm run test:report",
+    "test:sdk": "cd tests && npm run test:sdk"
   },
   "lint-staged": {
     "package.json": [

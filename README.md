@@ -15,16 +15,39 @@ npm run setup
 
 ## Services
 
-- src/services/report:
-  - Generate PDF reports with HTTP API. Also run cronjob to regullary generate reports
-- src/services/mail:
+- `src/services/report`:
+  - Generate PDF reports with HTTP API. Also run cronjob to generate reports
+- `src/services/mail`:
   - Handle email management
-- src/services/metric:
+- `src/services/metric`:
   - Config files for metrics
+
+
+## Packages
+
+- `src/sdk`
+  - SDK for report API
 
 ## Start
 
-```sh
+### Prod
+
+```bash
 source reporting.env.sh
-npm run start
+docker compose up -d
+```
+
+### Dev
+
+```bash
+source reporting.env.sh
+docker compose -f docker-compose.debug.yml up -d
+```
+
+## Test
+
+Located at `tests`
+
+```bash
+npm test
 ```
