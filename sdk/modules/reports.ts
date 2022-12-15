@@ -1,5 +1,5 @@
 import { parseISO } from 'date-fns';
-import axios from '../lib/axios';
+import axios, { axiosWithErrorFormatter } from '../lib/axios';
 import createEventfullPromise from '../lib/promises';
 import {
   parsePeriod,
@@ -195,7 +195,7 @@ export const startAndListenGeneration = (
 const getFile = async <Result>(
   pathName: string,
   institution?: string,
-) => (await axios.get<Result>(`/reports/${pathName}`, { params: { institution } })).data;
+) => (await axiosWithErrorFormatter<Result, 'get'>('get', `/reports/${pathName}`, { params: { institution } })).data;
 
 /**
  * Get report main file (the result) by giving the report's name

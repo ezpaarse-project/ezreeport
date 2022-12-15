@@ -1,6 +1,5 @@
 import { parseISO } from 'date-fns';
-import type { PaginatedApiResponse } from '../lib/axios';
-import axios from '../lib/axios';
+import { axiosWithErrorFormatter, type PaginatedApiResponse } from '../lib/axios';
 
 export interface RawHistory {
   id: string,
@@ -41,7 +40,8 @@ export const getAllEntries = async (
   paginationOpts?: { previous?: History['id'], count?: number },
   institution?: string,
 ): Promise<PaginatedApiResponse<History[]>> => {
-  const { data: { content, ...response } } = await axios.get<PaginatedApiResponse<RawHistory[]>>(
+  const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawHistory[]>, 'get'>(
+    'get',
     '/history',
     {
       params: {
