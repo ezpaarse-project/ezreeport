@@ -32,10 +32,10 @@ const pingResultSchema: JsonSchema<health.PingResult> = {
       type: 'boolean',
     },
     elapsedTime: {
-      type: ['number', 'null'],
+      type: ['number', 'null', 'undefined'],
     },
     error: {
-      type: ['string', 'null'],
+      type: ['string', 'null', 'undefined'],
     },
   },
 };

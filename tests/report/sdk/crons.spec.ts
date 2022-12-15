@@ -18,11 +18,11 @@ const cronSchema: JsonSchema<crons.Cron> = {
     },
     nextRun: {
       type: ['object', 'null', 'undefined'],
-      format: ['date-time', 'undefined'],
+      format: ['date-object', 'undefined'],
     },
     lastRun: {
       type: ['object', 'null', 'undefined'],
-      format: ['date-time', 'undefined'],
+      format: ['date-object', 'undefined'],
     },
   },
 };

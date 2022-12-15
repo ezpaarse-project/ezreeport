@@ -1,6 +1,6 @@
 type JsonTypes = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'null' | 'undefined';
 // https://github.com/ikr/tv4-formats
-type JsonFormat = 'credit-card-number' | 'date' | 'date-time' | 'duration' | 'time-offset' | 'email' | 'guid' | 'uri' | 'url' | 'undefined';
+type JsonFormat = 'date-object' | 'credit-card-number' | 'date' | 'date-time' | 'duration' | 'time-offset' | 'email' | 'guid' | 'uri' | 'url' | 'undefined';
 
 type TypeOf<T> = T extends string ? 'string'
   : T extends number ? 'number'
@@ -19,7 +19,7 @@ type JsonArray<T> = T extends (infer U)[] ? {
 type JsonObject<T> = T extends object ? {
   required?: (keyof T)[],
   properties?: {
-    [P in keyof T]: JsonSchema<T[P]>
+    [P in keyof Required<T>]: JsonSchema<T[P]>
   }
 } : {};
 

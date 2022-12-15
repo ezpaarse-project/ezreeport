@@ -40,15 +40,15 @@ const jobSchema: JsonSchema<queues.FullJob<object, object>> = {
     },
     added: {
       type: 'object',
-      format: 'date-time',
+      format: 'date-object',
     },
     started: {
       type: ['object', 'null', 'undefined'],
-      format: ['date-time', 'undefined'],
+      format: ['date-object', 'undefined'],
     },
     ended: {
       type: ['object', 'null', 'undefined'],
-      format: ['date-time', 'undefined'],
+      format: ['date-object', 'undefined'],
     },
     attemps: {
       type: 'number',
@@ -70,12 +70,12 @@ export default () => {
       const { content } = await res;
 
       // eslint-disable-next-line no-restricted-syntax
-      for (const cron of content) {
-        expect(cron).to.be.jsonSchema(queueSchema);
+      for (const queue of content) {
+        expect(queue).to.be.jsonSchema({ type: 'string' });
       }
     });
 
-    it('should return one queue', async () => {
+    it('should contains one specific queue', async () => {
       if (!res) {
         res = queues.getAllQueues();
       }
@@ -135,7 +135,7 @@ export default () => {
     });
 
     step('resumeQueue(<string>)', async () => {
-      const { content } = await queues.resumeQueue(config.SDK_REPORT_CRON);
+      const { content } = await queues.resumeQueue(config.SDK_REPORT_QUEUE);
 
       expect(content).to.be.jsonSchema(queueSchema);
       expect(content.status).to.be.equal('active');

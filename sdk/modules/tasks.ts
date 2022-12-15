@@ -50,7 +50,7 @@ export interface RawFullTask extends RawTask {
   template: {
     extends: string,
     fetchOptions?: object,
-    inserts: (Layout & { at: number })[],
+    inserts?: (Layout & { at: number })[],
   },
   targets: string[],
   history: RawHistory[]

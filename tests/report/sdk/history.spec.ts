@@ -4,7 +4,7 @@ import type { JsonSchema } from '../../lib/jsonSchema';
 
 const { expect } = chai;
 
-const entrySchema: JsonSchema<history.History> = {
+export const entrySchema: JsonSchema<history.History> = {
   type: 'object',
   required: ['id', 'taskId', 'type', 'message', 'createdAt'],
   properties: {
@@ -25,7 +25,7 @@ const entrySchema: JsonSchema<history.History> = {
     },
     createdAt: {
       type: 'object',
-      format: 'date-time',
+      format: 'date-object',
     },
   },
 };
