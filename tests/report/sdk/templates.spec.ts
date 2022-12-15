@@ -1,9 +1,12 @@
+import chai from 'chai';
 import { templates } from 'reporting-sdk-js';
-import { JsonSchema } from '../../lib/jsonSchema';
+import type { JsonSchema } from '../../lib/jsonSchema';
+
+const { expect } = chai;
 
 const figureSchema: JsonSchema<templates.Figure> = {
   type: 'object',
-  required: ['type', 'data', 'params'],
+  required: ['type', 'params'],
   properties: {
     type: {
       type: 'string',
@@ -62,4 +65,58 @@ export const templateSchema: JsonSchema<templates.FullTemplate['template']> = {
       items: layoutSchema,
     },
   },
+};
+
+const minTemplateSchema: JsonSchema<templates.Template> = {
+  type: 'object',
+  required: ['name', 'renderer', 'pageCount'],
+  properties: {
+    name: {
+      type: 'string',
+    },
+    renderer: {
+      type: 'string',
+    },
+    pageCount: {
+      type: 'number',
+    },
+  },
+};
+
+export default () => {
+  describe('getAllTemplates()', () => {
+    let res: ReturnType<typeof templates.getAllTemplates> | undefined;
+
+    it('should return array of template', async () => {
+      if (!res) {
+        res = templates.getAllTemplates();
+      }
+      const { content } = await res;
+
+      expect(content).to.be.jsonSchema({
+        type: 'array',
+        items: minTemplateSchema,
+      });
+    });
+  });
+
+  describe('getTemplate(<string>)', () => {
+    let res: ReturnType<typeof templates.getTemplate> | undefined;
+
+    it('should return template', async () => {
+      if (!res) {
+        res = templates.getTemplate('basic');
+      }
+      const { content } = await res;
+
+      expect(content).to.be.jsonSchema({
+        type: 'object',
+        required: [...(minTemplateSchema as Required<typeof minTemplateSchema>).required, 'template'],
+        properties: {
+          ...(minTemplateSchema as Required<typeof minTemplateSchema>).properties,
+          template: templateSchema,
+        },
+      });
+    });
+  });
 };

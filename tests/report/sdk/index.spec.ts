@@ -11,6 +11,7 @@ import queuesTests from './queues.spec';
 import reportsTests from './reports.spec';
 import setupTests from './setup.spec';
 import tasksTests from './tasks.spec';
+import templatesTests from './templates.spec';
 
 chai.use(chaiJsonSchema);
 chai.tv4.addFormat(tv4Formats);
@@ -38,4 +39,6 @@ export default () => {
   describe('tasks', tasksTests);
 
   describe('reports', reportsTests);
+
+  describe('templates', templatesTests);
 };
