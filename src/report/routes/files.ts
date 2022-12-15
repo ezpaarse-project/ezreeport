@@ -1,26 +1,25 @@
-import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import config from '../lib/config';
-import checkRight, { checkInstitution, Roles } from '../middlewares/auth';
+import { CustomRouter } from '../lib/express-utils';
+import { checkInstitution } from '../middlewares/auth';
 import { isValidResult } from '../models/reports';
+import { Roles } from '../models/roles';
 import { getTaskById } from '../models/tasks';
 import { HTTPError } from '../types/errors';
 
-const router = Router();
-
 const { outDir } = config.get('report');
 
-/**
- * Get speficic report
- */
-router.get('/:year/:yearMonth/:filename', checkRight(Roles.READ), checkInstitution, async (req, res) => {
-  const { year, yearMonth, filename } = req.params;
-  const reportFilename = filename.replace(/\..*$/, '');
-  const basePath = join(outDir, year, yearMonth);
+const router = CustomRouter('reports')
+  /**
+   * Get speficic report
+   */
+  .createSecuredRoute('GET /:year/:yearMonth/:filename', Roles.READ, async (req, res) => {
+    const { year, yearMonth, filename } = req.params;
+    const reportFilename = filename.replace(/\..*$/, '');
+    const basePath = join(outDir, year, yearMonth);
 
-  try {
     // Check if not trying to access unwanted file
     const path = join(basePath, `${reportFilename}.det.json`);
     if (new RegExp(`^${outDir}/.*\\.det\\.json$`, 'i').test(path) === false) {
@@ -45,9 +44,6 @@ router.get('/:year/:yearMonth/:filename', checkRight(Roles.READ), checkInstituti
     } else {
       throw new HTTPError(`No report "${year}/${yearMonth}/${filename}" for your organisation`, StatusCodes.NOT_FOUND);
     }
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+  }, checkInstitution);
 
 export default router;

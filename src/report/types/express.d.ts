@@ -3,12 +3,13 @@ declare namespace Express {
     /**
      * User information from Elastic
      *
-     * Added by `middlewares/auth::checkRight` & `middlewares/auth::checkInstitution`.
+     * Added by `middlewares/auth::checkRight`.
      */
     user?: {
       email: string,
       username: string,
       roles: string[],
+      maxRolePriority: number,
       /**
        * Added by `middlewares/auth::checkInstitution`
        */

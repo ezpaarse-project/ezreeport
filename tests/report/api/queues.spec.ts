@@ -205,8 +205,8 @@ export default (agent: ChaiHttp.Agent) => () => {
     });
 
     let queue: { status: 'active' | 'paused', jobs: { id: string }[] } | undefined;
-    step('PUT /queue/{queue}/pause', async () => {
-      const res = await agent.put(`/queus/${queueName}/pause`)
+    step('PUT /queues/{queue}/pause', async () => {
+      const res = await agent.put(`/queues/${queueName}/pause`)
         .auth(config.EZMESURE_TOKEN, { type: 'bearer' });
 
       expect(res).to.have.status(200);
@@ -217,8 +217,8 @@ export default (agent: ChaiHttp.Agent) => () => {
       queue = res.body.content;
     });
 
-    step('GET /queue/{queue}', async () => {
-      const res = await agent.get(`/queus/${queueName}`)
+    step('GET /queues/{queue}', async () => {
+      const res = await agent.get(`/queues/${queueName}`)
         .auth(config.EZMESURE_TOKEN, { type: 'bearer' });
 
       expect(res).to.have.status(200);
@@ -228,8 +228,8 @@ export default (agent: ChaiHttp.Agent) => () => {
       });
     });
 
-    step('PUT /queue/{queue}/resume', async () => {
-      const res = await agent.put(`/queus/${queueName}/resume`)
+    step('PUT /queues/{queue}/resume', async () => {
+      const res = await agent.put(`/queues/${queueName}/resume`)
         .auth(config.EZMESURE_TOKEN, { type: 'bearer' });
 
       expect(res).to.have.status(200);
@@ -240,9 +240,9 @@ export default (agent: ChaiHttp.Agent) => () => {
       queue = res.body.content;
     });
 
-    step('GET /queue/{queue}/{jobId}', async () => {
+    step('GET /queues/{queue}/{jobId}', async () => {
       const jobId = queue?.jobs[0].id;
-      const res = await agent.put(`/queus/${queueName}/${jobId}`)
+      const res = await agent.put(`/queues/${queueName}/${jobId}`)
         .auth(config.EZMESURE_TOKEN, { type: 'bearer' });
 
       expect(res).to.have.status(200);

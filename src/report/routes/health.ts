@@ -1,8 +1,8 @@
-import { differenceInMilliseconds } from 'date-fns';
-import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { setTimeout } from 'node:timers/promises';
+import { differenceInMilliseconds } from '../lib/date-fns';
 import { elasticPing } from '../lib/elastic';
+import { CustomRouter } from '../lib/express-utils';
 import logger from '../lib/logger';
 import { name as serviceName } from '../package.json';
 import { HTTPError } from '../types/errors';
@@ -46,8 +46,12 @@ const ping = async (
   try {
     const res = await Promise.race([
       pingers[service](),
-      setTimeout(timeout, false),
+      setTimeout(timeout, new Error('timed out')),
     ]);
+
+    if (res instanceof Error) {
+      throw res;
+    }
 
     const ms = differenceInMilliseconds(new Date(), start);
     if (!res) {
@@ -68,37 +72,26 @@ const ping = async (
   }
 };
 
-const router = Router();
-
-/**
- * Get all services that current one can ping (himself included)
- */
-router.get('/', (_req, res) => {
-  res.sendJson({
+const router = CustomRouter('health')
+  /**
+   * Get all services that current one can ping (himself included)
+   */
+  .createRoute('GET /', (_req, _res) => ({
     current: serviceName,
     services: Object.keys(pingers),
-  });
-});
+  }))
 
-/**
- * Ping all services (himself included)
- */
-router.get('/all', async (_req, res) => {
-  try {
-    const result = await Promise.all(
-      Object.keys(pingers).map((s) => ping(s)),
-    );
-    res.sendJson(result);
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+  /**
+   * Ping all services (himself included)
+   */
+  .createRoute('GET /all', (_req, _res) => Promise.all(
+    Object.keys(pingers).map((s) => ping(s)),
+  ))
 
-/**
- * Ping specific service
- */
-router.get('/:service', async (req, res) => {
-  try {
+  /**
+   * Ping specific service
+   */
+  .createRoute('GET /:service', async (req, _res) => {
     const { service } = req.params;
 
     if (!isService(service)) {
@@ -106,10 +99,7 @@ router.get('/:service', async (req, res) => {
     }
     const result = await ping(service);
 
-    res.sendJson(result);
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    return result;
+  });
 
 export default router;

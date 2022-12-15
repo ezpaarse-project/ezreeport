@@ -1,5 +1,4 @@
 import type Queue from 'bull';
-import { formatISO } from 'date-fns';
 import EventEmitter from 'node:events';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -7,8 +6,8 @@ import { addReportToQueue, type GenerationData } from '..';
 import { generateReport } from '../../../models/reports';
 import type { AnyTemplate } from '../../../models/templates';
 import config from '../../config';
-import '../../datefns'; // Setup default options for date-fns
-import apm from '../../elastic/apm'; // Setup Elastic's APM for monitoring
+import { formatISO } from '../../date-fns';
+import apm from '../../elastic/apm';
 import logger from '../../logger';
 
 const { outDir } = config.get('report');

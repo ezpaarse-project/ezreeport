@@ -1,11 +1,12 @@
-import { Prisma } from '@prisma/client';
-import { Router } from 'express';
+import type { Prisma } from '@prisma/client';
 import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
 import { pick } from 'lodash';
 import { addTaskToQueue } from '../lib/bull';
+import { CustomRouter } from '../lib/express-utils';
 import { b64ToString } from '../lib/utils';
-import checkRight, { checkInstitution, Roles } from '../middlewares/auth';
+import { checkInstitution } from '../middlewares/auth';
+import { Roles } from '../models/roles';
 import {
   createTask,
   deleteTaskById,
@@ -16,15 +17,39 @@ import {
 } from '../models/tasks';
 import { ArgumentError, HTTPError, NotFoundError } from '../types/errors';
 
-const router = Router();
+type UnsubData = {
+  unsubId: string,
+  email: string
+};
+
+const unsubSchema = Joi.object<UnsubData>({
+  unsubId: Joi.string().required(),
+  email: Joi.string().email().required(),
+});
 
 /**
- * List all active tasks of authed user's institution.
+ * Check if input data is a unsubscribe data
  *
- * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
+ * @param data The input data
+ * @returns `true` if valid
+ *
+ * @throws If not valid
  */
-router.get('/', checkRight(Roles.READ), checkInstitution, async (req, res) => {
-  try {
+const isValidUnsubData = (data: unknown): data is UnsubData => {
+  const validation = unsubSchema.validate(data, {});
+  if (validation.error != null) {
+    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
+  }
+  return true;
+};
+
+const router = CustomRouter('tasks')
+  /**
+   * List all active tasks of authed user's institution.
+   *
+   * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
+   */
+  .createSecuredRoute('GET /', Roles.READ, async (req, _res) => {
     const { previous: p = undefined, count = '15' } = req.query;
     const c = +count;
 
@@ -47,52 +72,43 @@ router.get('/', checkRight(Roles.READ), checkInstitution, async (req, res) => {
       req.user?.institution,
     );
 
-    res.sendJson(
-      tasks,
-      StatusCodes.OK,
-      {
+    return {
+      data: tasks,
+      meta: {
         // total: undefined,
         count: tasks.length,
         size: c,
         lastId: tasks.at(-1)?.id,
       },
-    );
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    };
+  }, checkInstitution)
 
-/**
- * Create a new task
- *
- * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
- */
-router.post('/', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res) => {
-  try {
+  /**
+   * Create a new task
+   *
+   * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
+   */
+  .createSecuredRoute('POST /', Roles.READ_WRITE, async (req, _res) => {
     if (!req.user || !req.user.institution) {
       throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
     }
 
-    res.sendJson(
-      await createTask(
+    return {
+      data: await createTask(
         req.body,
         req.user.username,
         req.user.institution,
       ),
-      StatusCodes.CREATED,
-    );
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+      code: StatusCodes.CREATED,
+    };
+  }, checkInstitution)
 
-/**
- * Get spectific task
- *
- * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
- */
-router.get('/:task', checkRight(Roles.READ), checkInstitution, async (req, res) => {
-  try {
+  /**
+   * Get spectific task
+   *
+   * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
+   */
+  .createSecuredRoute('GET /:task', Roles.READ, async (req, _res) => {
     const { task: id } = req.params;
 
     if (req.user && !req.user.institution && !req.user.roles.includes(Roles.SUPER_USER)) {
@@ -104,19 +120,15 @@ router.get('/:task', checkRight(Roles.READ), checkInstitution, async (req, res) 
       throw new HTTPError(`Task with id '${id}' not found for institution '${req.user?.institution}'`, StatusCodes.NOT_FOUND);
     }
 
-    res.sendJson(task, StatusCodes.OK);
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    return task;
+  }, checkInstitution)
 
-/**
- * Update a task
- *
- * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
- */
-router.put('/:task', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res) => {
-  try {
+  /**
+   * Update a task
+   *
+   * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
+   */
+  .createSecuredRoute('PUT /:task', Roles.READ_WRITE, async (req, _res) => {
     const { task: id } = req.params;
 
     if (!req.user || (!req.user.institution && !req.user.roles.includes(Roles.SUPER_USER))) {
@@ -134,19 +146,15 @@ router.put('/:task', checkRight(Roles.READ_WRITE), checkInstitution, async (req,
       throw new HTTPError(`Task with id '${id}' not found for institution '${req.user.institution}'`, StatusCodes.NOT_FOUND);
     }
 
-    res.sendJson(task, StatusCodes.OK);
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    return task;
+  }, checkInstitution)
 
-/**
- * Delete a task
- *
- * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
- */
-router.delete('/:task', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res) => {
-  try {
+  /**
+   * Delete a task
+   *
+   * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
+   */
+  .createSecuredRoute('DELETE /:task', Roles.READ_WRITE, async (req, _res) => {
     const { task: id } = req.params;
 
     if (!req.user || (!req.user.institution && !req.user.roles.includes(Roles.SUPER_USER))) {
@@ -159,19 +167,15 @@ router.delete('/:task', checkRight(Roles.READ_WRITE), checkInstitution, async (r
       throw new HTTPError(`Task with id '${id}' not found for institution '${req.user.institution}'`, StatusCodes.NOT_FOUND);
     }
 
-    res.sendJson(task, StatusCodes.OK);
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    return task;
+  }, checkInstitution)
 
-/**
- * Shorthand to quickly enable a task
- *
- * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
- */
-router.put('/:task/enable', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res) => {
-  try {
+  /**
+   * Shorthand to quickly enable a task
+   *
+   * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
+   */
+  .createSecuredRoute('PUT /:task/enable', Roles.READ_WRITE, async (req, _res) => {
     const { task: id } = req.params;
 
     if (!req.user || (!req.user.institution && !req.user.roles.includes(Roles.SUPER_USER))) {
@@ -184,7 +188,7 @@ router.put('/:task/enable', checkRight(Roles.READ_WRITE), checkInstitution, asyn
     }
 
     if (task.enabled) {
-      throw new HTTPError(`Task with id '${id}' is already disabled`, StatusCodes.CONFLICT);
+      throw new HTTPError(`Task with id '${id}' is already enabled`, StatusCodes.CONFLICT);
     }
 
     const editedTask = await editTaskByIdWithHistory(
@@ -199,19 +203,15 @@ router.put('/:task/enable', checkRight(Roles.READ_WRITE), checkInstitution, asyn
       req.user.institution,
     );
 
-    res.sendJson(editedTask, StatusCodes.OK);
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    return editedTask;
+  }, checkInstitution)
 
-/**
- * Shorthand to quickly disable a task
- *
- * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
- */
-router.put('/:task/disable', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res) => {
-  try {
+  /**
+   * Shorthand to quickly disable a task
+   *
+   * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
+   */
+  .createSecuredRoute('PUT /:task/disable', Roles.READ_WRITE, async (req, _res) => {
     const { task: id } = req.params;
 
     if (!req.user || (!req.user.institution && !req.user.roles.includes(Roles.SUPER_USER))) {
@@ -239,21 +239,17 @@ router.put('/:task/disable', checkRight(Roles.READ_WRITE), checkInstitution, asy
       req.user.institution,
     );
 
-    res.sendJson(editedTask, StatusCodes.OK);
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    return editedTask;
+  }, checkInstitution)
 
-/**
- * Force generation of report
- *
- * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)`
- * Parameter `test_emails` overrides task emails & enable first level of debug
- * Parameter `debug` is not accessible in PROD and enable second level of debug
- */
-router.post('/:task/run', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res) => {
-  try {
+  /**
+   * Force generation of report
+   *
+   * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)`
+   * Parameter `test_emails` overrides task emails & enable first level of debug
+   * Parameter `debug` is not accessible in PROD and enable second level of debug
+   */
+  .createSecuredRoute('POST /:task/run', Roles.READ_WRITE, async (req, _res) => {
     const { task: id } = req.params;
     let { test_emails: testEmails } = req.query;
     const {
@@ -299,52 +295,23 @@ router.post('/:task/run', checkRight(Roles.READ_WRITE), checkInstitution, async 
       debug: !!req.query.debug && process.env.NODE_ENV !== 'production',
     });
 
-    res.sendJson({
+    return {
       id: job.id,
+      queue: 'generation',
       data: job.data,
-    }, 200);
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    };
+  }, checkInstitution)
 
-type UnsubData = {
-  unsubId: string,
-  email: string
-};
-
-const unsubSchema = Joi.object<UnsubData>({
-  unsubId: Joi.string().required(),
-  email: Joi.string().email().required(),
-});
-
-/**
- * Check if input data is a unsubscribe data
- *
- * @param data The input data
- * @returns `true` if valid
- *
- * @throws If not valid
- */
-const isValidUnsubData = (data: unknown): data is UnsubData => {
-  const validation = unsubSchema.validate(data, {});
-  if (validation.error != null) {
-    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
-  }
-  return true;
-};
-
-/**
- * Shorthand to remove given email in given task
- */
-router.put('/:task/unsubscribe', async (req, res) => {
-  try {
+  /**
+   * Shorthand to remove given email in given task
+   */
+  .createRoute('PUT /:task/unsubscribe', async (req, _res) => {
     const { task: id } = req.params;
     const data = req.body;
 
     if (!isValidUnsubData(data)) {
       // As validation throws an error, this line shouldn't be called
-      return;
+      return {};
     }
 
     const [taskId64, to64] = decodeURIComponent(data.unsubId).split(':');
@@ -369,10 +336,7 @@ router.put('/:task/unsubscribe', async (req, res) => {
       { type: 'unsubscription', message: `${data.email} s'est désinscrit de la liste de diffusion.` },
     );
 
-    res.sendJson(await getTaskById(task.id));
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    return getTaskById(task.id);
+  }, checkInstitution);
 
 export default router;

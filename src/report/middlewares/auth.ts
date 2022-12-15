@@ -4,38 +4,25 @@ import { verify } from 'jsonwebtoken';
 import config from '../lib/config';
 import { elasticGetUser } from '../lib/elastic';
 import { findInstitutionByCreatorOrRole, findInstitutionByIds } from '../models/institutions';
+import {
+  getMaxRole, Roles, RoleValues
+} from '../models/roles';
 import { HTTPError } from '../types/errors';
 
 const { secret: jwtSecret } = config.get('ezmesure');
-
-/**
- * Roles names
- */
-export enum Roles {
-  SUPER_USER = 'superuser',
-  READ_WRITE = 'ezreporting',
-  READ = 'ezreporting_read_only',
-}
-
-/**
- * Roles priority, higher means more perms
- */
-const ROLES_PRIORITIES = {
-  [Roles.SUPER_USER]: 9999,
-  [Roles.READ_WRITE]: 2,
-  [Roles.READ]: 1,
-} as const;
 
 /**
  * Check if current user have the rights scopes.
  *
  * Adds `req.user` with `username` & `email` from Elastic user.
  *
- * @param minRole The minimum role required.
+ * @param minRolePriority The minimum role value required.
  *
  * @returns Express middleware
  */
-const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) => {
+export const checkRight = (
+  minRolePriority: RoleValues,
+): RequestHandler => async (req, res, next) => {
   let username = '';
   try {
     // Getting given JWT
@@ -68,15 +55,16 @@ const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) =>
     const { [username]: user } = await elasticGetUser(username);
 
     if (user?.enabled) {
-      req.user = { username: user.username, email: user.email, roles: user.roles };
+      const maxRole = getMaxRole(user.roles) ?? ['Not found', -1];
 
-      if (
-        // Check if user have enough role to access route
-        user.roles.some(
-          (role) => role in ROLES_PRIORITIES
-            && ROLES_PRIORITIES[role as keyof typeof ROLES_PRIORITIES] >= ROLES_PRIORITIES[minRole],
-        )
-      ) {
+      req.user = {
+        username: user.username,
+        email: user.email,
+        roles: user.roles,
+        maxRolePriority: maxRole[1],
+      };
+
+      if (maxRole[1] >= minRolePriority) {
         next();
         return;
       }
@@ -87,6 +75,11 @@ const checkRight = (minRole: Roles): RequestHandler => async (req, res, next) =>
   }
 };
 
+/**
+ * Get authed user's institution or given instituion (if allowed)
+ *
+ * Needs to be called after {@link checkRight}
+ */
 export const checkInstitution: RequestHandler = async (req, res, next) => {
   if (req.user) {
     if (

@@ -1,8 +1,8 @@
-import { format } from 'date-fns';
 import { jsPDF as PDF } from 'jspdf';
 import { existsSync } from 'node:fs';
 import { readFile, stat, unlink } from 'node:fs/promises';
 import config from '../config';
+import { format } from '../date-fns';
 import './fonts/Roboto-bold.js';
 import './fonts/Roboto-bolditalic.js';
 import './fonts/Roboto-italic.js';

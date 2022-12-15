@@ -134,6 +134,7 @@ export const addReportToQueue = (data: MailData) => queues.mail.add(data);
 const formatJob = async (job: Job<GenerationData | MailData>) => ({
   id: job.id,
   data: job.data,
+  result: job.returnvalue,
   progress: job.progress(),
   added: new Date(job.timestamp),
   started: job.processedOn && new Date(job.processedOn),

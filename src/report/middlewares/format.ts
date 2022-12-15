@@ -46,6 +46,7 @@ const middleware: RequestHandler = (req, res, next) => {
     res.sendJson(
       {
         message: error.message,
+        stack: process.env.NODE_ENV !== 'production' ? error.stack?.split('\n').map((t) => t.trim()) : undefined,
       },
       err instanceof HTTPError ? err.code : code,
     );

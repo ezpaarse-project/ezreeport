@@ -1,18 +1,16 @@
-import { Router } from 'express';
 import { readFile } from 'fs/promises';
 import { compile as handlebars } from 'handlebars';
 import Joi from 'joi';
+import { CustomRouter } from '../lib/express-utils';
 import { b64ToString } from '../lib/utils';
 import { getTaskById } from '../models/tasks';
 import { ArgumentError, NotFoundError } from '../types/errors';
 
-const router = Router();
-
-/**
- * Get unsubscribe static UI
- */
-router.get('/:unsubId', async (req, res) => {
-  try {
+const router = CustomRouter('unsub')
+  /**
+   * Get unsubscribe static UI
+   */
+  .createRoute('GET /:unsubId', async (req, res) => {
     const { unsubId } = req.params;
 
     const [taskId64, to64] = decodeURIComponent(unsubId).split(':');
@@ -32,9 +30,6 @@ router.get('/:unsubId', async (req, res) => {
 
     const html = handlebars(template)({ task, unsubId, email });
     res.send(html);
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+  });
 
 export default router;

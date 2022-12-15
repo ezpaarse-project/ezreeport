@@ -1,6 +1,6 @@
-import { format, isValid, parseISO } from 'date-fns';
 import type { Font } from 'jspdf';
 import type { PDFReport } from '.';
+import { format, isValid, parseISO } from '../date-fns';
 
 type MetricParams = {
   start: Position,

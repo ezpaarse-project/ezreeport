@@ -27,7 +27,7 @@
       "get": {
         "summary": "Get pingables services",
         "tags": [
-          "general"
+          "health"
         ],
         "responses": {
           "200": {
@@ -103,7 +103,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "ping",
+        "operationId": "health-get",
         "description": "Check services that current one can ping"
       }
     },
@@ -111,7 +111,7 @@
       "get": {
         "summary": "Ping all services",
         "tags": [
-          "general"
+          "health"
         ],
         "responses": {
           "200": {
@@ -185,7 +185,7 @@
                         {
                           "name": "error",
                           "status": false,
-                          "error": "Internal Server Error"
+                          "error": "timed out"
                         }
                       ]
                     }
@@ -198,7 +198,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-ping-_all",
+        "operationId": "health-get-all",
         "description": "Ping all services (himself included)"
       },
       "parameters": []
@@ -217,7 +217,7 @@
       "get": {
         "summary": "Ping specific service",
         "tags": [
-          "general"
+          "health"
         ],
         "responses": {
           "200": {
@@ -280,9 +280,9 @@
                       },
                       "content": {
                         "name": "elastic",
-                        "success": true,
-                        "time": 9,
-                        "timeout": false
+                        "status": true,
+                        "elapsedTime": 35,
+                        "statusCode": 200
                       }
                     }
                   }
@@ -297,7 +297,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-ping-service",
+        "operationId": "health-get-service",
         "description": "Ping specific service"
       }
     },
@@ -428,7 +428,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-tasks",
+        "operationId": "tasks-get",
         "description": "Get tasks of the authed user's institution. Accessible to READ.",
         "security": [
           {
@@ -449,7 +449,7 @@
       },
       "post": {
         "summary": "Add new task",
-        "operationId": "post-tasks",
+        "operationId": "tasks-post",
         "responses": {
           "201": {
             "description": "Created",
@@ -764,7 +764,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-tasks-taskId",
+        "operationId": "tasks-get-taskId",
         "description": "Get specific task of the authed user's institution. Accessible to READ.",
         "security": [
           {
@@ -779,7 +779,7 @@
       },
       "put": {
         "summary": "Update specific task",
-        "operationId": "put-tasks-taskId",
+        "operationId": "tasks-put-taskId",
         "responses": {
           "200": {
             "description": "OK",
@@ -957,7 +957,7 @@
       },
       "delete": {
         "summary": "Delete specific task",
-        "operationId": "delete-tasks-taskId",
+        "operationId": "tasks-delete-taskId",
         "responses": {
           "200": {
             "description": "OK",
@@ -1118,7 +1118,7 @@
       ],
       "put": {
         "summary": "Enable task",
-        "operationId": "put-tasks-taskId-enable",
+        "operationId": "tasks-put-taskId-enable",
         "responses": {
           "200": {
             "description": "OK",
@@ -1250,7 +1250,7 @@
     "/tasks/{taskId}/disable": {
       "put": {
         "summary": "Disable task",
-        "operationId": "put-tasks-taskId]-disable",
+        "operationId": "tasks-put-taskId]-disable",
         "responses": {
           "200": {
             "description": "OK",
@@ -1404,7 +1404,7 @@
       ],
       "post": {
         "summary": "Generate report",
-        "operationId": "post-tasks-taskId-run",
+        "operationId": "tasks-post-task-run",
         "responses": {
           "200": {
             "description": "OK",
@@ -1439,6 +1439,9 @@
                         "id": {
                           "type": "string",
                           "description": "Bull's job id"
+                        },
+                        "queue": {
+                          "type": "string"
                         },
                         "data": {
                           "type": "object",
@@ -1512,7 +1515,7 @@
     "/tasks/{taskId}/unsubscribe": {
       "put": {
         "summary": "Unsubscribe from task",
-        "operationId": "post-tasks-taskId-unsubscribe",
+        "operationId": "tasks-post-taskId-unsubscribe",
         "responses": {
           "200": {
             "description": "OK",
@@ -1655,7 +1658,7 @@
           }
         },
         "tags": [
-          "tasks"
+          "unsubscribe"
         ],
         "parameters": [
           {
@@ -1695,135 +1698,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "x-examples": {
-                    "Example": {
-                      "success": true,
-                      "detail": {
-                        "createdAt": "2022-11-14T15:02:46.340Z",
-                        "tool": 1000,
-                        "task": "af549626-641b-44ed-9381-f3b751370164",
-                        "files": {
-                          "detail": "2022/2022-11/reporting_ezMESURE_test-api.json",
-                          "report": "2022/2022-11/reporting_ezMESURE_test-api.pdf"
-                        },
-                        "writedTo": [
-                          "user@example.com"
-                        ],
-                        "period": {
-                          "start": "2021-10-18T00:00:00.000Z",
-                          "end": "2021-10-24T23:59:59.999Z"
-                        },
-                        "runAs": "user",
-                        "stats": {
-                          "pageCount": 6,
-                          "size": 398460
-                        }
-                      }
-                    }
-                  },
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "detail": {
-                      "type": "object",
-                      "properties": {
-                        "createdAt": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "took": {
-                          "type": "integer",
-                          "description": "Time taken to generate report in ms"
-                        },
-                        "taskId": {
-                          "type": "string"
-                        },
-                        "meta": {
-                          "type": "object",
-                          "nullable": true
-                        },
-                        "files": {
-                          "type": "object",
-                          "required": [
-                            "detail"
-                          ],
-                          "properties": {
-                            "detail": {
-                              "type": "string"
-                            },
-                            "report": {
-                              "type": "string"
-                            },
-                            "debug": {
-                              "type": "string"
-                            }
-                          }
-                        },
-                        "sendingTo": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        },
-                        "period": {
-                          "type": "object",
-                          "properties": {
-                            "start": {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            "end": {
-                              "type": "string",
-                              "format": "date-time"
-                            }
-                          },
-                          "required": [
-                            "start",
-                            "end"
-                          ]
-                        },
-                        "runAs": {
-                          "type": "string"
-                        },
-                        "stats": {
-                          "type": "object",
-                          "properties": {
-                            "pageCount": {
-                              "type": "integer"
-                            },
-                            "size": {
-                              "type": "integer"
-                            }
-                          }
-                        },
-                        "error": {
-                          "type": "object",
-                          "properties": {
-                            "message": {
-                              "type": "string"
-                            },
-                            "stack": {
-                              "type": "array",
-                              "items": {
-                                "type": "string"
-                              }
-                            }
-                          },
-                          "required": [
-                            "message",
-                            "stack"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "took",
-                        "taskId",
-                        "files"
-                      ]
-                    }
-                  }
+                  "$ref": "#/components/schemas/ReportDetail"
                 },
                 "examples": {
                   "Success": {
@@ -1891,7 +1766,7 @@
             }
           }
         },
-        "operationId": "get-reports-file",
+        "operationId": "reports-get-year-yearMonth-filename",
         "description": "Get specific report. Accessible to READ.",
         "parameters": [
           {
@@ -1981,7 +1856,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-queues",
+        "operationId": "queues-get",
         "description": "List all possible queues names. Accessible to READ.",
         "security": [
           {
@@ -2087,7 +1962,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-queues-queue",
+        "operationId": "queues-get-queue",
         "description": "Get info about a queue. Only accessible to SUPER_USER.",
         "security": [
           {
@@ -2110,7 +1985,7 @@
       ],
       "put": {
         "summary": "Pause queue",
-        "operationId": "put-queues-queue-pause",
+        "operationId": "queues-put-queue-pause",
         "responses": {
           "200": {
             "description": "OK",
@@ -2216,7 +2091,7 @@
       ],
       "put": {
         "summary": "Resume queue",
-        "operationId": "put-queues-queue-resume",
+        "operationId": "queues-put-queue-resume",
         "responses": {
           "200": {
             "description": "OK",
@@ -2417,16 +2292,11 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-queues-queue-jobId",
+        "operationId": "queues-get-queue-jobId",
         "description": "Get specific job of the authed user's institution. Accessible to READ.",
         "security": [
           {
             "ezmesure-jwt": []
-          }
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/institution"
           }
         ]
       }
@@ -2454,7 +2324,7 @@
       ],
       "post": {
         "summary": "Retry specific job",
-        "operationId": "post-queues-queue-jobId-retry",
+        "operationId": "queues-post-queue-jobId-retry",
         "responses": {
           "200": {
             "description": "OK",
@@ -2548,11 +2418,6 @@
           {
             "ezmesure-jwt": []
           }
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/institution"
-          }
         ]
       }
     },
@@ -2638,7 +2503,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-crons",
+        "operationId": "crons-get",
         "security": [
           {
             "ezmesure-jwt": []
@@ -2725,7 +2590,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-crons-cron]",
+        "operationId": "crons-get-cron",
         "description": "Get specific crons. Only accessible to SUPER_USER.",
         "security": [
           {
@@ -2759,7 +2624,7 @@
       ],
       "put": {
         "summary": "Start cron",
-        "operationId": "put-crons-cron-start",
+        "operationId": "crons-put-cron-start",
         "responses": {
           "200": {
             "description": "OK",
@@ -2857,7 +2722,7 @@
       ],
       "put": {
         "summary": "Stop cron",
-        "operationId": "put-crons-cron-stop",
+        "operationId": "crons-put-cron-stop",
         "responses": {
           "200": {
             "description": "OK",
@@ -2955,7 +2820,7 @@
       ],
       "post": {
         "summary": "Force cron",
-        "operationId": "post-crons-cron-force",
+        "operationId": "crons-post-cron-force",
         "responses": {
           "200": {
             "description": "OK",
@@ -3074,10 +2939,10 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-unsubscribe-unsubId",
+        "operationId": "unsubscribe-get-unsubId",
         "description": "Get unsubscribe form to be removed from task targets.",
         "tags": [
-          "general"
+          "unsubscribe"
         ]
       }
     },
@@ -3183,7 +3048,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-layouts",
+        "operationId": "templates-get",
         "security": [
           {
             "ezmesure-jwt": []
@@ -3316,14 +3181,14 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-layouts-layoutName",
+        "operationId": "templates-get-name(*)",
         "security": [
           {
             "ezmesure-jwt": []
           }
         ],
         "parameters": [],
-        "description": "Get specific defined templated. Accessible to READ_WRITE."
+        "description": "Get specific defined template. Accessible to READ_WRITE."
       }
     },
     "/history": {
@@ -3569,13 +3434,13 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "get-history",
+        "operationId": "history-get",
         "security": [
           {
             "ezmesure-jwt": []
           }
         ],
-        "description": "Get history entries of all  tasks. Only accessible to SUPER_USER.",
+        "description": "Get history entries of all tasks. Only accessible to SUPER_USER.",
         "parameters": [
           {
             "$ref": "#/components/parameters/previous"
@@ -3587,6 +3452,215 @@
             "$ref": "#/components/parameters/institution"
           }
         ]
+      }
+    },
+    "/me": {
+      "get": {
+        "summary": "Get user info",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "username": "tom.sublet",
+                        "email": "tom.sublet@inist.fr",
+                        "roles": [
+                          "ezreporting",
+                          "ezreporting-readonly",
+                          "bibcnrs",
+                          "tech_contact"
+                        ]
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "username": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "roles": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "maxRolePriority": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 0,
+                        "message": "string"
+                      },
+                      "content": {
+                        "username": "string",
+                        "email": "string",
+                        "roles": [
+                          "string"
+                        ],
+                        "maxRolePriority": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "auth-get",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "description": "Get authed user info. Accessible to READ."
+      }
+    },
+    "/me/permissions": {
+      "get": {
+        "summary": "Check permissions",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "health": true,
+                        "crons": {
+                          "read": false,
+                          "update": false
+                        },
+                        "tasks": {
+                          "customInstitution": false,
+                          "create": true,
+                          "read": true,
+                          "update": true,
+                          "delete": true
+                        },
+                        "reports": {
+                          "create": true,
+                          "read": true
+                        },
+                        "queues": {
+                          "read_all": true,
+                          "read_one": false,
+                          "update": false,
+                          "jobs": {
+                            "read": true,
+                            "update": true
+                          }
+                        },
+                        "layouts": {
+                          "read": true
+                        },
+                        "history": {
+                          "read": false
+                        }
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "auth-get-permissions",
+        "security": [
+          {
+            "ezmesure-jwt": []
+          }
+        ],
+        "description": "Check permission of current user. Accessible to READ."
       }
     }
   },
@@ -3923,6 +3997,9 @@
               }
             }
           },
+          "result": {
+            "$ref": "#/components/schemas/ReportDetail"
+          },
           "progress": {
             "type": "integer"
           },
@@ -3942,6 +4019,13 @@
             "type": "string"
           }
         },
+        "required": [
+          "id",
+          "data",
+          "added",
+          "attemps",
+          "status"
+        ],
         "description": ""
       },
       "Cron": {
@@ -4383,10 +4467,13 @@
   },
   "tags": [
     {
+      "name": "auth"
+    },
+    {
       "name": "cron"
     },
     {
-      "name": "general"
+      "name": "health"
     },
     {
       "name": "history"

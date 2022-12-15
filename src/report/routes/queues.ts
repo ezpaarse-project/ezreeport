@@ -1,4 +1,3 @@
-import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import {
   getJob,
@@ -8,109 +7,95 @@ import {
   resumeQueue,
   retryJob
 } from '../lib/bull';
-import checkRight, { checkInstitution, Roles } from '../middlewares/auth';
+import { CustomRouter } from '../lib/express-utils';
+import { checkInstitution } from '../middlewares/auth';
+import { Roles } from '../models/roles';
 import { HTTPError } from '../types/errors';
 
-const router = Router();
+const router = CustomRouter('queues')
+  /**
+   * Get all possible queues names (required for further requests)
+   */
+  .createSecuredRoute('GET /', Roles.READ, async (_req, _res) => queuesNames)
 
-/**
- * Get all possible queues names (required for further requests)
- */
-router.get('/', checkRight(Roles.READ), async (req, res) => {
-  try {
-    res.sendJson(queuesNames);
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
-
-/**
- * Get info about specific queue
- */
-router.get('/:queue', checkRight(Roles.SUPER_USER), async (req, res) => {
-  try {
+  /**
+   * Get info about specific queue
+   */
+  .createSecuredRoute('GET /:queue', Roles.SUPER_USER, async (req, _res) => {
     const { queue } = req.params;
-    res.sendJson(await getJobs(queue));
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    return getJobs(queue);
+  })
 
-/**
- * Pause specific queue
- */
-router.put('/:queue/pause', checkRight(Roles.SUPER_USER), async (req, res) => {
-  try {
+  /**
+   * Pause specific queue
+   */
+  .createSecuredRoute('PUT /:queue/pause', Roles.SUPER_USER, async (req, _res) => {
     const { queue } = req.params;
     await pauseQueue(queue);
 
-    res.sendJson(await getJobs(queue));
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    return getJobs(queue);
+  })
 
-/**
- * Resume specific queue
- */
-router.put('/:queue/resume', checkRight(Roles.SUPER_USER), async (req, res) => {
-  try {
+  /**
+   * Resume specific queue
+   */
+  .createSecuredRoute('PUT /:queue/resume', Roles.SUPER_USER, async (req, _res) => {
     const { queue } = req.params;
     await resumeQueue(queue);
 
-    res.sendJson(await getJobs(queue));
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    return getJobs(queue);
+  })
 
-/**
- * Get specific job info
- *
- * Can't access to other institution's jobs
- */
-router.get('/:queue/:jobId', checkRight(Roles.READ), checkInstitution, async (req, res) => {
-  try {
+  /**
+   * Get specific job info
+   *
+   * Can't access to other institution's jobs
+   */
+  .createSecuredRoute('GET /:queue/:jobId', Roles.READ, async (req, _res) => {
     const { queue, jobId } = req.params;
     const job = await getJob(queue, jobId);
     if (!job) {
       throw new HTTPError(`Job "${jobId}" not found`, StatusCodes.NOT_FOUND);
     }
 
-    if (req.user?.institution !== job.data.task.institution) {
+    if (
+      !req.user
+      || (
+        req.user.institution !== job.data.task.institution
+        && !req.user.roles.includes(Roles.SUPER_USER)
+      )
+    ) {
       throw new HTTPError(`Job "${jobId}" doesn't match your institution "${req.user?.institution}"`, StatusCodes.FORBIDDEN);
     }
 
-    res.sendJson(job);
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    return job;
+  }, checkInstitution)
 
-/**
- * Retry specific job
- *
- * Can't access to other institution's jobs
- *
- * Throw an error if job wasn't failed
- */
-router.post('/:queue/:jobId/retry', checkRight(Roles.READ_WRITE), checkInstitution, async (req, res) => {
-  try {
+  /**
+   * Retry specific job
+   *
+   * Can't access to other institution's jobs
+   *
+   * Throw an error if job wasn't failed
+   */
+  .createSecuredRoute('POST /:queue/:jobId/retry', Roles.READ_WRITE, async (req, _res) => {
     const { queue, jobId } = req.params;
     const job = await getJob(queue, jobId);
     if (!job) {
       throw new HTTPError(`Job "${jobId}" not found`, StatusCodes.NOT_FOUND);
     }
 
-    if (req.user?.institution !== job.data.task.institution) {
+    if (
+      !req.user
+      || (
+        req.user.institution !== job.data.task.institution
+        && !req.user.roles.includes(Roles.SUPER_USER)
+      )
+    ) {
       throw new HTTPError(`Job "${jobId}" doesn't match your institution "${req.user?.institution}"`, StatusCodes.FORBIDDEN);
     }
 
-    const retriedJob = await retryJob(queue, jobId);
-    res.sendJson(retriedJob);
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    return retryJob(queue, jobId);
+  }, checkInstitution);
 
 export default router;

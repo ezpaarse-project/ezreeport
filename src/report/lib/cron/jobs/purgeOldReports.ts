@@ -1,16 +1,17 @@
 import type Queue from 'bull';
+import { enUS } from 'date-fns/locale';
+import { readFile, unlink } from 'fs/promises';
+import { join } from 'node:path';
+import type { CronData } from '..';
+import { isValidResult } from '../../../models/reports';
+import config from '../../config';
 import {
   endOfDay,
   formatDuration,
   intervalToDuration,
   isBefore,
   parseISO
-} from 'date-fns';
-import { readFile, unlink } from 'fs/promises';
-import { join } from 'node:path';
-import type { CronData } from '..';
-import { isValidResult } from '../../../models/reports';
-import config from '../../config';
+} from '../../date-fns';
 import apm from '../../elastic/apm'; // Setup Elastic's APM for monitoring
 import glob from '../../glob';
 import logger from '../../logger';
@@ -76,7 +77,7 @@ export default async (job: Queue.Job<CronData>) => {
           await unlink(file);
           await job.progress(i / filesToDelete.length);
 
-          logger.info(`[cron] [${job.name}] Deleted "${file}" (${formatDuration(dur, { format: ['years', 'months', 'days'] })} old)`);
+          logger.info(`[cron] [${job.name}] Deleted "${file}" (${formatDuration(dur, { format: ['years', 'months', 'days'], locale: enUS })} old)`);
           return file;
         } catch (error) {
           logger.warn(`[cron] [${job.name}] Error on file deletion "${file}" : ${(error as Error).message}`);

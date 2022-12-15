@@ -1,7 +1,7 @@
 import integrationTests from './api/index.spec';
-import unitTests from './models.spec';
+import sdkTests from './sdk/index.spec';
 
 describe('Report', () => {
-  describe('Models', unitTests);
   describe('API', integrationTests);
+  describe('SDK', sdkTests);
 });

@@ -1,0 +1,40 @@
+{
+  "name": "reporting-sdk-js",
+  "version": "1.0.0",
+  "description": "JS SDK to communicate with reporting API",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "npm run build && cd ../tests/ && npm run test:sdk"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ezpaarse-project/reporting.git"
+  },
+  "author": "oxypomme",
+  "license": "CeCILL",
+  "bugs": {
+    "url": "https://github.com/ezpaarse-project/reporting/issues"
+  },
+  "homepage": "https://github.com/ezpaarse-project/reporting#readme",
+  "devDependencies": {
+    "@types/node": "^18.11.15",
+    "@typescript-eslint/eslint-plugin": "^5.46.1",
+    "@typescript-eslint/parser": "^5.46.1",
+    "eslint": "^8.29.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.6.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "axios": "^1.2.1",
+    "date-fns": "^2.29.3",
+    "events": "^3.3.0"
+  }
+}

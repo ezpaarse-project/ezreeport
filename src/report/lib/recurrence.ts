@@ -1,4 +1,5 @@
 import { Recurrence } from '@prisma/client';
+import type { TimeUnit } from 'vega-lite/build/src/timeunit';
 import {
   add,
   endOfDay,
@@ -13,8 +14,7 @@ import {
   startOfQuarter,
   startOfWeek,
   startOfYear
-} from 'date-fns';
-import { TimeUnit } from 'vega-lite/build/src/timeunit';
+} from './date-fns';
 
 /**
  * Calculate next run date for the task

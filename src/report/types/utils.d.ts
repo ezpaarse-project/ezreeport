@@ -16,6 +16,8 @@ type GeneratorParam<
   Key extends keyof Type,
 > = Exclude<Parameters<Type[Key]>[0], Record<string, unknown>>;
 
+type ExcludeFirst<T extends unknown[]> = T extends [unknown, ...(infer R)] ? R : [];
+
 type Position = {
   x: number,
   y: number

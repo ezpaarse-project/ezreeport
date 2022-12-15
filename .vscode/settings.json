@@ -12,7 +12,8 @@
     "report",
     "mail",
     "tests",
-    "metrics"
+    "metrics",
+    "sdk"
   ],
   "mochaExplorer.cwd": "tests",
   "mochaExplorer.files": "./*/index.spec.ts",

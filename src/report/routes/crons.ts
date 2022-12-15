@@ -1,4 +1,3 @@
-import { Router } from 'express';
 import {
   forceCron,
   getAllCrons,
@@ -6,67 +5,45 @@ import {
   startCron,
   stopCron
 } from '../lib/cron';
-import checkRight, { Roles } from '../middlewares/auth';
+import { CustomRouter } from '../lib/express-utils';
+import { Roles } from '../models/roles';
 
-const router = Router();
+const router = CustomRouter('crons')
+  /**
+   * Get all possible crons
+   */
+  .createSecuredRoute('GET /', Roles.SUPER_USER, async (_req, _res) => getAllCrons())
 
-/**
- * Get all possible crons
- */
-router.get('/', checkRight(Roles.SUPER_USER), async (req, res) => {
-  try {
-    res.sendJson(await getAllCrons());
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
-
-/**
- * Get info about specific cron
- */
-router.get('/:cron', checkRight(Roles.SUPER_USER), async (req, res) => {
-  try {
+  /**
+   * Get info about specific cron
+   */
+  .createSecuredRoute('GET /:cron', Roles.SUPER_USER, async (req, _res) => {
     const { cron } = req.params;
-    res.sendJson(await getCron(cron));
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    return getCron(cron);
+  })
 
-/**
- * Start specific cron
- */
-router.put('/:cron/start', checkRight(Roles.SUPER_USER), async (req, res) => {
-  try {
+  /**
+   * Start specific cron
+   */
+  .createSecuredRoute('PUT /:cron/start', Roles.SUPER_USER, async (req, _res) => {
     const { cron } = req.params;
-    res.sendJson(await startCron(cron));
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    return startCron(cron);
+  })
 
-/**
- * Stop specific cron
- */
-router.put('/:cron/stop', checkRight(Roles.SUPER_USER), async (req, res) => {
-  try {
+  /**
+   * Stop specific cron
+   */
+  .createSecuredRoute('PUT /:cron/stop', Roles.SUPER_USER, async (req, _res) => {
     const { cron } = req.params;
-    res.sendJson(await stopCron(cron));
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    return stopCron(cron);
+  })
 
-/**
- * Force a specific cron to run
- */
-router.post('/:cron/force', checkRight(Roles.SUPER_USER), async (req, res) => {
-  try {
+  /**
+   * Force a specific cron to run
+   */
+  .createSecuredRoute('POST /:cron/force', Roles.SUPER_USER, async (req, _res) => {
     const { cron } = req.params;
-    res.sendJson(await forceCron(cron));
-  } catch (error) {
-    res.errorJson(error);
-  }
-});
+    return forceCron(cron);
+  });
 
 export default router;

@@ -1,4 +1,4 @@
-import { differenceInMilliseconds } from 'date-fns';
+import { differenceInMilliseconds } from './date-fns';
 
 export enum FormatIntervalTarget {
   Milliseconds = 1,
