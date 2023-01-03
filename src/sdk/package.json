@@ -8,7 +8,13 @@
     "prepare": "npm run build",
     "build": "tsc",
     "dev": "tsc --watch",
+    "lint": "eslint --fix --parser-options=project:./tsconfig.json .",
     "test": "npm run build && cd ../tests/ && npm run test:sdk"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix --parser-options=project:./tsconfig.json"
+    ]
   },
   "repository": {
     "type": "git",
