@@ -1,5 +1,5 @@
-import ReportingTest from './ReportingTest.vue';
+import ReportingStatus from './ReportingStatus.vue';
 
 export default {
-  ReportingTest,
+  ReportingStatus,
 };

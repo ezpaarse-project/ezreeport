@@ -5,11 +5,28 @@ export {};
 
 declare module 'vue' {
   export interface GlobalComponents {
-    ReportingTest: typeof import('./src/components/ReportingTest.vue')['default']
-    'ReportingTest.story': typeof import('./src/components/ReportingTest.story.vue')['default']
+    LoadingToolbar: typeof import('./src/components/lib/LoadingToolbar.vue')['default']
+    'LoadingToolbar.story': typeof import('./src/components/lib/LoadingToolbar.story.vue')['default']
+    ReportingStatus: typeof import('./src/components/ReportingStatus.vue')['default']
+    'ReportingStatus.story': typeof import('./src/components/ReportingStatus.story.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     VApp: typeof import('vuetify/lib')['VApp']
+    VBtn: typeof import('vuetify/lib')['VBtn']
     VChip: typeof import('vuetify/lib')['VChip']
+    VFadeTransition: typeof import('vuetify/lib')['VFadeTransition']
+    VIcon: typeof import('vuetify/lib')['VIcon']
+    VList: typeof import('vuetify/lib')['VList']
+    VListItem: typeof import('vuetify/lib')['VListItem']
+    VListItemContent: typeof import('vuetify/lib')['VListItemContent']
+    VListItemTitle: typeof import('vuetify/lib')['VListItemTitle']
+    VOverlay: typeof import('vuetify/lib')['VOverlay']
+    VProgressCircular: typeof import('vuetify/lib')['VProgressCircular']
+    VProgressLinear: typeof import('vuetify/lib')['VProgressLinear']
+    VSpacer: typeof import('vuetify/lib')['VSpacer']
+    VThemeProvider: typeof import('vuetify/lib')['VThemeProvider']
+    VToolbar: typeof import('vuetify/lib')['VToolbar']
+    VToolbarTitle: typeof import('vuetify/lib')['VToolbarTitle']
+    VTooltip: typeof import('vuetify/lib')['VTooltip']
   }
 }

@@ -9,7 +9,7 @@
       md="6"
     >
       <v-card>
-        <ReportingTest />
+        <ReportingStatus />
       </v-card>
     </v-col>
   </v-row>

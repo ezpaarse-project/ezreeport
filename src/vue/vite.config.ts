@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 /// <reference types="histoire" />
 
 // import { fileURLToPath } from 'node:url';
@@ -24,6 +23,24 @@ export default defineConfig({
   histoire: {
     setupFile: '/histoire.setup.ts',
     plugins: [HstVue()],
+    tree: {
+      groups: [
+        {
+          id: 'internal',
+          title: 'Internal',
+          include: (file) => /^src\/components\/lib/i.test(file.path),
+        },
+        {
+          id: 'health',
+          title: 'Health',
+        },
+        {
+          id: 'other',
+          title: 'Others',
+          include: () => true,
+        },
+      ],
+    },
   },
   // resolve: {
   //   alias: {

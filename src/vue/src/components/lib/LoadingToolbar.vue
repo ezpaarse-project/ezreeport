@@ -1,0 +1,38 @@
+<template>
+  <v-toolbar>
+    <v-toolbar-title>{{ text }}</v-toolbar-title>
+
+    <v-spacer />
+
+    <slot />
+
+    <v-progress-linear
+      :active="loading"
+      indeterminate
+      absolute
+      bottom
+      color="primary"
+    />
+  </v-toolbar>
+</template>
+
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+  props: {
+    text: {
+      type: String,
+      required: true,
+    },
+    loading: {
+      type: Boolean,
+      default: false,
+    },
+  },
+});
+</script>
+
+<style scoped>
+
+</style>

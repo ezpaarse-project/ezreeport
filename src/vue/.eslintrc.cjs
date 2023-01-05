@@ -16,6 +16,12 @@ module.exports = {
         'vue/multi-word-component-names': 'off',
       },
     },
+    {
+      files: ['**/*.story.vue', 'vite.config.ts', 'histoire.setup.ts'],
+      rules: {
+        'import/no-extraneous-dependencies': 'off',
+      },
+    },
   ],
   parser: 'vue-eslint-parser',
   parserOptions: {
