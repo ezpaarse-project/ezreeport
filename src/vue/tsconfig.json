@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2018",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "allowJs": true,
+    "sourceMap": true,
+    "strict": true,
+    "noEmit": true,
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "types": ["vuetify"]
+  },
+  "exclude": [
+    "node_modules",
+    ".nuxt",
+    "dist"
+  ],
+  "vueCompilerOptions": {
+    "target": 2.7
+  }
+}

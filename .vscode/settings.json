@@ -13,7 +13,8 @@
     "mail",
     "tests",
     "metrics",
-    "sdk"
+    "sdk",
+    "vue"
   ],
   "mochaExplorer.cwd": "tests",
   "mochaExplorer.files": "./*/index.spec.ts",
