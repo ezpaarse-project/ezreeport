@@ -5,7 +5,14 @@ module.exports = {
     browser: true,
   },
   extends: ['airbnb-base', 'airbnb-typescript/base'],
-  overrides: [],
+  overrides: [
+    {
+      files: ['vite.config.ts'],
+      rules: {
+        'import/no-extraneous-dependencies': 'off',
+      },
+    },
+  ],
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',

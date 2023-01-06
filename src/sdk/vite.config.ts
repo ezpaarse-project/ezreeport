@@ -1,22 +1,39 @@
 import { resolve } from 'path';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { defineConfig } from 'vite';
+import dts from 'vite-plugin-dts';
 
 // TODO: fix node build
 
-const target = (process.env.BUILD_TARGET || 'browser') as 'browser' | 'node';
-console.log('i Building for', target);
+const buildTarget = (process.env.BUILD_TARGET || 'browser') as 'browser' | 'node' | 'types';
+console.log('i Building for', buildTarget);
+
+let params;
+switch (buildTarget) {
+  case 'node':
+    params = { build: { target: 'node14', outDir: 'dist/node', lib: { formats: ['es', 'csj'] } } };
+    break;
+
+  case 'types':
+    params = { build: { outDir: 'dist/types', write: false }, plugins: [dts({ outputDir: 'dist/types' })] };
+    break;
+
+  default:
+    params = { build: { target: 'modules', outDir: 'dist/browser', lib: { formats: ['es', 'umd'] } } };
+    break;
+}
 
 export default defineConfig({
+  plugins: [
+    ...(params.plugins ?? []),
+  ],
   build: {
     sourcemap: true,
-    target: target === 'node' ? 'node14' : 'modules',
-    outDir: target === 'node' ? 'dist/node' : 'dist/browser',
+    ...(params.build ?? {}),
     lib: {
-      formats: target === 'node' ? ['es', 'cjs'] : ['es', 'umd'],
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'ReportingSDK',
       fileName: 'reporting-sdk-js',
+      ...(params.build?.lib ?? {}),
     },
   },
 });
