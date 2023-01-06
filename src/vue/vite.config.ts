@@ -7,17 +7,13 @@ import { HstVue } from '@histoire/plugin-vue2';
 import vue2 from '@vitejs/plugin-vue2';
 import Components from 'unplugin-vue-components/vite';
 import { VuetifyResolver } from 'unplugin-vue-components/resolvers';
-import dts from 'vite-plugin-dts';
-import { exclude } from './tsconfig.json';
 
 export default defineConfig({
   plugins: [
     vue2(),
-    dts({
-      exclude: [...exclude, 'components.d.ts'],
-    }),
     Components({
       resolvers: [VuetifyResolver()],
+      dts: '.vite/components.d.ts',
     }),
   ],
   histoire: {

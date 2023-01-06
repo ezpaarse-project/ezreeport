@@ -13,9 +13,15 @@
     "types": ["vuetify"]
   },
   "exclude": [
+    "../sdk",
     "node_modules",
     ".nuxt",
     "dist"
+  ],
+  "include": [
+    ".vite/**/*.ts",
+    "src",
+    "plugins"
   ],
   "vueCompilerOptions": {
     "target": 2.7
