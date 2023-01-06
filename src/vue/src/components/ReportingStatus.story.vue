@@ -5,7 +5,9 @@
       icon="material-symbols:light-mode-outline"
     >
       <v-app style="background: transparent">
-        <ReportingStatus :mock="{ data }" />
+        <v-theme-provider light>
+          <ReportingStatus :mock="{ data }" />
+        </v-theme-provider>
       </v-app>
     </Variant>
 

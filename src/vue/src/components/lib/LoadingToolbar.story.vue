@@ -5,9 +5,11 @@
       icon="material-symbols:light-mode-outline"
     >
       <v-app style="background: transparent">
-        <div>
-          <LoadingToolbar text="My component" />
-        </div>
+        <v-theme-provider light>
+          <div>
+            <LoadingToolbar text="My component" />
+          </div>
+        </v-theme-provider>
       </v-app>
     </Variant>
 
