@@ -51,15 +51,7 @@
         </v-list-item-content>
       </v-list-item>
 
-      <v-fade-transition>
-        <v-overlay
-          v-if="error"
-          :color="errorColor"
-          absolute
-        >
-          {{ error }}
-        </v-overlay>
-      </v-fade-transition>
+      <ErrorOverlay :error="error" />
     </v-list>
   </div>
 </template>
