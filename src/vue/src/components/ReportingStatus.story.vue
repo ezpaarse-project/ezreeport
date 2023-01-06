@@ -27,7 +27,7 @@
       icon="material-symbols:error-outline"
     >
       <v-app style="background: transparent">
-        <ReportingStatus :mock="{ data, error: 'A mock error occured' }" />
+        <ReportingStatus :mock="{ data, error: 'A mock error occurred' }" />
       </v-app>
     </Variant>
 

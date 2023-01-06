@@ -1,5 +1,16 @@
 <template>
   <Story>
+    <template #controls>
+      <HstText
+        v-model="state.text"
+        title="Text"
+      />
+      <HstCheckbox
+        v-model="state.loading"
+        title="Loading"
+      />
+    </template>
+
     <Variant
       title="Light theme"
       icon="material-symbols:light-mode-outline"
@@ -7,7 +18,10 @@
       <v-app style="background: transparent">
         <v-theme-provider light>
           <div>
-            <LoadingToolbar text="My component" />
+            <LoadingToolbar
+              :text="state.text"
+              :loading="state.loading"
+            />
           </div>
         </v-theme-provider>
       </v-app>
@@ -20,30 +34,22 @@
       <v-app style="background: transparent">
         <v-theme-provider dark>
           <div>
-            <LoadingToolbar text="My component" />
+            <LoadingToolbar
+              :text="state.text"
+              :loading="state.loading"
+            />
           </div>
         </v-theme-provider>
-      </v-app>
-    </Variant>
-
-    <Variant
-      title="Loading"
-      icon="material-symbols:refresh"
-    >
-      <v-app style="background: transparent">
-        <div>
-          <LoadingToolbar
-            text="My component"
-            loading
-          />
-        </div>
       </v-app>
     </Variant>
 
     <Variant title="Custom content">
       <v-app style="background: transparent">
         <div>
-          <LoadingToolbar text="My component">
+          <LoadingToolbar
+            :text="state.text"
+            :loading="state.loading"
+          >
             <v-btn text>
               Action
             </v-btn>
@@ -55,6 +61,12 @@
 </template>
 
 <script setup lang="ts">
+import { reactive } from 'vue';
+
+const state = reactive({
+  text: 'My component',
+  loading: false,
+});
 </script>
 
 <docs lang="md">

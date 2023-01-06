@@ -1,12 +1,27 @@
 <template>
   <Story>
+    <template #controls>
+      <HstCheckbox
+        v-model="state.expand"
+        title="Expand"
+      />
+      <HstCheckbox
+        v-model="state.reverse"
+        title="Reverse"
+      />
+    </template>
+
     <Variant
       title="Light theme"
       icon="material-symbols:light-mode-outline"
     >
       <v-app style="background: transparent">
         <v-theme-provider light>
-          <CustomSwitch label="My switch" />
+          <CustomSwitch
+            label="My switch"
+            :expand="state.expand"
+            :reverse="state.reverse"
+          />
         </v-theme-provider>
       </v-app>
     </Variant>
@@ -17,49 +32,24 @@
     >
       <v-app style="background: transparent">
         <v-theme-provider dark>
-          <CustomSwitch label="My switch" />
+          <CustomSwitch
+            label="My switch"
+            :expand="state.expand"
+            :reverse="state.reverse"
+          />
         </v-theme-provider>
-      </v-app>
-    </Variant>
-
-    <Variant
-      title="Reversed"
-      icon="material-symbols:compare-arrows"
-    >
-      <v-app style="background: transparent">
-        <CustomSwitch
-          label="My switch"
-          reverse
-        />
-      </v-app>
-    </Variant>
-
-    <Variant
-      title="Expanded"
-      icon="mdi:arrow-expand-horizontal"
-    >
-      <v-app style="background: transparent">
-        <CustomSwitch
-          label="My expanded switch"
-          expand
-          reverse
-        />
       </v-app>
     </Variant>
   </Story>
 </template>
 
 <script setup lang="ts">
-import { isCollecting } from 'histoire/client';
-import { setup } from 'reporting-sdk-js';
-import { onMounted } from 'vue';
+import { reactive } from 'vue';
 import CustomSwitch from '.';
 
-onMounted(() => {
-  if (!isCollecting()) {
-    // do something only in the browser
-    setup.setURL(import.meta.env.VITE_REPORT_API);
-  }
+const state = reactive({
+  expand: false,
+  reverse: false,
 });
 </script>
 
