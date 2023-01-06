@@ -8,6 +8,8 @@ import vue2 from '@vitejs/plugin-vue2';
 import Components from 'unplugin-vue-components/vite';
 import { VuetifyResolver } from 'unplugin-vue-components/resolvers';
 
+// TODO: build type def
+
 export default defineConfig({
   plugins: [
     vue2(),
@@ -29,6 +31,10 @@ export default defineConfig({
         {
           id: 'health',
           title: 'Health',
+        },
+        {
+          id: 'cron',
+          title: 'Crons',
         },
         {
           id: 'other',
