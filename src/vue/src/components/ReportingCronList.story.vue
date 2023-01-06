@@ -91,4 +91,5 @@ onMounted(() => {
 <docs lang="md">
 # ReportingCronList
 
+List and manage all crons.
 </docs>
