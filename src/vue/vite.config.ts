@@ -22,8 +22,8 @@ export default defineConfig({
     tree: {
       groups: [
         {
-          id: 'internal',
-          title: 'Internal',
+          id: 'utils',
+          title: 'Utils',
           include: (file) => /^src\/components\/lib/i.test(file.path),
         },
         {

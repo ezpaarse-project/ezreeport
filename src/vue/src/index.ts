@@ -8,7 +8,7 @@ type ReportingOptions = {
 
 export default {
   install(app: typeof Vue, options: ReportingOptions) {
-    setup.setURL(options.url ?? 'http://localhost:8080');
+    setup.setURL(options.url ?? import.meta.env.VITE_REPORT_API);
     // eslint-disable-next-line no-restricted-syntax
     for (const [name, component] of Object.entries(components)) {
       app.component(name, component);

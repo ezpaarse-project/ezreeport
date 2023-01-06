@@ -34,6 +34,7 @@
 
             <v-tooltip
               top
+              :color="status.color"
             >
               <template #activator="{ on, attrs }">
                 <v-chip
@@ -96,7 +97,7 @@ export default defineComponent({
   }),
   mounted() {
     if (this.mock) {
-      this.statuses = (this.mock.data ?? []).map(this.pingResultToStatusItem);
+      this.statuses = (this.mock.data ?? []).map(this.parsePingResult);
       this.error = this.mock.error ?? '';
       this.loading = this.mock.loading ?? false;
     } else {
@@ -108,16 +109,17 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await health.checkAllConnectedService();
-        this.statuses = content.map(this.pingResultToStatusItem);
+        this.statuses = content.map(this.parsePingResult);
+        this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
       }
       this.loading = false;
     },
-    pingResultToStatusItem(ping: health.PingResult): StatusItem {
+    parsePingResult(ping: health.PingResult): StatusItem {
       return {
         name: ping.name,
-        color: ping.status ? 'green' : 'red',
+        color: ping.status ? 'success' : 'error',
         text: ping.status ? 'OK' : 'KO',
         tooltip: ping.status ? `${ping.elapsedTime}ms (${ping.statusCode})` : ping.error,
       };

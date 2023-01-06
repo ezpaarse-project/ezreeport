@@ -79,7 +79,7 @@ const data = ref<health.PingResult[]>([
 onMounted(() => {
   if (!isCollecting()) {
     // do something only in the browser
-    setup.setURL('http://localhost:8080');
+    setup.setURL(import.meta.env.VITE_REPORT_API);
   }
 });
 </script>
