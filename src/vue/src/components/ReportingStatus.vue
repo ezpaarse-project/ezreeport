@@ -29,11 +29,15 @@
         <v-list-item-content>
           <v-list-item-title class="d-flex align-center">
             <div>{{ status.name }}</div>
-            <v-tooltip top>
+
+            <v-spacer />
+
+            <v-tooltip
+              top
+            >
               <template #activator="{ on, attrs }">
                 <v-chip
                   :color="status.color"
-                  class="ml-auto"
                   v-bind="attrs"
                   v-on="on"
                 >
