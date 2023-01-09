@@ -57,7 +57,7 @@
 </template>
 
 <script lang="ts">
-import { health } from 'reporting-sdk-js';
+import { health } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 import colors from 'vuetify/es5/util/colors';
 

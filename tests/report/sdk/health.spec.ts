@@ -1,5 +1,5 @@
 import chai from 'chai';
-import { health } from 'reporting-sdk-js';
+import { health } from 'ezreeport-sdk-js';
 import config from '~/lib/config';
 import type { JsonSchema } from '~/lib/jsonSchema';
 

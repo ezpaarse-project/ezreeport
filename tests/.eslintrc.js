@@ -9,9 +9,10 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
-    project: 'tests/tsconfig.json',
+    project: 'tests/tsconfig.eslint.json',
   },
   rules: {
-    "import/extensions": "off"
+    'import/extensions': 'off',
+    'import/no-extraneous-dependencies': 'off',
   },
 };

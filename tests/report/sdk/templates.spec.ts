@@ -1,5 +1,5 @@
 import chai from 'chai';
-import { templates } from 'reporting-sdk-js';
+import { templates } from 'ezreeport-sdk-js';
 import type { JsonSchema } from '~/lib/jsonSchema';
 
 const { expect } = chai;

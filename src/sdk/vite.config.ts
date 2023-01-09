@@ -31,8 +31,8 @@ export default defineConfig({
     ...(params.build ?? {}),
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
-      name: 'ReportingSDK',
-      fileName: 'reporting-sdk-js',
+      name: 'ezReeportSDK',
+      fileName: 'ezreeport-sdk-js',
       ...(params.build?.lib ?? {}),
     },
   },

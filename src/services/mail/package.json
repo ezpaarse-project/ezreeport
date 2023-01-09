@@ -1,5 +1,5 @@
 {
-  "name": "reporting-mail",
+  "name": "ezreeport-mail",
   "version": "1.0.0",
   "description": "",
   "main": "app.ts",
@@ -11,19 +11,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ezpaarse-project/reporting.git"
+    "url": "git+https://github.com/ezpaarse-project/ezreeport.git"
   },
   "author": "oxypomme",
   "license": "CeCILL",
   "bugs": {
-    "url": "https://github.com/ezpaarse-project/reporting/issues"
+    "url": "https://github.com/ezpaarse-project/ezreeport/issues"
   },
   "lint-staged": {
     "*.{js,ts}": [
       "eslint --fix --parser-options=project:./tsconfig.json"
     ]
   },
-  "homepage": "https://github.com/ezpaarse-project/reporting#readme",
+  "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
   "dependencies": {
     "bull": "^4.10.2",
     "config": "^3.3.8",

@@ -175,7 +175,7 @@ export const generateReport = async (
   const todayStr = format(today, 'yyyy/yyyy-MM');
   const basePath = join(outDir, todayStr, '/');
 
-  let filename = `reporting_ezMESURE_${normaliseFilename(task.name)}`;
+  let filename = `ezReeport_ezMESURE_${normaliseFilename(task.name)}`;
   if (process.env.NODE_ENV === 'production' || writeHistory) {
     filename += `_${randomUUID()}`;
   }

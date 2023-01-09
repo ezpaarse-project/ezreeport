@@ -24,8 +24,8 @@ export default (agent: ChaiHttp.Agent) => () => {
     });
   });
 
-  describe('GET /health/reporting-report', () => {
-    const request = () => agent.get('/health/reporting-report');
+  describe('GET /health/ezreeport-report', () => {
+    const request = () => agent.get('/health/ezreeport-report');
 
     it('should return 200', async () => {
       const res = await request();

@@ -53,8 +53,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
-      name: 'ReportingVue',
-      fileName: 'reporting-vue',
+      name: 'ezReeportVue',
+      fileName: 'ezreeport-vue',
     },
     rollupOptions: {
       // TODO: Test as a package

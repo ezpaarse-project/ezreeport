@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import { isCollecting } from 'histoire/client';
-import { setup, type crons } from 'reporting-sdk-js';
+import { setup, type crons } from 'ezreeport-sdk-js';
 import { onMounted, ref } from 'vue';
 
 const data = ref<crons.Cron[]>([

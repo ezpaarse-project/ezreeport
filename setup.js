@@ -2,9 +2,9 @@ const fs = require('node:fs');
 const path = require('node:path')
 const { execSync } = require('node:child_process')
 
-const localEnv = path.join(__dirname, 'reporting.local.env.sh');
+const localEnv = path.join(__dirname, 'ezreeport.local.env.sh');
 if (!fs.existsSync(localEnv)) {
-  console.log('Creating "reporting.local.env.sh"');
+  console.log('Creating "ezreeport.local.env.sh"');
   fs.writeFileSync(localEnv, '#!/bin/bash\n\nexport ELASTIC_URL="$ELASTIC_SCHEME://$ELASTIC_HOST:$ELASTIC_PORT"\n\nexport DATABASE_URL="$DATABASE_PROTOCOL://$DATABASE_USER:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT/$DATABASE_DB?schema=default"')
 }
 

@@ -1,9 +1,9 @@
 {
-  "name": "reporting-tests",
+  "name": "ezreeport-tests",
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "lint": "eslint --fix --parser-options=project:./tsconfig.json .",
+    "lint": "eslint --fix --parser-options=project:./tsconfig.eslint.json .",
     "test": "mocha -r ts-node/register ./*/index.spec.ts",
     "test:report": "mocha -r ts-node/register ./report/api/index.spec.ts",
     "test:mail": "mocha -r ts-node/register ./mail/index.spec.ts",
@@ -11,19 +11,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ezpaarse-project/reporting.git"
+    "url": "git+https://github.com/ezpaarse-project/ezreeport.git"
   },
   "author": "oxypomme",
   "license": "CeCILL",
   "bugs": {
-    "url": "https://github.com/ezpaarse-project/reporting/issues"
+    "url": "https://github.com/ezpaarse-project/ezreeport/issues"
   },
   "lint-staged": {
     "*.{js,ts}": [
-      "eslint --fix --parser-options=project:./tsconfig.json"
+      "eslint --fix --parser-options=project:./tsconfig.eslint.json"
     ]
   },
-  "homepage": "https://github.com/ezpaarse-project/reporting#readme",
+  "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
   "devDependencies": {
     "@types/assert": "^1.5.6",
     "@types/chai-json-schema": "^1.4.6",
@@ -48,9 +48,9 @@
     "lodash": "^4.17.21",
     "mocha": "^10.2.0",
     "mocha-steps": "^1.3.0",
-    "reporting-mail": "file:../src/services/mail",
-    "reporting-report": "file:../src/services/report",
-    "reporting-sdk-js": "file:../src/sdk",
+    "ezreeport-mail": "file:../src/services/mail",
+    "ezreeport-report": "file:../src/services/report",
+    "ezreeport-sdk-js": "file:../src/sdk",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.1.1",
     "tv4-formats": "^3.0.4",

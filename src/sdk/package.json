@@ -1,21 +1,21 @@
 {
-  "name": "reporting-sdk-js",
+  "name": "ezreeport-sdk-js",
   "version": "1.0.0",
-  "description": "JS SDK to communicate with reporting API",
-  "homepage": "https://github.com/ezpaarse-project/reporting#readme",
+  "description": "JS SDK to communicate with ezReeport API",
+  "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
   "bugs": {
-    "url": "https://github.com/ezpaarse-project/reporting/issues"
+    "url": "https://github.com/ezpaarse-project/ezreeport/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ezpaarse-project/reporting.git"
+    "url": "git+https://github.com/ezpaarse-project/ezreeport.git"
   },
   "license": "CeCILL",
   "author": "oxypomme",
   "exports": {
     "browser": {
-      "import": "./dist/browser/reporting-sdk-js.mjs",
-      "require": "./dist/browser/reporting-sdk-js.umd.js"
+      "import": "./dist/browser/ezreeport-sdk-js.mjs",
+      "require": "./dist/browser/ezreeport-sdk-js.umd.js"
     },
     "node": {
       "default": "./dist/node/index.js"

@@ -1,16 +1,16 @@
 {
-  "name": "reporting-vue",
+  "name": "ezreeport-vue",
   "version": "1.0.0",
   "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/reporting-vue.js",
-      "require": "./dist/reporting-vue.umd.cjs"
+      "import": "./dist/ezreeport-vue.js",
+      "require": "./dist/ezreeport-vue.umd.cjs"
     }
   },
-  "main": "./dist/reporting-vue.umd.cjs",
-  "module": "./dist/reporting-vue.js",
-  "types": "./dist/reporting-vue.d.ts",
+  "main": "./dist/ezreeport-vue.umd.cjs",
+  "module": "./dist/ezreeport-vue.js",
+  "types": "./dist/ezreeport-vue.d.ts",
   "files": [
     "dist"
   ],
@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@mdi/font": "^7.1.96",
-    "reporting-sdk-js": "file:../sdk",
+    "ezreeport-sdk-js": "file:../sdk",
     "sass": "1.32.13",
     "vue": "^2.7.10",
     "vuetify": "^2.6.10"

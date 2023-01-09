@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { setup, type health } from 'reporting-sdk-js';
+import { setup, type health } from 'ezreeport-sdk-js';
 import { isCollecting } from 'histoire/client';
 
 const data = ref<health.PingResult[]>([
