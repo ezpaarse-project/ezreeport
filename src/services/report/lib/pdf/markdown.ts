@@ -423,7 +423,6 @@ const printImage = async (
   let imageData = '';
   if (meta.src.match(/^https?:\/\//i)) {
     // Remote images
-    // @ts-expect-error It seems an issue with @types/node package
     // eslint-disable-next-line no-await-in-loop
     const file = await (await fetch(meta.src)).blob();
     // eslint-disable-next-line no-await-in-loop

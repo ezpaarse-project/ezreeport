@@ -2,25 +2,12 @@ version: "3.8"
 
 services:
   db:
-    image: postgres:15.0
-    environment:
-      - POSTGRES_USER
-      - POSTGRES_DB
-      - POSTGRES_PASSWORD
-    volumes:
-      - ./data/db:/var/lib/postgresql/data
     ports:
       - 5432:5432
-    restart: unless-stopped
-
+  
   redis:
-    image: redis:7.0.5
-    command: redis-server --save 60 1 --requirepass ${REDIS_PASSWORD}
-    volumes:
-      - ./data/redis:/data
     ports:
       - 6389:6379
-    restart: unless-stopped
 
   report:
     image: node:18.12.0
@@ -29,32 +16,7 @@ services:
       - ./src/services/report:/report
     command: "npm run dev"
     ports:
-      - 8080:8080
       - 9230:9229 # Debug port
-    environment:
-      - REDIS_HOST
-      - REDIS_PORT
-      - REDIS_PASSWORD
-      - ELASTIC_SCHEME
-      - ELASTIC_HOST
-      - ELASTIC_PORT
-      - ELASTIC_API_KEY
-      - ELASTIC_REQUIRED_STATUS
-      - DATABASE_URL
-      - EZMESURE_AUTH_SECRET
-      - API_ALLOWED_ORIGINS
-      - REPORT_CRON_GENERATE_REPORT
-      - REPORT_CRON_PURGE_OLD_REPORT
-      - REPORT_ITERATIONS_TO_LIVE
-      - REPORT_DAYS_TO_LIVE
-      - LOG_LEVEL
-      - HTTP_PORT
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    depends_on:
-      - db
-      - redis
-    restart: unless-stopped
 
   mail:
     image: node:18.12.0
@@ -63,83 +25,7 @@ services:
       - ./src/services/mail:/mail
     command: "npm run dev"
     ports:
-      - 8081:8080
       - 9231:9229 # Debug port
-    environment:
-      - REDIS_HOST
-      - REDIS_PORT
-      - REDIS_PASSWORD
-      - SMTP_HOST
-      - SMTP_PORT
-      - SMTP_SECURE
-      - SMTP_IGNORE_TLS
-      - SMTP_REJECT_UNAUTHORIZED
-      - EMAIL_SENDER
-      - EMAIL_EZTEAM
-      - EMAIL_ATTEMPTS
-      - EMAIL_ATTEMPTS_INTERVAL
-      - API_DOMAIN
-      - LOG_LEVEL
-    depends_on:
-      - redis
-    restart: unless-stopped
-
-  metricbeat:
-    image: docker.elastic.co/beats/metricbeat:7.14.1
-    volumes:
-      - ./src/services/metrics/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro
-    command: "metricbeat -e"
-    user: root
-    environment:
-      - DATABASE_PROTOCOL
-      - DATABASE_USER
-      - DATABASE_PASSWORD
-      - DATABASE_HOST
-      - DATABASE_PORT
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_PASSWORD
-      - ELASTIC_URL
-      - MONITORING_INDEX_PREFIX
-      - MONITORING_API_KEY
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    restart: unless-stopped
-
-  heartbeat:
-    image: docker.elastic.co/beats/heartbeat:7.14.1
-    volumes:
-      - ./src/services/metrics/heartbeat.yml:/usr/share/heartbeat/heartbeat.yml:ro
-    cap_add:
-      - "NET_RAW"
-    user: root
-    environment:
-      - DATABASE_HOST
-      - SMTP_HOST
-      - REDIS_HOST
-      - ELASTIC_URL
-      - MONITORING_INDEX_PREFIX
-      - MONITORING_API_KEY
-      - MONITORING_SCHEDULE
-      - API_DOMAIN
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    restart: unless-stopped
-
-  apm:
-    image: docker.elastic.co/apm/apm-server:7.14.1
-    cap_add: ["CHOWN", "DAC_OVERRIDE", "SETGID", "SETUID"]
-    cap_drop: ["ALL"]
-    command: "apm-server -e"
-    volumes:
-      - ./src/services/metrics/apm.yml:/usr/share/apm-server/apm-server.yml:ro
-    environment:
-      - ELASTIC_URL
-      - MONITORING_INDEX_PREFIX
-      - MONITORING_API_KEY
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    restart: unless-stopped
 
   maildev:
     image: maildev/maildev

@@ -41,14 +41,14 @@ npm run setup
 
 ```bash
 source reporting.env.sh
-docker compose up -d
+docker compose -f docker-compose.yml up -d
 ```
 
 ### Dev
 
 ```bash
 source reporting.env.sh
-docker compose -f docker-compose.debug.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.debug.yml up -d
 ```
 
 ## Test
