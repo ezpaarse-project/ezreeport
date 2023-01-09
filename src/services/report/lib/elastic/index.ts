@@ -4,9 +4,7 @@ import config from '~/lib/config';
 import logger from '~/lib/logger';
 
 const {
-  scheme,
-  host,
-  port,
+  url,
   apiKey,
   requiredStatus,
   maxTries,
@@ -28,7 +26,7 @@ const REQUIRED_STATUS = isElasticStatus(requiredStatus) ? requiredStatus : 'gree
 
 const client = new Client({
   node: {
-    url: new URL(`${scheme}://${host}:${port}`),
+    url: new URL(url),
   },
   auth: {
     apiKey,

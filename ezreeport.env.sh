@@ -19,6 +19,7 @@ export ELASTIC_PORT=9200
 export ELASTIC_API_KEY="" # Base 64
 export ELASTIC_URL="$ELASTIC_SCHEME://$ELASTIC_HOST:$ELASTIC_PORT"
 export ELASTIC_REQUIRED_STATUS="green"
+export ELASTIC_MAX_TRIES="10"
 
 # db service
 export DATABASE_PROTOCOL="postgresql"
@@ -33,14 +34,14 @@ export DATABASE_URL="$DATABASE_PROTOCOL://$DATABASE_USER:$DATABASE_PASSWORD@$DAT
 export SMTP_HOST="maildev"
 export SMTP_PORT=1025
 export SMTP_SECURE="false"
-export SMTP_IGNORE_TLS="false"
+export SMTP_IGNORE_TLS="true"
 export SMTP_REJECT_UNAUTHORIZED="false"
 
 # mail service
 export EMAIL_SENDER="ezmesure-ezreeport@couperin.org"
 export EMAIL_EZTEAM="ezteam@couperin.org"
 export EMAIL_ATTEMPTS=5
-export EMAIL_ATTEMPTS_INTERVAL=200
+export EMAIL_ATTEMPTS_INTERVAL=2000
 
 # ezmesure
 export EZMESURE_AUTH_SECRET="" # ezMesure JWT secret

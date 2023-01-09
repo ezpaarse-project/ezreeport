@@ -12,6 +12,4 @@ RUN apk update \
 # Install service dependecies
 RUN npm ci --omit=dev
 
-EXPOSE 8080
-
 CMD [ "npm", "run", "start" ]

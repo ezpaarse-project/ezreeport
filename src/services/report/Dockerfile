@@ -16,6 +16,4 @@ RUN apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev giflib-dev
 # Install service dependecies
 RUN npm ci --omit=dev
 
-EXPOSE 8080
-
 CMD [ "npm", "run", "start" ]
