@@ -1,5 +1,5 @@
 import chai from 'chai';
-import { setup } from 'reporting-sdk-js';
+import { setup } from 'ezreeport-sdk-js';
 import config from '~/lib/config';
 
 const { expect } = chai;

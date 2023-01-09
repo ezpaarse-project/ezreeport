@@ -1,14 +1,14 @@
 {
-  "name": "reporting",
+  "name": "ezreeport",
   "version": "1.0.0",
   "description": "Reporting service for ezMESURE/ezCOUNTER",
-  "homepage": "https://github.com/ezpaarse-project/reporting#readme",
+  "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
   "bugs": {
-    "url": "https://github.com/ezpaarse-project/reporting/issues"
+    "url": "https://github.com/ezpaarse-project/ezreeport/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ezpaarse-project/reporting.git"
+    "url": "git+https://github.com/ezpaarse-project/ezreeport.git"
   },
   "license": "CeCILL",
   "author": "oxypomme",

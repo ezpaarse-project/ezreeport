@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
-LOCAL_ENV_FILE="$SCRIPT_DIR/reporting.local.env.sh"
+LOCAL_ENV_FILE="$SCRIPT_DIR/ezreeport.local.env.sh"
 
 # node
 export NODE_ENV="production"
@@ -37,7 +37,7 @@ export SMTP_IGNORE_TLS="false"
 export SMTP_REJECT_UNAUTHORIZED="false"
 
 # mail service
-export EMAIL_SENDER="ezmesure-reporting@couperin.org"
+export EMAIL_SENDER="ezmesure-ezreeport@couperin.org"
 export EMAIL_EZTEAM="ezteam@couperin.org"
 export EMAIL_ATTEMPTS=5
 export EMAIL_ATTEMPTS_INTERVAL=200

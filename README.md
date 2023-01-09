@@ -1,4 +1,4 @@
-# Reporting
+# ezReeport
 
 Reporting service for ezMESURE/ezCOUNTER
 
@@ -9,7 +9,7 @@ Reporting service for ezMESURE/ezCOUNTER
 ## Installation
 
 ```bash
-git clone https://github.com/ezpaarse-project/reporting.git
+git clone https://github.com/ezpaarse-project/ezreeport.git
 npm run setup
 ```
 
@@ -33,21 +33,21 @@ npm run setup
 ## Packages
 
 - `src/sdk`
-  - SDK for report API
+  - SDK for ezReeport API
 
 ## Start
 
 ### Prod
 
 ```bash
-source reporting.env.sh
+source ezreeport.env.sh
 docker compose -f docker-compose.yml up -d
 ```
 
 ### Dev
 
 ```bash
-source reporting.env.sh
+source ezreeport.env.sh
 docker compose -f docker-compose.yml -f docker-compose.debug.yml up -d
 ```
 

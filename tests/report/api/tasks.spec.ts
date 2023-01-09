@@ -1,7 +1,7 @@
 import chai from 'chai';
 import { pick } from 'lodash';
 import { step } from 'mocha-steps';
-import type { createTask } from 'reporting-report/models/tasks';
+import type { createTask } from 'ezreeport-report/models/tasks';
 import config from '~/lib/config';
 import { randomString } from '~/lib/utils';
 

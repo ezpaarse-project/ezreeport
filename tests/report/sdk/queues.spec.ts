@@ -1,6 +1,6 @@
 import chai from 'chai';
 import { step } from 'mocha-steps';
-import { queues } from 'reporting-sdk-js';
+import { queues } from 'ezreeport-sdk-js';
 import config from '~/lib/config';
 import type { JsonSchema } from '~/lib/jsonSchema';
 

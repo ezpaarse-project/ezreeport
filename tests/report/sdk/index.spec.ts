@@ -1,6 +1,6 @@
 import chai from 'chai';
 import chaiJsonSchema from 'chai-json-schema';
-import { setup } from 'reporting-sdk-js';
+import { setup } from 'ezreeport-sdk-js';
 import tv4Formats from 'tv4-formats';
 import config from '~/lib/config';
 import authTests from './auth.spec';
