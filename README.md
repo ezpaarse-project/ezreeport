@@ -13,6 +13,13 @@ git clone https://github.com/ezpaarse-project/reporting.git
 npm run setup
 ```
 
+## Main branches
+
+- `master`:
+  - Should be the version used on prod (vp) and preprod (vi)
+- `develop`:
+  - Should be the version used on dev (vd)
+
 ## Services
 
 - `src/services/report`:
