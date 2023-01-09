@@ -37,18 +37,18 @@ export EMAIL_ATTEMPTS_INTERVAL=200
 export EZMESURE_AUTH_SECRET="" # ezMesure API key
 export EZMESURE_DEPOSITORS_INDEX="depositors"
 
-export CRON_GENERATE_REPORT="0 12 * * *"
-export CRON_PURGE_OLD_REPORT="0 12 * * *"
+export REPORT_CRON_GENERATE_REPORT="0 12 * * *"
+export REPORT_CRON_PURGE_OLD_REPORT="0 12 * * *"
 
 export MONITORING_INDEX_PREFIX="reporting-"
 export MONITORING_API_KEY="" # "Beats" version of ELASTIC_API_KEY
 export MONITORING_SCHEDULE="@every 5s"
 
-export API_DOMAIN="http://localhost:8080"
-export API_ALLOWED_ORIGINS="*" # Comma separated origins (or * to allow all)
-
 export REPORT_ITERATIONS_TO_LIVE=2
 export REPORT_DAYS_TO_LIVE=7
+
+export API_DOMAIN="http://localhost:8080"
+export API_ALLOWED_ORIGINS="*" # Comma separated origins (or * to allow all)
 
 export LOG_LEVEL="info"
 export HTTP_PORT=8080
