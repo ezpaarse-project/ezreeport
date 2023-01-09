@@ -25,8 +25,10 @@ npm run setup
 
 ## Packages
 
-- `src/sdk`
+- `src/sdk` (reporting-sdk-js)
   - SDK for report API
+- `src/vue` (reporting-vue)
+  - Vue components that use SDK for displaying info
 
 ## Start
 
