@@ -138,9 +138,6 @@ export default defineComponent({
     crons: [] as CronItem[],
   }),
   computed: {
-    deb() {
-      return this.$ezReeport;
-    },
     perms() {
       return this.$ezReeport.auth_permissions;
     },

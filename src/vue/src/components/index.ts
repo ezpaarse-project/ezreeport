@@ -1,10 +1,10 @@
-import ReportingStatus from './ReportingStatus.vue';
-import ReportingCronList from './ReportingCronList.vue';
+import ezReportingStatus from './ezReeportStatus.vue';
+import ezReportingCronList from './ezReeportCronList.vue';
 
 //! IN ANY CASE
 //! DO NOT IMPORT *.story.vue
 
 export default {
-  ReportingStatus,
-  ReportingCronList,
+  ezReportingStatus,
+  ezReportingCronList,
 };

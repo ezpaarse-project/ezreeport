@@ -1,12 +1,12 @@
 <template>
-  <Story group="cron">
+  <Story group="health">
     <Variant
       title="Light theme"
       icon="material-symbols:light-mode-outline"
     >
       <v-app style="background: transparent">
         <v-theme-provider light>
-          <ReportingCronList :mock="{ data }" />
+          <ezReeportStatus :mock="{ data }" />
         </v-theme-provider>
       </v-app>
     </Variant>
@@ -17,7 +17,7 @@
     >
       <v-app style="background: transparent">
         <v-theme-provider dark>
-          <ReportingCronList :mock="{ data }" />
+          <ezReeportStatus :mock="{ data }" />
         </v-theme-provider>
       </v-app>
     </Variant>
@@ -27,7 +27,7 @@
       icon="material-symbols:error-outline"
     >
       <v-app style="background: transparent">
-        <ReportingCronList :mock="{ data, error: 'A mock error occurred' }" />
+        <ezReeportStatus :mock="{ data, error: 'A mock error occurred' }" />
       </v-app>
     </Variant>
 
@@ -36,7 +36,7 @@
       icon="material-symbols:refresh"
     >
       <v-app style="background: transparent">
-        <ReportingCronList :mock="{ data, loading: true }" />
+        <ezReeportStatus :mock="{ data, loading: true }" />
       </v-app>
     </Variant>
 
@@ -45,52 +45,49 @@
       icon="material-symbols:cloud-outline"
     >
       <v-app style="background: transparent">
-        <ReportingCronList />
+        <ezReeportStatus />
       </v-app>
     </Variant>
   </Story>
 </template>
 
 <script setup lang="ts">
-import { isCollecting } from 'histoire/client';
-import { type crons } from 'ezreeport-sdk-js';
 import { onMounted, ref } from 'vue';
-import { useEzReeport } from '../../plugins/ezReeport';
+import { setup, type health } from 'ezreeport-sdk-js';
+import { isCollecting } from 'histoire/client';
 
-const $ezReeport = useEzReeport();
-
-const data = ref<crons.Cron[]>([
+const data = ref<health.PingResult[]>([
   {
-    name: 'running-cron',
-    running: true,
-    nextRun: new Date(),
-    lastRun: new Date(),
+    name: 'fastest-service',
+    status: true,
+    elapsedTime: 10,
+    statusCode: 200,
   },
   {
-    name: 'stopped-cron',
-    running: false,
-    lastRun: new Date(),
+    name: 'slow-service',
+    status: true,
+    elapsedTime: 500,
+    statusCode: 200,
   },
   {
-    name: 'empty-cron',
-    running: false,
-  },
-  {
-    name: 'future-cron',
-    running: true,
-    nextRun: new Date(),
+    name: 'error-service',
+    status: false,
+    error: 'mock error',
   },
 ]);
 
 onMounted(() => {
   if (!isCollecting()) {
-    $ezReeport.auth_token = import.meta.env.VITE_EZMESURE_TOKEN;
+    // do something only in the browser
+    setup.setURL(import.meta.env.VITE_REPORT_API);
   }
 });
 </script>
 
 <docs lang="md">
-# ReportingCronList
+# ezReeportStatus
 
-List and manage all crons.
+Shows status of services connected to the reporting.
+
+You can hover each status to get more info about them (like time of response & status code).
 </docs>

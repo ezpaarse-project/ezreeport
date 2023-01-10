@@ -9,7 +9,7 @@
       md="6"
     >
       <v-card>
-        <ReportingStatus />
+        <ezReeportStatus />
       </v-card>
     </v-col>
   </v-row>
