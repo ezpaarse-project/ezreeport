@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="mock || perms?.['crons-get']">
     <LoadingToolbar
       text="Crons"
       :loading="loading"
@@ -42,6 +42,10 @@
               <v-spacer />
 
               <CustomSwitch
+                v-if="
+                  mock
+                    || (perms?.['crons-put-cron-stop'] && perms?.['crons-put-cron-start'])
+                "
                 v-model="item.running"
                 :inset="false"
                 :disabled="item.loading || loading"
@@ -74,6 +78,7 @@
         </div>
 
         <v-btn
+          v-if="mock || perms?.['crons-post-cron-force']"
           text
           color="warning"
           :disabled="item.loading || loading"
@@ -132,13 +137,29 @@ export default defineComponent({
     error: '',
     crons: [] as CronItem[],
   }),
+  computed: {
+    deb() {
+      return this.$ezReeport;
+    },
+    perms() {
+      return this.$ezReeport.auth_permissions;
+    },
+  },
+  watch: {
+    // eslint-disable-next-line func-names
+    '$ezReeport.auth_permissions': function (val: Record<string, boolean> | undefined) {
+      if (val?.['crons-get']) {
+        this.fetch();
+      } else {
+        this.crons = [];
+      }
+    },
+  },
   mounted() {
     if (this.mock) {
       this.crons = (this.mock.data ?? []).map(this.parseCron);
       this.loading = this.mock.loading ?? false;
       this.error = this.mock.error ?? '';
-    } else {
-      this.fetch();
     }
   },
   methods: {

@@ -53,8 +53,11 @@
 
 <script setup lang="ts">
 import { isCollecting } from 'histoire/client';
-import { setup, type crons } from 'ezreeport-sdk-js';
+import { type crons } from 'ezreeport-sdk-js';
 import { onMounted, ref } from 'vue';
+import { useEzReeport } from '../../plugins/ezReeport';
+
+const $ezReeport = useEzReeport();
 
 const data = ref<crons.Cron[]>([
   {
@@ -81,9 +84,7 @@ const data = ref<crons.Cron[]>([
 
 onMounted(() => {
   if (!isCollecting()) {
-    // do something only in the browser
-    setup.setURL(import.meta.env.VITE_REPORT_API);
-    setup.login(import.meta.env.VITE_EZMESURE_TOKEN);
+    $ezReeport.auth_token = import.meta.env.VITE_EZMESURE_TOKEN;
   }
 });
 </script>
