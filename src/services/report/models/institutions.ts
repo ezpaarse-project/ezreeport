@@ -1,7 +1,7 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import type { SearchHit } from '@elastic/elasticsearch/api/types';
 import config from '~/lib/config';
-import { elasticSearch, READONLY_SUFFIX } from '~/lib/elastic';
+import { elasticScroll, elasticSearch, READONLY_SUFFIX } from '~/lib/elastic';
 import { NotFoundError } from '~/types/errors';
 
 const TYPE = 'institution' as const;
@@ -122,4 +122,34 @@ export const findInstitutionContact = async (
   });
 
   return hits[0];
+};
+
+/**
+ * Find all available institutions
+ *
+ * @returns The result of search
+ */
+export const findAllInstitutions = async (): Promise<SearchHit<TypedElasticInstitution>[]> => {
+  const scroll = elasticScroll<TypedElasticInstitution>({
+    index: depositorsIndex,
+    scroll: '30s',
+    body: {
+      query: {
+        term: {
+          type: 'institution',
+        },
+      },
+      sort: [
+        '_doc',
+      ],
+    },
+  });
+
+  const hits = [];
+  // eslint-disable-next-line no-restricted-syntax
+  for await (const hit of scroll) {
+    hits.push(hit);
+  }
+
+  return hits;
 };
