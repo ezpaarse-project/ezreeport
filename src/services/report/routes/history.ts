@@ -8,7 +8,7 @@ const router = CustomRouter('history')
   /**
    * List all history entries.
    */
-  .createSecuredRoute('GET /', Roles.SUPER_USER, async (req, _res) => {
+  .createSecuredRoute('GET /', Roles.READ, async (req, _res) => {
     const { previous: p = undefined, count = '15' } = req.query;
     const c = +count;
 

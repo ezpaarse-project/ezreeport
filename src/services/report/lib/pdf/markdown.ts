@@ -423,6 +423,7 @@ const printImage = async (
   let imageData = '';
   if (meta.src.match(/^https?:\/\//i)) {
     // Remote images
+    // @ts-ignore
     // eslint-disable-next-line no-await-in-loop
     const file = await (await fetch(meta.src)).blob();
     // eslint-disable-next-line no-await-in-loop
