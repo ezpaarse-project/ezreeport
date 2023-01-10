@@ -38,7 +38,7 @@ const trimReadOnlySuffix = (str: string): string => {
 export const findInstitutionByCreatorOrRole = async (
   username: string,
   userRoles: string[],
-): Promise<ElasticTypes.SearchHit<TypedElasticInstitution>> => {
+): Promise<ElasticTypes.SearchHit<TypedElasticInstitution> | undefined> => {
   const { body: { hits: { hits } } } = await elasticSearch<TypedElasticInstitution>({
     index: depositorsIndex,
     size: 1,
@@ -63,7 +63,7 @@ export const findInstitutionByCreatorOrRole = async (
  *
  * @param ids Ids of possible institutions
  *
- * @returns  The result of search
+ * @returns The result of search
  */
 export const findInstitutionByIds = async (
   ids: string[],
@@ -82,6 +82,13 @@ export const findInstitutionByIds = async (
   return hits;
 };
 
+/**
+ * Find institution doc or tech contact
+ *
+ * @param id The id of the institution
+ *
+ * @returns The doc or tech contact
+ */
 export const findInstitutionContact = async (
   id: string,
 ): Promise<SearchHit<Pick<ElasticUser, 'username' | 'email' | 'metadata'>> | undefined> => {
