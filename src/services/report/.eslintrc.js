@@ -29,5 +29,6 @@ module.exports = {
       argsIgnorePattern: '^_',
       destructuredArrayIgnorePattern: '^_',
     }],
+    'no-underscore-dangle': 'off',
   },
 };

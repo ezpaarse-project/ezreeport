@@ -139,7 +139,6 @@ const fetchData = (params: {
           recurrence,
           period,
           // template,
-          // eslint-disable-next-line no-underscore-dangle
           indexPrefix: institution?.indexPrefix ?? '*',
           user,
         },
@@ -209,26 +208,22 @@ export const generateReport = async (
 
     // Get institution
     const [rawInstitution = { _source: null }] = await findInstitutionByIds([task.institution]);
-    // eslint-disable-next-line no-underscore-dangle
     if (!rawInstitution._source) {
       throw new Error(`Institution "${task.institution}" not found`);
     }
-    // eslint-disable-next-line no-underscore-dangle
     const institution = rawInstitution._source?.institution;
 
     // Get username who will run the requests
     const contact = (
-      // eslint-disable-next-line no-underscore-dangle
       await findInstitutionContact(rawInstitution._id.toString())
     ) ?? { _source: null };
-    // eslint-disable-next-line no-underscore-dangle
+
     if (!contact._source) {
       throw new Error(`No suitable contact found for your institution "${task.institution}". Please add doc_contact or tech_contact.`);
     }
     const { _source: { username: user } } = contact;
     result.detail.runAs = user;
 
-    // eslint-disable-next-line no-underscore-dangle
     events.emit('contactFound', contact._source);
 
     // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety

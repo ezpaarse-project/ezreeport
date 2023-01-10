@@ -86,13 +86,10 @@ export const checkInstitution: RequestHandler = async (req, res, next) => {
     ) {
       if (req.query.institution) {
         const instits = await findInstitutionByIds([req.query.institution]);
-
-        // eslint-disable-next-line no-underscore-dangle
         req.user.institution = instits[0]._id.toString();
       }
       next();
     } else {
-      // eslint-disable-next-line no-underscore-dangle
       const id = (await findInstitutionByCreatorOrRole(req.user.username, req.user.roles))?._id;
       req.user.institution = id?.toString();
       next();

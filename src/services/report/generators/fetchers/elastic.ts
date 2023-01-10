@@ -160,7 +160,6 @@ export default async (
 
   if (options.fetchCount) {
     const { body: { count } } = await elasticCount(baseOpts, options.user);
-    // eslint-disable-next-line no-underscore-dangle
     data[options.fetchCount] = count;
   }
 

@@ -93,7 +93,6 @@ export const findInstitutionContact = async (
   id: string,
 ): Promise<SearchHit<Pick<ElasticUser, 'username' | 'email' | 'metadata'>> | undefined> => {
   const [institution] = await findInstitutionByIds([id]);
-  // eslint-disable-next-line no-underscore-dangle
   if (!institution?._source) {
     throw new NotFoundError("Can't find your institution.");
   }

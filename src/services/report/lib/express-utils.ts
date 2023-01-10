@@ -89,9 +89,7 @@ export const createSecuredRoute = <R extends Router & { _permPrefix?: string }>(
   // Parse routename
   let routeName = path.slice(1).replace(/\//g, '-').replace(/:/g, '');
   routeName = `${method.toLowerCase()}-${routeName}`.replace(/-$/, '');
-  // eslint-disable-next-line no-underscore-dangle
   if (router._permPrefix) {
-    // eslint-disable-next-line no-underscore-dangle
     routeName = `${router._permPrefix}-${routeName}`;
   }
   if (routeName === method.toLowerCase()) {
