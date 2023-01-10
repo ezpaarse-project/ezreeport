@@ -1,5 +1,5 @@
 <template>
-  <div v-if="mock || perms?.['crons-get']">
+  <div v-if="mock || perms.readAll">
     <LoadingToolbar
       text="Crons"
       :loading="loading"
@@ -42,10 +42,7 @@
               <v-spacer />
 
               <CustomSwitch
-                v-if="
-                  mock
-                    || (perms?.['crons-put-cron-stop'] && perms?.['crons-put-cron-start'])
-                "
+                v-if="mock || (perms.start && perms.stop)"
                 v-model="item.running"
                 :inset="false"
                 :disabled="item.loading || loading"
@@ -78,7 +75,7 @@
         </div>
 
         <v-btn
-          v-if="mock || perms?.['crons-post-cron-force']"
+          v-if="mock || perms.force"
           text
           color="warning"
           :disabled="item.loading || loading"
@@ -96,7 +93,7 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import { crons } from 'ezreeport-sdk-js';
+import type { crons } from 'ezreeport-sdk-js';
 import CustomSwitch from './lib/CustomSwitch';
 
 type CronAction = typeof crons.startCron | typeof crons.stopCron | typeof crons.forceCron;
@@ -139,13 +136,21 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      return this.$ezReeport.auth_permissions;
+      const perms = this.$ezReeport.auth_permissions;
+      return {
+        readAll: perms?.['crons-get'],
+        readOne: perms?.['crons-get-cron'],
+
+        start: perms?.['crons-put-cron-start'],
+        stop: perms?.['crons-put-cron-stop'],
+        force: perms?.['crons-post-cron-force'],
+      };
     },
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth_permissions': function (val: Record<string, boolean> | undefined) {
-      if (val?.['crons-get']) {
+    '$ezReeport.auth_permissions': function () {
+      if (this.perms.readAll) {
         this.fetch();
       } else {
         this.crons = [];
@@ -160,10 +165,13 @@ export default defineComponent({
     }
   },
   methods: {
+    /**
+     * Fetch all crons and parse result
+     */
     async fetch() {
       this.loading = true;
       try {
-        const { content } = await crons.getAllCrons();
+        const { content } = await this.$ezReeport.crons.getAllCrons();
         this.crons = content.map(this.parseCron);
         this.error = '';
       } catch (error) {
@@ -171,25 +179,47 @@ export default defineComponent({
       }
       this.loading = false;
     },
-    parseCron(cron: crons.Cron): CronItem {
-      return {
-        open: false,
-        loading: false,
-        name: cron.name,
-        running: cron.running,
-        disabled: !cron.nextRun && !cron.lastRun,
-        detail: [
-          { key: 'lastRun', icon: 'mdi-calendar-arrow-left', value: cron.lastRun?.toLocaleString() },
-          { key: 'nextRun', icon: 'mdi-calendar-arrow-right', value: cron.nextRun?.toLocaleString() },
-        ],
-      };
-    },
+    /**
+     * Parse cron into a readable format
+     *
+     * @param cron The cron
+     */
+    parseCron: (cron: crons.Cron): CronItem => ({
+      open: false,
+      loading: false,
+      name: cron.name,
+      running: cron.running,
+      disabled: !cron.nextRun && !cron.lastRun,
+      detail: [
+        { key: 'lastRun', icon: 'mdi-calendar-arrow-left', value: cron.lastRun?.toLocaleString() },
+        { key: 'nextRun', icon: 'mdi-calendar-arrow-right', value: cron.nextRun?.toLocaleString() },
+      ],
+    }),
+    /**
+     * Shorthand to update status (start or stop)
+     *
+     * @param item The cron
+     */
     updateCronStatus(item: CronItem) {
-      return this.execCronAction(item, item.running ? crons.startCron : crons.stopCron);
+      return this.execCronAction(
+        item,
+        item.running ? this.$ezReeport.crons.startCron : this.$ezReeport.crons.stopCron,
+      );
     },
+    /**
+     * Shorthand to force a cron to run
+     *
+     * @param item The cron
+     */
     forceCronRun(item: CronItem) {
-      return this.execCronAction(item, crons.forceCron);
+      return this.execCronAction(item, this.$ezReeport.crons.forceCron);
     },
+    /**
+     * Execute action on a cron and update the item
+     *
+     * @param item The crcon
+     * @param action The action
+     */
     async execCronAction(item: CronItem, action: CronAction) {
       // eslint-disable-next-line no-param-reassign
       item.loading = true;

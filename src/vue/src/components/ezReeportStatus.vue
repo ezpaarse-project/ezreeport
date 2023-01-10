@@ -57,7 +57,7 @@
 </template>
 
 <script lang="ts">
-import { health } from 'ezreeport-sdk-js';
+import type { health } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 import colors from 'vuetify/es5/util/colors';
 
@@ -97,10 +97,13 @@ export default defineComponent({
     }
   },
   methods: {
+    /**
+     * Fetch all connected services and parse result
+     */
     async fetch() {
       this.loading = true;
       try {
-        const { content } = await health.checkAllConnectedService();
+        const { content } = await this.$ezReeport.health.checkAllConnectedService();
         this.statuses = content.map(this.parsePingResult);
         this.error = '';
       } catch (error) {
@@ -108,14 +111,17 @@ export default defineComponent({
       }
       this.loading = false;
     },
-    parsePingResult(ping: health.PingResult): StatusItem {
-      return {
-        name: ping.name,
-        color: ping.status ? 'success' : 'error',
-        text: ping.status ? 'OK' : 'KO',
-        tooltip: ping.status ? `${ping.elapsedTime}ms (${ping.statusCode})` : ping.error,
-      };
-    },
+    /**
+     * Parse ping result into a human readable format
+     *
+     * @param ping The ping result
+     */
+    parsePingResult: (ping: health.PingResult): StatusItem => ({
+      name: ping.name,
+      color: ping.status ? 'success' : 'error',
+      text: ping.status ? 'OK' : 'KO',
+      tooltip: ping.status ? `${ping.elapsedTime}ms (${ping.statusCode})` : ping.error,
+    }),
   },
 });
 </script>

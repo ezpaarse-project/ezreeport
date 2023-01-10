@@ -32,6 +32,7 @@ export interface Institution {
   validated: boolean;
   // domains: any[];
   logoId: string;
+  // TODO: Map str into date
   updatedAt: Date;
   createdAt: Date;
   acronym: string;
