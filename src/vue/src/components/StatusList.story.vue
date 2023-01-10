@@ -6,7 +6,7 @@
     >
       <v-app style="background: transparent">
         <v-theme-provider light>
-          <ezReeportStatus :mock="{ data }" />
+          <ezr-status-list :mock="{ data }" />
         </v-theme-provider>
       </v-app>
     </Variant>
@@ -17,7 +17,7 @@
     >
       <v-app style="background: transparent">
         <v-theme-provider dark>
-          <ezReeportStatus :mock="{ data }" />
+          <ezr-status-list :mock="{ data }" />
         </v-theme-provider>
       </v-app>
     </Variant>
@@ -27,7 +27,7 @@
       icon="material-symbols:error-outline"
     >
       <v-app style="background: transparent">
-        <ezReeportStatus :mock="{ data, error: 'A mock error occurred' }" />
+        <ezr-status-list :mock="{ data, error: 'A mock error occurred' }" />
       </v-app>
     </Variant>
 
@@ -36,7 +36,7 @@
       icon="material-symbols:refresh"
     >
       <v-app style="background: transparent">
-        <ezReeportStatus :mock="{ data, loading: true }" />
+        <ezr-status-list :mock="{ data, loading: true }" />
       </v-app>
     </Variant>
 
@@ -45,7 +45,7 @@
       icon="material-symbols:cloud-outline"
     >
       <v-app style="background: transparent">
-        <ezReeportStatus />
+        <ezr-status-list />
       </v-app>
     </Variant>
   </Story>
@@ -85,7 +85,7 @@ onMounted(() => {
 </script>
 
 <docs lang="md">
-# ezReeportStatus
+# Status List
 
 Shows status of services connected to the reporting.
 

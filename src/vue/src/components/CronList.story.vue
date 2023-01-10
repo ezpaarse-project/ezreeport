@@ -6,7 +6,7 @@
     >
       <v-app style="background: transparent">
         <v-theme-provider light>
-          <ezReeportCronList :mock="{ data }" />
+          <ezr-cron-list :mock="{ data }" />
         </v-theme-provider>
       </v-app>
     </Variant>
@@ -17,7 +17,7 @@
     >
       <v-app style="background: transparent">
         <v-theme-provider dark>
-          <ezReeportCronList :mock="{ data }" />
+          <ezr-cron-list :mock="{ data }" />
         </v-theme-provider>
       </v-app>
     </Variant>
@@ -27,7 +27,7 @@
       icon="material-symbols:error-outline"
     >
       <v-app style="background: transparent">
-        <ezReeportCronList :mock="{ data, error: 'A mock error occurred' }" />
+        <ezr-cron-list :mock="{ data, error: 'A mock error occurred' }" />
       </v-app>
     </Variant>
 
@@ -36,7 +36,7 @@
       icon="material-symbols:refresh"
     >
       <v-app style="background: transparent">
-        <ezReeportCronList :mock="{ data, loading: true }" />
+        <ezr-cron-list :mock="{ data, loading: true }" />
       </v-app>
     </Variant>
 
@@ -45,7 +45,7 @@
       icon="material-symbols:cloud-outline"
     >
       <v-app style="background: transparent">
-        <ezReeportCronList />
+        <ezr-cron-list />
       </v-app>
     </Variant>
   </Story>
@@ -90,7 +90,7 @@ onMounted(() => {
 </script>
 
 <docs lang="md">
-# ezReeportCronList
+# Cron List
 
 List and manage all crons.
 </docs>

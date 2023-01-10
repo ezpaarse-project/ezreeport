@@ -150,10 +150,12 @@ export default defineComponent({
   watch: {
     // eslint-disable-next-line func-names
     '$ezReeport.auth_permissions': function () {
-      if (this.perms.readAll) {
-        this.fetch();
-      } else {
-        this.crons = [];
+      if (!this.mock) {
+        if (this.perms.readAll) {
+          this.fetch();
+        } else {
+          this.crons = [];
+        }
       }
     },
   },
