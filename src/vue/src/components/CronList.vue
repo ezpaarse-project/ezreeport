@@ -4,28 +4,12 @@
       :text="$t('title').toString()"
       :loading="loading"
     >
-      <v-tooltip>
-        <template #activator="{ on, attrs }">
-          <v-btn
-            icon
-            :disabled="loading || !!mock"
-            v-bind="attrs"
-            @click="fetch"
-            v-on="on"
-          >
-            <v-progress-circular
-              v-if="loading"
-              size="20"
-              width="2"
-              indeterminate
-            />
-            <v-icon v-else>
-              mdi-refresh
-            </v-icon>
-          </v-btn>
-        </template>
-        <span>{{ $t('refresh-title').toString() }}</span>
-      </v-tooltip>
+      <RefreshButton
+        :loading="loading"
+        :disabled="!!mock"
+        :tooltip="$t('refresh-tooltip').toString()"
+        @click="fetch"
+      />
     </LoadingToolbar>
 
     <v-list style="position: relative;">
@@ -51,11 +35,8 @@
               <CustomSwitch
                 v-if="mock || (perms.start && perms.stop)"
                 v-model="item.running"
-                :inset="false"
                 :disabled="item.loading || loading"
-                :label="item.running
-                  ? $t('cron.active').toString()
-                  : $t('cron.inactive').toString()"
+                :label="$t(item.running ? 'cron.active' : 'cron.inactive')"
                 :loading="item.loading"
                 reverse
                 @click.stop="updateCronStatus(item)"

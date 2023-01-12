@@ -4,28 +4,12 @@
       :text="$t('title').toString()"
       :loading="loading"
     >
-      <v-tooltip>
-        <template #activator="{ on, attrs }">
-          <v-btn
-            icon
-            :disabled="loading || !!mock"
-            v-bind="attrs"
-            @click="fetch"
-            v-on="on"
-          >
-            <v-progress-circular
-              v-if="loading"
-              size="20"
-              width="2"
-              indeterminate
-            />
-            <v-icon v-else>
-              mdi-refresh
-            </v-icon>
-          </v-btn>
-        </template>
-        <span>{{ $t('refresh-tooltip') }}</span>
-      </v-tooltip>
+      <RefreshButton
+        :loading="loading"
+        :disabled="!!mock"
+        :tooltip="$t('refresh-tooltip').toString()"
+        @click="fetch"
+      />
     </LoadingToolbar>
 
     <v-list style="position: relative;">
