@@ -8,6 +8,7 @@
         <v-theme-provider light>
           <ezr-status-list :mock="{ data }" />
         </v-theme-provider>
+        <HstLocale />
       </v-app>
     </Variant>
 
@@ -19,6 +20,7 @@
         <v-theme-provider dark>
           <ezr-status-list :mock="{ data }" />
         </v-theme-provider>
+        <HstLocale />
       </v-app>
     </Variant>
 
@@ -28,6 +30,7 @@
     >
       <v-app style="background: transparent">
         <ezr-status-list :mock="{ data, error: 'A mock error occurred' }" />
+        <HstLocale />
       </v-app>
     </Variant>
 
@@ -37,6 +40,7 @@
     >
       <v-app style="background: transparent">
         <ezr-status-list :mock="{ data, loading: true }" />
+        <HstLocale />
       </v-app>
     </Variant>
 
@@ -46,6 +50,7 @@
     >
       <v-app style="background: transparent">
         <ezr-status-list />
+        <HstLocale />
       </v-app>
     </Variant>
   </Story>
