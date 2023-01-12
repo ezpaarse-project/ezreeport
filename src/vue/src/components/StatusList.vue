@@ -4,26 +4,33 @@
       text="Status"
       :loading="loading"
     >
-      <v-btn
-        icon
-        :disabled="loading || !!mock"
-        @click="fetch"
-      >
-        <v-progress-circular
-          v-if="loading"
-          size="20"
-          width="2"
-          indeterminate
-        />
-        <v-icon v-else>
-          mdi-refresh
-        </v-icon>
-      </v-btn>
+      <v-tooltip>
+        <template #activator="{ on, attrs }">
+          <v-btn
+            icon
+            :disabled="loading || !!mock"
+            v-bind="attrs"
+            @click="fetch"
+            v-on="on"
+          >
+            <v-progress-circular
+              v-if="loading"
+              size="20"
+              width="2"
+              indeterminate
+            />
+            <v-icon v-else>
+              mdi-refresh
+            </v-icon>
+          </v-btn>
+        </template>
+        <span>Rafraîchir la liste des status</span>
+      </v-tooltip>
     </LoadingToolbar>
 
     <v-list style="position: relative;">
       <v-list-item
-        v-for="status in statuses"
+        v-for="status in items"
         :key="status.name"
       >
         <v-list-item-content>
@@ -59,7 +66,6 @@
 <script lang="ts">
 import type { health } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
-import colors from 'vuetify/es5/util/colors';
 
 interface StatusItem {
   name: string,
@@ -83,13 +89,17 @@ export default defineComponent({
   },
   data: () => ({
     loading: false,
-    statuses: [] as StatusItem[],
+    statuses: [] as health.PingResult[],
     error: '',
-    errorColor: colors.red.darken4,
   }),
+  computed: {
+    items(): StatusItem[] {
+      return this.statuses.map(this.parsePingResult);
+    },
+  },
   mounted() {
     if (this.mock) {
-      this.statuses = (this.mock.data ?? []).map(this.parsePingResult);
+      this.statuses = (this.mock.data ?? []);
       this.error = this.mock.error ?? '';
       this.loading = this.mock.loading ?? false;
     } else {
@@ -104,7 +114,7 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.health.checkAllConnectedService();
-        this.statuses = content.map(this.parsePingResult);
+        this.statuses = content;
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;

@@ -4,26 +4,33 @@
       text="Crons"
       :loading="loading"
     >
-      <v-btn
-        icon
-        :disabled="loading || !!mock"
-        @click="fetch"
-      >
-        <v-progress-circular
-          v-if="loading"
-          size="20"
-          width="2"
-          indeterminate
-        />
-        <v-icon v-else>
-          mdi-refresh
-        </v-icon>
-      </v-btn>
+      <v-tooltip>
+        <template #activator="{ on, attrs }">
+          <v-btn
+            icon
+            :disabled="loading || !!mock"
+            v-bind="attrs"
+            @click="fetch"
+            v-on="on"
+          >
+            <v-progress-circular
+              v-if="loading"
+              size="20"
+              width="2"
+              indeterminate
+            />
+            <v-icon v-else>
+              mdi-refresh
+            </v-icon>
+          </v-btn>
+        </template>
+        <span>Rafraîchir la liste des crons</span>
+      </v-tooltip>
     </LoadingToolbar>
 
     <v-list style="position: relative;">
       <v-list-group
-        v-for="item in crons"
+        v-for="item in items"
         :key="item.name"
         v-model="item.open"
       >
@@ -132,7 +139,7 @@ export default defineComponent({
   data: () => ({
     loading: false,
     error: '',
-    crons: [] as CronItem[],
+    crons: [] as crons.Cron[],
   }),
   computed: {
     perms() {
@@ -145,6 +152,9 @@ export default defineComponent({
         stop: perms?.['crons-put-cron-stop'],
         force: perms?.['crons-post-cron-force'],
       };
+    },
+    items(): CronItem[] {
+      return this.crons.map(this.parseCron);
     },
   },
   watch: {
@@ -161,7 +171,7 @@ export default defineComponent({
   },
   mounted() {
     if (this.mock) {
-      this.crons = (this.mock.data ?? []).map(this.parseCron);
+      this.crons = (this.mock.data ?? []);
       this.loading = this.mock.loading ?? false;
       this.error = this.mock.error ?? '';
     }
@@ -174,7 +184,7 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.crons.getAllCrons();
-        this.crons = content.map(this.parseCron);
+        this.crons = content;
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
