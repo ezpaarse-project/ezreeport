@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "vue": "^2.7.10",
+    "vuetify": "^2.6.10",
     "vue-i18n": "^8.28.2"
   },
   "devDependencies": {
@@ -69,7 +70,6 @@
     "unplugin-vue-components": "^0.22.12",
     "vite": "^4.0.4",
     "vue-server-renderer": "^2.7.10",
-    "vue-template-compiler": "^2.7.10",
-    "vuetify": "^2.6.10"
+    "vue-template-compiler": "^2.7.10"
   }
 }

@@ -28,7 +28,7 @@ export default defineConfig({
         {
           id: 'utils',
           title: 'Utils',
-          include: (file) => /^src\/components\/lib/i.test(file.path),
+          include: (file) => /^src\/components\/common/i.test(file.path),
         },
         {
           id: 'health',
