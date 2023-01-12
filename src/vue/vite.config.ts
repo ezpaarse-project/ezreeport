@@ -7,7 +7,7 @@ import { HstVue } from '@histoire/plugin-vue2';
 import vue2 from '@vitejs/plugin-vue2';
 import Components from 'unplugin-vue-components/vite';
 import { VuetifyResolver } from 'unplugin-vue-components/resolvers';
-import vueI18nPlugin from './plugins/i18n';
+import vueI18nPlugin from './plugins/vite-i18n';
 
 // TODO: build type def
 
