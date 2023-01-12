@@ -10,7 +10,7 @@
     "noEmit": true,
     "experimentalDecorators": true,
     "resolveJsonModule": true,
-    "types": ["vuetify"]
+    "types": ["vuetify", "vue-i18n"]
   },
   "exclude": [
     "../sdk",
@@ -21,7 +21,6 @@
   "include": [
     ".vite/**/*.ts",
     "src",
-    "plugins"
   ],
   "vueCompilerOptions": {
     "target": 2.7

@@ -1,5 +1,16 @@
 {
   "name": "ezreeport-vue",
+  "description": "",
+  "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
+  "bugs": {
+    "url": "https://github.com/ezpaarse-project/ezreeport/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ezpaarse-project/ezreeport.git"
+  },
+  "license": "CeCILL",
+  "author": "oxypomme",
   "version": "1.0.0",
   "type": "module",
   "exports": {
@@ -27,17 +38,18 @@
     ]
   },
   "dependencies": {
-    "@mdi/font": "^7.1.96",
-    "ezreeport-sdk-js": "file:../sdk",
-    "sass": "1.32.13",
     "vue": "^2.7.10",
-    "vuetify": "^2.6.10"
+    "vue-i18n": "^8.28.2"
   },
   "devDependencies": {
     "@histoire/plugin-vue2": "^0.12.4",
+    "@mdi/font": "^7.1.96",
     "@nuxt/types": "^2.15.8",
     "@nuxt/typescript-build": "^2.1.0",
+    "@nuxtjs/i18n": "^7.3.1",
+    "@nuxtjs/proxy": "^2.1.0",
     "@nuxtjs/vuetify": "^1.12.3",
+    "@types/js-yaml": "^4.0.5",
     "@typescript-eslint/eslint-plugin": "^5.48.0",
     "@typescript-eslint/parser": "^5.48.0",
     "@vitejs/plugin-vue2": "^2.2.0",
@@ -48,12 +60,16 @@
     "eslint-import-resolver-typescript": "^3.5.2",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-vue": "^9.8.0",
+    "ezreeport-sdk-js": "file:../sdk",
     "histoire": "^0.12.4",
+    "js-yaml": "^4.1.0",
     "nuxt": "^2.15.8",
+    "sass": "1.32.13",
     "typescript": "^4.9.4",
     "unplugin-vue-components": "^0.22.12",
     "vite": "^4.0.4",
     "vue-server-renderer": "^2.7.10",
-    "vue-template-compiler": "^2.7.10"
+    "vue-template-compiler": "^2.7.10",
+    "vuetify": "^2.6.10"
   }
 }

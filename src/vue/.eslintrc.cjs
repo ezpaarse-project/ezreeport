@@ -17,7 +17,7 @@ module.exports = {
       },
     },
     {
-      files: ['**/*.story.vue', 'vite.config.ts', 'histoire.setup.ts'],
+      files: ['example/**/*', '**/*.story.vue', 'vite.config.ts', 'histoire.setup.ts', 'plugins/**/*.ts'],
       rules: {
         'import/no-extraneous-dependencies': 'off',
       },

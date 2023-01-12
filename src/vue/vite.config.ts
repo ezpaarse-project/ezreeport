@@ -7,12 +7,14 @@ import { HstVue } from '@histoire/plugin-vue2';
 import vue2 from '@vitejs/plugin-vue2';
 import Components from 'unplugin-vue-components/vite';
 import { VuetifyResolver } from 'unplugin-vue-components/resolvers';
+import vueI18nPlugin from './plugins/i18n';
 
 // TODO: build type def
 
 export default defineConfig({
   plugins: [
     vue2(),
+    vueI18nPlugin,
     Components({
       resolvers: [VuetifyResolver()],
       dts: '.vite/components.d.ts',
@@ -37,6 +39,10 @@ export default defineConfig({
           title: 'Crons',
         },
         {
+          id: 'task',
+          title: 'Tasks',
+        },
+        {
           id: 'other',
           title: 'Others',
           include: () => true,
@@ -54,17 +60,19 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'ezReeportVue',
-      fileName: 'ezreeport-vue',
     },
     rollupOptions: {
-      // TODO: Test as a package
-      external: ['vue', 'vuetify/lib'],
+      external: ['vue'],
       output: {
         globals: {
           vue: 'Vue',
-          'vuetify/lib': 'Vuetify',
         },
       },
+    },
+  },
+  server: {
+    proxy: {
+      '/api': 'https://ezmesure.couperin.org/',
     },
   },
   css: {

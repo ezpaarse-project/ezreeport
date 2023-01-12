@@ -18,7 +18,8 @@
     "types": [
       "@nuxt/types",
       "@types/node",
-      "@nuxtjs/vuetify"
+      "@nuxtjs/vuetify",
+      "@nuxtjs/i18n",
     ]
   }
 }

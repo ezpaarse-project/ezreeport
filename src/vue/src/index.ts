@@ -1,13 +1,13 @@
 import type VueApp from 'vue';
-import ezReeport from '../plugins/ezReeport';
+import ezReeport from './ezReeport';
 import components from './components';
 
-type ReportingOptions = {
+export type EzReeportOptions = {
   api_url?: 'string',
 };
 
 export default {
-  install(app: typeof VueApp, options: ReportingOptions) {
+  install(app: typeof VueApp, options: EzReeportOptions) {
     // Setup SDK
     ezReeport.api_url = options?.api_url ?? import.meta.env.VITE_REPORT_API;
 
@@ -21,7 +21,7 @@ export default {
   },
 };
 
-export { useEzReeport } from '../plugins/ezReeport';
+export { useEzReeport } from './ezReeport';
 
 declare module 'vue/types/vue' {
   interface Vue {
