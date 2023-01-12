@@ -34,10 +34,9 @@
 
               <CustomSwitch
                 v-if="mock || (perms.start && perms.stop)"
-                v-model="item.running"
-                :disabled="item.loading || loading"
+                :input-value="item.running"
+                :disabled="loading"
                 :label="$t(item.running ? 'cron.active' : 'cron.inactive')"
-                :loading="item.loading"
                 reverse
                 @click.stop="updateCronStatus(item)"
               />
@@ -68,8 +67,7 @@
           v-if="mock || perms.force"
           text
           color="warning"
-          :disabled="item.loading || loading"
-          :loading="item.loading"
+          :disabled="loading"
           @click="forceCronRun(item)"
         >
           {{ $t('cron.force').toString() }}
@@ -100,7 +98,6 @@ interface CronItem {
   detail: CronDetailItem[],
   open: boolean,
   disabled: boolean,
-  loading: boolean,
 }
 
 interface Mock {
@@ -181,7 +178,6 @@ export default defineComponent({
      */
     parseCron: (cron: crons.Cron): CronItem => ({
       open: false,
-      loading: false,
       name: cron.name,
       running: cron.running,
       disabled: !cron.nextRun && !cron.lastRun,
@@ -198,7 +194,7 @@ export default defineComponent({
     updateCronStatus(item: CronItem) {
       return this.execCronAction(
         item,
-        item.running ? this.$ezReeport.crons.startCron : this.$ezReeport.crons.stopCron,
+        item.running ? this.$ezReeport.crons.stopCron : this.$ezReeport.crons.startCron,
       );
     },
     /**
@@ -217,7 +213,7 @@ export default defineComponent({
      */
     async execCronAction(item: CronItem, action: CronAction) {
       // eslint-disable-next-line no-param-reassign
-      item.loading = true;
+      this.loading = true;
       if (!this.mock) {
         try {
           const items = [...this.crons];
@@ -240,7 +236,7 @@ export default defineComponent({
         }
       }
       // eslint-disable-next-line no-param-reassign
-      item.loading = false;
+      this.loading = false;
     },
   },
 });
