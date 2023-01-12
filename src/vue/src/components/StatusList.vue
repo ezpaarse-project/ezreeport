@@ -1,7 +1,7 @@
 <template>
   <div>
     <LoadingToolbar
-      text="Status"
+      :text="$t('title').toString()"
       :loading="loading"
     >
       <v-tooltip>
@@ -24,7 +24,7 @@
             </v-icon>
           </v-btn>
         </template>
-        <span>Rafraîchir la liste des status</span>
+        <span>{{ $t('refresh-tooltip') }}</span>
       </v-tooltip>
     </LoadingToolbar>
 
@@ -139,3 +139,13 @@ export default defineComponent({
 <style scoped>
 
 </style>
+
+<i18n lang="yaml">
+messages:
+  en:
+    title: "Status"
+    refresh-tooltip: "Refresh status list"
+  fr:
+    title: "Status"
+    refresh-tooltip: "Rafraîchir la liste des status"
+</i18n>
