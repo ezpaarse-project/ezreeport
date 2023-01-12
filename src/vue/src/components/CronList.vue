@@ -1,7 +1,7 @@
 <template>
   <div v-if="mock || perms.readAll">
     <LoadingToolbar
-      text="Crons"
+      :text="$t('title').toString()"
       :loading="loading"
     >
       <v-tooltip>
@@ -24,7 +24,7 @@
             </v-icon>
           </v-btn>
         </template>
-        <span>Rafraîchir la liste des crons</span>
+        <span>{{ $t('refresh-title').toString() }}</span>
       </v-tooltip>
     </LoadingToolbar>
 
@@ -53,7 +53,9 @@
                 v-model="item.running"
                 :inset="false"
                 :disabled="item.loading || loading"
-                :label="item.running ? 'Actif' : 'Inactif'"
+                :label="item.running
+                  ? $t('cron.active').toString()
+                  : $t('cron.inactive').toString()"
                 :loading="item.loading"
                 reverse
                 @click.stop="updateCronStatus(item)"
@@ -89,7 +91,7 @@
           :loading="item.loading"
           @click="forceCronRun(item)"
         >
-          Forcer
+          {{ $t('cron.force').toString() }}
         </v-btn>
       </v-list-group>
 
@@ -240,7 +242,9 @@ export default defineComponent({
           const items = [...this.crons];
           const index = items.findIndex(({ name }) => name === item.name);
           if (index < 0) {
-            throw new Error(`Cron "${item.name}" not found`);
+            throw new Error(
+              this.$t('cron.not-found', { name: item.name }).toString(),
+            );
           }
 
           const { content } = await action(item.name);
@@ -264,3 +268,23 @@ export default defineComponent({
 <style scoped>
 
 </style>
+
+<i18n lang="yaml">
+messages:
+  en:
+    title: "Status"
+    refresh-tooltip: "Refresh status list"
+    cron:
+      not-found: "Cron {name} not found"
+      force: "Force"
+      active: "Active"
+      inactive: "Inactive"
+  fr:
+    title: "Status"
+    refresh-tooltip: "Rafraîchir la liste des status"
+    cron:
+      not-found: "Cron {name} non trouvée"
+      force: "Forcer"
+      active: "Actif"
+      inactive: "Inactif"
+</i18n>
