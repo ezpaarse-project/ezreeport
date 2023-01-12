@@ -40,7 +40,12 @@ const router = CustomRouter('auth')
             id: hit._id.toString(),
           }));
       } else if (defInstitution && defInstitution._source) {
-        available = [defInstitution._source.institution];
+        available = [
+          {
+            ...defInstitution._source.institution,
+            id: defInstitution._id.toString(),
+          },
+        ];
       }
       // TODO: List all possible institutions once it's allowed by ezMesure
 
