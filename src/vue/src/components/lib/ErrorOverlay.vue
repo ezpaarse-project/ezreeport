@@ -12,7 +12,6 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { colors } from 'vuetify/lib';
 
 export default defineComponent({
   props: {
@@ -21,8 +20,8 @@ export default defineComponent({
       default: '',
     },
   },
-  data: () => ({
-    color: colors.red.darken4,
+  data: (vm) => ({
+    color: vm.$vuetify.theme.currentTheme.error,
   }),
 });
 </script>
