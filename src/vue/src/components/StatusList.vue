@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <v-col>
     <LoadingToolbar
       :text="$t('title').toString()"
       :loading="loading"
@@ -60,7 +60,7 @@
 
       <ErrorOverlay :error="error" />
     </v-list>
-  </div>
+  </v-col>
 </template>
 
 <script lang="ts">

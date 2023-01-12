@@ -1,5 +1,5 @@
 <template>
-  <div v-if="mock || perms.readAll">
+  <v-col v-if="mock || perms.readAll">
     <LoadingToolbar
       :text="$t('title').toString()"
       :loading="loading"
@@ -97,7 +97,7 @@
 
       <ErrorOverlay :error="error" />
     </v-list>
-  </div>
+  </v-col>
 </template>
 
 <script lang="ts">
