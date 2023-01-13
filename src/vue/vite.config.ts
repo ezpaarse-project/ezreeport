@@ -1,6 +1,6 @@
 /// <reference types="histoire" />
 
-// import { fileURLToPath } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import { HstVue } from '@histoire/plugin-vue2';
@@ -54,12 +54,13 @@ export default defineConfig({
       ],
     },
   },
-  // resolve: {
-  //   alias: {
-  //     '@': fileURLToPath(new URL('./src', import.meta.url)),
-  //     vue: 'vue/dist/vue.esm.js',
-  //   },
-  // },
+  resolve: {
+    alias: {
+      '~': fileURLToPath(new URL('./src', import.meta.url)),
+      '@': fileURLToPath(new URL('./src/components', import.meta.url)),
+      vue: 'vue/dist/vue.esm.js',
+    },
+  },
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),

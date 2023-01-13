@@ -10,7 +10,15 @@
     "noEmit": true,
     "experimentalDecorators": true,
     "resolveJsonModule": true,
-    "types": ["vuetify", "vue-i18n"]
+    "types": ["vuetify", "vue-i18n"],
+    "paths": {
+      "~/*": [
+        "./src/*"
+      ],
+      "@/*": [
+        "./src/components/*"
+      ],
+    }
   },
   "exclude": [
     "../sdk",

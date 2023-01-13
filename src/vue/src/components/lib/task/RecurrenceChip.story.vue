@@ -1,7 +1,7 @@
 <template>
   <Story
-    title="internal/RecurrenceChip"
     group="task"
+    title="internal/RecurrenceChip"
   >
     <template #controls>
       <HstSelect

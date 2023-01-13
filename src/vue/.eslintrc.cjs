@@ -34,12 +34,15 @@ module.exports = {
   plugins: [
     'vue',
     '@typescript-eslint',
+    'import',
   ],
   rules: {
   },
   settings: {
     'import/resolver': {
-      typescript: {}, // this loads <rootdir>/tsconfig.json to eslint
+      typescript: {
+        project: 'src/vue/',
+      },
     },
   },
 };

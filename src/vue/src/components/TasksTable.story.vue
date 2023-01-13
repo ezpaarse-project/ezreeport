@@ -59,7 +59,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { isCollecting } from 'histoire/client';
-import { useEzReeport } from '..';
+import { useEzReeport } from '~/index';
 
 const $ezReeport = useEzReeport();
 

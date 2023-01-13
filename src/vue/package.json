@@ -39,8 +39,8 @@
   },
   "dependencies": {
     "vue": "^2.7.10",
-    "vuetify": "^2.6.10",
-    "vue-i18n": "^8.28.2"
+    "vue-i18n": "^8.28.2",
+    "vuetify": "^2.6.10"
   },
   "devDependencies": {
     "@histoire/plugin-vue2": "^0.12.4",
@@ -58,7 +58,7 @@
     "eslint": "^8.31.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-airbnb-typescript": "^17.0.0",
-    "eslint-import-resolver-typescript": "^3.5.2",
+    "eslint-import-resolver-typescript": "^3.5.3",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-vue": "^9.8.0",
     "ezreeport-sdk-js": "file:../sdk",

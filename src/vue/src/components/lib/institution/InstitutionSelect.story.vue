@@ -86,7 +86,7 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import { isCollecting, logEvent } from 'histoire/client';
-import { useEzReeport } from '../..';
+import { useEzReeport } from '~/index';
 import { InstitutionItem } from './InstitutionSelect.vue';
 
 const $ezReeport = useEzReeport();

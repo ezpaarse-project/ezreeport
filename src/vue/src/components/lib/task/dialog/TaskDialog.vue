@@ -93,8 +93,9 @@
 <script lang="ts">
 import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
-import CustomSwitch from '../common/CustomSwitch';
+import CustomSwitch from '@/common/CustomSwitch';
 import TaskDetailDialog from './TaskDetailDialog.vue';
+import TaskFormDialog from './TaskFormDialog.vue';
 
 export default defineComponent({
   components: { CustomSwitch },
@@ -123,7 +124,7 @@ export default defineComponent({
       switch (this.mode) {
         case 'edit':
         case 'create':
-          return TaskDetailDialog; // TODO
+          return TaskFormDialog;
 
         default:
           return TaskDetailDialog;

@@ -84,8 +84,8 @@
 <script lang="ts">
 import type { auth, tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
+import CustomSwitch from '@/common/CustomSwitch';
 import type { DataTableHeader } from '../types/vuetify';
-import CustomSwitch from './common/CustomSwitch';
 
 interface TaskItem {
   id: string,

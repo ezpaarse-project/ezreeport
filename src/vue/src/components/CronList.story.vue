@@ -60,7 +60,7 @@
 import { isCollecting } from 'histoire/client';
 import { type crons } from 'ezreeport-sdk-js';
 import { onMounted, ref } from 'vue';
-import { useEzReeport } from '..';
+import { useEzReeport } from '~/index';
 
 const $ezReeport = useEzReeport();
 

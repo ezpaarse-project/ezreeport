@@ -82,7 +82,7 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
 import type { crons } from 'ezreeport-sdk-js';
-import CustomSwitch from './common/CustomSwitch';
+import CustomSwitch from '@/common/CustomSwitch';
 
 type CronAction = typeof crons.startCron | typeof crons.stopCron | typeof crons.forceCron;
 
