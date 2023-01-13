@@ -1,6 +1,6 @@
 <template>
   <Story
-    title="internal/TaskDetailDialog"
+    title="internal/TaskDialog"
     group="task"
   >
     <template #controls>
@@ -16,7 +16,7 @@
     >
       <v-app style="background: transparent">
         <v-theme-provider light>
-          <TaskDetailDialog
+          <TaskDialog
             :id="current"
             :show.sync="show"
           />
@@ -40,7 +40,7 @@
     >
       <v-app style="background: transparent">
         <v-theme-provider dark>
-          <TaskDetailDialog
+          <TaskDialog
             :id="current"
             :show.sync="show"
           />
@@ -63,7 +63,7 @@
       icon="material-symbols:error-outline"
     >
       <v-app style="background: transparent">
-        <TaskDetailDialog
+        <TaskDialog
           :id="current"
           :show.sync="show"
         />
@@ -85,7 +85,7 @@
       icon="material-symbols:refresh"
     >
       <v-app style="background: transparent">
-        <TaskDetailDialog
+        <TaskDialog
           :id="current"
           :show.sync="show"
         />
@@ -104,7 +104,7 @@
       icon="material-symbols:cloud-outline"
     >
       <v-app style="background: transparent">
-        <TaskDetailDialog
+        <TaskDialog
           :id="current"
           :show.sync="show"
         />
