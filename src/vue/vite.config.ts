@@ -27,7 +27,7 @@ export default defineConfig({
       groups: [
         {
           id: 'utils',
-          title: 'Utils',
+          title: 'Utils (internal)',
           include: (file) => /^src\/components\/common/i.test(file.path),
         },
         {
@@ -41,6 +41,10 @@ export default defineConfig({
         {
           id: 'task',
           title: 'Tasks',
+        },
+        {
+          id: 'history',
+          title: 'History entries',
         },
         {
           id: 'other',
