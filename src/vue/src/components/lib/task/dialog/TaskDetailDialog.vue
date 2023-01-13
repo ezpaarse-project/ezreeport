@@ -24,6 +24,7 @@
                 :key="email"
                 class="ma-2"
                 label
+                outlined
               >
                 <v-avatar left>
                   <v-icon>mdi-account</v-icon>
@@ -34,7 +35,6 @@
             <div v-if="(task?.targets.length || 0) > targets.length || !collapsedTargets">
               <v-chip
                 label
-                outlined
                 :disabled="loading"
                 style="width: 100%"
                 class="justify-center"

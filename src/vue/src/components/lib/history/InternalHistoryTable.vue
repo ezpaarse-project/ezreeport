@@ -12,7 +12,7 @@
       <div class="text-center">
         <v-chip
           :color="type.color"
-          :outlined="perms.readFile"
+          :outlined="!perms.readFile || !type.icon"
           @click="downloadFile(item)"
         >
           <v-icon

@@ -2,6 +2,7 @@
   <v-chip
     v-bind="props"
     color="primary"
+    :outlined="outlined"
   >
     {{ $t(value) }}
   </v-chip>
@@ -22,6 +23,10 @@ export default defineComponent({
     size: {
       type: String as PropType<Sizes>,
       default: 'normal',
+    },
+    outlined: {
+      type: Boolean,
+      default: true,
     },
   },
   computed: {

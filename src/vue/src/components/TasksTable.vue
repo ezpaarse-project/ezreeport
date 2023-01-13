@@ -22,6 +22,7 @@
         :sort-desc="[false, true, false]"
         class="data-table"
         item-key="id"
+        @click:row="showTaskDialog($event)"
       >
         <template #top>
           <LoadingToolbar :text="$t('title').toString()">
@@ -57,17 +58,6 @@
             reverse
             @click.stop=""
           />
-        </template>
-
-        <template #[`item.actions`]="{ item }">
-          <v-btn
-            icon
-            @click="showTaskDialog(item)"
-          >
-            <v-icon color="info">
-              mdi-information
-            </v-icon>
-          </v-btn>
         </template>
 
         <template
@@ -108,7 +98,7 @@ export default defineComponent({
     error: '',
   }),
   computed: {
-    headers(): DataTableHeader<TaskItem & { actions: never }>[] {
+    headers(): DataTableHeader<TaskItem>[] {
       return [
         {
           value: 'name',
@@ -130,11 +120,6 @@ export default defineComponent({
         {
           value: 'nextRun',
           text: this.$t('header.next').toString(),
-        },
-        {
-          value: 'actions',
-          text: this.$t('header.actions').toString(),
-          sortable: false,
         },
       ];
     },
@@ -212,6 +197,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .data-table::v-deep .v-data-table__wrapper {
   position: relative;
+  cursor: pointer;
 }
 </style>
 
