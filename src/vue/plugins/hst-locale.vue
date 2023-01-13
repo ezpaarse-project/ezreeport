@@ -1,10 +1,10 @@
 <template>
   <v-speed-dial
     v-model="open"
-    bottom
-    left
+    :direction="direction"
     transition="slide-y-reverse-transition"
     style="width: fit-content"
+    v-bind="props"
   >
     <template #activator>
       <v-btn
@@ -37,13 +37,34 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, type PropType } from 'vue';
+
+type XDirection = 'right' | 'left';
+type YDirection = 'top' | 'bottom';
+type Direction = XDirection | YDirection;
 
 export default defineComponent({
+  props: {
+    direction: {
+      type: String as PropType<Direction>,
+      default: 'top',
+    },
+    position: {
+      type: String as PropType<`${YDirection}-${XDirection}`>,
+      default: 'bottom-left',
+    },
+  },
   data: () => ({
     open: false,
   }),
   computed: {
+    props() {
+      const pos = this.position.split('-');
+      return {
+        [pos[0]]: true,
+        [pos[1]]: true,
+      };
+    },
     locale: {
       get(): string {
         return this.$i18n.locale;

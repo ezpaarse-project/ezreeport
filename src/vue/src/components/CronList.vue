@@ -36,7 +36,7 @@
                 v-if="mock || (perms.start && perms.stop)"
                 :input-value="item.running"
                 :disabled="loading"
-                :label="$t(item.running ? 'cron.active' : 'cron.inactive')"
+                :label="$t(item.running ? 'item.active' : 'item.inactive')"
                 reverse
                 @click.stop="updateCronStatus(item)"
               />
@@ -57,7 +57,7 @@
                 <v-icon small>
                   {{ entry.icon }}
                 </v-icon>
-                <span class="ml-1">{{ entry.value }}</span>
+                <span class="ml-1">{{ $t(`cron.${entry.key}`) }}: {{ entry.value }}</span>
               </v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
@@ -249,19 +249,25 @@ export default defineComponent({
 <i18n lang="yaml">
 messages:
   en:
-    title: "Status"
-    refresh-tooltip: "Refresh status list"
+    title: Crons
+    refresh-tooltip: Refresh cron list
     cron:
-      not-found: "Cron {name} not found"
-      force: "Force"
-      active: "Active"
-      inactive: "Inactive"
+      not-found: Cron {name} not found
+      force: Force
+      lastRun: Last run
+      nextRun: Next run
+    item:
+      active: Active
+      inactive: Inactive
   fr:
-    title: "Status"
-    refresh-tooltip: "Rafraîchir la liste des status"
+    title: Crons
+    refresh-tooltip: Rafraîchir la liste des crons
     cron:
-      not-found: "Cron {name} non trouvée"
-      force: "Forcer"
-      active: "Actif"
-      inactive: "Inactif"
+      not-found: Cron {name} non trouvée
+      force: Forcer
+      lastRun: Dernière itération
+      nextRun: Prochaine itération
+    item:
+      active: Actif
+      inactive: Inactif
 </i18n>
