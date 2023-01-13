@@ -1,5 +1,5 @@
 <template>
-  <Story>
+  <Story title="internal/InstitutionSelect">
     <template #controls>
       <HstSelect
         v-model="current"
@@ -91,7 +91,7 @@ import { InstitutionItem } from './InstitutionSelect.vue';
 
 const $ezReeport = useEzReeport();
 
-const current = ref<string>('');
+const current = ref('');
 const data = ref<InstitutionItem[]>([
   {
     id: 'bib-cnrs-inist',

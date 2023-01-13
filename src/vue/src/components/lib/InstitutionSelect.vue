@@ -22,14 +22,9 @@
             :title="item.name"
             fallback-icon="mdi-filter-variant"
           />
-          <RichListItem
+          <InstitutionRichListItem
             v-else
-            :title="item.name"
-            :subtitle="item.city"
-            :src="`/api/assets/logos/${item.logoId}`"
-            :alt="`Logo de ${item.name}`"
-            fallback-icon="mdi-office-building"
-            capitalize-subtitle
+            :institution="item"
           />
         </template>
 
@@ -39,14 +34,9 @@
             :title="item.name"
             fallback-icon="mdi-filter-variant"
           />
-          <RichListItem
+          <InstitutionRichListItem
             v-else
-            :title="item.name"
-            :subtitle="item.city"
-            :src="`/api/assets/logos/${item.logoId}`"
-            :alt="`Logo de ${item.name}`"
-            fallback-icon="mdi-office-building"
-            capitalize-subtitle
+            :institution="item"
             v-bind="attrs"
             v-on="on"
           />
