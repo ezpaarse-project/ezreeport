@@ -1,8 +1,5 @@
 <template>
-  <Story
-    title="internal/TaskDialog"
-    group="task"
-  >
+  <Story>
     <template #controls>
       <HstText
         :v-model="current"

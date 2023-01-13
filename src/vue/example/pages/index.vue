@@ -3,18 +3,32 @@
     justify="center"
     align="center"
   >
-    <v-col
-      cols="12"
-      sm="8"
-      md="6"
-    >
+    <v-btn @click="changeLocale">
+      {{ locale }}
+    </v-btn>
+    <v-col>
       <v-card>
-        <ezReeportStatus />
+        <ezr-task-table />
       </v-card>
     </v-col>
   </v-row>
 </template>
 
 <script>
-export default {};
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+  data: () => ({
+    locale: 'fr',
+  }),
+  mounted() {
+    this.$ezReeport.auth_token = this.$config.ezMesureToken;
+  },
+  methods: {
+    changeLocale() {
+      this.locale = this.locale === 'en' ? 'fr' : 'en';
+      this.$i18n.setLocale(this.locale);
+    },
+  },
+});
 </script>

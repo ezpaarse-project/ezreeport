@@ -1,5 +1,5 @@
 <template>
-  <Story title="internal/InstitutionRichListItem">
+  <Story>
     <Variant
       title="Light theme"
       icon="material-symbols:light-mode-outline"

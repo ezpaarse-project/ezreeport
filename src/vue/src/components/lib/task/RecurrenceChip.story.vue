@@ -1,8 +1,5 @@
 <template>
-  <Story
-    group="task"
-    title="internal/RecurrenceChip"
-  >
+  <Story>
     <template #controls>
       <HstSelect
         v-model="current"

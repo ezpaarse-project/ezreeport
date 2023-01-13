@@ -1,5 +1,5 @@
 <template>
-  <Story title="internal/InstitutionSelect">
+  <Story>
     <template #controls>
       <HstSelect
         v-model="current"

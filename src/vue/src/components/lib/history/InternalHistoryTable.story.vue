@@ -1,8 +1,5 @@
 <template>
-  <Story
-    title="internal/InternalHistoryTable"
-    group="history"
-  >
+  <Story>
     <Variant
       title="Light theme"
       icon="material-symbols:light-mode-outline"
