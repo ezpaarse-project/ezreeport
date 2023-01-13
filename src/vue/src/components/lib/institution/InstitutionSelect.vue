@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="mock || perms.readInstitutions"
+    v-if="perms.readInstitutions"
     class="d-flex align-center"
   >
     <div class="select-wrapper mr-2">
@@ -48,7 +48,6 @@
 
     <RefreshButton
       :loading="loading"
-      :disabled="!!mock"
       :tooltip="$t('refresh-tooltip').toString()"
       @click="fetch"
     />
@@ -56,7 +55,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, type PropType } from 'vue';
+import { defineComponent } from 'vue';
 import type { auth } from 'ezreeport-sdk-js';
 
 export interface InstitutionItem {
@@ -67,21 +66,11 @@ export interface InstitutionItem {
   acronym?: string,
 }
 
-interface Mock {
-  data?: auth.Institution[],
-  error?: string,
-  loading?: boolean
-}
-
 export default defineComponent({
   props: {
     value: {
       type: String,
       required: true,
-    },
-    mock: {
-      type: Object as PropType<Mock | undefined>,
-      default: undefined,
     },
   },
   emits: {
@@ -126,21 +115,12 @@ export default defineComponent({
   watch: {
     // eslint-disable-next-line func-names
     '$ezReeport.auth_permissions': function () {
-      if (!this.mock) {
-        if (this.perms.readInstitutions) {
-          this.fetch();
-        } else {
-          this.institutions = [];
-        }
+      if (this.perms.readInstitutions) {
+        this.fetch();
+      } else {
+        this.institutions = [];
       }
     },
-  },
-  mounted() {
-    if (this.mock) {
-      this.institutions = (this.mock.data ?? []);
-      this.loading = this.mock.loading ?? false;
-      this.error = this.mock.error ?? '';
-    }
   },
   methods: {
     /**

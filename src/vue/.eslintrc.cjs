@@ -37,6 +37,7 @@ module.exports = {
     'import',
   ],
   rules: {
+    'import/no-cycle': 'off',
   },
   settings: {
     'import/resolver': {

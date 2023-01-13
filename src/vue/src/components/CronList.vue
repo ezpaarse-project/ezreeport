@@ -1,12 +1,11 @@
 <template>
-  <v-col v-if="mock || perms.readAll">
+  <v-col v-if="perms.readAll">
     <LoadingToolbar
       :text="$t('title').toString()"
       :loading="loading"
     >
       <RefreshButton
         :loading="loading"
-        :disabled="!!mock"
         :tooltip="$t('refresh-tooltip').toString()"
         @click="fetch"
       />
@@ -33,7 +32,7 @@
               <v-spacer />
 
               <CustomSwitch
-                v-if="mock || (perms.start && perms.stop)"
+                v-if="(perms.start && perms.stop)"
                 :input-value="item.running"
                 :disabled="loading"
                 :label="$t(item.running ? 'item.active' : 'item.inactive')"
@@ -64,7 +63,7 @@
         </div>
 
         <v-btn
-          v-if="mock || perms.force"
+          v-if="perms.force"
           text
           color="warning"
           :disabled="loading"
@@ -80,7 +79,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, type PropType } from 'vue';
+import { defineComponent } from 'vue';
 import type { crons } from 'ezreeport-sdk-js';
 import CustomSwitch from '@/common/CustomSwitch';
 
@@ -100,21 +99,9 @@ interface CronItem {
   disabled: boolean,
 }
 
-interface Mock {
-  data?: crons.Cron[],
-  error?: string,
-  loading?: boolean
-}
-
 export default defineComponent({
   components: {
     CustomSwitch,
-  },
-  props: {
-    mock: {
-      type: Object as PropType<Mock | undefined>,
-      default: undefined,
-    },
   },
   data: () => ({
     loading: false,
@@ -140,21 +127,12 @@ export default defineComponent({
   watch: {
     // eslint-disable-next-line func-names
     '$ezReeport.auth_permissions': function () {
-      if (!this.mock) {
-        if (this.perms.readAll) {
-          this.fetch();
-        } else {
-          this.crons = [];
-        }
+      if (this.perms.readAll) {
+        this.fetch();
+      } else {
+        this.crons = [];
       }
     },
-  },
-  mounted() {
-    if (this.mock) {
-      this.crons = (this.mock.data ?? []);
-      this.loading = this.mock.loading ?? false;
-      this.error = this.mock.error ?? '';
-    }
   },
   methods: {
     /**
@@ -214,26 +192,24 @@ export default defineComponent({
     async execCronAction(item: CronItem, action: CronAction) {
       // eslint-disable-next-line no-param-reassign
       this.loading = true;
-      if (!this.mock) {
-        try {
-          const items = [...this.crons];
-          const index = items.findIndex(({ name }) => name === item.name);
-          if (index < 0) {
-            throw new Error(
-              this.$t('cron.not-found', { name: item.name }).toString(),
-            );
-          }
-
-          const { content } = await action(item.name);
-
-          const newItem = this.parseCron(content);
-          newItem.open = item.open;
-
-          items.splice(index, 1, newItem);
-          this.crons = items;
-        } catch (error) {
-          this.error = (error as Error).message;
+      try {
+        const items = [...this.crons];
+        const index = items.findIndex(({ name }) => name === item.name);
+        if (index < 0) {
+          throw new Error(
+            this.$t('cron.not-found', { name: item.name }).toString(),
+          );
         }
+
+        const { content } = await action(item.name);
+
+        const newItem = this.parseCron(content);
+        newItem.open = item.open;
+
+        items.splice(index, 1, newItem);
+        this.crons = items;
+      } catch (error) {
+        this.error = (error as Error).message;
       }
       // eslint-disable-next-line no-param-reassign
       this.loading = false;

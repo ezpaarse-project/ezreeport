@@ -23,36 +23,6 @@
         <HstLocale />
       </v-app>
     </Variant>
-
-    <Variant
-      title="Error"
-      icon="material-symbols:error-outline"
-    >
-      <v-app style="background: transparent">
-        <ezr-task-table />
-        <HstLocale />
-      </v-app>
-    </Variant>
-
-    <Variant
-      title="Loading"
-      icon="material-symbols:refresh"
-    >
-      <v-app style="background: transparent">
-        <ezr-task-table />
-        <HstLocale />
-      </v-app>
-    </Variant>
-
-    <Variant
-      title="Live data"
-      icon="material-symbols:cloud-outline"
-    >
-      <v-app style="background: transparent">
-        <ezr-task-table />
-        <HstLocale />
-      </v-app>
-    </Variant>
   </Story>
 </template>
 

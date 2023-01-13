@@ -6,7 +6,6 @@
     >
       <RefreshButton
         :loading="loading"
-        :disabled="!!mock"
         :tooltip="$t('refresh-tooltip').toString()"
         @click="fetch"
       />
@@ -58,19 +57,7 @@ interface StatusItem {
   tooltip: string,
 }
 
-interface Mock {
-  data?: health.PingResult[],
-  error?: string,
-  loading?: boolean
-}
-
 export default defineComponent({
-  props: {
-    mock: {
-      type: Object as PropType<Mock | undefined>,
-      default: undefined,
-    },
-  },
   data: () => ({
     loading: false,
     statuses: [] as health.PingResult[],
@@ -82,13 +69,7 @@ export default defineComponent({
     },
   },
   mounted() {
-    if (this.mock) {
-      this.statuses = (this.mock.data ?? []);
-      this.error = this.mock.error ?? '';
-      this.loading = this.mock.loading ?? false;
-    } else {
-      this.fetch();
-    }
+    this.fetch();
   },
   methods: {
     /**

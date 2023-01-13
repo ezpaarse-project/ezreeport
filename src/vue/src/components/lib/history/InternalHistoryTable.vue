@@ -33,7 +33,7 @@
 <script lang="ts">
 import type { history } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
-import type { DataTableHeader } from '../../types/vuetify';
+import type { DataTableHeader } from '~/types/vuetify';
 
 interface HistoryItem {
   id: string,

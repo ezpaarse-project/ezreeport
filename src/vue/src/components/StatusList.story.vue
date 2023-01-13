@@ -23,36 +23,6 @@
         <HstLocale />
       </v-app>
     </Variant>
-
-    <Variant
-      title="Error"
-      icon="material-symbols:error-outline"
-    >
-      <v-app style="background: transparent">
-        <ezr-status-list :mock="{ data, error: 'A mock error occurred' }" />
-        <HstLocale />
-      </v-app>
-    </Variant>
-
-    <Variant
-      title="Loading"
-      icon="material-symbols:refresh"
-    >
-      <v-app style="background: transparent">
-        <ezr-status-list :mock="{ data, loading: true }" />
-        <HstLocale />
-      </v-app>
-    </Variant>
-
-    <Variant
-      title="Live data"
-      icon="material-symbols:cloud-outline"
-    >
-      <v-app style="background: transparent">
-        <ezr-status-list />
-        <HstLocale />
-      </v-app>
-    </Variant>
   </Story>
 </template>
 
