@@ -1,6 +1,6 @@
 <template>
   <v-col>
-    <TaskDetailDialog
+    <TaskDialog
       :id="focusedTask"
       :show.sync="shownTaskDialog"
     />
