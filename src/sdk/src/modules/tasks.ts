@@ -12,7 +12,7 @@ export enum Recurrence {
   YEARLY = 'YEARLY',
 }
 
-interface RawTask {
+export interface RawTask {
   id: string,
   name: string,
   institution: string,

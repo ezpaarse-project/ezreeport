@@ -1,5 +1,6 @@
 import { parseISO } from 'date-fns';
 import { axiosWithErrorFormatter, type PaginatedApiResponse } from '../lib/axios';
+import type { RawTask } from './tasks';
 
 export interface RawHistory {
   id: string,
@@ -14,6 +15,14 @@ export interface History extends Omit<RawHistory, 'createdAt'> {
   createdAt: Date,
 }
 
+interface RawHistoryWithTask extends Omit<RawHistory, 'taskId'> {
+  task: RawTask
+}
+
+export interface HistoryWithTask extends Omit<History, 'taskId'> {
+  task: RawTask
+}
+
 /**
  * Transform raw data from JSON, to JS usable data
  *
@@ -22,6 +31,18 @@ export interface History extends Omit<RawHistory, 'createdAt'> {
  * @returns Parsed history entry
  */
 export const parseHistory = (entry: RawHistory): History => ({
+  ...entry,
+  createdAt: parseISO(entry.createdAt),
+});
+
+/**
+ * Transform raw data from JSON, to JS usable data
+ *
+ * @param entry Raw history entry
+ *
+ * @returns Parsed history entry
+ */
+const parseHistoryWithTask = (entry: RawHistoryWithTask): HistoryWithTask => ({
   ...entry,
   createdAt: parseISO(entry.createdAt),
 });
@@ -39,8 +60,8 @@ export const parseHistory = (entry: RawHistory): History => ({
 export const getAllEntries = async (
   paginationOpts?: { previous?: History['id'], count?: number },
   institution?: string,
-): Promise<PaginatedApiResponse<History[]>> => {
-  const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawHistory[]>, 'get'>(
+): Promise<PaginatedApiResponse<HistoryWithTask[]>> => {
+  const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawHistoryWithTask[]>, 'get'>(
     'get',
     '/history',
     {
@@ -53,6 +74,6 @@ export const getAllEntries = async (
 
   return {
     ...response,
-    content: content.map(parseHistory),
+    content: content.map(parseHistoryWithTask),
   };
 };
