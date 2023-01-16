@@ -176,7 +176,7 @@ export default defineComponent({
       if (this.id) {
         this.loading = true;
         try {
-          const { content } = await this.$ezReeport.tasks.getTask(this.id);
+          const { content } = await this.$ezReeport.sdk.tasks.getTask(this.id);
           this.task = content;
           this.error = '';
         } catch (error) {

@@ -66,7 +66,7 @@ export default defineComponent({
       this.loading = true;
       try {
         // TODO: pagination
-        const { content } = await this.$ezReeport.history.getAllEntries(
+        const { content } = await this.$ezReeport.sdk.history.getAllEntries(
           undefined,
           this.currentInstitution || undefined,
         );

@@ -35,7 +35,7 @@ const $ezReeport = useEzReeport();
 
 onMounted(() => {
   if (!isCollecting()) {
-    $ezReeport.auth_token = import.meta.env.VITE_EZMESURE_TOKEN;
+    $ezReeport.sdk.auth.login(import.meta.env.VITE_EZMESURE_TOKEN);
   }
 });
 </script>

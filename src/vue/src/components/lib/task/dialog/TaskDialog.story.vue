@@ -130,7 +130,7 @@ const show = ref(true);
 onMounted(() => {
   if (!isCollecting()) {
     // do something only in the browser
-    $ezReeport.auth_token = import.meta.env.VITE_EZMESURE_TOKEN;
+    $ezReeport.sdk.auth.login(import.meta.env.VITE_EZMESURE_TOKEN);
   }
 });
 </script>

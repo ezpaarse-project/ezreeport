@@ -95,6 +95,8 @@
         <InternalHistoryTable
           v-if="task"
           :history="task.history"
+          hide-task
+          hide-institution
         />
       </v-tab-item>
     </v-tabs>
@@ -183,7 +185,7 @@ export default defineComponent({
       if (this.task) {
         this.loading = true;
         try {
-          const { content: { available } } = await this.$ezReeport.auth.getInstitutions();
+          const { content: { available } } = await this.$ezReeport.sdk.auth.getInstitutions();
           this.institution = available.find(({ id }) => id === this.task?.institution);
           this.error = '';
         } catch (error) {

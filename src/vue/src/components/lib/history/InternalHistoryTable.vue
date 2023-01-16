@@ -145,11 +145,11 @@ export default defineComponent({
       this.loading = true;
       try {
         if (type === 'detail') {
-          const file = await this.$ezReeport.reports.getReportDetailByName(filepath);
+          const file = await this.$ezReeport.sdk.reports.getReportDetailByName(filepath);
           console.log(file);
           // TODO
         } else {
-          const file = await this.$ezReeport.reports.getReportFileByName(filepath);
+          const file = await this.$ezReeport.sdk.reports.getReportFileByName(filepath);
           // const b64 = atob(file);
           // console.log(b64);
           // TODO

@@ -1,45 +1,52 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import * as sdk from 'ezreeport-sdk-js';
-import { reactive, watch } from 'vue';
+import { reactive } from 'vue';
 
 type AuthPermissions = Awaited<ReturnType<typeof sdk.auth.getPermissions>>['content'];
 
 interface EzReeportData {
-  api_url: string | undefined,
   auth_permissions: AuthPermissions | undefined,
-  auth_token: string | undefined,
 }
 
+// Defining plugin's data
 const data = reactive<EzReeportData>({
-  api_url: undefined,
   auth_permissions: undefined,
-  auth_token: undefined,
-});
-Object.assign(data, sdk);
-
-// Update SDK if API URL changes
-watch(() => data.api_url, (value) => {
-  if (value) {
-    sdk.setup.setURL(value);
-  } else {
-    sdk.setup.unsetURL();
-  }
 });
 
-// Update SDK if token changes + fetch permissions
-watch(() => data.auth_token, async (value) => {
-  if (value) {
-    sdk.setup.login(value);
-  } else {
-    sdk.setup.logout();
-  }
+/**
+ * Add token into SDK and fetch permissions
+ *
+ * @param token The API token for ezMESURE
+ */
+const login = (token: string) => {
+  sdk.auth.login(token);
+  sdk.auth.getPermissions()
+    .then(({ content }) => { data.auth_permissions = content; })
+    .catch((error: Error) => { console.error('[ezReeport-vue]', error); });
+};
+/**
+ * Remove token from SDK and clear permissions
+ */
+const logout = () => {
+  sdk.auth.logout();
+  data.auth_permissions = undefined;
+};
 
-  try {
-    const { content } = await sdk.auth.getPermissions();
-    data.auth_permissions = content;
-  } catch (error) {
-    console.error('[ezReeport-vue]', error);
-  }
+// Add SDK to global property (while not making it reactive)
+Object.assign<EzReeportData, { sdk: sdk.EzReeportSDK }>(data, {
+  sdk: {
+    ...sdk,
+    auth: {
+      ...sdk.auth,
+      login,
+      logout,
+    },
+    setup: {
+      ...sdk.setup,
+      login,
+      logout,
+    },
+  },
 });
 
 /**
@@ -49,9 +56,9 @@ watch(() => data.auth_token, async (value) => {
  *
  * @returns Vue's plugin data
  */
-export const useEzReeport = () => data as EzReeportData & sdk.EzReeportSDK;
+export const useEzReeport = () => data as EzReeportData & { sdk: sdk.EzReeportSDK };
 
 /**
  * Vue's plugin data at init
  */
-export default data as EzReeportData & sdk.EzReeportSDK;
+export default data as EzReeportData & { sdk: sdk.EzReeportSDK };

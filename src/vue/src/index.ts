@@ -9,7 +9,7 @@ export type EzReeportOptions = {
 export default {
   install(app: typeof VueApp, options: EzReeportOptions) {
     // Setup SDK
-    ezReeport.api_url = options?.api_url ?? import.meta.env.VITE_REPORT_API;
+    ezReeport.sdk.setup.setURL(options?.api_url ?? import.meta.env.VITE_REPORT_API);
 
     // eslint-disable-next-line no-param-reassign
     app.prototype.$ezReeport = ezReeport;

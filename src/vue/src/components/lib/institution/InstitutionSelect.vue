@@ -106,7 +106,7 @@ export default defineComponent({
       // return items;
     },
     perms() {
-      const perms = this.$ezReeport.auth_permissions;
+      const perms = this.$ezReeport.sdk.auth_permissions;
       return {
         readInstitutions: perms?.['auth-get-institutions'],
       };
@@ -131,7 +131,7 @@ export default defineComponent({
       try {
         const {
           content: { default: def, available },
-        } = await this.$ezReeport.auth.getInstitutions();
+        } = await this.$ezReeport.sdk.auth.getInstitutions();
 
         this.institutions = available;
         this.$emit('fetched', available);

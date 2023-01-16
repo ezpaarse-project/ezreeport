@@ -153,7 +153,7 @@ export default defineComponent({
       this.loading = true;
       try {
         // TODO: pagination
-        const { content } = await this.$ezReeport.tasks.getAllTasks(
+        const { content } = await this.$ezReeport.sdk.tasks.getAllTasks(
           undefined,
           this.currentInstitution || undefined,
         );

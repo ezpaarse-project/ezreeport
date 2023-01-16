@@ -27,9 +27,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { setup, type health } from 'ezreeport-sdk-js';
-import { isCollecting } from 'histoire/client';
+import { ref } from 'vue';
+import type { health } from 'ezreeport-sdk-js';
 
 const data = ref<health.PingResult[]>([
   {
@@ -50,13 +49,6 @@ const data = ref<health.PingResult[]>([
     error: 'mock error',
   },
 ]);
-
-onMounted(() => {
-  if (!isCollecting()) {
-    // do something only in the browser
-    setup.setURL(import.meta.env.VITE_REPORT_API);
-  }
-});
 </script>
 
 <docs lang="md">
