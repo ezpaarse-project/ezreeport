@@ -7,6 +7,7 @@ import cronsRouter from './routes/crons';
 import filesRouter from './routes/files';
 import healthRouter from './routes/health';
 import historyRouter from './routes/history';
+import institutionsRouter from './routes/institutions';
 import queuesRouter from './routes/queues';
 import tasksRouter from './routes/tasks';
 import templatesRouter from './routes/templates';
@@ -20,6 +21,7 @@ const router = Router()
   .use('/templates', templatesRouter)
   .use('/tasks', tasksRouter)
   .use('/history', historyRouter)
+  .use('/institutions', institutionsRouter)
   .use('/reports', filesRouter)
   .use('/queues', queuesRouter)
   .use('/crons', cronsRouter)

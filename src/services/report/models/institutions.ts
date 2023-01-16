@@ -8,7 +8,7 @@ const TYPE = 'institution' as const;
 
 const { depositorsIndex } = config.get('ezmesure');
 
-type TypedElasticInstitution = {
+export type TypedElasticInstitution = {
   type: 'institution';
   institution: ElasticInstitution;
 };
