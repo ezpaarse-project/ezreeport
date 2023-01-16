@@ -3,6 +3,7 @@ export * as auth from './modules/auth';
 export * as crons from './modules/crons';
 export * as health from './modules/health';
 export * as history from './modules/history';
+export * as institutions from './modules/institutions';
 export * as queues from './modules/queues';
 export * as reports from './modules/reports';
 export * as setup from './modules/setup';
@@ -14,6 +15,7 @@ export type EzReeportSDK = {
   crons: typeof import('./modules/crons')
   health: typeof import('./modules/health')
   history: typeof import('./modules/history')
+  institutions: typeof import('./modules/institutions')
   queues: typeof import('./modules/queues')
   reports: typeof import('./modules/reports')
   setup: typeof import('./modules/setup')
