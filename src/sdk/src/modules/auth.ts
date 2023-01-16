@@ -14,6 +14,8 @@ export interface User {
   institution?: string
 }
 
+export type Permissions = Record<string, boolean>;
+
 /**
  * Set API token for ezMESURE to axios
  *
@@ -58,4 +60,4 @@ export const getCurrentUser = () => axios.$get<User>('/me');
  *
  * @returns Permissions
  */
-export const getPermissions = () => axios.$get<Record<string, boolean>>('/me/permissions');
+export const getPermissions = () => axios.$get<Permissions>('/me/permissions');
