@@ -286,7 +286,7 @@ export const generateReport = async (
       institution,
       user,
     }, events);
-    // Cleanup resolved resolvedTemplate
+    // Cleanup
     delete template.fetchOptions;
     events.emit('templateFetched', template);
     logger.debug('[gen] Data fetched');

@@ -9,32 +9,36 @@ type ElasticUser = {
 
 type ElasticInstitution = {
   id: string;
-  indexPrefix: string;
-  indexCount: number;
-  role: string;
-  space: string;
   name: string;
-  city: string;
-  website: string;
+  website?: string;
+  uai?: string;
   auto: {
     ezmesure: boolean;
     ezpaarse: boolean;
     report: boolean;
-    sushi: boolean;
+    sushi?: boolean;
   };
-  validated: boolean;
-  domains: any[];
-  logoId: string;
-  updatedAt: Date;
-  createdAt: Date;
-  acronym: string;
-  type: string;
-  twitterUrl: string;
-  youtubeUrl: string;
-  docContactName: string;
-  techContactName: string;
-  hidePartner: boolean;
-  sushiReadySince: Date;
+  validated?: boolean;
+  indexCount?: number;
+  domains?: string[];
+  logoId?: string;
+  updatedAt: string;
+  createdAt: string;
+  acronym?: string;
+  city?: string;
+  type?: string;
+  linkedinUrl?: string;
+  facebookUrl?: string;
+  twitterUrl?: string;
+  creator?: string;
+  youtubeUrl?: string;
+  indexPrefix?: string;
+  role?: string;
+  space?: string;
+  docContactName?: string;
+  techContactName?: string;
+  hidePartner?: boolean;
+  sushiReadySince?: string;
 };
 
 type ElasticConsultation = {

@@ -96,7 +96,11 @@ export const findInstitutionContact = async (
   if (!institution?._source) {
     throw new NotFoundError("Can't find your institution.");
   }
+
   const { _source: { institution: { role } } } = institution;
+  if (!role) {
+    throw new Error('No role found for your institution. It may come for a misconfiguration, please contact developer team to fix that issue.');
+  }
 
   const { body: { hits: { hits } } } = await elasticSearch<Pick<ElasticUser, 'username' | 'email' | 'metadata'>>({
     index: '.security',
