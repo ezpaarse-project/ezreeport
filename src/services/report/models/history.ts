@@ -25,6 +25,9 @@ export const getAllHistoryEntries = async (
     skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
     cursor: opts?.previous ? { id: opts.previous } : undefined,
     where: institution ? { task: { institution } } : undefined,
+    include: {
+      task: true,
+    },
     orderBy: {
       createdAt: 'desc',
     },
