@@ -1,4 +1,6 @@
 import { parseISO } from 'date-fns';
+import type { ResponseType } from 'axios';
+import { Stream } from 'stream';
 import axios, { axiosWithErrorFormatter } from '../lib/axios';
 import createEventfullPromise from '../lib/promises';
 import {
@@ -182,6 +184,15 @@ export const startAndListenGeneration = (
   },
 );
 
+interface ResponseTypeMap {
+  arraybuffer: ArrayBuffer
+  blob: Blob
+  json: object
+  text: string
+  stream: Stream
+}
+type GetJobParams = Parameters<typeof getJob>;
+
 /**
  * Get report's related file
  *
@@ -189,13 +200,24 @@ export const startAndListenGeneration = (
  *
  * @param pathName Path to the file
  * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param responseType Wanted response type
  *
  * @returns The file's content
  */
 const getFile = async <Result>(
   pathName: string,
   institution?: string,
-) => (await axiosWithErrorFormatter<Result, 'get'>('get', `/reports/${pathName}`, { params: { institution } })).data;
+  responseType?: ResponseType,
+) => (
+  await axiosWithErrorFormatter<Result, 'get'>(
+    'get',
+    `/reports/${pathName}`,
+    {
+      responseType,
+      params: { institution },
+    },
+  )
+).data;
 
 /**
  * Get report main file (the result) by giving the report's name
@@ -205,14 +227,16 @@ const getFile = async <Result>(
  * @param name Name of the report
  * @param ext The extension of the result (renderer dependent)
  * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param responseType Wanted response type
  *
  * @returns The report's content
  */
-export const getReportFileByName = (
+export const getReportFileByName = <Result extends keyof ResponseTypeMap = 'text'>(
   name: string,
   institution?: string,
+  responseType?: Result,
   ext = 'pdf',
-) => getFile<string>(`${name}.rep.${ext}`, institution);
+) => getFile<ResponseTypeMap[Result]>(`${name}.rep.${ext}`, institution, responseType);
 
 /**
  * Get report main file (the result) by giving job's info
@@ -222,18 +246,25 @@ export const getReportFileByName = (
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
  * @param institution Force institution
+ * @param responseType Wanted response type
  *
  * @returns The report's content
  */
-export const getReportFileByJob = async (
-  ...p: Parameters<typeof getJob>
+export const getReportFileByJob = async <Result extends keyof ResponseTypeMap = 'text'>(
+  queueName: GetJobParams[0],
+  jobId: GetJobParams[1],
+  institution?: GetJobParams[2],
+  responseType?: Result,
 ) => {
-  const { content: { result } } = await getJob<RawReportData, RawReportResult>(...p);
+  const { content: { result } } = await getJob<RawReportData, RawReportResult>(
+    queueName,
+    jobId,
+    institution,
+  );
   if (!result) {
     throw new Error('Job have no result');
   }
-  // FIXME: What if param order changes ?
-  return getFile<string>(result.detail?.files.report ?? '', p[2]);
+  return getFile<ResponseTypeMap[Result]>(result.detail?.files.report ?? '', institution, responseType);
 };
 
 /**
@@ -243,15 +274,23 @@ export const getReportFileByJob = async (
  *
  * @param name Name of the report
  * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param responseType Wanted response type. **If provided with anything but `json` you will have to
+ * cast in your type to avoid auto-completion issues.**
  *
  * @returns The detail's content
  */
 export const getReportDetailByName = async (
   name: string,
   institution?: string,
+  responseType?: keyof ResponseTypeMap,
 ) => {
-  const res = await getFile<RawReportResult>(`${name}.det.json`, institution);
-  return parseReportResult(res);
+  const res = await getFile<RawReportResult>(`${name}.det.json`, institution, responseType);
+  if (!responseType || responseType === 'json') {
+    return parseReportResult(res);
+  }
+  // Allowing user to ask for other response type (and then cast in wanted type)
+  // while not breaking auto-completion
+  return res as unknown as ReportResult;
 };
 
 /**
@@ -262,19 +301,32 @@ export const getReportDetailByName = async (
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
  * @param institution Force institution
+ * @param responseType Wanted response type. **If provided with anything but `json` you will have to
+ * cast in your type to avoid auto-completion issues.**
  *
  * @returns The detail's content
  */
 export const getReportDetailByJob = async (
-  ...p: Parameters<typeof getJob>
+  queueName: GetJobParams[0],
+  jobId: GetJobParams[1],
+  institution?: GetJobParams[2],
+  responseType?: keyof ResponseTypeMap,
 ) => {
-  const { content: { result } } = await getJob<RawReportData, RawReportResult>(...p);
+  const { content: { result } } = await getJob<RawReportData, RawReportResult>(
+    queueName,
+    jobId,
+    institution,
+  );
   if (!result) {
     throw new Error('Job have no result');
   }
-  // FIXME: What if param order changes ?
-  const res = await getFile<RawReportResult>(result.detail?.files.detail ?? '', p[2]);
-  return parseReportResult(res);
+  const res = await getFile<RawReportResult>(result.detail?.files.detail ?? '', institution, responseType);
+  if (!responseType || responseType === 'json') {
+    return parseReportResult(res);
+  }
+  // Allowing user to ask for other response type (and then use `as`)
+  // while not breaking auto-completion
+  return res as unknown as ReportResult;
 };
 
 /**
@@ -284,13 +336,15 @@ export const getReportDetailByJob = async (
  *
  * @param name Name of the report
  * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param responseType Wanted response type
  *
  * @returns The debug's content
  */
-export const getReportDebugByName = (
+export const getReportDebugByName = <Result extends keyof ResponseTypeMap = 'json'>(
   name: string,
   institution?: string,
-) => getFile<object>(`${name}.deb.json`, institution);
+  responseType?: Result,
+) => getFile<ResponseTypeMap[Result]>(`${name}.deb.json`, institution, responseType);
 
 /**
  * Get report debug file by giving job's info
@@ -300,16 +354,23 @@ export const getReportDebugByName = (
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
  * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param responseType Wanted response type
  *
  * @returns The debug's content
  */
-export const getReportDebugByJob = async (
-  ...p: Parameters<typeof getJob>
+export const getReportDebugByJob = async <Result extends keyof ResponseTypeMap = 'json'>(
+  queueName: GetJobParams[0],
+  jobId: GetJobParams[1],
+  institution?: GetJobParams[2],
+  responseType?: Result,
 ) => {
-  const { content: { result } } = await getJob<RawReportData, RawReportResult>(...p);
+  const { content: { result } } = await getJob<RawReportData, RawReportResult>(
+    queueName,
+    jobId,
+    institution,
+  );
   if (!result) {
     throw new Error('Job have no result');
   }
-  // FIXME: What if param order changes ?
-  return getFile<object>(result.detail?.files.debug ?? '', p[2]);
+  return getFile<ResponseTypeMap[Result]>(result.detail?.files.debug ?? '', institution, responseType);
 };
