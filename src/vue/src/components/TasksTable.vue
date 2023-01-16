@@ -9,7 +9,6 @@
       <InstitutionSelect
         v-model="currentInstitution"
         @input="fetch()"
-        @fetched="institutions = $event"
       />
     </v-row>
 
@@ -45,7 +44,6 @@
         <template #[`item.recurrence`]="{ value: recurrence }">
           <div class="text-center">
             <RecurrenceChip
-
               :value="recurrence"
             />
           </div>
@@ -72,7 +70,7 @@
 </template>
 
 <script lang="ts">
-import type { auth, tasks } from 'ezreeport-sdk-js';
+import type { institutions, tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import CustomSwitch from '@/common/CustomSwitch';
 import type { DataTableHeader } from '../types/vuetify';
@@ -80,7 +78,7 @@ import type { DataTableHeader } from '../types/vuetify';
 interface TaskItem {
   id: string,
   name: string,
-  institution?: auth.Institution,
+  institution?: institutions.Institution,
   recurrence: tasks.Recurrence,
   enabled: boolean,
   nextRun?: string,
@@ -89,7 +87,6 @@ interface TaskItem {
 export default defineComponent({
   components: { CustomSwitch },
   data: () => ({
-    institutions: [] as auth.Institution[],
     currentInstitution: '',
     tasks: [] as tasks.Task[],
     shownTaskDialog: false,
@@ -107,7 +104,7 @@ export default defineComponent({
         {
           value: 'institution',
           text: this.$t('header.institution').toString(),
-          sort: (a?: auth.Institution, b?: auth.Institution) => (a?.name ?? '').localeCompare(b?.name ?? ''),
+          sort: (a?: institutions.Institution, b?: institutions.Institution) => (a?.name ?? '').localeCompare(b?.name ?? ''),
         },
         {
           value: 'recurrence',
@@ -123,11 +120,14 @@ export default defineComponent({
         },
       ];
     },
+    institutions(): institutions.Institution[] {
+      return this.$ezReeport.institutions.data;
+    },
     items() {
       return this.tasks.map(this.parseTask);
     },
     perms() {
-      const perms = this.$ezReeport.auth_permissions;
+      const perms = this.$ezReeport.auth.permissions;
       return {
         readAll: perms?.['tasks-get'],
         start: perms?.['tasks-put-task-enable'],
@@ -137,31 +137,45 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth_permissions': function () {
-      if (this.perms.readAll) {
-        this.fetch();
-      } else {
-        this.tasks = [];
-      }
+    '$ezReeport.auth.permissions': function () {
+      this.fetch();
+      this.fetchInstitutions();
     },
   },
+  mounted() {
+    this.fetch();
+    this.fetchInstitutions();
+  },
   methods: {
-    /**
-     * Fetch tasks and parse result
-     */
-    async fetch() {
+    async fetchInstitutions() {
       this.loading = true;
       try {
-        // TODO: pagination
-        const { content } = await this.$ezReeport.sdk.tasks.getAllTasks(
-          undefined,
-          this.currentInstitution || undefined,
-        );
-        this.tasks = content;
+        this.$ezReeport.institutions.fetch();
       } catch (error) {
         this.error = (error as Error).message;
       }
       this.loading = false;
+    },
+    /**
+     * Fetch tasks and parse result
+     */
+    async fetch() {
+      if (this.perms.readAll) {
+        this.loading = true;
+        try {
+          // TODO: pagination
+          const { content } = await this.$ezReeport.sdk.tasks.getAllTasks(
+            undefined,
+            this.currentInstitution || undefined,
+          );
+          this.tasks = content;
+        } catch (error) {
+          this.error = (error as Error).message;
+        }
+        this.loading = false;
+      } else {
+        this.tasks = [];
+      }
     },
     /**
      *

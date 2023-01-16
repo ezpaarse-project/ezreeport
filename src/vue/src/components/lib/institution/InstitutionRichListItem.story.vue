@@ -47,15 +47,21 @@
 </template>
 
 <script setup lang="ts">
+import type { institutions } from 'ezreeport-sdk-js';
 import { ref } from 'vue';
-import { InstitutionItem } from './InstitutionRichListItem.vue';
 
-const data = ref<InstitutionItem>({
+const data = ref<institutions.Institution>({
   id: 'bib-cnrs-inist',
   name: 'Inist-CNRS Bibcnrs',
   city: 'Vandœuvre-lès-Nancy',
   logoId: 'd80d56af8ee12a08a4be022dd544dc2b.png',
   acronym: 'CNRS',
+  createdAt: new Date(),
+  auto: {
+    ezmesure: false,
+    ezpaarse: false,
+    report: false,
+  },
 });
 </script>
 

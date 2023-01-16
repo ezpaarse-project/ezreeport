@@ -4,7 +4,6 @@
       <InstitutionSelect
         v-model="currentInstitution"
         @input="fetch()"
-        @fetched="institutions = $event"
       />
     </v-row>
 
@@ -22,12 +21,11 @@
 </template>
 
 <script lang="ts">
-import type { auth, history } from 'ezreeport-sdk-js';
+import type { history } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 
 export default defineComponent({
   data: () => ({
-    institutions: [] as auth.Institution[],
     currentInstitution: '',
     history: [] as history.History[],
     interval: undefined as number | undefined,
@@ -36,7 +34,7 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.auth_permissions;
+      const perms = this.$ezReeport.auth.permissions;
       return {
         readAll: perms?.['tasks-get'],
       };
@@ -44,15 +42,12 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth_permissions': function () {
-      if (this.perms.readAll) {
-        this.fetch();
-      } else {
-        this.history = [];
-      }
+    '$ezReeport.auth.permissions': function () {
+      this.fetch();
     },
   },
   mounted() {
+    this.fetch();
     this.interval = setInterval(() => this.fetch(), 5000);
   },
   destroyed() {
@@ -63,18 +58,22 @@ export default defineComponent({
      * Fetch tasks and parse result
      */
     async fetch() {
-      this.loading = true;
-      try {
-        // TODO: pagination
-        const { content } = await this.$ezReeport.sdk.history.getAllEntries(
-          undefined,
-          this.currentInstitution || undefined,
-        );
-        this.history = content;
-      } catch (error) {
-        this.error = (error as Error).message;
+      if (this.perms.readAll) {
+        this.loading = true;
+        try {
+          // TODO: pagination
+          const { content } = await this.$ezReeport.sdk.history.getAllEntries(
+            undefined,
+            this.currentInstitution || undefined,
+          );
+          this.history = content;
+        } catch (error) {
+          this.error = (error as Error).message;
+        }
+        this.loading = false;
+      } else {
+        this.history = [];
       }
-      this.loading = false;
     },
   },
 });

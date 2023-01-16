@@ -131,7 +131,7 @@ export default defineComponent({
       }
     },
     perms() {
-      const perms = this.$ezReeport.auth_permissions;
+      const perms = this.$ezReeport.auth.permissions;
       return {
         create: perms?.['crons-get-cron'],
         readOne: perms?.['tasks-get-task'],
@@ -141,8 +141,6 @@ export default defineComponent({
         enable: perms?.['tasks-put-task-enable'],
         disable: perms?.['tasks-put-task-disable'],
 
-        readInstitutions: perms?.['auth-get-institutions'],
-
         createFile: perms?.['tasks-post-task-run'],
         readFile: perms?.['reports-get-year-yearMonth-filename'],
       };
@@ -150,7 +148,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth_permissions': function () {
+    '$ezReeport.auth.permissions': function () {
       if (this.perms.readOne) {
         this.fetch();
       } else {

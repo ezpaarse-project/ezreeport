@@ -110,7 +110,7 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.auth_permissions;
+      const perms = this.$ezReeport.auth.permissions;
       return {
         readAll: perms?.['crons-get'],
         readOne: perms?.['crons-get-cron'],
@@ -126,7 +126,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth_permissions': function () {
+    '$ezReeport.auth.permissions': function () {
       if (this.perms.readAll) {
         this.fetch();
       } else {
@@ -141,7 +141,7 @@ export default defineComponent({
     async fetch() {
       this.loading = true;
       try {
-        const { content } = await this.$ezReeport.crons.getAllCrons();
+        const { content } = await this.$ezReeport.sdk.crons.getAllCrons();
         this.crons = content;
         this.error = '';
       } catch (error) {
@@ -172,7 +172,7 @@ export default defineComponent({
     updateCronStatus(item: CronItem) {
       return this.execCronAction(
         item,
-        item.running ? this.$ezReeport.crons.stopCron : this.$ezReeport.crons.startCron,
+        item.running ? this.$ezReeport.sdk.crons.stopCron : this.$ezReeport.sdk.crons.startCron,
       );
     },
     /**
@@ -181,7 +181,7 @@ export default defineComponent({
      * @param item The cron
      */
     forceCronRun(item: CronItem) {
-      return this.execCronAction(item, this.$ezReeport.crons.forceCron);
+      return this.execCronAction(item, this.$ezReeport.sdk.crons.forceCron);
     },
     /**
      * Execute action on a cron and update the item

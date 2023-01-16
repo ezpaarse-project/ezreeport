@@ -106,7 +106,7 @@
 </template>
 
 <script lang="ts">
-import type { auth, tasks } from 'ezreeport-sdk-js';
+import type { institutions, tasks } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 
 const MAX_TARGETS = 2;
@@ -123,14 +123,14 @@ export default defineComponent({
   },
   data: () => ({
     mode: 'view',
-    institution: undefined as auth.Institution | undefined,
+    institution: undefined as institutions.Institution | undefined,
     collapsedTargets: true,
     loading: false,
     error: '',
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.auth_permissions;
+      const perms = this.$ezReeport.auth.permissions;
       return {
         create: perms?.['crons-get-cron'],
         readOne: perms?.['tasks-get-task'],
@@ -161,7 +161,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth_permissions': function () {
+    '$ezReeport.auth.permissions': function () {
       if (this.perms.readOne) {
         this.fetch();
       } else {
@@ -185,8 +185,8 @@ export default defineComponent({
       if (this.task) {
         this.loading = true;
         try {
-          const { content: { available } } = await this.$ezReeport.sdk.auth.getInstitutions();
-          this.institution = available.find(({ id }) => id === this.task?.institution);
+          this.institution = this.$ezReeport.institutions.data
+            .find(({ id }) => id === this.task?.institution);
           this.error = '';
         } catch (error) {
           this.error = (error as Error).message;

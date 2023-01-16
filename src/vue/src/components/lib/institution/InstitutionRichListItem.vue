@@ -10,20 +10,13 @@
 </template>
 
 <script lang="ts">
+import type { institutions } from 'ezreeport-sdk-js';
 import { defineComponent, PropType } from 'vue';
-
-export interface InstitutionItem {
-  id: string,
-  name: string,
-  city?: string,
-  logoId?: string,
-  acronym?: string,
-}
 
 export default defineComponent({
   props: {
     institution: {
-      type: Object as PropType<InstitutionItem>,
+      type: Object as PropType<institutions.Institution>,
       required: true,
     },
   },

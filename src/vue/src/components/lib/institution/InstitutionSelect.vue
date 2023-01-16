@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="perms.readInstitutions"
+    v-if="perms.read"
     class="d-flex align-center"
   >
     <div class="select-wrapper mr-2">
@@ -49,14 +49,14 @@
     <RefreshButton
       :loading="loading"
       :tooltip="$t('refresh-tooltip').toString()"
-      @click="fetch"
+      @click="fetch(true)"
     />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import type { auth } from 'ezreeport-sdk-js';
+import type { institutions } from 'ezreeport-sdk-js';
 
 export interface InstitutionItem {
   id: string,
@@ -77,19 +77,17 @@ export default defineComponent({
     input(value: string) {
       return !value || typeof value === 'string';
     },
-    fetched(value: auth.Institution[]) {
-      return Array.isArray(value);
-    },
   },
   data: () => ({
-    institutions: [] as auth.Institution[],
-    defaultInstitution: undefined as string | undefined,
     loading: false,
     error: '',
   }),
   computed: {
+    defaultInstitution() {
+      return this.$ezReeport.auth.user?.institution;
+    },
     items(): InstitutionItem[] {
-      const items = this.institutions
+      const items = this.$ezReeport.institutions.data
         .map(this.parseInstitution)
         .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -106,38 +104,38 @@ export default defineComponent({
       // return items;
     },
     perms() {
-      const perms = this.$ezReeport.sdk.auth_permissions;
+      const perms = this.$ezReeport.auth.permissions;
       return {
-        readInstitutions: perms?.['auth-get-institutions'],
+        read: perms?.['institutions-get'],
       };
     },
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth_permissions': function () {
-      if (this.perms.readInstitutions) {
-        this.fetch();
-      } else {
-        this.institutions = [];
-      }
+    '$ezReeport.auth.permissions': function () {
+      this.fetch();
     },
+  },
+  mounted() {
+    this.fetch();
   },
   methods: {
     /**
      * Fetch institutions and parse result
      */
-    async fetch() {
+    async fetch(force = false) {
       this.loading = true;
       try {
-        const {
-          content: { default: def, available },
-        } = await this.$ezReeport.sdk.auth.getInstitutions();
+        this.$ezReeport.institutions.fetch(force);
+        // const {
+        //   content: { default: def, available },
+        // } = await this.$ezReeport.sdk.auth.getInstitutions();
 
-        this.institutions = available;
-        this.$emit('fetched', available);
+        // this.institutions = available;
+        // this.$emit('fetched', available);
 
-        this.defaultInstitution = def;
-        this.$emit('input', def ?? '');
+        // this.defaultInstitution = def;
+        // this.$emit('input', def ?? '');
       } catch (error) {
         this.error = (error as Error).message;
       }
@@ -149,7 +147,7 @@ export default defineComponent({
      *
      * @param institution The institution
      */
-    parseInstitution: (institution: auth.Institution): InstitutionItem => ({
+    parseInstitution: (institution: institutions.Institution): InstitutionItem => ({
       id: institution.id,
       name: institution.name,
       logoId: institution.logoId,
