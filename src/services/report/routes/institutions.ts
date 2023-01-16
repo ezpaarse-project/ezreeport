@@ -1,4 +1,5 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
+import { StatusCodes } from 'http-status-codes';
 import { CustomRouter } from '~/lib/express-utils';
 import {
   findAllInstitutions,
@@ -7,6 +8,7 @@ import {
   type TypedElasticInstitution
 } from '~/models/institutions';
 import { getRoleValue, Roles } from '~/models/roles';
+import { HTTPError } from '~/types/errors';
 
 const parseInstitution = (hit: ElasticTypes.SearchHit<TypedElasticInstitution>) => ({
   ...(hit as Required<typeof hit>)._source.institution,
@@ -43,10 +45,18 @@ const router = CustomRouter('institutions')
     }
     throw new Error('User not found');
   })
+
+  /**
+   * Get specfic institution available for the user
+   */
   .createSecuredRoute('GET /:id', Roles.READ, async (req, _res) => {
     const { id } = req.params;
 
     const [institution] = await findInstitutionByIds([id]);
+    if (!institution) {
+      throw new HTTPError(`Institution "${id}" not found`, StatusCodes.NOT_FOUND);
+    }
+
     // TODO [feat]: Check if available
 
     return parseInstitution(institution);
