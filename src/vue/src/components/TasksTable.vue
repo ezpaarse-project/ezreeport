@@ -1,5 +1,5 @@
 <template>
-  <v-col>
+  <v-col v-if="perms.readAll">
     <TaskDialog
       :id="focusedTask"
       :show.sync="shownTaskDialog"

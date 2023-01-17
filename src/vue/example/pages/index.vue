@@ -22,7 +22,7 @@ export default defineComponent({
     locale: 'fr',
   }),
   mounted() {
-    this.$ezReeport.auth_token = this.$config.ezMesureToken;
+    this.$ezReeport.sdk.auth.login(this.$config.ezMesureToken);
   },
   methods: {
     changeLocale() {

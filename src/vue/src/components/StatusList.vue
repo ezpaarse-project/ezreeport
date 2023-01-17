@@ -78,7 +78,7 @@ export default defineComponent({
     async fetch() {
       this.loading = true;
       try {
-        const { content } = await this.$ezReeport.health.checkAllConnectedService();
+        const { content } = await this.$ezReeport.sdk.health.checkAllConnectedService();
         this.statuses = content;
         this.error = '';
       } catch (error) {

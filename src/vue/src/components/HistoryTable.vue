@@ -1,5 +1,5 @@
 <template>
-  <v-col>
+  <v-col v-if="perms.readAll">
     <v-row>
       <InstitutionSelect
         v-model="currentInstitution"
@@ -41,7 +41,7 @@ export default defineComponent({
     perms() {
       const perms = this.$ezReeport.auth.permissions;
       return {
-        readAll: perms?.['tasks-get'],
+        readAll: perms?.['history-get'],
       };
     },
   },

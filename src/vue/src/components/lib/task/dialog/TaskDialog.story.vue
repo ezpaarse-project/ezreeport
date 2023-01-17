@@ -54,66 +54,6 @@
         />
       </v-app>
     </Variant>
-
-    <Variant
-      title="Error"
-      icon="material-symbols:error-outline"
-    >
-      <v-app style="background: transparent">
-        <TaskDialog
-          :id="current"
-          :show.sync="show"
-        />
-
-        <div class="mb-4">
-          <v-btn @click="show = true">
-            Show
-          </v-btn>
-        </div>
-        <HstLocale
-          class="mt-4"
-          direction="bottom"
-        />
-      </v-app>
-    </Variant>
-
-    <Variant
-      title="Loading"
-      icon="material-symbols:refresh"
-    >
-      <v-app style="background: transparent">
-        <TaskDialog
-          :id="current"
-          :show.sync="show"
-        />
-
-        <div class="mb-4">
-          <v-btn @click="show = true">
-            Show
-          </v-btn>
-        </div>
-        <HstLocale />
-      </v-app>
-    </Variant>
-
-    <Variant
-      title="Live data"
-      icon="material-symbols:cloud-outline"
-    >
-      <v-app style="background: transparent">
-        <TaskDialog
-          :id="current"
-          :show.sync="show"
-        />
-
-        <div class="mb-4">
-          <v-btn @click="show = true">
-            Show
-          </v-btn>
-        </div>
-        <HstLocale />
-      </v-app>
-    </Variant>
   </Story>
 </template>
 

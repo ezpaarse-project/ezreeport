@@ -9,7 +9,6 @@
     <template #activator>
       <v-btn
         v-model="open"
-        dark
         fab
       >
         {{ locale }}
@@ -17,7 +16,6 @@
     </template>
     <v-btn
       fab
-      dark
       small
       :color="locale === 'fr' ? 'primary' : undefined"
       @click="locale = 'fr'"
@@ -26,7 +24,6 @@
     </v-btn>
     <v-btn
       fab
-      dark
       small
       :color="locale === 'en' ? 'primary' : undefined"
       @click="locale = 'en'"
