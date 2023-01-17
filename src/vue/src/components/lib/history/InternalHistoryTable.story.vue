@@ -1,5 +1,16 @@
 <template>
   <Story>
+    <template #controls>
+      <HstCheckbox
+        v-model="state.hideTask"
+        title="Hide Task"
+      />
+      <HstCheckbox
+        v-model="state.hideInstitution"
+        title="Hide Institution"
+      />
+    </template>
+
     <Variant
       title="Light theme"
       icon="material-symbols:light-mode-outline"
@@ -31,13 +42,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { reactive } from 'vue';
 
-// TODO
+const state = reactive({
+  hideTask: false,
+  hideInstitution: false,
+});
+
+// TODO: mock
 </script>
 
 <docs lang="md">
-# Recurrence Chip
+# Internal History Table
 
-Show task's reccurence in a styled chip
+...
 </docs>

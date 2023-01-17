@@ -8,14 +8,19 @@
     </v-row>
 
     <v-row>
-      <LoadingToolbar :text="$t('title').toString()">
-        <RefreshButton
-          :loading="loading"
-          :tooltip="$t('refresh-tooltip').toString()"
-          @click="fetch"
+      <div>
+        <LoadingToolbar :text="$t('title').toString()">
+          <RefreshButton
+            :loading="loading"
+            :tooltip="$t('refresh-tooltip').toString()"
+            @click="fetch"
+          />
+        </LoadingToolbar>
+        <InternalHistoryTable
+          :history="history"
+          class="history-table"
         />
-      </LoadingToolbar>
-      <InternalHistoryTable :history="history" />
+      </div>
     </v-row>
   </v-col>
 </template>
@@ -27,7 +32,7 @@ import { defineComponent } from 'vue';
 export default defineComponent({
   data: () => ({
     currentInstitution: '',
-    history: [] as history.History[],
+    history: [] as history.HistoryWithTask[],
     interval: undefined as number | undefined,
     loading: false,
     error: '',
@@ -80,7 +85,10 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-
+.history-table::v-deep .v-data-table {
+  border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
 </style>
 
 <i18n lang="yaml">
