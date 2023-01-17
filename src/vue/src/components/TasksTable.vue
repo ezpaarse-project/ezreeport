@@ -218,10 +218,10 @@ export default defineComponent({
 <i18n lang="yaml">
 messages:
   en:
-    title: Task list
-    refresh-tooltip: Refresh task list
+    title: Periodic report list
+    refresh-tooltip: Refresh report list
     header:
-      name: Name
+      name: Report name
       institution: Institution
       recurrence: Recurrence
       status: Status
@@ -231,13 +231,13 @@ messages:
       active: Active
       inactive: Inactive
   fr:
-    title: Liste des tâches
-    refresh-tooltip: Rafraîchir la liste des tâches
+    title: Liste des rapports périodiques
+    refresh-tooltip: Rafraîchir la liste des rapports
     header:
-      name: Nom
-      institution: Etablissement
+      name: Nom du rapport
+      institution: Établissement
       recurrence: Fréquence
-      status: Status
+      status: Statut
       next: Prochaine itération
       actions: Actions
     item:
