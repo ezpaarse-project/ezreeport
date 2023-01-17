@@ -41,7 +41,7 @@
         </v-list-item-content>
       </v-list-item>
 
-      <ErrorOverlay :error="error" />
+      <ErrorOverlay v-model="error" />
     </v-list>
   </v-col>
 </template>

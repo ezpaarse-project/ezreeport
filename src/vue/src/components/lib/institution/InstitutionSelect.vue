@@ -43,7 +43,7 @@
         </template>
       </v-select>
 
-      <ErrorOverlay :error="error" />
+      <ErrorOverlay v-model="error" />
     </div>
 
     <RefreshButton

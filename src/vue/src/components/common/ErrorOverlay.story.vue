@@ -14,7 +14,7 @@
       <v-app style="background: transparent">
         <v-theme-provider light>
           <div style="position: relative; height: 5rem;">
-            <ErrorOverlay :error="state.error" />
+            <ErrorOverlay v-model="state.error" />
           </div>
         </v-theme-provider>
       </v-app>
@@ -27,7 +27,7 @@
       <v-app style="background: transparent">
         <v-theme-provider dark>
           <div style="position: relative; height: 5rem;">
-            <ErrorOverlay :error="state.error" />
+            <ErrorOverlay v-model="state.error" />
           </div>
         </v-theme-provider>
       </v-app>

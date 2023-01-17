@@ -101,7 +101,7 @@
       </v-tab-item>
     </v-tabs>
 
-    <ErrorOverlay :error="error" />
+    <ErrorOverlay v-model="error" />
   </div>
 </template>
 

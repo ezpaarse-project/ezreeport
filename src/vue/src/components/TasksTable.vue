@@ -62,7 +62,7 @@
           v-if="error"
           #[`body.append`]
         >
-          <ErrorOverlay :error="error" />
+          <ErrorOverlay v-model="error" />
         </template>
       </v-data-table>
     </v-row>
@@ -236,7 +236,7 @@ messages:
     header:
       name: Nom
       institution: Etablissement
-      recurrence: Recurrence
+      recurrence: Fréquence
       status: Status
       next: Prochaine itération
       actions: Actions

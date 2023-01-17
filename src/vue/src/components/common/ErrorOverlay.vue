@@ -1,11 +1,16 @@
 <template>
   <v-fade-transition>
     <v-overlay
-      v-if="error"
+      v-if="value"
       :color="color"
       absolute
+      class="text-center"
+      opacity="0.8"
     >
-      {{ error }}
+      <div>{{ value }}</div>
+      <v-btn @click="$emit('input', '')">
+        {{ $t('close') }}
+      </v-btn>
     </v-overlay>
   </v-fade-transition>
 </template>
@@ -15,9 +20,14 @@ import { defineComponent } from 'vue';
 
 export default defineComponent({
   props: {
-    error: {
+    value: {
       type: String,
       default: '',
+    },
+  },
+  emits: {
+    input(val: string) {
+      return true;
     },
   },
   data: (vm) => ({
@@ -29,3 +39,11 @@ export default defineComponent({
 <style scoped>
 
 </style>
+
+<i18n lang="yaml">
+messages:
+  en:
+    close: Close
+  fr:
+    close: Fermer
+</i18n>

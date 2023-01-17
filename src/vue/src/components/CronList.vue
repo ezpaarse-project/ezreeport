@@ -73,7 +73,7 @@
         </v-btn>
       </v-list-group>
 
-      <ErrorOverlay :error="error" />
+      <ErrorOverlay v-model="error" />
     </v-list>
   </v-col>
 </template>

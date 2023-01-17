@@ -9,6 +9,7 @@
         :src="src"
         :alt="alt"
       />
+      <!-- TODO: Fix logo width -->
       <v-icon v-if="!showImage">
         {{ fallbackIcon }}
       </v-icon>
