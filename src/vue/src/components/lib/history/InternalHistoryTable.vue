@@ -39,47 +39,18 @@
             </template>
 
             <v-list>
-              <v-list-item v-if="type.color !== 'error'">
-                {{ $t('files.report') }}
-
-                <v-spacer />
-
-                <v-btn
-                  icon
-                  text
-                  @click="openFile(item, 'report')"
-                >
-                  <v-icon>mdi-open-in-new</v-icon>
-                </v-btn>
-
-                <v-btn
-                  icon
-                  text
-                  @click="downloadFile(item, 'report')"
-                >
-                  <v-icon>mdi-download</v-icon>
-                </v-btn>
+              <v-list-item
+                v-if="type.color !== 'error'"
+                ripple
+                @click="downloadFile(item, 'report')"
+              >
+                <v-icon>mdi-download</v-icon> {{ $t('files.report') }}
               </v-list-item>
-              <v-list-item>
-                {{ $t('files.detail') }}
-
-                <v-spacer />
-
-                <v-btn
-                  icon
-                  text
-                  @click="openFile(item, 'detail')"
-                >
-                  <v-icon>mdi-open-in-new</v-icon>
-                </v-btn>
-
-                <v-btn
-                  icon
-                  text
-                  @click="downloadFile(item, 'detail')"
-                >
-                  <v-icon>mdi-download</v-icon>
-                </v-btn>
+              <v-list-item
+                ripple
+                @click="downloadFile(item, 'detail')"
+              >
+                <v-icon>mdi-download</v-icon> {{ $t('files.detail') }}
               </v-list-item>
             </v-list>
           </v-menu>
@@ -300,30 +271,6 @@ export default defineComponent({
         el.download = res.fileName;
         el.click();
         URL.revokeObjectURL(el.href);
-      } catch (error) {
-        console.error('Error catch', error);
-
-        this.error = (error as Error).message;
-      }
-      this.loading = false;
-    },
-    /**
-     * Open file linked to an history entry
-     *
-     * @param entry The history entry
-     * @param type The type of file
-     */
-    async openFile({ id }: HistoryItem, type: 'report' | 'detail' | 'debug') {
-      this.loading = true;
-      try {
-        const res = await this.fetchFile(id, type);
-        if (!res) {
-          return;
-        }
-
-        const url = URL.createObjectURL(res.blob);
-        window.open(url, '_blank')?.focus();
-        URL.revokeObjectURL(url);
       } catch (error) {
         console.error('Error catch', error);
 
