@@ -7,7 +7,7 @@
     "start": "ts-node --transpile-only app.ts",
     "dev": "nodemon app.ts",
     "lint": "eslint --fix .",
-    "test": "cd ../../../tests/ && npm run test:mail"
+    "test": "npm --prefix ../../../tests/ run test:mail"
   },
   "repository": {
     "type": "git",
@@ -41,16 +41,11 @@
     "@types/node": "^18.11.15",
     "@types/nodemailer": "^6.4.6",
     "@types/nunjucks": "^3.2.1",
-    "@typescript-eslint/eslint-plugin": "^5.46.1",
-    "@typescript-eslint/parser": "^5.46.1",
-    "eslint": "^8.29.0",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-config-airbnb-typescript": "^17.0.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-n": "^15.6.0",
-    "eslint-plugin-promise": "^6.1.1",
     "nodemon": "^2.0.20",
     "tsconfig-paths": "^4.1.1",
     "typescript": "^4.9.4"
+  },
+  "engines": {
+    "node": "^18"
   }
 }

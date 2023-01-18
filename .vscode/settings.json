@@ -4,10 +4,8 @@
     ".env": "dotenv"
   },
   "eslint.workingDirectories": [{ "mode": "auto" }],
-  "eslint.validate": [
-    "javascript",
-    "typescript"
-  ],
+  "eslint.packageManager": "npm",
+  "eslint.runtime": "node_modules/.bin/eslint",
   "conventionalCommits.scopes": [
     "report",
     "mail",

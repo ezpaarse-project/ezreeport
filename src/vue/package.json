@@ -64,8 +64,6 @@
     "@vitejs/plugin-vue2": "^2.2.0",
     "@vue/eslint-config-airbnb-with-typescript": "^7.0.0",
     "core-js": "^3.25.3",
-    "eslint": "^8.31.0",
-    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-storybook": "^0.6.10",
     "eslint-plugin-vue": "^9.8.0",
     "ezreeport-sdk-js": "file:../sdk",
@@ -80,5 +78,8 @@
     "vite": "^4.0.4",
     "vue-server-renderer": "^2.7.10",
     "vue-template-compiler": "^2.7.10"
+  },
+  "engines": {
+    "node": "^16"
   }
 }
