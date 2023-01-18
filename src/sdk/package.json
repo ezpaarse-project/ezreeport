@@ -40,7 +40,7 @@
     ]
   },
   "dependencies": {
-    "axios": "^1.2.1",
+    "axios": "^1.2.3",
     "date-fns": "^2.29.3",
     "events": "^3.3.0"
   },
