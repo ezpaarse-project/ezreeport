@@ -49,7 +49,7 @@
                       collapsedTargets
                         ? 'show-more-tooltip'
                         : 'show-less-tooltip',
-                      { count: (task?.targets.length || 0) - targets.length }
+                      { count: (task?.targets.length || 0) - targets.length },
                     )
                   }}
                 </span>
@@ -203,43 +203,41 @@ export default defineComponent({
 </style>
 
 <i18n lang="yaml">
-messages:
-  en:
-    show-more-tooltip: Show {count} more
-    show-less-tooltip: Show less
-    headers:
-      institution: Institution
-      targets: Receivers
-      dates: Dates
-    tabs:
-      details: Details
-      template: Template
-      history: History
-    actions:
-      generate: Generate
-      edit: Edit
-      delete: Delete
-    task:
-      lastRun: Last run
-      nextRun: Next run
+en:
+  show-more-tooltip: 'Show {count} more'
+  show-less-tooltip: 'Show less'
+  headers:
+    institution: 'Institution'
+    targets: 'Receivers'
+    dates: 'Dates'
+  tabs:
+    details: 'Details'
+    template: 'Template'
+    history: 'History'
+  actions:
+    generate: 'Generate'
+    edit: 'Edit'
+    delete: 'Delete'
+  task:
+    lastRun: 'Last run'
+    nextRun: 'Next run'
 
-  fr:
-    show-more-tooltip: Afficher plus ({count})
-    show-less-tooltip: Afficher moins
-    headers:
-      institution: Institution
-      targets: Destinataires
-      dates: Dates
-    tabs:
-      details: Détails
-      template: Modèle
-      history: Historique
-    actions:
-      generate: Générer
-      edit: Éditer
-      delete: Supprimer
-    task:
-      lastRun: Dernière itération
-      nextRun: Prochaine itération
-
+fr:
+  show-more-tooltip: 'Afficher plus ({count})'
+  show-less-tooltip: 'Afficher moins'
+  headers:
+    institution: 'Institution'
+    targets: 'Destinataires'
+    dates: 'Dates'
+  tabs:
+    details: 'Détails'
+    template: 'Modèle'
+    history: 'Historique'
+  actions:
+    generate: 'Générer'
+    edit: 'Éditer'
+    delete: 'Supprimer'
+  task:
+    lastRun: 'Dernière itération'
+    nextRun: 'Prochaine itération'
 </i18n>

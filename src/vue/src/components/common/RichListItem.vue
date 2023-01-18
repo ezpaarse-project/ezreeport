@@ -28,26 +28,26 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, type PropType } from 'vue';
+import { defineComponent } from 'vue';
 import type { VImg } from 'vuetify/lib';
 
 export default defineComponent({
   props: {
     src: {
-      type: String as PropType<string | undefined>,
-      default: undefined,
+      type: String,
+      default: '',
     },
     alt: {
-      type: String as PropType<string | undefined>,
-      default: undefined,
+      type: String,
+      default: '',
     },
     title: {
       type: String,
       required: true,
     },
     subtitle: {
-      type: String as PropType<string | undefined>,
-      default: undefined,
+      type: String,
+      default: '',
     },
     capitalizeSubtitle: {
       type: Boolean,

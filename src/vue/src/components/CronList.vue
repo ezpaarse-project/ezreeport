@@ -223,27 +223,26 @@ export default defineComponent({
 </style>
 
 <i18n lang="yaml">
-messages:
-  en:
-    title: Crons
-    refresh-tooltip: Refresh cron list
-    cron:
-      not-found: Cron {name} not found
-      force: Force
-      lastRun: Last run
-      nextRun: Next run
-    item:
-      active: Active
-      inactive: Inactive
-  fr:
-    title: Crons
-    refresh-tooltip: Rafraîchir la liste des crons
-    cron:
-      not-found: Cron {name} non trouvée
-      force: Forcer
-      lastRun: Dernière itération
-      nextRun: Prochaine itération
-    item:
-      active: Actif
-      inactive: Inactif
+en:
+  title: 'Crons'
+  refresh-tooltip: 'Refresh cron list'
+  cron:
+    not-found: 'Cron {name} not found'
+    force: 'Force'
+    lastRun: 'Last run'
+    nextRun: 'Next run'
+  item:
+    active: 'Active'
+    inactive: 'Inactive'
+fr:
+  title: 'Crons'
+  refresh-tooltip: 'Rafraîchir la liste des crons'
+  cron:
+    not-found: 'Cron {name} non trouvée'
+    force: 'Forcer'
+    lastRun: 'Dernière itération'
+    nextRun: 'Prochaine itération'
+  item:
+    active: 'Actif'
+    inactive: 'Inactif'
 </i18n>

@@ -15,7 +15,7 @@
   "main": "app.ts",
   "scripts": {
     "dev": "nodemon app.ts",
-    "lint": "eslint --fix --parser-options=project:./tsconfig.json .",
+    "lint": "eslint --fix .",
     "prisma:gui": "prisma studio",
     "prisma:migrate": "prisma migrate dev",
     "start": "ts-node --transpile-only app.ts",
@@ -23,7 +23,7 @@
   },
   "lint-staged": {
     "*.{js,ts}": [
-      "eslint --fix --parser-options=project:./tsconfig.json"
+      "eslint --fix"
     ]
   },
   "dependencies": {

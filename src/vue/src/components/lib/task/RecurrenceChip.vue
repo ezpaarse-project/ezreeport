@@ -44,19 +44,18 @@ export default defineComponent({
 </style>
 
 <i18n lang="yaml">
-messages:
-  en:
-    DAILY: Daily
-    WEEKLY: Weekly
-    MONTHLY: Monthly
-    QUARTERLY: Quarterly
-    BIENNIAL: Biennial
-    YEARLY: Yearly
-  fr:
-    DAILY: Quotidien
-    WEEKLY: Hebdomadaire
-    MONTHLY: Mensuel
-    QUARTERLY: Trimestriel
-    BIENNIAL: Bi-annuel
-    YEARLY: Annuel
+en:
+  DAILY: 'Daily'
+  WEEKLY: 'Weekly'
+  MONTHLY: 'Monthly'
+  QUARTERLY: 'Quarterly'
+  BIENNIAL: 'Biennial'
+  YEARLY: 'Yearly'
+fr:
+  DAILY: 'Quotidien'
+  WEEKLY: 'Hebdomadaire'
+  MONTHLY: 'Mensuel'
+  QUARTERLY: 'Trimestriel'
+  BIENNIAL: 'Bi-annuel'
+  YEARLY: 'Annuel'
 </i18n>

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "lint": "eslint --fix --parser-options=project:./tsconfig.eslint.json .",
+    "lint": "eslint --fix .",
     "test": "mocha -r ts-node/register ./*/index.spec.ts",
     "test:report": "mocha -r ts-node/register ./report/api/index.spec.ts",
     "test:mail": "mocha -r ts-node/register ./mail/index.spec.ts",
@@ -20,7 +20,7 @@
   },
   "lint-staged": {
     "*.{js,ts}": [
-      "eslint --fix --parser-options=project:./tsconfig.eslint.json"
+      "eslint --fix"
     ]
   },
   "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",

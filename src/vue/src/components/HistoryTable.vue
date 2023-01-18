@@ -92,11 +92,10 @@ export default defineComponent({
 </style>
 
 <i18n lang="yaml">
-messages:
-  en:
-    title: History of tasks
-    refresh-tooltip: Refresh history
-  fr:
-    title: Historique des tâches
-    refresh-tooltip: Rafraîchir l'historique'
+en:
+  title: 'History of tasks'
+  refresh-tooltip: 'Refresh history'
+fr:
+  title: 'Historique des tâches'
+  refresh-tooltip: "Rafraîchir l'historique"
 </i18n>

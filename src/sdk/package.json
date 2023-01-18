@@ -31,12 +31,12 @@
     "build:node": "tsc --project tsconfig.node.json",
     "build:types": "tsc && BUILD_TARGET=types vite build",
     "build:web": "tsc && BUILD_TARGET=browser vite build",
-    "lint": "eslint --fix --parser-options=project:./tsconfig.eslint.json .",
+    "lint": "eslint --fix .",
     "test": "npm run build && cd ../tests/ && npm run test:sdk"
   },
   "lint-staged": {
     "*.ts": [
-      "eslint --fix --parser-options=project:./tsconfig.eslint.json"
+      "eslint --fix"
     ]
   },
   "dependencies": {

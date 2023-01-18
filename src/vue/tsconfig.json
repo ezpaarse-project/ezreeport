@@ -10,7 +10,10 @@
     "noEmit": true,
     "experimentalDecorators": true,
     "resolveJsonModule": true,
-    "types": ["vuetify", "vue-i18n"],
+    "types": [
+      "vuetify",
+      "vue-i18n"
+    ],
     "paths": {
       "~/*": [
         "./src/*"
@@ -18,17 +21,16 @@
       "@/*": [
         "./src/components/*"
       ],
+      // Disable types error from react (used for Storybook)
+      "react": [
+        "./src/types/null.d.ts"
+      ]
     }
   },
-  "exclude": [
-    "../sdk",
-    "node_modules",
-    ".nuxt",
-    "dist"
-  ],
   "include": [
     ".vite/**/*.ts",
-    "src",
+    "src/**/*.vue",
+    "src/**/*.ts",
   ],
   "vueCompilerOptions": {
     "target": 2.7

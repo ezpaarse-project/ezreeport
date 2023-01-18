@@ -1,4 +1,4 @@
 import Vue from 'vue';
-import ezReeportVuePlugin from '../../dist/ezreeport-vue';
+import ezReeportVuePlugin from '../..';
 
-Vue.use(ezReeportVuePlugin);
+Vue.use(ezReeportVuePlugin as any);

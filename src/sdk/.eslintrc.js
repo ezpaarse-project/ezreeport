@@ -1,4 +1,5 @@
 module.exports = {
+  root: true,
   env: {
     es2021: true,
     node: true,
@@ -16,7 +17,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
-    project: 'src/sdk/tsconfig.eslint.json',
+    project: 'tsconfig.eslint.json',
   },
   rules: {
     'import/extensions': 'off',

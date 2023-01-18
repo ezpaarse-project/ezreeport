@@ -48,7 +48,7 @@
 
 <script lang="ts">
 import type { health } from 'ezreeport-sdk-js';
-import { defineComponent, type PropType } from 'vue';
+import { defineComponent } from 'vue';
 
 interface StatusItem {
   name: string,
@@ -106,11 +106,10 @@ export default defineComponent({
 </style>
 
 <i18n lang="yaml">
-messages:
-  en:
-    title: "Status"
-    refresh-tooltip: "Refresh status list"
-  fr:
-    title: "Status"
-    refresh-tooltip: "Rafraîchir la liste des status"
+en:
+  title: 'Status'
+  refresh-tooltip: 'Refresh status list'
+fr:
+  title: 'Status'
+  refresh-tooltip: 'Rafraîchir la liste des status'
 </i18n>

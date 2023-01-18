@@ -156,22 +156,19 @@ export default defineComponent({
       }
     },
     id() {
-      if (this.perms.readOne) {
-        this.fetch();
-      } else {
-        this.task = undefined;
-      }
+      this.fetch();
     },
   },
   mounted() {
     this.mode = this.initialMode;
+    this.fetch();
   },
   methods: {
     /**
      * Fetch task info
      */
     async fetch() {
-      if (this.id) {
+      if (this.id && this.perms.readOne) {
         this.loading = true;
         try {
           const { content } = await this.$ezReeport.sdk.tasks.getTask(this.id);
@@ -181,6 +178,8 @@ export default defineComponent({
           this.error = (error as Error).message;
         }
         this.loading = false;
+      } else {
+        this.task = undefined;
       }
     },
   },
@@ -192,23 +191,22 @@ export default defineComponent({
 </style>
 
 <i18n lang="yaml">
-messages:
-  en:
-    refresh-tooltip: Refresh task
-    item:
-      active: Active
-      inactive: Inactive
-    actions:
-      generate: Generate
-      edit: Edit
-      delete: Delete
-  fr:
-    refresh-tooltip: Rafraichir la tâche
-    actions:
-      generate: Générer
-      edit: Éditer
-      delete: Supprimer
-    item:
-      active: Actif
-      inactive: Inactif
+en:
+  refresh-tooltip: 'Refresh task'
+  item:
+    active: 'Active'
+    inactive: 'Inactive'
+  actions:
+    generate: 'Generate'
+    edit: 'Edit'
+    delete: 'Delete'
+fr:
+  refresh-tooltip: 'Rafraichir la tâche'
+  item:
+    active: 'Actif'
+    inactive: 'Inactif'
+  actions:
+    generate: 'Générer'
+    edit: 'Éditer'
+    delete: 'Supprimer'
 </i18n>

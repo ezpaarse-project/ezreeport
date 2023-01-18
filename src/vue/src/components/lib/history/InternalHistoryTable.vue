@@ -291,25 +291,24 @@ export default defineComponent({
 </style>
 
 <i18n lang="yaml">
-messages:
-  en:
-    headers:
-      type: Type
-      message: Message
-      date: Date
-      task: Task
-      institution: Institution
-    files:
-      detail: Detail (JSON)
-      report: Report
-  fr:
-    headers:
-      type: Type
-      message: Message
-      date: Date
-      task: Tâche
-      institution: Établissement
-    files:
-      detail: Détail (JSON)
-      report: Rapport
+en:
+  headers:
+    type: 'Type'
+    message: 'Message'
+    date: 'Date'
+    task: 'Task'
+    institution: 'Institution'
+  files:
+    detail: 'Detail (JSON)'
+    report: 'Report'
+fr:
+  headers:
+    type: 'Type'
+    message: 'Message'
+    date: 'Date'
+    task: 'Tâche'
+    institution: 'Établissement'
+  files:
+    detail: 'Détail (JSON)'
+    report: 'Rapport'
 </i18n>

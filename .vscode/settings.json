@@ -3,7 +3,7 @@
     ".env.defaults": "dotenv",
     ".env": "dotenv"
   },
-  "eslint.workingDirectories": [],
+  "eslint.workingDirectories": [{ "mode": "auto" }],
   "eslint.validate": [
     "javascript",
     "typescript"
@@ -22,5 +22,5 @@
     "mocha-steps",
     "ts-node/register"
   ],
-  "typescript.tsdk": "./src/services/report/node_modules/typescript/lib"
+  "typescript.tsdk": "./src/services/report/node_modules/typescript/lib",
 }

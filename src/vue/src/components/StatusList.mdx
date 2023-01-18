@@ -1,0 +1,15 @@
+import { Meta, Story } from '@storybook/blocks';
+
+import * as StatusListStories from './StatusList.stories';
+
+<Meta of={StatusListStories} />
+
+# Status List
+
+Shows status of services connected to the reporting.
+
+You can hover each status to get more info about them (like time of response & status code).
+
+## Usage
+
+<Story of={StatusListStories.Basic} />

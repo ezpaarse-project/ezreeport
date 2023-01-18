@@ -170,11 +170,10 @@ export default defineComponent({
 </style>
 
 <i18n lang="yaml">
-messages:
-  en:
-    all: "All institutions"
-    refresh-tooltip: "Refresh institution list"
-  fr:
-    all: "Tous les établissements"
-    refresh-tooltip: "Rafraîchir la liste des établissements"
+en:
+  all: 'All institutions'
+  refresh-tooltip: 'Refresh institution list'
+fr:
+  all: 'Tous les établissements'
+  refresh-tooltip: 'Rafraîchir la liste des établissements'
 </i18n>

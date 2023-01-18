@@ -27,7 +27,7 @@ export default defineComponent({
   },
   emits: {
     input(val: string) {
-      return true;
+      return val.length >= 0;
     },
   },
   data: (vm) => ({
@@ -41,9 +41,8 @@ export default defineComponent({
 </style>
 
 <i18n lang="yaml">
-messages:
-  en:
-    close: Close
-  fr:
-    close: Fermer
+en:
+  close: 'Close'
+fr:
+  close: 'Fermer'
 </i18n>

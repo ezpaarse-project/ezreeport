@@ -216,31 +216,30 @@ export default defineComponent({
 </style>
 
 <i18n lang="yaml">
-messages:
-  en:
-    title: Periodic report list
-    refresh-tooltip: Refresh report list
-    header:
-      name: Report name
-      institution: Institution
-      recurrence: Recurrence
-      status: Status
-      next: Next run
-      actions: Actions
-    item:
-      active: Active
-      inactive: Inactive
-  fr:
-    title: Liste des rapports périodiques
-    refresh-tooltip: Rafraîchir la liste des rapports
-    header:
-      name: Nom du rapport
-      institution: Établissement
-      recurrence: Fréquence
-      status: Statut
-      next: Prochaine itération
-      actions: Actions
-    item:
-      active: Actif
-      inactive: Inactif
+en:
+  title: 'Periodic report list'
+  refresh-tooltip: 'Refresh report list'
+  header:
+    name: 'Report name'
+    institution: 'Institution'
+    recurrence: 'Recurrence'
+    status: 'Status'
+    next: 'Next run'
+    actions: 'Actions'
+  item:
+    active: 'Active'
+    inactive: 'Inactive'
+fr:
+  title: 'Liste des rapports périodiques'
+  refresh-tooltip: 'Rafraîchir la liste des rapports'
+  header:
+    name: 'Nom du rapport'
+    institution: 'Établissement'
+    recurrence: 'Fréquence'
+    status: 'Statut'
+    next: 'Prochaine itération'
+    actions: 'Actions'
+  item:
+    active: 'Actif'
+    inactive: 'Inactif'
 </i18n>
