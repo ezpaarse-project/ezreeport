@@ -26,7 +26,19 @@ export const getAllHistoryEntries = async (
     cursor: opts?.previous ? { id: opts.previous } : undefined,
     where: institution ? { task: { institution } } : undefined,
     include: {
-      task: true,
+      task: {
+        select: {
+          id: true,
+          name: true,
+          institution: true,
+          recurrence: true,
+          nextRun: true,
+          lastRun: true,
+          enabled: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
     },
     orderBy: {
       createdAt: 'desc',
