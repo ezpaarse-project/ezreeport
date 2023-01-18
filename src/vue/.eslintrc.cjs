@@ -22,11 +22,12 @@ module.exports = {
     },
     {
       files: [
+        '.storybook/**/*.ts',
         'example/**/*.ts',
         'example/**/*.vue',
-        'src/**/*.stories.ts',
         'plugins/**/*.ts',
-        '.storybook/**/*.ts',
+        'src/**/*.stories.ts',
+        'src/mock/**/*.ts',
         'vite.config.ts',
         '.eslintrc.cjs',
       ],

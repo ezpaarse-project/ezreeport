@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue';
+import history from '~/mock/history';
 import InternalHistoryTable from './InternalHistoryTable.vue';
 
 const meta: Meta<typeof InternalHistoryTable> = {
@@ -7,7 +8,7 @@ const meta: Meta<typeof InternalHistoryTable> = {
   args: {
     hideTask: false,
     hideInstitution: false,
-    history: [],
+    history,
   },
 };
 
