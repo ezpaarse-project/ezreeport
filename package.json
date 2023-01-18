@@ -13,16 +13,17 @@
   "license": "CeCILL",
   "author": "oxypomme",
   "scripts": {
-    "lint": "npm run lint:report && npm run lint:mail",
-    "lint:mail": "cd src/services/mail && npm run lint",
-    "lint:report": "cd src/services/report && npm run lint",
-    "lint:sdk": "cd src/sdk && npm run lint",
+    "lint": "run-p -ls lint:*",
+    "lint:mail": "npm --prefix src/services/mail run lint",
+    "lint:report": "npm --prefix src/services/report run lint",
+    "lint:sdk": "npm --prefix src/sdk run lint",
+    "lint:vue": "npm --prefix src/vue run lint",
     "prepare": "husky install",
     "setup": "node setup.js",
-    "test": "cd tests && npm run test",
-    "test:mail": "cd tests && npm run test:mail",
-    "test:report": "cd tests && npm run test:report",
-    "test:sdk": "cd tests && npm run test:sdk"
+    "test": "run-p -ls test:*",
+    "test:mail": "npm --prefix tests run test:mail",
+    "test:report": "npm --prefix tests run test:report",
+    "test:sdk": "npm --prefix tests run test:sdk"
   },
   "lint-staged": {
     "package.json": [
@@ -34,6 +35,7 @@
     "@commitlint/config-conventional": "^17.3.0",
     "husky": "^8.0.2",
     "lint-staged": "^13.1.0",
+    "npm-run-all": "^4.1.5",
     "sort-package-json": "^2.1.0"
   }
 }
