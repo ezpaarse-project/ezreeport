@@ -11,7 +11,7 @@
     "port": 1025,
     "secure": false,
     "tls": {
-      "ignore": false,
+      "ignore": true,
       "rejectUnauthorized": false
     }
   },
@@ -22,6 +22,6 @@
     "interval": 2000
   },
   "api": {
-    "domain": "http://report:8080"
+    "domain": "http://localhost:8080"
   }
 }

@@ -1,0 +1,91 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:15.1-alpine3.17
+    environment:
+      - POSTGRES_USER=DATABASE_USER
+      - POSTGRES_DB=DATABASE_DB
+      - POSTGRES_PASSWORD=DATABASE_PASSWORD
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.0.7-alpine3.17
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - ./data/redis:/data
+    restart: unless-stopped
+
+  report:
+    build:
+      context: ./src/services/report
+    volumes:
+      - ./data/report:/usr/src/report/data # Report output
+      - ./logs/report:/usr/src/report/logs # Logs output
+    ports:
+      - 8080:8080
+    environment:
+      # node
+      - NODE_ENV
+      # redis
+      - REDIS_HOST
+      - REDIS_PORT
+      - REDIS_PASSWORD
+      - REDIS_CONCURRENCE
+      # elastic
+      - ELASTIC_URL
+      - ELASTIC_API_KEY
+      - ELASTIC_REQUIRED_STATUS
+      - ELASTIC_MAX_TRIES
+      # database
+      - DATABASE_URL
+      # ezmesure
+      - EZMESURE_AUTH_SECRET
+      - EZMESURE_DEPOSITORS_INDEX
+      # report specfic
+      - REPORT_CRON_GENERATE_REPORT
+      - REPORT_CRON_PURGE_OLD_REPORT
+      - REPORT_ITERATIONS_TO_LIVE
+      - REPORT_DAYS_TO_LIVE
+      # common
+      - API_ALLOWED_ORIGINS
+      - LOG_LEVEL
+      - HTTP_PORT
+    extra_hosts:
+      - host.docker.internal:host-gateway # Used because elastic is on the same machine, but not the same network
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+
+  mail:
+    build:
+      context: ./src/services/mail
+    volumes:
+      - ./logs/report:/usr/src/mail/logs # Logs output
+    environment:
+      # node
+      - NODE_ENV
+      # redis
+      - REDIS_HOST
+      - REDIS_PORT
+      - REDIS_PASSWORD
+      # smtp
+      - SMTP_HOST
+      - SMTP_PORT
+      - SMTP_SECURE
+      - SMTP_IGNORE_TLS
+      - SMTP_REJECT_UNAUTHORIZED
+      # mail specific
+      - EMAIL_SENDER
+      - EMAIL_EZTEAM
+      - EMAIL_ATTEMPTS
+      - EMAIL_ATTEMPTS_INTERVAL
+      # common
+      - API_DOMAIN
+      - LOG_LEVEL
+    depends_on:
+      - redis
+    restart: unless-stopped
