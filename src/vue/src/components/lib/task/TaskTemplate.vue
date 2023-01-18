@@ -1,5 +1,17 @@
 <template>
-  <div />
+  <v-row v-if="task">
+    <v-col>
+      {{ $t('') }}
+    </v-col>
+
+    <v-divider vertical />
+
+    <v-col cols="6">
+      <pre>
+{{ JSON.stringify(task.template, undefined, 2) }}
+                </pre>
+    </v-col>
+  </v-row>
 </template>
 
 <script lang="ts">
@@ -12,9 +24,6 @@ export default defineComponent({
       type: Object as PropType<tasks.FullTask | undefined>,
       default: undefined,
     },
-  },
-  emits: {
-    created(id: string) { return !!id; },
   },
 });
 </script>

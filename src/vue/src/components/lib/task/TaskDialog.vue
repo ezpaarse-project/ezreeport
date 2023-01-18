@@ -49,10 +49,39 @@
 
       <v-card-text>
         <KeepAlive>
-          <component
+          <!-- <component
             :is="component"
             :task="task"
-          />
+          /> -->
+          <v-tabs>
+            <v-tab>
+              {{ $t('tabs.details') }}
+            </v-tab>
+            <v-tab>
+              {{ $t('tabs.template') }}
+            </v-tab>
+            <v-tab v-if="mode === 'view'">
+              {{ $t('tabs.history') }}
+            </v-tab>
+
+            <v-tab-item>
+              <TaskDetail v-if="mode === 'view'" :task="task" :loading="loading" />
+            </v-tab-item>
+
+            <v-tab-item>
+              <TaskTemplate v-if="mode === 'view'" :task="task" />
+            </v-tab-item>
+
+            <v-tab-item v-if="mode === 'view'">
+              <!-- History -->
+              <InternalHistoryTable
+                v-if="task"
+                :history="task.history"
+                hide-task
+                hide-institution
+              />
+            </v-tab-item>
+          </v-tabs>
         </KeepAlive>
       </v-card-text>
 
@@ -94,8 +123,6 @@
 import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 import CustomSwitch from '@/common/CustomSwitch';
-import TaskDetailDialog from './TaskDetailDialog.vue';
-import TaskFormDialog from './TaskFormDialog.vue';
 
 export default defineComponent({
   components: { CustomSwitch },
@@ -120,16 +147,6 @@ export default defineComponent({
     error: '',
   }),
   computed: {
-    component() {
-      switch (this.mode) {
-        case 'edit':
-        case 'create':
-          return TaskFormDialog;
-
-        default:
-          return TaskDetailDialog;
-      }
-    },
     perms() {
       const perms = this.$ezReeport.auth.permissions;
       return {
@@ -149,11 +166,7 @@ export default defineComponent({
   watch: {
     // eslint-disable-next-line func-names
     '$ezReeport.auth.permissions': function () {
-      if (this.perms.readOne) {
-        this.fetch();
-      } else {
-        this.task = undefined;
-      }
+      this.fetch();
     },
     id() {
       this.fetch();
@@ -193,6 +206,19 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   refresh-tooltip: 'Refresh task'
+  show-more-tooltip: 'Show {count} more'
+  show-less-tooltip: 'Show less'
+  headers:
+    institution: 'Institution'
+    targets: 'Receivers'
+    dates: 'Dates'
+  tabs:
+    details: 'Details'
+    template: 'Template'
+    history: 'History'
+  task:
+    lastRun: 'Last run'
+    nextRun: 'Next run'
   item:
     active: 'Active'
     inactive: 'Inactive'
@@ -202,6 +228,19 @@ en:
     delete: 'Delete'
 fr:
   refresh-tooltip: 'Rafraichir la tâche'
+  show-more-tooltip: 'Afficher plus ({count})'
+  show-less-tooltip: 'Afficher moins'
+  headers:
+    institution: 'Institution'
+    targets: 'Destinataires'
+    dates: 'Dates'
+  tabs:
+    details: 'Détails'
+    template: 'Modèle'
+    history: 'Historique'
+  task:
+    lastRun: 'Dernière itération'
+    nextRun: 'Prochaine itération'
   item:
     active: 'Actif'
     inactive: 'Inactif'
