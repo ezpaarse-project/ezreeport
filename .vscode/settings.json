@@ -5,7 +5,6 @@
   },
   "eslint.workingDirectories": [{ "mode": "auto" }],
   "eslint.packageManager": "npm",
-  "eslint.runtime": "node_modules/.bin/eslint",
   "conventionalCommits.scopes": [
     "report",
     "mail",
