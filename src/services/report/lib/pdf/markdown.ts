@@ -1,3 +1,4 @@
+import axios from 'axios';
 import type { Font } from 'jspdf';
 import { marked } from 'marked';
 import { lookup } from 'mime-types';
@@ -423,12 +424,11 @@ const printImage = async (
   let imageData = '';
   if (meta.src.match(/^https?:\/\//i)) {
     // Remote images
-    // @ts-ignore Issue with @types/node
-    // eslint-disable-next-line no-await-in-loop
-    const file = await (await fetch(meta.src)).blob();
-    // eslint-disable-next-line no-await-in-loop
-    const raw = Buffer.from(await file.arrayBuffer()).toString('base64');
-    imageData = `data:${file.type};base64,${raw}`;
+    const { data: file } = await axios.get(meta.src, { responseType: 'arraybuffer' });
+    // TODO [fix]: What if not contained in URL ?
+    const mime = lookup(meta.src);
+    const raw = file.toString('base64');
+    imageData = `data:${mime};base64,${raw}`;
   } else if (meta.src.match(/^data:/i)) {
     // Inline images
     imageData = meta.src;
