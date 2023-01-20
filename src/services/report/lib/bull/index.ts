@@ -70,20 +70,20 @@ const mailQueue = new Queue<MailData>('mail send', { redis });
 
 generationQueue.on('failed', (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {
-    logger.error(`[bull] "generation" failed with error: ${err.message}`);
+    logger.error(`[bull-job] "generation" failed with error: ${err.message}`);
     sendError(err);
   }
 });
 generationQueue.on('error', (err) => {
-  logger.error(`[bull] "generation" failed with error: ${err.message}`);
+  logger.error(`[bull-queue] "generation" failed with error: ${err.message}`);
 });
 mailQueue.on('failed', (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {
-    logger.error(`[bull] "mail" failed with error: ${err.message}`);
+    logger.error(`[bull-job] "mail" failed with error: ${err.message}`);
   }
 });
 mailQueue.on('error', (err) => {
-  logger.error(`[bull] "mail" failed with error: ${err.message}`);
+  logger.error(`[bull-queue] "mail" failed with error: ${err.message}`);
 });
 
 generationQueue.process(concurrence, join(__dirname, 'jobs/generateReport.ts'));
