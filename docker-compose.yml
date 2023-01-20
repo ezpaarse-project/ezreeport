@@ -80,7 +80,7 @@ services:
       - SMTP_REJECT_UNAUTHORIZED
       # mail specific
       - EMAIL_SENDER
-      - EMAIL_EZTEAM
+      - EMAIL_DEV_TEAM
       - EMAIL_ATTEMPTS
       - EMAIL_ATTEMPTS_INTERVAL
       # common

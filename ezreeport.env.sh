@@ -39,7 +39,7 @@ export SMTP_REJECT_UNAUTHORIZED="false"
 
 # mail service
 export EMAIL_SENDER="ezmesure-ezreeport@couperin.org"
-export EMAIL_EZTEAM="ezteam@couperin.org"
+export EMAIL_DEV_TEAM="ezteam@couperin.org"
 export EMAIL_ATTEMPTS=5
 export EMAIL_ATTEMPTS_INTERVAL=2000
 
