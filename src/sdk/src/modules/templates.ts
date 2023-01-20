@@ -2,7 +2,7 @@ import axios from '../lib/axios';
 
 export interface Figure {
   type: string,
-  data: string | unknown[],
+  data?: string | unknown[],
   params: object,
   slots?: number[]
 }
