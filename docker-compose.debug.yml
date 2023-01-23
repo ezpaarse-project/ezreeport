@@ -13,6 +13,8 @@ services:
     image: node:18.13.0
     working_dir: /usr/src/report
     volumes:
+      - ./node_modules:/usr/src/node_modules
+      - ./package-lock.json:/usr/src/package-lock.json
       - ./src/services/report:/usr/src/report
     command: "npm run dev"
     ports:
@@ -22,6 +24,8 @@ services:
     image: node:18.13.0
     working_dir: /usr/src/mail
     volumes:
+      - ./node_modules:/usr/src/node_modules
+      - ./package-lock.json:/usr/src/package-lock.json
       - ./src/services/mail:/usr/src/mail
     command: "npm run dev"
     ports:

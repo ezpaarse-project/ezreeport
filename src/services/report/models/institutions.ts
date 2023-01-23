@@ -47,8 +47,8 @@ export const findInstitutionByCreatorOrRole = async (
         bool: {
           should: [
             // Remove readonly suffix so that we search with the base role
-            { bool: { filter: { terms: { [`${TYPE}.role`]: userRoles.map(trimReadOnlySuffix) } } } },
-            { bool: { filter: { term: { [`${TYPE}.creator`]: username } } } },
+            { bool: { filter: { terms: { [`${TYPE}.role`]: userRoles.map(trimReadOnlySuffix) } } } as any },
+            { bool: { filter: { term: { [`${TYPE}.creator`]: username } } } as any },
           ],
         },
       },
@@ -119,7 +119,7 @@ export const findInstitutionContact = async (
             { terms: { roles: [role, role + READONLY_SUFFIX] } },
             { terms: { roles: ['doc_contact', 'tech_contact'] } },
           ],
-        },
+        } as any,
       },
     },
   });

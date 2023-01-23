@@ -1,6 +1,6 @@
-import type { Recurrence, Task } from '@prisma/client';
 import Queue, { type Job } from 'bull';
 import { join } from 'path';
+import type { Recurrence, Task } from '~/.prisma/client';
 import config from '~/lib/config';
 import { sendError } from '~/lib/elastic/apm';
 import logger from '~/lib/logger';

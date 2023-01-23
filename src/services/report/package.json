@@ -19,7 +19,7 @@
     "prisma:gui": "prisma studio",
     "prisma:migrate": "prisma migrate dev",
     "start": "ts-node --transpile-only app.ts",
-    "test": "npm --prefix ../../../tests/ run test:report"
+    "test": "npm -w ezreeport-tests run test:report"
   },
   "lint-staged": {
     "*.{js,ts}": [

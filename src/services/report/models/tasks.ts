@@ -1,12 +1,12 @@
+import { PrismaClientValidationError } from '@prisma/client/runtime';
+import Joi from 'joi';
+import { join } from 'node:path';
 import {
   History,
   Recurrence,
   type Prisma,
   type Task
-} from '@prisma/client';
-import { PrismaClientValidationError } from '@prisma/client/runtime';
-import Joi from 'joi';
-import { join } from 'node:path';
+} from '~/.prisma/client';
 import config from '~/lib/config';
 import {
   endOfDay,

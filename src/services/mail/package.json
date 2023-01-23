@@ -7,7 +7,7 @@
     "start": "ts-node --transpile-only app.ts",
     "dev": "nodemon app.ts",
     "lint": "eslint --fix .",
-    "test": "npm --prefix ../../../tests/ run test:mail"
+    "test": "npm -w ezreeport-tests run test:mail"
   },
   "repository": {
     "type": "git",

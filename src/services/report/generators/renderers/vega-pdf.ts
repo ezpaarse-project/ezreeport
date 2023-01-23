@@ -1,7 +1,7 @@
-import { Recurrence } from '@prisma/client';
 import EventEmitter from 'events';
 import Joi from 'joi';
 import { merge } from 'lodash';
+import { Recurrence } from '~/.prisma/client';
 import {
   addPage,
   deleteDoc,
