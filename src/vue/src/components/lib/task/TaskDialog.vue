@@ -2,7 +2,6 @@
   <v-dialog
     v-if="perms.readOne"
     :value="show"
-    width="850"
     scrollable
     @input="$emit('update:show', $event)"
   >
@@ -48,41 +47,34 @@
       <v-divider />
 
       <v-card-text>
-        <KeepAlive>
-          <!-- <component
-            :is="component"
-            :task="task"
-          /> -->
-          <v-tabs>
-            <v-tab>
-              {{ $t('tabs.details') }}
-            </v-tab>
-            <v-tab>
-              {{ $t('tabs.template') }}
-            </v-tab>
-            <v-tab v-if="mode === 'view'">
-              {{ $t('tabs.history') }}
-            </v-tab>
+        <v-tabs>
+          <v-tab>
+            {{ $t('tabs.details') }}
+          </v-tab>
+          <v-tab>
+            {{ $t('tabs.template') }}
+          </v-tab>
+          <v-tab v-if="mode === 'view'">
+            {{ $t('tabs.history') }}
+          </v-tab>
 
-            <v-tab-item>
-              <TaskDetail v-if="mode === 'view'" :task="task" :loading="loading" />
-            </v-tab-item>
+          <v-tab-item>
+            <TaskDetail v-if="mode === 'view'" :task="task" :loading="loading" />
+          </v-tab-item>
 
-            <v-tab-item>
-              <TaskTemplate v-if="mode === 'view'" :task="task" />
-            </v-tab-item>
+          <v-tab-item>
+            <TemplateDetail v-if="mode === 'view' && task" :template="task.template" />
+          </v-tab-item>
 
-            <v-tab-item v-if="mode === 'view'">
-              <!-- History -->
-              <InternalHistoryTable
-                v-if="task"
-                :history="task.history"
-                hide-task
-                hide-institution
-              />
-            </v-tab-item>
-          </v-tabs>
-        </KeepAlive>
+          <v-tab-item v-if="mode === 'view'">
+            <InternalHistoryTable
+              v-if="task"
+              :history="task.history"
+              hide-task
+              hide-institution
+            />
+          </v-tab-item>
+        </v-tabs>
       </v-card-text>
 
       <v-divider />

@@ -1,9 +1,10 @@
 /* eslint-disable import/no-import-module-exports */
 import { mergeConfig, type UserConfig } from 'vite';
-import type { StorybookConfig } from '@storybook/builder-vite';
+import type { StorybookConfig } from '@storybook/types';
+import type { StorybookConfigVite } from '@storybook/builder-vite';
 import viteConfig from '../vite.config';
 
-const config: StorybookConfig = {
+const config: StorybookConfig & StorybookConfigVite = {
   stories: [
     '../src/**/*.mdx',
     '../src/**/*.stories.@(js|jsx|ts|tsx)',
@@ -29,6 +30,16 @@ const config: StorybookConfig = {
     return mergeConfig(cfg, {
       resolve: defConfig.resolve,
       server: defConfig.server,
+      css: defConfig.css,
+      optimizeDeps: {
+        include: [
+          'vuetify',
+          'vue-i18n',
+          'vuetify/src/locale',
+          '@storybook/addon-essentials/docs/mdx-react-shim',
+          '@storybook/blocks',
+        ],
+      },
     });
   },
 };
