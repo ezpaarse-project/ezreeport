@@ -63,6 +63,27 @@ const isValidTask = (data: unknown): data is InputTask => {
 };
 
 /**
+ * Get count of tasks in DB
+ *
+ * @param institution The institution of the task. If provided,
+ * will restrict search to the instituion provided
+ *
+ * @returns The task count
+ */
+export const getCountTask = async (institution?: Task['institution']):Promise<number> => {
+  await prisma.$connect();
+
+  const count = await prisma.task.count({
+    where: {
+      institution,
+    },
+  });
+
+  await prisma.$disconnect();
+  return count;
+};
+
+/**
  * Get all tasks in DB
  *
  * @param opts Requests options

@@ -13,6 +13,7 @@ import {
   editTaskById,
   editTaskByIdWithHistory,
   getAllTasks,
+  getCountTask,
   getTaskById
 } from '~/models/tasks';
 import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';
@@ -75,7 +76,7 @@ const router = CustomRouter('tasks')
     return {
       data: tasks,
       meta: {
-        // total: undefined,
+        total: await getCountTask(req.user?.institution),
         count: tasks.length,
         size: c,
         lastId: tasks.at(-1)?.id,
