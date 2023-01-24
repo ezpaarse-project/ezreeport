@@ -213,12 +213,11 @@ export default defineComponent({
     /**
      * Fetch file linked to an history entry
      *
-     * TODO: Add file in `data`
-     *
      * @param entry The history entry
      * @param type The type of file
      */
     async fetchFile(id: HistoryItem['id'], type: 'report' | 'detail' | 'debug'): Promise<{ blob: Blob, fileName: string } | undefined> {
+      // TODO: Add file & if deleted in `data`
       const entry = this.history.find((e) => e.id === id);
       // Check if file is linked
       if (!entry || !/^generation-.*/i.test(entry.type)) {

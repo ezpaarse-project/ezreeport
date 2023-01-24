@@ -25,8 +25,10 @@
           :input-value="task.enabled"
           :readonly="!perms.enable || !perms.disable"
           :label="$t(task?.enabled ? 'item.active' : 'item.inactive')"
+          :disabled="loading"
           class="text-body-2"
           reverse
+          @click.stop="toggle()"
         />
 
         <RefreshButton
@@ -81,6 +83,7 @@
 
       <v-card-actions v-if="mode === 'view'">
         <v-btn
+          v-if="perms.runTask"
           text
           color="warning"
         >
@@ -100,12 +103,30 @@
           v-if="perms.delete"
           text
           color="error"
+          @click="remove()"
         >
           {{ $t('actions.delete') }}
         </v-btn>
       </v-card-actions>
       <v-card-actions v-else>
-        ...
+        <v-spacer />
+
+        <v-btn
+          text
+          color="error"
+          @click="cancel"
+        >
+          {{ $t('actions.cancel') }}
+        </v-btn>
+
+        <v-btn
+          v-if="(mode === 'create' && perms.create) || (mode === 'edit' && perms.update)"
+          text
+          color="info"
+          @click="save"
+        >
+          {{ $t('actions.save') }}
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -132,8 +153,15 @@ export default defineComponent({
       default: '',
     },
   },
+  emits: {
+    created(task: tasks.FullTask) { return task; },
+    edited(task: tasks.FullTask) { return task; },
+    deleted(task: tasks.FullTask) { return task; },
+    // eslint-disable-next-line func-names
+    'update:show': function (val: boolean) { return val !== undefined; },
+  },
   data: () => ({
-    mode: 'view',
+    mode: 'view' as 'view' | 'edit' | 'create',
     task: undefined as tasks.FullTask | undefined,
     loading: false,
     error: '',
@@ -150,7 +178,7 @@ export default defineComponent({
         enable: perms?.['tasks-put-task-enable'],
         disable: perms?.['tasks-put-task-disable'],
 
-        createFile: perms?.['tasks-post-task-run'],
+        runTask: perms?.['tasks-post-task-run'],
         readFile: perms?.['reports-get-year-yearMonth-filename'],
       };
     },
@@ -163,6 +191,11 @@ export default defineComponent({
     id() {
       this.fetch();
     },
+    show() {
+      if (this.show) {
+        this.mode = this.initialMode;
+      }
+    },
   },
   mounted() {
     this.mode = this.initialMode;
@@ -173,19 +206,90 @@ export default defineComponent({
      * Fetch task info
      */
     async fetch() {
-      if (this.id && this.perms.readOne) {
-        this.loading = true;
-        try {
-          const { content } = await this.$ezReeport.sdk.tasks.getTask(this.id);
-          this.task = content;
-          this.error = '';
-        } catch (error) {
-          this.error = (error as Error).message;
-        }
-        this.loading = false;
-      } else {
+      if (!this.id || !this.perms.readOne) {
         this.task = undefined;
+        return;
       }
+
+      this.loading = true;
+      try {
+        const { content } = await this.$ezReeport.sdk.tasks.getTask(this.id);
+        this.task = content;
+        this.error = '';
+      } catch (error) {
+        this.error = (error as Error).message;
+      }
+      this.loading = false;
+    },
+    async remove() {
+      if (!this.task || !this.perms.delete) {
+        this.task = undefined;
+        return;
+      }
+
+      this.loading = true;
+      try {
+        const { content } = await this.$ezReeport.sdk.tasks.getTask(this.id);
+        // const { content } = await this.$ezReeport.sdk.tasks.deleteTask(this.id);
+        this.task = content;
+        this.error = '';
+        this.$emit('deleted', content);
+        this.$emit('update:show', false);
+      } catch (error) {
+        this.error = (error as Error).message;
+      }
+      this.loading = false;
+    },
+    async save() {
+      if (!this.task || !this.perms.delete) {
+        this.task = undefined;
+        return;
+      }
+
+      this.loading = true;
+      try {
+        const { content } = await this.$ezReeport.sdk.tasks.getTask(this.id);
+        // const { content } = await this.$ezReeport.sdk.tasks.updateTask(this.id, this.task);
+        this.task = content;
+        this.error = '';
+        this.$emit('edited', content);
+      } catch (error) {
+        this.error = (error as Error).message;
+      }
+      this.loading = false;
+    },
+    async toggle() {
+      if (
+        !this.task
+        || (this.task.enabled && !this.perms.disable)
+        || (!this.task.enabled && !this.perms.enable)
+      ) {
+        this.task = undefined;
+        return;
+      }
+
+      this.loading = true;
+      try {
+        const action = this.task.enabled
+          ? this.$ezReeport.sdk.tasks.disableTask
+          : this.$ezReeport.sdk.tasks.enableTask;
+
+        const { content } = await action(this.id);
+
+        this.task = content;
+        this.error = '';
+        this.$emit('edited', content);
+      } catch (error) {
+        this.error = (error as Error).message;
+      }
+      this.loading = false;
+    },
+    cancel() {
+      if (this.mode === 'create') {
+        this.$emit('update:show', false);
+        return;
+      }
+      this.mode = 'view';
     },
   },
 });
@@ -218,6 +322,8 @@ en:
     generate: 'Generate'
     edit: 'Edit'
     delete: 'Delete'
+    cancel: 'Cancel'
+    save: 'Save'
 fr:
   refresh-tooltip: 'Rafraichir la tâche'
   show-more-tooltip: 'Afficher plus ({count})'
@@ -240,4 +346,6 @@ fr:
     generate: 'Générer'
     edit: 'Éditer'
     delete: 'Supprimer'
+    cancel: 'Annuler'
+    save: 'Sauvegarder'
 </i18n>
