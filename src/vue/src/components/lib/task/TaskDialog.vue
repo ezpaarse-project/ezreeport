@@ -1,21 +1,15 @@
 <template>
-  <v-dialog
-    v-if="perms.readOne"
-    :value="show"
-    scrollable
-    @input="$emit('update:show', $event)"
-  >
-    <v-card
-      :loading="loading"
-    >
+  <v-dialog v-if="perms.readOne" :value="show" scrollable @input="$emit('update:show', $event)">
+    <GenerationDialog
+      v-if="task && shownGenerationDialog"
+      :show.sync="shownGenerationDialog"
+      :task="task" />
+
+    <v-card :loading="loading">
       <v-card-title>
         <div v-if="task">
           {{ task.name }}
-          <RecurrenceChip
-            size="small"
-            class="text-body-2 ml-2"
-            :value="task.recurrence"
-          />
+          <RecurrenceChip size="small" class="text-body-2 ml-2" :value="task.recurrence" />
         </div>
 
         <v-spacer />
@@ -28,20 +22,14 @@
           :disabled="loading"
           class="text-body-2"
           reverse
-          @click.stop="toggle()"
-        />
+          @click.stop="toggle()" />
 
         <RefreshButton
           v-if="mode === 'view'"
           :loading="loading"
           :tooltip="$t('refresh-tooltip').toString()"
-          @click="fetch"
-        />
-        <v-btn
-          icon
-          text
-          @click="$emit('update:show', false)"
-        >
+          @click="fetch" />
+        <v-btn icon text @click="$emit('update:show', false)">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
@@ -69,62 +57,37 @@
           </v-tab-item>
 
           <v-tab-item v-if="mode === 'view'">
-            <InternalHistoryTable
-              v-if="task"
-              :history="task.history"
-              hide-task
-              hide-institution
-            />
+            <InternalHistoryTable v-if="task" :history="task.history" hide-task hide-institution />
           </v-tab-item>
         </v-tabs>
       </v-card-text>
 
-      <v-divider />
+      <!-- <v-divider /> -->
 
       <v-card-actions v-if="mode === 'view'">
-        <v-btn
-          v-if="perms.runTask"
-          text
-          color="warning"
-        >
+        <v-btn v-if="perms.runTask" color="warning" @click="shownGenerationDialog = true">
           {{ $t('actions.generate') }}
         </v-btn>
 
-        <v-btn
-          v-if="perms.update"
-          text
-          color="info"
-          @click="mode = 'edit'"
-        >
+        <v-btn v-if="perms.update" color="info" @click="mode = 'edit'">
           {{ $t('actions.edit') }}
         </v-btn>
 
-        <v-btn
-          v-if="perms.delete"
-          text
-          color="error"
-          @click="remove()"
-        >
+        <v-btn v-if="perms.delete" color="error" @click="remove()">
           {{ $t('actions.delete') }}
         </v-btn>
       </v-card-actions>
       <v-card-actions v-else>
         <v-spacer />
 
-        <v-btn
-          text
-          color="error"
-          @click="cancel"
-        >
+        <v-btn color="error" @click="cancel">
           {{ $t('actions.cancel') }}
         </v-btn>
 
         <v-btn
           v-if="(mode === 'create' && perms.create) || (mode === 'edit' && perms.update)"
-          text
           color="info"
-          @click="save"
-        >
+          @click="save">
           {{ $t('actions.save') }}
         </v-btn>
       </v-card-actions>
@@ -165,6 +128,7 @@ export default defineComponent({
     task: undefined as tasks.FullTask | undefined,
     loading: false,
     error: '',
+    shownGenerationDialog: false,
   }),
   computed: {
     perms() {

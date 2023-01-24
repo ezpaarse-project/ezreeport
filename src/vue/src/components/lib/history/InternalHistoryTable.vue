@@ -271,8 +271,6 @@ export default defineComponent({
         el.click();
         URL.revokeObjectURL(el.href);
       } catch (error) {
-        console.error('Error catch', error);
-
         this.error = (error as Error).message;
       }
       this.loading = false;
