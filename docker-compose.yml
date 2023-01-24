@@ -64,7 +64,7 @@ services:
     build:
       context: ./src/services/mail
     volumes:
-      - ./logs/report:/usr/src/mail/logs # Logs output
+      - ./logs/mail:/usr/src/mail/logs # Logs output
     environment:
       # node
       - NODE_ENV
