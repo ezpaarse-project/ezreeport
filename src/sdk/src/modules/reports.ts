@@ -123,6 +123,9 @@ export const startGeneration = (
   },
 );
 
+export type GenerationStartedEvent = { id: string | number, queue: string };
+export type GenerationProgressEvent = { progress: number, status: FullReportJob['status'] };
+
 /**
  * Start generation of a report and track progress
  *
@@ -132,8 +135,9 @@ export const startGeneration = (
  * @param params Other params for overriding default
  * @param institution Force institution
  *
- * @fires #started When generation started. Contains job's id and queue.
- * @fires #progress When generation progress. Contains job's progress (>= 0 & <= 1) & status
+ * @fires #started When generation started. See `GenerationStartedEvent`.
+ * @fires #progress When generation progress. See `GenerationProgressEvent`. Job's progress is
+ * between 0 and 1
  *
  * @throws If job's fails. **Not if generation fails !**
  *
@@ -241,7 +245,7 @@ export const getReportFileByName = <Result extends keyof ResponseTypeMap = 'text
 /**
  * Get report main file (the result) by giving job's info
  *
- * Needs `reports-get-year-yearMonth-filename` permission
+ * Needs `reports-get-year-yearMonth-filename` & `queues-get-queue-jobId ` permission
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
@@ -296,7 +300,7 @@ export const getReportDetailByName = async (
 /**
  * Get report detail by giving job's info
  *
- * Needs `reports-get-year-yearMonth-filename` permission
+ * Needs `reports-get-year-yearMonth-filename` & `queues-get-queue-jobId ` permission
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
@@ -349,7 +353,7 @@ export const getReportDebugByName = <Result extends keyof ResponseTypeMap = 'jso
 /**
  * Get report debug file by giving job's info
  *
- * Needs `reports-get-year-yearMonth-filename` permission
+ * Needs `reports-get-year-yearMonth-filename` & `queues-get-queue-jobId ` permission
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
