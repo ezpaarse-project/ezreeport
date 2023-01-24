@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "@highlightjs/vue-plugin": "^1.0.2",
+    "date-fns": "^2.29.3",
     "highlight.js": "^10.7.2",
     "vue": "^2.7.10",
     "vue-i18n": "^8.28.2",
