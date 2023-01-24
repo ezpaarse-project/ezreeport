@@ -12,7 +12,8 @@ export interface PaginatedApiResponse<T> extends ApiResponse<T> {
   meta: {
     count: number,
     size: number,
-    lastId?: number
+    total: number,
+    lastId?: unknown
   }
 }
 
