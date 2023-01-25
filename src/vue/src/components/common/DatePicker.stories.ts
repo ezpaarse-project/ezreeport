@@ -9,6 +9,13 @@ const meta: Meta<typeof DatePicker> = {
     value: new Date(),
     min: new Date(2000, 0, 1),
     max: new Date(3000, 0, 1),
+    events: [],
+    eventColor: 'primary',
+    color: 'primary',
+    icon: 'mdi-calendar',
+    solo: false,
+    filled: false,
+    outlined: false,
   },
   argTypes: {
     input: { action: 'input' },

@@ -12,7 +12,7 @@
         :solo="solo"
         :filled="filled"
         :outlined="outlined"
-        prepend-icon="mdi-calendar"
+        :prepend-icon="icon"
         readonly
         v-bind="attrs"
         v-on="on"
@@ -72,6 +72,10 @@ export default defineComponent({
     color: {
       type: String,
       default: 'primary',
+    },
+    icon: {
+      type: String,
+      default: 'mdi-calendar',
     },
     solo: {
       type: Boolean,
