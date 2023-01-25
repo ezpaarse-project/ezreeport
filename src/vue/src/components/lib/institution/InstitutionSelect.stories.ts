@@ -6,6 +6,8 @@ const meta: Meta<typeof InstitutionSelect> = {
   component: InstitutionSelect,
   args: {
     value: '',
+    hideAll: false,
+    errorMessage: '',
   },
   argTypes: {
     input: { action: 'input' },

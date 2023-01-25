@@ -12,6 +12,7 @@
         :items="items"
         :loading="loading"
         :disabled="loading || !!error"
+        :error-messages="errorMessage"
         menu-props="closeOnContentClick"
         class="select-input"
         @input="$emit('input', $event)"
@@ -72,6 +73,14 @@ export default defineComponent({
       type: String,
       required: true,
     },
+    errorMessage: {
+      type: String,
+      default: undefined,
+    },
+    hideAll: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: {
     input(value: string) {
@@ -91,7 +100,7 @@ export default defineComponent({
         .map(this.parseInstitution)
         .sort((a, b) => a.name.localeCompare(b.name));
 
-      if (!this.defaultInstitution) {
+      if (!this.defaultInstitution && !this.hideAll) {
         // Only SUPER_USERS don't have default institution
         return [
           { id: '', name: this.$t('all').toString() },
@@ -127,15 +136,6 @@ export default defineComponent({
       this.loading = true;
       try {
         this.$ezReeport.institutions.fetch(force);
-        // const {
-        //   content: { default: def, available },
-        // } = await this.$ezReeport.sdk.auth.getInstitutions();
-
-        // this.institutions = available;
-        // this.$emit('fetched', available);
-
-        // this.defaultInstitution = def;
-        // this.$emit('input', def ?? '');
       } catch (error) {
         this.error = (error as Error).message;
       }
