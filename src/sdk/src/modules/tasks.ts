@@ -88,6 +88,7 @@ const parseFullTask = (task: RawFullTask): FullTask => {
 };
 
 export interface InputTask extends Pick<FullTask, 'name' | 'template' | 'targets' | 'recurrence'> {
+  institution?: FullTask['institution'],
   nextRun?: FullTask['nextRun'],
   enabled?: FullTask['enabled'],
 }
