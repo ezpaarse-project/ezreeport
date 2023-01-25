@@ -136,6 +136,14 @@ const router = CustomRouter('tasks')
       throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
     }
 
+    if (
+      req.body.institution
+      && req.body.institution !== req.user.institution
+      && !req.user.roles.includes(Roles.SUPER_USER)
+    ) {
+      throw new HTTPError('Body is not valid: "institution" is not allowed', StatusCodes.BAD_REQUEST);
+    }
+
     const task = await editTaskById(
       id,
       req.body,
