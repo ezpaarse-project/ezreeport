@@ -91,11 +91,30 @@
             <v-combobox
               v-model="targets"
               :label="$t('headers.targets')"
-              :rules="rules"
+              :rules="rules.targets"
               multiple
-              chips
               deletable-chips
-            />
+              outlined
+            >
+              <template #append>
+                <div />
+              </template>
+
+              <template v-slot:selection="data">
+                <v-chip
+                  :key="data.item"
+                  :input-value="data.selected"
+                  :disabled="data.disabled"
+                  :color="!validateMail(data.item) ? 'error' : undefined"
+                  small
+                  close
+                  @click:close="data.parent.selectItem(data.item)"
+                  v-bind="data.attrs"
+                >
+                  {{ data.item }}
+                </v-chip>
+              </template>
+            </v-combobox>
           </v-row>
         </v-slide-y-transition>
 
@@ -105,6 +124,7 @@
               v-model="periodRange"
               :label="$t('headers.period').toString()"
               :max="max"
+              outlined
             >
               <template #append>
                 <v-btn icon @click="resetPeriod">
@@ -188,11 +208,12 @@ export default defineComponent({
       }));
     },
     rules() {
-      return [
-        (v: string[]) => v.length > 0 || this.$t('errors.length'),
-        // ULTRA Simple email validation
-        (v: string[]) => v.every((s) => /[a-z0-9.-]*@[a-z0-9.-]*\.[a-z-]*/i.test(s)) || this.$t('errors.format'),
-      ];
+      return {
+        targets: [
+          (v: string[]) => v.length > 0 || this.$t('errors.length'),
+          (v: string[]) => v.every(this.validateMail) || this.$t('errors.format'),
+        ],
+      };
     },
     perms() {
       const perms = this.$ezReeport.auth.permissions;
@@ -216,6 +237,14 @@ export default defineComponent({
     },
   },
   methods: {
+    /**
+     * Check if given string is a mail address
+     *
+     * ! ULTRA Simple email validation
+     *
+     * @param s The string
+     */
+    validateMail: (s: string) => /[a-z0-9.-]*@[a-z0-9.-]*\.[a-z-]*/i.test(s),
     /**
      * Remove item in target list
      *

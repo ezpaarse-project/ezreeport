@@ -9,12 +9,15 @@
       <v-text-field
         :value="formatedDate"
         :label="label"
+        :solo="solo"
+        :filled="filled"
+        :outlined="outlined"
         prepend-icon="mdi-calendar"
         readonly
         v-bind="attrs"
         v-on="on"
       >
-        <template #append>
+        <template #append-outer>
           <slot name="append" />
         </template>
       </v-text-field>
@@ -69,6 +72,18 @@ export default defineComponent({
     color: {
       type: String,
       default: 'primary',
+    },
+    solo: {
+      type: Boolean,
+      default: undefined,
+    },
+    filled: {
+      type: Boolean,
+      default: undefined,
+    },
+    outlined: {
+      type: Boolean,
+      default: undefined,
     },
   },
   emits: {
