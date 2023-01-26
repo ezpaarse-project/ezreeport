@@ -7,6 +7,7 @@ const meta: Meta<typeof LoadingToolbar> = {
   args: {
     text: 'My component',
     loading: false,
+    elevation: 0,
   },
 };
 

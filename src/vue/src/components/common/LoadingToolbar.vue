@@ -1,5 +1,5 @@
 <template>
-  <v-toolbar>
+  <v-toolbar :elevation="elevation">
     <v-toolbar-title>{{ text }}</v-toolbar-title>
 
     <v-spacer />
@@ -28,6 +28,10 @@ export default defineComponent({
     loading: {
       type: Boolean,
       default: false,
+    },
+    elevation: {
+      type: [String, Number],
+      default: 0,
     },
   },
 });

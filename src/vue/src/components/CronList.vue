@@ -11,6 +11,8 @@
       />
     </LoadingToolbar>
 
+    <v-divider />
+
     <v-list style="position: relative;">
       <v-list-group
         v-for="item in items"

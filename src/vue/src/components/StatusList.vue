@@ -11,6 +11,8 @@
       />
     </LoadingToolbar>
 
+    <v-divider />
+
     <v-list style="position: relative;">
       <v-list-item
         v-for="status in items"
