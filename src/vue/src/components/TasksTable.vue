@@ -1,13 +1,29 @@
 <template>
   <v-col v-if="perms.readAll">
-    <TaskDialog
-      v-if="shownTaskDialog"
-      :id="focusedTask"
-      :show.sync="shownTaskDialog"
-      :initial-mode="taskDialogMode"
+    <TaskDialogCreate
+      v-if="perms.create"
+      v-model="createTaskDialogShown"
+      :id="focusedId"
       @created="onTaskCreated"
-      @edited="onTaskEdited"
+    />
+    <TaskDialogRead
+      v-if="perms.readOne"
+      v-model="readTaskDialogShown"
+      :id="focusedId"
+      @updated="onTaskEdited"
       @deleted="onTaskDeleted"
+    />
+    <TaskDialogUpdate
+      v-if="perms.update"
+      v-model="updateTaskDialogShown"
+      :id="focusedId"
+      @updated="onTaskEdited"
+    />
+    <TaskDialogDelete
+      v-if="perms.delete && focusedTask"
+      v-model="deleteTaskDialogShown"
+      :task="focusedTask"
+      @deleted="onTaskEdited"
     />
 
     <v-row>
@@ -48,7 +64,7 @@
             v-if="institution"
             :institution="institution"
           />
-          <span v-else>...</span>
+          <v-progress-circular v-else indeterminate class="my-2" />
         </template>
 
         <template #[`item.recurrence`]="{ value: recurrence }">
@@ -70,10 +86,17 @@
           />
         </template>
 
-        <template
-          v-if="error"
-          #[`body.append`]
-        >
+        <template #[`item.actions`]="{ item }">
+          <v-btn icon color="info" @click.stop="showEditDialog(item)">
+            <v-icon>mdi-pencil</v-icon>
+          </v-btn>
+
+          <v-btn icon color="error" @click.stop="showDeleteDialog(item)">
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
+        </template>
+
+        <template v-if="error" #[`body.append`]>
           <ErrorOverlay v-model="error" />
         </template>
       </v-data-table>
@@ -100,18 +123,23 @@ interface TaskItem {
 export default defineComponent({
   components: { CustomSwitch },
   data: () => ({
-    currentInstitution: '',
-    tasks: [] as tasks.Task[],
-    lastIds: {} as Record<number, string | undefined>,
+    readTaskDialogShown: false,
+    createTaskDialogShown: false,
+    updateTaskDialogShown: false,
+    deleteTaskDialogShown: false,
+
     options: {
       sortBy: ['institution', 'enabled', 'nextRun'],
       sortDesc: [false, true, false],
       multiSort: true,
     } as DataOptions,
+    lastIds: {} as Record<number, string | undefined>,
+
+    currentInstitution: '',
+    tasks: [] as tasks.Task[],
     totalItems: 0,
-    shownTaskDialog: false,
-    taskDialogMode: 'view',
-    focusedTask: '' as string,
+    focusedId: '' as string,
+
     loading: false,
     error: '',
   }),
@@ -120,24 +148,28 @@ export default defineComponent({
       return [
         {
           value: 'name',
-          text: this.$t('header.name').toString(),
+          text: this.$t('headers.name').toString(),
         },
         {
           value: 'institution',
-          text: this.$t('header.institution').toString(),
+          text: this.$t('headers.institution').toString(),
           sort: (a?: institutions.Institution, b?: institutions.Institution) => (a?.name ?? '').localeCompare(b?.name ?? ''),
         },
         {
           value: 'recurrence',
-          text: this.$t('header.recurrence').toString(),
+          text: this.$t('headers.recurrence').toString(),
         },
         {
           value: 'enabled',
-          text: this.$t('header.status').toString(),
+          text: this.$t('headers.status').toString(),
         },
         {
           value: 'nextRun',
-          text: this.$t('header.next').toString(),
+          text: this.$t('headers.next').toString(),
+        },
+        {
+          value: 'actions' as keyof TaskItem,
+          text: this.$t('headers.actions').toString(),
         },
       ];
     },
@@ -151,10 +183,17 @@ export default defineComponent({
       const perms = this.$ezReeport.auth.permissions;
       return {
         readAll: perms?.['tasks-get'],
+        readOne: perms?.['tasks-get-task'],
+        update: perms?.['tasks-put-task'],
+        create: perms?.['tasks-post'],
+        delete: perms?.['tasks-delete-task'],
 
         enable: perms?.['tasks-put-task-enable'],
         disable: perms?.['tasks-put-task-disable'],
       };
+    },
+    focusedTask() {
+      return this.tasks.find(({ id }) => id === this.focusedId);
     },
   },
   watch: {
@@ -247,17 +286,33 @@ export default defineComponent({
      * @param item The item
      */
     showTaskDialog({ id }: TaskItem) {
-      this.taskDialogMode = 'view';
-      this.focusedTask = id;
-      this.shownTaskDialog = true;
+      this.focusedId = id;
+      this.readTaskDialogShown = true;
     },
     /**
      * Prepare and show task creation dialog
      */
     showCreateDialog() {
-      this.taskDialogMode = 'create';
-      this.focusedTask = '';
-      this.shownTaskDialog = true;
+      this.focusedId = '';
+      this.createTaskDialogShown = true;
+    },
+    /**
+     * Prepare and show task edition dialog
+     *
+     * @param item The item
+     */
+    showEditDialog({ id }: TaskItem) {
+      this.focusedId = id;
+      this.updateTaskDialogShown = true;
+    },
+    /**
+     * Prepare and show task deletion dialog
+     *
+     * @param item The item
+     */
+    showDeleteDialog({ id }: TaskItem) {
+      this.focusedId = id;
+      this.deleteTaskDialogShown = true;
     },
     /**
      * Toggle task state
@@ -330,7 +385,7 @@ export default defineComponent({
 en:
   title: 'Periodic report list'
   refresh-tooltip: 'Refresh report list'
-  header:
+  headers:
     name: 'Report name'
     institution: 'Institution'
     recurrence: 'Recurrence'
@@ -340,6 +395,7 @@ en:
   item:
     active: 'Active'
     inactive: 'Inactive'
+
 fr:
   title: 'Liste des rapports périodiques'
   refresh-tooltip: 'Rafraîchir la liste des rapports'

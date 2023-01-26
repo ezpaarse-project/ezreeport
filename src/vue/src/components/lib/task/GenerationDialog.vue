@@ -1,5 +1,5 @@
 <template>
-  <v-dialog :value="show" max-width="600">
+  <v-dialog :value="value" max-width="600" @input="$emit('input', $event)">
     <v-card>
       <v-progress-linear
         :active="progress >= 0"
@@ -12,7 +12,7 @@
 
         <v-spacer />
 
-        <v-btn icon text @click="$emit('update:show', false)">
+        <v-btn icon text @click="$emit('input', false)">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
@@ -93,7 +93,6 @@
               :label="$t('headers.targets')"
               :rules="rules.targets"
               multiple
-              deletable-chips
               outlined
             >
               <template #append>
@@ -141,12 +140,13 @@
       <v-card-actions>
         <v-spacer />
 
-        <v-btn @click="$emit('update:show', false)" color="error" :disabled="progress >= 0">
+        <v-btn @click="$emit('input', false)" color="error" :disabled="progress >= 0">
           {{ $t('actions.cancel') }}
         </v-btn>
 
         <v-btn
-          :disabled="!perms.runTask && (generationType === 'test' && targets.length <= 0) || progress >= 0"
+          :disabled="!perms.runTask && (generationType === 'test' && targets.length <= 0)"
+          :loading="progress >= 0"
           color="success"
           @click="start"
         >
@@ -167,7 +167,7 @@ const today = new Date();
 
 export default defineComponent({
   props: {
-    show: {
+    value: {
       type: Boolean,
       required: true,
     },
@@ -177,12 +177,10 @@ export default defineComponent({
     },
   },
   emits: {
-    // eslint-disable-next-line func-names
-    'update:show': function (val: boolean) { return val !== undefined; },
+    input(show: boolean) { return show !== undefined; },
+    generated(value: boolean) { return value !== undefined; },
   },
   data: () => ({
-    error: '',
-    progress: -1,
     generationType: 'test',
     targets: [] as string[],
     result: undefined as reports.ReportResult | undefined,
@@ -190,6 +188,9 @@ export default defineComponent({
     reportStatus: '' as '' | 'success' | 'error',
     period: { start: today, end: today } as Period,
     max: addDays(today, -1),
+
+    progress: -1,
+    error: '',
   }),
   mounted() {
     this.targets = this.task.targets;
@@ -331,7 +332,7 @@ export default defineComponent({
         !this.perms.runTask
         || (this.generationType === 'test' && this.targets.length <= 0)
       ) {
-        this.$emit('update:show', false);
+        this.$emit('input', false);
         return;
       }
 
@@ -359,6 +360,7 @@ export default defineComponent({
 
         this.result = await gen;
         this.reportStatus = this.result.success ? 'success' : 'error';
+        this.$emit('generated', true);
       } catch (error) {
         this.error = (error as Error).message;
       }
@@ -368,13 +370,13 @@ export default defineComponent({
      * Calc period based on recurrence
      */
     resetPeriod() {
-      this.period = calcPeriod(today, this.task.recurrence);
+      this.period = calcPeriod(this.$ezReeport.sdk.tasks.Recurrence, today, this.task.recurrence);
     },
   },
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 
 </style>
 

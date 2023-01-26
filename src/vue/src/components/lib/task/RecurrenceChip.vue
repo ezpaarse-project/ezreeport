@@ -3,6 +3,7 @@
     v-bind="props"
     color="primary"
     :outlined="outlined"
+    v-on="on"
   >
     {{ $t(value) }}
   </v-chip>
@@ -27,6 +28,10 @@ export default defineComponent({
     outlined: {
       type: Boolean,
       default: true,
+    },
+    on: {
+      type: Object,
+      default: undefined,
     },
   },
   computed: {

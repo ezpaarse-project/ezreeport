@@ -1,8 +1,9 @@
 <template>
   <div style="position: relative">
-    <TaskDialog
+    <TaskDialogRead
+      v-if="perms.readOneTask"
+      v-model="readTaskDialogShown"
       :id="focusedTask"
-      :show.sync="shownTaskDialog"
     />
 
     <ErrorOverlay v-model="error" />
@@ -118,7 +119,7 @@ export default defineComponent({
   },
   data: () => ({
     focusedTask: '',
-    shownTaskDialog: false,
+    readTaskDialogShown: false,
     loading: false,
     error: '',
   }),
@@ -277,7 +278,7 @@ export default defineComponent({
     },
     showTaskDialog(id: string) {
       this.focusedTask = id;
-      this.shownTaskDialog = true;
+      this.readTaskDialogShown = true;
     },
   },
 });

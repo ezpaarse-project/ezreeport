@@ -29,36 +29,41 @@ export type Period = {
 /**
  * Get previous period based on Reccurrence
  *
+ * @param Reccurrence Reccurence list (`this.$ezReeport.sdk.tasks.Reccurence`)
  * @param today The today's date
  * @param recurrence The reccurence
  *
  * @returns The period
  */
-export const calcPeriod = (today: Date, recurrence: tasks.Recurrence): Period => {
+export const calcPeriod = (
+  Reccurrence: typeof tasks.Recurrence,
+  today: Date,
+  recurrence: tasks.Recurrence,
+): Period => {
   let period;
 
   switch (recurrence) {
-    case 'DAILY': {
+    case Reccurrence.DAILY: {
       const target = add(today, { days: -1 });
       period = { start: startOfDay(target), end: endOfDay(target) };
       break;
     }
-    case 'WEEKLY': {
+    case Reccurrence.WEEKLY: {
       const target = add(today, { weeks: -1 });
       period = { start: startOfWeek(target), end: endOfWeek(target) };
       break;
     }
-    case 'MONTHLY': {
+    case Reccurrence.MONTHLY: {
       const target = add(today, { months: -1 });
       period = { start: startOfMonth(target), end: endOfMonth(target) };
       break;
     }
-    case 'QUARTERLY': {
+    case Reccurrence.QUARTERLY: {
       const target = add(today, { months: -3 });
       period = { start: startOfQuarter(target), end: endOfQuarter(target) };
       break;
     }
-    case 'BIENNIAL': {
+    case Reccurrence.BIENNIAL: {
       const year = getYear(today);
       const midYear = new Date(year, 5, 30);
       if (isAfter(today, midYear)) {
@@ -71,7 +76,7 @@ export const calcPeriod = (today: Date, recurrence: tasks.Recurrence): Period =>
       }
       break;
     }
-    case 'YEARLY': {
+    case Reccurrence.YEARLY: {
       const target = add(today, { years: -1 });
       period = { start: startOfYear(target), end: endOfYear(target) };
       break;
