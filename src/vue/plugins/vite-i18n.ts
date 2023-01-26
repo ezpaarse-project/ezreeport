@@ -16,7 +16,7 @@ const vueI18nPlugin: Plugin = {
 
     return `export default (Comp) => {
       Comp.i18n = Comp.i18n ?? {};
-      Comp.i18n.messages = ${c};
+      Comp.i18n.messages = { ...(Comp.i18n.messages ?? {}), ...${c} };
     }`;
   },
 };
