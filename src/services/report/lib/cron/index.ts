@@ -17,7 +17,7 @@ export type CronData = {
 
 const pausedJobs: Partial<Record<Crons, Queue.JobInformation>> = {};
 
-const cronQueue = new Queue<CronData>('daily cron', { prefix: 'cron', redis });
+const cronQueue = new Queue<CronData>('ezReeport.daily-cron', { prefix: 'cron', redis });
 cronQueue.on('failed', (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {
     logger.error(`[cron] Failed with error: ${err.message}`);

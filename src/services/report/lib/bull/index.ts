@@ -65,8 +65,8 @@ export type MailData = {
   url: string,
 };
 
-const generationQueue = new Queue<GenerationData>('report generation', { redis });
-const mailQueue = new Queue<MailData>('mail send', { redis });
+const generationQueue = new Queue<GenerationData>('ezReeport.report-generation', { redis });
+const mailQueue = new Queue<MailData>('ezReeport.mail-send', { redis });
 
 generationQueue.on('failed', (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {

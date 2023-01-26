@@ -40,7 +40,7 @@ export type MailData = {
   url: string,
 };
 
-const mailQueue = new Queue<MailData>('mail send', { redis });
+const mailQueue = new Queue<MailData>('ezReeport.mail-send', { redis });
 
 mailQueue.on('failed', (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {
