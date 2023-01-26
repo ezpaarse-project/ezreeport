@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import { CustomRouter } from '~/lib/express-utils';
 import { checkInstitution } from '~/middlewares/auth';
-import { getAllHistoryEntries } from '~/models/history';
+import { getAllHistoryEntries, getCountHistory } from '~/models/history';
 import { Roles } from '~/models/roles';
 
 const router = CustomRouter('history')
@@ -24,7 +24,7 @@ const router = CustomRouter('history')
       data: entries,
       code: StatusCodes.OK,
       meta: {
-        // total: undefined,
+        total: await getCountHistory(req.user?.institution),
         count: entries.length,
         size: c,
         lastId: entries.at(-1)?.id,

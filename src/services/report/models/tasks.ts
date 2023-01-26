@@ -71,7 +71,7 @@ const isValidTask = (data: unknown): data is InputTask => {
  *
  * @returns The task count
  */
-export const getCountTask = async (institution?: Task['institution']):Promise<number> => {
+export const getCountTask = async (institution?: Task['institution']): Promise<number> => {
   await prisma.$connect();
 
   const count = await prisma.task.count({

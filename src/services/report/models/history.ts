@@ -2,6 +2,29 @@ import type { History, Task } from '~/.prisma/client';
 import prisma from '~/lib/prisma';
 
 /**
+ * Get count of history entries in DB
+ *
+ * @param institution The institution of the task. If provided,
+ * will restrict search to the instituion provided
+ *
+ * @returns The entries count
+ */
+export const getCountHistory = async (institution?: Task['institution']): Promise<number> => {
+  await prisma.$connect();
+
+  const count = await prisma.history.count({
+    where: {
+      task: {
+        institution,
+      },
+    },
+  });
+
+  await prisma.$disconnect();
+  return count;
+};
+
+/**
  * Get all history entry in DB
  *
  * @param opts Requests options
