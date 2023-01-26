@@ -152,9 +152,8 @@ export default defineComponent({
     },
   },
   emits: {
-    updated(task: tasks.FullTask) { return !!task; },
-    deleted(task: tasks.FullTask) { return !!task; },
-    input(show: boolean) { return show !== undefined; },
+    updated: (task: tasks.FullTask) => !!task,
+    input: (show: boolean) => show !== undefined,
   },
   data: () => ({
     generationDialogShown: false,
@@ -266,15 +265,6 @@ export default defineComponent({
         this.error = (error as Error).message;
       }
       this.loading = false;
-    },
-    /**
-     * Called when a task is deleted
-     *
-     * @param task The deleted task
-     */
-    onTaskDeleted(task: tasks.FullTask) {
-      this.$emit('deleted', task);
-      this.$emit('input', false);
     },
   },
 });

@@ -42,9 +42,7 @@ export default defineComponent({
     },
   },
   emits: {
-    click() {
-      return true;
-    },
+    click: () => true,
   },
 });
 </script>

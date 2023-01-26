@@ -83,9 +83,7 @@ export default defineComponent({
     },
   },
   emits: {
-    input(value: string) {
-      return !value || typeof value === 'string';
-    },
+    input: (value: string) => !!value,
   },
   data: () => ({
     loading: false,

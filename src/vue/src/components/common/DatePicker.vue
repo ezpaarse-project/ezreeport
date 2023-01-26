@@ -91,7 +91,7 @@ export default defineComponent({
     },
   },
   emits: {
-    input(value: Date | [Date, Date]) { return !!value; },
+    input: (value: Date | [Date, Date]) => !!value,
   },
   computed: {
     /**

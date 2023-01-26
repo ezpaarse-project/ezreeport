@@ -26,9 +26,7 @@ export default defineComponent({
     },
   },
   emits: {
-    input(val: string) {
-      return val.length >= 0;
-    },
+    input: (val: string) => val.length >= 0,
   },
   data: (vm) => ({
     color: vm.$vuetify.theme.currentTheme.error,

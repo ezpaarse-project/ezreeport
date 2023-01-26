@@ -152,8 +152,8 @@ export default defineComponent({
     },
   },
   emits: {
-    input(show: boolean) { return show !== undefined; },
-    updated(task: tasks.FullTask) { return !!task; },
+    input: (show: boolean) => show !== undefined,
+    updated: (task: tasks.FullTask) => !!task,
   },
   data: () => ({
     task: undefined as tasks.FullTask | undefined,

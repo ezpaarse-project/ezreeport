@@ -177,8 +177,8 @@ export default defineComponent({
     },
   },
   emits: {
-    input(show: boolean) { return show !== undefined; },
-    generated(value: boolean) { return value !== undefined; },
+    input: (show: boolean) => show !== undefined,
+    generated: (value: boolean) => value !== undefined,
   },
   data: () => ({
     generationType: 'test',

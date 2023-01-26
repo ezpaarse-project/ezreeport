@@ -147,8 +147,8 @@ export default defineComponent({
     },
   },
   emits: {
-    input(show: boolean) { return show !== undefined; },
-    created(task: tasks.FullTask) { return !!task; },
+    input: (show: boolean) => show !== undefined,
+    created: (task: tasks.FullTask) => !!task,
   },
   data: (vm) => ({
     task: {
