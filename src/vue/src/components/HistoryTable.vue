@@ -8,7 +8,7 @@
     </v-row>
 
     <v-row>
-      <div>
+      <v-col>
         <LoadingToolbar :text="$t('title').toString()">
           <RefreshButton
             :loading="loading"
@@ -16,11 +16,19 @@
             @click="fetch"
           />
         </LoadingToolbar>
+
         <InternalHistoryTable
           :history="history"
+          :options="options"
           class="history-table"
         />
-      </div>
+
+        <v-data-footer
+          :items-per-page-options="[5, 10, 15]"
+          :options.sync="footerOptions"
+          :pagination="footerPagination"
+        />
+      </v-col>
     </v-row>
   </v-col>
 </template>
@@ -28,12 +36,27 @@
 <script lang="ts">
 import type { history } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
+import { DataOptions, DataPagination } from 'vuetify';
 
 export default defineComponent({
   data: () => ({
+    interval: undefined as NodeJS.Timer | undefined,
+
+    options: {
+      sortBy: ['date'],
+      sortDesc: [true],
+      itemsPerPage: -1,
+    } as DataOptions,
+    paginationData: {
+      page: 1,
+      itemsPerPage: 15,
+      itemsLength: 0,
+    },
+    lastIds: {} as Record<number, string | undefined>,
+
     currentInstitution: '',
     history: [] as history.HistoryWithTask[],
-    interval: undefined as number | undefined,
+
     loading: false,
     error: '',
   }),
@@ -42,6 +65,34 @@ export default defineComponent({
       const perms = this.$ezReeport.auth.permissions;
       return {
         readAll: perms?.['history-get'],
+      };
+    },
+    footerOptions: {
+      get(): DataOptions {
+        return {
+          page: this.paginationData.page,
+          itemsPerPage: this.paginationData.itemsPerPage,
+          sortBy: [''],
+          sortDesc: [false],
+          groupBy: [''],
+          groupDesc: [false],
+          multiSort: false,
+          mustSort: false,
+        };
+      },
+      set(val: DataOptions) {
+        this.paginationData.itemsPerPage = val.itemsPerPage;
+        this.fetch(val.page);
+      },
+    },
+    footerPagination(): DataPagination {
+      return {
+        page: this.paginationData.page,
+        itemsPerPage: this.paginationData.itemsPerPage,
+        pageStart: (this.paginationData.page - 1) * this.paginationData.itemsPerPage,
+        pageStop: this.paginationData.page * this.paginationData.itemsPerPage,
+        pageCount: this.paginationData.itemsPerPage,
+        itemsLength: this.paginationData.itemsLength,
       };
     },
   },
@@ -58,20 +109,39 @@ export default defineComponent({
   destroyed() {
     clearInterval(this.interval);
   },
+  unmounted() {
+    clearInterval(this.interval);
+  },
   methods: {
     /**
      * Fetch tasks and parse result
+     *
+     * @param page The page to fetch, if not present it default to current page
      */
-    async fetch() {
+    async fetch(page?:number) {
+      if (!page) {
+        // eslint-disable-next-line no-param-reassign
+        page = this.paginationData.page;
+      }
+
       if (this.perms.readAll) {
         this.loading = true;
         try {
-          // TODO: pagination
-          const { content } = await this.$ezReeport.sdk.history.getAllEntries(
-            undefined,
+          // TODO: sort (not supported by API)
+          const { content, meta } = await this.$ezReeport.sdk.history.getAllEntries(
+            {
+              previous: this.lastIds[page - 1],
+              count: this.paginationData.itemsPerPage,
+            },
             this.currentInstitution || undefined,
           );
           this.history = content;
+          this.paginationData.page = page;
+          this.paginationData.itemsLength = meta.total;
+
+          const lastIds = { ...this.lastIds };
+          lastIds[page] = meta.lastId as string | undefined;
+          this.lastIds = lastIds;
         } catch (error) {
           this.error = (error as Error).message;
         }

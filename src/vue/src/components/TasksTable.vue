@@ -40,6 +40,7 @@
         :loading="loading"
         :options.sync="options"
         :server-items-length="totalItems"
+        :items-per-page-options="[5, 10, 15]"
         class="data-table"
         item-key="id"
         @click:row="showTaskDialog"
@@ -87,13 +88,23 @@
         </template>
 
         <template #[`item.actions`]="{ item }">
-          <v-btn icon color="info" @click.stop="showEditDialog(item)">
-            <v-icon>mdi-pencil</v-icon>
-          </v-btn>
+          <v-tooltip>
+            <template #activator="{ attrs, on }">
+              <v-btn icon color="info" @click.stop="showEditDialog(item)" v-on="on" v-bind="attrs">
+                <v-icon>mdi-pencil</v-icon>
+              </v-btn>
+            </template>
+            <span>{{ $t('actions.edit') }}</span>
+          </v-tooltip>
 
-          <v-btn icon color="error" @click.stop="showDeleteDialog(item)">
-            <v-icon>mdi-delete</v-icon>
-          </v-btn>
+          <v-tooltip>
+            <template #activator="{ attrs, on }">
+              <v-btn icon color="error" @click.stop="showDeleteDialog(item)" v-on="on" v-bind="attrs">
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </template>
+            <span>{{ $t('actions.delete') }}</span>
+          </v-tooltip>
         </template>
 
         <template v-if="error" #[`body.append`]>
@@ -170,6 +181,7 @@ export default defineComponent({
         {
           value: 'actions' as keyof TaskItem,
           text: this.$t('headers.actions').toString(),
+          sortable: false,
         },
       ];
     },
@@ -230,6 +242,8 @@ export default defineComponent({
     },
     /**
      * Fetch tasks and parse result
+     *
+     * @param page The page to fetch, if not present it default to current page
      */
     async fetch(page?:number) {
       if (!page) {
@@ -395,7 +409,9 @@ en:
   item:
     active: 'Active'
     inactive: 'Inactive'
-
+  actions:
+    edit: 'Edit'
+    delete: 'Delete'
 fr:
   title: 'Liste des rapports périodiques'
   refresh-tooltip: 'Rafraîchir la liste des rapports'
@@ -409,4 +425,7 @@ fr:
   item:
     active: 'Actif'
     inactive: 'Inactif'
+  actions:
+    edit: 'Éditer'
+    delete: 'Supprimer'
 </i18n>

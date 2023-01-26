@@ -26,6 +26,9 @@ const data: history.HistoryWithTask[] = [
     data: {
       jobId: '77',
       jobAdded: '2022-11-24T11:40:34.441Z',
+      files: {
+        detail: '2022/2022-11/reporting_ezMESURE_bibcnrs-*:-report-1-v-2-1_c0192740-ac6d-48cf-b15d-91fbadcf3cbc.det.json',
+      },
     },
     createdAt: new Date(Date.parse('2022-11-24T11:40:37.000Z')),
     task: {

@@ -3,7 +3,7 @@
     <TaskDialogRead
       v-if="perms.readOneTask"
       v-model="readTaskDialogShown"
-      :id="focusedTask"
+      :id="focusedId"
     />
 
     <ErrorOverlay v-model="error" />
@@ -11,25 +11,25 @@
     <v-data-table
       :headers="headers"
       :items="items"
-      sort-by="date"
-      sort-desc
-      item-key="id"
       :loading="loading"
+      :options="options"
+      item-key="id"
       hide-default-footer
+      @update:options="$emit('update:options', $event)"
     >
       <template #[`item.type`]="{ value: type, item }">
         <!-- Status of entry + actions on linked files -->
         <div class="text-center">
-          <v-menu :disabled="!perms.readFile || !type.icon">
+          <v-menu :disabled="!perms.readFile || !item.files">
             <template #activator="{ on, attrs }">
               <v-chip
                 :color="type.color"
-                :outlined="!perms.readFile || !type.icon"
+                :outlined="!perms.readFile || !item.files"
                 v-bind="attrs"
                 v-on="on"
               >
                 <v-icon
-                  v-if="type.icon"
+                  v-if="item.files"
                   small
                   class="mr-1"
                 >
@@ -41,13 +41,14 @@
 
             <v-list>
               <v-list-item
-                v-if="type.color !== 'error'"
+                v-if="item.files?.report"
                 ripple
                 @click="downloadFile(item, 'report')"
               >
                 <v-icon>mdi-download</v-icon> {{ $t('files.report') }}
               </v-list-item>
               <v-list-item
+                v-if="item.files?.detail"
                 ripple
                 @click="downloadFile(item, 'detail')"
               >
@@ -83,8 +84,9 @@
 </template>
 
 <script lang="ts">
-import type { history, institutions } from 'ezreeport-sdk-js';
+import type { history, institutions, tasks } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
+import type { DataOptions } from 'vuetify';
 import type { DataTableHeader } from '~/types/vuetify';
 
 type AnyHistory = history.History | history.HistoryWithTask;
@@ -100,6 +102,10 @@ interface HistoryItem {
   date: string,
   task?: history.HistoryWithTask['task'],
   institution?: institutions.Institution,
+  files?: {
+    report?: string,
+    detail?: string,
+  }
 }
 
 export default defineComponent({
@@ -116,14 +122,30 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    options: {
+      type: Object as PropType<DataOptions>,
+      default: (): Partial<DataOptions> => ({
+        sortBy: ['date'],
+        sortDesc: [true],
+        itemsPerPage: -1,
+      }),
+    },
+  },
+  emits: {
+    'update:options': (val: DataOptions) => !!val,
   },
   data: () => ({
-    focusedTask: '',
     readTaskDialogShown: false,
+
+    focusedId: '',
+
     loading: false,
     error: '',
   }),
   computed: {
+    /**
+     * User permissions
+     */
     perms() {
       const perms = this.$ezReeport.auth.permissions;
       return {
@@ -131,11 +153,15 @@ export default defineComponent({
         readOneTask: perms?.['tasks-get-task'],
       };
     },
+    /**
+     * Data table headers
+     */
     headers(): DataTableHeader<HistoryItem>[] {
       const headers: DataTableHeader<HistoryItem>[] = [
         {
           value: 'type',
           text: this.$t('headers.type').toString(),
+          sortable: false,
         },
         {
           value: 'message',
@@ -151,16 +177,21 @@ export default defineComponent({
         headers.splice(1, 0, {
           value: 'institution',
           text: this.$t('headers.institution').toString(),
+          sort: (a?: institutions.Institution, b?: institutions.Institution) => (a?.name ?? '').localeCompare(b?.name ?? ''),
         });
       }
       if (!this.hideTask && this.perms.readOneTask) {
         headers.splice(1, 0, {
           value: 'task',
           text: this.$t('headers.task').toString(),
+          sort: (a?: tasks.Task, b?: tasks.Task) => (a?.name ?? '').localeCompare(b?.name ?? ''),
         });
       }
       return headers;
     },
+    /**
+     * Data table items
+     */
     items(): HistoryItem[] {
       return this.history.map(this.parseHistory);
     },
@@ -209,6 +240,7 @@ export default defineComponent({
         date: entry.createdAt.toLocaleDateString(),
         task,
         institution,
+        files: (entry.data as any | undefined)?.files,
       };
     },
     /**
@@ -276,8 +308,13 @@ export default defineComponent({
       }
       this.loading = false;
     },
+    /**
+     * Prepare and show task dialog
+     *
+     * @param id The id of the task
+     */
     showTaskDialog(id: string) {
-      this.focusedTask = id;
+      this.focusedId = id;
       this.readTaskDialogShown = true;
     },
   },
