@@ -36,6 +36,8 @@ services:
       - REDIS_CONCURRENCE
       # elastic
       - ELASTIC_URL
+      - ELASTIC_USERNAME
+      - ELASTIC_PASSWORD
       - ELASTIC_API_KEY
       - ELASTIC_REQUIRED_STATUS
       - ELASTIC_MAX_TRIES

@@ -5,6 +5,8 @@ import logger from '~/lib/logger';
 
 const {
   url,
+  username,
+  password,
   apiKey,
   requiredStatus,
   maxTries,
@@ -23,14 +25,13 @@ const isElasticStatus = (
 
 // Parse some env var
 const REQUIRED_STATUS = isElasticStatus(requiredStatus) ? requiredStatus : 'green';
+const ES_AUTH = apiKey ? { apiKey } : { username, password };
 
 const client = new Client({
   node: {
     url: new URL(url),
   },
-  auth: {
-    apiKey,
-  },
+  auth: ES_AUTH,
   ssl: {
     rejectUnauthorized: process.env.NODE_ENV === 'production' ?? false,
   },
@@ -154,17 +155,17 @@ export const elasticCheckIndex = async (index: string): Promise<boolean> => {
 /**
  * Get specific user in elastic security
  *
- * @param username The user's username
+ * @param name The user's username
  *
  * @returns The user data
  */
 export const elasticGetUser = async (
-  username: string,
+  name: string,
 ): Promise<Record<string, ElasticUser | undefined>> => {
   const elastic = await getElasticClient();
 
   const { body } = await elastic.security.getUser<Record<string, ElasticUser | undefined>>({
-    username,
+    username: name,
   });
 
   return body;
