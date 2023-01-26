@@ -8,27 +8,13 @@
           :rules="rules.name"
           :label="$t('headers.name')"
         />
-        <v-menu v-if="task">
-          <template #activator="{ on }">
-            <RecurrenceChip
-              :value="task.recurrence"
-              :outlined="false"
-              :on="on"
-              size="small"
-              class="text-body-2 ml-2"
-            />
-          </template>
-
-          <v-list class="text-center">
-            <v-list-item-group v-model="task.recurrence" mandatory>
-              <v-list-item v-for="reccurence in reccurences" :key="reccurence" :value="reccurence">
-                <template #default="{ active }">
-                  <RecurrenceChip :value="reccurence" :outlined="!active" />
-                </template>
-              </v-list-item>
-            </v-list-item-group>
-          </v-list>
-        </v-menu>
+        <RecurrenceChip
+          v-if="task"
+          v-model="task.recurrence"
+          selectable
+          size="small"
+          class="text-body-2 ml-2"
+        />
 
         <v-spacer />
 
@@ -203,9 +189,6 @@ export default defineComponent({
     },
     maxWidth(): number | undefined {
       return this.currentTab !== 1 ? 1000 : undefined;
-    },
-    reccurences(): tasks.Recurrence[] {
-      return Object.values(this.$ezReeport.sdk.tasks.Recurrence);
     },
   },
   watch: {

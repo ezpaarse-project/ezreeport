@@ -1,12 +1,24 @@
 <template>
-  <v-chip
-    v-bind="props"
-    color="primary"
-    :outlined="outlined"
-    v-on="on"
-  >
-    {{ $t(value) }}
-  </v-chip>
+  <v-menu :disabled="!selectable">
+    <template #activator="{ on, attrs }">
+      <v-chip
+        color="primary"
+        :outlined="!selectable"
+        v-bind="{ ...props, ...attrs }"
+        v-on="on"
+      >
+        {{ $t(value) }}
+      </v-chip>
+    </template>
+
+    <v-list class="text-center">
+      <v-list-item-group :value="value" mandatory @change="$emit('input', $event)">
+        <v-list-item v-for="reccurence in reccurences" :key="reccurence" :value="reccurence">
+          {{ $t(reccurence) }}
+        </v-list-item>
+      </v-list-item-group>
+    </v-list>
+  </v-menu>
 </template>
 
 <script lang="ts">
@@ -25,9 +37,9 @@ export default defineComponent({
       type: String as PropType<Sizes>,
       default: 'normal',
     },
-    outlined: {
+    selectable: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     on: {
       type: Object,
@@ -35,6 +47,9 @@ export default defineComponent({
     },
   },
   computed: {
+    reccurences(): tasks.Recurrence[] {
+      return Object.values(this.$ezReeport.sdk.tasks.Recurrence);
+    },
     props() {
       return {
         [this.size]: true,
