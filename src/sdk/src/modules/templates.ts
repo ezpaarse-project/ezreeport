@@ -36,7 +36,7 @@ export interface FullTemplate extends Template {
  *
  * @returns All templates' info
  */
-export const getAllTemplates = () => axios.$get<Template>('/templates');
+export const getAllTemplates = () => axios.$get<Template[]>('/templates');
 
 /**
  * Get template info
