@@ -1,8 +1,8 @@
 <template>
-  <v-dialog max-width="400" :value="value" @input="$emit('input', $event)">
+  <v-dialog max-width="500" :value="value" @input="$emit('input', $event)">
     <v-card :loading="loading">
       <v-card-title>
-        <div>{{$t('title', { name: task.name })}}</div>
+        <div>{{$t('title')}}</div>
 
         <v-spacer />
 
@@ -99,13 +99,13 @@ export default defineComponent({
 
 <i18n lang="yaml">
 en:
-  title: 'Delete "{name}"'
+  title: 'Delete report ?'
   description: 'Do you really want to delete the report "{name}" ? This action is irreversible.'
   actions:
     cancel: 'Cancel'
     confirm: 'OK'
 fr:
-  title: 'Supprimer "{name}"'
+  title: 'Supprimer le rapport ?'
   description: 'Voulez-vous définitivement supprimer le rapport "{name}" ? Cette action est irrévérsible.'
   actions:
     cancel: 'Annuler'
