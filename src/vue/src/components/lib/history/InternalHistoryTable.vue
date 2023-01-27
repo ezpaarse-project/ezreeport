@@ -84,6 +84,7 @@
 </template>
 
 <script lang="ts">
+import { isBefore, parseISO } from 'date-fns';
 import type { history, institutions, tasks } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 import type { DataOptions } from 'vuetify';
@@ -105,8 +106,11 @@ interface HistoryItem {
   files?: {
     report?: string,
     detail?: string,
+    debug?: string,
   }
 }
+
+const today = new Date();
 
 export default defineComponent({
   props: {
@@ -233,6 +237,7 @@ export default defineComponent({
           .find(({ id }) => id === entry.task.institution);
       }
 
+      const data = entry.data as any | undefined;
       return {
         id: entry.id,
         type,
@@ -240,7 +245,7 @@ export default defineComponent({
         date: entry.createdAt.toLocaleDateString(),
         task,
         institution,
-        files: (entry.data as any | undefined)?.files,
+        files: (!data?.destroyAt || isBefore(today, parseISO(data.destroyAt))) && data?.files,
       };
     },
     /**
@@ -249,40 +254,33 @@ export default defineComponent({
      * @param entry The history entry
      * @param type The type of file
      */
-    async fetchFile(id: HistoryItem['id'], type: 'report' | 'detail' | 'debug'): Promise<{ blob: Blob, fileName: string } | undefined> {
-      // TODO: Add file & if deleted in `data`
-      const entry = this.history.find((e) => e.id === id);
+    async fetchFile(
+      item: HistoryItem,
+      type: keyof Required<HistoryItem>['files'],
+    ): Promise<{ blob: Blob, fileName: string } | undefined> {
+      const entry = this.history.find(({ id }) => id === item.id);
       // Check if file is linked
-      if (!entry || !/^generation-.*/i.test(entry.type)) {
+      if (!entry || !item.files?.[type]) {
         return undefined;
       }
-      const matches = /rapport "(?<filepath>.*)"/i.exec(entry.message);
-      if (!matches?.groups?.filepath) {
-        return undefined;
-      }
-      const filePath = matches?.groups?.filepath;
-      let blob: Blob;
-      let fileName: string = filePath.replace(/^.*\//i, '');
 
+      let blob: Blob;
+      const fileName = (item.files[type] ?? '').replace(/\.[a-z]{3}\.json$/gi, '');
       if (type === 'report') {
-        blob = await this.$ezReeport.sdk.reports.getReportFileByName(filePath, undefined, 'blob');
-        fileName += '.rep.pdf';
+        blob = await this.$ezReeport.sdk.reports.getReportFileByName(fileName, undefined, 'blob');
       } else {
         let content: object;
 
         if (type === 'detail') {
-          content = await this.$ezReeport.sdk.reports.getReportDetailByName(filePath);
-          fileName += '.det';
+          content = await this.$ezReeport.sdk.reports.getReportDetailByName(fileName);
         } else {
-          content = await this.$ezReeport.sdk.reports.getReportDebugByName(filePath);
-          fileName += '.deb';
+          content = await this.$ezReeport.sdk.reports.getReportDebugByName(fileName);
         }
 
         blob = new Blob([JSON.stringify(content, undefined, 2)], { type: 'application/json' });
-        fileName += '.json';
       }
 
-      return { blob, fileName };
+      return { blob, fileName: item.files[type] ?? '' };
     },
     /**
      * Download file linked to an history entry
@@ -290,10 +288,10 @@ export default defineComponent({
      * @param entry The history entry
      * @param type The type of file
      */
-    async downloadFile({ id }: HistoryItem, type: 'report' | 'detail' | 'debug') {
+    async downloadFile(item: HistoryItem, type: 'report' | 'detail' | 'debug') {
       this.loading = true;
       try {
-        const res = await this.fetchFile(id, type);
+        const res = await this.fetchFile(item, type);
         if (!res) {
           return;
         }
