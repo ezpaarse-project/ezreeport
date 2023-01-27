@@ -43,11 +43,11 @@ const login = (token: string) => {
 
   sdk.auth.getPermissions()
     .then(({ content }) => { data.auth.permissions = content; })
-    .catch((error: Error) => { console.error('[ezReeport-vue]', error); });
+    .catch((error: Error) => { console.error('[ezReeport-vue]', error.message); });
 
   sdk.auth.getCurrentUser()
     .then(({ content }) => { data.auth.user = content; })
-    .catch((error: Error) => { console.error('[ezReeport-vue]', error); });
+    .catch((error: Error) => { console.error('[ezReeport-vue]', error.message); });
 };
 /**
  * Remove token from SDK, clear permissions & current user
