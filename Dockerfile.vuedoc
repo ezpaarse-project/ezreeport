@@ -25,8 +25,7 @@ RUN apk update \
   && apk upgrade -U -a
 
 # npm ci isn't possible because project uses npm workspaces
-# when dependencies are sorted: npm i --omit=dev
-RUN npm i
+RUN npm i --omit=dev
 
 RUN npm run build:doc
 

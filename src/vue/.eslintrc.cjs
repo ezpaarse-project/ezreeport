@@ -22,21 +22,6 @@ module.exports = {
         'vue/multi-word-component-names': 'off',
       },
     },
-    {
-      files: [
-        '.storybook/**/*.ts',
-        'example/**/*.ts',
-        'example/**/*.vue',
-        'plugins/**/*.ts',
-        'src/**/*.stories.ts',
-        'src/mock/**/*.ts',
-        'vite.config.ts',
-        '.eslintrc.cjs',
-      ],
-      rules: {
-        'import/no-extraneous-dependencies': 'off',
-      },
-    },
   ],
   parserOptions: {
     ecmaVersion: 'latest',
