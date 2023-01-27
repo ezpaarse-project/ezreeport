@@ -7,10 +7,10 @@ const meta: Meta<typeof GenerationDialog> = {
   component: GenerationDialog,
   args: {
     task: mockTasks[0],
-    show: true,
+    value: true,
   },
   argTypes: {
-    'update:show': { action: 'update:show' },
+    input: { action: 'input' },
   },
 };
 

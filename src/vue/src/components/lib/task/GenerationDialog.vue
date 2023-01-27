@@ -266,7 +266,6 @@ export default defineComponent({
 
       let blob: Blob;
       let fileName: string;
-
       if (type === 'report') {
         blob = await this.$ezReeport.sdk.reports.getReportFileByJob(
           this.job.queue,
