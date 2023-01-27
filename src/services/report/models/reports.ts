@@ -349,6 +349,7 @@ export const generateReport = async (
           message: `Rapport "${namepath}" généré par ${origin}`,
           data: {
             ...meta,
+            destroyAt: result.detail.destroyAt.toISOString(),
             files: result.detail.files,
             period: {
               start: formatISO(period.start),
@@ -383,14 +384,15 @@ export const generateReport = async (
           template: task.template as Prisma.InputJsonObject,
           enabled: false,
         },
-        writeHistory ? {
+        {
           type: 'generation-error',
           message: `Rapport "${namepath}" non généré par ${origin} suite à une erreur.`,
           data: {
             ...meta,
+            destroyAt: result.detail.destroyAt.toISOString(),
             files: result.detail.files,
           },
-        } : undefined,
+        },
       );
     }
     logger.error(`[gen] Report "${namepath}" failed to generate in ${(result.detail.took / 1000).toFixed(2)}s with error : ${(error as Error).message}`);
