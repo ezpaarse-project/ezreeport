@@ -104,10 +104,11 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
   institution?: Task['institution'],
 ): Promise<Pick<Task, Keys[number]>[]> => {
   try {
-    // TODO[refactor]: any other way ?
-    const select = opts?.select && opts.select.reduce(
-      (prev, key) => ({ ...prev, [key]: true }),
-      {} as Prisma.TaskSelect,
+    const select: Prisma.TaskSelect = opts?.select && Object.assign(
+      {},
+      ...opts.select.map((v) => ({
+        [v]: true,
+      })),
     );
 
     await prisma.$connect();
