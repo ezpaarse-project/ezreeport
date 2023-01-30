@@ -1,7 +1,7 @@
 <template>
   <v-dialog :max-width="maxWidth" :value="value" scrollable @input="$emit('input', $event)">
     <GenerationDialog
-      v-if="task"
+      v-if="task && perms.runTask"
       v-model="generationDialogShown"
       :task="task"
       @generated="fetch()"

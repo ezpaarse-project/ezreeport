@@ -1,5 +1,11 @@
 <template>
   <v-row>
+    <TemplateDialogRead
+      v-if="taskTemplate && perms.readOne"
+      v-model="readTemplateDialogShown"
+      :name="taskTemplate.extends"
+    />
+
     <v-col>
       <v-switch :label="$t('show-raw')" v-model="showRaw" />
 
@@ -11,25 +17,37 @@
             :label="$t('headers.base')"
             :value="taskTemplate.extends || ''"
             :items="[taskTemplate.extends || '']"
-            readonly />
+            readonly
+          >
+            <template #append-outer>
+              <v-btn v-if="perms.readOne" @click="readTemplateDialogShown = true">
+                {{ $t('actions.see-extends') }}
+              </v-btn>
+            </template>
+          </v-select>
+
           <v-select
-            v-if="fullTemplate"
+            v-if="baseTemplate"
             :label="$t('headers.renderer')"
-            :value="fullTemplate.renderer || 'vega-pdf'"
+            :value="baseTemplate.renderer || 'vega-pdf'"
             :items="availableRenderer"
-            readonly />
+            :disabled="!!taskTemplate"
+            readonly
+          />
 
           <ToggleableObjectTree
             v-if="template.fetchOptions"
             :label="$t('headers.fetchOptions').toString()"
             :value="template.fetchOptions"
-            class="my-2" />
+            class="my-2"
+          />
 
           <ToggleableObjectTree
             v-if="fullTemplate?.renderOptions"
             :label="$t('headers.renderOptions').toString()"
             :value="fullTemplate.renderOptions"
-            class="my-2" />
+            class="my-2"
+          />
         </v-col>
       </v-row>
 
@@ -52,7 +70,8 @@
               v-if="layout.fetchOptions"
               :label="$t('headers.fetchOptions').toString()"
               :value="layout.fetchOptions"
-              class="my-2" />
+              class="my-2"
+            />
 
             <FigureDetail
               v-for="(figure, j) in layout.figures"
@@ -95,6 +114,8 @@ export default defineComponent({
     },
   },
   data: () => ({
+    readTemplateDialogShown: false,
+
     hlStyle: null as HTMLElement | null,
     showRaw: false,
     availableFetchers: ['elastic'],
@@ -106,6 +127,15 @@ export default defineComponent({
     error: '',
   }),
   computed: {
+    /**
+     * User permissions
+     */
+    perms() {
+      const perms = this.$ezReeport.auth.permissions;
+      return {
+        readOne: perms?.['templates-get-name(*)'],
+      };
+    },
     taskTemplate(): tasks.FullTask['template'] | undefined {
       if ('extends' in this.template) {
         return this.template;
@@ -203,30 +233,28 @@ en:
     renderer: 'Renderer'
     base: 'Base template'
     fetchOptions: 'Fetch options'
+    renderOptions: 'Render options'
     inserts: 'Additional layouts'
     insert: 'Layout #{id}'
     at: 'Insert at index'
     at-hint: 'Index is depedent of other inserts'
     layouts: 'Pages'
     layout: 'Page #{id}'
-  types:
-    table: 'Table'
-    md: 'Markdown'
-    metric: 'Metrics'
+  actions:
+    see-extends: 'See base'
 fr:
   show-raw: 'Afficher JSON'
   headers:
     renderer: 'Moteur de rendu'
     base: 'Modèle de base'
     fetchOptions: 'Options de récupération'
+    renderOptions: 'Options de rendu'
     inserts: 'Pages additionnelles'
     insert: 'Page #{id}'
     at: "Insérer à l'index"
     at-hint: "L'index est dépendant des autres pages additionnelles"
     layouts: 'Pages'
     layout: 'Page #{id}'
-  types:
-    table: 'Table'
-    md: 'Markdown'
-    metric: 'Métriques'
+  actions:
+    see-extends: 'See base' # TODO: French translation
 </i18n>
