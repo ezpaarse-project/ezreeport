@@ -47,17 +47,44 @@ export default defineComponent({
       type: [Number, String],
       required: true,
     },
+    grid: {
+      type: Object as PropType<{ rows: number, cols: number } | undefined>,
+      default: undefined,
+    },
   },
-  data: () => ({
-    availableSlots: [1, 2, 3, 4], // TODO: rules
-  }),
   computed: {
+    availableSlots() {
+      // TODO: rules
+      const length = this.grid ? this.grid.cols * this.grid.rows : 4;
+
+      return Array.from({ length }, (_, i) => i + 1);
+    },
     figureTypes() {
-      return [
-        { label: this.$t('types.table'), value: 'table' },
-        { label: this.$t('types.md'), value: 'md' },
-        { label: this.$t('types.metric'), value: 'metric' },
+      const types = [
+        // Vega types
+        'arc',
+        'area',
+        'bar',
+        // 'image',
+        'line',
+        'point',
+        'rect',
+        'rule',
+        'text',
+        'tick',
+        'trail',
+        'circle',
+        'square',
+        // Custom types
+        'table',
+        'md',
+        'metric',
       ];
+
+      return types.map((value) => ({
+        label: this.$t(`figure_types.${value}`),
+        value,
+      }));
     },
   },
 });
@@ -75,10 +102,22 @@ en:
     data: 'Figure data'
     figureParams: 'Figure params'
     slots: 'Figure slot(s)'
-  types:
+  figure_types:
     table: 'Table'
     md: 'Markdown'
     metric: 'Metrics'
+    arc: 'Arc'
+    area: 'Area'
+    bar: 'Bar'
+    line: 'Line'
+    point: 'Point'
+    rect: 'Rect'
+    rule: 'Rule'
+    text: 'Text'
+    tick: 'Tick'
+    trail: 'Trail'
+    circle: 'Circle'
+    square: 'Square'
 fr:
   headers:
     figure: 'Visualisation #{id}'
@@ -86,8 +125,20 @@ fr:
     data: 'Données de la visualisation'
     figureParams: 'Paramètres de la visualisation'
     slots: 'Emplacements de la visualisation'
-  types:
+  figure_types:
     table: 'Table'
     md: 'Markdown'
     metric: 'Métriques'
+    arc: 'Circulaire'
+    area: 'Aire'
+    bar: 'Bâtons'
+    line: 'Courbes'
+    point: 'Nuage de point'
+    rect: 'Rectangle'
+    rule: 'Règle'
+    text: 'Texte'
+    tick: 'Tick' # TODO French translation
+    trail: 'Trail' # TODO French translation
+    circle: 'Cercle'
+    square: 'Carré'
 </i18n>

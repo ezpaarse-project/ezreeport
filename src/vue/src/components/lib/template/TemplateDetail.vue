@@ -7,15 +7,15 @@
         <!-- Global options -->
         <v-col>
           <v-select
-            v-if="'extends' in template"
+            v-if="taskTemplate"
             :label="$t('headers.base')"
-            :value="template.extends || ''"
-            :items="[template.extends || '']"
+            :value="taskTemplate.extends || ''"
+            :items="[taskTemplate.extends || '']"
             readonly />
           <v-select
-            v-else
+            v-if="fullTemplate"
             :label="$t('headers.renderer')"
-            :value="template.renderer || 'vega-pdf'"
+            :value="fullTemplate.renderer || 'vega-pdf'"
             :items="availableRenderer"
             readonly />
 
@@ -26,26 +26,26 @@
             class="my-2" />
 
           <ToggleableObjectTree
-            v-if="'renderOptions' in template && template.renderOptions"
+            v-if="fullTemplate?.renderOptions"
             :label="$t('headers.renderOptions').toString()"
-            :value="template.renderOptions"
+            :value="fullTemplate.renderOptions"
             class="my-2" />
         </v-col>
       </v-row>
 
       <v-row>
-        <v-col v-if="'inserts' in template">
+        <v-col v-if="taskTemplate">
           <div>{{ $t('headers.inserts') }}</div>
-          <v-sheet v-for="(insert, i) in (template.inserts || [])" :key="i" rounded outlined class="pa-2 mt-2">
+          <v-sheet v-for="(insert, i) in (taskTemplate.inserts || [])" :key="i" rounded outlined class="pa-2 mt-2">
             {{ $t('headers.insert', { id: i }) }}
             <v-text-field :label="$t('headers.at')" :value="insert.at" readonly type="number" min="0" />
             <FigureDetail v-for="(figure, j) in insert.figures" :key="j" :figure="figure" :id="j" />
           </v-sheet>
         </v-col>
 
-        <v-col v-if="'layouts' in template">
+        <v-col v-if="fullTemplate">
           <div>{{ $t('headers.layouts') }}</div>
-          <v-sheet v-for="(layout, i) in (template.layouts || [])" :key="i" rounded outlined class="pa-2 mt-2">
+          <v-sheet v-for="(layout, i) in (fullTemplate.layouts || [])" :key="i" rounded outlined class="pa-2 mt-2">
             {{ $t('headers.layout', { id: i }) }}
 
             <ToggleableObjectTree
@@ -54,7 +54,13 @@
               :value="layout.fetchOptions"
               class="my-2" />
 
-            <FigureDetail v-for="(figure, j) in layout.figures" :key="j" :figure="figure" :id="j" />
+            <FigureDetail
+              v-for="(figure, j) in layout.figures"
+              :key="j"
+              :figure="figure"
+              :id="j"
+              :grid="grid"
+            />
           </v-sheet>
         </v-col>
       </v-row>
@@ -93,11 +99,47 @@ export default defineComponent({
     showRaw: false,
     availableFetchers: ['elastic'],
     availableRenderer: ['vega-pdf'],
+
+    extendedTemplate: undefined as templates.FullTemplate | undefined,
+
+    loading: false,
+    error: '',
   }),
+  computed: {
+    taskTemplate(): tasks.FullTask['template'] | undefined {
+      if ('extends' in this.template) {
+        return this.template;
+      }
+      return undefined;
+    },
+    fullTemplate(): templates.FullTemplate['template'] | undefined {
+      // Not using this.taskTemplate cause of TS casting
+      if ('extends' in this.template) {
+        return undefined;
+      }
+      return this.template;
+    },
+    baseTemplate(): templates.FullTemplate['template'] | undefined {
+      if (this.taskTemplate) {
+        return this.extendedTemplate?.template;
+      }
+      return this.fullTemplate;
+    },
+    grid() {
+      const grid = this.baseTemplate?.renderOptions?.grid;
+      if (!grid || typeof grid !== 'object' || Array.isArray(grid)) {
+        return undefined;
+      }
+      return grid as { cols: number, rows: number };
+    },
+  },
   watch: {
     // eslint-disable-next-line func-names
     '$vuetify.theme.dark': function () {
       this.applyHlTheme();
+    },
+    template() {
+      this.fetchBase();
     },
   },
   mounted() {
@@ -108,6 +150,7 @@ export default defineComponent({
       document.head.appendChild(this.hlStyle);
       this.applyHlTheme();
     }
+    this.fetchBase();
   },
   destroyed() {
     if (this.hlStyle) {
@@ -120,6 +163,23 @@ export default defineComponent({
     }
   },
   methods: {
+    async fetchBase() {
+      if (!this.taskTemplate) {
+        return;
+      }
+
+      this.loading = true;
+      try {
+        const { content } = await this.$ezReeport.sdk.templates.getTemplate(
+          this.taskTemplate.extends,
+        );
+        this.extendedTemplate = content;
+        this.error = '';
+      } catch (error) {
+        this.error = (error as Error).message;
+      }
+      this.loading = false;
+    },
     json(value: unknown): string {
       return JSON.stringify(value, undefined, 2);
     },

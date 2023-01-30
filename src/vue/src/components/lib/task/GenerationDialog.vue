@@ -340,7 +340,6 @@ export default defineComponent({
       this.result = undefined;
       this.progress = 0;
       try {
-        // TODO: English translations
         const gen = this.$ezReeport.sdk.reports.startAndListenGeneration(
           this.task.id,
           {
@@ -386,11 +385,11 @@ en:
     targets: 'Receivers'
     period: 'Report period'
   labels:
-    prod: 'labels.prod'
-    test: 'labels.test'
+    prod: 'labels.prod' # TODO: English translations
+    test: 'labels.test' # TODO: English translations
   descriptions:
-    prod: 'descriptions.prod'
-    test: 'descriptions.test'
+    prod: 'descriptions.prod' # TODO: English translations
+    test: 'descriptions.test' # TODO: English translations
   errors:
     length: 'Please enter at least 1 address'
     format: "One or more address aren't valid"
