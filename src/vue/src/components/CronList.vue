@@ -129,18 +129,22 @@ export default defineComponent({
   watch: {
     // eslint-disable-next-line func-names
     '$ezReeport.auth.permissions': function () {
-      if (this.perms.readAll) {
-        this.fetch();
-      } else {
-        this.crons = [];
-      }
+      this.fetch();
     },
+  },
+  mounted() {
+    this.fetch();
   },
   methods: {
     /**
      * Fetch all crons and parse result
      */
     async fetch() {
+      if (!this.perms.readAll) {
+        this.crons = [];
+        return;
+      }
+
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.crons.getAllCrons();

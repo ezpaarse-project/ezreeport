@@ -61,12 +61,8 @@
     </v-col>
 
     <v-slide-x-reverse-transition>
-      <v-divider v-if="showRaw" vertical />
-    </v-slide-x-reverse-transition>
-
-    <v-slide-x-reverse-transition>
       <v-col v-if="showRaw" cols="6">
-        <highlightjs language="json" :code="json(template)" />
+        <highlightjs language="json" :code="json(template)" class="mt-4" />
       </v-col>
     </v-slide-x-reverse-transition>
   </v-row>
@@ -111,6 +107,11 @@ export default defineComponent({
       this.hlStyle.id = 'hl-style';
       document.head.appendChild(this.hlStyle);
       this.applyHlTheme();
+    }
+  },
+  destroyed() {
+    if (this.hlStyle) {
+      document.head.removeChild(this.hlStyle);
     }
   },
   unmounted() {

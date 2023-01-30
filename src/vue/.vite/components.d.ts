@@ -31,6 +31,7 @@ declare module 'vue' {
     TaskDialogUpdate: typeof import('./../src/components/lib/task/TaskDialogUpdate.vue')['default']
     TasksTable: typeof import('./../src/components/TasksTable.vue')['default']
     TemplateDetail: typeof import('./../src/components/lib/template/TemplateDetail.vue')['default']
+    TemplateDialogRead: typeof import('./../src/components/lib/template/TemplateDialogRead.vue')['default']
     TemplateList: typeof import('./../src/components/TemplateList.vue')['default']
     ToggleableObjectTree: typeof import('./../src/components/common/ObjectTree/ToggleableObjectTree.vue')['default']
     VAlert: typeof import('vuetify/lib')['VAlert']

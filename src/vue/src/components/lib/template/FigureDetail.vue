@@ -23,7 +23,13 @@
       :value="figure.params"
       class="mb-2" />
 
-    <v-select :label="$t('headers.slots')" :value="figure.slots || []" :items="availableSlots" multiple readonly />
+    <v-select
+      :label="$t('headers.slots')"
+      :value="figure.slots || []"
+      :items="availableSlots"
+      multiple
+      readonly
+    />
   </v-sheet>
 </template>
 
