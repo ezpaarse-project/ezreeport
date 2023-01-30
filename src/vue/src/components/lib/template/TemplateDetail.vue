@@ -27,11 +27,10 @@
           </v-select>
 
           <v-select
-            v-if="baseTemplate"
+            v-if="fullTemplate"
             :label="$t('headers.renderer')"
-            :value="baseTemplate.renderer || 'vega-pdf'"
+            :value="fullTemplate.renderer || 'vega-pdf'"
             :items="availableRenderer"
-            :disabled="!!taskTemplate"
             readonly
           />
 
@@ -65,6 +64,14 @@
           <div>{{ $t('headers.layouts') }}</div>
           <v-sheet v-for="(layout, i) in (fullTemplate.layouts || [])" :key="i" rounded outlined class="pa-2 mt-2">
             {{ $t('headers.layout', { id: i }) }}
+
+            <v-select
+              v-if="!layout.data"
+              :label="$t('headers.fetcher')"
+              :value="layout.fetcher || 'elastic'"
+              :items="availableFetchers"
+              readonly
+            />
 
             <ToggleableObjectTree
               v-if="layout.fetchOptions"
@@ -184,12 +191,12 @@ export default defineComponent({
   },
   destroyed() {
     if (this.hlStyle) {
-      document.head.removeChild(this.hlStyle);
+      this.hlStyle.parentNode?.removeChild(this.hlStyle);
     }
   },
   unmounted() {
     if (this.hlStyle) {
-      document.head.removeChild(this.hlStyle);
+      this.hlStyle.parentNode?.removeChild(this.hlStyle);
     }
   },
   methods: {
@@ -231,6 +238,7 @@ en:
   show-raw: 'Show JSON'
   headers:
     renderer: 'Renderer'
+    fetcher: 'Fetcher'
     base: 'Base template'
     fetchOptions: 'Fetch options'
     renderOptions: 'Render options'
@@ -246,6 +254,7 @@ fr:
   show-raw: 'Afficher JSON'
   headers:
     renderer: 'Moteur de rendu'
+    fetcher: 'Outil de récupération'
     base: 'Modèle de base'
     fetchOptions: 'Options de récupération'
     renderOptions: 'Options de rendu'
