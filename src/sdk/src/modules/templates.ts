@@ -1,16 +1,21 @@
 import axios from '../lib/axios';
 
+// Extracted from Prisma
+type JsonObject = { [Key in string]?: JsonValue };
+type JsonArray = JsonValue[];
+type JsonValue = string | number | boolean | JsonObject | JsonArray | null;
+
 export interface Figure {
   type: string,
   data?: string | unknown[],
-  params: object,
+  params: JsonObject,
   slots?: number[]
 }
 
 export interface Layout {
   data?: unknown
   fetcher?: string,
-  fetchOptions?: object,
+  fetchOptions?: JsonObject,
   figures: Figure[]
 }
 
@@ -23,8 +28,8 @@ export interface Template {
 export interface FullTemplate extends Template {
   template: {
     renderer?: string,
-    renderOptions?: object,
-    fetchOptions?: object,
+    renderOptions?: JsonObject,
+    fetchOptions?: JsonObject,
     layouts: Layout[]
   }
 }
