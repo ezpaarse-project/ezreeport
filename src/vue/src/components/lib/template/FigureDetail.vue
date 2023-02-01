@@ -7,21 +7,29 @@
       :items="figureTypes"
       item-text="label"
       item-value="value"
-      readonly />
+      readonly
+    />
 
-    <v-textarea v-if="figure.data && figure.type === 'md'" :value="figure.data" readonly :label="$t('headers.data')" />
+    <v-textarea
+      v-if="figure.data && figure.type === 'md'"
+      :value="figure.data"
+      :label="$t('headers.data')"
+      readonly
+    />
 
     <ToggleableObjectTree
       v-else-if="Array.isArray(figure.data)"
       :label="$t('headers.data').toString()"
       :value="figure.data"
-      class="mb-2" />
+      class="mb-2"
+    />
 
     <ToggleableObjectTree
       v-if="figure.params"
       :label="$t('headers.figureParams').toString()"
       :value="figure.params"
-      class="mb-2" />
+      class="mb-2"
+    />
 
     <v-select
       :label="$t('headers.slots')"

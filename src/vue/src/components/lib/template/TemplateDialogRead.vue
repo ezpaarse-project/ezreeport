@@ -2,9 +2,9 @@
   <v-dialog :value="value" scrollable @input="$emit('input', $event)">
     <v-card :loading="loading">
       <v-card-title>
-        <div v-if="item">
+        <template v-if="item">
           {{ item.name }}
-        </div>
+        </template>
 
         <v-spacer />
 

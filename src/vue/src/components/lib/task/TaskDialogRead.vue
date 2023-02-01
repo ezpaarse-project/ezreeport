@@ -9,10 +9,10 @@
 
     <v-card :loading="loading">
       <v-card-title>
-        <div v-if="task">
+        <template v-if="task">
           {{ task.name }}
-          <RecurrenceChip size="small" class="text-body-2 ml-2" :value="task.recurrence" />
-        </div>
+          <RecurrenceChip size="small" classes="text-body-2 ml-2" :value="task.recurrence" />
+        </template>
 
         <v-spacer />
 
@@ -85,14 +85,14 @@
               </v-col>
 
               <v-col>
-                <div>{{ $t('headers.institution') }}:</div>
+                {{ $t('headers.institution') }}:
                 <InstitutionRichListItem
                   v-if="institution"
                   :institution="institution"
                 />
                 <v-progress-circular v-else indeterminate class="my-2" />
 
-                <div>{{ $t('headers.dates') }}:</div>
+                {{ $t('headers.dates') }}:
                 <v-container>
                   <div v-if="task?.lastRun">
                     <v-icon small>

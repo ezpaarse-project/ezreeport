@@ -2,7 +2,7 @@
   <v-dialog max-width="500" :value="value" @input="$emit('input', $event)">
     <v-card :loading="loading">
       <v-card-title>
-        <div>{{$t('title')}}</div>
+        {{$t('title')}}
 
         <v-spacer />
 

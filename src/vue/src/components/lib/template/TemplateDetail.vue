@@ -6,7 +6,7 @@
       :name="taskTemplate.extends"
     />
 
-    <v-col>
+    <v-col style="position: relative">
       <v-switch :label="$t('show-raw')" v-model="showRaw" />
 
       <v-row>
