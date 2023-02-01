@@ -22,7 +22,7 @@
       <v-card-actions>
         <v-spacer />
 
-        <v-btn color="error" @click="$emit('input', false)">
+        <v-btn @click="$emit('input', false)">
           {{ $t('actions.cancel') }}
         </v-btn>
 

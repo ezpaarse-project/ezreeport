@@ -140,7 +140,7 @@
       <v-card-actions>
         <v-spacer />
 
-        <v-btn @click="$emit('input', false)" color="error" :disabled="progress >= 0">
+        <v-btn @click="$emit('input', false)" :disabled="progress >= 0">
           {{ $t('actions.cancel') }}
         </v-btn>
 
