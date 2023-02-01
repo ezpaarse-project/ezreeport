@@ -175,7 +175,13 @@ export const getTemplateByName = async (name: string) => {
   }
 
   // Resolve import
-  const template = JSON.parse(await readFile(path, 'utf-8'));
+  let template: unknown;
+  try {
+    template = JSON.parse(await readFile(path, 'utf-8'));
+  } catch (error) {
+    throw new Error(`An unexpected error occured: ${(error as Error).message}`);
+  }
+
   if (!isNewTemplate(template)) {
     // As validation throws an error, this line shouldn't be called
     return {};
