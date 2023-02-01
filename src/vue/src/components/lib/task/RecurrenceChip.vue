@@ -4,6 +4,7 @@
       <v-chip
         color="primary"
         :outlined="!selectable"
+        :class="classes"
         v-bind="{ ...props, ...attrs }"
         v-on="on"
       >
@@ -40,6 +41,10 @@ export default defineComponent({
     selectable: {
       type: Boolean,
       default: false,
+    },
+    classes: {
+      type: [String, Object, Array],
+      default: undefined,
     },
     on: {
       type: Object,

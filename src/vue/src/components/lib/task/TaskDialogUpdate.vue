@@ -13,7 +13,7 @@
           v-model="task.recurrence"
           selectable
           size="small"
-          class="text-body-2 ml-2"
+          classes="text-body-2 ml-2"
         />
 
         <v-spacer />
