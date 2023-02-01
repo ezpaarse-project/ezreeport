@@ -90,6 +90,8 @@
           </v-sheet>
         </v-col>
       </v-row>
+
+      <ErrorOverlay v-model="error" />
     </v-col>
 
     <v-slide-x-reverse-transition>
