@@ -1,12 +1,34 @@
 <template>
   <div>
+    <ObjectTreePropertyDialog ref="propertyDialogRef" />
+
     <span v-if="label" class="text--secondary">
-      <v-btn icon @click="collpased = !collpased" x-small>
-        <v-icon>mdi-chevron-{{ collpased === false ? 'up' : 'down' }}</v-icon>
+      <v-btn
+        :disabled="length <= 0"
+        icon
+        x-small
+        @click="collapsed = !collapsed"
+      >
+        <v-icon>mdi-chevron-{{ collapsed === false ? 'up' : 'down' }}</v-icon>
       </v-btn>
       {{ label }}
+
+      <v-btn
+        v-if="$listeners.input"
+        icon
+        x-small
+        color="success"
+        @click="addField"
+      >
+        <v-icon>mdi-plus</v-icon>
+      </v-btn>
     </span>
-    <ObjectTree v-if="!collpased" :value="value" />
+    <ObjectTree
+      v-if="!collapsed"
+      :value="value"
+      :dialog-ref="$refs.propertyDialogRef"
+      @input="$emit('input', $event)"
+    />
   </div>
 </template>
 
@@ -24,9 +46,33 @@ export default defineComponent({
       required: true,
     },
   },
+  emits: {
+    input: (v: Record<string, any> | unknown[]) => !!v,
+  },
   data: () => ({
-    collpased: true,
+    collapsed: true,
   }),
+  computed: {
+    length() {
+      return Object.keys(this.value).length;
+    },
+  },
+  methods: {
+    /**
+     * Add a new field to the object/array
+     */
+    addField() {
+      this.collapsed = false;
+      if (Array.isArray(this.value)) {
+        // Creating value based on previous type
+        const val = this.value.at(-1)?.constructor() ?? '';
+        this.$emit('input', [...this.value, val]);
+      } else {
+        const index = Object.keys(this.value).length;
+        this.$emit('input', { ...this.value, [`key-${index}`]: '' });
+      }
+    },
+  },
 });
 </script>
 
