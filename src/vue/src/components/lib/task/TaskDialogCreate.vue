@@ -118,7 +118,7 @@
         </v-btn>
 
         <v-btn
-          :disabled="!valid || task.name.length <= 0 || !perms.create"
+          :disabled="!valid || !isNameValid || !perms.create"
           :loading="loading"
           color="success"
           @click="save"
@@ -180,6 +180,9 @@ export default defineComponent({
         ],
       };
     },
+    isNameValid() {
+      return this.rules.name.every((fnc) => fnc(this.task?.name ?? '') === true);
+    },
     perms() {
       const perms = this.$ezReeport.auth.permissions;
       return {
@@ -222,7 +225,7 @@ export default defineComponent({
      * Save and edit task
      */
     async save() {
-      if (!this.task || !this.valid || this.task.name.length <= 0) {
+      if (!this.task || !this.valid || !this.isNameValid) {
         return;
       }
 

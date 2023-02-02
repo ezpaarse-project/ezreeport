@@ -121,7 +121,7 @@
         </v-btn>
 
         <v-btn
-          :disabled="!task || !valid || task.name.length <= 0 || !perms.update"
+          :disabled="!task || !valid || !isNameValid || !perms.update"
           :loading="loading"
           color="success"
           @click="save"
@@ -176,6 +176,9 @@ export default defineComponent({
           (v: string[]) => v.every(this.validateMail) || this.$t('errors.format'),
         ],
       };
+    },
+    isNameValid() {
+      return this.rules.name.every((fnc) => fnc(this.task?.name ?? '') === true);
     },
     perms() {
       const perms = this.$ezReeport.auth.permissions;
@@ -237,7 +240,7 @@ export default defineComponent({
      * Save and edit task
      */
     async save() {
-      if (!this.task || !this.valid || this.task.name.length <= 0) {
+      if (!this.task || !this.valid || !this.isNameValid) {
         return;
       }
 
