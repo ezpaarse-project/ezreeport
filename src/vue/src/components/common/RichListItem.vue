@@ -3,11 +3,11 @@
     two-line
   >
     <v-list-item-avatar :color="!showImage && fallbackIcon ? avatarColor : 'transparent'">
-      <v-img
+      <img
         v-show="showImage"
-        ref="img"
         :src="src"
         :alt="alt"
+        @error="onImageError"
       />
       <!-- TODO: Fix logo width -->
       <v-icon v-if="!showImage">
@@ -29,7 +29,6 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import type { VImg } from 'vuetify/lib';
 
 export default defineComponent({
   props: {
@@ -62,10 +61,12 @@ export default defineComponent({
       default: 'grey',
     },
   },
-  computed: {
-    showImage(): boolean {
-      const img = this.$refs.img as InstanceType<typeof VImg> | undefined;
-      return !!this.src && !img?.$data.hasError;
+  data: () => ({
+    showImage: true,
+  }),
+  methods: {
+    onImageError() {
+      this.showImage = false;
     },
   },
 });
