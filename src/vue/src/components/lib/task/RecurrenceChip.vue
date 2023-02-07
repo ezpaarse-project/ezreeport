@@ -15,8 +15,8 @@
 
     <v-list class="text-center">
       <v-list-item-group :value="value" mandatory @change="$emit('input', $event)">
-        <v-list-item v-for="reccurence in reccurences" :key="reccurence" :value="reccurence">
-          {{ $t(reccurence) }}
+        <v-list-item v-for="recurrence in recurrences" :key="recurrence" :value="recurrence">
+          {{ $t(recurrence) }}
         </v-list-item>
       </v-list-item-group>
     </v-list>
@@ -53,7 +53,7 @@ export default defineComponent({
     },
   },
   computed: {
-    reccurences(): tasks.Recurrence[] {
+    recurrences(): tasks.Recurrence[] {
       return Object.values(this.$ezReeport.sdk.tasks.Recurrence);
     },
     props() {
