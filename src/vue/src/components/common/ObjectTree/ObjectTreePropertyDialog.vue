@@ -194,14 +194,14 @@ en:
     number: 'The value must be the same type as the property'
 fr:
   headers:
-    property: 'Nom de la propriétée'
-    type: 'Type de la propriétée'
-    value: 'Valeur de la propriétée'
+    property: 'Nom de la propriété'
+    type: 'Type de la propriété'
+    value: 'Valeur de la propriété'
   actions:
     cancel: 'Annuler'
     save: 'Sauvegarder'
     delete: 'Supprimer'
   errors:
     empty: 'Ce champ est requis'
-    number: 'La valeur doit être du même type que la propriétée'
+    number: 'La valeur doit être du même type que la propriété'
 </i18n>

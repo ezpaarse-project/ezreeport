@@ -20,4 +20,13 @@
     "ts-node/register"
   ],
   "typescript.tsdk": "./node_modules/typescript/lib",
+  "cSpell.words": [
+    "ezreeport",
+    "highlightjs",
+    "stackoverflow",
+    "Toggleable",
+    "vega",
+    "vuedraggable",
+    "vuetify"
+  ],
 }

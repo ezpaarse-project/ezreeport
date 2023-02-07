@@ -7,7 +7,7 @@
   >
     <template #activator="{ on, attrs }">
       <v-text-field
-        :value="formatedDate"
+        :value="formattedDate"
         :label="label"
         :solo="solo"
         :filled="filled"
@@ -131,7 +131,7 @@ export default defineComponent({
     /**
      * The value for TextField
      */
-    formatedDate(): string {
+    formattedDate(): string {
       return Array.isArray(this.value)
         ? this.value.map((v) => v.toLocaleDateString()).join(' - ')
         : this.value.toLocaleDateString();
