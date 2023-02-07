@@ -101,7 +101,10 @@
           </v-tab-item>
 
           <v-tab-item>
-            <TemplateDetail v-if="task" :template="task.template" />
+            <TemplateForm
+              v-if="task"
+              :template.sync="task.template"
+            />
           </v-tab-item>
         </v-tabs-items>
 
@@ -135,6 +138,7 @@ import { addDays } from 'date-fns';
 import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import CustomSwitch from '~/components/common/CustomSwitch';
+import type { CustomTaskTemplate } from '../template/customTemplates';
 
 const minDate = addDays(new Date(), 1);
 
@@ -153,7 +157,7 @@ export default defineComponent({
   data: (vm) => ({
     task: {
       name: '',
-      template: { extends: 'base' },
+      template: { extends: 'base' } as CustomTaskTemplate,
       targets: [],
       recurrence: vm.$ezReeport.sdk.tasks.Recurrence.DAILY,
       institution: '',
@@ -236,11 +240,23 @@ export default defineComponent({
 
       this.loading = true;
       try {
+        // Remove frontend data from payload
+        const inserts = this.task.template.inserts?.map(
+          ({ _, ...insert }) => ({
+            ...insert,
+            // eslint-disable-next-line @typescript-eslint/no-shadow
+            figures: insert.figures.map(({ _, ...figure }) => figure),
+          }),
+        );
+
         const { institution, ...task } = this.task;
         const { content } = await this.$ezReeport.sdk.tasks.createTask(
           {
             name: task.name,
-            template: task.template,
+            template: {
+              ...this.task.template,
+              inserts,
+            },
             targets: task.targets,
             recurrence: task.recurrence,
             nextRun: task.nextRun,

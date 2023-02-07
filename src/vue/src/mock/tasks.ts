@@ -6,7 +6,7 @@ const data: tasks.FullTask[] = [
     name: '(mock) bibcnrs-*: report 1 v 2.1',
     institution: 'institution:abba8400-1216-11eb-af77-ff33b5dd411e',
     template: {
-      extends: 'basic',
+      extends: 'tests/slot-tests',
       inserts: [
         {
           at: 0,

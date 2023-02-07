@@ -3,11 +3,11 @@
     <div class="d-flex">
       {{ $t('headers.figure', { id }) }}
 
-      <template v-if="locked">
-        <v-spacer />
+      <v-spacer />
 
-        <v-icon color="black" dense>mdi-lock</v-icon>
-      </template>
+      <v-btn icon color="error" x-small @click="$emit('delete:figure', figure)">
+        <v-icon>mdi-delete</v-icon>
+      </v-btn>
     </div>
 
     <v-select
@@ -16,25 +16,30 @@
       :items="figureTypes"
       item-text="label"
       item-value="value"
-      readonly
+      @change="onFigureTypeChange"
     />
 
     <v-textarea
-      v-if="figure.data && figure.type === 'md'"
-      :value="figure.data"
+      v-if="figure.type === 'md'"
+      :value="figure.data || ''"
       :label="$t('headers.data')"
-      readonly
+      @blur="onMdChange"
     />
 
+    <!-- TODO: choose if custom param -->
     <v-sheet
-      v-else-if="Array.isArray(figure.data)"
+      v-else
       rounded
       outlined
       class="my-2 pa-2"
     >
       <ToggleableObjectTree
         :label="$t('headers.data').toString()"
-        :value="figure.data"
+        :value="Array.isArray(figure.data) ? figure.data : []"
+        @input="
+          Array.isArray($event)
+            && $emit('update:figure', { ...figure, data: $event })
+        "
       />
     </v-sheet>
 
@@ -47,6 +52,10 @@
       <ToggleableObjectTree
         :label="$t('headers.figureParams').toString()"
         :value="figure.params"
+        @input="
+          !Array.isArray($event)
+            && $emit('update:figure', { ...figure, params: $event })
+        "
       />
     </v-sheet>
 
@@ -55,19 +64,19 @@
       :value="figure.slots || []"
       :items="availableSlots"
       multiple
-      readonly
+      @change="$emit('update:figure', { ...figure, slots: $event })"
     />
   </v-sheet>
 </template>
 
 <script lang="ts">
-import type { templates } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
+import type { AnyCustomFigure } from './customTemplates';
 
 export default defineComponent({
   props: {
     figure: {
-      type: Object as PropType<templates.Figure>,
+      type: Object as PropType<AnyCustomFigure>,
       required: true,
     },
     id: {
@@ -78,11 +87,14 @@ export default defineComponent({
       type: Object as PropType<{ rows: number, cols: number } | undefined>,
       default: undefined,
     },
-    locked: {
-      type: Boolean,
-      default: false,
-    },
   },
+  emits: {
+    'update:figure': (val: AnyCustomFigure) => !!val,
+    'delete:figure': (val: AnyCustomFigure) => !!val,
+  },
+  data: () => ({
+    dataMap: {} as Record<string, string | unknown[] | undefined>,
+  }),
   computed: {
     availableSlots() {
       // TODO: rules
@@ -116,6 +128,24 @@ export default defineComponent({
         label: this.$t(`figure_types.${value}`),
         value,
       }));
+    },
+  },
+  methods: {
+    onFigureTypeChange(type: string) {
+      // Backup data for current type
+      this.dataMap[this.figure.type] = this.figure.data;
+      // Update type
+      this.$emit('update:figure', {
+        ...this.figure,
+        data: this.dataMap[type],
+        type,
+      });
+    },
+    onMdChange(e: Event) {
+      const { value } = e.target as HTMLInputElement;
+      if (value !== this.figure.data) {
+        this.$emit('update:figure', { ...this.figure, data: value });
+      }
     },
   },
 });

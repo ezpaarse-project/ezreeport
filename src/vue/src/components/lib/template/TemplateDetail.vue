@@ -7,7 +7,7 @@
     />
 
     <v-col style="position: relative">
-      <v-switch :label="$t('show-raw')" v-model="showRaw" />
+      <v-switch :label="$t('show-raw')" v-model="rawTemplateShown" />
 
       <v-row>
         <!-- Global options -->
@@ -15,12 +15,16 @@
           <v-select
             v-if="taskTemplate"
             :label="$t('headers.base')"
-            :value="taskTemplate.extends || ''"
-            :items="[taskTemplate.extends || '']"
+            :value="taskTemplate.extends"
+            :items="[taskTemplate.extends]"
             readonly
           >
             <template #append-outer>
-              <v-btn v-if="perms.readOne" @click="readTemplateDialogShown = true">
+              <v-btn
+                v-if="perms.readOne"
+                :disabled="loading || !taskTemplate"
+                @click="openBaseDialog()"
+              >
                 {{ $t('actions.see-extends') }}
               </v-btn>
             </template>
@@ -30,7 +34,7 @@
             v-if="fullTemplate"
             :label="$t('headers.renderer')"
             :value="fullTemplate.renderer || 'vega-pdf'"
-            :items="availableRenderer"
+            :items="[fullTemplate.renderer || 'vega-pdf']"
             readonly
           />
 
@@ -52,34 +56,58 @@
 
       <v-row>
         <v-col v-if="taskTemplate">
-          <div>{{ $t('headers.inserts') }}</div>
+          {{ $t('headers.inserts') }}
+
           <v-sheet v-for="(insert, i) in (taskTemplate.inserts || [])" :key="i" rounded outlined class="pa-2 mt-2">
             {{ $t('headers.insert', { id: i }) }}
-            <v-text-field :label="$t('headers.at')" :value="insert.at" readonly type="number" min="0" />
+            <v-text-field
+              :label="$t('headers.at')"
+              :value="insert.at"
+              :hint="$t('headers.at-hint')"
+              readonly
+              type="number"
+              min="0"
+            />
+
+            {{ $t('headers.figures') }}
             <FigureDetail v-for="(figure, j) in insert.figures" :key="j" :figure="figure" :id="j" />
           </v-sheet>
         </v-col>
 
         <v-col v-if="fullTemplate">
-          <div>{{ $t('headers.layouts') }}</div>
+          {{ $t('headers.layouts') }}
+
           <v-sheet v-for="(layout, i) in (fullTemplate.layouts || [])" :key="i" rounded outlined class="pa-2 mt-2">
             {{ $t('headers.layout', { id: i }) }}
 
-            <v-select
-              v-if="!layout.data"
-              :label="$t('headers.fetcher')"
-              :value="layout.fetcher || 'elastic'"
-              :items="availableFetchers"
-              readonly
-            />
+            <div v-if="!layout.data">
+              <!-- Fetcher -->
+              <v-select
+                :label="$t('headers.fetcher')"
+                :value="layout.fetcher || 'elastic'"
+                :items="[layout.fetcher || 'elastic']"
+                readonly
+              />
+              <ToggleableObjectTree
+                v-if="layout.fetchOptions"
+                :label="$t('headers.fetchOptions').toString()"
+                :value="layout.fetchOptions"
+                class="my-2"
+              />
+            </div>
 
-            <ToggleableObjectTree
-              v-if="layout.fetchOptions"
-              :label="$t('headers.fetchOptions').toString()"
-              :value="layout.fetchOptions"
-              class="my-2"
-            />
+            <template v-else>
+              <!-- Layout Data -->
+              <ToggleableObjectTree
+                v-if="typeof layout.data === 'object'"
+                :label="$t('headers.data').toString()"
+                :value="layout.data"
+                class="my-2"
+              />
+              <v-textarea v-else :value="layout.data" :label="$t('headers.data')" readonly />
+            </template>
 
+            {{ $t('headers.figures') }}
             <FigureDetail
               v-for="(figure, j) in layout.figures"
               :key="j"
@@ -95,8 +123,8 @@
     </v-col>
 
     <v-slide-x-reverse-transition>
-      <v-col v-if="showRaw" cols="6">
-        <highlightjs language="json" :code="json(template)" class="mt-4" />
+      <v-col v-if="rawTemplateShown" cols="6">
+        <highlightjs language="json" :code="rawTemplate" class="mt-4" />
       </v-col>
     </v-slide-x-reverse-transition>
   </v-row>
@@ -124,11 +152,9 @@ export default defineComponent({
   },
   data: () => ({
     readTemplateDialogShown: false,
+    rawTemplateShown: false,
 
     hlStyle: null as HTMLElement | null,
-    showRaw: false,
-    availableFetchers: ['elastic'],
-    availableRenderer: ['vega-pdf'],
 
     extendedTemplate: undefined as templates.FullTemplate | undefined,
 
@@ -145,12 +171,28 @@ export default defineComponent({
         readOne: perms?.['templates-get-name(*)'],
       };
     },
+    /**
+     * Template as JSON
+     */
+    rawTemplate(): string {
+      return JSON.stringify(this.template, undefined, 2);
+    },
+    /**
+     * The template of a task. If the provided template isn't from a task, return undefined
+     *
+     * Used to simplify casts in TS
+     */
     taskTemplate(): tasks.FullTask['template'] | undefined {
       if ('extends' in this.template) {
         return this.template;
       }
       return undefined;
     },
+    /**
+     * The template. If the provided tempalte is from a task, return undefined
+     *
+     * Used to simplify casts in TS
+     */
     fullTemplate(): templates.FullTemplate['template'] | undefined {
       // Not using this.taskTemplate cause of TS casting
       if ('extends' in this.template) {
@@ -158,14 +200,21 @@ export default defineComponent({
       }
       return this.template;
     },
+    /**
+     * The base template. If the provided tempalte is from a task,
+     * return the template that it extends, return self otherwise
+     */
     baseTemplate(): templates.FullTemplate['template'] | undefined {
       if (this.taskTemplate) {
         return this.extendedTemplate?.template;
       }
       return this.fullTemplate;
     },
+    /**
+     * The grid of the template. Used to get possible slots for figures.
+     */
     grid() {
-      const grid = this.baseTemplate?.renderOptions?.grid;
+      const grid = this.baseTemplate?.renderOptions?.grid ?? { cols: 2, rows: 2 };
       if (!grid || typeof grid !== 'object' || Array.isArray(grid)) {
         return undefined;
       }
@@ -219,13 +268,14 @@ export default defineComponent({
       }
       this.loading = false;
     },
-    json(value: unknown): string {
-      return JSON.stringify(value, undefined, 2);
-    },
     applyHlTheme() {
       if (this.hlStyle) {
         this.hlStyle.textContent = this.$vuetify.theme.dark ? hlDark : hlLight;
       }
+    },
+    async openBaseDialog() {
+      await this.fetchBase();
+      this.readTemplateDialogShown = true;
     },
   },
 });
@@ -246,10 +296,12 @@ en:
     renderOptions: 'Render options'
     inserts: 'Additional layouts'
     insert: 'Layout #{id}'
+    data: 'Figures data'
     at: 'Insert at index'
     at-hint: 'Index is depedent of other inserts'
     layouts: 'Pages'
     layout: 'Page #{id}'
+    figures: 'Figures'
   actions:
     see-extends: 'See base'
 fr:
@@ -262,10 +314,12 @@ fr:
     renderOptions: 'Options de rendu'
     inserts: 'Pages additionnelles'
     insert: 'Page #{id}'
+    data: 'Données des visualisations'
     at: "Insérer à l'index"
     at-hint: "L'index est dépendant des autres pages additionnelles"
     layouts: 'Pages'
     layout: 'Page #{id}'
+    figures: 'Visualisations'
   actions:
     see-extends: 'See base' # TODO: French translation
 </i18n>

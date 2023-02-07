@@ -104,7 +104,10 @@
           </v-tab-item>
 
           <v-tab-item>
-            <TemplateDetail v-if="task" :template="task.template" />
+            <TemplateForm
+              v-if="task"
+              :template.sync="task.template"
+            />
           </v-tab-item>
         </v-tabs-items>
 
@@ -138,6 +141,9 @@ import { addDays } from 'date-fns';
 import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import CustomSwitch from '~/components/common/CustomSwitch';
+import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '../template/customTemplates';
+
+type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTemplate };
 
 export default defineComponent({
   components: { CustomSwitch },
@@ -156,7 +162,7 @@ export default defineComponent({
     updated: (task: tasks.FullTask) => !!task,
   },
   data: () => ({
-    task: undefined as tasks.FullTask | undefined,
+    task: undefined as CustomTask | undefined,
     currentTab: 0,
 
     minDate: addDays(new Date(), 1),
@@ -229,7 +235,11 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.tasks.getTask(this.id);
-        this.task = content;
+
+        // Add additional data
+        content.template.inserts = addAdditionalDataToLayouts(content.template.inserts ?? []);
+
+        this.task = content as CustomTask;
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
@@ -251,12 +261,24 @@ export default defineComponent({
 
       this.loading = true;
       try {
+        // Remove frontend data from payload
+        const inserts = this.task.template.inserts?.map(
+          ({ _, ...insert }) => ({
+            ...insert,
+            // eslint-disable-next-line @typescript-eslint/no-shadow
+            figures: insert.figures.map(({ _, ...figure }) => figure),
+          }),
+        );
+
         const { content } = await this.$ezReeport.sdk.tasks.updateTask(
           this.task.id,
           {
             name: this.task.name,
             institution: this.task.institution,
-            template: this.task.template,
+            template: {
+              ...this.task.template,
+              inserts,
+            },
             targets: this.task.targets,
             recurrence: this.task.recurrence,
             nextRun: this.task.nextRun,
