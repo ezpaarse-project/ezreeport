@@ -1,5 +1,11 @@
 <template>
-  <v-dialog :value="value" width="500" scrollable @input="$emit('input', $event)">
+  <v-dialog
+    :value="value"
+    :persistent="!valid"
+    width="500"
+    scrollable
+    @input="$emit('input', $event)"
+  >
     <v-card>
       <v-card-title>
         {{ $t('title', { index }) }}
@@ -15,9 +21,10 @@
                 :value="layout.at ?? index"
                 :label="$t('headers.position')"
                 :readonly="readonly"
+                :rules="rules.position"
                 type="number"
                 min="0"
-                @input="$emit('update:index', +$event)"
+                @input="onPositionChange"
               />
             </v-col>
           </v-row>
@@ -63,7 +70,7 @@
                   :label="$t('headers.data')"
                   :rules="rules.data"
                   :readonly="readonly"
-                  @blur="$emit('update:layout', { ...layout, data: $event })"
+                  @blur="onMdChange"
                 />
               </template>
             </v-col>
@@ -111,11 +118,30 @@ export default defineComponent({
     rules() {
       return {
         position: [
-          (v: string) => !Number.isNaN(v) || this.$t('errors.empty'),
+          (v: string) => v !== '' || this.$t('errors.empty'),
+          (v: string) => !Number.isNaN(v) || this.$t('errors.valid'),
+          (v: string) => +v >= 0 || this.$t('errors.negative'),
         ],
-        fetcher: [], // TODO
-        data: [], // TODO
+        fetcher: [
+          (v: string) => !!v || !!this.layout.data || this.$t('errors.fetcher'),
+        ],
+        data: [
+          (v: string) => !!v || !!this.layout.fetcher || this.$t('errors.fetcher'),
+        ],
       };
+    },
+  },
+  methods: {
+    onPositionChange(value: string) {
+      if (this.rules.position.every((rule) => rule(value) === true)) {
+        this.$emit('update:index', +value);
+      }
+    },
+    onMdChange(e: Event) {
+      const { value } = e.target as HTMLInputElement;
+      if (value !== this.layout.data) {
+        this.$emit('update:layout', { ...this.layout, data: value });
+      }
     },
   },
 });
@@ -132,7 +158,12 @@ en:
     position: 'Page number'
     fetcher: 'Fetcher'
     fetchOptions: 'Fetch options'
-    data: 'Figures params'
+    data: 'Figures data'
+  errors:
+    empty: 'This field is required'
+    valid: 'The value must be valid'
+    negative: 'The value must be positive'
+    fetcher: 'A fetcher OR data must be present'
 fr:
   title: 'Paramètres de la page #{index}'
   headers:
@@ -140,4 +171,9 @@ fr:
     fetcher: 'Outil de récupération'
     fetchOptions: 'Options de récupération'
     data: 'Données des visualisations'
+  errors:
+    empty: 'Ce champ est requis'
+    valid: 'La valeur doit être valide'
+    negative: 'La valeur doit être positive'
+    fetcher: 'Un outil de récupération OU des données doivent être présentes'
 </i18n>
