@@ -304,14 +304,19 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
+    '$ezReeport.auth.permissions': function () {
+      this.fetch();
+      this.fetchBase();
+    },
+    // eslint-disable-next-line func-names
     '$vuetify.theme.dark': function () {
       this.applyHlTheme();
     },
-    template() {
-      // FIXME: Any edit retrigger fetch
-      // this.fetch();
-      // this.fetchBase();
-    },
+    // template() {
+    // FIXME: Any edit retrigger fetch
+    // this.fetch();
+    // this.fetchBase();
+    // },
   },
   mounted() {
     // Add highlight.js style if not already present
