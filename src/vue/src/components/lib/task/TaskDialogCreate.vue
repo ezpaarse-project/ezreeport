@@ -33,11 +33,8 @@
       </v-card-title>
 
       <v-tabs v-model="currentTab">
-        <v-tab>
-          {{ $t('tabs.details') }}
-        </v-tab>
-        <v-tab>
-          {{ $t('tabs.template') }}
+        <v-tab v-for="tab in tabs" :key="tab.name">
+          {{ tab.label }}
         </v-tab>
       </v-tabs>
 
@@ -173,6 +170,9 @@ export default defineComponent({
     error: '',
   }),
   computed: {
+    /**
+     * Validation rules
+     */
     rules() {
       return {
         name: [
@@ -184,9 +184,30 @@ export default defineComponent({
         ],
       };
     },
+    /**
+     * Tabs data
+     */
+    tabs() {
+      return [
+        {
+          name: 'details',
+          label: this.$t('tabs.details'),
+        },
+        {
+          name: 'template',
+          label: this.$t('tabs.template'),
+        },
+      ];
+    },
+    /**
+     * name field is outside of the v-form, so we need to manually check using rules
+     */
     isNameValid() {
       return this.rules.name.every((rule) => rule(this.task?.name ?? '') === true);
     },
+    /**
+     * User permissions
+     */
     perms() {
       const perms = this.$ezReeport.auth.permissions;
       return {
@@ -194,6 +215,9 @@ export default defineComponent({
         create: perms?.['tasks-post'],
       };
     },
+    /**
+     * Max Width of the dialog
+     */
     maxWidth(): number | undefined {
       return this.currentTab !== 1 ? 1000 : undefined;
     },

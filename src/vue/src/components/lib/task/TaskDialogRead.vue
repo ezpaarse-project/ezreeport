@@ -40,14 +40,8 @@
       </v-card-title>
 
       <v-tabs v-model="currentTab">
-        <v-tab>
-          {{ $t('tabs.details') }}
-        </v-tab>
-        <v-tab>
-          {{ $t('tabs.template') }}
-        </v-tab>
-        <v-tab>
-          {{ $t('tabs.history') }}
+        <v-tab v-for="tab in tabs" :key="tab.name">
+          {{ tab.label }}
         </v-tab>
       </v-tabs>
 
@@ -166,6 +160,9 @@ export default defineComponent({
     error: '',
   }),
   computed: {
+    /**
+     * Validation rules
+     */
     perms() {
       const perms = this.$ezReeport.auth.permissions;
       return {
@@ -178,12 +175,40 @@ export default defineComponent({
         runTask: perms?.['tasks-post-task-run'],
       };
     },
+    /**
+     * name field is outside of the v-form, so we need to manually check using rules
+     */
     maxWidth(): number | undefined {
       return this.currentTab !== 1 ? 1000 : undefined;
     },
+    /**
+     * User permissions
+     */
     institution(): institutions.Institution | undefined {
       return this.$ezReeport.institutions.data.find(({ id }) => id === this.task?.institution);
     },
+    /**
+     * Tabs data
+     */
+    tabs() {
+      return [
+        {
+          name: 'details',
+          label: this.$t('tabs.details'),
+        },
+        {
+          name: 'template',
+          label: this.$t('tabs.template'),
+        },
+        {
+          name: 'history',
+          label: this.$t('tabs.history'),
+        },
+      ];
+    },
+    /**
+     * Max Width of the dialog
+     */
     dates(): { nextRun?: string, lastRun?: string } {
       return {
         nextRun: this.task?.enabled ? this.task.nextRun.toLocaleDateString() : undefined,
