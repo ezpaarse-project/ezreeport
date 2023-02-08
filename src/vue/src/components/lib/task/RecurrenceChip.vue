@@ -9,7 +9,7 @@
         v-on="on"
       >
         {{ $t(value) }}
-        <v-icon right>mdi-menu-down</v-icon>
+        <v-icon v-if="selectable" right>mdi-menu-down</v-icon>
       </v-chip>
     </template>
 
