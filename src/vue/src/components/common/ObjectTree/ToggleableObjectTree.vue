@@ -1,6 +1,6 @@
 <template>
   <div>
-    <ObjectTreePropertyDialog ref="propertyDialogRef" />
+    <ObjectTreePropertyDialog v-if="$listeners.input" ref="propertyDialogRef" />
 
     <span v-if="label" class="text--secondary">
       <v-btn
@@ -27,7 +27,7 @@
       v-if="!collapsed"
       :value="value"
       :dialog-ref="$refs.propertyDialogRef"
-      @input="$emit('input', $event)"
+      v-on="treeListeners"
     />
   </div>
 </template>
@@ -55,6 +55,13 @@ export default defineComponent({
   computed: {
     length() {
       return Object.keys(this.value).length;
+    },
+    treeListeners() {
+      return {
+        input: this.$listeners.input
+          ? (v: Record<string, any> | unknown[]) => this.$emit('input', v)
+          : undefined,
+      };
     },
   },
   methods: {

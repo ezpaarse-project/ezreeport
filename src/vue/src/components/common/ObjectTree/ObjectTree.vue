@@ -1,13 +1,12 @@
 <template>
   <ul class="list">
     <ObjectTreeItem
-      v-for="[key, val] in entries"
+      v-for="[key, val, listeners] in entries"
       :key="key"
       :property="key"
       :value="val"
       :dialog-ref="dialogRef"
-      @input="(k, v) => onUpdate(key, k, v)"
-      @delete="onDelete(key)"
+      v-on="listeners"
     />
   </ul>
 </template>
@@ -34,10 +33,21 @@ export default defineComponent({
     /**
      * The entries of the object/array
      */
-    entries() {
+    entries(): [string, unknown, Record<string, Function | undefined>][] {
       return Object
         .entries(this.value)
-        .filter(([, value]) => value !== undefined && value !== null);
+        .filter(([, value]) => value !== undefined && value !== null)
+        // Adding listeners
+        .map(([key, value]) => [
+          key,
+          value,
+          {
+            input: this.$listeners.input
+              ? (k: string | number, v: any) => this.onUpdate(key, k, v)
+              : undefined,
+            delete: () => this.onDelete(key),
+          },
+        ]);
     },
   },
   methods: {

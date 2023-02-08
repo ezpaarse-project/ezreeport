@@ -5,7 +5,7 @@
     </v-btn>
 
     <div class="d-flex align-end">
-      <span class="label" @click="openPropertyDialog" @keydown="openPropertyDialog">
+      <span :class="[$listeners.input && 'label']" @click="openPropertyDialog" @keydown="openPropertyDialog">
         {{ property }}:
       </span>
 
@@ -36,7 +36,7 @@
         <div v-else class="font-italic text--disabled">
           {{ value.constructor.name }}
 
-          <v-btn icon color="success" x-small @click="addField">
+          <v-btn v-if="$listeners.input" icon color="success" x-small @click="addField">
             <v-icon>mdi-plus</v-icon>
           </v-btn>
         </div>
@@ -47,7 +47,7 @@
       v-if="!collapsed && (isObject || isArray)"
       :value="value"
       :dialog-ref="dialogRef"
-      @input="$emit('input', property, $event)"
+      v-on="treeListeners"
     />
   </li>
 </template>
@@ -122,6 +122,16 @@ export default defineComponent({
      */
     isString() {
       return !this.isNull && typeof this.value === 'string';
+    },
+    /**
+     * Listeners for sub tree
+     */
+    treeListeners() {
+      return {
+        input: this.$listeners.input
+          ? (v: Record<string, any> | unknown[]) => this.$emit('input', this.property, v)
+          : undefined,
+      };
     },
   },
   methods: {
