@@ -4,6 +4,7 @@ import { v4 as uuid } from 'uuid';
 interface CustomProperties {
   _: {
     id: string
+    hasError: boolean,
   }
 }
 
@@ -28,6 +29,7 @@ export const addAdditionalData = <T>(value: T): T & CustomProperties => ({
   ...value,
   _: {
     id: uuid(),
+    hasError: false,
   },
 });
 

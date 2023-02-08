@@ -36,9 +36,11 @@
       <v-tabs v-model="currentTab">
         <v-tab>
           {{ $t('tabs.details') }}
+          <v-icon v-if="!isDetailValid" color="warning" small right>mdi-alert</v-icon>
         </v-tab>
         <v-tab>
           {{ $t('tabs.template') }}
+          <v-icon v-if="!isTemplateValid" color="warning" small right>mdi-alert</v-icon>
         </v-tab>
       </v-tabs>
 
@@ -48,7 +50,7 @@
         <v-tabs-items v-model="currentTab" class="mt-2">
           <v-tab-item>
             <!-- Details -->
-            <v-form v-if="task" v-model="valid">
+            <v-form v-if="task" v-model="valid" @input="isDetailValid = $event">
               <v-row>
                 <v-col>
                   <v-combobox
@@ -124,7 +126,7 @@
         </v-btn>
 
         <v-btn
-          :disabled="!task || !valid || !isNameValid || !perms.update"
+          :disabled="!task || !valid || !isNameValid || !isTemplateValid || !perms.update"
           :loading="loading"
           color="success"
           @click="save"
@@ -167,11 +169,15 @@ export default defineComponent({
 
     minDate: addDays(new Date(), 1),
     valid: false,
+    isDetailValid: false,
 
     loading: false,
     error: '',
   }),
   computed: {
+    /**
+     * Validation rules
+     */
     rules() {
       return {
         name: [
@@ -183,9 +189,15 @@ export default defineComponent({
         ],
       };
     },
+    /**
+     * name field is outside of the v-form, so we need to manually check using rules
+     */
     isNameValid() {
       return this.rules.name.every((rule) => rule(this.task?.name ?? '') === true);
     },
+    /**
+     * User permissions
+     */
     perms() {
       const perms = this.$ezReeport.auth.permissions;
       return {
@@ -193,13 +205,28 @@ export default defineComponent({
         update: perms?.['tasks-put-task'],
       };
     },
+    /**
+     * Max Width of the dialog
+     */
     maxWidth(): number | undefined {
       return this.currentTab !== 1 ? 1000 : undefined;
     },
+    /**
+     * Various dates to show
+     */
     dates(): { nextRun?: string, lastRun?: string } {
       return {
         lastRun: this.task?.lastRun?.toLocaleString(),
       };
+    },
+    /**
+     * Is task's template valid
+     */
+    isTemplateValid(): boolean {
+      if (!this.task?.template.inserts) {
+        return true;
+      }
+      return this.task.template.inserts.findIndex(({ _: { hasError } }) => hasError) < 0;
     },
   },
   watch: {
@@ -250,7 +277,7 @@ export default defineComponent({
      * Save and edit task
      */
     async save() {
-      if (!this.task || !this.valid || !this.isNameValid) {
+      if (!this.task || !this.valid || !this.isNameValid || !this.isTemplateValid) {
         return;
       }
 

@@ -10,6 +10,7 @@ const meta: Meta<typeof TemplateForm> = {
   component: TemplateForm,
   argTypes: {
     'update:template': { action: 'update:template' },
+    validation: { action: 'validation' },
     // 'update:task-template': { action: 'update:task-template' },
     // 'update:full-template': { action: 'update:full-template' },
   },

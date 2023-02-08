@@ -1,74 +1,79 @@
 <template>
   <v-sheet rounded outlined class="pa-2">
-    <div class="d-flex">
-      {{ $t('headers.figure', { id }) }}
+    <v-form @input="$emit('validation', $event)">
+      <div class="d-flex">
+        <div>
+          {{ $t('headers.figure', { id }) }}
+          <v-icon v-if="figure._.hasError" color="warning" small>mdi-alert</v-icon>
+        </div>
 
-      <v-spacer />
+        <v-spacer />
 
-      <v-btn icon color="error" x-small @click="$emit('delete:figure', figure)">
-        <v-icon>mdi-delete</v-icon>
-      </v-btn>
-    </div>
+        <v-btn icon color="error" x-small @click="$emit('delete:figure', figure)">
+          <v-icon>mdi-delete</v-icon>
+        </v-btn>
+      </div>
 
-    <v-select
-      :label="$t('headers.type')"
-      :value="figure.type"
-      :items="figureTypes"
-      :rules="rules.type"
-      item-text="label"
-      item-value="value"
-      @change="onFigureTypeChange"
-    />
-
-    <v-textarea
-      v-if="figure.type === 'md'"
-      :value="figure.data || ''"
-      :label="$t('headers.data')"
-      :rules="rules.data"
-      @blur="onMdChange"
-    />
-
-    <!-- TODO: choose if custom param -->
-    <v-sheet
-      v-else
-      rounded
-      outlined
-      class="my-2 pa-2"
-    >
-      <ToggleableObjectTree
-        :label="$t('headers.data').toString()"
-        :value="Array.isArray(figure.data) ? figure.data : []"
-        @input="
-          Array.isArray($event)
-            && $emit('update:figure', { ...figure, data: $event })
-        "
+      <v-select
+        :label="$t('headers.type')"
+        :value="figure.type"
+        :items="figureTypes"
+        :rules="rules.type"
+        item-text="label"
+        item-value="value"
+        @change="onFigureTypeChange"
       />
-    </v-sheet>
 
-    <v-sheet
-      v-if="figure.params"
-      rounded
-      outlined
-      class="my-2 pa-2"
-    >
-      <ToggleableObjectTree
-        :label="$t('headers.figureParams').toString()"
-        :value="figure.params"
-        @input="
-          !Array.isArray($event)
-            && $emit('update:figure', { ...figure, params: $event })
-        "
+      <v-textarea
+        v-if="figure.type === 'md'"
+        :value="figure.data || ''"
+        :label="$t('headers.data')"
+        :rules="rules.data"
+        @blur="onMdChange"
       />
-    </v-sheet>
 
-    <v-select
-      :label="$t('headers.slots')"
-      :value="figure.slots || []"
-      :items="availableSlots"
-      :rules="rules.slots"
-      multiple
-      @change="$emit('update:figure', { ...figure, slots: $event })"
-    />
+      <!-- TODO: choose if custom param -->
+      <v-sheet
+        v-else
+        rounded
+        outlined
+        class="my-2 pa-2"
+      >
+        <ToggleableObjectTree
+          :label="$t('headers.data').toString()"
+          :value="Array.isArray(figure.data) ? figure.data : []"
+          @input="
+            Array.isArray($event)
+              && $emit('update:figure', { ...figure, data: $event })
+          "
+        />
+      </v-sheet>
+
+      <v-sheet
+        v-if="figure.params"
+        rounded
+        outlined
+        class="my-2 pa-2"
+      >
+        <ToggleableObjectTree
+          :label="$t('headers.figureParams').toString()"
+          :value="figure.params"
+          @input="
+            !Array.isArray($event)
+              && $emit('update:figure', { ...figure, params: $event })
+          "
+        />
+      </v-sheet>
+
+      <v-select
+        :label="$t('headers.slots')"
+        :value="figure.slots || []"
+        :items="availableSlots"
+        :rules="rules.slots"
+        multiple
+        @change="$emit('update:figure', { ...figure, slots: $event })"
+      />
+    </v-form>
   </v-sheet>
 </template>
 
@@ -98,6 +103,7 @@ export default defineComponent({
   emits: {
     'update:figure': (val: AnyCustomFigure) => !!val,
     'delete:figure': (val: AnyCustomFigure) => !!val,
+    validation: (val: boolean) => val !== undefined,
   },
   data: () => ({
     dataMap: {} as Record<string, string | unknown[] | undefined>,

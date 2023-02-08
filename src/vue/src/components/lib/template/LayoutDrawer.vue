@@ -25,6 +25,7 @@
         <div class="d-flex">
           <span :class="[value === i && 'primary--text']">
             #{{ i }}
+            <v-icon v-if="layout._.hasError" color="warning" small>mdi-alert</v-icon>
           </span>
 
           <v-spacer />

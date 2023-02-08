@@ -19,6 +19,7 @@
         :taken-slots="takenSlots"
         @update:figure="onFigureUpdate($event)"
         @delete:figure="onFigureDelete($event)"
+        @validation="onValidation(figure, $event)"
       />
     </v-col>
 
@@ -130,6 +131,22 @@ export default defineComponent({
       const items = [...this.items];
       items.splice(index, 1);
       this.$emit('update:items', items);
+    },
+    /**
+     * Set error state in figure
+     *
+     * @param figure The figure
+     * @param value The validation value
+     */
+    onValidation(figure: AnyCustomFigure, value: boolean) {
+      this.onFigureUpdate({
+        ...figure,
+        // Set validation state
+        _: {
+          ...figure._,
+          hasError: !value,
+        },
+      });
     },
   },
 });

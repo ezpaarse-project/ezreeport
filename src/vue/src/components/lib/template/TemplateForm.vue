@@ -434,6 +434,12 @@ export default defineComponent({
       const layouts = [...this.mergedLayouts];
       layouts.splice(this.selectedLayoutIndex, 1, {
         ...this.selectedLayout,
+        // Set validation state based on figures
+        _: {
+          ...this.selectedLayout._,
+          hasError: value.findIndex(({ _: { hasError } }) => hasError) >= 0,
+        },
+        // Set figures
         figures: value,
       });
       this.onLayoutListUpdate(layouts);
