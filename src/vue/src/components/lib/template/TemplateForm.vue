@@ -92,37 +92,31 @@
 
         <v-divider />
 
-        <v-card-text v-show="!templateEditorCollapsed" style="height: 650px">
-          <v-row v-if="taskTemplate" style="height: 100%">
+        <v-card-text v-show="!templateEditorCollapsed" class="pb-0" style="height: 650px">
+          <v-row style="height: 100%">
             <!--
-          TODO:
-            - DO TASKS FIRST (ignore templates)
-            - Drawer
-            - Images in sheet
-            - Legend about icons
-            - Do the same in TemplateDetail
-            - Fix create
-        -->
-            <v-col cols="5" xl="1" lg="2" md="3" sm="4" class="editor-panel">
-              <LayoutDrawer
-                v-model="selectedLayoutIndex"
-                :items="mergedLayouts"
-                :mode="modes.drawerMode"
-                @update:items="onLayoutListUpdate"
-              />
-            </v-col>
+              TODO:
+                - DO TASKS FIRST (ignore templates)
+                - Images/color in sheet
+                - Legend about icons
+                - Do the same in TemplateDetail
+                - Fix create
+            -->
+            <LayoutDrawer
+              v-model="selectedLayoutIndex"
+              :items="mergedLayouts"
+              :mode="modes.drawerMode"
+              @update:items="onLayoutListUpdate"
+            />
 
-            <v-divider inset vertical />
-
-            <v-col v-if="selectedLayout" class="editor-panel">
-              <!-- Current layout preview -->
-              <LayoutViewer
-                :items="selectedLayout.figures"
-                :grid="grid"
-                :readonly="modes.isViewerReadonly"
-                @update:items="onFigureListUpdate"
-              />
-            </v-col>
+            <LayoutViewer
+              v-if="selectedLayout"
+              class="editor-panel ma-0"
+              :items="selectedLayout.figures"
+              :grid="grid"
+              :readonly="modes.isViewerReadonly"
+              @update:items="onFigureListUpdate"
+            />
           </v-row>
         </v-card-text>
       </v-card>
@@ -488,6 +482,7 @@ export default defineComponent({
 .editor-panel {
   height: 100%;
   overflow-y: auto;
+  flex: 1;
 }
 </style>
 
