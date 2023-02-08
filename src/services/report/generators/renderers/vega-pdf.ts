@@ -37,7 +37,7 @@ interface RenderOptions {
   debug?: boolean
 }
 
-const optionScehma = Joi.object<RenderOptions>({
+const optionSchema = Joi.object<RenderOptions>({
   doc: Joi.object({
     name: Joi.string().required(),
     period: Joi.object({
@@ -71,7 +71,7 @@ const optionScehma = Joi.object<RenderOptions>({
  * @throws If not valid
  */
 const isRenderOptions = (data: unknown): data is RenderOptions => {
-  const validation = optionScehma.validate(data, {});
+  const validation = optionSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Fetch options are not valid: ${validation.error.message}`);
   }
@@ -80,7 +80,7 @@ const isRenderOptions = (data: unknown): data is RenderOptions => {
 
 // FIXME: WTF + still can have space
 /**
- * Calculating modififer to apply to margin. Usefull on x/y pos of slots, because else it can
+ * Calculating modifier to apply to margin. Useful on x/y pos of slots, because else it can
  * create too little margin.
  *
  * The math that function is using is crappy and kinda black magic (ty Geogebra) and should
@@ -153,7 +153,7 @@ const generateSlots = (params: {
  */
 const resolveManualFigureSlot = (params: {
   /**
-   * Slots indicies wanted by template
+   * Slots indices wanted by template
    */
   indices: number[],
   /**
