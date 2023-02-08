@@ -115,7 +115,7 @@ export default defineComponent({
           (v: ItemType) => !!v || this.$t('errors.empty'),
         ],
         value: [
-          (v: any) => this.item.type.Constructor.name === v.constructor.name || this.$t('errors.number'),
+          (v: any) => this.item.type.Constructor.name === v.constructor.name || this.$t('errors.type'),
         ],
       };
     },
@@ -191,7 +191,7 @@ en:
     delete: 'Delete'
   errors:
     empty: 'This field is required'
-    number: 'The value must be the same type as the property'
+    type: 'The value must be the same type as the property'
 fr:
   headers:
     property: 'Nom de la propriété'
@@ -203,5 +203,5 @@ fr:
     delete: 'Supprimer'
   errors:
     empty: 'Ce champ est requis'
-    number: 'La valeur doit être du même type que la propriété'
+    type: 'La valeur doit être du même type que la propriété'
 </i18n>
