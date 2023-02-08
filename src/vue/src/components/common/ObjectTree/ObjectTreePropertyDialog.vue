@@ -120,7 +120,7 @@ export default defineComponent({
       };
     },
     isPropertyValid() {
-      return this.rules.property.every((fnc) => fnc(this.item.property) === true);
+      return this.rules.property.every((rule) => rule(this.item.property) === true);
     },
   },
   methods: {

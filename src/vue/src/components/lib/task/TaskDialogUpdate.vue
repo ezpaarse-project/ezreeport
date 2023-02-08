@@ -184,7 +184,7 @@ export default defineComponent({
       };
     },
     isNameValid() {
-      return this.rules.name.every((fnc) => fnc(this.task?.name ?? '') === true);
+      return this.rules.name.every((rule) => rule(this.task?.name ?? '') === true);
     },
     perms() {
       const perms = this.$ezReeport.auth.permissions;
