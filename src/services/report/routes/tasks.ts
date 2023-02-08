@@ -1,7 +1,7 @@
-import type { Prisma } from '@prisma/client';
 import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
 import { pick } from 'lodash';
+import type { Prisma } from '~/.prisma/client';
 import { addTaskToQueue } from '~/lib/bull';
 import { CustomRouter } from '~/lib/express-utils';
 import { b64ToString } from '~/lib/utils';
@@ -13,6 +13,7 @@ import {
   editTaskById,
   editTaskByIdWithHistory,
   getAllTasks,
+  getCountTask,
   getTaskById
 } from '~/models/tasks';
 import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';
@@ -75,7 +76,7 @@ const router = CustomRouter('tasks')
     return {
       data: tasks,
       meta: {
-        // total: undefined,
+        total: await getCountTask(req.user?.institution),
         count: tasks.length,
         size: c,
         lastId: tasks.at(-1)?.id,
@@ -133,6 +134,14 @@ const router = CustomRouter('tasks')
 
     if (!req.user || (!req.user.institution && !req.user.roles.includes(Roles.SUPER_USER))) {
       throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
+    }
+
+    if (
+      req.body.institution
+      && req.body.institution !== req.user.institution
+      && !req.user.roles.includes(Roles.SUPER_USER)
+    ) {
+      throw new HTTPError('Body is not valid: "institution" is not allowed', StatusCodes.BAD_REQUEST);
     }
 
     const task = await editTaskById(

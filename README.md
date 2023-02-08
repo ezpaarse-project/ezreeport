@@ -27,13 +27,15 @@ npm run setup
 - `src/services/mail`:
   - Handle email management
 - `src/services/metric`:
-  - Config files for metrics
+  - Config files for metrics (you may need to to run `sudo chown root src/services/metrics/*` and `sudo chmod 600 src/services/metrics/*`)
 
 
 ## Packages
 
-- `src/sdk`
+- `src/sdk` (ezreeport-sdk-js)
   - SDK for ezReeport API
+- `src/vue` (ezreeport-vue)
+  - Vue components that use SDK for displaying info
 
 ## Start
 

@@ -12,17 +12,26 @@
   },
   "license": "CeCILL",
   "author": "oxypomme",
+  "workspaces": [
+    "./tests",
+    "./src/sdk",
+    "./src/vue",
+    "./src/services/mail",
+    "./src/services/report"
+  ],
   "scripts": {
-    "lint": "npm run lint:report && npm run lint:mail",
-    "lint:mail": "cd src/services/mail && npm run lint",
-    "lint:report": "cd src/services/report && npm run lint",
-    "lint:sdk": "cd src/sdk && npm run lint",
+    "lint": "npm -ws run lint",
+    "lint:mail": "npm -w ezreeport-mail run lint",
+    "lint:report": "npm -w ezreeport-report run lint",
+    "lint:sdk": "npm -w ezreeport-sdk-js run lint",
+    "lint:vue": "npm -w ezreeport-vue run lint",
+    "lint:tests": "npm -w ezreeport-tests run lint",
     "prepare": "husky install",
     "setup": "node setup.js",
-    "test": "cd tests && npm run test",
-    "test:mail": "cd tests && npm run test:mail",
-    "test:report": "cd tests && npm run test:report",
-    "test:sdk": "cd tests && npm run test:sdk"
+    "test": "run-p -ls test:*",
+    "test:mail": "npm --prefix tests run test:mail",
+    "test:report": "npm --prefix tests run test:report",
+    "test:sdk": "npm -w ezreeport-sdk-js run build && npm --prefix tests run test:sdk"
   },
   "lint-staged": {
     "package.json": [
@@ -30,10 +39,19 @@
     ]
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.3.0",
-    "@commitlint/config-conventional": "^17.3.0",
-    "husky": "^8.0.2",
+    "@commitlint/cli": "^17.4.2",
+    "@commitlint/config-conventional": "^17.4.2",
+    "@typescript-eslint/eslint-plugin": "^5.48.2",
+    "@typescript-eslint/parser": "^5.48.2",
+    "eslint": "^8.32.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.6.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "husky": "^8.0.3",
     "lint-staged": "^13.1.0",
+    "npm-run-all": "^4.1.5",
     "sort-package-json": "^2.1.0"
   }
 }

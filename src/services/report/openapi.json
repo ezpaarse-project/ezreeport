@@ -3440,7 +3440,7 @@
             "ezmesure-jwt": []
           }
         ],
-        "description": "Get history entries of all tasks. Only accessible to SUPER_USER.",
+        "description": "Get history entries of all tasks of given institution.",
         "parameters": [
           {
             "$ref": "#/components/parameters/previous"

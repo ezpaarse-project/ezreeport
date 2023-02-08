@@ -3,17 +3,15 @@
     ".env.defaults": "dotenv",
     ".env": "dotenv"
   },
-  "eslint.workingDirectories": [],
-  "eslint.validate": [
-    "javascript",
-    "typescript"
-  ],
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+  "eslint.packageManager": "npm",
   "conventionalCommits.scopes": [
     "report",
     "mail",
     "tests",
     "metrics",
-    "sdk"
+    "sdk",
+    "vue"
   ],
   "mochaExplorer.cwd": "tests",
   "mochaExplorer.files": "./*/index.spec.ts",
@@ -21,5 +19,14 @@
     "mocha-steps",
     "ts-node/register"
   ],
-  "typescript.tsdk": "./src/services/report/node_modules/typescript/lib"
+  "typescript.tsdk": "./node_modules/typescript/lib",
+  "cSpell.words": [
+    "ezreeport",
+    "highlightjs",
+    "stackoverflow",
+    "Toggleable",
+    "vega",
+    "vuedraggable",
+    "vuetify"
+  ],
 }

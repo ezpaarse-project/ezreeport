@@ -1,5 +1,5 @@
-import { Recurrence } from '@prisma/client';
 import type { TimeUnit } from 'vega-lite/build/src/timeunit';
+import { Recurrence } from '~/.prisma/client';
 import {
   add,
   endOfDay,

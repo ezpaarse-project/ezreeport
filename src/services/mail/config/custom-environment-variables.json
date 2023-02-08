@@ -17,7 +17,7 @@
   },
   "email": {
     "sender": "EMAIL_SENDER",
-    "team": "EMAIL_EZTEAM",
+    "team": "EMAIL_DEV_TEAM",
     "attempts": { "__name": "EMAIL_ATTEMPTS", "__format": "number" },
     "interval": { "__name": "EMAIL_ATTEMPTS_INTERVAL", "__format": "number" }
   },

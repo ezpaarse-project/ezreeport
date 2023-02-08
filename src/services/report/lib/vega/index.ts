@@ -1,4 +1,3 @@
-import { Recurrence } from '@prisma/client';
 import { registerFont } from 'canvas';
 import { compile as handlebars } from 'handlebars';
 import type { ImageOptions } from 'jspdf';
@@ -15,6 +14,7 @@ import {
 import { compile, type TopLevelSpec } from 'vega-lite';
 import type { Mark, MarkDef } from 'vega-lite/build/src/mark';
 import type { UnitSpec } from 'vega-lite/build/src/spec';
+import { Recurrence } from '~/.prisma/client';
 import config from '~/lib/config';
 import logger from '~/lib/logger';
 import type { PDFReport } from '~/lib/pdf';

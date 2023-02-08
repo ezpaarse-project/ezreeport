@@ -74,7 +74,7 @@ export const checkRight = (
 };
 
 /**
- * Get authed user's institution or given instituion (if allowed)
+ * Get authed user's institution or given institution (if allowed)
  *
  * Needs to be called after {@link checkRight}
  */
@@ -86,14 +86,12 @@ export const checkInstitution: RequestHandler = async (req, res, next) => {
     ) {
       if (req.query.institution) {
         const instits = await findInstitutionByIds([req.query.institution]);
-
-        // eslint-disable-next-line no-underscore-dangle
         req.user.institution = instits[0]._id.toString();
       }
       next();
     } else {
-      const { _id: id } = await findInstitutionByCreatorOrRole(req.user.username, req.user.roles);
-      req.user.institution = id.toString();
+      const id = (await findInstitutionByCreatorOrRole(req.user.username, req.user.roles))?._id;
+      req.user.institution = id?.toString();
       next();
     }
   }

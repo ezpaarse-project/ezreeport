@@ -1,0 +1,41 @@
+FROM node:16.19.0-alpine as sdk-builder
+
+WORKDIR /usr/build/sdk
+
+COPY ./src/sdk ./
+
+RUN apk update \
+  && apk upgrade -U -a
+
+# npm ci isn't possible because project uses npm workspaces
+RUN npm i --omit=dev
+
+RUN npm run build:web && npm run build:types
+
+# ----
+
+FROM node:16.19.0-alpine as vue-builder
+
+WORKDIR /usr/build/vue
+
+COPY ./src/vue ./
+COPY --from=sdk-builder /usr/build/sdk ../sdk
+
+RUN apk update \
+  && apk upgrade -U -a
+
+# npm ci isn't possible because project uses npm workspaces
+RUN npm i --omit=dev
+
+RUN npm run build:doc
+
+# ----
+
+FROM nginx:stable-alpine
+
+WORKDIR /usr/share/nginx/html
+
+COPY --from=vue-builder /usr/build/vue/storybook-static ./
+COPY ./config/vue-ngnix.types /etc/nginx/mime.types
+
+EXPOSE 80

@@ -1,8 +1,8 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
-import { Recurrence, type Prisma } from '@prisma/client';
 import Joi from 'joi';
 import { cloneDeep, merge } from 'lodash';
 import EventEmitter from 'node:events';
+import { Recurrence, type Prisma } from '~/.prisma/client';
 import { formatISO } from '~/lib/date-fns';
 import { elasticCount, elasticSearch } from '~/lib/elastic';
 import { calcElasticInterval } from '~/models/recurrence';
@@ -83,7 +83,7 @@ export default async (
               },
             },
           },
-        },
+        } as any,
       },
     },
   };
@@ -160,7 +160,6 @@ export default async (
 
   if (options.fetchCount) {
     const { body: { count } } = await elasticCount(baseOpts, options.user);
-    // eslint-disable-next-line no-underscore-dangle
     data[options.fetchCount] = count;
   }
 

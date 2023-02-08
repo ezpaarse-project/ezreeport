@@ -106,9 +106,7 @@ export const elasticSearch = async <ResponseType extends Record<string, unknown>
 
   return elastic.search<ElasticTypes.SearchResponse<ResponseType>>(
     params as Record<string, unknown>,
-    {
-      headers,
-    },
+    { headers },
   );
 };
 
@@ -170,3 +168,50 @@ export const elasticGetUser = async (
 
   return body;
 };
+
+/**
+ * Shorthand to scroll with elastic
+ *
+ * @param params The search params
+ * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
+ *
+ * @returns The result of the scroll
+ */
+export async function* elasticScroll<ResponseType extends Record<string, unknown>>(
+  params: ElasticTypes.SearchRequest,
+  runAs?: string,
+) {
+  const elastic = await getElasticClient();
+
+  const headers: Record<string, unknown> = {};
+  if (runAs) {
+    headers['es-security-runas-user'] = runAs;
+  }
+
+  let response = await elastic.search<ElasticTypes.SearchResponse<ResponseType>>(
+    params as Record<string, unknown>,
+    { headers },
+  );
+
+  while (true) {
+    const { body: { _scroll_id: scrollId, hits: { hits } } } = response;
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const hit of hits) {
+      yield hit;
+    }
+
+    if (hits.length === 0 || !scrollId) {
+      break;
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    response = await client.scroll(
+      {
+        scroll_id: scrollId,
+        scroll: params.scroll?.toString(),
+      },
+      { headers },
+    );
+  }
+}

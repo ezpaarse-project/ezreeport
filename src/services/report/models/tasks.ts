@@ -1,12 +1,12 @@
+import { PrismaClientValidationError } from '@prisma/client/runtime';
+import Joi from 'joi';
+import { join } from 'node:path';
 import {
   History,
   Recurrence,
   type Prisma,
   type Task
-} from '@prisma/client';
-import { PrismaClientValidationError } from '@prisma/client/runtime';
-import Joi from 'joi';
-import { join } from 'node:path';
+} from '~/.prisma/client';
 import config from '~/lib/config';
 import {
   endOfDay,
@@ -32,6 +32,7 @@ type InputHistory = Pick<Prisma.HistoryCreateWithoutTaskInput, 'type' | 'message
  */
 const taskSchema = Joi.object<Prisma.TaskCreateInput>({
   name: Joi.string().trim().required(),
+  institution: Joi.string(), // Validated before called
   template: templateDBSchema.required(),
   targets: Joi.array().items(Joi.string().trim().email()).required(),
   recurrence: Joi.string().valid(
@@ -63,6 +64,27 @@ const isValidTask = (data: unknown): data is InputTask => {
 };
 
 /**
+ * Get count of tasks in DB
+ *
+ * @param institution The institution of the task. If provided,
+ * will restrict search to the instituion provided
+ *
+ * @returns The task count
+ */
+export const getCountTask = async (institution?: Task['institution']): Promise<number> => {
+  await prisma.$connect();
+
+  const count = await prisma.task.count({
+    where: {
+      institution,
+    },
+  });
+
+  await prisma.$disconnect();
+  return count;
+};
+
+/**
  * Get all tasks in DB
  *
  * @param opts Requests options
@@ -82,10 +104,11 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
   institution?: Task['institution'],
 ): Promise<Pick<Task, Keys[number]>[]> => {
   try {
-    // TODO[refactor]: any other way ?
-    const select = opts?.select && opts.select.reduce(
-      (prev, key) => ({ ...prev, [key]: true }),
-      {} as Prisma.TaskSelect,
+    const select: Prisma.TaskSelect = opts?.select && Object.assign(
+      {},
+      ...opts.select.map((v) => ({
+        [v]: true,
+      })),
     );
 
     await prisma.$connect();

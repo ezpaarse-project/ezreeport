@@ -1,10 +1,10 @@
-import type { Prisma, Recurrence, Task } from '@prisma/client';
 import Joi from 'joi';
 import { compact, merge, omit } from 'lodash';
 import { randomUUID } from 'node:crypto';
 import EventEmitter from 'node:events';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import type { Prisma, Recurrence, Task } from '~/.prisma/client';
 import fetchers, { type Fetchers } from '~/generators/fetchers';
 import renderers, { type Renderers } from '~/generators/renderers';
 import config from '~/lib/config';
@@ -139,7 +139,6 @@ const fetchData = (params: {
           recurrence,
           period,
           // template,
-          // eslint-disable-next-line no-underscore-dangle
           indexPrefix: institution?.indexPrefix ?? '*',
           user,
         },
@@ -209,26 +208,22 @@ export const generateReport = async (
 
     // Get institution
     const [rawInstitution = { _source: null }] = await findInstitutionByIds([task.institution]);
-    // eslint-disable-next-line no-underscore-dangle
     if (!rawInstitution._source) {
       throw new Error(`Institution "${task.institution}" not found`);
     }
-    // eslint-disable-next-line no-underscore-dangle
     const institution = rawInstitution._source?.institution;
 
     // Get username who will run the requests
     const contact = (
-      // eslint-disable-next-line no-underscore-dangle
       await findInstitutionContact(rawInstitution._id.toString())
     ) ?? { _source: null };
-    // eslint-disable-next-line no-underscore-dangle
+
     if (!contact._source) {
       throw new Error(`No suitable contact found for your institution "${task.institution}". Please add doc_contact or tech_contact.`);
     }
     const { _source: { username: user } } = contact;
     result.detail.runAs = user;
 
-    // eslint-disable-next-line no-underscore-dangle
     events.emit('contactFound', contact._source);
 
     // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
@@ -291,7 +286,7 @@ export const generateReport = async (
       institution,
       user,
     }, events);
-    // Cleanup resolved resolvedTemplate
+    // Cleanup
     delete template.fetchOptions;
     events.emit('templateFetched', template);
     logger.debug('[gen] Data fetched');
@@ -354,6 +349,7 @@ export const generateReport = async (
           message: `Rapport "${namepath}" généré par ${origin}`,
           data: {
             ...meta,
+            destroyAt: result.detail.destroyAt.toISOString(),
             files: result.detail.files,
             period: {
               start: formatISO(period.start),
@@ -388,14 +384,15 @@ export const generateReport = async (
           template: task.template as Prisma.InputJsonObject,
           enabled: false,
         },
-        writeHistory ? {
+        {
           type: 'generation-error',
           message: `Rapport "${namepath}" non généré par ${origin} suite à une erreur.`,
           data: {
             ...meta,
+            destroyAt: result.detail.destroyAt.toISOString(),
             files: result.detail.files,
           },
-        } : undefined,
+        },
       );
     }
     logger.error(`[gen] Report "${namepath}" failed to generate in ${(result.detail.took / 1000).toFixed(2)}s with error : ${(error as Error).message}`);
