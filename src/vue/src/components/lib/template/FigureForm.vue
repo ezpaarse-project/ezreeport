@@ -14,6 +14,7 @@
       :label="$t('headers.type')"
       :value="figure.type"
       :items="figureTypes"
+      :rules="rules.type"
       item-text="label"
       item-value="value"
       @change="onFigureTypeChange"
@@ -23,6 +24,7 @@
       v-if="figure.type === 'md'"
       :value="figure.data || ''"
       :label="$t('headers.data')"
+      :rules="rules.data"
       @blur="onMdChange"
     />
 
@@ -63,6 +65,7 @@
       :label="$t('headers.slots')"
       :value="figure.slots || []"
       :items="availableSlots"
+      :rules="rules.slots"
       multiple
       @change="$emit('update:figure', { ...figure, slots: $event })"
     />
@@ -100,6 +103,38 @@ export default defineComponent({
     dataMap: {} as Record<string, string | unknown[] | undefined>,
   }),
   computed: {
+    rules() {
+      return {
+        type: [
+          (v: string) => !!v || this.$t('errors.empty'),
+        ],
+        data: [],
+        slots: [
+          (slots: number[]) => {
+            if (slots.length === this.grid.cols * this.grid.rows) {
+              return true;
+            }
+
+            // Check if slot combinaison is possible, extracted from vega-pdf
+            // TODO[feat]: support complex squares
+            const isSameRow = slots.every(
+              // Every slot on same row
+              (s, row) => Math.floor(s / this.grid.cols) === Math.floor(slots[0] / this.grid.cols)
+                // Possible (ex: we have 3 cols, and we're asking for col 1 & 3 but not 2)
+                && (row === 0 || s - slots[row - 1] === 1),
+            );
+            const isSameCol = slots.every(
+              // Every slot on same colon
+              (s, col) => s % this.grid.cols === slots[0] % this.grid.cols
+                // Possible (ex: we have 3 rows, and we're asking for row 1 & 3 but not 2)
+                && (col === 0 || s - slots[col - 1] === this.grid.cols),
+            );
+
+            return isSameRow || isSameCol || this.$t('errors.slots');
+          },
+        ],
+      };
+    },
     availableSlots() {
       const length = this.grid.cols * this.grid.rows;
 
@@ -186,6 +221,9 @@ en:
     trail: 'Trail'
     circle: 'Circle'
     square: 'Square'
+  errors:
+    empty: 'This field is required'
+    slots: "This combinaison of slots is not possible"
 fr:
   headers:
     figure: 'Visualisation #{id}'
@@ -209,4 +247,7 @@ fr:
     trail: 'Trail' # TODO French translation
     circle: 'Cercle'
     square: 'Carré'
+  errors:
+    empty: 'Ce champ est requis'
+    slots: "Cette combinaison d'emplacement n'est pas possible"
 </i18n>
