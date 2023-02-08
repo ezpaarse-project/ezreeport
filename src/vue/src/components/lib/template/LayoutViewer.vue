@@ -83,7 +83,7 @@ export default defineComponent({
     /**
      * The slots taken by the figures
      */
-    takenSlots() {
+    takenSlots(): number[] {
       return this.items.reduce(
         (taken, { slots }) => (slots ? [...taken, ...slots] : taken),
         [] as number[],

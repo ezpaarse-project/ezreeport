@@ -72,42 +72,66 @@
         </v-col>
       </v-row>
 
-      <v-row v-if="taskTemplate">
-        <!--
+      <v-card
+        outlined
+        elevation="0"
+      >
+        <v-card-subtitle class="py-2 pl-2">
+          <v-btn
+            icon
+            x-small
+            @click="templateEditorCollapsed = !templateEditorCollapsed"
+          >
+            <v-icon>mdi-chevron-{{ templateEditorCollapsed === false ? 'up' : 'down' }}</v-icon>
+          </v-btn>
+
+          {{ $t('headers.layouts', { count: mergedLayouts.length }) }}
+
+          <v-icon v-if="!isLayoutsValid" color="warning" small>mdi-alert</v-icon>
+        </v-card-subtitle>
+
+        <v-divider />
+
+        <v-card-text v-show="!templateEditorCollapsed" style="height: 650px">
+          <v-row v-if="taskTemplate" style="height: 100%">
+            <!--
           TODO:
             - DO TASKS FIRST (ignore templates)
+            - Drawer
             - Images in sheet
             - Legend about icons
             - Do the same in TemplateDetail
             - Fix create
         -->
-        <v-col cols="5" xl="1" lg="2" md="3" sm="4">
-          <LayoutDrawer
-            v-model="selectedLayoutIndex"
-            :items="mergedLayouts"
-            :mode="modes.drawerMode"
-            @update:items="onLayoutListUpdate"
-          />
-        </v-col>
+            <v-col cols="5" xl="1" lg="2" md="3" sm="4" class="editor-panel">
+              <LayoutDrawer
+                v-model="selectedLayoutIndex"
+                :items="mergedLayouts"
+                :mode="modes.drawerMode"
+                @update:items="onLayoutListUpdate"
+              />
+            </v-col>
 
-        <v-divider vertical />
+            <v-divider inset vertical />
 
-        <v-col v-if="selectedLayout">
-          <!-- Current layout preview -->
-          <LayoutViewer
-            :items="selectedLayout.figures"
-            :grid="grid"
-            :readonly="modes.isViewerReadonly"
-            @update:items="onFigureListUpdate"
-          />
-        </v-col>
-      </v-row>
+            <v-col v-if="selectedLayout" class="editor-panel">
+              <!-- Current layout preview -->
+              <LayoutViewer
+                :items="selectedLayout.figures"
+                :grid="grid"
+                :readonly="modes.isViewerReadonly"
+                @update:items="onFigureListUpdate"
+              />
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
 
       <ErrorOverlay v-model="error" />
     </v-col>
 
     <v-slide-x-reverse-transition>
-      <v-col v-if="rawTemplateShown" cols="6">
+      <v-col v-if="rawTemplateShown" cols="5">
         <highlightjs language="json" :code="rawTemplate" class="mt-4" />
       </v-col>
     </v-slide-x-reverse-transition>
@@ -152,6 +176,7 @@ export default defineComponent({
   data: () => ({
     readTemplateDialogShown: false,
     rawTemplateShown: false,
+    templateEditorCollapsed: false,
 
     hlStyle: null as HTMLElement | null,
 
@@ -269,6 +294,12 @@ export default defineComponent({
         drawerMode: 'template-edition',
         isViewerReadonly: false,
       };
+    },
+    /**
+     * Is template layouts valid
+     */
+    isLayoutsValid(): boolean {
+      return this.mergedLayouts.findIndex(({ _: { hasError } }) => hasError) < 0;
     },
   },
   watch: {
@@ -449,7 +480,10 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-
+.editor-panel {
+  height: 100%;
+  overflow-y: auto;
+}
 </style>
 
 <i18n lang="yaml">
@@ -461,7 +495,7 @@ en:
     base: 'Base template'
     fetchOptions: 'Fetch options'
     renderOptions: 'Render options'
-    layouts: 'Pages'
+    layouts: 'Page editor ({count} pages)'
   actions:
     see-extends: 'See base'
 fr:
@@ -472,7 +506,7 @@ fr:
     base: 'Modèle de base'
     fetchOptions: 'Options de récupération'
     renderOptions: 'Options de rendu'
-    layouts: 'Pages'
+    layouts: 'Éditeur de pages ({count} pages)'
   actions:
     see-extends: 'Voir la base'
 </i18n>
