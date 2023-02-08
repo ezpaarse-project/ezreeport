@@ -16,6 +16,7 @@
         v-else
         :figure="figure"
         :id="i"
+        :taken-slots="takenSlots"
         @update:figure="onFigureUpdate($event)"
         @delete:figure="onFigureDelete($event)"
       />
@@ -76,6 +77,15 @@ export default defineComponent({
       const figures = [...this.items];
       return figures.sort(
         (a, b) => Math.max(...(a.slots ?? [])) - Math.max(...(b.slots ?? [])),
+      );
+    },
+    /**
+     * The slots taken by the figures
+     */
+    takenSlots() {
+      return this.items.reduce(
+        (taken, { slots }) => (slots ? [...taken, ...slots] : taken),
+        [] as number[],
       );
     },
   },

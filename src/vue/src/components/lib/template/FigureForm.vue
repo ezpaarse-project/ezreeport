@@ -84,8 +84,12 @@ export default defineComponent({
       required: true,
     },
     grid: {
-      type: Object as PropType<{ rows: number, cols: number } | undefined>,
-      default: undefined,
+      type: Object as PropType<{ rows: number, cols: number }>,
+      default: () => ({ cols: 2, rows: 2 }),
+    },
+    takenSlots: {
+      type: Array as PropType<number[]>,
+      default: () => [],
     },
   },
   emits: {
@@ -97,10 +101,13 @@ export default defineComponent({
   }),
   computed: {
     availableSlots() {
-      // TODO: rules
-      const length = this.grid ? this.grid.cols * this.grid.rows : 4;
+      const length = this.grid.cols * this.grid.rows;
 
-      return Array.from({ length }, (_, i) => i);
+      return Array.from({ length }, (_, i) => ({
+        text: i,
+        valued: i,
+        disabled: this.takenSlots.includes(i) && !this.figure.slots?.includes(i),
+      }));
     },
     figureTypes() {
       const types = [
