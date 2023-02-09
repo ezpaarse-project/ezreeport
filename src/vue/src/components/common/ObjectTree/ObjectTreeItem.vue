@@ -127,10 +127,11 @@ export default defineComponent({
      * Listeners for sub tree
      */
     treeListeners() {
+      if (!this.$listeners.input) {
+        return {};
+      }
       return {
-        input: this.$listeners.input
-          ? (v: Record<string, any> | unknown[]) => this.$emit('input', this.property, v)
-          : undefined,
+        input: (v: Record<string, any> | unknown[]) => this.$emit('input', this.property, v),
       };
     },
   },

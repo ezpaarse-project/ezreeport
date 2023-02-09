@@ -57,10 +57,11 @@ export default defineComponent({
       return Object.keys(this.value).length;
     },
     treeListeners() {
+      if (!this.$listeners.input) {
+        return {};
+      }
       return {
-        input: this.$listeners.input
-          ? (v: Record<string, any> | unknown[]) => this.$emit('input', v)
-          : undefined,
+        input: (v: Record<string, any> | unknown[]) => this.$emit('input', v),
       };
     },
   },

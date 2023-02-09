@@ -38,16 +38,23 @@ export default defineComponent({
         .entries(this.value)
         .filter(([, value]) => value !== undefined && value !== null)
         // Adding listeners
-        .map(([key, value]) => [
-          key,
-          value,
-          {
-            input: this.$listeners.input
-              ? (k: string | number, v: any) => this.onUpdate(key, k, v)
-              : undefined,
+        .map(([key, value]) => {
+          const listeners = {
             delete: () => this.onDelete(key),
-          },
-        ]);
+          };
+
+          if (!this.$listeners.input) {
+            return [key, value, listeners];
+          }
+          return [
+            key,
+            value,
+            {
+              ...listeners,
+              input: (k: string | number, v: any) => this.onUpdate(key, k, v),
+            },
+          ];
+        });
     },
   },
   methods: {
