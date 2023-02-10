@@ -1,7 +1,7 @@
 <template>
   <v-sheet rounded outlined class="pa-2">
     <div class="d-flex">
-      {{ $t('headers.figure', { id }) }}
+      {{ $t('headers.figure') }}
 
       <template v-if="locked">
         <v-spacer />
@@ -70,10 +70,6 @@ export default defineComponent({
       type: Object as PropType<templates.Figure>,
       required: true,
     },
-    id: {
-      type: [Number, String],
-      required: true,
-    },
     grid: {
       type: Object as PropType<{ rows: number, cols: number }>,
       default: () => ({ cols: 2, rows: 2 }),
@@ -127,7 +123,7 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   headers:
-    figure: 'Figure #{id}'
+    figure: 'Figure'
     type: 'Figure type'
     data: 'Figure data'
     figureParams: 'Figure params'
@@ -150,7 +146,7 @@ en:
     square: 'Square'
 fr:
   headers:
-    figure: 'Visualisation #{id}'
+    figure: 'Visualisation'
     type: 'Type de visualisation'
     data: 'Données de la visualisation'
     figureParams: 'Paramètres de la visualisation'

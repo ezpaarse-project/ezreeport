@@ -53,7 +53,9 @@
                     v-model="task.targets"
                     :label="$t('headers.targets')"
                     :rules="rules.targets"
+                    class="mt-1"
                     multiple
+                    outlined
                   >
                     <template #append>
                       <div />

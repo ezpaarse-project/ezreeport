@@ -133,6 +133,10 @@ import type { institutions, tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import CustomSwitch from '@/common/CustomSwitch';
 
+import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '../template/customTemplates';
+
+type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTemplate };
+
 export default defineComponent({
   components: { CustomSwitch },
   props: {
@@ -153,7 +157,7 @@ export default defineComponent({
     generationDialogShown: false,
     deleteTaskDialogShown: false,
 
-    task: undefined as tasks.FullTask | undefined,
+    task: undefined as CustomTask | undefined,
     currentTab: 0,
 
     loading: false,
@@ -248,14 +252,18 @@ export default defineComponent({
      */
     async fetch() {
       if (!this.id || !this.perms.readOne) {
-        this.task = undefined;
+        this.$emit('input', false);
         return;
       }
 
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.tasks.getTask(this.id);
-        this.task = content;
+
+        // Add additional data
+        content.template.inserts = addAdditionalDataToLayouts(content.template.inserts ?? []);
+
+        this.task = content as CustomTask;
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
@@ -283,7 +291,10 @@ export default defineComponent({
 
         const { content } = await action(this.id);
 
-        this.task = content;
+        // Add additional data
+        content.template.inserts = addAdditionalDataToLayouts(content.template.inserts ?? []);
+
+        this.task = content as CustomTask;
         this.error = '';
         this.$emit('updated', content);
       } catch (error) {

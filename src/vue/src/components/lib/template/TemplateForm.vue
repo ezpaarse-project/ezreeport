@@ -96,7 +96,6 @@
           <v-row style="height: 100%">
             <!--
               TODO:
-                - Do the same in TemplateDetail
                 - Fix create
             -->
             <LayoutDrawer

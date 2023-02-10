@@ -33,6 +33,12 @@
 <script lang="ts">
 import type { templates } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
+import {
+  addAdditionalDataToLayouts,
+  type CustomTemplate,
+} from './customTemplates';
+
+type CustomFullTemplate = Omit<templates.FullTemplate, 'template'> & { template: CustomTemplate };
 
 export default defineComponent({
   props: {
@@ -49,7 +55,7 @@ export default defineComponent({
     input: (show: boolean) => show !== undefined,
   },
   data: () => ({
-    item: undefined as templates.FullTemplate | undefined,
+    item: undefined as CustomFullTemplate | undefined,
 
     error: '',
     loading: false,
@@ -90,7 +96,11 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.templates.getTemplate(this.name);
-        this.item = content;
+
+        // Add additional data
+        content.template.layouts = addAdditionalDataToLayouts(content.template.layouts ?? []);
+
+        this.item = content as CustomFullTemplate;
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
