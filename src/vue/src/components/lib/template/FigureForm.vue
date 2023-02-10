@@ -3,7 +3,10 @@
     <v-form @input="$emit('validation', $event)">
       <div class="d-flex">
         <div>
-          {{ $t('headers.figure', { id }) }}
+          <v-icon v-if="draggable" style="cursor: grab" small>mdi-drag</v-icon>
+
+          {{ $t('headers.figure') }}
+
           <v-icon v-if="figure._.hasError" color="warning" small>mdi-alert</v-icon>
         </div>
 
@@ -80,15 +83,12 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
 import type { AnyCustomFigure } from './customTemplates';
+import { figureTypes } from './figures';
 
 export default defineComponent({
   props: {
     figure: {
       type: Object as PropType<AnyCustomFigure>,
-      required: true,
-    },
-    id: {
-      type: [Number, String],
       required: true,
     },
     grid: {
@@ -98,6 +98,10 @@ export default defineComponent({
     takenSlots: {
       type: Array as PropType<number[]>,
       default: () => [],
+    },
+    draggable: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: {
@@ -116,7 +120,8 @@ export default defineComponent({
         ],
         data: [],
         slots: [
-          (slots: number[]) => {
+          (v: number[]) => {
+            const slots = [...v].sort();
             if (slots.length === this.grid.cols * this.grid.rows) {
               return true;
             }
@@ -151,28 +156,7 @@ export default defineComponent({
       }));
     },
     figureTypes() {
-      const types = [
-        // Vega types
-        'arc',
-        'area',
-        'bar',
-        // 'image',
-        'line',
-        'point',
-        'rect',
-        'rule',
-        'text',
-        'tick',
-        'trail',
-        'circle',
-        'square',
-        // Custom types
-        'table',
-        'md',
-        'metric',
-      ];
-
-      return types.map((value) => ({
+      return figureTypes.map((value) => ({
         label: this.$t(`figure_types.${value}`),
         value,
       }));
@@ -206,7 +190,7 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   headers:
-    figure: 'Figure #{id}'
+    figure: 'Figure'
     type: 'Figure type'
     data: 'Figure data'
     figureParams: 'Figure params'
@@ -232,7 +216,7 @@ en:
     slots: "This combinaison of slots is not possible"
 fr:
   headers:
-    figure: 'Visualisation #{id}'
+    figure: 'Visualisation'
     type: 'Type de visualisation'
     data: 'Données de la visualisation'
     figureParams: 'Paramètres de la visualisation'

@@ -96,9 +96,6 @@
           <v-row style="height: 100%">
             <!--
               TODO:
-                - DO TASKS FIRST (ignore templates)
-                - Images/color in sheet
-                - Legend about icons
                 - Do the same in TemplateDetail
                 - Fix create
             -->
@@ -106,15 +103,18 @@
               v-model="selectedLayoutIndex"
               :items="mergedLayouts"
               :mode="modes.drawerMode"
+              class="ml-n1"
               @update:items="onLayoutListUpdate"
             />
+
+            <v-divider vertical style="margin-left: 1px" />
 
             <LayoutViewer
               v-if="selectedLayout"
               class="editor-panel ma-0"
               :items="selectedLayout.figures"
               :grid="grid"
-              :readonly="modes.isViewerReadonly"
+              :mode="modes.viewerMode"
               @update:items="onFigureListUpdate"
             />
           </v-row>
@@ -170,7 +170,7 @@ export default defineComponent({
   data: () => ({
     readTemplateDialogShown: false,
     rawTemplateShown: false,
-    templateEditorCollapsed: false,
+    templateEditorCollapsed: true,
 
     hlStyle: null as HTMLElement | null,
 
@@ -276,17 +276,17 @@ export default defineComponent({
     /**
      * Various modes base on current props for various components
      */
-    modes(): { drawerMode: 'view' | 'task-edition' | 'template-edition', isViewerReadonly: boolean } {
+    modes(): { drawerMode: 'view' | 'task-edition' | 'template-edition', viewerMode: 'view' | 'allowed-edition' | 'denied-edition' } {
       if (this.taskTemplate) {
         return {
           drawerMode: 'task-edition',
-          isViewerReadonly: this.selectedLayout?.at === undefined,
+          viewerMode: this.selectedLayout?.at === undefined ? 'denied-edition' : 'allowed-edition',
         };
       }
 
       return {
         drawerMode: 'template-edition',
-        isViewerReadonly: false,
+        viewerMode: 'allowed-edition',
       };
     },
     /**
@@ -306,11 +306,19 @@ export default defineComponent({
     '$vuetify.theme.dark': function () {
       this.applyHlTheme();
     },
-    // template() {
-    // FIXME: Any edit retrigger fetch
-    // this.fetch();
-    // this.fetchBase();
-    // },
+    template() {
+      // FIXME: Any edit retrigger fetch
+      // this.fetch();
+      // this.fetchBase();
+
+      // Show editor if needed
+      if ('inserts' in this.template) {
+        this.templateEditorCollapsed = (this.template.inserts?.length ?? 0) === 0;
+      }
+      if ('layouts' in this.template) {
+        this.templateEditorCollapsed = this.template.layouts.length === 0;
+      }
+    },
   },
   mounted() {
     // Add highlight.js style if not already present
@@ -325,6 +333,14 @@ export default defineComponent({
     // Fetch some info
     this.fetch();
     this.fetchBase();
+
+    // Show editor if needed
+    if ('inserts' in this.template) {
+      this.templateEditorCollapsed = (this.template.inserts?.length ?? 0) === 0;
+    }
+    if ('layouts' in this.template) {
+      this.templateEditorCollapsed = this.template.layouts.length === 0;
+    }
   },
   /**
    * Called in Vue 2
@@ -481,7 +497,6 @@ export default defineComponent({
 <style lang="scss" scoped>
 .editor-panel {
   height: 100%;
-  overflow-y: auto;
   flex: 1;
 }
 </style>

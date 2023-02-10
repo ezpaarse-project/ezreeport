@@ -1,51 +1,59 @@
 <template>
-  <v-row>
-    <v-col
-      v-for="(figure, i) in sortedItems"
-      :key="figure._.id"
-      cols="12"
-      :md="12 / grid.cols"
-    >
-      <FigureDetail
-        v-if="readonly"
-        :figure="figure"
-        :id="i"
-        locked
-      />
-      <FigureForm
-        v-else
-        :figure="figure"
-        :id="i"
-        :taken-slots="takenSlots"
-        @update:figure="onFigureUpdate($event)"
-        @delete:figure="onFigureDelete($event)"
-        @validation="onValidation(figure, $event)"
-      />
-    </v-col>
-
-    <v-col
-      v-if="
-        !readonly
-          && items.length < grid.cols * grid.rows
-      "
-      class="d-flex align-center justify-center"
-    >
-      <v-tooltip>
-        <template #activator="{ attrs, on }">
+  <div class="d-flex flex-column">
+    <template v-if="mode !== 'view'">
+      <div class="d-flex pa-2" style="min-height: 44px;">
+        <template>
           <v-btn
-            fab
-            v-bind="attrs"
-            v-on="on"
+            small
+            elevation="0"
+            color="success"
+            :disabled="items.length >= grid.cols * grid.rows"
             @click="onFigureCreate"
           >
-            <v-icon>mdi-plus</v-icon>
+            <v-icon left>mdi-plus</v-icon>
+            {{ $t('actions.add') }}
           </v-btn>
         </template>
+      </div>
 
-        <span>{{ $t('actions.add-figure') }}</span>
-      </v-tooltip>
-    </v-col>
-  </v-row>
+      <v-divider />
+    </template>
+
+    <div class="pa-2" style="overflow-y: auto; flex: 1;">
+      <SlotItemGrid
+        :items="items"
+        :grid="grid"
+        show-unused
+        v-on="gridListeners"
+      >
+        <template #item="{ item: figure, isDraggable, isHovered }">
+          <FigureDetail
+            v-if="mode !== 'allowed-edition'"
+            :figure="figure"
+            :locked="mode === 'denied-edition'"
+            :class="[
+              'figure-slot',
+              isHovered && 'figure-slot--hovered primary--text',
+            ]"
+          />
+          <FigureForm
+            v-else
+            :figure="figure"
+            :taken-slots="takenSlots"
+            :draggable="isDraggable"
+            :class="[
+              'figure-slot',
+              isHovered && 'figure-slot--hovered primary--text',
+            ]"
+            @update:figure="onFigureUpdate"
+            @delete:figure="onFigureDelete"
+            @validation="onValidation(figure, $event)"
+          />
+        </template>
+
+      </SlotItemGrid>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -62,24 +70,15 @@ export default defineComponent({
       type: Object as PropType<{ cols: number, rows: number }>,
       default: () => ({ cols: 2, rows: 2 }),
     },
-    readonly: {
-      type: Boolean,
-      default: true,
+    mode: {
+      type: String as PropType<'view' | 'allowed-edition' | 'denied-edition'>,
+      default: 'view',
     },
   },
   emits: {
     'update:items': (v: AnyCustomFigure[]) => v.length >= 0,
   },
   computed: {
-    /**
-     * The figures sorted by slot
-     */
-    sortedItems() {
-      const figures = [...this.items];
-      return figures.sort(
-        (a, b) => Math.max(...(a.slots ?? [])) - Math.max(...(b.slots ?? [])),
-      );
-    },
     /**
      * The slots taken by the figures
      */
@@ -89,8 +88,27 @@ export default defineComponent({
         [] as number[],
       );
     },
+    /**
+     * Listeners for figure grid
+     */
+    gridListeners() {
+      if (this.mode !== 'allowed-edition') {
+        return { };
+      }
+      return {
+        'update:items': this.onFigureListUpdate,
+      };
+    },
   },
   methods: {
+    /**
+     * TS wrapper for updating figure list
+     *
+     * @param items the figure list
+     */
+    onFigureListUpdate(items: { slots?: number[] }[]) {
+      this.$emit('update:items', items as AnyCustomFigure[]);
+    },
     /**
      * Update a figure in current layout
      *
@@ -98,7 +116,7 @@ export default defineComponent({
      */
     onFigureUpdate(value: AnyCustomFigure) {
       const index = this.items.findIndex(({ _: { id } }) => id === value._.id);
-      if (this.readonly || !this.items[index]) {
+      if (this.mode !== 'allowed-edition' || !this.items[index]) {
         return;
       }
 
@@ -110,7 +128,7 @@ export default defineComponent({
      * Add a new figure in current layout
      */
     onFigureCreate() {
-      if (this.readonly) {
+      if (this.mode !== 'allowed-edition') {
         return;
       }
 
@@ -124,7 +142,7 @@ export default defineComponent({
      */
     onFigureDelete(value: AnyCustomFigure) {
       const index = this.items.findIndex(({ _: { id } }) => id === value._.id);
-      if (this.readonly || !this.items[index]) {
+      if (this.mode !== 'allowed-edition' || !this.items[index]) {
         return;
       }
 
@@ -152,15 +170,22 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+.figure-slot {
+  height: 100%;
+  transition: border-color 0.25s;
 
+  &--hovered {
+    border-color: currentColor;
+  }
+}
 </style>
 
 <i18n lang="yaml">
 en:
   actions:
-    add-figure: 'Add figure'
+    add: 'Add figure'
 fr:
   actions:
-    add-figure: 'Ajouter une visualisation'
+    add: 'Ajouter une visualisation'
 </i18n>
