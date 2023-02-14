@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
 import { pick } from 'lodash';
-import type { Prisma } from '~/.prisma/client';
+import type { Prisma } from '~/lib/prisma';
 import { addTaskToQueue } from '~/lib/bull';
 import { CustomRouter } from '~/lib/express-utils';
 import { b64ToString } from '~/lib/utils';

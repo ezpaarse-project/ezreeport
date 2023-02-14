@@ -1,12 +1,5 @@
-import { PrismaClientValidationError } from '@prisma/client/runtime';
 import Joi from 'joi';
 import { join } from 'node:path';
-import {
-  History,
-  Recurrence,
-  type Prisma,
-  type Task
-} from '~/.prisma/client';
 import config from '~/lib/config';
 import {
   endOfDay,
@@ -14,8 +7,13 @@ import {
   isBefore,
   isSameDay
 } from '~/lib/date-fns';
-import logger from '~/lib/logger';
 import prisma from '~/lib/prisma';
+import {
+  Recurrence,
+  type History,
+  type Prisma,
+  type Task
+} from '~/lib/prisma';
 import { calcNextDate } from '~/models/recurrence';
 import { ArgumentError } from '~/types/errors';
 import { templateDBSchema } from './templates';
@@ -103,40 +101,31 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
   },
   institution?: Task['institution'],
 ): Promise<Pick<Task, Keys[number]>[]> => {
-  try {
-    const select: Prisma.TaskSelect = opts?.select && Object.assign(
-      {},
-      ...opts.select.map((v) => ({
-        [v]: true,
-      })),
-    );
+  const select: Prisma.TaskSelect = opts?.select && Object.assign(
+    {},
+    ...opts.select.map((v) => ({
+      [v]: true,
+    })),
+  );
 
-    await prisma.$connect();
+  await prisma.$connect();
 
-    const tasks = await prisma.task.findMany({
-      take: opts?.count,
-      skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
-      cursor: opts?.previous ? { id: opts.previous } : undefined,
-      select,
-      where: {
-        ...(opts?.filter ?? {}),
-        institution,
-      },
-      orderBy: {
-        createdAt: 'asc',
-      },
-    }) as Pick<Task, Keys[number]>[];
+  const tasks = await prisma.task.findMany({
+    take: opts?.count,
+    skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
+    cursor: opts?.previous ? { id: opts.previous } : undefined,
+    select,
+    where: {
+      ...(opts?.filter ?? {}),
+      institution,
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
+  }) as Pick<Task, Keys[number]>[];
 
-    await prisma.$disconnect();
-    return tasks;
-  } catch (error) {
-    if (error instanceof PrismaClientValidationError) {
-      logger.error(`[prisma] ${error.message.trim()}`);
-      throw new Error('An error occured with DB client. See server logs for more information.');
-    } else {
-      throw error;
-    }
-  }
+  await prisma.$disconnect();
+  return tasks;
 };
 
 /**

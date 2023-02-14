@@ -17,3 +17,5 @@ client.$on('warn', (e) => logger.warn(`[prisma] ${e.message}`));
 client.$on('error', (e) => logger.error(`[prisma] ${e.message}`));
 
 export default client;
+
+export * from '~/.prisma/client';

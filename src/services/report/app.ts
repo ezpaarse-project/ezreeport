@@ -30,5 +30,6 @@ express()
    * Start server
    */
   .listen(port, () => {
+    logger.info(`[node] Service running in ${process.env.NODE_ENV} mode`);
     logger.info(`[http] Service listening on port ${port} in ${process.uptime().toFixed(2)}s`);
   });

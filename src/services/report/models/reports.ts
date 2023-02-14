@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import EventEmitter from 'node:events';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { Prisma, Recurrence, Task } from '~/.prisma/client';
+import type { Prisma, Recurrence, Task } from '~/lib/prisma';
 import fetchers, { type Fetchers } from '~/generators/fetchers';
 import renderers, { type Renderers } from '~/generators/renderers';
 import config from '~/lib/config';

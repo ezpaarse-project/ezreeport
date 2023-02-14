@@ -14,7 +14,7 @@ import {
 import { compile, type TopLevelSpec } from 'vega-lite';
 import type { Mark, MarkDef } from 'vega-lite/build/src/mark';
 import type { UnitSpec } from 'vega-lite/build/src/spec';
-import { Recurrence } from '~/.prisma/client';
+import { Recurrence } from '~/lib/prisma';
 import config from '~/lib/config';
 import logger from '~/lib/logger';
 import type { PDFReport } from '~/lib/pdf';

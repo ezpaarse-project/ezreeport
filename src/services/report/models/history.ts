@@ -1,4 +1,4 @@
-import type { History, Task } from '~/.prisma/client';
+import type { History, Task } from '~/lib/prisma';
 import prisma from '~/lib/prisma';
 
 /**

@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import type { Prisma } from '~/.prisma/client';
+import type { Prisma } from '~/lib/prisma';
 import type { Fetchers } from '~/generators/fetchers';
 import fetchers from '~/generators/fetchers';
 import { ArgumentError } from '~/types/errors';

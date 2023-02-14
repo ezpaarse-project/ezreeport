@@ -2,7 +2,7 @@ import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import Joi from 'joi';
 import { cloneDeep, merge } from 'lodash';
 import EventEmitter from 'node:events';
-import { Recurrence, type Prisma } from '~/.prisma/client';
+import { Recurrence, type Prisma } from '~/lib/prisma';
 import { formatISO } from '~/lib/date-fns';
 import { elasticCount, elasticSearch } from '~/lib/elastic';
 import { calcElasticInterval } from '~/models/recurrence';
