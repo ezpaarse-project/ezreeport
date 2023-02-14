@@ -22,6 +22,6 @@
     "interval": 2000
   },
   "api": {
-    "domain": "http://localhost:8080"
+    "url": "http://localhost:8080"
   }
 }

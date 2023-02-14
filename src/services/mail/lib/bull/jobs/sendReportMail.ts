@@ -8,7 +8,7 @@ import { recurrenceToStr } from '~/models/recurrence';
 import type { MailData } from '..';
 
 const { team } = config.get('mail');
-const { domain: APIdomain } = config.get('api');
+const { url: APIurl } = config.get('api');
 
 export default async (job: Job<MailData>) => {
   const filename = job.data.url.replace(/^.*\//, '');
@@ -37,7 +37,7 @@ export default async (job: Job<MailData>) => {
             const to64 = stringToB64(to);
             const unsubId = encodeURIComponent(`${taskId64}:${to64}`);
 
-            const unsubscribeLink = `${APIdomain}/unsubscribe/${unsubId}`;
+            const unsubscribeLink = `${APIurl}/unsubscribe/${unsubId}`;
             await sendMail({
               ...options,
               to,

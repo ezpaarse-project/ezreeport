@@ -56,7 +56,7 @@ export REPORT_ITERATIONS_TO_LIVE=2
 export REPORT_DAYS_TO_LIVE=7
 
 # common to all services
-export API_DOMAIN="http://localhost:8080"
+export API_URL="http://localhost:8080"
 export API_ALLOWED_ORIGINS="*" # Comma separated origins (or * to allow all)
 export LOG_LEVEL="info"
 export HTTP_PORT=8080

@@ -86,7 +86,7 @@ services:
       - EMAIL_ATTEMPTS
       - EMAIL_ATTEMPTS_INTERVAL
       # common
-      - API_DOMAIN
+      - API_URL
       - LOG_LEVEL
     depends_on:
       - redis
