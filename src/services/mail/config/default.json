@@ -3,8 +3,7 @@
   "redis": {
     "host": "redis",
     "port": 6379,
-    "password": "",
-    "concurrence": 5
+    "password": ""
   },
   "smtp": {
     "host": "maildev",
@@ -14,6 +13,10 @@
       "ignore": true,
       "rejectUnauthorized": false
     }
+  },
+  "workers": {
+    "concurrence": 5,
+    "maxExecTime": 10000
   },
   "mail": {
     "sender": "ezmesure-ezreeport@couperin.org",

@@ -82,6 +82,9 @@ services:
       - SMTP_SECURE
       - SMTP_IGNORE_TLS
       - SMTP_REJECT_UNAUTHORIZED
+      # workers
+      - WORKERS_CONCURRENCE
+      - WORKERS_MAX_EXEC_TIME
       # mail specific
       - EMAIL_SENDER
       - EMAIL_DEV_TEAM

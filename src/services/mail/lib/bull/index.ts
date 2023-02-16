@@ -4,7 +4,8 @@ import config from '~/lib/config';
 import logger from '~/lib/logger';
 import { type Recurrence } from '~/models/recurrence';
 
-const { concurrence, ...redis } = config.get('redis');
+const { ...redis } = config.get('redis');
+const { concurrence, maxExecTime } = config.get('workers');
 
 //! Should be synced with report
 export type MailData = {
@@ -44,7 +45,7 @@ const baseQueueOptions: Queue.QueueOptions = {
   redis,
   limiter: {
     max: concurrence,
-    duration: 10000,
+    duration: maxExecTime,
   },
 };
 
@@ -56,4 +57,4 @@ mailQueue.on('failed', (job, err) => {
   }
 });
 
-mailQueue.process(concurrence, join(__dirname, 'jobs/sendReportMail.ts'));
+mailQueue.process(join(__dirname, 'jobs/sendReportMail.ts'));
