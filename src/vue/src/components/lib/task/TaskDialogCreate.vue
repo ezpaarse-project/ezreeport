@@ -1,6 +1,6 @@
 <template>
-  <v-dialog :max-width="maxWidth" :value="value" scrollable @input="$emit('input', $event)">
-    <v-card :loading="loading">
+  <v-dialog :fullscreen="currentTab === 1" :value="value" max-width="1000" scrollable @input="$emit('input', $event)">
+    <v-card :loading="loading" :tile="currentTab === 1">
       <v-card-title>
         <v-text-field
           v-if="task"
@@ -32,7 +32,7 @@
         </v-btn>
       </v-card-title>
 
-      <v-tabs v-model="currentTab">
+      <v-tabs v-model="currentTab" style="flex-grow: 0;">
         <v-tab v-for="tab in tabs" :key="tab.name">
           {{ tab.label }}
         </v-tab>
@@ -154,7 +154,7 @@ export default defineComponent({
   data: (vm) => ({
     task: {
       name: '',
-      template: { extends: 'base' } as CustomTaskTemplate,
+      template: { extends: 'basic' } as CustomTaskTemplate,
       targets: [],
       recurrence: vm.$ezReeport.sdk.tasks.Recurrence.DAILY,
       institution: '',
@@ -214,12 +214,6 @@ export default defineComponent({
         readOne: perms?.['tasks-get-task'],
         create: perms?.['tasks-post'],
       };
-    },
-    /**
-     * Max Width of the dialog
-     */
-    maxWidth(): number | undefined {
-      return this.currentTab !== 1 ? 1000 : undefined;
     },
   },
   watch: {

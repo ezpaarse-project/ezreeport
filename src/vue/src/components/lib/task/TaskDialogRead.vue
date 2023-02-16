@@ -1,5 +1,5 @@
 <template>
-  <v-dialog :max-width="maxWidth" :value="value" scrollable @input="$emit('input', $event)">
+  <v-dialog :fullscreen="currentTab === 1" :value="value" max-width="1000" scrollable @input="$emit('input', $event)">
     <GenerationDialog
       v-if="task && perms.runTask"
       v-model="generationDialogShown"
@@ -7,7 +7,7 @@
       @generated="fetch()"
     />
 
-    <v-card :loading="loading">
+    <v-card :loading="loading" :tile="currentTab === 1">
       <v-card-title>
         <template v-if="task">
           {{ task.name }}
@@ -39,7 +39,7 @@
 
       </v-card-title>
 
-      <v-tabs v-model="currentTab">
+      <v-tabs v-model="currentTab" style="flex-grow: 0;">
         <v-tab v-for="tab in tabs" :key="tab.name">
           {{ tab.label }}
         </v-tab>
@@ -178,12 +178,6 @@ export default defineComponent({
 
         runTask: perms?.['tasks-post-task-run'],
       };
-    },
-    /**
-     * name field is outside of the v-form, so we need to manually check using rules
-     */
-    maxWidth(): number | undefined {
-      return this.currentTab !== 1 ? 1000 : undefined;
     },
     /**
      * User permissions

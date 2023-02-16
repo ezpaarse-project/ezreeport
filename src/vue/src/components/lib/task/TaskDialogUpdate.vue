@@ -1,6 +1,6 @@
 <template>
-  <v-dialog :max-width="maxWidth" :value="value" scrollable @input="$emit('input', $event)">
-    <v-card :loading="loading">
+  <v-dialog :fullscreen="currentTab === 1" :value="value" max-width="1000" scrollable @input="$emit('input', $event)">
+    <v-card :loading="loading" :tile="currentTab === 1">
       <v-card-title>
         <v-text-field
           v-if="task"
@@ -33,7 +33,7 @@
 
       </v-card-title>
 
-      <v-tabs v-model="currentTab">
+      <v-tabs v-model="currentTab" style="flex-grow: 0;">
         <v-tab v-for="tab in tabs" :key="tab.name">
           {{ tab.label }}
           <v-icon v-if="!tab.valid" color="warning" small right>mdi-alert</v-icon>
@@ -219,12 +219,6 @@ export default defineComponent({
         readOne: perms?.['tasks-get-task'],
         update: perms?.['tasks-put-task'],
       };
-    },
-    /**
-     * Max Width of the dialog
-     */
-    maxWidth(): number | undefined {
-      return this.currentTab !== 1 ? 1000 : undefined;
     },
     /**
      * Various dates to show
