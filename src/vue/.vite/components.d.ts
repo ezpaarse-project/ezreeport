@@ -15,6 +15,7 @@ declare module 'vue' {
     InstitutionRichListItem: typeof import('./../src/components/lib/institution/InstitutionRichListItem.vue')['default']
     InstitutionSelect: typeof import('./../src/components/lib/institution/InstitutionSelect.vue')['default']
     InternalHistoryTable: typeof import('./../src/components/lib/history/InternalHistoryTable.vue')['default']
+    JSONPreview: typeof import('./../src/components/common/JSONPreview.vue')['default']
     LayoutDialogParams: typeof import('./../src/components/lib/template/LayoutDialogParams.vue')['default']
     LayoutDrawer: typeof import('./../src/components/lib/template/LayoutDrawer.vue')['default']
     LayoutViewer: typeof import('./../src/components/lib/template/LayoutViewer.vue')['default']
@@ -22,6 +23,9 @@ declare module 'vue' {
     ObjectTree: typeof import('./../src/components/common/ObjectTree/ObjectTree.vue')['default']
     ObjectTreeItem: typeof import('./../src/components/common/ObjectTree/ObjectTreeItem.vue')['default']
     ObjectTreePropertyDialog: typeof import('./../src/components/common/ObjectTree/ObjectTreePropertyDialog.vue')['default']
+    QueueJobDialogDetail: typeof import('./../src/components/lib/queues/QueueJobDialogDetail.vue')['default']
+    QueueJobsTable: typeof import('./../src/components/lib/queues/QueueJobsTable.vue')['default']
+    QueueList: typeof import('./../src/components/QueueList.vue')['default']
     RecurrenceChip: typeof import('./../src/components/lib/task/RecurrenceChip.vue')['default']
     RefreshButton: typeof import('./../src/components/common/RefreshButton.vue')['default']
     RichListItem: typeof import('./../src/components/common/RichListItem.vue')['default']
@@ -42,6 +46,7 @@ declare module 'vue' {
     VBtn: typeof import('vuetify/lib')['VBtn']
     VCard: typeof import('vuetify/lib')['VCard']
     VCardActions: typeof import('vuetify/lib')['VCardActions']
+    VCardSubtitle: typeof import('vuetify/lib')['VCardSubtitle']
     VCardText: typeof import('vuetify/lib')['VCardText']
     VCardTitle: typeof import('vuetify/lib')['VCardTitle']
     VCheckbox: typeof import('vuetify/lib')['VCheckbox']
@@ -89,7 +94,6 @@ declare module 'vue' {
     VToolbar: typeof import('vuetify/lib')['VToolbar']
     VToolbarTitle: typeof import('vuetify/lib')['VToolbarTitle']
     VTooltip: typeof import('vuetify/lib')['VTooltip']
-    VVirtualScoll: typeof import('vuetify/lib')['VVirtualScoll']
     VVirtualScroll: typeof import('vuetify/lib')['VVirtualScroll']
   }
 }

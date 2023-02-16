@@ -123,7 +123,7 @@ const data: tasks.FullTask[] = [
         data: {
           jobId: '143',
           jobAdded: '2022-11-15T13:54:05.851Z',
-          jobAttemps: 1,
+          jobAttempts: 1,
         },
         createdAt: new Date(Date.parse('2022-11-15T13:54:11.155Z')),
       },
