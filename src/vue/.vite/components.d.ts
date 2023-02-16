@@ -15,6 +15,7 @@ declare module 'vue' {
     InstitutionRichListItem: typeof import('./../src/components/lib/institution/InstitutionRichListItem.vue')['default']
     InstitutionSelect: typeof import('./../src/components/lib/institution/InstitutionSelect.vue')['default']
     InternalHistoryTable: typeof import('./../src/components/lib/history/InternalHistoryTable.vue')['default']
+    JSONPreview: typeof import('./../src/components/common/JSONPreview.vue')['default']
     LayoutDialogParams: typeof import('./../src/components/lib/template/LayoutDialogParams.vue')['default']
     LayoutDrawer: typeof import('./../src/components/lib/template/LayoutDrawer.vue')['default']
     LayoutViewer: typeof import('./../src/components/lib/template/LayoutViewer.vue')['default']
