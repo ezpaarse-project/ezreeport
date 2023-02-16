@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const figureIcons: Record<string, string> = {
   // Vega types
   arc: 'mdi-chart-arc',

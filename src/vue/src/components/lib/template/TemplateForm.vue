@@ -125,19 +125,13 @@
 
     <v-slide-x-reverse-transition>
       <v-col v-if="rawTemplateShown" cols="5">
-        <highlightjs language="json" :code="rawTemplate" class="mt-4" />
+        <JSONPreview :value="template" class="mt-4" />
       </v-col>
     </v-slide-x-reverse-transition>
   </v-row>
 </template>
 
 <script lang="ts">
-import hljs from 'highlight.js/lib/core';
-import hlJSON from 'highlight.js/lib/languages/json';
-import hlLight from 'highlight.js/styles/stackoverflow-light.css?inline';
-import hlDark from 'highlight.js/styles/stackoverflow-dark.css?inline';
-import highlightjs from '@highlightjs/vue-plugin';
-
 import { defineComponent, type PropType } from 'vue';
 import {
   addAdditionalDataToLayouts,
@@ -149,12 +143,7 @@ import {
   type CustomTaskLayout,
 } from './customTemplates';
 
-hljs.registerLanguage('json', hlJSON);
-
 export default defineComponent({
-  components: {
-    highlightjs: highlightjs.component,
-  },
   props: {
     template: {
       type: Object as PropType<AnyCustomTemplate>,
@@ -171,8 +160,6 @@ export default defineComponent({
     rawTemplateShown: false,
     templateEditorCollapsed: true,
 
-    hlStyle: null as HTMLElement | null,
-
     availableTemplates: [] as string[],
     availableFetchers: ['', 'elastic'],
     availableRenderer: ['vega-pdf'],
@@ -188,7 +175,6 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      // TODO: watch perms
       const perms = this.$ezReeport.auth.permissions;
       return {
         realAll: perms?.['templates-get'],
@@ -301,10 +287,6 @@ export default defineComponent({
       this.fetch();
       this.fetchBase();
     },
-    // eslint-disable-next-line func-names
-    '$vuetify.theme.dark': function () {
-      this.applyHlTheme();
-    },
     template() {
       // FIXME: Any edit retrigger fetch
       // this.fetch();
@@ -320,15 +302,6 @@ export default defineComponent({
     },
   },
   mounted() {
-    // Add highlight.js style if not already present
-    this.hlStyle = document.getElementById('hl-style');
-    if (!this.hlStyle) {
-      this.hlStyle = document.createElement('style');
-      this.hlStyle.id = 'hl-style';
-      document.head.appendChild(this.hlStyle);
-    }
-    this.applyHlTheme();
-
     // Fetch some info
     this.fetch();
     this.fetchBase();
@@ -339,24 +312,6 @@ export default defineComponent({
     }
     if ('layouts' in this.template) {
       this.templateEditorCollapsed = this.template.layouts.length === 0;
-    }
-  },
-  /**
-   * Called in Vue 2
-   */
-  destroyed() {
-    // Remove highlight.js style
-    if (this.hlStyle) {
-      this.hlStyle.parentNode?.removeChild(this.hlStyle);
-    }
-  },
-  /**
-   * Called in Vue 3
-   */
-  unmounted() {
-    // Remove highlight.js style
-    if (this.hlStyle) {
-      this.hlStyle.parentNode?.removeChild(this.hlStyle);
     }
   },
   methods: {
@@ -403,14 +358,6 @@ export default defineComponent({
         this.error = (error as Error).message;
       }
       this.loading = false;
-    },
-    /**
-     * Apply highlight.js theme
-     */
-    applyHlTheme() {
-      if (this.hlStyle) {
-        this.hlStyle.textContent = this.$vuetify.theme.dark ? hlDark : hlLight;
-      }
     },
     /**
      * Prepare and open dialog of base template

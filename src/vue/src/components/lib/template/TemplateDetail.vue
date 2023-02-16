@@ -98,19 +98,13 @@
 
     <v-slide-x-reverse-transition>
       <v-col v-if="rawTemplateShown" cols="6">
-        <highlightjs language="json" :code="rawTemplate" class="mt-4" />
+        <JSONPreview :value="template" class="mt-4" />
       </v-col>
     </v-slide-x-reverse-transition>
   </v-row>
 </template>
 
 <script lang="ts">
-import hljs from 'highlight.js/lib/core';
-import hlJSON from 'highlight.js/lib/languages/json';
-import hlLight from 'highlight.js/styles/stackoverflow-light.css?inline';
-import hlDark from 'highlight.js/styles/stackoverflow-dark.css?inline';
-import highlightjs from '@highlightjs/vue-plugin';
-
 import { defineComponent, type PropType } from 'vue';
 import {
   addAdditionalDataToLayouts,
@@ -120,10 +114,7 @@ import {
   type CustomTemplate,
 } from './customTemplates';
 
-hljs.registerLanguage('json', hlJSON);
-
 export default defineComponent({
-  components: { highlightjs: highlightjs.component },
   props: {
     template: {
       type: Object as PropType<AnyCustomTemplate>,
@@ -134,8 +125,6 @@ export default defineComponent({
     readTemplateDialogShown: false,
     rawTemplateShown: false,
     templateEditorCollapsed: true,
-
-    hlStyle: null as HTMLElement | null,
 
     extendedTemplate: undefined as CustomTemplate | undefined,
     selectedLayoutIndex: 0,
@@ -152,12 +141,6 @@ export default defineComponent({
       return {
         readOne: perms?.['templates-get-name(*)'],
       };
-    },
-    /**
-     * Template as JSON
-     */
-    rawTemplate(): string {
-      return JSON.stringify(this.template, undefined, 2);
     },
     /**
      * The template of a task. If the provided template isn't from a task, return undefined
@@ -232,10 +215,6 @@ export default defineComponent({
     },
   },
   watch: {
-    // eslint-disable-next-line func-names
-    '$vuetify.theme.dark': function () {
-      this.applyHlTheme();
-    },
     template() {
       this.fetchBase();
 
@@ -249,14 +228,6 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.hlStyle = document.getElementById('hl-style');
-    if (!this.hlStyle) {
-      this.hlStyle = document.createElement('style');
-      this.hlStyle.id = 'hl-style';
-      document.head.appendChild(this.hlStyle);
-      this.applyHlTheme();
-    }
-
     this.fetchBase();
 
     // Show editor if needed
@@ -265,16 +236,6 @@ export default defineComponent({
     }
     if ('layouts' in this.template) {
       this.templateEditorCollapsed = this.template.layouts.length === 0;
-    }
-  },
-  destroyed() {
-    if (this.hlStyle) {
-      this.hlStyle.parentNode?.removeChild(this.hlStyle);
-    }
-  },
-  unmounted() {
-    if (this.hlStyle) {
-      this.hlStyle.parentNode?.removeChild(this.hlStyle);
     }
   },
   methods: {
@@ -303,14 +264,6 @@ export default defineComponent({
         this.error = (error as Error).message;
       }
       this.loading = false;
-    },
-    /**
-     * Apply highlight.js theme
-     */
-    applyHlTheme() {
-      if (this.hlStyle) {
-        this.hlStyle.textContent = this.$vuetify.theme.dark ? hlDark : hlLight;
-      }
     },
     /**
      * Prepare and open dialog of base template
