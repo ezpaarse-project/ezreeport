@@ -1,6 +1,6 @@
 <template>
-  <v-dialog :value="value" scrollable @input="$emit('input', $event)">
-    <v-card :loading="loading">
+  <v-dialog :value="value" :fullscreen="fullscreen" scrollable @input="$emit('input', $event)">
+    <v-card :loading="loading" :tile="fullscreen">
       <v-card-title>
         <template v-if="item">
           {{ item.name }}
@@ -49,6 +49,10 @@ export default defineComponent({
     name: {
       type: String,
       required: true,
+    },
+    fullscreen: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: {
