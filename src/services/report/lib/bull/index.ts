@@ -93,8 +93,6 @@ const queues = {
   mail: mailQueue,
 };
 
-export const queuesNames = Object.keys(queues);
-
 type Queues = keyof typeof queues;
 
 /**
@@ -107,13 +105,25 @@ type Queues = keyof typeof queues;
 const isQueue = (name: string): name is Queues => Object.keys(queues).includes(name);
 
 /**
+ * Get current queues
+ *
+ * @returns The queues infos
+ */
+export const getQueues = () => Promise.all(
+  Object.entries(queues).map(async ([name, queue]) => ({
+    name,
+    status: await queue.isPaused() ? 'paused' : 'active',
+  })),
+);
+
+/**
  * Add task to generation queue
  *
  * @param data The data
  *
  * @returns When task is placed in queue
  */
-export const addTaskToQueue = (data: GenerationData) => queues.generation.add(data);
+export const addTaskToGenQueue = (data: GenerationData) => queues.generation.add(data);
 
 /**
  * Add task to mail queue
@@ -122,26 +132,7 @@ export const addTaskToQueue = (data: GenerationData) => queues.generation.add(da
  *
  * @returns When task is placed in queue
  */
-export const addReportToQueue = (data: MailData) => queues.mail.add(data);
-
-/**
- * Format bull job
- *
- * @param job bull job
- *
- * @returns formated job
- */
-const formatJob = async (job: Job<GenerationData | MailData>) => ({
-  id: job.id,
-  data: job.data,
-  result: job.returnvalue,
-  progress: job.progress(),
-  added: new Date(job.timestamp),
-  started: job.processedOn && new Date(job.processedOn),
-  ended: job.finishedOn && new Date(job.finishedOn),
-  attemps: job.attemptsMade + 1,
-  status: await job.getState(),
-});
+export const addReportToMailQueue = (data: MailData) => queues.mail.add(data);
 
 /**
  * Pause the whole queue
@@ -175,26 +166,79 @@ export const resumeQueue = (queue: string) => {
   return queues[queue].resume();
 };
 
-// TODO[feat]: pagination
 /**
- * Get info about specific queue
+ * Format bull job
+ *
+ * @param job bull job
+ *
+ * @returns formatted job
+ */
+const formatJob = async (job: Job<GenerationData | MailData>) => ({
+  id: job.id,
+  data: job.data,
+  result: job.returnvalue,
+  progress: job.progress(),
+  added: new Date(job.timestamp),
+  started: job.processedOn && new Date(job.processedOn),
+  ended: job.finishedOn && new Date(job.finishedOn),
+  attempts: job.attemptsMade + 1,
+  status: await job.getState(),
+});
+
+/**
+ * Get count of jobs in queue
+ *
+ * @param queue The queue name
+ *
+ * @returns The count of jobs
+ */
+export const getCountJobs = async (queue: string) => {
+  if (!isQueue(queue)) {
+    throw new NotFoundError(`Queue "${queue}" not found`);
+  }
+
+  const jobs = await queues[queue].getJobs(
+    ['active', 'completed', 'delayed', 'failed', 'paused', 'waiting'],
+  );
+
+  return jobs.length;
+};
+
+/**
+ * Get jobs of a queue
  *
  * @param queue The queue name
  *
  * @throw If queue not found
  *
- * @returns The queue info
+ * @returns The jobs in queue
  */
-export const getJobs = async (queue: string) => {
+export const getJobs = async (
+  queue: string,
+  jobOpts?: {
+    count?: number,
+    previous?: Job<GenerationData>['id'],
+  },
+) => {
   if (!isQueue(queue)) {
     throw new NotFoundError(`Queue "${queue}" not found`);
   }
 
-  const rawJobs = await queues[queue].getJobs(['active', 'delayed', 'paused', 'waiting']);
-  return {
-    status: await queues[queue].isPaused() ? 'paused' : 'active',
-    jobs: await Promise.all(rawJobs.map(formatJob)),
-  };
+  const rawJobs = await queues[queue].getJobs(
+    ['active', 'completed', 'delayed', 'failed', 'paused', 'waiting'],
+  );
+  let jobs = rawJobs;
+  if (jobOpts?.previous) {
+    const index = rawJobs.findIndex(({ id }) => id === jobOpts.previous) + 1;
+    if (!index) {
+      jobs = [];
+    } else {
+      jobs = rawJobs.slice(index);
+    }
+  }
+  jobs = jobs.slice(0, jobOpts?.count ?? 15);
+
+  return Promise.all(jobs.map(formatJob));
 };
 
 /**

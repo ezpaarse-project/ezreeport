@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 import { Recurrence } from '~/lib/prisma';
-import { addReportToQueue } from '~/lib/bull';
+import { addReportToMailQueue } from '~/lib/bull';
 import { formatISO } from '~/lib/date-fns';
 import logger from '~/lib/logger';
 
@@ -18,7 +18,7 @@ export const sendError = async (error: Error, origin: string, _timer: string) =>
     const date = formatISO(new Date());
     const errStr = `[ErrorName] ${error.name}\n[ErrorMessage] ${error.message}\n[ErrorDate] ${date}\n\n${error.stack}`;
 
-    await addReportToQueue({
+    await addReportToMailQueue({
       success: false,
       file: Buffer.from(errStr).toString('base64'),
       task: {

@@ -1741,7 +1741,7 @@
                         "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
                         "meta": {
                           "jobId": "134",
-                          "jobAttemps": 0,
+                          "jobAttempts": 0,
                           "jobAdded": "2022-11-15T10:43:03.899Z"
                         },
                         "files": {
@@ -2229,7 +2229,7 @@
                         "added": "2022-11-15T11:01:33.179Z",
                         "started": "2022-11-15T11:01:33.184Z",
                         "ended": "2022-11-15T11:01:38.320Z",
-                        "attemps": 1,
+                        "attempts": 1,
                         "status": "completed"
                       }
                     }
@@ -2267,7 +2267,7 @@
                         "added": "2022-11-15T11:01:33.179Z",
                         "started": "2022-11-15T11:01:33.184Z",
                         "ended": "2022-11-15T11:01:38.320Z",
-                        "attemps": 1,
+                        "attempts": 1,
                         "status": "completed"
                       }
                     }
@@ -2347,7 +2347,7 @@
                         "added": "2022-11-15T11:01:33.179Z",
                         "started": "2022-11-15T11:01:33.184Z",
                         "ended": "2022-11-15T11:01:38.320Z",
-                        "attemps": 1,
+                        "attempts": 1,
                         "status": "completed"
                       }
                     }
@@ -2385,7 +2385,7 @@
                         "added": "2022-11-15T11:01:33.179Z",
                         "started": "2022-11-15T11:01:33.184Z",
                         "ended": "2022-11-15T11:01:38.320Z",
-                        "attemps": 1,
+                        "attempts": 1,
                         "status": "completed"
                       }
                     }
@@ -3320,7 +3320,7 @@
                           "data": {
                             "jobId": "143",
                             "jobAdded": "2022-11-15T13:54:05.851Z",
-                            "jobAttemps": 1
+                            "jobAttempts": 1
                           },
                           "createdAt": "2022-11-15T13:54:11.155Z"
                         },
@@ -3972,7 +3972,7 @@
             "added": "2022-11-15T11:01:33.179Z",
             "started": "2022-11-15T11:01:33.184Z",
             "ended": "2022-11-15T11:01:38.320Z",
-            "attemps": 1,
+            "attempts": 1,
             "status": "completed"
           }
         },
@@ -4012,7 +4012,7 @@
           "ended": {
             "type": "string"
           },
-          "attemps": {
+          "attempts": {
             "type": "integer"
           },
           "status": {
@@ -4023,7 +4023,7 @@
           "id",
           "data",
           "added",
-          "attemps",
+          "attempts",
           "status"
         ],
         "description": ""
