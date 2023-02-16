@@ -1,15 +1,18 @@
 {
-	// See https://go.microsoft.com/fwlink/?LinkId=827846 to learn about workspace recommendations.
-	// Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
-	// List of extensions which should be recommended for users of this workspace.
-	"recommendations": [
-		// ESLint support
-		"dbaeumer.vscode-eslint",
-		// npm import autocompletion
-		"christian-kohler.npm-intellisense",
-		// Mocha text explorer
-		"hbenl.vscode-mocha-test-adapter"
-	],
-	// List of extensions recommended by VS Code that should not be recommended for users of this workspace.
-	"unwantedRecommendations": []
+    // See https://go.microsoft.com/fwlink/?LinkId=827846 to learn about workspace recommendations.
+    // Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
+    // List of extensions which should be recommended for users of this workspace.
+    "recommendations": [
+			"dbaeumer.vscode-eslint",
+			"christian-kohler.npm-intellisense",
+			"hbenl.vscode-mocha-test-adapter",
+			"streetsidesoftware.code-spell-checker",
+			"vivaxy.vscode-conventional-commits",
+			"ms-azuretools.vscode-docker",
+			"mikestead.dotenv",
+			"streetsidesoftware.code-spell-checker-french",
+			"prisma.prisma",
+			"vue.volar",
+			"vue.vscode-typescript-vue-plugin"
+		]
 }

@@ -1,10 +1,14 @@
 {
-  "files.associations": {
-    ".env.defaults": "dotenv",
-    ".env": "dotenv"
-  },
-  "eslint.workingDirectories": [{ "mode": "auto" }],
-  "eslint.packageManager": "npm",
+  "cSpell.words": [
+    "ezreeport",
+    "highlightjs",
+    "prisma",
+    "stackoverflow",
+    "Toggleable",
+    "vega",
+    "vuedraggable",
+    "vuetify"
+  ],
   "conventionalCommits.scopes": [
     "report",
     "mail",
@@ -13,20 +17,21 @@
     "sdk",
     "vue"
   ],
+  "eslint.packageManager": "npm",
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+  "files.associations": {
+    ".env": "dotenv",
+    ".env.defaults": "dotenv"
+  },
   "mochaExplorer.cwd": "tests",
   "mochaExplorer.files": "./*/index.spec.ts",
   "mochaExplorer.require": [
     "mocha-steps",
     "ts-node/register"
   ],
-  "typescript.tsdk": "./node_modules/typescript/lib",
-  "cSpell.words": [
-    "ezreeport",
-    "highlightjs",
-    "stackoverflow",
-    "Toggleable",
-    "vega",
-    "vuedraggable",
-    "vuetify"
-  ],
+  "typescript.tsdk": "./node_modules/typescript/lib"
 }
