@@ -6,7 +6,8 @@ import { sendError } from '~/lib/elastic/apm';
 import logger from '~/lib/logger';
 import { NotFoundError } from '~/types/errors';
 
-const { concurrence, ...redis } = config.get('redis');
+const { ...redis } = config.get('redis');
+const { concurrence, maxExecTime } = config.get('workers');
 
 export type GenerationData = {
   /**
@@ -65,8 +66,16 @@ export type MailData = {
   url: string,
 };
 
-const generationQueue = new Queue<GenerationData>('ezReeport.report-generation', { redis });
-const mailQueue = new Queue<MailData>('ezReeport.mail-send', { redis });
+export const baseQueueOptions: Queue.QueueOptions = {
+  redis,
+  limiter: {
+    max: concurrence,
+    duration: maxExecTime,
+  },
+};
+
+const generationQueue = new Queue<GenerationData>('ezReeport.report-generation', baseQueueOptions);
+const mailQueue = new Queue<MailData>('ezReeport.mail-send', baseQueueOptions);
 
 generationQueue.on('failed', (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {
@@ -86,7 +95,7 @@ mailQueue.on('error', (err) => {
   logger.error(`[bull-queue] "mail" failed with error: ${err.message}`);
 });
 
-generationQueue.process(concurrence, join(__dirname, 'jobs/generateReport.ts'));
+generationQueue.process(join(__dirname, 'jobs/generateReport.ts'));
 
 const queues = {
   generation: generationQueue,

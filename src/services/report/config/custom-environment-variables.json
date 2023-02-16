@@ -11,8 +11,11 @@
   "redis": {
     "host": "REDIS_HOST",
     "port": { "__name": "REDIS_PORT", "__format": "number" },
-    "password": "REDIS_PASSWORD",
-    "concurrence": { "__name": "REDIS_CONCURRENCE", "__format": "number" }
+    "password": "REDIS_PASSWORD"
+  },
+  "workers": {
+    "concurrence": { "__name": "WORKERS_CONCURRENCE", "__format": "number" },
+    "maxExecTime": { "__name": "WORKERS_MAX_EXEC_TIME", "__format": "number" }
   },
   "ezmesure": {
     "secret": "EZMESURE_AUTH_SECRET",

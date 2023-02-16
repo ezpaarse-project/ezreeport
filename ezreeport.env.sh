@@ -10,7 +10,6 @@ export NODE_ENV="production"
 export REDIS_HOST="redis"
 export REDIS_PORT=6379
 export REDIS_PASSWORD=""
-export REDIS_CONCURRENCE=5
 
 # elastic
 export ELASTIC_SCHEME="https"
@@ -44,6 +43,10 @@ export EMAIL_SENDER="ezmesure-ezreeport@couperin.org"
 export EMAIL_DEV_TEAM="ezteam@couperin.org"
 export EMAIL_ATTEMPTS=5
 export EMAIL_ATTEMPTS_INTERVAL=2000
+
+# workers
+export WORKERS_CONCURRENCE=5
+export WORKERS_MAX_EXEC_TIME=10000
 
 # ezmesure
 export EZMESURE_AUTH_SECRET="" # ezMesure JWT secret

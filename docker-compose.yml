@@ -33,7 +33,6 @@ services:
       - REDIS_HOST
       - REDIS_PORT
       - REDIS_PASSWORD
-      - REDIS_CONCURRENCE
       # elastic
       - ELASTIC_URL
       - ELASTIC_USERNAME
@@ -43,6 +42,9 @@ services:
       - ELASTIC_MAX_TRIES
       # database
       - DATABASE_URL
+      # workers
+      - WORKERS_CONCURRENCE
+      - WORKERS_MAX_EXEC_TIME
       # ezmesure
       - EZMESURE_AUTH_SECRET
       - EZMESURE_DEPOSITORS_INDEX

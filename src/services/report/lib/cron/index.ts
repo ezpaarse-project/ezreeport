@@ -5,8 +5,8 @@ import { sendError } from '~/lib/elastic/apm';
 import logger from '~/lib/logger';
 import { formatInterval } from '~/lib/utils';
 import { NotFoundError } from '~/types/errors';
+import { baseQueueOptions } from '../bull';
 
-const { concurrence, ...redis } = config.get('redis');
 const cronsTimers = config.get('crons');
 
 type Crons = keyof typeof cronsTimers;
@@ -17,7 +17,7 @@ export type CronData = {
 
 const pausedJobs: Partial<Record<Crons, Queue.JobInformation>> = {};
 
-const cronQueue = new Queue<CronData>('ezReeport.daily-cron', { prefix: 'cron', redis });
+const cronQueue = new Queue<CronData>('ezReeport.daily-cron', { prefix: 'cron', ...baseQueueOptions });
 cronQueue.on('failed', (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {
     logger.error(`[cron-job] Failed with error: ${err.message}`);
@@ -56,7 +56,7 @@ cronQueue.on('error', (err) => {
           );
           try {
             //! TS type is kinda wrong here, it's not a promise
-            cronQueue.process(key, concurrence, join(__dirname, `jobs/${key}.ts`));
+            cronQueue.process(key, join(__dirname, `jobs/${key}.ts`));
             logger.debug(`[cron] ${job.name} registered for ${timer}`);
           } catch (error) {
             logger.error(`[cron] Failed to add process for ${key} (${timer}) with error: ${(error as Error).message}`);
