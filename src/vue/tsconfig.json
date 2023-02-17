@@ -18,9 +18,6 @@
       "~/*": [
         "./src/*"
       ],
-      "@/*": [
-        "./src/components/*"
-      ],
       // Disable types error from react (used for Storybook)
       "react": [
         "./src/types/null.d.ts"
