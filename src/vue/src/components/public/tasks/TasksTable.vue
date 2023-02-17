@@ -119,7 +119,7 @@
 <script lang="ts">
 import type { institutions, tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
-import CustomSwitch from '~/components/utils/forms/CustomSwitch';
+import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
 import type { DataOptions } from 'vuetify';
 import type { DataTableHeader } from '~/types/vuetify';
 

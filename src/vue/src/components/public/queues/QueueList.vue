@@ -50,7 +50,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import CustomSwitch from '~/components/utils/forms/CustomSwitch';
+import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
 import type { queues } from 'ezreeport-sdk-js';
 
 interface QueueItem {
