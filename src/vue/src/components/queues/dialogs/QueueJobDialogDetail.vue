@@ -91,7 +91,7 @@
             <v-tabs-items v-model="currentTab" class="mt-2">
               <v-tab-item v-if="job.data">
                 <!-- Data -->
-                <v-row>
+                <v-row class="mx-0">
                   <v-col>
                     <v-switch v-model="showRawData" :label="$t('headers.show-raw')" />
                     <ObjectTree :value="job.data" />
@@ -109,7 +109,7 @@
 
               <v-tab-item v-if="job.result">
                 <!-- Result -->
-                <v-row>
+                <v-row class="mx-0">
                   <v-col>
                     <v-switch v-model="showRawResult" :label="$t('headers.show-raw')" />
                     <ObjectTree :value="job.result" />

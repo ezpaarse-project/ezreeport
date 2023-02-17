@@ -39,6 +39,7 @@
                 :disabled="loading"
                 :label="$t(item.isRunning ? 'item.active' : 'item.inactive')"
                 reverse
+                class="mr-4"
                 @click.stop="updateCronStatus(item)"
               />
             </v-list-item-title>
@@ -66,7 +67,6 @@
 
         <v-btn
           v-if="perms.force"
-          text
           color="warning"
           :disabled="loading"
           @click="forceCronRun(item)"

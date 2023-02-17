@@ -1,5 +1,5 @@
 <template>
-  <v-row>
+  <v-row class="mx-0">
     <TemplateDialogRead
       v-if="taskTemplate && perms.readOne"
       v-model="readTemplateDialogShown"

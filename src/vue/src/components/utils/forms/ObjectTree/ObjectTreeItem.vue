@@ -21,7 +21,7 @@
             :readonly="!$listeners.input"
             dense
             hide-details
-            class="mt-0"
+            class="ml-2 mt-0"
             @change="$emit('input', property, $event)"
           />
 
