@@ -1,13 +1,13 @@
 import Queue from 'bull';
 import { join } from 'node:path';
 import config from '~/lib/config';
-import { sendError } from '~/lib/elastic/apm';
 import logger from '~/lib/logger';
 import { formatInterval } from '~/lib/utils';
 import { NotFoundError } from '~/types/errors';
 import { baseQueueOptions } from '../bull';
 
 const cronsTimers = config.get('crons');
+const { maxExecTime } = config.get('workers');
 
 type Crons = keyof typeof cronsTimers;
 
@@ -17,11 +17,18 @@ export type CronData = {
 
 const pausedJobs: Partial<Record<Crons, Queue.JobInformation>> = {};
 
-const cronQueue = new Queue<CronData>('ezReeport.daily-cron', { prefix: 'cron', ...baseQueueOptions });
+const queueOptions: Queue.QueueOptions = {
+  ...baseQueueOptions,
+  limiter: {
+    max: Object.keys(cronsTimers).length,
+    duration: maxExecTime,
+  },
+};
+
+const cronQueue = new Queue<CronData>('ezReeport.daily-cron', { prefix: 'cron', ...queueOptions });
 cronQueue.on('failed', (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {
     logger.error(`[cron-job] Failed with error: ${err.message}`);
-    sendError(err);
   }
 });
 cronQueue.on('error', (err) => {

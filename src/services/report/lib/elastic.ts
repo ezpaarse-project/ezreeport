@@ -1,7 +1,7 @@
-import { Client, estypes, type estypes as ElasticTypes } from '@elastic/elasticsearch';
+import { Client, type estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { setTimeout } from 'node:timers/promises';
-import config from '~/lib/config';
-import logger from '~/lib/logger';
+import config from './config';
+import logger from './logger';
 
 const {
   url,
@@ -49,14 +49,14 @@ const getElasticClient = async () => {
   while (tries < maxTries) {
     try {
       // eslint-disable-next-line no-await-in-loop
-      const { body: { status } } = await client.cluster.health<estypes.ClusterHealthResponse>({
+      const { body: { status } } = await client.cluster.health<ElasticTypes.ClusterHealthResponse>({
         wait_for_status: REQUIRED_STATUS,
         timeout: '5s',
       });
 
       if (
         ElasticStatus[
-          status.toLowerCase() as Lowercase<estypes.HealthStatus>
+          status.toLowerCase() as Lowercase<ElasticTypes.HealthStatus>
         ] >= ElasticStatus[REQUIRED_STATUS]
       ) {
         break;

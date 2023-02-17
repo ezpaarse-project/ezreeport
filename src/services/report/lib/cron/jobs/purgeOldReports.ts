@@ -10,7 +10,6 @@ import {
   isBefore,
   parseISO
 } from '~/lib/date-fns';
-import apm from '~/lib/elastic/apm'; // Setup Elastic's APM for monitoring
 import glob from '~/lib/glob';
 import logger from '~/lib/logger';
 import { formatInterval, isFulfilled } from '~/lib/utils';
@@ -25,11 +24,6 @@ type FileCheckResult = { file: string, dur: Duration };
 export default async (job: Queue.Job<CronData>) => {
   const start = new Date();
   logger.debug(`[cron] [${job.name}] Started`);
-
-  const apmtrans = apm.startTransaction(job.name, 'cron');
-  if (!apmtrans) {
-    logger.warn(`[cron] [${job.name}] Can't start APM transaction`);
-  }
 
   try {
     const today = endOfDay(start);
@@ -88,11 +82,9 @@ export default async (job: Queue.Job<CronData>) => {
 
     const dur = formatInterval({ start, end: new Date() });
     logger.info(`[cron] [${job.name}] In ${dur}s : Checked ${detailFiles.length} reports | Deleted ${deletedFiles.length}/${filesToDelete.length} files`);
-    apmtrans?.end('success');
   } catch (error) {
     const dur = formatInterval({ start, end: new Date() });
     logger.error(`[cron] Job ${job.name} failed in ${dur}s with error: ${(error as Error).message}`);
-    apmtrans?.end('error');
     await sendError(error as Error, 'index', job.data.timer);
   }
 };

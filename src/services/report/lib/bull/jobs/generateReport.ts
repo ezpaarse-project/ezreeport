@@ -4,8 +4,6 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import config from '~/lib/config';
 import { formatISO } from '~/lib/date-fns';
-import apm from '~/lib/elastic/apm'; // Setup Elastic's APM for monitoring
-import logger from '~/lib/logger';
 import { generateReport } from '~/models/reports';
 import type { AnyTemplate } from '~/models/templates';
 import { addReportToMailQueue, type GenerationData } from '..';
@@ -13,11 +11,6 @@ import { addReportToMailQueue, type GenerationData } from '..';
 const { outDir } = config.get('report');
 
 export default async (job: Queue.Job<GenerationData>) => {
-  const apmtrans = apm.startTransaction('generation', 'job');
-  if (!apmtrans) {
-    logger.warn('[bull] [generation] Can\'t start APM transaction');
-  }
-
   const {
     id: jobId,
     data: {
@@ -72,7 +65,6 @@ export default async (job: Queue.Job<GenerationData>) => {
     date: task.lastRun?.toString() ?? formatISO(new Date()),
   };
 
-  apmtrans?.end(res.success ? 'success' : 'error');
   if (res.success && res.detail.files.report) {
     const file = await readFile(join(outDir, res.detail.files.report), 'base64');
 

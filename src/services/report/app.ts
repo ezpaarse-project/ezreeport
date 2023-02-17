@@ -2,7 +2,6 @@ import express from 'express';
 import routes from './routes';
 import config from './lib/config';
 import './lib/date-fns'; // Setup default options for date-fns
-import './lib/elastic/apm'; // Setup Elastic's APM for monitoring
 import logger from './lib/logger';
 import corsMiddleware from './middlewares/cors';
 import formatMiddleware from './middlewares/format';

@@ -2,7 +2,6 @@ import Queue, { type Job } from 'bull';
 import { join } from 'path';
 import type { Recurrence, Task } from '~/lib/prisma';
 import config from '~/lib/config';
-import { sendError } from '~/lib/elastic/apm';
 import logger from '~/lib/logger';
 import { NotFoundError } from '~/types/errors';
 
@@ -80,7 +79,6 @@ const mailQueue = new Queue<MailData>('ezReeport.mail-send', baseQueueOptions);
 generationQueue.on('failed', (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {
     logger.error(`[bull-job] "generation" failed with error: ${err.message}`);
-    sendError(err);
   }
 });
 generationQueue.on('error', (err) => {

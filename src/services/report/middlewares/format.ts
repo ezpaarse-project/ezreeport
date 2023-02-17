@@ -1,6 +1,5 @@
 import type { RequestHandler } from 'express';
 import { getReasonPhrase, StatusCodes } from 'http-status-codes';
-import { sendError } from '~/lib/elastic/apm';
 import {
   ArgumentError,
   ConflitError,
@@ -37,10 +36,6 @@ const middleware: RequestHandler = (req, res, next) => {
       code = StatusCodes.BAD_REQUEST;
     } else if (err instanceof ConflitError) {
       code = StatusCodes.CONFLICT;
-    }
-
-    if (code >= 500) {
-      sendError(err, req, res);
     }
 
     res.sendJson(
