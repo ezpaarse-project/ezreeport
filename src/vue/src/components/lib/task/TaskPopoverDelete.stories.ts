@@ -8,6 +8,10 @@ const meta: Meta<typeof TaskPopoverDelete> = {
   args: {
     task: tasks[0],
     value: true,
+    coords: {
+      x: 0,
+      y: 0,
+    },
   },
   argTypes: {
     input: { action: 'input' },
