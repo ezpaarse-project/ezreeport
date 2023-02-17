@@ -1,11 +1,12 @@
 <template>
   <div class="layout-drawer-container">
-    <LayoutDialogParams
+    <LayoutPopoverParams
       v-if="selectedLayout"
-      v-model="paramsLayoutDialogShown"
+      v-model="paramsLayoutPopoverShown"
       :layout="selectedLayout"
       :index="value"
       :readonly="mode === 'view'"
+      :coords="paramsLayoutPopoverCoords"
       @update:layout="onLayoutUpdate"
       @update:index="selectedLayout && onLayoutPositionUpdate(selectedLayout, $event)"
     />
@@ -66,7 +67,7 @@
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
 
-              <v-btn icon x-small @click="showLayoutParams(i)">
+              <v-btn icon x-small @click="showLayoutParamsPopover(i, $event)">
                 <v-icon>mdi-cog</v-icon>
               </v-btn>
             </template>
@@ -142,7 +143,11 @@ export default defineComponent({
     'update:items': (val: AnyCustomLayout[]) => val.length >= 0,
   },
   data: () => ({
-    paramsLayoutDialogShown: false,
+    paramsLayoutPopoverShown: false,
+    paramsLayoutPopoverCoords: {
+      x: 0,
+      y: 0,
+    },
 
     figureIcons,
     collapsed: false,
@@ -272,13 +277,19 @@ export default defineComponent({
       }
     },
     /**
-     * Show params dialog for given layout
+     * Show params popover for given layout
      *
      * @param index The index of the layout in the template/task
+     * @param event The base event
      */
-    showLayoutParams(index: number) {
+    async showLayoutParamsPopover(index: number, event: MouseEvent) {
       this.$emit('input', index);
-      this.paramsLayoutDialogShown = true;
+      this.paramsLayoutPopoverCoords = {
+        x: event.clientX,
+        y: event.clientY,
+      };
+      await this.$nextTick();
+      this.paramsLayoutPopoverShown = true;
     },
   },
 });

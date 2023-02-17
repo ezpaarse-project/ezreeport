@@ -1,6 +1,6 @@
 <template>
   <v-dialog :fullscreen="currentTab === 1" :value="value" max-width="1000" scrollable @input="$emit('input', $event)">
-    <GenerationDialog
+    <TaskDialogGeneration
       v-if="task && perms.runTask"
       v-model="generationDialogShown"
       :task="task"
@@ -120,7 +120,7 @@
       <v-divider />
 
       <v-card-actions>
-        <v-btn :disabled="!perms.runTask" color="warning" @click="generationDialogShown = true">
+        <v-btn :disabled="!perms.runTask" color="warning" @click="showGenerateDialog">
           {{ $t('actions.generate') }}
         </v-btn>
       </v-card-actions>
@@ -155,7 +155,6 @@ export default defineComponent({
   },
   data: () => ({
     generationDialogShown: false,
-    deleteTaskDialogShown: false,
 
     task: undefined as CustomTask | undefined,
     currentTab: 0,
@@ -295,6 +294,12 @@ export default defineComponent({
         this.error = (error as Error).message;
       }
       this.loading = false;
+    },
+    /**
+     * Prepare and show task generation dialog
+     */
+    showGenerateDialog() {
+      this.generationDialogShown = true;
     },
   },
 });

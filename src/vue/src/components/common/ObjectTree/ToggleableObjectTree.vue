@@ -1,6 +1,6 @@
 <template>
   <div>
-    <ObjectTreePropertyDialog v-if="$listeners.input" ref="propertyDialogRef" />
+    <ObjectTreePropertyPopover v-if="$listeners.input" ref="propertyPopoverRef" />
 
     <span v-if="label" class="text--secondary">
       <v-btn
@@ -26,7 +26,7 @@
     <ObjectTree
       v-if="!collapsed"
       :value="value"
-      :dialog-ref="$refs.propertyDialogRef"
+      :popover-ref="$refs.propertyPopoverRef"
       v-on="treeListeners"
     />
   </div>

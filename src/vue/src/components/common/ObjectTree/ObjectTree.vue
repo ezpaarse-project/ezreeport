@@ -5,7 +5,7 @@
       :key="key"
       :property="key"
       :value="val"
-      :dialog-ref="dialogRef"
+      :popover-ref="popoverRef"
       v-on="listeners"
     />
   </ul>
@@ -21,7 +21,7 @@ export default defineComponent({
       type: [Object, Array],
       required: true,
     },
-    dialogRef: {
+    popoverRef: {
       type: Object,
       default: undefined,
     },

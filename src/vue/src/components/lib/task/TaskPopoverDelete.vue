@@ -1,5 +1,15 @@
 <template>
-  <v-dialog max-width="500" :value="value" @input="$emit('input', $event)">
+  <v-menu
+    :value="value"
+    :position-x="coords.x"
+    :position-y="coords.y"
+    :close-on-content-click="false"
+    absolute
+    offset-y
+    max-width="450"
+    min-width="450"
+    @input="$emit('input', $event)"
+  >
     <v-card :loading="loading">
       <v-card-title>
         {{$t('title')}}
@@ -36,7 +46,7 @@
         </v-btn>
       </v-card-actions>
     </v-card>
-  </v-dialog>
+  </v-menu>
 </template>
 
 <script lang="ts">
@@ -51,6 +61,10 @@ export default defineComponent({
     },
     task: {
       type: Object as PropType<tasks.Task | tasks.FullTask>,
+      required: true,
+    },
+    coords: {
+      type: Object as PropType<{ x: number, y: number }>,
       required: true,
     },
   },

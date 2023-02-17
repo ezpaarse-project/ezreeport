@@ -1,5 +1,9 @@
 <template>
-  <v-dialog :value="value" max-width="600" @input="$emit('input', $event)">
+  <v-dialog
+    :value="value"
+    max-width="600"
+    @input="$emit('input', $event)"
+  >
     <v-card>
       <v-progress-linear
         :active="progress >= 0"
@@ -58,34 +62,32 @@
           </v-alert>
         </v-slide-y-transition>
 
-        <v-row>
-          <v-list three-line flat>
-            <v-list-item-group v-model="generationType" mandatory>
-              <v-list-item
-                v-for="item in options"
-                :key="item.value"
-                :value="item.value"
-                :disabled="progress >= 0"
-              >
-                <template v-slot:default="{ active }">
-                  <v-list-item-action>
-                    <v-checkbox off-icon="$radioOff" on-icon="$radioOn" :input-value="active" />
-                  </v-list-item-action>
+        <v-list three-line flat>
+          <v-list-item-group v-model="generationType" mandatory>
+            <v-list-item
+              v-for="item in options"
+              :key="item.value"
+              :value="item.value"
+              :disabled="progress >= 0"
+            >
+              <template v-slot:default="{ active }">
+                <v-list-item-action>
+                  <v-checkbox off-icon="$radioOff" on-icon="$radioOn" :input-value="active" />
+                </v-list-item-action>
 
-                  <v-list-item-content>
-                    <v-list-item-title>{{ item.title }}</v-list-item-title>
-                    <v-list-item-subtitle>
-                      {{ item.description }}
-                    </v-list-item-subtitle>
-                  </v-list-item-content>
-                </template>
-              </v-list-item>
-            </v-list-item-group>
-          </v-list>
-        </v-row>
+                <v-list-item-content>
+                  <v-list-item-title>{{ item.title }}</v-list-item-title>
+                  <v-list-item-subtitle>
+                    {{ item.description }}
+                  </v-list-item-subtitle>
+                </v-list-item-content>
+              </template>
+            </v-list-item>
+          </v-list-item-group>
+        </v-list>
 
         <v-slide-y-transition>
-          <v-row
+          <template
             v-if="generationType === 'test'"
           >
             <v-combobox
@@ -114,25 +116,21 @@
                 </v-chip>
               </template>
             </v-combobox>
-          </v-row>
+          </template>
         </v-slide-y-transition>
 
-        <v-row>
-          <v-col>
-            <DatePicker
-              v-model="periodRange"
-              :label="$t('headers.period').toString()"
-              :max="max"
-              outlined
-            >
-              <template #append>
-                <v-btn icon @click="resetPeriod">
-                  <v-icon>mdi-undo</v-icon>
-                </v-btn>
-              </template>
-            </DatePicker>
-          </v-col>
-        </v-row>
+        <DatePicker
+          v-model="periodRange"
+          :label="$t('headers.period').toString()"
+          :max="max"
+          outlined
+        >
+          <template #append>
+            <v-btn icon @click="resetPeriod">
+              <v-icon>mdi-undo</v-icon>
+            </v-btn>
+          </template>
+        </DatePicker>
 
         <ErrorOverlay v-model="error" />
       </v-card-text>
