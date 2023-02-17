@@ -1,7 +1,7 @@
 <template>
   <v-col v-if="perms.readAll">
     <TemplateDialogRead
-      v-if="perms.readOne"
+      v-if="perms.readOne && focusedName"
       v-model="readTemplateDialogShown"
       :name="focusedName"
       fullscreen

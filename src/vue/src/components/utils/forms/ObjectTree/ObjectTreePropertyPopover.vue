@@ -4,6 +4,8 @@
     :position-x="coords.x"
     :position-y="coords.y"
     :close-on-content-click="false"
+    min-width="400"
+    max-width="400"
     absolute
     offset-x
     @input="close"
@@ -66,10 +68,6 @@
         </v-btn>
 
         <v-spacer />
-
-        <v-btn @click="close">
-          {{ $t('actions.cancel') }}
-        </v-btn>
 
         <v-btn :disabled="!valid || !isPropertyValid" color="success" @click="save">
           {{ $t('actions.save') }}

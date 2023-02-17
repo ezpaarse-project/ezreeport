@@ -121,7 +121,7 @@ import type { institutions, tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import CustomSwitch from '~/components/utils/forms/CustomSwitch';
 import type { DataOptions } from 'vuetify';
-import type { DataTableHeader } from '../types/vuetify';
+import type { DataTableHeader } from '~/types/vuetify';
 
 interface TaskItem {
   id: string,
@@ -235,9 +235,9 @@ export default defineComponent({
       this.loading = false;
     },
     /**
-     * Called when datatable options are updated
+     * Called when data table options are updated
      *
-     * @param opts Datatable options
+     * @param opts DataTable options
      */
     onPaginationChange(opts: DataOptions) {
       this.fetch(opts.page);
