@@ -8,7 +8,7 @@ import apm from '~/lib/elastic/apm'; // Setup Elastic's APM for monitoring
 import logger from '~/lib/logger';
 import { generateReport } from '~/models/reports';
 import type { AnyTemplate } from '~/models/templates';
-import { addReportToQueue, type GenerationData } from '..';
+import { addReportToMailQueue, type GenerationData } from '..';
 
 const { outDir } = config.get('report');
 
@@ -76,7 +76,7 @@ export default async (job: Queue.Job<GenerationData>) => {
   if (res.success && res.detail.files.report) {
     const file = await readFile(join(outDir, res.detail.files.report), 'base64');
 
-    await addReportToQueue({
+    await addReportToMailQueue({
       ...base,
       success: true,
       file,
@@ -85,7 +85,7 @@ export default async (job: Queue.Job<GenerationData>) => {
   } else {
     const file = await readFile(join(outDir, res.detail.files.detail), 'base64');
 
-    await addReportToQueue({
+    await addReportToMailQueue({
       ...base,
       success: false,
       file,

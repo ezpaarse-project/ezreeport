@@ -17,7 +17,7 @@
       <v-list-group
         v-for="item in items"
         :key="item.name"
-        v-model="item.open"
+        v-model="openedCrons[item.name]"
       >
         <template
           v-if="item.disabled"
@@ -35,9 +35,9 @@
 
               <CustomSwitch
                 v-if="(perms.start && perms.stop)"
-                :input-value="item.running"
+                :input-value="item.isRunning"
                 :disabled="loading"
-                :label="$t(item.running ? 'item.active' : 'item.inactive')"
+                :label="$t(item.isRunning ? 'item.active' : 'item.inactive')"
                 reverse
                 @click.stop="updateCronStatus(item)"
               />
@@ -95,9 +95,8 @@ interface CronDetailItem {
 
 interface CronItem {
   name: string,
-  running: boolean,
+  isRunning: boolean,
   detail: CronDetailItem[],
-  open: boolean,
   disabled: boolean,
 }
 
@@ -106,9 +105,11 @@ export default defineComponent({
     CustomSwitch,
   },
   data: () => ({
+    crons: [] as crons.Cron[],
+    openedCrons: {} as Record<string, boolean>,
+
     loading: false,
     error: '',
-    crons: [] as crons.Cron[],
   }),
   computed: {
     perms() {
@@ -161,9 +162,8 @@ export default defineComponent({
      * @param cron The cron
      */
     parseCron: (cron: crons.Cron): CronItem => ({
-      open: false,
       name: cron.name,
-      running: cron.running,
+      isRunning: cron.running,
       disabled: !cron.nextRun && !cron.lastRun,
       detail: [
         { key: 'lastRun', icon: 'mdi-calendar-arrow-left', value: cron.lastRun?.toLocaleString() },
@@ -178,7 +178,7 @@ export default defineComponent({
     updateCronStatus(item: CronItem) {
       return this.execCronAction(
         item,
-        item.running ? this.$ezReeport.sdk.crons.stopCron : this.$ezReeport.sdk.crons.startCron,
+        item.isRunning ? this.$ezReeport.sdk.crons.stopCron : this.$ezReeport.sdk.crons.startCron,
       );
     },
     /**
@@ -209,10 +209,7 @@ export default defineComponent({
 
         const { content } = await action(item.name);
 
-        const newItem = this.parseCron(content);
-        newItem.open = item.open;
-
-        items.splice(index, 1, newItem);
+        items.splice(index, 1, content);
         this.crons = items;
       } catch (error) {
         this.error = (error as Error).message;

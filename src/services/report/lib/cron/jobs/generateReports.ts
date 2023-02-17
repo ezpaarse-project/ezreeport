@@ -1,5 +1,5 @@
 import type Queue from 'bull';
-import { addTaskToQueue } from '~/lib/bull';
+import { addTaskToGenQueue } from '~/lib/bull';
 import { endOfDay, isBefore, isSameDay } from '~/lib/date-fns';
 import apm from '~/lib/elastic/apm'; // Setup Elastic's APM for monitoring
 import logger from '~/lib/logger';
@@ -26,7 +26,7 @@ export default async (job: Queue.Job<CronData>) => {
       tasks.map(
         async (task, i, arr) => {
           if (isSameDay(task.nextRun, today)) {
-            await addTaskToQueue({ task, origin: 'daily-cron-job' });
+            await addTaskToGenQueue({ task, origin: 'daily-cron-job' });
           } else if (isBefore(task.nextRun, today)) {
             logger.warn(`[cron] [${job.name}] Task "${task.id}" have a "nextRun" before today. Skipping it.`);
           }

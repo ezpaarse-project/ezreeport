@@ -3,7 +3,8 @@ import {
   getJob,
   getJobs,
   pauseQueue,
-  queuesNames,
+  getQueues,
+  getCountJobs,
   resumeQueue,
   retryJob
 } from '~/lib/bull';
@@ -14,17 +15,9 @@ import { HTTPError } from '~/types/errors';
 
 const router = CustomRouter('queues')
   /**
-   * Get all possible queues names (required for further requests)
+   * Get all possible queues
    */
-  .createSecuredRoute('GET /', Roles.READ, async (_req, _res) => queuesNames)
-
-  /**
-   * Get info about specific queue
-   */
-  .createSecuredRoute('GET /:queue', Roles.SUPER_USER, async (req, _res) => {
-    const { queue } = req.params;
-    return getJobs(queue);
-  })
+  .createSecuredRoute('GET /', Roles.READ, (_req, _res) => getQueues())
 
   /**
    * Pause specific queue
@@ -33,7 +26,7 @@ const router = CustomRouter('queues')
     const { queue } = req.params;
     await pauseQueue(queue);
 
-    return getJobs(queue);
+    return (await getQueues()).find(({ name }) => name === queue);
   })
 
   /**
@@ -43,7 +36,29 @@ const router = CustomRouter('queues')
     const { queue } = req.params;
     await resumeQueue(queue);
 
-    return getJobs(queue);
+    return (await getQueues()).find(({ name }) => name === queue);
+  })
+
+/**
+   * Get jobs of a specific queue
+   */
+  .createSecuredRoute('GET /:queue/jobs', Roles.SUPER_USER, async (req, _res) => {
+    const { queue } = req.params;
+    const { previous: p = undefined, count = '15' } = req.query;
+    const c = +count;
+
+    // TODO: custom sort
+    const jobs = await getJobs(queue, { count: c, previous: p?.toString() });
+
+    return {
+      data: jobs,
+      meta: {
+        total: await getCountJobs(queue),
+        count: jobs.length,
+        size: c,
+        lastId: jobs.at(-1)?.id,
+      },
+    };
   })
 
   /**
@@ -51,7 +66,7 @@ const router = CustomRouter('queues')
    *
    * Can't access to other institution's jobs
    */
-  .createSecuredRoute('GET /:queue/:jobId', Roles.READ, async (req, _res) => {
+  .createSecuredRoute('GET /:queue/jobs/:jobId', Roles.READ, async (req, _res) => {
     const { queue, jobId } = req.params;
     const job = await getJob(queue, jobId);
     if (!job) {
@@ -78,7 +93,7 @@ const router = CustomRouter('queues')
    *
    * Throw an error if job wasn't failed
    */
-  .createSecuredRoute('POST /:queue/:jobId/retry', Roles.READ_WRITE, async (req, _res) => {
+  .createSecuredRoute('POST /:queue/jobs/:jobId/retry', Roles.READ_WRITE, async (req, _res) => {
     const { queue, jobId } = req.params;
     const job = await getJob(queue, jobId);
     if (!job) {

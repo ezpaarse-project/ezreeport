@@ -2,6 +2,8 @@ import type VueApp from 'vue';
 import ezReeport from './ezReeport';
 import components from './components';
 
+import './style';
+
 export type EzReeportOptions = {
   api_url?: 'string',
 };

@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
 import { pick } from 'lodash';
 import type { Prisma } from '~/lib/prisma';
-import { addTaskToQueue } from '~/lib/bull';
+import { addTaskToGenQueue } from '~/lib/bull';
 import { CustomRouter } from '~/lib/express-utils';
 import { b64ToString } from '~/lib/utils';
 import { checkInstitution } from '~/middlewares/auth';
@@ -296,7 +296,7 @@ const router = CustomRouter('tasks')
       throw new HTTPError('Missing part of custom period', StatusCodes.BAD_REQUEST);
     }
 
-    const job = await addTaskToQueue({
+    const job = await addTaskToGenQueue({
       task: { ...task, targets: testEmails || task.targets },
       customPeriod,
       origin: req.user.username,
