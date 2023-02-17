@@ -1,9 +1,12 @@
 <template>
-  <v-dialog
+  <v-menu
     :value="value"
     :persistent="!valid"
-    width="500"
-    scrollable
+    :position-x="coords.x"
+    :position-y="coords.y"
+    :close-on-content-click="false"
+    absolute
+    offset-x
     @input="$emit('input', $event)"
   >
     <v-card>
@@ -78,7 +81,7 @@
         </v-form>
       </v-card-text>
     </v-card>
-  </v-dialog>
+  </v-menu>
 </template>
 
 <script lang="ts">
@@ -97,6 +100,10 @@ export default defineComponent({
     },
     index: {
       type: Number,
+      required: true,
+    },
+    coords: {
+      type: Object as PropType<{ x: number, y: number }>,
       required: true,
     },
     readonly: {

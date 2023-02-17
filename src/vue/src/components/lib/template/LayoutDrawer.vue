@@ -1,81 +1,112 @@
 <template>
-  <div>
-    <LayoutDialogParams
+  <div class="layout-drawer-container">
+    <LayoutPopoverParams
       v-if="selectedLayout"
-      v-model="paramsLayoutDialogShown"
+      v-model="paramsLayoutPopoverShown"
       :layout="selectedLayout"
       :index="value"
       :readonly="mode === 'view'"
+      :coords="paramsLayoutPopoverCoords"
       @update:layout="onLayoutUpdate"
       @update:index="selectedLayout && onLayoutPositionUpdate(selectedLayout, $event)"
     />
 
-    <draggable
-      :value="items"
-      :move="onLayoutMove"
-      :disabled="mode === 'view'"
-      draggable=".draggable"
-      @change="onLayoutDragged"
-    >
-      <div
-        v-for="(layout, i) in items"
-        :key="layout._.id"
-        class="draggable"
-      >
-        <div class="d-flex">
-          <span :class="[value === i && 'primary--text']">
-            #{{ i }}
-            <v-icon v-if="layout._.hasError" color="warning" small>mdi-alert</v-icon>
-          </span>
-
-          <v-spacer />
-
-          <template v-if="layout.at !== undefined">
-            <v-btn icon color="error" x-small @click="onLayoutDelete(layout)">
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
-
-            <v-btn icon x-small @click="showLayoutParams(i)">
-              <v-icon>mdi-cog</v-icon>
-            </v-btn>
-          </template>
-          <template v-else>
-            <v-icon color="black" dense>mdi-lock</v-icon>
-          </template>
+    <div class="d-flex flex-column" style="width: 100%;">
+      <template v-if="mode !== 'view'">
+        <!-- Toolbar -->
+        <div class="d-flex pa-2" style="min-height: 44px;">
+          <v-btn
+            small
+            color="success"
+            elevation="0"
+            @click="onLayoutCreate"
+          >
+            <v-icon left>mdi-plus</v-icon>
+            {{ $t('actions.add') }}
+          </v-btn>
         </div>
 
-        <v-hover v-slot="{ hover }">
-          <v-sheet
-            :color="(value === i && 'primary')
-              || (hover && 'grey')
-              || undefined"
-            rounded
-            outlined
-            class="layout-preview mb-3"
-            @click="$emit('input', i)"
-          />
-        </v-hover>
-      </div>
+        <v-divider />
+      </template>
 
-      <template #footer>
-        <div class="layout-preview">
-          <v-tooltip>
-            <template #activator="{ attrs, on }">
+      <!-- Items -->
+      <draggable
+        :value="items"
+        :move="onLayoutMove"
+        :disabled="mode === 'view'"
+        :component-data="{
+          attrs: {
+            class: 'drawer px-3',
+          },
+        }"
+        ref="drawerRef"
+        draggable=".drawer-item--draggable"
+        @change="onLayoutDragged"
+      >
+        <div
+          v-for="(layout, i) in items"
+          :key="layout._.id"
+          class="drawer-item--draggable"
+        >
+          <div class="d-flex">
+            <span :class="[value === i && 'primary--text']">
+              #{{ i }}
+              <v-icon v-if="layout._.hasError" color="warning" small>mdi-alert</v-icon>
+            </span>
+
+            <v-spacer />
+
+            <template v-if="mode !== 'task-edition' || layout.at !== undefined">
               <v-btn
-                fab
-                v-bind="attrs"
-                @click="onLayoutCreate"
-                v-on="on"
+                v-if="mode !== 'view'"
+                icon
+                color="error"
+                x-small
+                @click="onLayoutDelete(layout)"
               >
-                <v-icon>mdi-plus</v-icon>
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+
+              <v-btn icon x-small @click="showLayoutParamsPopover(i, $event)">
+                <v-icon>mdi-cog</v-icon>
               </v-btn>
             </template>
+            <template v-else>
+              <v-icon color="black" dense>mdi-lock</v-icon>
+            </template>
+          </div>
 
-            <span>{{ $t('actions.add-layout') }}</span>
-          </v-tooltip>
+          <v-hover v-slot="{ hover }">
+            <v-sheet
+              :color="(value === i && 'primary')
+                || (hover && 'grey')
+                || undefined"
+              rounded
+              outlined
+              class="layout-preview mb-3 pa-2"
+              @click="$emit('input', i)"
+            >
+              <SlotItemGrid
+                :items="layout.figures"
+                :grid="grid"
+              >
+                <template #item="{ item: figure }">
+                  <v-sheet
+                    class="figure-preview"
+                    rounded
+                    outlined
+                  >
+                    <v-icon :large="layout.figures.length <= 2">
+                      {{ figureIcons[figure.type] }}
+                    </v-icon>
+                  </v-sheet>
+                </template>
+              </SlotItemGrid>
+            </v-sheet>
+          </v-hover>
         </div>
-      </template>
-    </draggable>
+      </draggable>
+    </div>
   </div>
 </template>
 
@@ -83,6 +114,7 @@
 import draggable, { type MoveEvent } from 'vuedraggable';
 import { defineComponent, type PropType } from 'vue';
 import { addAdditionalData, type AnyCustomLayout } from './customTemplates';
+import { figureIcons } from './figures';
 
 export default defineComponent({
   components: {
@@ -101,13 +133,24 @@ export default defineComponent({
       type: String as PropType<'view' | 'task-edition' | 'template-edition'>,
       default: 'view',
     },
+    grid: {
+      type: Object as PropType<{ rows: number, cols: number }>,
+      default: () => ({ cols: 2, rows: 2 }),
+    },
   },
   emits: {
     input: (val: number) => !!val,
     'update:items': (val: AnyCustomLayout[]) => val.length >= 0,
   },
   data: () => ({
-    paramsLayoutDialogShown: false,
+    paramsLayoutPopoverShown: false,
+    paramsLayoutPopoverCoords: {
+      x: 0,
+      y: 0,
+    },
+
+    figureIcons,
+    collapsed: false,
   }),
   computed: {
     /**
@@ -207,6 +250,12 @@ export default defineComponent({
       this.$emit('update:items', [...this.items, defaultLayout]);
       // Select created template
       this.$emit('input', this.items.length);
+
+      // Scroll to bottom
+      this.$nextTick(() => {
+        const el = (this.$refs.drawerRef as Vue).$el;
+        el.scrollTop = el.scrollHeight;
+      });
     },
     /**
      * Delete a layout in current template
@@ -228,21 +277,38 @@ export default defineComponent({
       }
     },
     /**
-     * Show params dialog for given layout
+     * Show params popover for given layout
      *
      * @param index The index of the layout in the template/task
+     * @param event The base event
      */
-    showLayoutParams(index: number) {
+    async showLayoutParamsPopover(index: number, event: MouseEvent) {
       this.$emit('input', index);
-      this.paramsLayoutDialogShown = true;
+      this.paramsLayoutPopoverCoords = {
+        x: event.clientX,
+        y: event.clientY,
+      };
+      await this.$nextTick();
+      this.paramsLayoutPopoverShown = true;
     },
   },
 });
 </script>
 
 <style lang="scss" scoped>
-.layout-preview {
+.layout-drawer-container {
+  position: relative;
+  width: 20%;
+  height: 100%;
   display: flex;
+
+  &::v-deep(.drawer) {
+    flex: 1;
+    overflow-y: auto;
+  }
+}
+
+.layout-preview {
   align-items: center;
   justify-content: center;
 
@@ -250,14 +316,25 @@ export default defineComponent({
   cursor: pointer;
 
   transition: background-color 0.5s, border-color 0.5s;
+
+  > * {
+    height: 100%;
+  }
+
+  .figure-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
 }
 </style>
 
 <i18n lang="yaml">
 en:
   actions:
-    add-layout: 'Add layout'
+    add: 'Add'
 fr:
   actions:
-    add-layout: 'Ajouter une page'
+    add: 'Ajouter'
 </i18n>

@@ -1,6 +1,6 @@
 <template>
-  <v-dialog :max-width="maxWidth" :value="value" scrollable @input="$emit('input', $event)">
-    <v-card :loading="loading">
+  <v-dialog :fullscreen="currentTab === 1" :value="value" max-width="1000" scrollable @input="$emit('input', $event)">
+    <v-card :loading="loading" :tile="currentTab === 1">
       <v-card-title>
         <v-text-field
           v-if="task"
@@ -33,14 +33,10 @@
 
       </v-card-title>
 
-      <v-tabs v-model="currentTab">
-        <v-tab>
-          {{ $t('tabs.details') }}
-          <v-icon v-if="!isDetailValid" color="warning" small right>mdi-alert</v-icon>
-        </v-tab>
-        <v-tab>
-          {{ $t('tabs.template') }}
-          <v-icon v-if="!isTemplateValid" color="warning" small right>mdi-alert</v-icon>
+      <v-tabs v-model="currentTab" style="flex-grow: 0;">
+        <v-tab v-for="tab in tabs" :key="tab.name">
+          {{ tab.label }}
+          <v-icon v-if="!tab.valid" color="warning" small right>mdi-alert</v-icon>
         </v-tab>
       </v-tabs>
 
@@ -57,7 +53,9 @@
                     v-model="task.targets"
                     :label="$t('headers.targets')"
                     :rules="rules.targets"
+                    class="mt-1"
                     multiple
+                    outlined
                   >
                     <template #append>
                       <div />
@@ -190,6 +188,23 @@ export default defineComponent({
       };
     },
     /**
+     * Tabs data
+     */
+    tabs() {
+      return [
+        {
+          name: 'details',
+          label: this.$t('tabs.details'),
+          valid: this.isDetailValid,
+        },
+        {
+          name: 'template',
+          label: this.$t('tabs.template'),
+          valid: this.isTemplateValid,
+        },
+      ];
+    },
+    /**
      * name field is outside of the v-form, so we need to manually check using rules
      */
     isNameValid() {
@@ -204,12 +219,6 @@ export default defineComponent({
         readOne: perms?.['tasks-get-task'],
         update: perms?.['tasks-put-task'],
       };
-    },
-    /**
-     * Max Width of the dialog
-     */
-    maxWidth(): number | undefined {
-      return this.currentTab !== 1 ? 1000 : undefined;
     },
     /**
      * Various dates to show

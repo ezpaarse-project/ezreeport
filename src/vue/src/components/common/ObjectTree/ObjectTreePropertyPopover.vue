@@ -1,8 +1,12 @@
 <template>
-  <v-dialog
+  <v-menu
     :value="shown"
+    :position-x="coords.x"
+    :position-y="coords.y"
+    :close-on-content-click="false"
+    absolute
+    offset-x
     @input="close"
-    max-width="600"
   >
     <v-card v-if="item.ref">
       <v-card-title>
@@ -72,7 +76,7 @@
         </v-btn>
       </v-card-actions>
     </v-card>
-  </v-dialog>
+  </v-menu>
 </template>
 
 <script lang="ts">
@@ -91,6 +95,7 @@ export default defineComponent({
   expose: ['open', 'close'],
   data: () => ({
     shown: false,
+    coords: { x: 0, y: 0 },
 
     item: {
       ref: undefined as InstanceType<typeof ObjectTreeItem> | undefined,
@@ -129,7 +134,7 @@ export default defineComponent({
      *
      * @param item The current item
      */
-    open(item: InstanceType<typeof ObjectTreeItem>) {
+    async open(item: InstanceType<typeof ObjectTreeItem>, coords: { x:number, y:number }) {
       this.item = {
         ref: item as any,
         property: item.property,
@@ -138,6 +143,8 @@ export default defineComponent({
         ) ?? this.availableTypes[0],
         value: item.value,
       };
+      this.coords = coords;
+      await this.$nextTick();
       this.shown = true;
     },
     /**

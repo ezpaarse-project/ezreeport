@@ -5,7 +5,11 @@
     </v-btn>
 
     <div class="d-flex align-end">
-      <span class="label" @click="openPropertyDialog" @keydown="openPropertyDialog">
+      <span
+        :class="[$listeners.input && 'label']"
+        @click="openPropertyPopover"
+        @keydown="() => {}"
+      >
         {{ property }}:
       </span>
 
@@ -36,7 +40,7 @@
         <div v-else class="font-italic text--disabled">
           {{ value.constructor.name }}
 
-          <v-btn icon color="success" x-small @click="addField">
+          <v-btn v-if="$listeners.input" icon color="success" x-small @click="addField">
             <v-icon>mdi-plus</v-icon>
           </v-btn>
         </div>
@@ -46,8 +50,8 @@
     <ObjectTree
       v-if="!collapsed && (isObject || isArray)"
       :value="value"
-      :dialog-ref="dialogRef"
-      @input="$emit('input', property, $event)"
+      :popover-ref="popoverRef"
+      v-on="treeListeners"
     />
   </li>
 </template>
@@ -66,7 +70,7 @@ export default defineComponent({
       type: [] as PropType<any>,
       required: true,
     },
-    dialogRef: {
+    popoverRef: {
       type: Object,
       default: undefined,
     },
@@ -123,14 +127,33 @@ export default defineComponent({
     isString() {
       return !this.isNull && typeof this.value === 'string';
     },
+    /**
+     * Listeners for sub tree
+     */
+    treeListeners() {
+      if (!this.$listeners.input) {
+        return {};
+      }
+      return {
+        input: (v: Record<string, any> | unknown[]) => this.$emit('input', this.property, v),
+      };
+    },
   },
   methods: {
     /**
-     * Open advanced edition dialog
+     * Open advanced edition popover
+     *
+     * @param event The base event
      */
-    openPropertyDialog() {
-      this.dialogRef?.close();
-      this.dialogRef?.open(this);
+    openPropertyPopover(event: MouseEvent) {
+      this.popoverRef?.close();
+      this.popoverRef?.open(
+        this,
+        {
+          x: event.clientX,
+          y: event.clientY,
+        },
+      );
     },
     /**
      * When value is updated (used to trigger on blur and avoid too many updates)

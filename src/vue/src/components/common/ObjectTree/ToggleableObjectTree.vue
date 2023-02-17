@@ -1,6 +1,6 @@
 <template>
   <div>
-    <ObjectTreePropertyDialog ref="propertyDialogRef" />
+    <ObjectTreePropertyPopover v-if="$listeners.input" ref="propertyPopoverRef" />
 
     <span v-if="label" class="text--secondary">
       <v-btn
@@ -26,8 +26,8 @@
     <ObjectTree
       v-if="!collapsed"
       :value="value"
-      :dialog-ref="$refs.propertyDialogRef"
-      @input="$emit('input', $event)"
+      :popover-ref="$refs.propertyPopoverRef"
+      v-on="treeListeners"
     />
   </div>
 </template>
@@ -55,6 +55,14 @@ export default defineComponent({
   computed: {
     length() {
       return Object.keys(this.value).length;
+    },
+    treeListeners() {
+      if (!this.$listeners.input) {
+        return {};
+      }
+      return {
+        input: (v: Record<string, any> | unknown[]) => this.$emit('input', v),
+      };
     },
   },
   methods: {

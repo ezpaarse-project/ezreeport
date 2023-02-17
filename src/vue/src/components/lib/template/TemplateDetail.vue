@@ -54,109 +54,80 @@
         </v-col>
       </v-row>
 
-      <v-row>
-        <v-col v-if="taskTemplate">
-          {{ $t('headers.inserts') }}
+      <v-card
+        outlined
+        elevation="0"
+      >
+        <v-card-subtitle class="py-2 pl-2">
+          <v-btn
+            icon
+            x-small
+            @click="templateEditorCollapsed = !templateEditorCollapsed"
+          >
+            <v-icon>mdi-chevron-{{ templateEditorCollapsed === false ? 'up' : 'down' }}</v-icon>
+          </v-btn>
 
-          <v-sheet v-for="(insert, i) in (taskTemplate.inserts || [])" :key="i" rounded outlined class="pa-2 mt-2">
-            {{ $t('headers.insert', { id: i }) }}
-            <v-text-field
-              :label="$t('headers.at')"
-              :value="insert.at"
-              :hint="$t('headers.at-hint')"
-              readonly
-              type="number"
-              min="0"
+          {{ $t('headers.layouts', { count: mergedLayouts.length }) }}
+        </v-card-subtitle>
+
+        <v-divider />
+
+        <v-card-text v-show="!templateEditorCollapsed" class="pb-0" style="height: 650px">
+          <v-row style="height: 100%">
+            <LayoutDrawer
+              v-model="selectedLayoutIndex"
+              :items="mergedLayouts"
+              mode="view"
+              class="ml-n1"
             />
 
-            {{ $t('headers.figures') }}
-            <FigureDetail v-for="(figure, j) in insert.figures" :key="j" :figure="figure" :id="j" />
-          </v-sheet>
-        </v-col>
+            <v-divider vertical style="margin-left: 1px" />
 
-        <v-col v-if="fullTemplate">
-          {{ $t('headers.layouts') }}
-
-          <v-sheet v-for="(layout, i) in (fullTemplate.layouts || [])" :key="i" rounded outlined class="pa-2 mt-2">
-            {{ $t('headers.layout', { id: i }) }}
-
-            <div v-if="!layout.data">
-              <!-- Fetcher -->
-              <v-select
-                :label="$t('headers.fetcher')"
-                :value="layout.fetcher || 'elastic'"
-                :items="[layout.fetcher || 'elastic']"
-                readonly
-              />
-              <ToggleableObjectTree
-                v-if="layout.fetchOptions"
-                :label="$t('headers.fetchOptions').toString()"
-                :value="layout.fetchOptions"
-                class="my-2"
-              />
-            </div>
-
-            <template v-else>
-              <!-- Layout Data -->
-              <ToggleableObjectTree
-                v-if="typeof layout.data === 'object'"
-                :label="$t('headers.data').toString()"
-                :value="layout.data"
-                class="my-2"
-              />
-              <v-textarea v-else :value="layout.data" :label="$t('headers.data')" readonly />
-            </template>
-
-            {{ $t('headers.figures') }}
-            <FigureDetail
-              v-for="(figure, j) in layout.figures"
-              :key="j"
-              :figure="figure"
-              :id="j"
+            <LayoutViewer
+              v-if="selectedLayout"
+              class="editor-panel ma-0"
+              :items="selectedLayout.figures"
               :grid="grid"
+              mode="view"
             />
-          </v-sheet>
-        </v-col>
-      </v-row>
-
+          </v-row>
+        </v-card-text>
+      </v-card>
       <ErrorOverlay v-model="error" />
     </v-col>
 
     <v-slide-x-reverse-transition>
       <v-col v-if="rawTemplateShown" cols="6">
-        <highlightjs language="json" :code="rawTemplate" class="mt-4" />
+        <JSONPreview :value="template" class="mt-4" />
       </v-col>
     </v-slide-x-reverse-transition>
   </v-row>
 </template>
 
 <script lang="ts">
-import hljs from 'highlight.js/lib/core';
-import hlJSON from 'highlight.js/lib/languages/json';
-import hlLight from 'highlight.js/styles/stackoverflow-light.css?inline';
-import hlDark from 'highlight.js/styles/stackoverflow-dark.css?inline';
-import highlightjs from '@highlightjs/vue-plugin';
-
-import type { templates, tasks } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
-
-hljs.registerLanguage('json', hlJSON);
+import {
+  addAdditionalDataToLayouts,
+  type AnyCustomLayout,
+  type AnyCustomTemplate,
+  type CustomTaskTemplate,
+  type CustomTemplate,
+} from './customTemplates';
 
 export default defineComponent({
-  components: { highlightjs: highlightjs.component },
   props: {
     template: {
-      type: Object as PropType<templates.FullTemplate['template'] | tasks.FullTask['template']>,
+      type: Object as PropType<AnyCustomTemplate>,
       required: true,
     },
   },
   data: () => ({
     readTemplateDialogShown: false,
     rawTemplateShown: false,
+    templateEditorCollapsed: true,
 
-    hlStyle: null as HTMLElement | null,
-
-    extendedTemplate: undefined as templates.FullTemplate | undefined,
+    extendedTemplate: undefined as CustomTemplate | undefined,
+    selectedLayoutIndex: 0,
 
     loading: false,
     error: '',
@@ -172,28 +143,22 @@ export default defineComponent({
       };
     },
     /**
-     * Template as JSON
-     */
-    rawTemplate(): string {
-      return JSON.stringify(this.template, undefined, 2);
-    },
-    /**
      * The template of a task. If the provided template isn't from a task, return undefined
      *
      * Used to simplify casts in TS
      */
-    taskTemplate(): tasks.FullTask['template'] | undefined {
+    taskTemplate(): CustomTaskTemplate | undefined {
       if ('extends' in this.template) {
         return this.template;
       }
       return undefined;
     },
     /**
-     * The template. If the provided tempalte is from a task, return undefined
+     * The template. If the provided template is from a task, return undefined
      *
      * Used to simplify casts in TS
      */
-    fullTemplate(): templates.FullTemplate['template'] | undefined {
+    fullTemplate(): CustomTemplate | undefined {
       // Not using this.taskTemplate cause of TS casting
       if ('extends' in this.template) {
         return undefined;
@@ -201,12 +166,12 @@ export default defineComponent({
       return this.template;
     },
     /**
-     * The base template. If the provided tempalte is from a task,
+     * The base template. If the provided template is from a task,
      * return the template that it extends, return self otherwise
      */
-    baseTemplate(): templates.FullTemplate['template'] | undefined {
+    baseTemplate(): CustomTemplate | undefined {
       if (this.taskTemplate) {
-        return this.extendedTemplate?.template;
+        return this.extendedTemplate;
       }
       return this.fullTemplate;
     },
@@ -220,39 +185,67 @@ export default defineComponent({
       }
       return grid as { cols: number, rows: number };
     },
+    /**
+     * The merged list of the task layouts and the base template
+     */
+    mergedLayouts(): AnyCustomLayout[] {
+      if (this.fullTemplate) {
+        return this.fullTemplate.layouts;
+      }
+
+      // Base layouts
+      const layouts = [...(this.baseTemplate?.layouts ?? [])];
+      // Layouts to insert
+      const inserts = [...(this.taskTemplate?.inserts ?? [])];
+      // eslint-disable-next-line no-restricted-syntax
+      for (const layout of inserts) {
+        layouts.splice(layout.at, 0, layout);
+      }
+      return layouts;
+    },
+    /**
+     * The current layout selected, based on layoutIndexSelected
+     */
+    selectedLayout(): AnyCustomLayout | undefined {
+      if (this.selectedLayoutIndex < 0 || this.selectedLayoutIndex >= this.mergedLayouts.length) {
+        return undefined;
+      }
+
+      return this.mergedLayouts[this.selectedLayoutIndex];
+    },
   },
   watch: {
-    // eslint-disable-next-line func-names
-    '$vuetify.theme.dark': function () {
-      this.applyHlTheme();
-    },
     template() {
       this.fetchBase();
+
+      // Show editor if needed
+      if ('inserts' in this.template) {
+        this.templateEditorCollapsed = (this.template.inserts?.length ?? 0) === 0;
+      }
+      if ('layouts' in this.template) {
+        this.templateEditorCollapsed = this.template.layouts.length === 0;
+      }
     },
   },
   mounted() {
-    this.hlStyle = document.getElementById('hl-style');
-    if (!this.hlStyle) {
-      this.hlStyle = document.createElement('style');
-      this.hlStyle.id = 'hl-style';
-      document.head.appendChild(this.hlStyle);
-      this.applyHlTheme();
-    }
     this.fetchBase();
-  },
-  destroyed() {
-    if (this.hlStyle) {
-      this.hlStyle.parentNode?.removeChild(this.hlStyle);
+
+    // Show editor if needed
+    if ('inserts' in this.template) {
+      this.templateEditorCollapsed = (this.template.inserts?.length ?? 0) === 0;
     }
-  },
-  unmounted() {
-    if (this.hlStyle) {
-      this.hlStyle.parentNode?.removeChild(this.hlStyle);
+    if ('layouts' in this.template) {
+      this.templateEditorCollapsed = this.template.layouts.length === 0;
     }
   },
   methods: {
+    /**
+     * Fetch base template that the current template is extending
+     *
+     * Doesn't do anything if it's not the template of task
+     */
     async fetchBase() {
-      if (!this.taskTemplate) {
+      if (!this.taskTemplate || !this.perms.readOne) {
         return;
       }
 
@@ -261,18 +254,20 @@ export default defineComponent({
         const { content } = await this.$ezReeport.sdk.templates.getTemplate(
           this.taskTemplate.extends,
         );
-        this.extendedTemplate = content;
+
+        // Add additional data
+        content.template.layouts = addAdditionalDataToLayouts(content.template.layouts);
+
+        this.extendedTemplate = content.template as CustomTemplate;
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
       }
       this.loading = false;
     },
-    applyHlTheme() {
-      if (this.hlStyle) {
-        this.hlStyle.textContent = this.$vuetify.theme.dark ? hlDark : hlLight;
-      }
-    },
+    /**
+     * Prepare and open dialog of base template
+     */
     async openBaseDialog() {
       await this.fetchBase();
       this.readTemplateDialogShown = true;
@@ -281,8 +276,11 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
-
+<style lang="scss" scoped>
+.editor-panel {
+  height: 100%;
+  flex: 1;
+}
 </style>
 
 <i18n lang="yaml">
@@ -294,14 +292,7 @@ en:
     base: 'Base template'
     fetchOptions: 'Fetch options'
     renderOptions: 'Render options'
-    inserts: 'Additional layouts'
-    insert: 'Layout #{id}'
-    data: 'Figures data'
-    at: 'Insert at index'
-    at-hint: 'Index is depedent of other inserts'
-    layouts: 'Pages'
-    layout: 'Page #{id}'
-    figures: 'Figures'
+    layouts: 'Page viewer ({count} pages)'
   actions:
     see-extends: 'See base'
 fr:
@@ -312,14 +303,7 @@ fr:
     base: 'Modèle de base'
     fetchOptions: 'Options de récupération'
     renderOptions: 'Options de rendu'
-    inserts: 'Pages additionnelles'
-    insert: 'Page #{id}'
-    data: 'Données des visualisations'
-    at: "Insérer à l'index"
-    at-hint: "L'index est dépendant des autres pages additionnelles"
-    layouts: 'Pages'
-    layout: 'Page #{id}'
-    figures: 'Visualisations'
+    layouts: 'Visionneur de pages ({count} pages)'
   actions:
-    see-extends: 'See base' # TODO: French translation
+    see-extends: 'Voir la base'
 </i18n>

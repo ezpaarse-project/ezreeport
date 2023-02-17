@@ -1,13 +1,13 @@
 <template>
-  <v-dialog :max-width="maxWidth" :value="value" scrollable @input="$emit('input', $event)">
-    <GenerationDialog
+  <v-dialog :fullscreen="currentTab === 1" :value="value" max-width="1000" scrollable @input="$emit('input', $event)">
+    <TaskDialogGeneration
       v-if="task && perms.runTask"
       v-model="generationDialogShown"
       :task="task"
       @generated="fetch()"
     />
 
-    <v-card :loading="loading">
+    <v-card :loading="loading" :tile="currentTab === 1">
       <v-card-title>
         <template v-if="task">
           {{ task.name }}
@@ -39,15 +39,9 @@
 
       </v-card-title>
 
-      <v-tabs v-model="currentTab">
-        <v-tab>
-          {{ $t('tabs.details') }}
-        </v-tab>
-        <v-tab>
-          {{ $t('tabs.template') }}
-        </v-tab>
-        <v-tab>
-          {{ $t('tabs.history') }}
+      <v-tabs v-model="currentTab" style="flex-grow: 0;">
+        <v-tab v-for="tab in tabs" :key="tab.name">
+          {{ tab.label }}
         </v-tab>
       </v-tabs>
 
@@ -126,7 +120,7 @@
       <v-divider />
 
       <v-card-actions>
-        <v-btn :disabled="!perms.runTask" color="warning" @click="generationDialogShown = true">
+        <v-btn :disabled="!perms.runTask" color="warning" @click="showGenerateDialog">
           {{ $t('actions.generate') }}
         </v-btn>
       </v-card-actions>
@@ -138,6 +132,10 @@
 import type { institutions, tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import CustomSwitch from '@/common/CustomSwitch';
+
+import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '../template/customTemplates';
+
+type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTemplate };
 
 export default defineComponent({
   components: { CustomSwitch },
@@ -157,15 +155,17 @@ export default defineComponent({
   },
   data: () => ({
     generationDialogShown: false,
-    deleteTaskDialogShown: false,
 
-    task: undefined as tasks.FullTask | undefined,
+    task: undefined as CustomTask | undefined,
     currentTab: 0,
 
     loading: false,
     error: '',
   }),
   computed: {
+    /**
+     * Validation rules
+     */
     perms() {
       const perms = this.$ezReeport.auth.permissions;
       return {
@@ -178,12 +178,34 @@ export default defineComponent({
         runTask: perms?.['tasks-post-task-run'],
       };
     },
-    maxWidth(): number | undefined {
-      return this.currentTab !== 1 ? 1000 : undefined;
-    },
+    /**
+     * User permissions
+     */
     institution(): institutions.Institution | undefined {
       return this.$ezReeport.institutions.data.find(({ id }) => id === this.task?.institution);
     },
+    /**
+     * Tabs data
+     */
+    tabs() {
+      return [
+        {
+          name: 'details',
+          label: this.$t('tabs.details'),
+        },
+        {
+          name: 'template',
+          label: this.$t('tabs.template'),
+        },
+        {
+          name: 'history',
+          label: this.$t('tabs.history'),
+        },
+      ];
+    },
+    /**
+     * Max Width of the dialog
+     */
     dates(): { nextRun?: string, lastRun?: string } {
       return {
         nextRun: this.task?.enabled ? this.task.nextRun.toLocaleDateString() : undefined,
@@ -223,14 +245,18 @@ export default defineComponent({
      */
     async fetch() {
       if (!this.id || !this.perms.readOne) {
-        this.task = undefined;
+        this.$emit('input', false);
         return;
       }
 
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.tasks.getTask(this.id);
-        this.task = content;
+
+        // Add additional data
+        content.template.inserts = addAdditionalDataToLayouts(content.template.inserts ?? []);
+
+        this.task = content as CustomTask;
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
@@ -258,13 +284,22 @@ export default defineComponent({
 
         const { content } = await action(this.id);
 
-        this.task = content;
+        // Add additional data
+        content.template.inserts = addAdditionalDataToLayouts(content.template.inserts ?? []);
+
+        this.task = content as CustomTask;
         this.error = '';
         this.$emit('updated', content);
       } catch (error) {
         this.error = (error as Error).message;
       }
       this.loading = false;
+    },
+    /**
+     * Prepare and show task generation dialog
+     */
+    showGenerateDialog() {
+      this.generationDialogShown = true;
     },
   },
 });

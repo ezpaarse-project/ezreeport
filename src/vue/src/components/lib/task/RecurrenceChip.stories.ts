@@ -25,11 +25,14 @@ const meta: Meta<typeof RecurrenceChip> = {
   args: {
     value: recurrences[0],
     size: 'normal',
-    outlined: false,
+    selectable: false,
+    classes: '',
+    on: {},
   },
   argTypes: {
     value: { options: recurrences },
     size: { options: sizes },
+    input: { action: 'input' },
   },
 };
 

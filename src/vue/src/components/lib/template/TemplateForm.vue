@@ -72,55 +72,66 @@
         </v-col>
       </v-row>
 
-      <v-row v-if="taskTemplate">
-        <!--
-          TODO:
-            - DO TASKS FIRST (ignore templates)
-            - Images in sheet
-            - Legend about icons
-            - Do the same in TemplateDetail
-            - Fix create
-        -->
-        <v-col cols="5" xl="1" lg="2" md="3" sm="4">
-          <LayoutDrawer
-            v-model="selectedLayoutIndex"
-            :items="mergedLayouts"
-            :mode="modes.drawerMode"
-            @update:items="onLayoutListUpdate"
-          />
-        </v-col>
+      <v-card
+        outlined
+        elevation="0"
+      >
+        <v-card-subtitle class="py-2 pl-2">
+          <v-btn
+            icon
+            x-small
+            @click="templateEditorCollapsed = !templateEditorCollapsed"
+          >
+            <v-icon>mdi-chevron-{{ templateEditorCollapsed === false ? 'up' : 'down' }}</v-icon>
+          </v-btn>
 
-        <v-divider vertical />
+          {{ $t('headers.layouts', { count: mergedLayouts.length }) }}
 
-        <v-col v-if="selectedLayout">
-          <!-- Current layout preview -->
-          <LayoutViewer
-            :items="selectedLayout.figures"
-            :grid="grid"
-            :readonly="modes.isViewerReadonly"
-            @update:items="onFigureListUpdate"
-          />
-        </v-col>
-      </v-row>
+          <v-icon v-if="!isLayoutsValid" color="warning" small>mdi-alert</v-icon>
+        </v-card-subtitle>
+
+        <v-divider />
+
+        <v-card-text v-show="!templateEditorCollapsed" class="pb-0" style="height: 650px">
+          <v-row style="height: 100%">
+            <!--
+              TODO:
+                - Fix create
+            -->
+            <LayoutDrawer
+              v-model="selectedLayoutIndex"
+              :items="mergedLayouts"
+              :mode="modes.drawerMode"
+              class="ml-n1"
+              @update:items="onLayoutListUpdate"
+            />
+
+            <v-divider vertical style="margin-left: 1px" />
+
+            <LayoutViewer
+              v-if="selectedLayout"
+              class="editor-panel ma-0"
+              :items="selectedLayout.figures"
+              :grid="grid"
+              :mode="modes.viewerMode"
+              @update:items="onFigureListUpdate"
+            />
+          </v-row>
+        </v-card-text>
+      </v-card>
 
       <ErrorOverlay v-model="error" />
     </v-col>
 
     <v-slide-x-reverse-transition>
-      <v-col v-if="rawTemplateShown" cols="6">
-        <highlightjs language="json" :code="rawTemplate" class="mt-4" />
+      <v-col v-if="rawTemplateShown" cols="5">
+        <JSONPreview :value="template" class="mt-4" />
       </v-col>
     </v-slide-x-reverse-transition>
   </v-row>
 </template>
 
 <script lang="ts">
-import hljs from 'highlight.js/lib/core';
-import hlJSON from 'highlight.js/lib/languages/json';
-import hlLight from 'highlight.js/styles/stackoverflow-light.css?inline';
-import hlDark from 'highlight.js/styles/stackoverflow-dark.css?inline';
-import highlightjs from '@highlightjs/vue-plugin';
-
 import { defineComponent, type PropType } from 'vue';
 import {
   addAdditionalDataToLayouts,
@@ -132,12 +143,7 @@ import {
   type CustomTaskLayout,
 } from './customTemplates';
 
-hljs.registerLanguage('json', hlJSON);
-
 export default defineComponent({
-  components: {
-    highlightjs: highlightjs.component,
-  },
   props: {
     template: {
       type: Object as PropType<AnyCustomTemplate>,
@@ -152,8 +158,7 @@ export default defineComponent({
   data: () => ({
     readTemplateDialogShown: false,
     rawTemplateShown: false,
-
-    hlStyle: null as HTMLElement | null,
+    templateEditorCollapsed: true,
 
     availableTemplates: [] as string[],
     availableFetchers: ['', 'elastic'],
@@ -170,7 +175,6 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      // TODO: watch perms
       const perms = this.$ezReeport.auth.permissions;
       return {
         realAll: perms?.['templates-get'],
@@ -257,61 +261,57 @@ export default defineComponent({
     /**
      * Various modes base on current props for various components
      */
-    modes(): { drawerMode: 'view' | 'task-edition' | 'template-edition', isViewerReadonly: boolean } {
+    modes(): { drawerMode: 'view' | 'task-edition' | 'template-edition', viewerMode: 'view' | 'allowed-edition' | 'denied-edition' } {
       if (this.taskTemplate) {
         return {
           drawerMode: 'task-edition',
-          isViewerReadonly: this.selectedLayout?.at === undefined,
+          viewerMode: this.selectedLayout?.at === undefined ? 'denied-edition' : 'allowed-edition',
         };
       }
 
       return {
         drawerMode: 'template-edition',
-        isViewerReadonly: false,
+        viewerMode: 'allowed-edition',
       };
+    },
+    /**
+     * Is template layouts valid
+     */
+    isLayoutsValid(): boolean {
+      return this.mergedLayouts.findIndex(({ _: { hasError } }) => hasError) < 0;
     },
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$vuetify.theme.dark': function () {
-      this.applyHlTheme();
+    '$ezReeport.auth.permissions': function () {
+      this.fetch();
+      this.fetchBase();
     },
     template() {
       // FIXME: Any edit retrigger fetch
       // this.fetch();
       // this.fetchBase();
+
+      // Show editor if needed
+      if ('inserts' in this.template) {
+        this.templateEditorCollapsed = (this.template.inserts?.length ?? 0) === 0;
+      }
+      if ('layouts' in this.template) {
+        this.templateEditorCollapsed = this.template.layouts.length === 0;
+      }
     },
   },
   mounted() {
-    // Add highlight.js style if not already present
-    this.hlStyle = document.getElementById('hl-style');
-    if (!this.hlStyle) {
-      this.hlStyle = document.createElement('style');
-      this.hlStyle.id = 'hl-style';
-      document.head.appendChild(this.hlStyle);
-    }
-    this.applyHlTheme();
-
     // Fetch some info
     this.fetch();
     this.fetchBase();
-  },
-  /**
-   * Called in Vue 2
-   */
-  destroyed() {
-    // Remove highlight.js style
-    if (this.hlStyle) {
-      this.hlStyle.parentNode?.removeChild(this.hlStyle);
+
+    // Show editor if needed
+    if ('inserts' in this.template) {
+      this.templateEditorCollapsed = (this.template.inserts?.length ?? 0) === 0;
     }
-  },
-  /**
-   * Called in Vue 3
-   */
-  unmounted() {
-    // Remove highlight.js style
-    if (this.hlStyle) {
-      this.hlStyle.parentNode?.removeChild(this.hlStyle);
+    if ('layouts' in this.template) {
+      this.templateEditorCollapsed = this.template.layouts.length === 0;
     }
   },
   methods: {
@@ -358,14 +358,6 @@ export default defineComponent({
         this.error = (error as Error).message;
       }
       this.loading = false;
-    },
-    /**
-     * Apply highlight.js theme
-     */
-    applyHlTheme() {
-      if (this.hlStyle) {
-        this.hlStyle.textContent = this.$vuetify.theme.dark ? hlDark : hlLight;
-      }
     },
     /**
      * Prepare and open dialog of base template
@@ -449,7 +441,10 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-
+.editor-panel {
+  height: 100%;
+  flex: 1;
+}
 </style>
 
 <i18n lang="yaml">
@@ -461,7 +456,7 @@ en:
     base: 'Base template'
     fetchOptions: 'Fetch options'
     renderOptions: 'Render options'
-    layouts: 'Pages'
+    layouts: 'Page editor ({count} pages)'
   actions:
     see-extends: 'See base'
 fr:
@@ -472,7 +467,7 @@ fr:
     base: 'Modèle de base'
     fetchOptions: 'Options de récupération'
     renderOptions: 'Options de rendu'
-    layouts: 'Pages'
+    layouts: 'Éditeur de pages ({count} pages)'
   actions:
     see-extends: 'Voir la base'
 </i18n>

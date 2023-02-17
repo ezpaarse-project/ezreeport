@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/vue';
 import tasks from '~/mock/tasks';
-import TaskDialogDelete from './TaskDialogDelete.vue';
+import TaskPopoverDelete from './TaskPopoverDelete.vue';
 
-const meta: Meta<typeof TaskDialogDelete> = {
-  title: 'Tasks/Internal/TaskDialogDelete',
-  component: TaskDialogDelete,
+const meta: Meta<typeof TaskPopoverDelete> = {
+  title: 'Tasks/Internal/TaskPopoverDelete',
+  component: TaskPopoverDelete,
   args: {
     task: tasks[0],
     value: true,
@@ -17,12 +17,12 @@ const meta: Meta<typeof TaskDialogDelete> = {
 
 export default meta;
 
-type Story = StoryObj<typeof TaskDialogDelete>;
+type Story = StoryObj<typeof TaskPopoverDelete>;
 
 export const Basic: Story = {
   render: (args) => ({
-    components: { TaskDialogDelete },
+    components: { TaskPopoverDelete },
     props: Object.keys(args),
-    template: '<TaskDialogDelete v-bind="$props" v-on="$props" />',
+    template: '<TaskPopoverDelete v-bind="$props" v-on="$props" />',
   }),
 };

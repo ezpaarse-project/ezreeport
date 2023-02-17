@@ -19,10 +19,11 @@
       :id="focusedId"
       @updated="onTaskEdited"
     />
-    <TaskDialogDelete
+    <TaskPopoverDelete
       v-if="perms.delete && focusedTask"
-      v-model="deleteTaskDialogShown"
+      v-model="deleteTaskPopoverShown"
       :task="focusedTask"
+      :coords="deleteTaskPopoverCoords"
       @deleted="onTaskEdited"
     />
 
@@ -99,7 +100,7 @@
 
           <v-tooltip>
             <template #activator="{ attrs, on }">
-              <v-btn icon color="error" @click.stop="showDeleteDialog(item)" v-on="on" v-bind="attrs">
+              <v-btn icon color="error" @click.stop="showDeletePopover(item, $event)" v-on="on" v-bind="attrs">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             </template>
@@ -137,7 +138,8 @@ export default defineComponent({
     readTaskDialogShown: false,
     createTaskDialogShown: false,
     updateTaskDialogShown: false,
-    deleteTaskDialogShown: false,
+    deleteTaskPopoverShown: false,
+    deleteTaskPopoverCoords: { x: 0, y: 0 },
 
     options: {
       sortBy: ['institution', 'enabled', 'nextRun'],
@@ -320,13 +322,19 @@ export default defineComponent({
       this.updateTaskDialogShown = true;
     },
     /**
-     * Prepare and show task deletion dialog
+     * Prepare and show task deletion popover
      *
      * @param item The item
+     * @param event The base event
      */
-    showDeleteDialog({ id }: TaskItem) {
+    async showDeletePopover({ id }: TaskItem, event: MouseEvent) {
       this.focusedId = id;
-      this.deleteTaskDialogShown = true;
+      this.deleteTaskPopoverCoords = {
+        x: event.clientX,
+        y: event.clientY,
+      };
+      await this.$nextTick();
+      this.deleteTaskPopoverShown = true;
     },
     /**
      * Toggle task state

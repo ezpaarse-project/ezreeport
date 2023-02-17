@@ -4,6 +4,7 @@
       v-if="perms.readOne"
       v-model="readTemplateDialogShown"
       :name="focusedName"
+      fullscreen
     />
 
     <LoadingToolbar

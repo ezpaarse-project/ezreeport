@@ -30,7 +30,18 @@ export default meta;
 
 type Story = StoryObj<typeof ObjectTree>;
 
-export const Basic: Story = {
+export const Readonly: Story = {
+  render: (args) => ({
+    components: { ObjectTree },
+    props: Object.keys(args),
+    template: '<ObjectTree v-bind="$props" v-on="$props" />',
+  }),
+};
+
+export const Editable: Story = {
+  argTypes: {
+    input: { action: 'input' },
+  },
   render: (args) => ({
     components: { ObjectTree },
     props: Object.keys(args),

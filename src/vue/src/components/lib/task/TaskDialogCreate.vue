@@ -1,6 +1,6 @@
 <template>
-  <v-dialog :max-width="maxWidth" :value="value" scrollable @input="$emit('input', $event)">
-    <v-card :loading="loading">
+  <v-dialog :fullscreen="currentTab === 1" :value="value" max-width="1000" scrollable @input="$emit('input', $event)">
+    <v-card :loading="loading" :tile="currentTab === 1">
       <v-card-title>
         <v-text-field
           v-if="task"
@@ -32,12 +32,9 @@
         </v-btn>
       </v-card-title>
 
-      <v-tabs v-model="currentTab">
-        <v-tab>
-          {{ $t('tabs.details') }}
-        </v-tab>
-        <v-tab>
-          {{ $t('tabs.template') }}
+      <v-tabs v-model="currentTab" style="flex-grow: 0;">
+        <v-tab v-for="tab in tabs" :key="tab.name">
+          {{ tab.label }}
         </v-tab>
       </v-tabs>
 
@@ -157,7 +154,7 @@ export default defineComponent({
   data: (vm) => ({
     task: {
       name: '',
-      template: { extends: 'base' } as CustomTaskTemplate,
+      template: { extends: 'basic' } as CustomTaskTemplate,
       targets: [],
       recurrence: vm.$ezReeport.sdk.tasks.Recurrence.DAILY,
       institution: '',
@@ -173,6 +170,9 @@ export default defineComponent({
     error: '',
   }),
   computed: {
+    /**
+     * Validation rules
+     */
     rules() {
       return {
         name: [
@@ -184,18 +184,36 @@ export default defineComponent({
         ],
       };
     },
+    /**
+     * Tabs data
+     */
+    tabs() {
+      return [
+        {
+          name: 'details',
+          label: this.$t('tabs.details'),
+        },
+        {
+          name: 'template',
+          label: this.$t('tabs.template'),
+        },
+      ];
+    },
+    /**
+     * name field is outside of the v-form, so we need to manually check using rules
+     */
     isNameValid() {
       return this.rules.name.every((rule) => rule(this.task?.name ?? '') === true);
     },
+    /**
+     * User permissions
+     */
     perms() {
       const perms = this.$ezReeport.auth.permissions;
       return {
         readOne: perms?.['tasks-get-task'],
         create: perms?.['tasks-post'],
       };
-    },
-    maxWidth(): number | undefined {
-      return this.currentTab !== 1 ? 1000 : undefined;
     },
   },
   watch: {
