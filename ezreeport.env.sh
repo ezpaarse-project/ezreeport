@@ -43,6 +43,7 @@ export EMAIL_SENDER="ezmesure-ezreeport@couperin.org"
 export EMAIL_DEV_TEAM="ezteam@couperin.org"
 export EMAIL_ATTEMPTS=5
 export EMAIL_ATTEMPTS_INTERVAL=2000
+export EMAIL_MEM_LIMIT=3 # in Go. Should be at least `0.3 + (WORKERS_CONCURRENCE * 0.3)`
 
 # workers
 export WORKERS_CONCURRENCE=5
@@ -57,6 +58,7 @@ export REPORT_CRON_GENERATE_REPORT="0 12 * * *"
 export REPORT_CRON_PURGE_OLD_REPORT="0 12 * * *"
 export REPORT_ITERATIONS_TO_LIVE=2
 export REPORT_DAYS_TO_LIVE=7
+export REPORT_MEM_LIMIT=7 # in Go. Should be at least `0.5 + (2 * WORKERS_CONCURRENCE * 0.5) + (count of crons * 0.5)`
 
 # common to all services
 export API_URL="http://localhost:8080"

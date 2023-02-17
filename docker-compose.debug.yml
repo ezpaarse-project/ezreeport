@@ -11,6 +11,7 @@ services:
 
   report:
     image: node:18.13.0
+    restart: 'no'
     working_dir: /usr/src/report
     volumes:
       - ./node_modules:/usr/src/node_modules
@@ -36,4 +37,8 @@ services:
     ports:
       - 1080:1080 # web interface
       - 1025:1025
+    deploy:
+      resources:
+          limits:
+            memory: 2G
     restart: unless-stopped
