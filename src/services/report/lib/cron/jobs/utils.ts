@@ -3,6 +3,9 @@ import { Recurrence } from '~/lib/prisma';
 import { addReportToMailQueue } from '~/lib/bull';
 import { formatISO } from '~/lib/date-fns';
 import logger from '~/lib/logger';
+import config from '~/lib/config';
+
+const { team } = config.get('report');
 
 /**
  * Send generic error as a generation error
@@ -21,6 +24,7 @@ export const sendError = async (error: Error, origin: string, _timer: string) =>
     await addReportToMailQueue({
       success: false,
       file: Buffer.from(errStr).toString('base64'),
+      contact: team,
       task: {
         id: '',
         recurrence: Recurrence.DAILY, // TODO[feat]: based on cron

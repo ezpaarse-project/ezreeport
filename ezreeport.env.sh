@@ -40,7 +40,8 @@ export SMTP_REJECT_UNAUTHORIZED="false"
 
 # mail service
 export EMAIL_SENDER="ezmesure-ezreeport@couperin.org"
-export EMAIL_DEV_TEAM="ezteam@couperin.org"
+export EMAIL_SUPPORT_TEAM="ezteam@couperin.org"
+export EMAIL_DEV_TEAM="ezteam-dev@couperin.org"
 export EMAIL_ATTEMPTS=5
 export EMAIL_ATTEMPTS_INTERVAL=2000
 export EMAIL_MEM_LIMIT=3 # in Go. Should be at least `0.3 + (WORKERS_CONCURRENCE * 0.3)`

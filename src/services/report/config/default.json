@@ -34,7 +34,8 @@
     "ttl": {
       "iterations": 4,
       "days": 7
-    }
+    },
+    "team": "ezteam-dev@couperin.org"
   },
   "pdf": {
     "logos": [

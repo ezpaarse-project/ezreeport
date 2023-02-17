@@ -29,6 +29,7 @@
     "ttl": {
       "iterations": { "__name": "REPORT_ITERATIONS_TO_LIVE", "__format": "number" },
       "days": { "__name": "REPORT_DAYS_TO_LIVE", "__format": "number" }
-    }
+    },
+    "team": "EMAIL_DEV_TEAM"
   }
 }

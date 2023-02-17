@@ -61,6 +61,7 @@ services:
       - REPORT_CRON_PURGE_OLD_REPORT
       - REPORT_ITERATIONS_TO_LIVE
       - REPORT_DAYS_TO_LIVE
+      - EMAIL_DEV_TEAM
       # common
       - API_ALLOWED_ORIGINS
       - LOG_LEVEL
@@ -99,7 +100,7 @@ services:
       - WORKERS_MAX_EXEC_TIME
       # mail specific
       - EMAIL_SENDER
-      - EMAIL_DEV_TEAM
+      - EMAIL_SUPPORT_TEAM
       - EMAIL_ATTEMPTS
       - EMAIL_ATTEMPTS_INTERVAL
       # common

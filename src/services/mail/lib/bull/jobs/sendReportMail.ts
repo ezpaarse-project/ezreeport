@@ -29,7 +29,7 @@ export default async (job: Job<MailData>) => {
     };
 
     if (job.data.success) {
-      // Send one email per target to allow unsubscription prefill
+      // Send one email per target to allow un-subscription prefill
       const targets = await Promise.allSettled(
         job.data.task.targets.map(async (to) => {
           try {
