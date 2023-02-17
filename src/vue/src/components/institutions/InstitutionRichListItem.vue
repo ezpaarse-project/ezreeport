@@ -20,6 +20,16 @@ export default defineComponent({
       required: true,
     },
   },
+  data: () => ({
+  }),
+  computed: {
+    src(): string | undefined {
+      if (!this.institution.logoId) {
+        return undefined;
+      }
+      return new URL(this.institution.logoId, import.meta.env.VITE_LOGO_URL).href;
+    },
+  },
 });
 </script>
 

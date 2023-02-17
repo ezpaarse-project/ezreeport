@@ -50,10 +50,6 @@ const config: NuxtConfig = {
     },
   },
 
-  proxy: {
-    '/api': 'https://ezmesure.couperin.org/',
-  },
-
   publicRuntimeConfig: {
     ezMesureToken: process.env.EZMESURE_TOKEN,
   },

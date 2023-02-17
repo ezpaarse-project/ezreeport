@@ -37,11 +37,6 @@ export default defineConfig({
       },
     },
   },
-  server: {
-    proxy: {
-      '/api': 'https://ezmesure.couperin.org/',
-    },
-  },
   css: {
     preprocessorOptions: {
       scss: {
