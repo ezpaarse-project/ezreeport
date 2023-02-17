@@ -4,7 +4,7 @@ import { differenceInMilliseconds } from '~/lib/date-fns';
 import { elasticPing } from '~/lib/elastic';
 import { CustomRouter } from '~/lib/express-utils';
 import logger from '~/lib/logger';
-import { name as serviceName } from '~/package.json';
+import { name as serviceName, version as serviceVersion } from '~/package.json';
 import { HTTPError } from '~/types/errors';
 
 const pingers: Record<string, () => Promise<number | false>> = {
@@ -78,6 +78,7 @@ const router = CustomRouter('health')
    */
   .createRoute('GET /', (_req, _res) => ({
     current: serviceName,
+    currentVersion: serviceVersion,
     services: Object.keys(pingers),
   }))
 
