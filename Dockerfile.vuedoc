@@ -17,6 +17,9 @@ RUN npm run build:web && npm run build:types
 # ----
 
 FROM node:16.19.0-alpine as vue-builder
+ARG EZMESURE_TOKEN="changeme"
+ARG REPORT_API="http://localhost:8080/"
+ARG LOGO_URL="https://ezmesure.couperin.org/"
 
 WORKDIR /usr/build/vue
 
@@ -29,6 +32,10 @@ RUN apk update \
 # npm ci isn't possible because project uses npm workspaces
 # we need devDeps as Storybook is in it
 RUN npm i
+
+ENV VITE_EZMESURE_TOKEN=${EZMESURE_TOKEN}
+ENV VITE_REPORT_API=${REPORT_API}
+ENV VITE_LOGO_URL=${REPORT_API}
 
 RUN npm run build:doc
 
