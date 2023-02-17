@@ -85,6 +85,6 @@ export default async (job: Queue.Job<CronData>) => {
   } catch (error) {
     const dur = formatInterval({ start, end: new Date() });
     logger.error(`[cron] Job ${job.name} failed in ${dur}s with error: ${(error as Error).message}`);
-    await sendError(error as Error, 'index', job.data.timer);
+    await sendError(error as Error, job.name, job.data.timer);
   }
 };
