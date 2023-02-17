@@ -9,6 +9,7 @@ export * as reports from './modules/reports';
 export * as setup from './modules/setup';
 export * as tasks from './modules/tasks';
 export * as templates from './modules/templates';
+export { version } from '../package.json';
 
 export type EzReeportSDK = {
   auth: typeof import('./modules/auth')
@@ -20,5 +21,6 @@ export type EzReeportSDK = {
   reports: typeof import('./modules/reports')
   setup: typeof import('./modules/setup')
   tasks: typeof import('./modules/tasks')
-  templates: typeof import('./modules/templates')
+  templates: typeof import('./modules/templates'),
+  version: string,
 };
