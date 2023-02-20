@@ -38,19 +38,30 @@
             readonly
           />
 
-          <ToggleableObjectTree
+          <v-sheet
             v-if="template.fetchOptions"
-            :label="$t('headers.fetchOptions').toString()"
-            :value="template.fetchOptions"
-            class="my-2"
-          />
+            rounded
+            outlined
+            class="my-2 pa-2"
+          >
+            <ToggleableObjectTree
+              :label="$t('headers.fetchOptions').toString()"
+              :value="template.fetchOptions"
+            />
+          </v-sheet>
 
-          <ToggleableObjectTree
+          <v-sheet
             v-if="fullTemplate?.renderOptions"
-            :label="$t('headers.renderOptions').toString()"
-            :value="fullTemplate.renderOptions"
-            class="my-2"
-          />
+            rounded
+            outlined
+            class="my-2 pa-2"
+          >
+            <ToggleableObjectTree
+              v-if="fullTemplate?.renderOptions"
+              :label="$t('headers.renderOptions').toString()"
+              :value="fullTemplate.renderOptions"
+            />
+          </v-sheet>
         </v-col>
       </v-row>
 
