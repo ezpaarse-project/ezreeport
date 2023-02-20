@@ -39,7 +39,7 @@
 
       </v-card-title>
 
-      <v-tabs v-model="currentTab" style="flex-grow: 0;">
+      <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
         <v-tab v-for="tab in tabs" :key="tab.name">
           {{ tab.label }}
         </v-tab>

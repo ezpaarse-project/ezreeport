@@ -33,7 +33,7 @@
 
       </v-card-title>
 
-      <v-tabs v-model="currentTab" style="flex-grow: 0;">
+      <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
         <v-tab v-for="tab in tabs" :key="tab.name">
           {{ tab.label }}
           <v-icon v-if="!tab.valid" color="warning" small right>mdi-alert</v-icon>
