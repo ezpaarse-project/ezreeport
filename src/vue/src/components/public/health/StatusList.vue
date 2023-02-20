@@ -7,13 +7,13 @@
       <v-tooltip top>
         <template #activator="{ attrs, on }">
           <v-chip
-            href="https://github.com/ezpaarse-project/ezreeport/releases?q=ezreeport-vue&expanded=true"
+            :href="`https://github.com/ezpaarse-project/ezreeport/releases?q=${client.name}&expanded=true`"
             target="_blank"
             rel="noopener noreferrer"
             v-bind="attrs"
             v-on="on"
           >
-            v{{ clientVersion }}
+            v{{ client.version }}
           </v-chip>
         </template>
 
@@ -45,7 +45,7 @@
                 <v-chip
                   :color="versionCompat.color"
                   :outlined="!server.version"
-                  href="https://github.com/ezpaarse-project/ezreeport/releases?q=ezreeport-report&expanded=true"
+                  :href="`https://github.com/ezpaarse-project/ezreeport/releases?q=${server.name}&expanded=true`"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="mr-2"
@@ -87,7 +87,7 @@
 <script lang="ts">
 import type { health } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
-import { version } from '~/../package.json';
+import { version, name } from '~/../package.json';
 
 interface StatusItem {
   name: string,
@@ -99,7 +99,10 @@ interface StatusItem {
 export default defineComponent({
   data: () => ({
     statuses: [] as health.PingResult[],
-    clientVersion: version,
+    client: {
+      name,
+      version,
+    },
     server: {
       name: '',
       version: '',
@@ -114,7 +117,7 @@ export default defineComponent({
     },
     versionCompat() {
       if (this.server.version) {
-        const [clientMajor, clientMinor] = this.clientVersion.split('.', 3);
+        const [clientMajor, clientMinor] = this.client.version.split('.', 3);
         const [serverMajor, serverMinor] = this.server.version.split('.', 3);
 
         if (+clientMajor !== +serverMajor) {
