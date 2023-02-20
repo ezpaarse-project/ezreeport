@@ -55,8 +55,9 @@ export EZMESURE_AUTH_SECRET="" # ezMesure JWT secret
 export EZMESURE_DEPOSITORS_INDEX="depositors"
 
 # report service
-export REPORT_CRON_GENERATE_REPORT="0 12 * * *"
-export REPORT_CRON_PURGE_OLD_REPORT="0 12 * * *"
+export REPORT_CRON_TZ="" # Timezone wanted for the cron execution
+export REPORT_CRON_TIMER_GENERATE_REPORT="0 12 * * *"
+export REPORT_CRON_TIMER_PURGE_OLD_REPORT="0 12 * * *"
 export REPORT_ITERATIONS_TO_LIVE=2
 export REPORT_DAYS_TO_LIVE=7
 export REPORT_MEM_LIMIT=7 # in Go. Should be at least `0.5 + (2 * WORKERS_CONCURRENCE * 0.5) + (count of crons * 0.5)`

@@ -24,8 +24,13 @@
     "depositorsIndex": "depositors"
   },
   "crons": {
-    "generateReports": "0 0 * * *",
-    "purgeOldReports": "0 0 * * *"
+    "options": {
+      "tz": ""
+    },
+    "timers": {
+      "generateReports": "0 0 * * *",
+      "purgeOldReports": "0 0 * * *"
+    }
   },
   "report": {
     "templatesDir": "templates",

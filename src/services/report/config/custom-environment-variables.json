@@ -22,8 +22,13 @@
     "depositorsIndex": "EZMESURE_DEPOSITORS_INDEX"
   },
   "crons": {
-    "generateReports": "REPORT_CRON_GENERATE_REPORT",
-    "purgeOldReports": "REPORT_CRON_PURGE_OLD_REPORT"
+    "options": {
+      "tz": "REPORT_CRON_TZ"
+    },
+    "timers": {
+      "generateReports": "REPORT_CRON_TIMER_GENERATE_REPORT",
+      "purgeOldReports": "REPORT_CRON_TIMER_PURGE_OLD_REPORT"
+    }
   },
   "report": {
     "ttl": {

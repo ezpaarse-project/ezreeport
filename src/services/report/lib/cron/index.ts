@@ -6,10 +6,10 @@ import { formatInterval } from '~/lib/utils';
 import { NotFoundError } from '~/types/errors';
 import { baseQueueOptions } from '../bull';
 
-const cronsTimers = config.get('crons');
+const { options: cronOptions, timers: cronTimers } = config.get('crons');
 const { maxExecTime } = config.get('workers');
 
-type Crons = keyof typeof cronsTimers;
+type Crons = keyof typeof cronTimers;
 
 export type CronData = {
   timer: string,
@@ -20,7 +20,7 @@ const pausedJobs: Partial<Record<Crons, Queue.JobInformation>> = {};
 const queueOptions: Queue.QueueOptions = {
   ...baseQueueOptions,
   limiter: {
-    max: Object.keys(cronsTimers).length,
+    max: Object.keys(cronTimers).length,
     duration: maxExecTime,
   },
 };
@@ -53,13 +53,18 @@ cronQueue.on('error', (err) => {
 
     // Adding all jobs
     await Promise.all(
-      Object.entries(cronsTimers).map(
+      Object.entries(cronTimers).map(
         async ([key, timer]) => {
           // Using `.add` instead of `.addBulk` because the later doesn't support repeat option
           const job = await cronQueue.add(
             key,
             { timer },
-            { repeat: { cron: timer } },
+            {
+              repeat: {
+                cron: timer,
+                tz: cronOptions.tz || undefined,
+              },
+            },
           );
           try {
             //! TS type is kinda wrong here, it's not a promise
@@ -90,7 +95,7 @@ cronQueue.on('error', (err) => {
  *
  * @returns Given name is a valid cron name
  */
-const isCron = (name: string): name is Crons => Object.keys(cronsTimers).includes(name);
+const isCron = (name: string): name is Crons => Object.keys(cronTimers).includes(name);
 
 /**
  * Get specific cron **without** format
@@ -219,7 +224,7 @@ export const forceCron = async (name: string) => {
     throw new NotFoundError(`Cron "${name}" not found`);
   }
 
-  await cronQueue.add(name, { timer: cronsTimers[name] });
+  await cronQueue.add(name, { timer: cronTimers[name] });
 
   return { ...await getCron(name), lastRun: new Date() };
 };
