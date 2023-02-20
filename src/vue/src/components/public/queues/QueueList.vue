@@ -32,6 +32,7 @@
                 :disabled="loading"
                 :label="$t(item.isActive ? 'item.active' : 'item.inactive')"
                 reverse
+                class="mr-4"
                 @click.stop="updateQueueStatus(item)"
               />
             </v-list-item-title>
