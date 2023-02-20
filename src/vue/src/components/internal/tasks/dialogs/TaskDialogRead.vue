@@ -41,7 +41,7 @@
 
       <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
         <v-tab v-for="tab in tabs" :key="tab.name">
-          {{ tab.label }}
+          {{ $t(`tabs.${tab.name}`) }}
         </v-tab>
       </v-tabs>
 
@@ -136,6 +136,12 @@ import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
 
 type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTemplate };
 
+export const tabs = [
+  { name: 'details' },
+  { name: 'template' },
+  { name: 'history' },
+] as const;
+
 export default defineComponent({
   components: { CustomSwitch },
   props: {
@@ -156,6 +162,7 @@ export default defineComponent({
     generationDialogShown: false,
 
     task: undefined as CustomTask | undefined,
+    tabs,
     currentTab: 0,
 
     loading: false,
@@ -182,25 +189,6 @@ export default defineComponent({
      */
     institution(): institutions.Institution | undefined {
       return this.$ezReeport.institutions.data.find(({ id }) => id === this.task?.institution);
-    },
-    /**
-     * Tabs data
-     */
-    tabs() {
-      return [
-        {
-          name: 'details',
-          label: this.$t('tabs.details'),
-        },
-        {
-          name: 'template',
-          label: this.$t('tabs.template'),
-        },
-        {
-          name: 'history',
-          label: this.$t('tabs.history'),
-        },
-      ];
     },
     /**
      * Max Width of the dialog

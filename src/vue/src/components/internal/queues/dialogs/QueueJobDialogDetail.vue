@@ -79,51 +79,33 @@
 
         <v-row>
           <v-col>
-            <v-tabs v-model="currentTab" grow>
-              <v-tab v-if="job.data">
-                {{ $t('tabs.data') }}
-              </v-tab>
-              <v-tab v-if="job.result">
-                {{ $t('tabs.result') }}
-              </v-tab>
+            <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
+              <template v-for="tab in tabs">
+                <v-tab v-if="!tab.empty" :key="tab.key">
+                  {{ $t(`tabs.${tab.key}`) }}
+                </v-tab>
+              </template>
             </v-tabs>
 
             <v-tabs-items v-model="currentTab" class="mt-2">
-              <v-tab-item v-if="job.data">
-                <!-- Data -->
-                <v-row class="mx-0">
-                  <v-col>
-                    <v-switch v-model="showRawData" :label="$t('headers.show-raw')" />
-                    <ObjectTree :value="job.data" />
-                  </v-col>
-
-                  <v-divider vertical />
-
-                  <v-slide-x-reverse-transition>
-                    <v-col v-if="showRawData && job.data" cols="6">
-                      <JSONPreview :value="job.data" class="mt-4" />
+              <template v-for="tab in tabs">
+                <v-tab-item v-if="!tab.empty" :key="tab.key">
+                  <v-row class="mx-0">
+                    <v-col>
+                      <v-switch v-model="showRawData" :label="$t('headers.show-raw')" />
+                      <ObjectTree :value="job[tab.key] ?? {}" class="pb-1" />
                     </v-col>
-                  </v-slide-x-reverse-transition>
-                </v-row>
-              </v-tab-item>
 
-              <v-tab-item v-if="job.result">
-                <!-- Result -->
-                <v-row class="mx-0">
-                  <v-col>
-                    <v-switch v-model="showRawResult" :label="$t('headers.show-raw')" />
-                    <ObjectTree :value="job.result" />
-                  </v-col>
+                    <v-divider vertical />
 
-                  <v-divider vertical />
-
-                  <v-slide-x-reverse-transition>
-                    <v-col v-if="showRawResult && job.result" cols="6">
-                      <JSONPreview :value="job.result" class="mt-4" />
-                    </v-col>
-                  </v-slide-x-reverse-transition>
-                </v-row>
-              </v-tab-item>
+                    <v-slide-x-reverse-transition>
+                      <v-col v-if="showRawData" cols="6">
+                        <JSONPreview :value="job[tab.key]" class="mt-4" />
+                      </v-col>
+                    </v-slide-x-reverse-transition>
+                  </v-row>
+                </v-tab-item>
+              </template>
             </v-tabs-items>
           </v-col>
         </v-row>
@@ -150,6 +132,11 @@
 import type { queues } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 
+const tabs = [
+  { key: 'data' },
+  { key: 'result' },
+] as const;
+
 export default defineComponent({
   props: {
     value: {
@@ -170,11 +157,11 @@ export default defineComponent({
     updated: (job: queues.FullJob<unknown, unknown>) => !!job,
   },
   data: () => ({
-    interval: undefined as NodeJS.Timer | undefined,
-
-    currentTab: 0,
     showRawData: false,
     showRawResult: false,
+
+    interval: undefined as NodeJS.Timer | undefined,
+    currentTab: 0,
 
     loading: false,
     error: '',
@@ -190,6 +177,15 @@ export default defineComponent({
 
         rerun: perms?.['queues-get-queue-jobs'],
       };
+    },
+    /**
+     * Data tabs
+     */
+    tabs() {
+      return tabs.map((v) => ({
+        ...v,
+        empty: this.isEmpty(v),
+      }));
     },
     /**
      * Color linked to the status of the job
@@ -271,6 +267,24 @@ export default defineComponent({
     }
   },
   methods: {
+    /**
+     * Check if tab content exists
+     *
+     * @param key The key of the tab
+     */
+    isEmpty({ key }: (typeof tabs)[number]) {
+      const val = this.job[key];
+
+      if (!val) {
+        return true;
+      }
+
+      if (typeof val === 'number') {
+        return false;
+      }
+
+      return Object.keys(val).length <= 0;
+    },
     /**
      * Fetch data
      */

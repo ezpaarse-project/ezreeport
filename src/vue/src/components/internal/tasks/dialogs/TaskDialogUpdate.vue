@@ -35,7 +35,7 @@
 
       <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
         <v-tab v-for="tab in tabs" :key="tab.name">
-          {{ tab.label }}
+          {{ $t(`tabs.${tab.name}`) }}
           <v-icon v-if="!tab.valid" color="warning" small right>mdi-alert</v-icon>
         </v-tab>
       </v-tabs>
@@ -46,7 +46,7 @@
         <v-tabs-items v-model="currentTab" class="mt-2">
           <v-tab-item>
             <!-- Details -->
-            <v-form v-if="task" v-model="valid" @input="isDetailValid = $event">
+            <v-form v-if="task" v-model="valid">
               <v-row>
                 <v-col>
                   <v-combobox
@@ -142,6 +142,7 @@ import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
+import { tabs } from './TaskDialogRead.vue';
 
 type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTemplate };
 
@@ -167,7 +168,6 @@ export default defineComponent({
 
     minDate: addDays(new Date(), 1),
     valid: false,
-    isDetailValid: false,
 
     loading: false,
     error: '',
@@ -191,17 +191,18 @@ export default defineComponent({
      * Tabs data
      */
     tabs() {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [detailTab, templateTab, historyTab, ...otherTabs] = tabs;
       return [
         {
-          name: 'details',
-          label: this.$t('tabs.details'),
-          valid: this.isDetailValid,
+          ...detailTab,
+          valid: this.valid,
         },
         {
-          name: 'template',
-          label: this.$t('tabs.template'),
+          ...templateTab,
           valid: this.isTemplateValid,
         },
+        // ...otherTabs.map((v) => ({ ...v, valid: true })),
       ];
     },
     /**
