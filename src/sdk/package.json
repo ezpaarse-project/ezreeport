@@ -32,7 +32,8 @@
     "build:types": "tsc && BUILD_TARGET=types vite build",
     "build:web": "tsc && BUILD_TARGET=browser vite build",
     "lint": "eslint --fix .",
-    "test": "npm run build && npm -w ezreeport-tests run test:sdk"
+    "test": "npm run build && npm -w ezreeport-tests run test:sdk",
+    "publish": "HUSKY=0 semantic-release"
   },
   "lint-staged": {
     "*.ts": [
