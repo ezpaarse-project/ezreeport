@@ -69,9 +69,9 @@ cronQueue.on('error', (err) => {
           try {
             //! TS type is kinda wrong here, it's not a promise
             cronQueue.process(key, join(__dirname, `jobs/${key}.ts`));
-            logger.debug(`[cron] ${job.name} registered for ${timer}`);
+            logger.debug(`[cron] ${job.name} registered with "${timer}" for "${cronOptions.tz || 'default'}"`);
           } catch (error) {
-            logger.error(`[cron] Failed to add process for ${key} (${timer}) with error: ${(error as Error).message}`);
+            logger.error(`[cron] Failed to add process for ${key} ("${timer}" for "${cronOptions.tz || 'default'}") with error: ${(error as Error).message}`);
             if (job.opts.repeat && 'key' in job.opts.repeat) {
               // @ts-expect-error
               await cronQueue.removeRepeatableByKey(job.opts.repeat?.key);
