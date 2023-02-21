@@ -73,7 +73,7 @@
         <v-divider />
 
         <v-card-text v-show="!templateEditorCollapsed" class="pb-0" style="height: 650px">
-          <v-row style="height: 100%">
+          <v-row class="fill-height">
             <LayoutDrawer
               v-model="selectedLayoutIndex"
               :items="mergedLayouts"
