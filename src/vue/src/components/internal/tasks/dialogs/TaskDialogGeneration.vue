@@ -398,7 +398,7 @@ en:
     download: 'Download'
   results:
     success: 'The report was generated with success'
-    error: 'An error occured while generating: {error}'
+    error: 'An error occurred while generating: {error}'
   files:
     detail: 'Detail (JSON)'
     report: 'Report'
@@ -412,10 +412,10 @@ fr:
     prod: 'Génération prod'
     test: 'Génération test'
   descriptions:
-    prod: "Le rapport sera envoyé aux destinataires habituels. La génération sera affichée dans l'historique et mettera à jour la date de prochaine itération."
+    prod: "Le rapport sera envoyé aux destinataires habituels. La génération sera affichée dans l'historique et mettra à jour la date de prochaine itération."
     test: "Le rapport sera envoyé aux destinataires indiqués."
   errors:
-    length: 'Veuillez rentrer au moins 1 addresse'
+    length: 'Veuillez rentrer au moins 1 adresse'
     format: 'Une ou plusieurs addresses ne sont pas valides'
   actions:
     ok: 'Valider'
