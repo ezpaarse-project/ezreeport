@@ -216,9 +216,10 @@ export default defineComponent({
     },
     perms() {
       const perms = this.$ezReeport.auth.permissions;
+
       return {
-        runTask: perms?.['tasks-post-task-run'] && perms?.['queues-get-queue-jobId'],
-        getFile: perms?.['reports-get-year-yearMonth-filename'] && perms?.['queues-get-queue-jobId'],
+        runTask: perms?.['tasks-post-task-run'] && perms?.['queues-get-queue-jobs-jobId'],
+        getFile: perms?.['reports-get-year-yearMonth-filename'] && perms?.['queues-get-queue-jobs-jobId'],
       };
     },
     periodRange: {

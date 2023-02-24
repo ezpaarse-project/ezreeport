@@ -129,7 +129,7 @@ export type GenerationProgressEvent = { progress: number, status: FullReportJob[
 /**
  * Start generation of a report and track progress
  *
- * Needs `tasks-post-task-run` & `queues-get-queue-jobId` permissions
+ * Needs `tasks-post-task-run` & `queues-get-queue-jobs-jobId` permissions
  *
  * @param taskId Id of the task
  * @param params Other params for overriding default
@@ -245,7 +245,7 @@ export const getReportFileByName = <Result extends keyof ResponseTypeMap = 'text
 /**
  * Get report main file (the result) by giving job's info
  *
- * Needs `reports-get-year-yearMonth-filename` & `queues-get-queue-jobId ` permission
+ * Needs `reports-get-year-yearMonth-filename` & `queues-get-queue-jobs-jobId ` permission
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
@@ -300,7 +300,7 @@ export const getReportDetailByName = async (
 /**
  * Get report detail by giving job's info
  *
- * Needs `reports-get-year-yearMonth-filename` & `queues-get-queue-jobId ` permission
+ * Needs `reports-get-year-yearMonth-filename` & `queues-get-queue-jobs-jobId ` permission
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
@@ -353,7 +353,7 @@ export const getReportDebugByName = <Result extends keyof ResponseTypeMap = 'jso
 /**
  * Get report debug file by giving job's info
  *
- * Needs `reports-get-year-yearMonth-filename` & `queues-get-queue-jobId ` permission
+ * Needs `reports-get-year-yearMonth-filename` & `queues-get-queue-jobs-jobId ` permission
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
