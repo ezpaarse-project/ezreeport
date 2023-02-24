@@ -11,7 +11,6 @@ services:
 
   report:
     image: node:18.13.0
-    restart: 'no'
     working_dir: /usr/src/report
     volumes:
       - ./node_modules:/usr/src/node_modules
