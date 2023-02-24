@@ -7,6 +7,8 @@ declare module 'vue' {
   export interface GlobalComponents {
     CronList: typeof import('./../src/components/public/crons/CronList.vue')['default']
     DatePicker: typeof import('./../src/components/internal/utils/forms/DatePicker.vue')['default']
+    ElasticQueryBuilder: typeof import('./../src/components/internal/utils/elsatic/ElasticQueryBuilder.vue')['default']
+    ElasticQueryElementPopover: typeof import('./../src/components/internal/utils/elsatic/ElasticQueryElementPopover.vue')['default']
     ErrorOverlay: typeof import('./../src/components/internal/utils/ErrorOverlay.vue')['default']
     FigureDetail: typeof import('./../src/components/internal/templates/details/FigureDetail.vue')['default']
     FigureForm: typeof import('./../src/components/internal/templates/forms/FigureForm.vue')['default']
@@ -52,6 +54,7 @@ declare module 'vue' {
     VCardTitle: typeof import('vuetify/lib')['VCardTitle']
     VCheckbox: typeof import('vuetify/lib')['VCheckbox']
     VChip: typeof import('vuetify/lib')['VChip']
+    VChipGroup: typeof import('vuetify/lib')['VChipGroup']
     VCol: typeof import('vuetify/lib')['VCol']
     VCombobox: typeof import('vuetify/lib')['VCombobox']
     VContainer: typeof import('vuetify/lib')['VContainer']
