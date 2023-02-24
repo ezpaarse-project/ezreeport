@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ezpaarse-project/ezreeport.git"
+    "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
   },
   "license": "CeCILL",
   "author": "oxypomme",
