@@ -31,8 +31,7 @@
     "dev": "storybook dev -p 6006",
     "lint": "eslint --fix .",
     "start": "nuxt dev example",
-    "watch": "vite build --watch",
-    "publish": "HUSKY=0 semantic-release"
+    "watch": "vite build --watch"
   },
   "lint-staged": {
     "*.{ts,vue}": [

@@ -8,8 +8,7 @@
     "start": "ts-node --transpile-only app.ts",
     "dev": "nodemon app.ts",
     "lint": "eslint --fix .",
-    "test": "npm -w ezreeport-tests run test:mail",
-    "publish": "HUSKY=0 semantic-release"
+    "test": "npm -w ezreeport-tests run test:mail"
   },
   "repository": {
     "type": "git",

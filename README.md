@@ -67,5 +67,5 @@ npm test
 
 ```bash
 # Build images and push to registries before this
-npm -w <package-name> run publish
+npm run publish
 ```

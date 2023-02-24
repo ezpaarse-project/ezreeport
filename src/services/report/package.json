@@ -20,8 +20,7 @@
     "db:gui": "prisma studio",
     "db:migrate": "prisma migrate deploy",
     "start": "ts-node --transpile-only app.ts",
-    "test": "npm -w ezreeport-tests run test:report",
-    "publish": "HUSKY=0 semantic-release"
+    "test": "npm -w ezreeport-tests run test:report"
   },
   "lint-staged": {
     "*.{js,ts}": [
