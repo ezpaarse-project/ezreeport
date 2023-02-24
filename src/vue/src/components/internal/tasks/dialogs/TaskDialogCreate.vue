@@ -176,7 +176,7 @@ export default defineComponent({
     rules() {
       return {
         name: [
-          (v: string) => v.length > 0 || this.$t('errors.empty'),
+          (v: string) => !!v || this.$t('errors.empty'),
         ],
         targets: [
           (v: string[]) => v.length > 0 || this.$t('errors.empty'),

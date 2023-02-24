@@ -112,7 +112,7 @@ export default defineComponent({
     rules() {
       return {
         property: [
-          (v: string | number) => v.toString().length > 0 || this.$t('errors.empty'),
+          (v: string | number) => !!v.toString() || this.$t('errors.empty'),
         ],
         type: [
           (v: ItemType) => !!v || this.$t('errors.empty'),
