@@ -1,6 +1,7 @@
 {
   "name": "ezreeport",
-  "version": "1.0.0",
+  "version": "0.0.0",
+  "private": true,
   "description": "Reporting service for ezMESURE/ezCOUNTER",
   "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
   "bugs": {
@@ -41,6 +42,8 @@
   "devDependencies": {
     "@commitlint/cli": "^17.4.2",
     "@commitlint/config-conventional": "^17.4.2",
+    "@semantic-release/changelog": "^6.0.2",
+    "@semantic-release/git": "^10.0.1",
     "@typescript-eslint/eslint-plugin": "^5.48.2",
     "@typescript-eslint/parser": "^5.48.2",
     "eslint": "^8.32.0",
@@ -52,6 +55,7 @@
     "husky": "^8.0.3",
     "lint-staged": "^13.1.0",
     "npm-run-all": "^4.1.5",
+    "semantic-release": "^20.1.0",
     "sort-package-json": "^2.1.0"
   }
 }

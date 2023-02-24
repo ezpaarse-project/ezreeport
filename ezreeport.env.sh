@@ -3,6 +3,8 @@
 SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
 LOCAL_ENV_FILE="$SCRIPT_DIR/ezreeport.local.env.sh"
 
+## ==== PROD ====
+
 # node
 export NODE_ENV="production"
 
@@ -68,6 +70,13 @@ export API_URL="http://localhost:8080"
 export API_ALLOWED_ORIGINS="*" # Comma separated origins (or * to allow all)
 export LOG_LEVEL="info"
 export HTTP_PORT=8080
+
+## ==== DEV ====
+
+export BUILD_GITHUB_TOKEN="" # GitHub token to publish release
+export BUILD_DOCKER_REGISTRY="docker.io" # Docker registry
+
+## ==== LOCAL ====
 
 if [[ -f $LOCAL_ENV_FILE ]] ; then
   source "$LOCAL_ENV_FILE"

@@ -16,18 +16,20 @@ npm run setup
 ## Main branches
 
 - `master`:
-  - Should be the version used on prod (vp) and preprod (vi)
-- `develop`:
+  - Should be the version used on prod (vp)
+- `rc`:
+  - Should be the version used on integ (vi)
+  - Versions are suffixed by `-rc`
+- `dev`:
   - Should be the version used on dev (vd)
+  - Versions are suffixed by `-beta`
 
 ## Services
 
-- `src/services/report`:
+- `src/services/report`: (ezreeport-report)
   - Generate PDF reports with HTTP API. Also run cronjob to generate reports
-- `src/services/mail`:
+- `src/services/mail`: (ezreeport-mail)
   - Handle email management
-- `src/services/metric`:
-  - Config files for metrics (you may need to to run `sudo chown root src/services/metrics/*` and `sudo chmod 600 src/services/metrics/*`)
 
 
 ## Packages
@@ -59,4 +61,10 @@ Located at `tests`
 
 ```bash
 npm test
+```
+
+## Publish
+
+```bash
+npm -w <package-name> run publish
 ```
