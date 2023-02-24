@@ -26,39 +26,39 @@
       <v-card-text style="position: relative">
         <v-slide-y-transition>
           <v-alert v-if="reportStatus" :type="reportStatus" text class="mt-2">
-            <div class="d-flex align-center">
+            <div>
               {{ $t('results.' + reportStatus, { error: result?.detail.error?.message }) }}
-
-              <v-spacer />
-
-              <v-menu v-if="perms.getFile">
-                <template #activator="{ on, attrs }">
-                  <v-btn
-                    small
-                    :color="reportStatus"
-                    v-bind="attrs"
-                    v-on="on">
-                    {{ $t('actions.download') }}
-                  </v-btn>
-                </template>
-
-                <v-list>
-                  <v-list-item
-                    v-if="reportStatus !== 'error'"
-                    ripple
-                    @click="downloadFile('report')"
-                  >
-                    <v-icon>mdi-download</v-icon> {{ $t('files.report') }}
-                  </v-list-item>
-                  <v-list-item
-                    ripple
-                    @click="downloadFile('detail')"
-                  >
-                    <v-icon>mdi-download</v-icon> {{ $t('files.detail') }}
-                  </v-list-item>
-                </v-list>
-              </v-menu>
             </div>
+
+            <v-menu v-if="perms.getFile">
+              <template #activator="{ on, attrs }">
+                <v-btn
+                  :color="reportStatus"
+                  small
+                  block
+                  class="mt-2"
+                  v-bind="attrs"
+                  v-on="on">
+                  {{ $t('actions.download') }}
+                </v-btn>
+              </template>
+
+              <v-list>
+                <v-list-item
+                  v-if="reportStatus !== 'error'"
+                  ripple
+                  @click="downloadFile('report')"
+                >
+                  <v-icon>mdi-download</v-icon> {{ $t('files.report') }}
+                </v-list-item>
+                <v-list-item
+                  ripple
+                  @click="downloadFile('detail')"
+                >
+                  <v-icon>mdi-download</v-icon> {{ $t('files.detail') }}
+                </v-list-item>
+              </v-list>
+            </v-menu>
           </v-alert>
         </v-slide-y-transition>
 
