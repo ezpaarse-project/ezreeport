@@ -117,14 +117,14 @@ export default defineComponent({
     },
     versionCompat() {
       if (this.server.version) {
-        const [clientMajor, clientMinor] = this.client.version.split('.', 3);
+        const [sdkMajor, sdkMinor] = this.$ezReeport.sdk.version.split('.', 3);
         const [serverMajor, serverMinor] = this.server.version.split('.', 3);
 
-        if (+clientMajor !== +serverMajor) {
+        if (+sdkMajor !== +serverMajor) {
           return { color: 'error', tooltip: this.$t('version-tooltip.mismatch') };
         }
 
-        if (+clientMinor !== +serverMinor) {
+        if (+sdkMinor !== +serverMinor) {
           return { color: 'warning', tooltip: this.$t('version-tooltip.mismatch') };
         }
       }
