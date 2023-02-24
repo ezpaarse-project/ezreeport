@@ -38,6 +38,18 @@
             readonly
           />
 
+          <v-sheet
+            v-if="template.fetchOptions?.filters"
+            rounded
+            outlined
+            class="my-2 pa-2"
+          >
+            <span class="text--secondary">{{ 'Fetcher filters' }}</span>
+            <ElasticQueryBuilder
+              :value="template.fetchOptions.filters"
+            />
+          </v-sheet>
+
           <ToggleableObjectTree
             v-if="template.fetchOptions"
             :label="$t('headers.fetchOptions').toString()"

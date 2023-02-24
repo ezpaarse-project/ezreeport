@@ -39,14 +39,13 @@
           />
 
           <v-sheet
-            v-if="template.fetchOptions"
             rounded
             outlined
             class="my-2 pa-2"
           >
             <ToggleableObjectTree
               :label="$t('headers.fetchOptions').toString()"
-              :value="template.fetchOptions"
+              :value="template.fetchOptions || {}"
               @input="
                 !Array.isArray($event)
                   && onTemplateUpdate({ ...template, fetchOptions: $event })
@@ -55,14 +54,28 @@
           </v-sheet>
 
           <v-sheet
-            v-if="fullTemplate?.renderOptions"
+            rounded
+            outlined
+            class="my-2 pa-2"
+          >
+            <span class="text--secondary">{{ 'Fetcher filters' }}</span>
+            <ElasticQueryBuilder
+              :value="template.fetchOptions?.filters || {}"
+              @input="onTemplateUpdate(
+                Object.assign(template, { fetchOptions: { filters: $event } }),
+              )"
+            />
+          </v-sheet>
+
+          <v-sheet
+            v-if="fullTemplate"
             rounded
             outlined
             class="my-2 pa-2"
           >
             <ToggleableObjectTree
               :label="$t('headers.renderOptions').toString()"
-              :value="fullTemplate.renderOptions"
+              :value="fullTemplate.renderOptions || {}"
               @input="
                 fullTemplate && !Array.isArray($event)
                   && onTemplateUpdate({ ...fullTemplate, renderOptions: $event })
@@ -161,7 +174,6 @@ export default defineComponent({
     templateEditorCollapsed: true,
 
     availableTemplates: [] as string[],
-    availableFetchers: ['', 'elastic'],
     availableRenderer: ['vega-pdf'],
 
     extendedTemplate: undefined as CustomTemplate | undefined,

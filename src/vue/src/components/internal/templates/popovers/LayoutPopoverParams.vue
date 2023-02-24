@@ -63,6 +63,18 @@
                         && $emit('update:layout', { ...layout, fetchOptions: $event })
                     "
                   />
+
+                  <v-sheet
+                    v-if="layout.fetcher === 'elastic'"
+                    rounded
+                    outlined
+                    class="my-2 pa-2"
+                  >
+                    <span class="text--secondary">{{ 'Fetcher filters' }}</span>
+                    <ElasticQueryBuilder
+                      :value="layout.fetchOptions?.filters || {}"
+                    />
+                  </v-sheet>
                 </v-sheet>
               </template>
 
