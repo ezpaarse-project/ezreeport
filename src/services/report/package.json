@@ -16,8 +16,8 @@
   "scripts": {
     "dev": "nodemon app.ts",
     "lint": "eslint --fix .",
-    "prisma:gui": "prisma studio",
-    "prisma:migrate": "prisma migrate dev",
+    "db:gui": "prisma studio",
+    "db:migrate": "prisma migrate deploy",
     "start": "ts-node --transpile-only app.ts",
     "test": "npm -w ezreeport-tests run test:report"
   },

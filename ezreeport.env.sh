@@ -61,6 +61,7 @@ export REPORT_CRON_TIMER_PURGE_OLD_REPORT="0 12 * * *"
 export REPORT_ITERATIONS_TO_LIVE=2
 export REPORT_DAYS_TO_LIVE=7
 export REPORT_MEM_LIMIT=7 # in Go. Should be at least `0.5 + (2 * WORKERS_CONCURRENCE * 0.5) + (count of crons * 0.5)`
+export REPORT_PACKAGE_NAME="ezreeport-report"
 
 # common to all services
 export API_URL="http://localhost:8080"
