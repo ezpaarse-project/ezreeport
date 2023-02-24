@@ -32,9 +32,9 @@
         </v-btn>
       </v-card-title>
 
-      <v-tabs v-model="currentTab" style="flex-grow: 0;">
+      <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
         <v-tab v-for="tab in tabs" :key="tab.name">
-          {{ tab.label }}
+          {{ $t(`tabs.${tab.name}`) }}
         </v-tab>
       </v-tabs>
 
@@ -136,6 +136,7 @@ import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import type { CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
+import { tabs } from './TaskDialogRead.vue';
 
 const minDate = addDays(new Date(), 1);
 
@@ -188,15 +189,18 @@ export default defineComponent({
      * Tabs data
      */
     tabs() {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [detailTab, templateTab, historyTab, ...otherTabs] = tabs;
       return [
         {
-          name: 'details',
-          label: this.$t('tabs.details'),
+          ...detailTab,
+          valid: this.valid,
         },
         {
-          name: 'template',
-          label: this.$t('tabs.template'),
+          ...templateTab,
+          valid: this.isTemplateValid,
         },
+        // ...otherTabs.map((v) => ({ ...v, valid: true })),
       ];
     },
     /**
@@ -214,6 +218,15 @@ export default defineComponent({
         readOne: perms?.['tasks-get-task'],
         create: perms?.['tasks-post'],
       };
+    },
+    /**
+     * Is task's template valid
+     */
+    isTemplateValid(): boolean {
+      if (!this.task?.template.inserts) {
+        return true;
+      }
+      return this.task.template.inserts.findIndex(({ _: { hasError } }) => hasError) < 0;
     },
   },
   watch: {

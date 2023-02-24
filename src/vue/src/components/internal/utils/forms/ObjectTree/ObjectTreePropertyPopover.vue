@@ -43,15 +43,31 @@
             </v-col>
             <v-col>
               <v-text-field
-                v-if="typeof item.value === 'string' || typeof item.value === 'number'"
+                v-if="isNumber"
                 :value="item.value"
-                :label="$t('headers.value')"
-                :type="typeof item.value === 'number' ? 'number' : 'text'"
-                :rules="rules.value"
-                @input="typeof item.value === 'number' ? item.value = +$event : item.value = $event"
+                type="number"
+                v-bind="commonInputProps"
+                @input="item.value = +$event"
               />
+
+              <template v-else-if="isString">
+                <v-text-field
+                  v-if="item.value.length <= 100"
+                  :value="item.value"
+                  v-bind="commonInputProps"
+                  @blur="onValueUpdate"
+                />
+
+                <v-textarea
+                  v-else
+                  :value="item.value"
+                  v-bind="commonInputProps"
+                  @blur="onValueUpdate"
+                />
+              </template>
+
               <v-switch
-                v-if="typeof item.value === 'boolean'"
+                v-else-if="isBoolean"
                 v-model="item.value"
                 :label="$t('headers.value')"
               />
@@ -109,6 +125,9 @@ export default defineComponent({
     })),
   }),
   computed: {
+    /**
+     * Form validation rules
+     */
     rules() {
       return {
         property: [
@@ -122,8 +141,44 @@ export default defineComponent({
         ],
       };
     },
+    /**
+     * property field is outside of the v-form, so we need to manually check using rules
+     */
     isPropertyValid() {
       return this.rules.property.every((rule) => rule(this.item.property) === true);
+    },
+    /**
+     * Is the value null ?
+     */
+    isNull() {
+      return this.item.value === undefined || this.item.value === null;
+    },
+    /**
+     * Is the value a number ?
+     */
+    isNumber() {
+      return !this.isNull && typeof this.item.value === 'number';
+    },
+    /**
+     * Is the value a boolean ?
+     */
+    isBoolean() {
+      return !this.isNull && typeof this.item.value === 'boolean';
+    },
+    /**
+     * Is the value a string ?
+     */
+    isString() {
+      return !this.isNull && typeof this.item.value === 'string';
+    },
+    /**
+     * Common props for input
+     */
+    commonInputProps() {
+      return {
+        label: this.$t('headers.value'),
+        rules: this.rules.value,
+      };
     },
   },
   methods: {
@@ -175,6 +230,17 @@ export default defineComponent({
     onTypeChange(newType: ItemType) {
       this.item.value = (new newType.Constructor()).valueOf();
       this.item.type = newType;
+    },
+    /**
+     * When value is updated (used to trigger on blur and avoid too many updates)
+     *
+     * @param e The event
+     */
+    onValueUpdate(e: Event) {
+      const { value } = e.target as HTMLInputElement;
+      if (value !== this.item.value) {
+        this.item.value = value;
+      }
     },
   },
 });
