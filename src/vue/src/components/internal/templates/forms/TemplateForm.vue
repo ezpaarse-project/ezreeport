@@ -123,10 +123,10 @@
 
             <LayoutViewer
               v-if="selectedLayout"
-              class="editor-panel ma-0"
               :items="selectedLayout.figures"
               :grid="grid"
               :mode="modes.viewerMode"
+              class="editor-panel ma-0"
               @update:items="onFigureListUpdate"
             />
           </v-row>

@@ -5,7 +5,7 @@
         <div>
           <v-icon v-if="draggable" style="cursor: grab" small>mdi-drag</v-icon>
 
-          {{ $t('headers.figure') }}
+          {{ $t('headers.figure', { i: figureIndex }) }}
 
           <v-tooltip top v-if="figure._.valid !== true" color="warning">
             <template #activator="{ attrs, on }">
@@ -102,6 +102,10 @@ export default defineComponent({
   props: {
     figure: {
       type: Object as PropType<AnyCustomFigure>,
+      required: true,
+    },
+    figureIndex: {
+      type: Number,
       required: true,
     },
     grid: {
@@ -262,7 +266,7 @@ en:
     slots: "This combinaison of slots is not possible"
 fr:
   headers:
-    figure: 'Visualisation'
+    figure: 'Visualisation #{i}'
     type: 'Type de visualisation'
     data: 'Données de la visualisation'
     figureParams: 'Paramètres de la visualisation'
