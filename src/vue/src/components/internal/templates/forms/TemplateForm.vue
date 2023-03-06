@@ -87,7 +87,20 @@
 
           {{ $t('headers.layouts', { count: mergedLayouts.length }) }}
 
-          <v-icon v-if="!isLayoutsValid" color="warning" small>mdi-alert</v-icon>
+          <v-tooltip top v-if="layoutValidation !== true" color="warning">
+            <template #activator="{ attrs, on }">
+              <v-icon
+                color="warning"
+                small
+                v-bind="attrs"
+                v-on="on"
+              >
+                mdi-alert
+              </v-icon>
+            </template>
+
+            <span>{{ layoutValidation }}</span>
+          </v-tooltip>
         </v-card-subtitle>
 
         <v-divider />
@@ -277,8 +290,18 @@ export default defineComponent({
     /**
      * Is template layouts valid
      */
-    isLayoutsValid(): boolean {
-      return this.mergedLayouts.findIndex(({ _: { hasError } }) => hasError) < 0;
+    layoutValidation(): true | string {
+      const invalidIndex = this.mergedLayouts.findIndex(({ _: { valid } }) => valid !== true);
+      if (invalidIndex >= 0) {
+        return this.$t(
+          'errors.layouts._detail',
+          {
+            at: invalidIndex,
+            valid: this.mergedLayouts[invalidIndex]._.valid,
+          },
+        ).toString();
+      }
+      return true;
     },
   },
   watch: {
@@ -315,6 +338,23 @@ export default defineComponent({
     }
   },
   methods: {
+    /**
+     * Test if layout is valid
+     *
+     * @param layout The layout
+     */
+    validateLayout(layout: AnyCustomLayout): true | string {
+      if (layout._.valid !== true) return layout._.valid;
+
+      const isLayoutEmpty = layout.figures.length === 0;
+      if (!isLayoutEmpty) this.$t('errors.figures.length').toString();
+
+      const isLayoutManual = layout.figures.every(({ slots }) => !!slots);
+      const isLayoutAuto = layout.figures.every(({ slots }) => !slots);
+      if (isLayoutManual === isLayoutAuto) return this.$t('errors.figures.mixed').toString();
+
+      return true;
+    },
     /**
      * Fetch all available templates
      */
@@ -394,9 +434,17 @@ export default defineComponent({
      * @param value The new layouts
      */
     onLayoutListUpdate(value: AnyCustomLayout[]) {
+      const items = value.map((l) => ({
+        ...l,
+        _: {
+          ...l._,
+          valid: this.validateLayout(l),
+        },
+      }));
+
       if (this.taskTemplate) {
         const baseLayoutsIds = this.baseTemplate?.layouts.map(({ _: { id } }) => id) ?? [];
-        const inserts = value.filter(
+        const inserts = items.filter(
           ({ _: { id } }) => !baseLayoutsIds.includes(id),
         ) as CustomTaskLayout[];
 
@@ -409,7 +457,7 @@ export default defineComponent({
       if (this.fullTemplate) {
         this.onTemplateUpdate({
           ...this.fullTemplate,
-          layouts: value,
+          layouts: items,
         });
       }
     },
@@ -423,13 +471,25 @@ export default defineComponent({
         return;
       }
 
+      const invalidIndex = value.findIndex(({ _: { valid } }) => valid !== true);
+      let valid: true | string = true;
+      if (invalidIndex >= 0) {
+        valid = this.$t(
+          'errors.figures._detail',
+          {
+            at: invalidIndex,
+            valid: value[invalidIndex]._.valid,
+          },
+        ).toString();
+      }
+
       const layouts = [...this.mergedLayouts];
       layouts.splice(this.selectedLayoutIndex, 1, {
         ...this.selectedLayout,
         // Set validation state based on figures
         _: {
           ...this.selectedLayout._,
-          hasError: value.findIndex(({ _: { hasError } }) => hasError) >= 0,
+          valid,
         },
         // Set figures
         figures: value,
@@ -459,6 +519,13 @@ en:
     layouts: 'Page editor ({count} pages)'
   actions:
     see-extends: 'See base'
+  errors:
+    layouts:
+      _detail: 'Page {at}: {valid}'
+    figures:
+      _detail: 'Figure {at}: {valid}'
+      length: 'All pages must contains at least one figure'
+      mixed: 'All figures must be placed the same way (auto or manually)'
 fr:
   show-raw: 'Afficher JSON'
   headers:
@@ -470,4 +537,11 @@ fr:
     layouts: 'Éditeur de pages ({count} pages)'
   actions:
     see-extends: 'Voir la base'
+  errors:
+    layouts:
+      _detail: 'Page {at}: {valid}'
+    figures:
+      _detail: 'Visualisation {at}: {valid}'
+      length: 'Chaque page doit contenir au moins une visualisation'
+      mixed: 'Toutes les visualisations doivent être placée de la même façon (auto ou manuellement)'
 </i18n>

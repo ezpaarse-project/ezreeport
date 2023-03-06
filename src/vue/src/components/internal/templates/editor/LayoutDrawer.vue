@@ -51,7 +51,21 @@
           <div class="d-flex">
             <span :class="[value === i && 'primary--text']">
               #{{ i }}
-              <v-icon v-if="errorMap.get(layout._.id)" color="warning" small>mdi-alert</v-icon>
+
+              <v-tooltip top v-if="layout._.valid !== true" color="warning">
+                <template #activator="{ attrs, on }">
+                  <v-icon
+                    color="warning"
+                    small
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    mdi-alert
+                  </v-icon>
+                </template>
+
+                <span>{{ layout._.valid}}</span>
+              </v-tooltip>
             </span>
 
             <v-spacer />
@@ -158,26 +172,6 @@ export default defineComponent({
      */
     selectedLayout() {
       return this.items[this.value];
-    },
-    /**
-     * Validate every layout
-     */
-    errorMap(): Map<string, boolean> {
-      const errorMap = new Map<string, boolean>();
-
-      // eslint-disable-next-line no-restricted-syntax
-      for (const layout of this.items) {
-        const isLayoutEmpty = layout.figures.length === 0;
-
-        const isLayoutManual = layout.figures.every(({ slots }) => !!slots);
-        const isLayoutAuto = layout.figures.every(({ slots }) => !slots);
-        const isLayoutMixed = (isLayoutManual === isLayoutAuto);
-
-        const hasError = layout._.hasError || isLayoutEmpty || isLayoutMixed;
-        errorMap.set(layout._.id, hasError);
-      }
-
-      return errorMap;
     },
   },
   methods: {

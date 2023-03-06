@@ -1,13 +1,26 @@
 <template>
   <v-sheet rounded outlined class="pa-2">
-    <v-form @input="$emit('validation', $event)">
+    <v-form @input="onValidationChange">
       <div class="d-flex">
         <div>
           <v-icon v-if="draggable" style="cursor: grab" small>mdi-drag</v-icon>
 
           {{ $t('headers.figure') }}
 
-          <v-icon v-if="figure._.hasError" color="warning" small>mdi-alert</v-icon>
+          <v-tooltip top v-if="figure._.valid !== true" color="warning">
+            <template #activator="{ attrs, on }">
+              <v-icon
+                color="warning"
+                small
+                v-bind="attrs"
+                v-on="on"
+              >
+                mdi-alert
+              </v-icon>
+            </template>
+
+            <span>{{ figure._.valid }}</span>
+          </v-tooltip>
         </div>
 
         <v-spacer />
@@ -107,20 +120,27 @@ export default defineComponent({
   emits: {
     'update:figure': (val: AnyCustomFigure) => !!val,
     'delete:figure': (val: AnyCustomFigure) => !!val,
-    validation: (val: boolean) => val !== undefined,
+    validation: (val: true | string) => !!val,
   },
   data: () => ({
     dataMap: {} as Record<string, string | unknown[] | undefined>,
   }),
   computed: {
-    rules() {
+    /**
+     * Validation rules
+     */
+    rules(): Record<string, ((v: any) => true | string)[]> {
       return {
         type: [
-          (v: string) => !!v || this.$t('errors.empty'),
+          (v) => !!v || this.$t('errors.empty').toString(),
         ],
         data: [],
         slots: [
-          (v: number[]) => {
+          (v) => {
+            if (!v) {
+              return true;
+            }
+
             const slots = [...v].sort();
             if (slots.length === this.grid.cols * this.grid.rows) {
               return true;
@@ -141,11 +161,30 @@ export default defineComponent({
                 && (col === 0 || s - slots[col - 1] === this.grid.cols),
             );
 
-            return isSameRow || isSameCol || this.$t('errors.slots');
+            return isSameRow || isSameCol || this.$t('errors.slots').toString();
           },
         ],
       };
     },
+    /**
+     * Keeps track of validation state within the form
+     */
+    validationMap() {
+      const validationMap = new Map<keyof AnyCustomFigure, true | string>();
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [field, rules] of Object.entries(this.rules)) {
+        const key = field as keyof AnyCustomFigure;
+        validationMap.set(
+          key,
+          rules.map((cb) => cb(this.figure[key])).find((v) => v !== true) || true,
+        );
+      }
+
+      return validationMap;
+    },
+    /**
+     * Available slots
+     */
     availableSlots() {
       const length = this.grid.cols * this.grid.rows;
 
@@ -155,6 +194,9 @@ export default defineComponent({
         disabled: this.takenSlots.includes(i) && !this.figure.slots?.includes(i),
       }));
     },
+    /**
+     * Localized figure types
+     */
     figureTypes() {
       return figureTypes.map((value) => ({
         label: this.$t(`figure_types.${value}`),
@@ -178,6 +220,10 @@ export default defineComponent({
       if (value !== this.figure.data) {
         this.$emit('update:figure', { ...this.figure, data: value });
       }
+    },
+    onValidationChange() {
+      const validationResult = [...this.validationMap.values()].find((v) => v !== true) || true;
+      this.$emit('validation', validationResult);
     },
   },
 });

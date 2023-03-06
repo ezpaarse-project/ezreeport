@@ -156,13 +156,13 @@ export default defineComponent({
      * @param figure The figure
      * @param value The validation value
      */
-    onValidation(figure: AnyCustomFigure, value: boolean) {
+    onValidation(figure: AnyCustomFigure, value: true | string) {
       this.onFigureUpdate({
         ...figure,
         // Set validation state
         _: {
           ...figure._,
-          hasError: !value,
+          valid: value,
         },
       });
     },

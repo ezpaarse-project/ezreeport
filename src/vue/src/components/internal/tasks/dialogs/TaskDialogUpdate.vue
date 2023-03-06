@@ -36,7 +36,21 @@
       <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
         <v-tab v-for="tab in tabs" :key="tab.name">
           {{ $t(`tabs.${tab.name}`) }}
-          <v-icon v-if="!tab.valid" color="warning" small right>mdi-alert</v-icon>
+
+          <v-tooltip top v-if="tab.valid !== true" color="warning">
+            <template #activator="{ attrs, on }">
+              <v-icon
+                color="warning"
+                small
+                v-bind="attrs"
+                v-on="on"
+              >
+                mdi-alert
+              </v-icon>
+            </template>
+
+            <span>{{ tab.valid }}</span>
+          </v-tooltip>
         </v-tab>
       </v-tabs>
 
@@ -124,7 +138,11 @@
         </v-btn>
 
         <v-btn
-          :disabled="!task || !valid || !isNameValid || !isTemplateValid || !perms.update"
+          :disabled="!task
+            || !valid
+            || !isNameValid
+            || templateValidation !== true
+            || !perms.update"
           :loading="loading"
           color="success"
           @click="save"
@@ -200,7 +218,7 @@ export default defineComponent({
         },
         {
           ...templateTab,
-          valid: this.isTemplateValid,
+          valid: this.templateValidation,
         },
         // ...otherTabs.map((v) => ({ ...v, valid: true })),
       ];
@@ -232,11 +250,23 @@ export default defineComponent({
     /**
      * Is task's template valid
      */
-    isTemplateValid(): boolean {
-      if (!this.task?.template.inserts) {
+    templateValidation(): true | string {
+      if (!this.task || !this.task.template.inserts) {
         return true;
       }
-      return this.task.template.inserts.findIndex(({ _: { hasError } }) => hasError) < 0;
+
+      const invalidInsert = this.task.template.inserts.find(({ _: { valid } }) => valid !== true);
+      if (invalidInsert) {
+        return this.$t(
+          'errors.layouts._detail',
+          {
+            at: invalidInsert.at,
+            valid: invalidInsert._.valid,
+          },
+        ).toString();
+      }
+
+      return true;
     },
   },
   watch: {
@@ -287,7 +317,7 @@ export default defineComponent({
      * Save and edit task
      */
     async save() {
-      if (!this.task || !this.valid || !this.isNameValid || !this.isTemplateValid) {
+      if (!this.task || !this.valid || !this.isNameValid || this.templateValidation) {
         return;
       }
 
@@ -356,6 +386,8 @@ en:
     active: 'Active'
     inactive: 'Inactive'
   errors:
+    layouts:
+      _detail: 'Page {at}: {valid}'
     empty: 'This field must be set'
     format: "One or more address aren't valid"
   actions:
@@ -377,6 +409,8 @@ fr:
     active: 'Actif'
     inactive: 'Inactif'
   errors:
+    layouts:
+      _detail: 'Page {at}: {valid}'
     empty: 'Ce champ doit être rempli'
     format: 'Une ou plusieurs addresses ne sont pas valides'
   actions:
