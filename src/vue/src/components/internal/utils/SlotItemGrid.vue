@@ -182,9 +182,10 @@ export default defineComponent({
       } else if (index === this.maxItemLength - 2 && index === this.items.length - 1) {
         // If in penultimate slot and last figure, take whole remaining space
         slots = Array.from({ length: this.grid.cols }, (_, i) => i + index);
-      } else if (this.items.length === this.maxItemLength) {
+      } else if (this.items.length <= this.maxItemLength) {
         slots = [index];
       }
+
       return this.resolveManualSlots(slots, index);
     },
     /**
@@ -197,7 +198,7 @@ export default defineComponent({
       css: CSSProperties;
       slots: number[];
     } {
-      if (index > this.maxItemLength) {
+      if (index >= this.maxItemLength) {
         return { slots: [], css: { display: 'none' } };
       }
       let res;
@@ -206,6 +207,7 @@ export default defineComponent({
       } else {
         res = this.resolveManualSlots(slots, index);
       }
+
       return {
         slots: res.slots,
         css: {
