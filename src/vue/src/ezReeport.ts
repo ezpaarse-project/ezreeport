@@ -9,6 +9,7 @@ const data = reactive({
     user: undefined as sdk.auth.User | undefined,
   },
   institutions: {
+    logoUrl: '',
     data: [] as sdk.institutions.Institution[],
     /**
      * Shorthand to fetch institutions and make it available into whole Vue.

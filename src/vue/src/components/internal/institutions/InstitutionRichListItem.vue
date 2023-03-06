@@ -2,7 +2,7 @@
   <RichListItem
     :title="institution.name"
     :subtitle="institution.city"
-    :src="`/api/assets/logos/${institution.logoId}`"
+    :src="src"
     :alt="`Logo de ${institution.name}`"
     fallback-icon="mdi-office-building"
     capitalize-subtitle
@@ -27,7 +27,7 @@ export default defineComponent({
       if (!this.institution.logoId) {
         return undefined;
       }
-      return new URL(this.institution.logoId, import.meta.env.VITE_LOGO_URL).href;
+      return new URL(this.institution.logoId, this.$ezReeport.institutions.logoUrl).href;
     },
   },
 });
