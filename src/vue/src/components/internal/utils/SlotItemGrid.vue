@@ -100,7 +100,15 @@ export default defineComponent({
      * Item list with calculated position
      */
     itemsWithCSS() {
-      return this.items.map((item, index) => {
+      // TODO: better handle weird cases (0,3,auto)
+      // Place manual items before auto to help slot resolution
+      const items = [...this.items].sort((a, b) => {
+        if (!a.slots && b.slots) return 1;
+        if (a.slots && !b.slots) return -1;
+        return 0;
+      });
+
+      return items.map((item, index) => {
         const resolved = this.slotsToCSS(item, index);
         return {
           item,
