@@ -51,7 +51,21 @@
           <div class="d-flex">
             <span :class="[value === i && 'primary--text']">
               #{{ i }}
-              <v-icon v-if="layout._.hasError" color="warning" small>mdi-alert</v-icon>
+
+              <v-tooltip top v-if="layout._.valid !== true" color="warning">
+                <template #activator="{ attrs, on }">
+                  <v-icon
+                    color="warning"
+                    small
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    mdi-alert
+                  </v-icon>
+                </template>
+
+                <span>{{ layout._.valid}}</span>
+              </v-tooltip>
             </span>
 
             <v-spacer />

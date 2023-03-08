@@ -96,10 +96,10 @@
 
             <LayoutViewer
               v-if="selectedLayout"
-              class="editor-panel ma-0"
               :items="selectedLayout.figures"
               :grid="grid"
               mode="view"
+              class="editor-panel ma-0"
             />
           </v-row>
         </v-card-text>

@@ -100,7 +100,15 @@ export default defineComponent({
      * Item list with calculated position
      */
     itemsWithCSS() {
-      return this.items.map((item, index) => {
+      // TODO: better handle weird cases (0,3,auto)
+      // Place manual items before auto to help slot resolution
+      const items = [...this.items].sort((a, b) => {
+        if (!a.slots && b.slots) return 1;
+        if (a.slots && !b.slots) return -1;
+        return 0;
+      });
+
+      return items.map((item, index) => {
         const resolved = this.slotsToCSS(item, index);
         return {
           item,
@@ -116,15 +124,11 @@ export default defineComponent({
         return [];
       }
 
-      const usedSlots = this.deduplicateArray(
-        this.itemsWithCSS
-          .map(({ resolved: { slots } }) => slots)
-          .flat(),
-      );
+      const usedSlots = new Set(this.itemsWithCSS.map(({ resolved: { slots } }) => slots).flat());
 
       return Array
         .from({ length: this.maxItemLength }, (_, i) => i)
-        .filter((v) => !usedSlots.includes(v));
+        .filter((v) => !usedSlots.has(v));
     },
     /**
      * Are the child draggable
@@ -134,14 +138,6 @@ export default defineComponent({
     },
   },
   methods: {
-    /**
-     * Deduplicate items in array
-     *
-     * @param array The array
-     */
-    deduplicateArray: <T>(array: T[]) => array.filter(
-      (value, index, self) => index === self.findIndex((t) => t === value),
-    ),
     /**
      * Resolve slots into grid area when items specify slots
      *
@@ -157,7 +153,7 @@ export default defineComponent({
           rows: 1,
         },
       };
-      const slots = this.deduplicateArray(rawSlots).sort();
+      const slots = [...new Set(rawSlots)];
       pos.col = slots[0] % this.grid.cols;
       pos.row = Math.floor(slots[0] / this.grid.cols);
       // Every slot on same row
@@ -194,9 +190,10 @@ export default defineComponent({
       } else if (index === this.maxItemLength - 2 && index === this.items.length - 1) {
         // If in penultimate slot and last figure, take whole remaining space
         slots = Array.from({ length: this.grid.cols }, (_, i) => i + index);
-      } else if (this.items.length === this.maxItemLength) {
+      } else if (this.items.length <= this.maxItemLength) {
         slots = [index];
       }
+
       return this.resolveManualSlots(slots, index);
     },
     /**
@@ -209,7 +206,7 @@ export default defineComponent({
       css: CSSProperties;
       slots: number[];
     } {
-      if (index > this.maxItemLength) {
+      if (index >= this.maxItemLength) {
         return { slots: [], css: { display: 'none' } };
       }
       let res;
@@ -218,6 +215,7 @@ export default defineComponent({
       } else {
         res = this.resolveManualSlots(slots, index);
       }
+
       return {
         slots: res.slots,
         css: {
