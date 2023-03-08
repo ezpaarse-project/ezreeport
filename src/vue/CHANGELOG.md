@@ -1,3 +1,19 @@
+# ezreeport-vue [1.0.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-vue@1.0.0-beta.1...ezreeport-vue@1.0.0-beta.2) (2023-03-08)
+
+
+### Bug Fixes
+
+* **vue:** fixed logo url for institutions ([67dea07](https://github.com/ezpaarse-project/ezreeport/commit/67dea07212588f3d3892b2d3c16981cb9718abc6))
+* **vue:** fixed superposition of items in auto mode ([9a56ad6](https://github.com/ezpaarse-project/ezreeport/commit/9a56ad66d28bfad2685bf2e2f41da2a211669b83))
+* **vue:** partial fix for mixed mode in item grid ([0997fa8](https://github.com/ezpaarse-project/ezreeport/commit/0997fa865fcae8937ae195890b72f1ea795980e5))
+
+
+### Features
+
+* **vue:** added error detail to page editor ([b05036a](https://github.com/ezpaarse-project/ezreeport/commit/b05036a9886ff694febc9ab4668f8e1499da62a6))
+* **vue:** added index into figures ([6f76822](https://github.com/ezpaarse-project/ezreeport/commit/6f768229dccad9f5fd60da8550169c60c6a4d475))
+* **vue:** added layout validation ([d21708d](https://github.com/ezpaarse-project/ezreeport/commit/d21708dc17297bb9b2fe280b4f094d193a299ce2))
+
 # ezreeport-vue 1.0.0-beta.1 (2023-02-24)
 
 
