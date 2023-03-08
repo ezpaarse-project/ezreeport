@@ -49,7 +49,7 @@
     "@highlightjs/vue-plugin": "^1.0.2",
     "@vitejs/plugin-vue2": "^2.2.0",
     "date-fns": "^2.29.3",
-    "ezreeport-sdk-js": "1.0.0-beta.1",
+    "ezreeport-sdk-js": "../sdk",
     "highlight.js": "^10.7.2",
     "js-yaml": "^4.1.0",
     "unplugin-vue-components": "^0.22.12",
