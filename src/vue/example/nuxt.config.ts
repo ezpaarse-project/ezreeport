@@ -1,4 +1,5 @@
 import type { NuxtConfig } from '@nuxt/types';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import colors from 'vuetify/es5/util/colors';
 
 const config: NuxtConfig = {
@@ -23,7 +24,6 @@ const config: NuxtConfig = {
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
-    '@nuxtjs/proxy',
     '@nuxtjs/i18n',
   ],
 
