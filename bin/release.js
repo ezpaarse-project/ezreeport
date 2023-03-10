@@ -1,13 +1,11 @@
 const multirelease = require("multi-semantic-release");
 const path = require('node:path');
+const workspaces = require('./workspaces.json');
 
 multirelease(
-  [
-    path.join(__dirname, `src/sdk/package.json`),
-    path.join(__dirname, `src/vue/package.json`),
-    path.join(__dirname, `src/services/mail/package.json`),
-    path.join(__dirname, `src/services/report/package.json`),
-  ],
+  workspaces
+    .filter(({ release }) => !!release)
+    .map(({ path: p }) => path.join(__dirname, '..', p)),
   {
     ci: false,
     plugins: [
