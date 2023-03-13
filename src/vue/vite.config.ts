@@ -6,21 +6,29 @@ import Components from 'unplugin-vue-components/vite';
 import { VuetifyResolver } from 'unplugin-vue-components/resolvers';
 import VueI18nPlugin from './plugins/vite-i18n';
 
-// TODO: build type def
+let comps = Components({
+  dts: false,
+});
+if (process.env.NODE_ENV !== 'production') {
+  console.log('building in dev mode');
+
+  // Resolve Vuetify components in dev
+  comps = Components({
+    resolvers: [VuetifyResolver()],
+    dts: '.vite/components.d.ts',
+  });
+}
 
 export default defineConfig({
   plugins: [
     vue2(),
     VueI18nPlugin,
-    Components({
-      resolvers: [VuetifyResolver()],
-      dts: '.vite/components.d.ts',
-    }),
+    comps,
   ],
   resolve: {
     alias: {
       '~': fileURLToPath(new URL('./src', import.meta.url)),
-      // vue: 'vue/dist/vue.esm.js',
+      vue: 'vue/dist/vue.esm.js',
     },
   },
   build: {
@@ -31,6 +39,7 @@ export default defineConfig({
     rollupOptions: {
       external: ['vue'],
       output: {
+        exports: 'named',
         globals: {
           vue: 'Vue',
         },

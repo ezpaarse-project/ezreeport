@@ -27,12 +27,5 @@ export default {
 };
 
 export { useEzReeport } from './ezReeport';
-
-declare module 'vue/types/vue' {
-  interface Vue {
-    /**
-     * Shorthand to access reporting SDK and few more data (like current permissions)
-     */
-    $ezReeport: typeof ezReeport;
-  }
-}
+export type InjectedEzRData = typeof ezReeport;
+export type InjectedEzRComponents = typeof components;

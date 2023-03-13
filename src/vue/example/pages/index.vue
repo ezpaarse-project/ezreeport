@@ -8,7 +8,7 @@
     </v-btn>
     <v-col>
       <v-card>
-        <ezr-task-table />
+        <ezr-status-list />
       </v-card>
     </v-col>
   </v-row>

@@ -17,6 +17,10 @@
     ".": {
       "import": "./dist/ezreeport-vue.js",
       "require": "./dist/ezreeport-vue.umd.cjs"
+    },
+    "./dist/style.css": {
+      "import": "./dist/style.css",
+      "require": "./dist/style.css"
     }
   },
   "main": "./dist/ezreeport-vue.umd.cjs",
@@ -26,12 +30,12 @@
     "dist"
   ],
   "scripts": {
-    "build": "vite build",
+    "build": "NODE_ENV=production vite build",
     "build:doc": "storybook build",
     "dev": "storybook dev -p 6006",
     "lint": "eslint --fix src plugins vite.config.ts .storybook",
     "start": "npm --prefix example run start",
-    "watch": "vite build --watch"
+    "watch": "NODE_ENV=production vite build --watch"
   },
   "lint-staged": {
     "!(example)/*.{ts,vue}": [

@@ -13,14 +13,3 @@ export default {
   'ezr-template-list': TemplateList,
   'ezr-queue-list': QueueList,
 };
-
-declare module 'vue' {
-  export interface GlobalComponents {
-    EzrStatusList: typeof StatusList,
-    EzrCronList: typeof CronList,
-    EzrTasksTable: typeof TasksTable,
-    EzrHistoryTable: typeof HistoryTable,
-    EzrTemplateList: typeof TemplateList,
-    EzrQueueList: typeof QueueList,
-  }
-}
