@@ -17,8 +17,9 @@ RUN apk update \
 	&& apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev giflib-dev
 
 # Install service dependencies (it will build node-canvas)
-# npm ci isn't possible because project uses npm workspaces
-RUN npm i --omit=dev
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY . ./
 
 # ---- Build prisma-client
 
@@ -29,20 +30,16 @@ WORKDIR /usr/build/prisma
 
 ENV NODE_ENV=production
 
-COPY ./prisma ./prisma
-COPY ./package.json ./
 # Getting node_modules from previous stage to avoid rebuilding node-canvas
 COPY --from=npm-builder /usr/build/report/node_modules ./node_modules
 
 # Install dev dependencies
-# npm ci isn't possible because project uses npm workspaces
-RUN npm i \
-	# Adding non critical dependencies but still required for generating prisma-client
-	#? Why it's not included with npm i ?!
-	&& npm i -g prisma-erd-generator @mermaid-js/mermaid-cli
+COPY ./package*.json ./
+RUN npm ci
+COPY ./prisma ./prisma
 
 # Generate prisma-client
-RUN DISABLE_ERD=true npx prisma generate
+RUN npx prisma generate
 
 # ---- Prod image
 
@@ -52,10 +49,9 @@ EXPOSE 8080
 
 WORKDIR /usr/src/report
 
-# fixme: app not starting
 ENV NODE_ENV=production
 
-COPY ./ ./
+COPY . ./
 COPY --from=prisma /usr/build/prisma/.prisma ./.prisma
 COPY --from=npm-builder /usr/build/report/node_modules ./node_modules
 
