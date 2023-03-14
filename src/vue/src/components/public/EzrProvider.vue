@@ -117,6 +117,10 @@ export default defineComponent({
       if (force || this.institutions.data.length <= 0) {
         if (this.auth.permissions?.['institutions-get']) {
           const { content } = await sdk.institutions.getInstitutions();
+          if (!content) {
+            throw new Error(this.$t('errors.no_data').toString());
+          }
+
           this.institutions.data = content;
         } else {
           this.institutions.data = [];
@@ -131,3 +135,12 @@ export default defineComponent({
 <style scoped>
 
 </style>
+
+<i18n lang="yaml">
+en:
+  errors:
+    no_data: 'An error occurred when fetching data'
+fr:
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
+</i18n>

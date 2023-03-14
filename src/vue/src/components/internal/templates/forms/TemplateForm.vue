@@ -367,6 +367,10 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.templates.getAllTemplates();
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
+
         this.availableTemplates = content.map(({ name }) => name);
         this.error = '';
       } catch (error) {
@@ -521,6 +525,7 @@ en:
   actions:
     see-extends: 'See base'
   errors:
+    no_data: 'An error occurred when fetching data'
     layouts:
       _detail: 'Page {at}: {valid}'
     figures:
@@ -539,6 +544,7 @@ fr:
   actions:
     see-extends: 'Voir la base'
   errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
     layouts:
       _detail: 'Page {at}: {valid}'
     figures:

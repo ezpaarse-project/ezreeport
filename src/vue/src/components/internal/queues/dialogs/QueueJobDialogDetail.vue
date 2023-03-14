@@ -301,6 +301,9 @@ export default defineComponent({
           this.queue,
           this.job.id,
         );
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
 
         this.$emit('updated', content);
         this.$emit('input', false);
@@ -371,6 +374,8 @@ en:
     ended: 'Ended at'
   actions:
     rerun: 'Rerun'
+  errors:
+    no_data: 'An error occurred when fetching data'
 fr:
   title: 'Job de {queue} #{id}'
   refresh-tooltip: 'Rafraîchir le job'
@@ -386,4 +391,6 @@ fr:
     ended: 'Fini le'
   actions:
     rerun: 'Relancer'
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>

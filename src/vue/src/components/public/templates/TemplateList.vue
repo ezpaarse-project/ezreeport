@@ -93,6 +93,10 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.templates.getAllTemplates();
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
+
         this.templates = content;
         this.error = '';
       } catch (error) {
@@ -119,7 +123,11 @@ export default defineComponent({
 en:
   title: 'Templates'
   refresh-tooltip: 'Refresh template list'
+  errors:
+    no_data: 'An error occurred when fetching data'
 fr:
   title: 'Modèles'
   refresh-tooltip: 'Rafraîchir la liste des modèles'
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>

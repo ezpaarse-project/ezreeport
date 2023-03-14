@@ -238,6 +238,9 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.tasks.getTask(this.id);
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
 
         // Add additional data
         content.template.inserts = addAdditionalDataToLayouts(content.template.inserts ?? []);
@@ -319,6 +322,8 @@ en:
     inactive: 'Inactive'
   actions:
     generate: 'Generate'
+  errors:
+    no_data: 'An error occurred when fetching data'
 fr:
   headers:
     institution: 'Institution'
@@ -336,4 +341,6 @@ fr:
     inactive: 'Inactif'
   actions:
     generate: 'Générer'
-  </i18n>
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
+</i18n>

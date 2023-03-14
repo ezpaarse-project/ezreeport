@@ -167,6 +167,10 @@ export default defineComponent({
             count: this.options.itemsPerPage,
           },
         );
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
+
         this.jobs = content;
         this.totalItems = meta.total;
 

@@ -301,6 +301,9 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.tasks.getTask(this.id);
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
 
         // Add additional data
         content.template.inserts = addAdditionalDataToLayouts(content.template.inserts ?? []);
@@ -389,6 +392,7 @@ en:
       _detail: 'Page {at}: {valid}'
     empty: 'This field must be set'
     format: "One or more address aren't valid"
+    no_data: 'An error occurred when fetching data'
   actions:
     cancel: 'Cancel'
     save: 'Save'
@@ -412,6 +416,7 @@ fr:
       _detail: 'Page {at}: {valid}'
     empty: 'Ce champ doit être rempli'
     format: 'Une ou plusieurs addresses ne sont pas valides'
+    no_data: 'Une erreur est survenue lors de la récupération des données'
   actions:
     cancel: 'Annuler'
     save: 'Sauvegarder'

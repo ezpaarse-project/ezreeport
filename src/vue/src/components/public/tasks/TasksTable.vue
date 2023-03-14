@@ -263,6 +263,10 @@ export default defineComponent({
             },
             this.currentInstitution || undefined,
           );
+          if (!content) {
+            throw new Error(this.$t('errors.no_data').toString());
+          }
+
           this.tasks = content;
           this.totalItems = meta.total;
 

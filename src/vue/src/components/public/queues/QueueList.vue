@@ -111,6 +111,9 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.queues.getAllQueues();
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
 
         this.queues = content;
         this.error = '';
@@ -179,6 +182,8 @@ en:
   item:
     active: 'Active'
     inactive: 'Inactive'
+  errors:
+    no_data: 'An error occurred when fetching data'
 fr:
   title: 'Queues'
   refresh-tooltip: 'Rafraîchir la liste des queues'
@@ -190,4 +195,6 @@ fr:
   item:
     active: 'Actif'
     inactive: 'Inactif'
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>

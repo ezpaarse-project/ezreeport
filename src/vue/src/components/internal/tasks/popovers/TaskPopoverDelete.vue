@@ -54,6 +54,7 @@ import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 
 export default defineComponent({
+  inject: ['$ezReeport'],
   props: {
     value: {
       type: Boolean,
@@ -78,7 +79,7 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         delete: perms?.['tasks-delete-task'],
       };

@@ -136,6 +136,10 @@ export default defineComponent({
             },
             this.currentInstitution || undefined,
           );
+          if (!content) {
+            throw new Error(this.$t('errors.no_data').toString());
+          }
+
           this.history = content;
           this.paginationData.page = page;
           this.paginationData.itemsLength = meta.total;

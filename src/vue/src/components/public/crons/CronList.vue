@@ -146,6 +146,10 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.crons.getAllCrons();
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
+
         this.crons = content;
         this.error = '';
       } catch (error) {
@@ -234,6 +238,8 @@ en:
   item:
     active: 'Active'
     inactive: 'Inactive'
+  errors:
+    no_data: 'An error occurred when fetching data'
 fr:
   title: 'Crons'
   refresh-tooltip: 'Rafraîchir la liste des crons'
@@ -245,4 +251,6 @@ fr:
   item:
     active: 'Actif'
     inactive: 'Inactif'
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>

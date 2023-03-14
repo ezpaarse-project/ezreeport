@@ -101,6 +101,9 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.templates.getTemplate(this.name);
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
 
         // Add additional data
         content.template.layouts = addAdditionalDataToLayouts(content.template.layouts ?? []);
@@ -123,6 +126,10 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   refresh-tooltip: 'Refresh template'
+  errors:
+    no_data: 'An error occurred when fetching data'
 fr:
   refresh-tooltip: 'Rafraîchir le modèle'
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>
