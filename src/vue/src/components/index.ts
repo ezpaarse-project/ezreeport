@@ -4,6 +4,7 @@ import TasksTable from './public/tasks/TasksTable.vue';
 import HistoryTable from './public/history/HistoryTable.vue';
 import TemplateList from './public/templates/TemplateList.vue';
 import QueueList from './public/queues/QueueList.vue';
+import Provider from './public/EzrProvider.vue';
 
 export default {
   'ezr-status-list': StatusList,
@@ -12,4 +13,5 @@ export default {
   'ezr-history-table': HistoryTable,
   'ezr-template-list': TemplateList,
   'ezr-queue-list': QueueList,
+  'ezr-provider': Provider,
 };

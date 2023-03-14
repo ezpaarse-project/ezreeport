@@ -157,6 +157,7 @@ import {
 } from '~/lib/templates/customTemplates';
 
 export default defineComponent({
+  inject: ['$ezReeport'],
   props: {
     template: {
       type: Object as PropType<AnyCustomTemplate>,
@@ -188,7 +189,7 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         realAll: perms?.['templates-get'],
         readOne: perms?.['templates-get-name(*)'],
@@ -306,7 +307,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
       this.fetchBase();
     },

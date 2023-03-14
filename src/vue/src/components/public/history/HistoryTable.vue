@@ -39,6 +39,7 @@ import { defineComponent } from 'vue';
 import { DataOptions, DataPagination } from 'vuetify';
 
 export default defineComponent({
+  inject: ['$ezReeport'],
   data: () => ({
     interval: undefined as NodeJS.Timer | undefined,
 
@@ -62,7 +63,7 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readAll: perms?.['history-get'],
       };
@@ -98,7 +99,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
   },

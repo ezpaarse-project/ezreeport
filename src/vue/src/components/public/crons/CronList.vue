@@ -100,9 +100,7 @@ interface CronItem {
 }
 
 export default defineComponent({
-
-
-
+  inject: ['$ezReeport'],
   data: () => ({
     crons: [] as crons.Cron[],
     openedCrons: {} as Record<string, boolean>,
@@ -112,7 +110,7 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readAll: perms?.['crons-get'],
         readOne: perms?.['crons-get-cron'],
@@ -128,7 +126,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
   },

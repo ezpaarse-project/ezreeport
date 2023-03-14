@@ -59,9 +59,7 @@ interface QueueItem {
 }
 
 export default defineComponent({
-
-
-
+  inject: ['$ezReeport'],
   data: () => ({
     queues: [] as queues.Queue[],
     openedQueues: {} as Record<string, boolean>,
@@ -71,7 +69,7 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readAll: perms?.['queues-get'],
 
@@ -93,7 +91,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
   },

@@ -43,6 +43,7 @@ import type { templates } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 
 export default defineComponent({
+  inject: ['$ezReeport'],
   data: () => ({
     readTemplateDialogShown: false,
 
@@ -57,7 +58,7 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readAll: perms?.['templates-get'],
         readOne: perms?.['templates-get-name(*)'],
@@ -72,7 +73,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
   },

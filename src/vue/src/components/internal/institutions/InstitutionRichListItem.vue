@@ -14,6 +14,7 @@ import type { institutions } from 'ezreeport-sdk-js';
 import { defineComponent, PropType } from 'vue';
 
 export default defineComponent({
+  inject: ['$ezReeport'],
   props: {
     institution: {
       type: Object as PropType<institutions.Institution>,
@@ -27,7 +28,7 @@ export default defineComponent({
       if (!this.institution.logoId) {
         return undefined;
       }
-      return new URL(this.institution.logoId, this.$ezReeport.institutions.logoUrl).href;
+      return new URL(this.institution.logoId, this.$ezReeport.data.institutions.logoUrl).href;
     },
   },
 });

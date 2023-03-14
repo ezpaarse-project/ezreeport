@@ -30,6 +30,7 @@ import { defineComponent, type PropType } from 'vue';
 export type Sizes = 'x-small' | 'small' | 'normal' | 'large' | 'x-large';
 
 export default defineComponent({
+  inject: ['$ezReeport'],
   props: {
     value: {
       type: String as PropType<tasks.Recurrence>,

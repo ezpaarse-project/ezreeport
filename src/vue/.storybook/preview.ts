@@ -3,6 +3,7 @@
 import Vue from 'vue';
 import Vuetify from 'vuetify';
 import type { Decorator, Parameters } from '@storybook/vue';
+import { auth as sdkAuth } from 'ezreeport-sdk-js';
 import i18n from './plugins/i18n';
 import vuetify from './plugins/vuetify';
 import ezReeport from '../src';
@@ -17,7 +18,7 @@ Vue.prototype._i18n = i18n;
 // Setup ezReeport plugin
 Vue.use(ezReeport);
 if (import.meta.env.VITE_EZMESURE_TOKEN) {
-  Vue.prototype.$ezReeport.sdk.auth.login(import.meta.env.VITE_EZMESURE_TOKEN);
+  sdkAuth.login(import.meta.env.VITE_EZMESURE_TOKEN);
   console.info('[ezReeport-storybook] Auth token setup');
 } else {
   console.warn('[ezReeport-storybook] Auth token not found');
@@ -85,9 +86,11 @@ export const decorators: Decorator[] = [
       },
       template: `
         <v-app>
-          <v-container fluid>
-            <wrapped />
-          </v-container>
+          <ezr-provider>
+            <v-container fluid>
+              <wrapped />
+            </v-container>
+          </ezr-provider>
         </v-app>
       `,
     });

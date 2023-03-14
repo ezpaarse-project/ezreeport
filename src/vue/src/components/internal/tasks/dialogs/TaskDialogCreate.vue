@@ -159,7 +159,7 @@ import { tabs } from './TaskDialogRead.vue';
 const minDate = addDays(new Date(), 1);
 
 export default defineComponent({
-
+  inject: ['$ezReeport'],
   props: {
     value: {
       type: Boolean,
@@ -231,7 +231,7 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readOne: perms?.['tasks-get-task'],
         create: perms?.['tasks-post'],
@@ -261,7 +261,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.resetInstitution();
     },
     id() {
@@ -284,7 +284,7 @@ export default defineComponent({
      * Reset institution value
      */
     resetInstitution() {
-      this.task.institution = this.$ezReeport.auth.user?.institution ?? '';
+      this.task.institution = this.$ezReeport.data.auth.user?.institution ?? '';
     },
     /**
      * Save and edit task

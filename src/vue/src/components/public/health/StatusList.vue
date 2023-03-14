@@ -97,6 +97,7 @@ interface StatusItem {
 }
 
 export default defineComponent({
+  inject: ['$ezReeport'],
   data: () => ({
     statuses: [] as health.PingResult[],
     client: {

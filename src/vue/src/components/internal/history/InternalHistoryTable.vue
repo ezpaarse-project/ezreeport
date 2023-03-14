@@ -113,6 +113,7 @@ interface HistoryItem {
 const today = new Date();
 
 export default defineComponent({
+  inject: ['$ezReeport'],
   props: {
     history: {
       type: Array as PropType<AnyHistory[]>,
@@ -151,7 +152,7 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readFile: perms?.['reports-get-year-yearMonth-filename'],
         readOneTask: perms?.['tasks-get-task'],
@@ -233,7 +234,7 @@ export default defineComponent({
       let institution: institutions.Institution | undefined;
       if ('task' in entry) {
         task = entry.task;
-        institution = this.$ezReeport.institutions.data
+        institution = this.$ezReeport.data.institutions.data
           .find(({ id }) => id === entry.task.institution);
       }
 

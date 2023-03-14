@@ -142,8 +142,7 @@ export const tabs = [
 ] as const;
 
 export default defineComponent({
-
-
+  inject: ['$ezReeport'],
   props: {
     value: {
       type: Boolean,
@@ -173,7 +172,7 @@ export default defineComponent({
      * Validation rules
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readOne: perms?.['tasks-get-task'],
         update: perms?.['tasks-put-task'],
@@ -188,7 +187,7 @@ export default defineComponent({
      * User permissions
      */
     institution(): institutions.Institution | undefined {
-      return this.$ezReeport.institutions.data.find(({ id }) => id === this.task?.institution);
+      return this.$ezReeport.data.institutions.data.find(({ id }) => id === this.task?.institution);
     },
     /**
      * Max Width of the dialog
@@ -202,7 +201,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
       this.fetchInstitutions();
     },
@@ -221,7 +220,7 @@ export default defineComponent({
     async fetchInstitutions() {
       this.loading = true;
       try {
-        this.$ezReeport.institutions.fetch();
+        this.$ezReeport.fetchInstitutions();
       } catch (error) {
         this.error = (error as Error).message;
       }

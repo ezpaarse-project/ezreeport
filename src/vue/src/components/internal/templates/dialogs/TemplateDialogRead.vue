@@ -41,6 +41,7 @@ import {
 type CustomFullTemplate = Omit<templates.FullTemplate, 'template'> & { template: CustomTemplate };
 
 export default defineComponent({
+  inject: ['$ezReeport'],
   props: {
     value: {
       type: Boolean,
@@ -69,7 +70,7 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readOne: perms?.['templates-get-name(*)'],
       };
@@ -77,7 +78,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
     name() {

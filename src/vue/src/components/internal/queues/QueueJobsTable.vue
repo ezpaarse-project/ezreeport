@@ -70,6 +70,7 @@ interface JobItem {
 }
 
 export default defineComponent({
+  inject: ['$ezReeport'],
   props: {
     queue: {
       type: String,
@@ -94,7 +95,7 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readAll: perms?.['queues-get-queue-jobs'],
         readOne: perms?.['queues-get-queue-jobs-jobId'],
@@ -135,7 +136,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
   },

@@ -138,6 +138,7 @@ const tabs = [
 ] as const;
 
 export default defineComponent({
+  inject: ['$ezReeport'],
   props: {
     value: {
       type: Boolean,
@@ -171,7 +172,7 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readOne: perms?.['queues-get-queue-jobs-jobId'],
 

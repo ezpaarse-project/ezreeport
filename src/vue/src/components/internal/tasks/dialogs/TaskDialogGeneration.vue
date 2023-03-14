@@ -164,6 +164,7 @@ import { calcPeriod, type Period } from '~/lib/tasks/recurrence';
 const today = new Date();
 
 export default defineComponent({
+  inject: ['$ezReeport'],
   props: {
     value: {
       type: Boolean,
@@ -215,7 +216,7 @@ export default defineComponent({
       };
     },
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
 
       return {
         runTask: perms?.['tasks-post-task-run'] && perms?.['queues-get-queue-jobs-jobId'],

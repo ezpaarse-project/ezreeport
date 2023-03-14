@@ -132,7 +132,7 @@ interface TaskItem {
 }
 
 export default defineComponent({
-
+  inject: ['$ezReeport'],
   data: () => ({
     readTaskDialogShown: false,
     createTaskDialogShown: false,
@@ -187,13 +187,13 @@ export default defineComponent({
       ];
     },
     institutions(): institutions.Institution[] {
-      return this.$ezReeport.institutions.data;
+      return this.$ezReeport.data.institutions.data;
     },
     items() {
       return this.tasks.map(this.parseTask);
     },
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readAll: perms?.['tasks-get'],
         readOne: perms?.['tasks-get-task'],
@@ -211,7 +211,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
       this.fetchInstitutions();
     },
@@ -227,7 +227,7 @@ export default defineComponent({
     async fetchInstitutions() {
       this.loading = true;
       try {
-        this.$ezReeport.institutions.fetch();
+        this.$ezReeport.fetchInstitutions();
       } catch (error) {
         this.error = (error as Error).message;
       }

@@ -126,6 +126,7 @@ import {
 } from '~/lib/templates/customTemplates';
 
 export default defineComponent({
+  inject: ['$ezReeport'],
   props: {
     template: {
       type: Object as PropType<AnyCustomTemplate>,
@@ -148,7 +149,7 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readOne: perms?.['templates-get-name(*)'],
       };
