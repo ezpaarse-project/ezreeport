@@ -326,6 +326,7 @@ en:
   errors:
     no_data: 'An error occurred when fetching data'
 fr:
+  refresh-tooltip: 'Rafraîchir la tâche'
   headers:
     institution: 'Institution'
     targets: 'Destinataires'

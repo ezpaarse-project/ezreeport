@@ -154,8 +154,8 @@ import { addDays } from 'date-fns';
 import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import type { CustomTaskTemplate } from '~/lib/templates/customTemplates';
-import { tabs } from './TaskDialogRead.vue';
 import ezReeportMixin from '~/mixins/ezr';
+import { tabs } from './TaskDialogRead.vue';
 
 const minDate = addDays(new Date(), 1);
 
@@ -354,6 +354,7 @@ en:
     details: 'Details'
     template: 'Template'
   task:
+    lastRun: 'Last run'
     nextRun: 'Next run'
   item:
     active: 'Active'
@@ -377,6 +378,7 @@ fr:
     template: 'Modèle'
   task:
     lastRun: 'Dernière itération'
+    nextRun: 'Prochaine itération'
   item:
     active: 'Actif'
     inactive: 'Inactif'
