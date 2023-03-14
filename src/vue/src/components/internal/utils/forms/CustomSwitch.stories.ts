@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue';
-import CustomSwitch from '.';
+import CustomSwitch from './CustomSwitch.vue';
 
 const meta: Meta<typeof CustomSwitch> = {
   title: 'Utils (Internal)/CustomSwitch',

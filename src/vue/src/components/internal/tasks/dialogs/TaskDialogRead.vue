@@ -132,7 +132,6 @@
 import type { institutions, tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
-import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
 
 type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTemplate };
 
@@ -143,7 +142,8 @@ export const tabs = [
 ] as const;
 
 export default defineComponent({
-  components: { CustomSwitch },
+
+
   props: {
     value: {
       type: Boolean,

@@ -159,13 +159,12 @@ import { addDays } from 'date-fns';
 import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
-import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
 import { tabs } from './TaskDialogRead.vue';
 
 type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTemplate };
 
 export default defineComponent({
-  components: { CustomSwitch },
+  
   props: {
     value: {
       type: Boolean,

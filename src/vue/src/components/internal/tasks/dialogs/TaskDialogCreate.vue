@@ -154,13 +154,12 @@ import { addDays } from 'date-fns';
 import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import type { CustomTaskTemplate } from '~/lib/templates/customTemplates';
-import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
 import { tabs } from './TaskDialogRead.vue';
 
 const minDate = addDays(new Date(), 1);
 
 export default defineComponent({
-  components: { CustomSwitch },
+
   props: {
     value: {
       type: Boolean,

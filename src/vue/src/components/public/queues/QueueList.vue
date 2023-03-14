@@ -51,7 +51,6 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
 import type { queues } from 'ezreeport-sdk-js';
 
 interface QueueItem {
@@ -60,9 +59,9 @@ interface QueueItem {
 }
 
 export default defineComponent({
-  components: {
-    CustomSwitch,
-  },
+
+
+
   data: () => ({
     queues: [] as queues.Queue[],
     openedQueues: {} as Record<string, boolean>,
