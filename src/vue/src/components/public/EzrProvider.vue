@@ -7,6 +7,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import * as sdk from 'ezreeport-sdk-js';
+import { type InjectedEzReeport, InjectionEzReeportKey } from '~/mixins/ezr';
 
 export default defineComponent({
   props: {
@@ -19,15 +20,15 @@ export default defineComponent({
       default: import.meta.env.VITE_INSTITUTIONS_LOGO_URL,
     },
   },
-  data: () => ({
+  data: (): InjectedEzReeport['data'] => ({
     ready: false,
     auth: {
-      permissions: undefined as sdk.auth.Permissions | undefined,
-      user: undefined as sdk.auth.User | undefined,
+      permissions: undefined,
+      user: undefined,
     },
     institutions: {
       logoUrl: '',
-      data: [] as sdk.institutions.Institution[],
+      data: [],
     },
   }),
   watch: {
@@ -68,7 +69,7 @@ export default defineComponent({
     );
 
     return {
-      $ezReeport,
+      [InjectionEzReeportKey]: $ezReeport,
     };
   },
   mounted() {
@@ -79,7 +80,6 @@ export default defineComponent({
     // and it can be before we set the correct URL.
     // ? maybe a v-if on each public component is better tha here
     this.ready = true;
-    // TODO: $ezR in TS is not supported
   },
   methods: {
     /**

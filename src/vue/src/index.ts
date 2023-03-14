@@ -12,4 +12,6 @@ export default {
   },
 };
 
-export type InjectedEzRComponents = typeof components;
+export { default as ezReeportMixin } from './mixins/ezr';
+
+export type GlobalEzRComponents = typeof components;

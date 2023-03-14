@@ -89,6 +89,7 @@ import type { history, institutions, tasks } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 import type { DataOptions } from 'vuetify';
 import type { DataTableHeader } from '~/types/vuetify';
+import ezReeportMixin from '~/mixins/ezr';
 
 type AnyHistory = history.History | history.HistoryWithTask;
 
@@ -113,7 +114,7 @@ interface HistoryItem {
 const today = new Date();
 
 export default defineComponent({
-  inject: ['$ezReeport'],
+  mixins: [ezReeportMixin],
   props: {
     history: {
       type: Array as PropType<AnyHistory[]>,

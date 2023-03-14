@@ -35,9 +35,9 @@
 
               <CustomSwitch
                 v-if="(perms.start && perms.stop)"
-                :input-value="item.isRunning"
+                :value="item.isRunning"
                 :disabled="loading"
-                :label="$t(item.isRunning ? 'item.active' : 'item.inactive')"
+                :label="$t(item.isRunning ? 'item.active' : 'item.inactive').toString()"
                 reverse
                 class="mr-4"
                 @click.stop="updateCronStatus(item)"
@@ -83,6 +83,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import type { crons } from 'ezreeport-sdk-js';
+import ezReeportMixin from '~/mixins/ezr';
 
 type CronAction = typeof crons.startCron | typeof crons.stopCron | typeof crons.forceCron;
 
@@ -100,7 +101,7 @@ interface CronItem {
 }
 
 export default defineComponent({
-  inject: ['$ezReeport'],
+  mixins: [ezReeportMixin],
   data: () => ({
     crons: [] as crons.Cron[],
     openedCrons: {} as Record<string, boolean>,

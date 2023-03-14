@@ -124,9 +124,10 @@ import {
   type CustomTaskTemplate,
   type CustomTemplate,
 } from '~/lib/templates/customTemplates';
+import ezReeportMixin from '~/mixins/ezr';
 
 export default defineComponent({
-  inject: ['$ezReeport'],
+  mixins: [ezReeportMixin],
   props: {
     template: {
       type: Object as PropType<AnyCustomTemplate>,

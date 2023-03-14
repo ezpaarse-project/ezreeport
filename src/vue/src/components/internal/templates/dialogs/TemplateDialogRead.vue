@@ -37,11 +37,12 @@ import {
   addAdditionalDataToLayouts,
   type CustomTemplate,
 } from '~/lib/templates/customTemplates';
+import ezReeportMixin from '~/mixins/ezr';
 
 type CustomFullTemplate = Omit<templates.FullTemplate, 'template'> & { template: CustomTemplate };
 
 export default defineComponent({
-  inject: ['$ezReeport'],
+  mixins: [ezReeportMixin],
   props: {
     value: {
       type: Boolean,

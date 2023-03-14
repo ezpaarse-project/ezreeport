@@ -131,6 +131,7 @@
 <script lang="ts">
 import type { queues } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
+import ezReeportMixin from '~/mixins/ezr';
 
 const tabs = [
   { key: 'data' },
@@ -138,7 +139,7 @@ const tabs = [
 ] as const;
 
 export default defineComponent({
-  inject: ['$ezReeport'],
+  mixins: [ezReeportMixin],
   props: {
     value: {
       type: Boolean,

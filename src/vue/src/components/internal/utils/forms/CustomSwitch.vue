@@ -6,7 +6,7 @@
     ]"
   >
     <v-switch
-      :input-value="inputValue"
+      :input-value="value"
       :readonly="readonly"
       :label="label"
       :disabled="disabled"
@@ -25,7 +25,7 @@ export default defineComponent({
     click: (event: MouseEvent) => !!event,
   },
   props: {
-    inputValue: {
+    value: {
       type: Boolean,
       required: true,
     },

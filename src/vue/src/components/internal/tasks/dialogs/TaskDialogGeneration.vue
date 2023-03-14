@@ -160,11 +160,12 @@ import { addDays, differenceInDays, min } from 'date-fns';
 import type { tasks, reports } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 import { calcPeriod, type Period } from '~/lib/tasks/recurrence';
+import ezReeportMixin from '~/mixins/ezr';
 
 const today = new Date();
 
 export default defineComponent({
-  inject: ['$ezReeport'],
+  mixins: [ezReeportMixin],
   props: {
     value: {
       type: Boolean,

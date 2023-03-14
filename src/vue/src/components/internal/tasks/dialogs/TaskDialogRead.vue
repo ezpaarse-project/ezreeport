@@ -18,9 +18,9 @@
 
         <CustomSwitch
           v-if="task"
-          :input-value="task.enabled"
+          :value="task.enabled"
           :readonly="!perms.enable || !perms.disable"
-          :label="$t(task?.enabled ? 'item.active' : 'item.inactive')"
+          :label="$t(task?.enabled ? 'item.active' : 'item.inactive').toString()"
           :disabled="loading"
           class="text-body-2"
           reverse
@@ -132,6 +132,7 @@
 import type { institutions, tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
+import ezReeportMixin from '~/mixins/ezr';
 
 type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTemplate };
 
@@ -142,7 +143,7 @@ export const tabs = [
 ] as const;
 
 export default defineComponent({
-  inject: ['$ezReeport'],
+  mixins: [ezReeportMixin],
   props: {
     value: {
       type: Boolean,

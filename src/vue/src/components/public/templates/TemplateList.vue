@@ -41,9 +41,10 @@
 <script lang="ts">
 import type { templates } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
+import ezReeportMixin from '~/mixins/ezr';
 
 export default defineComponent({
-  inject: ['$ezReeport'],
+  mixins: [ezReeportMixin],
   data: () => ({
     readTemplateDialogShown: false,
 

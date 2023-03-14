@@ -58,6 +58,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import type { institutions } from 'ezreeport-sdk-js';
+import ezReeportMixin from '~/mixins/ezr';
 
 export interface InstitutionItem {
   id: string,
@@ -68,7 +69,7 @@ export interface InstitutionItem {
 }
 
 export default defineComponent({
-  inject: ['$ezReeport'],
+  mixins: [ezReeportMixin],
   props: {
     value: {
       type: String,

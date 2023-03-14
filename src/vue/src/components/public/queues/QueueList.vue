@@ -28,9 +28,9 @@
 
               <CustomSwitch
                 v-if="(perms.resume && perms.pause)"
-                :input-value="item.isActive"
+                :value="item.isActive"
                 :disabled="loading"
-                :label="$t(item.isActive ? 'item.active' : 'item.inactive')"
+                :label="$t(item.isActive ? 'item.active' : 'item.inactive').toString()"
                 reverse
                 class="mr-4"
                 @click.stop="updateQueueStatus(item)"
@@ -52,6 +52,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import type { queues } from 'ezreeport-sdk-js';
+import ezReeportMixin from '~/mixins/ezr';
 
 interface QueueItem {
   name: string,
@@ -59,7 +60,7 @@ interface QueueItem {
 }
 
 export default defineComponent({
-  inject: ['$ezReeport'],
+  mixins: [ezReeportMixin],
   data: () => ({
     queues: [] as queues.Queue[],
     openedQueues: {} as Record<string, boolean>,

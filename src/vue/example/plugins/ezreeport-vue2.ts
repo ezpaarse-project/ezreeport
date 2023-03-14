@@ -1,8 +1,8 @@
 import Vue from 'vue';
-import ezReeportVuePlugin, { type InjectedEzRComponents } from 'ezreeport-vue';
+import ezReeportVuePlugin, { type GlobalEzRComponents } from 'ezreeport-vue';
 
 declare module 'vue' {
-  export interface GlobalComponents extends InjectedEzRComponents {}
+  export interface GlobalComponents extends GlobalEzRComponents {}
 }
 
 Vue.use(ezReeportVuePlugin);

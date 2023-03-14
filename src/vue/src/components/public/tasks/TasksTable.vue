@@ -79,9 +79,9 @@
 
         <template #[`item.enabled`]="{ value: enabled, item }">
           <CustomSwitch
-            :input-value="enabled"
+            :value="enabled"
             :readonly="!perms.enable || !perms.disable"
-            :label="$t(enabled ? 'item.active' : 'item.inactive')"
+            :label="$t(enabled ? 'item.active' : 'item.inactive').toString()"
             :disabled="loading"
             reverse
             @click.stop="toggleTask(item)"
@@ -121,6 +121,7 @@ import type { institutions, tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import type { DataOptions } from 'vuetify';
 import type { DataTableHeader } from '~/types/vuetify';
+import ezReeportMixin from '~/mixins/ezr';
 
 interface TaskItem {
   id: string,
@@ -132,7 +133,7 @@ interface TaskItem {
 }
 
 export default defineComponent({
-  inject: ['$ezReeport'],
+  mixins: [ezReeportMixin],
   data: () => ({
     readTaskDialogShown: false,
     createTaskDialogShown: false,

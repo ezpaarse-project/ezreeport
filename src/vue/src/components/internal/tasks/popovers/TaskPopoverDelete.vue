@@ -52,9 +52,10 @@
 <script lang="ts">
 import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
+import ezReeportMixin from '~/mixins/ezr';
 
 export default defineComponent({
-  inject: ['$ezReeport'],
+  mixins: [ezReeportMixin],
   props: {
     value: {
       type: Boolean,

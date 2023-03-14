@@ -41,9 +41,10 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { ezReeportMixin } from 'ezreeport-vue';
 
 export default defineComponent({
-  inject: ['$ezReeport'],
+  mixins: [ezReeportMixin],
   data: () => ({
     locale: 'fr',
     locales: ['fr', 'en'],

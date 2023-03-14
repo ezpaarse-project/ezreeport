@@ -58,6 +58,7 @@ import { defineComponent } from 'vue';
 import type { queues } from 'ezreeport-sdk-js';
 import { DataTableHeader } from '~/types/vuetify';
 import type { DataOptions } from 'vuetify';
+import ezReeportMixin from '~/mixins/ezr';
 
 type AnyJob = queues.FullJob<unknown, unknown>;
 
@@ -70,7 +71,7 @@ interface JobItem {
 }
 
 export default defineComponent({
-  inject: ['$ezReeport'],
+  mixins: [ezReeportMixin],
   props: {
     queue: {
       type: String,

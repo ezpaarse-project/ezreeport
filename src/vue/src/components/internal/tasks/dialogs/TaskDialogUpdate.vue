@@ -21,7 +21,7 @@
         <CustomSwitch
           v-if="task"
           v-model="task.enabled"
-          :label="$t(task?.enabled ? 'item.active' : 'item.inactive')"
+          :label="$t(task?.enabled ? 'item.active' : 'item.inactive').toString()"
           :disabled="loading"
           class="text-body-2"
           reverse
@@ -159,12 +159,13 @@ import { addDays } from 'date-fns';
 import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
+import ezReeportMixin from '~/mixins/ezr';
 import { tabs } from './TaskDialogRead.vue';
 
 type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTemplate };
 
 export default defineComponent({
-  inject: ['$ezReeport'],
+  mixins: [ezReeportMixin],
   props: {
     value: {
       type: Boolean,

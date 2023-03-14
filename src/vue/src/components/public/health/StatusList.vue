@@ -88,6 +88,7 @@
 import type { health } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { version, name } from '~/../package.json';
+import ezReeportMixin from '~/mixins/ezr';
 
 interface StatusItem {
   name: string,
@@ -97,7 +98,7 @@ interface StatusItem {
 }
 
 export default defineComponent({
-  inject: ['$ezReeport'],
+  mixins: [ezReeportMixin],
   data: () => ({
     statuses: [] as health.PingResult[],
     client: {
