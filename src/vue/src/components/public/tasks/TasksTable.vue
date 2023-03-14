@@ -426,7 +426,7 @@ en:
 fr:
   title: 'Liste des rapports périodiques'
   refresh-tooltip: 'Rafraîchir la liste des rapports'
-  header:
+  headers:
     name: 'Nom du rapport'
     institution: 'Établissement'
     recurrence: 'Fréquence'
