@@ -58,6 +58,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import type { institutions } from 'ezreeport-sdk-js';
+import ezReeportMixin from '~/mixins/ezr';
 
 export interface InstitutionItem {
   id: string,
@@ -68,6 +69,7 @@ export interface InstitutionItem {
 }
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   props: {
     value: {
       type: String,
@@ -91,10 +93,10 @@ export default defineComponent({
   }),
   computed: {
     defaultInstitution() {
-      return this.$ezReeport.auth.user?.institution;
+      return this.$ezReeport.data.auth.user?.institution;
     },
     items(): InstitutionItem[] {
-      const items = this.$ezReeport.institutions.data
+      const items = this.$ezReeport.data.institutions.data
         .map(this.parseInstitution)
         .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -111,7 +113,7 @@ export default defineComponent({
       // return items;
     },
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         read: perms?.['institutions-get'],
       };
@@ -119,7 +121,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
   },
@@ -133,7 +135,7 @@ export default defineComponent({
     async fetch(force = false) {
       this.loading = true;
       try {
-        this.$ezReeport.institutions.fetch(force);
+        this.$ezReeport.fetchInstitutions(force);
       } catch (error) {
         this.error = (error as Error).message;
       }

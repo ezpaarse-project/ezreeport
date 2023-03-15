@@ -6,6 +6,10 @@ const config: NuxtConfig = {
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,
 
+  css: [
+    'ezreeport-vue/dist/style.css',
+  ],
+
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
     '~/plugins/ezreeport-vue2.ts',
@@ -17,7 +21,18 @@ const config: NuxtConfig = {
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
   buildModules: [
     // https://go.nuxtjs.dev/typescript
-    '@nuxt/typescript-build',
+    [
+      '@nuxt/typescript-build',
+      {
+        typeCheck: {
+          issue: {
+            exclude: [
+              { file: '../src/**/*' },
+            ],
+          },
+        },
+      },
+    ],
     // https://go.nuxtjs.dev/vuetify
     '@nuxtjs/vuetify',
   ],
@@ -29,6 +44,7 @@ const config: NuxtConfig = {
 
   i18n: {
     defaultLocale: 'fr',
+    vueI18nLoader: true,
   },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
@@ -38,6 +54,15 @@ const config: NuxtConfig = {
       dark: true,
       themes: {
         dark: {
+          primary: colors.purple.darken2,
+          accent: colors.grey.darken3,
+          secondary: colors.amber.darken3,
+          info: colors.teal.lighten1,
+          warning: colors.amber.base,
+          error: colors.deepOrange.accent4,
+          success: colors.green.accent3,
+        },
+        light: {
           primary: colors.purple.darken2,
           accent: colors.grey.darken3,
           secondary: colors.amber.darken3,

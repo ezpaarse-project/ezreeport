@@ -18,9 +18,9 @@
 
         <CustomSwitch
           v-if="task"
-          :input-value="task.enabled"
+          :value="task.enabled"
           :readonly="!perms.enable || !perms.disable"
-          :label="$t(task?.enabled ? 'item.active' : 'item.inactive')"
+          :label="$t(task?.enabled ? 'item.active' : 'item.inactive').toString()"
           :disabled="loading"
           class="text-body-2"
           reverse
@@ -132,7 +132,7 @@
 import type { institutions, tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
-import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
+import ezReeportMixin from '~/mixins/ezr';
 
 type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTemplate };
 
@@ -143,7 +143,7 @@ export const tabs = [
 ] as const;
 
 export default defineComponent({
-  components: { CustomSwitch },
+  mixins: [ezReeportMixin],
   props: {
     value: {
       type: Boolean,
@@ -173,7 +173,7 @@ export default defineComponent({
      * Validation rules
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readOne: perms?.['tasks-get-task'],
         update: perms?.['tasks-put-task'],
@@ -188,7 +188,7 @@ export default defineComponent({
      * User permissions
      */
     institution(): institutions.Institution | undefined {
-      return this.$ezReeport.institutions.data.find(({ id }) => id === this.task?.institution);
+      return this.$ezReeport.data.institutions.data.find(({ id }) => id === this.task?.institution);
     },
     /**
      * Max Width of the dialog
@@ -202,7 +202,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
       this.fetchInstitutions();
     },
@@ -221,7 +221,7 @@ export default defineComponent({
     async fetchInstitutions() {
       this.loading = true;
       try {
-        this.$ezReeport.institutions.fetch();
+        this.$ezReeport.fetchInstitutions();
       } catch (error) {
         this.error = (error as Error).message;
       }
@@ -239,6 +239,9 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.tasks.getTask(this.id);
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
 
         // Add additional data
         content.template.inserts = addAdditionalDataToLayouts(content.template.inserts ?? []);
@@ -320,7 +323,10 @@ en:
     inactive: 'Inactive'
   actions:
     generate: 'Generate'
+  errors:
+    no_data: 'An error occurred when fetching data'
 fr:
+  refresh-tooltip: 'Rafraîchir la tâche'
   headers:
     institution: 'Institution'
     targets: 'Destinataires'
@@ -337,4 +343,6 @@ fr:
     inactive: 'Inactif'
   actions:
     generate: 'Générer'
-  </i18n>
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
+</i18n>

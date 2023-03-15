@@ -131,6 +131,7 @@
 <script lang="ts">
 import type { queues } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
+import ezReeportMixin from '~/mixins/ezr';
 
 const tabs = [
   { key: 'data' },
@@ -138,6 +139,7 @@ const tabs = [
 ] as const;
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   props: {
     value: {
       type: Boolean,
@@ -171,7 +173,7 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readOne: perms?.['queues-get-queue-jobs-jobId'],
 
@@ -300,6 +302,9 @@ export default defineComponent({
           this.queue,
           this.job.id,
         );
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
 
         this.$emit('updated', content);
         this.$emit('input', false);
@@ -370,6 +375,8 @@ en:
     ended: 'Ended at'
   actions:
     rerun: 'Rerun'
+  errors:
+    no_data: 'An error occurred when fetching data'
 fr:
   title: 'Job de {queue} #{id}'
   refresh-tooltip: 'Rafraîchir le job'
@@ -385,4 +392,6 @@ fr:
     ended: 'Fini le'
   actions:
     rerun: 'Relancer'
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>

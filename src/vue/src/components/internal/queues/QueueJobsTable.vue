@@ -58,6 +58,7 @@ import { defineComponent } from 'vue';
 import type { queues } from 'ezreeport-sdk-js';
 import { DataTableHeader } from '~/types/vuetify';
 import type { DataOptions } from 'vuetify';
+import ezReeportMixin from '~/mixins/ezr';
 
 type AnyJob = queues.FullJob<unknown, unknown>;
 
@@ -70,6 +71,7 @@ interface JobItem {
 }
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   props: {
     queue: {
       type: String,
@@ -94,7 +96,7 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readAll: perms?.['queues-get-queue-jobs'],
         readOne: perms?.['queues-get-queue-jobs-jobId'],
@@ -135,7 +137,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
   },
@@ -166,6 +168,10 @@ export default defineComponent({
             count: this.options.itemsPerPage,
           },
         );
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
+
         this.jobs = content;
         this.totalItems = meta.total;
 

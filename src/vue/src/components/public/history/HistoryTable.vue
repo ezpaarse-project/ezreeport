@@ -37,8 +37,10 @@
 import type { history } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { DataOptions, DataPagination } from 'vuetify';
+import ezReeportMixin from '~/mixins/ezr';
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   data: () => ({
     interval: undefined as NodeJS.Timer | undefined,
 
@@ -62,7 +64,7 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readAll: perms?.['history-get'],
       };
@@ -98,7 +100,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
   },
@@ -135,6 +137,10 @@ export default defineComponent({
             },
             this.currentInstitution || undefined,
           );
+          if (!content) {
+            throw new Error(this.$t('errors.no_data').toString());
+          }
+
           this.history = content;
           this.paginationData.page = page;
           this.paginationData.itemsLength = meta.total;

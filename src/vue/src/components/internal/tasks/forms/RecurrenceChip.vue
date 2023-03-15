@@ -26,10 +26,12 @@
 <script lang="ts">
 import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
+import ezReeportMixin from '~/mixins/ezr';
 
 export type Sizes = 'x-small' | 'small' | 'normal' | 'large' | 'x-large';
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   props: {
     value: {
       type: String as PropType<tasks.Recurrence>,

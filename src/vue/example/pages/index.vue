@@ -1,34 +1,28 @@
 <template>
-  <v-row
-    justify="center"
-    align="center"
-  >
-    <v-btn @click="changeLocale">
-      {{ locale }}
-    </v-btn>
+  <v-row>
     <v-col>
-      <v-card>
-        <ezr-task-table />
-      </v-card>
+      <ezr-status-list />
     </v-col>
+
+    <v-col>
+      <ezr-cron-list />
+    </v-col>
+
+    <v-col>
+      <ezr-queue-list />
+    </v-col>
+
+    <v-col>
+      <ezr-template-list />
+    </v-col>
+
+    <v-col>
+      <ezr-task-table />
+    </v-col>
+
+    <v-col>
+      <ezr-history-table />
+    </v-col>
+
   </v-row>
 </template>
-
-<script lang="ts">
-import { defineComponent } from 'vue';
-
-export default defineComponent({
-  data: () => ({
-    locale: 'fr',
-  }),
-  mounted() {
-    this.$ezReeport.sdk.auth.login(this.$config.ezMesureToken);
-  },
-  methods: {
-    changeLocale() {
-      this.locale = this.locale === 'en' ? 'fr' : 'en';
-      this.$i18n.setLocale(this.locale);
-    },
-  },
-});
-</script>

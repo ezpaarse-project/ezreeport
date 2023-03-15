@@ -21,7 +21,7 @@
         <CustomSwitch
           v-if="task"
           v-model="task.enabled"
-          :label="$t(task?.enabled ? 'item.active' : 'item.inactive')"
+          :label="$t(task?.enabled ? 'item.active' : 'item.inactive').toString()"
           :disabled="loading"
           class="text-body-2"
           reverse
@@ -154,13 +154,13 @@ import { addDays } from 'date-fns';
 import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import type { CustomTaskTemplate } from '~/lib/templates/customTemplates';
-import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
+import ezReeportMixin from '~/mixins/ezr';
 import { tabs } from './TaskDialogRead.vue';
 
 const minDate = addDays(new Date(), 1);
 
 export default defineComponent({
-  components: { CustomSwitch },
+  mixins: [ezReeportMixin],
   props: {
     value: {
       type: Boolean,
@@ -171,12 +171,12 @@ export default defineComponent({
     input: (show: boolean) => show !== undefined,
     created: (task: tasks.FullTask) => !!task,
   },
-  data: (vm) => ({
+  data: () => ({
     task: {
       name: '',
       template: { extends: 'basic' } as CustomTaskTemplate,
       targets: [],
-      recurrence: vm.$ezReeport.sdk.tasks.Recurrence.DAILY,
+      recurrence: 'DAILY' as tasks.Recurrence,
       institution: '',
       nextRun: minDate,
       enabled: true,
@@ -232,7 +232,7 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readOne: perms?.['tasks-get-task'],
         create: perms?.['tasks-post'],
@@ -262,7 +262,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.resetInstitution();
     },
     id() {
@@ -285,7 +285,7 @@ export default defineComponent({
      * Reset institution value
      */
     resetInstitution() {
-      this.task.institution = this.$ezReeport.auth.user?.institution ?? '';
+      this.task.institution = this.$ezReeport.data.auth.user?.institution ?? '';
     },
     /**
      * Save and edit task
@@ -354,6 +354,7 @@ en:
     details: 'Details'
     template: 'Template'
   task:
+    lastRun: 'Last run'
     nextRun: 'Next run'
   item:
     active: 'Active'
@@ -377,6 +378,7 @@ fr:
     template: 'Modèle'
   task:
     lastRun: 'Dernière itération'
+    nextRun: 'Prochaine itération'
   item:
     active: 'Actif'
     inactive: 'Inactif'

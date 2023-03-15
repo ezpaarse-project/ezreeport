@@ -41,8 +41,10 @@
 <script lang="ts">
 import type { templates } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
+import ezReeportMixin from '~/mixins/ezr';
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   data: () => ({
     readTemplateDialogShown: false,
 
@@ -57,7 +59,7 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readAll: perms?.['templates-get'],
         readOne: perms?.['templates-get-name(*)'],
@@ -72,7 +74,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
   },
@@ -92,6 +94,10 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.templates.getAllTemplates();
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
+
         this.templates = content;
         this.error = '';
       } catch (error) {
@@ -118,7 +124,11 @@ export default defineComponent({
 en:
   title: 'Templates'
   refresh-tooltip: 'Refresh template list'
+  errors:
+    no_data: 'An error occurred when fetching data'
 fr:
   title: 'Modèles'
   refresh-tooltip: 'Rafraîchir la liste des modèles'
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>

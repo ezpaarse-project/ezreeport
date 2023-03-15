@@ -28,9 +28,9 @@
 
               <CustomSwitch
                 v-if="(perms.resume && perms.pause)"
-                :input-value="item.isActive"
+                :value="item.isActive"
                 :disabled="loading"
-                :label="$t(item.isActive ? 'item.active' : 'item.inactive')"
+                :label="$t(item.isActive ? 'item.active' : 'item.inactive').toString()"
                 reverse
                 class="mr-4"
                 @click.stop="updateQueueStatus(item)"
@@ -51,8 +51,8 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
 import type { queues } from 'ezreeport-sdk-js';
+import ezReeportMixin from '~/mixins/ezr';
 
 interface QueueItem {
   name: string,
@@ -60,9 +60,7 @@ interface QueueItem {
 }
 
 export default defineComponent({
-  components: {
-    CustomSwitch,
-  },
+  mixins: [ezReeportMixin],
   data: () => ({
     queues: [] as queues.Queue[],
     openedQueues: {} as Record<string, boolean>,
@@ -72,7 +70,7 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readAll: perms?.['queues-get'],
 
@@ -94,7 +92,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
   },
@@ -114,6 +112,9 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.queues.getAllQueues();
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
 
         this.queues = content;
         this.error = '';
@@ -182,6 +183,8 @@ en:
   item:
     active: 'Active'
     inactive: 'Inactive'
+  errors:
+    no_data: 'An error occurred when fetching data'
 fr:
   title: 'Queues'
   refresh-tooltip: 'Rafraîchir la liste des queues'
@@ -193,4 +196,6 @@ fr:
   item:
     active: 'Actif'
     inactive: 'Inactif'
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>

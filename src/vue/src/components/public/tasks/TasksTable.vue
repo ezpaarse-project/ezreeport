@@ -79,9 +79,9 @@
 
         <template #[`item.enabled`]="{ value: enabled, item }">
           <CustomSwitch
-            :input-value="enabled"
+            :value="enabled"
             :readonly="!perms.enable || !perms.disable"
-            :label="$t(enabled ? 'item.active' : 'item.inactive')"
+            :label="$t(enabled ? 'item.active' : 'item.inactive').toString()"
             :disabled="loading"
             reverse
             @click.stop="toggleTask(item)"
@@ -119,9 +119,9 @@
 <script lang="ts">
 import type { institutions, tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
-import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
 import type { DataOptions } from 'vuetify';
 import type { DataTableHeader } from '~/types/vuetify';
+import ezReeportMixin from '~/mixins/ezr';
 
 interface TaskItem {
   id: string,
@@ -133,7 +133,7 @@ interface TaskItem {
 }
 
 export default defineComponent({
-  components: { CustomSwitch },
+  mixins: [ezReeportMixin],
   data: () => ({
     readTaskDialogShown: false,
     createTaskDialogShown: false,
@@ -188,13 +188,13 @@ export default defineComponent({
       ];
     },
     institutions(): institutions.Institution[] {
-      return this.$ezReeport.institutions.data;
+      return this.$ezReeport.data.institutions.data;
     },
     items() {
       return this.tasks.map(this.parseTask);
     },
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readAll: perms?.['tasks-get'],
         readOne: perms?.['tasks-get-task'],
@@ -212,7 +212,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
       this.fetchInstitutions();
     },
@@ -228,7 +228,7 @@ export default defineComponent({
     async fetchInstitutions() {
       this.loading = true;
       try {
-        this.$ezReeport.institutions.fetch();
+        this.$ezReeport.fetchInstitutions();
       } catch (error) {
         this.error = (error as Error).message;
       }
@@ -264,6 +264,10 @@ export default defineComponent({
             },
             this.currentInstitution || undefined,
           );
+          if (!content) {
+            throw new Error(this.$t('errors.no_data').toString());
+          }
+
           this.tasks = content;
           this.totalItems = meta.total;
 
@@ -423,7 +427,7 @@ en:
 fr:
   title: 'Liste des rapports périodiques'
   refresh-tooltip: 'Rafraîchir la liste des rapports'
-  header:
+  headers:
     name: 'Nom du rapport'
     institution: 'Établissement'
     recurrence: 'Fréquence'

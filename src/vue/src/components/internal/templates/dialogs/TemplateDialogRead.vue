@@ -37,10 +37,12 @@ import {
   addAdditionalDataToLayouts,
   type CustomTemplate,
 } from '~/lib/templates/customTemplates';
+import ezReeportMixin from '~/mixins/ezr';
 
 type CustomFullTemplate = Omit<templates.FullTemplate, 'template'> & { template: CustomTemplate };
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   props: {
     value: {
       type: Boolean,
@@ -69,7 +71,7 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readOne: perms?.['templates-get-name(*)'],
       };
@@ -77,7 +79,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
     name() {
@@ -100,6 +102,9 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.templates.getTemplate(this.name);
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
 
         // Add additional data
         content.template.layouts = addAdditionalDataToLayouts(content.template.layouts ?? []);
@@ -122,6 +127,10 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   refresh-tooltip: 'Refresh template'
+  errors:
+    no_data: 'An error occurred when fetching data'
 fr:
   refresh-tooltip: 'Rafraîchir le modèle'
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>

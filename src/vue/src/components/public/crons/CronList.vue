@@ -35,9 +35,9 @@
 
               <CustomSwitch
                 v-if="(perms.start && perms.stop)"
-                :input-value="item.isRunning"
+                :value="item.isRunning"
                 :disabled="loading"
-                :label="$t(item.isRunning ? 'item.active' : 'item.inactive')"
+                :label="$t(item.isRunning ? 'item.active' : 'item.inactive').toString()"
                 reverse
                 class="mr-4"
                 @click.stop="updateCronStatus(item)"
@@ -83,7 +83,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import type { crons } from 'ezreeport-sdk-js';
-import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
+import ezReeportMixin from '~/mixins/ezr';
 
 type CronAction = typeof crons.startCron | typeof crons.stopCron | typeof crons.forceCron;
 
@@ -101,9 +101,7 @@ interface CronItem {
 }
 
 export default defineComponent({
-  components: {
-    CustomSwitch,
-  },
+  mixins: [ezReeportMixin],
   data: () => ({
     crons: [] as crons.Cron[],
     openedCrons: {} as Record<string, boolean>,
@@ -113,7 +111,7 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readAll: perms?.['crons-get'],
         readOne: perms?.['crons-get-cron'],
@@ -129,7 +127,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
   },
@@ -149,6 +147,10 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.crons.getAllCrons();
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
+
         this.crons = content;
         this.error = '';
       } catch (error) {
@@ -237,6 +239,8 @@ en:
   item:
     active: 'Active'
     inactive: 'Inactive'
+  errors:
+    no_data: 'An error occurred when fetching data'
 fr:
   title: 'Crons'
   refresh-tooltip: 'Rafraîchir la liste des crons'
@@ -248,4 +252,6 @@ fr:
   item:
     active: 'Actif'
     inactive: 'Inactif'
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>

@@ -12,8 +12,10 @@
 <script lang="ts">
 import type { institutions } from 'ezreeport-sdk-js';
 import { defineComponent, PropType } from 'vue';
+import ezReeportMixin from '~/mixins/ezr';
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   props: {
     institution: {
       type: Object as PropType<institutions.Institution>,
@@ -27,7 +29,7 @@ export default defineComponent({
       if (!this.institution.logoId) {
         return undefined;
       }
-      return new URL(this.institution.logoId, this.$ezReeport.institutions.logoUrl).href;
+      return new URL(this.institution.logoId, this.$ezReeport.data.institutions.logoUrl).href;
     },
   },
 });

@@ -88,6 +88,7 @@
 import type { health } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { version, name } from '~/../package.json';
+import ezReeportMixin from '~/mixins/ezr';
 
 interface StatusItem {
   name: string,
@@ -97,6 +98,7 @@ interface StatusItem {
 }
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   data: () => ({
     statuses: [] as health.PingResult[],
     client: {
@@ -143,6 +145,10 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.health.checkAllConnectedService();
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
+
         this.statuses = content;
 
         const { content: result } = await this.$ezReeport.sdk.health.getAllConnectedServices();
@@ -184,6 +190,8 @@ en:
     client: 'Client version (SDK: v{sdk})'
     server: 'API version'
     mismatch: 'Client version is not compatible with API version. It may result in unwanted behavior.'
+  errors:
+    no_data: 'An error occurred when fetching data'
 fr:
   title: 'Status'
   refresh-tooltip: 'Rafraîchir la liste des status'
@@ -191,4 +199,6 @@ fr:
     client: 'Version du Client (SDK: v{sdk})'
     server: "Version de l'API"
     mismatch: "La version du client n'est pas compatible avec la version de l'API. Cela peut résulter en un comportement anormal."
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>

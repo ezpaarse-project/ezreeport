@@ -124,8 +124,10 @@ import {
   type CustomTaskTemplate,
   type CustomTemplate,
 } from '~/lib/templates/customTemplates';
+import ezReeportMixin from '~/mixins/ezr';
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   props: {
     template: {
       type: Object as PropType<AnyCustomTemplate>,
@@ -148,7 +150,7 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         readOne: perms?.['templates-get-name(*)'],
       };

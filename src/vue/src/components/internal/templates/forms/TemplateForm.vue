@@ -155,8 +155,10 @@ import {
   type AnyCustomFigure,
   type CustomTaskLayout,
 } from '~/lib/templates/customTemplates';
+import ezReeportMixin from '~/mixins/ezr';
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   props: {
     template: {
       type: Object as PropType<AnyCustomTemplate>,
@@ -188,7 +190,7 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const perms = this.$ezReeport.data.auth.permissions;
       return {
         realAll: perms?.['templates-get'],
         readOne: perms?.['templates-get-name(*)'],
@@ -306,7 +308,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
       this.fetchBase();
     },
@@ -366,6 +368,10 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.templates.getAllTemplates();
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
+
         this.availableTemplates = content.map(({ name }) => name);
         this.error = '';
       } catch (error) {
@@ -520,6 +526,7 @@ en:
   actions:
     see-extends: 'See base'
   errors:
+    no_data: 'An error occurred when fetching data'
     layouts:
       _detail: 'Page {at}: {valid}'
     figures:
@@ -538,6 +545,7 @@ fr:
   actions:
     see-extends: 'Voir la base'
   errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
     layouts:
       _detail: 'Page {at}: {valid}'
     figures:
