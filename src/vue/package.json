@@ -34,7 +34,7 @@
     "build:doc": "storybook build",
     "dev": "storybook dev -p 6006",
     "lint": "eslint --fix src plugins vite.config.ts .storybook",
-    "start": "npm --prefix example run start",
+    "example": "npm --prefix example run dev",
     "watch": "NODE_ENV=production vite build --watch"
   },
   "lint-staged": {

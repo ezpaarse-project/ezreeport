@@ -1,9 +1,8 @@
 /// <reference types="../src/types/env" />
 
-import Vue from 'vue';
+import Vue, { defineComponent } from 'vue';
 import Vuetify from 'vuetify';
 import type { Decorator, Parameters } from '@storybook/vue';
-import { auth as sdkAuth } from 'ezreeport-sdk-js';
 import i18n from './plugins/i18n';
 import vuetify from './plugins/vuetify';
 import ezReeport from '../src';
@@ -17,10 +16,7 @@ Vue.prototype._i18n = i18n;
 
 // Setup ezReeport plugin
 Vue.use(ezReeport);
-if (import.meta.env.VITE_EZMESURE_TOKEN) {
-  sdkAuth.login(import.meta.env.VITE_EZMESURE_TOKEN);
-  console.info('[ezReeport-storybook] Auth token setup');
-} else {
+if (!import.meta.env.VITE_EZMESURE_TOKEN) {
   console.warn('[ezReeport-storybook] Auth token not found');
 }
 
@@ -55,7 +51,7 @@ export const decorators: Decorator[] = [
   (story, context) => {
     const wrapped = story(context);
 
-    return Vue.extend({
+    return defineComponent({
       name: 'StorybookPreview',
       vuetify,
       i18n,
@@ -70,6 +66,9 @@ export const decorators: Decorator[] = [
           default: context.globals.locale,
         },
       },
+      data: () => ({
+        token: import.meta.env.VITE_EZMESURE_TOKEN,
+      }),
       watch: {
         theme: {
           immediate: true,
@@ -86,7 +85,7 @@ export const decorators: Decorator[] = [
       },
       template: `
         <v-app>
-          <ezr-provider>
+          <ezr-provider :token="token">
             <v-container fluid>
               <wrapped />
             </v-container>

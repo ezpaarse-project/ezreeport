@@ -5,12 +5,16 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, type PropType } from 'vue';
 import * as sdk from 'ezreeport-sdk-js';
 import { type InjectedEzReeport, InjectionEzReeportKey } from '~/mixins/ezr';
 
 export default defineComponent({
   props: {
+    token: {
+      type: String as PropType<string | undefined>,
+      default: undefined,
+    },
     api_url: {
       type: String,
       default: import.meta.env.VITE_REPORT_API,
@@ -75,6 +79,9 @@ export default defineComponent({
   mounted() {
     sdk.setup.setURL(this.api_url);
     this.institutions.logoUrl = this.institution_logo_url;
+    if (this.token) {
+      this.login(this.token);
+    }
 
     // Rendering childrens will trigger requests to API
     // and it can be before we set the correct URL.
