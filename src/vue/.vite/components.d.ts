@@ -28,8 +28,6 @@ declare module 'vue' {
     RecurrenceChip: typeof import('./../src/components/internal/tasks/forms/RecurrenceChip.vue')['default']
     RefreshButton: typeof import('./../src/components/internal/utils/RefreshButton.vue')['default']
     RichListItem: typeof import('./../src/components/internal/utils/RichListItem.vue')['default']
-    RouterLink: typeof import('vue-router')['RouterLink']
-    RouterView: typeof import('vue-router')['RouterView']
     SlotItemGrid: typeof import('./../src/components/internal/utils/SlotItemGrid.vue')['default']
     StatusList: typeof import('./../src/components/public/health/StatusList.vue')['default']
     TaskDialogCreate: typeof import('./../src/components/internal/tasks/dialogs/TaskDialogCreate.vue')['default']

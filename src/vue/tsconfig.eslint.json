@@ -6,8 +6,6 @@
   },
   "include": [
     ".storybook/**/*.ts",
-    "example/**/*.vue",
-    "example/**/*.ts",
     "plugins/**/*.ts",
     "plugins/**/*.ts",
     "src/**/*.vue",

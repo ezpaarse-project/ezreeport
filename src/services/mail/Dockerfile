@@ -3,13 +3,14 @@ LABEL maintainer="ezTeam <ezteam@couperin.org>"
 
 WORKDIR /usr/src/report
 
-COPY . ./
 
 # Update APK registry
 RUN apk update \
 	&& apk upgrade -U -a
 
 # Install service dependecies
-RUN npm i --omit=dev
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY . ./
 
 CMD [ "npm", "run", "start" ]

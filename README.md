@@ -38,6 +38,7 @@ npm run setup
   - SDK for ezReeport API
 - `src/vue` (ezreeport-vue)
   - Vue components that use SDK for displaying info
+  - It also contains an example with [Nuxt](https://nuxtjs.org/) at `src/vue/example` (it's not part of the workspace because of webpack issues)
 
 ## Start
 
