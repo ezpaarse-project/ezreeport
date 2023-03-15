@@ -1,3 +1,20 @@
+# ezreeport-vue [1.0.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-vue@1.0.0-beta.2...ezreeport-vue@1.0.0-beta.3) (2023-03-15)
+
+
+### Bug Fixes
+
+* **vue:** added checks when fetching ([0d430c7](https://github.com/ezpaarse-project/ezreeport/commit/0d430c731a68bb55f228a0655be686949468cd26))
+* **vue:** fixed custom switch integration ([6d0645b](https://github.com/ezpaarse-project/ezreeport/commit/6d0645b24ae6fe305445ae3b2085df763b0774ec))
+* **vue:** fixed example build ([caa276b](https://github.com/ezpaarse-project/ezreeport/commit/caa276ba1dd07fa8647c9be233db4c653efbff1b))
+* **vue:** fixed localization of some components ([67616b5](https://github.com/ezpaarse-project/ezreeport/commit/67616b518b28194bbb733e1aa819475fa60e7325))
+* **vue:** fixed localization of task table headers ([e8f7ec8](https://github.com/ezpaarse-project/ezreeport/commit/e8f7ec8df380b40a0f34ffec2fbc094088bd7428))
+
+
+### Features
+
+* **vue:** added page example ([fecf427](https://github.com/ezpaarse-project/ezreeport/commit/fecf4279790fea1d8004f3d563d9d0872a630acc))
+* **vue:** using provider instead of global injected methods ([7ecc342](https://github.com/ezpaarse-project/ezreeport/commit/7ecc3422532ee049de57072fbfb9bece6d905e4e))
+
 # ezreeport-vue [1.0.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-vue@1.0.0-beta.1...ezreeport-vue@1.0.0-beta.2) (2023-03-08)
 
 
