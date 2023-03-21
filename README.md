@@ -67,6 +67,8 @@ npm test
 ## Publish
 
 ```bash
-# Build images and push to registries before this
+# Test, and build a first time to test
+# Generate changelogs, etc. as it will bump version
 npm run publish
+# Build and push to registries
 ```
