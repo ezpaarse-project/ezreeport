@@ -7,7 +7,7 @@ import config from '~/lib/config';
 import glob from '~/lib/glob';
 import { isFulfilled } from '~/lib/utils';
 import { ArgumentError } from '~/types/errors';
-import { layoutSchema, NewLayout } from './layouts';
+import { layoutSchema, type Layout } from './layouts';
 
 const { templatesDir } = config.get('report');
 
@@ -16,16 +16,16 @@ const { templatesDir } = config.get('report');
  *
  *  This interface describe a template in a template file (not in a task's `template` property)
  */
-export interface NewTemplate<
+export interface Template<
  R extends keyof Renderers,
  F extends keyof Fetchers,
 > {
   /**
   * Layouts that compose the template
   *
-  * @see {NewLayout} for more info
+  * @see {Layout} for more info
   */
-  layouts: NewLayout<F>[]
+  layouts: Layout<F>[]
   /**
   * Options passed to the fetcher.
   *
@@ -34,7 +34,7 @@ export interface NewTemplate<
   *
   * @see {fetchers} For more info
   */
-  fetchOptions?: NewLayout<F>['fetchOptions'],
+  fetchOptions?: Layout<F>['fetchOptions'],
   /**
   * Name of the renderer
   *
@@ -53,7 +53,7 @@ export interface NewTemplate<
   { doc: Omit<GeneratorParam<Renderers, R>['doc'], 'period'> },
 }
 
-export type AnyTemplate = NewTemplate<keyof Renderers, keyof Fetchers>;
+export type AnyTemplate = Template<keyof Renderers, keyof Fetchers>;
 
 const templateSchema = Joi.object<AnyTemplate>({
   layouts: Joi.array().items(layoutSchema).required(),
@@ -70,7 +70,7 @@ const templateSchema = Joi.object<AnyTemplate>({
  *
  * @throws If not valid
  */
-export const isNewTemplate = (data: unknown): data is AnyTemplate => {
+export const isTemplate = (data: unknown): data is AnyTemplate => {
   const validation = templateSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Template is not valid: ${validation.error.message}`);
@@ -81,7 +81,7 @@ export const isNewTemplate = (data: unknown): data is AnyTemplate => {
 /**
 * The interface describe options allowed in Task's
 */
-export interface NewTemplateDB<F extends keyof Fetchers> {
+export interface TemplateDB<F extends keyof Fetchers> {
   /**
   * Base template file
   */
@@ -94,16 +94,16 @@ export interface NewTemplateDB<F extends keyof Fetchers> {
   *
   * @see {fetchers} For more info
   */
-  fetchOptions?: NewLayout<F>['fetchOptions'],
+  fetchOptions?: Layout<F>['fetchOptions'],
   /**
   * Additional layouts
   *
-  * @see {NewLayout} for more info
+  * @see {Layout} for more info
   */
-  inserts?: (NewLayout<F> & { at: number })[]
+  inserts?: (Layout<F> & { at: number })[]
 }
 
-export type AnyTemplateDB = NewTemplateDB<keyof Fetchers>;
+export type AnyTemplateDB = TemplateDB<keyof Fetchers>;
 
 export const templateDBSchema = Joi.object<AnyTemplateDB>({
   extends: Joi.string().required(),
@@ -123,7 +123,7 @@ export const templateDBSchema = Joi.object<AnyTemplateDB>({
  *
  * @throws If not valid
  */
-export const isNewTemplateDB = (data: unknown): data is AnyTemplateDB => {
+export const isTemplateDB = (data: unknown): data is AnyTemplateDB => {
   const validation = templateDBSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Template is not valid: ${validation.error.message}`);
@@ -143,7 +143,7 @@ export const getAllTemplates = async () => {
     templates.map(async (path) => {
       // Resolve import
       const template = JSON.parse(await readFile(path, 'utf-8'));
-      if (!isNewTemplate(template)) {
+      if (!isTemplate(template)) {
         // As validation throws an error, this line shouldn't be called
         return {};
       }
@@ -182,7 +182,7 @@ export const getTemplateByName = async (name: string) => {
     throw new Error(`An unexpected error occured: ${(error as Error).message}`);
   }
 
-  if (!isNewTemplate(template)) {
+  if (!isTemplate(template)) {
     // As validation throws an error, this line shouldn't be called
     return {};
   }

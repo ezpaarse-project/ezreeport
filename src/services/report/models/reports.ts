@@ -22,12 +22,12 @@ import { calcNextDate, calcPeriod } from '~/models/recurrence';
 import { ArgumentError, ConflitError } from '~/types/errors';
 import { editTaskByIdWithHistory } from './tasks';
 import {
-  isNewTemplate,
-  isNewTemplateDB,
+  isTemplate,
+  isTemplateDB,
   type AnyTemplate,
   type AnyTemplateDB
 } from './templates';
-import { TypedNamespace, getNamespaceById } from './namespaces';
+import { type TypedNamespace, getNamespaceById } from './namespaces';
 
 const { ttl, templatesDir, outDir } = config.get('report');
 
@@ -248,7 +248,7 @@ export const generateReport = async (
 
     // Parse task template
     const taskTemplate = task.template;
-    if (!isNewTemplateDB(taskTemplate) || (typeof taskTemplate !== 'object' || Array.isArray(taskTemplate))) {
+    if (!isTemplateDB(taskTemplate) || (typeof taskTemplate !== 'object' || Array.isArray(taskTemplate))) {
       // As validation throws an error, this line should be called only if 2nd assertion fails
       throw new ArgumentError("Task's template is not an object");
     }
@@ -261,7 +261,7 @@ export const generateReport = async (
 
     // Resolve import
     const template = JSON.parse(await readFile(extendsPath, 'utf-8'));
-    if (!isNewTemplate(template)) {
+    if (!isTemplate(template)) {
       // As validation throws an error, this line shouldn't be called
       return {} as ReportResult;
     }

@@ -3,12 +3,12 @@ import type { Prisma } from '~/lib/prisma';
 import type { Fetchers } from '~/generators/fetchers';
 import fetchers from '~/generators/fetchers';
 import { ArgumentError } from '~/types/errors';
-import { AnyFigure, figureSchema } from './figures';
+import { type AnyFigure, figureSchema } from './figures';
 
 /**
  * Layout is a page of report
  */
-export interface NewLayout<
+export interface Layout<
  F extends keyof Fetchers,
 > {
   /**
@@ -39,7 +39,7 @@ export interface NewLayout<
   figures: AnyFigure[],
 }
 
-export type AnyLayout = NewLayout<keyof Fetchers>;
+export type AnyLayout = Layout<keyof Fetchers>;
 
 export const layoutSchema = Joi.object<AnyLayout>({
   data: Joi.any(),
@@ -56,7 +56,7 @@ export const layoutSchema = Joi.object<AnyLayout>({
  *
  * @throws If not valid
  */
-export const isNewLayout = (data: unknown): data is AnyLayout => {
+export const isLayout = (data: unknown): data is AnyLayout => {
   const validation = layoutSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Layout is not valid: ${validation.error.message}`);
