@@ -28,15 +28,15 @@ const router = Router()
    */
   .use('/crons', cronsRouter)
   .use('/queues', queuesRouter)
+  .use('/templates', templatesRouter)
 
   /**
-   * Authed routes
+   * Authenticated routes
    */
   .use('/me', authRouter)
   .use('/reports', filesRouter)
   .use('/history', historyRouter)
   .use('/tasks', tasksRouter)
-  .use('/templates', templatesRouter)
 
   /**
    * Other routes

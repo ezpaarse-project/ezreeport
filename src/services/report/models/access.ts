@@ -12,6 +12,11 @@ const accessValues: Record<Access, number> = {
 const accessPerRoute = new Map<string, number>();
 
 /**
+ * Registered routes with admin required or not
+ */
+const adminPerRoute = new Map<string, boolean>();
+
+/**
  * Register route with given access level
  *
  * @param route Route name
@@ -19,6 +24,16 @@ const accessPerRoute = new Map<string, number>();
  */
 export const registerRouteWithAccess = (route: string, access: Access) => {
   accessPerRoute.set(route, accessValues[access]);
+};
+
+/**
+ * Register route with given admin state
+ *
+ * @param route Route name
+ * @param isAdminRequired Is admin required
+ */
+export const registerRoute = (route: string, isAdminRequired: boolean) => {
+  adminPerRoute.set(route, isAdminRequired);
 };
 
 /**
@@ -31,9 +46,9 @@ export const registerRouteWithAccess = (route: string, access: Access) => {
 export const getAccessValue = (access: Access) => accessValues[access];
 
 /**
- * Get allowed routes of a given access's level using registered routes
+ * Get allowed routes of a given access' level using registered routes
  *
- * @param access The access's level
+ * @param access The access' level
  *
  * @returns Routes & if given access is allowed
  */
@@ -44,6 +59,24 @@ export const getAllowedRoutes = (access: Access) => {
   // eslint-disable-next-line no-restricted-syntax
   for (const [route, minAccess] of accessPerRoute) {
     routes.set(route, val >= minAccess);
+  }
+
+  return routes;
+};
+
+/**
+ * Get allowed routes of a given admin state using registered routes
+ *
+ * @param isAdmin The admin state
+ *
+ * @returns Routes & if given admin state is allowed
+ */
+export const getRoutes = (isAdmin: boolean) => {
+  const routes = new Map<string, boolean>();
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const [route, adminRequired] of adminPerRoute) {
+    routes.set(route, isAdmin >= adminRequired);
   }
 
   return routes;

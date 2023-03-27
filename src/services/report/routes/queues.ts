@@ -10,7 +10,6 @@ import {
   retryJob
 } from '~/lib/bull';
 import { CustomRouter } from '~/lib/express-utils';
-import { requireUser, requireAdmin } from '~/middlewares/auth';
 import { Access } from '~/models/access';
 import { HTTPError } from '~/types/errors';
 
@@ -18,32 +17,32 @@ const router = CustomRouter('queues')
   /**
    * Get all possible queues
    */
-  .createRoute('GET /', (_req, _res) => getQueues(), requireUser, requireAdmin)
+  .createAdminRoute('GET /', (_req, _res) => getQueues())
 
   /**
    * Pause specific queue
    */
-  .createRoute('PUT /:queue/pause', async (req, _res) => {
+  .createAdminRoute('PUT /:queue/pause', async (req, _res) => {
     const { queue } = req.params;
     await pauseQueue(queue);
 
     return (await getQueues()).find(({ name }) => name === queue);
-  }, requireUser, requireAdmin)
+  })
 
   /**
    * Resume specific queue
    */
-  .createRoute('PUT /:queue/resume', async (req, _res) => {
+  .createAdminRoute('PUT /:queue/resume', async (req, _res) => {
     const { queue } = req.params;
     await resumeQueue(queue);
 
     return (await getQueues()).find(({ name }) => name === queue);
-  }, requireUser, requireAdmin)
+  })
 
   /**
    * Get jobs of a specific queue
    */
-  .createRoute('GET /:queue/jobs', async (req, _res) => {
+  .createAdminRoute('GET /:queue/jobs', async (req, _res) => {
     const { queue } = req.params;
     const { previous: p = undefined, count = '15' } = req.query;
     const c = +count;
@@ -60,14 +59,14 @@ const router = CustomRouter('queues')
         lastId: jobs.at(-1)?.id,
       },
     };
-  }, requireUser, requireAdmin)
+  })
 
   /**
    * Get specific job info
    *
    * Can't access to other namespace's jobs
    */
-  .createSecuredRoute('GET /:queue/jobs/:jobId', Access.READ, async (req, _res) => {
+  .createNamespacedRoute('GET /:queue/jobs/:jobId', Access.READ, async (req, _res) => {
     const { queue, jobId } = req.params;
     const job = await getJob(queue, jobId);
     if (!job) {
@@ -91,7 +90,7 @@ const router = CustomRouter('queues')
    *
    * Throw an error if job wasn't failed
    */
-  .createSecuredRoute('POST /:queue/jobs/:jobId/retry', Access.READ_WRITE, async (req, _res) => {
+  .createNamespacedRoute('POST /:queue/jobs/:jobId/retry', Access.READ_WRITE, async (req, _res) => {
     const { queue, jobId } = req.params;
     const job = await getJob(queue, jobId);
     if (!job) {

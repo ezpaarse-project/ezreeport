@@ -7,7 +7,7 @@ const router = CustomRouter('history')
   /**
    * List all history entries.
    */
-  .createSecuredRoute('GET /', Access.READ, async (req, _res) => {
+  .createNamespacedRoute('GET /', Access.READ, async (req, _res) => {
     const { previous: p = undefined, count = '15' } = req.query;
     const c = +count;
 

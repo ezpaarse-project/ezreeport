@@ -47,7 +47,7 @@ const router = CustomRouter('tasks')
   /**
    * List all active tasks of authed user's namespace.
    */
-  .createSecuredRoute('GET /', Access.READ, async (req, _res) => {
+  .createNamespacedRoute('GET /', Access.READ, async (req, _res) => {
     const { previous: p = undefined, count = '15' } = req.query;
     const c = +count;
 
@@ -84,7 +84,7 @@ const router = CustomRouter('tasks')
   /**
    * Create a new task
    */
-  .createSecuredRoute('POST /', Access.READ_WRITE, async (req, _res) => {
+  .createNamespacedRoute('POST /', Access.READ_WRITE, async (req, _res) => {
     if (!req.namespaceIds?.includes(req.body.namespace)) {
       throw new HTTPError("The provided namespace doesn't exist or you don't have access to this namespace", StatusCodes.BAD_REQUEST);
     }
@@ -101,7 +101,7 @@ const router = CustomRouter('tasks')
   /**
    * Get specific task
    */
-  .createSecuredRoute('GET /:task', Access.READ, async (req, _res) => {
+  .createNamespacedRoute('GET /:task', Access.READ, async (req, _res) => {
     const { task: id } = req.params;
 
     const task = await getTaskById(id, req.namespaceIds);
@@ -115,7 +115,7 @@ const router = CustomRouter('tasks')
   /**
    * Update a task
    */
-  .createSecuredRoute('PUT /:task', Access.READ_WRITE, async (req, _res) => {
+  .createNamespacedRoute('PUT /:task', Access.READ_WRITE, async (req, _res) => {
     const { task: id } = req.params;
 
     const task = await editTaskById(
@@ -135,7 +135,7 @@ const router = CustomRouter('tasks')
   /**
    * Delete a task
    */
-  .createSecuredRoute('DELETE /:task', Access.READ_WRITE, async (req, _res) => {
+  .createNamespacedRoute('DELETE /:task', Access.READ_WRITE, async (req, _res) => {
     const { task: id } = req.params;
 
     const task = await deleteTaskById(id, req.namespaceIds);
@@ -150,7 +150,7 @@ const router = CustomRouter('tasks')
   /**
    * Shorthand to quickly enable a task
    */
-  .createSecuredRoute('PUT /:task/enable', Access.READ_WRITE, async (req, _res) => {
+  .createNamespacedRoute('PUT /:task/enable', Access.READ_WRITE, async (req, _res) => {
     const { task: id } = req.params;
 
     const task = await getTaskById(id, req.namespaceIds);
@@ -180,7 +180,7 @@ const router = CustomRouter('tasks')
   /**
    * Shorthand to quickly disable a task
    */
-  .createSecuredRoute('PUT /:task/disable', Access.READ_WRITE, async (req, _res) => {
+  .createNamespacedRoute('PUT /:task/disable', Access.READ_WRITE, async (req, _res) => {
     const { task: id } = req.params;
 
     const task = await getTaskById(id, req.namespaceIds);
@@ -213,7 +213,7 @@ const router = CustomRouter('tasks')
    * Parameter `test_emails` overrides task emails & enable first level of debug
    * Parameter `debug` is not accessible in PROD and enable second level of debug
    */
-  .createSecuredRoute('POST /:task/run', Access.READ_WRITE, async (req, _res) => {
+  .createNamespacedRoute('POST /:task/run', Access.READ_WRITE, async (req, _res) => {
     const { task: id } = req.params;
     let { test_emails: testEmails } = req.query;
     const {

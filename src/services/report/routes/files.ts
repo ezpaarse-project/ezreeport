@@ -14,7 +14,7 @@ const router = CustomRouter('reports')
   /**
    * Get specific report
    */
-  .createSecuredRoute('GET /:year/:yearMonth/:filename', Access.READ, async (req, res) => {
+  .createNamespacedRoute('GET /:year/:yearMonth/:filename', Access.READ, async (req, res) => {
     const { year, yearMonth, filename } = req.params;
     const reportFilename = filename.replace(/\..*$/, '');
     const basePath = join(outDir, year, yearMonth);

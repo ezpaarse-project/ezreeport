@@ -1,5 +1,4 @@
 import { CustomRouter } from '~/lib/express-utils';
-import { requireAdmin, requireUser } from '~/middlewares/auth';
 import { Access } from '~/models/access';
 import {
   createTemplate,
@@ -10,21 +9,21 @@ const router = CustomRouter('templates')
   /**
    * Get possibles templates
    */
-  .createSecuredRoute('GET /', Access.READ, (_req, _res) => getAllTemplates())
+  .createNamespacedRoute('GET /', Access.READ, (_req, _res) => getAllTemplates())
 
   /**
    * Create template
    */
-  .createRoute('POST /', (req, _res) => {
+  .createAdminRoute('POST /', (req, _res) => {
     const { name, ...data } = req.body;
 
     return createTemplate(name, data);
-  }, requireUser, requireAdmin)
+  })
 
   /**
    * Get specific template
    */
-  .createSecuredRoute('GET /:name(*)', Access.READ, async (req, _res) => {
+  .createNamespacedRoute('GET /:name(*)', Access.READ, async (req, _res) => {
     const { name } = req.params;
 
     const template = await getTemplateByName(name);
@@ -38,7 +37,7 @@ const router = CustomRouter('templates')
   /**
    * Edit template
    */
-  .createRoute('PUT /:name(*)', async (req, _res) => {
+  .createAdminRoute('PUT /:name(*)', async (req, _res) => {
     const { name } = req.params;
 
     const template = await editTemplateByName(name, req.body);
@@ -47,12 +46,12 @@ const router = CustomRouter('templates')
     }
 
     return template;
-  }, requireUser, requireAdmin)
+  })
 
   /**
    * Delete template
    */
-  .createRoute('DELETE /:name(*)', async (req, _res) => {
+  .createAdminRoute('DELETE /:name(*)', async (req, _res) => {
     const { name } = req.params;
 
     const template = await deleteTemplateByName(name);
@@ -61,6 +60,6 @@ const router = CustomRouter('templates')
     }
 
     return template;
-  }, requireUser, requireAdmin);
+  });
 
 export default router;

@@ -1,16 +1,17 @@
 import { CustomRouter } from '~/lib/express-utils';
-import { getAllowedRoutes, Access } from '~/models/access';
+import { requireUser } from '~/middlewares/auth';
+import { getAllowedRoutes, Access, getRoutes } from '~/models/access';
 
 const router = CustomRouter('auth')
   /**
    * Get all user info
    */
-  .createSecuredRoute('GET /', Access.READ, (req, _res) => req.user)
+  .createRoute('GET /', (req, _res) => req.user, requireUser)
 
   /**
    * Get user's permissions per route
    */
-  .createSecuredRoute('GET /permissions', Access.READ, (req, _res) => {
+  .createNamespacedRoute('GET /permissions', Access.READ, (req, _res) => {
     const map = new Map<string, Record<string, boolean>>();
 
     // eslint-disable-next-line no-restricted-syntax
@@ -23,7 +24,10 @@ const router = CustomRouter('auth')
       );
     }
 
-    return Object.fromEntries(map);
+    return {
+      general: Object.fromEntries(getRoutes(req.user?.isAdmin ?? false)),
+      namespaces: Object.fromEntries(map),
+    };
   });
 
 export default router;

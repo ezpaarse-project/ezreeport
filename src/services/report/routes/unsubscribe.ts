@@ -10,7 +10,7 @@ const router = CustomRouter('unsub')
   /**
    * Get unsubscribe static UI
    */
-  .createRoute('GET /:unsubId', async (req, res) => {
+  .createBasicRoute('GET /:unsubId', async (req, res) => {
     const { unsubId } = req.params;
 
     const [taskId64, to64] = decodeURIComponent(unsubId).split(':');

@@ -16,7 +16,7 @@ const router = CustomRouter('namespaces')
   /**
    * List all namespaces
    */
-  .createRoute('GET /', async (req, _res) => {
+  .createBasicRoute('GET /', async (req, _res) => {
     const { previous: p = undefined, count = '15' } = req.query;
     const c = +count;
 
@@ -42,7 +42,7 @@ const router = CustomRouter('namespaces')
   /**
    * Create a new namespace
    */
-  .createRoute('POST /', async (req, _res) => ({
+  .createBasicRoute('POST /', async (req, _res) => ({
     data: await createNamespace(
       req.body,
     ),
@@ -52,7 +52,7 @@ const router = CustomRouter('namespaces')
   /**
    * Get specific namespace
    */
-  .createRoute('GET /:namespace', async (req, _res) => {
+  .createBasicRoute('GET /:namespace', async (req, _res) => {
     const { namespace: id } = req.params;
 
     const namespace = await getNamespaceById(id);
@@ -66,7 +66,7 @@ const router = CustomRouter('namespaces')
   /**
    * Update a namespace
    */
-  .createRoute('PUT /:namespace', async (req, _res) => {
+  .createBasicRoute('PUT /:namespace', async (req, _res) => {
     const { namespace: id } = req.params;
 
     const namespace = await editNamespaceById(id, req.body);
@@ -80,7 +80,7 @@ const router = CustomRouter('namespaces')
   /**
    * Delete a namespace
    */
-  .createRoute('DELETE /:namespace', async (req, _res) => {
+  .createBasicRoute('DELETE /:namespace', async (req, _res) => {
     const { namespace: id } = req.params;
 
     const namespace = await deleteNamespaceById(id);
@@ -94,7 +94,7 @@ const router = CustomRouter('namespaces')
   /**
    * Add a user to a namespace
    */
-  .createRoute('POST /:namespace/members', async (req, _res) => {
+  .createBasicRoute('POST /:namespace/members', async (req, _res) => {
     const { namespace: id } = req.params;
     const { username, ...data } = req.body;
 
@@ -106,7 +106,7 @@ const router = CustomRouter('namespaces')
   /**
    * Update a user of a namespace
    */
-  .createRoute('PUT /:namespace/members/:username', async (req, _res) => {
+  .createBasicRoute('PUT /:namespace/members/:username', async (req, _res) => {
     const { namespace: id, username } = req.params;
 
     await updateUserOfNamespace(username, id, req.body);
@@ -117,7 +117,7 @@ const router = CustomRouter('namespaces')
   /**
    * Delete a user from a namespace
    */
-  .createRoute('DELETE /:namespace/members/:username', async (req, _res) => {
+  .createBasicRoute('DELETE /:namespace/members/:username', async (req, _res) => {
     const { namespace: id, username } = req.params;
 
     await removeUserFromNamespace(username, id);
