@@ -1,23 +1,50 @@
 import Joi from 'joi';
 import prisma from '~/lib/prisma';
+import fetchers from '~/generators/fetchers';
 import type {
   Namespace, Prisma, Membership, Task
 } from '~/lib/prisma';
 import { ArgumentError } from '~/types/errors';
 
 type InputNamespace = Pick<Prisma.NamespaceCreateInput, 'name' | 'fetchLogin' | 'fetchOptions' | 'logoId'>;
+
 type FullNamespace = Namespace & {
   memberships: Membership[],
   tasks: Task[],
 };
+
+interface NamespaceOptions {
+  fetchLogin: {
+    'elastic'?: { username: string }
+  },
+  fetchOptions: {
+    'elastic'?: { indexPrefix?: string }
+  },
+}
+
+export type TypedNamespace = Omit<Namespace, 'fetchLogin' | 'fetchOptions'> & NamespaceOptions;
 
 /**
  * Joi schema
  */
 const namespaceSchema = Joi.object<Prisma.NamespaceCreateInput>({
   name: Joi.string().required(),
-  fetchLogin: Joi.object().required(), // TODO: Record<Fetchers, object>
-  fetchOptions: Joi.object().required(), // TODO: Record<Fetchers, FetcherOptions>
+  fetchLogin: Joi
+    .object(
+      // Object like { elastic: { user: 'foobar' } }
+      Object.fromEntries(
+        Object.keys(fetchers).map((key) => [key, Joi.object()]),
+      ),
+    )
+    .required(),
+  fetchOptions: Joi
+    .object(
+      // Object like { elastic: { indexPrefix: {} } }
+      Object.fromEntries(
+        Object.keys(fetchers).map((key) => [key, Joi.object()]),
+      ),
+    )
+    .required(),
   logoId: Joi.string(),
 });
 
@@ -73,6 +100,13 @@ export const getAllNamespaces = async (
   },
 });
 
+/**
+ * Get namespace entries in DB, filtered by given ids
+ *
+ * @param ids The namespaces' ids
+ *
+ * @returns The namespaces filtered by given ids
+ */
 export const getNamespacesByIds = (ids: Namespace['id'][]) => prisma.namespace.findMany({
   where: {
     id: {
@@ -95,7 +129,7 @@ export const getNamespacesByIds = (ids: Namespace['id'][]) => prisma.namespace.f
  *
  * @returns Namespace
  */
-export const getNamespaceById = async (id: Namespace['id']): Promise<FullNamespace | null> => prisma.namespace.findFirst({
+export const getNamespaceById = async (id: Namespace['id']) => prisma.namespace.findFirst({
   where: {
     id,
   },
@@ -103,7 +137,7 @@ export const getNamespaceById = async (id: Namespace['id']): Promise<FullNamespa
     memberships: true,
     tasks: true,
   },
-});
+}) as Promise<FullNamespace | null>;
 
 /**
  * Create namespace in DB
@@ -135,7 +169,7 @@ export const createNamespace = (data: unknown): Promise<FullNamespace> => {
  *
  * @returns The edited namespace
  */
-export const deleteNamespaceById = async (id: Namespace['id']): Promise<FullNamespace | null> => {
+export const deleteNamespaceById = async (id: Namespace['id']) => {
   // Check if namespace exist
   const namespace = await getNamespaceById(id);
   if (!namespace) {
@@ -150,7 +184,7 @@ export const deleteNamespaceById = async (id: Namespace['id']): Promise<FullName
       memberships: true,
       tasks: true,
     },
-  });
+  }) as Promise<FullNamespace | null>;
 };
 
 /**

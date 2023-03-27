@@ -247,8 +247,13 @@ const router = CustomRouter('tasks')
       throw new HTTPError('Missing part of custom period', StatusCodes.BAD_REQUEST);
     }
 
+    const { namespace, ...taskData } = task;
     const job = await addTaskToGenQueue({
-      task: { ...task, targets: testEmails || task.targets },
+      task: {
+        ...taskData,
+        namespaceId: namespace.id,
+        targets: testEmails || task.targets,
+      },
       customPeriod,
       origin: req.user?.username ?? '',
       writeHistory: testEmails === undefined,

@@ -4,9 +4,7 @@ import { randomUUID } from 'node:crypto';
 import EventEmitter from 'node:events';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type {
-  Namespace, Prisma, Recurrence, Task
-} from '~/lib/prisma';
+import type { Prisma, Recurrence, Task } from '~/lib/prisma';
 import fetchers, { type Fetchers } from '~/generators/fetchers';
 import renderers, { type Renderers } from '~/generators/renderers';
 import config from '~/lib/config';
@@ -29,7 +27,7 @@ import {
   type AnyTemplate,
   type AnyTemplateDB
 } from './templates';
-import { getNamespaceById } from './namespaces';
+import { TypedNamespace, getNamespaceById } from './namespaces';
 
 const { ttl, templatesDir, outDir } = config.get('report');
 
@@ -47,9 +45,7 @@ type ReportResult = {
     },
     sendingTo?: string[],
     period?: Interval,
-    auth?: {
-      username?: string,
-    },
+    auth?: TypedNamespace['fetchLogin'],
     stats?: Omit<Awaited<ReturnType<Renderers[keyof Renderers]>>, 'path'>,
     error?: {
       message: string,
@@ -76,9 +72,12 @@ const reportresultSchema = Joi.object<ReportResult>({
       start: [Joi.date().iso().required(), Joi.number().integer().required()],
       end: [Joi.date().iso().required(), Joi.number().integer().required()],
     }),
-    auth: Joi.object<ReportResult['detail']['auth']>({
-      username: Joi.string(),
-    }),
+    auth: Joi.object<ReportResult['detail']['auth']>(
+      // Object like { elastic: { user: 'foobar' } }
+      Object.fromEntries(
+        Object.keys(fetchers).map((key) => [key, Joi.object()]),
+      ),
+    ),
     stats: Joi.object<ReportResult['detail']['stats']>({
       pageCount: Joi.number().integer().required(),
       size: Joi.number().integer().required(),
@@ -122,7 +121,7 @@ const fetchData = (params: {
   template: AnyTemplate,
   taskTemplate: AnyTemplateDB,
   period: Interval,
-  namespace?: Namespace,
+  namespace?: TypedNamespace,
   recurrence: Recurrence
 }, events: EventEmitter) => {
   const {
@@ -150,8 +149,8 @@ const fetchData = (params: {
           recurrence,
           period,
           // template,
-          indexPrefix: (namespace?.fetchOptions as any)[fetcher].indexPrefix ?? '*',
-          auth: (namespace?.fetchLogin as any)[fetcher],
+          indexPrefix: namespace?.fetchOptions?.[fetcher]?.indexPrefix ?? '*',
+          auth: namespace?.fetchLogin?.[fetcher] ?? { username: '' },
         },
       );
       template.layouts[i].fetchOptions = fetchOptions;
@@ -192,7 +191,7 @@ export const generateReport = async (
   const filepath = join(basePath, filename);
   const namepath = `${todayStr}/${filename}`;
 
-  const namespace = await getNamespaceById(task.namespaceId);
+  const namespace = await getNamespaceById(task.namespaceId) as TypedNamespace;
   if (!namespace) {
     throw new Error(`Namespace "${task.namespaceId}" not found`);
   }
@@ -222,9 +221,8 @@ export const generateReport = async (
       throw new Error("Targets can't be null");
     }
 
-    result.detail.auth = namespace.fetchLogin as any;
-
-    events.emit('authFound', namespace.fetchLogin);
+    result.detail.auth = namespace.fetchLogin;
+    events.emit('authFound', result.detail.auth);
 
     // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
     let period = calcPeriod(parseISO(task.nextRun.toString()), task.recurrence);

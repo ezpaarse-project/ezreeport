@@ -19,12 +19,14 @@ import { calcNextDate } from '~/models/recurrence';
 import { ArgumentError } from '~/types/errors';
 import { templateDBSchema } from './templates';
 
-// TODO[feat]: More checks to make custom errors
-
 const { templatesDir } = config.get('report');
 
 type InputTask = Pick<Prisma.TaskCreateInput, 'name' | 'template' | 'targets' | 'recurrence' | 'nextRun' | 'enabled'>;
 type InputHistory = Pick<Prisma.HistoryCreateWithoutTaskInput, 'type' | 'message' | 'data'>;
+type FullTask = Omit<Task, 'namespaceId'> & {
+  namespace: Pick<Namespace, 'id' | 'name' | 'logoId' | 'createdAt' | 'updatedAt'>,
+  history: History[]
+};
 
 /**
  * Joi schema
@@ -68,12 +70,30 @@ const createTaskSchema = taskSchema.append(
   },
 );
 
+/**
+ * Check if input data is a task creation
+ *
+ * @param data The input data
+ * @returns `true` if valid
+ *
+ * @throws If not valid
+ */
 const isValidCreateTask = (data: unknown): data is (InputTask & { namespace: string }) => {
   const validation = createTaskSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
   }
   return true;
+};
+
+const prismaNamespaceSelect = {
+  select: {
+    id: true,
+    name: true,
+    logoId: true,
+    createdAt: true,
+    updatedAt: true,
+  },
 };
 
 /**
@@ -85,8 +105,6 @@ const isValidCreateTask = (data: unknown): data is (InputTask & { namespace: str
  * @returns The task count
  */
 export const getCountTask = async (namespaceIds?: Namespace['id'][]): Promise<number> => {
-  await prisma.$connect();
-
   const count = await prisma.task.count({
     where: {
       namespaceId: {
@@ -95,7 +113,6 @@ export const getCountTask = async (namespaceIds?: Namespace['id'][]): Promise<nu
     },
   });
 
-  await prisma.$disconnect();
   return count;
 };
 
@@ -109,7 +126,7 @@ export const getCountTask = async (namespaceIds?: Namespace['id'][]): Promise<nu
  * @returns Tasks list
  */
 // TODO[feat]: Custom sort
-export const getAllTasks = async <Keys extends Array<keyof Task>>(
+export const getAllTasks = <Keys extends Array<keyof Task>>(
   opts?: {
     count?: number,
     previous?: Task['id'],
@@ -125,9 +142,7 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
     })),
   );
 
-  await prisma.$connect();
-
-  const tasks = await prisma.task.findMany({
+  return prisma.task.findMany({
     take: opts?.count,
     skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
     cursor: opts?.previous ? { id: opts.previous } : undefined,
@@ -141,10 +156,7 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
     orderBy: {
       createdAt: 'asc',
     },
-  }) as Pick<Task, Keys[number]>[];
-
-  await prisma.$disconnect();
-  return tasks;
+  }) as Promise<Pick<Task, Keys[number]>[]>;
 };
 
 /**
@@ -156,28 +168,22 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
  *
  * @returns Task
  */
-export const getTaskById = async (id: Task['id'], namespaceIds?: Namespace['id'][]): Promise<(Task & { history: History[] }) | null> => {
-  await prisma.$connect();
-
-  const task = await prisma.task.findFirst({
-    where: {
-      id,
-      namespaceId: {
-        in: namespaceIds,
+export const getTaskById = (id: Task['id'], namespaceIds?: Namespace['id'][]): Promise<FullTask | null> => prisma.task.findFirst({
+  where: {
+    id,
+    namespaceId: {
+      in: namespaceIds,
+    },
+  },
+  include: {
+    namespace: prismaNamespaceSelect,
+    history: {
+      orderBy: {
+        createdAt: 'asc',
       },
     },
-    include: {
-      history: {
-        orderBy: {
-          createdAt: 'asc',
-        },
-      },
-    },
-  });
-
-  await prisma.$disconnect();
-  return task;
-};
+  },
+});
 
 /**
  * Create task in DB
@@ -190,11 +196,11 @@ export const getTaskById = async (id: Task['id'], namespaceIds?: Namespace['id']
 export const createTask = async (
   data: unknown,
   creator: string,
-): Promise<Task> => {
+): Promise<FullTask> => {
   // Validate body
   if (!isValidCreateTask(data)) {
     // As validation throws an error, this line shouldn't be called
-    return {} as Task;
+    return {} as FullTask;
   }
   const { namespace, ...taskData } = data as InputTask & { namespace: string };
 
@@ -213,7 +219,7 @@ export const createTask = async (
 
   await prisma.$connect();
 
-  const task = await prisma.task.create({
+  return prisma.task.create({
     data: {
       ...taskData,
       namespaceId: namespace,
@@ -223,6 +229,7 @@ export const createTask = async (
       },
     },
     include: {
+      namespace: prismaNamespaceSelect,
       history: {
         orderBy: {
           createdAt: 'asc',
@@ -230,9 +237,6 @@ export const createTask = async (
       },
     },
   });
-
-  await prisma.$disconnect();
-  return task;
 };
 
 /**
@@ -244,20 +248,19 @@ export const createTask = async (
  *
  * @returns The edited task
  */
-export const deleteTaskById = async (id: Task['id'], namespaceIds?: Namespace['id'][]): Promise<Task | null> => {
+export const deleteTaskById = async (id: Task['id'], namespaceIds?: Namespace['id'][]): Promise<FullTask | null> => {
   // Check if task exist
   const task = await getTaskById(id, namespaceIds);
   if (!task) {
     return null;
   }
 
-  await prisma.$connect();
-
-  const deletedTask = await prisma.task.delete({
+  return prisma.task.delete({
     where: {
       id,
     },
     include: {
+      namespace: prismaNamespaceSelect,
       history: {
         orderBy: {
           createdAt: 'asc',
@@ -265,9 +268,6 @@ export const deleteTaskById = async (id: Task['id'], namespaceIds?: Namespace['i
       },
     },
   });
-
-  await prisma.$disconnect();
-  return deletedTask;
 };
 
 /**
@@ -286,7 +286,7 @@ export const editTaskByIdWithHistory = async (
   data: InputTask & { lastRun?: Task['lastRun'] },
   entry?: InputHistory,
   namespaceIds?: Namespace['id'][],
-) => {
+): Promise<FullTask | null> => {
   // Check if task exist
   const task = await getTaskById(id, namespaceIds);
   if (!task) {
@@ -324,9 +324,7 @@ export const editTaskByIdWithHistory = async (
     nextRun = task.nextRun;
   }
 
-  await prisma.$connect();
-
-  const editedTask = await prisma.task.update({
+  return prisma.task.update({
     where: { id },
     data: {
       ...data,
@@ -334,6 +332,7 @@ export const editTaskByIdWithHistory = async (
       history: entry && { create: { ...entry, createdAt: formatISO(new Date()) } },
     },
     include: {
+      namespace: prismaNamespaceSelect,
       history: {
         orderBy: {
           createdAt: 'asc',
@@ -341,9 +340,6 @@ export const editTaskByIdWithHistory = async (
       },
     },
   });
-
-  await prisma.$disconnect();
-  return editedTask;
 };
 
 /**
@@ -362,7 +358,7 @@ export const editTaskById = (
   data: unknown,
   editor: string,
   namespaceIds?: Namespace['id'][],
-) => {
+): Promise<FullTask | null> => {
   // Validate body
   if (!isValidTask(data)) {
     // As validation throws an error, this line shouldn't be called
