@@ -1,15 +1,10 @@
-import { readFile } from 'fs/promises';
 import Joi from 'joi';
-import { join } from 'node:path';
+import prisma from '~/lib/prisma';
+import type { Template as PrismaTemplate } from '~/lib/prisma';
 import type { Fetchers } from '~/generators/fetchers';
 import renderers, { type Renderers } from '~/generators/renderers';
-import config from '~/lib/config';
-import glob from '~/lib/glob';
-import { isFulfilled } from '~/lib/utils';
 import { ArgumentError } from '~/types/errors';
 import { layoutSchema, type Layout } from './layouts';
-
-const { templatesDir } = config.get('report');
 
 /**
  * Template is the report
@@ -29,8 +24,8 @@ export interface Template<
   /**
   * Options passed to the fetcher.
   *
-  * Overrided by layouts `fetchOptions`.
-  * Overrided by default `fetchOptions`.
+  * Overrode by layouts `fetchOptions`.
+  * Overrode by default `fetchOptions`.
   *
   * @see {fetchers} For more info
   */
@@ -44,7 +39,7 @@ export interface Template<
   /**
   * Options passed to the renderer.
   *
-  * Overrided by default `rendererOptions`.
+  * Overrode by default `rendererOptions`.
   *
   * @see {renderers} For more info
   */
@@ -81,7 +76,7 @@ export const isTemplate = (data: unknown): data is AnyTemplate => {
 /**
 * The interface describe options allowed in Task's
 */
-export interface TemplateDB<F extends keyof Fetchers> {
+export interface TaskTemplate<F extends keyof Fetchers> {
   /**
   * Base template file
   */
@@ -89,8 +84,8 @@ export interface TemplateDB<F extends keyof Fetchers> {
   /**
   * Options passed to the fetcher.
   *
-  * Overrided by layouts `fetchOptions`.
-  * Overrided by function `fetchOptions`.
+  * Overrode by layouts `fetchOptions`.
+  * Overrode by function `fetchOptions`.
   *
   * @see {fetchers} For more info
   */
@@ -103,9 +98,9 @@ export interface TemplateDB<F extends keyof Fetchers> {
   inserts?: (Layout<F> & { at: number })[]
 }
 
-export type AnyTemplateDB = TemplateDB<keyof Fetchers>;
+export type AnyTaskTemplate = TaskTemplate<keyof Fetchers>;
 
-export const templateDBSchema = Joi.object<AnyTemplateDB>({
+export const taskTemplateSchema = Joi.object<AnyTaskTemplate>({
   extends: Joi.string().required(),
   fetchOptions: Joi.object(),
   inserts: Joi.array().items(
@@ -123,10 +118,36 @@ export const templateDBSchema = Joi.object<AnyTemplateDB>({
  *
  * @throws If not valid
  */
-export const isTemplateDB = (data: unknown): data is AnyTemplateDB => {
-  const validation = templateDBSchema.validate(data, {});
+export const isTaskTemplate = (data: unknown): data is AnyTaskTemplate => {
+  const validation = taskTemplateSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Template is not valid: ${validation.error.message}`);
+  }
+  return true;
+};
+
+interface ShowcasedAnyTemplate extends Omit<PrismaTemplate, 'body'> {
+  renderer: keyof Renderers,
+  pageCount: number,
+  body: AnyTemplate,
+}
+
+const showcasedTemplateSchema = Joi.object<Pick<ShowcasedAnyTemplate, 'body'>>({
+  body: templateSchema.required(),
+});
+
+/**
+ * Check if input data is a showcased template
+ *
+ * @param data The input data
+ * @returns `true` if valid
+ *
+ * @throws If not valid
+ */
+const isShowcasedTemplate = (data: unknown): data is Pick<ShowcasedAnyTemplate, 'body'> => {
+  const validation = showcasedTemplateSchema.validate(data, {});
+  if (validation.error != null) {
+    throw new ArgumentError(`Given data is not valid: ${validation.error.message}`);
   }
   return true;
 };
@@ -136,30 +157,30 @@ export const isTemplateDB = (data: unknown): data is AnyTemplateDB => {
 *
 * @returns General info of all templates
 */
-export const getAllTemplates = async () => {
-  const templates = await glob(`${templatesDir}/**/*.json`);
+export const getAllTemplates = async (): Promise<Omit<ShowcasedAnyTemplate, 'body'>[]> => {
+  const res = await prisma.template.findMany();
 
-  const result = await Promise.allSettled(
-    templates.map(async (path) => {
-      // Resolve import
-      const template = JSON.parse(await readFile(path, 'utf-8'));
-      if (!isTemplate(template)) {
-        // As validation throws an error, this line shouldn't be called
-        return {};
+  return res
+    .filter((template) => {
+      try {
+        if (!isTemplate(template.body)) {
+          // As validation throws an error, this line shouldn't be called
+          return false;
+        }
+        return true;
+      } catch (error) {
+        return false;
       }
-
-      // template.
+    })
+    .map(({ body, ...template }) => {
+      // We did the type check in .filter
+      const b = body as unknown as AnyTemplate;
       return {
-        name: path
-          .replace(/\.(?!.*\.).*$/, '')
-          .replace(new RegExp(`^.*${templatesDir}/`, 'i'), ''),
-        renderer: template.renderer ?? 'vega-pdf',
-        pageCount: template.layouts.length,
+        ...template,
+        renderer: b.renderer ?? 'vega-pdf',
+        pageCount: b.layouts.length,
       };
-    }),
-  );
-
-  return result.filter(isFulfilled).flatMap(({ value }) => value);
+    });
 };
 
 /**
@@ -167,30 +188,118 @@ export const getAllTemplates = async () => {
  *
  * @returns Full info of template
  */
-export const getTemplateByName = async (name: string) => {
-  // Check if not trying to access unwanted file
-  const path = join(templatesDir, `${name}.json`);
-  if (new RegExp(`^${templatesDir}/.*\\.json$`, 'i').test(path) === false) {
-    throw new Error(`Task's layout must be in the "${templatesDir}" folder. Resolved: "${path}"`);
+export const getTemplateByName = async (name: string): Promise<ShowcasedAnyTemplate | null> => {
+  const template = await prisma.template.findUnique({
+    where: {
+      name,
+    },
+  });
+
+  if (!template) {
+    return null;
   }
 
-  // Resolve import
-  let template: unknown;
-  try {
-    template = JSON.parse(await readFile(path, 'utf-8'));
-  } catch (error) {
-    throw new Error(`An unexpected error occured: ${(error as Error).message}`);
-  }
-
-  if (!isTemplate(template)) {
+  if (!isTemplate(template.body)) {
     // As validation throws an error, this line shouldn't be called
-    return {};
+    return {} as ShowcasedAnyTemplate;
   }
 
   return {
-    name,
-    renderer: template.renderer ?? 'vega-pdf',
-    pageCount: template.layouts.length,
-    template,
+    ...template,
+    body: template.body,
+    renderer: template.body.renderer ?? 'vega-pdf',
+    pageCount: template.body.layouts.length,
+  };
+};
+
+export const createTemplate = async (
+  name:string,
+  data: unknown,
+): Promise<ShowcasedAnyTemplate> => {
+  if (!isShowcasedTemplate(data)) {
+    // As validation throws an error, this line shouldn't be called
+    return {} as ShowcasedAnyTemplate;
+  }
+
+  const template = await prisma.template.create({
+    data: {
+      ...data,
+      name,
+      body: data.body as object,
+    },
+  });
+
+  if (!isTemplate(template.body)) {
+    // As validation throws an error, this line shouldn't be called
+    return {} as ShowcasedAnyTemplate;
+  }
+
+  return {
+    ...template,
+    body: template.body,
+    renderer: template.body.renderer ?? 'vega-pdf',
+    pageCount: template.body.layouts.length,
+  };
+};
+
+export const deleteTemplateByName = async (name: string): Promise<ShowcasedAnyTemplate | null> => {
+  const res = await getTemplateByName(name);
+  if (!res) {
+    return null;
+  }
+
+  const template = await prisma.template.delete({
+    where: {
+      name,
+    },
+  });
+
+  if (!isTemplate(template.body)) {
+    // As validation throws an error, this line shouldn't be called
+    return {} as ShowcasedAnyTemplate;
+  }
+
+  return {
+    ...template,
+    body: template.body,
+    renderer: template.body.renderer ?? 'vega-pdf',
+    pageCount: template.body.layouts.length,
+  };
+};
+
+export const editTemplateByName = async (
+  name: string,
+  data: unknown,
+): Promise<ShowcasedAnyTemplate | null> => {
+  const res = await getTemplateByName(name);
+  if (!res) {
+    return null;
+  }
+
+  if (!isShowcasedTemplate(data)) {
+    // As validation throws an error, this line shouldn't be called
+    return {} as ShowcasedAnyTemplate;
+  }
+
+  const template = await prisma.template.update({
+    where: {
+      name,
+    },
+    data: {
+      ...data,
+      body: data.body as object,
+    },
+  });
+
+  if (!isTemplate(template.body)) {
+    // As validation throws an error, this line shouldn't be called
+    return {} as ShowcasedAnyTemplate;
+  }
+
+  return {
+    ...template,
+    body: template.body,
+    renderer: template.body.renderer ?? 'vega-pdf',
+    pageCount: template.body.layouts.length,
   };
 };

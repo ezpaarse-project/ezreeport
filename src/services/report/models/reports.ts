@@ -2,7 +2,7 @@ import Joi from 'joi';
 import { compact, merge, omit } from 'lodash';
 import { randomUUID } from 'node:crypto';
 import EventEmitter from 'node:events';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Prisma, Recurrence, Task } from '~/lib/prisma';
 import fetchers, { type Fetchers } from '~/generators/fetchers';
@@ -22,14 +22,14 @@ import { calcNextDate, calcPeriod } from '~/models/recurrence';
 import { ArgumentError, ConflitError } from '~/types/errors';
 import { editTaskByIdWithHistory } from './tasks';
 import {
-  isTemplate,
-  isTemplateDB,
+  getTemplateByName,
+  isTaskTemplate,
   type AnyTemplate,
-  type AnyTemplateDB
+  type AnyTaskTemplate
 } from './templates';
 import { type TypedNamespace, getNamespaceById } from './namespaces';
 
-const { ttl, templatesDir, outDir } = config.get('report');
+const { ttl, outDir } = config.get('report');
 
 type ReportResult = {
   success: boolean,
@@ -119,7 +119,7 @@ const normaliseFilename = (filename: string): string => filename.toLowerCase().r
 
 const fetchData = (params: {
   template: AnyTemplate,
-  taskTemplate: AnyTemplateDB,
+  taskTemplate: AnyTaskTemplate,
   period: Interval,
   namespace?: TypedNamespace,
   recurrence: Recurrence
@@ -248,22 +248,14 @@ export const generateReport = async (
 
     // Parse task template
     const taskTemplate = task.template;
-    if (!isTemplateDB(taskTemplate) || (typeof taskTemplate !== 'object' || Array.isArray(taskTemplate))) {
+    if (!isTaskTemplate(taskTemplate) || (typeof taskTemplate !== 'object' || Array.isArray(taskTemplate))) {
       // As validation throws an error, this line should be called only if 2nd assertion fails
       throw new ArgumentError("Task's template is not an object");
     }
 
-    // Check if not trying to access unwanted file
-    const extendsPath = join(templatesDir, `${taskTemplate.extends}.json`);
-    if (new RegExp(`^${templatesDir}/.*\\.json$`, 'i').test(extendsPath) === false) {
-      throw new Error(`Task's layout must be in the "${templatesDir}" folder. Resolved: "${extendsPath}"`);
-    }
-
-    // Resolve import
-    const template = JSON.parse(await readFile(extendsPath, 'utf-8'));
-    if (!isTemplate(template)) {
-      // As validation throws an error, this line shouldn't be called
-      return {} as ReportResult;
+    const { body: template = null } = await getTemplateByName(taskTemplate.extends) ?? {};
+    if (!template) {
+      throw new Error(`No template named "${taskTemplate.extends}" was found`);
     }
 
     // Insert task's layouts

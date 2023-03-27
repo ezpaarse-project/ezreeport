@@ -22,13 +22,13 @@ Contains all possible template usable by various tasks
 
 - `elastic`: Fetch data from `ezMesure`'s ElasticSearch
   - `options` : See [`FetchOptions` in `generators/fetchers/elastic.ts`](../generators/fetchers/elastic.ts#L14)
-    - `recurrence`, `period`, `indexPrefix` and `user` are already passed (and overrided when generation is started)
+    - `recurrence`, `period`, `indexPrefix` and `user` are already passed (and Overrode when generation is started)
 
 ### Available renderers
 
 - `vega-pdf`: Render data into PDF with Vega
   - `options` : See [`RenderOptions` in `generators/renderers/vega-pdf.ts`](../generators/renderers/vega-pdf.ts#L32)
-    - `pdf`, `recurrence`, `debug` and `layouts` are already passed (and overrided when generation is started)
+    - `pdf`, `recurrence`, `debug` and `layouts` are already passed (and Overrode when generation is started)
 
 ### Available Figure
 

@@ -28,7 +28,7 @@ export interface Layout<
   * Can be present if fetcher is
   *
   * Override template `fetchOptions`.
-  * Overrided by default `fetchOptions`.
+  * Overrode by default `fetchOptions`.
   *
   * @see {fetchers} For more info
   */

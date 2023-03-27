@@ -1,6 +1,4 @@
 import Joi from 'joi';
-import { join } from 'node:path';
-import config from '~/lib/config';
 import {
   endOfDay,
   formatISO,
@@ -17,9 +15,7 @@ import {
 } from '~/lib/prisma';
 import { calcNextDate } from '~/models/recurrence';
 import { ArgumentError } from '~/types/errors';
-import { templateDBSchema } from './templates';
-
-const { templatesDir } = config.get('report');
+import { getTemplateByName, taskTemplateSchema } from './templates';
 
 type InputTask = Pick<Prisma.TaskCreateInput, 'name' | 'template' | 'targets' | 'recurrence' | 'nextRun' | 'enabled'>;
 type InputHistory = Pick<Prisma.HistoryCreateWithoutTaskInput, 'type' | 'message' | 'data'>;
@@ -34,7 +30,7 @@ type FullTask = Omit<Task, 'namespaceId'> & {
 const taskSchema = Joi.object<Prisma.TaskCreateInput>({
   name: Joi.string().trim().required(),
   namespace: Joi.string(),
-  template: templateDBSchema.required(),
+  template: taskTemplateSchema.required(),
   targets: Joi.array().items(Joi.string().trim().email()).required(),
   recurrence: Joi.string().valid(
     Recurrence.DAILY,
@@ -64,11 +60,9 @@ const isValidTask = (data: unknown): data is InputTask => {
   return true;
 };
 
-const createTaskSchema = taskSchema.append(
-  {
-    namespace: Joi.string().required(),
-  },
-);
+const createTaskSchema = taskSchema.append({
+  namespace: Joi.string().required(),
+});
 
 /**
  * Check if input data is a task creation
@@ -204,12 +198,9 @@ export const createTask = async (
   }
   const { namespace, ...taskData } = data as InputTask & { namespace: string };
 
-  // Check if not trying to access unwanted file
-  if (typeof data.template === 'object' && 'extends' in data.template) {
-    const extendsPath = join(templatesDir, `${data.template.extends}.json`);
-    if (new RegExp(`^${templatesDir}/.*\\.json$`, 'i').test(extendsPath) === false) {
-      throw new ArgumentError(`Task's layout must be in the "${templatesDir}" folder. Resolved: "${extendsPath}"`);
-    }
+  // Check if "parent" template exist
+  if (typeof data.template === 'object' && 'extends' in data.template && !await getTemplateByName(`${data.template.extends}`)) {
+    throw new ArgumentError(`No template named "${data.template.extends}" was found`);
   }
 
   let { nextRun } = data;
@@ -293,12 +284,9 @@ export const editTaskByIdWithHistory = async (
     return null;
   }
 
-  // Check if not trying to access unwanted file
-  if (typeof data.template === 'object' && 'extends' in data.template) {
-    const extendsPath = join(templatesDir, `${data.template.extends}.json`);
-    if (new RegExp(`^${templatesDir}/.*\\.json$`, 'i').test(extendsPath) === false) {
-      throw new ArgumentError(`Task's layout must be in the "${templatesDir}" folder. Resolved: "${extendsPath}"`);
-    }
+  // Check if "parent" template exist
+  if (typeof data.template === 'object' && 'extends' in data.template && !await getTemplateByName(`${data.template.extends}`)) {
+    throw new ArgumentError(`No template named "${data.template.extends}" was found`);
   }
 
   // If next run isn't changed but recurrence changed

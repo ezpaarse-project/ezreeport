@@ -30,7 +30,6 @@
     }
   },
   "report": {
-    "templatesDir": "templates",
     "assetsDir": "assets",
     "outDir": "data",
     "ttl": {
