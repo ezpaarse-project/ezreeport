@@ -6,13 +6,13 @@ import {
   stopCron
 } from '~/lib/cron';
 import { CustomRouter } from '~/lib/express-utils';
-import { requireAPIKey } from '~/middlewares/auth';
+import { requireUser, requireAdmin } from '~/middlewares/auth';
 
 const router = CustomRouter('crons')
   /**
    * Get all possible crons
    */
-  .createRoute('GET /', async (_req, _res) => getAllCrons(), requireAPIKey)
+  .createRoute('GET /', async (_req, _res) => getAllCrons(), requireUser, requireAdmin)
 
   /**
    * Get info about specific cron
@@ -20,7 +20,7 @@ const router = CustomRouter('crons')
   .createRoute('GET /:cron', async (req, _res) => {
     const { cron } = req.params;
     return getCron(cron);
-  }, requireAPIKey)
+  }, requireUser, requireAdmin)
 
   /**
    * Start specific cron
@@ -28,7 +28,7 @@ const router = CustomRouter('crons')
   .createRoute('PUT /:cron/start', async (req, _res) => {
     const { cron } = req.params;
     return startCron(cron);
-  }, requireAPIKey)
+  }, requireUser, requireAdmin)
 
   /**
    * Stop specific cron
@@ -36,7 +36,7 @@ const router = CustomRouter('crons')
   .createRoute('PUT /:cron/stop', async (req, _res) => {
     const { cron } = req.params;
     return stopCron(cron);
-  }, requireAPIKey)
+  }, requireUser, requireAdmin)
 
   /**
    * Force a specific cron to run
@@ -44,6 +44,6 @@ const router = CustomRouter('crons')
   .createRoute('POST /:cron/force', async (req, _res) => {
     const { cron } = req.params;
     return forceCron(cron);
-  }, requireAPIKey);
+  }, requireUser, requireAdmin);
 
 export default router;
