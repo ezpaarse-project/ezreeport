@@ -23,7 +23,7 @@ const router = CustomRouter('history')
       data: entries,
       code: StatusCodes.OK,
       meta: {
-        total: await getCountHistory(/* req.user?.namespace */),
+        total: await getCountHistory(req.namespaceIds),
         count: entries.length,
         size: c,
         lastId: entries.at(-1)?.id,

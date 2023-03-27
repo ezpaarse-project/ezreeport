@@ -4,18 +4,20 @@ import prisma from '~/lib/prisma';
 /**
  * Get count of history entries in DB
  *
- * @param namespace The namespace of the task. If provided,
+ * @param namespaceIds The namespaces of the task. If provided,
  * will restrict search to the namespace provided
  *
  * @returns The entries count
  */
-export const getCountHistory = async (namespace?: Namespace): Promise<number> => {
+export const getCountHistory = async (namespaceIds?: string[]): Promise<number> => {
   await prisma.$connect();
 
   const count = await prisma.history.count({
     where: {
       task: {
-        namespaceId: namespace?.id,
+        namespaceId: {
+          in: namespaceIds,
+        },
       },
     },
   });
