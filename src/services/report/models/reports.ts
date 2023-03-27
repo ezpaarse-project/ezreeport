@@ -4,7 +4,9 @@ import { randomUUID } from 'node:crypto';
 import EventEmitter from 'node:events';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { Prisma, Recurrence, Task } from '~/lib/prisma';
+import type {
+  Namespace, Prisma, Recurrence, Task
+} from '~/lib/prisma';
 import fetchers, { type Fetchers } from '~/generators/fetchers';
 import renderers, { type Renderers } from '~/generators/renderers';
 import config from '~/lib/config';
@@ -20,7 +22,6 @@ import {
 import logger from '~/lib/logger';
 import { calcNextDate, calcPeriod } from '~/models/recurrence';
 import { ArgumentError, ConflitError } from '~/types/errors';
-import { findInstitutionByIds, findInstitutionContact } from './institutions';
 import { editTaskByIdWithHistory } from './tasks';
 import {
   isNewTemplate,
@@ -28,6 +29,7 @@ import {
   type AnyTemplate,
   type AnyTemplateDB
 } from './templates';
+import { getNamespaceById } from './namespaces';
 
 const { ttl, templatesDir, outDir } = config.get('report');
 
@@ -45,7 +47,9 @@ type ReportResult = {
     },
     sendingTo?: string[],
     period?: Interval,
-    runAs?: string,
+    auth?: {
+      username?: string,
+    },
     stats?: Omit<Awaited<ReturnType<Renderers[keyof Renderers]>>, 'path'>,
     error?: {
       message: string,
@@ -72,7 +76,9 @@ const reportresultSchema = Joi.object<ReportResult>({
       start: [Joi.date().iso().required(), Joi.number().integer().required()],
       end: [Joi.date().iso().required(), Joi.number().integer().required()],
     }),
-    runAs: Joi.string(),
+    auth: Joi.object<ReportResult['detail']['auth']>({
+      username: Joi.string(),
+    }),
     stats: Joi.object<ReportResult['detail']['stats']>({
       pageCount: Joi.number().integer().required(),
       size: Joi.number().integer().required(),
@@ -116,13 +122,17 @@ const fetchData = (params: {
   template: AnyTemplate,
   taskTemplate: AnyTemplateDB,
   period: Interval,
-  user: string,
-  institution?: ElasticInstitution,
+  namespace?: Namespace,
   recurrence: Recurrence
 }, events: EventEmitter) => {
   const {
-    template, taskTemplate, period, user, institution, recurrence,
+    template,
+    taskTemplate,
+    period,
+    namespace,
+    recurrence,
   } = params;
+
   return Promise.all(
     template.layouts.map(async (layout, i) => {
       if (
@@ -130,6 +140,7 @@ const fetchData = (params: {
       ) {
         return;
       }
+      const fetcher = layout.fetcher ?? 'elastic';
       const fetchOptions: GeneratorParam<Fetchers, keyof Fetchers> = merge(
         template.fetchOptions ?? {},
         layout.fetchOptions ?? {},
@@ -139,12 +150,12 @@ const fetchData = (params: {
           recurrence,
           period,
           // template,
-          indexPrefix: institution?.indexPrefix ?? '*',
-          user,
+          indexPrefix: (namespace?.fetchOptions as any)[fetcher].indexPrefix ?? '*',
+          auth: (namespace?.fetchLogin as any)[fetcher],
         },
       );
       template.layouts[i].fetchOptions = fetchOptions;
-      template.layouts[i].data = await fetchers[layout.fetcher ?? 'elastic'](fetchOptions, events);
+      template.layouts[i].data = await fetchers[fetcher](fetchOptions, events);
     }),
   );
 };
@@ -181,6 +192,11 @@ export const generateReport = async (
   const filepath = join(basePath, filename);
   const namepath = `${todayStr}/${filename}`;
 
+  const namespace = await getNamespaceById(task.namespaceId);
+  if (!namespace) {
+    throw new Error(`Namespace "${task.namespaceId}" not found`);
+  }
+
   logger.debug(`[gen] Generation of report "${namepath}" started`);
   events.emit('creation');
 
@@ -206,25 +222,9 @@ export const generateReport = async (
       throw new Error("Targets can't be null");
     }
 
-    // Get institution
-    const [rawInstitution = { _source: null }] = await findInstitutionByIds([task.institution]);
-    if (!rawInstitution._source) {
-      throw new Error(`Institution "${task.institution}" not found`);
-    }
-    const institution = rawInstitution._source?.institution;
+    result.detail.auth = namespace.fetchLogin as any;
 
-    // Get username who will run the requests
-    const contact = (
-      await findInstitutionContact(rawInstitution._id.toString())
-    ) ?? { _source: null };
-
-    if (!contact._source) {
-      throw new Error(`No suitable contact found for your institution "${task.institution}". Please add doc_contact or tech_contact.`);
-    }
-    const { _source: { username: user } } = contact;
-    result.detail.runAs = user;
-
-    events.emit('contactFound', contact._source);
+    events.emit('authFound', namespace.fetchLogin);
 
     // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
     let period = calcPeriod(parseISO(task.nextRun.toString()), task.recurrence);
@@ -283,8 +283,7 @@ export const generateReport = async (
       taskTemplate,
       period,
       recurrence: task.recurrence,
-      institution,
-      user,
+      namespace,
     }, events);
     // Cleanup
     delete template.fetchOptions;

@@ -7,8 +7,9 @@ import {
 } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
-import { checkRight } from '../middlewares/auth';
-import { getRoleValue, registerRouteWithRole, Roles } from '../models/roles';
+import { registerRouteWithAccess } from '~/models/access';
+import { requireNamespace, requireUser } from '../middlewares/auth';
+import { Access } from './prisma';
 
 type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 type HTTPPath = `/${string}`;
@@ -22,7 +23,7 @@ interface HandlerData {
 
 const handlerDataSchema = Joi.object<HandlerData>({
   data: Joi.any().required(),
-  code: Joi.number().allow(...Object.values(StatusCodes)),
+  code: Joi.number().valid(...Object.values(StatusCodes)),
   meta: Joi.any(),
 });
 
@@ -45,16 +46,17 @@ export const createRoute = <R extends Router>(
   const [method, path] = route.split(' ', 2);
 
   const asyncHandler: RequestHandler = (req, res) => {
-    let result: Promise<unknown>;
+    let promise: Promise<unknown>;
+
     try {
       // Call handler
-      result = Promise.resolve(handler(req, res));
+      promise = Promise.resolve(handler(req, res));
     } catch (error) {
-      result = Promise.reject(error);
+      promise = Promise.reject(error);
     }
 
-    if (result) {
-      result
+    if (promise) {
+      promise
         .then((v) => {
           // If response wasn't already sent
           if (!res.headersSent) {
@@ -80,13 +82,13 @@ export const createRoute = <R extends Router>(
 export const createSecuredRoute = <R extends Router & { _permPrefix?: string }>(
   router: R,
   route: HTTPRoute,
-  minRole: Roles,
+  minAccess: Access,
   handler: RouteHandler,
   ...middlewares: RequestHandler[]
 ): R => {
   const [method, path] = route.split(' ', 2);
 
-  // Parse routename
+  // Parse route name
   let routeName = path.slice(1).replace(/\//g, '-').replace(/:/g, '');
   routeName = `${method.toLowerCase()}-${routeName}`.replace(/-$/, '');
   if (router._permPrefix) {
@@ -96,18 +98,20 @@ export const createSecuredRoute = <R extends Router & { _permPrefix?: string }>(
     throw new Error('Something went wrong when parsing routeName: check if router have a "_permPerfix"');
   }
 
-  // Register route priority
-  const minRolePriority = getRoleValue(minRole);
-  registerRouteWithRole(
+  // Register route accessibility
+  registerRouteWithAccess(
     routeName,
-    minRolePriority,
+    minAccess,
   );
 
   return createRoute(
     router,
     route,
+    // Route handler
     handler,
-    checkRight(minRolePriority),
+    // Route middlewares
+    requireUser,
+    requireNamespace(minAccess),
     ...middlewares,
   );
 };
@@ -135,11 +139,10 @@ type CustomRouterType = {
   ): R,
 
   /**
-   * Create secured route that will check elastic's role of user.
+   * Create secured route that will check user.
    *
    * Route is secured by {@link checkRight}, so :
-   * - `req.user` with `username` & `email` from Elastic user.
-   * - You can safely add `checkInstitution` middleware
+   * - `req.user` with data from DB.
    *
    * @param route The name of route
    * @param minRole The minimum role
@@ -157,7 +160,7 @@ type CustomRouterType = {
 };
 
 /**
- * Warpper for creating an express router with some custom functions
+ * Wrapper for creating an express router with some custom functions
  *
  * @param prefix Router prefix, used for perms
  * @param opts Router options passed to express

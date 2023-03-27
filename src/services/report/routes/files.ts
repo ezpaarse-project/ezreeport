@@ -3,9 +3,8 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import config from '~/lib/config';
 import { CustomRouter } from '~/lib/express-utils';
-import { checkInstitution } from '~/middlewares/auth';
 import { isValidResult } from '~/models/reports';
-import { Roles } from '~/models/roles';
+import { Access } from '~/models/access';
 import { getTaskById } from '~/models/tasks';
 import { HTTPError } from '~/types/errors';
 
@@ -13,9 +12,9 @@ const { outDir } = config.get('report');
 
 const router = CustomRouter('reports')
   /**
-   * Get speficic report
+   * Get specific report
    */
-  .createSecuredRoute('GET /:year/:yearMonth/:filename', Roles.READ, async (req, res) => {
+  .createSecuredRoute('GET /:year/:yearMonth/:filename', Access.READ, async (req, res) => {
     const { year, yearMonth, filename } = req.params;
     const reportFilename = filename.replace(/\..*$/, '');
     const basePath = join(outDir, year, yearMonth);
@@ -32,7 +31,7 @@ const router = CustomRouter('reports')
       return;
     }
 
-    const task = await getTaskById(detailFile.detail.taskId, req.user?.institution);
+    const task = await getTaskById(detailFile.detail.taskId, req.namespaceIds);
     if (task) {
       // Check if wanted file isn't already read
       if (filename === `${reportFilename}.det.json`) {
@@ -42,8 +41,8 @@ const router = CustomRouter('reports')
         res.send(await readFile(join(basePath, filename)));
       }
     } else {
-      throw new HTTPError(`No report "${year}/${yearMonth}/${filename}" for your organisation`, StatusCodes.NOT_FOUND);
+      throw new HTTPError(`No report "${year}/${yearMonth}/${filename}" for your namespace`, StatusCodes.NOT_FOUND);
     }
-  }, checkInstitution);
+  });
 
 export default router;

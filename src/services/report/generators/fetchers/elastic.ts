@@ -17,7 +17,7 @@ interface FetchOptions {
   filters?: ElasticFilters,
   indexPrefix: string,
   indexSuffix: string,
-  user: string,
+  auth: { username: string },
   fetchCount?: string,
   aggs?: (ElasticAggregation & { name?: string })[];
 }
@@ -38,7 +38,9 @@ const optionScehma = Joi.object<FetchOptions>({
   filters: Joi.object(),
   indexPrefix: Joi.string().required(),
   indexSuffix: Joi.string().required(),
-  user: Joi.string().required(),
+  auth: Joi.object({
+    username: Joi.string().required(),
+  }).required(),
   fetchCount: Joi.string(),
   aggs: Joi.array(),
 });
@@ -119,7 +121,7 @@ export default async (
   }
 
   const data: Prisma.JsonValue = {};
-  const { body } = await elasticSearch(opts, options.user);
+  const { body } = await elasticSearch(opts, options.auth.username);
 
   if (options.aggs) {
     // eslint-disable-next-line no-restricted-syntax
@@ -159,7 +161,7 @@ export default async (
   }
 
   if (options.fetchCount) {
-    const { body: { count } } = await elasticCount(baseOpts, options.user);
+    const { body: { count } } = await elasticCount(baseOpts, options.auth.username);
     data[options.fetchCount] = count;
   }
 

@@ -3,7 +3,7 @@
  *
  * @param data The result of Promise.allSettled
  *
- * @returns Is promise settled is fullfield
+ * @returns Is promise settled is fulfilled
  */
 export const isFulfilled = <T>(data: PromiseSettledResult<T>): data is PromiseFulfilledResult<T> => data.status === 'fulfilled';
 

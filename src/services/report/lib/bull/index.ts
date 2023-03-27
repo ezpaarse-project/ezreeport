@@ -49,7 +49,7 @@ export type MailData = {
     recurrence: Recurrence,
     name: string,
     targets: string[],
-    institution: string,
+    namespace: string,
   }
   /**
    * The email of the user that was used for generation

@@ -10,6 +10,7 @@ import {
 import prisma from '~/lib/prisma';
 import {
   Recurrence,
+  type Namespace,
   type History,
   type Prisma,
   type Task
@@ -30,7 +31,7 @@ type InputHistory = Pick<Prisma.HistoryCreateWithoutTaskInput, 'type' | 'message
  */
 const taskSchema = Joi.object<Prisma.TaskCreateInput>({
   name: Joi.string().trim().required(),
-  institution: Joi.string(), // Validated before called
+  namespace: Joi.string(),
   template: templateDBSchema.required(),
   targets: Joi.array().items(Joi.string().trim().email()).required(),
   recurrence: Joi.string().valid(
@@ -61,20 +62,36 @@ const isValidTask = (data: unknown): data is InputTask => {
   return true;
 };
 
+const createTaskSchema = taskSchema.append(
+  {
+    namespace: Joi.string().required(),
+  },
+);
+
+const isValidCreateTask = (data: unknown): data is (InputTask & { namespace: string }) => {
+  const validation = createTaskSchema.validate(data, {});
+  if (validation.error != null) {
+    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
+  }
+  return true;
+};
+
 /**
  * Get count of tasks in DB
  *
- * @param institution The institution of the task. If provided,
- * will restrict search to the instituion provided
+ * @param namespace The namespace of the task. If provided,
+ * will restrict search to the namespace provided
  *
  * @returns The task count
  */
-export const getCountTask = async (institution?: Task['institution']): Promise<number> => {
+export const getCountTask = async (namespaceIds?: Namespace['id'][]): Promise<number> => {
   await prisma.$connect();
 
   const count = await prisma.task.count({
     where: {
-      institution,
+      namespaceId: {
+        in: namespaceIds,
+      },
     },
   });
 
@@ -86,8 +103,8 @@ export const getCountTask = async (institution?: Task['institution']): Promise<n
  * Get all tasks in DB
  *
  * @param opts Requests options
- * @param institution The institution of the task. If provided,
- * will restrict search to the instituion provided
+ * @param namespaceIds The namespaces of the task. If provided,
+ * will restrict search to the namespace provided
  *
  * @returns Tasks list
  */
@@ -97,9 +114,9 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
     count?: number,
     previous?: Task['id'],
     select?: Keys,
-    filter?: Omit<Prisma.TaskWhereInput, 'institution'>
+    filter?: Omit<Prisma.TaskWhereInput, 'namespace'>
   },
-  institution?: Task['institution'],
+  namespaceIds?: Namespace['id'][],
 ): Promise<Pick<Task, Keys[number]>[]> => {
   const select: Prisma.TaskSelect = opts?.select && Object.assign(
     {},
@@ -117,7 +134,9 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
     select,
     where: {
       ...(opts?.filter ?? {}),
-      institution,
+      namespaceId: {
+        in: namespaceIds,
+      },
     },
     orderBy: {
       createdAt: 'asc',
@@ -132,18 +151,20 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
  * Get specific task in DB
  *
  * @param id The id of the task
- * @param institution The institution of the task. If provided,
- * will restrict search to the instituion provided
+ * @param namespaceIds The namespaces of the task. If provided,
+ * will restrict search to the namespace provided
  *
  * @returns Task
  */
-export const getTaskById = async (id: Task['id'], institution?: Task['institution']): Promise<(Task & { history: History[] }) | null> => {
+export const getTaskById = async (id: Task['id'], namespaceIds?: Namespace['id'][]): Promise<(Task & { history: History[] }) | null> => {
   await prisma.$connect();
 
   const task = await prisma.task.findFirst({
     where: {
       id,
-      institution,
+      namespaceId: {
+        in: namespaceIds,
+      },
     },
     include: {
       history: {
@@ -163,17 +184,19 @@ export const getTaskById = async (id: Task['id'], institution?: Task['institutio
  *
  * @param data The input data
  * @param creator The user creating the task
- * @param institution The institution of the task. If provided,
- * will restrict search to the instituion provided
  *
  * @returns The created task
  */
-export const createTask = async (data: unknown, creator: string, institution: Task['institution']): Promise<Task> => {
+export const createTask = async (
+  data: unknown,
+  creator: string,
+): Promise<Task> => {
   // Validate body
-  if (!isValidTask(data)) {
+  if (!isValidCreateTask(data)) {
     // As validation throws an error, this line shouldn't be called
     return {} as Task;
   }
+  const { namespace, ...taskData } = data as InputTask & { namespace: string };
 
   // Check if not trying to access unwanted file
   if (typeof data.template === 'object' && 'extends' in data.template) {
@@ -192,9 +215,9 @@ export const createTask = async (data: unknown, creator: string, institution: Ta
 
   const task = await prisma.task.create({
     data: {
-      ...data,
+      ...taskData,
+      namespaceId: namespace,
       nextRun,
-      institution,
       history: {
         create: { type: 'creation', message: `Tâche créée par ${creator}` },
       },
@@ -216,14 +239,14 @@ export const createTask = async (data: unknown, creator: string, institution: Ta
  * Delete specific task in DB
  *
  * @param id The id of the task
- * @param institution The institution of the task. If provided,
- * will restrict search to the instituion provided
+ * @param namespaceIds The namespaces of the task. If provided,
+ * will restrict search to the namespace provided
  *
  * @returns The edited task
  */
-export const deleteTaskById = async (id: Task['id'], institution?: Task['institution']): Promise<Task | null> => {
+export const deleteTaskById = async (id: Task['id'], namespaceIds?: Namespace['id'][]): Promise<Task | null> => {
   // Check if task exist
-  const task = await getTaskById(id, institution);
+  const task = await getTaskById(id, namespaceIds);
   if (!task) {
     return null;
   }
@@ -253,8 +276,8 @@ export const deleteTaskById = async (id: Task['id'], institution?: Task['institu
  * @param id The id of the task
  * @param data The input data
  * @param entry The new history entry. If not provided, edit is considered as "silent"
- * @param institution The institution of the task. If provided,
- * will restrict search to the instituion provided
+ * @param namespaceIds The namespaces of the task. If provided,
+ * will restrict search to the namespace provided
  *
  * @returns The edited task, or null if task doesn't exist
  */
@@ -262,10 +285,10 @@ export const editTaskByIdWithHistory = async (
   id: Task['id'],
   data: InputTask & { lastRun?: Task['lastRun'] },
   entry?: InputHistory,
-  institution?: Task['institution'],
+  namespaceIds?: Namespace['id'][],
 ) => {
   // Check if task exist
-  const task = await getTaskById(id, institution);
+  const task = await getTaskById(id, namespaceIds);
   if (!task) {
     return null;
   }
@@ -329,8 +352,8 @@ export const editTaskByIdWithHistory = async (
  * @param data The input data
  * @param id The id of the task
  * @param editor The user editing the task. Used for creating default history
- * @param institution The institution of the task. If provided,
- * will restrict search to the instituion provided
+ * @param namespaceIds The namespaces of the task. If provided,
+ * will restrict search to the namespace provided
  *
  * @returns The edited task, or null if task doesn't exist
  */
@@ -338,7 +361,7 @@ export const editTaskById = (
   id: Task['id'],
   data: unknown,
   editor: string,
-  institution?: Task['institution'],
+  namespaceIds?: Namespace['id'][],
 ) => {
   // Validate body
   if (!isValidTask(data)) {
@@ -350,6 +373,6 @@ export const editTaskById = (
     id,
     data,
     { type: 'edition', message: `Tâche éditée par ${editor}` },
-    institution,
+    namespaceIds,
   );
 };

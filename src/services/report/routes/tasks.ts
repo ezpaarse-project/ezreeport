@@ -5,8 +5,6 @@ import type { Prisma } from '~/lib/prisma';
 import { addTaskToGenQueue } from '~/lib/bull';
 import { CustomRouter } from '~/lib/express-utils';
 import { b64ToString } from '~/lib/utils';
-import { checkInstitution } from '~/middlewares/auth';
-import { Roles } from '~/models/roles';
 import {
   createTask,
   deleteTaskById,
@@ -16,6 +14,7 @@ import {
   getCountTask,
   getTaskById
 } from '~/models/tasks';
+import { Access } from '~/models/access';
 import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';
 
 type UnsubData = {
@@ -46,11 +45,9 @@ const isValidUnsubData = (data: unknown): data is UnsubData => {
 
 const router = CustomRouter('tasks')
   /**
-   * List all active tasks of authed user's institution.
-   *
-   * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
+   * List all active tasks of authed user's namespace.
    */
-  .createSecuredRoute('GET /', Roles.READ, async (req, _res) => {
+  .createSecuredRoute('GET /', Access.READ, async (req, _res) => {
     const { previous: p = undefined, count = '15' } = req.query;
     const c = +count;
 
@@ -61,7 +58,7 @@ const router = CustomRouter('tasks')
         select: [
           'id',
           'name',
-          'institution',
+          'namespaceId',
           'recurrence',
           'nextRun',
           'lastRun',
@@ -70,130 +67,95 @@ const router = CustomRouter('tasks')
           'updatedAt',
         ],
       },
-      req.user?.institution,
+      req.namespaceIds,
     );
 
     return {
       data: tasks,
       meta: {
-        total: await getCountTask(req.user?.institution),
+        total: await getCountTask(req.namespaceIds),
         count: tasks.length,
         size: c,
         lastId: tasks.at(-1)?.id,
       },
     };
-  }, checkInstitution)
+  })
 
   /**
    * Create a new task
-   *
-   * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
    */
-  .createSecuredRoute('POST /', Roles.READ_WRITE, async (req, _res) => {
-    if (!req.user || !req.user.institution) {
-      throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
+  .createSecuredRoute('POST /', Access.READ_WRITE, async (req, _res) => {
+    if (!req.namespaceIds?.includes(req.body.namespace)) {
+      throw new HTTPError("The provided namespace doesn't exist or you don't have access to this namespace", StatusCodes.BAD_REQUEST);
     }
 
     return {
       data: await createTask(
         req.body,
-        req.user.username,
-        req.user.institution,
+        req.user?.username ?? '',
       ),
       code: StatusCodes.CREATED,
     };
-  }, checkInstitution)
+  })
 
   /**
-   * Get spectific task
-   *
-   * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
+   * Get specific task
    */
-  .createSecuredRoute('GET /:task', Roles.READ, async (req, _res) => {
+  .createSecuredRoute('GET /:task', Access.READ, async (req, _res) => {
     const { task: id } = req.params;
 
-    if (req.user && !req.user.institution && !req.user.roles.includes(Roles.SUPER_USER)) {
-      throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
-    }
-
-    const task = await getTaskById(id, req.user?.institution);
+    const task = await getTaskById(id, req.namespaceIds);
     if (!task) {
-      throw new HTTPError(`Task with id '${id}' not found for institution '${req.user?.institution}'`, StatusCodes.NOT_FOUND);
+      throw new HTTPError(`Task with id '${id}' not found for namespace(s) '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
     }
 
     return task;
-  }, checkInstitution)
+  })
 
   /**
    * Update a task
-   *
-   * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
    */
-  .createSecuredRoute('PUT /:task', Roles.READ_WRITE, async (req, _res) => {
+  .createSecuredRoute('PUT /:task', Access.READ_WRITE, async (req, _res) => {
     const { task: id } = req.params;
-
-    if (!req.user || (!req.user.institution && !req.user.roles.includes(Roles.SUPER_USER))) {
-      throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
-    }
-
-    if (
-      req.body.institution
-      && req.body.institution !== req.user.institution
-      && !req.user.roles.includes(Roles.SUPER_USER)
-    ) {
-      throw new HTTPError('Body is not valid: "institution" is not allowed', StatusCodes.BAD_REQUEST);
-    }
 
     const task = await editTaskById(
       id,
       req.body,
-      req.user.username,
-      req.user.institution,
+      req.user?.username ?? '',
+      req.namespaceIds,
     );
 
     if (!task) {
-      throw new HTTPError(`Task with id '${id}' not found for institution '${req.user.institution}'`, StatusCodes.NOT_FOUND);
+      throw new HTTPError(`Task with id '${id}' not found for namespace(s) '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
     }
 
     return task;
-  }, checkInstitution)
+  })
 
   /**
    * Delete a task
-   *
-   * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
    */
-  .createSecuredRoute('DELETE /:task', Roles.READ_WRITE, async (req, _res) => {
+  .createSecuredRoute('DELETE /:task', Access.READ_WRITE, async (req, _res) => {
     const { task: id } = req.params;
 
-    if (!req.user || (!req.user.institution && !req.user.roles.includes(Roles.SUPER_USER))) {
-      throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
-    }
-
-    const task = await deleteTaskById(id, req.user.institution);
+    const task = await deleteTaskById(id, req.namespaceIds);
 
     if (!task) {
-      throw new HTTPError(`Task with id '${id}' not found for institution '${req.user.institution}'`, StatusCodes.NOT_FOUND);
+      throw new HTTPError(`Task with id '${id}' not found for namespace '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
     }
 
     return task;
-  }, checkInstitution)
+  })
 
   /**
    * Shorthand to quickly enable a task
-   *
-   * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
    */
-  .createSecuredRoute('PUT /:task/enable', Roles.READ_WRITE, async (req, _res) => {
+  .createSecuredRoute('PUT /:task/enable', Access.READ_WRITE, async (req, _res) => {
     const { task: id } = req.params;
 
-    if (!req.user || (!req.user.institution && !req.user.roles.includes(Roles.SUPER_USER))) {
-      throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
-    }
-
-    const task = await getTaskById(id, req.user?.institution);
+    const task = await getTaskById(id, req.namespaceIds);
     if (!task) {
-      throw new HTTPError(`Task with id '${id}' not found for institution '${req.user?.institution}'`, StatusCodes.NOT_FOUND);
+      throw new HTTPError(`Task with id '${id}' not found for namespace '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
     }
 
     if (task.enabled) {
@@ -209,27 +171,21 @@ const router = CustomRouter('tasks')
         enabled: true,
       },
       { type: 'edition', message: `Tâche activée par ${req.user?.username}` },
-      req.user.institution,
+      req.namespaceIds,
     );
 
     return editedTask;
-  }, checkInstitution)
+  })
 
   /**
    * Shorthand to quickly disable a task
-   *
-   * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)
    */
-  .createSecuredRoute('PUT /:task/disable', Roles.READ_WRITE, async (req, _res) => {
+  .createSecuredRoute('PUT /:task/disable', Access.READ_WRITE, async (req, _res) => {
     const { task: id } = req.params;
 
-    if (!req.user || (!req.user.institution && !req.user.roles.includes(Roles.SUPER_USER))) {
-      throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
-    }
-
-    const task = await getTaskById(id, req.user?.institution);
+    const task = await getTaskById(id, req.namespaceIds);
     if (!task) {
-      throw new HTTPError(`Task with id '${id}' not found for institution '${req.user?.institution}'`, StatusCodes.NOT_FOUND);
+      throw new HTTPError(`Task with id '${id}' not found for namespace '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
     }
 
     if (!task.enabled) {
@@ -245,20 +201,19 @@ const router = CustomRouter('tasks')
         enabled: false,
       },
       { type: 'edition', message: `Tâche désactivée par ${req.user?.username}` },
-      req.user.institution,
+      req.namespaceIds,
     );
 
     return editedTask;
-  }, checkInstitution)
+  })
 
   /**
    * Force generation of report
    *
-   * Parameter `institution` is only accessible to Roles.SUPER_USER (ignored otherwise)`
    * Parameter `test_emails` overrides task emails & enable first level of debug
    * Parameter `debug` is not accessible in PROD and enable second level of debug
    */
-  .createSecuredRoute('POST /:task/run', Roles.READ_WRITE, async (req, _res) => {
+  .createSecuredRoute('POST /:task/run', Access.READ_WRITE, async (req, _res) => {
     const { task: id } = req.params;
     let { test_emails: testEmails } = req.query;
     const {
@@ -273,13 +228,9 @@ const router = CustomRouter('tasks')
       else testEmails = testEmails.map((email) => email.toString());
     }
 
-    if (!req.user || (!req.user.institution && !req.user.roles.includes(Roles.SUPER_USER))) {
-      throw new HTTPError("Can't find your institution.", StatusCodes.BAD_REQUEST);
-    }
-
-    const task = await getTaskById(id, req.user.institution);
+    const task = await getTaskById(id, req.namespaceIds);
     if (!task) {
-      throw new HTTPError(`Task with id '${id}' not found for institution '${req.user.institution}'`, StatusCodes.NOT_FOUND);
+      throw new HTTPError(`Task with id '${id}' not found for namespace '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
     }
 
     let customPeriod: { start: string, end: string } | undefined;
@@ -299,7 +250,7 @@ const router = CustomRouter('tasks')
     const job = await addTaskToGenQueue({
       task: { ...task, targets: testEmails || task.targets },
       customPeriod,
-      origin: req.user.username,
+      origin: req.user?.username ?? '',
       writeHistory: testEmails === undefined,
       debug: !!req.query.debug && process.env.NODE_ENV !== 'production',
     });
@@ -309,7 +260,7 @@ const router = CustomRouter('tasks')
       queue: 'generation',
       data: job.data,
     };
-  }, checkInstitution)
+  })
 
   /**
    * Shorthand to remove given email in given task
@@ -346,6 +297,6 @@ const router = CustomRouter('tasks')
     );
 
     return getTaskById(task.id);
-  }, checkInstitution);
+  });
 
 export default router;

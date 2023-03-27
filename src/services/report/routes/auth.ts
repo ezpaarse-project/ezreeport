@@ -1,22 +1,29 @@
 import { CustomRouter } from '~/lib/express-utils';
-import { checkInstitution } from '~/middlewares/auth';
-import { getAllowedRoutes, Roles } from '~/models/roles';
+import { getAllowedRoutes, Access } from '~/models/access';
 
 const router = CustomRouter('auth')
   /**
    * Get all user info
    */
-  .createSecuredRoute('GET /', Roles.READ, (req, _res) => req.user, checkInstitution)
+  .createSecuredRoute('GET /', Access.READ, (req, _res) => req.user)
 
   /**
    * Get user's permissions per route
    */
-  .createSecuredRoute('GET /permissions', Roles.READ, (req, _res) => {
-    if (req.user) {
-      const { maxRolePriority } = req.user;
-      return getAllowedRoutes(maxRolePriority as Parameters<typeof getAllowedRoutes>[0]);
+  .createSecuredRoute('GET /permissions', Access.READ, (req, _res) => {
+    const map = new Map<string, Record<string, boolean>>();
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const membership of req.namespaces ?? []) {
+      map.set(
+        membership.namespace.id,
+        Object.fromEntries(
+          getAllowedRoutes(membership.access),
+        ),
+      );
     }
-    throw new Error('User not found');
+
+    return Object.fromEntries(map);
   });
 
 export default router;

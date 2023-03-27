@@ -1,20 +1,26 @@
 declare namespace Express {
   export interface Request {
     /**
-     * User information from Elastic
+     * User information from DB
      *
-     * Added by `middlewares/auth::checkRight`.
+     * Added by `middlewares/auth::requireUser`
+     * (already included with `lib/express-utils::createSecuredRoute`)
      */
-    user?: {
-      email: string,
-      username: string,
-      roles: string[],
-      maxRolePriority: number,
-      /**
-       * Added by `middlewares/auth::checkInstitution`
-       */
-      institution?: string
-    }
+    user?: import('~/models/users').FullUser
+    /**
+     * Possible namespaces wanted by user
+     *
+     * Added by `middlewares/auth::requireNamespace`
+     * (already included with `lib/express-utils::createSecuredRoute`)
+     */
+    namespaces?: import('~/models/users').FullUser['memberships']
+    /**
+     * Possible namespaces' ids wanted by user
+     *
+     * Added by `middlewares/auth::requireNamespace`
+     * (already included with `lib/express-utils::createSecuredRoute`)
+     */
+    namespaceIds?: string[]
   }
   export interface Response {
     /**

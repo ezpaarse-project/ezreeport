@@ -1,21 +1,21 @@
-import type { History, Task } from '~/lib/prisma';
+import type { History, Namespace } from '~/lib/prisma';
 import prisma from '~/lib/prisma';
 
 /**
  * Get count of history entries in DB
  *
- * @param institution The institution of the task. If provided,
- * will restrict search to the instituion provided
+ * @param namespace The namespace of the task. If provided,
+ * will restrict search to the namespace provided
  *
  * @returns The entries count
  */
-export const getCountHistory = async (institution?: Task['institution']): Promise<number> => {
+export const getCountHistory = async (namespace?: Namespace): Promise<number> => {
   await prisma.$connect();
 
   const count = await prisma.history.count({
     where: {
       task: {
-        institution,
+        namespaceId: namespace?.id,
       },
     },
   });
@@ -28,8 +28,8 @@ export const getCountHistory = async (institution?: Task['institution']): Promis
  * Get all history entry in DB
  *
  * @param opts Requests options
- * @param instituion he institution of the task. If provided,
- * will restrict search to the instituion provided
+ * @param namespaceIds The namespaces of the task. If provided,
+ * will restrict search to the namespace provided
  *
  * @returns History entry list
  */
@@ -39,7 +39,7 @@ export const getAllHistoryEntries = async (
     count?: number,
     previous?: History['id']
   },
-  institution?: Task['institution'],
+  namespaceIds?: Namespace['id'][],
 ) => {
   await prisma.$connect();
 
@@ -47,13 +47,13 @@ export const getAllHistoryEntries = async (
     take: opts?.count,
     skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
     cursor: opts?.previous ? { id: opts.previous } : undefined,
-    where: institution ? { task: { institution } } : undefined,
+    where: namespaceIds ? { task: { namespaceId: { in: namespaceIds } } } : undefined,
     include: {
       task: {
         select: {
           id: true,
           name: true,
-          institution: true,
+          namespace: true,
           recurrence: true,
           nextRun: true,
           lastRun: true,
@@ -72,5 +72,3 @@ export const getAllHistoryEntries = async (
 
   return entries;
 };
-
-export default getAllHistoryEntries;

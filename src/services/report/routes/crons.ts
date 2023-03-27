@@ -6,44 +6,44 @@ import {
   stopCron
 } from '~/lib/cron';
 import { CustomRouter } from '~/lib/express-utils';
-import { Roles } from '~/models/roles';
+import { requireAPIKey } from '~/middlewares/auth';
 
 const router = CustomRouter('crons')
   /**
    * Get all possible crons
    */
-  .createSecuredRoute('GET /', Roles.SUPER_USER, async (_req, _res) => getAllCrons())
+  .createRoute('GET /', async (_req, _res) => getAllCrons(), requireAPIKey)
 
   /**
    * Get info about specific cron
    */
-  .createSecuredRoute('GET /:cron', Roles.SUPER_USER, async (req, _res) => {
+  .createRoute('GET /:cron', async (req, _res) => {
     const { cron } = req.params;
     return getCron(cron);
-  })
+  }, requireAPIKey)
 
   /**
    * Start specific cron
    */
-  .createSecuredRoute('PUT /:cron/start', Roles.SUPER_USER, async (req, _res) => {
+  .createRoute('PUT /:cron/start', async (req, _res) => {
     const { cron } = req.params;
     return startCron(cron);
-  })
+  }, requireAPIKey)
 
   /**
    * Stop specific cron
    */
-  .createSecuredRoute('PUT /:cron/stop', Roles.SUPER_USER, async (req, _res) => {
+  .createRoute('PUT /:cron/stop', async (req, _res) => {
     const { cron } = req.params;
     return stopCron(cron);
-  })
+  }, requireAPIKey)
 
   /**
    * Force a specific cron to run
    */
-  .createSecuredRoute('POST /:cron/force', Roles.SUPER_USER, async (req, _res) => {
+  .createRoute('POST /:cron/force', async (req, _res) => {
     const { cron } = req.params;
     return forceCron(cron);
-  });
+  }, requireAPIKey);
 
 export default router;

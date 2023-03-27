@@ -4,9 +4,9 @@ services:
   db:
     image: postgres:15.1-alpine3.17
     environment:
-      - POSTGRES_USER=DATABASE_USER
-      - POSTGRES_DB=DATABASE_DB
-      - POSTGRES_PASSWORD=DATABASE_PASSWORD
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_DB=${DATABASE_DB}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
     volumes:
       - ./data/db:/var/lib/postgresql/data
     deploy:
@@ -65,10 +65,8 @@ services:
       # workers
       - WORKERS_CONCURRENCE
       - WORKERS_MAX_EXEC_TIME
-      # ezmesure
-      - EZMESURE_AUTH_SECRET
-      - EZMESURE_DEPOSITORS_INDEX
       # report specfic
+      - REPORT_ADMIN_KEY
       - REPORT_CRON_TZ
       - REPORT_CRON_TIMER_GENERATE_REPORT
       - REPORT_CRON_TIMER_PURGE_OLD_REPORT

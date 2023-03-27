@@ -1,33 +1,48 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import swaggerUi from 'swagger-ui-express';
-import { HTTPError } from './types/errors';
 import openapi from './openapi.json';
+import { HTTPError } from './types/errors';
+
 import authRouter from './routes/auth';
 import cronsRouter from './routes/crons';
 import filesRouter from './routes/files';
 import healthRouter from './routes/health';
 import historyRouter from './routes/history';
-import institutionsRouter from './routes/institutions';
+import namespacesRouter from './routes/namespaces';
 import queuesRouter from './routes/queues';
 import tasksRouter from './routes/tasks';
 import templatesRouter from './routes/templates';
 import unsubscribeRouter from './routes/unsubscribe';
+import usersRouter from './routes/users';
 
 const router = Router()
   /**
-   * Router
+   * Management routes
+   */
+  .use('/namespaces', namespacesRouter)
+  .use('/users', usersRouter)
+
+  /**
+   * Admin routes
+   */
+  .use('/crons', cronsRouter)
+  .use('/queues', queuesRouter)
+
+  /**
+   * Authed routes
    */
   .use('/me', authRouter)
-  .use('/crons', cronsRouter)
   .use('/reports', filesRouter)
-  .use('/health', healthRouter)
   .use('/history', historyRouter)
-  .use('/institutions', institutionsRouter)
-  .use('/queues', queuesRouter)
   .use('/tasks', tasksRouter)
   .use('/templates', templatesRouter)
+
+  /**
+   * Other routes
+  */
   .use('/unsubscribe', unsubscribeRouter)
+  .use('/health', healthRouter)
 
   /**
    * API Docs

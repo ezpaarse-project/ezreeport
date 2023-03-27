@@ -58,7 +58,7 @@ export type AnyTemplate = NewTemplate<keyof Renderers, keyof Fetchers>;
 const templateSchema = Joi.object<AnyTemplate>({
   layouts: Joi.array().items(layoutSchema).required(),
   fetchOptions: Joi.object(),
-  renderer: Joi.string().allow(...Object.keys(renderers)),
+  renderer: Joi.string().valid(...Object.keys(renderers)),
   renderOptions: Joi.object(),
 });
 

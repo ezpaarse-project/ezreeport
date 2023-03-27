@@ -1,100 +1,105 @@
-import type { RequestHandler } from 'express';
+import type { Request, RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { verify } from 'jsonwebtoken';
 import config from '~/lib/config';
-import { elasticGetUser } from '~/lib/elastic';
-import { findInstitutionByCreatorOrRole, findInstitutionByIds } from '~/models/institutions';
-import { getMaxRole, Roles, RoleValues } from '~/models/roles';
+import { getAccessValue, Access } from '~/models/access';
+import { getAllNamespaces } from '~/models/namespaces';
+import { FullUser, getUserByToken } from '~/models/users';
 import { HTTPError } from '~/types/errors';
 
-const { secret: jwtSecret } = config.get('ezmesure');
+const adminKey = config.get('adminKey');
 
-/**
- * Check if current user have the rights scopes.
- *
- * Adds `req.user` with `username` & `email` from Elastic user.
- *
- * @param minRolePriority The minimum role value required.
- *
- * @returns Express middleware
- */
-export const checkRight = (
-  minRolePriority: RoleValues,
-): RequestHandler => async (req, res, next) => {
-  let username = '';
-  try {
-    // Getting given JWT
-    const token = req.headers.authorization ?? '';
-    const regRes = /Bearer (?<token>.*)/i.exec(token);
-    // If no username given/found
-    if (!regRes?.groups?.token) {
-      throw new HTTPError(`'${req.method} ${req.originalUrl}' requires auth`, StatusCodes.UNAUTHORIZED);
-    }
-
-    const jwt = verify(regRes.groups.token, jwtSecret, { algorithms: ['HS256'] });
-
-    if (typeof jwt === 'string') {
-      throw new Error("result can't be string");
-    }
-
-    username = jwt.username;
-  } catch (error) {
-    if (error instanceof HTTPError) {
-      res.errorJson(error);
-    } else {
-      res.errorJson(
-        new HTTPError(`JWT malformed: ${(error as Error).message}`, StatusCodes.BAD_REQUEST),
-      );
-    }
+export const requireUser: RequestHandler = (req, res, next) => {
+  // Getting token
+  const header = req.headers.authorization ?? '';
+  const regexRes = /Bearer (?<token>.*)/i.exec(header);
+  // If no username given/found
+  if (!regexRes?.groups?.token) {
+    res.errorJson(new HTTPError(`'${req.method} ${req.originalUrl}' requires user`, StatusCodes.UNAUTHORIZED));
     return;
   }
 
-  try {
-    const { [username]: user } = await elasticGetUser(username);
-
-    if (user?.enabled) {
-      const maxRole = getMaxRole(user.roles) ?? ['Not found', -1];
-
-      req.user = {
-        username: user.username,
-        email: user.email,
-        roles: user.roles,
-        maxRolePriority: maxRole[1],
-      };
-
-      if (maxRole[1] >= minRolePriority) {
-        next();
-        return;
-      }
+  getUserByToken(regexRes.groups.token).then((user) => {
+    if (!user) {
+      res.errorJson(new HTTPError('User not found', StatusCodes.UNAUTHORIZED));
+      return;
     }
-    throw new HTTPError(`User '${username}' doesn't have the rights to access to '${req.method} ${req.originalUrl}'`, StatusCodes.FORBIDDEN);
-  } catch (error) {
-    res.errorJson(error);
-  }
+
+    req.user = user;
+    next();
+  });
 };
 
-/**
- * Get authed user's institution or given institution (if allowed)
- *
- * Needs to be called after {@link checkRight}
- */
-export const checkInstitution: RequestHandler = async (req, res, next) => {
-  if (req.user) {
-    if (
-      req.user.roles.includes(Roles.SUPER_USER)
-      && (typeof req.query.institution === 'string' || typeof req.query.institution === 'undefined')
-    ) {
-      if (req.query.institution) {
-        const instits = await findInstitutionByIds([req.query.institution]);
-        req.user.institution = instits[0]._id.toString();
-      }
-      next();
-    } else {
-      const id = (await findInstitutionByCreatorOrRole(req.user.username, req.user.roles))?._id;
-      req.user.institution = id?.toString();
-      next();
-    }
+export const requireAPIKey: RequestHandler = (req, res, next) => {
+  // Getting token
+  const token = req.headers['x-api-key'] ?? '';
+  // If no username given/found
+  if (!token) {
+    res.errorJson(new HTTPError(`'${req.method} ${req.originalUrl}' requires API Key`, StatusCodes.UNAUTHORIZED));
+    return;
   }
+
+  if (adminKey !== token) {
+    res.errorJson(new HTTPError('Token is not valid', StatusCodes.UNAUTHORIZED));
+    return;
+  }
+
+  next();
 };
 
-export default checkRight;
+export const requireAdmin: RequestHandler = (req, res, next) => {
+  if (!req.user?.isAdmin) {
+    throw new HTTPError(`'${req.method} ${req.originalUrl}' requires to be admin`, StatusCodes.UNAUTHORIZED);
+  }
+
+  next();
+};
+
+const getPossibleNamespaces = async (
+  req: Request,
+  minAccess: Access,
+): Promise<FullUser['memberships']> => {
+  const minAccessValue = getAccessValue(minAccess);
+
+  if (!req.user) {
+    return [];
+  }
+
+  if (req.user.isAdmin) {
+    const { createdAt, updatedAt } = req.user;
+
+    return (await getAllNamespaces()).map((namespace) => ({
+      access: Access.SUPER_USER,
+      createdAt,
+      updatedAt,
+      namespace,
+    }));
+  }
+
+  return req.user.memberships.filter(
+    ({ access }) => getAccessValue(access) >= minAccessValue,
+  );
+};
+
+export const requireNamespace = (minAccess: Access): RequestHandler => (req, res, next) => {
+  getPossibleNamespaces(req, minAccess).then((possibleNamespaces) => {
+    // Get ids wanted by user
+    const { namespaces: wantedIds } = req.query;
+    let ids = possibleNamespaces.map(({ namespace: { id } }) => id) ?? [];
+
+    if (wantedIds) {
+      if (!Array.isArray(wantedIds)) {
+        throw new HTTPError('Given namespaces ids are not an array', StatusCodes.BAD_REQUEST);
+      }
+
+      ids = wantedIds.map((id) => id.toString()).filter((id) => ids.includes(id));
+    }
+
+    if (ids.length <= 0) {
+      throw new HTTPError("Can't find your namespace(s)", StatusCodes.BAD_REQUEST);
+    }
+
+    req.namespaceIds = ids;
+    req.namespaces = possibleNamespaces.filter(({ namespace: { id } }) => ids.includes(id));
+    next();
+  });
+};

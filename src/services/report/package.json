@@ -41,7 +41,6 @@
     "handlebars": "^4.7.7",
     "http-status-codes": "^2.2.0",
     "joi": "^17.7.0",
-    "jsonwebtoken": "^9.0.0",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.28",
     "lodash": "^4.17.21",

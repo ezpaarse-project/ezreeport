@@ -151,25 +151,6 @@ export const elasticCheckIndex = async (index: string): Promise<boolean> => {
 };
 
 /**
- * Get specific user in elastic security
- *
- * @param name The user's username
- *
- * @returns The user data
- */
-export const elasticGetUser = async (
-  name: string,
-): Promise<Record<string, ElasticUser | undefined>> => {
-  const elastic = await getElasticClient();
-
-  const { body } = await elastic.security.getUser<Record<string, ElasticUser | undefined>>({
-    username: name,
-  });
-
-  return body;
-};
-
-/**
  * Shorthand to scroll with elastic
  *
  * @param params The search params

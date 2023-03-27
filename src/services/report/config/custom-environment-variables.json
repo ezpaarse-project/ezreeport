@@ -2,6 +2,7 @@
   "logLevel": "LOG_LEVEL",
   "port": { "__name": "HTTP_PORT", "__format": "number" },
   "allowedOrigins": "API_ALLOWED_ORIGINS",
+  "adminKey": "REPORT_ADMIN_KEY",
   "elasticsearch": {
     "url": "ELASTIC_URL",
     "apiKey": "ELASTIC_API_KEY",
@@ -16,10 +17,6 @@
   "workers": {
     "concurrence": { "__name": "WORKERS_CONCURRENCE", "__format": "number" },
     "maxExecTime": { "__name": "WORKERS_MAX_EXEC_TIME", "__format": "number" }
-  },
-  "ezmesure": {
-    "secret": "EZMESURE_AUTH_SECRET",
-    "depositorsIndex": "EZMESURE_DEPOSITORS_INDEX"
   },
   "crons": {
     "options": {

@@ -52,11 +52,8 @@ export EMAIL_MEM_LIMIT=3 # in Go. Should be at least `0.3 + (WORKERS_CONCURRENCE
 export WORKERS_CONCURRENCE=5
 export WORKERS_MAX_EXEC_TIME=10000
 
-# ezmesure
-export EZMESURE_AUTH_SECRET="" # ezMesure JWT secret
-export EZMESURE_DEPOSITORS_INDEX="depositors"
-
 # report service
+export REPORT_ADMIN_KEY=""
 export REPORT_CRON_TZ="" # Timezone wanted for the cron execution
 export REPORT_CRON_TIMER_GENERATE_REPORT="0 12 * * *"
 export REPORT_CRON_TIMER_PURGE_OLD_REPORT="0 12 * * *"

@@ -11,10 +11,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// TODO: rename to Report
 model Task {
   id          String     @id @default(uuid())
   name        String
-  institution String
+  namespaceId String
+  namespace   Namespace  @relation(fields: [namespaceId], references: [id], onDelete: Cascade)
   template    Json
   targets     String[]
   recurrence  Recurrence
@@ -25,7 +27,16 @@ model Task {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime?  @updatedAt
 
-  @@index([institution])
+  @@index([namespaceId])
+}
+
+enum Recurrence {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  BIENNIAL
+  YEARLY
 }
 
 model History {
@@ -38,11 +49,43 @@ model History {
   createdAt DateTime @default(now())
 }
 
-enum Recurrence {
-  DAILY
-  WEEKLY
-  MONTHLY
-  QUARTERLY
-  BIENNIAL
-  YEARLY
+model User {
+  username    String       @id
+  token       String       @unique
+  isAdmin     Boolean      @default(false)
+  memberships Membership[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime?    @updatedAt
+
+  @@index([token])
+}
+
+model Membership {
+  username    String
+  user        User      @relation(fields: [username], references: [username], onDelete: Cascade)
+  namespaceId String
+  namespace   Namespace @relation(fields: [namespaceId], references: [id], onDelete: Cascade)
+  access      Access
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+
+  @@id([username, namespaceId])
+}
+
+enum Access {
+  READ
+  READ_WRITE
+  SUPER_USER
+}
+
+model Namespace {
+  id           String       @id @default(uuid())
+  name         String
+  fetchLogin   Json
+  fetchOptions Json
+  logoId       String?
+  memberships  Membership[]
+  tasks        Task[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime?    @updatedAt
 }

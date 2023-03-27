@@ -43,7 +43,7 @@ export type AnyLayout = NewLayout<keyof Fetchers>;
 
 export const layoutSchema = Joi.object<AnyLayout>({
   data: Joi.any(),
-  fetcher: Joi.string().allow(...Object.keys(fetchers)),
+  fetcher: Joi.string().valid(...Object.keys(fetchers)),
   fetchOptions: Joi.object(),
   figures: Joi.array().items(figureSchema).required(),
 });
