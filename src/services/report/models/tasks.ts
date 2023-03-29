@@ -19,10 +19,6 @@ import { getTemplateByName, taskTemplateSchema } from './templates';
 
 type InputTask = Pick<Prisma.TaskCreateInput, 'name' | 'template' | 'targets' | 'recurrence' | 'nextRun' | 'enabled'>;
 type InputHistory = Pick<Prisma.HistoryCreateWithoutTaskInput, 'type' | 'message' | 'data'>;
-type FullTask = Omit<Task, 'namespaceId'> & {
-  namespace: Pick<Namespace, 'id' | 'name' | 'logoId' | 'createdAt' | 'updatedAt'>,
-  history: History[]
-};
 
 /**
  * Joi schema
@@ -80,15 +76,38 @@ const isValidCreateTask = (data: unknown): data is (InputTask & { namespace: str
   return true;
 };
 
-const prismaNamespaceSelect = {
-  select: {
-    id: true,
-    name: true,
-    logoId: true,
-    createdAt: true,
-    updatedAt: true,
-  },
+type FullTask = Pick<Task, 'id' | 'name' | 'template' | 'targets' | 'recurrence' | 'nextRun' | 'lastRun' | 'enabled' | 'createdAt' | 'updatedAt'> & {
+  namespace: Pick<Namespace, 'id' | 'name' | 'logoId' | 'createdAt' | 'updatedAt'>,
+  history: History[]
 };
+
+const prismaTaskSelect = {
+  id: true,
+  name: true,
+  template: true,
+  targets: true,
+  recurrence: true,
+  nextRun: true,
+  lastRun: true,
+  enabled: true,
+  createdAt: true,
+  updatedAt: true,
+
+  namespace: {
+    select: {
+      id: true,
+      name: true,
+      logoId: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  },
+  history: {
+    orderBy: {
+      createdAt: 'asc',
+    },
+  },
+} satisfies Prisma.TaskSelect;
 
 /**
  * Get count of tasks in DB
@@ -169,14 +188,7 @@ export const getTaskById = (id: Task['id'], namespaceIds?: Namespace['id'][]): P
       in: namespaceIds,
     },
   },
-  include: {
-    namespace: prismaNamespaceSelect,
-    history: {
-      orderBy: {
-        createdAt: 'asc',
-      },
-    },
-  },
+  select: prismaTaskSelect,
 });
 
 /**
@@ -219,14 +231,7 @@ export const createTask = async (
         create: { type: 'creation', message: `Tâche créée par ${creator}` },
       },
     },
-    include: {
-      namespace: prismaNamespaceSelect,
-      history: {
-        orderBy: {
-          createdAt: 'asc',
-        },
-      },
-    },
+    select: prismaTaskSelect,
   });
 };
 
@@ -250,14 +255,7 @@ export const deleteTaskById = async (id: Task['id'], namespaceIds?: Namespace['i
     where: {
       id,
     },
-    include: {
-      namespace: prismaNamespaceSelect,
-      history: {
-        orderBy: {
-          createdAt: 'asc',
-        },
-      },
-    },
+    select: prismaTaskSelect,
   });
 };
 
@@ -319,14 +317,7 @@ export const editTaskByIdWithHistory = async (
       nextRun,
       history: entry && { create: { ...entry, createdAt: formatISO(new Date()) } },
     },
-    include: {
-      namespace: prismaNamespaceSelect,
-      history: {
-        orderBy: {
-          createdAt: 'asc',
-        },
-      },
-    },
+    select: prismaTaskSelect,
   });
 };
 

@@ -289,7 +289,7 @@ const router = CustomRouter('tasks')
       throw new NotFoundError(`Task ${id} not found`);
     }
 
-    const index = task.targets.findIndex((email) => email === data.email);
+    const index = task.targets.findIndex((email: string) => email === data.email);
     if (index < 0) {
       throw new ArgumentError(`Email "${data.email}" not found in targets of task "${task.id}"`);
     }
