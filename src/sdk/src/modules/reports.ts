@@ -2,7 +2,7 @@ import { parseISO } from 'date-fns';
 import type { ResponseType } from 'axios';
 import { Stream } from 'stream';
 import axios, { axiosWithErrorFormatter } from '../lib/axios';
-import createEventfullPromise from '../lib/promises';
+import createEventfulPromise from '../lib/promises';
 import {
   parsePeriod,
   setTimeoutAsync,
@@ -145,7 +145,7 @@ export type GenerationProgressEvent = { progress: number, status: FullReportJob[
  */
 export const startAndListenGeneration = (
   ...p: Parameters<typeof startGeneration>
-) => createEventfullPromise(
+) => createEventfulPromise(
   async (events) => {
     const { content: { id, queue } } = await startGeneration(...p);
     events.emit('started', { id, queue });

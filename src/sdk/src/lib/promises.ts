@@ -7,7 +7,7 @@ interface EventEmitterBase {
   emit: (...p: Parameters<EventEmitter['emit']>) => this,
 }
 
-export type EventfullPromise<T> = Promise<T> & EventEmitterBase;
+export type EventfulPromise<T> = Promise<T> & EventEmitterBase;
 
 /**
  * Attach a `EventEmitter` to a `Promise` returned by the `executor`
@@ -15,15 +15,15 @@ export type EventfullPromise<T> = Promise<T> & EventEmitterBase;
  * @param executor Executor returning the promise. The `emitter` is passed to the executor as param.
  * @param emitter `EventEmitter` attached. By default it's a new instance.
  *
- * @returns The EventfullPromise
+ * @returns The EventfulPromise
  */
-const createEventfullPromise = <T>(
+const createEventfulPromise = <T>(
   executor: (emitter: EventEmitter | EventEmitterBase) => Promise<T>,
   emitter = new EventEmitter(),
-): EventfullPromise<T> => {
+): EventfulPromise<T> => {
   const promise = executor(emitter);
 
-  const res: EventfullPromise<T> = Object.assign(
+  const res: EventfulPromise<T> = Object.assign(
     promise,
     {
       on: (...p) => { emitter.on(...p); return res; },
@@ -35,4 +35,4 @@ const createEventfullPromise = <T>(
   return res;
 };
 
-export default createEventfullPromise;
+export default createEventfulPromise;
