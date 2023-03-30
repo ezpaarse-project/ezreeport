@@ -1,6 +1,7 @@
 import { parseISO } from 'date-fns';
 import axios, { axiosWithErrorFormatter, type ApiResponse, type PaginatedApiResponse } from '../lib/axios';
 import { parseHistory, type History, type RawHistory } from './history';
+import { parseNamespace, type Namespace, type RawNamespace } from './namespaces';
 import type { Layout } from './templates';
 
 export enum Recurrence {
@@ -15,11 +16,12 @@ export enum Recurrence {
 export interface RawTask {
   id: string,
   name: string,
-  institution: string,
+  namespaceId: string,
   recurrence: Recurrence,
   nextRun: string, // Date
   lastRun?: string, // Date
   enabled: boolean,
+
   createdAt: string, // Date
   updatedAt?: string, // Date
 }
@@ -27,6 +29,7 @@ export interface RawTask {
 export interface Task extends Omit<RawTask, 'nextRun' | 'lastRun' | 'createdAt' | 'updatedAt'> {
   nextRun: Date,
   lastRun?: Date,
+
   createdAt: Date,
   updatedAt?: Date,
 }
@@ -42,24 +45,28 @@ const parseTask = (task: RawTask): Task => ({
   ...task,
   nextRun: parseISO(task.nextRun),
   lastRun: task.lastRun ? parseISO(task.lastRun) : undefined,
+
   createdAt: parseISO(task.createdAt),
   updatedAt: task.updatedAt ? parseISO(task.updatedAt) : undefined,
 });
 
-export interface RawFullTask extends RawTask {
+export interface RawFullTask extends Omit<RawTask, 'namespaceId'> {
   template: {
     extends: string,
     fetchOptions?: object,
     inserts?: (Layout & { at: number })[],
   },
+  namespace: RawNamespace,
   targets: string[],
   history: RawHistory[]
 }
 
-export interface FullTask extends Omit<RawFullTask, 'nextRun' | 'lastRun' | 'createdAt' | 'updatedAt' | 'history'> {
+export interface FullTask extends Omit<RawFullTask, 'namespace' | 'history' | 'nextRun' | 'lastRun' | 'createdAt' | 'updatedAt'> {
+  namespace: Namespace,
   history: History[],
   nextRun: Date,
   lastRun?: Date,
+
   createdAt: Date,
   updatedAt?: Date,
 }
@@ -73,14 +80,23 @@ export interface FullTask extends Omit<RawFullTask, 'nextRun' | 'lastRun' | 'cre
  */
 const parseFullTask = (task: RawFullTask): FullTask => {
   const {
+    namespace,
+    history,
     template,
     targets,
-    history,
     ...rawTask
   } = task;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { namespaceId, ...parsedTask } = parseTask({
+    namespaceId: namespace.id,
+    ...rawTask,
+  });
+
   return {
-    ...parseTask(rawTask),
+    ...parsedTask,
+
+    namespace: parseNamespace(namespace),
     history: history.map(parseHistory),
     template,
     targets,
@@ -88,7 +104,7 @@ const parseFullTask = (task: RawFullTask): FullTask => {
 };
 
 export interface InputTask extends Pick<FullTask, 'name' | 'template' | 'targets' | 'recurrence'> {
-  institution?: FullTask['institution'],
+  namespace?: Task['namespaceId'],
   nextRun?: FullTask['nextRun'],
   enabled?: FullTask['enabled'],
 }
@@ -96,23 +112,23 @@ export interface InputTask extends Pick<FullTask, 'name' | 'template' | 'targets
 /**
  * Get all available tasks
  *
- * Needs `tasks-get` permission
+ * Needs `namespaces[namespaceId].tasks-get` permission
  *
  * @param paginationOpts Options for pagination
- * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param namespaces
  *
  * @returns All tasks' info
  */
 export const getAllTasks = async (
   paginationOpts?: { previous?: Task['id'], count?: number },
-  institution?: string,
+  namespaces?: Namespace['name'][],
 ): Promise<PaginatedApiResponse<Task[]>> => {
   const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawTask[]>, 'get'>(
     'get',
     '/tasks',
     {
       params: {
-        institution,
+        namespaces,
         ...(paginationOpts ?? {}),
       },
     },
@@ -130,18 +146,18 @@ export const getAllTasks = async (
  * Needs `namespaces[namespaceId].tasks-post` permission
  *
  * @param task Task's data
- * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param namespaces
  *
  * @returns Created task's info
  */
 export const createTask = async (
   task: InputTask,
-  institution?: string,
+  namespaces?: Namespace['name'][],
 ): Promise<ApiResponse<FullTask>> => {
   const { content, ...response } = await axios.$post<RawFullTask>(
     '/tasks',
     task,
-    { params: { institution } },
+    { params: { namespaces } },
   );
 
   return {
@@ -156,15 +172,15 @@ export const createTask = async (
  * Needs `namespaces[namespaceId].tasks-get-task` permission
  *
  * @param id Task's id
- * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param namespaces
  *
  * @returns Task's info
  */
 export const getTask = async (
   id: Task['id'],
-  institution?: string,
+  namespaces?: Namespace['name'][],
 ): Promise<ApiResponse<FullTask>> => {
-  const { content, ...response } = await axios.$get<RawFullTask>(`/tasks/${id}`, { params: { institution } });
+  const { content, ...response } = await axios.$get<RawFullTask>(`/tasks/${id}`, { params: { namespaces } });
 
   return {
     ...response,
@@ -179,19 +195,19 @@ export const getTask = async (
  *
  * @param id Task's id
  * @param task New Task's data
- * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param namespaces
  *
  * @returns Updated Task's info
  */
 export const updateTask = async (
   id: Task['id'],
   task: InputTask,
-  institution?: string,
+  namespaces?: Namespace['name'][],
 ): Promise<ApiResponse<FullTask>> => {
   const { content, ...response } = await axios.$put<RawFullTask>(
     `/tasks/${id}`,
     task,
-    { params: { institution } },
+    { params: { namespaces } },
   );
 
   return {
@@ -206,15 +222,15 @@ export const updateTask = async (
  * Needs `namespaces[namespaceId].tasks-delete-task` permission
  *
  * @param id Task's id
- * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param namespaces
  *
  * @returns Deleted Task's info
  */
 export const deleteTask = async (
   id: Task['id'],
-  institution?: string,
+  namespaces?: Namespace['name'][],
 ): Promise<ApiResponse<FullTask>> => {
-  const { content, ...response } = await axios.$delete<RawFullTask>(`/tasks/${id}`, { params: { institution } });
+  const { content, ...response } = await axios.$delete<RawFullTask>(`/tasks/${id}`, { params: { namespaces } });
 
   return {
     ...response,
@@ -228,18 +244,18 @@ export const deleteTask = async (
  * Needs `namespaces[namespaceId].tasks-put-task-enable` permission
  *
  * @param id Task's id
- * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param namespaces
  *
  * @returns Updated task's info
  */
 export const enableTask = async (
   id: Task['id'],
-  institution?: string,
+  namespaces?: Namespace['name'][],
 ): Promise<ApiResponse<FullTask>> => {
   const { content, ...response } = await axios.$put<RawFullTask>(
     `/tasks/${id}/enable`,
     undefined,
-    { params: { institution } },
+    { params: { namespaces } },
   );
 
   return {
@@ -254,18 +270,18 @@ export const enableTask = async (
  * Needs `namespaces[namespaceId].tasks-put-task-disable` permission
  *
  * @param id Task's id
- * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param namespaces
  *
  * @returns Updated task's info
  */
 export const disableTask = async (
   id: Task['id'],
-  institution?: string,
+  namespaces?: Namespace['name'][],
 ): Promise<ApiResponse<FullTask>> => {
   const { content, ...response } = await axios.$put<RawFullTask>(
     `/tasks/${id}/disable`,
     undefined,
-    { params: { institution } },
+    { params: { namespaces } },
   );
 
   return {

@@ -8,6 +8,7 @@ export interface RawHistory {
   type: string,
   message: string,
   data?: object,
+
   createdAt: string, // Date
 }
 
@@ -32,6 +33,7 @@ export interface HistoryWithTask extends Omit<History, 'taskId'> {
  */
 export const parseHistory = (entry: RawHistory): History => ({
   ...entry,
+
   createdAt: parseISO(entry.createdAt),
 });
 
@@ -44,6 +46,7 @@ export const parseHistory = (entry: RawHistory): History => ({
  */
 const parseHistoryWithTask = (entry: RawHistoryWithTask): HistoryWithTask => ({
   ...entry,
+
   createdAt: parseISO(entry.createdAt),
 });
 
@@ -53,20 +56,20 @@ const parseHistoryWithTask = (entry: RawHistoryWithTask): HistoryWithTask => ({
  * Needs `namespaces[namespaceId].history-get` permission
  *
  * @param paginationOpts Options for pagination
- * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param namespaces
  *
  * @returns All history entries' info
  */
 export const getAllEntries = async (
   paginationOpts?: { previous?: History['id'], count?: number },
-  institution?: string,
+  namespaces?: string[],
 ): Promise<PaginatedApiResponse<HistoryWithTask[]>> => {
   const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawHistoryWithTask[]>, 'get'>(
     'get',
     '/history',
     {
       params: {
-        institution,
+        namespaces,
         ...(paginationOpts ?? {}),
       },
     },

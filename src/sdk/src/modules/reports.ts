@@ -92,7 +92,7 @@ type FullReportJob = FullJob<RawReportData, RawReportResult>;
  *
  * @param taskId Id of the task
  * @param params Other params for overriding default
- * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param namespaces
  *
  * @returns Job info to track progress
  */
@@ -109,7 +109,7 @@ export const startGeneration = (
      */
     period?: Period,
   },
-  institution?: string,
+  namespaces?: string[],
 ) => axios.$post<ReportJob>(
   `/tasks/${taskId}/run`,
   null,
@@ -118,7 +118,7 @@ export const startGeneration = (
       test_emails: params?.testEmails,
       period_start: params?.period?.start,
       period_end: params?.period?.end,
-      institution,
+      namespaces,
     },
   },
 );
@@ -134,7 +134,7 @@ export type GenerationProgressEvent = { progress: number, status: FullReportJob[
  *
  * @param taskId Id of the task
  * @param params Other params for overriding default
- * @param institution Force institution
+ * @param namespaces
  *
  * @fires #started When generation started. See `GenerationStartedEvent`.
  * @fires #progress When generation progress. See `GenerationProgressEvent`. Job's progress is
@@ -204,14 +204,14 @@ type GetJobParams = Parameters<typeof getJob>;
  * Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename` permission
  *
  * @param pathName Path to the file
- * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param namespaces
  * @param responseType Wanted response type
  *
  * @returns The file's content
  */
 const getFile = async <Result>(
   pathName: string,
-  institution?: string,
+  namespaces?: string[],
   responseType?: ResponseType,
 ) => (
   await axiosWithErrorFormatter<Result, 'get'>(
@@ -219,7 +219,7 @@ const getFile = async <Result>(
     `/reports/${pathName}`,
     {
       responseType,
-      params: { institution },
+      params: { namespaces },
     },
   )
 ).data;
@@ -231,17 +231,17 @@ const getFile = async <Result>(
  *
  * @param name Name of the report
  * @param ext The extension of the result (renderer dependent)
- * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param namespaces
  * @param responseType Wanted response type
  *
  * @returns The report's content
  */
 export const getReportFileByName = <Result extends keyof ResponseTypeMap = 'text'>(
   name: string,
-  institution?: string,
+  namespaces?: string[],
   responseType?: Result,
   ext = 'pdf',
-) => getFile<ResponseTypeMap[Result]>(`${name}.rep.${ext}`, institution, responseType);
+) => getFile<ResponseTypeMap[Result]>(`${name}.rep.${ext}`, namespaces, responseType);
 
 /**
  * Get report main file (the result) by giving job's info
@@ -251,7 +251,7 @@ export const getReportFileByName = <Result extends keyof ResponseTypeMap = 'text
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
- * @param institution Force institution
+ * @param namespaces
  * @param responseType Wanted response type
  *
  * @returns The report's content
@@ -259,18 +259,18 @@ export const getReportFileByName = <Result extends keyof ResponseTypeMap = 'text
 export const getReportFileByJob = async <Result extends keyof ResponseTypeMap = 'text'>(
   queueName: GetJobParams[0],
   jobId: GetJobParams[1],
-  institution?: GetJobParams[2],
+  namespaces?: GetJobParams[2],
   responseType?: Result,
 ) => {
   const { content: { result } } = await getJob<RawReportData, RawReportResult>(
     queueName,
     jobId,
-    institution,
+    namespaces,
   );
   if (!result) {
     throw new Error('Job have no result');
   }
-  return getFile<ResponseTypeMap[Result]>(result.detail?.files.report ?? '', institution, responseType);
+  return getFile<ResponseTypeMap[Result]>(result.detail?.files.report ?? '', namespaces, responseType);
 };
 
 /**
@@ -279,7 +279,7 @@ export const getReportFileByJob = async <Result extends keyof ResponseTypeMap = 
  * Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename` permission
  *
  * @param name Name of the report
- * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param namespaces
  * @param responseType Wanted response type. **If provided with anything but `json` you will have to
  * cast in your type to avoid auto-completion issues.**
  *
@@ -287,10 +287,10 @@ export const getReportFileByJob = async <Result extends keyof ResponseTypeMap = 
  */
 export const getReportDetailByName = async (
   name: string,
-  institution?: string,
+  namespaces?: string[],
   responseType?: keyof ResponseTypeMap,
 ) => {
-  const res = await getFile<RawReportResult>(`${name}.det.json`, institution, responseType);
+  const res = await getFile<RawReportResult>(`${name}.det.json`, namespaces, responseType);
   if (!responseType || responseType === 'json') {
     return parseReportResult(res);
   }
@@ -307,7 +307,7 @@ export const getReportDetailByName = async (
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
- * @param institution Force institution
+ * @param namespaces
  * @param responseType Wanted response type. **If provided with anything but `json` you will have to
  * cast in your type to avoid auto-completion issues.**
  *
@@ -316,18 +316,18 @@ export const getReportDetailByName = async (
 export const getReportDetailByJob = async (
   queueName: GetJobParams[0],
   jobId: GetJobParams[1],
-  institution?: GetJobParams[2],
+  namespaces?: GetJobParams[2],
   responseType?: keyof ResponseTypeMap,
 ) => {
   const { content: { result } } = await getJob<RawReportData, RawReportResult>(
     queueName,
     jobId,
-    institution,
+    namespaces,
   );
   if (!result) {
     throw new Error('Job have no result');
   }
-  const res = await getFile<RawReportResult>(result.detail?.files.detail ?? '', institution, responseType);
+  const res = await getFile<RawReportResult>(result.detail?.files.detail ?? '', namespaces, responseType);
   if (!responseType || responseType === 'json') {
     return parseReportResult(res);
   }
@@ -342,16 +342,16 @@ export const getReportDetailByJob = async (
  * Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename` permission
  *
  * @param name Name of the report
- * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param namespaces
  * @param responseType Wanted response type
  *
  * @returns The debug's content
  */
 export const getReportDebugByName = <Result extends keyof ResponseTypeMap = 'json'>(
   name: string,
-  institution?: string,
+  namespaces?: string[],
   responseType?: Result,
-) => getFile<ResponseTypeMap[Result]>(`${name}.deb.json`, institution, responseType);
+) => getFile<ResponseTypeMap[Result]>(`${name}.deb.json`, namespaces, responseType);
 
 /**
  * Get report debug file by giving job's info
@@ -361,7 +361,7 @@ export const getReportDebugByName = <Result extends keyof ResponseTypeMap = 'jso
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
- * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param namespaces
  * @param responseType Wanted response type
  *
  * @returns The debug's content
@@ -369,16 +369,16 @@ export const getReportDebugByName = <Result extends keyof ResponseTypeMap = 'jso
 export const getReportDebugByJob = async <Result extends keyof ResponseTypeMap = 'json'>(
   queueName: GetJobParams[0],
   jobId: GetJobParams[1],
-  institution?: GetJobParams[2],
+  namespaces?: GetJobParams[2],
   responseType?: Result,
 ) => {
   const { content: { result } } = await getJob<RawReportData, RawReportResult>(
     queueName,
     jobId,
-    institution,
+    namespaces,
   );
   if (!result) {
     throw new Error('Job have no result');
   }
-  return getFile<ResponseTypeMap[Result]>(result.detail?.files.debug ?? '', institution, responseType);
+  return getFile<ResponseTypeMap[Result]>(result.detail?.files.debug ?? '', namespaces, responseType);
 };

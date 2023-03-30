@@ -120,16 +120,16 @@ export const getQueueJobs = async <Data, Result>(
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
- * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param namespaces
  *
  * @returns Job full info
  */
 export const getJob = async <Data, Result>(
   queueName: Job<Data>['queue'],
   jobId: Job<Data>['id'],
-  institution?: string,
+  namespaces?: string[],
 ): Promise<ApiResponse<FullJob<Data, Result>>> => {
-  const { content, ...response } = await axios.$get<RawFullJob<Data, Result>>(`/queues/${queueName}/jobs/${jobId}`, { params: { institution } });
+  const { content, ...response } = await axios.$get<RawFullJob<Data, Result>>(`/queues/${queueName}/jobs/${jobId}`, { params: { namespaces } });
   return {
     ...response,
     content: parseFullJob(content),
@@ -143,16 +143,16 @@ export const getJob = async <Data, Result>(
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
- * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param namespaces
  *
  * @returns queue info
  */
 export const retryJob = async <Data, Result>(
   queueName: Job<Data>['queue'],
   jobId: Job<Data>['id'],
-  institution?: string,
+  namespaces?: string[],
 ): Promise<ApiResponse<FullJob<Data, Result>>> => {
-  const { content, ...response } = await axios.$post<RawFullJob<Data, Result>>(`/queues/${queueName}/jobs/${jobId}/retry`, { params: { institution } });
+  const { content, ...response } = await axios.$post<RawFullJob<Data, Result>>(`/queues/${queueName}/jobs/${jobId}/retry`, { params: { namespaces } });
   return {
     ...response,
     content: parseFullJob(content),
