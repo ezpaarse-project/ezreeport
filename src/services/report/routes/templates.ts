@@ -1,5 +1,5 @@
 import { CustomRouter } from '~/lib/express-utils';
-import { Access } from '~/models/access';
+import { requireUser } from '~/middlewares/auth';
 import {
   createTemplate,
   deleteTemplateByName, editTemplateByName, getAllTemplates, getTemplateByName
@@ -9,7 +9,7 @@ const router = CustomRouter('templates')
   /**
    * Get possibles templates
    */
-  .createNamespacedRoute('GET /', Access.READ, (_req, _res) => getAllTemplates())
+  .createRoute('GET /', (_req, _res) => getAllTemplates(), requireUser)
 
   /**
    * Create template
@@ -23,7 +23,7 @@ const router = CustomRouter('templates')
   /**
    * Get specific template
    */
-  .createNamespacedRoute('GET /:name(*)', Access.READ, async (req, _res) => {
+  .createRoute('GET /:name(*)', async (req, _res) => {
     const { name } = req.params;
 
     const template = await getTemplateByName(name);
@@ -32,7 +32,7 @@ const router = CustomRouter('templates')
     }
 
     return template;
-  })
+  }, requireUser)
 
   /**
    * Edit template
