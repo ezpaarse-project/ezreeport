@@ -1,20 +1,93 @@
-import axios from '../lib/axios';
+import { parseISO } from 'date-fns';
+import axios, { ApiResponse } from '../lib/axios';
+import { parseNamespace, type Namespace, type RawNamespace } from './namespaces';
 
-enum Roles {
-  SUPER_USER = 9999,
-  READ_WRITE = 2,
-  READ = 1,
+export enum Access {
+  READ = 'READ',
+  READ_WRITE = 'READ_WRITE',
+  SUPER_USER = 'SUPER_USER',
 }
 
-export interface User {
+interface RawMembership {
+  access: Access,
+  namespace: RawNamespace,
+
+  createdAt: string,
+  updatedAt?: string,
+}
+
+export interface Membership extends Omit<RawMembership, 'namespace' | 'createdAt' | 'updatedAt'> {
+  namespace: Namespace,
+
+  createdAt: Date,
+  updatedAt?: Date,
+}
+
+/**
+ * Transform raw data from JSON, to JS usable data
+ *
+ * @param membership Raw membership
+ *
+ * @returns Parsed membership
+ */
+const parseMembership = (membership: RawMembership): Membership => ({
+  ...membership,
+  namespace: parseNamespace(membership.namespace),
+
+  createdAt: parseISO(membership.createdAt),
+  updatedAt: membership.updatedAt ? parseISO(membership.updatedAt) : undefined,
+});
+
+interface RawUser {
   username: string,
-  email: string,
-  roles: string[],
-  maxRolePriority: Roles
-  institution?: string
+  token: string,
+  isAdmin: true,
+  memberships: RawMembership[],
+
+  createdAt: string, // Date
+  updatedAt?: string, // Date
 }
 
-export type Permissions = Record<string, boolean>;
+export interface User extends Omit<RawUser, 'memberships' | 'createdAt' | 'updatedAt'> {
+  memberships: Membership[],
+
+  createdAt: Date,
+  updatedAt?: Date,
+}
+
+/**
+ * Transform raw data from JSON, to JS usable data
+ *
+ * @param user Raw user
+ *
+ * @returns Parsed user
+ */
+const parseUser = (user: RawUser): User => ({
+  ...user,
+  memberships: user.memberships.map(parseMembership),
+
+  createdAt: parseISO(user.createdAt),
+  updatedAt: user.updatedAt ? parseISO(user.updatedAt) : undefined,
+});
+
+export type Permissions = {
+  /**
+   * General routes independent of namespaces
+   */
+  general: {
+    [routeId: string]: boolean
+  },
+  /**
+   * Routes who are dependent of namespaces
+   *
+   * If wanted namespace isn't present, then user doesn't have access
+   */
+  namespaces: {
+    [namespaceId: string]: {
+      [routeId: string]: boolean
+    }
+  }
+};
 
 /**
  * Set API token for ezMESURE to axios
@@ -45,16 +118,22 @@ export const isLogged = () => {
 };
 
 /**
- * Get authed user info
+ * Get logged user info
  *
  * Needs `auth-get` permission
  *
- * @returns The authed user info
+ * @returns The logged user info
  */
-export const getCurrentUser = () => axios.$get<User>('/me');
+export const getCurrentUser = async (): Promise<ApiResponse<User>> => {
+  const { content, ...response } = await axios.$get<RawUser>('/me');
+  return {
+    ...response,
+    content: parseUser(content),
+  };
+};
 
 /**
- * Compute auther user permissions
+ * Compute logged user permissions
  *
  * Needs `auth-get-permissions` permission
  *

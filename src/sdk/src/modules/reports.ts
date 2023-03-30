@@ -88,7 +88,7 @@ type FullReportJob = FullJob<RawReportData, RawReportResult>;
 /**
  * Start generation of a report
  *
- * Needs `tasks-post-task-run` permission
+ * Needs `namespaces[namespaceId].tasks-post-task-run` permission
  *
  * @param taskId Id of the task
  * @param params Other params for overriding default
@@ -129,7 +129,8 @@ export type GenerationProgressEvent = { progress: number, status: FullReportJob[
 /**
  * Start generation of a report and track progress
  *
- * Needs `tasks-post-task-run` & `queues-get-queue-jobs-jobId` permissions
+ * Needs `namespaces[namespaceId].tasks-post-task-run`
+ * & `namespaces[namespaceId].queues-get-queue-jobs-jobId` permissions
  *
  * @param taskId Id of the task
  * @param params Other params for overriding default
@@ -200,7 +201,7 @@ type GetJobParams = Parameters<typeof getJob>;
 /**
  * Get report's related file
  *
- * Needs `reports-get-year-yearMonth-filename` permission
+ * Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename` permission
  *
  * @param pathName Path to the file
  * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
@@ -226,7 +227,7 @@ const getFile = async <Result>(
 /**
  * Get report main file (the result) by giving the report's name
  *
- * Needs `reports-get-year-yearMonth-filename` permission
+ * Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename` permission
  *
  * @param name Name of the report
  * @param ext The extension of the result (renderer dependent)
@@ -245,7 +246,8 @@ export const getReportFileByName = <Result extends keyof ResponseTypeMap = 'text
 /**
  * Get report main file (the result) by giving job's info
  *
- * Needs `reports-get-year-yearMonth-filename` & `queues-get-queue-jobs-jobId ` permission
+ * Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename`
+ * & `namespaces[namespaceId].queues-get-queue-jobs-jobId ` permission
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
@@ -274,7 +276,7 @@ export const getReportFileByJob = async <Result extends keyof ResponseTypeMap = 
 /**
  * Get report detail by giving the report's name
  *
- * Needs `reports-get-year-yearMonth-filename` permission
+ * Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename` permission
  *
  * @param name Name of the report
  * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
@@ -300,7 +302,8 @@ export const getReportDetailByName = async (
 /**
  * Get report detail by giving job's info
  *
- * Needs `reports-get-year-yearMonth-filename` & `queues-get-queue-jobs-jobId ` permission
+ * Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename`
+ * & `namespaces[namespaceId].queues-get-queue-jobs-jobId` permission
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
@@ -336,7 +339,7 @@ export const getReportDetailByJob = async (
 /**
  * Get report debug file by giving the report's name
  *
- * Needs `reports-get-year-yearMonth-filename` permission
+ * Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename` permission
  *
  * @param name Name of the report
  * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
@@ -353,7 +356,8 @@ export const getReportDebugByName = <Result extends keyof ResponseTypeMap = 'jso
 /**
  * Get report debug file by giving job's info
  *
- * Needs `reports-get-year-yearMonth-filename` & `queues-get-queue-jobs-jobId ` permission
+ * Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename`
+ * & `namespaces[namespaceId].queues-get-queue-jobs-jobId ` permission
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue

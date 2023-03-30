@@ -58,7 +58,7 @@ export interface Queue {
 /**
  * Get all available queues
  *
- * Needs `queues-get` permission
+ * Needs `general.queues-get` permission
  *
  * @returns All queues' names
  */
@@ -67,7 +67,7 @@ export const getAllQueues = () => axios.$get<Queue[]>('/queues');
 /**
  * Pause queue
  *
- * Needs `queues-put-queue-pause` permission
+ * Needs `general.queues-put-queue-pause` permission
  *
  * @param queueName Name of the queue
  *
@@ -78,7 +78,7 @@ export const pauseQueue = async (queueName: string): Promise<ApiResponse<Queue>>
 /**
  * Resume queue
  *
- * Needs `queues-put-queue-resume` permission
+ * Needs `general.queues-put-queue-resume` permission
  *
  * @param queueName Name of the queue
  *
@@ -89,7 +89,7 @@ export const resumeQueue = async (queueName: string): Promise<ApiResponse<Queue>
 /**
  * Get queue info
  *
- * Needs `queues-get-queue-jobs` permission
+ * Needs `general.queues-get-queue-jobs` permission
  *
  * @param queueName Name of the queue
  *
@@ -116,7 +116,7 @@ export const getQueueJobs = async <Data, Result>(
 /**
  * Get job info
  *
- * Needs `queues-get-queue-jobs-jobId` permission
+ * Needs `namespaces[namespaceId].queues-get-queue-jobs-jobId` permission
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue
@@ -139,7 +139,7 @@ export const getJob = async <Data, Result>(
 /**
  * Retry job that failed
  *
- * Needs `queues-post-queue-jobs-jobId-retry` permission
+ * Needs `namespaces[namespaceId].queues-post-queue-jobs-jobId-retry` permission
  *
  * @param queueName Name of queue where job is
  * @param jobId Id of the job in queue

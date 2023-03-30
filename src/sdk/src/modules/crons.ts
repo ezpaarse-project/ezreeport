@@ -29,7 +29,7 @@ const parseCron = (cron: RawCron): Cron => ({
 /**
  * Get all available crons
  *
- * Needs `crons-get` permission
+ * Needs `general.crons-get` permission
  *
  * @returns All crons' info
  */
@@ -44,7 +44,7 @@ export const getAllCrons = async (): Promise<ApiResponse<Cron[]>> => {
 /**
  * Get cron info
  *
- * Needs `crons-get-cron` permission
+ * Needs `general.crons-get-cron` permission
  *
  * @param name Cron name
  *
@@ -61,7 +61,7 @@ export const getCron = async (name: Cron['name']): Promise<ApiResponse<Cron>> =>
 /**
  * Start cron
  *
- * Needs `crons-put-cron-start` permission
+ * Needs `general.crons-put-cron-start` permission
  *
  * @param name Cron name
  *
@@ -78,7 +78,7 @@ export const startCron = async (name: Cron['name']) => {
 /**
  * Stop cron
  *
- * Needs `crons-put-cron-stop` permission
+ * Needs `general.crons-put-cron-stop` permission
  *
  * @param name Cron name
  *
@@ -95,7 +95,7 @@ export const stopCron = async (name: Cron['name']) => {
 /**
  * Force cron to run
  *
- * Needs `crons-post-cron-force` permission
+ * Needs `general.crons-post-cron-force` permission
  *
  * @param name Cron name
  *

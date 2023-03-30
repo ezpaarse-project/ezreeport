@@ -50,7 +50,7 @@ const parseHistoryWithTask = (entry: RawHistoryWithTask): HistoryWithTask => ({
 /**
  * Get all available history entries
  *
- * Needs `history-get` permission
+ * Needs `namespaces[namespaceId].history-get` permission
  *
  * @param paginationOpts Options for pagination
  * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.

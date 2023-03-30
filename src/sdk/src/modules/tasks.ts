@@ -127,7 +127,7 @@ export const getAllTasks = async (
 /**
  * Create a new task
  *
- * Needs `tasks-post` permission
+ * Needs `namespaces[namespaceId].tasks-post` permission
  *
  * @param task Task's data
  * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
@@ -153,7 +153,7 @@ export const createTask = async (
 /**
  * Get task info
  *
- * Needs `tasks-get-task` permission
+ * Needs `namespaces[namespaceId].tasks-get-task` permission
  *
  * @param id Task's id
  * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
@@ -175,7 +175,7 @@ export const getTask = async (
 /**
  * Update a task
  *
- * Needs `tasks-put-task` permission
+ * Needs `namespaces[namespaceId].tasks-put-task` permission
  *
  * @param id Task's id
  * @param task New Task's data
@@ -203,7 +203,7 @@ export const updateTask = async (
 /**
  * Delete a task
  *
- * Needs `tasks-delete-task` permission
+ * Needs `namespaces[namespaceId].tasks-delete-task` permission
  *
  * @param id Task's id
  * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
@@ -225,7 +225,7 @@ export const deleteTask = async (
 /**
  * Shorthand to enable task
  *
- * Needs `tasks-put-task-enable` permission
+ * Needs `namespaces[namespaceId].tasks-put-task-enable` permission
  *
  * @param id Task's id
  * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
@@ -251,7 +251,7 @@ export const enableTask = async (
 /**
  * Shorthand to disable task
  *
- * Needs `tasks-put-task-disable` permission
+ * Needs `namespaces[namespaceId].tasks-put-task-disable` permission
  *
  * @param id Task's id
  * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.

@@ -18,6 +18,8 @@ export type PingResult = PingResultSuccess | PingResultFail;
 /**
  * Get all services connected to current
  *
+ * Needs `general.health-get` permission
+ *
  * @returns The current service & the name of connected ones
  */
 export const getAllConnectedServices = () => axios.$get<{ current: string, currentVersion: string, services: PingResult['name'][] }>('/health');
@@ -25,12 +27,16 @@ export const getAllConnectedServices = () => axios.$get<{ current: string, curre
 /**
  * Check connection for all connected service from current
  *
+ * Needs `general.health-get-all` permission
+ *
  * @returns The connection status for all services
  */
 export const checkAllConnectedService = () => axios.$get<PingResult[]>('/health/all');
 
 /**
  * Check connection of a specific service from current
+ *
+ * Needs `general.health-get-service` permission
  *
  * @param service The name of the service
  *
@@ -41,7 +47,9 @@ export const checkConnectedService = (service: PingResult['name']) => axios.$get
 /**
  * Check connection of current service
  *
- * It's usefull when the app will have limited connection, or if you just want the processing time.
+ * It's useful when the app will have limited connection, or if you just want the processing time.
+ *
+ * Needs `general.health-get-all` & `general.health-get-service` permission
  *
  * @returns The connection status of current service
  */
