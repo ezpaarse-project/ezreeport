@@ -126,13 +126,13 @@ export const isTaskTemplate = (data: unknown): data is AnyTaskTemplate => {
   return true;
 };
 
-interface ShowcasedAnyTemplate extends Omit<PrismaTemplate, 'body'> {
+interface FullTemplate extends Omit<PrismaTemplate, 'body'> {
   renderer: keyof Renderers,
   pageCount: number,
   body: AnyTemplate,
 }
 
-const showcasedTemplateSchema = Joi.object<Pick<ShowcasedAnyTemplate, 'body'>>({
+const fullTemplateSchema = Joi.object<Pick<FullTemplate, 'body'>>({
   body: templateSchema.required(),
 });
 
@@ -144,8 +144,8 @@ const showcasedTemplateSchema = Joi.object<Pick<ShowcasedAnyTemplate, 'body'>>({
  *
  * @throws If not valid
  */
-const isShowcasedTemplate = (data: unknown): data is Pick<ShowcasedAnyTemplate, 'body'> => {
-  const validation = showcasedTemplateSchema.validate(data, {});
+const isFullTemplate = (data: unknown): data is Pick<FullTemplate, 'body'> => {
+  const validation = fullTemplateSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Given data is not valid: ${validation.error.message}`);
   }
@@ -153,11 +153,11 @@ const isShowcasedTemplate = (data: unknown): data is Pick<ShowcasedAnyTemplate, 
 };
 
 /**
-* Get all template files
+* Get all template
 *
 * @returns General info of all templates
 */
-export const getAllTemplates = async (): Promise<Omit<ShowcasedAnyTemplate, 'body'>[]> => {
+export const getAllTemplates = async (): Promise<Omit<FullTemplate, 'body'>[]> => {
   const res = await prisma.template.findMany();
 
   return res
@@ -184,11 +184,11 @@ export const getAllTemplates = async (): Promise<Omit<ShowcasedAnyTemplate, 'bod
 };
 
 /**
- * Get specific template file
+ * Get specific template
  *
  * @returns Full info of template
  */
-export const getTemplateByName = async (name: string): Promise<ShowcasedAnyTemplate | null> => {
+export const getTemplateByName = async (name: string): Promise<FullTemplate | null> => {
   const template = await prisma.template.findUnique({
     where: {
       name,
@@ -201,7 +201,7 @@ export const getTemplateByName = async (name: string): Promise<ShowcasedAnyTempl
 
   if (!isTemplate(template.body)) {
     // As validation throws an error, this line shouldn't be called
-    return {} as ShowcasedAnyTemplate;
+    return {} as FullTemplate;
   }
 
   return {
@@ -213,12 +213,12 @@ export const getTemplateByName = async (name: string): Promise<ShowcasedAnyTempl
 };
 
 export const createTemplate = async (
-  name:string,
+  name: string,
   data: unknown,
-): Promise<ShowcasedAnyTemplate> => {
-  if (!isShowcasedTemplate(data)) {
+): Promise<FullTemplate> => {
+  if (!isFullTemplate(data)) {
     // As validation throws an error, this line shouldn't be called
-    return {} as ShowcasedAnyTemplate;
+    return {} as FullTemplate;
   }
 
   const template = await prisma.template.create({
@@ -231,7 +231,7 @@ export const createTemplate = async (
 
   if (!isTemplate(template.body)) {
     // As validation throws an error, this line shouldn't be called
-    return {} as ShowcasedAnyTemplate;
+    return {} as FullTemplate;
   }
 
   return {
@@ -242,7 +242,7 @@ export const createTemplate = async (
   };
 };
 
-export const deleteTemplateByName = async (name: string): Promise<ShowcasedAnyTemplate | null> => {
+export const deleteTemplateByName = async (name: string): Promise<FullTemplate | null> => {
   const res = await getTemplateByName(name);
   if (!res) {
     return null;
@@ -256,7 +256,7 @@ export const deleteTemplateByName = async (name: string): Promise<ShowcasedAnyTe
 
   if (!isTemplate(template.body)) {
     // As validation throws an error, this line shouldn't be called
-    return {} as ShowcasedAnyTemplate;
+    return {} as FullTemplate;
   }
 
   return {
@@ -270,15 +270,15 @@ export const deleteTemplateByName = async (name: string): Promise<ShowcasedAnyTe
 export const editTemplateByName = async (
   name: string,
   data: unknown,
-): Promise<ShowcasedAnyTemplate | null> => {
+): Promise<FullTemplate | null> => {
   const res = await getTemplateByName(name);
   if (!res) {
     return null;
   }
 
-  if (!isShowcasedTemplate(data)) {
+  if (!isFullTemplate(data)) {
     // As validation throws an error, this line shouldn't be called
-    return {} as ShowcasedAnyTemplate;
+    return {} as FullTemplate;
   }
 
   const template = await prisma.template.update({
@@ -293,7 +293,7 @@ export const editTemplateByName = async (
 
   if (!isTemplate(template.body)) {
     // As validation throws an error, this line shouldn't be called
-    return {} as ShowcasedAnyTemplate;
+    return {} as FullTemplate;
   }
 
   return {
