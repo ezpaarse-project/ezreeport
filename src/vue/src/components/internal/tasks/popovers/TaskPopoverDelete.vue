@@ -37,7 +37,7 @@
         </v-btn>
 
         <v-btn
-          :disabled="!perms.delete"
+          v-if="perms.delete"
           :loading="loading"
           color="success"
           @click="save"
@@ -80,9 +80,11 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.data.auth.permissions;
+      const has = this.$ezReeport.hasNamespacedPermission;
+      const namespaces = 'namespaceId' in this.task ? [this.task.namespaceId] : [this.task.namespace.id];
+
       return {
-        delete: perms?.['tasks-delete-task'],
+        delete: has('tasks-delete-task', namespaces),
       };
     },
   },

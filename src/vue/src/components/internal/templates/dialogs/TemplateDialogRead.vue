@@ -71,9 +71,9 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.data.auth.permissions;
+      const has = this.$ezReeport.hasGeneralPermission;
       return {
-        readOne: perms?.['templates-get-name(*)'],
+        readOne: has('templates-get-name(*)'),
       };
     },
   },
@@ -107,7 +107,7 @@ export default defineComponent({
         }
 
         // Add additional data
-        content.template.layouts = addAdditionalDataToLayouts(content.template.layouts ?? []);
+        content.body.layouts = addAdditionalDataToLayouts(content.body.layouts ?? []);
 
         this.item = content as CustomFullTemplate;
         this.error = '';

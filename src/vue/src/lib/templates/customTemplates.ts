@@ -16,7 +16,7 @@ export type CustomTaskLayout = Omit<TaskLayout, 'figures'> & { figures: AnyCusto
 type AnyLayout = templates.Layout & { at?: number };
 export type AnyCustomLayout = Omit<AnyLayout, 'figures'> & { figures: AnyCustomFigure[] } & CustomProperties;
 
-export type CustomTemplate = Omit<templates.FullTemplate['template'], 'layouts'> & { layouts: CustomLayout[] };
+export type CustomTemplate = Omit<templates.FullTemplate['body'], 'layouts'> & { layouts: CustomLayout[] };
 export type CustomTaskTemplate = Omit<tasks.FullTask['template'], 'inserts'> & { inserts?: CustomTaskLayout[] };
 export type AnyCustomTemplate = CustomTemplate | CustomTaskTemplate;
 

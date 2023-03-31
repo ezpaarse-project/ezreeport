@@ -94,7 +94,10 @@
 
                 <v-col>
                   <div>{{ $t('headers.institution') }}:</div>
-                  <InstitutionSelect v-model="task.institution" hide-all />
+                  <NamespaceSelect
+                    :value="task.namespace.id"
+                    hide-all
+                  />
 
                   <div>{{ $t('headers.dates') }}:</div>
                   <v-container>
@@ -233,10 +236,11 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.data.auth.permissions;
+      const has = this.$ezReeport.hasNamespacedPermission;
+      const namespaces = this.task ? [this.task.namespace.id] : [];
       return {
-        readOne: perms?.['tasks-get-task'],
-        update: perms?.['tasks-put-task'],
+        readOne: has('tasks-get-task', namespaces),
+        update: has('tasks-put-task', namespaces),
       };
     },
     /**
@@ -344,7 +348,6 @@ export default defineComponent({
           this.task.id,
           {
             name: this.task.name,
-            institution: this.task.institution,
             template: {
               ...this.task.template,
               inserts,

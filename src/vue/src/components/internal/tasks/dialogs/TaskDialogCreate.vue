@@ -90,10 +90,11 @@
                 </v-col>
 
                 <v-col>
-                  <div>{{ $t('headers.institution') }}:</div>
-                  <InstitutionSelect
-                    v-model="task.institution"
-                    :error-message="!task.institution ? $t('errors.empty').toString() : undefined"
+                  <div>{{ $t('headers.namespace') }}:</div>
+                  <NamespaceSelect
+                    v-model="task.namespace"
+                    :error-message="!task.namespace ? $t('errors.empty').toString() : undefined"
+                    :needed-permissions="['tasks-post']"
                     hide-all
                   />
 
@@ -177,7 +178,7 @@ export default defineComponent({
       template: { extends: 'basic' } as CustomTaskTemplate,
       targets: [],
       recurrence: 'DAILY' as tasks.Recurrence,
-      institution: '',
+      namespace: '',
       nextRun: minDate,
       enabled: true,
     },
@@ -232,10 +233,11 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.data.auth.permissions;
+      const has = this.$ezReeport.hasNamespacedPermission;
+      const namespaces = this.task.namespace ? [this.task.namespace] : [];
       return {
-        readOne: perms?.['tasks-get-task'],
-        create: perms?.['tasks-post'],
+        readOne: has('tasks-get-task', namespaces),
+        create: has('tasks-post', namespaces),
       };
     },
     /**
@@ -260,18 +262,6 @@ export default defineComponent({
       return true;
     },
   },
-  watch: {
-    // eslint-disable-next-line func-names
-    '$ezReeport.data.auth.permissions': function () {
-      this.resetInstitution();
-    },
-    id() {
-      this.resetInstitution();
-    },
-  },
-  mounted() {
-    this.resetInstitution();
-  },
   methods: {
     /**
      * Check if given string is a mail address
@@ -281,12 +271,6 @@ export default defineComponent({
      * @param s The string
      */
     validateMail: (s: string) => /[a-z0-9.-]*@[a-z0-9.-]*\.[a-z-]*/i.test(s),
-    /**
-     * Reset institution value
-     */
-    resetInstitution() {
-      this.task.institution = this.$ezReeport.data.auth.user?.institution ?? '';
-    },
     /**
      * Save and edit task
      */
@@ -311,20 +295,19 @@ export default defineComponent({
           }),
         );
 
-        const { institution, ...task } = this.task;
         const { content } = await this.$ezReeport.sdk.tasks.createTask(
           {
-            name: task.name,
+            name: this.task.name,
+            namespace: this.task.namespace,
             template: {
               ...this.task.template,
               inserts,
             },
-            targets: task.targets,
-            recurrence: task.recurrence,
-            nextRun: task.nextRun,
-            enabled: task.enabled,
+            targets: this.task.targets,
+            recurrence: this.task.recurrence,
+            nextRun: this.task.nextRun,
+            enabled: this.task.enabled,
           },
-          institution,
         );
 
         this.$emit('created', content);
@@ -347,7 +330,7 @@ export default defineComponent({
 en:
   headers:
     name: 'Report name'
-    institution: 'Institution'
+    namespace: 'Namespace'
     targets: 'Receivers'
     dates: 'Dates'
   tabs:
@@ -370,7 +353,7 @@ en:
 fr:
   headers:
     name: 'Nom du rapport'
-    institution: 'Institution'
+    namespace: 'Namespace'
     targets: 'Destinataires'
     dates: 'Dates'
   tabs:

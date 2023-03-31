@@ -1,8 +1,8 @@
 <template>
   <v-col v-if="perms.readAll">
     <v-row>
-      <InstitutionSelect
-        v-model="currentInstitution"
+      <NamespaceSelect
+        v-model="currentNamespace"
         @input="fetch()"
       />
     </v-row>
@@ -56,7 +56,7 @@ export default defineComponent({
     },
     lastIds: {} as Record<number, string | undefined>,
 
-    currentInstitution: '',
+    currentNamespace: '',
     history: [] as history.HistoryWithTask[],
 
     loading: false,
@@ -64,9 +64,9 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.data.auth.permissions;
+      const has = this.$ezReeport.hasNamespacedPermission;
       return {
-        readAll: perms?.['history-get'],
+        readAll: has('history-get', []),
       };
     },
     footerOptions: {
@@ -135,7 +135,7 @@ export default defineComponent({
               previous: this.lastIds[page - 1],
               count: this.paginationData.itemsPerPage,
             },
-            this.currentInstitution || undefined,
+            this.currentNamespace ? [this.currentNamespace] : [],
           );
           if (!content) {
             throw new Error(this.$t('errors.no_data').toString());

@@ -5,7 +5,7 @@ const data: templates.FullTemplate[] = [
     name: 'basic',
     renderer: 'vega-pdf',
     pageCount: 6,
-    template: {
+    body: {
       layouts: [
         {
           fetchOptions: {
@@ -327,6 +327,8 @@ const data: templates.FullTemplate[] = [
         },
       ],
     },
+    createdAt: new Date(Date.parse('2022-11-14T09:18:35.194Z')),
+    updatedAt: new Date(Date.parse('2023-01-13T09:26:36.345Z')),
   },
 ];
 

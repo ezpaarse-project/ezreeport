@@ -190,10 +190,10 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.data.auth.permissions;
+      const has = this.$ezReeport.hasGeneralPermission;
       return {
-        realAll: perms?.['templates-get'],
-        readOne: perms?.['templates-get-name(*)'],
+        realAll: has('templates-get'),
+        readOne: has('templates-get-name(*)'),
       };
     },
     /**
@@ -396,9 +396,9 @@ export default defineComponent({
         );
 
         // Add additional data
-        content.template.layouts = addAdditionalDataToLayouts(content.template.layouts);
+        content.body.layouts = addAdditionalDataToLayouts(content.body.layouts);
 
-        this.extendedTemplate = content.template as CustomTemplate;
+        this.extendedTemplate = content.body as CustomTemplate;
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;

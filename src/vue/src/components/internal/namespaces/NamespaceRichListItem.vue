@@ -1,24 +1,23 @@
 <template>
   <RichListItem
-    :title="institution.name"
-    :subtitle="institution.city"
+    :title="namespace.name"
     :src="src"
-    :alt="`Logo de ${institution.name}`"
+    :alt="`Logo de ${namespace.name}`"
     fallback-icon="mdi-office-building"
     capitalize-subtitle
   />
 </template>
 
 <script lang="ts">
-import type { institutions } from 'ezreeport-sdk-js';
+import type { namespaces } from 'ezreeport-sdk-js';
 import { defineComponent, PropType } from 'vue';
 import ezReeportMixin from '~/mixins/ezr';
 
 export default defineComponent({
   mixins: [ezReeportMixin],
   props: {
-    institution: {
-      type: Object as PropType<institutions.Institution>,
+    namespace: {
+      type: Object as PropType<namespaces.Namespace>,
       required: true,
     },
   },
@@ -26,10 +25,10 @@ export default defineComponent({
   }),
   computed: {
     src(): string | undefined {
-      if (!this.institution.logoId) {
+      if (!this.namespace.logoId) {
         return undefined;
       }
-      return new URL(this.institution.logoId, this.$ezReeport.data.institutions.logoUrl).href;
+      return new URL(this.namespace.logoId, this.$ezReeport.data.namespaces.logoUrl).href;
     },
   },
 });

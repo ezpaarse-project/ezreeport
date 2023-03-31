@@ -72,10 +72,10 @@
         </div>
       </template>
 
-      <template #[`item.institution`]="{ value: institution }">
-        <InstitutionRichListItem
-          v-if="institution"
-          :institution="institution"
+      <template #[`item.namespace`]="{ value: namespace }">
+        <NamespaceRichListItem
+          v-if="namespace"
+          :namespace="namespace"
         />
         <span v-else>...</span>
       </template>
@@ -85,7 +85,7 @@
 
 <script lang="ts">
 import { isBefore, parseISO } from 'date-fns';
-import type { history, institutions, tasks } from 'ezreeport-sdk-js';
+import type { history, namespaces, tasks } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 import type { DataOptions } from 'vuetify';
 import type { DataTableHeader } from '~/types/vuetify';
@@ -103,7 +103,7 @@ interface HistoryItem {
   message: string,
   date: string,
   task?: history.HistoryWithTask['task'],
-  institution?: institutions.Institution,
+  namespace?: namespaces.Namespace,
   files?: {
     report?: string,
     detail?: string,
@@ -153,10 +153,10 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.data.auth.permissions;
+      const has = this.$ezReeport.hasNamespacedPermission;
       return {
-        readFile: perms?.['reports-get-year-yearMonth-filename'],
-        readOneTask: perms?.['tasks-get-task'],
+        readFile: has('reports-get-year-yearMonth-filename', []),
+        readOneTask: has('tasks-get-task', []),
       };
     },
     /**
@@ -181,9 +181,9 @@ export default defineComponent({
       ];
       if (!this.hideInstitution && this.perms.readOneTask) {
         headers.splice(1, 0, {
-          value: 'institution',
+          value: 'namespace',
           text: this.$t('headers.institution').toString(),
-          sort: (a?: institutions.Institution, b?: institutions.Institution) => (a?.name ?? '').localeCompare(b?.name ?? ''),
+          sort: (a?: namespaces.Namespace, b?: namespaces.Namespace) => (a?.name ?? '').localeCompare(b?.name ?? ''),
         });
       }
       if (!this.hideTask && this.perms.readOneTask) {
@@ -232,11 +232,11 @@ export default defineComponent({
       }
 
       let task: history.HistoryWithTask['task'] | undefined;
-      let institution: institutions.Institution | undefined;
+      let namespace: namespaces.Namespace | undefined;
       if ('task' in entry) {
         task = entry.task;
-        institution = this.$ezReeport.data.institutions.data
-          .find(({ id }) => id === entry.task.institution);
+        namespace = this.$ezReeport.data.namespaces.data
+          .find(({ id }) => id === entry.task.namespace.id);
       }
 
       const data = entry.data as any | undefined;
@@ -246,7 +246,7 @@ export default defineComponent({
         message: entry.message,
         date: entry.createdAt.toLocaleDateString(),
         task,
-        institution,
+        namespace,
         files: (!data?.destroyAt || isBefore(today, parseISO(data.destroyAt))) && data?.files,
       };
     },

@@ -28,8 +28,8 @@
     />
 
     <v-row>
-      <InstitutionSelect
-        v-model="currentInstitution"
+      <NamespaceSelect
+        v-model="currentNamespace"
         @input="fetch()"
       />
     </v-row>
@@ -55,16 +55,16 @@
               @click="fetch"
             />
 
-            <v-btn icon color="success" @click="showCreateDialog">
+            <v-btn v-if="perms.create" icon color="success" @click="showCreateDialog">
               <v-icon>mdi-plus</v-icon>
             </v-btn>
           </LoadingToolbar>
         </template>
 
-        <template #[`item.institution`]="{ value: institution }">
-          <InstitutionRichListItem
-            v-if="institution"
-            :institution="institution"
+        <template #[`item.namespace`]="{ value: namespace }">
+          <NamespaceRichListItem
+            v-if="namespace"
+            :namespace="namespace"
           />
           <v-progress-circular v-else indeterminate class="my-2" />
         </template>
@@ -80,16 +80,18 @@
         <template #[`item.enabled`]="{ value: enabled, item }">
           <CustomSwitch
             :value="enabled"
-            :readonly="!perms.enable || !perms.disable"
+            :readonly="loading"
+            :disabled="!rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task-enable']
+              || !rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task-disable']
+            "
             :label="$t(enabled ? 'item.active' : 'item.inactive').toString()"
-            :disabled="loading"
             reverse
             @click.stop="toggleTask(item)"
           />
         </template>
 
         <template #[`item.actions`]="{ item }">
-          <v-tooltip>
+          <v-tooltip v-if="rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task']">
             <template #activator="{ attrs, on }">
               <v-btn icon color="info" @click.stop="showEditDialog(item)" v-on="on" v-bind="attrs">
                 <v-icon>mdi-pencil</v-icon>
@@ -98,7 +100,7 @@
             <span>{{ $t('actions.edit') }}</span>
           </v-tooltip>
 
-          <v-tooltip>
+          <v-tooltip v-if="rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-delete-task']">
             <template #activator="{ attrs, on }">
               <v-btn icon color="error" @click.stop="showDeletePopover(item, $event)" v-on="on" v-bind="attrs">
                 <v-icon>mdi-delete</v-icon>
@@ -117,7 +119,7 @@
 </template>
 
 <script lang="ts">
-import type { institutions, tasks } from 'ezreeport-sdk-js';
+import type { namespaces, tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import type { DataOptions } from 'vuetify';
 import type { DataTableHeader } from '~/types/vuetify';
@@ -126,7 +128,7 @@ import ezReeportMixin from '~/mixins/ezr';
 interface TaskItem {
   id: string,
   name: string,
-  institution?: institutions.Institution,
+  namespace?: namespaces.Namespace,
   recurrence: tasks.Recurrence,
   enabled: boolean,
   nextRun?: string,
@@ -148,7 +150,7 @@ export default defineComponent({
     } as DataOptions,
     lastIds: {} as Record<number, string | undefined>,
 
-    currentInstitution: '',
+    currentNamespace: '',
     tasks: [] as tasks.Task[],
     totalItems: 0,
     focusedId: '' as string,
@@ -164,9 +166,9 @@ export default defineComponent({
           text: this.$t('headers.name').toString(),
         },
         {
-          value: 'institution',
+          value: 'namespace',
           text: this.$t('headers.institution').toString(),
-          sort: (a?: institutions.Institution, b?: institutions.Institution) => (a?.name ?? '').localeCompare(b?.name ?? ''),
+          sort: (a?: namespaces.Namespace, b?: namespaces.Namespace) => (a?.name ?? '').localeCompare(b?.name ?? ''),
         },
         {
           value: 'recurrence',
@@ -187,23 +189,24 @@ export default defineComponent({
         },
       ];
     },
-    institutions(): institutions.Institution[] {
-      return this.$ezReeport.data.institutions.data;
+    namespaces(): namespaces.Namespace[] {
+      return this.$ezReeport.data.namespaces.data;
     },
     items() {
       return this.tasks.map(this.parseTask);
     },
+    rawNamespacePerms() {
+      return this.$ezReeport.data.auth.permissions?.namespaces;
+    },
     perms() {
-      const perms = this.$ezReeport.data.auth.permissions;
-      return {
-        readAll: perms?.['tasks-get'],
-        readOne: perms?.['tasks-get-task'],
-        update: perms?.['tasks-put-task'],
-        create: perms?.['tasks-post'],
-        delete: perms?.['tasks-delete-task'],
+      const has = this.$ezReeport.hasNamespacedPermission;
 
-        enable: perms?.['tasks-put-task-enable'],
-        disable: perms?.['tasks-put-task-disable'],
+      return {
+        readAll: has('tasks-get', []),
+        readOne: has('tasks-get-task', []),
+        update: has('tasks-put-task', []),
+        create: has('tasks-post', []),
+        delete: has('tasks-delete-task', []),
       };
     },
     focusedTask() {
@@ -262,7 +265,7 @@ export default defineComponent({
               previous: this.lastIds[page - 1],
               count: this.options.itemsPerPage,
             },
-            this.currentInstitution || undefined,
+            this.currentNamespace ? [this.currentNamespace] : undefined,
           );
           if (!content) {
             throw new Error(this.$t('errors.no_data').toString());
@@ -294,7 +297,7 @@ export default defineComponent({
         name: task.name,
         recurrence: task.recurrence,
         enabled: task.enabled,
-        institution: this.institutions.find(({ id }) => task.institution === id),
+        namespace: this.namespaces.find(({ id }) => task.namespaceId === id),
         nextRun: task.nextRun && task.enabled
           ? task.nextRun.toLocaleString(undefined, { year: 'numeric', month: 'numeric', day: 'numeric' })
           : undefined,
@@ -305,7 +308,11 @@ export default defineComponent({
      *
      * @param item The item
      */
-    showTaskDialog({ id }: TaskItem) {
+    showTaskDialog({ id, namespace }: TaskItem) {
+      if (!this.rawNamespacePerms?.[namespace?.id ?? '']?.['tasks-get-task']) {
+        return;
+      }
+
       this.focusedId = id;
       this.readTaskDialogShown = true;
     },
@@ -345,11 +352,11 @@ export default defineComponent({
      *
      * @param item The item
      */
-    async toggleTask({ id, enabled }: tasks.Task) {
+    async toggleTask({ id, enabled, namespace }: TaskItem) {
       if (
         this.tasks.findIndex((t) => t.id === id) < 0
-        || (enabled && !this.perms.disable)
-        || (!enabled && !this.perms.enable)
+        || (enabled && !this.rawNamespacePerms?.[namespace?.id ?? '']?.['tasks-put-task-enable'])
+        || (!enabled && !this.rawNamespacePerms?.[namespace?.id ?? '']?.['tasks-put-task-disable'])
       ) {
         return;
       }
@@ -393,7 +400,7 @@ export default defineComponent({
       }
 
       const tasks = [...this.tasks];
-      tasks.splice(index, 1, task);
+      tasks.splice(index, 1, { ...task, namespaceId: task.namespace.id });
       this.tasks = tasks;
     },
   },

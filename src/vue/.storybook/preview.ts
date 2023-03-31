@@ -16,7 +16,7 @@ Vue.prototype._i18n = i18n;
 
 // Setup ezReeport plugin
 Vue.use(ezReeport);
-if (!import.meta.env.VITE_EZMESURE_TOKEN) {
+if (!import.meta.env.VITE_AUTH_TOKEN) {
   console.warn('[ezReeport-storybook] Auth token not found');
 }
 
@@ -67,7 +67,7 @@ export const decorators: Decorator[] = [
         },
       },
       data: () => ({
-        token: import.meta.env.VITE_EZMESURE_TOKEN,
+        token: import.meta.env.VITE_AUTH_TOKEN,
       }),
       watch: {
         theme: {

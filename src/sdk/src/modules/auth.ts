@@ -120,7 +120,7 @@ export const isLogged = () => {
 /**
  * Get logged user info
  *
- * Needs `auth-get` permission
+ * Needs `general.auth-get` permission
  *
  * @returns The logged user info
  */
@@ -133,10 +133,19 @@ export const getCurrentUser = async (): Promise<ApiResponse<User>> => {
 };
 
 /**
- * Compute logged user permissions
+ * Get logged user permissions
  *
- * Needs `auth-get-permissions` permission
+ * Needs `namespaces[namespaceId].auth-get-permissions` permission
  *
  * @returns Permissions
  */
-export const getPermissions = () => axios.$get<Permissions>('/me/permissions');
+export const getCurrentPermissions = () => axios.$get<Permissions>('/me/permissions');
+
+/**
+ * Get logged user accessible namespaces
+ *
+ * Needs `namespaces[namespaceId].auth-get-namespaces` permission
+ *
+ * @returns Permissions
+ */
+export const getCurrentNamespaces = () => axios.$get<Namespace[]>('/me/namespaces');

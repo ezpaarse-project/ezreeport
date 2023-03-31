@@ -111,14 +111,14 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.data.auth.permissions;
+      const has = this.$ezReeport.hasGeneralPermission;
       return {
-        readAll: perms?.['crons-get'],
-        readOne: perms?.['crons-get-cron'],
+        readAll: has('crons-get'),
+        readOne: has('crons-get-cron'),
 
-        start: perms?.['crons-put-cron-start'],
-        stop: perms?.['crons-put-cron-stop'],
-        force: perms?.['crons-post-cron-force'],
+        start: has('crons-put-cron-start'),
+        stop: has('crons-put-cron-stop'),
+        force: has('crons-post-cron-force'),
       };
     },
     items(): CronItem[] {

@@ -70,12 +70,12 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.data.auth.permissions;
+      const has = this.$ezReeport.hasGeneralPermission;
       return {
-        readAll: perms?.['queues-get'],
+        readAll: has('queues-get'),
 
-        resume: perms?.['queues-put-queue-resume'],
-        pause: perms?.['queues-put-queue-pause'],
+        resume: has('queues-put-queue-resume'),
+        pause: has('queues-put-queue-pause'),
       };
     },
     items(): QueueItem[] {

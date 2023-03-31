@@ -80,9 +80,9 @@
 
               <v-col>
                 {{ $t('headers.institution') }}:
-                <InstitutionRichListItem
-                  v-if="institution"
-                  :institution="institution"
+                <NamespaceRichListItem
+                  v-if="namespace"
+                  :namespace="namespace"
                 />
                 <v-progress-circular v-else indeterminate class="my-2" />
 
@@ -120,7 +120,7 @@
       <v-divider />
 
       <v-card-actions>
-        <v-btn :disabled="!perms.runTask" color="warning" @click="showGenerateDialog">
+        <v-btn v-if="perms.runTask" color="warning" @click="showGenerateDialog">
           {{ $t('actions.generate') }}
         </v-btn>
       </v-card-actions>
@@ -129,7 +129,7 @@
 </template>
 
 <script lang="ts">
-import type { institutions, tasks } from 'ezreeport-sdk-js';
+import type { namespaces, tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
@@ -173,22 +173,23 @@ export default defineComponent({
      * Validation rules
      */
     perms() {
-      const perms = this.$ezReeport.data.auth.permissions;
+      const has = this.$ezReeport.hasNamespacedPermission;
+      const namespaces = this.task ? [this.task.namespace.id] : [];
       return {
-        readOne: perms?.['tasks-get-task'],
-        update: perms?.['tasks-put-task'],
+        readOne: has('tasks-get-task', namespaces),
+        update: has('tasks-put-task', namespaces),
 
-        enable: perms?.['tasks-put-task-enable'],
-        disable: perms?.['tasks-put-task-disable'],
+        enable: has('tasks-put-task-enable', namespaces),
+        disable: has('tasks-put-task-disable', namespaces),
 
-        runTask: perms?.['tasks-post-task-run'],
+        runTask: has('tasks-post-task-run', namespaces),
       };
     },
     /**
      * User permissions
      */
-    institution(): institutions.Institution | undefined {
-      return this.$ezReeport.data.institutions.data.find(({ id }) => id === this.task?.institution);
+    namespace(): namespaces.Namespace | undefined {
+      return this.$ezReeport.data.namespaces.data.find(({ id }) => id === this.task?.namespace.id);
     },
     /**
      * Max Width of the dialog
@@ -204,29 +205,15 @@ export default defineComponent({
     // eslint-disable-next-line func-names
     '$ezReeport.data.auth.permissions': function () {
       this.fetch();
-      this.fetchInstitutions();
     },
     id() {
       this.fetch();
     },
   },
   mounted() {
-    this.fetchInstitutions();
     this.fetch();
   },
   methods: {
-    /**
-     * Fetch institutions
-     */
-    async fetchInstitutions() {
-      this.loading = true;
-      try {
-        this.$ezReeport.fetchInstitutions();
-      } catch (error) {
-        this.error = (error as Error).message;
-      }
-      this.loading = false;
-    },
     /**
      * Fetch task info
      */

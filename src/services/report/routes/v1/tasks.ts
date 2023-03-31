@@ -185,7 +185,7 @@ const router = CustomRouter('tasks')
 
     const task = await getTaskById(id, req.namespaceIds);
     if (!task) {
-      throw new HTTPError(`Task with id '${id}' not found for namespace '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
+      throw new HTTPError(`Task with id '${id}' not found for namespaces '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
     }
 
     if (!task.enabled) {

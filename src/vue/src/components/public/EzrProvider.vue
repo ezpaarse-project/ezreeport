@@ -15,11 +15,11 @@ export default defineComponent({
       type: String as PropType<string | undefined>,
       default: undefined,
     },
-    api_url: {
+    apiUrl: {
       type: String,
       default: import.meta.env.VITE_REPORT_API,
     },
-    institution_logo_url: {
+    namespaceLogoUrl: {
       type: String,
       default: import.meta.env.VITE_INSTITUTIONS_LOGO_URL,
     },
@@ -30,17 +30,17 @@ export default defineComponent({
       permissions: undefined,
       user: undefined,
     },
-    institutions: {
-      logoUrl: '',
+    namespaces: {
       data: [],
+      logoUrl: '',
     },
   }),
   watch: {
-    api_url(value: string) {
+    apiUrl(value: string) {
       sdk.setup.setURL(value);
     },
-    institution_logo_url(value: string) {
-      this.institutions.logoUrl = value;
+    namespaceLogoUrl(value: string) {
+      this.namespaces.logoUrl = value;
     },
     token(value?: string) {
       if (value) {
@@ -56,6 +56,11 @@ export default defineComponent({
       fetchInstitutions: (force?: boolean) => this.fetchInstitutions(force),
       login: (token: string) => this.login(token),
       logout: () => this.logout(),
+      hasGeneralPermission: (permission: string) => this.hasGeneralPermission(permission),
+      hasNamespacedPermission: (
+        permission: string,
+        namespaces: string[],
+      ) => this.hasNamespacedPermission(permission, namespaces),
     };
 
     Object.defineProperties(
@@ -77,8 +82,8 @@ export default defineComponent({
     };
   },
   mounted() {
-    sdk.setup.setURL(this.api_url);
-    this.institutions.logoUrl = this.institution_logo_url;
+    sdk.setup.setURL(this.apiUrl);
+    this.namespaces.logoUrl = this.namespaceLogoUrl;
     if (this.token) {
       this.login(this.token);
     }
@@ -97,13 +102,22 @@ export default defineComponent({
     login(token: string) {
       sdk.auth.login(token);
 
-      sdk.auth.getPermissions()
-        .then(({ content }) => { this.auth.permissions = content; })
-        .catch((error: Error) => { console.error('[ezReeport-vue]', error.message); });
+      Promise.allSettled([
+        sdk.auth.getCurrentPermissions()
+          .then(({ content }) => { this.auth.permissions = content; }),
 
-      sdk.auth.getCurrentUser()
-        .then(({ content }) => { this.auth.user = content; })
-        .catch((error: Error) => { console.error('[ezReeport-vue]', error.message); });
+        sdk.auth.getCurrentUser()
+          .then(({ content }) => { this.auth.user = content; }),
+
+        this.fetchInstitutions(),
+      ]).then((results) => {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const res of results) {
+          if (res.status === 'rejected') {
+            console.error('[ezReeport-vue]', res.reason.message);
+          }
+        }
+      });
     },
     /**
      * Remove token from SDK, clear permissions & current user
@@ -120,20 +134,47 @@ export default defineComponent({
      *
      * @param force Force reload
      */
-    async fetchInstitutions(force = false): Promise<sdk.institutions.Institution[]> {
-      if (force || this.institutions.data.length <= 0) {
-        if (this.auth.permissions?.['institutions-get']) {
-          const { content } = await sdk.institutions.getInstitutions();
+    async fetchInstitutions(force = false): Promise<sdk.namespaces.Namespace[]> {
+      if (force || this.namespaces.data.length <= 0) {
+        if (this.hasNamespacedPermission('auth-get-namespaces', [])) {
+          const { content } = await sdk.auth.getCurrentNamespaces();
           if (!content) {
             throw new Error(this.$t('errors.no_data').toString());
           }
 
-          this.institutions.data = content;
+          this.namespaces.data = content;
         } else {
-          this.institutions.data = [];
+          this.namespaces.data = [];
         }
       }
-      return this.institutions.data;
+      return this.namespaces.data;
+    },
+    /**
+     * Check if logged user have permission to do some action
+     *
+     * @param permission The permission name
+     *
+     * @returns If the user have the permission
+     */
+    hasGeneralPermission(permission: string) {
+      return !!this.auth.permissions?.general[permission];
+    },
+    /**
+     * Check if logged user have permission in namespaces to do some action
+     *
+     * @param permission The permission name
+     * @param namespaces The concerned namespaces. If empty will attempt
+     * to find at least one in all possibles
+     *
+     * @returns If the user have the permission
+     */
+    hasNamespacedPermission(permission: string, namespaces: string[]) {
+      let entries = Object.entries(this.auth.permissions?.namespaces ?? {});
+
+      if (namespaces.length > 0) {
+        entries = entries.filter(([namespace]) => namespaces.includes(namespace));
+      }
+      return !!entries.find(([, perms]) => perms[permission]);
     },
   },
 });

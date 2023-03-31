@@ -114,6 +114,13 @@ export default defineComponent({
     error: '',
   }),
   computed: {
+    perms() {
+      const has = this.$ezReeport.hasGeneralPermission;
+      return {
+        checkAll: has('health-get'),
+        readAll: has('health-get-all'),
+      };
+    },
     items(): StatusItem[] {
       return this.statuses.map(this.parsePingResult);
     },
@@ -142,6 +149,10 @@ export default defineComponent({
      * Fetch all connected services and parse result
      */
     async fetch() {
+      if (!this.perms.checkAll || !this.perms.readAll) {
+        return;
+      }
+
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.health.checkAllConnectedService();

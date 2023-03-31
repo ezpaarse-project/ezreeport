@@ -1,8 +1,5 @@
 <template>
-  <div
-    v-if="perms.read"
-    class="d-flex align-center"
-  >
+  <div class="d-flex align-center">
     <div class="select-wrapper mr-2">
       <v-select
         ref="menu"
@@ -23,9 +20,9 @@
             :title="item.name"
             fallback-icon="mdi-filter-variant"
           />
-          <InstitutionRichListItem
+          <NamespaceRichListItem
             v-else
-            :institution="item"
+            :namespace="item"
           />
         </template>
 
@@ -35,9 +32,9 @@
             :title="item.name"
             fallback-icon="mdi-filter-variant"
           />
-          <InstitutionRichListItem
+          <NamespaceRichListItem
             v-else
-            :institution="item"
+            :namespace="item"
             v-bind="attrs"
             v-on="on"
           />
@@ -56,16 +53,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-import type { institutions } from 'ezreeport-sdk-js';
+import { defineComponent, type PropType } from 'vue';
+import type { namespaces } from 'ezreeport-sdk-js';
 import ezReeportMixin from '~/mixins/ezr';
 
-export interface InstitutionItem {
+export interface NamespaceItem {
   id: string,
   name: string,
-  city?: string,
   logoId?: string,
-  acronym?: string,
 }
 
 export default defineComponent({
@@ -78,6 +73,10 @@ export default defineComponent({
     errorMessage: {
       type: String,
       default: undefined,
+    },
+    neededPermissions: {
+      type: Array as PropType<string[]>,
+      default: () => [],
     },
     hideAll: {
       type: Boolean,
@@ -92,31 +91,28 @@ export default defineComponent({
     error: '',
   }),
   computed: {
-    defaultInstitution() {
-      return this.$ezReeport.data.auth.user?.institution;
-    },
-    items(): InstitutionItem[] {
-      const items = this.$ezReeport.data.institutions.data
-        .map(this.parseInstitution)
+    items(): NamespaceItem[] {
+      const items = this.$ezReeport.data.namespaces.data
+        .filter((namespace) => {
+          if (this.neededPermissions.length <= 0) {
+            return true;
+          }
+
+          return this.neededPermissions.every(
+            (perm) => this.$ezReeport.data.auth.permissions?.namespaces[namespace.id]?.[perm],
+          );
+        })
+        .map(this.parseNamespace)
         .sort((a, b) => a.name.localeCompare(b.name));
 
-      if (!this.defaultInstitution && !this.hideAll) {
-        // Only SUPER_USERS don't have default institution
-        return [
-          { id: '', name: this.$t('all').toString() },
-          ...items,
-        ];
+      if (this.hideAll) {
+        return items;
       }
+
       return [
+        { id: '', name: this.$t('all').toString() },
         ...items,
       ];
-      // return items;
-    },
-    perms() {
-      const perms = this.$ezReeport.data.auth.permissions;
-      return {
-        read: perms?.['institutions-get'],
-      };
     },
   },
   watch: {
@@ -147,12 +143,10 @@ export default defineComponent({
      *
      * @param institution The institution
      */
-    parseInstitution: (institution: institutions.Institution): InstitutionItem => ({
+    parseNamespace: (institution: namespaces.Namespace): NamespaceItem => ({
       id: institution.id,
       name: institution.name,
       logoId: institution.logoId,
-      acronym: institution.acronym,
-      city: institution.city,
     }),
   },
 });

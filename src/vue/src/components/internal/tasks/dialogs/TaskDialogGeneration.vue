@@ -143,7 +143,8 @@
         </v-btn>
 
         <v-btn
-          :disabled="!perms.runTask && (generationType === 'test' && targets.length <= 0)"
+          v-if="perms.runTask"
+          :disabled="generationType === 'test' && targets.length <= 0"
           :loading="progress >= 0"
           color="success"
           @click="start"
@@ -217,11 +218,14 @@ export default defineComponent({
       };
     },
     perms() {
-      const perms = this.$ezReeport.data.auth.permissions;
-
+      const has = this.$ezReeport.hasNamespacedPermission;
+      const namespaces = [this.task.namespace.id];
       return {
-        runTask: perms?.['tasks-post-task-run'] && perms?.['queues-get-queue-jobs-jobId'],
-        getFile: perms?.['reports-get-year-yearMonth-filename'] && perms?.['queues-get-queue-jobs-jobId'],
+        runTask: has('tasks-post-task-run', namespaces)
+          && has('queues-get-queue-jobs-jobId', namespaces),
+
+        getFile: has('reports-get-year-yearMonth-filename', namespaces)
+          && has('queues-get-queue-jobs-jobId', namespaces),
       };
     },
     periodRange: {

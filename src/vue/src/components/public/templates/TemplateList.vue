@@ -59,10 +59,10 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.data.auth.permissions;
+      const has = this.$ezReeport.hasGeneralPermission;
       return {
-        readAll: perms?.['templates-get'],
-        readOne: perms?.['templates-get-name(*)'],
+        readAll: has('templates-get'),
+        readOne: has('templates-get-name(*)'),
       };
     },
     /**
