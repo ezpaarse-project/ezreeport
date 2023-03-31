@@ -23,6 +23,7 @@ declare namespace Express {
     namespaceIds?: string[]
   }
   export interface Response {
+    apiVersion?: number,
     /**
      * Send formatted data as success.
      *

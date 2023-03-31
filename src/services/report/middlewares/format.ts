@@ -21,6 +21,7 @@ const middleware: RequestHandler = (req, res, next) => {
       status: {
         code,
         message: getReasonPhrase(code),
+        apiVersion: res.apiVersion,
       },
       content,
       meta,
