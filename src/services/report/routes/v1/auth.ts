@@ -1,12 +1,17 @@
 import { CustomRouter } from '~/lib/express-utils';
 import { requireUser } from '~/middlewares/auth';
-import { getAllowedRoutes, Access, getRoutes } from '~/models/access';
+import { Access, getAllowedRoutes, getRoutes } from '~/models/access';
 
 const router = CustomRouter('auth')
   /**
    * Get all user info
    */
   .createRoute('GET /', (req, _res) => req.user, requireUser)
+
+  /**
+   * Get namespaces that user can access
+   */
+  .createNamespacedRoute('GET /namespaces', Access.READ, (req, _res) => req.namespaces?.map(({ namespace }) => namespace) ?? [])
 
   /**
    * Get user's permissions per route
