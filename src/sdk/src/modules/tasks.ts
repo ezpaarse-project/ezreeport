@@ -1,74 +1,34 @@
-import { parseISO } from 'date-fns';
 import axios, { axiosWithErrorFormatter, type ApiResponse, type PaginatedApiResponse } from '../lib/axios';
 import { parseHistory, type History, type RawHistory } from './history';
-import { parseNamespace, type Namespace, type RawNamespace } from './namespaces';
+import type { Namespace } from './namespaces';
+import {
+  parseTask,
+  parseTaskWithNamespace,
+  type Task,
+  type RawTaskWithNamespace,
+  type TaskWithNamespace,
+  type RawTask
+} from './tasks.base';
 import type { Layout } from './templates';
 
-export enum Recurrence {
-  DAILY = 'DAILY',
-  WEEKLY = 'WEEKLY',
-  MONTHLY = 'MONTHLY',
-  QUARTERLY = 'QUARTERLY',
-  BIENNIAL = 'BIENNIAL',
-  YEARLY = 'YEARLY',
-}
-
-export interface RawTask {
-  id: string,
-  name: string,
-  namespaceId: string,
-  recurrence: Recurrence,
-  nextRun: string, // Date
-  lastRun?: string, // Date
-  enabled: boolean,
-
-  createdAt: string, // Date
-  updatedAt?: string, // Date
-}
-
-export interface Task extends Omit<RawTask, 'nextRun' | 'lastRun' | 'createdAt' | 'updatedAt'> {
-  nextRun: Date,
-  lastRun?: Date,
-
-  createdAt: Date,
-  updatedAt?: Date,
-}
-
-/**
- * Transform raw data from JSON, to JS usable data
- *
- * @param task Raw task
- *
- * @returns Parsed task
- */
-const parseTask = (task: RawTask): Task => ({
-  ...task,
-  nextRun: parseISO(task.nextRun),
-  lastRun: task.lastRun ? parseISO(task.lastRun) : undefined,
-
-  createdAt: parseISO(task.createdAt),
-  updatedAt: task.updatedAt ? parseISO(task.updatedAt) : undefined,
-});
-
-export interface RawFullTask extends Omit<RawTask, 'namespaceId'> {
+interface AdditionalRawTaskData {
   template: {
     extends: string,
     fetchOptions?: object,
     inserts?: (Layout & { at: number })[],
   },
-  namespace: RawNamespace,
   targets: string[],
   history: RawHistory[]
 }
 
-export interface FullTask extends Omit<RawFullTask, 'namespace' | 'history' | 'nextRun' | 'lastRun' | 'createdAt' | 'updatedAt'> {
-  namespace: Namespace,
+interface AdditionalTaskData extends Omit<AdditionalRawTaskData, 'history'> {
   history: History[],
-  nextRun: Date,
-  lastRun?: Date,
+}
 
-  createdAt: Date,
-  updatedAt?: Date,
+export interface RawFullTask extends RawTaskWithNamespace, AdditionalRawTaskData {
+}
+
+export interface FullTask extends TaskWithNamespace, AdditionalTaskData {
 }
 
 /**
@@ -80,23 +40,15 @@ export interface FullTask extends Omit<RawFullTask, 'namespace' | 'history' | 'n
  */
 const parseFullTask = (task: RawFullTask): FullTask => {
   const {
-    namespace,
     history,
     template,
     targets,
     ...rawTask
   } = task;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { namespaceId, ...parsedTask } = parseTask({
-    namespaceId: namespace.id,
-    ...rawTask,
-  });
-
   return {
-    ...parsedTask,
+    ...parseTaskWithNamespace(rawTask),
 
-    namespace: parseNamespace(namespace),
     history: history.map(parseHistory),
     template,
     targets,
@@ -289,3 +241,5 @@ export const disableTask = async (
     content: parseFullTask(content),
   };
 };
+
+export * from './tasks.base';

@@ -1,6 +1,6 @@
 import { parseISO } from 'date-fns';
 import { axiosWithErrorFormatter, type PaginatedApiResponse } from '../lib/axios';
-import type { RawTask } from './tasks';
+import { parseTaskWithNamespace, type RawTaskWithNamespace, type TaskWithNamespace } from './tasks.base';
 
 export interface RawHistory {
   id: string,
@@ -17,11 +17,11 @@ export interface History extends Omit<RawHistory, 'createdAt'> {
 }
 
 interface RawHistoryWithTask extends Omit<RawHistory, 'taskId'> {
-  task: RawTask
+  task: RawTaskWithNamespace
 }
 
 export interface HistoryWithTask extends Omit<History, 'taskId'> {
-  task: RawTask
+  task: TaskWithNamespace
 }
 
 /**
@@ -46,6 +46,7 @@ export const parseHistory = (entry: RawHistory): History => ({
  */
 const parseHistoryWithTask = (entry: RawHistoryWithTask): HistoryWithTask => ({
   ...entry,
+  task: parseTaskWithNamespace(entry.task),
 
   createdAt: parseISO(entry.createdAt),
 });
