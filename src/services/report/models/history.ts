@@ -50,18 +50,33 @@ export const getAllHistoryEntries = async (
     skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
     cursor: opts?.previous ? { id: opts.previous } : undefined,
     where: namespaceIds ? { task: { namespaceId: { in: namespaceIds } } } : undefined,
-    include: {
+    select: {
+      id: true,
+      type: true,
+      message: true,
+      data: true,
+      createdAt: true,
+
       task: {
         select: {
           id: true,
           name: true,
-          namespace: true,
           recurrence: true,
           nextRun: true,
           lastRun: true,
           enabled: true,
           createdAt: true,
           updatedAt: true,
+
+          namespace: {
+            select: {
+              id: true,
+              name: true,
+              logoId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
         },
       },
     },
