@@ -19,9 +19,9 @@
         <CustomSwitch
           v-if="task"
           :value="task.enabled"
-          :readonly="!perms.enable || !perms.disable"
+          :disabled="!perms.enable || !perms.disable"
           :label="$t(task?.enabled ? 'item.active' : 'item.inactive').toString()"
-          :disabled="loading"
+          :readonly="loading"
           class="text-body-2"
           reverse
           @click.stop="toggle()"

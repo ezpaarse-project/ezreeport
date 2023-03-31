@@ -61,14 +61,18 @@
 
       <template #[`item.task`]="{ value: task }">
         <div class="text-center">
-          <a
-            v-if="task"
-            href="#"
-            @click.prevent="showTaskDialog(task.id)"
-          >
-            {{ task.name }}
-          </a>
-          <span v-else>...</span>
+          <template v-if="task">
+            <a
+              v-if="$ezReeport.data.auth.permissions?.namespaces[task.namespace?.id ?? '']?.['tasks-get-task']"
+              href="#"
+              @click.prevent="showTaskDialog(task.id)"
+            >
+              {{ task.name }}
+            </a>
+            <span v-else>{{ task.name }}</span>
+          </template>
+
+          <v-progress-circular v-else indeterminate class="my-2" />
         </div>
       </template>
 
@@ -77,7 +81,7 @@
           v-if="namespace"
           :namespace="namespace"
         />
-        <span v-else>...</span>
+        <v-progress-circular v-else indeterminate class="my-2" />
       </template>
     </v-data-table>
   </div>

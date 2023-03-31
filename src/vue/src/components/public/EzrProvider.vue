@@ -90,7 +90,7 @@ export default defineComponent({
 
     // Rendering childrens will trigger requests to API
     // and it can be before we set the correct URL.
-    // ? maybe a v-if on each public component is better tha here
+    // ? maybe a v-if on each public component is better than here
     this.ready = true;
   },
   methods: {
