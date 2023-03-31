@@ -18,10 +18,10 @@ const middleware: RequestHandler = (req, res, next) => {
     }
 
     res.status(code).json({
+      apiVersion: res.apiVersion,
       status: {
         code,
         message: getReasonPhrase(code),
-        apiVersion: res.apiVersion,
       },
       content,
       meta,
