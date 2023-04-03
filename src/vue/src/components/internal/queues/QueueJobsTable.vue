@@ -96,10 +96,11 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.data.auth.permissions;
+      const hasNamespaced = this.$ezReeport.hasNamespacedPermission;
+      const hasGeneral = this.$ezReeport.hasGeneralPermission;
       return {
-        readAll: perms?.['queues-get-queue-jobs'],
-        readOne: perms?.['queues-get-queue-jobs-jobId'],
+        readAll: hasGeneral('queues-get-queue-jobs'),
+        readOne: hasNamespaced('queues-get-queue-jobs-jobId', []),
       };
     },
     items() {

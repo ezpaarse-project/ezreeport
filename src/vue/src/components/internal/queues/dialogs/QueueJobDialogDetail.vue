@@ -173,11 +173,11 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.data.auth.permissions;
+      const has = this.$ezReeport.hasNamespacedPermission;
       return {
-        readOne: perms?.['queues-get-queue-jobs-jobId'],
+        readOne: has('queues-get-queue-jobs-jobId', []),
 
-        rerun: perms?.['queues-get-queue-jobs'],
+        rerun: has('queues-get-queue-jobs-jobId-retry', []),
       };
     },
     /**
