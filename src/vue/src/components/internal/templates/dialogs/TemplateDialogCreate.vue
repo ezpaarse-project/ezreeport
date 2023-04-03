@@ -2,17 +2,14 @@
   <v-dialog :value="value" :fullscreen="fullscreen" scrollable @input="$emit('input', $event)">
     <v-card :loading="loading" :tile="fullscreen">
       <v-card-title>
-        <template v-if="item">
-          {{ item.name }}
-        </template>
+        <v-text-field
+          v-if="item"
+          v-model="item.name"
+          :rules="rules.name"
+          :label="$t('headers.name')"
+        />
 
         <v-spacer />
-
-        <RefreshButton
-          :loading="loading"
-          :tooltip="$t('refresh-tooltip').toString()"
-          @click="fetch"
-        />
 
         <v-btn icon text @click="$emit('input', false)">
           <v-icon>mdi-close</v-icon>
@@ -37,8 +34,9 @@
         </v-btn>
 
         <v-btn
-          v-if="perms.update"
+          v-if="perms.create"
           :disabled="!item
+            || !isNameValid
             || templateValidation !== true"
           :loading="loading"
           color="success"
@@ -53,24 +51,18 @@
 
 <script lang="ts">
 import type { templates } from 'ezreeport-sdk-js';
+import { cloneDeep } from 'lodash';
 import { defineComponent } from 'vue';
-import {
-  addAdditionalDataToLayouts,
-  type CustomTemplate,
-} from '~/lib/templates/customTemplates';
+import { type CustomTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
 
-type CustomFullTemplate = Omit<templates.FullTemplate, 'body'> & { body: CustomTemplate };
+type CustomCreateTemplate = Omit<templates.FullTemplate, 'body' | 'createdAt' | 'pageCount' | 'updatedAt' | 'renderer'> & { body: CustomTemplate };
 
 export default defineComponent({
   mixins: [ezReeportMixin],
   props: {
     value: {
       type: Boolean,
-      required: true,
-    },
-    name: {
-      type: String,
       required: true,
     },
     fullscreen: {
@@ -80,15 +72,36 @@ export default defineComponent({
   },
   emits: {
     input: (show: boolean) => show !== undefined,
-    updated: (template: templates.FullTemplate) => !!template,
+    created: (template: templates.FullTemplate) => !!template,
   },
   data: () => ({
-    item: undefined as CustomFullTemplate | undefined,
+    item: undefined as CustomCreateTemplate | undefined,
+    initItem: {
+      name: '',
+      body: { layouts: [] },
+    } as CustomCreateTemplate,
 
     error: '',
     loading: false,
   }),
+  watch: {
+    value(val: boolean) {
+      if (val) {
+        this.item = cloneDeep(this.initItem);
+      }
+    },
+  },
   computed: {
+    /**
+     * Validation rules
+     */
+    rules() {
+      return {
+        name: [
+          (v: string) => !!v || this.$t('errors.empty'),
+        ],
+      };
+    },
     /**
      * User permissions
      */
@@ -96,8 +109,14 @@ export default defineComponent({
       const has = this.$ezReeport.hasGeneralPermission;
       return {
         readOne: has('templates-get-name(*)'),
-        update: has('templates-put-name(*)'),
+        create: has('templates-post'),
       };
+    },
+    /**
+     * name field is outside of the v-form, so we need to manually check using rules
+     */
+    isNameValid() {
+      return this.rules.name.every((rule) => rule(this.item?.name ?? '') === true);
     },
     /**
      * Is template valid
@@ -110,54 +129,16 @@ export default defineComponent({
       return !this.item.body.layouts.find(({ _: { valid } }) => valid !== true);
     },
   },
-  watch: {
-    // eslint-disable-next-line func-names
-    '$ezReeport.data.auth.permissions': function () {
-      this.fetch();
-    },
-    name() {
-      this.fetch();
-    },
-  },
-  mounted() {
-    this.fetch();
-  },
   methods: {
     /**
-     * Fetch template
-     */
-    async fetch() {
-      if (!this.perms.readOne) {
-        this.item = undefined;
-        return;
-      }
-
-      this.loading = true;
-      try {
-        const { content } = await this.$ezReeport.sdk.templates.getTemplate(this.name);
-        if (!content) {
-          throw new Error(this.$t('errors.no_data').toString());
-        }
-
-        // Add additional data
-        content.body.layouts = addAdditionalDataToLayouts(content.body.layouts ?? []);
-
-        this.item = content as CustomFullTemplate;
-        this.error = '';
-      } catch (error) {
-        this.error = (error as Error).message;
-      }
-      this.loading = false;
-    },
-    /**
-     * Save and edit template
+     * Save and create template
      */
     async save() {
-      if (!this.item || this.templateValidation !== true) {
+      if (!this.item || !this.isNameValid || this.templateValidation !== true) {
         return;
       }
 
-      if (!this.name || !this.perms.update) {
+      if (!this.item.name || !this.perms.create) {
         this.$emit('input', false);
         return;
       }
@@ -173,9 +154,9 @@ export default defineComponent({
           }),
         );
 
-        const { content } = await this.$ezReeport.sdk.templates.updateTemplate(
-          this.item.name,
+        const { content } = await this.$ezReeport.sdk.templates.createTemplate(
           {
+            name: this.item.name,
             body: {
               ...this.item.body,
               layouts,
@@ -183,7 +164,7 @@ export default defineComponent({
           },
         );
 
-        this.$emit('updated', content);
+        this.$emit('created', content);
         this.$emit('input', false);
         this.error = '';
       } catch (error) {
@@ -202,18 +183,16 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   refresh-tooltip: 'Refresh template'
-  headers:
-    name: 'Template name'
   errors:
+    empty: 'This field must be set'
     no_data: 'An error occurred when fetching data'
   actions:
     cancel: 'Cancel'
     save: 'Save'
 fr:
   refresh-tooltip: 'Rafraîchir le modèle'
-  headers:
-    name: 'Nom du modèle'
   errors:
+    empty: 'Ce champ doit être rempli'
     no_data: 'Une erreur est survenue lors de la récupération des données'
   actions:
     cancel: 'Annuler'

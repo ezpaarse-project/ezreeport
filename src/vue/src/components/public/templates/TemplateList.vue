@@ -15,6 +15,13 @@
       @updated="onTemplateEdited"
     />
 
+    <TemplateDialogCreate
+      v-if="perms.create"
+      v-model="createTemplateDialogShown"
+      fullscreen
+      @created="onTemplateCreated"
+    />
+
     <LoadingToolbar
       :text="$t('title').toString()"
       :loading="loading"
@@ -24,6 +31,10 @@
         :tooltip="$t('refresh-tooltip').toString()"
         @click="fetch"
       />
+
+      <v-btn v-if="perms.create" icon color="success" @click="showCreateDialog">
+        <v-icon>mdi-plus</v-icon>
+      </v-btn>
     </LoadingToolbar>
 
     <v-divider />
@@ -67,6 +78,7 @@ export default defineComponent({
   data: () => ({
     readTemplateDialogShown: false,
     updateTemplateDialogShown: false,
+    createTemplateDialogShown: false,
 
     focusedName: '',
     templates: [] as templates.Template[],
@@ -84,6 +96,7 @@ export default defineComponent({
         readAll: has('templates-get'),
         readOne: has('templates-get-name(*)'),
         update: has('templates-put-name(*)'),
+        create: has('templates-post'),
       };
     },
     /**
@@ -140,11 +153,24 @@ export default defineComponent({
       this.items = items;
     },
     /**
+     * Called when a template is created by a dialog
+     */
+    onTemplateCreated() {
+      this.fetch();
+    },
+    /**
      * Prepare and open read dialog
      */
     showTemplateDialog({ name }: templates.Template) {
       this.focusedName = name;
       this.readTemplateDialogShown = true;
+    },
+    /**
+     * Prepare and show template creation dialog
+     */
+    showCreateDialog() {
+      this.focusedName = '';
+      this.createTemplateDialogShown = true;
     },
     /**
      * Prepare and show template edition dialog
