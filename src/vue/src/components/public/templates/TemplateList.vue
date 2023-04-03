@@ -7,6 +7,14 @@
       fullscreen
     />
 
+    <TemplateDialogUpdate
+      v-if="perms.update && focusedName"
+      v-model="updateTemplateDialogShown"
+      :name="focusedName"
+      fullscreen
+      @updated="onTemplateEdited"
+    />
+
     <LoadingToolbar
       :text="$t('title').toString()"
       :loading="loading"
@@ -24,11 +32,22 @@
       <v-list-item
         v-for="template in items"
         :key="template.name"
-        @click="openReadDialog(template)"
+        @click="showTemplateDialog(template)"
       >
         <v-list-item-content>
           <v-list-item-title class="d-flex align-center">
             <div>{{ template.name }}</div>
+
+            <v-spacer />
+
+            <v-tooltip v-if="perms.update">
+              <template #activator="{ attrs, on }">
+                <v-btn icon color="info" @click.stop="showEditDialog(template)" v-on="on" v-bind="attrs">
+                  <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+              </template>
+              <span>{{ $t('actions.edit') }}</span>
+            </v-tooltip>
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
@@ -47,6 +66,7 @@ export default defineComponent({
   mixins: [ezReeportMixin],
   data: () => ({
     readTemplateDialogShown: false,
+    updateTemplateDialogShown: false,
 
     focusedName: '',
     templates: [] as templates.Template[],
@@ -63,6 +83,7 @@ export default defineComponent({
       return {
         readAll: has('templates-get'),
         readOne: has('templates-get-name(*)'),
+        update: has('templates-put-name(*)'),
       };
     },
     /**
@@ -106,11 +127,33 @@ export default defineComponent({
       this.loading = false;
     },
     /**
+     * Called when a template is edited by a dialog
+     */
+    onTemplateEdited(template: templates.Template) {
+      const index = this.items.findIndex((t) => t.name === template.name);
+      if (index < 0) {
+        return;
+      }
+
+      const items = [...this.items];
+      items.splice(index, 1, { ...template });
+      this.items = items;
+    },
+    /**
      * Prepare and open read dialog
      */
-    openReadDialog(item: templates.Template) {
-      this.focusedName = item.name;
+    showTemplateDialog({ name }: templates.Template) {
+      this.focusedName = name;
       this.readTemplateDialogShown = true;
+    },
+    /**
+     * Prepare and show template edition dialog
+     *
+     * @param item The item
+     */
+    showEditDialog({ name }: templates.Template) {
+      this.focusedName = name;
+      this.updateTemplateDialogShown = true;
     },
   },
 });
