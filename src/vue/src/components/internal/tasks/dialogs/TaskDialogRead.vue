@@ -79,7 +79,7 @@
               </v-col>
 
               <v-col>
-                {{ $t('headers.institution') }}:
+                <span>{{ $ezReeport.tcNamespace(true) }}:</span>
                 <NamespaceRichListItem
                   v-if="namespace"
                   :namespace="namespace"
@@ -110,7 +110,7 @@
           </v-tab-item>
 
           <v-tab-item>
-            <InternalHistoryTable v-if="task" :history="task.history" hide-task hide-institution />
+            <InternalHistoryTable v-if="task" :history="task.history" hide-task hide-namespace />
           </v-tab-item>
         </v-tabs-items>
 
@@ -295,7 +295,6 @@ export default defineComponent({
 en:
   refresh-tooltip: 'Refresh task'
   headers:
-    institution: 'Institution'
     targets: 'Receivers'
     dates: 'Dates'
   tabs:
@@ -315,7 +314,6 @@ en:
 fr:
   refresh-tooltip: 'Rafraîchir la tâche'
   headers:
-    institution: 'Institution'
     targets: 'Destinataires'
     dates: 'Dates'
   tabs:

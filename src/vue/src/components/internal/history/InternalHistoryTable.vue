@@ -128,7 +128,7 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    hideInstitution: {
+    hideNamespace: {
       type: Boolean,
       default: false,
     },
@@ -183,10 +183,10 @@ export default defineComponent({
           text: this.$t('headers.date').toString(),
         },
       ];
-      if (!this.hideInstitution && this.perms.readOneTask) {
+      if (!this.hideNamespace && this.perms.readOneTask) {
         headers.splice(1, 0, {
           value: 'namespace',
-          text: this.$t('headers.institution').toString(),
+          text: this.$ezReeport.tcNamespace(true),
           sort: (a?: namespaces.Namespace, b?: namespaces.Namespace) => (a?.name ?? '').localeCompare(b?.name ?? ''),
         });
       }
@@ -336,7 +336,6 @@ en:
     message: 'Message'
     date: 'Date'
     task: 'Task'
-    institution: 'Institution'
   files:
     detail: 'Detail (JSON)'
     report: 'Report'
@@ -346,7 +345,6 @@ fr:
     message: 'Message'
     date: 'Date'
     task: 'Tâche'
-    institution: 'Établissement'
   files:
     detail: 'Détail (JSON)'
     report: 'Rapport'

@@ -83,9 +83,17 @@ export const decorators: Decorator[] = [
           },
         },
       },
+      computed: {
+        namespaceLabel() {
+          return {
+            en: 'namespace | namespaces',
+            fr: 'établissement | établissements',
+          };
+        },
+      },
       template: `
         <v-app>
-          <ezr-provider :token="token">
+          <ezr-provider :token="token" :namespaceLabel="namespaceLabel">
             <v-container fluid>
               <wrapped />
             </v-container>

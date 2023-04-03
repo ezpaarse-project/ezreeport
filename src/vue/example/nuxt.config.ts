@@ -76,7 +76,7 @@ const config: NuxtConfig = {
   },
 
   publicRuntimeConfig: {
-    ezMesureToken: process.env.EZMESURE_TOKEN,
+    authToken: process.env.AUTH_TOKEN,
   },
 };
 

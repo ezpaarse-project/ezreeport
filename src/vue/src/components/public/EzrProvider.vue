@@ -21,7 +21,11 @@ export default defineComponent({
     },
     namespaceLogoUrl: {
       type: String,
-      default: import.meta.env.VITE_INSTITUTIONS_LOGO_URL,
+      default: import.meta.env.VITE_NAMESPACES_LOGO_URL,
+    },
+    namespaceLabel: {
+      type: Object as PropType<Record<string, string>>,
+      default: () => {},
     },
   },
   data: (): InjectedEzReeport['data'] => ({
@@ -42,6 +46,10 @@ export default defineComponent({
     namespaceLogoUrl(value: string) {
       this.namespaces.logoUrl = value;
     },
+    // eslint-disable-next-line func-names
+    '$i18n.locale': function () {
+      this.registerNamespaceLocalization();
+    },
     token(value?: string) {
       if (value) {
         this.login(value);
@@ -53,7 +61,17 @@ export default defineComponent({
   provide() {
     const $ezReeport = {
       sdk,
-      fetchInstitutions: (force?: boolean) => this.fetchInstitutions(force),
+
+      tcNamespace: (capitalize?: boolean, choice?: number) => {
+        const res = this.$tc('namespace', choice).toString();
+
+        if (capitalize) {
+          return `${res.at(0)?.toLocaleUpperCase() ?? ''}${res.slice(1)}`;
+        }
+        return res;
+      },
+
+      fetchNamespaces: (force?: boolean) => this.fetchNamespaces(force),
       login: (token: string) => this.login(token),
       logout: () => this.logout(),
       hasGeneralPermission: (permission: string) => this.hasGeneralPermission(permission),
@@ -84,6 +102,7 @@ export default defineComponent({
   mounted() {
     sdk.setup.setURL(this.apiUrl);
     this.namespaces.logoUrl = this.namespaceLogoUrl;
+    this.registerNamespaceLocalization();
     if (this.token) {
       this.login(this.token);
     }
@@ -94,6 +113,12 @@ export default defineComponent({
     this.ready = true;
   },
   methods: {
+    registerNamespaceLocalization() {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [locale, label] of Object.entries(this.namespaceLabel)) {
+        this.$i18n.mergeLocaleMessage(locale, { namespace: label });
+      }
+    },
     /**
      * Add token into SDK, fetch permissions & current user
      *
@@ -108,8 +133,6 @@ export default defineComponent({
 
         sdk.auth.getCurrentUser()
           .then(({ content }) => { this.auth.user = content; }),
-
-        this.fetchInstitutions(),
       ]).then((results) => {
         // eslint-disable-next-line no-restricted-syntax
         for (const res of results) {
@@ -128,13 +151,13 @@ export default defineComponent({
       this.auth.user = undefined;
     },
     /**
-     * Shorthand to fetch institutions and make it available into whole Vue.
+     * Shorthand to fetch namespaces and make it available into whole Vue.
      *
-     * If institutions was already fetched before, it will not re-fetch
+     * If namespaces was already fetched before, it will not re-fetch
      *
      * @param force Force reload
      */
-    async fetchInstitutions(force = false): Promise<sdk.namespaces.Namespace[]> {
+    async fetchNamespaces(force = false): Promise<sdk.namespaces.Namespace[]> {
       if (force || this.namespaces.data.length <= 0) {
         if (this.hasNamespacedPermission('auth-get-namespaces', [])) {
           const { content } = await sdk.auth.getCurrentNamespaces();
@@ -186,9 +209,11 @@ export default defineComponent({
 
 <i18n lang="yaml">
 en:
+  namespace: 'namespace'
   errors:
     no_data: 'An error occurred when fetching data'
 fr:
+  namespace: 'espace'
   errors:
     no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>

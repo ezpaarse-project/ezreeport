@@ -7,7 +7,7 @@ const meta: Meta<typeof InternalHistoryTable> = {
   component: InternalHistoryTable,
   args: {
     hideTask: false,
-    hideInstitution: false,
+    hideNamespace: false,
     history,
   },
 };

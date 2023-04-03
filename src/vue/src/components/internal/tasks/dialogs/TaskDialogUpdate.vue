@@ -93,7 +93,7 @@
                 </v-col>
 
                 <v-col>
-                  <div>{{ $t('headers.institution') }}:</div>
+                  <div>{{ $ezReeport.tcNamespace(true) }}:</div>
                   <NamespaceSelect
                     :value="task.namespace.id"
                     hide-all
@@ -379,7 +379,6 @@ export default defineComponent({
 en:
   headers:
     name: 'Report name'
-    institution: 'Institution'
     targets: 'Receivers'
     dates: 'Dates'
   tabs:
@@ -403,7 +402,6 @@ en:
 fr:
   headers:
     name: 'Nom du rapport'
-    institution: 'Institution'
     targets: 'Destinataires'
     dates: 'Dates'
   tabs:

@@ -65,19 +65,28 @@ interface EzReeportVueMethods {
    */
   hasNamespacedPermission: (permission: string, namespaces: string[]) => boolean,
   /**
-   * Shorthand to fetch institutions and make it available into whole Vue.
+   * Shorthand to fetch namespaces and make it available into whole Vue.
    *
-   * If institutions was already fetched before, it will not re-fetch
+   * If namespaces was already fetched before, it will not re-fetch
    *
    * @param force Force reload
    */
-  fetchInstitutions: (force?: boolean) => Promise<sdk.namespaces.Namespace[]>,
+  fetchNamespaces: (force?: boolean) => Promise<sdk.namespaces.Namespace[]>,
+  /**
+   * Get localized name of namespace
+   *
+   * @param capitalize Should capitalize result
+   * @param choice optional, default 1
+   *
+   * @returns The localized name
+   */
+  tcNamespace: (capitalize?: boolean, choice?: number) => string,
 }
 
 export type InjectedEzReeport = EzReeportVueMethods & {
   data: EzReeportVueData,
   isLogged: boolean,
-  sdk: sdk.EzReeportSDK
+  sdk: sdk.EzReeportSDK,
 };
 
 export const InjectionEzReeportKey = Symbol('injected EzReeport data');

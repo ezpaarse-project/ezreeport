@@ -54,7 +54,7 @@ export default defineComponent({
       if (this.$ezReeport.isLogged) {
         return this.$ezReeport.logout();
       }
-      return this.$ezReeport.login(this.$config.ezMesureToken);
+      return this.$ezReeport.login(this.$config.authToken);
     },
   },
 });

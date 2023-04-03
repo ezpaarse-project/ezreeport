@@ -144,7 +144,7 @@ export default defineComponent({
     deleteTaskPopoverCoords: { x: 0, y: 0 },
 
     options: {
-      sortBy: ['institution', 'enabled', 'nextRun'],
+      sortBy: ['namespace', 'enabled', 'nextRun'],
       sortDesc: [false, true, false],
       multiSort: true,
     } as DataOptions,
@@ -167,7 +167,7 @@ export default defineComponent({
         },
         {
           value: 'namespace',
-          text: this.$t('headers.institution').toString(),
+          text: this.$ezReeport.tcNamespace(true),
           sort: (a?: namespaces.Namespace, b?: namespaces.Namespace) => (a?.name ?? '').localeCompare(b?.name ?? ''),
         },
         {
@@ -217,21 +217,21 @@ export default defineComponent({
     // eslint-disable-next-line func-names
     '$ezReeport.data.auth.permissions': function () {
       this.fetch();
-      this.fetchInstitutions();
+      this.fetchNamespaces();
     },
   },
   mounted() {
     this.fetch();
-    this.fetchInstitutions();
+    this.fetchNamespaces();
   },
   methods: {
     /**
-     * Fetch institutions
+     * Fetch namespaces
      */
-    async fetchInstitutions() {
+    async fetchNamespaces() {
       this.loading = true;
       try {
-        this.$ezReeport.fetchInstitutions();
+        this.$ezReeport.fetchNamespaces();
       } catch (error) {
         this.error = (error as Error).message;
       }
@@ -420,7 +420,6 @@ en:
   refresh-tooltip: 'Refresh report list'
   headers:
     name: 'Report name'
-    institution: 'Institution'
     recurrence: 'Recurrence'
     status: 'Status'
     next: 'Next run'
@@ -436,7 +435,6 @@ fr:
   refresh-tooltip: 'Rafraîchir la liste des rapports'
   headers:
     name: 'Nom du rapport'
-    institution: 'Établissement'
     recurrence: 'Fréquence'
     status: 'Statut'
     next: 'Prochaine itération'

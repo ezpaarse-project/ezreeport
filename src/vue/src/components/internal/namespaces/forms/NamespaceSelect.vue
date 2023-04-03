@@ -46,7 +46,7 @@
 
     <RefreshButton
       :loading="loading"
-      :tooltip="$t('refresh-tooltip').toString()"
+      :tooltip="$t('refresh-tooltip', { namespace: $ezReeport.tcNamespace() }).toString()"
       @click="fetch(true)"
     />
   </div>
@@ -110,7 +110,7 @@ export default defineComponent({
       }
 
       return [
-        { id: '', name: this.$t('all').toString() },
+        { id: '', name: this.$t('all', { namespace: this.$ezReeport.tcNamespace(false, 2) }).toString() },
         ...items,
       ];
     },
@@ -126,12 +126,12 @@ export default defineComponent({
   },
   methods: {
     /**
-     * Fetch institutions and parse result
+     * Fetch namespaces and parse result
      */
     async fetch(force = false) {
       this.loading = true;
       try {
-        this.$ezReeport.fetchInstitutions(force);
+        this.$ezReeport.fetchNamespaces(force);
       } catch (error) {
         this.error = (error as Error).message;
       }
@@ -139,14 +139,14 @@ export default defineComponent({
     },
     /**
      *
-     * Parse institution into human readable format
+     * Parse namespace into human readable format
      *
-     * @param institution The institution
+     * @param namespace The namespace
      */
-    parseNamespace: (institution: namespaces.Namespace): NamespaceItem => ({
-      id: institution.id,
-      name: institution.name,
-      logoId: institution.logoId,
+    parseNamespace: (namespace: namespaces.Namespace): NamespaceItem => ({
+      id: namespace.id,
+      name: namespace.name,
+      logoId: namespace.logoId,
     }),
   },
 });
@@ -165,9 +165,9 @@ export default defineComponent({
 
 <i18n lang="yaml">
 en:
-  all: 'All institutions'
-  refresh-tooltip: 'Refresh institution list'
+  all: 'All {namespace}'
+  refresh-tooltip: 'Refresh {namespace} list'
 fr:
-  all: 'Tous les établissements'
-  refresh-tooltip: 'Rafraîchir la liste des établissements'
+  all: 'Tous les {namespace}'
+  refresh-tooltip: 'Rafraîchir la liste des {namespace}s'
 </i18n>
