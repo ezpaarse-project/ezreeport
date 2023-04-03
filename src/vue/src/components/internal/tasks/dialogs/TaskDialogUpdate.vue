@@ -141,11 +141,11 @@
         </v-btn>
 
         <v-btn
+          v-if="perms.update"
           :disabled="!task
             || !valid
             || !isNameValid
-            || templateValidation !== true
-            || !perms.update"
+            || templateValidation !== true"
           :loading="loading"
           color="success"
           @click="save"
@@ -324,7 +324,7 @@ export default defineComponent({
      * Save and edit task
      */
     async save() {
-      if (!this.task || !this.valid || !this.isNameValid || this.templateValidation) {
+      if (!this.task || !this.valid || !this.isNameValid || this.templateValidation !== true) {
         return;
       }
 

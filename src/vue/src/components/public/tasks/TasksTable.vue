@@ -11,7 +11,6 @@
       v-model="readTaskDialogShown"
       :id="focusedId"
       @updated="onTaskEdited"
-      @deleted="onTaskDeleted"
     />
     <TaskDialogUpdate
       v-if="perms.update"
@@ -24,7 +23,7 @@
       v-model="deleteTaskPopoverShown"
       :task="focusedTask"
       :coords="deleteTaskPopoverCoords"
-      @deleted="onTaskEdited"
+      @deleted="onTaskDeleted"
     />
 
     <v-row>

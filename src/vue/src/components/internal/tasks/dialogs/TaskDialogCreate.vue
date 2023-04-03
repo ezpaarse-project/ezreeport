@@ -275,7 +275,7 @@ export default defineComponent({
      * Save and edit task
      */
     async save() {
-      if (!this.task || !this.valid || !this.isNameValid || this.templateValidation) {
+      if (!this.task || !this.valid || !this.isNameValid || this.templateValidation !== true) {
         return;
       }
 
