@@ -154,11 +154,17 @@
 import { addDays } from 'date-fns';
 import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
+import { cloneDeep } from 'lodash';
 import type { CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
 import { tabs } from './TaskDialogRead.vue';
 
 const minDate = addDays(new Date(), 1);
+
+type CustomCreateTask = Omit<tasks.FullTask, 'createdAt' | 'id' | 'history' | 'namespace' | 'template'> & {
+  template: CustomTaskTemplate,
+  namespace: string;
+};
 
 export default defineComponent({
   mixins: [ezReeportMixin],
@@ -173,7 +179,8 @@ export default defineComponent({
     created: (task: tasks.FullTask) => !!task,
   },
   data: () => ({
-    task: {
+    task: undefined as CustomCreateTask | undefined,
+    initTask: {
       name: '',
       template: { extends: 'basic' } as CustomTaskTemplate,
       targets: [],
@@ -181,7 +188,7 @@ export default defineComponent({
       namespace: '',
       nextRun: minDate,
       enabled: true,
-    },
+    } as CustomCreateTask,
     currentTab: 0,
 
     minDate,
@@ -190,6 +197,13 @@ export default defineComponent({
     loading: false,
     error: '',
   }),
+  watch: {
+    value(val: boolean) {
+      if (val) {
+        this.task = cloneDeep(this.initTask);
+      }
+    },
+  },
   computed: {
     /**
      * Validation rules
@@ -234,7 +248,7 @@ export default defineComponent({
      */
     perms() {
       const has = this.$ezReeport.hasNamespacedPermission;
-      const namespaces = this.task.namespace ? [this.task.namespace] : [];
+      const namespaces = this.task?.namespace ? [this.task.namespace] : [];
       return {
         readOne: has('tasks-get-task', namespaces),
         create: has('tasks-post', namespaces),
