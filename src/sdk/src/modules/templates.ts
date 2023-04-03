@@ -152,7 +152,7 @@ export const createTemplate = async (
  *
  * @returns Updated Template's info
  */
-export const editTemplate = async (
+export const updateTemplate = async (
   name: Template['name'],
   template: InputTemplate,
 ): Promise<ApiResponse<FullTemplate>> => {
