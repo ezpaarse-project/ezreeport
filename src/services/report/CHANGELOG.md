@@ -1,3 +1,34 @@
+# ezreeport-report [1.0.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.1...ezreeport-report@1.0.0-beta.2) (2023-04-04)
+
+
+### Bug Fixes
+
+* **report:** cleaned up type issues ([92cb3c5](https://github.com/ezpaarse-project/ezreeport/commit/92cb3c5af8920c4e9bdcb0bb778fb443ab3e43cc))
+* **report:** crons now needs admin instead of api key ([4fdd061](https://github.com/ezpaarse-project/ezreeport/commit/4fdd06115796d824697bf575db2d902023f84b00))
+* **report:** fixed history count ([25a1b45](https://github.com/ezpaarse-project/ezreeport/commit/25a1b45ee291e9c5c436533eb08366d40490fae8))
+* **report:** fixed history return type ([2780b98](https://github.com/ezpaarse-project/ezreeport/commit/2780b989452c2d6e77605f4d5c02912553564e96))
+* **report:** fixed permissions issues about templates ([548b08f](https://github.com/ezpaarse-project/ezreeport/commit/548b08f25982eb8fcfcbbe4c9a03e0f4fe2a5a83))
+* **report:** uniformized task return type ([2fbe854](https://github.com/ezpaarse-project/ezreeport/commit/2fbe8546a5fc529b4bfac1f20b9b172b98a55ef9))
+
+
+### Code Refactoring
+
+* **report:** moved api under versioned folder ([c4e9f3f](https://github.com/ezpaarse-project/ezreeport/commit/c4e9f3f9c3c98f25d5e2980456a8ac6d2afee3e6))
+
+
+### Features
+
+* **report:** added all routes into permission system ([188b8e5](https://github.com/ezpaarse-project/ezreeport/commit/188b8e5f5dceccdc0c591e98839b3f625a1e48b5))
+* **report:** added route for getting all accessible namespaces ([d688ab0](https://github.com/ezpaarse-project/ezreeport/commit/d688ab00e4304ee0e5bcd835fab9162b294018ef))
+* **report:** moving auth & institution management into DB ([4b48680](https://github.com/ezpaarse-project/ezreeport/commit/4b4868073ebfd40f9fe992793a648ed76b8d5459))
+* **report:** templates are now in DB ([bf3eab4](https://github.com/ezpaarse-project/ezreeport/commit/bf3eab4b5693785923902d6c721d826f2d4b3e12))
+* **vue:** switched to the new permission system ([a0a59a0](https://github.com/ezpaarse-project/ezreeport/commit/a0a59a050a216f1ca4a17060fb57395deb5c443a))
+
+
+### BREAKING CHANGES
+
+* **report:** routes that needs API KEY are under /admin
+
 # ezreeport-report 1.0.0-beta.1 (2023-02-24)
 
 
