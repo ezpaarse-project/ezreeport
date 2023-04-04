@@ -7,8 +7,6 @@ WORKDIR /usr/build/report
 
 ENV NODE_ENV=production
 
-COPY ./package.json ./
-
 # Update APK registry
 RUN apk update \
 	&& apk upgrade -U -a \
@@ -23,20 +21,15 @@ COPY . ./
 
 # ---- Build prisma-client
 
-FROM node:18.14.0-alpine3.17 AS prisma
-LABEL maintainer="ezTeam <ezteam@couperin.org>"
+FROM npm-builder AS prisma
 
-WORKDIR /usr/build/prisma
-
-ENV NODE_ENV=production
-
-# Getting node_modules from previous stage to avoid rebuilding node-canvas
-COPY --from=npm-builder /usr/build/report/node_modules ./node_modules
+RUN apk update \
+	&& apk upgrade -U -a \
+	&& apk add --no-cache --update python3 \
+	&& ln -sf python3 /usr/bin/python
 
 # Install dev dependencies
-COPY ./package*.json ./
 RUN npm ci
-COPY ./prisma ./prisma
 
 # Generate prisma-client
 RUN npx prisma generate
@@ -52,7 +45,7 @@ WORKDIR /usr/src/report
 ENV NODE_ENV=production
 
 COPY . ./
-COPY --from=prisma /usr/build/prisma/.prisma ./.prisma
+COPY --from=prisma /usr/build/report/.prisma ./.prisma
 COPY --from=npm-builder /usr/build/report/node_modules ./node_modules
 
 RUN apk add --no-cache cairo jpeg pango giflib
