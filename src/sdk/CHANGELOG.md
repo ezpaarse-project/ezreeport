@@ -1,3 +1,25 @@
+# ezreeport-sdk-js [1.0.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-sdk-js@1.0.0-beta.1...ezreeport-sdk-js@1.0.0-beta.2) (2023-04-04)
+
+
+### Bug Fixes
+
+* **sdk:** fixed namespace in task in history ([a992199](https://github.com/ezpaarse-project/ezreeport/commit/a992199ecb4c2748112fe928ba93f5e9a6e8a4df))
+* **sdk:** fixed wrong name for updating template ([b75dad6](https://github.com/ezpaarse-project/ezreeport/commit/b75dad69899df59cefeac246e33f9243307cf200))
+* **sdk:** updating auth module following API ([947084d](https://github.com/ezpaarse-project/ezreeport/commit/947084d8827c41c2ec4fbb3ff64eaf24a5bd9fd5))
+
+
+### Features
+
+* **sdk:** added template management ([e67ae37](https://github.com/ezpaarse-project/ezreeport/commit/e67ae37a3524ba4490bc328b7939926537dbd811))
+* **sdk:** using namespaces instead of institutions, following API ([9950309](https://github.com/ezpaarse-project/ezreeport/commit/99503094c972aede02c18677b3c81e718d820214))
+* **vue:** switched to the new permission system ([a0a59a0](https://github.com/ezpaarse-project/ezreeport/commit/a0a59a050a216f1ca4a17060fb57395deb5c443a))
+
+
+### BREAKING CHANGES
+
+* **sdk:** institution parameter is now an array of strings
+* **sdk:** institution module is dropped
+
 # ezreeport-sdk-js 1.0.0-beta.1 (2023-02-24)
 
 
