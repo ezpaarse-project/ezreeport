@@ -41,9 +41,15 @@
         @click="fetch"
       />
 
-      <v-btn v-if="perms.create" icon color="success" @click="showCreateDialog">
-        <v-icon>mdi-plus</v-icon>
-      </v-btn>
+      <v-tooltip v-if="perms.create">
+        <template #activator="{ on, attrs }">
+          <v-btn icon color="success" @click="showCreateDialog" v-bind="attrs" v-on="on">
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+        </template>
+
+        {{$t('actions.create')}}
+      </v-tooltip>
     </LoadingToolbar>
 
     <v-divider />
@@ -237,9 +243,17 @@ en:
   refresh-tooltip: 'Refresh template list'
   errors:
     no_data: 'An error occurred when fetching data'
+  actions:
+    create: 'Create'
+    edit: 'Edit'
+    delete: 'Delete'
 fr:
   title: 'Modèles'
   refresh-tooltip: 'Rafraîchir la liste des modèles'
   errors:
     no_data: 'Une erreur est survenue lors de la récupération des données'
+  actions:
+    create: 'Créer'
+    edit: 'Éditer'
+    delete: 'Supprimer'
 </i18n>

@@ -54,9 +54,15 @@
               @click="fetch"
             />
 
-            <v-btn v-if="perms.create" icon color="success" @click="showCreateDialog">
-              <v-icon>mdi-plus</v-icon>
-            </v-btn>
+            <v-tooltip v-if="perms.create">
+              <template #activator="{ on, attrs }">
+                <v-btn icon color="success" @click="showCreateDialog" v-bind="attrs" v-on="on">
+                  <v-icon>mdi-plus</v-icon>
+                </v-btn>
+              </template>
+
+              {{$t('actions.create')}}
+            </v-tooltip>
           </LoadingToolbar>
         </template>
 
@@ -427,6 +433,7 @@ en:
     active: 'Active'
     inactive: 'Inactive'
   actions:
+    create: 'Create'
     edit: 'Edit'
     delete: 'Delete'
 fr:
@@ -442,6 +449,7 @@ fr:
     active: 'Actif'
     inactive: 'Inactif'
   actions:
+    create: 'Créer'
     edit: 'Éditer'
     delete: 'Supprimer'
 </i18n>
