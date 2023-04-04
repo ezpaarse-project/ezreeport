@@ -41,8 +41,8 @@ export const Task: Story = {
 export const Template: Story = {
   args: {
     template: {
-      ...mockTemplates[0].template,
-      layouts: mapLayouts(mockTemplates[0].template.layouts),
+      ...mockTemplates[0].body,
+      layouts: mapLayouts(mockTemplates[0].body.layouts),
     },
   },
   render: (args) => ({
