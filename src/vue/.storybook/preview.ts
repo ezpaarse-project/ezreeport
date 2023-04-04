@@ -48,58 +48,54 @@ export const globalTypes = {
 };
 
 export const decorators: Decorator[] = [
-  (story, context) => {
-    const wrapped = story(context);
-
-    return defineComponent({
-      name: 'StorybookPreview',
-      vuetify,
-      i18n,
-      components: { wrapped },
-      props: {
-        theme: {
-          type: String,
-          default: context.globals.theme,
-        },
-        locale: {
-          type: String,
-          default: context.globals.locale,
+  (story, context) => defineComponent({
+    name: 'StorybookPreview',
+    vuetify,
+    i18n,
+    components: { story },
+    props: {
+      theme: {
+        type: String,
+        default: context.globals.theme,
+      },
+      locale: {
+        type: String,
+        default: context.globals.locale,
+      },
+    },
+    data: () => ({
+      token: import.meta.env.VITE_AUTH_TOKEN,
+    }),
+    watch: {
+      theme: {
+        immediate: true,
+        handler(val) {
+          this.$vuetify.theme.dark = val === 'dark';
         },
       },
-      data: () => ({
-        token: import.meta.env.VITE_AUTH_TOKEN,
-      }),
-      watch: {
-        theme: {
-          immediate: true,
-          handler(val) {
-            this.$vuetify.theme.dark = val === 'dark';
-          },
-        },
-        locale: {
-          immediate: true,
-          handler(val) {
-            this.$i18n.locale = val;
-          },
+      locale: {
+        immediate: true,
+        handler(val) {
+          this.$i18n.locale = val;
         },
       },
-      computed: {
-        namespaceLabel() {
-          return {
-            en: 'namespace | namespaces',
-            fr: 'établissement | établissements',
-          };
-        },
+    },
+    computed: {
+      namespaceLabel() {
+        return {
+          en: 'namespace | namespaces',
+          fr: 'établissement | établissements',
+        };
       },
-      template: `
+    },
+    template: `
         <v-app>
           <ezr-provider :token="token" :namespaceLabel="namespaceLabel">
             <v-container fluid>
-              <wrapped />
+              <story />
             </v-container>
           </ezr-provider>
         </v-app>
       `,
-    });
-  },
+  }),
 ];
