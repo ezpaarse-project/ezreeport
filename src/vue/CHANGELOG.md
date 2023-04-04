@@ -1,3 +1,32 @@
+# ezreeport-vue [1.0.0-beta.4](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-vue@1.0.0-beta.3...ezreeport-vue@1.0.0-beta.4) (2023-04-04)
+
+
+### Bug Fixes
+
+* **vue:** fixed old permissions on queues ([5587fd3](https://github.com/ezpaarse-project/ezreeport/commit/5587fd3bd7b538789560454c9a0f7dfaccb1ec74))
+* **vue:** fixed story of template detail ([fb5d7e3](https://github.com/ezpaarse-project/ezreeport/commit/fb5d7e3fa28ace31e4fe6c25cd5e993a71c2e2c4))
+* **vue:** fixed task creation not been reset ([fc98a8a](https://github.com/ezpaarse-project/ezreeport/commit/fc98a8ab87b248d5c8ad3eca7fd704bb15009f96))
+* **vue:** minor fixs for task dialogs ([9ca77ac](https://github.com/ezpaarse-project/ezreeport/commit/9ca77ac287d80c546fa698b4568a8098b6bd1679))
+
+
+### Features
+
+* **vue:** added missing tooltips on some buttons ([dee279b](https://github.com/ezpaarse-project/ezreeport/commit/dee279b21d2c14a5e2ea3d8b48a04c01b14f464f))
+* **vue:** added template creation ([ad60157](https://github.com/ezpaarse-project/ezreeport/commit/ad601575ae24a21d03359caa80de2f2702412be1))
+* **vue:** added template deletion ([beb8002](https://github.com/ezpaarse-project/ezreeport/commit/beb8002bd09764e313925d32fc4c7f30f1a9677a))
+* **vue:** added template edition ([f8c169d](https://github.com/ezpaarse-project/ezreeport/commit/f8c169d013fbaa8987b780332b6808594b0eb46c))
+* **vue:** better feedback on whenever a user have the premission to do an action ([3dfb1c6](https://github.com/ezpaarse-project/ezreeport/commit/3dfb1c6ff3c17abb26a17c3a17e71c75fd058a06))
+* **vue:** can custom namespace label ([4c73294](https://github.com/ezpaarse-project/ezreeport/commit/4c73294e10dec2906660e34520ac4aa3509fe622))
+* **vue:** switched to the new permission system ([a0a59a0](https://github.com/ezpaarse-project/ezreeport/commit/a0a59a050a216f1ca4a17060fb57395deb5c443a))
+
+
+
+
+
+### Dependencies
+
+* **ezreeport-sdk-js:** upgraded to 1.0.0-beta.2
+
 # ezreeport-vue [1.0.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-vue@1.0.0-beta.2...ezreeport-vue@1.0.0-beta.3) (2023-03-15)
 
 
