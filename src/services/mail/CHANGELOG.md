@@ -1,3 +1,10 @@
+# ezreeport-mail [1.0.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.0.0-beta.1...ezreeport-mail@1.0.0-beta.2) (2023-04-04)
+
+
+### Features
+
+* **report:** moving auth & institution management into DB ([4b48680](https://github.com/ezpaarse-project/ezreeport/commit/4b4868073ebfd40f9fe992793a648ed76b8d5459))
+
 # ezreeport-mail 1.0.0-beta.1 (2023-02-24)
 
 
