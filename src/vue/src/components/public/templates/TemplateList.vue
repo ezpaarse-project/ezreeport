@@ -22,6 +22,15 @@
       @created="onTemplateCreated"
     />
 
+    <TemplatePopoverDelete
+      v-if="perms.delete && focusedTemplate"
+      v-model="deleteTemplatePopoverShown"
+      :coords="deleteTemplatePopoverCoords"
+      :template="focusedTemplate"
+      fullscreen
+      @deleted="onTemplateDeleted"
+    />
+
     <LoadingToolbar
       :text="$t('title').toString()"
       :loading="loading"
@@ -41,7 +50,7 @@
 
     <v-list style="position: relative;">
       <v-list-item
-        v-for="template in items"
+        v-for="template in templates"
         :key="template.name"
         @click="showTemplateDialog(template)"
       >
@@ -58,6 +67,15 @@
                 </v-btn>
               </template>
               <span>{{ $t('actions.edit') }}</span>
+            </v-tooltip>
+
+            <v-tooltip v-if="perms.delete">
+              <template #activator="{ attrs, on }">
+                <v-btn icon color="error" @click.stop="showDeletePopover(template, $event)" v-on="on" v-bind="attrs">
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+              </template>
+              <span>{{ $t('actions.delete') }}</span>
             </v-tooltip>
           </v-list-item-title>
         </v-list-item-content>
@@ -79,6 +97,8 @@ export default defineComponent({
     readTemplateDialogShown: false,
     updateTemplateDialogShown: false,
     createTemplateDialogShown: false,
+    deleteTemplatePopoverShown: false,
+    deleteTemplatePopoverCoords: { x: 0, y: 0 },
 
     focusedName: '',
     templates: [] as templates.Template[],
@@ -97,13 +117,14 @@ export default defineComponent({
         readOne: has('templates-get-name(*)'),
         update: has('templates-put-name(*)'),
         create: has('templates-post'),
+        delete: has('templates-delete-name(*)'),
       };
     },
     /**
-     * List items
+     * Focused template
      */
-    items() {
-      return this.templates;
+    focusedTemplate() {
+      return this.templates.find(({ name }) => name === this.focusedName);
     },
   },
   watch: {
@@ -143,19 +164,25 @@ export default defineComponent({
      * Called when a template is edited by a dialog
      */
     onTemplateEdited(template: templates.Template) {
-      const index = this.items.findIndex((t) => t.name === template.name);
+      const index = this.templates.findIndex((t) => t.name === template.name);
       if (index < 0) {
         return;
       }
 
-      const items = [...this.items];
-      items.splice(index, 1, { ...template });
-      this.items = items;
+      const templates = [...this.templates];
+      templates.splice(index, 1, { ...template });
+      this.templates = templates;
     },
     /**
      * Called when a template is created by a dialog
      */
     onTemplateCreated() {
+      this.fetch();
+    },
+    /**
+     * Called when a template is deleted by a dialog
+     */
+    onTemplateDeleted() {
       this.fetch();
     },
     /**
@@ -180,6 +207,21 @@ export default defineComponent({
     showEditDialog({ name }: templates.Template) {
       this.focusedName = name;
       this.updateTemplateDialogShown = true;
+    },
+    /**
+     * Prepare and show template deletion popover
+     *
+     * @param item The item
+     * @param event The base event
+     */
+    async showDeletePopover({ name }: templates.Template, event: MouseEvent) {
+      this.focusedName = name;
+      this.deleteTemplatePopoverCoords = {
+        x: event.clientX,
+        y: event.clientY,
+      };
+      await this.$nextTick();
+      this.deleteTemplatePopoverShown = true;
     },
   },
 });

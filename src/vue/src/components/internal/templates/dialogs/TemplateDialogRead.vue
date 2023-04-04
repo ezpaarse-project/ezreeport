@@ -22,7 +22,7 @@
       <v-divider />
 
       <v-card-text style="position: relative">
-        <TemplateDetail v-if="item?.template" :template="item.template" />
+        <TemplateDetail v-if="item?.body" :template="item.body" />
 
         <ErrorOverlay v-model="error" />
       </v-card-text>
@@ -39,7 +39,7 @@ import {
 } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
 
-type CustomFullTemplate = Omit<templates.FullTemplate, 'template'> & { template: CustomTemplate };
+type CustomFullTemplate = Omit<templates.FullTemplate, 'body'> & { body: CustomTemplate };
 
 export default defineComponent({
   mixins: [ezReeportMixin],
