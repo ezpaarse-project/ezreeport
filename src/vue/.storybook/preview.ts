@@ -52,7 +52,7 @@ export const decorators: Decorator[] = [
     name: 'StorybookPreview',
     vuetify,
     i18n,
-    components: { story },
+    components: { story: story(context) },
     props: {
       theme: {
         type: String,

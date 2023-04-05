@@ -1,6 +1,7 @@
 {
   "name": "ezreeport-vue-example",
   "description": "",
+  "private": true,
   "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
   "bugs": {
     "url": "https://github.com/ezpaarse-project/ezreeport/issues"
