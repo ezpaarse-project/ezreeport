@@ -149,10 +149,6 @@ export default defineComponent({
      * Fetch all connected services and parse result
      */
     async fetch() {
-      if (!this.perms.checkAll || !this.perms.readAll) {
-        return;
-      }
-
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.health.checkAllConnectedService();

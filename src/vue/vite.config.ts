@@ -4,7 +4,7 @@ import { defineConfig } from 'vite';
 import vue2 from '@vitejs/plugin-vue2';
 import Components from 'unplugin-vue-components/vite';
 import { VuetifyResolver } from 'unplugin-vue-components/resolvers';
-import VueI18nPlugin from './plugins/vite-i18n';
+import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite';
 
 let comps = Components({
   dts: false,
@@ -22,7 +22,10 @@ if (process.env.NODE_ENV !== 'production') {
 export default defineConfig({
   plugins: [
     vue2(),
-    VueI18nPlugin,
+    VueI18nPlugin({
+      compositionOnly: false,
+      bridge: true,
+    }),
     comps,
   ],
   resolve: {

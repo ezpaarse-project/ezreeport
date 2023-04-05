@@ -1,8 +1,8 @@
 <template>
   <v-app>
-    <ezr-provider>
+    <ezr-provider :api-url="apiUrl">
       <v-main>
-        <AppBar />
+        <AppBar :url.sync="apiUrl" />
 
         <v-container>
           <Nuxt />
@@ -11,3 +11,13 @@
     </ezr-provider>
   </v-app>
 </template>
+
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+  data: () => ({
+    apiUrl: 'http://localhost:8080/v1/',
+  }),
+});
+</script>

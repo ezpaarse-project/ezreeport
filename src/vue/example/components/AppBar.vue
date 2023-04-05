@@ -5,6 +5,8 @@
     <v-spacer />
 
     <div class="d-flex align-center">
+      <v-text-field :value="url" label="API URL" dense hide-details class="mx-2" @change="$emit('update:url', $event)" />
+
       <div>
         <v-btn @click="updateAuth" color="primary">
           {{ $t($ezReeport.isLogged ? 'actions.logout' : 'actions.login') }}
@@ -44,6 +46,12 @@ import { defineComponent } from 'vue';
 import { ezReeportMixin } from 'ezreeport-vue';
 
 export default defineComponent({
+  props: {
+    url: {
+      type: String,
+      required: true,
+    },
+  },
   mixins: [ezReeportMixin],
   data: () => ({
     locale: 'fr',

@@ -25,7 +25,7 @@ export default defineComponent({
     },
     namespaceLabel: {
       type: Object as PropType<Record<string, string>>,
-      default: () => {},
+      default: () => ({}),
     },
   },
   data: (): InjectedEzReeport['data'] => ({
