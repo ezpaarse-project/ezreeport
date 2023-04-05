@@ -17,11 +17,11 @@ export default defineComponent({
     },
     apiUrl: {
       type: String,
-      default: import.meta.env.VITE_REPORT_API,
+      default: '',
     },
     namespaceLogoUrl: {
       type: String,
-      default: import.meta.env.VITE_NAMESPACES_LOGO_URL,
+      default: '',
     },
     namespaceLabel: {
       type: Object as PropType<Record<string, string>>,
@@ -41,10 +41,10 @@ export default defineComponent({
   }),
   watch: {
     apiUrl(value: string) {
-      sdk.setup.setURL(value);
+      sdk.setup.setURL(value || import.meta.env.VITE_REPORT_API);
     },
     namespaceLogoUrl(value: string) {
-      this.namespaces.logoUrl = value;
+      this.namespaces.logoUrl = value || import.meta.env.VITE_NAMESPACES_LOGO_URL;
     },
     // eslint-disable-next-line func-names
     '$i18n.locale': function () {
@@ -100,8 +100,8 @@ export default defineComponent({
     };
   },
   mounted() {
-    sdk.setup.setURL(this.apiUrl);
-    this.namespaces.logoUrl = this.namespaceLogoUrl;
+    sdk.setup.setURL(this.apiUrl || import.meta.env.VITE_REPORT_API);
+    this.namespaces.logoUrl = this.namespaceLogoUrl || import.meta.env.VITE_NAMESPACES_LOGO_URL;
     this.registerNamespaceLocalization();
     if (this.token) {
       this.login(this.token);
