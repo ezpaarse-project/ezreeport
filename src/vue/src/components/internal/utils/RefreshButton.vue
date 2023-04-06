@@ -1,9 +1,9 @@
 <template>
-  <v-tooltip>
+  <v-tooltip top>
     <template #activator="{ on, attrs }">
       <v-btn
-        icon
         :disabled="loading || disabled"
+        icon
         v-bind="attrs"
         @click="$emit('click')"
         v-on="on"
@@ -19,6 +19,7 @@
         </v-icon>
       </v-btn>
     </template>
+
     <span>{{ tooltip }}</span>
   </v-tooltip>
 </template>

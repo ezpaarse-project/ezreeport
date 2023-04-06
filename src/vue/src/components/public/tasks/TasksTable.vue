@@ -57,7 +57,7 @@
                 @click="fetch"
               />
 
-              <v-tooltip v-if="perms.create">
+              <v-tooltip top v-if="perms.create">
                 <template #activator="{ on, attrs }">
                   <v-btn icon color="success" @click="showCreateDialog" v-bind="attrs" v-on="on">
                     <v-icon>mdi-plus</v-icon>
@@ -99,7 +99,7 @@
           </template>
 
           <template #[`item.actions`]="{ item }">
-            <v-tooltip v-if="rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task']">
+            <v-tooltip top v-if="rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task']">
               <template #activator="{ attrs, on }">
                 <v-btn icon color="info" @click.stop="showEditDialog(item)" v-on="on" v-bind="attrs">
                   <v-icon>mdi-pencil</v-icon>
@@ -108,7 +108,7 @@
               <span>{{ $t('actions.edit') }}</span>
             </v-tooltip>
 
-            <v-tooltip v-if="rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-delete-task']">
+            <v-tooltip top v-if="rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-delete-task']">
               <template #activator="{ attrs, on }">
                 <v-btn icon color="error" @click.stop="showDeletePopover(item, $event)" v-on="on" v-bind="attrs">
                   <v-icon>mdi-delete</v-icon>
