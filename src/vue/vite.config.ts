@@ -35,6 +35,7 @@ export default defineConfig({
     },
   },
   build: {
+    target: 'es6',
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'ezReeportVue',
