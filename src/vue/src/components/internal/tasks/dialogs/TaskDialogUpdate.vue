@@ -161,9 +161,9 @@
 import { addDays } from 'date-fns';
 import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
+import { isEmailValid } from '@hapi/address';
 import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
-import validateMail from '~/lib/utils/validateMail';
 import { tabs } from './TaskDialogRead.vue';
 
 type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTemplate };
@@ -292,7 +292,7 @@ export default defineComponent({
      *
      * @param email The string
      */
-    validateMail,
+    validateMail: (email: string) => isEmailValid(email),
     /**
      * Fetch task info
      */

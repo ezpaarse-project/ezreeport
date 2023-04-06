@@ -155,9 +155,9 @@ import { addDays } from 'date-fns';
 import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { cloneDeep } from 'lodash';
+import { isEmailValid } from '@hapi/address';
 import type { CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
-import validateMail from '~/lib/utils/validateMail';
 import { tabs } from './TaskDialogRead.vue';
 
 const minDate = addDays(new Date(), 1);
@@ -283,7 +283,7 @@ export default defineComponent({
      *
      * @param email The string
      */
-    validateMail,
+    validateMail: (email: string) => isEmailValid(email),
     /**
      * Save and edit task
      */
