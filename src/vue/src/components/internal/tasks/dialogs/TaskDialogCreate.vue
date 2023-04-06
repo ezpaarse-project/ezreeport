@@ -183,7 +183,7 @@ export default defineComponent({
     task: undefined as CustomCreateTask | undefined,
     initTask: {
       name: '',
-      template: { extends: 'basic' } as CustomTaskTemplate,
+      template: { extends: 'scratch' } as CustomTaskTemplate,
       targets: [],
       recurrence: 'DAILY' as tasks.Recurrence,
       namespace: '',
