@@ -90,7 +90,7 @@
                 </v-col>
 
                 <v-col>
-                  <div>{{ $t('headers.namespace') }}:</div>
+                  <div>{{ $ezReeport.tcNamespace(true) }}:</div>
                   <NamespaceSelect
                     v-model="task.namespace"
                     :error-message="!task.namespace ? $t('errors.empty').toString() : undefined"
@@ -229,7 +229,7 @@ export default defineComponent({
       return [
         {
           ...detailTab,
-          valid: this.valid,
+          valid: this.valid || this.$t('errors._default'),
         },
         {
           ...templateTab,
@@ -343,7 +343,6 @@ export default defineComponent({
 en:
   headers:
     name: 'Report name'
-    namespace: 'Namespace'
     targets: 'Receivers'
     dates: 'Dates'
   tabs:
@@ -356,6 +355,7 @@ en:
     active: 'Active'
     inactive: 'Inactive'
   errors:
+    _default: 'An error is in this form'
     layouts:
       _detail: 'Page {at}: {valid}'
     empty: 'This field must be set'
@@ -366,7 +366,6 @@ en:
 fr:
   headers:
     name: 'Nom du rapport'
-    namespace: 'Namespace'
     targets: 'Destinataires'
     dates: 'Dates'
   tabs:
@@ -379,6 +378,7 @@ fr:
     active: 'Actif'
     inactive: 'Inactif'
   errors:
+    _default: 'Une erreur est présente dans ce formulaire'
     layouts:
       _detail: 'Page {at}: {valid}'
     empty: 'Ce champ doit être rempli'
