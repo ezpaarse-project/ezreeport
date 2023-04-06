@@ -126,7 +126,7 @@ export const isTaskTemplate = (data: unknown): data is AnyTaskTemplate => {
   return true;
 };
 
-interface FullTemplate extends Omit<PrismaTemplate, 'body'> {
+export interface FullTemplate extends Omit<PrismaTemplate, 'body'> {
   renderer: keyof Renderers,
   pageCount: number,
   body: AnyTemplate,

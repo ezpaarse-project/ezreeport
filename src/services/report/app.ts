@@ -6,8 +6,39 @@ import logger from './lib/logger';
 import corsMiddleware from './middlewares/cors';
 import formatMiddleware from './middlewares/format';
 import loggerMiddleware from './middlewares/logger';
+import { createTemplate, getTemplateByName, type FullTemplate } from './models/templates';
 
 const port = config.get('port');
+const DEFAULT_TEMPLATE_NAME = 'scratch';
+
+/**
+ * Add default template if not already present
+ */
+const initTemplates = async () => {
+  logger.debug(`[init] Checking existence of "${DEFAULT_TEMPLATE_NAME}"...`);
+  let template: FullTemplate | null;
+  try {
+    template = await getTemplateByName(DEFAULT_TEMPLATE_NAME);
+  } catch (error) {
+    logger.error(`[init] Couldn't get template "${DEFAULT_TEMPLATE_NAME}":`, (error as Error).message);
+    return;
+  }
+
+  if (template) {
+    return;
+  }
+
+  logger.debug(`[init] Template "${DEFAULT_TEMPLATE_NAME}" not found, creating it...`);
+  try {
+    await createTemplate(
+      DEFAULT_TEMPLATE_NAME,
+      { body: { layouts: [] } } satisfies Pick<FullTemplate, 'body'>,
+    );
+    logger.info(`[init] Template "${DEFAULT_TEMPLATE_NAME}" created`);
+  } catch (error) {
+    logger.error(`[init] Couldn't create template "${DEFAULT_TEMPLATE_NAME}":`, (error as Error).message);
+  }
+};
 
 express()
   /**
@@ -31,4 +62,7 @@ express()
   .listen(port, () => {
     logger.info(`[node] Service running in ${process.env.NODE_ENV} mode`);
     logger.info(`[http] Service listening on port ${port} in ${process.uptime().toFixed(2)}s`);
+
+    // Add "raw" template if not already present
+    initTemplates();
   });
