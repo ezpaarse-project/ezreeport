@@ -28,4 +28,7 @@ module.exports = {
     sourceType: 'module',
     project: 'tsconfig.eslint.json',
   },
+  rules: {
+    'import/no-extraneous-dependencies': 'off',
+  },
 };

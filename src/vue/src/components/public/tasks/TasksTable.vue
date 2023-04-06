@@ -27,98 +27,102 @@
     />
 
     <v-row>
-      <NamespaceSelect
-        v-model="currentNamespace"
-        @input="fetch()"
-      />
+      <v-col>
+        <NamespaceSelect
+          v-model="currentNamespace"
+          @input="fetch()"
+        />
+      </v-col>
     </v-row>
 
     <v-row>
-      <v-data-table
-        :headers="headers"
-        :items="items"
-        :loading="loading"
-        :options.sync="options"
-        :server-items-length="totalItems"
-        :items-per-page-options="[5, 10, 15]"
-        class="data-table"
-        item-key="id"
-        @click:row="showTaskDialog"
-        @update:options="onPaginationChange"
-      >
-        <template #top>
-          <LoadingToolbar :text="$t('title').toString()">
-            <RefreshButton
-              :loading="loading"
-              :tooltip="$t('refresh-tooltip').toString()"
-              @click="fetch"
-            />
+      <v-col>
+        <v-data-table
+          :headers="headers"
+          :items="items"
+          :loading="loading"
+          :options.sync="options"
+          :server-items-length="totalItems"
+          :items-per-page-options="[5, 10, 15]"
+          class="data-table"
+          item-key="id"
+          @click:row="showTaskDialog"
+          @update:options="onPaginationChange"
+        >
+          <template #top>
+            <LoadingToolbar :text="$t('title').toString()">
+              <RefreshButton
+                :loading="loading"
+                :tooltip="$t('refresh-tooltip').toString()"
+                @click="fetch"
+              />
 
-            <v-tooltip v-if="perms.create">
-              <template #activator="{ on, attrs }">
-                <v-btn icon color="success" @click="showCreateDialog" v-bind="attrs" v-on="on">
-                  <v-icon>mdi-plus</v-icon>
+              <v-tooltip v-if="perms.create">
+                <template #activator="{ on, attrs }">
+                  <v-btn icon color="success" @click="showCreateDialog" v-bind="attrs" v-on="on">
+                    <v-icon>mdi-plus</v-icon>
+                  </v-btn>
+                </template>
+
+                {{$t('actions.create')}}
+              </v-tooltip>
+            </LoadingToolbar>
+          </template>
+
+          <template #[`item.namespace`]="{ value: namespace }">
+            <NamespaceRichListItem
+              v-if="namespace"
+              :namespace="namespace"
+            />
+            <v-progress-circular v-else indeterminate class="my-2" />
+          </template>
+
+          <template #[`item.recurrence`]="{ value: recurrence }">
+            <div class="text-center">
+              <RecurrenceChip
+                :value="recurrence"
+              />
+            </div>
+          </template>
+
+          <template #[`item.enabled`]="{ value: enabled, item }">
+            <CustomSwitch
+              :value="enabled"
+              :readonly="loading"
+              :disabled="!rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task-enable']
+                || !rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task-disable']
+              "
+              :label="$t(enabled ? 'item.active' : 'item.inactive').toString()"
+              reverse
+              @click.stop="toggleTask(item)"
+            />
+          </template>
+
+          <template #[`item.actions`]="{ item }">
+            <v-tooltip v-if="rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task']">
+              <template #activator="{ attrs, on }">
+                <v-btn icon color="info" @click.stop="showEditDialog(item)" v-on="on" v-bind="attrs">
+                  <v-icon>mdi-pencil</v-icon>
                 </v-btn>
               </template>
-
-              {{$t('actions.create')}}
+              <span>{{ $t('actions.edit') }}</span>
             </v-tooltip>
-          </LoadingToolbar>
-        </template>
 
-        <template #[`item.namespace`]="{ value: namespace }">
-          <NamespaceRichListItem
-            v-if="namespace"
-            :namespace="namespace"
-          />
-          <v-progress-circular v-else indeterminate class="my-2" />
-        </template>
+            <v-tooltip v-if="rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-delete-task']">
+              <template #activator="{ attrs, on }">
+                <v-btn icon color="error" @click.stop="showDeletePopover(item, $event)" v-on="on" v-bind="attrs">
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+              </template>
+              <span>{{ $t('actions.delete') }}</span>
+            </v-tooltip>
+          </template>
 
-        <template #[`item.recurrence`]="{ value: recurrence }">
-          <div class="text-center">
-            <RecurrenceChip
-              :value="recurrence"
-            />
-          </div>
-        </template>
-
-        <template #[`item.enabled`]="{ value: enabled, item }">
-          <CustomSwitch
-            :value="enabled"
-            :readonly="loading"
-            :disabled="!rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task-enable']
-              || !rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task-disable']
-            "
-            :label="$t(enabled ? 'item.active' : 'item.inactive').toString()"
-            reverse
-            @click.stop="toggleTask(item)"
-          />
-        </template>
-
-        <template #[`item.actions`]="{ item }">
-          <v-tooltip v-if="rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task']">
-            <template #activator="{ attrs, on }">
-              <v-btn icon color="info" @click.stop="showEditDialog(item)" v-on="on" v-bind="attrs">
-                <v-icon>mdi-pencil</v-icon>
-              </v-btn>
-            </template>
-            <span>{{ $t('actions.edit') }}</span>
-          </v-tooltip>
-
-          <v-tooltip v-if="rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-delete-task']">
-            <template #activator="{ attrs, on }">
-              <v-btn icon color="error" @click.stop="showDeletePopover(item, $event)" v-on="on" v-bind="attrs">
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
-            </template>
-            <span>{{ $t('actions.delete') }}</span>
-          </v-tooltip>
-        </template>
-
-        <template v-if="error" #[`body.append`]>
-          <ErrorOverlay v-model="error" />
-        </template>
-      </v-data-table>
+          <template v-if="error" #[`body.append`]>
+            <ErrorOverlay v-model="error" />
+          </template>
+        </v-data-table>
+      </v-col>
     </v-row>
   </v-col>
 </template>

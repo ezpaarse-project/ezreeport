@@ -1,10 +1,12 @@
 <template>
   <v-col v-if="perms.readAll">
     <v-row>
-      <NamespaceSelect
-        v-model="currentNamespace"
-        @input="fetch()"
-      />
+      <v-col>
+        <NamespaceSelect
+          v-model="currentNamespace"
+          @input="fetch()"
+        />
+      </v-col>
     </v-row>
 
     <v-row>
