@@ -161,6 +161,7 @@ import { addDays, differenceInDays, min } from 'date-fns';
 import type { tasks, reports } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 import { calcPeriod, type Period } from '~/lib/tasks/recurrence';
+import validateMail from '~/lib/utils/validateMail';
 import ezReeportMixin from '~/mixins/ezr';
 
 const today = new Date();
@@ -246,11 +247,9 @@ export default defineComponent({
     /**
      * Check if given string is a mail address
      *
-     * ! ULTRA Simple email validation
-     *
-     * @param s The string
+     * @param email The string
      */
-    validateMail: (s: string) => /[a-z0-9.-]*@[a-z0-9.-]*\.[a-z-]*/i.test(s),
+    validateMail,
     /**
      * Remove item in target list
      *

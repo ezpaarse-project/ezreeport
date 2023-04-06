@@ -157,6 +157,7 @@ import { defineComponent } from 'vue';
 import { cloneDeep } from 'lodash';
 import type { CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
+import validateMail from '~/lib/utils/validateMail';
 import { tabs } from './TaskDialogRead.vue';
 
 const minDate = addDays(new Date(), 1);
@@ -280,11 +281,9 @@ export default defineComponent({
     /**
      * Check if given string is a mail address
      *
-     * ! ULTRA Simple email validation
-     *
-     * @param s The string
+     * @param email The string
      */
-    validateMail: (s: string) => /[a-z0-9.-]*@[a-z0-9.-]*\.[a-z-]*/i.test(s),
+    validateMail,
     /**
      * Save and edit task
      */

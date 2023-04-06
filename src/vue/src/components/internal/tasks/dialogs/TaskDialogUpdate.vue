@@ -163,6 +163,7 @@ import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
+import validateMail from '~/lib/utils/validateMail';
 import { tabs } from './TaskDialogRead.vue';
 
 type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTemplate };
@@ -289,11 +290,9 @@ export default defineComponent({
     /**
      * Check if given string is a mail address
      *
-     * ! ULTRA Simple email validation
-     *
-     * @param s The string
+     * @param email The string
      */
-    validateMail: (s: string) => /[a-z0-9.-]*@[a-z0-9.-]*\.[a-z-]*/i.test(s),
+    validateMail,
     /**
      * Fetch task info
      */
