@@ -48,7 +48,8 @@ export const requireAPIKey: RequestHandler = (req, res, next) => {
 
 export const requireAdmin: RequestHandler = (req, res, next) => {
   if (!req.user?.isAdmin) {
-    throw new HTTPError(`'${req.method} ${req.originalUrl}' requires to be admin`, StatusCodes.UNAUTHORIZED);
+    res.errorJson(new HTTPError(`'${req.method} ${req.originalUrl}' requires to be admin`, StatusCodes.UNAUTHORIZED));
+    return;
   }
 
   next();
@@ -88,14 +89,16 @@ export const requireNamespace = (minAccess: Access): RequestHandler => (req, res
 
     if (wantedIds) {
       if (!Array.isArray(wantedIds)) {
-        throw new HTTPError('Given namespaces ids are not an array', StatusCodes.BAD_REQUEST);
+        res.errorJson(new HTTPError('Given namespaces ids are not an array', StatusCodes.BAD_REQUEST));
+        return;
       }
 
       ids = wantedIds.map((id) => id.toString()).filter((id) => ids.includes(id));
     }
 
     if (ids.length <= 0) {
-      throw new HTTPError("Can't find your namespace(s)", StatusCodes.BAD_REQUEST);
+      res.errorJson(new HTTPError("Can't find your namespace(s)", StatusCodes.BAD_REQUEST));
+      return;
     }
 
     req.namespaceIds = ids;
