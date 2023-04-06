@@ -87,6 +87,13 @@ export const requireNamespace = (minAccess: Access): RequestHandler => (req, res
     const { namespaces: wantedIds } = req.query;
     let ids = possibleNamespaces.map(({ namespace: { id } }) => id) ?? [];
 
+    if (ids.length <= 0) {
+      req.namespaceIds = [];
+      req.namespaces = [];
+      next();
+      return;
+    }
+
     if (wantedIds) {
       if (!Array.isArray(wantedIds)) {
         res.errorJson(new HTTPError('Given namespaces ids are not an array', StatusCodes.BAD_REQUEST));
