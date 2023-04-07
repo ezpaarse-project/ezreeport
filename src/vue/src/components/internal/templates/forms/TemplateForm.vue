@@ -419,7 +419,8 @@ export default defineComponent({
      */
     onExtendChange(value: string) {
       this.onTemplateUpdate({ ...this.template, extends: value });
-      this.fetchBase();
+      this.$nextTick()
+        .then(() => this.fetchBase());
     },
     /**
      * Called when the template is updated
