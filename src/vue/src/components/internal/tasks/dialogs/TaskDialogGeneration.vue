@@ -389,11 +389,11 @@ en:
     targets: 'Receivers'
     period: 'Report period'
   labels:
-    prod: 'labels.prod' # TODO: English translations
-    test: 'labels.test' # TODO: English translations
+    prod: 'Normal generation'
+    test: 'Test generation'
   descriptions:
-    prod: 'descriptions.prod' # TODO: English translations
-    test: 'descriptions.test' # TODO: English translations
+    prod: 'The report will be sent to the usual recipients. The generation will be displayed in the history and will update the next iteration date.' # TODO: English translations
+    test: 'The report will be sent to the indicated recipients.'
   errors:
     length: 'Please enter at least 1 address'
     format: "One or more address aren't valid"
@@ -414,7 +414,7 @@ fr:
     targets: 'Destinataires'
     period: 'Période du rapport'
   labels:
-    prod: 'Génération prod'
+    prod: 'Génération normale'
     test: 'Génération test'
   descriptions:
     prod: "Le rapport sera envoyé aux destinataires habituels. La génération sera affichée dans l'historique et mettra à jour la date de prochaine itération."
