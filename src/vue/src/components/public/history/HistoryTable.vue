@@ -171,9 +171,9 @@ export default defineComponent({
 
 <i18n lang="yaml">
 en:
-  title: 'History of tasks'
-  refresh-tooltip: 'Refresh history'
+  title: 'Activity of periodic reports'
+  refresh-tooltip: 'Refresh activity'
 fr:
-  title: 'Historique des tâches'
-  refresh-tooltip: "Rafraîchir l'historique"
+  title: 'Activité des rapports périodiques'
+  refresh-tooltip: "Rafraîchir l'activité"
 </i18n>

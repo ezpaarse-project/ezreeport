@@ -186,8 +186,8 @@ en:
   errors:
     no_data: 'An error occurred when fetching data'
 fr:
-  title: 'Queues'
-  refresh-tooltip: 'Rafraîchir la liste des queues'
+  title: "File d'attente"
+  refresh-tooltip: "Rafraîchir la liste des file d'attente"
   queue:
     not-found: 'Cron {name} non trouvée'
     force: 'Forcer'
