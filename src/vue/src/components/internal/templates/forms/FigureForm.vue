@@ -193,8 +193,8 @@ export default defineComponent({
       const length = this.grid.cols * this.grid.rows;
 
       return Array.from({ length }, (_, i) => ({
-        text: i,
-        valued: i,
+        text: this.$t(`slots[${i}]`),
+        value: i,
         disabled: this.takenSlots.includes(i) && !this.figure.slots?.includes(i),
       }));
     },
@@ -261,6 +261,11 @@ en:
     trail: 'Trail'
     circle: 'Circle'
     square: 'Square'
+  slots:
+    - 'Top left'
+    - 'Top right'
+    - 'Bottom left'
+    - 'Bottom right'
   errors:
     empty: 'This field is required'
     slots: "This combinaison of slots is not possible"
@@ -287,6 +292,11 @@ fr:
     trail: 'Trail' # TODO French translation
     circle: 'Cercle'
     square: 'Carré'
+  slots:
+    - 'Haut à gauche'
+    - 'Haut à droite'
+    - 'Bas à gauche'
+    - 'Bas à droite'
   errors:
     empty: 'Ce champ est requis'
     slots: "Cette combinaison d'emplacement n'est pas possible"
