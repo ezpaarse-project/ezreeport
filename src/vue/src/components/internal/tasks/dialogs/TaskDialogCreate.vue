@@ -160,12 +160,22 @@ import type { CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
 import { tabs } from './TaskDialogRead.vue';
 
-const minDate = addDays(new Date(), 1);
-
 type CustomCreateTask = Omit<tasks.FullTask, 'createdAt' | 'id' | 'history' | 'namespace' | 'template'> & {
   template: CustomTaskTemplate,
   namespace: string;
 };
+
+const minDate = addDays(new Date(), 1);
+
+const initTask = {
+  name: '',
+  template: { extends: 'scratch' } as CustomTaskTemplate,
+  targets: [],
+  recurrence: 'DAILY' as tasks.Recurrence,
+  namespace: '',
+  nextRun: minDate,
+  enabled: true,
+} as CustomCreateTask;
 
 export default defineComponent({
   mixins: [ezReeportMixin],
@@ -181,15 +191,6 @@ export default defineComponent({
   },
   data: () => ({
     task: undefined as CustomCreateTask | undefined,
-    initTask: {
-      name: '',
-      template: { extends: 'scratch' } as CustomTaskTemplate,
-      targets: [],
-      recurrence: 'DAILY' as tasks.Recurrence,
-      namespace: '',
-      nextRun: minDate,
-      enabled: true,
-    } as CustomCreateTask,
     currentTab: 0,
 
     minDate,
@@ -201,7 +202,7 @@ export default defineComponent({
   watch: {
     value(val: boolean) {
       if (val) {
-        this.task = cloneDeep(this.initTask);
+        this.task = cloneDeep(initTask);
       }
     },
   },

@@ -165,6 +165,7 @@ import { calcPeriod, type Period } from '~/lib/tasks/recurrence';
 import ezReeportMixin from '~/mixins/ezr';
 
 const today = new Date();
+const maxDate = addDays(today, -1);
 
 export default defineComponent({
   mixins: [ezReeportMixin],
@@ -189,7 +190,7 @@ export default defineComponent({
     job: undefined as reports.GenerationStartedEvent | undefined,
     reportStatus: '' as '' | 'success' | 'error',
     period: { start: today, end: today } as Period,
-    max: addDays(today, -1),
+    max: maxDate,
 
     progress: -1,
     error: '',
@@ -198,6 +199,13 @@ export default defineComponent({
     this.targets = this.task.targets;
     this.error = '';
     this.resetPeriod();
+  },
+  watch: {
+    value(val: boolean) {
+      if (val) {
+        this.resetPeriod();
+      }
+    },
   },
   computed: {
     options() {
@@ -392,7 +400,7 @@ en:
     prod: 'Normal generation'
     test: 'Test generation'
   descriptions:
-    prod: 'The report will be sent to the usual recipients. The generation will be displayed in the history and will update the next iteration date.' # TODO: English translations
+    prod: 'The report will be sent to the usual recipients. The generation will be displayed in the history and will update the next iteration date.'
     test: 'The report will be sent to the indicated recipients.'
   errors:
     length: 'Please enter at least 1 address'

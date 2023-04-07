@@ -58,6 +58,11 @@ import ezReeportMixin from '~/mixins/ezr';
 
 type CustomCreateTemplate = Omit<templates.FullTemplate, 'body' | 'createdAt' | 'pageCount' | 'updatedAt' | 'renderer'> & { body: CustomTemplate };
 
+const initItem = {
+  name: '',
+  body: { layouts: [] },
+} as CustomCreateTemplate;
+
 export default defineComponent({
   mixins: [ezReeportMixin],
   props: {
@@ -76,10 +81,6 @@ export default defineComponent({
   },
   data: () => ({
     item: undefined as CustomCreateTemplate | undefined,
-    initItem: {
-      name: '',
-      body: { layouts: [] },
-    } as CustomCreateTemplate,
 
     error: '',
     loading: false,
@@ -87,7 +88,7 @@ export default defineComponent({
   watch: {
     value(val: boolean) {
       if (val) {
-        this.item = cloneDeep(this.initItem);
+        this.item = cloneDeep(initItem);
       }
     },
   },

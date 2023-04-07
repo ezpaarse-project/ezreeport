@@ -8,12 +8,6 @@
 
         <v-spacer />
 
-        <RefreshButton
-          :loading="loading"
-          :tooltip="$t('refresh-tooltip').toString()"
-          @click="fetch"
-        />
-
         <v-btn icon text @click="$emit('input', false)">
           <v-icon>mdi-close</v-icon>
         </v-btn>
@@ -115,12 +109,11 @@ export default defineComponent({
     '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
-    name() {
-      this.fetch();
+    value(val: boolean) {
+      if (val) {
+        this.fetch();
+      }
     },
-  },
-  mounted() {
-    this.fetch();
   },
   methods: {
     /**
