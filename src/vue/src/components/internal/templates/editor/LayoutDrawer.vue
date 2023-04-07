@@ -14,16 +14,27 @@
     <div class="d-flex flex-column" style="width: 100%;">
       <template v-if="mode !== 'view'">
         <!-- Toolbar -->
-        <div class="d-flex pa-2" style="min-height: 44px;">
-          <v-btn
-            small
-            color="success"
-            elevation="0"
-            @click="onLayoutCreate"
-          >
-            <v-icon left>mdi-plus</v-icon>
-            {{ $t('actions.add') }}
-          </v-btn>
+        <div class="d-flex align-center pa-2" style="min-height: 44px;">
+          {{ $t('headers.layouts') }}
+
+          <v-spacer />
+
+          <v-tooltip top>
+            <template #activator="{ attrs, on }">
+              <v-btn
+                small
+                icon
+                color="success"
+                v-bind="attrs"
+                @click="onLayoutCreate"
+                v-on="on"
+              >
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </template>
+
+            <span>{{$t('actions.create-tooltip')}}</span>
+          </v-tooltip>
         </div>
 
         <v-divider />
@@ -346,9 +357,13 @@ export default defineComponent({
 
 <i18n lang="yaml">
 en:
+  headers:
+    layouts: 'Pages'
   actions:
-    add: 'Add'
+    create-tooltip: 'Add a page'
 fr:
+  headers:
+    layouts: 'Pages'
   actions:
-    add: 'Ajouter'
+    create-tooltip: 'Ajouter une page'
 </i18n>
