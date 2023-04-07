@@ -24,6 +24,10 @@ export interface RawTemplate {
   name: string,
   renderer: string,
   pageCount: number,
+  tags: {
+    name: string,
+    color?: string,
+  }[],
 
   createdAt: string, // Date
   updatedAt?: string, // Date
@@ -80,6 +84,7 @@ const parseFullTemplate = (template: RawFullTemplate): FullTemplate => {
 
 export interface InputTemplate {
   body: FullTemplate['body']
+  tags: FullTemplate['tags']
 }
 
 /**
