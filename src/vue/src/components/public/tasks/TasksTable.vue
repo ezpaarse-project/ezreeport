@@ -30,6 +30,7 @@
       <v-col>
         <NamespaceSelect
           v-model="currentNamespace"
+          hide-refresh
           @input="fetch()"
         />
       </v-col>
@@ -51,12 +52,6 @@
         >
           <template #top>
             <LoadingToolbar :text="$t('title').toString()">
-              <RefreshButton
-                :loading="loading"
-                :tooltip="$t('refresh-tooltip').toString()"
-                @click="fetch"
-              />
-
               <v-tooltip top v-if="perms.create">
                 <template #activator="{ on, attrs }">
                   <v-btn icon color="success" @click="showCreateDialog" v-bind="attrs" v-on="on">
@@ -426,7 +421,6 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   title: 'Periodic report list'
-  refresh-tooltip: 'Refresh report list'
   headers:
     name: 'Report name'
     recurrence: 'Recurrence'
@@ -442,7 +436,6 @@ en:
     delete: 'Delete'
 fr:
   title: 'Liste des rapports périodiques'
-  refresh-tooltip: 'Rafraîchir la liste des rapports'
   headers:
     name: 'Nom du rapport'
     recurrence: 'Fréquence'

@@ -45,6 +45,7 @@
     </div>
 
     <RefreshButton
+      v-if="!hideRefresh"
       :loading="loading"
       :tooltip="$t('refresh-tooltip', { namespace: $ezReeport.tcNamespace() }).toString()"
       @click="fetch(true)"
@@ -79,6 +80,10 @@ export default defineComponent({
       default: () => [],
     },
     hideAll: {
+      type: Boolean,
+      default: false,
+    },
+    hideRefresh: {
       type: Boolean,
       default: false,
     },
