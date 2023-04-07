@@ -132,8 +132,14 @@ export interface FullTemplate extends Omit<PrismaTemplate, 'body'> {
   body: AnyTemplate,
 }
 
-const fullTemplateSchema = Joi.object<Pick<FullTemplate, 'body'>>({
+const fullTemplateSchema = Joi.object<Pick<FullTemplate, 'body' | 'tags'>>({
   body: templateSchema.required(),
+  tags: Joi.array().items(
+    Joi.object({
+      name: Joi.string().required(),
+      color: Joi.string(),
+    }),
+  ),
 });
 
 /**

@@ -92,7 +92,8 @@ model Namespace {
 
 model Template {
   name      String    @id
-  body  Json
+  tags      Json[]    @default([])
+  body      Json
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
 }
