@@ -283,6 +283,7 @@ export default defineComponent({
      */
     async openBaseDialog() {
       await this.fetchBase();
+      await this.$nextTick();
       this.readTemplateDialogShown = true;
     },
   },

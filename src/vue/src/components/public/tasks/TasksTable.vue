@@ -323,8 +323,9 @@ export default defineComponent({
     /**
      * Prepare and show task creation dialog
      */
-    showCreateDialog() {
+    async showCreateDialog() {
       this.focusedId = '';
+      await this.$nextTick();
       this.createTaskDialogShown = true;
     },
     /**

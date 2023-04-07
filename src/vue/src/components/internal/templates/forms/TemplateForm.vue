@@ -309,10 +309,6 @@ export default defineComponent({
       this.fetchBase();
     },
     template() {
-      // FIXME: Any edit retrigger fetch
-      // this.fetch();
-      // this.fetchBase();
-
       // Show editor if needed
       if ('inserts' in this.template) {
         this.templateEditorCollapsed = (this.template.inserts?.length ?? 0) === 0;
@@ -406,6 +402,7 @@ export default defineComponent({
      */
     async openBaseDialog() {
       await this.fetchBase();
+      await this.$nextTick();
       this.readTemplateDialogShown = true;
     },
     /**
@@ -413,10 +410,10 @@ export default defineComponent({
      *
      * @param value
      */
-    onExtendChange(value: string) {
+    async onExtendChange(value: string) {
       this.onTemplateUpdate({ ...this.template, extends: value });
-      this.$nextTick()
-        .then(() => this.fetchBase());
+      await this.$nextTick();
+      this.fetchBase();
     },
     /**
      * Called when the template is updated

@@ -194,15 +194,17 @@ export default defineComponent({
     /**
      * Prepare and open read dialog
      */
-    showTemplateDialog({ name }: templates.Template) {
+    async showTemplateDialog({ name }: templates.Template) {
       this.focusedName = name;
+      await this.$nextTick();
       this.readTemplateDialogShown = true;
     },
     /**
      * Prepare and show template creation dialog
      */
-    showCreateDialog() {
+    async showCreateDialog() {
       this.focusedName = '';
+      await this.$nextTick();
       this.createTemplateDialogShown = true;
     },
     /**
@@ -210,8 +212,9 @@ export default defineComponent({
      *
      * @param item The item
      */
-    showEditDialog({ name }: templates.Template) {
+    async showEditDialog({ name }: templates.Template) {
       this.focusedName = name;
+      await this.$nextTick();
       this.updateTemplateDialogShown = true;
     },
     /**
