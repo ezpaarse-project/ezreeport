@@ -10,7 +10,7 @@
       :readonly="readonly"
       :label="label"
       :disabled="disabled"
-      @change="$emit('change', $event)"
+      @change="$emit('input', $event)"
       @click="$emit('click', $event)"
     />
   </div>
@@ -21,7 +21,7 @@ import { defineComponent } from 'vue';
 
 export default defineComponent({
   emits: {
-    change: (value: boolean) => value !== undefined,
+    input: (value: boolean) => value !== undefined,
     click: (event: MouseEvent) => !!event,
   },
   props: {
