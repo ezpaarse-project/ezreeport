@@ -183,6 +183,8 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   refresh-tooltip: 'Refresh template'
+  headers:
+    name: 'Name of template'
   errors:
     empty: 'This field must be set'
     no_data: 'An error occurred when fetching data'
@@ -191,6 +193,8 @@ en:
     save: 'Save'
 fr:
   refresh-tooltip: 'Rafraîchir le modèle'
+  headers:
+    name: 'Nom du modèle'
   errors:
     empty: 'Ce champ doit être rempli'
     no_data: 'Une erreur est survenue lors de la récupération des données'
