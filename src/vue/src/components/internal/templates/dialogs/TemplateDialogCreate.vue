@@ -19,7 +19,11 @@
       <v-divider />
 
       <v-card-text style="position: relative">
-        <TemplateForm v-if="item?.body" :template.sync="item.body" />
+        <template v-if="item">
+          <TagsForm v-model="item.tags" :availableTags="availableTags" />
+
+          <TemplateForm :template.sync="item.body" />
+        </template>
 
         <ErrorOverlay v-model="error" />
       </v-card-text>
@@ -52,7 +56,7 @@
 <script lang="ts">
 import type { templates } from 'ezreeport-sdk-js';
 import { cloneDeep } from 'lodash';
-import { defineComponent } from 'vue';
+import { defineComponent, type PropType } from 'vue';
 import { type CustomTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
 
@@ -61,6 +65,7 @@ type CustomCreateTemplate = Omit<templates.FullTemplate, 'body' | 'createdAt' | 
 const initItem = {
   name: '',
   body: { layouts: [] },
+  tags: [],
 } as CustomCreateTemplate;
 
 export default defineComponent({
@@ -73,6 +78,10 @@ export default defineComponent({
     fullscreen: {
       type: Boolean,
       default: false,
+    },
+    availableTags: {
+      type: Array as PropType<templates.FullTemplate['tags']>,
+      default: () => [],
     },
   },
   emits: {
@@ -162,6 +171,7 @@ export default defineComponent({
               ...this.item.body,
               layouts,
             },
+            tags: this.item.tags ?? [],
           },
         );
 

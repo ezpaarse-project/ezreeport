@@ -22,7 +22,11 @@
       <v-divider />
 
       <v-card-text style="position: relative">
-        <TemplateDetail v-if="item?.body" :template="item.body" />
+        <template v-if="item">
+          <TagsDetail v-if="item.tags.length > 0" :value="item.tags" />
+
+          <TemplateDetail :template="item.body" />
+        </template>
 
         <ErrorOverlay v-model="error" />
       </v-card-text>
