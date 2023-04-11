@@ -1,5 +1,11 @@
 <template>
-  <v-dialog :value="value" :fullscreen="fullscreen" scrollable @input="$emit('input', $event)">
+  <v-dialog
+    :value="value"
+    :fullscreen="fullscreen"
+    :transition="fullscreen ? 'ezr_dialog-right-transition' : undefined"
+    scrollable
+    @input="$emit('input', $event)"
+  >
     <v-card :loading="loading" :tile="fullscreen">
       <v-card-title>
         <template v-if="item">
