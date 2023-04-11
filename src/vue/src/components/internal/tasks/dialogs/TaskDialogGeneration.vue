@@ -160,7 +160,7 @@
 import { addDays, differenceInDays, min } from 'date-fns';
 import type { tasks, reports } from 'ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
-import { isEmailValid } from '@hapi/address';
+import isEmail from 'validator/lib/isEmail';
 import { calcPeriod, type Period } from '~/lib/tasks/recurrence';
 import ezReeportMixin from '~/mixins/ezr';
 
@@ -257,7 +257,7 @@ export default defineComponent({
      *
      * @param email The string
      */
-    validateMail: (email: string) => isEmailValid(email),
+    validateMail: (email: string) => isEmail(email),
     /**
      * Remove item in target list
      *
