@@ -1,7 +1,7 @@
 import type Queue from 'bull';
 import { addTaskToGenQueue } from '~/lib/bull';
 import { endOfDay, isBefore, isSameDay } from '~/lib/date-fns';
-import logger from '~/lib/logger';
+import { appLogger as logger } from '~/lib/logger';
 import { formatInterval } from '~/lib/utils';
 import { getAllTasks } from '~/models/tasks';
 import type { CronData } from '..';

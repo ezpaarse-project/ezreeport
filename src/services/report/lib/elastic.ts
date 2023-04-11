@@ -1,7 +1,7 @@
 import { Client, type estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { setTimeout } from 'node:timers/promises';
 import config from './config';
-import logger from './logger';
+import { appLogger as logger } from './logger';
 
 const {
   url,

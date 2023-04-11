@@ -3,7 +3,7 @@ import { setTimeout } from 'node:timers/promises';
 import { differenceInMilliseconds } from '~/lib/date-fns';
 import { elasticPing } from '~/lib/elastic';
 import { CustomRouter } from '~/lib/express-utils';
-import logger from '~/lib/logger';
+import { appLogger as logger } from '~/lib/logger';
 import { name as serviceName, version as serviceVersion } from '~/package.json';
 import { HTTPError } from '~/types/errors';
 

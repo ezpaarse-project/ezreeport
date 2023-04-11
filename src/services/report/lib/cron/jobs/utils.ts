@@ -2,7 +2,7 @@
 import { Recurrence } from '~/lib/prisma';
 import { addReportToMailQueue } from '~/lib/bull';
 import { formatISO } from '~/lib/date-fns';
-import logger from '~/lib/logger';
+import { appLogger as logger } from '~/lib/logger';
 import config from '~/lib/config';
 
 const { team } = config.get('report');

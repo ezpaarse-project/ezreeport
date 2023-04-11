@@ -11,7 +11,7 @@ import {
   parseISO
 } from '~/lib/date-fns';
 import glob from '~/lib/glob';
-import logger from '~/lib/logger';
+import { appLogger as logger } from '~/lib/logger';
 import { formatInterval, isFulfilled } from '~/lib/utils';
 import { isValidResult } from '~/models/reports';
 import type { CronData } from '..';

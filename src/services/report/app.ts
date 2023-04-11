@@ -2,7 +2,7 @@ import express from 'express';
 import routes from './routes';
 import config from './lib/config';
 import './lib/date-fns'; // Setup default options for date-fns
-import logger from './lib/logger';
+import { appLogger as logger } from './lib/logger';
 import corsMiddleware from './middlewares/cors';
 import formatMiddleware from './middlewares/format';
 import loggerMiddleware from './middlewares/logger';
@@ -25,6 +25,7 @@ const initTemplates = async () => {
   }
 
   if (template) {
+    logger.debug(`[init] Template "${DEFAULT_TEMPLATE_NAME}" found`);
     return;
   }
 

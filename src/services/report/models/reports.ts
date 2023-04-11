@@ -17,7 +17,7 @@ import {
   parseISO,
   startOfDay
 } from '~/lib/date-fns';
-import logger from '~/lib/logger';
+import { appLogger as logger } from '~/lib/logger';
 import { calcNextDate, calcPeriod } from '~/models/recurrence';
 import { ArgumentError, ConflitError } from '~/types/errors';
 import { editTaskByIdWithHistory } from './tasks';

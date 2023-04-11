@@ -16,7 +16,7 @@ import type { Mark, MarkDef } from 'vega-lite/build/src/mark';
 import type { UnitSpec } from 'vega-lite/build/src/spec';
 import { Recurrence } from '~/lib/prisma';
 import config from '~/lib/config';
-import logger from '~/lib/logger';
+import { appLogger as logger } from '~/lib/logger';
 import type { PDFReport } from '~/lib/pdf';
 import { calcVegaFormat } from '~/models/recurrence';
 import localeFR from './locales/fr-FR.json';
