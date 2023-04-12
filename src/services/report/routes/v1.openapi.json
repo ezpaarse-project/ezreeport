@@ -15,11 +15,16 @@
       "name": "CeCILL",
       "url": "https://github.com/ezpaarse-project/ezreeport/blob/master/LICENSE.txt"
     },
-    "description": "Reporting service for ezMESURE/ezCOUNTER"
+    "description": "Reporting service"
   },
   "servers": [
     {
-      "url": "http://localhost:8080/v1/"
+      "url": "http://localhost:8080/v1",
+      "description": "Dev"
+    },
+    {
+      "url": "https://ezmesure-preprod.couperin.org/report/api/v1",
+      "description": "Pre-Prod"
     }
   ],
   "paths": {
@@ -384,34 +389,7 @@
                     }
                   }
                 },
-                "examples": {
-                  "Example": {
-                    "value": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": [
-                        {
-                          "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                          "name": "My Super Task",
-                          "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-                          "recurrence": "WEEKLY",
-                          "nextRun": "2022-10-31T10:00:00.000Z",
-                          "lastRun": "2022-10-31T10:00:00.000Z",
-                          "enabled": true,
-                          "createdAt": "2022-10-25T11:55:47.375Z",
-                          "updatedAt": "2022-10-25T11:55:47.375Z"
-                        }
-                      ],
-                      "meta": {
-                        "count": 1,
-                        "size": 15,
-                        "lastId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000"
-                      }
-                    }
-                  }
-                }
+                "examples": {}
               }
             }
           },
@@ -429,10 +407,10 @@
           }
         },
         "operationId": "tasks-get",
-        "description": "Get tasks of the authed user's institution. Accessible to READ.",
+        "description": "Get tasks of the authed user's institution.\n\nNeeds `namespaces[namespaceId].tasks-get` (see `/me/permissions` for more info).",
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ],
         "parameters": [
@@ -443,7 +421,7 @@
             "$ref": "#/components/parameters/count"
           },
           {
-            "$ref": "#/components/parameters/institution"
+            "$ref": "#/components/parameters/namespaces"
           }
         ]
       },
@@ -499,67 +477,11 @@
                       }
                     },
                     "content": {
-                      "$ref": "#/components/schemas/FullTask"
+                      "$ref": "#/components/schemas/TaskFull"
                     }
                   }
                 },
-                "examples": {
-                  "Example": {
-                    "value": {
-                      "status": {
-                        "code": 201,
-                        "message": "Created"
-                      },
-                      "content": {
-                        "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                        "name": "My Super Task",
-                        "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-                        "template": {
-                          "extends": "basic"
-                        },
-                        "targets": [
-                          "user@example.com"
-                        ],
-                        "recurrence": "WEEKLY",
-                        "nextRun": "2022-10-31T10:00:00.000Z",
-                        "lastRun": "2022-10-31T10:00:00.000Z",
-                        "enabled": true,
-                        "history": [
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000000",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "edition",
-                            "message": "Tâche crée par ...",
-                            "createdAt": "2022-11-07T15:06:24.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "edition",
-                            "message": "Tâche éditée par ...",
-                            "createdAt": "2022-11-07T15:08:37.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "generation-error",
-                            "message": "Rapport \"...\" non généré par ... suite à une erreur.",
-                            "createdAt": "2022-11-07T15:16:37.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "generation-success",
-                            "message": "Rapport \"...\" généré par ...",
-                            "createdAt": "2022-11-07T15:17:49.000Z"
-                          }
-                        ],
-                        "createdAt": "2022-10-25T11:55:47.375Z",
-                        "updatedAt": "2022-10-25T11:55:47.375Z"
-                      }
-                    }
-                  }
-                }
+                "examples": {}
               }
             }
           },
@@ -578,41 +500,34 @@
         },
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/FullTask"
-              },
-              "examples": {
-                "Example": {
-                  "value": {
-                    "name": "My Super Task",
-                    "template": {
-                      "extends": "basic"
-                    },
-                    "targets": [
-                      "user@example.com"
-                    ],
-                    "recurrence": "WEEKLY",
-                    "nextRun": "2022-10-31T12:00:00+02:00",
-                    "enabled": true
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TaskBody"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "namespace": {
+                        "type": "string"
+                      }
+                    }
                   }
-                }
-              }
+                ]
+              },
+              "examples": {}
             }
           },
           "description": ""
         },
-        "description": "Add new reporting task to the authed user's institution. Accessible to READ_WRITE.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/institution"
-          }
-        ],
+        "description": "Add new reporting task to the authed user's institution.\n\nNeeds `namespaces[namespaceId].tasks-post` (see `/me/permissions` for more info).",
+        "parameters": [],
         "tags": [
           "tasks"
         ]
@@ -684,67 +599,11 @@
                       }
                     },
                     "content": {
-                      "$ref": "#/components/schemas/FullTask"
+                      "$ref": "#/components/schemas/TaskFull"
                     }
                   }
                 },
-                "examples": {
-                  "Example": {
-                    "value": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": {
-                        "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                        "name": "My Super Task",
-                        "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-                        "template": {
-                          "extends": "basic"
-                        },
-                        "targets": [
-                          "user@example.com"
-                        ],
-                        "recurrence": "WEEKLY",
-                        "nextRun": "2022-10-31T10:00:00.000Z",
-                        "lastRun": "2022-10-31T10:00:00.000Z",
-                        "enabled": true,
-                        "history": [
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000000",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "edition",
-                            "message": "Tâche crée par ...",
-                            "createdAt": "2022-11-07T15:06:24.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "edition",
-                            "message": "Tâche éditée par ...",
-                            "createdAt": "2022-11-07T15:08:37.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "generation-error",
-                            "message": "Rapport \"...\" non généré par ... suite à une erreur.",
-                            "createdAt": "2022-11-07T15:16:37.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "generation-success",
-                            "message": "Rapport \"...\" généré par ...",
-                            "createdAt": "2022-11-07T15:17:49.000Z"
-                          }
-                        ],
-                        "createdAt": "2022-10-25T11:55:47.375Z",
-                        "updatedAt": "2022-10-25T11:55:47.375Z"
-                      }
-                    }
-                  }
-                }
+                "examples": {}
               }
             }
           },
@@ -765,17 +624,13 @@
           }
         },
         "operationId": "tasks-get-taskId",
-        "description": "Get specific task of the authed user's institution. Accessible to READ.",
+        "description": "Get specific task of the authed user's institution.\n\nNeeds `namespaces[namespaceId].tasks-get-task` (see `/me/permissions` for more info).",
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/institution"
-          }
-        ]
+        "parameters": []
       },
       "put": {
         "summary": "Update specific task",
@@ -835,67 +690,11 @@
                       }
                     },
                     "content": {
-                      "$ref": "#/components/schemas/FullTask"
+                      "$ref": "#/components/schemas/TaskFull"
                     }
                   }
                 },
-                "examples": {
-                  "Example": {
-                    "value": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": {
-                        "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                        "name": "My Super Task",
-                        "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-                        "template": {
-                          "extends": "basic"
-                        },
-                        "targets": [
-                          "user@example.com"
-                        ],
-                        "recurrence": "WEEKLY",
-                        "nextRun": "2022-11-28T10:00:00.000Z",
-                        "lastRun": "2022-10-31T10:00:00.000Z",
-                        "enabled": true,
-                        "history": [
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000000",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "edition",
-                            "message": "Tâche crée par ...",
-                            "createdAt": "2022-11-07T15:06:24.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "edition",
-                            "message": "Tâche éditée par ...",
-                            "createdAt": "2022-11-07T15:08:37.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "generation-error",
-                            "message": "Rapport \"...\" non généré par ... suite à une erreur.",
-                            "createdAt": "2022-11-07T15:16:37.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "generation-success",
-                            "message": "Rapport \"...\" généré par ...",
-                            "createdAt": "2022-11-07T15:17:49.000Z"
-                          }
-                        ],
-                        "createdAt": "2022-10-25T12:46:27.264Z",
-                        "updatedAt": "2022-10-26T06:54:23.833Z"
-                      }
-                    }
-                  }
-                }
+                "examples": {}
               }
             }
           },
@@ -915,39 +714,20 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "description": "Update specific task of the authed user's institution. Accessible to READ_WRITE.",
+        "description": "Update specific task of the authed user's institution.\n\nNeeds `namespaces[namespaceId].tasks-put-task` (see `/me/permissions` for more info).",
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/institution"
-          }
-        ],
+        "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/FullTask"
+                "$ref": "#/components/schemas/TaskBody"
               },
-              "examples": {
-                "Example": {
-                  "value": {
-                    "name": "My Super Task",
-                    "template": {
-                      "extends": "basic"
-                    },
-                    "targets": [
-                      "user@example.com"
-                    ],
-                    "recurrence": "WEEKLY",
-                    "nextRun": "2022-10-31T12:00:00+02:00",
-                    "enabled": true
-                  }
-                }
-              }
+              "examples": {}
             }
           }
         },
@@ -1008,67 +788,11 @@
                       }
                     },
                     "content": {
-                      "$ref": "#/components/schemas/FullTask"
+                      "$ref": "#/components/schemas/TaskFull"
                     }
                   }
                 },
-                "examples": {
-                  "Example": {
-                    "value": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": {
-                        "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                        "name": "My Super Task",
-                        "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-                        "template": {
-                          "extends": "basic"
-                        },
-                        "targets": [
-                          "user@example.com"
-                        ],
-                        "recurrence": "WEEKLY",
-                        "nextRun": "2022-11-28T10:00:00.000Z",
-                        "lastRun": "2022-10-31T10:00:00.000Z",
-                        "enabled": true,
-                        "history": [
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000000",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "edition",
-                            "message": "Tâche crée par ...",
-                            "createdAt": "2022-11-07T15:06:24.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "edition",
-                            "message": "Tâche éditée par ...",
-                            "createdAt": "2022-11-07T15:08:37.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "generation-error",
-                            "message": "Rapport \"...\" non généré par ... suite à une erreur.",
-                            "createdAt": "2022-11-07T15:16:37.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "generation-success",
-                            "message": "Rapport \"...\" généré par ...",
-                            "createdAt": "2022-11-07T15:17:49.000Z"
-                          }
-                        ],
-                        "createdAt": "2022-10-25T12:46:27.264Z",
-                        "updatedAt": "2022-10-26T06:54:23.833Z"
-                      }
-                    }
-                  }
-                }
+                "examples": {}
               }
             }
           },
@@ -1088,17 +812,13 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "description": "Update specific task of the authed user's institution. Accessible to READ_WRITE.",
+        "description": "Update specific task of the authed user's institution.\n\nNeeds `namespaces[namespaceId].tasks-delete-task` (see `/me/permissions` for more info).",
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/institution"
-          }
-        ],
+        "parameters": [],
         "tags": [
           "tasks"
         ]
@@ -1148,67 +868,11 @@
                       }
                     },
                     "content": {
-                      "$ref": "#/components/schemas/FullTask"
+                      "$ref": "#/components/schemas/TaskFull"
                     }
                   }
                 },
-                "examples": {
-                  "Example": {
-                    "value": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": {
-                        "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                        "name": "My Super Task",
-                        "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-                        "template": {
-                          "extends": "basic"
-                        },
-                        "targets": [
-                          "user@example.com"
-                        ],
-                        "recurrence": "WEEKLY",
-                        "nextRun": "2022-10-31T10:00:00.000Z",
-                        "lastRun": "2022-10-31T10:00:00.000Z",
-                        "enabled": true,
-                        "history": [
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000000",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "edition",
-                            "message": "Tâche crée par ...",
-                            "createdAt": "2022-11-07T15:06:24.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "edition",
-                            "message": "Tâche éditée par ...",
-                            "createdAt": "2022-11-07T15:08:37.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "generation-error",
-                            "message": "Rapport \"...\" non généré par ... suite à une erreur.",
-                            "createdAt": "2022-11-07T15:16:37.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "generation-success",
-                            "message": "Rapport \"...\" généré par ...",
-                            "createdAt": "2022-11-07T15:17:49.000Z"
-                          }
-                        ],
-                        "createdAt": "2022-10-25T11:55:47.375Z",
-                        "updatedAt": "2022-10-25T11:55:47.375Z"
-                      }
-                    }
-                  }
-                }
+                "examples": {}
               }
             }
           },
@@ -1233,18 +897,14 @@
         },
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ],
         "tags": [
           "tasks"
         ],
-        "description": "Enable task generation. Accessible to READ_WRITE.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/institution"
-          }
-        ]
+        "description": "Enable task periodic generation.\n\nNeeds `namespaces[namespaceId].tasks-put-task-enable` (see `/me/permissions` for more info).",
+        "parameters": []
       }
     },
     "/tasks/{taskId}/disable": {
@@ -1280,67 +940,11 @@
                       }
                     },
                     "content": {
-                      "$ref": "#/components/schemas/FullTask"
+                      "$ref": "#/components/schemas/TaskFull"
                     }
                   }
                 },
-                "examples": {
-                  "Example": {
-                    "value": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": {
-                        "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                        "name": "My Super Task",
-                        "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-                        "template": {
-                          "extends": "basic"
-                        },
-                        "targets": [
-                          "user@example.com"
-                        ],
-                        "recurrence": "WEEKLY",
-                        "nextRun": "2022-10-31T10:00:00.000Z",
-                        "lastRun": "2022-10-31T10:00:00.000Z",
-                        "enabled": false,
-                        "history": [
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000000",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "edition",
-                            "message": "Tâche crée par ...",
-                            "createdAt": "2022-11-07T15:06:24.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "edition",
-                            "message": "Tâche éditée par ...",
-                            "createdAt": "2022-11-07T15:08:37.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "generation-error",
-                            "message": "Rapport \"...\" non généré par ... suite à une erreur.",
-                            "createdAt": "2022-11-07T15:16:37.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "generation-success",
-                            "message": "Rapport \"...\" généré par ...",
-                            "createdAt": "2022-11-07T15:17:49.000Z"
-                          }
-                        ],
-                        "createdAt": "2022-10-25T11:55:47.375Z",
-                        "updatedAt": "2022-10-25T11:55:47.375Z"
-                      }
-                    }
-                  }
-                }
+                "examples": {}
               }
             }
           },
@@ -1365,18 +969,14 @@
         },
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ],
         "tags": [
           "tasks"
         ],
-        "description": "Disable task generation. Accessible to READ_WRITE.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/institution"
-          }
-        ]
+        "description": "Disable task periodic generation.\n\nNeeds `namespaces[namespaceId].tasks-put-task-disable` (see `/me/permissions` for more info).",
+        "parameters": []
       },
       "parameters": [
         {
@@ -1447,7 +1047,7 @@
                           "type": "object",
                           "properties": {
                             "task": {
-                              "$ref": "#/components/schemas/FullTask"
+                              "$ref": "#/components/schemas/TaskFull"
                             },
                             "origin": {
                               "type": "string"
@@ -1473,13 +1073,10 @@
         ],
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ],
         "parameters": [
-          {
-            "$ref": "#/components/parameters/institution"
-          },
           {
             "schema": {
               "type": "array",
@@ -1509,7 +1106,7 @@
             "description": "Override period end. ISO format. Time is ignored."
           }
         ],
-        "description": "Trigger generation of report. Accessible to READ_WRITE."
+        "description": "Trigger generation of report.\n\nNeeds `namespaces[namespaceId].tasks-post-task-run` (see `/me/permissions` for more info)."
       }
     },
     "/tasks/{taskId}/unsubscribe": {
@@ -1550,67 +1147,11 @@
                       }
                     },
                     "content": {
-                      "$ref": "#/components/schemas/FullTask"
+                      "$ref": "#/components/schemas/TaskFull"
                     }
                   }
                 },
-                "examples": {
-                  "Example": {
-                    "value": {
-                      "status": {
-                        "code": 20,
-                        "message": "OK"
-                      },
-                      "content": {
-                        "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                        "name": "My Super Task",
-                        "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-                        "template": {
-                          "extends": "..."
-                        },
-                        "targets": [
-                          "user@example.com"
-                        ],
-                        "recurrence": "WEEKLY",
-                        "nextRun": "2022-10-31T10:00:00.000Z",
-                        "lastRun": "2022-10-31T10:00:00.000Z",
-                        "enabled": true,
-                        "history": [
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000000",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "edition",
-                            "message": "Tâche crée par ...",
-                            "createdAt": "2022-11-07T15:06:24.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000001",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "edition",
-                            "message": "Tâche éditée par ...",
-                            "createdAt": "2022-11-07T15:08:37.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000002",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "generation-error",
-                            "message": "Rapport \"...\" non généré par ... suite à une erreur.",
-                            "createdAt": "2022-11-07T15:16:37.000Z"
-                          },
-                          {
-                            "id": "0cc0c0cc-ccc0-00cc-0c00-c0c000000003",
-                            "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                            "type": "generation-success",
-                            "message": "Rapport \"...\" généré par ...",
-                            "createdAt": "2022-11-07T15:17:49.000Z"
-                          }
-                        ],
-                        "createdAt": "2022-10-25T11:55:47.375Z",
-                        "updatedAt": "2022-10-25T11:55:47.375Z"
-                      }
-                    }
-                  }
-                }
+                "examples": {}
               }
             }
           },
@@ -1624,7 +1165,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "description": "Shorthand to remove given email in given task",
+        "description": "Shorthand to remove given email in given task.\n\nNeeds `general.tasks-put-task-unsubscribe` (see `/me/permissions` for more info) but it should always be granted.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1660,11 +1201,7 @@
         "tags": [
           "unsubscribe"
         ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/institution"
-          }
-        ]
+        "parameters": []
       },
       "parameters": [
         {
@@ -1698,63 +1235,9 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ReportDetail"
+                  "type": "object"
                 },
-                "examples": {
-                  "Success": {
-                    "value": {
-                      "success": true,
-                      "detail": {
-                        "createdAt": "2022-11-14T15:02:46.340Z",
-                        "took": 1000,
-                        "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                        "meta": {
-                          "jobId": "134",
-                          "jobAdded": "2022-11-15T10:43:03.899Z"
-                        },
-                        "files": {
-                          "detail": "---.det.json",
-                          "report": "---.rep.pdf",
-                          "debug": "---.deb.json"
-                        },
-                        "sendingTo": [
-                          "..."
-                        ],
-                        "period": {
-                          "start": "2021-10-18T00:00:00.000Z",
-                          "end": "2021-10-24T23:59:59.999Z"
-                        },
-                        "runAs": "...",
-                        "stats": {
-                          "pageCount": 6,
-                          "size": 398460
-                        }
-                      }
-                    }
-                  },
-                  "Error": {
-                    "value": {
-                      "success": false,
-                      "detail": {
-                        "createdAt": "2022-11-14T15:16:55.623Z",
-                        "took": 1000,
-                        "taskId": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-                        "meta": {
-                          "jobId": "134",
-                          "jobAttempts": 0,
-                          "jobAdded": "2022-11-15T10:43:03.899Z"
-                        },
-                        "files": {
-                          "detail": "---.det.json"
-                        },
-                        "error": {
-                          "message": "...",
-                          "stack": []
-                        }
-                      }
-                    }
-                  }
-                }
+                "examples": {}
               },
               "application/pdf": {
                 "schema": {
@@ -1767,15 +1250,11 @@
           }
         },
         "operationId": "reports-get-year-yearMonth-filename",
-        "description": "Get specific report. Accessible to READ.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/institution"
-          }
-        ],
+        "description": "Get specific report.\n\nNeeds `general.reports-get-year-yearMonth-filename` (see `/me/permissions` for more info).",
+        "parameters": [],
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ],
         "tags": [
@@ -1857,116 +1336,10 @@
           }
         },
         "operationId": "queues-get",
-        "description": "List all possible queues names. Accessible to READ.",
+        "description": "List all possible queues names.\n\nNeeds `general.queues-get` (see `/me/permissions` for more info).",
         "security": [
           {
-            "ezmesure-jwt": []
-          }
-        ]
-      }
-    },
-    "/queues/{queue}": {
-      "parameters": [
-        {
-          "schema": {
-            "type": "string"
-          },
-          "name": "queue",
-          "in": "path",
-          "required": true,
-          "description": "Queue name"
-        }
-      ],
-      "get": {
-        "summary": "Get specific queue",
-        "tags": [
-          "queue"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "x-examples": {
-                    "example-1": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": {
-                        "status": "active",
-                        "jobs": []
-                      }
-                    }
-                  },
-                  "properties": {
-                    "status": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "integer"
-                        },
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    },
-                    "content": {
-                      "type": "object",
-                      "properties": {
-                        "status": {
-                          "type": "string"
-                        },
-                        "jobs": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/Job"
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                "examples": {
-                  "Example": {
-                    "value": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": {
-                        "status": "active",
-                        "jobs": []
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/400"
-          },
-          "401": {
-            "$ref": "#/components/responses/401"
-          },
-          "403": {
-            "$ref": "#/components/responses/403"
-          },
-          "404": {
-            "$ref": "#/components/responses/404"
-          },
-          "500": {
-            "$ref": "#/components/responses/500"
-          }
-        },
-        "operationId": "queues-get-queue",
-        "description": "Get info about a queue. Only accessible to SUPER_USER.",
-        "security": [
-          {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ]
       }
@@ -2018,35 +1391,11 @@
                       }
                     },
                     "content": {
-                      "type": "object",
-                      "properties": {
-                        "status": {
-                          "type": "string"
-                        },
-                        "jobs": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/Job"
-                          }
-                        }
-                      }
+                      "$ref": "#/components/schemas/Queue"
                     }
                   }
                 },
-                "examples": {
-                  "Example": {
-                    "value": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": {
-                        "status": "paused",
-                        "jobs": []
-                      }
-                    }
-                  }
-                }
+                "examples": {}
               }
             }
           },
@@ -2068,10 +1417,10 @@
         },
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ],
-        "description": "Pause the whole queue. Only accessible to SUPER_USER.",
+        "description": "Pause the whole queue.\n\nNeeds `general.queues-put-queue-pause` (see `/me/permissions` for more info).",
         "tags": [
           "queue"
         ]
@@ -2124,35 +1473,11 @@
                       }
                     },
                     "content": {
-                      "type": "object",
-                      "properties": {
-                        "status": {
-                          "type": "string"
-                        },
-                        "jobs": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/Job"
-                          }
-                        }
-                      }
+                      "$ref": "#/components/schemas/Queue"
                     }
                   }
                 },
-                "examples": {
-                  "Example": {
-                    "value": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": {
-                        "status": "active",
-                        "jobs": []
-                      }
-                    }
-                  }
-                }
+                "examples": {}
               }
             }
           },
@@ -2172,10 +1497,10 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "description": "Resume the whole queue. Only accessible to SUPER_USER.",
+        "description": "Resume the whole queue.\n\nNeeds `general.queues-put-queue-resume` (see `/me/permissions` for more info).",
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ],
         "tags": [
@@ -2183,7 +1508,98 @@
         ]
       }
     },
-    "/queues/{queue}/{jobId}": {
+    "/queues/{queue}/jobs": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "queue",
+          "in": "path",
+          "required": true,
+          "description": "Queue name"
+        }
+      ],
+      "get": {
+        "summary": "Get jobs of queue",
+        "tags": [
+          "queue"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "id": "135",
+                        "data": {},
+                        "progress": 1,
+                        "added": "2022-11-15T11:01:33.179Z",
+                        "started": "2022-11-15T11:01:33.184Z",
+                        "ended": "2022-11-15T11:01:38.320Z",
+                        "attempts": 1,
+                        "status": "completed"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Job"
+                      }
+                    }
+                  }
+                },
+                "examples": {}
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/401"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "queues-get-queue-jobId",
+        "description": "Get jobs of the queue.\n\nNeeds `general.queues-get-queue-jobs` (see `/me/permissions` for more info).",
+        "security": [
+          {
+            "User Token": []
+          }
+        ]
+      }
+    },
+    "/queues/{queue}/jobs/{jobId}": {
       "parameters": [
         {
           "schema": {
@@ -2251,28 +1667,7 @@
                     }
                   }
                 },
-                "examples": {
-                  "Example": {
-                    "value": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": {
-                        "id": "135",
-                        "data": {
-                          "...": "..."
-                        },
-                        "progress": 1,
-                        "added": "2022-11-15T11:01:33.179Z",
-                        "started": "2022-11-15T11:01:33.184Z",
-                        "ended": "2022-11-15T11:01:38.320Z",
-                        "attempts": 1,
-                        "status": "completed"
-                      }
-                    }
-                  }
-                }
+                "examples": {}
               }
             }
           },
@@ -2292,11 +1687,11 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "operationId": "queues-get-queue-jobId",
-        "description": "Get specific job of the authed user's institution. Accessible to READ.",
+        "operationId": "queues-get-queue-jobs-jobId",
+        "description": "Get specific job of the authed user's institution.\n\nNeeds `namespaces[namespaceId].queues-get` (see `/me/permissions` for more info).",
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ]
       }
@@ -2369,28 +1764,7 @@
                     }
                   }
                 },
-                "examples": {
-                  "Example": {
-                    "value": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": {
-                        "id": "135",
-                        "data": {
-                          "...": "..."
-                        },
-                        "progress": 1,
-                        "added": "2022-11-15T11:01:33.179Z",
-                        "started": "2022-11-15T11:01:33.184Z",
-                        "ended": "2022-11-15T11:01:38.320Z",
-                        "attempts": 1,
-                        "status": "completed"
-                      }
-                    }
-                  }
-                }
+                "examples": {}
               }
             }
           },
@@ -2410,13 +1784,13 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "description": "Retry specific job of the authed user's institution. Accessible to READ_WRITE.",
+        "description": "Retry specific job of the authed user's institution.\n\nNeeds `namespaces[namespaceId].queues-post-queue-jobs-jobId-retry` (see `/me/permissions` for more info).",
         "tags": [
           "queue"
         ],
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ]
       }
@@ -2506,10 +1880,10 @@
         "operationId": "crons-get",
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ],
-        "description": "Get all crons. Only accessible to SUPER_USER."
+        "description": "Get all crons.\n\nNeeds `general.crons-get` (see `/me/permissions` for more info)."
       }
     },
     "/crons/{cron}": {
@@ -2591,10 +1965,10 @@
           }
         },
         "operationId": "crons-get-cron",
-        "description": "Get specific crons. Only accessible to SUPER_USER.",
+        "description": "Get specific crons.\n\nNeeds `general.crons-get-cron` (see `/me/permissions` for more info).",
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ]
       },
@@ -2697,13 +2071,13 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "description": "Start specific cron. Only accessible to SUPER_USER.",
+        "description": "Start specific cron.\n\nNeeds `general.crons-put-cron-start` (see `/me/permissions` for more info).",
         "tags": [
           "cron"
         ],
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ]
       }
@@ -2795,13 +2169,13 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "description": "Stop specific cron. Only accessible to SUPER_USER.",
+        "description": "Stop specific cron.\n\nNeeds `general.crons-put-cron-stop` (see `/me/permissions` for more info).",
         "tags": [
           "cron"
         ],
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ]
       }
@@ -2893,13 +2267,13 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "description": "Force specific cron to run. Only accessible to SUPER_USER.",
+        "description": "Force specific cron to run.\n\nNeeds `general.crons-post-cron-force` (see `/me/permissions` for more info).",
         "tags": [
           "cron"
         ],
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ]
       }
@@ -2994,44 +2368,12 @@
                     "content": {
                       "type": "array",
                       "items": {
-                        "type": "object",
-                        "properties": {
-                          "name": {
-                            "type": "string"
-                          },
-                          "renderer": {
-                            "type": "string"
-                          },
-                          "pageCount": {
-                            "type": "number"
-                          }
-                        }
+                        "$ref": "#/components/schemas/Template"
                       }
                     }
                   }
                 },
-                "examples": {
-                  "Example": {
-                    "value": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": [
-                        {
-                          "name": "basic",
-                          "renderer": "vega-pdf",
-                          "pageCount": 6
-                        },
-                        {
-                          "name": "tests/slot-tests",
-                          "renderer": "vega-pdf",
-                          "pageCount": 9
-                        }
-                      ]
-                    }
-                  }
-                }
+                "examples": {}
               }
             }
           },
@@ -3051,12 +2393,110 @@
         "operationId": "templates-get",
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ],
-        "description": "Get all defined templated. Accessible to READ_WRITE."
+        "description": "Get all templates usable by tasks.\n\nNeeds `general.templates-get` (see `/me/permissions` for more info)."
       },
-      "parameters": []
+      "parameters": [],
+      "post": {
+        "summary": "Create template",
+        "operationId": "post-templates",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "apiVersion": 1,
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "scratch",
+                        "tags": [],
+                        "body": {
+                          "layouts": []
+                        },
+                        "createdAt": "2023-04-11T09:31:24.620Z",
+                        "updatedAt": "2023-04-11T09:31:24.620Z",
+                        "renderer": "vega-pdf",
+                        "pageCount": 0
+                      }
+                    }
+                  },
+                  "properties": {
+                    "apiVersion": {
+                      "type": "integer"
+                    },
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/TemplateFull"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "description": "Add a template usable by tasks.\n\nNeeds `general.queues-post` (see `/me/permissions` for more info).",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TemplateBody"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "description": ""
+        },
+        "security": [
+          {
+            "User Token": []
+          }
+        ],
+        "tags": [
+          "templates"
+        ]
+      }
     },
     "/templates/{layoutName}": {
       "parameters": [
@@ -3109,59 +2549,11 @@
                       }
                     },
                     "content": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string"
-                        },
-                        "renderer": {
-                          "type": "string"
-                        },
-                        "pageCount": {
-                          "type": "integer"
-                        },
-                        "template": {
-                          "type": "object",
-                          "properties": {
-                            "layouts": {
-                              "type": "array",
-                              "items": {
-                                "$ref": "#/components/schemas/Layout"
-                              }
-                            },
-                            "fetchOptions": {
-                              "type": "object"
-                            },
-                            "renderer": {
-                              "type": "string"
-                            },
-                            "renderOptions": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      }
+                      "$ref": "#/components/schemas/TemplateFull"
                     }
                   }
                 },
-                "examples": {
-                  "Example": {
-                    "value": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": {
-                        "name": "tests/slot-tests",
-                        "renderer": "vega-pdf",
-                        "pageCount": 9,
-                        "template": {
-                          "figures": []
-                        }
-                      }
-                    }
-                  }
-                }
+                "examples": {}
               }
             }
           },
@@ -3184,11 +2576,176 @@
         "operationId": "templates-get-name(*)",
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ],
         "parameters": [],
-        "description": "Get specific defined template. Accessible to READ_WRITE."
+        "description": "Get specific template.\n\nNeeds `general.templates-get-name(*)` (see `/me/permissions` for more info).",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplateBody"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update specific template",
+        "operationId": "put-templates-layoutName",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "scratch",
+                        "tags": [],
+                        "body": {
+                          "layouts": []
+                        },
+                        "createdAt": "2023-04-11T09:31:24.620Z",
+                        "updatedAt": "2023-04-11T09:31:24.620Z",
+                        "renderer": "vega-pdf",
+                        "pageCount": 0
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/TemplateFull"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "description": "Update a template.\n\nNeeds `general.templates-put-name(*)` (see `/me/permissions` for more info).",
+        "security": [
+          {
+            "User Token": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplateBody"
+              }
+            }
+          }
+        },
+        "tags": [
+          "templates"
+        ]
+      },
+      "delete": {
+        "summary": "Delete specific template",
+        "operationId": "delete-templates-layoutName",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "scratch",
+                        "tags": [],
+                        "body": {
+                          "layouts": []
+                        },
+                        "createdAt": "2023-04-11T09:31:24.620Z",
+                        "updatedAt": "2023-04-11T09:31:24.620Z",
+                        "renderer": "vega-pdf",
+                        "pageCount": 0
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/TemplateFull"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "description": "Delete template.\n\nNeeds `general.templates-delete-name(*)` (see `/me/permissions` for more info).",
+        "security": [
+          {
+            "User Token": []
+          }
+        ],
+        "tags": [
+          "templates"
+        ]
       }
     },
     "/history": {
@@ -3437,10 +2994,10 @@
         "operationId": "history-get",
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ],
-        "description": "Get history entries of all tasks of given institution.",
+        "description": "Get history entries of all tasks of given institution.\n\nNeeds `namespaces[namespaceId].history-get` (see `/me/permissions` for more info).",
         "parameters": [
           {
             "$ref": "#/components/parameters/previous"
@@ -3449,7 +3006,7 @@
             "$ref": "#/components/parameters/count"
           },
           {
-            "$ref": "#/components/parameters/institution"
+            "$ref": "#/components/parameters/namespaces"
           }
         ]
       }
@@ -3503,40 +3060,31 @@
                         "username": {
                           "type": "string"
                         },
-                        "email": {
+                        "token": {
                           "type": "string"
                         },
-                        "roles": {
+                        "isAdmin": {
+                          "type": "boolean"
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "memberships": {
                           "type": "array",
                           "items": {
-                            "type": "string"
+                            "$ref": "#/components/schemas/Membership"
                           }
-                        },
-                        "maxRolePriority": {
-                          "type": "number"
                         }
                       }
                     }
                   }
                 },
-                "examples": {
-                  "Example": {
-                    "value": {
-                      "status": {
-                        "code": 0,
-                        "message": "string"
-                      },
-                      "content": {
-                        "username": "string",
-                        "email": "string",
-                        "roles": [
-                          "string"
-                        ],
-                        "maxRolePriority": 0
-                      }
-                    }
-                  }
-                }
+                "examples": {}
               }
             }
           },
@@ -3556,10 +3104,10 @@
         "operationId": "auth-get",
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ],
-        "description": "Get authed user info. Accessible to READ."
+        "description": "Get authed user info.\n\nNeeds `auth-get` (see `/me/permissions` for more info) but it should be always granted."
       }
     },
     "/me/permissions": {
@@ -3631,8 +3179,62 @@
                     "content": {
                       "type": "object",
                       "properties": {
-                        "": {
-                          "type": "boolean"
+                        "general": {
+                          "type": "object"
+                        },
+                        "namespaces": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Example 1": {
+                    "value": {
+                      "status": {
+                        "code": 0,
+                        "message": "string"
+                      },
+                      "content": {
+                        "general": {
+                          "auth-get": true,
+                          "crons-get": true,
+                          "crons-get-cron": true,
+                          "crons-put-cron-start": true,
+                          "crons-put-cron-stop": true,
+                          "crons-post-cron-force": true,
+                          "health-get": true,
+                          "health-get-all": true,
+                          "health-get-service": true,
+                          "queues-get": true,
+                          "queues-put-queue-pause": true,
+                          "queues-put-queue-resume": true,
+                          "queues-get-queue-jobs": true,
+                          "tasks-put-task-unsubscribe": true,
+                          "templates-get": true,
+                          "templates-post": true,
+                          "templates-get-name(*)": true,
+                          "templates-put-name(*)": true,
+                          "templates-delete-name(*)": true
+                        },
+                        "namespaces": {
+                          "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee": {
+                            "auth-get-namespaces": true,
+                            "auth-get-permissions": true,
+                            "reports-get-year-yearMonth-filename": true,
+                            "history-get": true,
+                            "queues-get-queue-jobs-jobId": true,
+                            "queues-post-queue-jobs-jobId-retry": true,
+                            "tasks-get": true,
+                            "tasks-post": true,
+                            "tasks-get-task": true,
+                            "tasks-put-task": true,
+                            "tasks-delete-task": true,
+                            "tasks-put-task-enable": true,
+                            "tasks-put-task-disable": true,
+                            "tasks-post-task-run": true
+                          }
                         }
                       }
                     }
@@ -3657,10 +3259,1090 @@
         "operationId": "auth-get-permissions",
         "security": [
           {
-            "ezmesure-jwt": []
+            "User Token": []
           }
         ],
-        "description": "Check permission of current user. Accessible to READ."
+        "description": "Check permissions of current user. There are 2 types of permissions :\n\n- `general` permissions that doesn't depend on the requested namespace\n- `namespace`d permissions, that depend on the requested namespace\n\nNeeds the `namespaces[namespaceId].auth-get-permissions`, but it should be always granted."
+      }
+    },
+    "/me/namespaces": {
+      "get": {
+        "summary": "Get accessible namespaces",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        {
+                          "id": "681d7a77-9551-4466-a48f-4a5e7f57d7d4",
+                          "name": "Test3 Dev",
+                          "logoId": null,
+                          "createdAt": "2023-04-11T13:49:06.535Z",
+                          "updatedAt": "2023-04-11T13:49:06.535Z"
+                        },
+                        {
+                          "id": "a2c42f69-c2a0-436e-9099-ecd0fc4f73e6",
+                          "name": "Test2 Dev",
+                          "logoId": null,
+                          "createdAt": "2023-04-11T13:48:39.383Z",
+                          "updatedAt": "2023-04-11T13:48:39.383Z"
+                        }
+                      ]
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Namespace"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "get-me-namespaces",
+        "description": "List all accessible namespaces by user.\n\nNeeds the `namespaces[namespaceId].auth-get-namespaces` (see `/me/permissions` for more info), but it should be always granted."
+      }
+    },
+    "/admin/users": {
+      "get": {
+        "summary": "Get all users",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-admin-users",
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "description": "Get all available users.\n\nOnly usable with the API Key provided at server initialization.",
+        "tags": [
+          "admin - users"
+        ]
+      },
+      "post": {
+        "summary": "Add new user",
+        "operationId": "post-admin-users",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/UserFull"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Create new user.\n\nOnly usable with the API Key provided at server initialization.",
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "tags": [
+          "admin - users"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/UserBody"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/users/{username}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "username",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "summary": "Get specific user",
+        "tags": [
+          "admin - users"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/UserFull"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-admin-users-username",
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "description": "Get specific user.\n\nOnly usable with the API Key provided at server initialization."
+      },
+      "put": {
+        "summary": "Update specific user",
+        "operationId": "put-admin-users-username",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/UserFull"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserBody"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin - users"
+        ],
+        "description": "Update specific user.\n\nOnly usable with the API Key provided at server initialization."
+      },
+      "delete": {
+        "summary": "Delete specific user",
+        "operationId": "delete-admin-users-username",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/UserFull"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "tags": [
+          "admin - users"
+        ],
+        "description": "Delete specific user.\n\nOnly usable with the API Key provided at server initialization."
+      }
+    },
+    "/admin/users/{username}/memberships": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "username",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "post": {
+        "summary": "Add membership of a user",
+        "operationId": "post-admin-users-username-memberships",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/UserFull"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "tags": [
+          "admin - users"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MembershipBody"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "namespace": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "description": "Create new membership for user.\n\nOnly usable with the API Key provided at server initialization."
+      }
+    },
+    "/admin/users/{username}/memberships/{namespace}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "username",
+          "in": "path",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "namespace",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "put": {
+        "summary": "Update membership of a user",
+        "operationId": "put-admin-users-username-memberships-namespace",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/UserFull"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "tags": [
+          "admin - users"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MembershipBody"
+              }
+            }
+          }
+        },
+        "description": "Update membership of a user.\n\nOnly usable with the API Key provided at server initialization."
+      },
+      "delete": {
+        "summary": "Remove membership of a user",
+        "operationId": "delete-admin-users-username-memberships-namespace",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/UserFull"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "tags": [
+          "admin - users"
+        ],
+        "description": "Delete specific membership of a user.\n\nOnly usable with the API Key provided at server initialization."
+      }
+    },
+    "/admin/namespaces": {
+      "get": {
+        "summary": "Get all namespaces",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/Namespace"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-admin-namespaces",
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "description": "Get all available namespaces.\n\nOnly usable with the API Key provided at server initialization.",
+        "tags": [
+          "admin - namespaces"
+        ]
+      },
+      "post": {
+        "summary": "Add new namespace",
+        "operationId": "post-admin-namespaces",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/NamespaceFull"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin - namespaces"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NamespaceBody"
+              }
+            }
+          }
+        },
+        "description": "Create a new namespace.\n\nOnly usable with the API Key provided at server initialization.",
+        "security": [
+          {
+            "API Key": []
+          }
+        ]
+      }
+    },
+    "/admin/namespaces/{id}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "id",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "summary": "Get specific namespace",
+        "tags": [
+          "admin - namespaces"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/NamespaceFull"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-namespaces-id",
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "description": "Get specific namespace.\n\nOnly usable with the API Key provided at server initialization."
+      },
+      "put": {
+        "summary": "Update specific namespace",
+        "operationId": "put-namespaces-id",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/NamespaceFull"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NamespaceBody"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin - namespaces"
+        ],
+        "description": "Update specific namespace.\n\nOnly usable with the API Key provided at server initialization."
+      },
+      "delete": {
+        "summary": "Delete specific namespace",
+        "operationId": "delete-namespaces-id",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/NamespaceFull"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "tags": [
+          "admin - namespaces"
+        ],
+        "description": "Delete specific namespace.\n\nOnly usable with the API Key provided at server initialization."
+      }
+    },
+    "/admin/namespaces/{id}/members": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "id",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "post": {
+        "summary": "Add membership of a user",
+        "operationId": "post-admin-namespaces-id-members",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/NamespaceFull"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MembershipBody"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "namespace": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin - namespaces"
+        ],
+        "description": "Add membership to a namespace.\n\n**The returned data is the whole namespace (with updated membership).**\n\nOnly usable with the API Key provided at server initialization."
+      }
+    },
+    "/admin/namespaces/{id}/members/{username}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "id",
+          "in": "path",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "username",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "put": {
+        "summary": "Update membership of a user",
+        "operationId": "put-admin-namespaces-id-members-username",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/NamespaceFull"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MembershipBody"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin - namespaces"
+        ],
+        "description": "Update membership to a namespace.\n\n**The returned data is the whole namespace (with updated membership).**\n\nOnly usable with the API Key provided at server initialization."
+      },
+      "delete": {
+        "summary": "Remove membership of a user",
+        "operationId": "delete-admin-namespaces-id-members-username",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/NamespaceFull"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "Remove membership to a namespace.\n\n**The returned data is the whole namespace (with updated membership).**\n\nOnly usable with the API Key provided at server initialization.",
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "tags": [
+          "admin - namespaces"
+        ]
       }
     }
   },
@@ -3713,22 +4395,12 @@
       },
       "Task": {
         "type": "object",
-        "x-examples": {
-          "Example": {
-            "id": "0000a00a-aaa0-0000-a0aa-000a0a0aa000",
-            "name": "My Super Task",
-            "institution": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a",
-            "recurrence": "WEEKLY",
-            "nextRun": "2022-10-31T10:00:00.000Z",
-            "enabled": true,
-            "createdAt": "2022-10-25T11:55:47.375Z",
-            "updatedAt": "2022-10-25T11:55:47.375Z"
-          }
-        },
+        "x-examples": {},
         "description": "Reporting task",
         "x-tags": [
           "task"
         ],
+        "additionalProperties": false,
         "properties": {
           "id": {
             "type": "string",
@@ -3738,7 +4410,7 @@
           "name": {
             "type": "string"
           },
-          "institution": {
+          "namespaceId": {
             "type": "string",
             "description": "Institution concerned by the task",
             "readOnly": true
@@ -3788,177 +4460,151 @@
           "nextRun"
         ]
       },
-      "FullTask": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Task"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "template": {
-                "type": "object",
-                "description": "Layout of the report",
-                "required": [
-                  "extends"
-                ],
-                "properties": {
-                  "extends": {
-                    "type": "string",
-                    "description": "Base layout name"
-                  },
-                  "fetcher": {
-                    "type": "string",
-                    "nullable": true
-                  },
-                  "fetchOptions": {
-                    "type": "object",
-                    "description": "Data options used by \"extends\"",
-                    "nullable": true
-                  },
-                  "inserts": {
-                    "allOf": [
-                      {
-                        "$ref": "#/components/schemas/Layout"
-                      },
-                      {
-                        "type": "object",
-                        "properties": {
-                          "at": {
-                            "type": "number"
-                          }
-                        }
-                      }
-                    ]
-                  }
-                }
-              },
-              "targets": {
-                "type": "array",
-                "description": "Emails target",
-                "minItems": 1,
-                "items": {
-                  "type": "string",
-                  "format": "email"
-                }
-              },
-              "history": {
-                "type": "array",
-                "description": "History of the task",
-                "items": {
-                  "$ref": "#/components/schemas/History"
-                },
-                "readOnly": true
-              }
-            },
-            "required": [
-              "template",
-              "targets"
-            ]
-          }
-        ]
-      },
-      "Figure": {
-        "title": "Figure",
-        "x-stoplight": {
-          "id": "1gq05jmf1edi5"
-        },
+      "TaskFull": {
         "type": "object",
-        "description": "Reporting figure",
+        "additionalProperties": false,
+        "x-stoplight": {
+          "id": "861bb5f8c6893"
+        },
         "properties": {
-          "type": {
-            "type": "string",
-            "description": "Type of figure"
+          "id": {
+            "type": "string"
           },
-          "data": {
-            "oneOf": [
-              {
-                "type": "string",
-                "properties": {}
-              },
-              {
-                "type": "array",
-                "items": {
-                  "oneOf": [
-                    {
-                      "type": "object"
-                    },
-                    {
-                      "type": "array",
-                      "items": {}
-                    },
-                    {
-                      "type": "string",
-                      "properties": {}
-                    },
-                    {
-                      "type": "number",
-                      "properties": {}
-                    }
-                  ]
-                }
-              }
-            ],
-            "description": "Data of figure"
+          "name": {
+            "type": "string"
           },
-          "slots": {
+          "template": {
+            "$ref": "#/components/schemas/TaskTemplate"
+          },
+          "tagets": {
             "type": "array",
-            "description": "Slot used by figure",
             "items": {
-              "type": "number"
+              "type": "string",
+              "format": "email"
             }
+          },
+          "recurrence": {
+            "type": "string",
+            "enum": [
+              "DAILY",
+              "WEEKLY",
+              "MONTHLY",
+              "QUARTERLY",
+              "BIENNIAL",
+              "YEARLY"
+            ]
+          },
+          "nextRun": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastRun": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "namespace": {
+            "$ref": "#/components/schemas/Namespace"
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/History"
+            }
+          }
+        }
+      },
+      "TaskBody": {
+        "title": "TaskBody",
+        "type": "object",
+        "additionalProperties": false,
+        "x-stoplight": {
+          "id": "5b6a061fa181c"
+        },
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "template": {
+            "$ref": "#/components/schemas/TaskTemplate"
+          },
+          "tagets": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "email"
+            }
+          },
+          "recurrence": {
+            "type": "string",
+            "enum": [
+              "DAILY",
+              "WEEKLY",
+              "MONTHLY",
+              "QUARTERLY",
+              "BIENNIAL",
+              "YEARLY"
+            ]
+          },
+          "nextRun": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "enabled": {
+            "type": "boolean"
           }
         },
         "required": [
-          "type",
-          "data"
+          "name",
+          "template",
+          "tagets",
+          "recurrence"
         ]
       },
-      "Layout": {
-        "title": "Layout",
+      "TaskTemplate": {
+        "title": "TaskTemplate",
         "x-stoplight": {
-          "id": "ee3cc32b28f0d"
+          "id": "zc8qc4z6s7cbi"
         },
         "type": "object",
-        "description": "Layout info. Can have more properties",
-        "x-examples": {
-          "Example": {
-            "name": "basic",
-            "renderer": "vega-pdf",
-            "pageCount": 6
-          }
-        },
         "properties": {
-          "data": {
-            "anyOf": [
-              {
-                "type": "object"
-              },
-              {
-                "type": "array",
-                "items": {}
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "fetcher": {
+          "extends": {
             "type": "string"
           },
           "fetchOptions": {
-            "type": "object"
+            "type": "object",
+            "nullable": true
           },
-          "figures": {
+          "inserts": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Figure"
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ReportLayout"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "at": {
+                      "type": "number"
+                    }
+                  }
+                }
+              ]
             }
           }
-        },
-        "required": [
-          "figures"
-        ]
+        }
       },
       "Job": {
         "type": "object",
@@ -3984,7 +4630,7 @@
             "type": "object",
             "properties": {
               "task": {
-                "$ref": "#/components/schemas/FullTask"
+                "$ref": "#/components/schemas/TemplateFull"
               },
               "origin": {
                 "type": "string"
@@ -3998,7 +4644,7 @@
             }
           },
           "result": {
-            "$ref": "#/components/schemas/ReportDetail"
+            "type": "object"
           },
           "progress": {
             "type": "integer"
@@ -4025,8 +4671,7 @@
           "added",
           "attempts",
           "status"
-        ],
-        "description": ""
+        ]
       },
       "Cron": {
         "type": "object",
@@ -4090,12 +4735,544 @@
           "name",
           "status"
         ]
+      },
+      "Membership": {
+        "title": "Membership",
+        "x-stoplight": {
+          "id": "cgw95jeoewcwi"
+        },
+        "type": "object",
+        "properties": {
+          "access": {
+            "type": "string",
+            "enum": [
+              "READ",
+              "READ_WRITE",
+              "SUPER_USER"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "namespace": {
+            "$ref": "#/components/schemas/Namespace"
+          }
+        }
+      },
+      "MembershipBody": {
+        "type": "object",
+        "x-examples": {
+          "Example 1": {
+            "namespace": "b877ca11-2227-46a6-84e9-883b22e3140e",
+            "access": "READ_WRITE"
+          }
+        },
+        "properties": {
+          "access": {
+            "type": "string",
+            "enum": [
+              "READ",
+              "READ_WRITE",
+              "SUPER_USER"
+            ]
+          }
+        }
+      },
+      "Namespace": {
+        "title": "Namespace",
+        "x-stoplight": {
+          "id": "69bji1pmw43zv"
+        },
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "logoId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        }
+      },
+      "NamespaceFull": {
+        "type": "object",
+        "x-examples": {
+          "Example 1": {
+            "id": "681d7a77-9551-4466-a48f-4a5e7f57d7d4",
+            "name": "Test3 Dev",
+            "fetchLogin": {},
+            "fetchOptions": {},
+            "logoId": null,
+            "createdAt": "2023-04-11T13:49:06.535Z",
+            "updatedAt": "2023-04-11T13:49:06.535Z",
+            "memberships": [],
+            "tasks": []
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "fetchLogin": {
+            "type": "object"
+          },
+          "fetchOptions": {
+            "type": "object"
+          },
+          "logoId": {
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "memberships": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "username": {
+                  "type": "string"
+                },
+                "access": {
+                  "type": "string",
+                  "enum": [
+                    "READ",
+                    "READ_WRITE",
+                    "SUPER_USER"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          "tasks": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Task"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "targets": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "email"
+                    }
+                  },
+                  "template": {
+                    "$ref": "#/components/schemas/TaskTemplate"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "NamespaceBody": {
+        "type": "object",
+        "x-examples": {
+          "Example 1": {
+            "name": "Test2 Dev",
+            "fetchLogin": {},
+            "fetchOptions": {}
+          }
+        },
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "fetchLogin": {
+            "type": "object"
+          },
+          "fetchOptions": {
+            "type": "object"
+          },
+          "logoId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "fetchLogin",
+          "fetchOptions"
+        ]
+      },
+      "Queue": {
+        "title": "Queue",
+        "x-stoplight": {
+          "id": "ukq73kbfu4p6d"
+        },
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "paused"
+            ]
+          }
+        }
+      },
+      "Template": {
+        "title": "Template",
+        "x-stoplight": {
+          "id": "gadmdr9m2pb87"
+        },
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "color": {
+                  "type": "string",
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "renderer": {
+            "type": "string"
+          },
+          "pageCount": {
+            "type": "number"
+          }
+        }
+      },
+      "TemplateFull": {
+        "title": "TemplateFull",
+        "x-stoplight": {
+          "id": "f249696c2d47f"
+        },
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "color": {
+                  "type": "string",
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "body": {
+            "$ref": "#/components/schemas/ReportTemplate"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "renderer": {
+            "type": "string"
+          },
+          "pageCount": {
+            "type": "number"
+          }
+        }
+      },
+      "TemplateBody": {
+        "title": "TemplateBody",
+        "x-stoplight": {
+          "id": "bbc96ab4f9875"
+        },
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "color": {
+                  "type": "string",
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "body": {
+            "$ref": "#/components/schemas/ReportTemplate"
+          }
+        }
+      },
+      "ReportTemplate": {
+        "title": "ReportTemplate",
+        "x-stoplight": {
+          "id": "ioqkkh3sl06p9"
+        },
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "layouts": {
+            "$ref": "#/components/schemas/ReportLayout"
+          },
+          "fetchOptions": {
+            "type": "object"
+          },
+          "renderer": {
+            "type": "string",
+            "nullable": true
+          },
+          "renderOptions": {
+            "type": "object"
+          }
+        }
+      },
+      "ReportLayout": {
+        "title": "ReportLayout",
+        "x-stoplight": {
+          "id": "13fa278fffb4e"
+        },
+        "type": "object",
+        "description": "Layout info. Can have more properties",
+        "x-examples": {
+          "Example": {
+            "name": "basic",
+            "renderer": "vega-pdf",
+            "pageCount": 6
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "array",
+                "items": {}
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "fetcher": {
+            "type": "string",
+            "nullable": true
+          },
+          "fetchOptions": {
+            "type": "object"
+          },
+          "figures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportFigure"
+            }
+          }
+        },
+        "required": [
+          "figures"
+        ]
+      },
+      "ReportFigure": {
+        "title": "ReportFigure",
+        "x-stoplight": {
+          "id": "b0c34fa35eb7c"
+        },
+        "type": "object",
+        "description": "Reporting figure",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type of figure"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object"
+                    },
+                    {
+                      "type": "array",
+                      "items": {}
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "slots": {
+            "type": "array",
+            "description": "Slot used by figure",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "data"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "x-examples": {
+          "Example 1": {
+            "username": "ezr-admin",
+            "token": "3OSXlaYcSRK/SYmyVvbt9l5no+72HIYnGY5F04obq8ICJXv+GK1vzeB8TS5OIUyQFt6d/WQIH9aD3TedC+vT15H3mjvfNYPJtR0cVA1eGgu40qwhihx3YvfUDdNz3oktJBb+UpU6uqHXroKLJxPvpa5Vi1q2C4dUVt4pwA==",
+            "isAdmin": true,
+            "createdAt": "2023-04-11T13:47:00.072Z",
+            "updatedAt": "2023-04-11T13:47:00.072Z"
+          }
+        }
+      },
+      "UserFull": {
+        "type": "object",
+        "x-examples": {
+          "Example 1": {
+            "username": "ezr-admin",
+            "token": "3OSXlaYcSRK/SYmyVvbt9l5no+72HIYnGY5F04obq8ICJXv+GK1vzeB8TS5OIUyQFt6d/WQIH9aD3TedC+vT15H3mjvfNYPJtR0cVA1eGgu40qwhihx3YvfUDdNz3oktJBb+UpU6uqHXroKLJxPvpa5Vi1q2C4dUVt4pwA==",
+            "isAdmin": true,
+            "createdAt": "2023-04-11T13:47:00.072Z",
+            "updatedAt": "2023-04-11T13:47:00.072Z",
+            "memberships": []
+          }
+        },
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "memberships": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Membership"
+            }
+          }
+        }
+      },
+      "UserBody": {
+        "type": "object",
+        "properties": {
+          "isAdmin": {
+            "type": "boolean"
+          }
+        },
+        "x-examples": {
+          "Example 1": {
+            "isAdmin": true
+          }
+        }
       }
     },
     "securitySchemes": {
-      "ezmesure-jwt": {
+      "User Token": {
         "type": "http",
-        "scheme": "bearer"
+        "scheme": "bearer",
+        "description": "Used by user to interact with service"
+      },
+      "API Key": {
+        "name": "X-API-Key",
+        "type": "apiKey",
+        "in": "header",
+        "description": "Used by linked application to manage service"
       }
     },
     "requestBodies": {},
@@ -4453,19 +5630,28 @@
         },
         "description": "Count of object to return"
       },
-      "institution": {
-        "name": "institution",
+      "namespaces": {
+        "name": "namespaces",
         "in": "query",
         "required": false,
         "schema": {
-          "type": "string",
-          "example": "institution:aaaa0000-0000-00aa-aa00-aa00a0aa000a"
+          "type": "array",
+          "example": [
+            "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+            "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+          ]
         },
-        "description": "Force institution. Only available for SUPERUSERS, otherwise it'll be ignored."
+        "description": "Select wich namespaces are concerned by the request. If none it will select all possible namespaces."
       }
     }
   },
   "tags": [
+    {
+      "name": "admin - namespaces"
+    },
+    {
+      "name": "admin - users"
+    },
     {
       "name": "auth"
     },
@@ -4489,6 +5675,9 @@
     },
     {
       "name": "templates"
+    },
+    {
+      "name": "unsubscribe"
     }
   ]
 }
