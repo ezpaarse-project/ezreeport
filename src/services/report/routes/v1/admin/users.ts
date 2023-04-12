@@ -57,12 +57,12 @@ const router = CustomRouter('users')
   .createBasicRoute('GET /:username', async (req, _res) => {
     const { username } = req.params;
 
-    const namespace = await getUserByUsername(username);
-    if (!namespace) {
-      throw new HTTPError(`Namespace with username '${username}' not found`, StatusCodes.NOT_FOUND);
+    const user = await getUserByUsername(username);
+    if (!user) {
+      throw new HTTPError(`User with username '${username}' not found`, StatusCodes.NOT_FOUND);
     }
 
-    return namespace;
+    return user;
   }, requireAPIKey)
 
   /**
@@ -71,12 +71,12 @@ const router = CustomRouter('users')
   .createBasicRoute('PUT /:username', async (req, _res) => {
     const { username } = req.params;
 
-    const namespace = await editUserByUsername(username, req.body);
-    if (!namespace) {
-      throw new HTTPError(`Namespace with username '${username}' not found`, StatusCodes.NOT_FOUND);
+    const user = await editUserByUsername(username, req.body);
+    if (!user) {
+      throw new HTTPError(`User with username '${username}' not found`, StatusCodes.NOT_FOUND);
     }
 
-    return namespace;
+    return user;
   }, requireAPIKey)
 
   /**
@@ -85,12 +85,12 @@ const router = CustomRouter('users')
   .createBasicRoute('DELETE /:username', async (req, _res) => {
     const { username } = req.params;
 
-    const namespace = await deleteUserByUsername(username);
-    if (!namespace) {
-      throw new HTTPError(`Namespace with username '${username}' not found`, StatusCodes.NOT_FOUND);
+    const user = await deleteUserByUsername(username);
+    if (!user) {
+      throw new HTTPError(`User with username '${username}' not found`, StatusCodes.NOT_FOUND);
     }
 
-    return namespace;
+    return user;
   }, requireAPIKey)
 
   /**
@@ -98,9 +98,9 @@ const router = CustomRouter('users')
    */
   .createBasicRoute('POST /:username/memberships', async (req, _res) => {
     const { username } = req.params;
-    const { namespace, ...data } = req.body;
+    const { user, ...data } = req.body;
 
-    await addUserToNamespace(username, namespace, data);
+    await addUserToNamespace(username, user, data);
 
     return getUserByUsername(username);
   }, requireAPIKey)
