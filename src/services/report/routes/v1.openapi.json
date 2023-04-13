@@ -19,12 +19,12 @@
   },
   "servers": [
     {
-      "url": "http://localhost:8080/v1",
-      "description": "Dev"
+      "url": "/v1",
+      "description": "Direct"
     },
     {
-      "url": "https://ezmesure-preprod.couperin.org/report/api/v1",
-      "description": "Pre-Prod"
+      "url": "/report/api/v1",
+      "description": "ezMESURE"
     }
   ],
   "paths": {
@@ -388,8 +388,7 @@
                       }
                     }
                   }
-                },
-                "examples": {}
+                }
               }
             }
           },
@@ -480,8 +479,7 @@
                       "$ref": "#/components/schemas/TaskFull"
                     }
                   }
-                },
-                "examples": {}
+                }
               }
             }
           },
@@ -520,8 +518,7 @@
                     }
                   }
                 ]
-              },
-              "examples": {}
+              }
             }
           },
           "description": ""
@@ -602,8 +599,7 @@
                       "$ref": "#/components/schemas/TaskFull"
                     }
                   }
-                },
-                "examples": {}
+                }
               }
             }
           },
@@ -693,8 +689,7 @@
                       "$ref": "#/components/schemas/TaskFull"
                     }
                   }
-                },
-                "examples": {}
+                }
               }
             }
           },
@@ -726,8 +721,7 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/TaskBody"
-              },
-              "examples": {}
+              }
             }
           }
         },
@@ -791,8 +785,7 @@
                       "$ref": "#/components/schemas/TaskFull"
                     }
                   }
-                },
-                "examples": {}
+                }
               }
             }
           },
@@ -871,8 +864,7 @@
                       "$ref": "#/components/schemas/TaskFull"
                     }
                   }
-                },
-                "examples": {}
+                }
               }
             }
           },
@@ -943,8 +935,7 @@
                       "$ref": "#/components/schemas/TaskFull"
                     }
                   }
-                },
-                "examples": {}
+                }
               }
             }
           },
@@ -1150,8 +1141,7 @@
                       "$ref": "#/components/schemas/TaskFull"
                     }
                   }
-                },
-                "examples": {}
+                }
               }
             }
           },
@@ -1236,8 +1226,7 @@
               "application/json": {
                 "schema": {
                   "type": "object"
-                },
-                "examples": {}
+                }
               },
               "application/pdf": {
                 "schema": {
@@ -1394,8 +1383,7 @@
                       "$ref": "#/components/schemas/Queue"
                     }
                   }
-                },
-                "examples": {}
+                }
               }
             }
           },
@@ -1476,8 +1464,7 @@
                       "$ref": "#/components/schemas/Queue"
                     }
                   }
-                },
-                "examples": {}
+                }
               }
             }
           },
@@ -1569,8 +1556,7 @@
                       }
                     }
                   }
-                },
-                "examples": {}
+                }
               }
             }
           },
@@ -1666,8 +1652,7 @@
                       "$ref": "#/components/schemas/Job"
                     }
                   }
-                },
-                "examples": {}
+                }
               }
             }
           },
@@ -1763,8 +1748,7 @@
                       "$ref": "#/components/schemas/Job"
                     }
                   }
-                },
-                "examples": {}
+                }
               }
             }
           },
@@ -2372,8 +2356,7 @@
                       }
                     }
                   }
-                },
-                "examples": {}
+                }
               }
             }
           },
@@ -2552,8 +2535,7 @@
                       "$ref": "#/components/schemas/TemplateFull"
                     }
                   }
-                },
-                "examples": {}
+                }
               }
             }
           },
@@ -3375,6 +3357,14 @@
         "description": "Get all available users.\n\nOnly usable with the API Key provided at server initialization.",
         "tags": [
           "admin - users"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/previous"
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          }
         ]
       },
       "post": {
@@ -3437,7 +3427,7 @@
                   {
                     "type": "object",
                     "properties": {
-                      "name": {
+                      "username": {
                         "type": "string"
                       }
                     }
@@ -3881,6 +3871,14 @@
         "description": "Get all available namespaces.\n\nOnly usable with the API Key provided at server initialization.",
         "tags": [
           "admin - namespaces"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/previous"
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          }
         ]
       },
       "post": {
@@ -3930,7 +3928,20 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NamespaceBody"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/NamespaceBody"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
               }
             }
           }
@@ -4002,7 +4013,8 @@
             "API Key": []
           }
         ],
-        "description": "Get specific namespace.\n\nOnly usable with the API Key provided at server initialization."
+        "description": "Get specific namespace.\n\nOnly usable with the API Key provided at server initialization.",
+        "parameters": []
       },
       "put": {
         "summary": "Update specific namespace",
