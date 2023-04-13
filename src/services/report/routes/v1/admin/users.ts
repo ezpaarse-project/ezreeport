@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
+import Joi from 'joi';
 import { CustomRouter } from '~/lib/express-utils';
 import { requireAPIKey } from '~/middlewares/auth';
 import { addUserToNamespace, removeUserFromNamespace, updateUserOfNamespace } from '~/models/memberships';
@@ -10,7 +11,7 @@ import {
   getCountUsers,
   getUserByUsername
 } from '~/models/users';
-import { HTTPError } from '~/types/errors';
+import { ArgumentError, HTTPError } from '~/types/errors';
 
 const router = CustomRouter('users')
   /**
@@ -44,6 +45,11 @@ const router = CustomRouter('users')
    */
   .createBasicRoute('POST /', async (req, _res) => {
     const { username, ...data } = req.body;
+
+    const validation = Joi.string().validate(username);
+    if (validation.error !== null) {
+      throw new ArgumentError(`username is not valid: ${validation.error?.message}`);
+    }
 
     return {
       data: await createUser(username, data),
