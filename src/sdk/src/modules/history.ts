@@ -2,6 +2,7 @@ import { parseISO } from 'date-fns';
 import { axiosWithErrorFormatter, type PaginatedApiResponse } from '../lib/axios';
 import { parseTaskWithNamespace, type RawTaskWithNamespace, type TaskWithNamespace } from './tasks.base';
 
+// Private export
 export interface RawHistory {
   id: string,
   taskId: string,
@@ -24,6 +25,7 @@ export interface HistoryWithTask extends Omit<History, 'taskId'> {
   task: TaskWithNamespace
 }
 
+// Private export
 /**
  * Transform raw data from JSON, to JS usable data
  *

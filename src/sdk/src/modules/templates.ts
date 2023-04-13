@@ -20,6 +20,7 @@ export interface Layout {
   figures: Figure[]
 }
 
+// Private export
 export interface RawTemplate {
   name: string,
   renderer: string,
@@ -52,6 +53,7 @@ const parseTemplate = (template: RawTemplate): Template => ({
   updatedAt: template.updatedAt ? parseISO(template.updatedAt) : undefined,
 });
 
+// Private export
 export interface RawFullTemplate extends RawTemplate {
   body: {
     renderer?: string,

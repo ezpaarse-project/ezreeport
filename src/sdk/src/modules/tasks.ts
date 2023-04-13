@@ -25,6 +25,7 @@ interface AdditionalTaskData extends Omit<AdditionalRawTaskData, 'history'> {
   history: History[],
 }
 
+// Private export
 export interface RawFullTask extends RawTaskWithNamespace, AdditionalRawTaskData {
 }
 
@@ -241,5 +242,3 @@ export const disableTask = async (
     content: parseFullTask(content),
   };
 };
-
-export * from './tasks.base';

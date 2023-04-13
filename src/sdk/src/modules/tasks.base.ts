@@ -10,6 +10,7 @@ export enum Recurrence {
   YEARLY = 'YEARLY',
 }
 
+// Private export
 export interface RawTask {
   id: string,
   name: string,
@@ -31,6 +32,7 @@ export interface Task extends Omit<RawTask, 'nextRun' | 'lastRun' | 'createdAt' 
   updatedAt?: Date,
 }
 
+// Private export
 /**
  * Transform raw data from JSON, to JS usable data
  *
@@ -47,6 +49,7 @@ export const parseTask = (task: RawTask): Task => ({
   updatedAt: task.updatedAt ? parseISO(task.updatedAt) : undefined,
 });
 
+// Private export
 export interface RawTaskWithNamespace extends Omit<RawTask, 'namespaceId'> {
   namespace: RawNamespace,
 }
@@ -55,6 +58,7 @@ export interface TaskWithNamespace extends Omit<Task, 'namespaceId'> {
   namespace: Namespace,
 }
 
+// Private export
 /**
  * Transform raw data from JSON, to JS usable data
  *

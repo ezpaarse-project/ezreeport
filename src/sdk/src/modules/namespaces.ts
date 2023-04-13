@@ -1,5 +1,6 @@
 import { parseISO } from 'date-fns';
 
+// Private export
 export interface RawNamespace {
   id: string,
   name: string,
@@ -14,6 +15,7 @@ export interface Namespace extends Omit<RawNamespace, 'createdAt' | 'updatedAt'>
   updatedAt?: Date,
 }
 
+// Private export
 /**
  * Transform raw data from JSON, to JS usable data
  *
