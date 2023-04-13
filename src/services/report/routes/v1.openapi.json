@@ -3024,24 +3024,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "x-examples": {
-                    "Example 1": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": {
-                        "username": "tom.sublet",
-                        "email": "tom.sublet@inist.fr",
-                        "roles": [
-                          "ezreporting",
-                          "ezreporting-readonly",
-                          "bibcnrs",
-                          "tech_contact"
-                        ]
-                      }
-                    }
-                  },
                   "properties": {
                     "status": {
                       "type": "object",
@@ -3083,8 +3065,7 @@
                       }
                     }
                   }
-                },
-                "examples": {}
+                }
               }
             }
           },
@@ -4404,7 +4385,6 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "Id of the task",
             "readOnly": true
           },
           "name": {
@@ -4412,7 +4392,7 @@
           },
           "namespaceId": {
             "type": "string",
-            "description": "Institution concerned by the task",
+            "description": "Namespace concerned by the task",
             "readOnly": true
           },
           "recurrence": {
@@ -4424,7 +4404,8 @@
               "QUARTERLY",
               "BIENNIAL",
               "YEARLY"
-            ]
+            ],
+            "description": "Defines when the task will be run."
           },
           "nextRun": {
             "type": "string",
@@ -4434,31 +4415,24 @@
           "lastRun": {
             "type": "string",
             "format": "date-time",
+            "description": "Last time the task has run",
             "nullable": true,
             "readOnly": true
           },
           "enabled": {
             "type": "boolean",
-            "default": true,
-            "description": "Is the task enabled"
+            "default": true
           },
           "createdAt": {
             "type": "string",
-            "description": "Task created at ...",
             "readOnly": true
           },
           "updatedAt": {
             "type": "string",
-            "description": "Task last updated at ...",
             "nullable": true,
             "readOnly": true
           }
-        },
-        "required": [
-          "name",
-          "recurrence",
-          "nextRun"
-        ]
+        }
       },
       "TaskFull": {
         "type": "object",
@@ -4466,6 +4440,7 @@
         "x-stoplight": {
           "id": "861bb5f8c6893"
         },
+        "description": "Full info about reporting task",
         "properties": {
           "id": {
             "type": "string"
@@ -4478,6 +4453,7 @@
           },
           "tagets": {
             "type": "array",
+            "description": "Emails address to send reports",
             "items": {
               "type": "string",
               "format": "email"
@@ -4492,15 +4468,18 @@
               "QUARTERLY",
               "BIENNIAL",
               "YEARLY"
-            ]
+            ],
+            "description": "Defines when the task will be run."
           },
           "nextRun": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "Next time the task will be run"
           },
           "lastRun": {
             "type": "string",
             "format": "date-time",
+            "description": "Last time the task has run",
             "nullable": true
           },
           "enabled": {
@@ -4519,6 +4498,7 @@
           },
           "history": {
             "type": "array",
+            "description": "Activity of the task",
             "items": {
               "$ref": "#/components/schemas/History"
             }
@@ -4541,6 +4521,7 @@
           },
           "tagets": {
             "type": "array",
+            "description": "Emails address to send reports",
             "items": {
               "type": "string",
               "format": "email"
@@ -4555,14 +4536,17 @@
               "QUARTERLY",
               "BIENNIAL",
               "YEARLY"
-            ]
+            ],
+            "description": "Defines when the task will be run, updating it will automaticly updates `nextRun`."
           },
           "nextRun": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "Next time the task will be run. Calculated if not given"
           },
           "enabled": {
-            "type": "boolean"
+            "type": "boolean",
+            "default": true
           }
         },
         "required": [
@@ -4570,7 +4554,8 @@
           "template",
           "tagets",
           "recurrence"
-        ]
+        ],
+        "description": "Data to send to edit/create a task"
       },
       "TaskTemplate": {
         "title": "TaskTemplate",
@@ -4580,14 +4565,17 @@
         "type": "object",
         "properties": {
           "extends": {
-            "type": "string"
+            "type": "string",
+            "description": "Base template that this one extends"
           },
           "fetchOptions": {
             "type": "object",
+            "description": "Options passed to fetcher (elastic)",
             "nullable": true
           },
           "inserts": {
             "type": "array",
+            "description": "Additional layouts that will be inserted",
             "items": {
               "allOf": [
                 {
@@ -4604,7 +4592,8 @@
               ]
             }
           }
-        }
+        },
+        "description": "Template used in tasks"
       },
       "Job": {
         "type": "object",
@@ -4622,15 +4611,17 @@
             "status": "completed"
           }
         },
+        "description": "Bull's Job",
         "properties": {
           "id": {
             "type": "string"
           },
           "data": {
             "type": "object",
+            "description": "Data passed with Job",
             "properties": {
               "task": {
-                "$ref": "#/components/schemas/TemplateFull"
+                "$ref": "#/components/schemas/Task"
               },
               "origin": {
                 "type": "string"
@@ -4664,14 +4655,7 @@
           "status": {
             "type": "string"
           }
-        },
-        "required": [
-          "id",
-          "data",
-          "added",
-          "attempts",
-          "status"
-        ]
+        }
       },
       "Cron": {
         "type": "object",
@@ -4718,7 +4702,8 @@
             "type": "string"
           },
           "status": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Is the ping successful"
           },
           "elapsedTime": {
             "type": "integer"
@@ -4730,11 +4715,7 @@
           "error": {
             "type": "string"
           }
-        },
-        "required": [
-          "name",
-          "status"
-        ]
+        }
       },
       "Membership": {
         "title": "Membership",
@@ -4742,6 +4723,7 @@
           "id": "cgw95jeoewcwi"
         },
         "type": "object",
+        "description": "Defines access level of a user to a namespace",
         "properties": {
           "access": {
             "type": "string",
@@ -4749,7 +4731,8 @@
               "READ",
               "READ_WRITE",
               "SUPER_USER"
-            ]
+            ],
+            "description": "Access level"
           },
           "createdAt": {
             "type": "string"
@@ -4770,6 +4753,7 @@
             "access": "READ_WRITE"
           }
         },
+        "description": "Data to send to edit/create a membership",
         "properties": {
           "access": {
             "type": "string",
@@ -4777,7 +4761,8 @@
               "READ",
               "READ_WRITE",
               "SUPER_USER"
-            ]
+            ],
+            "description": "Access level"
           }
         }
       },
@@ -4803,7 +4788,8 @@
           "updatedAt": {
             "type": "string"
           }
-        }
+        },
+        "description": ""
       },
       "NamespaceFull": {
         "type": "object",
@@ -4829,10 +4815,24 @@
             "type": "string"
           },
           "fetchLogin": {
-            "type": "object"
+            "type": "object",
+            "description": "Auth used when generating report",
+            "properties": {
+              "elastic": {
+                "type": "object",
+                "description": "Auth specific to \"elastic\" fetcher",
+                "nullable": true,
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
           },
           "fetchOptions": {
-            "type": "object"
+            "type": "object",
+            "description": "Options passed to fetcher"
           },
           "logoId": {
             "nullable": true
@@ -4845,6 +4845,7 @@
           },
           "memberships": {
             "type": "array",
+            "description": "Users that have access to this Namespace (excluding admins) with their access level",
             "items": {
               "type": "object",
               "additionalProperties": false,
@@ -4905,15 +4906,30 @@
             "fetchOptions": {}
           }
         },
+        "description": "Data to send to edit/create a namespace",
         "properties": {
           "name": {
             "type": "string"
           },
           "fetchLogin": {
-            "type": "object"
+            "type": "object",
+            "description": "Auth used when generating report",
+            "properties": {
+              "elastic": {
+                "type": "object",
+                "description": "Auth specific to \"elastic\" fetcher",
+                "nullable": true,
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
           },
           "fetchOptions": {
-            "type": "object"
+            "type": "object",
+            "description": "Options passed to fetcher"
           },
           "logoId": {
             "type": "string"
@@ -4942,7 +4958,8 @@
               "paused"
             ]
           }
-        }
+        },
+        "description": "Bull's Queue"
       },
       "Template": {
         "title": "Template",
@@ -4951,6 +4968,7 @@
         },
         "type": "object",
         "additionalProperties": false,
+        "description": "Report template with a few more info",
         "properties": {
           "name": {
             "type": "string"
@@ -4979,7 +4997,8 @@
             "format": "date-time"
           },
           "renderer": {
-            "type": "string"
+            "type": "string",
+            "description": "Renderer needed to render this template"
           },
           "pageCount": {
             "type": "number"
@@ -4993,6 +5012,7 @@
         },
         "type": "object",
         "additionalProperties": false,
+        "description": "Full info about template",
         "properties": {
           "name": {
             "type": "string"
@@ -5024,7 +5044,8 @@
             "format": "date-time"
           },
           "renderer": {
-            "type": "string"
+            "type": "string",
+            "description": "Renderer needed to render this template"
           },
           "pageCount": {
             "type": "number"
@@ -5057,7 +5078,8 @@
           "body": {
             "$ref": "#/components/schemas/ReportTemplate"
           }
-        }
+        },
+        "description": "Data to send to edit/create a template"
       },
       "ReportTemplate": {
         "title": "ReportTemplate",
@@ -5066,6 +5088,7 @@
         },
         "type": "object",
         "additionalProperties": false,
+        "description": "Base template to use when generating tasks",
         "properties": {
           "layouts": {
             "$ref": "#/components/schemas/ReportLayout"
@@ -5075,10 +5098,12 @@
           },
           "renderer": {
             "type": "string",
+            "description": "Renderer needed to render this template",
             "nullable": true
           },
           "renderOptions": {
-            "type": "object"
+            "type": "object",
+            "description": "Options passed to the renderer"
           }
         }
       },
@@ -5114,10 +5139,12 @@
           },
           "fetcher": {
             "type": "string",
+            "description": "Fetcher used to fetch data",
             "nullable": true
           },
           "fetchOptions": {
-            "type": "object"
+            "type": "object",
+            "description": "Options passed to the fetcher"
           },
           "figures": {
             "type": "array",
@@ -5185,12 +5212,22 @@
       },
       "User": {
         "type": "object",
+        "x-examples": {
+          "Example 1": {
+            "username": "ezr-admin",
+            "token": "3OSXlaYcSRK/SYmyVvbt9l5no+72HIYnGY5F04obq8ICJXv+GK1vzeB8TS5OIUyQFt6d/WQIH9aD3TedC+vT15H3mjvfNYPJtR0cVA1eGgu40qwhihx3YvfUDdNz3oktJBb+UpU6uqHXroKLJxPvpa5Vi1q2C4dUVt4pwA==",
+            "isAdmin": true,
+            "createdAt": "2023-04-11T13:47:00.072Z",
+            "updatedAt": "2023-04-11T13:47:00.072Z"
+          }
+        },
         "properties": {
           "username": {
             "type": "string"
           },
           "token": {
-            "type": "string"
+            "type": "string",
+            "description": "Token used to authenticate user, generated when user is created"
           },
           "isAdmin": {
             "type": "boolean"
@@ -5200,15 +5237,6 @@
           },
           "updatedAt": {
             "type": "string"
-          }
-        },
-        "x-examples": {
-          "Example 1": {
-            "username": "ezr-admin",
-            "token": "3OSXlaYcSRK/SYmyVvbt9l5no+72HIYnGY5F04obq8ICJXv+GK1vzeB8TS5OIUyQFt6d/WQIH9aD3TedC+vT15H3mjvfNYPJtR0cVA1eGgu40qwhihx3YvfUDdNz3oktJBb+UpU6uqHXroKLJxPvpa5Vi1q2C4dUVt4pwA==",
-            "isAdmin": true,
-            "createdAt": "2023-04-11T13:47:00.072Z",
-            "updatedAt": "2023-04-11T13:47:00.072Z"
           }
         }
       },
@@ -5224,12 +5252,14 @@
             "memberships": []
           }
         },
+        "description": "Full info about user",
         "properties": {
           "username": {
             "type": "string"
           },
           "token": {
-            "type": "string"
+            "type": "string",
+            "description": "Token used to authenticate user, generated when user is created"
           },
           "isAdmin": {
             "type": "boolean"
@@ -5242,6 +5272,7 @@
           },
           "memberships": {
             "type": "array",
+            "description": "Namespaces that user is member of, with access level",
             "items": {
               "$ref": "#/components/schemas/Membership"
             }
@@ -5259,7 +5290,8 @@
           "Example 1": {
             "isAdmin": true
           }
-        }
+        },
+        "description": "Base template to use when generating user"
       }
     },
     "securitySchemes": {
