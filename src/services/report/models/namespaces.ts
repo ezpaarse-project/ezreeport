@@ -142,11 +142,12 @@ export const getNamespaceById = async (id: Namespace['id']) => prisma.namespace.
 /**
  * Create namespace in DB
  *
+ * @param id The namespace id
  * @param data The input data
  *
  * @returns The created namespace
  */
-export const createNamespace = (data: unknown): Promise<FullNamespace> => {
+export const createNamespace = (id: string, data: unknown): Promise<FullNamespace> => {
   // Validate body
   if (!isValidNamespace(data)) {
     // As validation throws an error, this line shouldn't be called
@@ -154,7 +155,10 @@ export const createNamespace = (data: unknown): Promise<FullNamespace> => {
   }
 
   return prisma.namespace.create({
-    data,
+    data: {
+      id,
+      ...data,
+    },
     include: {
       memberships: true,
       tasks: true,

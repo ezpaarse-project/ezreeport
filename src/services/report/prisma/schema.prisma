@@ -79,7 +79,7 @@ enum Access {
 }
 
 model Namespace {
-  id           String       @id @default(uuid())
+  id           String       @id
   name         String
   fetchLogin   Json
   fetchOptions Json

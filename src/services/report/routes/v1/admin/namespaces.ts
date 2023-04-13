@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
+import Joi from 'joi';
 import { CustomRouter } from '~/lib/express-utils';
 import { requireAPIKey } from '~/middlewares/auth';
 import { addUserToNamespace, removeUserFromNamespace, updateUserOfNamespace } from '~/models/memberships';
@@ -10,7 +11,7 @@ import {
   getCountNamespaces,
   getNamespaceById
 } from '~/models/namespaces';
-import { HTTPError } from '~/types/errors';
+import { ArgumentError, HTTPError } from '~/types/errors';
 
 const router = CustomRouter('namespaces')
   /**
@@ -42,12 +43,22 @@ const router = CustomRouter('namespaces')
   /**
    * Create a new namespace
    */
-  .createBasicRoute('POST /', async (req, _res) => ({
-    data: await createNamespace(
-      req.body,
-    ),
-    code: StatusCodes.CREATED,
-  }), requireAPIKey)
+  .createBasicRoute('POST /', async (req, _res) => {
+    const { id, body } = req.body;
+
+    const validation = Joi.string().validate(id);
+    if (validation.error !== null) {
+      throw new ArgumentError(`id is not valid: ${validation.error?.message}`);
+    }
+
+    return {
+      data: await createNamespace(
+        id,
+        body,
+      ),
+      code: StatusCodes.CREATED,
+    };
+  }, requireAPIKey)
 
   /**
    * Get specific namespace
