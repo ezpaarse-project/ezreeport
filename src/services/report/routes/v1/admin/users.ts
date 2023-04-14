@@ -145,7 +145,8 @@ const router = CustomRouter('users')
 
     return {
       code,
-      data: await getUserByUsername(username),
+      data: (await getUserByUsername(username))?.memberships
+        .find(({ namespace: { name } }) => name === namespace),
     };
   }, requireAPIKey)
 

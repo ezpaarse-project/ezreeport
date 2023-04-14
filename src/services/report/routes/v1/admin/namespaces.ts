@@ -151,7 +151,7 @@ const router = CustomRouter('namespaces')
 
     return {
       code,
-      data: await getNamespaceById(id),
+      data: (await getNamespaceById(id))?.memberships.find((m) => m.username === username),
     };
   }, requireAPIKey)
 
