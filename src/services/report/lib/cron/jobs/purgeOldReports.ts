@@ -2,6 +2,7 @@ import type Queue from 'bull';
 import { enUS } from 'date-fns/locale';
 import { readFile, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
+import { glob } from 'glob';
 import config from '~/lib/config';
 import {
   endOfDay,
@@ -10,7 +11,6 @@ import {
   isBefore,
   parseISO
 } from '~/lib/date-fns';
-import glob from '~/lib/glob';
 import { appLogger as logger } from '~/lib/logger';
 import { formatInterval, isFulfilled } from '~/lib/utils';
 import { isValidResult } from '~/models/reports';
