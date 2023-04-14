@@ -44,10 +44,10 @@ WORKDIR /usr/src/report
 
 ENV NODE_ENV=production
 
-COPY . ./
-COPY --from=prisma /usr/build/report/.prisma ./.prisma
-COPY --from=npm-builder /usr/build/report/node_modules ./node_modules
-
 RUN apk add --no-cache cairo jpeg pango giflib
+
+COPY --from=npm-builder /usr/build/report/node_modules ./node_modules
+COPY --from=prisma /usr/build/report/.prisma ./.prisma
+COPY . ./
 
 CMD [ "npm", "run", "start" ]
