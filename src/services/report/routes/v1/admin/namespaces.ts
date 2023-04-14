@@ -42,12 +42,14 @@ const router = CustomRouter('namespaces')
 
   /**
    * Create a new namespace
+   *
+   * @deprecated Use `PUT /:namespace` instead
    */
   .createBasicRoute('POST /', async (req, _res) => {
-    const { id, body } = req.body;
+    const { id, ...body } = req.body;
 
     const validation = Joi.string().validate(id);
-    if (validation.error !== null) {
+    if (validation.error) {
       throw new ArgumentError(`id is not valid: ${validation.error?.message}`);
     }
 
@@ -80,12 +82,20 @@ const router = CustomRouter('namespaces')
   .createBasicRoute('PUT /:namespace', async (req, _res) => {
     const { namespace: id } = req.params;
 
-    const namespace = await editNamespaceById(id, req.body);
-    if (!namespace) {
-      throw new HTTPError(`Namespace with id '${id}' not found`, StatusCodes.NOT_FOUND);
+    let namespace = await getNamespaceById(id);
+    let code;
+    if (namespace) {
+      namespace = await editNamespaceById(id, req.body);
+      code = StatusCodes.OK;
+    } else {
+      namespace = await createNamespace(id, req.body);
+      code = StatusCodes.CREATED;
     }
 
-    return namespace;
+    return {
+      code,
+      data: namespace,
+    };
   }, requireAPIKey)
 
   /**
@@ -99,25 +109,50 @@ const router = CustomRouter('namespaces')
 
   /**
    * Add a user to a namespace
+   *
+   * @deprecated Use `PUT /:namespace/members/:username` instead
    */
   .createBasicRoute('POST /:namespace/members', async (req, _res) => {
     const { namespace: id } = req.params;
     const { username, ...data } = req.body;
 
+    const namespace = await getNamespaceById(id);
+    if (!namespace) {
+      throw new NotFoundError(`Namespace "${namespace}" not found`);
+    }
+
     await addUserToNamespace(username, id, data);
 
-    return getNamespaceById(id);
+    return {
+      code: StatusCodes.CREATED,
+      data: await getNamespaceById(id),
+    };
   }, requireAPIKey)
 
   /**
-   * Update a user of a namespace
+   * Update or adds a user of a namespace
    */
   .createBasicRoute('PUT /:namespace/members/:username', async (req, _res) => {
     const { namespace: id, username } = req.params;
 
-    await updateUserOfNamespace(username, id, req.body);
+    const namespace = await getNamespaceById(id);
+    if (!namespace) {
+      throw new NotFoundError(`Namespace "${namespace}" not found`);
+    }
 
-    return getNamespaceById(id);
+    let code;
+    if (namespace.memberships.find((m) => m.username === username)) {
+      await updateUserOfNamespace(username, id, req.body);
+      code = StatusCodes.OK;
+    } else {
+      await addUserToNamespace(username, id, req.body);
+      code = StatusCodes.CREATED;
+    }
+
+    return {
+      code,
+      data: await getNamespaceById(id),
+    };
   }, requireAPIKey)
 
   /**

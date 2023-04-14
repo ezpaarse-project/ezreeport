@@ -113,20 +113,21 @@ const router = CustomRouter('tasks')
   })
 
   /**
-   * Update a task
+   * Update or create a task
    */
   .createNamespacedRoute('PUT /:task', Access.READ_WRITE, async (req, _res) => {
     const { task: id } = req.params;
 
-    const task = await editTaskById(
-      id,
-      req.body,
-      req.user?.username ?? '',
-      req.namespaceIds,
-    );
-
-    if (!task) {
-      throw new HTTPError(`Task with id '${id}' not found for namespace(s) '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
+    let task = await getTaskById(id);
+    if (task) {
+      task = await editTaskById(
+        id,
+        req.body,
+        req.user?.username ?? '',
+        req.namespaceIds,
+      );
+    } else {
+      task = await createTask(req.body, req.user?.username ?? '', id);
     }
 
     return task;

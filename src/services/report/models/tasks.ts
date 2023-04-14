@@ -196,12 +196,14 @@ export const getTaskById = (id: Task['id'], namespaceIds?: Namespace['id'][]): P
  *
  * @param data The input data
  * @param creator The user creating the task
+ * @param id Wanted id
  *
  * @returns The created task
  */
 export const createTask = async (
   data: unknown,
   creator: string,
+  id?: string,
 ): Promise<FullTask> => {
   // Validate body
   if (!isValidCreateTask(data)) {
@@ -225,6 +227,7 @@ export const createTask = async (
   return prisma.task.create({
     data: {
       ...taskData,
+      id,
       namespaceId: namespace,
       nextRun,
       history: {

@@ -42,18 +42,20 @@ const router = CustomRouter('users')
 
   /**
    * Create a new user
+   *
+   * @deprecated Use `PUT /:username` instead
    */
   .createBasicRoute('POST /', async (req, _res) => {
     const { username, ...data } = req.body;
 
     const validation = Joi.string().validate(username);
-    if (validation.error !== null) {
+    if (validation.error) {
       throw new ArgumentError(`username is not valid: ${validation.error?.message}`);
     }
 
     return {
-      data: await createUser(username, data),
       code: StatusCodes.CREATED,
+      data: await createUser(username, data),
     };
   }, requireAPIKey)
 
@@ -72,17 +74,25 @@ const router = CustomRouter('users')
   }, requireAPIKey)
 
   /**
-   * Update a user
+   * Update or create a user
    */
   .createBasicRoute('PUT /:username', async (req, _res) => {
     const { username } = req.params;
 
-    const user = await editUserByUsername(username, req.body);
-    if (!user) {
-      throw new HTTPError(`User with username '${username}' not found`, StatusCodes.NOT_FOUND);
+    let user = await getUserByUsername(username);
+    let code;
+    if (user) {
+      user = await editUserByUsername(username, req.body);
+      code = StatusCodes.OK;
+    } else {
+      user = await createUser(username, req.body);
+      code = StatusCodes.CREATED;
     }
 
-    return user;
+    return {
+      code,
+      data: user,
+    };
   }, requireAPIKey)
 
   /**
@@ -96,10 +106,17 @@ const router = CustomRouter('users')
 
   /**
    * Add a user to a namespace
+   *
+   * @deprecated Use `PUT /:username/memberships/:namespace` instead
    */
   .createBasicRoute('POST /:username/memberships', async (req, _res) => {
     const { username } = req.params;
     const { user, ...data } = req.body;
+
+    const userExists = !!await getUserByUsername(username);
+    if (!userExists) {
+      throw new NotFoundError(`User "${username}" not found`);
+    }
 
     await addUserToNamespace(username, user, data);
 
@@ -107,14 +124,29 @@ const router = CustomRouter('users')
   }, requireAPIKey)
 
   /**
-   * Update a user of a namespace
+   * Update or add a user of a namespace
    */
   .createBasicRoute('PUT /:username/memberships/:namespace', async (req, _res) => {
     const { username, namespace } = req.params;
 
-    await updateUserOfNamespace(username, namespace, req.body);
+    const user = await getUserByUsername(username);
+    if (!user) {
+      throw new NotFoundError(`User "${username}" not found`);
+    }
 
-    return getUserByUsername(username);
+    let code;
+    if (user.memberships.find(({ namespace: { name } }) => name === namespace)) {
+      await updateUserOfNamespace(username, namespace, req.body);
+      code = StatusCodes.OK;
+    } else {
+      await addUserToNamespace(username, namespace, req.body);
+      code = StatusCodes.CREATED;
+    }
+
+    return {
+      code,
+      data: await getUserByUsername(username),
+    };
   }, requireAPIKey)
 
   /**

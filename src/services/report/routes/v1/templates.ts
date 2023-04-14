@@ -1,3 +1,4 @@
+import { StatusCodes } from 'http-status-codes';
 import { CustomRouter } from '~/lib/express-utils';
 import { requireUser } from '~/middlewares/auth';
 import {
@@ -13,6 +14,8 @@ const router = CustomRouter('templates')
 
   /**
    * Create template
+   *
+   * @deprecated Use `PUT /:name(*)` instead
    */
   .createAdminRoute('POST /', (req, _res) => {
     const { name, ...data } = req.body;
@@ -35,17 +38,25 @@ const router = CustomRouter('templates')
   }, requireUser)
 
   /**
-   * Edit template
+   * Edit or create template
    */
   .createAdminRoute('PUT /:name(*)', async (req, _res) => {
     const { name } = req.params;
 
-    const template = await editTemplateByName(name, req.body);
-    if (!template) {
-      throw new Error(`No template named "${name}" was found`);
+    let template = await getTemplateByName(name);
+    let code;
+    if (template) {
+      template = await editTemplateByName(name, req.body);
+      code = StatusCodes.OK;
+    } else {
+      template = await createTemplate(name, req.body);
+      code = StatusCodes.CREATED;
     }
 
-    return template;
+    return {
+      code,
+      data: template,
+    };
   })
 
   /**
