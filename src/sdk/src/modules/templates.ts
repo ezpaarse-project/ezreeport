@@ -132,6 +132,8 @@ export const getTemplate = async (name: Template['name']): Promise<ApiResponse<F
  * @param template Template's data
  * @param namespaces
  *
+ * @deprecated use `upsertTemplate` instead
+ *
  * @returns Created template's info
  */
 export const createTemplate = async (
@@ -139,6 +141,32 @@ export const createTemplate = async (
 ): Promise<ApiResponse<FullTemplate>> => {
   const { content, ...response } = await axios.$post<RawFullTemplate>(
     '/templates',
+    template,
+  );
+
+  return {
+    ...response,
+    content: parseFullTemplate(content),
+  };
+};
+
+/**
+ * Update or create a template
+ *
+ * Needs `general.templates-put-name(*)` permission
+ *
+ * @param id Template's id
+ * @param template Template's data
+ * @param namespaces
+ *
+ * @returns Updated/Created Template's info
+ */
+export const upsertTemplate = async (
+  name: Template['name'],
+  template: InputTemplate,
+): Promise<ApiResponse<FullTemplate>> => {
+  const { content, ...response } = await axios.$put<RawFullTemplate>(
+    `/templates/${name}`,
     template,
   );
 
@@ -157,22 +185,11 @@ export const createTemplate = async (
  * @param template New Template's data
  * @param namespaces
  *
+ * @deprecated use `upsertTemplate` instead
+ *
  * @returns Updated Template's info
  */
-export const updateTemplate = async (
-  name: Template['name'],
-  template: InputTemplate,
-): Promise<ApiResponse<FullTemplate>> => {
-  const { content, ...response } = await axios.$put<RawFullTemplate>(
-    `/templates/${name}`,
-    template,
-  );
-
-  return {
-    ...response,
-    content: parseFullTemplate(content),
-  };
-};
+export const updateTemplate = upsertTemplate;
 
 /**
  * Delete a template

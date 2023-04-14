@@ -142,17 +142,17 @@ export const getTask = async (
 };
 
 /**
- * Update a task
+ * Update or create a task
  *
  * Needs `namespaces[namespaceId].tasks-put-task` permission
  *
  * @param id Task's id
- * @param task New Task's data
+ * @param task Task's data
  * @param namespaces
  *
- * @returns Updated Task's info
+ * @returns Updated/Created Task's info
  */
-export const updateTask = async (
+export const upsertTask = async (
   id: Task['id'],
   task: InputTask,
   namespaces?: Namespace['name'][],
@@ -168,6 +168,21 @@ export const updateTask = async (
     content: parseFullTask(content),
   };
 };
+
+/**
+ * Update a task
+ *
+ * Needs `namespaces[namespaceId].tasks-put-task` permission
+ *
+ * @param id Task's id
+ * @param task New Task's data
+ * @param namespaces
+ *
+ * @deprecated Use `upsertTask` instead
+ *
+ * @returns Updated Task's info
+ */
+export const updateTask = upsertTask;
 
 /**
  * Delete a task

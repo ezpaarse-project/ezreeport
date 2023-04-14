@@ -5,6 +5,7 @@ export {
   getTask,
   createTask,
   updateTask,
+  upsertTask,
   deleteTask,
   enableTask,
   disableTask,
