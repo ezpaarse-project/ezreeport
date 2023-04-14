@@ -118,7 +118,7 @@ const router = CustomRouter('namespaces')
 
     const namespace = await getNamespaceById(id);
     if (!namespace) {
-      throw new NotFoundError(`Namespace "${namespace}" not found`);
+      throw new NotFoundError(`Namespace "${id}" not found`);
     }
 
     await addUserToNamespace(username, id, data);
@@ -137,7 +137,7 @@ const router = CustomRouter('namespaces')
 
     const namespace = await getNamespaceById(id);
     if (!namespace) {
-      throw new NotFoundError(`Namespace "${namespace}" not found`);
+      throw new NotFoundError(`Namespace "${id}" not found`);
     }
 
     const membership = namespace.memberships.find((m) => m.username === username);
@@ -156,7 +156,7 @@ const router = CustomRouter('namespaces')
 
     const namespace = await getNamespaceById(id);
     if (!namespace) {
-      throw new NotFoundError(`Namespace "${namespace}" not found`);
+      throw new NotFoundError(`Namespace "${id}" not found`);
     }
 
     let code;
@@ -182,7 +182,7 @@ const router = CustomRouter('namespaces')
 
     const namespace = await getNamespaceById(id);
     if (!namespace) {
-      throw new NotFoundError(`Namespace "${namespace}" not found`);
+      throw new NotFoundError(`Namespace "${id}" not found`);
     }
 
     await removeUserFromNamespace(username, id);
