@@ -184,11 +184,6 @@ export const updateTemplate = async (
  *
  * @returns Deleted Template's info
  */
-export const deleteTemplate = async (name: Template['name']): Promise<ApiResponse<FullTemplate>> => {
-  const { content, ...response } = await axios.$delete<RawFullTemplate>(`/templates/${name}`);
-
-  return {
-    ...response,
-    content: parseFullTemplate(content),
-  };
+export const deleteTemplate = async (name: Template['name']): Promise<void> => {
+  await axios.$delete<RawFullTemplate>(`/templates/${name}`);
 };

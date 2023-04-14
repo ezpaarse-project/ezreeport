@@ -182,13 +182,8 @@ export const updateTask = async (
 export const deleteTask = async (
   id: Task['id'],
   namespaces?: Namespace['name'][],
-): Promise<ApiResponse<FullTask>> => {
-  const { content, ...response } = await axios.$delete<RawFullTask>(`/tasks/${id}`, { params: { namespaces } });
-
-  return {
-    ...response,
-    content: parseFullTask(content),
-  };
+): Promise<void> => {
+  await axios.$delete(`/tasks/${id}`, { params: { namespaces } });
 };
 
 /**
