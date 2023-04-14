@@ -9,7 +9,7 @@ import { ArgumentError } from '~/types/errors';
 type InputNamespace = Pick<Prisma.NamespaceCreateInput, 'name' | 'fetchLogin' | 'fetchOptions' | 'logoId'>;
 
 type FullNamespace = Namespace & {
-  memberships: Membership[],
+  memberships: Omit<Membership, 'namespaceId'>[],
   tasks: Task[],
 };
 
@@ -134,7 +134,14 @@ export const getNamespaceById = async (id: Namespace['id']) => prisma.namespace.
     id,
   },
   include: {
-    memberships: true,
+    memberships: {
+      select: {
+        access: true,
+        username: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    },
     tasks: true,
   },
 }) as Promise<FullNamespace | null>;
@@ -160,7 +167,14 @@ export const createNamespace = (id: string, data: unknown): Promise<FullNamespac
       ...data,
     },
     include: {
-      memberships: true,
+      memberships: {
+        select: {
+          access: true,
+          username: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
       tasks: true,
     },
   });
@@ -185,7 +199,14 @@ export const deleteNamespaceById = async (id: Namespace['id']) => {
       id,
     },
     include: {
-      memberships: true,
+      memberships: {
+        select: {
+          access: true,
+          username: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
       tasks: true,
     },
   }) as Promise<FullNamespace | null>;
@@ -212,7 +233,14 @@ export const editNamespaceById = (id: Namespace['id'], data: unknown): Promise<F
     },
     data,
     include: {
-      memberships: true,
+      memberships: {
+        select: {
+          access: true,
+          username: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
       tasks: true,
     },
   });
