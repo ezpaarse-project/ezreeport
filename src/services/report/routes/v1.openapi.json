@@ -376,14 +376,21 @@
                     "meta": {
                       "type": "object",
                       "properties": {
-                        "count": {
-                          "type": "integer"
+                        "total": {
+                          "type": "number",
+                          "description": "Total items available"
                         },
-                        "lastId": {
-                          "type": "string"
+                        "count": {
+                          "type": "number",
+                          "description": "Count of items in response"
                         },
                         "size": {
-                          "type": "number"
+                          "type": "number",
+                          "description": "Wanted size"
+                        },
+                        "lastId": {
+                          "type": "string",
+                          "nullable": true
                         }
                       }
                     }
@@ -629,11 +636,72 @@
         "parameters": []
       },
       "put": {
-        "summary": "Update specific task",
+        "summary": "Update or create specific task",
         "operationId": "tasks-put-taskId",
         "responses": {
           "200": {
             "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "id": "3f419e88-5a82-4c35-8520-a40a4f1742ae",
+                        "institution": "institution:abba8400-1216-11eb-af77-ff33b5dd411e",
+                        "layout": {
+                          "edited": true,
+                          "notImplemented": true
+                        },
+                        "targets": [
+                          "user@example.com",
+                          "user2@example.com"
+                        ],
+                        "recurrence": "WEEKLY",
+                        "nextRun": "2022-11-28T10:00:00.000Z",
+                        "enabled": true,
+                        "history": [
+                          {
+                            "type": "creation",
+                            "message": "La tâche a été créée par ..."
+                          },
+                          {
+                            "type": "edition",
+                            "message": "La tâche a été créée par ..."
+                          }
+                        ],
+                        "createdAt": "2022-10-25T12:46:27.264Z",
+                        "updatedAt": "2022-10-26T06:54:23.833Z"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/TaskFull"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
             "content": {
               "application/json": {
                 "schema": {
@@ -709,7 +777,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "description": "Update specific task of the authed user's institution.\n\nNeeds `namespaces[namespaceId].tasks-put-task` (see `/me/permissions` for more info).",
+        "description": "Update specific task of the authed user's institution. If task is not found it will be created.\n\nNeeds `namespaces[namespaceId].tasks-put-task` (see `/me/permissions` for more info).",
         "security": [
           {
             "User Token": []
@@ -733,61 +801,8 @@
         "summary": "Delete specific task",
         "operationId": "tasks-delete-taskId",
         "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "x-examples": {
-                    "example-1": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": {
-                        "id": "f63891f9-f640-4fdb-b426-65ba678b4e3e",
-                        "institution": "institution:abba8400-1216-11eb-af77-ff33b5dd411e",
-                        "layout": {
-                          "toDelete": true
-                        },
-                        "targets": [
-                          "user@example.com"
-                        ],
-                        "recurrence": "WEEKLY",
-                        "nextRun": "2022-10-31T10:00:00.000Z",
-                        "enabled": true,
-                        "history": [
-                          {
-                            "createdAt": "2022-10-26T08:12:12Z",
-                            "type": "creation",
-                            "message": "Tâche créée par ..."
-                          }
-                        ],
-                        "createdAt": "2022-10-26T08:12:12.402Z",
-                        "updatedAt": "2022-10-26T08:12:12.402Z"
-                      }
-                    }
-                  },
-                  "properties": {
-                    "status": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "integer"
-                        },
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    },
-                    "content": {
-                      "$ref": "#/components/schemas/TaskFull"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "No Content"
           },
           "400": {
             "$ref": "#/components/responses/400"
@@ -1264,6 +1279,17 @@
               "application/json": {
                 "schema": {
                   "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        "generation"
+                      ]
+                    }
+                  },
                   "properties": {
                     "status": {
                       "type": "object",
@@ -1279,32 +1305,8 @@
                     "content": {
                       "type": "array",
                       "items": {
-                        "type": "string"
+                        "$ref": "#/components/schemas/Queue"
                       }
-                    }
-                  },
-                  "x-examples": {
-                    "example-1": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": [
-                        "generation"
-                      ]
-                    }
-                  }
-                },
-                "examples": {
-                  "Example": {
-                    "value": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": [
-                        "generation"
-                      ]
                     }
                   }
                 }
@@ -2478,7 +2480,8 @@
         ],
         "tags": [
           "templates"
-        ]
+        ],
+        "deprecated": true
       }
     },
     "/templates/{layoutName}": {
@@ -2574,11 +2577,56 @@
         }
       },
       "put": {
-        "summary": "Update specific template",
+        "summary": "Update or create specific template",
         "operationId": "put-templates-layoutName",
         "responses": {
           "200": {
             "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "scratch",
+                        "tags": [],
+                        "body": {
+                          "layouts": []
+                        },
+                        "createdAt": "2023-04-11T09:31:24.620Z",
+                        "updatedAt": "2023-04-11T09:31:24.620Z",
+                        "renderer": "vega-pdf",
+                        "pageCount": 0
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/TemplateFull"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
             "content": {
               "application/json": {
                 "schema": {
@@ -2631,14 +2679,11 @@
           "403": {
             "$ref": "#/components/responses/403"
           },
-          "404": {
-            "$ref": "#/components/responses/404"
-          },
           "500": {
             "$ref": "#/components/responses/500"
           }
         },
-        "description": "Update a template.\n\nNeeds `general.templates-put-name(*)` (see `/me/permissions` for more info).",
+        "description": "Update a template if found, create if not.\n\nNeeds `general.templates-put-name(*)` (see `/me/permissions` for more info).",
         "security": [
           {
             "User Token": []
@@ -2661,50 +2706,8 @@
         "summary": "Delete specific template",
         "operationId": "delete-templates-layoutName",
         "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "x-examples": {
-                    "Example 1": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": {
-                        "name": "scratch",
-                        "tags": [],
-                        "body": {
-                          "layouts": []
-                        },
-                        "createdAt": "2023-04-11T09:31:24.620Z",
-                        "updatedAt": "2023-04-11T09:31:24.620Z",
-                        "renderer": "vega-pdf",
-                        "pageCount": 0
-                      }
-                    }
-                  },
-                  "properties": {
-                    "status": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "integer"
-                        },
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    },
-                    "content": {
-                      "$ref": "#/components/schemas/TemplateFull"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "No Content"
           },
           "400": {
             "$ref": "#/components/responses/400"
@@ -2920,15 +2923,21 @@
                     "meta": {
                       "type": "object",
                       "properties": {
-                        "count": {
-                          "type": "integer"
+                        "total": {
+                          "type": "number",
+                          "description": "Total items available"
                         },
-                        "lastId": {
-                          "type": "string"
+                        "count": {
+                          "type": "number",
+                          "description": "Count of items in response"
                         },
                         "size": {
                           "type": "number",
-                          "description": "Mirror of count parameter"
+                          "description": "Wanted size"
+                        },
+                        "lastId": {
+                          "type": "string",
+                          "nullable": true
                         }
                       }
                     }
@@ -3341,6 +3350,27 @@
                       "items": {
                         "$ref": "#/components/schemas/User"
                       }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "number",
+                          "description": "Total items available"
+                        },
+                        "count": {
+                          "type": "number",
+                          "description": "Count of items in response"
+                        },
+                        "size": {
+                          "type": "number",
+                          "description": "Wanted size"
+                        },
+                        "lastId": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      }
                     }
                   }
                 }
@@ -3436,7 +3466,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/admin/users/{username}": {
@@ -3501,7 +3532,7 @@
         "description": "Get specific user.\n\nOnly usable with the API Key provided at server initialization."
       },
       "put": {
-        "summary": "Update specific user",
+        "summary": "Update or create specific user",
         "operationId": "put-admin-users-username",
         "responses": {
           "200": {
@@ -3538,33 +3569,9 @@
                 }
               }
             }
-          }
-        },
-        "security": [
-          {
-            "API Key": []
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserBody"
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin - users"
-        ],
-        "description": "Update specific user.\n\nOnly usable with the API Key provided at server initialization."
-      },
-      "delete": {
-        "summary": "Delete specific user",
-        "operationId": "delete-admin-users-username",
-        "responses": {
-          "200": {
-            "description": "OK",
+          },
+          "201": {
+            "description": "Created",
             "content": {
               "application/json": {
                 "schema": {
@@ -3597,6 +3604,57 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserBody"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin - users"
+        ],
+        "description": "Update specific user if found, create if not.\n\nOnly usable with the API Key provided at server initialization."
+      },
+      "delete": {
+        "summary": "Delete specific user",
+        "operationId": "delete-admin-users-username",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
           }
         },
         "security": [
@@ -3659,6 +3717,21 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
           }
         },
         "security": [
@@ -3690,7 +3763,8 @@
             }
           }
         },
-        "description": "Create new membership for user.\n\nOnly usable with the API Key provided at server initialization."
+        "description": "Create new membership for user.\n\nThis route and `PUT /admin/namespaces/{namespace}/members/{username}` have the same effect\n\nOnly usable with the API Key provided at server initialization.",
+        "deprecated": true
       }
     },
     "/admin/users/{username}/memberships/{namespace}": {
@@ -3713,7 +3787,7 @@
         }
       ],
       "put": {
-        "summary": "Update membership of a user",
+        "summary": "Update or create membership of a user",
         "operationId": "put-admin-users-username-memberships-namespace",
         "responses": {
           "200": {
@@ -3744,12 +3818,39 @@
                       }
                     },
                     "content": {
-                      "$ref": "#/components/schemas/UserFull"
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/Membership"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "namespace": {
+                              "$ref": "#/components/schemas/Namespace"
+                            }
+                          }
+                        }
+                      ]
                     }
                   }
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
           }
         },
         "security": [
@@ -3769,11 +3870,44 @@
             }
           }
         },
-        "description": "Update membership of a user.\n\nOnly usable with the API Key provided at server initialization."
+        "description": "Update membership of a user if found, create it if not.\n\nThis route and `PUT /admin/namespaces/{namespace}/members/{username}` have the same effect\n\nOnly usable with the API Key provided at server initialization."
       },
       "delete": {
         "summary": "Remove membership of a user",
         "operationId": "delete-admin-users-username-memberships-namespace",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "tags": [
+          "admin - users"
+        ],
+        "description": "Delete specific membership of a user.\n\nThis route and `DELETE /admin/namespaces/{namespace}/members/{username}` have the same effect\n\nOnly usable with the API Key provided at server initialization."
+      },
+      "get": {
+        "summary": "Get specific membership of user",
+        "operationId": "get-admin-users-username-memberships-namespace",
         "responses": {
           "200": {
             "description": "OK",
@@ -3803,14 +3937,42 @@
                       }
                     },
                     "content": {
-                      "$ref": "#/components/schemas/UserFull"
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/Membership"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "namespace": {
+                              "$ref": "#/components/schemas/Namespace"
+                            }
+                          }
+                        }
+                      ]
                     }
                   }
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
           }
         },
+        "description": "Get specific membership of a user.\n\nThis route and `GET /admin/namespaces/{namespace}/members/{username}` have the same effect\n\nOnly usable with the API Key provided at server initialization.",
         "security": [
           {
             "API Key": []
@@ -3818,8 +3980,7 @@
         ],
         "tags": [
           "admin - users"
-        ],
-        "description": "Delete specific membership of a user.\n\nOnly usable with the API Key provided at server initialization."
+        ]
       }
     },
     "/admin/namespaces": {
@@ -3854,12 +4015,51 @@
                       }
                     },
                     "content": {
-                      "$ref": "#/components/schemas/Namespace"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Namespace"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "number",
+                          "description": "Total items available"
+                        },
+                        "count": {
+                          "type": "number",
+                          "description": "Count of items in response"
+                        },
+                        "size": {
+                          "type": "number",
+                          "description": "Wanted size"
+                        },
+                        "lastId": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      }
                     }
                   }
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
           }
         },
         "operationId": "get-admin-namespaces",
@@ -3951,7 +4151,8 @@
           {
             "API Key": []
           }
-        ]
+        ],
+        "deprecated": true
       }
     },
     "/admin/namespaces/{id}": {
@@ -4017,7 +4218,7 @@
         "parameters": []
       },
       "put": {
-        "summary": "Update specific namespace",
+        "summary": "Update or create specific namespace",
         "operationId": "put-namespaces-id",
         "responses": {
           "200": {
@@ -4054,33 +4255,9 @@
                 }
               }
             }
-          }
-        },
-        "security": [
-          {
-            "API Key": []
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NamespaceBody"
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin - namespaces"
-        ],
-        "description": "Update specific namespace.\n\nOnly usable with the API Key provided at server initialization."
-      },
-      "delete": {
-        "summary": "Delete specific namespace",
-        "operationId": "delete-namespaces-id",
-        "responses": {
-          "200": {
-            "description": "OK",
+          },
+          "201": {
+            "description": "Created",
             "content": {
               "application/json": {
                 "schema": {
@@ -4113,6 +4290,63 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NamespaceBody"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin - namespaces"
+        ],
+        "description": "Update specific namespace, if not found create it.\n\nOnly usable with the API Key provided at server initialization."
+      },
+      "delete": {
+        "summary": "Delete specific namespace",
+        "operationId": "delete-namespaces-id",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
           }
         },
         "security": [
@@ -4175,6 +4409,21 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
           }
         },
         "security": [
@@ -4206,7 +4455,8 @@
         "tags": [
           "admin - namespaces"
         ],
-        "description": "Add membership to a namespace.\n\n**The returned data is the whole namespace (with updated membership).**\n\nOnly usable with the API Key provided at server initialization."
+        "description": "Add membership to a user.\n\nThis route and `POST /admin/users/{username}/memberships` have the same effect\n\n**The returned data is the whole namespace (with updated membership).**\n\nOnly usable with the API Key provided at server initialization.",
+        "deprecated": true
       }
     },
     "/admin/namespaces/{id}/members/{username}": {
@@ -4229,7 +4479,7 @@
         }
       ],
       "put": {
-        "summary": "Update membership of a user",
+        "summary": "Update or create membership of a user",
         "operationId": "put-admin-namespaces-id-members-username",
         "responses": {
           "200": {
@@ -4260,39 +4510,27 @@
                       }
                     },
                     "content": {
-                      "$ref": "#/components/schemas/NamespaceFull"
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/Membership"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "username": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      ]
                     }
                   }
                 }
               }
             }
-          }
-        },
-        "security": [
-          {
-            "API Key": []
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MembershipBody"
-              }
-            }
-          }
-        },
-        "tags": [
-          "admin - namespaces"
-        ],
-        "description": "Update membership to a namespace.\n\n**The returned data is the whole namespace (with updated membership).**\n\nOnly usable with the API Key provided at server initialization."
-      },
-      "delete": {
-        "summary": "Remove membership of a user",
-        "operationId": "delete-admin-namespaces-id-members-username",
-        "responses": {
-          "200": {
-            "description": "OK",
+          },
+          "201": {
+            "description": "Created",
             "content": {
               "application/json": {
                 "schema": {
@@ -4325,9 +4563,137 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
           }
         },
-        "description": "Remove membership to a namespace.\n\n**The returned data is the whole namespace (with updated membership).**\n\nOnly usable with the API Key provided at server initialization.",
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MembershipBody"
+              }
+            }
+          }
+        },
+        "tags": [
+          "admin - namespaces"
+        ],
+        "description": "Update membership to a user, if not found create it.\n\nThis route and `PUT /admin/users/{username}/memberships/{namespace}` have the same effect\n\nOnly usable with the API Key provided at server initialization."
+      },
+      "delete": {
+        "summary": "Remove membership of a user",
+        "operationId": "delete-admin-namespaces-id-members-username",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "description": "Remove membership to a user.\n\nThis route and `DELETE /admin/users/{username}/memberships/{namespace}` have the same effect\n\nOnly usable with the API Key provided at server initialization.",
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "tags": [
+          "admin - namespaces"
+        ]
+      },
+      "get": {
+        "summary": "Get speficic membership of a user",
+        "operationId": "get-admin-namespaces-id-members-username",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/Membership"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "username": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "description": "Get membership of a user.\n\nThis route and `GET /admin/users/{username}/memberships/{namespace}` have the same effect\n\nOnly usable with the API Key provided at server initialization.",
         "security": [
           {
             "API Key": []
@@ -4751,9 +5117,6 @@
           },
           "updatedAt": {
             "type": "string"
-          },
-          "namespace": {
-            "$ref": "#/components/schemas/Namespace"
           }
         }
       },
@@ -4859,29 +5222,20 @@
             "type": "array",
             "description": "Users that have access to this Namespace (excluding admins) with their access level",
             "items": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "username": {
-                  "type": "string"
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Membership"
                 },
-                "access": {
-                  "type": "string",
-                  "enum": [
-                    "READ",
-                    "READ_WRITE",
-                    "SUPER_USER"
-                  ]
-                },
-                "createdAt": {
-                  "type": "string",
-                  "format": "date-time"
-                },
-                "updatedAt": {
-                  "type": "string",
-                  "format": "date-time"
+                {
+                  "additionalProperties": false,
+                  "type": "object",
+                  "properties": {
+                    "username": {
+                      "type": "string"
+                    }
+                  }
                 }
-              }
+              ]
             }
           },
           "tasks": {
@@ -5286,7 +5640,19 @@
             "type": "array",
             "description": "Namespaces that user is member of, with access level",
             "items": {
-              "$ref": "#/components/schemas/Membership"
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Membership"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "namespace": {
+                      "$ref": "#/components/schemas/Namespace"
+                    }
+                  }
+                }
+              ]
             }
           }
         }
