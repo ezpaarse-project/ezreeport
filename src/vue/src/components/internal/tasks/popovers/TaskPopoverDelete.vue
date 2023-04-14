@@ -84,20 +84,22 @@ export default defineComponent({
       const namespaces = 'namespaceId' in this.task ? [this.task.namespaceId] : [this.task.namespace.id];
 
       return {
+        readOne: has('tasks-get-task', namespaces),
         delete: has('tasks-delete-task', namespaces),
       };
     },
   },
   methods: {
     async save() {
-      if (!this.perms.delete) {
+      if (!this.perms.readOne || !this.perms.delete) {
         this.$emit('input', false);
         return;
       }
 
       this.loading = true;
       try {
-        const { content } = await this.$ezReeport.sdk.tasks.deleteTask(this.task.id);
+        const { content } = await this.$ezReeport.sdk.tasks.getTask(this.task.id);
+        await this.$ezReeport.sdk.tasks.deleteTask(this.task.id);
 
         this.$emit('deleted', content);
         this.$emit('input', false);

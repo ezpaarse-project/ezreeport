@@ -341,7 +341,7 @@ export default defineComponent({
           }),
         );
 
-        const { content } = await this.$ezReeport.sdk.tasks.updateTask(
+        const { content } = await this.$ezReeport.sdk.tasks.upsertTask(
           this.task.id,
           {
             name: this.task.name,

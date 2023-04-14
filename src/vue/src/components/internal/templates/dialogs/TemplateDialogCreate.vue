@@ -170,9 +170,9 @@ export default defineComponent({
           }),
         );
 
-        const { content } = await this.$ezReeport.sdk.templates.createTemplate(
+        const { content } = await this.$ezReeport.sdk.templates.upsertTemplate(
+          this.item.name,
           {
-            name: this.item.name,
             body: {
               ...this.item.body,
               layouts,

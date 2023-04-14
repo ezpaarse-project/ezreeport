@@ -83,20 +83,22 @@ export default defineComponent({
       const has = this.$ezReeport.hasGeneralPermission;
 
       return {
+        getOne: has('templates-get-name(*)'),
         delete: has('templates-delete-name(*)'),
       };
     },
   },
   methods: {
     async save() {
-      if (!this.perms.delete) {
+      if (!this.perms.getOne || !this.perms.delete) {
         this.$emit('input', false);
         return;
       }
 
       this.loading = true;
       try {
-        const { content } = await this.$ezReeport.sdk.templates.deleteTemplate(this.template.name);
+        const { content } = await this.$ezReeport.sdk.templates.getTemplate(this.template.name);
+        await this.$ezReeport.sdk.templates.deleteTemplate(this.template.name);
 
         this.$emit('deleted', content);
         this.$emit('input', false);
