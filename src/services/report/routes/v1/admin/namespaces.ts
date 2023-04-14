@@ -130,6 +130,25 @@ const router = CustomRouter('namespaces')
   }, requireAPIKey)
 
   /**
+   * Get membership of a namespace
+   */
+  .createBasicRoute('GET /:namespace/members/:username', async (req, _res) => {
+    const { namespace: id, username } = req.params;
+
+    const namespace = await getNamespaceById(id);
+    if (!namespace) {
+      throw new NotFoundError(`Namespace "${namespace}" not found`);
+    }
+
+    const membership = namespace.memberships.find((m) => m.username === username);
+    if (!membership) {
+      throw new NotFoundError(`User "${username}" is not in namespace "${namespace}"`);
+    }
+
+    return membership;
+  }, requireAPIKey)
+
+  /**
    * Update or adds a user of a namespace
    */
   .createBasicRoute('PUT /:namespace/members/:username', async (req, _res) => {
