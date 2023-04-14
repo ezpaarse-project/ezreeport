@@ -90,25 +90,25 @@ export type Permissions = {
 };
 
 /**
- * Set API token for ezMESURE to axios
+ * Set auth token to axios
  *
- * @param token The API token for ezMESURE
+ * @param token The auth token
  */
 export const login = (token: string) => {
   axios.defaults.headers.common.authorization = `Bearer ${token}`;
 };
 
 /**
- * Unset API token for ezMESURE from axios
+ * Unset auth token from axios
  */
 export const logout = () => {
   axios.defaults.headers.common.authorization = undefined;
 };
 
 /**
- * Check if API token is setup in axios. **DOESN'T CHECK IF JWT IS VALID !**
+ * Check if auth token is setup in axios. **DOESN'T CHECK IF TOKEN IS VALID !**
  *
- * @returns If API token is setup
+ * @returns If auth token is setup
  */
 export const isLogged = () => {
   const bearer = axios.defaults.headers.common.authorization;
