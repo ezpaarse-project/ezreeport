@@ -135,7 +135,7 @@ const router = CustomRouter('users')
     }
 
     let code;
-    if (user.memberships.find(({ namespace: { name } }) => name === namespace)) {
+    if (user.memberships.find(({ namespace: { id } }) => id === namespace)) {
       await updateUserOfNamespace(username, namespace, req.body);
       code = StatusCodes.OK;
     } else {
@@ -146,7 +146,7 @@ const router = CustomRouter('users')
     return {
       code,
       data: (await getUserByUsername(username))?.memberships
-        .find(({ namespace: { name } }) => name === namespace),
+        .find(({ namespace: { id } }) => id === namespace),
     };
   }, requireAPIKey)
 
