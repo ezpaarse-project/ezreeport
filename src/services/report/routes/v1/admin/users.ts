@@ -11,7 +11,7 @@ import {
   getCountUsers,
   getUserByUsername
 } from '~/models/users';
-import { ArgumentError, HTTPError } from '~/types/errors';
+import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';
 
 const router = CustomRouter('users')
   /**
@@ -91,12 +91,7 @@ const router = CustomRouter('users')
   .createBasicRoute('DELETE /:username', async (req, _res) => {
     const { username } = req.params;
 
-    const user = await deleteUserByUsername(username);
-    if (!user) {
-      throw new HTTPError(`User with username '${username}' not found`, StatusCodes.NOT_FOUND);
-    }
-
-    return user;
+    await deleteUserByUsername(username);
   }, requireAPIKey)
 
   /**
@@ -123,14 +118,17 @@ const router = CustomRouter('users')
   }, requireAPIKey)
 
   /**
-   * Delete a user from a namespace
+   * Removes a user from a namespace
    */
   .createBasicRoute('DELETE /:username/memberships/:namespace', async (req, _res) => {
     const { username, namespace } = req.params;
 
-    await removeUserFromNamespace(username, namespace);
+    const user = await getUserByUsername(username);
+    if (!user) {
+      throw new NotFoundError(`User "${username}" not found`);
+    }
 
-    return getUserByUsername(username);
+    await removeUserFromNamespace(username, namespace);
   }, requireAPIKey);
 
 export default router;

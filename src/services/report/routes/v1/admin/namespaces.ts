@@ -11,7 +11,7 @@ import {
   getCountNamespaces,
   getNamespaceById
 } from '~/models/namespaces';
-import { ArgumentError, HTTPError } from '~/types/errors';
+import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';
 
 const router = CustomRouter('namespaces')
   /**
@@ -75,7 +75,7 @@ const router = CustomRouter('namespaces')
   }, requireAPIKey)
 
   /**
-   * Update a namespace
+   * Update or create a namespace
    */
   .createBasicRoute('PUT /:namespace', async (req, _res) => {
     const { namespace: id } = req.params;
@@ -94,12 +94,7 @@ const router = CustomRouter('namespaces')
   .createBasicRoute('DELETE /:namespace', async (req, _res) => {
     const { namespace: id } = req.params;
 
-    const namespace = await deleteNamespaceById(id);
-    if (!namespace) {
-      throw new HTTPError(`Namespace with id '${id}' not found`, StatusCodes.NOT_FOUND);
-    }
-
-    return namespace;
+    await deleteNamespaceById(id);
   }, requireAPIKey)
 
   /**
@@ -126,14 +121,17 @@ const router = CustomRouter('namespaces')
   }, requireAPIKey)
 
   /**
-   * Delete a user from a namespace
+   * Removes a user from a namespace
    */
   .createBasicRoute('DELETE /:namespace/members/:username', async (req, _res) => {
     const { namespace: id, username } = req.params;
 
-    await removeUserFromNamespace(username, id);
+    const namespace = await getNamespaceById(id);
+    if (!namespace) {
+      throw new NotFoundError(`Namespace "${namespace}" not found`);
+    }
 
-    return getNamespaceById(id);
+    await removeUserFromNamespace(username, id);
   }, requireAPIKey);
 
 export default router;

@@ -54,12 +54,7 @@ const router = CustomRouter('templates')
   .createAdminRoute('DELETE /:name(*)', async (req, _res) => {
     const { name } = req.params;
 
-    const template = await deleteTemplateByName(name);
-    if (!template) {
-      throw new Error(`No template named "${name}" was found`);
-    }
-
-    return template;
+    await deleteTemplateByName(name);
   });
 
 export default router;

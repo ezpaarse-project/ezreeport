@@ -138,13 +138,7 @@ const router = CustomRouter('tasks')
   .createNamespacedRoute('DELETE /:task', Access.READ_WRITE, async (req, _res) => {
     const { task: id } = req.params;
 
-    const task = await deleteTaskById(id, req.namespaceIds);
-
-    if (!task) {
-      throw new HTTPError(`Task with id '${id}' not found for namespace '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
-    }
-
-    return task;
+    await deleteTaskById(id, req.namespaceIds);
   })
 
   /**
