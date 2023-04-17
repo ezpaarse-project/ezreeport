@@ -16,6 +16,14 @@
 
 - [auth](#auth)
 - [setup](#setup)
+- [health](#health)
+- [tasks](#tasks)
+- [reports](#reports)
+- [templates](#templates)
+- [history](#history)
+- [crons](#crons)
+- [queues](#queues)
+- [namespaces](#namespaces)
 
 All responses use the `ApiResponse` or `PaginatedApiResponse` types which refer to this :
 
