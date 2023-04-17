@@ -6,7 +6,7 @@ import { addAdditionalData } from '~/lib/templates/customTemplates';
 import TemplateForm from './TemplateForm.vue';
 
 const meta: Meta<typeof TemplateForm> = {
-  title: 'Templates/Internal/Forms/TemplateForm',
+
   component: TemplateForm,
   argTypes: {
     'update:template': { action: 'update:template' },

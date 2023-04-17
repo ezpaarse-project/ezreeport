@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import ObjectTree from './ObjectTree.vue';
 
 const meta: Meta<typeof ObjectTree> = {
-  title: 'Utils (Internal)/Forms/ObjectTree/ObjectTree',
+
   component: ObjectTree,
   args: {
     label: 'Test Tree',

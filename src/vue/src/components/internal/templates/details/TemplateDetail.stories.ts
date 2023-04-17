@@ -6,7 +6,7 @@ import { addAdditionalData } from '~/lib/templates/customTemplates';
 import TemplateDetail from './TemplateDetail.vue';
 
 const meta: Meta<typeof TemplateDetail> = {
-  title: 'Templates/Internal/Details/TemplateDetail',
+
   component: TemplateDetail,
 };
 

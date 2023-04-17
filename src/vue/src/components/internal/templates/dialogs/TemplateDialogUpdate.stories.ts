@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import TemplateDialogUpdate from './TemplateDialogUpdate.vue';
 
 const meta: Meta<typeof TemplateDialogUpdate> = {
-  title: 'Templates/Internal/Dialogs/TemplateDialogUpdate',
+
   component: TemplateDialogUpdate,
   args: {
     value: true,

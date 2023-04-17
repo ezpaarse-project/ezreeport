@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import TagsForm, { type Tag } from './TagsForm.vue';
 
 const meta: Meta<typeof TagsForm> = {
-  title: 'Templates/Internal/Forms/TagsForm',
+
   component: TagsForm,
   args: {
     value: [

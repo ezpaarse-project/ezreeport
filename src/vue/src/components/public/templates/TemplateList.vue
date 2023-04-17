@@ -119,7 +119,7 @@
 <script lang="ts">
 import type { templates } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
-import { Tag } from '~/components/internal/templates/forms/TagsForm.vue';
+import { Tag } from '~/components/templates/forms/TagsForm.vue';
 import ezReeportMixin from '~/mixins/ezr';
 
 const MAX_TAGS_SHOWN = 4;

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import StatusList from './StatusList.vue';
 
 const meta: Meta<typeof StatusList> = {
-  title: 'Health/StatusList',
+  title: 'ezr-status-list (StatusList)',
   component: StatusList,
 };
 
@@ -14,6 +14,6 @@ export const Basic: Story = {
   render: (args) => ({
     components: { StatusList },
     props: Object.keys(args),
-    template: '<ezr-status-list v-bind="$props" v-on="$props" />',
+    template: '<StatusList v-bind="$props" v-on="$props" />',
   }),
 };

@@ -3,7 +3,7 @@ import jobs from '~/mock/jobs';
 import QueueJobDialogDetail from './QueueJobDialogDetail.vue';
 
 const meta: Meta<typeof QueueJobDialogDetail> = {
-  title: 'Queues/Internal/Dialogs/QueueJobDialogDetail',
+
   component: QueueJobDialogDetail,
   args: {
     value: true,

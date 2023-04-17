@@ -3,7 +3,6 @@ import history from '~/mock/history';
 import InternalHistoryTable from './InternalHistoryTable.vue';
 
 const meta: Meta<typeof InternalHistoryTable> = {
-  title: 'History/Internal/InternalHistoryTable',
   component: InternalHistoryTable,
   args: {
     hideTask: false,

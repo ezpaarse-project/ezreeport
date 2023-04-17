@@ -3,7 +3,7 @@ import templates from '~/mock/templates';
 import TemplatePopoverDelete from './TemplatePopoverDelete.vue';
 
 const meta: Meta<typeof TemplatePopoverDelete> = {
-  title: 'Templates/Internal/Popovers/TemplatePopoverDelete',
+
   component: TemplatePopoverDelete,
   args: {
     template: templates[0],

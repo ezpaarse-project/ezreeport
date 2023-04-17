@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import CustomSwitch from './CustomSwitch.vue';
 
 const meta: Meta<typeof CustomSwitch> = {
-  title: 'Utils (Internal)/CustomSwitch',
+
   component: CustomSwitch,
   args: {
     expand: false,

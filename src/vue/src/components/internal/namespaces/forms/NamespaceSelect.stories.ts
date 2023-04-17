@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import NamespaceSelect from './NamespaceSelect.vue';
 
 const meta: Meta<typeof NamespaceSelect> = {
-  title: 'Namespaces/Internal/Forms/NamespaceSelect',
+
   component: NamespaceSelect,
   args: {
     value: '',

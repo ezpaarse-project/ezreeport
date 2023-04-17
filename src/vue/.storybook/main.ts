@@ -5,8 +5,18 @@ import type { StorybookConfigVite } from '@storybook/builder-vite';
 
 const config: StorybookConfig & StorybookConfigVite = {
   stories: [
-    // '../src/**/*.mdx',
-    '../src/**/*.stories.@(js|jsx|ts|tsx)',
+    {
+      directory: '../src/components/internal',
+      titlePrefix: 'Internal',
+      files: '**/*.stories.@(js|jsx|ts|tsx)',
+      // files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../src/components/public',
+      titlePrefix: 'Public',
+      files: '**/*.stories.@(js|jsx|ts|tsx)',
+      // files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
   ],
   addons: [
     '@storybook/addon-links',

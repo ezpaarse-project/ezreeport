@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import NamespaceRichListItem from './NamespaceRichListItem.vue';
 
 const meta: Meta<typeof NamespaceRichListItem> = {
-  title: 'Namespaces/Internal/NamespaceRichListItem',
+
   component: NamespaceRichListItem,
   args: {
     namespace: {

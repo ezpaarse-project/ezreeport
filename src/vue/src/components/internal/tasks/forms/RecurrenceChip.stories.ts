@@ -20,7 +20,7 @@ const sizes = [
 ];
 
 const meta: Meta<typeof RecurrenceChip> = {
-  title: 'Tasks/Internal/Forms/RecurrenceChip',
+
   component: RecurrenceChip,
   args: {
     value: recurrences[0],

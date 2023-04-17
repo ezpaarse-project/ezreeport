@@ -3,7 +3,7 @@ import tasks from '~/mock/tasks';
 import TaskPopoverDelete from './TaskPopoverDelete.vue';
 
 const meta: Meta<typeof TaskPopoverDelete> = {
-  title: 'Tasks/Internal/Popovers/TaskPopoverDelete',
+
   component: TaskPopoverDelete,
   args: {
     task: tasks[0],

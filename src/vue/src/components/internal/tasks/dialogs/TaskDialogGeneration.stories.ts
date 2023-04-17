@@ -3,7 +3,7 @@ import mockTasks from '~/mock/tasks';
 import TaskDialogGeneration from './TaskDialogGeneration.vue';
 
 const meta: Meta<typeof TaskDialogGeneration> = {
-  title: 'Tasks/Internal/Dialogs/TaskDialogGeneration',
+
   component: TaskDialogGeneration,
   args: {
     task: mockTasks[0],

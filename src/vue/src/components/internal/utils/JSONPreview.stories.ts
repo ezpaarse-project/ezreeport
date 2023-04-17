@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import CodeBlock from './JSONPreview.vue';
 
 const meta: Meta<typeof CodeBlock> = {
-  title: 'Utils (Internal)/CodeBlock',
+
   component: CodeBlock,
   args: {
     value: { hey: 'you', im: [{ complex: 'yeah' }, { reactive: true }], order: 66 },

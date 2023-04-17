@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import TaskDialogCreate from './TaskDialogCreate.vue';
 
 const meta: Meta<typeof TaskDialogCreate> = {
-  title: 'Tasks/Internal/Dialogs/TaskDialogCreate',
+
   component: TaskDialogCreate,
   args: {
     value: true,

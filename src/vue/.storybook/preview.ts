@@ -20,7 +20,16 @@ if (!import.meta.env.VITE_AUTH_TOKEN) {
   console.warn('[ezReeport-storybook] Auth token not found');
 }
 
-export const parameters: Parameters = {};
+export const parameters: Parameters = {
+  options: {
+    storySort: {
+      order: [
+        'Public',
+        'Internal',
+      ],
+    },
+  },
+};
 
 export const globalTypes = {
   theme: {

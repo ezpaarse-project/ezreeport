@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import HistoryTable from './HistoryTable.vue';
 
 const meta: Meta<typeof HistoryTable> = {
-  title: 'History/HistoryTable',
+  title: 'ezr-history-table (HistoryTable)',
   component: HistoryTable,
 };
 
@@ -14,6 +14,6 @@ export const Basic: Story = {
   render: (args) => ({
     components: { HistoryTable },
     props: Object.keys(args),
-    template: '<ezr-history-table v-bind="$props" v-on="$props" />',
+    template: '<HistoryTable v-bind="$props" v-on="$props" />',
   }),
 };

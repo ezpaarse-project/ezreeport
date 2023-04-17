@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import TasksTable from './TasksTable.vue';
 
 const meta: Meta<typeof TasksTable> = {
-  title: 'Tasks/TasksTable',
+  title: 'ezr-task-table (TasksTable)',
   component: TasksTable,
 };
 
@@ -14,6 +14,6 @@ export const Basic: Story = {
   render: (args) => ({
     components: { TasksTable },
     props: Object.keys(args),
-    template: '<ezr-task-table v-bind="$props" v-on="$props" />',
+    template: '<TasksTable v-bind="$props" v-on="$props" />',
   }),
 };

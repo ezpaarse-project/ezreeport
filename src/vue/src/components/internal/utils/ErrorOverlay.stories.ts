@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import ErrorOverlay from './ErrorOverlay.vue';
 
 const meta: Meta<typeof ErrorOverlay> = {
-  title: 'Utils (Internal)/ErrorOverlay',
+
   component: ErrorOverlay,
   args: {
     value: 'A mock error occurred',
