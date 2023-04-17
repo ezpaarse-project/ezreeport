@@ -111,7 +111,6 @@ export const getAllTemplates = async (): Promise<ApiResponse<Template[]>> => {
  * Needs `general.templates-get-name(*)` permission
  *
  * @param name Template's name
- * @param namespaces
  *
  * @returns Template info
  */

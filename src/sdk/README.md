@@ -723,7 +723,52 @@ __Params__:
 ### templates
 
 #### getAllTemplates
+
+```ts
+getAllTemplates(): Promise<ApiResponse<templates.Template[]>>
+```
+
+Get all available templates
+
+Needs `general.templates-get` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
 #### getTemplate
-#### createTemplate
-#### updateTemplate
+
+```ts
+getTemplate(name: string): Promise<ApiResponse<templates.Template>>
+```
+
+Needs `general.templates-get-name(*)` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `id`: Task's id
+- `data`: Task's data
+
+#### upsertTemplate
+
+```ts
+upsertTemplate(name: string, data: templates.InputTemplate): Promise<ApiResponse<templates.Template>>
+```
+
+Update or create a template
+
+Needs `general.templates-put-name(*)` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `name`: Template's name
+- `data`: Template's data
+
 #### deleteTemplate
+
+```ts
+deleteTemplate(name: string): Promise<void>
+```
+Delete a template
+
+Needs `general.templates-delete-name(*)` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `name`: Template's name
