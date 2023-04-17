@@ -12,7 +12,7 @@ export {
 } from './tasks';
 
 export {
-  type Recurrence,
+  Recurrence,
   type Task,
   type TaskWithNamespace,
 } from './tasks.base';
