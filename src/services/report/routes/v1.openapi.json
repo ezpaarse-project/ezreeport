@@ -378,7 +378,7 @@
                       "properties": {
                         "total": {
                           "type": "number",
-                          "description": "Total items available"
+                          "description": "Count of items available"
                         },
                         "count": {
                           "type": "number",
@@ -386,11 +386,12 @@
                         },
                         "size": {
                           "type": "number",
-                          "description": "Wanted size"
+                          "description": "Count of items available"
                         },
                         "lastId": {
                           "type": "string",
-                          "nullable": true
+                          "nullable": true,
+                          "description": "Id of last item in response"
                         }
                       }
                     }
@@ -2925,7 +2926,7 @@
                       "properties": {
                         "total": {
                           "type": "number",
-                          "description": "Total items available"
+                          "description": "Count of items available"
                         },
                         "count": {
                           "type": "number",
@@ -2933,11 +2934,12 @@
                         },
                         "size": {
                           "type": "number",
-                          "description": "Wanted size"
+                          "description": "Count of items available"
                         },
                         "lastId": {
                           "type": "string",
-                          "nullable": true
+                          "nullable": true,
+                          "description": "Id of last item in response"
                         }
                       }
                     }
@@ -3356,7 +3358,7 @@
                       "properties": {
                         "total": {
                           "type": "number",
-                          "description": "Total items available"
+                          "description": "Count of items available"
                         },
                         "count": {
                           "type": "number",
@@ -3364,11 +3366,12 @@
                         },
                         "size": {
                           "type": "number",
-                          "description": "Wanted size"
+                          "description": "Count of items available"
                         },
                         "lastId": {
                           "type": "string",
-                          "nullable": true
+                          "nullable": true,
+                          "description": "Id of last item in response"
                         }
                       }
                     }
@@ -4025,7 +4028,7 @@
                       "properties": {
                         "total": {
                           "type": "number",
-                          "description": "Total items available"
+                          "description": "Count of items available"
                         },
                         "count": {
                           "type": "number",
@@ -4033,11 +4036,12 @@
                         },
                         "size": {
                           "type": "number",
-                          "description": "Wanted size"
+                          "description": "Count of items available"
                         },
                         "lastId": {
                           "type": "string",
-                          "nullable": true
+                          "nullable": true,
+                          "description": "Id of last item in response"
                         }
                       }
                     }
@@ -6051,7 +6055,7 @@
             "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
           ]
         },
-        "description": "Select wich namespaces are concerned by the request. If none it will select all possible namespaces."
+        "description": "Select which namespaces are concerned by the request. If none it will select all possible namespaces."
       }
     }
   },
