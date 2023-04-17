@@ -17,7 +17,6 @@ RUN apk update \
 # Install service dependencies (it will build node-canvas)
 COPY package*.json ./
 RUN npm ci --omit=dev
-COPY . ./
 
 # ---- Build prisma-client
 
@@ -30,6 +29,7 @@ RUN apk update \
 
 # Install dev dependencies
 RUN npm ci
+COPY . ./
 
 # Generate prisma-client
 RUN npx prisma generate
