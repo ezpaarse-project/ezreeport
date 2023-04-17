@@ -251,12 +251,111 @@ Only used for types.
 ---
 
 ### queues
+
+Methods used to manage queues
+
 #### getAllQueues
+
+```ts
+getAllQueues(): Promise<ApiResponse<queues.Queue[]>>
+```
+
+Get all available queues
+
+Needs `general.queues-get` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
 #### pauseQueue
+
+```ts
+pauseQueue(name: string): Promise<ApiResponse<queues.Queue>>
+```
+
+Pause specific queue
+
+Needs `general.queues-put-queue-pause` permission(see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `name`: Name of the queue
+
 #### resumeQueue
+
+```ts
+resumeQueue(name: string): Promise<ApiResponse<queues.Queue>>
+```
+
+
+Restart specific queue
+
+Needs `general.queues-put-queue-resume` permission(see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `name`: Name of the queue
+
 #### getQueueJobs
+
+```ts
+getQueueJobs<Data, Result>(name: string): Promise<PaginatedApiResponse<queues.FullJob<Data, Result>[]>>
+```
+
+Get specific queue info
+
+Needs `general.queues-get-queue-jobs` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Type Params__:
+
+- `Data`: Data passed to the job (accessible with the `data` property)
+- `Result`: Result returned by the job (accessible with the `result` property)
+
+__Params__:
+
+- `name`: Name of the queue
+
 #### getJob
+
+```ts
+getJob<Data, Result>(name: string, jobId: string | number, namespaces?: string[]): Promise<ApiResponse<FullJob<Data, Result>>>
+```
+
+Get specific job info
+
+Needs `namespaces[namespaceId].queues-get-queue-jobs-jobId` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Type Params__:
+
+- `Data`: Data passed to the job (accessible with the `data` property)
+- `Result`: Result returned by the job (accessible with the `result` property)
+
+__Params__:
+
+- `name`: Name of the queue
+- `jobId`: Id of the job
+- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+
 #### retryJob
+
+```ts
+retryJob(): void
+```
+
+Retry job that failed
+
+Needs `namespaces[namespaceId].queues-post-queue-jobs-jobId-retry` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+
+__Type Params__:
+
+- `Data`: Data passed to the job (accessible with the `data` property)
+- `Result`: Result returned by the job (accessible with the `result` property)
+
+__Params__:
+
+- `name`: Name of the queue
+- `jobId`: Id of the job
+- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+
+---
 
 ### reports
 #### startGeneration
