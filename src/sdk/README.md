@@ -117,9 +117,78 @@ getCurrentNamespaces(): Promise<ApiResponse<namespaces.Namespace[]>>
 Get accessible namespaces by logged user. It should returns the same namespaces as [auth::getCurrentPermissions](#getcurrentpermissions) but with more info about namespaces.
 
 ---
+
 ### crons
+
+Methods used to manage crons, it should be only available to admins of ezREEPORT.
+
 #### getAllCrons
+
+```ts
+getAllCrons(): Promise<ApiResponse<crons.Cron[]>>
+```
+
+Get all available crons and their statuses.
+
+Needs `general.crons-get` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
 #### getCron
+
+```ts
+getCron(name: string): Promise<ApiResponse<crons.Cron>>
+```
+
+Get more info about specific cron
+
+Needs `general.crons-get-cron` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `name`: The name of the cron
+
+#### startCron
+
+```ts
+startCron(name: string): Promise<ApiResponse<crons.Cron>>
+```
+
+Start cron
+
+Needs `general.crons-put-cron-start` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `name`: The name of the cron
+
+#### stopCron
+
+```ts
+stopCron(name: string): Promise<ApiResponse<crons.Cron>>
+```
+
+Stop cron
+
+Needs `general.crons-put-cron-stop` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `name`: The name of the cron
+
+#### forceCron
+
+```ts
+forceCron(name: string): Promise<ApiResponse<crons.Cron>>
+```
+
+Force run of a cron
+
+Needs `general.crons-post-cron-force` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `name`: The name of the cron
+
+---
 
 ### health
 #### getAllConnectedServices
