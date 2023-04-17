@@ -192,10 +192,12 @@ export default defineComponent({
     availableSlots() {
       const length = this.grid.cols * this.grid.rows;
 
+      const takenSet = new Set(this.takenSlots);
+      const slotsSet = new Set(this.figure.slots);
       return Array.from({ length }, (_, i) => ({
         text: this.$t(`slots[${i}]`),
         value: i,
-        disabled: this.takenSlots.includes(i) && !this.figure.slots?.includes(i),
+        disabled: takenSet.has(i) && !slotsSet.has(i),
       }));
     },
     /**

@@ -193,9 +193,10 @@ export default defineComponent({
      */
     hasNamespacedPermission(permission: string, namespaces: string[]) {
       let entries = Object.entries(this.auth.permissions?.namespaces ?? {});
+      const namespaceSet = new Set(namespaces);
 
       if (namespaces.length > 0) {
-        entries = entries.filter(([namespace]) => namespaces.includes(namespace));
+        entries = entries.filter(([namespace]) => namespaceSet.has(namespace));
       }
       return !!entries.find(([, perms]) => perms[permission]);
     },
