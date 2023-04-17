@@ -9,12 +9,59 @@
 - ✅ Automatic parsing (dates, enums, etc.)
 - ❌ Admin requests (the ones that need API key)
 
+---
+---
+
 ## Modules
 
 - [auth](#auth)
 - [setup](#setup)
 
+All responses use the `ApiResponse` or `PaginatedApiResponse` types which refer to this :
+
+```ts
+interface ApiResponse<T> {
+  /**
+   * HTTP Status
+   */
+  status: {
+    code: number,
+    message: string,
+  },
+  /**
+   * Content of the response
+   */
+  content: T
+}
+
+interface PaginatedApiResponse<T> extends ApiResponse<T> {
+  meta: {
+    /**
+     * Count of items in response
+     */
+    count: number,
+    /**
+     * Count of items wanted
+     */
+    size: number,
+    /**
+     * Count of items available
+     */
+    total: number,
+    /**
+     * Id of last item in response
+     */
+    lastId?: unknown
+  }
+}
+
+```
+
+---
+
 ### auth
+
+Methods used to interact with current user
 
 #### login
 
@@ -41,9 +88,35 @@ isLogged(): boolean
 Check if any token is in axios. **DOESN'T CHECK IF TOKEN IS VALID !**
 
 #### getCurrentUser
+
+```ts
+getCurrentUser(): Promise<ApiResponse<auth.User>>
+```
+
+Get info about logged user
+
 #### getCurrentPermissions
+
+```ts
+getCurrentPermissions(): Promise<ApiResponse<auth.Permissions>>
+```
+
+Get permissions of logged user.
+
+There a 2 types of permissions :
+
+- Namespaced: Those ones depends from a namespace to another. If a namespace is not in the list, then the current user doesn't have access to this namespace.
+- General: Those ones are global to ezREEPORT and doesn't depends on namespace.
+
 #### getCurrentNamespaces
 
+```ts
+getCurrentNamespaces(): Promise<ApiResponse<namespaces.Namespace[]>>
+```
+
+Get accessible namespaces by logged user. It should returns the same namespaces as [auth::getCurrentPermissions](#getcurrentpermissions) but with more info about namespaces.
+
+---
 ### crons
 #### getAllCrons
 #### getCron
