@@ -46,33 +46,38 @@
           </v-list-item-content>
         </template>
 
-        <div
-          v-for="entry in item.detail"
-          :key="entry.key"
-        >
-          <v-list-item
-            v-if="entry.value"
-            style="min-height: 0px"
-          >
-            <v-list-item-content class="py-1">
-              <v-list-item-subtitle class="d-flex align-center">
-                <v-icon small>
-                  {{ entry.icon }}
-                </v-icon>
-                <span class="ml-1">{{ $t(`cron.${entry.key}`) }}: {{ entry.value }}</span>
-              </v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-        </div>
+        <v-row>
+          <v-col>
+            <template v-for="entry in item.detail">
+              <v-list-item
+                v-if="entry.value"
+                style="min-height: 0px"
+                :key="entry.key"
+              >
+                <v-list-item-content class="py-1">
+                  <v-list-item-subtitle class="d-flex align-center">
+                    <v-icon small>
+                      {{ entry.icon }}
+                    </v-icon>
+                    <span class="ml-1">{{ $t(`cron.${entry.key}`) }}: {{ entry.value }}</span>
+                  </v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
+          </v-col>
 
-        <v-btn
-          v-if="perms.force"
-          color="warning"
-          :disabled="loading"
-          @click="forceCronRun(item)"
-        >
-          {{ $t('cron.force').toString() }}
-        </v-btn>
+          <v-col cols="2">
+            <v-btn
+              v-if="perms.force"
+              :disabled="loading"
+              color="warning"
+              class="d-block mx-auto"
+              @click="forceCronRun(item)"
+            >
+              {{ $t('cron.force').toString() }}
+            </v-btn>
+          </v-col>
+        </v-row>
       </v-list-group>
 
       <ErrorOverlay v-model="error" />
