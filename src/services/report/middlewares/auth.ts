@@ -85,9 +85,9 @@ export const requireNamespace = (minAccess: Access): RequestHandler => (req, res
   getPossibleNamespaces(req, minAccess).then((possibleNamespaces) => {
     // Get ids wanted by user
     const { namespaces: wantedIds } = req.query;
-    let ids = possibleNamespaces.map(({ namespace: { id } }) => id) ?? [];
+    let ids = new Set(possibleNamespaces.map(({ namespace: { id } }) => id) ?? []);
 
-    if (ids.length <= 0) {
+    if (ids.size <= 0) {
       req.namespaceIds = [];
       req.namespaces = [];
       next();
@@ -100,16 +100,20 @@ export const requireNamespace = (minAccess: Access): RequestHandler => (req, res
         return;
       }
 
-      ids = wantedIds.map((id) => id.toString()).filter((id) => ids.includes(id));
+      ids = new Set(
+        wantedIds
+          .map((id) => id.toString())
+          .filter((id) => ids.has(id)),
+      );
     }
 
-    if (ids.length <= 0) {
+    if (ids.size <= 0) {
       res.errorJson(new HTTPError("Can't find your namespace(s)", StatusCodes.BAD_REQUEST));
       return;
     }
 
-    req.namespaceIds = ids;
-    req.namespaces = possibleNamespaces.filter(({ namespace: { id } }) => ids.includes(id));
+    req.namespaceIds = [...ids];
+    req.namespaces = possibleNamespaces.filter(({ namespace: { id } }) => ids.has(id));
     next();
   });
 };
