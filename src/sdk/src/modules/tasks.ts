@@ -74,7 +74,7 @@ export interface InputTask extends Pick<FullTask, 'name' | 'template' | 'targets
  */
 export const getAllTasks = async (
   paginationOpts?: { previous?: Task['id'], count?: number },
-  namespaces?: Namespace['name'][],
+  namespaces?: Namespace['id'][],
 ): Promise<PaginatedApiResponse<Task[]>> => {
   const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawTask[]>, 'get'>(
     'get',
@@ -105,7 +105,7 @@ export const getAllTasks = async (
  */
 export const createTask = async (
   task: InputTask,
-  namespaces?: Namespace['name'][],
+  namespaces?: Namespace['id'][],
 ): Promise<ApiResponse<FullTask>> => {
   const { content, ...response } = await axios.$post<RawFullTask>(
     '/tasks',
@@ -131,7 +131,7 @@ export const createTask = async (
  */
 export const getTask = async (
   id: Task['id'],
-  namespaces?: Namespace['name'][],
+  namespaces?: Namespace['id'][],
 ): Promise<ApiResponse<FullTask>> => {
   const { content, ...response } = await axios.$get<RawFullTask>(`/tasks/${id}`, { params: { namespaces } });
 
@@ -155,7 +155,7 @@ export const getTask = async (
 export const upsertTask = async (
   id: Task['id'],
   task: InputTask,
-  namespaces?: Namespace['name'][],
+  namespaces?: Namespace['id'][],
 ): Promise<ApiResponse<FullTask>> => {
   const { content, ...response } = await axios.$put<RawFullTask>(
     `/tasks/${id}`,
@@ -196,7 +196,7 @@ export const updateTask = upsertTask;
  */
 export const deleteTask = async (
   id: Task['id'],
-  namespaces?: Namespace['name'][],
+  namespaces?: Namespace['id'][],
 ): Promise<void> => {
   await axios.$delete(`/tasks/${id}`, { params: { namespaces } });
 };
@@ -213,7 +213,7 @@ export const deleteTask = async (
  */
 export const enableTask = async (
   id: Task['id'],
-  namespaces?: Namespace['name'][],
+  namespaces?: Namespace['id'][],
 ): Promise<ApiResponse<FullTask>> => {
   const { content, ...response } = await axios.$put<RawFullTask>(
     `/tasks/${id}/enable`,
@@ -239,7 +239,7 @@ export const enableTask = async (
  */
 export const disableTask = async (
   id: Task['id'],
-  namespaces?: Namespace['name'][],
+  namespaces?: Namespace['id'][],
 ): Promise<ApiResponse<FullTask>> => {
   const { content, ...response } = await axios.$put<RawFullTask>(
     `/tasks/${id}/disable`,

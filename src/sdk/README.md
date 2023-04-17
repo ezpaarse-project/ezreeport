@@ -339,7 +339,7 @@ __Params__:
 
 - `name`: Name of the queue
 - `jobId`: Id of the job
-- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+- `namespaces`: Select which namespaces are concerned by the request. Default to all possible namespaces.
 
 #### retryJob
 
@@ -361,7 +361,7 @@ __Params__:
 
 - `name`: Name of the queue
 - `jobId`: Id of the job
-- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+- `namespaces`: Select which namespaces are concerned by the request. Default to all possible namespaces.
 
 ---
 
@@ -395,7 +395,7 @@ __Params__:
 
 - `taskId`: Id of the task
 - `params`: Other params for overriding default
-- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+- `namespaces`: Select which namespaces are concerned by the request. Default to all possible namespaces.
 
 #### startAndListenGeneration
 
@@ -426,7 +426,7 @@ __Params__:
 
 - `taskId`: Id of the task
 - `params`: Other params for overriding default
-- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+- `namespaces`: Select which namespaces are concerned by the request. Default to all possible namespaces.
 
 __Fires__:
 
@@ -451,7 +451,7 @@ Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename` permission (
 __Params__:
 
 - `pathName`: Path to the file
-- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+- `namespaces`: Select which namespaces are concerned by the request. Default to all possible namespaces.
 - `responseType`: Wanted response type
 
 #### getReportFileByJob
@@ -471,7 +471,7 @@ __Params__:
 
 - `name`: Name of the queue
 - `jobId`: Id of the job
-- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+- `namespaces`: Select which namespaces are concerned by the request. Default to all possible namespaces.
 - `responseType`: Wanted response type
 
 #### getReportDetailByName
@@ -489,7 +489,7 @@ Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename` permission (
 __Params__:
 
 - `pathName`: Path to the file
-- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+- `namespaces`: Select which namespaces are concerned by the request. Default to all possible namespaces.
 - `responseType`: Wanted response type. **If provided with anything but `json` you will have to cast in your type to avoid auto-completion issues.**
 
 #### getReportDetailByJob
@@ -509,7 +509,7 @@ __Params__:
 
 - `name`: Name of the queue
 - `jobId`: Id of the job
-- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+- `namespaces`: Select which namespaces are concerned by the request. Default to all possible namespaces.
 - `responseType`: Wanted response type. **If provided with anything but `json` you will have to cast in your type to avoid auto-completion issues.**
 
 #### getReportDebugByName
@@ -528,7 +528,7 @@ Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename` permission (
 __Params__:
 
 - `pathName`: Path to the file
-- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+- `namespaces`: Select which namespaces are concerned by the request. Default to all possible namespaces.
 - `responseType`: Wanted response type
 
 #### getReportDebugByJob
@@ -549,7 +549,7 @@ __Params__:
 
 - `name`: Name of the queue
 - `jobId`: Id of the job
-- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+- `namespaces`: Select which namespaces are concerned by the request. Default to all possible namespaces.
 - `responseType`: Wanted response type
 
 ---
@@ -602,12 +602,123 @@ Same as in [auth module](#isLogged)
 ### tasks
 
 #### getAllTasks
+
+```ts
+type P = {
+  /**
+   * Previous id
+   */
+  previous?: string,
+  /**
+   * Wanted count of items
+   */
+  count?: number
+}
+
+getAllTasks(paginationOpts: P, namespaces?: string[]): Promise<PaginatedApiResponse<tasks.Task[]>>
+```
+
+Get all available tasks
+
+Needs `namespaces[namespaceId].tasks-get` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `paginationOpts`: Options for pagination
+- `namespaces`: Select which namespaces are concerned by the request. Default to all possible namespaces.
+
 #### getTask
+
+```ts
+getTask(id: string, namespaces?: string[]): Promise<ApiResponse<tasks.Task>>
+```
+
+Get specific task info
+
+Needs `namespaces[namespaceId].tasks-get-task` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `id`: Task's id
+- `namespaces`: Select which namespaces are concerned by the request. Default to all possible namespaces.
+
 #### createTask
-#### updateTask
+
+```ts
+createTask(data: tasks.InputTask, namespaces?: string[]): Promise<ApiResponse<tasks.FullTask>>
+```
+
+Create a new task with a random UUID
+
+Needs `namespaces[namespaceId].tasks-post-task` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `data`: Task's data
+- `namespaces`: Select which namespaces are concerned by the request. Default to all possible namespaces.
+
+#### upsertTask
+
+```ts
+upsertTask(id: string, data: tasks.InputTask, namespaces?: string[]): Promise<ApiResponse<tasks.FullTask>>
+```
+
+Update or create a task
+
+Needs `namespaces[namespaceId].tasks-put-task` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `id`: Task's id
+- `data`: Task's data
+- `namespaces`: Select which namespaces are concerned by the request. Default to all possible namespaces.
+
 #### deleteTask
+
+```ts
+deleteTask(id: string, namespaces?: string[]): Promise<void>
+```
+
+Delete specific task
+
+Needs `namespaces[namespaceId].tasks-delete-task` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `id`: Task's id
+- `namespaces`: Select which namespaces are concerned by the request. Default to all possible namespaces.
+
 #### enableTask
+
+```ts
+enableTask(id: string, namespaces?: string[]): Promise<ApiResponse<FullTask>>
+```
+
+Shorthand to enable a task
+
+Needs `namespaces[namespaceId].tasks-put-task-enable` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `id`: Task's id
+- `namespaces`: Select which namespaces are concerned by the request. Default to all possible namespaces.
+
 #### disableTask
+
+```ts
+disableTask(id: string, namespaces?: string[]): Promise<ApiResponse<FullTask>>
+```
+
+Shorthand to disable a task
+
+Needs `namespaces[namespaceId].tasks-put-task-disable` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `id`: Task's id
+- `namespaces`: Select which namespaces are concerned by the request. Default to all possible namespaces.
+
+---
 
 ### templates
 
