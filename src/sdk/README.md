@@ -358,14 +358,193 @@ __Params__:
 ---
 
 ### reports
+
+Methods to start generation of reports and to get results
+
 #### startGeneration
+
+```ts
+type P = {
+  /**
+   * Override targets of task. Also enable first level of debugging
+   * (disable generation history)
+   */
+  testEmails?: string[],
+  /**
+   * Override period, must match task's recurrence
+   */
+  period?: Period,
+}
+
+startGeneration(taskId: string, params: P, namespaces?: string[]): Promise<ApiResponse<queues.Job>>
+```
+
+Start generation of a report. Returns the job info in order to track progress.
+
+Needs `namespaces[namespaceId].tasks-post-task-run` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `taskId`: Id of the task
+- `params`: Other params for overriding default
+- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+
 #### startAndListenGeneration
+
+```ts
+type P = {
+  /**
+   * Override targets of task. Also enable first level of debugging
+   * (disable generation history)
+   */
+  testEmails?: string[],
+  /**
+   * Override period, must match task's recurrence
+   */
+  period?: Period,
+}
+
+startAndListenGeneration(taskId: string, params: P, namespaces?: string[]): EventfulPromise<ReportResult>
+```
+
+Start generation of a report and track progress. Returns the detail when generation ends as an `EventfulPromise` (a promise that can send events so you can still use async/await while tracking progress).
+
+Needs `namespaces[namespaceId].tasks-post-task-run` & `namespaces[namespaceId].queues-get-queue-jobs-jobId` permissions permissions (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+> **Note**
+> If job's fails it will throws an error but __not if generation fails !__
+
+__Params__:
+
+- `taskId`: Id of the task
+- `params`: Other params for overriding default
+- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+
+__Fires__:
+
+- `started` When generation started. Type: `reports.GenerationStartedEvent`.
+- `progress` When generation started. Job's progress is between 0 and 1. Type: `reports.GenerationStartedEvent`.
+
 #### getReportFileByName
+
+```ts
+// Parameter to give to have...
+type ResultTypes = "arraybuffer" | "blob" | "json" | "text" | "stream"
+// ...matching return type
+type Result = ArrayBuffer | Blob | object | string | Stream
+
+getReportFileByName(pathName: string, namespaces?: string[], responseType: ResultTypes = 'text'): Promise<Result>
+```
+
+Get report main file (the result) by giving the report's name
+
+Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `pathName`: Path to the file
+- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+- `responseType`: Wanted response type
+
 #### getReportFileByJob
+
+```ts
+type ResultTypes = "arraybuffer" | "blob" | "json" | "text" | "stream"
+type Result = ArrayBuffer | Blob | object | string | Stream
+
+getReportFileByJob(queueName: string, jobId: string | number, namespaces?: string[], responseType: Result = 'text'): Promise<Result>
+```
+
+Get report main file (the result) by giving job's info
+
+Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename` & `namespaces[namespaceId].queues-get-queue-jobs-jobId ` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `name`: Name of the queue
+- `jobId`: Id of the job
+- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+- `responseType`: Wanted response type
+
 #### getReportDetailByName
+
+```ts
+type ResultTypes = "arraybuffer" | "blob" | "json" | "text" | "stream"
+
+getReportDetailByName(pathName: string, namespaces?: string[], responseType: ResultTypes = 'json'): Promise<reports.ReportResult>
+```
+
+Get report detail by giving the report's name
+
+Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `pathName`: Path to the file
+- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+- `responseType`: Wanted response type. **If provided with anything but `json` you will have to cast in your type to avoid auto-completion issues.**
+
 #### getReportDetailByJob
+
+```ts
+type ResultTypes = "arraybuffer" | "blob" | "json" | "text" | "stream"
+
+getReportDetailByJob(queueName: string, jobId: string | number, namespaces?: string[], responseType: ResultTypes = 'json'): Promise<reports.ReportResult>
+```
+
+Get report detail by giving job's info
+
+Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename`
+ * & `namespaces[namespaceId].queues-get-queue-jobs-jobId ` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `name`: Name of the queue
+- `jobId`: Id of the job
+- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+- `responseType`: Wanted response type. **If provided with anything but `json` you will have to cast in your type to avoid auto-completion issues.**
+
 #### getReportDebugByName
+
+```ts
+type ResultTypes = "arraybuffer" | "blob" | "json" | "text" | "stream"
+type Result = ArrayBuffer | Blob | object | string | Stream
+
+getReportDebugByName(pathName: string, namespaces?: string[], responseType: ResultTypes = 'text'): Promise<Result>
+```
+
+Get report debug file by giving the report's name
+
+Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `pathName`: Path to the file
+- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+- `responseType`: Wanted response type
+
 #### getReportDebugByJob
+
+```ts
+type ResultTypes = "arraybuffer" | "blob" | "json" | "text" | "stream"
+type Result = ArrayBuffer | Blob | object | string | Stream
+
+getReportDebugByJob(queueName: string, jobId: string | number, namespaces?: string[], responseType: ResultTypes = 'json'): Promise<Result>
+```
+
+Get report debug file by giving job's info
+
+Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename`
+ * & `namespaces[namespaceId].queues-get-queue-jobs-jobId ` permission (see [auth::getCurrentPermissions](#getcurrentpermissions) for more info)
+
+__Params__:
+
+- `name`: Name of the queue
+- `jobId`: Id of the job
+- `namespaces`: Ids of the namespace. Default to all possible namespaces.
+- `responseType`: Wanted response type
+
+---
 
 ### setup
 
