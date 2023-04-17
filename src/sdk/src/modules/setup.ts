@@ -19,7 +19,7 @@ export const unsetURL = () => {
 };
 
 /**
- * Check if API url is setup in axios.
+ * Check if API url is setup in axios
  *
  * @returns If API url is setup
  */

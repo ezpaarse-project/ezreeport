@@ -548,21 +548,48 @@ __Params__:
 
 ### setup
 
+Methods to setup SDK before using it
+
 #### setURL
+
+```ts
+setURL(url: string): void
+```
+
+Set API url to axios
+
+__Params__:
+
+- `url`: The base URL to ezREEPORT API
+
 #### unsetURL
+
+```ts
+unsetURL(): void
+```
+
+Unset API url from axios
+
 #### isURLset
+
+```ts
+isURLset(): void
+```
+Check if API url is setup in axios
 
 #### login
 
-Same as in [auth module](#auth)
+Same as in [auth module](#login)
 
 #### logout
 
-Same as in [auth module](#auth)
+Same as in [auth module](#logout)
 
 #### isLogged
 
-Same as in [auth module](#auth)
+Same as in [auth module](#isLogged)
+
+---
 
 ### tasks
 
