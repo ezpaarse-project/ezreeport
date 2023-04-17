@@ -191,10 +191,58 @@ __Params__:
 ---
 
 ### health
+
+Methods used to monitor health of ezREEPORT.
+
 #### getAllConnectedServices
+
+```ts
+type R = {
+  current: string;
+  currentVersion: string;
+  services: health.PingResult['name'][];
+};
+
+getAllConnectedServices(): Promise<ApiResponse<R>>
+```
+
+Get all services connected to current service.
+
 #### checkAllConnectedService
+
+```ts
+checkAllConnectedService(service: string): Promise<ApiResponse<health.PingResult>>
+```
+
+Check connection for all connected service from current service
+
+__Params__:
+
+- `service`: The name of the service
+
 #### checkConnectedService
+
+```ts
+checkConnectedService(service: string): Promise<ApiResponse<health.PingResult>>
+```
+
+Check connection of a specific service from current service
+
+__Params__:
+
+- `service`: The name of the service
+
 #### checkCurrentService
+
+```ts
+checkCurrentService(): Promise<ApiResponse<health.PingResult>>
+```
+
+Check connection of current service
+
+It's useful when the app will have limited connection, or if you just want the processing time.
+
+---
 
 ### namespaces
 
