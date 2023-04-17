@@ -246,6 +246,10 @@ It's useful when the app will have limited connection, or if you just want the p
 
 ### namespaces
 
+Only used for types.
+
+---
+
 ### queues
 #### getAllQueues
 #### pauseQueue
