@@ -46,6 +46,7 @@ npm run setup
 
 ```bash
 source ezreeport.env.sh
+docker compose -f docker-compose.migrate.yml up -d
 docker compose -f docker-compose.yml up -d
 ```
 
@@ -53,6 +54,7 @@ docker compose -f docker-compose.yml up -d
 
 ```bash
 source ezreeport.env.sh
+docker compose -f docker-compose.migrate.yml up -d
 docker compose -f docker-compose.yml -f docker-compose.debug.yml up -d
 ```
 
