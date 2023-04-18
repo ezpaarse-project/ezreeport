@@ -11,7 +11,7 @@ export NODE_ENV="production"
 # redis service
 export REDIS_HOST="redis"
 export REDIS_PORT=6379
-export REDIS_PASSWORD=""
+export REDIS_PASSWORD="changeme"
 
 # elastic
 export ELASTIC_SCHEME="https"
@@ -27,7 +27,7 @@ export ELASTIC_MAX_TRIES="10"
 # db service
 export DATABASE_PROTOCOL="postgresql"
 export DATABASE_USER="postgres"
-export DATABASE_PASSWORD=""
+export DATABASE_PASSWORD="changeme"
 export DATABASE_HOST="db"
 export DATABASE_PORT=5432
 export DATABASE_DB="postgres"
