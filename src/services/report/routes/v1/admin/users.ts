@@ -8,6 +8,7 @@ import {
   deleteUserByUsername,
   getAllUsers,
   editUserByUsername,
+  editUsers,
   getCountUsers,
   getUserByUsername
 } from '~/models/users';
@@ -56,6 +57,18 @@ const router = CustomRouter('users')
     return {
       code: StatusCodes.CREATED,
       data: await createUser(username, data),
+    };
+  }, requireAPIKey)
+
+  /**
+   * Update users
+   */
+  .createBasicRoute('PUT /', async (req, _res) => {
+    const { users } = req.body;
+
+    return {
+      code: StatusCodes.CREATED,
+      data: await editUsers(users),
     };
   }, requireAPIKey)
 

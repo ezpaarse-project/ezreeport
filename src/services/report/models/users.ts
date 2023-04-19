@@ -217,3 +217,65 @@ export const editUserByUsername = async (
     },
   });
 };
+
+/**
+ * Edit users
+ *
+ * @param users List of user and their config
+ *
+ * @returns List of updated user
+ */
+export const editUsers = async (users: Array<User>): Promise<Array<FullUser> | null> => {
+  const updatedUsers = [];
+
+  const actualUsers = await getAllUsers();
+
+  for (let i = 1; i < users.length; i += 1) {
+    const user = users[i];
+
+    // TODO check username and data
+    const {
+      username,
+      data,
+    } = user;
+
+    if (!isValidUser(data)) {
+      // As validation throws an error, this line shouldn't be called
+      return null;
+    }
+
+    // if no exist, create
+    const userExist = getUserByUsername(user.username);
+    if (!userExist) {
+      const createdUser = createUser(username, data);
+      updatedUsers.push(createdUser);
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    const updatedUser = await prisma.user.update({
+      where: {
+        username,
+      },
+      data,
+      include: {
+        memberships: prismaMembershipSelect,
+      },
+    });
+
+    // TODO filter only updated with change
+    updatedUsers.push(updatedUser);
+  }
+
+  // if user exist but not anymore, delete it
+  for (let i = 1; i < actualUsers.length; i += 1) {
+    const oldUser = users[i];
+
+    const isUserNotExistAnymore = users.find((newUser) => newUser.username === oldUser.username);
+    if (!isUserNotExistAnymore) {
+      // eslint-disable-next-line no-await-in-loop
+      const deletedUser = await deleteUserByUsername(oldUser.username);
+      updatedUsers.push(deletedUser);
+    }
+  }
+  return updatedUsers;
+};
