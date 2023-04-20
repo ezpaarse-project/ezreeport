@@ -1,10 +1,20 @@
 import Joi from 'joi';
+import { isEqual } from 'lodash';
 import prisma from '~/lib/prisma';
 import fetchers from '~/generators/fetchers';
 import type {
-  Namespace, Prisma, Membership, Task
+  Namespace,
+  Prisma,
+  Membership,
+  Task
 } from '~/lib/prisma';
 import { ArgumentError } from '~/types/errors';
+import {
+  membershipSchema,
+  upsertBulkMembershipsByNamespace,
+  deleteBulkMembershipByNamespace
+} from './memberships';
+import { parseBulkResults, type BulkResult } from '~/lib/utils';
 
 type InputNamespace = Pick<Prisma.NamespaceCreateInput, 'name' | 'fetchLogin' | 'fetchOptions' | 'logoId'>;
 
@@ -243,5 +253,176 @@ export const editNamespaceById = (id: Namespace['id'], data: unknown): Promise<F
       },
       tasks: true,
     },
+  });
+};
+
+interface BulkNamespace extends InputNamespace {
+  id: Namespace['id'],
+  memberships?: Omit<Membership, 'namespaceId'>[],
+}
+
+const bulkNamespaceSchema = Joi.array<BulkNamespace[]>().items(
+  namespaceSchema.append({
+    id: Joi.string().required(),
+    memberships: Joi.array().items(
+      membershipSchema.append({
+        username: Joi.string().required(),
+      }),
+    ),
+  }),
+);
+
+/**
+ * Check if input data is many namespaces
+ *
+ * @param data The input data
+ * @returns `true` if valid
+ *
+ * @throws If not valid
+ */
+export const isValidBulkNamespace = (data: unknown): data is BulkNamespace[] => {
+  const validation = bulkNamespaceSchema.validate(data, {});
+  if (validation.error != null) {
+    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
+  }
+  return true;
+};
+
+/**
+ * Checks if 2 namespace are the same
+ *
+ * @param current The current state
+ * @param input The new state
+ *
+ * @returns If there's change between states
+ */
+const hasNamespaceChanged = (current: Namespace, input: InputNamespace): boolean => (
+  input.name !== current.name
+    || input.logoId !== (current.logoId ?? undefined)
+    || !isEqual(input.fetchLogin, current.fetchLogin)
+    || !isEqual(input.fetchOptions, current.fetchOptions)
+);
+
+/**
+ * Update or create a namespace part of bulk
+ *
+ * @param tx The transaction with DB
+ * @param param1 The namespace
+ *
+ * @returns The operation type (created, updated or none) and the result
+ */
+const upsertBulkNamespace = async (
+  tx: Prisma.TransactionClient,
+  { id, memberships: _, ...inputNamespace }: BulkNamespace,
+): Promise<BulkResult<Namespace>> => {
+  const existingNamespace = await tx.namespace.findUnique({ where: { id } });
+
+  if (!existingNamespace) {
+    // If namespace doesn't already exist, create it
+    return {
+      type: 'created',
+      data: await tx.namespace.create({ data: { id, ...inputNamespace } }),
+    };
+  } if (hasNamespaceChanged(existingNamespace, inputNamespace)) {
+    // If namespace already exist and changed, update it
+    return {
+      type: 'updated',
+      data: await tx.namespace.update({
+        where: { id },
+        data: inputNamespace,
+      }),
+    };
+  }
+
+  return { type: 'none' };
+};
+
+/**
+ * Delete namespace (not) part of bulk
+ *
+ * @param tx The transaction with the DB
+ * @param param1 The namespace
+ *
+ * @returns The operation type (created, updated or none) and the result
+ */
+const deleteBulkNamespace = async (
+  tx: Prisma.TransactionClient,
+  { id }: Namespace,
+): Promise<BulkResult<Namespace>> => ({
+  type: 'deleted',
+  data: await tx.namespace.delete({ where: { id } }),
+});
+
+/**
+ * Replace many namespace
+ *
+ * @param data The namespaces with or without memberships
+ *
+ * @returns The results
+ */
+export const replaceManyNamespaces = async (
+  data: BulkNamespace[],
+): Promise<{
+  namespaces: BulkResult<Namespace>[],
+  memberships: BulkResult<Membership>[]
+}> => {
+  const dataIds = data.map(({ id }) => id);
+  const membershipUsernamesPerNamespace = new Map(
+    data.map(
+      ({ id, memberships }) => ([
+        id,
+        (memberships ?? []).map(({ username }) => username),
+      ]),
+    ),
+  );
+
+  const namespacesToDelete = await prisma.namespace.findMany({
+    where: {
+      id: { notIn: dataIds },
+    },
+  });
+
+  return prisma.$transaction(async (tx) => {
+    const namespacesSettled = await Promise.allSettled([
+      ...data.map(async (n) => upsertBulkNamespace(tx, n)),
+
+      ...namespacesToDelete.map((n) => deleteBulkNamespace(tx, n)),
+    ]);
+
+    // Membership changes
+    const membershipPromises: Promise<BulkResult<Membership>>[] = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const { memberships, id: namespaceId } of data) {
+      if (memberships) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const membership of memberships) {
+          membershipPromises.push(
+            upsertBulkMembershipsByNamespace(tx, namespaceId, membership),
+          );
+        }
+
+        // eslint-disable-next-line no-await-in-loop
+        const membershipsToDelete = await tx.membership.findMany({
+          where: {
+            AND: {
+              namespaceId,
+              username: { notIn: membershipUsernamesPerNamespace.get(namespaceId) },
+            },
+          },
+        });
+        // eslint-disable-next-line no-restricted-syntax
+        for (const membership of membershipsToDelete) {
+          membershipPromises.push(
+            deleteBulkMembershipByNamespace(tx, namespaceId, membership),
+          );
+        }
+      }
+    }
+    const membershipsSettled = await Promise.allSettled(membershipPromises);
+
+    return {
+      namespaces: parseBulkResults(namespacesSettled),
+      memberships: parseBulkResults(membershipsSettled),
+    };
   });
 };

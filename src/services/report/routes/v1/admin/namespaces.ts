@@ -9,7 +9,9 @@ import {
   getAllNamespaces,
   editNamespaceById,
   getCountNamespaces,
-  getNamespaceById
+  getNamespaceById,
+  isValidBulkNamespace,
+  replaceManyNamespaces
 } from '~/models/namespaces';
 import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';
 
@@ -60,6 +62,21 @@ const router = CustomRouter('namespaces')
       ),
       code: StatusCodes.CREATED,
     };
+  }, requireAPIKey)
+
+  /**
+   * Replace namespaces and/or memberships
+   */
+  .createBasicRoute('PUT /', (req, _res) => {
+    const data = req.body;
+
+    // Validate body
+    if (!isValidBulkNamespace(data)) {
+      // As validation throws an error, this line shouldn't be called
+      return null;
+    }
+
+    return replaceManyNamespaces(data);
   }, requireAPIKey)
 
   /**
