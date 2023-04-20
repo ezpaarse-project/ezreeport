@@ -5,6 +5,7 @@ import type {
   User, Prisma, Membership, Namespace
 } from '~/lib/prisma';
 import { ArgumentError } from '~/types/errors';
+import { hasMembershipChanged } from '~/models/memberships';
 
 type InputUser = Pick<Prisma.UserCreateInput, 'isAdmin'>;
 export type FullUser = User & {
@@ -237,17 +238,16 @@ export const editUsers = async (users: Array<User>): Promise<Array<FullUser> | n
   const oldUsers = await getAllUsers();
 
   return prisma.$transaction(async (tx) => {
-    for (let i = 1; i < users.length; i += 1) {
-      const user = users[i];
-
+    // eslint-disable-next-line no-restricted-syntax
+    for (const user of users) {
       // TODO check username and data
       const {
         username,
-        data,
+        ...data
       } = user;
 
       if (!isValidUser(data)) {
-      // As validation throws an error, this line shouldn't be called
+        // As validation throws an error, this line shouldn't be called
         return null;
       }
 
@@ -288,7 +288,7 @@ export const editUsers = async (users: Array<User>): Promise<Array<FullUser> | n
     for (const oldUser of oldUsers) {
       const isUserNotExistAnymore = users.find((newUser) => newUser.username === oldUser.username);
       if (!isUserNotExistAnymore) {
-      // eslint-disable-next-line no-await-in-loop
+        // eslint-disable-next-line no-await-in-loop
         const deletedUser = await tx.user.delete({
           where: {
             username: oldUser.username,
@@ -298,6 +298,58 @@ export const editUsers = async (users: Array<User>): Promise<Array<FullUser> | n
         updatedUsers.push(deletedUser);
       }
     }
-    return updatedUsers;
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const { memberships, username } of users) {
+      if (memberships) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const membership of memberships) {
+          // eslint-disable-next-line no-await-in-loop
+          const existingMembership = await tx.membership.findUnique({
+            where: {
+              username_namespaceId: { username, namespaceId: membership.namespace },
+            },
+          });
+
+          if (!existingMembership) {
+            tx.membership.create({
+              data: { namespaceId: membership.id, ...membership },
+            });
+          } else if (hasMembershipChanged(existingMembership, membership)) {
+            // eslint-disable-next-line no-await-in-loop
+            await tx.membership.update({
+              where: {
+                username_namespaceId: {
+                  username, namespaceId: membership.namespaceId,
+                },
+                data: { username, ...membership },
+              },
+            });
+          }
+        }
+
+        const idsOfMemberships = memberships.map((membership) => membership.namespaceId);
+
+        // if membership exist but not anymore, delete it
+        // eslint-disable-next-line no-await-in-loop
+        const membershipsToDelete = await tx.membership.findMany({
+          where: {
+            AND: {
+              username,
+              namespaceId: { notIn: idsOfMemberships },
+            },
+          },
+        });
+        // eslint-disable-next-line no-restricted-syntax
+        for (const membership of membershipsToDelete) {
+          // eslint-disable-next-line no-await-in-loop
+          await tx.membership.delete({
+            where: { username_namespaceId: { username, namespaceId: membership.namespaceId } },
+          });
+        }
+      }
+    }
+
+    return null;
   });
 };

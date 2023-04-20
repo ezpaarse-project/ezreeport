@@ -43,7 +43,7 @@ const isValidMembership = (data: unknown): data is InputMembership => {
  *
  * @returns If there's change between states
  */
-const hasMembershipChanged = (current: Membership, input: Omit<Membership, 'namespaceId'>) => (
+export const hasMembershipChanged = (current: Membership, input: Omit<Membership, 'namespaceId'>) => (
   input.access !== current.access
 );
 
