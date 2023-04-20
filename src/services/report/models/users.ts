@@ -127,6 +127,11 @@ export const getUserByToken = async (
   },
 });
 
+/**
+ * Generate auth token for user
+ *
+ * @returns Auth token
+ */
 const generateToken = async () => new Promise<string>((resolve, reject) => {
   randomBytes(124, (err, buf) => {
     if (err) reject(err);
@@ -229,10 +234,9 @@ export const editUserByUsername = async (
  */
 export const editUsers = async (users: Array<User>): Promise<Array<FullUser> | null> => {
   const updatedUsers = [];
+  const oldUsers = await getAllUsers();
 
   return prisma.$transaction(async (tx) => {
-    const actualUsers = await getAllUsers();
-
     for (let i = 1; i < users.length; i += 1) {
       const user = users[i];
 
@@ -248,27 +252,20 @@ export const editUsers = async (users: Array<User>): Promise<Array<FullUser> | n
       }
 
       // if no exist, create
-
       const userExist = tx.user.findFirst({
         where: {
           username,
-        },
-        include: {
-          memberships: prismaMembershipSelect,
         },
       });
 
       if (!userExist) {
         // eslint-disable-next-line no-await-in-loop
         const token = await generateToken();
-        const createdUser = prisma.user.create({
+        const createdUser = tx.user.create({
           data: {
             ...data,
             username,
             token,
-          },
-          include: {
-            memberships: prismaMembershipSelect,
           },
         });
         // TODO logger
@@ -280,9 +277,6 @@ export const editUsers = async (users: Array<User>): Promise<Array<FullUser> | n
             username,
           },
           data,
-          include: {
-            memberships: prismaMembershipSelect,
-          },
         });
         // TODO logger
         updatedUsers.push(updatedUser);
@@ -290,13 +284,16 @@ export const editUsers = async (users: Array<User>): Promise<Array<FullUser> | n
     }
 
     // if user exist but not anymore, delete it
-    for (let i = 1; i < actualUsers.length; i += 1) {
-      const oldUser = users[i];
-
+    // eslint-disable-next-line no-restricted-syntax
+    for (const oldUser of oldUsers) {
       const isUserNotExistAnymore = users.find((newUser) => newUser.username === oldUser.username);
       if (!isUserNotExistAnymore) {
       // eslint-disable-next-line no-await-in-loop
-        const deletedUser = await deleteUserByUsername(oldUser.username);
+        const deletedUser = await tx.user.delete({
+          where: {
+            username: oldUser.username,
+          },
+        });
         // TODO logger
         updatedUsers.push(deletedUser);
       }
