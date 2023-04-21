@@ -29,7 +29,7 @@ interface FetchOptions {
   aggs?: (ElasticAggregation & { name?: string })[];
 }
 
-const optionScehma = Joi.object<FetchOptions>({
+const optionSchema = Joi.object<FetchOptions>({
   recurrence: Joi.string().valid(
     Recurrence.DAILY,
     Recurrence.WEEKLY,
@@ -62,7 +62,7 @@ const optionScehma = Joi.object<FetchOptions>({
  * @throws If not valid
  */
 const isFetchOptions = (data: unknown): data is FetchOptions => {
-  const validation = optionScehma.validate(data, {});
+  const validation = optionSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Fetch options are not valid: ${validation.error.message}`);
   }
