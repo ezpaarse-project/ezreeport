@@ -3471,6 +3471,168 @@
           }
         },
         "deprecated": true
+      },
+      "put": {
+        "summary": "Replace all users",
+        "operationId": "put-admin-users",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "users": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "created",
+                                  "updated",
+                                  "deleted"
+                                ]
+                              },
+                              "data": {
+                                "$ref": "#/components/schemas/User"
+                              }
+                            }
+                          }
+                        },
+                        "memberships": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "created",
+                                  "updated",
+                                  "deleted"
+                                ]
+                              },
+                              "data": {
+                                "allOf": [
+                                  {
+                                    "$ref": "#/components/schemas/Membership"
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "username": {
+                                        "type": "string"
+                                      },
+                                      "namespaceId": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "description": "Create, update or delete many users.\n\nOnly usable with the API Key provided at server initialization.",
+        "tags": [
+          "admin - users"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NamespaceBody"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "memberships": {
+                          "allOf": [
+                            {
+                              "$ref": "#/components/schemas/MembershipBody"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "username": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "username"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/admin/users/{username}": {
@@ -4157,6 +4319,168 @@
           }
         ],
         "deprecated": true
+      },
+      "put": {
+        "summary": "Replace all namespaces",
+        "operationId": "put-admin-namespaces",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "users": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "created",
+                                  "updated",
+                                  "deleted"
+                                ]
+                              },
+                              "data": {
+                                "$ref": "#/components/schemas/Namespace"
+                              }
+                            }
+                          }
+                        },
+                        "memberships": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "created",
+                                  "updated",
+                                  "deleted"
+                                ]
+                              },
+                              "data": {
+                                "allOf": [
+                                  {
+                                    "$ref": "#/components/schemas/Membership"
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "username": {
+                                        "type": "string"
+                                      },
+                                      "namespaceId": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "description": "Create, update or delete many namespaces.\n\nOnly usable with the API Key provided at server initialization.",
+        "tags": [
+          "admin - namespaces"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NamespaceBody"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "memberships": {
+                          "allOf": [
+                            {
+                              "$ref": "#/components/schemas/MembershipBody"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "namespace": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "namespace"
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/admin/namespaces/{id}": {
