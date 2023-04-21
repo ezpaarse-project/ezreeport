@@ -258,13 +258,13 @@ export const editNamespaceById = (id: Namespace['id'], data: unknown): Promise<F
 
 interface BulkNamespace extends InputNamespace {
   id: Namespace['id'],
-  memberships?: Omit<Membership, 'namespaceId'>[],
+  members?: Omit<Membership, 'namespaceId'>[],
 }
 
 const bulkNamespaceSchema = Joi.array<BulkNamespace[]>().items(
   namespaceSchema.append({
     id: Joi.string().required(),
-    memberships: Joi.array().items(
+    members: Joi.array().items(
       membershipSchema.append({
         username: Joi.string().required(),
       }),
@@ -313,7 +313,7 @@ const hasNamespaceChanged = (current: Namespace, input: InputNamespace): boolean
  */
 const upsertBulkNamespace = async (
   tx: Prisma.TransactionClient,
-  { id, memberships: _, ...inputNamespace }: BulkNamespace,
+  { id, members: _, ...inputNamespace }: BulkNamespace,
 ): Promise<BulkResult<Namespace>> => {
   const existingNamespace = await tx.namespace.findUnique({ where: { id } });
 
@@ -366,19 +366,20 @@ export const replaceManyNamespaces = async (
   namespaces: BulkResult<Namespace>[],
   memberships: BulkResult<Membership>[]
 }> => {
-  const dataIds = data.map(({ id }) => id);
-  const membershipUsernamesPerNamespace = new Map(
-    data.map(
-      ({ id, memberships }) => ([
+  const dataWithMembers = data.filter(({ members }) => !!members);
+  // Compute which members we will not delete for each namespace
+  const membersUsernamesPerNamespace = new Map<string, string[]>(
+    dataWithMembers.map(
+      ({ id, members }) => ([
         id,
-        (memberships ?? []).map(({ username }) => username),
+        (members ?? []).map(({ username }) => username),
       ]),
     ),
   );
 
   const namespacesToDelete = await prisma.namespace.findMany({
     where: {
-      id: { notIn: dataIds },
+      id: { notIn: data.map(({ id }) => id) },
     },
   });
 
@@ -389,36 +390,34 @@ export const replaceManyNamespaces = async (
       ...namespacesToDelete.map((n) => deleteBulkNamespace(tx, n)),
     ]);
 
-    // Membership changes
-    const membershipPromises: Promise<BulkResult<Membership>>[] = [];
+    // Members changes
+    const membersPromises: Promise<BulkResult<Membership>>[] = [];
     // eslint-disable-next-line no-restricted-syntax
-    for (const { memberships, id: namespaceId } of data) {
-      if (memberships) {
-        // eslint-disable-next-line no-restricted-syntax
-        for (const membership of memberships) {
-          membershipPromises.push(
-            upsertBulkMembershipsByNamespace(tx, namespaceId, membership),
-          );
-        }
+    for (const { members, id: namespaceId } of dataWithMembers) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const membership of (members ?? [])) {
+        membersPromises.push(
+          upsertBulkMembershipsByNamespace(tx, namespaceId, membership),
+        );
+      }
 
-        // eslint-disable-next-line no-await-in-loop
-        const membershipsToDelete = await tx.membership.findMany({
-          where: {
-            AND: {
-              namespaceId,
-              username: { notIn: membershipUsernamesPerNamespace.get(namespaceId) },
-            },
+      // eslint-disable-next-line no-await-in-loop
+      const membershipsToDelete = await tx.membership.findMany({
+        where: {
+          AND: {
+            namespaceId,
+            username: { notIn: membersUsernamesPerNamespace.get(namespaceId) },
           },
-        });
+        },
+      });
         // eslint-disable-next-line no-restricted-syntax
-        for (const membership of membershipsToDelete) {
-          membershipPromises.push(
-            deleteBulkMembershipByNamespace(tx, namespaceId, membership),
-          );
-        }
+      for (const membership of membershipsToDelete) {
+        membersPromises.push(
+          deleteBulkMembershipByNamespace(tx, namespaceId, membership),
+        );
       }
     }
-    const membershipsSettled = await Promise.allSettled(membershipPromises);
+    const membershipsSettled = await Promise.allSettled(membersPromises);
 
     return {
       namespaces: parseBulkResults(namespacesSettled),
