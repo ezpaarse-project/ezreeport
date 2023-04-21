@@ -43,7 +43,7 @@ const isValidMembership = (data: unknown): data is InputMembership => {
  *
  * @returns If there's change between states
  */
-export const hasMembershipChanged = (current: Membership, input: Omit<Membership, 'namespaceId'>) => (
+const hasMembershipChanged = (current: Membership, input: Omit<Membership, 'namespaceId' | 'username'>) => (
   input.access !== current.access
 );
 
@@ -110,18 +110,18 @@ export const removeUserFromNamespace = async (username: User['username'], namesp
 * Update or create a memberships part of bulk of namespace
 *
 * @param tx The transaction with the DB
-* @param namespaceId Namespace id
+* @param namespaceId Namespace id linked to the membership
+* @param username The username linked to the membership
 * @param membership The membership
 *
 * @returns  The operation type (created, updated or none) and the result
 */
-export const upsertBulkMembershipsByNamespace = async (
+export const upsertBulkMembership = async (
   tx: Prisma.TransactionClient,
   namespaceId: string,
-  membership: Omit<Membership, 'namespaceId'>,
+  username: string,
+  membership: Omit<Membership, 'namespaceId' | 'username'>,
 ): Promise<BulkResult<Membership>> => {
-  const { username } = membership;
-
   const existingMembership = await tx.membership.findUnique({
     where: {
       username_namespaceId: { username, namespaceId },
@@ -132,7 +132,7 @@ export const upsertBulkMembershipsByNamespace = async (
     // If namespace doesn't already exist, create it
     return {
       type: 'created',
-      data: await tx.membership.create({ data: { namespaceId, ...membership } }),
+      data: await tx.membership.create({ data: { ...membership, username, namespaceId } }),
     };
   } if (hasMembershipChanged(existingMembership, membership)) {
     // If namespace already exist, update it
@@ -140,9 +140,9 @@ export const upsertBulkMembershipsByNamespace = async (
       type: 'updated',
       data: await tx.membership.update({
         where: {
-          username_namespaceId: { username: membership.username, namespaceId },
+          username_namespaceId: { username, namespaceId },
         },
-        data: { namespaceId, ...membership },
+        data: { ...membership, username, namespaceId },
       }),
     };
   }
@@ -154,15 +154,15 @@ export const upsertBulkMembershipsByNamespace = async (
 * Delete membership (not) part of bulk of namespaces
 *
 * @param tx The transaction with the DB
-* @param namespaceId Namespace id
-* @param param1 The membership
+* @param namespaceId Namespace id linked to the membership
+* @param username The username linked to the membership
 *
 * @returns The operation type (created, updated or none) and the result
 */
-export const deleteBulkMembershipByNamespace = async (
+export const deleteBulkMembership = async (
   tx: Prisma.TransactionClient,
   namespaceId: string,
-  { username }: Membership,
+  username: string,
 ): Promise<BulkResult<Membership>> => ({
   type: 'deleted',
   data: await tx.membership.delete({

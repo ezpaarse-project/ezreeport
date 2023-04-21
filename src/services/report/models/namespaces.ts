@@ -11,8 +11,8 @@ import type {
 import { ArgumentError } from '~/types/errors';
 import {
   membershipSchema,
-  upsertBulkMembershipsByNamespace,
-  deleteBulkMembershipByNamespace
+  upsertBulkMembership,
+  deleteBulkMembership
 } from './memberships';
 import { parseBulkResults, type BulkResult } from '~/lib/utils';
 
@@ -402,12 +402,12 @@ export const replaceManyNamespaces = async (
       // eslint-disable-next-line no-restricted-syntax
       for (const membership of (members ?? [])) {
         membersPromises.push(
-          upsertBulkMembershipsByNamespace(tx, namespaceId, membership),
+          upsertBulkMembership(tx, namespaceId, membership.username, membership),
         );
       }
 
       // eslint-disable-next-line no-await-in-loop
-      const membershipsToDelete = await tx.membership.findMany({
+      const membersToDelete = await tx.membership.findMany({
         where: {
           AND: {
             namespaceId,
@@ -415,12 +415,9 @@ export const replaceManyNamespaces = async (
           },
         },
       });
-        // eslint-disable-next-line no-restricted-syntax
-      for (const membership of membershipsToDelete) {
-        membersPromises.push(
-          deleteBulkMembershipByNamespace(tx, namespaceId, membership),
-        );
-      }
+      membersPromises.push(
+        ...membersToDelete.map((m) => deleteBulkMembership(tx, namespaceId, m.username)),
+      );
     }
     const membershipsSettled = await Promise.allSettled(membersPromises);
 

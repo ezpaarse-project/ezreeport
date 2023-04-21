@@ -5,7 +5,7 @@ import type {
   User, Prisma, Membership, Namespace
 } from '~/lib/prisma';
 import { ArgumentError } from '~/types/errors';
-import { hasMembershipChanged } from '~/models/memberships';
+import { upsertBulkMembership, deleteBulkMembership } from '~/models/memberships';
 
 type InputUser = Pick<Prisma.UserCreateInput, 'isAdmin'>;
 export type FullUser = User & {
@@ -305,27 +305,7 @@ export const editUsers = async (users: Array<User>): Promise<Array<FullUser> | n
         // eslint-disable-next-line no-restricted-syntax
         for (const membership of memberships) {
           // eslint-disable-next-line no-await-in-loop
-          const existingMembership = await tx.membership.findUnique({
-            where: {
-              username_namespaceId: { username, namespaceId: membership.namespace },
-            },
-          });
-
-          if (!existingMembership) {
-            tx.membership.create({
-              data: { namespaceId: membership.id, ...membership },
-            });
-          } else if (hasMembershipChanged(existingMembership, membership)) {
-            // eslint-disable-next-line no-await-in-loop
-            await tx.membership.update({
-              where: {
-                username_namespaceId: {
-                  username, namespaceId: membership.namespaceId,
-                },
-                data: { username, ...membership },
-              },
-            });
-          }
+          await upsertBulkMembership(tx, membership.namespace, username, membership);
         }
 
         const idsOfMemberships = memberships.map((membership) => membership.namespaceId);
@@ -343,9 +323,7 @@ export const editUsers = async (users: Array<User>): Promise<Array<FullUser> | n
         // eslint-disable-next-line no-restricted-syntax
         for (const membership of membershipsToDelete) {
           // eslint-disable-next-line no-await-in-loop
-          await tx.membership.delete({
-            where: { username_namespaceId: { username, namespaceId: membership.namespaceId } },
-          });
+          await deleteBulkMembership(tx, membership.namespaceId, username);
         }
       }
     }
