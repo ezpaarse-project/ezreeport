@@ -28,7 +28,12 @@ interface NamespaceOptions {
     'elastic'?: { username: string }
   },
   fetchOptions: {
-    'elastic'?: { indexPrefix?: string }
+    'elastic'?: {
+      /**
+       * @deprecated Use `index` in tasks instead
+       */
+      indexPrefix?: string
+    }
   },
 }
 

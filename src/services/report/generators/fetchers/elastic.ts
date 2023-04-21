@@ -15,8 +15,15 @@ interface FetchOptions {
   recurrence: Recurrence,
   period: Interval,
   filters?: ElasticFilters,
-  indexPrefix: string,
-  indexSuffix: string,
+  /**
+   * @deprecated Not used anymore
+   */
+  indexPrefix?: string,
+  /**
+   * @deprecated Replaced by `index`
+   */
+  indexSuffix?: string,
+  index?: string,
   auth: { username: string },
   fetchCount?: string,
   aggs?: (ElasticAggregation & { name?: string })[];
@@ -36,8 +43,9 @@ const optionScehma = Joi.object<FetchOptions>({
     end: Joi.date().required(),
   }).required(),
   filters: Joi.object(),
-  indexPrefix: Joi.string().required(),
-  indexSuffix: Joi.string().required(),
+  indexPrefix: Joi.string(), // @deprecated Use `index` instead
+  indexSuffix: Joi.string(), // @deprecated Use `index` instead
+  index: Joi.string(),
   auth: Joi.object({
     username: Joi.string().required(),
   }).required(),
@@ -70,9 +78,13 @@ export default async (
     // As validation throws an error, this line shouldn't be called
     return [];
   }
+  const index = (options.index ?? `${options.indexPrefix}${options.indexSuffix}`) || null;
+  if (!index) {
+    throw new ArgumentError('You must precise an index before trying to fetch data from elastic');
+  }
 
   const baseOpts: ElasticTypes.SearchRequest = {
-    index: options.indexPrefix + options.indexSuffix,
+    index,
     body: {
       query: {
         bool: {
