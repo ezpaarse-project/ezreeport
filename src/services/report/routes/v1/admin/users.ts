@@ -8,9 +8,10 @@ import {
   deleteUserByUsername,
   getAllUsers,
   editUserByUsername,
-  editUsers,
+  replaceManyUsers,
   getCountUsers,
-  getUserByUsername
+  getUserByUsername,
+  isValidBulkUser
 } from '~/models/users';
 import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';
 
@@ -64,12 +65,13 @@ const router = CustomRouter('users')
    * Update users
    */
   .createBasicRoute('PUT /', async (req, _res) => {
-    const { users } = req.body;
+    // Validate body
+    if (!isValidBulkUser(req.body)) {
+      // As validation throws an error, this line shouldn't be called
+      return null;
+    }
 
-    return {
-      code: StatusCodes.CREATED,
-      data: await editUsers(users),
-    };
+    return replaceManyUsers(req.body);
   }, requireAPIKey)
 
   /**

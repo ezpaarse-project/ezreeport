@@ -68,15 +68,13 @@ const router = CustomRouter('namespaces')
    * Replace namespaces and/or memberships
    */
   .createBasicRoute('PUT /', (req, _res) => {
-    const data = req.body;
-
     // Validate body
-    if (!isValidBulkNamespace(data)) {
+    if (!isValidBulkNamespace(req.body)) {
       // As validation throws an error, this line shouldn't be called
       return null;
     }
 
-    return replaceManyNamespaces(data);
+    return replaceManyNamespaces(req.body);
   }, requireAPIKey)
 
   /**

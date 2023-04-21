@@ -5,7 +5,8 @@ import type {
   User, Prisma, Membership, Namespace
 } from '~/lib/prisma';
 import { ArgumentError } from '~/types/errors';
-import { upsertBulkMembership, deleteBulkMembership } from '~/models/memberships';
+import { upsertBulkMembership, deleteBulkMembership, membershipSchema } from '~/models/memberships';
+import { BulkResult, parseBulkResults } from '~/lib/utils';
 
 type InputUser = Pick<Prisma.UserCreateInput, 'isAdmin'>;
 
@@ -236,6 +237,99 @@ interface BulkUser extends InputUser {
   memberships?: BulkUserMembership[],
 }
 
+const bulkUserSchema = Joi.array<BulkUser[]>().items(
+  userSchema.append({
+    username: Joi.string().required(),
+    memberships: Joi.array().items(
+      membershipSchema.append({
+        namespace: Joi.string().required(),
+      }),
+    ),
+  }),
+);
+
+/**
+ * Check if input data is many users
+ *
+ * @param data The input data
+ * @returns `true` if valid
+ *
+ * @throws If not valid
+ */
+export const isValidBulkUser = (data: unknown): data is BulkUser[] => {
+  const validation = bulkUserSchema.validate(data, {});
+  if (validation.error != null) {
+    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
+  }
+  return true;
+};
+
+/**
+ * Checks if 2 users are the same
+ *
+ * @param current The current state
+ * @param input The new state
+ *
+ * @returns If there's change between states
+ */
+const hasUserChanged = (current: User, input: InputUser): boolean => (
+  input.isAdmin !== current.isAdmin
+);
+
+/**
+ * Update or create a user part of bulk
+ *
+ * @param tx The transaction with DB
+ * @param param1 The user
+ *
+ * @returns The operation type (created, updated or none) and the result
+ */
+const upsertBulkUser = async (
+  tx: Prisma.TransactionClient,
+  { username, memberships: _, ...inputUser }: BulkUser,
+): Promise<BulkResult<User>> => {
+  const existingUser = await tx.user.findUnique({ where: { username } });
+
+  if (!existingUser) {
+    // TODO: logger
+    const token = await generateToken();
+    // If user doesn't already exist, create it
+    return {
+      type: 'created',
+      data: await tx.user.create({ data: { ...inputUser, username, token } }),
+    };
+  } if (hasUserChanged(existingUser, inputUser)) {
+    // TODO: logger
+    // If user already exist and changed, update it
+    return {
+      type: 'updated',
+      data: await tx.user.update({
+        where: { username },
+        data: inputUser,
+      }),
+    };
+  }
+
+  return { type: 'none' };
+};
+
+/**
+ * Delete user (not) part of bulk
+ *
+ * @param tx The transaction with the DB
+ * @param param1 The user
+ *
+ * @returns The operation type (created, updated or none) and the result
+ */
+const deleteBulkUser = async (
+  tx: Prisma.TransactionClient,
+  { username }: User,
+): Promise<BulkResult<User>> => ({
+  // TODO: logger
+  type: 'deleted',
+  data: await tx.user.delete({ where: { username } }),
+});
+
 /**
  * Edit users
  *
@@ -243,103 +337,65 @@ interface BulkUser extends InputUser {
  *
  * @returns List of updated user
  */
-export const editUsers = async (users: BulkUser[]): Promise<Array<FullUser> | null> => {
-  const updatedUsers = [];
-  const oldUsers = await getAllUsers();
+export const replaceManyUsers = async (
+  data: BulkUser[],
+): Promise<{
+  users: BulkResult<User>[],
+  memberships: BulkResult<Membership>[]
+}> => {
+  const dataWithMemberships = data.filter(({ memberships }) => !!memberships);
+  // Compute which memberships we will not delete for each user
+  const membershipsIdPerUser = new Map<string, string[]>(
+    dataWithMemberships.map(
+      ({ username, memberships }) => ([
+        username,
+        (memberships ?? []).map(({ namespace }) => namespace),
+      ]),
+    ),
+  );
+
+  const usersToDelete = await prisma.user.findMany({
+    where: {
+      username: { notIn: data.map(({ username }) => username) },
+    },
+  });
 
   return prisma.$transaction(async (tx) => {
-    // eslint-disable-next-line no-restricted-syntax
-    for (const user of users) {
-      const {
-        username,
-        // eslint-disable-next-line max-len
-        // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
-        memberships: _,
-        ...data
-      } = user;
+    const usersSettled = await Promise.allSettled([
+      ...data.map((u) => upsertBulkUser(tx, u)),
 
-      if (!isValidUser(data)) {
-        // As validation throws an error, this line shouldn't be called
-        return null;
+      ...usersToDelete.map((u) => deleteBulkUser(tx, u)),
+    ]);
+
+    const membershipsPromises: Promise<BulkResult<Membership>>[] = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const { username, memberships } of dataWithMemberships) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const membership of (memberships ?? [])) {
+        const { namespace, ...d } = membership;
+        membershipsPromises.push(
+          upsertBulkMembership(tx, namespace, username, d),
+        );
       }
 
-      // if no exist, create
-      const userExist = tx.user.findFirst({
+      // eslint-disable-next-line no-await-in-loop
+      const membershipsToDelete = await tx.membership.findMany({
         where: {
-          username,
+          AND: {
+            namespaceId: { notIn: membershipsIdPerUser.get(username) },
+            username,
+          },
         },
       });
-
-      if (!userExist) {
-        // eslint-disable-next-line no-await-in-loop
-        const token = await generateToken();
-        const createdUser = tx.user.create({
-          data: {
-            ...data,
-            username,
-            token,
-          },
-        });
-        // TODO logger
-        updatedUsers.push(createdUser);
-      } else {
-        // eslint-disable-next-line no-await-in-loop
-        const updatedUser = await tx.user.update({
-          where: {
-            username,
-          },
-          data,
-        });
-        // TODO logger
-        updatedUsers.push(updatedUser);
-      }
+      membershipsPromises.push(
+        ...membershipsToDelete.map((m) => deleteBulkMembership(tx, m.namespaceId, username)),
+      );
     }
+    const membershipsSettled = await Promise.allSettled(membershipsPromises);
 
-    // if user exist but not anymore, delete it
-    // eslint-disable-next-line no-restricted-syntax
-    for (const oldUser of oldUsers) {
-      const isUserNotExistAnymore = users.find((newUser) => newUser.username === oldUser.username);
-      if (!isUserNotExistAnymore) {
-        // eslint-disable-next-line no-await-in-loop
-        const deletedUser = await tx.user.delete({
-          where: {
-            username: oldUser.username,
-          },
-        });
-        // TODO logger
-        updatedUsers.push(deletedUser);
-      }
-    }
-
-    // eslint-disable-next-line no-restricted-syntax
-    for (const { memberships, username } of users) {
-      if (memberships) {
-        // eslint-disable-next-line no-restricted-syntax
-        for (const membership of memberships) {
-          // eslint-disable-next-line no-await-in-loop
-          await upsertBulkMembership(tx, membership.namespace, username, membership);
-        }
-
-        const idsOfMemberships = memberships.map((membership) => membership.namespace);
-
-        // if membership exist but not anymore, delete it
-        // eslint-disable-next-line no-await-in-loop
-        const membershipsToDelete = await tx.membership.findMany({
-          where: {
-            AND: {
-              username,
-              namespaceId: { notIn: idsOfMemberships },
-            },
-          },
-        });
-        // eslint-disable-next-line no-restricted-syntax
-        for (const membership of membershipsToDelete) {
-          // eslint-disable-next-line no-await-in-loop
-          await deleteBulkMembership(tx, membership.namespaceId, username);
-        }
-      }
-    }
-
-    return null;
+    return {
+      users: parseBulkResults(usersSettled),
+      memberships: parseBulkResults(membershipsSettled),
+    };
   });
 };

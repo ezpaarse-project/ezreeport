@@ -326,7 +326,7 @@ const upsertBulkNamespace = async (
     // If namespace doesn't already exist, create it
     return {
       type: 'created',
-      data: await tx.namespace.create({ data: { id, ...inputNamespace } }),
+      data: await tx.namespace.create({ data: { ...inputNamespace, id } }),
     };
   } if (hasNamespaceChanged(existingNamespace, inputNamespace)) {
     // If namespace already exist and changed, update it
@@ -361,7 +361,7 @@ const deleteBulkNamespace = async (
 /**
  * Replace many namespace
  *
- * @param data The namespaces with or without memberships
+ * @param data The namespaces with or without members
  *
  * @returns The results
  */
@@ -369,7 +369,7 @@ export const replaceManyNamespaces = async (
   data: BulkNamespace[],
 ): Promise<{
   namespaces: BulkResult<Namespace>[],
-  memberships: BulkResult<Membership>[]
+  members: BulkResult<Membership>[]
 }> => {
   const dataWithMembers = data.filter(({ members }) => !!members);
   // Compute which members we will not delete for each namespace
@@ -400,9 +400,9 @@ export const replaceManyNamespaces = async (
     // eslint-disable-next-line no-restricted-syntax
     for (const { members, id: namespaceId } of dataWithMembers) {
       // eslint-disable-next-line no-restricted-syntax
-      for (const membership of (members ?? [])) {
+      for (const member of (members ?? [])) {
         membersPromises.push(
-          upsertBulkMembership(tx, namespaceId, membership.username, membership),
+          upsertBulkMembership(tx, namespaceId, member.username, member),
         );
       }
 
@@ -419,11 +419,11 @@ export const replaceManyNamespaces = async (
         ...membersToDelete.map((m) => deleteBulkMembership(tx, namespaceId, m.username)),
       );
     }
-    const membershipsSettled = await Promise.allSettled(membersPromises);
+    const membersSettled = await Promise.allSettled(membersPromises);
 
     return {
       namespaces: parseBulkResults(namespacesSettled),
-      memberships: parseBulkResults(membershipsSettled),
+      members: parseBulkResults(membersSettled),
     };
   });
 };
