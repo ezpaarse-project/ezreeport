@@ -8,6 +8,7 @@ import { ArgumentError } from '~/types/errors';
 import { upsertBulkMembership, deleteBulkMembership } from '~/models/memberships';
 
 type InputUser = Pick<Prisma.UserCreateInput, 'isAdmin'>;
+
 export type FullUser = User & {
   memberships: (
     Pick<Membership, 'access' | 'createdAt' | 'updatedAt'>
@@ -226,6 +227,15 @@ export const editUserByUsername = async (
   });
 };
 
+interface BulkUserMembership extends Omit<Membership, 'username' | 'namespaceId' | 'createdAt' | 'updatedAt'> {
+  namespace: Membership['namespaceId']
+}
+
+interface BulkUser extends InputUser {
+  username: User['username'],
+  memberships?: BulkUserMembership[],
+}
+
 /**
  * Edit users
  *
@@ -233,16 +243,18 @@ export const editUserByUsername = async (
  *
  * @returns List of updated user
  */
-export const editUsers = async (users: Array<User>): Promise<Array<FullUser> | null> => {
+export const editUsers = async (users: BulkUser[]): Promise<Array<FullUser> | null> => {
   const updatedUsers = [];
   const oldUsers = await getAllUsers();
 
   return prisma.$transaction(async (tx) => {
     // eslint-disable-next-line no-restricted-syntax
     for (const user of users) {
-      // TODO check username and data
       const {
         username,
+        // eslint-disable-next-line max-len
+        // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
+        memberships: _,
         ...data
       } = user;
 
@@ -308,7 +320,7 @@ export const editUsers = async (users: Array<User>): Promise<Array<FullUser> | n
           await upsertBulkMembership(tx, membership.namespace, username, membership);
         }
 
-        const idsOfMemberships = memberships.map((membership) => membership.namespaceId);
+        const idsOfMemberships = memberships.map((membership) => membership.namespace);
 
         // if membership exist but not anymore, delete it
         // eslint-disable-next-line no-await-in-loop

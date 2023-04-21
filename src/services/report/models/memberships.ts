@@ -43,7 +43,7 @@ const isValidMembership = (data: unknown): data is InputMembership => {
  *
  * @returns If there's change between states
  */
-const hasMembershipChanged = (current: Membership, input: Omit<Membership, 'namespaceId' | 'username'>) => (
+const hasMembershipChanged = (current: Membership, input: Omit<Membership, 'namespaceId' | 'username' | 'updatedAt' | 'createdAt'>) => (
   input.access !== current.access
 );
 
@@ -120,7 +120,7 @@ export const upsertBulkMembership = async (
   tx: Prisma.TransactionClient,
   namespaceId: string,
   username: string,
-  membership: Omit<Membership, 'namespaceId' | 'username'>,
+  membership: Omit<Membership, 'namespaceId' | 'username' | 'updatedAt' | 'createdAt'>,
 ): Promise<BulkResult<Membership>> => {
   const existingMembership = await tx.membership.findUnique({
     where: {
