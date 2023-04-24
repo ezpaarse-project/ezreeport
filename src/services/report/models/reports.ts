@@ -310,7 +310,7 @@ export const generateReport = async (
       'utf-8',
     );
     result.detail.files.debug = `${namepath}.deb.json`;
-    logger.verbose(`[gen] Template writed to "${namepath}.deb.json"`);
+    logger.verbose(`[gen] Template wrote to "${namepath}.deb.json"`);
 
     result = merge<ReportResult, DeepPartial<ReportResult>>(
       result,
@@ -399,6 +399,6 @@ export const generateReport = async (
     ),
     'utf-8',
   );
-  logger.verbose(`[gen] Detail writed to "${namepath}.det.json"`);
+  logger.verbose(`[gen] Detail wrote to "${namepath}.det.json"`);
   return result;
 };
