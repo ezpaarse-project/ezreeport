@@ -1,3 +1,10 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.1...@ezpaarse-project/ezreeport-vue@1.0.0-beta.2) (2023-04-24)
+
+
+### Bug Fixes
+
+* **vue:** better style for scss [skip ci] ([0d1f6ac](https://github.com/ezpaarse-project/ezreeport/commit/0d1f6ac46641fa743a435303a0df04e2024a7793))
+
 # @ezpaarse-project/ezreeport-vue 1.0.0-beta.1 (2023-04-24)
 
 
