@@ -1,3 +1,10 @@
+# ezreeport-report [1.0.0-beta.4](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.3...ezreeport-report@1.0.0-beta.4) (2023-04-24)
+
+
+### Features
+
+* **report:** 500 errors are now logged as app ([d49f463](https://github.com/ezpaarse-project/ezreeport/commit/d49f4636f94fec17bb3d7dd3cec2a5a12ece0a2e))
+
 # ezreeport-report [1.0.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.2...ezreeport-report@1.0.0-beta.3) (2023-04-24)
 
 
