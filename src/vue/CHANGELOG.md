@@ -150,11 +150,3 @@
 ### Reverts
 
 * **vue:** removed open file in new tab ([0f6028b](https://github.com/ezpaarse-project/ezreeport/commit/0f6028b63361ab61dae79993ff4c23b27231769a))
-
-
-
-
-
-### Dependencies
-
-* **ezreeport-sdk-js:** upgraded to 1.0.0-beta.3
