@@ -1,3 +1,10 @@
+# ezreeport-mail [1.0.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.0.0-beta.2...ezreeport-mail@1.0.0-beta.3) (2023-04-24)
+
+
+### Bug Fixes
+
+* **report:** fixed logs not writing in docker ([42cc9c4](https://github.com/ezpaarse-project/ezreeport/commit/42cc9c4e98bc9b666856d7962ee8319d8b398ad0))
+
 # ezreeport-mail [1.0.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.0.0-beta.1...ezreeport-mail@1.0.0-beta.2) (2023-04-04)
 
 
