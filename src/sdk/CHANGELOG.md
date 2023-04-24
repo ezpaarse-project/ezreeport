@@ -1,3 +1,18 @@
+# ezreeport-sdk-js [1.0.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-sdk-js@1.0.0-beta.2...ezreeport-sdk-js@1.0.0-beta.3) (2023-04-24)
+
+
+### Bug Fixes
+
+* **sdk:** fixed export of crons methods ([46d1dbc](https://github.com/ezpaarse-project/ezreeport/commit/46d1dbc081a1c2206c2a63737088c4627990f7ca))
+* **sdk:** fixed export of reccurence ([7d88766](https://github.com/ezpaarse-project/ezreeport/commit/7d8876676256de55766b4724c57c5c9b27effe5e))
+
+
+### Features
+
+* **sdk:** added support for tags in template ([d9285b0](https://github.com/ezpaarse-project/ezreeport/commit/d9285b083c426b96fcc636cb0bf4ae7a0026dd99))
+* **sdk:** delete no longer returns something ([743308f](https://github.com/ezpaarse-project/ezreeport/commit/743308f52e75ad329fd067c9282bbb80dbbcb42a))
+* **sdk:** following reporting api changes ([4a52e7c](https://github.com/ezpaarse-project/ezreeport/commit/4a52e7c2a5ffd83f3ee2d471484d4b49115adcbb))
+
 # ezreeport-sdk-js [1.0.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-sdk-js@1.0.0-beta.1...ezreeport-sdk-js@1.0.0-beta.2) (2023-04-04)
 
 
