@@ -523,7 +523,10 @@
                       "namespace": {
                         "type": "string"
                       }
-                    }
+                    },
+                    "required": [
+                      "namespace"
+                    ]
                   }
                 ]
               }
@@ -2458,7 +2461,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/TemplateBody"
+                    "$ref": "#/components/schemas/TemplateFull"
                   },
                   {
                     "type": "object",
@@ -2571,7 +2574,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TemplateBody"
+                "$ref": "#/components/schemas/TemplateFull"
               }
             }
           }
@@ -2694,7 +2697,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TemplateBody"
+                "$ref": "#/components/schemas/TemplateFull"
               }
             }
           }
@@ -3455,7 +3458,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/UserBody"
+                    "$ref": "#/components/schemas/User"
                   },
                   {
                     "type": "object",
@@ -3584,7 +3587,7 @@
             "API Key": []
           }
         ],
-        "description": "Create, update or delete many users.\n\nOnly usable with the API Key provided at server initialization.",
+        "description": "Create, update or delete many users.\n\nIf you provide no `memberships`, it will keep current ones. If you provide empty `memberships`, it will remove all current memberships.\n\nWhen creating a membership, **user and namespace must exist**, so you may want to create namespaces first (without `members`)\n\nOnly usable with the API Key provided at server initialization.",
         "tags": [
           "admin - users"
         ],
@@ -3596,35 +3599,35 @@
                 "items": {
                   "allOf": [
                     {
-                      "$ref": "#/components/schemas/NamespaceBody"
+                      "$ref": "#/components/schemas/User"
                     },
                     {
                       "type": "object",
                       "properties": {
-                        "id": {
+                        "username": {
                           "type": "string"
                         },
                         "memberships": {
-                          "allOf": [
-                            {
-                              "$ref": "#/components/schemas/MembershipBody"
-                            },
-                            {
-                              "type": "object",
-                              "properties": {
-                                "username": {
-                                  "type": "string"
-                                }
+                          "type": "array",
+                          "items": {
+                            "allOf": [
+                              {
+                                "$ref": "#/components/schemas/Membership"
                               },
-                              "required": [
-                                "username"
-                              ]
-                            }
-                          ]
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "namespace": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            ]
+                          }
                         }
                       },
                       "required": [
-                        "id"
+                        "username"
                       ]
                     }
                   ]
@@ -3792,7 +3795,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UserBody"
+                "$ref": "#/components/schemas/User"
               }
             }
           }
@@ -3913,7 +3916,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/MembershipBody"
+                    "$ref": "#/components/schemas/Membership"
                   },
                   {
                     "type": "object",
@@ -4030,7 +4033,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/MembershipBody"
+                "$ref": "#/components/schemas/Membership"
               }
             }
           }
@@ -4354,7 +4357,7 @@
                     "content": {
                       "type": "object",
                       "properties": {
-                        "users": {
+                        "namespaces": {
                           "type": "array",
                           "items": {
                             "type": "object",
@@ -4373,7 +4376,7 @@
                             }
                           }
                         },
-                        "memberships": {
+                        "members": {
                           "type": "array",
                           "items": {
                             "type": "object",
@@ -4432,7 +4435,7 @@
             "API Key": []
           }
         ],
-        "description": "Create, update or delete many namespaces.\n\nOnly usable with the API Key provided at server initialization.",
+        "description": "Create, update or delete many namespaces.\n\nIf you provide no `members`, it will keep current ones. If you provide empty `members`, it will remove all current memberships.\n\nWhen creating a membership, **user and namespace must exist**, so you may want to create users first (without `memberships`)\n\nOnly usable with the API Key provided at server initialization.",
         "tags": [
           "admin - namespaces"
         ],
@@ -4452,23 +4455,23 @@
                         "id": {
                           "type": "string"
                         },
-                        "memberships": {
-                          "allOf": [
-                            {
-                              "$ref": "#/components/schemas/MembershipBody"
-                            },
-                            {
-                              "type": "object",
-                              "properties": {
-                                "namespace": {
-                                  "type": "string"
-                                }
+                        "members": {
+                          "type": "array",
+                          "items": {
+                            "allOf": [
+                              {
+                                "$ref": "#/components/schemas/Membership"
                               },
-                              "required": [
-                                "namespace"
-                              ]
-                            }
-                          ]
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "username": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            ]
+                          }
                         }
                       },
                       "required": [
@@ -4765,7 +4768,7 @@
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/MembershipBody"
+                    "$ref": "#/components/schemas/Membership"
                   },
                   {
                     "type": "object",
@@ -4914,7 +4917,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/MembershipBody"
+                "$ref": "#/components/schemas/Membership"
               }
             }
           }
@@ -5115,7 +5118,7 @@
           },
           "nextRun": {
             "type": "string",
-            "description": "Next time the task will be run",
+            "description": "Next time the task will be run. Calculated if omiited",
             "format": "date-time"
           },
           "lastRun": {
@@ -5138,7 +5141,11 @@
             "nullable": true,
             "readOnly": true
           }
-        }
+        },
+        "required": [
+          "name",
+          "recurrence"
+        ]
       },
       "TaskFull": {
         "type": "object",
@@ -5212,56 +5219,31 @@
         }
       },
       "TaskBody": {
-        "title": "TaskBody",
-        "type": "object",
-        "additionalProperties": false,
-        "x-stoplight": {
-          "id": "5b6a061fa181c"
-        },
-        "properties": {
-          "name": {
-            "type": "string"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Task"
           },
-          "template": {
-            "$ref": "#/components/schemas/TaskTemplate"
-          },
-          "tagets": {
-            "type": "array",
-            "description": "Emails address to send reports",
-            "items": {
-              "type": "string",
-              "format": "email"
-            }
-          },
-          "recurrence": {
-            "type": "string",
-            "enum": [
-              "DAILY",
-              "WEEKLY",
-              "MONTHLY",
-              "QUARTERLY",
-              "BIENNIAL",
-              "YEARLY"
-            ],
-            "description": "Defines when the task will be run, updating it will automaticly updates `nextRun`."
-          },
-          "nextRun": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Next time the task will be run. Calculated if not given"
-          },
-          "enabled": {
-            "type": "boolean",
-            "default": true
+          {
+            "type": "object",
+            "properties": {
+              "template": {
+                "$ref": "#/components/schemas/TaskTemplate"
+              },
+              "tagets": {
+                "type": "array",
+                "description": "Emails address to send reports",
+                "items": {
+                  "type": "string",
+                  "format": "email"
+                }
+              }
+            },
+            "required": [
+              "template",
+              "tagets"
+            ]
           }
-        },
-        "required": [
-          "name",
-          "template",
-          "tagets",
-          "recurrence"
-        ],
-        "description": "Data to send to edit/create a task"
+        ]
       },
       "TaskTemplate": {
         "title": "TaskTemplate",
@@ -5441,31 +5423,12 @@
             "description": "Access level"
           },
           "createdAt": {
-            "type": "string"
+            "type": "string",
+            "readOnly": true
           },
           "updatedAt": {
-            "type": "string"
-          }
-        }
-      },
-      "MembershipBody": {
-        "type": "object",
-        "x-examples": {
-          "Example 1": {
-            "namespace": "b877ca11-2227-46a6-84e9-883b22e3140e",
-            "access": "READ_WRITE"
-          }
-        },
-        "description": "Data to send to edit/create a membership",
-        "properties": {
-          "access": {
             "type": "string",
-            "enum": [
-              "READ",
-              "READ_WRITE",
-              "SUPER_USER"
-            ],
-            "description": "Access level"
+            "readOnly": true
           }
         }
       },
@@ -5709,7 +5672,8 @@
         "description": "Full info about template",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "readOnly": true
           },
           "tags": {
             "type": "array",
@@ -5731,49 +5695,28 @@
           },
           "createdAt": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "readOnly": true
           },
           "updatedAt": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "readOnly": true
           },
           "renderer": {
             "type": "string",
-            "description": "Renderer needed to render this template"
+            "description": "Renderer needed to render this template",
+            "readOnly": true
           },
           "pageCount": {
-            "type": "number"
-          }
-        }
-      },
-      "TemplateBody": {
-        "title": "TemplateBody",
-        "x-stoplight": {
-          "id": "bbc96ab4f9875"
-        },
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "tags": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "color": {
-                  "type": "string",
-                  "nullable": true
-                }
-              }
-            }
-          },
-          "body": {
-            "$ref": "#/components/schemas/ReportTemplate"
+            "type": "number",
+            "readOnly": true
           }
         },
-        "description": "Data to send to edit/create a template"
+        "required": [
+          "tags",
+          "body"
+        ]
       },
       "ReportTemplate": {
         "title": "ReportTemplate",
@@ -5917,22 +5860,29 @@
         },
         "properties": {
           "username": {
-            "type": "string"
+            "type": "string",
+            "readOnly": true
           },
           "token": {
             "type": "string",
-            "description": "Token used to authenticate user, generated when user is created"
+            "description": "Token used to authenticate user, generated when user is created",
+            "readOnly": true
           },
           "isAdmin": {
             "type": "boolean"
           },
           "createdAt": {
-            "type": "string"
+            "type": "string",
+            "readOnly": true
           },
           "updatedAt": {
-            "type": "string"
+            "type": "string",
+            "readOnly": true
           }
-        }
+        },
+        "required": [
+          "isAdmin"
+        ]
       },
       "UserFull": {
         "type": "object",
@@ -5984,20 +5934,6 @@
             }
           }
         }
-      },
-      "UserBody": {
-        "type": "object",
-        "properties": {
-          "isAdmin": {
-            "type": "boolean"
-          }
-        },
-        "x-examples": {
-          "Example 1": {
-            "isAdmin": true
-          }
-        },
-        "description": "Base template to use when generating user"
       }
     },
     "securitySchemes": {
