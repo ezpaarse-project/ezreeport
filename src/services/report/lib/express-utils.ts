@@ -10,6 +10,8 @@ import Joi from 'joi';
 import { registerRoute, registerRouteWithAccess } from '~/models/access';
 import { requireAdmin, requireNamespace, requireUser } from '../middlewares/auth';
 import { Access } from './prisma';
+import { HTTPError } from '~/types/errors';
+import { appLogger } from './logger';
 
 type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 type HTTPPath = `/${string}`;
@@ -83,7 +85,12 @@ export const createBasicRoute = <R extends Router>(
             res.sendJson(val.data, val.code, val.meta);
           }
         })
-        .catch((err) => res.errorJson(err));
+        .catch((err) => {
+          if (!(err instanceof HTTPError)) {
+            appLogger.error(err.message);
+          }
+          res.errorJson(err);
+        });
     }
   };
 
