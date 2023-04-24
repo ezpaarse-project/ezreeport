@@ -161,7 +161,7 @@ export const createUser = async (
     },
   });
 
-  appLogger.debug(`[models] User "${username}" created`);
+  appLogger.verbose(`[models] User "${username}" created`);
   return user;
 };
 
@@ -190,7 +190,7 @@ export const deleteUserByUsername = async (
     },
   });
 
-  appLogger.debug(`[models] User "${username}" updated`);
+  appLogger.verbose(`[models] User "${username}" updated`);
   return user;
 };
 
@@ -216,7 +216,7 @@ export const editUserByUsername = async (
     },
   });
 
-  appLogger.debug(`[models] User "${username}" deleted`);
+  appLogger.verbose(`[models] User "${username}" deleted`);
   return user;
 };
 

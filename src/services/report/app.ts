@@ -15,7 +15,7 @@ const DEFAULT_TEMPLATE_NAME = 'scratch';
  * Add default template if not already present
  */
 const initTemplates = async () => {
-  logger.debug(`[init] Checking existence of "${DEFAULT_TEMPLATE_NAME}"...`);
+  logger.verbose(`[init] Checking existence of "${DEFAULT_TEMPLATE_NAME}"...`);
   let template: FullTemplate | null;
   try {
     template = await getTemplateByName(DEFAULT_TEMPLATE_NAME);
@@ -25,11 +25,11 @@ const initTemplates = async () => {
   }
 
   if (template) {
-    logger.debug(`[init] Template "${DEFAULT_TEMPLATE_NAME}" found`);
+    logger.verbose(`[init] Template "${DEFAULT_TEMPLATE_NAME}" found`);
     return;
   }
 
-  logger.debug(`[init] Template "${DEFAULT_TEMPLATE_NAME}" not found, creating it...`);
+  logger.verbose(`[init] Template "${DEFAULT_TEMPLATE_NAME}" not found, creating it...`);
   try {
     await createTemplate(
       DEFAULT_TEMPLATE_NAME,

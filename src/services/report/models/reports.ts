@@ -198,7 +198,7 @@ export const generateReport = async (
     throw new Error(`Namespace "${task.namespaceId}" not found`);
   }
 
-  logger.debug(`[gen] Generation of report "${namepath}" started`);
+  logger.verbose(`[gen] Generation of report "${namepath}" started`);
   events.emit('creation');
 
   let result: ReportResult = {
@@ -280,7 +280,7 @@ export const generateReport = async (
     // Cleanup
     delete template.fetchOptions;
     events.emit('templateFetched', template);
-    logger.debug('[gen] Data fetched');
+    logger.verbose('[gen] Data fetched');
 
     // Render report
     const renderOptions: GeneratorParam<Renderers, keyof Renderers> = merge(
@@ -298,7 +298,7 @@ export const generateReport = async (
     );
     template.renderOptions = renderOptions;
     const stats = await renderers[template.renderer ?? 'vega-pdf'](renderOptions, events);
-    logger.debug(`[gen] Report wroted to "${namepath}.rep.pdf"`);
+    logger.verbose(`[gen] Report wroted to "${namepath}.rep.pdf"`);
 
     await writeFile(
       `${filepath}.deb.json`,
@@ -310,7 +310,7 @@ export const generateReport = async (
       'utf-8',
     );
     result.detail.files.debug = `${namepath}.deb.json`;
-    logger.debug(`[gen] Template writed to "${namepath}.deb.json"`);
+    logger.verbose(`[gen] Template writed to "${namepath}.deb.json"`);
 
     result = merge<ReportResult, DeepPartial<ReportResult>>(
       result,
@@ -399,6 +399,6 @@ export const generateReport = async (
     ),
     'utf-8',
   );
-  logger.debug(`[gen] Detail writed to "${namepath}.det.json"`);
+  logger.verbose(`[gen] Detail writed to "${namepath}.det.json"`);
   return result;
 };

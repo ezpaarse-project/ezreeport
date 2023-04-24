@@ -227,7 +227,7 @@ export const createTask = async (
     select: prismaTaskSelect,
   });
 
-  appLogger.debug(`[models] Task "${id}" created`);
+  appLogger.verbose(`[models] Task "${id}" created`);
   return task;
 };
 
@@ -254,7 +254,7 @@ export const deleteTaskById = async (id: Task['id'], namespaceIds?: Namespace['i
     select: prismaTaskSelect,
   });
 
-  appLogger.debug(`[models] Task "${id}" deleted`);
+  appLogger.verbose(`[models] Task "${id}" deleted`);
   return task;
 };
 
@@ -319,7 +319,7 @@ export const editTaskByIdWithHistory = async (
     select: prismaTaskSelect,
   });
 
-  appLogger.debug(`[models] Task "${id}" edited`);
+  appLogger.verbose(`[models] Task "${id}" edited`);
   return task;
 };
 

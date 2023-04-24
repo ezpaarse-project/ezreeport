@@ -70,7 +70,7 @@ export const addUserToNamespace = async (
     },
   });
 
-  appLogger.debug(`[models] Membership between user "${username}" and namespace "${namespaceId}" created`);
+  appLogger.verbose(`[models] Membership between user "${username}" and namespace "${namespaceId}" created`);
   return membership;
 };
 
@@ -102,7 +102,7 @@ export const updateUserOfNamespace = async (
     },
   });
 
-  appLogger.debug(`[models] Membership between user "${username}" and namespace "${namespaceId}" updated`);
+  appLogger.verbose(`[models] Membership between user "${username}" and namespace "${namespaceId}" updated`);
   return membership;
 };
 
@@ -127,7 +127,7 @@ export const removeUserFromNamespace = async (
     },
   });
 
-  appLogger.debug(`[models] Membership between user "${username}" and namespace "${namespaceId}" deleted`);
+  appLogger.verbose(`[models] Membership between user "${username}" and namespace "${namespaceId}" deleted`);
   return membership;
 };
 
@@ -156,7 +156,7 @@ export const upsertBulkMembership = async (
   if (!existingMembership) {
     const data = await tx.membership.create({ data: { ...membership, username, namespaceId } });
 
-    appLogger.debug(`[models] Membership between user "${username}" and namespace "${namespaceId}" will be created via bulk operation`);
+    appLogger.verbose(`[models] Membership between user "${username}" and namespace "${namespaceId}" will be created via bulk operation`);
     // If namespace doesn't already exist, create it
     return {
       type: 'created',
@@ -170,7 +170,7 @@ export const upsertBulkMembership = async (
       data: { ...membership, username, namespaceId },
     });
 
-    appLogger.debug(`[models] Membership between user "${username}" and namespace "${namespaceId}" will be updated via bulk operation`);
+    appLogger.verbose(`[models] Membership between user "${username}" and namespace "${namespaceId}" will be updated via bulk operation`);
     // If namespace already exist, update it
     return {
       type: 'updated',
@@ -199,7 +199,7 @@ export const deleteBulkMembership = async (
     where: { username_namespaceId: { username, namespaceId } },
   });
 
-  appLogger.debug(`[models] Membership between user "${username}" and namespace "${namespaceId}" will be deleted via bulk operation`);
+  appLogger.verbose(`[models] Membership between user "${username}" and namespace "${namespaceId}" will be deleted via bulk operation`);
   return {
     type: 'deleted',
     data,

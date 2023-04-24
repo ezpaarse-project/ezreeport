@@ -189,7 +189,7 @@ export const createNamespace = async (id: string, data: InputNamespace): Promise
     },
   });
 
-  appLogger.debug(`[models] Namespace "${id}" created`);
+  appLogger.verbose(`[models] Namespace "${id}" created`);
   return namespace;
 };
 
@@ -224,7 +224,7 @@ export const deleteNamespaceById = async (id: Namespace['id']): Promise<FullName
     },
   });
 
-  appLogger.debug(`[models] Namespace "${id}" deleted`);
+  appLogger.verbose(`[models] Namespace "${id}" deleted`);
   return namespace;
 };
 
@@ -255,7 +255,7 @@ export const editNamespaceById = (id: Namespace['id'], data: InputNamespace): Pr
     },
   });
 
-  appLogger.debug(`[models] Namespace "${id}" updated`);
+  appLogger.verbose(`[models] Namespace "${id}" updated`);
   return namespace;
 };
 
@@ -323,7 +323,7 @@ const upsertBulkNamespace = async (
   if (!existingNamespace) {
     const data = await tx.namespace.create({ data: { ...inputNamespace, id } });
 
-    appLogger.debug(`[models] Namespace "${id}" will be created via bulk operation`);
+    appLogger.verbose(`[models] Namespace "${id}" will be created via bulk operation`);
     // If namespace doesn't already exist, create it
     return {
       type: 'created',
@@ -335,7 +335,7 @@ const upsertBulkNamespace = async (
       data: inputNamespace,
     });
 
-    appLogger.debug(`[models] Namespace "${id}" will be updated via bulk operation`);
+    appLogger.verbose(`[models] Namespace "${id}" will be updated via bulk operation`);
     // If namespace already exist and changed, update it
     return {
       type: 'updated',
@@ -360,7 +360,7 @@ const deleteBulkNamespace = async (
 ): Promise<BulkResult<Namespace>> => {
   const data = await tx.namespace.delete({ where: { id } });
 
-  appLogger.debug(`[models] Namespace "${id}" will be deleted`);
+  appLogger.verbose(`[models] Namespace "${id}" will be deleted`);
   return {
     type: 'deleted',
     data,

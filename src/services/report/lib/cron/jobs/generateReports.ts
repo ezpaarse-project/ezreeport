@@ -9,7 +9,7 @@ import { sendError } from './utils';
 
 export default async (job: Queue.Job<CronData>) => {
   const start = new Date();
-  logger.debug(`[cron] [${job.name}] Started`);
+  logger.verbose(`[cron] [${job.name}] Started`);
 
   try {
     const tasks = await getAllTasks({ filter: { enabled: true } });

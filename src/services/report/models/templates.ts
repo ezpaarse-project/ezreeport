@@ -230,7 +230,7 @@ export const createTemplate = async (
       body: data.body as object,
     },
   });
-  appLogger.debug(`[models] Template "${name}" created`);
+  appLogger.verbose(`[models] Template "${name}" created`);
 
   if (!isTemplate(template.body)) {
     // As validation throws an error, this line shouldn't be called
@@ -256,7 +256,7 @@ export const deleteTemplateByName = async (name: string): Promise<FullTemplate |
       name,
     },
   });
-  appLogger.debug(`[models] Template "${name}" deleted`);
+  appLogger.verbose(`[models] Template "${name}" deleted`);
 
   // Here only for type completion (should always returns true)
   if (!isTemplate(template.body)) {
@@ -290,7 +290,7 @@ export const editTemplateByName = async (
       body: data.body as object,
     },
   });
-  appLogger.debug(`[models] Template "${name}" updated`);
+  appLogger.verbose(`[models] Template "${name}" updated`);
 
   // Here only for type completion (should always returns true)
   if (!isTemplate(template.body)) {
