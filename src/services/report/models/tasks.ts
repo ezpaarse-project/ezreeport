@@ -16,6 +16,7 @@ import {
 import { calcNextDate } from '~/models/recurrence';
 import { ArgumentError } from '~/types/errors';
 import { getTemplateByName, taskTemplateSchema } from './templates';
+import { appLogger } from '~/lib/logger';
 
 type InputTask = Pick<Prisma.TaskCreateInput, 'name' | 'template' | 'targets' | 'recurrence' | 'nextRun' | 'enabled'>;
 type InputHistory = Pick<Prisma.HistoryCreateWithoutTaskInput, 'type' | 'message' | 'data'>;
@@ -48,7 +49,7 @@ const taskSchema = Joi.object<Prisma.TaskCreateInput>({
  *
  * @throws If not valid
  */
-const isValidTask = (data: unknown): data is InputTask => {
+export const isValidTask = (data: unknown): data is InputTask => {
   const validation = taskSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
@@ -68,7 +69,7 @@ const createTaskSchema = taskSchema.append({
  *
  * @throws If not valid
  */
-const isValidCreateTask = (data: unknown): data is (InputTask & { namespace: string }) => {
+export const isValidCreateTask = (data: unknown): data is (InputTask & { namespace: string }) => {
   const validation = createTaskSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
@@ -117,17 +118,15 @@ const prismaTaskSelect = {
  *
  * @returns The task count
  */
-export const getCountTask = async (namespaceIds?: Namespace['id'][]): Promise<number> => {
-  const count = await prisma.task.count({
-    where: {
-      namespaceId: {
-        in: namespaceIds,
-      },
+export const getCountTask = (
+  namespaceIds?: Namespace['id'][],
+): Promise<number> => prisma.task.count({
+  where: {
+    namespaceId: {
+      in: namespaceIds,
     },
-  });
-
-  return count;
-};
+  },
+});
 
 /**
  * Get all tasks in DB
@@ -201,41 +200,35 @@ export const getTaskById = (id: Task['id'], namespaceIds?: Namespace['id'][]): P
  * @returns The created task
  */
 export const createTask = async (
-  data: unknown,
+  { namespace, nextRun, ...data }: InputTask & { namespace: string },
   creator: string,
   id?: string,
 ): Promise<FullTask> => {
-  // Validate body
-  if (!isValidCreateTask(data)) {
-    // As validation throws an error, this line shouldn't be called
-    return {} as FullTask;
-  }
-  const { namespace, ...taskData } = data as InputTask & { namespace: string };
-
   // Check if "parent" template exist
   if (typeof data.template === 'object' && 'extends' in data.template && !await getTemplateByName(`${data.template.extends}`)) {
     throw new ArgumentError(`No template named "${data.template.extends}" was found`);
   }
 
-  let { nextRun } = data;
-  if (!nextRun) {
-    nextRun = calcNextDate(new Date(), data.recurrence);
+  let nR = nextRun;
+  if (!nR) {
+    nR = calcNextDate(new Date(), data.recurrence);
   }
 
-  await prisma.$connect();
-
-  return prisma.task.create({
+  const task = await prisma.task.create({
     data: {
-      ...taskData,
+      ...data,
       id,
       namespaceId: namespace,
-      nextRun,
+      nextRun: nR,
       history: {
         create: { type: 'creation', message: `Tâche créée par ${creator}` },
       },
     },
     select: prismaTaskSelect,
   });
+
+  appLogger.debug(`[models] Task "${id}" created`);
+  return task;
 };
 
 /**
@@ -249,17 +242,20 @@ export const createTask = async (
  */
 export const deleteTaskById = async (id: Task['id'], namespaceIds?: Namespace['id'][]): Promise<FullTask | null> => {
   // Check if task exist
-  const task = await getTaskById(id, namespaceIds);
-  if (!task) {
+  const existingTask = await getTaskById(id, namespaceIds);
+  if (!existingTask) {
     return null;
   }
 
-  return prisma.task.delete({
+  const task = await prisma.task.delete({
     where: {
       id,
     },
     select: prismaTaskSelect,
   });
+
+  appLogger.debug(`[models] Task "${id}" deleted`);
+  return task;
 };
 
 /**
@@ -275,13 +271,13 @@ export const deleteTaskById = async (id: Task['id'], namespaceIds?: Namespace['i
  */
 export const editTaskByIdWithHistory = async (
   id: Task['id'],
-  data: InputTask & { lastRun?: Task['lastRun'] },
+  { nextRun, ...data }: InputTask & { lastRun?: Task['lastRun'] },
   entry?: InputHistory,
   namespaceIds?: Namespace['id'][],
 ): Promise<FullTask | null> => {
   // Check if task exist
-  const task = await getTaskById(id, namespaceIds);
-  if (!task) {
+  const existingTask = await getTaskById(id, namespaceIds);
+  if (!existingTask) {
     return null;
   }
 
@@ -291,37 +287,40 @@ export const editTaskByIdWithHistory = async (
   }
 
   // If next run isn't changed but recurrence changed
-  let { nextRun } = data;
+  let nR = nextRun;
   if (
-    data.recurrence !== task.recurrence
-      && (!data.nextRun || isSameDay(new Date(data.nextRun), task.nextRun))
+    data.recurrence !== existingTask.recurrence
+      && (!nR || isSameDay(new Date(nR), existingTask.nextRun))
   ) {
-    nextRun = calcNextDate(task.lastRun ?? new Date(), data.recurrence);
+    nR = calcNextDate(existingTask.lastRun ?? new Date(), data.recurrence);
   }
 
   // If next run isn't changed but task is re-enabled
-  if (data.enabled && data.enabled !== task.enabled && !data.nextRun) {
+  if (data.enabled && data.enabled !== existingTask.enabled && !nR) {
     const today = endOfDay(new Date());
-    nextRun = task.nextRun;
-    while (isBefore(nextRun, today)) {
-      nextRun = calcNextDate(nextRun, task.recurrence);
+    nR = existingTask.nextRun;
+    while (isBefore(nR, today)) {
+      nR = calcNextDate(nR, existingTask.recurrence);
     }
   }
 
   // Falling back to task's nextRun
-  if (nextRun === '') {
-    nextRun = task.nextRun;
+  if (nR === '') {
+    nR = existingTask.nextRun;
   }
 
-  return prisma.task.update({
+  const task = await prisma.task.update({
     where: { id },
     data: {
       ...data,
-      nextRun,
+      nextRun: nR,
       history: entry && { create: { ...entry, createdAt: formatISO(new Date()) } },
     },
     select: prismaTaskSelect,
   });
+
+  appLogger.debug(`[models] Task "${id}" edited`);
+  return task;
 };
 
 /**
@@ -337,20 +336,12 @@ export const editTaskByIdWithHistory = async (
  */
 export const editTaskById = (
   id: Task['id'],
-  data: unknown,
+  data: InputTask,
   editor: string,
   namespaceIds?: Namespace['id'][],
-): Promise<FullTask | null> => {
-  // Validate body
-  if (!isValidTask(data)) {
-    // As validation throws an error, this line shouldn't be called
-    return Promise.resolve(null);
-  }
-
-  return editTaskByIdWithHistory(
-    id,
-    data,
-    { type: 'edition', message: `Tâche éditée par ${editor}` },
-    namespaceIds,
-  );
-};
+): Promise<FullTask | null> => editTaskByIdWithHistory(
+  id,
+  data,
+  { type: 'edition', message: `Tâche éditée par ${editor}` },
+  namespaceIds,
+);

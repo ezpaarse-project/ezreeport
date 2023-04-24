@@ -9,22 +9,17 @@ import prisma from '~/lib/prisma';
  *
  * @returns The entries count
  */
-export const getCountHistory = async (namespaceIds?: string[]): Promise<number> => {
-  await prisma.$connect();
-
-  const count = await prisma.history.count({
-    where: {
-      task: {
-        namespaceId: {
-          in: namespaceIds,
-        },
+export const getCountHistory = (
+  namespaceIds?: string[],
+): Promise<number> => prisma.history.count({
+  where: {
+    task: {
+      namespaceId: {
+        in: namespaceIds,
       },
     },
-  });
-
-  await prisma.$disconnect();
-  return count;
-};
+  },
+});
 
 /**
  * Get all history entry in DB
@@ -36,56 +31,48 @@ export const getCountHistory = async (namespaceIds?: string[]): Promise<number> 
  * @returns History entry list
  */
 // TODO[feat]: Custom sort
-export const getAllHistoryEntries = async (
+export const getAllHistoryEntries = (
   opts?: {
     count?: number,
     previous?: History['id']
   },
   namespaceIds?: Namespace['id'][],
-) => {
-  await prisma.$connect();
+) => prisma.history.findMany({
+  take: opts?.count,
+  skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
+  cursor: opts?.previous ? { id: opts.previous } : undefined,
+  where: namespaceIds ? { task: { namespaceId: { in: namespaceIds } } } : undefined,
+  select: {
+    id: true,
+    type: true,
+    message: true,
+    data: true,
+    createdAt: true,
 
-  const entries = await prisma.history.findMany({
-    take: opts?.count,
-    skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
-    cursor: opts?.previous ? { id: opts.previous } : undefined,
-    where: namespaceIds ? { task: { namespaceId: { in: namespaceIds } } } : undefined,
-    select: {
-      id: true,
-      type: true,
-      message: true,
-      data: true,
-      createdAt: true,
+    task: {
+      select: {
+        id: true,
+        name: true,
+        recurrence: true,
+        nextRun: true,
+        lastRun: true,
+        enabled: true,
+        createdAt: true,
+        updatedAt: true,
 
-      task: {
-        select: {
-          id: true,
-          name: true,
-          recurrence: true,
-          nextRun: true,
-          lastRun: true,
-          enabled: true,
-          createdAt: true,
-          updatedAt: true,
-
-          namespace: {
-            select: {
-              id: true,
-              name: true,
-              logoId: true,
-              createdAt: true,
-              updatedAt: true,
-            },
+        namespace: {
+          select: {
+            id: true,
+            name: true,
+            logoId: true,
+            createdAt: true,
+            updatedAt: true,
           },
         },
       },
     },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
-
-  await prisma.$disconnect();
-
-  return entries;
-};
+  },
+  orderBy: {
+    createdAt: 'desc',
+  },
+});

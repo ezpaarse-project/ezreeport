@@ -5,6 +5,7 @@ import type { Fetchers } from '~/generators/fetchers';
 import renderers, { type Renderers } from '~/generators/renderers';
 import { ArgumentError } from '~/types/errors';
 import { layoutSchema, type Layout } from './layouts';
+import { appLogger } from '~/lib/logger';
 
 /**
  * Template is the report
@@ -150,7 +151,7 @@ const fullTemplateSchema = Joi.object<Pick<FullTemplate, 'body' | 'tags'>>({
  *
  * @throws If not valid
  */
-const isFullTemplate = (data: unknown): data is Pick<FullTemplate, 'body'> => {
+export const isFullTemplate = (data: unknown): data is Pick<FullTemplate, 'body'> => {
   const validation = fullTemplateSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Given data is not valid: ${validation.error.message}`);
@@ -220,13 +221,8 @@ export const getTemplateByName = async (name: string): Promise<FullTemplate | nu
 
 export const createTemplate = async (
   name: string,
-  data: unknown,
+  data: Pick<FullTemplate, 'body'>,
 ): Promise<FullTemplate> => {
-  if (!isFullTemplate(data)) {
-    // As validation throws an error, this line shouldn't be called
-    return {} as FullTemplate;
-  }
-
   const template = await prisma.template.create({
     data: {
       ...data,
@@ -234,6 +230,7 @@ export const createTemplate = async (
       body: data.body as object,
     },
   });
+  appLogger.debug(`[models] Template "${name}" created`);
 
   if (!isTemplate(template.body)) {
     // As validation throws an error, this line shouldn't be called
@@ -259,7 +256,9 @@ export const deleteTemplateByName = async (name: string): Promise<FullTemplate |
       name,
     },
   });
+  appLogger.debug(`[models] Template "${name}" deleted`);
 
+  // Here only for type completion (should always returns true)
   if (!isTemplate(template.body)) {
     // As validation throws an error, this line shouldn't be called
     return {} as FullTemplate;
@@ -275,16 +274,11 @@ export const deleteTemplateByName = async (name: string): Promise<FullTemplate |
 
 export const editTemplateByName = async (
   name: string,
-  data: unknown,
+  data: Pick<FullTemplate, 'body'>,
 ): Promise<FullTemplate | null> => {
   const res = await getTemplateByName(name);
   if (!res) {
     return null;
-  }
-
-  if (!isFullTemplate(data)) {
-    // As validation throws an error, this line shouldn't be called
-    return {} as FullTemplate;
   }
 
   const template = await prisma.template.update({
@@ -296,7 +290,9 @@ export const editTemplateByName = async (
       body: data.body as object,
     },
   });
+  appLogger.debug(`[models] Template "${name}" updated`);
 
+  // Here only for type completion (should always returns true)
   if (!isTemplate(template.body)) {
     // As validation throws an error, this line shouldn't be called
     return {} as FullTemplate;

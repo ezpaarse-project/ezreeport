@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { appLogger } from '~/lib/logger';
 import prisma from '~/lib/prisma';
 import {
   Access,
@@ -27,7 +28,7 @@ export const membershipSchema = Joi.object<Prisma.MembershipCreateInput>({
  *
  * @throws If not valid
  */
-const isValidMembership = (data: unknown): data is InputMembership => {
+export const isValidMembership = (data: unknown): data is InputMembership => {
   const validation = membershipSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
@@ -47,15 +48,21 @@ const hasMembershipChanged = (current: Membership, input: Omit<Membership, 'name
   input.access !== current.access
 );
 
-export const addUserToNamespace = async (username: User['username'], namespaceId: Namespace['id'], data: unknown) => {
-  if (!isValidMembership(data)) {
-    // As validation throws an error, this line shouldn't be called
-    return;
-  }
-
-  await prisma.$connect();
-
-  await prisma.membership.create({
+/**
+ * Creates a membership between a user and a namespace
+ *
+ * @param username The username of the user
+ * @param namespaceId The id of the namespace
+ * @param data The membership data
+ *
+ * @returns The membership
+ */
+export const addUserToNamespace = async (
+  username: User['username'],
+  namespaceId: Namespace['id'],
+  data: InputMembership,
+) => {
+  const membership = await prisma.membership.create({
     data: {
       ...data,
       username,
@@ -63,18 +70,25 @@ export const addUserToNamespace = async (username: User['username'], namespaceId
     },
   });
 
-  await prisma.$disconnect();
+  appLogger.debug(`[models] Membership between user "${username}" and namespace "${namespaceId}" created`);
+  return membership;
 };
 
-export const updateUserOfNamespace = async (username: User['username'], namespaceId: Namespace['id'], data: unknown) => {
-  if (!isValidMembership(data)) {
-    // As validation throws an error, this line shouldn't be called
-    return;
-  }
-
-  await prisma.$connect();
-
-  await prisma.membership.update({
+/**
+ * Updates a membership between a user and a namespace
+ *
+ * @param username The username of the user
+ * @param namespaceId The id of the namespace
+ * @param data The membership data
+ *
+ * @returns The membership
+ */
+export const updateUserOfNamespace = async (
+  username: User['username'],
+  namespaceId: Namespace['id'],
+  data: InputMembership,
+) => {
+  const membership = await prisma.membership.update({
     where: {
       username_namespaceId: {
         username,
@@ -88,13 +102,23 @@ export const updateUserOfNamespace = async (username: User['username'], namespac
     },
   });
 
-  await prisma.$disconnect();
+  appLogger.debug(`[models] Membership between user "${username}" and namespace "${namespaceId}" updated`);
+  return membership;
 };
 
-export const removeUserFromNamespace = async (username: User['username'], namespaceId: Namespace['id']) => {
-  await prisma.$connect();
-
-  await prisma.membership.delete({
+/**
+ * Remove a membership between a user and a namespace
+ *
+ * @param username The username of the user
+ * @param namespaceId The id of the namespace
+ *
+ * @returns The membership
+ */
+export const removeUserFromNamespace = async (
+  username: User['username'],
+  namespaceId: Namespace['id'],
+) => {
+  const membership = await prisma.membership.delete({
     where: {
       username_namespaceId: {
         username,
@@ -103,7 +127,8 @@ export const removeUserFromNamespace = async (username: User['username'], namesp
     },
   });
 
-  await prisma.$disconnect();
+  appLogger.debug(`[models] Membership between user "${username}" and namespace "${namespaceId}" deleted`);
+  return membership;
 };
 
 /**
@@ -129,21 +154,27 @@ export const upsertBulkMembership = async (
   });
 
   if (!existingMembership) {
+    const data = await tx.membership.create({ data: { ...membership, username, namespaceId } });
+
+    appLogger.debug(`[models] Membership between user "${username}" and namespace "${namespaceId}" will be created via bulk operation`);
     // If namespace doesn't already exist, create it
     return {
       type: 'created',
-      data: await tx.membership.create({ data: { ...membership, username, namespaceId } }),
+      data,
     };
   } if (hasMembershipChanged(existingMembership, membership)) {
+    const data = await tx.membership.update({
+      where: {
+        username_namespaceId: { username, namespaceId },
+      },
+      data: { ...membership, username, namespaceId },
+    });
+
+    appLogger.debug(`[models] Membership between user "${username}" and namespace "${namespaceId}" will be updated via bulk operation`);
     // If namespace already exist, update it
     return {
       type: 'updated',
-      data: await tx.membership.update({
-        where: {
-          username_namespaceId: { username, namespaceId },
-        },
-        data: { ...membership, username, namespaceId },
-      }),
+      data,
     };
   }
 
@@ -163,9 +194,14 @@ export const deleteBulkMembership = async (
   tx: Prisma.TransactionClient,
   namespaceId: string,
   username: string,
-): Promise<BulkResult<Membership>> => ({
-  type: 'deleted',
-  data: await tx.membership.delete({
+): Promise<BulkResult<Membership>> => {
+  const data = await tx.membership.delete({
     where: { username_namespaceId: { username, namespaceId } },
-  }),
-});
+  });
+
+  appLogger.debug(`[models] Membership between user "${username}" and namespace "${namespaceId}" will be deleted via bulk operation`);
+  return {
+    type: 'deleted',
+    data,
+  };
+};

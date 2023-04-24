@@ -7,6 +7,7 @@ import type {
 import { ArgumentError } from '~/types/errors';
 import { upsertBulkMembership, deleteBulkMembership, membershipSchema } from '~/models/memberships';
 import { BulkResult, parseBulkResults } from '~/lib/utils';
+import { appLogger } from '~/lib/logger';
 
 type InputUser = Pick<Prisma.UserCreateInput, 'isAdmin'>;
 
@@ -32,7 +33,7 @@ const userSchema = Joi.object<Prisma.UserCreateInput>({
  *
  * @throws If not valid
  */
-const isValidUser = (data: unknown): data is InputUser => {
+export const isValidUser = (data: unknown): data is InputUser => {
   const validation = userSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
@@ -63,14 +64,7 @@ const prismaMembershipSelect = {
  *
  * @returns The entries count
  */
-export const getCountUsers = async (): Promise<number> => {
-  await prisma.$connect();
-
-  const count = await prisma.user.count();
-
-  await prisma.$disconnect();
-  return count;
-};
+export const getCountUsers = (): Promise<number> => prisma.user.count();
 
 /**
  * Get all user entries in DB
@@ -151,17 +145,12 @@ const generateToken = async () => new Promise<string>((resolve, reject) => {
  */
 export const createUser = async (
   username: string,
-  data: unknown,
+  data: InputUser,
 ): Promise<FullUser> => {
-  if (!isValidUser(data)) {
-    // As validation throws an error, this line shouldn't be called
-    return {} as FullUser;
-  }
-
   // Generate token
   const token = await generateToken();
 
-  return prisma.user.create({
+  const user = prisma.user.create({
     data: {
       ...data,
       username,
@@ -171,6 +160,9 @@ export const createUser = async (
       memberships: prismaMembershipSelect,
     },
   });
+
+  appLogger.debug(`[models] User "${username}" created`);
+  return user;
 };
 
 /**
@@ -184,12 +176,12 @@ export const deleteUserByUsername = async (
   username: User['username'],
 ): Promise<FullUser | null> => {
   // Check if user exist
-  const user = await getUserByUsername(username);
-  if (!user) {
+  const existingUser = await getUserByUsername(username);
+  if (!existingUser) {
     return null;
   }
 
-  return prisma.user.delete({
+  const user = await prisma.user.delete({
     where: {
       username,
     },
@@ -197,6 +189,9 @@ export const deleteUserByUsername = async (
       memberships: prismaMembershipSelect,
     },
   });
+
+  appLogger.debug(`[models] User "${username}" updated`);
+  return user;
 };
 
 /**
@@ -209,15 +204,9 @@ export const deleteUserByUsername = async (
  */
 export const editUserByUsername = async (
   username: User['username'],
-  data: unknown,
+  data: InputUser,
 ): Promise<FullUser | null> => {
-  // Validate body
-  if (!isValidUser(data)) {
-    // As validation throws an error, this line shouldn't be called
-    return null;
-  }
-
-  return prisma.user.update({
+  const user = await prisma.user.update({
     where: {
       username,
     },
@@ -226,6 +215,9 @@ export const editUserByUsername = async (
       memberships: prismaMembershipSelect,
     },
   });
+
+  appLogger.debug(`[models] User "${username}" deleted`);
+  return user;
 };
 
 interface BulkUserMembership extends Omit<Membership, 'username' | 'namespaceId' | 'createdAt' | 'updatedAt'> {

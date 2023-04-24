@@ -3,7 +3,7 @@ import { CustomRouter } from '~/lib/express-utils';
 import { requireUser } from '~/middlewares/auth';
 import {
   createTemplate,
-  deleteTemplateByName, editTemplateByName, getAllTemplates, getTemplateByName
+  deleteTemplateByName, editTemplateByName, getAllTemplates, getTemplateByName, isFullTemplate
 } from '~/models/templates';
 
 const router = CustomRouter('templates')
@@ -19,6 +19,11 @@ const router = CustomRouter('templates')
    */
   .createAdminRoute('POST /', (req, _res) => {
     const { name, ...data } = req.body;
+
+    if (!isFullTemplate(data)) {
+      // As validation throws an error, this line shouldn't be called
+      return {};
+    }
 
     return createTemplate(name, data);
   })
@@ -42,6 +47,11 @@ const router = CustomRouter('templates')
    */
   .createAdminRoute('PUT /:name(*)', async (req, _res) => {
     const { name } = req.params;
+
+    if (!isFullTemplate(req.body)) {
+      // As validation throws an error, this line shouldn't be called
+      return {};
+    }
 
     let template = await getTemplateByName(name);
     let code;

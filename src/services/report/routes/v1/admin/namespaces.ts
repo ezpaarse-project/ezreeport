@@ -2,7 +2,9 @@ import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
 import { CustomRouter } from '~/lib/express-utils';
 import { requireAPIKey } from '~/middlewares/auth';
-import { addUserToNamespace, removeUserFromNamespace, updateUserOfNamespace } from '~/models/memberships';
+import {
+  addUserToNamespace, isValidMembership, removeUserFromNamespace, updateUserOfNamespace
+} from '~/models/memberships';
 import {
   createNamespace,
   deleteNamespaceById,
@@ -11,7 +13,8 @@ import {
   getCountNamespaces,
   getNamespaceById,
   isValidBulkNamespace,
-  replaceManyNamespaces
+  replaceManyNamespaces,
+  isValidNamespace
 } from '~/models/namespaces';
 import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';
 
@@ -53,6 +56,11 @@ const router = CustomRouter('namespaces')
     const validation = Joi.string().validate(id);
     if (validation.error) {
       throw new ArgumentError(`id is not valid: ${validation.error?.message}`);
+    }
+    // Validate body
+    if (!isValidNamespace(body)) {
+      // As validation throws an error, this line shouldn't be called
+      return {};
     }
 
     return {
@@ -97,6 +105,12 @@ const router = CustomRouter('namespaces')
   .createBasicRoute('PUT /:namespace', async (req, _res) => {
     const { namespace: id } = req.params;
 
+    // Validate body
+    if (!isValidNamespace(req.body)) {
+      // As validation throws an error, this line shouldn't be called
+      return Promise.resolve(null);
+    }
+
     let namespace = await getNamespaceById(id);
     let code;
     if (namespace) {
@@ -136,6 +150,11 @@ const router = CustomRouter('namespaces')
       throw new NotFoundError(`Namespace "${id}" not found`);
     }
 
+    if (!isValidMembership(data)) {
+      // As validation throws an error, this line shouldn't be called
+      return {};
+    }
+
     await addUserToNamespace(username, id, data);
 
     return {
@@ -172,6 +191,11 @@ const router = CustomRouter('namespaces')
     const namespace = await getNamespaceById(id);
     if (!namespace) {
       throw new NotFoundError(`Namespace "${id}" not found`);
+    }
+
+    if (!isValidMembership(req.body)) {
+      // As validation throws an error, this line shouldn't be called
+      return {};
     }
 
     let code;

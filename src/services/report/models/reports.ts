@@ -117,13 +117,15 @@ export const isValidResult = (data: unknown): data is ReportResult => {
  */
 const normaliseFilename = (filename: string): string => filename.toLowerCase().replace(/[/ .]/g, '-');
 
-const fetchData = (params: {
+type FetchParams = {
   template: AnyTemplate,
   taskTemplate: AnyTaskTemplate,
   period: Interval,
   namespace?: TypedNamespace,
   recurrence: Recurrence
-}, events: EventEmitter) => {
+};
+
+const fetchData = (params: FetchParams, events: EventEmitter) => {
   const {
     template,
     taskTemplate,

@@ -2,7 +2,12 @@ import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
 import { CustomRouter } from '~/lib/express-utils';
 import { requireAPIKey } from '~/middlewares/auth';
-import { addUserToNamespace, removeUserFromNamespace, updateUserOfNamespace } from '~/models/memberships';
+import {
+  addUserToNamespace,
+  isValidMembership,
+  removeUserFromNamespace,
+  updateUserOfNamespace
+} from '~/models/memberships';
 import {
   createUser,
   deleteUserByUsername,
@@ -11,7 +16,8 @@ import {
   replaceManyUsers,
   getCountUsers,
   getUserByUsername,
-  isValidBulkUser
+  isValidBulkUser,
+  isValidUser
 } from '~/models/users';
 import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';
 
@@ -55,6 +61,11 @@ const router = CustomRouter('users')
       throw new ArgumentError(`username is not valid: ${validation.error?.message}`);
     }
 
+    if (!isValidUser(data)) {
+      // As validation throws an error, this line shouldn't be called
+      return {};
+    }
+
     return {
       code: StatusCodes.CREATED,
       data: await createUser(username, data),
@@ -93,6 +104,12 @@ const router = CustomRouter('users')
    */
   .createBasicRoute('PUT /:username', async (req, _res) => {
     const { username } = req.params;
+
+    // Validate body
+    if (!isValidUser(req.body)) {
+      // As validation throws an error, this line shouldn't be called
+      return null;
+    }
 
     let user = await getUserByUsername(username);
     let code;
@@ -133,9 +150,17 @@ const router = CustomRouter('users')
       throw new NotFoundError(`User "${username}" not found`);
     }
 
+    if (!isValidMembership(data)) {
+      // As validation throws an error, this line shouldn't be called
+      return {};
+    }
+
     await addUserToNamespace(username, user, data);
 
-    return getUserByUsername(username);
+    return {
+      code: StatusCodes.CREATED,
+      data: getUserByUsername(username),
+    };
   }, requireAPIKey)
 
   /**
@@ -166,6 +191,11 @@ const router = CustomRouter('users')
     const user = await getUserByUsername(username);
     if (!user) {
       throw new NotFoundError(`User "${username}" not found`);
+    }
+
+    if (!isValidMembership(req.body)) {
+      // As validation throws an error, this line shouldn't be called
+      return {};
     }
 
     let code;

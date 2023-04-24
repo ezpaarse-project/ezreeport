@@ -15,6 +15,7 @@ import {
   deleteBulkMembership
 } from './memberships';
 import { parseBulkResults, type BulkResult } from '~/lib/utils';
+import { appLogger } from '~/lib/logger';
 
 type InputNamespace = Pick<Prisma.NamespaceCreateInput, 'name' | 'fetchLogin' | 'fetchOptions' | 'logoId'>;
 
@@ -71,7 +72,7 @@ const namespaceSchema = Joi.object<Prisma.NamespaceCreateInput>({
  *
  * @throws If not valid
  */
-const isValidNamespace = (data: unknown): data is InputNamespace => {
+export const isValidNamespace = (data: unknown): data is InputNamespace => {
   const validation = namespaceSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
@@ -169,14 +170,8 @@ export const getNamespaceById = async (id: Namespace['id']) => prisma.namespace.
  *
  * @returns The created namespace
  */
-export const createNamespace = (id: string, data: unknown): Promise<FullNamespace> => {
-  // Validate body
-  if (!isValidNamespace(data)) {
-    // As validation throws an error, this line shouldn't be called
-    return Promise.resolve({} as FullNamespace);
-  }
-
-  return prisma.namespace.create({
+export const createNamespace = async (id: string, data: InputNamespace): Promise<FullNamespace> => {
+  const namespace = await prisma.namespace.create({
     data: {
       id,
       ...data,
@@ -193,6 +188,9 @@ export const createNamespace = (id: string, data: unknown): Promise<FullNamespac
       tasks: true,
     },
   });
+
+  appLogger.debug(`[models] Namespace "${id}" created`);
+  return namespace;
 };
 
 /**
@@ -202,14 +200,14 @@ export const createNamespace = (id: string, data: unknown): Promise<FullNamespac
  *
  * @returns The edited namespace
  */
-export const deleteNamespaceById = async (id: Namespace['id']) => {
+export const deleteNamespaceById = async (id: Namespace['id']): Promise<FullNamespace | null> => {
   // Check if namespace exist
-  const namespace = await getNamespaceById(id);
-  if (!namespace) {
+  const existingNamespace = await getNamespaceById(id);
+  if (!existingNamespace) {
     return null;
   }
 
-  return prisma.namespace.delete({
+  const namespace = await prisma.namespace.delete({
     where: {
       id,
     },
@@ -224,7 +222,10 @@ export const deleteNamespaceById = async (id: Namespace['id']) => {
       },
       tasks: true,
     },
-  }) as Promise<FullNamespace | null>;
+  });
+
+  appLogger.debug(`[models] Namespace "${id}" deleted`);
+  return namespace;
 };
 
 /**
@@ -235,14 +236,8 @@ export const deleteNamespaceById = async (id: Namespace['id']) => {
  *
  * @returns The edited namespace
  */
-export const editNamespaceById = (id: Namespace['id'], data: unknown): Promise<FullNamespace | null> => {
-  // Validate body
-  if (!isValidNamespace(data)) {
-    // As validation throws an error, this line shouldn't be called
-    return Promise.resolve(null);
-  }
-
-  return prisma.namespace.update({
+export const editNamespaceById = (id: Namespace['id'], data: InputNamespace): Promise<FullNamespace | null> => {
+  const namespace = prisma.namespace.update({
     where: {
       id,
     },
@@ -259,6 +254,9 @@ export const editNamespaceById = (id: Namespace['id'], data: unknown): Promise<F
       tasks: true,
     },
   });
+
+  appLogger.debug(`[models] Namespace "${id}" updated`);
+  return namespace;
 };
 
 interface BulkNamespace extends InputNamespace {
@@ -323,19 +321,25 @@ const upsertBulkNamespace = async (
   const existingNamespace = await tx.namespace.findUnique({ where: { id } });
 
   if (!existingNamespace) {
+    const data = await tx.namespace.create({ data: { ...inputNamespace, id } });
+
+    appLogger.debug(`[models] Namespace "${id}" will be created via bulk operation`);
     // If namespace doesn't already exist, create it
     return {
       type: 'created',
-      data: await tx.namespace.create({ data: { ...inputNamespace, id } }),
+      data,
     };
   } if (hasNamespaceChanged(existingNamespace, inputNamespace)) {
+    const data = await tx.namespace.update({
+      where: { id },
+      data: inputNamespace,
+    });
+
+    appLogger.debug(`[models] Namespace "${id}" will be updated via bulk operation`);
     // If namespace already exist and changed, update it
     return {
       type: 'updated',
-      data: await tx.namespace.update({
-        where: { id },
-        data: inputNamespace,
-      }),
+      data,
     };
   }
 
@@ -353,10 +357,15 @@ const upsertBulkNamespace = async (
 const deleteBulkNamespace = async (
   tx: Prisma.TransactionClient,
   { id }: Namespace,
-): Promise<BulkResult<Namespace>> => ({
-  type: 'deleted',
-  data: await tx.namespace.delete({ where: { id } }),
-});
+): Promise<BulkResult<Namespace>> => {
+  const data = await tx.namespace.delete({ where: { id } });
+
+  appLogger.debug(`[models] Namespace "${id}" will be deleted`);
+  return {
+    type: 'deleted',
+    data,
+  };
+};
 
 /**
  * Replace many namespace

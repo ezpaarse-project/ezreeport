@@ -12,7 +12,9 @@ import {
   editTaskByIdWithHistory,
   getAllTasks,
   getCountTask,
-  getTaskById
+  getTaskById,
+  isValidCreateTask,
+  isValidTask
 } from '~/models/tasks';
 import { Access } from '~/models/access';
 import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';
@@ -89,6 +91,12 @@ const router = CustomRouter('tasks')
       throw new HTTPError("The provided namespace doesn't exist or you don't have access to this namespace", StatusCodes.BAD_REQUEST);
     }
 
+    // Validate body
+    if (!isValidCreateTask(req.body)) {
+      // As validation throws an error, this line shouldn't be called
+      return {};
+    }
+
     return {
       data: await createTask(
         req.body,
@@ -120,6 +128,12 @@ const router = CustomRouter('tasks')
 
     let task = await getTaskById(id);
     if (task) {
+      // Validate body
+      if (!isValidTask(req.body)) {
+        // As validation throws an error, this line shouldn't be called
+        return {};
+      }
+
       task = await editTaskById(
         id,
         req.body,
@@ -127,6 +141,12 @@ const router = CustomRouter('tasks')
         req.namespaceIds,
       );
     } else {
+      // Validate body
+      if (!isValidCreateTask(req.body)) {
+        // As validation throws an error, this line shouldn't be called
+        return {};
+      }
+
       task = await createTask(req.body, req.user?.username ?? '', id);
     }
 
