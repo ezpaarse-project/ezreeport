@@ -146,12 +146,11 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
         template.fetchOptions ?? {},
         layout.fetchOptions ?? {},
         {
-          indexSuffix: '',
           ...(taskTemplate.fetchOptions ?? {}),
           recurrence,
           period,
           // template,
-          indexPrefix: namespace?.fetchOptions?.[fetcher]?.indexPrefix ?? '*',
+          indexPrefix: namespace?.fetchOptions?.[fetcher]?.indexPrefix,
           auth: namespace?.fetchLogin?.[fetcher] ?? { username: '' },
         },
       );

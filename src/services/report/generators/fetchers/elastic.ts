@@ -43,9 +43,9 @@ const optionSchema = Joi.object<FetchOptions>({
     end: Joi.date().required(),
   }).required(),
   filters: Joi.object(),
-  indexPrefix: Joi.string(), // @deprecated Use `index` instead
-  indexSuffix: Joi.string(), // @deprecated Use `index` instead
-  index: Joi.string(),
+  indexPrefix: Joi.string().allow(''), // @deprecated Use `index` instead
+  indexSuffix: Joi.string().allow(''), // @deprecated Use `index` instead
+  index: Joi.string().allow(''),
   auth: Joi.object({
     username: Joi.string().required(),
   }).required(),
@@ -134,6 +134,12 @@ export default async (
 
   const data: Prisma.JsonValue = {};
   const { body } = await elasticSearch(opts, options.auth.username);
+
+  // Checks any errors
+  if (body._shards.failures?.length) {
+    const reasons = body._shards.failures.map((err) => err.reason.reason).join(' ; ');
+    throw new Error(`An error occurred when fetching data : ${reasons}`);
+  }
 
   if (options.aggs) {
     // eslint-disable-next-line no-restricted-syntax
