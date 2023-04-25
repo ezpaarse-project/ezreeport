@@ -41,7 +41,7 @@ export SMTP_IGNORE_TLS="true"
 export SMTP_REJECT_UNAUTHORIZED="false"
 
 # mail service
-export EMAIL_SENDER="ezmesure-ezreeport@couperin.org"
+export EMAIL_SENDER="ezreeport@inist.fr"
 export EMAIL_SUPPORT_TEAM="ezteam@couperin.org"
 export EMAIL_DEV_TEAM="ezteam-dev@couperin.org"
 export EMAIL_ATTEMPTS=5
