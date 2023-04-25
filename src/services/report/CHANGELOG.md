@@ -1,3 +1,16 @@
+# ezreeport-report [1.0.0-beta.5](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.4...ezreeport-report@1.0.0-beta.5) (2023-04-25)
+
+
+### Bug Fixes
+
+* **report:** fixed link to ezmesure in pdfs ([55ef15c](https://github.com/ezpaarse-project/ezreeport/commit/55ef15c1bb6a0b6fd5a4d98655c7d99483011e2e))
+
+
+### Features
+
+* **report:** now correctly log access errors ([e27a80a](https://github.com/ezpaarse-project/ezreeport/commit/e27a80aa524fc0ab72d581045547992635cf3800))
+* **report:** now detects when there's an error on elastic side when fetching data ([4681ef9](https://github.com/ezpaarse-project/ezreeport/commit/4681ef954cfe8972bf39a775119cdbb8d3cc0904))
+
 # ezreeport-report [1.0.0-beta.4](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.3...ezreeport-report@1.0.0-beta.4) (2023-04-24)
 
 
