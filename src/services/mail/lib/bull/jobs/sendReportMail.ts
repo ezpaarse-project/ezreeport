@@ -19,7 +19,8 @@ export default async (job: Job<MailData>) => {
     const options: Omit<MailOptions, 'to' | 'body' | 'subject'> = {
       attachments: [{
         filename,
-        content: b64ToString(job.data.file),
+        content: job.data.file,
+        encoding: 'base64',
       }],
     };
     const bodyData = {
