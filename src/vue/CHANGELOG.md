@@ -1,3 +1,10 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.2...@ezpaarse-project/ezreeport-vue@1.0.0-beta.3) (2023-04-25)
+
+
+### Bug Fixes
+
+* **vue:** bump version [skip ci] ([2c52e72](https://github.com/ezpaarse-project/ezreeport/commit/2c52e72bfa2d515405656a78cd375487a80d0830))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.1...@ezpaarse-project/ezreeport-vue@1.0.0-beta.2) (2023-04-24)
 
 
