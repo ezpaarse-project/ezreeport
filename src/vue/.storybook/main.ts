@@ -8,14 +8,17 @@ const config: StorybookConfig & StorybookConfigVite = {
     {
       directory: '../src/components/internal',
       titlePrefix: 'Internal',
-      files: '**/*.stories.@(js|jsx|ts|tsx)',
-      // files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+      files: '**/*.@(stories.@(js|jsx|ts|tsx)|mdx)',
     },
     {
       directory: '../src/components/public',
       titlePrefix: 'Public',
-      files: '**/*.stories.@(js|jsx|ts|tsx)',
-      // files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+      files: '**/*.@(stories.@(js|jsx|ts|tsx)|mdx)',
+    },
+    {
+      directory: '../src/components',
+      titlePrefix: 'Get Started',
+      files: 'GetStarted.mdx',
     },
   ],
   addons: [

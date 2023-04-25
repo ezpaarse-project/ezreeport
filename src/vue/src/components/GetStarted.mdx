@@ -1,0 +1,53 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Get Started" />
+
+# Get started
+
+## Requirements
+
+- [`vue` (^2.7)](todo link)
+- [`vue-i18n` (^8.28)](todo link)
+- [`vuetify` (^2.6)](todo link)
+- [`@mdi/font` (^7)](todo link)
+
+## Install
+
+```sh
+npm i --save @ezpaarse-project/ezreeport-vue
+```
+
+### Nuxt
+
+Write the following in a new [plugin](to do doc) :
+
+```ts
+// plugins/ezreeport.js|ts
+import Vue from 'vue';
+
+import ezReeportVuePlugin from '@ezpaarse-project/ezreeport-vue';
+// Remove if not in TS
+import type { GlobalEzRComponents } from '@ezpaarse-project/ezreeport-vue';
+import '@ezpaarse-project/ezreeport-vue/dist/style.css';
+
+// Remove if not in TS
+declare module 'vue' {
+  export interface GlobalComponents extends GlobalEzRComponents {}
+}
+
+Vue.use(ezReeportVuePlugin);
+```
+
+And add plugin into `nuxt.config.js|ts` :
+
+```ts
+// nuxt.config.js|ts
+export default {
+  // Other params
+
+  plugins: [
+    // Other plugins goes here
+    '~/plugins/ezreeport-vue2.ts',
+  ],
+}
+```

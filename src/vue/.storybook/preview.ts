@@ -24,6 +24,7 @@ export const parameters: Parameters = {
   options: {
     storySort: {
       order: [
+        'Get Started',
         'Public',
         'Internal',
       ],
