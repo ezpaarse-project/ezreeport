@@ -1,4 +1,4 @@
-FROM node:16.19.0-alpine as sdk-builder
+FROM node:18.16.0-alpine as sdk-builder
 
 WORKDIR /usr/build/sdk
 
@@ -15,7 +15,7 @@ RUN npm run build:web && npm run build:types
 
 # ----
 
-FROM node:16.19.0-alpine as vue-builder
+FROM node:18.16.0-alpine as vue-builder
 ARG AUTH_TOKEN="changeme"
 ARG REPORT_API="http://localhost:8080/"
 ARG LOGO_URL="https://ezmesure.couperin.org/"
@@ -44,7 +44,7 @@ FROM nginx:stable-alpine
 
 WORKDIR /usr/share/nginx/html
 
-COPY --from=vue-builder /usr/build/vue/storybook-static ./
 COPY ./config/vue-ngnix.types /etc/nginx/mime.types
+COPY --from=vue-builder /usr/build/vue/storybook-static ./
 
 EXPOSE 80

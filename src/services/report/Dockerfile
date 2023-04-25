@@ -1,6 +1,6 @@
 # ---- Build prod dependencies (like node-canvas)
 
-FROM node:18.14.0-alpine3.17 AS npm-builder
+FROM node:18.16.0-alpine3.17 AS npm-builder
 LABEL maintainer="ezTeam <ezteam@couperin.org>"
 
 WORKDIR /usr/build/report
@@ -36,7 +36,7 @@ RUN npx prisma generate
 
 # ---- Prod image
 
-FROM node:18.14.0-alpine3.17
+FROM node:18.16.0-alpine3.17
 LABEL maintainer="ezTeam <ezteam@couperin.org>"
 EXPOSE 8080
 
