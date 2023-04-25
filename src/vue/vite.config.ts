@@ -6,17 +6,16 @@ import Components from 'unplugin-vue-components/vite';
 import { VuetifyResolver } from 'unplugin-vue-components/resolvers';
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite';
 
-let comps = Components({
+type ComponentsOptions = Parameters<typeof Components>[0];
+
+const comps: ComponentsOptions = {
+  resolvers: [VuetifyResolver()],
   dts: false,
-});
+};
 if (process.env.NODE_ENV !== 'production') {
   console.log('building in dev mode');
 
-  // Resolve Vuetify components in dev
-  comps = Components({
-    resolvers: [VuetifyResolver()],
-    dts: '.vite/components.d.ts',
-  });
+  comps.dts = '.vite/components.d.ts';
 }
 
 export default defineConfig({
@@ -26,7 +25,7 @@ export default defineConfig({
       compositionOnly: false,
       bridge: true,
     }),
-    comps,
+    Components(comps),
   ],
   resolve: {
     alias: {
@@ -39,6 +38,7 @@ export default defineConfig({
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'ezReeportVue',
+      formats: ['es'],
     },
     rollupOptions: {
       external: ['vue'],

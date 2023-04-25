@@ -15,8 +15,7 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/ezreeport-vue.js",
-      "require": "./dist/ezreeport-vue.umd.cjs"
+      "import": "./dist/ezreeport-vue.js"
     },
     "./dist/style.css": {
       "import": "./dist/style.css",
