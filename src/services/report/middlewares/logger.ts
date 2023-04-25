@@ -10,7 +10,13 @@ const middleware: RequestHandler = (req, res, next) => {
 
   res.once('finish', () => {
     const end = new Date();
-    logger.info(`${req.method} ${req.originalUrl} - ${res.statusCode} (${differenceInMilliseconds(end, start)})`);
+
+    let log = logger.info;
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      log = logger.error;
+    }
+
+    log(`${req.method} ${req.originalUrl} - ${res.statusCode} (${differenceInMilliseconds(end, start)})`);
   });
 
   next();
