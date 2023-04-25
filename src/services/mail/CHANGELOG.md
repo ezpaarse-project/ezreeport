@@ -1,3 +1,10 @@
+# ezreeport-mail [1.0.0-beta.4](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.0.0-beta.3...ezreeport-mail@1.0.0-beta.4) (2023-04-25)
+
+
+### Bug Fixes
+
+* **mail:** fixed mail attachements ([51135b7](https://github.com/ezpaarse-project/ezreeport/commit/51135b7dd3a2fbc2eb10b5683effb269afade5c7))
+
 # ezreeport-mail [1.0.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.0.0-beta.2...ezreeport-mail@1.0.0-beta.3) (2023-04-24)
 
 
