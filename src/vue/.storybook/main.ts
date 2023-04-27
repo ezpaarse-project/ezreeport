@@ -2,6 +2,7 @@
 import { mergeConfig } from 'vite';
 import type { StorybookConfig } from '@storybook/types';
 import type { StorybookConfigVite } from '@storybook/builder-vite';
+import remarkGfm from 'remark-gfm';
 
 const config: StorybookConfig & StorybookConfigVite = {
   stories: [
@@ -25,6 +26,16 @@ const config: StorybookConfig & StorybookConfigVite = {
     '@storybook/addon-links',
     '@storybook/addon-essentials',
     '@storybook/addon-interactions',
+    {
+      name: '@storybook/addon-docs',
+      options: {
+        mdxPluginOptions: {
+          mdxCompileOptions: {
+            remarkPlugins: [remarkGfm],
+          },
+        },
+      },
+    },
   ],
   framework: {
     name: '@storybook/vue-vite',

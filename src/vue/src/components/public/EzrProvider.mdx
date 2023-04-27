@@ -1,5 +1,33 @@
-import { Meta, Story } from '@storybook/blocks';
+import { Meta, Controls } from '@storybook/blocks';
 
-import * as ProviderStories from './EzrProvider.stories';
+<Meta title="ezr-provider (Provider)" />
 
-<Meta of={ProviderStories} />
+# Provider
+
+This is the mount point for other components and functionality and ensures that it propagates
+data, sdk and methods to children components. To avoid issues, `ezr-provider` should only be rendered
+once.
+
+## Props
+
+| Name             | Type     | Description                                                        | Required | Default                                                   |
+|------------------|----------|--------------------------------------------------------------------|----------|-----------------------------------------------------------|
+| token            | `string` | User's token                                                       |          |                                                           |
+| apiUrl           | `string` | Base URL for ezREEPORT API                                         |          | {<code>{import.meta.env.VITE_REPORT_API}</code>}          |
+| namespaceLogoUrl | `string` | Base URL to fetch namespace's logos                                |          | {<code>{import.meta.env.VITE_NAMESPACES_LOGO_URL}</code>} |
+| namespaceLabel   | `object` | How namespaces are called. It similar to i18n's `message` property |          | `{ fr: 'espace\|espaces', en: 'namespace\|namespaces' }`  |
+
+## Usage
+
+### Default
+
+```html
+<template>
+  <ezr-provider
+    :token="'USER TOKEN FROM API'"
+    :namespaceLabel="{ fr: 'établissement|établissements', en: 'institution|institutions' }"
+    apiUrl="https://url-to-ezreeport.dev/api/"
+    namespaceLogoUrl="https://url-to-your-apps.dev/namespaces/logos"
+  >
+</template>
+```

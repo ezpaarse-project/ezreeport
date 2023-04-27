@@ -210,11 +210,11 @@ export default defineComponent({
 
 <i18n lang="yaml">
 en:
-  namespace: 'namespace'
+  namespace: 'namespace|namespaces'
   errors:
     no_data: 'An error occurred when fetching data'
 fr:
-  namespace: 'espace'
+  namespace: 'espace|espaces'
   errors:
     no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>
