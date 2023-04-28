@@ -4,6 +4,9 @@ import HistoryTable from './HistoryTable.vue';
 const meta: Meta<typeof HistoryTable> = {
   title: 'ezr-history-table (HistoryTable)',
   component: HistoryTable,
+  args: {
+    fetchInterval: 5000,
+  },
 };
 
 export default meta;
