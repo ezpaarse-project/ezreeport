@@ -10,12 +10,13 @@ once.
 
 ## Props
 
-| Name             | Type     | Description                                                        | Required | Default                                                   |
-|------------------|----------|--------------------------------------------------------------------|----------|-----------------------------------------------------------|
-| token            | `string` | User's token                                                       |          |                                                           |
-| apiUrl           | `string` | Base URL for ezREEPORT API                                         |          | {<code>{import.meta.env.VITE_REPORT_API}</code>}          |
-| namespaceLogoUrl | `string` | Base URL to fetch namespace's logos                                |          | {<code>{import.meta.env.VITE_NAMESPACES_LOGO_URL}</code>} |
-| namespaceLabel   | `object` | How namespaces are called. It similar to i18n's `message` property |          | `{ fr: 'espace\|espaces', en: 'namespace\|namespaces' }`  |
+| Name             | Type     | Description                                                                       | Required | Default                                                   |
+|------------------|----------|-----------------------------------------------------------------------------------|----------|-----------------------------------------------------------|
+| as               | `string` | Which element provider will render to. Can be a Vue component using default slot. |          | `div`                                                     |
+| token            | `string` | User's token                                                                      |          |                                                           |
+| apiUrl           | `string` | Base URL for ezREEPORT API                                                        |          | {<code>{import.meta.env.VITE_REPORT_API}</code>}          |
+| namespaceLogoUrl | `string` | Base URL to fetch namespace's logos                                               |          | {<code>{import.meta.env.VITE_NAMESPACES_LOGO_URL}</code>} |
+| namespaceLabel   | `object` | How namespaces are called. It similar to i18n's `message` property                |          | `{ fr: 'espace\|espaces', en: 'namespace\|namespaces' }`  |
 
 ## Usage
 
@@ -29,5 +30,7 @@ once.
     apiUrl="https://url-to-ezreeport.dev/api/"
     namespaceLogoUrl="https://url-to-your-apps.dev/namespaces/logos"
   >
+    <!-- ezREEPORT components goes here -->
+  </ezr-provider>
 </template>
 ```

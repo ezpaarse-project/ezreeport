@@ -1,7 +1,7 @@
 <template>
-  <div v-if="ready">
+  <component v-bind:is="as" v-if="ready">
     <slot />
-  </div>
+  </component>
 </template>
 
 <script lang="ts">
@@ -11,6 +11,10 @@ import { type InjectedEzReeport, InjectionEzReeportKey } from '~/mixins/ezr';
 
 export default defineComponent({
   props: {
+    as: {
+      type: String,
+      default: 'div',
+    },
     token: {
       type: String as PropType<string | undefined>,
       default: undefined,
