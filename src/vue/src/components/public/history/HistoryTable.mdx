@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/blocks';
+import { Meta, Story, Controls } from '@storybook/blocks';
 
 import * as HistoryTableStories from './HistoryTable.stories';
 
@@ -6,7 +6,14 @@ import * as HistoryTableStories from './HistoryTable.stories';
 
 # History Table
 
-...
+List activity of all task user have access to, entries are re-fetched every 5s by default.
+
+> **Note**
+> This components show only if any `namespaces.history-get` permission is granted to the authed user.
+
+## Props
+
+<Controls />
 
 ## Usage
 
