@@ -6,10 +6,22 @@ import * as StatusListStories from './StatusList.stories';
 
 # Status List
 
-Shows status of services connected to the reporting.
+Shows status of services connected to ezREEPORT.
 
 You can hover each status to get more info about them (like time of response & status code).
 
+You can also see version of ezREEPORT parts (API, SDK, components, etc.).
+
 ## Usage
+
+### Default
+
+```html
+<template>
+  <ezr-provider ...>
+    <ezr-cron-list />
+  </ezr-provider>
+</template>
+```
 
 <Story of={StatusListStories.Basic} />
