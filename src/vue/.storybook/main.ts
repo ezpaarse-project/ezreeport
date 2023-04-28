@@ -9,7 +9,7 @@ const config: StorybookConfig & StorybookConfigVite = {
     {
       directory: '../src/components/internal',
       titlePrefix: 'Internal',
-      files: '**/*.@(stories.@(js|jsx|ts|tsx)|mdx)',
+      files: '**/*.@(stories.@(js|jsx|ts|tsx))',
     },
     {
       directory: '../src/components/public',
