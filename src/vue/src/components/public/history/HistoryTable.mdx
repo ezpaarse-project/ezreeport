@@ -17,4 +17,12 @@ List activity of all task user have access to, entries are re-fetched every 5s b
 
 ## Usage
 
+```html
+<template>
+  <ezr-provider ...>
+    <ezr-history-table :fetchInterval="5000" />
+  </ezr-provider>
+</template>
+```
+
 <Story of={HistoryTableStories.Basic} />

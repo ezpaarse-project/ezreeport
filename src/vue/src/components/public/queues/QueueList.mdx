@@ -1,0 +1,32 @@
+import { Meta, Story, Controls } from '@storybook/blocks';
+
+import * as QueueListStories from './QueueList.stories';
+
+<Meta of={QueueListStories} />
+
+# Queue List
+
+List and manage all queues. You can see jobs in queue by clicking on it.
+
+> **Note**
+> This components show only if `general.queues-get` permission is granted to the authed user.
+
+{/*
+## Props
+
+<Controls />
+*/}
+
+## Usage
+
+### Default
+
+```html
+<template>
+  <ezr-provider ...>
+    <ezr-queue-list />
+  </ezr-provider>
+</template>
+```
+
+<Story of={QueueListStories.Basic} />
