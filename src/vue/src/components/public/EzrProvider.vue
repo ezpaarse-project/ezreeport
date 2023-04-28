@@ -32,6 +32,10 @@ export default defineComponent({
       default: () => ({}),
     },
   },
+  emits: {
+    error: (err: Error) => !!err,
+    'error:login': (err: Error) => !!err,
+  },
   data: (): InjectedEzReeport['data'] => ({
     ready: false,
     auth: {
@@ -50,16 +54,18 @@ export default defineComponent({
     namespaceLogoUrl(value: string) {
       this.namespaces.logoUrl = value || import.meta.env.VITE_NAMESPACES_LOGO_URL;
     },
+    namespaceLabel() {
+      this.registerNamespaceLocalization();
+    },
     // eslint-disable-next-line func-names
     '$i18n.locale': function () {
       this.registerNamespaceLocalization();
     },
     token(value?: string) {
+      this.logout();
       if (value) {
         this.login(value);
-        return;
       }
-      this.logout();
     },
   },
   provide() {
@@ -141,6 +147,8 @@ export default defineComponent({
         // eslint-disable-next-line no-restricted-syntax
         for (const res of results) {
           if (res.status === 'rejected') {
+            this.$emit('error', res.reason);
+            this.$emit('error:login', res.reason);
             console.error('[ezReeport-vue]', res.reason.message);
           }
         }
