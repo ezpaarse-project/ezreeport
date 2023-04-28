@@ -1,6 +1,7 @@
-import { Meta, Controls } from '@storybook/blocks';
+import { Meta, Story, Controls } from '@storybook/blocks';
+import * as EzrProviderStories from './EzrProvider.stories.ts';
 
-<Meta title="ezr-provider (Provider)" />
+<Meta of={EzrProviderStories} />
 
 # Provider
 
@@ -10,13 +11,7 @@ once.
 
 ## Props
 
-| Name             | Type     | Description                                                                       | Required | Default                                                   |
-|------------------|----------|-----------------------------------------------------------------------------------|----------|-----------------------------------------------------------|
-| as               | `string` | Which element provider will render to. Can be a Vue component using default slot. |          | `div`                                                     |
-| token            | `string` | User's token                                                                      |          |                                                           |
-| apiUrl           | `string` | Base URL for ezREEPORT API                                                        |          | {<code>{import.meta.env.VITE_REPORT_API}</code>}          |
-| namespaceLogoUrl | `string` | Base URL to fetch namespace's logos                                               |          | {<code>{import.meta.env.VITE_NAMESPACES_LOGO_URL}</code>} |
-| namespaceLabel   | `object` | How namespaces are called. It similar to i18n's `message` property                |          | `{ fr: 'espace\|espaces', en: 'namespace\|namespaces' }`  |
+<Controls />
 
 ## Usage
 
@@ -29,8 +24,14 @@ once.
     :namespaceLabel="{ fr: 'établissement|établissements', en: 'institution|institutions' }"
     apiUrl="https://url-to-ezreeport.dev/api/"
     namespaceLogoUrl="https://url-to-your-apps.dev/namespaces/logos"
+    @error="(e) => console.error(e)"
+    @error:login="(e) => console.error(e)"
   >
     <!-- ezREEPORT components goes here -->
+    <!-- ProviderDemo is for example, and just shows basic info about current user -->
+    <ProviderDemo />
   </ezr-provider>
 </template>
 ```
+
+<Story of={EzrProviderStories.Basic} />

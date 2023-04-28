@@ -11,30 +11,55 @@ import { type InjectedEzReeport, InjectionEzReeportKey } from '~/mixins/ezr';
 
 export default defineComponent({
   props: {
+    /**
+     * Which element provider will render to. Can be a Vue component using default slot
+     */
     as: {
       type: String,
       default: 'div',
     },
+    /**
+     * User's token
+     */
     token: {
       type: String as PropType<string | undefined>,
       default: undefined,
     },
+    /**
+     * Base URL for ezREEPORT API
+     */
     apiUrl: {
       type: String,
       default: '',
     },
+    /**
+     * Base URL to fetch namespace's logos
+     */
     namespaceLogoUrl: {
       type: String,
       default: '',
     },
+    /**
+     * How namespaces are called. It similar to i18n's `message` property
+     */
     namespaceLabel: {
       type: Object as PropType<Record<string, string>>,
       default: () => ({}),
     },
   },
   emits: {
+    /**
+     * Triggered on any error from a provider root methods (like `login`)
+     *
+     * @param err The error
+     */
     error: (err: Error) => !!err,
-    'error:login': (err: Error) => !!err,
+    /**
+     * Triggered on any error from auth
+     *
+     * @param err The error
+     */
+    'error:auth': (err: Error) => !!err,
   },
   data: (): InjectedEzReeport['data'] => ({
     ready: false,
@@ -148,7 +173,7 @@ export default defineComponent({
         for (const res of results) {
           if (res.status === 'rejected') {
             this.$emit('error', res.reason);
-            this.$emit('error:login', res.reason);
+            this.$emit('error:auth', res.reason);
             console.error('[ezReeport-vue]', res.reason.message);
           }
         }
