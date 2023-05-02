@@ -1,0 +1,37 @@
+import { Meta, Story, Controls } from '@storybook/blocks';
+import * as EzrProviderStories from './EzrProvider.stories.ts';
+
+<Meta of={EzrProviderStories} />
+
+# Provider
+
+This is the mount point for other components and functionality and ensures that it propagates
+data, sdk and methods to children components. To avoid issues, `ezr-provider` should only be rendered
+once.
+
+## Props / Events / Slots
+
+<Controls />
+
+## Usage
+
+### Default
+
+```html
+<template>
+  <ezr-provider
+    :token="'USER TOKEN FROM API'"
+    :namespaceLabel="{ fr: 'établissement|établissements', en: 'institution|institutions' }"
+    apiUrl="https://url-to-ezreeport.dev/api/"
+    namespaceLogoUrl="https://url-to-your-apps.dev/namespaces/logos"
+    @error="(e) => console.error(e)"
+    @error:login="(e) => console.error(e)"
+  >
+    <!-- ezREEPORT components goes here -->
+    <!-- ProviderDemo is for example, and just shows basic info about current user -->
+    <ProviderDemo />
+  </ezr-provider>
+</template>
+```
+
+<Story of={EzrProviderStories.Basic} />

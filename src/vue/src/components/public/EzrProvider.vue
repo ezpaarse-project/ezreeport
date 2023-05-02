@@ -1,7 +1,7 @@
 <template>
-  <div v-if="ready">
+  <component v-bind:is="as" v-if="ready">
     <slot />
-  </div>
+  </component>
 </template>
 
 <script lang="ts">
@@ -11,22 +11,55 @@ import { type InjectedEzReeport, InjectionEzReeportKey } from '~/mixins/ezr';
 
 export default defineComponent({
   props: {
+    /**
+     * Which element provider will render to. Can be a Vue component using default slot
+     */
+    as: {
+      type: String,
+      default: 'div',
+    },
+    /**
+     * User's token
+     */
     token: {
       type: String as PropType<string | undefined>,
       default: undefined,
     },
+    /**
+     * Base URL for ezREEPORT API
+     */
     apiUrl: {
       type: String,
       default: '',
     },
+    /**
+     * Base URL to fetch namespace's logos
+     */
     namespaceLogoUrl: {
       type: String,
       default: '',
     },
+    /**
+     * How namespaces are called. It similar to i18n's `message` property
+     */
     namespaceLabel: {
       type: Object as PropType<Record<string, string>>,
       default: () => ({}),
     },
+  },
+  emits: {
+    /**
+     * Triggered on any error from a provider root methods (like `login`)
+     *
+     * @param err The error
+     */
+    error: (err: Error) => !!err,
+    /**
+     * Triggered on any error from auth
+     *
+     * @param err The error
+     */
+    'error:auth': (err: Error) => !!err,
   },
   data: (): InjectedEzReeport['data'] => ({
     ready: false,
@@ -46,16 +79,18 @@ export default defineComponent({
     namespaceLogoUrl(value: string) {
       this.namespaces.logoUrl = value || import.meta.env.VITE_NAMESPACES_LOGO_URL;
     },
+    namespaceLabel() {
+      this.registerNamespaceLocalization();
+    },
     // eslint-disable-next-line func-names
     '$i18n.locale': function () {
       this.registerNamespaceLocalization();
     },
     token(value?: string) {
+      this.logout();
       if (value) {
         this.login(value);
-        return;
       }
-      this.logout();
     },
   },
   provide() {
@@ -137,6 +172,8 @@ export default defineComponent({
         // eslint-disable-next-line no-restricted-syntax
         for (const res of results) {
           if (res.status === 'rejected') {
+            this.$emit('error', res.reason);
+            this.$emit('error:auth', res.reason);
             console.error('[ezReeport-vue]', res.reason.message);
           }
         }
@@ -210,11 +247,11 @@ export default defineComponent({
 
 <i18n lang="yaml">
 en:
-  namespace: 'namespace'
+  namespace: 'namespace|namespaces'
   errors:
     no_data: 'An error occurred when fetching data'
 fr:
-  namespace: 'espace'
+  namespace: 'espace|espaces'
   errors:
     no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>

@@ -37,12 +37,21 @@
 
 <script lang="ts">
 import type { history } from 'ezreeport-sdk-js';
-import { defineComponent } from 'vue';
+import { type PropType, defineComponent } from 'vue';
 import { DataOptions, DataPagination } from 'vuetify';
 import ezReeportMixin from '~/mixins/ezr';
 
 export default defineComponent({
   mixins: [ezReeportMixin],
+  props: {
+    /**
+     * How often the entries are re-fetched in ms
+     */
+    fetchInterval: {
+      type: [Number, Boolean] as PropType<number | false>,
+      default: 5000,
+    },
+  },
   data: () => ({
     interval: undefined as NodeJS.Timer | undefined,
 
@@ -105,18 +114,30 @@ export default defineComponent({
     '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
+    fetchInterval() {
+      this.stopAutoFetch();
+      this.startAutoFetch();
+    },
   },
   mounted() {
     this.fetch();
-    this.interval = setInterval(() => this.fetch(), 5000);
+    this.startAutoFetch();
   },
   destroyed() {
-    clearInterval(this.interval);
+    this.stopAutoFetch();
   },
   unmounted() {
-    clearInterval(this.interval);
+    this.stopAutoFetch();
   },
   methods: {
+    startAutoFetch() {
+      if (this.fetchInterval && !Number.isNaN(this.fetchInterval)) {
+        this.interval = setInterval(() => this.fetch(), this.fetchInterval);
+      }
+    },
+    stopAutoFetch() {
+      clearInterval(this.interval);
+    },
     /**
      * Fetch tasks and parse result
      *
