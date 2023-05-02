@@ -1,3 +1,20 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.4](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.3...@ezpaarse-project/ezreeport-vue@1.0.0-beta.4) (2023-05-02)
+
+
+### Features
+
+* **vue:** added `as` prop to provider ([8547286](https://github.com/ezpaarse-project/ezreeport/commit/85472860e85262c7b2acc3c305c6e34f995f41d4))
+* **vue:** can now customize the fetchInterval of ezr-history-table ([86437b6](https://github.com/ezpaarse-project/ezreeport/commit/86437b67972ac28c1368503725a09d5c89694907))
+* **vue:** provider now emits errors on login ([d931557](https://github.com/ezpaarse-project/ezreeport/commit/d9315576d2ce2c244978f9f6328f89e2288acf86))
+
+
+
+
+
+### Dependencies
+
+* **@ezpaarse-project/ezreeport-sdk-js:** upgraded to 1.0.0-beta.1
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.2...@ezpaarse-project/ezreeport-vue@1.0.0-beta.3) (2023-04-25)
 
 
