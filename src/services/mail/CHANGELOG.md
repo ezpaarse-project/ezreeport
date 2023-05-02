@@ -1,3 +1,10 @@
+# ezreeport-mail [1.0.0-beta.5](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.0.0-beta.4...ezreeport-mail@1.0.0-beta.5) (2023-05-02)
+
+
+### Bug Fixes
+
+* **mail:** fixed env not overriding mail config ([8ad5c5f](https://github.com/ezpaarse-project/ezreeport/commit/8ad5c5f4fcd70072f1442ecfb717b8818dd11fd3))
+
 # ezreeport-mail [1.0.0-beta.4](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.0.0-beta.3...ezreeport-mail@1.0.0-beta.4) (2023-04-25)
 
 
