@@ -39,7 +39,7 @@
     "dotenv-flow": "^3.2.0",
     "ezreeport-mail": "file:../src/services/mail",
     "ezreeport-report": "file:../src/services/report",
-    "ezreeport-sdk-js": "file:../src/sdk",
+    "@ezpaarse-project/ezreeport-sdk-js": "file:../src/sdk",
     "lodash": "^4.17.21",
     "mocha": "^10.2.0",
     "mocha-steps": "^1.3.0",
