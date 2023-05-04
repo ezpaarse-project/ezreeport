@@ -1,0 +1,47 @@
+name: Generate ERD of report database
+
+on:
+  push:
+    branches:
+      - master
+      - rc
+      - dev
+    paths:
+      - 'src/services/report/prisma/schema.prisma'
+
+env:
+  PRISMA_SCHEMA: src/services/report/prisma/schema.prisma
+  OUT_PATH: src/services/report/prisma/doc/ERD.svg
+  COMMIT_NAME: 'doc(report): updated ERD[skip ci]'
+
+jobs:
+  generate-erd:
+    permissions: write-all
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Generate ERD
+        run: 'curl -X POST -d "$(cat ${{ env.PRISMA_SCHEMA }})" -H "Content-Type: text/plain" -o "${{ env.OUT_PATH }}" https://p-erd.oxypomme.fr/erd/'
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+            node-version-file: .nvmrc
+            cache: npm
+
+      - name: Commit files
+        run: |
+          npm ci
+          HUSKY=0
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -a -m "${{ env.COMMIT_NAME }}"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
