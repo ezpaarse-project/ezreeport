@@ -95,3 +95,4 @@ model Template {
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
 }
+
