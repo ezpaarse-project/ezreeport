@@ -7,6 +7,7 @@ on:
       - rc
       - dev
     paths:
+      - '.github/workflows/report-erd.yml'
       - 'src/services/report/prisma/schema.prisma'
 
 env:
@@ -38,7 +39,7 @@ jobs:
           HUSKY=0
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git commit add "${{ env.OUT_PATH }}"
+          git add .
           git commit -m "${{ env.COMMIT_NAME }}"
 
       - name: Push changes
