@@ -10,7 +10,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// TODO: rename to Report
 model Task {
   id          String     @id @default(uuid())
   name        String
