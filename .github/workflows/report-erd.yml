@@ -14,6 +14,8 @@ env:
   PRISMA_SCHEMA: src/services/report/prisma/schema.prisma
   OUT_PATH: src/services/report/prisma/doc/ERD.svg
   COMMIT_NAME: 'doc(report): updated ERD[skip ci]'
+  COMMIT_BODY: '${{ github.event.compare }}'
+  COMMIT_FOOTER: 'Co-authored-by: ${{ github.event.sender.login }} <${{ github.event.sender.email }}>'
   ERD_WS: https://p-erd.oxypomme.fr/erd/
 
 jobs:
