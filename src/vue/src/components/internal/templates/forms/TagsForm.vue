@@ -66,7 +66,7 @@
     </div>
 
     <v-chip-group column v-if="value.length > 0">
-      <v-chip
+      <ReadableChip
         v-for="tag in value"
         :key="tag.name"
         :color="tag.color"
@@ -74,7 +74,7 @@
         @click="showTagPopover($event, tag)"
       >
         {{ tag.name }}
-      </v-chip>
+      </ReadableChip>
     </v-chip-group>
   </v-card>
 </template>

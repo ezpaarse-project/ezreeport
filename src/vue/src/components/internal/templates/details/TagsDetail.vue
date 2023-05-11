@@ -9,7 +9,7 @@
     </div>
 
     <v-chip-group column>
-      <v-chip
+      <ReadableChip
         v-for="tag in value"
         :key="tag.name"
         :color="tag.color"
@@ -18,7 +18,7 @@
         style="pointer-events: none;"
       >
         {{ tag.name }}
-      </v-chip>
+      </ReadableChip>
     </v-chip-group>
   </v-sheet>
 </template>
