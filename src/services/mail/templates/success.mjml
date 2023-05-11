@@ -12,7 +12,8 @@
       <p>Bonjour,</p>
       <p>
         Vous trouverez dans ce mail le rapport <strong>{{ recurrence }}</strong>
-        « <strong>{{ name }}</strong> », généré le <strong>{{ date }}</strong>.
+        « <strong>{{ name }}</strong> », généré le <strong>{{ date }} (UTC
+        +0)</strong>.
       </p>
       <p>
         Ce message est envoyé automatiquement par l'application ezMESURE,
