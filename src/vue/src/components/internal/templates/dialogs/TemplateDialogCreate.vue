@@ -60,7 +60,7 @@
 </template>
 
 <script lang="ts">
-import type { templates } from 'ezreeport-sdk-js';
+import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import { cloneDeep } from 'lodash';
 import { defineComponent, type PropType } from 'vue';
 import { type CustomTemplate } from '~/lib/templates/customTemplates';

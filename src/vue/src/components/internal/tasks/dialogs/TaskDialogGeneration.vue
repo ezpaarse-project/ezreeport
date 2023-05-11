@@ -164,7 +164,7 @@ import {
   min,
   parseISO,
 } from 'date-fns';
-import type { tasks, reports } from 'ezreeport-sdk-js';
+import type { tasks, reports } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 import isEmail from 'validator/lib/isEmail';
 import { calcPeriod, type Period } from '~/lib/tasks/recurrence';

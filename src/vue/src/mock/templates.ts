@@ -1,4 +1,4 @@
-import type { templates } from 'ezreeport-sdk-js';
+import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 
 const data: templates.FullTemplate[] = [
   {

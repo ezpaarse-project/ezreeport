@@ -152,7 +152,7 @@
 
 <script lang="ts">
 import { addDays, formatISO, parseISO } from 'date-fns';
-import type { tasks } from 'ezreeport-sdk-js';
+import type { tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { cloneDeep } from 'lodash';
 import isEmail from 'validator/lib/isEmail';

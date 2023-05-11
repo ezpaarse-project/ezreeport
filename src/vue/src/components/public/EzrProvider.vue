@@ -6,7 +6,7 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import * as sdk from 'ezreeport-sdk-js';
+import * as sdk from '@ezpaarse-project/ezreeport-sdk-js';
 import { type InjectedEzReeport, InjectionEzReeportKey } from '~/mixins/ezr';
 
 export default defineComponent({

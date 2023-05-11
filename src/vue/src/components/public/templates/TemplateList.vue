@@ -117,7 +117,7 @@
 </template>
 
 <script lang="ts">
-import type { templates } from 'ezreeport-sdk-js';
+import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { Tag } from '~/components/templates/forms/TagsForm.vue';
 import ezReeportMixin from '~/mixins/ezr';

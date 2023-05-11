@@ -1,4 +1,4 @@
-import type * as sdk from 'ezreeport-sdk-js';
+import type * as sdk from '@ezpaarse-project/ezreeport-sdk-js';
 
 interface EzReeportVueData {
   /**

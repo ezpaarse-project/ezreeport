@@ -36,7 +36,7 @@
 </template>
 
 <script lang="ts">
-import type { history } from 'ezreeport-sdk-js';
+import type { history } from '@ezpaarse-project/ezreeport-sdk-js';
 import { type PropType, defineComponent } from 'vue';
 import { DataOptions, DataPagination } from 'vuetify';
 import ezReeportMixin from '~/mixins/ezr';

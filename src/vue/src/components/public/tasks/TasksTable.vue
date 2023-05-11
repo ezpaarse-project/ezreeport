@@ -123,7 +123,7 @@
 </template>
 
 <script lang="ts">
-import type { namespaces, tasks } from 'ezreeport-sdk-js';
+import type { namespaces, tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import type { DataOptions } from 'vuetify';
 import type { DataTableHeader } from '~/types/vuetify';

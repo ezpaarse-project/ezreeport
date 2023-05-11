@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-import type { namespaces } from 'ezreeport-sdk-js';
+import type { namespaces } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent, PropType } from 'vue';
 import ezReeportMixin from '~/mixins/ezr';
 

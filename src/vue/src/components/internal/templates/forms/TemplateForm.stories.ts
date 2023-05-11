@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue';
-import type { templates } from 'ezreeport-sdk-js';
+import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import mockTasks from '~/mock/tasks';
 import mockTemplates from '~/mock/templates';
 import { addAdditionalData } from '~/lib/templates/customTemplates';

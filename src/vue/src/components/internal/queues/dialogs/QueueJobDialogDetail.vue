@@ -129,7 +129,7 @@
 </template>
 
 <script lang="ts">
-import type { queues } from 'ezreeport-sdk-js';
+import type { queues } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 import ezReeportMixin from '~/mixins/ezr';
 

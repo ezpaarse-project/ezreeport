@@ -157,7 +157,7 @@
 
 <script lang="ts">
 import { addDays, formatISO, parseISO } from 'date-fns';
-import type { tasks } from 'ezreeport-sdk-js';
+import type { tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import isEmail from 'validator/lib/isEmail';
 import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '~/lib/templates/customTemplates';

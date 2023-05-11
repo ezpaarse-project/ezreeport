@@ -85,7 +85,7 @@
 </template>
 
 <script lang="ts">
-import type { health } from 'ezreeport-sdk-js';
+import type { health } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { version, name } from '~/../package.json';
 import ezReeportMixin from '~/mixins/ezr';

@@ -25,7 +25,7 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import type { templates } from 'ezreeport-sdk-js';
+import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 
 export type Tag = templates.FullTemplate['tags'][number];
 

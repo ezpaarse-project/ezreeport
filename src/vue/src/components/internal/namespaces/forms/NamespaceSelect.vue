@@ -55,7 +55,7 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import type { namespaces } from 'ezreeport-sdk-js';
+import type { namespaces } from '@ezpaarse-project/ezreeport-sdk-js';
 import ezReeportMixin from '~/mixins/ezr';
 
 export interface NamespaceItem {
