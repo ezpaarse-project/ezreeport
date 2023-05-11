@@ -151,7 +151,7 @@
 </template>
 
 <script lang="ts">
-import { addDays } from 'date-fns';
+import { addDays, formatISO, parseISO } from 'date-fns';
 import type { tasks } from 'ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { cloneDeep } from 'lodash';
@@ -309,6 +309,8 @@ export default defineComponent({
           }),
         );
 
+        const nextRun = formatISO(this.task.nextRun, { representation: 'date' });
+
         const { content } = await this.$ezReeport.sdk.tasks.createTask(
           {
             name: this.task.name,
@@ -319,7 +321,7 @@ export default defineComponent({
             },
             targets: this.task.targets,
             recurrence: this.task.recurrence,
-            nextRun: this.task.nextRun,
+            nextRun: parseISO(`${nextRun}T00:00:00.000Z`),
             enabled: this.task.enabled,
           },
         );
