@@ -125,6 +125,10 @@ export const startGeneration = (
 
 export type GenerationStartedEvent = { id: string | number, queue: string };
 export type GenerationProgressEvent = { progress: number, status: FullReportJob['status'] };
+type GenerationEvents = {
+  'started': [GenerationStartedEvent],
+  'progress': [GenerationProgressEvent],
+};
 
 /**
  * Start generation of a report and track progress
@@ -146,7 +150,7 @@ export type GenerationProgressEvent = { progress: number, status: FullReportJob[
  */
 export const startAndListenGeneration = (
   ...p: Parameters<typeof startGeneration>
-) => createEventfulPromise(
+) => createEventfulPromise<ReportResult, GenerationEvents>(
   async (events) => {
     const { content: { id, queue } } = await startGeneration(...p);
     events.emit('started', { id, queue });

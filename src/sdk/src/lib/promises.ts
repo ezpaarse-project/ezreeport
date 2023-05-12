@@ -1,13 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import EventEmitter from 'events';
 
-interface EventEmitterBase {
-  on: (...p: Parameters<EventEmitter['on']>) => this,
-  once: (...p: Parameters<EventEmitter['once']>) => this,
-  off: (...p: Parameters<EventEmitter['off']>) => this,
-  emit: (...p: Parameters<EventEmitter['emit']>) => this,
+interface EventfulListener<E extends Record<string, any[]>> {
+  on: <P extends keyof E>(eventName: P, listener: (...args: E[P]) => void) => this,
+  once: <P extends keyof E>(eventName: P, listener: (...args: E[P]) => void) => this,
+  off: <P extends keyof E>(eventName: P, listener: (...args: E[P]) => void) => this,
 }
-
-export type EventfulPromise<T> = Promise<T> & EventEmitterBase;
+interface EventfulEmitter<E extends Record<string, any[]>> {
+  emit: <P extends keyof E>(eventName: P, ...args: E[P]) => this,
+}
+export type EventfulPromise<T, E extends Record<string, any[]>> = Promise<T> & EventfulListener<E>;
 
 /**
  * Attach a `EventEmitter` to a `Promise` returned by the `executor`
@@ -17,20 +19,35 @@ export type EventfulPromise<T> = Promise<T> & EventEmitterBase;
  *
  * @returns The EventfulPromise
  */
-const createEventfulPromise = <T>(
-  executor: (emitter: EventEmitter | EventEmitterBase) => Promise<T>,
+const createEventfulPromise = <T, E extends Record<string, any[]> = Record<string, any[]>>(
+  executor: (emitter: EventfulEmitter<E>) => Promise<T>,
   emitter = new EventEmitter(),
-): EventfulPromise<T> => {
-  const promise = executor(emitter);
+): EventfulPromise<T, E> => {
+  const customEmitter: EventfulEmitter<E> = {
+    emit: (eventName, ...args) => {
+      emitter.emit(eventName.toString(), ...args);
+      return customEmitter;
+    },
+  };
 
-  const res: EventfulPromise<T> = Object.assign(
+  const promise = executor(customEmitter);
+
+  const res: EventfulPromise<T, E> = Object.assign<Promise<T>, EventfulListener<E>>(
     promise,
     {
-      on: (...p) => { emitter.on(...p); return res; },
-      once: (...p) => { emitter.on(...p); return res; },
-      off: (...p) => { emitter.on(...p); return res; },
-      emit: (...p) => { emitter.emit(...p); return res; },
-    } as EventEmitterBase,
+      on: (eventName, listener) => {
+        emitter.on(eventName.toString(), (...p) => listener(...p as any));
+        return res;
+      },
+      once: (eventName, listener) => {
+        emitter.once(eventName.toString(), (...p) => listener(...p as any));
+        return res;
+      },
+      off: (eventName, listener) => {
+        emitter.off(eventName.toString(), (...p) => listener(...p as any));
+        return res;
+      },
+    },
   );
   return res;
 };
