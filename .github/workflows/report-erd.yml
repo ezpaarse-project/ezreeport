@@ -1,4 +1,4 @@
-name: Generate ERD of report database
+name: Generate database documentation of report database
 
 on:
   push:
@@ -22,7 +22,7 @@ env:
   ERD_WS_KEY: ${{ secrets.PRISMA_ERD_API_KEY }}
 
 jobs:
-  generate-erd:
+  generate-db-doc:
     permissions: write-all
     runs-on: ubuntu-latest
 
@@ -33,7 +33,7 @@ jobs:
       - name: Generate ERD
         run: 'curl -X POST -d "$(cat ${{ env.PRISMA_SCHEMA }})" -H "Content-Type: text/plain" -H "X-Api-Key: ${{ env.ERD_WS_KEY }}" -o "${{ env.OUT_ERD_PATH }}" ${{ env.ERD_WS }}/erd/'
 
-      - name: Generate Data dictionnary
+      - name: Generate Data dictionary
         run: 'curl -X POST -d "$(cat ${{ env.PRISMA_SCHEMA }})" -H "Content-Type: text/plain" -H "X-Api-Key: ${{ env.ERD_WS_KEY }}" -o "${{ env.OUT_DIC_PATH }}" ${{ env.ERD_WS }}/dict/\?name\=${{ env.DIC_NAME }}'
 
       - name: Setup Node
