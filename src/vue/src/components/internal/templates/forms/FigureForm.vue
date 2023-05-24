@@ -66,14 +66,13 @@
       </v-sheet>
 
       <v-sheet
-        v-if="figure.params"
         rounded
         outlined
         class="my-2 pa-2"
       >
         <ToggleableObjectTree
           :label="$t('headers.figureParams').toString()"
-          :value="figure.params"
+          :value="figure.params || {}"
           @input="
             !Array.isArray($event)
               && $emit('update:figure', { ...figure, params: $event })
