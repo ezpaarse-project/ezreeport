@@ -5180,6 +5180,7 @@
           },
           "enabled": {
             "type": "boolean",
+            "description": "Is the generation of the task is enabled",
             "default": true
           },
           "createdAt": {
