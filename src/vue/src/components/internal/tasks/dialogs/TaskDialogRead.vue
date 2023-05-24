@@ -133,7 +133,7 @@ type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTempl
 export const tabs = [
   { name: 'details' },
   { name: 'template' },
-  { name: 'history' },
+  { name: 'activity' },
 ] as const;
 
 export default defineComponent({
@@ -293,7 +293,7 @@ en:
   tabs:
     details: 'Details'
     template: 'Template'
-    history: 'History'
+    activity: 'Activity'
   task:
     lastRun: 'Last run'
     nextRun: 'Next run'
@@ -312,7 +312,7 @@ fr:
   tabs:
     details: 'Détails'
     template: 'Modèle'
-    history: 'Historique'
+    activity: 'Activité'
   task:
     lastRun: 'Dernière itération'
     nextRun: 'Prochaine itération'
