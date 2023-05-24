@@ -67,8 +67,18 @@ const getPossibleNamespaces = async (
 
   if (req.user.isAdmin) {
     const { createdAt, updatedAt } = req.user;
+    const namespaces = await getAllNamespaces();
+    if (namespaces.length < 1) {
+      namespaces.push({
+        id: '_',
+        name: '_',
+        logoId: '',
+        createdAt: new Date('a'),
+        updatedAt: new Date('a'),
+      });
+    }
 
-    return (await getAllNamespaces()).map((namespace) => ({
+    return namespaces.map((namespace) => ({
       access: Access.SUPER_USER,
       createdAt,
       updatedAt,
