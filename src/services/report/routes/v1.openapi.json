@@ -5215,7 +5215,7 @@
           "template": {
             "$ref": "#/components/schemas/TaskTemplate"
           },
-          "tagets": {
+          "targets": {
             "type": "array",
             "description": "Emails address to send reports",
             "items": {
@@ -5280,7 +5280,7 @@
               "template": {
                 "$ref": "#/components/schemas/TaskTemplate"
               },
-              "tagets": {
+              "targets": {
                 "type": "array",
                 "description": "Emails address to send reports",
                 "items": {
@@ -5291,7 +5291,7 @@
             },
             "required": [
               "template",
-              "tagets"
+              "targets"
             ]
           }
         ]

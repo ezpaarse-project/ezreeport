@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { parseISO } from 'date-fns';
 import {
   endOfDay,
   formatISO,
@@ -26,7 +27,6 @@ type InputHistory = Pick<Prisma.HistoryCreateWithoutTaskInput, 'type' | 'message
  */
 const taskSchema = Joi.object<Prisma.TaskCreateInput>({
   name: Joi.string().trim().required(),
-  namespace: Joi.string(),
   template: taskTemplateSchema.required(),
   targets: Joi.array().items(Joi.string().trim().email()).required(),
   recurrence: Joi.string().valid(
@@ -37,7 +37,7 @@ const taskSchema = Joi.object<Prisma.TaskCreateInput>({
     Recurrence.BIENNIAL,
     Recurrence.YEARLY,
   ).required(),
-  nextRun: Joi.date().iso().greater('now'),
+  nextRun: Joi.date().iso().required(),
   enabled: Joi.boolean().default(true),
 });
 
@@ -58,6 +58,7 @@ export const isValidTask = (data: unknown): data is InputTask => {
 };
 
 const createTaskSchema = taskSchema.append({
+  nextRun: Joi.date().iso().greater('now'),
   namespace: Joi.string().required(),
 });
 
@@ -286,27 +287,27 @@ export const editTaskByIdWithHistory = async (
     throw new ArgumentError(`No template named "${data.template.extends}" was found`);
   }
 
-  // If next run isn't changed but recurrence changed
-  let nR = nextRun;
-  if (
-    data.recurrence !== existingTask.recurrence
-      && (!nR || isSameDay(new Date(nR), existingTask.nextRun))
-  ) {
-    nR = calcNextDate(existingTask.lastRun ?? new Date(), data.recurrence);
+  let nR = typeof nextRun === 'object' ? nextRun : parseISO(nextRun);
+  const isNextRunChanged = !isSameDay(nR, existingTask.nextRun);
+  if (isNextRunChanged && isBefore(nR, new Date())) {
+    throw new ArgumentError('Body is not valid: "nextRun" must be greater than "now" or stays unmodified');
   }
 
-  // If next run isn't changed but task is re-enabled
-  if (data.enabled && data.enabled !== existingTask.enabled && !nR) {
-    const today = endOfDay(new Date());
-    nR = existingTask.nextRun;
-    while (isBefore(nR, today)) {
-      nR = calcNextDate(nR, existingTask.recurrence);
+  // If next run isn't changed...
+  if (!isNextRunChanged) {
+    //  ... but recurrence changed, update nextRun
+    if (data.recurrence !== existingTask.recurrence) {
+      nR = calcNextDate(existingTask.lastRun ?? new Date(), data.recurrence);
     }
-  }
 
-  // Falling back to task's nextRun
-  if (nR === '') {
-    nR = existingTask.nextRun;
+    // ... but task is re-enabled
+    if (data.enabled && existingTask.enabled === false) {
+      const today = endOfDay(new Date());
+      nR = existingTask.nextRun;
+      while (isBefore(nR, today)) {
+        nR = calcNextDate(nR, existingTask.recurrence);
+      }
+    }
   }
 
   const task = await prisma.task.update({
