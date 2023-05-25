@@ -1,3 +1,16 @@
+# ezreeport-report [1.0.0-beta.6](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.5...ezreeport-report@1.0.0-beta.6) (2023-05-25)
+
+
+### Bug Fixes
+
+* **report:** fixed mail date after report generation ([a07ffba](https://github.com/ezpaarse-project/ezreeport/commit/a07ffba155f6972f53b370a235667d8ab5ba86a8))
+
+
+### Features
+
+* **report:** added dummy namespace for admins when there's no namespace ([e839f37](https://github.com/ezpaarse-project/ezreeport/commit/e839f376e50a9b8174153457108fc6bbf5ed413b))
+* **report:** when updating task, nextRun is now mandatory but can stay unchanged ([3a7e91d](https://github.com/ezpaarse-project/ezreeport/commit/3a7e91dbb72f9059ea99960abf37ae9fdbddd1d4))
+
 # ezreeport-report [1.0.0-beta.5](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.4...ezreeport-report@1.0.0-beta.5) (2023-04-25)
 
 
