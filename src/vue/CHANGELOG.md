@@ -1,3 +1,30 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.4](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.3...@ezpaarse-project/ezreeport-vue@1.0.0-beta.4) (2023-05-25)
+
+
+### Bug Fixes
+
+* **vue:** fixed issues with fetchOptions/renderOptions/figureParams not beign visible ([f1ba00c](https://github.com/ezpaarse-project/ezreeport/commit/f1ba00cc9e2abdb0f7dc3664cdc677a93b69f463))
+* **vue:** fixed timezone issue in task dialogs ([6cd9440](https://github.com/ezpaarse-project/ezreeport/commit/6cd9440429d36d0d154ada48eccf4817d011c83b))
+
+
+### Features
+
+* **vue:** add support for months in DatePicker ([50a9e4c](https://github.com/ezpaarse-project/ezreeport/commit/50a9e4ccd2d8f0651ee4011a4063abc56abd83cf))
+* **vue:** added `as` prop to provider ([8547286](https://github.com/ezpaarse-project/ezreeport/commit/85472860e85262c7b2acc3c305c6e34f995f41d4))
+* **vue:** added accessibilty on template's tags ([c5c8bbc](https://github.com/ezpaarse-project/ezreeport/commit/c5c8bbc18939da00c960ac5c8863942724568431))
+* **vue:** can now customize the fetchInterval of ezr-history-table ([86437b6](https://github.com/ezpaarse-project/ezreeport/commit/86437b67972ac28c1368503725a09d5c89694907))
+* **vue:** click on a report can now open edition ([afa0831](https://github.com/ezpaarse-project/ezreeport/commit/afa0831ed7f60d1e6cb3fe1fbab814be1f84384c))
+* **vue:** provider now emits errors on login ([d931557](https://github.com/ezpaarse-project/ezreeport/commit/d9315576d2ce2c244978f9f6328f89e2288acf86))
+* **vue:** renamed "history" to "activity" in task dialogs ([4372627](https://github.com/ezpaarse-project/ezreeport/commit/43726278d44db215438174a2a96f4e50144eb96c))
+
+
+
+
+
+### Dependencies
+
+* **@ezpaarse-project/ezreeport-sdk-js:** upgraded to 1.0.0-beta.2
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.4](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.3...@ezpaarse-project/ezreeport-vue@1.0.0-beta.4) (2023-05-02)
 
 
