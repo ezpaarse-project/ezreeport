@@ -181,7 +181,7 @@ const router = CustomRouter('tasks')
       id,
       {
         ...pick(task, 'name', 'targets', 'recurrence', 'nextRun'),
-        nextRun: '',
+        nextRun: task.nextRun,
         template: task.template as Prisma.InputJsonObject,
         enabled: true,
       },
@@ -211,7 +211,7 @@ const router = CustomRouter('tasks')
       id,
       {
         ...pick(task, 'name', 'targets', 'recurrence'),
-        nextRun: '',
+        nextRun: task.nextRun,
         template: task.template as Prisma.InputJsonObject,
         enabled: false,
       },
