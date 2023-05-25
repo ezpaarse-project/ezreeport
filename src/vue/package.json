@@ -26,7 +26,8 @@
   "module": "./dist/ezreeport-vue.js",
   "types": "./src/index.ts",
   "files": [
-    "dist"
+    "dist",
+    "src/index.ts"
   ],
   "scripts": {
     "build": "NODE_ENV=production vite build",
