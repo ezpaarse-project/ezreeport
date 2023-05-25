@@ -257,9 +257,11 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.fetch();
-    this.fetchNamespaces();
     this.innerCurrentNamespace = this.currentNamespace ?? '';
+    this.$nextTick(() => {
+      this.fetch();
+      this.fetchNamespaces();
+    });
   },
   methods: {
     /**
