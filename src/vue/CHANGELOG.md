@@ -1,3 +1,10 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.6](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.5...@ezpaarse-project/ezreeport-vue@1.0.0-beta.6) (2023-05-25)
+
+
+### Features
+
+* **vue:** added namespace filter and control over tasktable ([2e8c541](https://github.com/ezpaarse-project/ezreeport/commit/2e8c541d838aa9b8654cf8f713943395cd783e97))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.5](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.4...@ezpaarse-project/ezreeport-vue@1.0.0-beta.5) (2023-05-25)
 
 
