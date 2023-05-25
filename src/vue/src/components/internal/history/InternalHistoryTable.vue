@@ -89,7 +89,7 @@
 
 <script lang="ts">
 import { isBefore, parseISO } from 'date-fns';
-import type { history, namespaces, tasks } from 'ezreeport-sdk-js';
+import type { history, namespaces, tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 import type { DataOptions } from 'vuetify';
 import type { DataTableHeader } from '~/types/vuetify';

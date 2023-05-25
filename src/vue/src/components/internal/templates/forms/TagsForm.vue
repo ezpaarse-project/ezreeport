@@ -66,7 +66,7 @@
     </div>
 
     <v-chip-group column v-if="value.length > 0">
-      <v-chip
+      <ReadableChip
         v-for="tag in value"
         :key="tag.name"
         :color="tag.color"
@@ -74,14 +74,14 @@
         @click="showTagPopover($event, tag)"
       >
         {{ tag.name }}
-      </v-chip>
+      </ReadableChip>
     </v-chip-group>
   </v-card>
 </template>
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import type { templates } from 'ezreeport-sdk-js';
+import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 
 export type Tag = templates.FullTemplate['tags'][number];
 

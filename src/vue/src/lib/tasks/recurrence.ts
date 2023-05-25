@@ -15,7 +15,7 @@ import {
   setDefaultOptions,
 } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import type { tasks } from 'ezreeport-sdk-js';
+import type { tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 
 setDefaultOptions({ locale: fr, weekStartsOn: 1 });
 

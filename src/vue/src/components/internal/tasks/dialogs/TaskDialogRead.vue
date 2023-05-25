@@ -123,7 +123,7 @@
 </template>
 
 <script lang="ts">
-import type { namespaces, tasks } from 'ezreeport-sdk-js';
+import type { namespaces, tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
@@ -133,7 +133,7 @@ type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTempl
 export const tabs = [
   { name: 'details' },
   { name: 'template' },
-  { name: 'history' },
+  { name: 'activity' },
 ] as const;
 
 export default defineComponent({
@@ -269,6 +269,10 @@ export default defineComponent({
      * Prepare and show task generation dialog
      */
     showGenerateDialog() {
+      if (!this.perms.runTask) {
+        return;
+      }
+
       this.generationDialogShown = true;
     },
   },
@@ -293,7 +297,7 @@ en:
   tabs:
     details: 'Details'
     template: 'Template'
-    history: 'History'
+    activity: 'Activity'
   task:
     lastRun: 'Last run'
     nextRun: 'Next run'
@@ -312,7 +316,7 @@ fr:
   tabs:
     details: 'Détails'
     template: 'Modèle'
-    history: 'Historique'
+    activity: 'Activité'
   task:
     lastRun: 'Dernière itération'
     nextRun: 'Prochaine itération'

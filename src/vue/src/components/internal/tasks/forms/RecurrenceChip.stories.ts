@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue';
-import { tasks } from 'ezreeport-sdk-js';
+import { tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import RecurrenceChip from './RecurrenceChip.vue';
 
 const recurrences = [

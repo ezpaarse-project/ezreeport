@@ -1,4 +1,4 @@
-import { tasks } from 'ezreeport-sdk-js';
+import { tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 
 const data: tasks.FullTask[] = [
   {

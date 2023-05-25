@@ -32,6 +32,7 @@
       :event-color="eventColor"
       :color="color"
       :range="Array.isArray(date)"
+      :type="type"
       first-day-of-week="1"
       show-current
       show-adjacent-months
@@ -53,6 +54,10 @@ export default defineComponent({
     label: {
       type: String,
       required: true,
+    },
+    type: {
+      type: String as PropType<'date' | 'month' | 'year' | undefined>,
+      default: undefined,
     },
     min: {
       type: Date as PropType<Date | undefined>,
@@ -108,7 +113,7 @@ export default defineComponent({
         const val: Date | Date[] = Array.isArray(value)
           ? value.map(this.parseDate)
           : this.parseDate(value);
-        this.$emit('input', val as [Date, Date]);
+        this.$emit('input', val as Date | [Date, Date]);
       },
     },
     /**
@@ -140,6 +145,9 @@ export default defineComponent({
   },
   methods: {
     parseDate(date: string) {
+      if (this.type === 'year' || this.type === 'month') {
+        return parse(date, 'yyyy-MM', new Date());
+      }
       return parse(date, 'yyyy-MM-dd', new Date());
     },
     formatDate(date: Date) {

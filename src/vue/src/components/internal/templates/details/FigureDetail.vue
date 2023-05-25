@@ -61,7 +61,7 @@
 </template>
 
 <script lang="ts">
-import type { templates } from 'ezreeport-sdk-js';
+import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 
 export default defineComponent({

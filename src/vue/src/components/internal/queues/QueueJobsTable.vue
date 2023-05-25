@@ -55,7 +55,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import type { queues } from 'ezreeport-sdk-js';
+import type { queues } from '@ezpaarse-project/ezreeport-sdk-js';
 import { DataTableHeader } from '~/types/vuetify';
 import type { DataOptions } from 'vuetify';
 import ezReeportMixin from '~/mixins/ezr';

@@ -4005,6 +4005,44 @@
               }
             }
           },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/Membership"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "namespace": {
+                              "$ref": "#/components/schemas/Namespace"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
           "400": {
             "$ref": "#/components/responses/400"
           },
@@ -4888,7 +4926,19 @@
                       }
                     },
                     "content": {
-                      "$ref": "#/components/schemas/NamespaceFull"
+                      "allOf": [
+                        {
+                          "$ref": "#/components/schemas/Membership"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "username": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      ]
                     }
                   }
                 }
@@ -5130,6 +5180,7 @@
           },
           "enabled": {
             "type": "boolean",
+            "description": "Is the generation of the task is enabled",
             "default": true
           },
           "createdAt": {
@@ -5164,7 +5215,7 @@
           "template": {
             "$ref": "#/components/schemas/TaskTemplate"
           },
-          "tagets": {
+          "targets": {
             "type": "array",
             "description": "Emails address to send reports",
             "items": {
@@ -5229,7 +5280,7 @@
               "template": {
                 "$ref": "#/components/schemas/TaskTemplate"
               },
-              "tagets": {
+              "targets": {
                 "type": "array",
                 "description": "Emails address to send reports",
                 "items": {
@@ -5240,7 +5291,7 @@
             },
             "required": [
               "template",
-              "tagets"
+              "targets"
             ]
           }
         ]

@@ -87,7 +87,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import type { crons } from 'ezreeport-sdk-js';
+import type { crons } from '@ezpaarse-project/ezreeport-sdk-js';
 import ezReeportMixin from '~/mixins/ezr';
 
 type CronAction = typeof crons.startCron | typeof crons.stopCron | typeof crons.forceCron;

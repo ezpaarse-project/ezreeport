@@ -51,7 +51,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import type { queues } from 'ezreeport-sdk-js';
+import type { queues } from '@ezpaarse-project/ezreeport-sdk-js';
 import ezReeportMixin from '~/mixins/ezr';
 
 interface QueueItem {

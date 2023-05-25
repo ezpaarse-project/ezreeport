@@ -9,7 +9,7 @@
     </div>
 
     <v-chip-group column>
-      <v-chip
+      <ReadableChip
         v-for="tag in value"
         :key="tag.name"
         :color="tag.color"
@@ -18,14 +18,14 @@
         style="pointer-events: none;"
       >
         {{ tag.name }}
-      </v-chip>
+      </ReadableChip>
     </v-chip-group>
   </v-sheet>
 </template>
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import type { templates } from 'ezreeport-sdk-js';
+import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 
 export type Tag = templates.FullTemplate['tags'][number];
 

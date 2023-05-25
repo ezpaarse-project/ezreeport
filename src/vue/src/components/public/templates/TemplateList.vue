@@ -89,7 +89,7 @@
           </v-list-item-title>
 
           <v-list-item-subtitle>
-            <v-chip
+            <ReadableChip
               v-for="tag in tagMap[template.name].value"
               :key="tag.name"
               :color="tag.color"
@@ -98,7 +98,7 @@
               style="pointer-events: none;"
             >
               {{ tag.name }}
-            </v-chip>
+            </ReadableChip>
 
             <v-tooltip v-if="tagMap[template.name].tooltip" top>
               <template #activator="{ attrs, on }">
@@ -117,10 +117,10 @@
 </template>
 
 <script lang="ts">
-import type { templates } from 'ezreeport-sdk-js';
+import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
-import { Tag } from '~/components/templates/forms/TagsForm.vue';
 import ezReeportMixin from '~/mixins/ezr';
+import { Tag } from '~/components/templates/forms/TagsForm.vue';
 
 const MAX_TAGS_SHOWN = 4;
 

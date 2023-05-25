@@ -1,4 +1,4 @@
-import { type history, tasks } from 'ezreeport-sdk-js';
+import { type history, tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 
 const data: history.HistoryWithTask[] = [
   {

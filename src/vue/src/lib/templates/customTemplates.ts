@@ -1,4 +1,4 @@
-import type { templates, tasks } from 'ezreeport-sdk-js';
+import type { templates, tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { v4 as uuid } from 'uuid';
 
 interface CustomProperties {

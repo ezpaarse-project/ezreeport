@@ -157,8 +157,14 @@
 </template>
 
 <script lang="ts">
-import { addDays, differenceInDays, min } from 'date-fns';
-import type { tasks, reports } from 'ezreeport-sdk-js';
+import {
+  addDays,
+  differenceInDays,
+  formatISO,
+  min,
+  parseISO,
+} from 'date-fns';
+import type { tasks, reports } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 import isEmail from 'validator/lib/isEmail';
 import { calcPeriod, type Period } from '~/lib/tasks/recurrence';
@@ -352,11 +358,17 @@ export default defineComponent({
       this.result = undefined;
       this.progress = 0;
       try {
+        const periodStart = formatISO(this.period.start, { representation: 'date' });
+        const periodEnd = formatISO(this.period.end, { representation: 'date' });
+
         const gen = this.$ezReeport.sdk.reports.startAndListenGeneration(
           this.task.id,
           {
             testEmails: this.generationType === 'test' ? this.targets : undefined,
-            period: this.period,
+            period: {
+              start: parseISO(`${periodStart}T00:00:00.000Z`),
+              end: parseISO(`${periodEnd}T23:59:59.999Z`),
+            },
           },
         );
 
