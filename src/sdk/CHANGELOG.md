@@ -1,3 +1,10 @@
+# @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.1...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.2) (2023-05-25)
+
+
+### Features
+
+* **sdk:** eventful promises are now strongly typed ([e870378](https://github.com/ezpaarse-project/ezreeport/commit/e87037883d5a44ef6f0e481a95dddd06107a088f))
+
 # @ezpaarse-project/ezreeport-sdk-js 1.0.0-beta.1 (2023-05-25)
 
 
