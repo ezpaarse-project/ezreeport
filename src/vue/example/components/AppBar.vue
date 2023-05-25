@@ -43,7 +43,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { ezReeportMixin } from 'ezreeport-vue';
+import { ezReeportMixin } from '@ezpaarse-project/ezreeport-vue';
 
 export default defineComponent({
   props: {

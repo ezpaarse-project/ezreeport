@@ -12,6 +12,11 @@ const comps: ComponentsOptions = {
   resolvers: [VuetifyResolver()],
   dts: false,
 };
+if (process.env.SKIP_RESOLVERS) {
+  console.log('skipping resolvers');
+
+  comps.resolvers = [];
+}
 if (process.env.NODE_ENV !== 'production') {
   console.log('building in dev mode');
 

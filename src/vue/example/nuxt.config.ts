@@ -1,14 +1,11 @@
 import type { NuxtConfig } from '@nuxt/types';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import colors from 'vuetify/es5/util/colors';
+import path from 'node:path';
 
 const config: NuxtConfig = {
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,
-
-  css: [
-    'ezreeport-vue/dist/style.css',
-  ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
@@ -77,6 +74,13 @@ const config: NuxtConfig = {
 
   publicRuntimeConfig: {
     authToken: process.env.AUTH_TOKEN,
+  },
+
+  extend(c: any) {
+    // eslint-disable-next-line no-param-reassign
+    c.resolve.alias.vue$ = path.resolve(__dirname, 'node_modules/vue/dist/vue.runtime.esm.js');
+    // eslint-disable-next-line no-param-reassign
+    c.resolve.alias['^vuetify'] = path.resolve(__dirname, 'node_modules/vuetify');
   },
 };
 

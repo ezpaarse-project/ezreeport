@@ -17,7 +17,7 @@
     </v-col>
 
     <v-col>
-      <ezr-task-table />
+      <ezr-task-table :current-namespace.sync="currentInstitution" />
     </v-col>
 
     <v-col>
@@ -26,3 +26,13 @@
 
   </v-row>
 </template>
+
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+  data: () => ({
+    currentInstitution: undefined,
+  }),
+});
+</script>
