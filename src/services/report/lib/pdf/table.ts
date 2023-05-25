@@ -55,14 +55,6 @@ export const addTableToPDF = async (
     }
   }
 
-  // console.log(
-  //   JSON.stringify(
-  //     tableData,
-  //     undefined,
-  //     2,
-  //   ),
-  // );
-
   const options = merge({
     margin: {
       right: doc.margin.right,
