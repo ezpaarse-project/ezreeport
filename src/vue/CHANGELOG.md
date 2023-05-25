@@ -1,3 +1,10 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.8](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.7...@ezpaarse-project/ezreeport-vue@1.0.0-beta.8) (2023-05-25)
+
+
+### Bug Fixes
+
+* **vue:** fixed currentNamespace not beign applied when tasktable is mounted ([202d02c](https://github.com/ezpaarse-project/ezreeport/commit/202d02ce4c458d6988e1b82261ad558ea12d3ce3))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.7](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.6...@ezpaarse-project/ezreeport-vue@1.0.0-beta.7) (2023-05-25)
 
 
