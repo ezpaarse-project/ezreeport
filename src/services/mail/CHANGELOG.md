@@ -1,3 +1,10 @@
+# ezreeport-mail [1.0.0-beta.6](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.0.0-beta.5...ezreeport-mail@1.0.0-beta.6) (2023-05-25)
+
+
+### Bug Fixes
+
+* **mail:** added timezone to mails ([69563e3](https://github.com/ezpaarse-project/ezreeport/commit/69563e3b152b6bfa1077e8f0252a3e2026db9186))
+
 # ezreeport-mail [1.0.0-beta.5](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.0.0-beta.4...ezreeport-mail@1.0.0-beta.5) (2023-05-02)
 
 
