@@ -94,7 +94,7 @@ model Membership {
   /// The Namespace linked to the User
   namespace   Namespace @relation(fields: [namespaceId], references: [id], onDelete: Cascade)
   namespaceId String
-  /// Access level of the user on this namespace
+  /// Access level of the user on this Namespace
   access      Access
   /// When the membership was created
   createdAt   DateTime  @default(now())
