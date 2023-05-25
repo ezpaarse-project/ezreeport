@@ -249,9 +249,9 @@ export default defineComponent({
       this.fetch();
       this.fetchNamespaces();
     },
-    currentNamespace() {
-      if (this.currentNamespace !== this.innerCurrentNamespace) {
-        this.innerCurrentNamespace = this.currentNamespace ?? '';
+    currentNamespace(value: string | undefined) {
+      if (value !== this.innerCurrentNamespace) {
+        this.innerCurrentNamespace = value ?? '';
         this.fetch();
       }
     },
@@ -259,6 +259,7 @@ export default defineComponent({
   mounted() {
     this.fetch();
     this.fetchNamespaces();
+    this.innerCurrentNamespace = this.currentNamespace ?? '';
   },
   methods: {
     /**
