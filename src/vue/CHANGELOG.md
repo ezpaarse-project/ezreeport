@@ -1,3 +1,10 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.9](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.8...@ezpaarse-project/ezreeport-vue@1.0.0-beta.9) (2023-05-25)
+
+
+### Bug Fixes
+
+* **vue:** fixed currentNamespace still not applied when tasktable is mounted ([a3f56c0](https://github.com/ezpaarse-project/ezreeport/commit/a3f56c0b92bf5a78cc1b8ee901cc611b96e659fd))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.8](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.7...@ezpaarse-project/ezreeport-vue@1.0.0-beta.8) (2023-05-25)
 
 
