@@ -301,7 +301,7 @@ export default defineComponent({
               previous: this.lastIds[page - 1],
               count: this.options.itemsPerPage,
             },
-            this.actualCurrentNamespace ? [this.actualCurrentNamespace] : this.allowedNamespaces,
+            this.innerCurrentNamespace ? [this.innerCurrentNamespace] : this.allowedNamespaces,
           );
           if (!content) {
             throw new Error(this.$t('errors.no_data').toString());
