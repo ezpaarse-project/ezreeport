@@ -1,3 +1,10 @@
+# ezreeport-report [1.0.0-beta.7](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.6...ezreeport-report@1.0.0-beta.7) (2023-05-25)
+
+
+### Bug Fixes
+
+* **report:** fixed error on task enable/disable ([df98987](https://github.com/ezpaarse-project/ezreeport/commit/df9898780a53b80d5ea1c19faba3386043692eda))
+
 # ezreeport-report [1.0.0-beta.6](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.5...ezreeport-report@1.0.0-beta.6) (2023-05-25)
 
 
