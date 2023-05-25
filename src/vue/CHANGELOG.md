@@ -1,3 +1,10 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.7](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.6...@ezpaarse-project/ezreeport-vue@1.0.0-beta.7) (2023-05-25)
+
+
+### Bug Fixes
+
+* **vue:** fixed filter when controlling with two way binding ([58b4a15](https://github.com/ezpaarse-project/ezreeport/commit/58b4a15ec0db3272857727aba779e1d747f5c7a7))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.6](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.5...@ezpaarse-project/ezreeport-vue@1.0.0-beta.6) (2023-05-25)
 
 
