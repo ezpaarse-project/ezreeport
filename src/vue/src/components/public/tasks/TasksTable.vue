@@ -29,7 +29,8 @@
     <v-row>
       <v-col>
         <NamespaceSelect
-          v-model="currentNamespace"
+          v-model="actualCurrentNamespace"
+          :allowed-namespaces="allowedNamespaces"
           hide-refresh
           @input="fetch()"
         />
@@ -119,6 +120,7 @@ import { defineComponent } from 'vue';
 import type { DataOptions } from 'vuetify';
 import type { DataTableHeader } from '~/types/vuetify';
 import ezReeportMixin from '~/mixins/ezr';
+import type { PropType } from 'vue';
 
 interface TaskItem {
   id: string,
@@ -131,6 +133,30 @@ interface TaskItem {
 
 export default defineComponent({
   mixins: [ezReeportMixin],
+  props: {
+    /**
+     * Current value of namespace filter
+     */
+    currentNamespace: {
+      type: String as PropType<string | undefined>,
+      default: undefined,
+    },
+    /**
+     * Allowed namespaces in namespace filter
+     */
+    allowedNamespaces: {
+      type: Array as PropType<string[] | undefined>,
+      default: undefined,
+    },
+  },
+  emits: {
+    /**
+     * Triggered when namespace filter changed by user
+     *
+     * @param id The namespace id
+     */
+    'update:currentNamespace': (id: string | undefined) => id !== null,
+  },
   data: () => ({
     readTaskDialogShown: false,
     createTaskDialogShown: false,
@@ -145,7 +171,7 @@ export default defineComponent({
     } as DataOptions,
     lastIds: {} as Record<number, string | undefined>,
 
-    currentNamespace: '',
+    innerCurrentNamespace: '',
     tasks: [] as tasks.Task[],
     totalItems: 0,
     focusedId: '' as string,
@@ -154,6 +180,15 @@ export default defineComponent({
     error: '',
   }),
   computed: {
+    actualCurrentNamespace: {
+      get(): string {
+        return this.currentNamespace || this.innerCurrentNamespace;
+      },
+      set(id: string) {
+        this.innerCurrentNamespace = id;
+        this.$emit('update:currentNamespace', id || undefined);
+      },
+    },
     headers(): DataTableHeader<TaskItem>[] {
       return [
         {
@@ -214,6 +249,12 @@ export default defineComponent({
       this.fetch();
       this.fetchNamespaces();
     },
+    currentNamespace() {
+      if (this.currentNamespace !== this.innerCurrentNamespace) {
+        this.innerCurrentNamespace = this.currentNamespace ?? '';
+        this.fetch();
+      }
+    },
   },
   mounted() {
     this.fetch();
@@ -260,7 +301,7 @@ export default defineComponent({
               previous: this.lastIds[page - 1],
               count: this.options.itemsPerPage,
             },
-            this.currentNamespace ? [this.currentNamespace] : undefined,
+            this.actualCurrentNamespace ? [this.actualCurrentNamespace] : this.allowedNamespaces,
           );
           if (!content) {
             throw new Error(this.$t('errors.no_data').toString());

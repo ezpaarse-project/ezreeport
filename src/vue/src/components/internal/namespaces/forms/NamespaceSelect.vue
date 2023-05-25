@@ -87,6 +87,13 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    /**
+     * Allowed namespaces
+     */
+    allowedNamespaces: {
+      type: Array as PropType<string[] | undefined>,
+      default: undefined,
+    },
   },
   emits: {
     input: (value: string) => !!value,
@@ -97,17 +104,20 @@ export default defineComponent({
   }),
   computed: {
     items(): NamespaceItem[] {
-      const items = this.$ezReeport.data.namespaces.data
-        .filter((namespace) => {
-          if (this.neededPermissions.length <= 0) {
-            return true;
-          }
+      let items = this.$ezReeport.data.namespaces.data;
 
-          return this.neededPermissions.every(
-            (perm) => this.$ezReeport.data.auth.permissions?.namespaces[namespace.id]?.[perm],
-          );
-        })
-        .map(this.parseNamespace)
+      if (this.allowedNamespaces && Array.isArray(this.allowedNamespaces)) {
+        const allowedSet = new Set(this.allowedNamespaces);
+        items = items.filter((namespace) => allowedSet.has(namespace.id));
+      }
+
+      if (Array.isArray(this.neededPermissions) && this.neededPermissions.length >= 0) {
+        items = items.filter((namespace) => this.neededPermissions.every(
+          (perm) => this.$ezReeport.data.auth.permissions?.namespaces[namespace.id]?.[perm],
+        ));
+      }
+
+      items.map(this.parseNamespace)
         .sort((a, b) => a.name.localeCompare(b.name));
 
       if (this.hideAll) {

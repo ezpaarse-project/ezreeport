@@ -4,6 +4,22 @@ import TasksTable from './TasksTable.vue';
 const meta: Meta<typeof TasksTable> = {
   title: 'ezr-task-table (TasksTable)',
   component: TasksTable,
+  args: {
+    currentNamespace: undefined,
+    allowedNamespaces: undefined,
+  },
+  argTypes: {
+    currentNamespace: {
+      control: { type: 'text' },
+    },
+    allowedNamespaces: {
+      control: { type: 'object' },
+    },
+    'update:currentNamespace': {
+      action: 'update:currentNamespace',
+      control: { type: null },
+    },
+  },
 };
 
 export default meta;
