@@ -94,15 +94,6 @@
           </template>
 
           <template #[`item.actions`]="{ item }">
-            <v-tooltip top v-if="rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task']">
-              <template #activator="{ attrs, on }">
-                <v-btn icon color="info" @click.stop="showEditDialog(item)" v-on="on" v-bind="attrs">
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-              </template>
-              <span>{{ $t('actions.edit') }}</span>
-            </v-tooltip>
-
             <v-tooltip top v-if="rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-delete-task']">
               <template #activator="{ attrs, on }">
                 <v-btn icon color="error" @click.stop="showDeletePopover(item, $event)" v-on="on" v-bind="attrs">
@@ -313,12 +304,20 @@ export default defineComponent({
      * @param item The item
      */
     showTaskDialog({ id, namespace }: TaskItem) {
-      if (!this.rawNamespacePerms?.[namespace?.id ?? '']?.['tasks-get-task']) {
+      const hasPermission = (perm: string) => this.rawNamespacePerms?.[namespace?.id ?? '']?.[perm];
+      if (
+        !hasPermission('tasks-get-task')
+        && !hasPermission('tasks-put-task')
+      ) {
         return;
       }
 
       this.focusedId = id;
-      this.readTaskDialogShown = true;
+      if (hasPermission('tasks-put-task')) {
+        this.updateTaskDialogShown = true;
+      } else {
+        this.readTaskDialogShown = true;
+      }
     },
     /**
      * Prepare and show task creation dialog
@@ -329,21 +328,16 @@ export default defineComponent({
       this.createTaskDialogShown = true;
     },
     /**
-     * Prepare and show task edition dialog
-     *
-     * @param item The item
-     */
-    showEditDialog({ id }: TaskItem) {
-      this.focusedId = id;
-      this.updateTaskDialogShown = true;
-    },
-    /**
      * Prepare and show task deletion popover
      *
      * @param item The item
      * @param event The base event
      */
-    async showDeletePopover({ id }: TaskItem, event: MouseEvent) {
+    async showDeletePopover({ id, namespace }: TaskItem, event: MouseEvent) {
+      if (!this.rawNamespacePerms?.[namespace?.id ?? '']?.['tasks-delete-task']) {
+        return;
+      }
+
       this.focusedId = id;
       this.deleteTaskPopoverCoords = {
         x: event.clientX,

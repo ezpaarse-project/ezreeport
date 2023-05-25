@@ -1,5 +1,12 @@
 <template>
   <v-dialog :fullscreen="currentTab === 1" :value="value" max-width="1000" scrollable @input="$emit('input', $event)">
+    <TaskDialogGeneration
+      v-if="task && perms.runTask"
+      v-model="generationDialogShown"
+      :task="task"
+      @generated="fetch()"
+    />
+
     <v-card :loading="loading" :tile="currentTab === 1">
       <v-card-title>
         <v-text-field
@@ -124,6 +131,10 @@
               :template.sync="task.template"
             />
           </v-tab-item>
+
+          <v-tab-item>
+            <InternalHistoryTable v-if="task" :history="task.history" hide-task hide-namespace />
+          </v-tab-item>
         </v-tabs-items>
 
         <ErrorOverlay v-model="error" />
@@ -132,6 +143,10 @@
       <v-divider />
 
       <v-card-actions>
+        <v-btn v-if="perms.runTask" color="warning" @click="showGenerateDialog">
+          {{ $t('actions.generate') }}
+        </v-btn>
+
         <v-spacer />
 
         <v-btn @click="$emit('input', false)">
@@ -183,6 +198,8 @@ export default defineComponent({
     updated: (task: tasks.FullTask) => !!task,
   },
   data: () => ({
+    generationDialogShown: false,
+
     task: undefined as CustomTask | undefined,
     currentTab: 0,
 
@@ -212,7 +229,7 @@ export default defineComponent({
      */
     tabs() {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [detailTab, templateTab, historyTab, ...otherTabs] = tabs;
+      const [detailTab, templateTab, ...otherTabs] = tabs;
       return [
         {
           ...detailTab,
@@ -222,7 +239,7 @@ export default defineComponent({
           ...templateTab,
           valid: this.templateValidation,
         },
-        // ...otherTabs.map((v) => ({ ...v, valid: true })),
+        ...otherTabs.map((v) => ({ ...v, valid: true })),
       ];
     },
     /**
@@ -240,6 +257,8 @@ export default defineComponent({
       return {
         readOne: has('tasks-get-task', namespaces),
         update: has('tasks-put-task', namespaces),
+
+        runTask: has('tasks-post-task-run', namespaces),
       };
     },
     /**
@@ -366,6 +385,16 @@ export default defineComponent({
       }
       this.loading = false;
     },
+    /**
+     * Prepare and show task generation dialog
+     */
+    showGenerateDialog() {
+      if (!this.perms.runTask) {
+        return;
+      }
+
+      this.generationDialogShown = true;
+    },
   },
 });
 </script>
@@ -383,6 +412,7 @@ en:
   tabs:
     details: 'Details'
     template: 'Template'
+    activity: 'Activity'
   task:
     lastRun: 'Last run'
     nextRun: 'Next run'
@@ -397,6 +427,7 @@ en:
     format: "One or more address aren't valid"
     no_data: 'An error occurred when fetching data'
   actions:
+    generate: 'Generate'
     cancel: 'Cancel'
     save: 'Save'
 fr:
@@ -407,6 +438,7 @@ fr:
   tabs:
     details: 'Détails'
     template: 'Modèle'
+    activity: 'Activité'
   task:
     lastRun: 'Dernière itération'
     nextRun: 'Prochaine itération'
@@ -421,6 +453,7 @@ fr:
     format: 'Une ou plusieurs addresses ne sont pas valides'
     no_data: 'Une erreur est survenue lors de la récupération des données'
   actions:
+    generate: 'Générer'
     cancel: 'Annuler'
     save: 'Sauvegarder'
 </i18n>

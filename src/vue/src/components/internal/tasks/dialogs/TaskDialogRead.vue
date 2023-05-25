@@ -269,6 +269,10 @@ export default defineComponent({
      * Prepare and show task generation dialog
      */
     showGenerateDialog() {
+      if (!this.perms.runTask) {
+        return;
+      }
+
       this.generationDialogShown = true;
     },
   },
