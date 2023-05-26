@@ -141,6 +141,14 @@ export default async (
     throw new Error(`An error occurred when fetching data : ${reasons}`);
   }
 
+  // Checks if there's data
+  if (
+    (typeof body.hits.total === 'object' && body.hits.total.value === 0)
+    || body.hits.hits.length === 0
+  ) {
+    throw new Error(`No data found for given request: ${JSON.stringify(opts)}`);
+  }
+
   if (options.aggs) {
     // eslint-disable-next-line no-restricted-syntax
     for (const { name, subAggs } of aggsInfos) {
