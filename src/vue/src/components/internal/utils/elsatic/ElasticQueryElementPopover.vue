@@ -64,12 +64,16 @@
                 v-if="element.operator !== 'EXISTS'"
                 :label="$t('headers.value')"
                 :value="element.values"
+                :deletable-chips="element.values.length > 1"
                 :rules="rules.value"
                 multiple
                 small-chips
-                deletable-chips
                 @input="updateValue"
-              />
+              >
+                <template #append>
+                  <div />
+                </template>
+              </v-combobox>
             </v-col>
           </v-row>
         </v-form>
@@ -236,7 +240,7 @@ fr:
     IS: 'est'
     EXISTS: 'existe'
   modifiers:
-    NOT: 'not' # TODO french trans
+    NOT: 'non'
   errors:
     empty: 'Ce champ doit être rempli'
     valid: 'La valeur doit être valide'
