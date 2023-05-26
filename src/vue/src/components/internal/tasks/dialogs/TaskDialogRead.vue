@@ -18,19 +18,13 @@
 
         <CustomSwitch
           v-if="task"
-          :input-value="task.enabled"
-          :readonly="!perms.enable || !perms.disable"
-          :label="$t(task?.enabled ? 'item.active' : 'item.inactive')"
-          :disabled="loading"
+          :value="task.enabled"
+          :disabled="!perms.enable || !perms.disable"
+          :label="$t(task?.enabled ? 'item.active' : 'item.inactive').toString()"
+          :readonly="loading"
           class="text-body-2"
           reverse
           @click.stop="toggle()"
-        />
-
-        <RefreshButton
-          :loading="loading"
-          :tooltip="$t('refresh-tooltip').toString()"
-          @click="fetch"
         />
 
         <v-btn icon text @click="$emit('input', false)">
@@ -39,9 +33,9 @@
 
       </v-card-title>
 
-      <v-tabs v-model="currentTab" style="flex-grow: 0;">
+      <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
         <v-tab v-for="tab in tabs" :key="tab.name">
-          {{ tab.label }}
+          {{ $t(`tabs.${tab.name}`) }}
         </v-tab>
       </v-tabs>
 
@@ -79,10 +73,10 @@
               </v-col>
 
               <v-col>
-                {{ $t('headers.institution') }}:
-                <InstitutionRichListItem
-                  v-if="institution"
-                  :institution="institution"
+                <span>{{ $ezReeport.tcNamespace(true) }}:</span>
+                <NamespaceRichListItem
+                  v-if="namespace"
+                  :namespace="namespace"
                 />
                 <v-progress-circular v-else indeterminate class="my-2" />
 
@@ -110,7 +104,7 @@
           </v-tab-item>
 
           <v-tab-item>
-            <InternalHistoryTable v-if="task" :history="task.history" hide-task hide-institution />
+            <InternalHistoryTable v-if="task" :history="task.history" hide-task hide-namespace />
           </v-tab-item>
         </v-tabs-items>
 
@@ -120,7 +114,7 @@
       <v-divider />
 
       <v-card-actions>
-        <v-btn :disabled="!perms.runTask" color="warning" @click="showGenerateDialog">
+        <v-btn v-if="perms.runTask" color="warning" @click="showGenerateDialog">
           {{ $t('actions.generate') }}
         </v-btn>
       </v-card-actions>
@@ -129,15 +123,21 @@
 </template>
 
 <script lang="ts">
-import type { institutions, tasks } from 'ezreeport-sdk-js';
+import type { namespaces, tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
-import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
+import ezReeportMixin from '~/mixins/ezr';
 
 type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTemplate };
 
+export const tabs = [
+  { name: 'details' },
+  { name: 'template' },
+  { name: 'activity' },
+] as const;
+
 export default defineComponent({
-  components: { CustomSwitch },
+  mixins: [ezReeportMixin],
   props: {
     value: {
       type: Boolean,
@@ -156,6 +156,7 @@ export default defineComponent({
     generationDialogShown: false,
 
     task: undefined as CustomTask | undefined,
+    tabs,
     currentTab: 0,
 
     loading: false,
@@ -166,41 +167,23 @@ export default defineComponent({
      * Validation rules
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const has = this.$ezReeport.hasNamespacedPermission;
+      const namespaces = this.task ? [this.task.namespace.id] : [];
       return {
-        readOne: perms?.['tasks-get-task'],
-        update: perms?.['tasks-put-task'],
+        readOne: has('tasks-get-task', namespaces),
+        update: has('tasks-put-task', namespaces),
 
-        enable: perms?.['tasks-put-task-enable'],
-        disable: perms?.['tasks-put-task-disable'],
+        enable: has('tasks-put-task-enable', namespaces),
+        disable: has('tasks-put-task-disable', namespaces),
 
-        runTask: perms?.['tasks-post-task-run'],
+        runTask: has('tasks-post-task-run', namespaces),
       };
     },
     /**
      * User permissions
      */
-    institution(): institutions.Institution | undefined {
-      return this.$ezReeport.institutions.data.find(({ id }) => id === this.task?.institution);
-    },
-    /**
-     * Tabs data
-     */
-    tabs() {
-      return [
-        {
-          name: 'details',
-          label: this.$t('tabs.details'),
-        },
-        {
-          name: 'template',
-          label: this.$t('tabs.template'),
-        },
-        {
-          name: 'history',
-          label: this.$t('tabs.history'),
-        },
-      ];
+    namespace(): namespaces.Namespace | undefined {
+      return this.$ezReeport.data.namespaces.data.find(({ id }) => id === this.task?.namespace.id);
     },
     /**
      * Max Width of the dialog
@@ -214,31 +197,16 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
-      this.fetch();
-      this.fetchInstitutions();
-    },
-    id() {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
-  },
-  mounted() {
-    this.fetchInstitutions();
-    this.fetch();
+    value(val: boolean) {
+      if (val) {
+        this.fetch();
+      }
+    },
   },
   methods: {
-    /**
-     * Fetch institutions
-     */
-    async fetchInstitutions() {
-      this.loading = true;
-      try {
-        this.$ezReeport.institutions.fetch();
-      } catch (error) {
-        this.error = (error as Error).message;
-      }
-      this.loading = false;
-    },
     /**
      * Fetch task info
      */
@@ -251,6 +219,9 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.tasks.getTask(this.id);
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
 
         // Add additional data
         content.template.inserts = addAdditionalDataToLayouts(content.template.inserts ?? []);
@@ -298,6 +269,10 @@ export default defineComponent({
      * Prepare and show task generation dialog
      */
     showGenerateDialog() {
+      if (!this.perms.runTask) {
+        return;
+      }
+
       this.generationDialogShown = true;
     },
   },
@@ -317,13 +292,12 @@ export default defineComponent({
 en:
   refresh-tooltip: 'Refresh task'
   headers:
-    institution: 'Institution'
     targets: 'Receivers'
     dates: 'Dates'
   tabs:
     details: 'Details'
     template: 'Template'
-    history: 'History'
+    activity: 'Activity'
   task:
     lastRun: 'Last run'
     nextRun: 'Next run'
@@ -332,15 +306,17 @@ en:
     inactive: 'Inactive'
   actions:
     generate: 'Generate'
+  errors:
+    no_data: 'An error occurred when fetching data'
 fr:
+  refresh-tooltip: 'Rafraîchir la tâche'
   headers:
-    institution: 'Institution'
     targets: 'Destinataires'
     dates: 'Dates'
   tabs:
     details: 'Détails'
     template: 'Modèle'
-    history: 'Historique'
+    activity: 'Activité'
   task:
     lastRun: 'Dernière itération'
     nextRun: 'Prochaine itération'
@@ -349,4 +325,6 @@ fr:
     inactive: 'Inactif'
   actions:
     generate: 'Générer'
-  </i18n>
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
+</i18n>

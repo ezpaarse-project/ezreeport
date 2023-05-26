@@ -1,7 +1,7 @@
 import Queue from 'bull';
 import { join } from 'node:path';
 import config from '~/lib/config';
-import logger from '~/lib/logger';
+import { appLogger as logger } from '~/lib/logger';
 import { type Recurrence } from '~/models/recurrence';
 
 const { ...redis } = config.get('redis');
@@ -25,7 +25,7 @@ export type MailData = {
     recurrence: Recurrence,
     name: string,
     targets: string[],
-    institution: string,
+    namespace: string,
   },
   /**
    * The email of the user that was used for generation

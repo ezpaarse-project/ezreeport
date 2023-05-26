@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import TemplateList from './TemplateList.vue';
 
 const meta: Meta<typeof TemplateList> = {
-  title: 'Templates/TemplateList',
+  title: 'ezr-template-list (TemplateList)',
   component: TemplateList,
 };
 
@@ -14,6 +14,6 @@ export const Basic: Story = {
   render: (args) => ({
     components: { TemplateList },
     props: Object.keys(args),
-    template: '<ezr-template-list v-bind="$props" v-on="$props" />',
+    template: '<TemplateList v-bind="$props" v-on="$props" />',
   }),
 };

@@ -1,10 +1,10 @@
-import type { templates, tasks } from 'ezreeport-sdk-js';
+import type { templates, tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { v4 as uuid } from 'uuid';
 
 interface CustomProperties {
   _: {
     id: string
-    hasError: boolean,
+    valid: true | string,
   }
 }
 
@@ -16,7 +16,7 @@ export type CustomTaskLayout = Omit<TaskLayout, 'figures'> & { figures: AnyCusto
 type AnyLayout = templates.Layout & { at?: number };
 export type AnyCustomLayout = Omit<AnyLayout, 'figures'> & { figures: AnyCustomFigure[] } & CustomProperties;
 
-export type CustomTemplate = Omit<templates.FullTemplate['template'], 'layouts'> & { layouts: CustomLayout[] };
+export type CustomTemplate = Omit<templates.FullTemplate['body'], 'layouts'> & { layouts: CustomLayout[] };
 export type CustomTaskTemplate = Omit<tasks.FullTask['template'], 'inserts'> & { inserts?: CustomTaskLayout[] };
 export type AnyCustomTemplate = CustomTemplate | CustomTaskTemplate;
 
@@ -29,7 +29,7 @@ export const addAdditionalData = <T>(value: T): T & CustomProperties => ({
   ...value,
   _: {
     id: uuid(),
-    hasError: false,
+    valid: true,
   },
 });
 

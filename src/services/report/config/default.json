@@ -2,6 +2,7 @@
   "logLevel": "debug",
   "port": 8080,
   "allowedOrigins": "*",
+  "adminKey": "00000000-0000-0000-0000-000000000000",
   "elasticsearch": {
     "url": "https://host.docker.internal:9000",
     "username": "elastic",
@@ -19,10 +20,6 @@
     "concurrence": 5,
     "maxExecTime": 10000
   },
-  "ezmesure": {
-    "secret": "",
-    "depositorsIndex": "depositors"
-  },
   "crons": {
     "options": {
       "tz": ""
@@ -33,9 +30,8 @@
     }
   },
   "report": {
-    "templatesDir": "templates",
     "assetsDir": "assets",
-    "outDir": "data",
+    "outDir": "/data/ezreeport/report",
     "ttl": {
       "iterations": 4,
       "days": 7
@@ -46,7 +42,7 @@
     "logos": [
       {
         "path": "assets/logos/ezmesure.png",
-        "link": "https://ezmesure.couperin.org/kibana/"
+        "link": "https://ezmesure.couperin.org/"
       },
       {
         "path": "assets/logos/cnrs.png",

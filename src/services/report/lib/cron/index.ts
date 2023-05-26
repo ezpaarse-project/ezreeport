@@ -1,7 +1,7 @@
 import Queue from 'bull';
 import { join } from 'node:path';
 import config from '~/lib/config';
-import logger from '~/lib/logger';
+import { appLogger as logger } from '~/lib/logger';
 import { formatInterval } from '~/lib/utils';
 import { NotFoundError } from '~/types/errors';
 import { baseQueueOptions } from '../bull';
@@ -41,13 +41,13 @@ cronQueue.on('error', (err) => {
 (async () => {
   try {
     const start = new Date();
-    logger.debug('[cron] Init started');
+    logger.verbose('[cron] Init started');
     // Cleaning next jobs before adding cron to avoid issues
     const jobs = await cronQueue.getRepeatableJobs();
     await Promise.all(
       jobs.map(async (j) => {
         await cronQueue.removeRepeatable(j.name, j);
-        logger.debug(`[cron] ${j.name} (${j.cron}) deleted`);
+        logger.verbose(`[cron] ${j.name} (${j.cron}) deleted`);
       }),
     );
 
@@ -69,9 +69,9 @@ cronQueue.on('error', (err) => {
           try {
             //! TS type is kinda wrong here, it's not a promise
             cronQueue.process(key, join(__dirname, `jobs/${key}.ts`));
-            logger.debug(`[cron] ${job.name} registered for ${timer}`);
+            logger.verbose(`[cron] ${job.name} registered with "${timer}" for "${cronOptions.tz || 'default'}"`);
           } catch (error) {
-            logger.error(`[cron] Failed to add process for ${key} (${timer}) with error: ${(error as Error).message}`);
+            logger.error(`[cron] Failed to add process for ${key} ("${timer}" for "${cronOptions.tz || 'default'}") with error: ${(error as Error).message}`);
             if (job.opts.repeat && 'key' in job.opts.repeat) {
               // @ts-expect-error
               await cronQueue.removeRepeatableByKey(job.opts.repeat?.key);

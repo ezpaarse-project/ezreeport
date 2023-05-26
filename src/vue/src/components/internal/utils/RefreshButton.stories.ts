@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import RefreshButton from './RefreshButton.vue';
 
 const meta: Meta<typeof RefreshButton> = {
-  title: 'Utils (Internal)/RefreshButton',
+
   component: RefreshButton,
   args: {
     loading: false,

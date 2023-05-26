@@ -12,7 +12,7 @@
       <p>Bonjour,</p>
       <p>
         La génération du rapport <strong>{{ recurrence }}</strong> « <strong>{{ name }}</strong> »
-        a rencontré une erreur le <strong>{{ date }}</strong>. Ce faisant la tâche de reporting a
+        a rencontré une erreur le <strong>{{ date }} (UTC+0)</strong>. Ce faisant la tâche de reporting a
         été désactivée, pensez donc à la réactiver une fois l'erreur corrigée.
       </p>
       <p>

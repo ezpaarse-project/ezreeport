@@ -6,8 +6,27 @@ import * as CronListStories from './CronList.stories';
 
 # Cron List
 
-List and manage all crons.
+List and manage all crons. You can see details about a cron by clicking on it.
+
+> **Note**
+> This components show only if `general.crons-get` permission is granted to the authed user.
+
+{/*
+## Props / Events / Slots
+
+<Controls />
+*/}
 
 ## Usage
+
+### Default
+
+```html
+<template>
+  <ezr-provider ...>
+    <ezr-cron-list />
+  </ezr-provider>
+</template>
+```
 
 <Story of={CronListStories.Basic} />

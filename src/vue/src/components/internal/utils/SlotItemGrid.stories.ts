@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import SlotItemGrid from './SlotItemGrid.vue';
 
 const meta: Meta<typeof SlotItemGrid> = {
-  title: 'Utils (Internal)/SlotItemGrid',
+
   component: SlotItemGrid,
   args: {
     grid: {

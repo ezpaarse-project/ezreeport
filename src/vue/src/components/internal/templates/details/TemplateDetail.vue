@@ -39,30 +39,41 @@
           />
 
           <v-sheet
-            v-if="template.fetchOptions?.filters"
+            v-if="template.fetchOptions"
             rounded
             outlined
             class="my-2 pa-2"
           >
-            <span class="text--secondary">{{ 'Fetcher filters' }}</span>
-            <ElasticQueryBuilder
-              :value="template.fetchOptions.filters"
+            <v-sheet
+              v-if="'filters' in template.fetchOptions && template.fetchOptions.filters"
+              rounded
+              outlined
+              class="my-2 pa-2"
+            >
+              <span class="text--secondary">{{ 'Fetcher filters' }}</span>
+              <ElasticQueryBuilder
+                :value="template.fetchOptions.filters"
+              />
+            </v-sheet>
+
+            <ToggleableObjectTree
+              :label="$t('headers.fetchOptions').toString()"
+              :value="template.fetchOptions"
             />
           </v-sheet>
 
-          <ToggleableObjectTree
-            v-if="template.fetchOptions"
-            :label="$t('headers.fetchOptions').toString()"
-            :value="template.fetchOptions"
-            class="my-2"
-          />
-
-          <ToggleableObjectTree
+          <v-sheet
             v-if="fullTemplate?.renderOptions"
-            :label="$t('headers.renderOptions').toString()"
-            :value="fullTemplate.renderOptions"
-            class="my-2"
-          />
+            rounded
+            outlined
+            class="my-2 pa-2"
+          >
+            <ToggleableObjectTree
+              v-if="fullTemplate?.renderOptions"
+              :label="$t('headers.renderOptions').toString()"
+              :value="fullTemplate.renderOptions"
+            />
+          </v-sheet>
         </v-col>
       </v-row>
 
@@ -97,10 +108,10 @@
 
             <LayoutViewer
               v-if="selectedLayout"
-              class="editor-panel ma-0"
               :items="selectedLayout.figures"
               :grid="grid"
               mode="view"
+              class="editor-panel ma-0"
             />
           </v-row>
         </v-card-text>
@@ -125,8 +136,10 @@ import {
   type CustomTaskTemplate,
   type CustomTemplate,
 } from '~/lib/templates/customTemplates';
+import ezReeportMixin from '~/mixins/ezr';
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   props: {
     template: {
       type: Object as PropType<AnyCustomTemplate>,
@@ -149,9 +162,9 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const has = this.$ezReeport.hasGeneralPermission;
       return {
-        readOne: perms?.['templates-get-name(*)'],
+        readOne: has('templates-get-name(*)'),
       };
     },
     /**
@@ -268,9 +281,9 @@ export default defineComponent({
         );
 
         // Add additional data
-        content.template.layouts = addAdditionalDataToLayouts(content.template.layouts);
+        content.body.layouts = addAdditionalDataToLayouts(content.body.layouts);
 
-        this.extendedTemplate = content.template as CustomTemplate;
+        this.extendedTemplate = content.body as CustomTemplate;
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
@@ -282,6 +295,7 @@ export default defineComponent({
      */
     async openBaseDialog() {
       await this.fetchBase();
+      await this.$nextTick();
       this.readTemplateDialogShown = true;
     },
   },

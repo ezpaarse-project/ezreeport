@@ -1,0 +1,37 @@
+<template>
+  <v-chip
+    :color="color"
+    :style="{ color: textColor }"
+    v-bind="$attrs"
+    v-on="$listeners"
+  >
+    <slot />
+  </v-chip>
+</template>
+
+<script lang="ts">
+import chroma from 'chroma-js';
+import { defineComponent, type PropType } from 'vue';
+
+export default defineComponent({
+  props: {
+    color: {
+      type: String as PropType<string | undefined>,
+      default: undefined,
+    },
+  },
+  computed: {
+    textColor(): string | undefined {
+      if (!this.color) {
+        return undefined;
+      }
+
+      return chroma.contrast(this.color, 'black') > 5 ? 'black' : 'white';
+    },
+  },
+});
+</script>
+
+<style scoped>
+
+</style>

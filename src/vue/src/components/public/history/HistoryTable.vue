@@ -1,10 +1,12 @@
 <template>
   <v-col v-if="perms.readAll">
     <v-row>
-      <InstitutionSelect
-        v-model="currentInstitution"
-        @input="fetch()"
-      />
+      <v-col>
+        <NamespaceSelect
+          v-model="currentNamespace"
+          @input="fetch()"
+        />
+      </v-col>
     </v-row>
 
     <v-row>
@@ -34,11 +36,22 @@
 </template>
 
 <script lang="ts">
-import type { history } from 'ezreeport-sdk-js';
-import { defineComponent } from 'vue';
+import type { history } from '@ezpaarse-project/ezreeport-sdk-js';
+import { type PropType, defineComponent } from 'vue';
 import { DataOptions, DataPagination } from 'vuetify';
+import ezReeportMixin from '~/mixins/ezr';
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
+  props: {
+    /**
+     * How often the entries are re-fetched in ms
+     */
+    fetchInterval: {
+      type: [Number, Boolean] as PropType<number | false>,
+      default: 5000,
+    },
+  },
   data: () => ({
     interval: undefined as NodeJS.Timer | undefined,
 
@@ -54,7 +67,7 @@ export default defineComponent({
     },
     lastIds: {} as Record<number, string | undefined>,
 
-    currentInstitution: '',
+    currentNamespace: '',
     history: [] as history.HistoryWithTask[],
 
     loading: false,
@@ -62,9 +75,9 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const has = this.$ezReeport.hasNamespacedPermission;
       return {
-        readAll: perms?.['history-get'],
+        readAll: has('history-get', []),
       };
     },
     footerOptions: {
@@ -98,21 +111,33 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
+    },
+    fetchInterval() {
+      this.stopAutoFetch();
+      this.startAutoFetch();
     },
   },
   mounted() {
     this.fetch();
-    this.interval = setInterval(() => this.fetch(), 5000);
+    this.startAutoFetch();
   },
   destroyed() {
-    clearInterval(this.interval);
+    this.stopAutoFetch();
   },
   unmounted() {
-    clearInterval(this.interval);
+    this.stopAutoFetch();
   },
   methods: {
+    startAutoFetch() {
+      if (this.fetchInterval && !Number.isNaN(this.fetchInterval)) {
+        this.interval = setInterval(() => this.fetch(), this.fetchInterval);
+      }
+    },
+    stopAutoFetch() {
+      clearInterval(this.interval);
+    },
     /**
      * Fetch tasks and parse result
      *
@@ -133,8 +158,12 @@ export default defineComponent({
               previous: this.lastIds[page - 1],
               count: this.paginationData.itemsPerPage,
             },
-            this.currentInstitution || undefined,
+            this.currentNamespace ? [this.currentNamespace] : [],
           );
+          if (!content) {
+            throw new Error(this.$t('errors.no_data').toString());
+          }
+
           this.history = content;
           this.paginationData.page = page;
           this.paginationData.itemsLength = meta.total;
@@ -163,9 +192,9 @@ export default defineComponent({
 
 <i18n lang="yaml">
 en:
-  title: 'History of tasks'
-  refresh-tooltip: 'Refresh history'
+  title: 'Activity of periodic reports'
+  refresh-tooltip: 'Refresh activity'
 fr:
-  title: 'Historique des tâches'
-  refresh-tooltip: "Rafraîchir l'historique"
+  title: 'Activité des rapports périodiques'
+  refresh-tooltip: "Rafraîchir l'activité"
 </i18n>

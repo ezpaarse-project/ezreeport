@@ -1,13 +1,15 @@
 import { parseISO } from 'date-fns';
 import { axiosWithErrorFormatter, type PaginatedApiResponse } from '../lib/axios';
-import type { RawTask } from './tasks';
+import { parseTaskWithNamespace, type RawTaskWithNamespace, type TaskWithNamespace } from './tasks.base';
 
+// Private export
 export interface RawHistory {
   id: string,
   taskId: string,
   type: string,
   message: string,
   data?: object,
+
   createdAt: string, // Date
 }
 
@@ -16,13 +18,14 @@ export interface History extends Omit<RawHistory, 'createdAt'> {
 }
 
 interface RawHistoryWithTask extends Omit<RawHistory, 'taskId'> {
-  task: RawTask
+  task: RawTaskWithNamespace
 }
 
 export interface HistoryWithTask extends Omit<History, 'taskId'> {
-  task: RawTask
+  task: TaskWithNamespace
 }
 
+// Private export
 /**
  * Transform raw data from JSON, to JS usable data
  *
@@ -32,6 +35,7 @@ export interface HistoryWithTask extends Omit<History, 'taskId'> {
  */
 export const parseHistory = (entry: RawHistory): History => ({
   ...entry,
+
   createdAt: parseISO(entry.createdAt),
 });
 
@@ -44,29 +48,31 @@ export const parseHistory = (entry: RawHistory): History => ({
  */
 const parseHistoryWithTask = (entry: RawHistoryWithTask): HistoryWithTask => ({
   ...entry,
+  task: parseTaskWithNamespace(entry.task),
+
   createdAt: parseISO(entry.createdAt),
 });
 
 /**
  * Get all available history entries
  *
- * Needs `history-get` permission
+ * Needs `namespaces[namespaceId].history-get` permission
  *
  * @param paginationOpts Options for pagination
- * @param institution Force institution. Only available for SUPER_USERS, otherwise it'll be ignored.
+ * @param namespaces
  *
  * @returns All history entries' info
  */
 export const getAllEntries = async (
   paginationOpts?: { previous?: History['id'], count?: number },
-  institution?: string,
+  namespaces?: string[],
 ): Promise<PaginatedApiResponse<HistoryWithTask[]>> => {
   const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawHistoryWithTask[]>, 'get'>(
     'get',
     '/history',
     {
       params: {
-        institution,
+        namespaces,
         ...(paginationOpts ?? {}),
       },
     },

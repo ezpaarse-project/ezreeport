@@ -55,9 +55,10 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import type { queues } from 'ezreeport-sdk-js';
+import type { queues } from '@ezpaarse-project/ezreeport-sdk-js';
 import { DataTableHeader } from '~/types/vuetify';
 import type { DataOptions } from 'vuetify';
+import ezReeportMixin from '~/mixins/ezr';
 
 type AnyJob = queues.FullJob<unknown, unknown>;
 
@@ -70,6 +71,7 @@ interface JobItem {
 }
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   props: {
     queue: {
       type: String,
@@ -94,10 +96,11 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const hasNamespaced = this.$ezReeport.hasNamespacedPermission;
+      const hasGeneral = this.$ezReeport.hasGeneralPermission;
       return {
-        readAll: perms?.['queues-get-queue-jobs'],
-        readOne: perms?.['queues-get-queue-jobs-jobId'],
+        readAll: hasGeneral('queues-get-queue-jobs'),
+        readOne: hasNamespaced('queues-get-queue-jobs-jobId', []),
       };
     },
     items() {
@@ -135,7 +138,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
   },
@@ -166,6 +169,10 @@ export default defineComponent({
             count: this.options.itemsPerPage,
           },
         );
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
+
         this.jobs = content;
         this.totalItems = meta.total;
 

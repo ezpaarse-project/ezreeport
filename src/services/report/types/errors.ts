@@ -1,5 +1,5 @@
 /* eslint-disable max-classes-per-file */
-import type { StatusCodes } from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 
 export class HTTPError extends Error {
   code: StatusCodes;
@@ -10,8 +10,20 @@ export class HTTPError extends Error {
   }
 }
 
-export class NotFoundError extends Error {}
+export class NotFoundError extends HTTPError {
+  constructor(message: string) {
+    super(message, StatusCodes.NOT_FOUND);
+  }
+}
 
-export class ArgumentError extends Error {}
+export class ArgumentError extends HTTPError {
+  constructor(message: string) {
+    super(message, StatusCodes.BAD_REQUEST);
+  }
+}
 
-export class ConflitError extends Error {}
+export class ConflitError extends HTTPError {
+  constructor(message: string) {
+    super(message, StatusCodes.CONFLICT);
+  }
+}

@@ -1,7 +1,7 @@
 import type { Job } from 'bull';
 import { format, parseISO } from 'date-fns';
 import config from '~/lib/config';
-import logger from '~/lib/logger';
+import { appLogger as logger } from '~/lib/logger';
 import { generateMail, sendMail, type MailOptions } from '~/lib/mail';
 import { b64ToString, isFulfilled, stringToB64 } from '~/lib/utils';
 import { recurrenceToStr } from '~/models/recurrence';
@@ -19,7 +19,8 @@ export default async (job: Job<MailData>) => {
     const options: Omit<MailOptions, 'to' | 'body' | 'subject'> = {
       attachments: [{
         filename,
-        content: b64ToString(job.data.file),
+        content: job.data.file,
+        encoding: 'base64',
       }],
     };
     const bodyData = {

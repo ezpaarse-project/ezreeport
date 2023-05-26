@@ -1,18 +1,36 @@
 import axios, { Axios, AxiosError, AxiosResponse } from 'axios';
 
 export interface ApiResponse<T> {
+  /**
+   * HTTP Status
+   */
   status: {
     code: number,
     message: string,
   },
+  /**
+   * Content of the response
+   */
   content: T
 }
 
 export interface PaginatedApiResponse<T> extends ApiResponse<T> {
   meta: {
+    /**
+     * Count of items in response
+     */
     count: number,
+    /**
+     * Count of items wanted
+     */
     size: number,
+    /**
+     * Count of items available
+     */
     total: number,
+    /**
+     * Id of last item in response
+     */
     lastId?: unknown
   }
 }

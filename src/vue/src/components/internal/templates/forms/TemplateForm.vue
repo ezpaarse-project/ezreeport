@@ -43,27 +43,30 @@
             outlined
             class="my-2 pa-2"
           >
+            <span class="text--secondary">{{ $t('headers.advancedOptions') }}</span>
+
+            <v-sheet
+              rounded
+              outlined
+              class="my-2 pa-2"
+            >
+              <span class="text--secondary">{{ $t('headers.filters') }}</span>
+
+              <ElasticQueryBuilder
+                :value="template.fetchOptions?.filters || {}"
+                @input="onTemplateUpdate(
+                  Object.assign(template, { fetchOptions: { filters: $event } }),
+                )"
+              />
+            </v-sheet>
+
             <ToggleableObjectTree
-              :label="$t('headers.fetchOptions').toString()"
+              :label="$t('headers.advancedOptions').toString()"
               :value="template.fetchOptions || {}"
               @input="
                 !Array.isArray($event)
                   && onTemplateUpdate({ ...template, fetchOptions: $event })
               "
-            />
-          </v-sheet>
-
-          <v-sheet
-            rounded
-            outlined
-            class="my-2 pa-2"
-          >
-            <span class="text--secondary">{{ 'Fetcher filters' }}</span>
-            <ElasticQueryBuilder
-              :value="template.fetchOptions?.filters || {}"
-              @input="onTemplateUpdate(
-                Object.assign(template, { fetchOptions: { filters: $event } }),
-              )"
             />
           </v-sheet>
 
@@ -100,17 +103,26 @@
 
           {{ $t('headers.layouts', { count: mergedLayouts.length }) }}
 
-          <v-icon v-if="!isLayoutsValid" color="warning" small>mdi-alert</v-icon>
+          <v-tooltip top v-if="layoutValidation !== true" color="warning">
+            <template #activator="{ attrs, on }">
+              <v-icon
+                color="warning"
+                small
+                v-bind="attrs"
+                v-on="on"
+              >
+                mdi-alert
+              </v-icon>
+            </template>
+
+            <span>{{ layoutValidation }}</span>
+          </v-tooltip>
         </v-card-subtitle>
 
         <v-divider />
 
         <v-card-text v-show="!templateEditorCollapsed" class="pb-0" style="height: 650px">
           <v-row class="fill-height">
-            <!--
-              TODO:
-                - Fix create
-            -->
             <LayoutDrawer
               v-model="selectedLayoutIndex"
               :items="mergedLayouts"
@@ -123,10 +135,10 @@
 
             <LayoutViewer
               v-if="selectedLayout"
-              class="editor-panel ma-0"
               :items="selectedLayout.figures"
               :grid="grid"
               :mode="modes.viewerMode"
+              class="editor-panel ma-0"
               @update:items="onFigureListUpdate"
             />
           </v-row>
@@ -155,8 +167,10 @@ import {
   type AnyCustomFigure,
   type CustomTaskLayout,
 } from '~/lib/templates/customTemplates';
+import ezReeportMixin from '~/mixins/ezr';
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   props: {
     template: {
       type: Object as PropType<AnyCustomTemplate>,
@@ -187,10 +201,10 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const has = this.$ezReeport.hasGeneralPermission;
       return {
-        realAll: perms?.['templates-get'],
-        readOne: perms?.['templates-get-name(*)'],
+        realAll: has('templates-get'),
+        readOne: has('templates-get-name(*)'),
       };
     },
     /**
@@ -289,21 +303,27 @@ export default defineComponent({
     /**
      * Is template layouts valid
      */
-    isLayoutsValid(): boolean {
-      return this.mergedLayouts.findIndex(({ _: { hasError } }) => hasError) < 0;
+    layoutValidation(): true | string {
+      const invalidIndex = this.mergedLayouts.findIndex(({ _: { valid } }) => valid !== true);
+      if (invalidIndex >= 0) {
+        return this.$t(
+          'errors.layouts._detail',
+          {
+            at: invalidIndex,
+            valid: this.mergedLayouts[invalidIndex]._.valid,
+          },
+        ).toString();
+      }
+      return true;
     },
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
       this.fetchBase();
     },
     template() {
-      // FIXME: Any edit retrigger fetch
-      // this.fetch();
-      // this.fetchBase();
-
       // Show editor if needed
       if ('inserts' in this.template) {
         this.templateEditorCollapsed = (this.template.inserts?.length ?? 0) === 0;
@@ -328,6 +348,23 @@ export default defineComponent({
   },
   methods: {
     /**
+     * Test if layout is valid
+     *
+     * @param layout The layout
+     */
+    validateLayout(layout: AnyCustomLayout): true | string {
+      if (layout._.valid !== true) return layout._.valid;
+
+      const isLayoutEmpty = layout.figures.length === 0;
+      if (!isLayoutEmpty) this.$t('errors.figures.length').toString();
+
+      const isLayoutManual = layout.figures.every(({ slots }) => !!slots);
+      const isLayoutAuto = layout.figures.every(({ slots }) => !slots);
+      if (isLayoutManual === isLayoutAuto) return this.$t('errors.figures.mixed').toString();
+
+      return true;
+    },
+    /**
      * Fetch all available templates
      */
     async fetch() {
@@ -338,6 +375,10 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.templates.getAllTemplates();
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
+
         this.availableTemplates = content.map(({ name }) => name);
         this.error = '';
       } catch (error) {
@@ -362,9 +403,9 @@ export default defineComponent({
         );
 
         // Add additional data
-        content.template.layouts = addAdditionalDataToLayouts(content.template.layouts);
+        content.body.layouts = addAdditionalDataToLayouts(content.body.layouts);
 
-        this.extendedTemplate = content.template as CustomTemplate;
+        this.extendedTemplate = content.body as CustomTemplate;
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
@@ -376,6 +417,7 @@ export default defineComponent({
      */
     async openBaseDialog() {
       await this.fetchBase();
+      await this.$nextTick();
       this.readTemplateDialogShown = true;
     },
     /**
@@ -383,8 +425,9 @@ export default defineComponent({
      *
      * @param value
      */
-    onExtendChange(value: string) {
+    async onExtendChange(value: string) {
       this.onTemplateUpdate({ ...this.template, extends: value });
+      await this.$nextTick();
       this.fetchBase();
     },
     /**
@@ -406,9 +449,17 @@ export default defineComponent({
      * @param value The new layouts
      */
     onLayoutListUpdate(value: AnyCustomLayout[]) {
+      const items = value.map((l) => ({
+        ...l,
+        _: {
+          ...l._,
+          valid: this.validateLayout(l),
+        },
+      }));
+
       if (this.taskTemplate) {
         const baseLayoutsIds = this.baseTemplate?.layouts.map(({ _: { id } }) => id) ?? [];
-        const inserts = value.filter(
+        const inserts = items.filter(
           ({ _: { id } }) => !baseLayoutsIds.includes(id),
         ) as CustomTaskLayout[];
 
@@ -421,7 +472,7 @@ export default defineComponent({
       if (this.fullTemplate) {
         this.onTemplateUpdate({
           ...this.fullTemplate,
-          layouts: value,
+          layouts: items,
         });
       }
     },
@@ -435,13 +486,25 @@ export default defineComponent({
         return;
       }
 
+      const invalidIndex = value.findIndex(({ _: { valid } }) => valid !== true);
+      let valid: true | string = true;
+      if (invalidIndex >= 0) {
+        valid = this.$t(
+          'errors.figures._detail',
+          {
+            at: invalidIndex,
+            valid: value[invalidIndex]._.valid,
+          },
+        ).toString();
+      }
+
       const layouts = [...this.mergedLayouts];
       layouts.splice(this.selectedLayoutIndex, 1, {
         ...this.selectedLayout,
         // Set validation state based on figures
         _: {
           ...this.selectedLayout._,
-          hasError: value.findIndex(({ _: { hasError } }) => hasError) >= 0,
+          valid,
         },
         // Set figures
         figures: value,
@@ -467,10 +530,20 @@ en:
     fetcher: 'Fetcher'
     base: 'Base template'
     fetchOptions: 'Fetch options'
+    filters: 'Fetch filters'
+    advancedOptions: 'Advanced options'
     renderOptions: 'Render options'
     layouts: 'Page editor ({count} pages)'
   actions:
     see-extends: 'See base'
+  errors:
+    no_data: 'An error occurred when fetching data'
+    layouts:
+      _detail: 'Page {at}: {valid}'
+    figures:
+      _detail: 'Figure {at}: {valid}'
+      length: 'All pages must contains at least one figure'
+      mixed: 'All figures must be placed the same way (auto or manually)'
 fr:
   show-raw: 'Afficher JSON'
   headers:
@@ -478,8 +551,18 @@ fr:
     fetcher: 'Outil de récupération'
     base: 'Modèle de base'
     fetchOptions: 'Options de récupération'
+    filters: 'Filtres de récupération'
+    advancedOptions: 'Options avancées'
     renderOptions: 'Options de rendu'
     layouts: 'Éditeur de pages ({count} pages)'
   actions:
     see-extends: 'Voir la base'
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
+    layouts:
+      _detail: 'Page {at}: {valid}'
+    figures:
+      _detail: 'Visualisation {at}: {valid}'
+      length: 'Chaque page doit contenir au moins une visualisation'
+      mixed: 'Toutes les visualisations doivent être placée de la même façon (auto ou manuellement)'
 </i18n>

@@ -1,4 +1,4 @@
-import type { queues } from 'ezreeport-sdk-js';
+import type { queues } from '@ezpaarse-project/ezreeport-sdk-js';
 
 const data: queues.FullJob<unknown, unknown>[] = [{
   id: '183',

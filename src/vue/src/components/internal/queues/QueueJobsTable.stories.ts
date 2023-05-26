@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import QueueJobsTable from './QueueJobsTable.vue';
 
 const meta: Meta<typeof QueueJobsTable> = {
-  title: 'Queues/Internal/Dialogs/QueueJobsTable',
+
   component: QueueJobsTable,
   args: {
     queue: 'generation',

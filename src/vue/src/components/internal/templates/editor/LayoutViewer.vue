@@ -1,18 +1,29 @@
 <template>
   <div class="d-flex flex-column">
     <template v-if="mode !== 'view'">
-      <div class="d-flex pa-2" style="min-height: 44px;">
+      <div class="d-flex align-center pa-2" style="min-height: 44px;">
         <template>
-          <v-btn
-            small
-            elevation="0"
-            color="success"
-            :disabled="items.length >= grid.cols * grid.rows"
-            @click="onFigureCreate"
-          >
-            <v-icon left>mdi-plus</v-icon>
-            {{ $t('actions.add') }}
-          </v-btn>
+          {{$t('headers.figures')}}
+
+          <v-spacer />
+
+          <v-tooltip top>
+            <template #activator="{ attrs, on }">
+              <v-btn
+                :disabled="items.length >= grid.cols * grid.rows || mode !== 'allowed-edition'"
+                small
+                icon
+                color="success"
+                v-bind="attrs"
+                @click="onFigureCreate"
+                v-on="on"
+              >
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </template>
+
+            <span>{{$t('actions.create-tooltip')}}</span>
+          </v-tooltip>
         </template>
       </div>
 
@@ -26,10 +37,17 @@
         show-unused
         v-on="gridListeners"
       >
-        <template #item="{ item: figure, isDraggable, isHovered }">
+        <template
+          #item="{
+            item: figure,
+            isDraggable,
+            isHovered,
+            index,
+          }">
           <FigureDetail
             v-if="mode !== 'allowed-edition'"
             :figure="figure"
+            :figure-index="index"
             :locked="mode === 'denied-edition'"
             :class="[
               'figure-slot',
@@ -39,6 +57,7 @@
           <FigureForm
             v-else
             :figure="figure"
+            :figure-index="index"
             :taken-slots="takenSlots"
             :draggable="isDraggable"
             :class="[
@@ -156,13 +175,13 @@ export default defineComponent({
      * @param figure The figure
      * @param value The validation value
      */
-    onValidation(figure: AnyCustomFigure, value: boolean) {
+    onValidation(figure: AnyCustomFigure, value: true | string) {
       this.onFigureUpdate({
         ...figure,
         // Set validation state
         _: {
           ...figure._,
-          hasError: !value,
+          valid: value,
         },
       });
     },
@@ -183,9 +202,13 @@ export default defineComponent({
 
 <i18n lang="yaml">
 en:
+  headers:
+    figures: 'Figures'
   actions:
-    add: 'Add figure'
+    create-tooltip: 'Add a figure'
 fr:
+  headers:
+    figures: 'Visualisations'
   actions:
-    add: 'Ajouter une visualisation'
+    create-tooltip: 'Ajouter une visualisation'
 </i18n>

@@ -10,23 +10,18 @@ services:
       - 6389:6379
 
   report:
-    image: node:18.13.0
-    restart: 'no'
+    image: node:18.16.0
     working_dir: /usr/src/report
     volumes:
-      - ./node_modules:/usr/src/node_modules
-      - ./package-lock.json:/usr/src/package-lock.json
       - ./src/services/report:/usr/src/report
     command: "npm run dev"
     ports:
       - 9230:9229 # Debug port
 
   mail:
-    image: node:18.13.0
+    image: node:18.16.0
     working_dir: /usr/src/mail
     volumes:
-      - ./node_modules:/usr/src/node_modules
-      - ./package-lock.json:/usr/src/package-lock.json
       - ./src/services/mail:/usr/src/mail
     command: "npm run dev"
     ports:

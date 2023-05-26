@@ -1,7 +1,7 @@
 import { compile as handlebars } from 'handlebars';
 import autoTable, { type UserOptions } from 'jspdf-autotable';
 import { get, merge } from 'lodash';
-import logger from '~/lib/logger';
+import { appLogger as logger } from '~/lib/logger';
 import type { PDFReport } from '.';
 
 export type TableParams = {
@@ -54,14 +54,6 @@ export const addTableToPDF = async (
       tableData.length = maxCells;
     }
   }
-
-  // console.log(
-  //   JSON.stringify(
-  //     tableData,
-  //     undefined,
-  //     2,
-  //   ),
-  // );
 
   const options = merge({
     margin: {

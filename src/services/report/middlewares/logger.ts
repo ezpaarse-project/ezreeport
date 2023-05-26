@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express';
 import { differenceInMilliseconds } from '~/lib/date-fns';
-import logger from '~/lib/logger';
+import { accessLogger as logger } from '~/lib/logger';
 
 /**
  * Logging middleware
@@ -10,7 +10,13 @@ const middleware: RequestHandler = (req, res, next) => {
 
   res.once('finish', () => {
     const end = new Date();
-    logger.info(`[http] ${req.method} ${req.originalUrl} - ${res.statusCode} (${differenceInMilliseconds(end, start)}ms)`);
+
+    let log = logger.info;
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      log = logger.error;
+    }
+
+    log(`${req.method} ${req.originalUrl} - ${res.statusCode} (${differenceInMilliseconds(end, start)})`);
   });
 
   next();

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import ToggleableObjectTree from './ToggleableObjectTree.vue';
 
 const meta: Meta<typeof ToggleableObjectTree> = {
-  title: 'Utils (Internal)/Forms/ObjectTree/ToggleableObjectTree',
+
   component: ToggleableObjectTree,
   args: {
     label: 'Test Tree',

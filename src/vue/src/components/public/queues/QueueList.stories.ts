@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import QueueList from './QueueList.vue';
 
 const meta: Meta<typeof QueueList> = {
-  title: 'Queues/QueueList',
+  title: 'ezr-queue-list (QueueList)',
   component: QueueList,
 };
 
@@ -14,6 +14,6 @@ export const Basic: Story = {
   render: (args) => ({
     components: { QueueList },
     props: Object.keys(args),
-    template: '<ezr-queue-list v-bind="$props" v-on="$props" />',
+    template: '<QueueList v-bind="$props" v-on="$props" />',
   }),
 };

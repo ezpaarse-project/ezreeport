@@ -37,7 +37,7 @@
         </v-btn>
 
         <v-btn
-          :disabled="!perms.delete"
+          v-if="perms.delete"
           :loading="loading"
           color="success"
           @click="save"
@@ -50,10 +50,12 @@
 </template>
 
 <script lang="ts">
-import type { tasks } from 'ezreeport-sdk-js';
+import type { tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
+import ezReeportMixin from '~/mixins/ezr';
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   props: {
     value: {
       type: Boolean,
@@ -78,22 +80,26 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const has = this.$ezReeport.hasNamespacedPermission;
+      const namespaces = 'namespaceId' in this.task ? [this.task.namespaceId] : [this.task.namespace.id];
+
       return {
-        delete: perms?.['tasks-delete-task'],
+        readOne: has('tasks-get-task', namespaces),
+        delete: has('tasks-delete-task', namespaces),
       };
     },
   },
   methods: {
     async save() {
-      if (!this.perms.delete) {
+      if (!this.perms.readOne || !this.perms.delete) {
         this.$emit('input', false);
         return;
       }
 
       this.loading = true;
       try {
-        const { content } = await this.$ezReeport.sdk.tasks.deleteTask(this.task.id);
+        const { content } = await this.$ezReeport.sdk.tasks.getTask(this.task.id);
+        await this.$ezReeport.sdk.tasks.deleteTask(this.task.id);
 
         this.$emit('deleted', content);
         this.$emit('input', false);
@@ -120,7 +126,7 @@ en:
     confirm: 'OK'
 fr:
   title: 'Supprimer le rapport ?'
-  description: 'Voulez-vous définitivement supprimer le rapport "{name}" ? Cette action est irrévérsible.'
+  description: 'Voulez-vous définitivement supprimer le rapport "{name}" ? Cette action est irréversible.'
   actions:
     cancel: 'Annuler'
     confirm: 'Confirmer'

@@ -18,23 +18,33 @@
           <v-switch
             v-if="isBoolean"
             :input-value="value"
-            :readonly="!$listeners.input"
-            dense
-            hide-details
             class="ml-2 mt-0"
+            v-bind="commonInputProps"
             @change="$emit('input', property, $event)"
           />
 
           <v-text-field
-            v-else-if="isNumber || isString"
-            :type="isNumber ? 'number' : 'text'"
+            v-else-if="isNumber"
             :value="value"
-            :readonly="!$listeners.input"
-            :placeholder="$t('value')"
-            dense
-            hide-details
+            type="number"
+            v-bind="commonInputProps"
             @blur="onValueUpdate"
           />
+
+          <template v-else-if="isString">
+            <v-text-field
+              v-if="value.length <= 100"
+              :value="value"
+              v-bind="commonInputProps"
+              @blur="onValueUpdate"
+            />
+            <v-textarea
+              v-else
+              :value="value"
+              v-bind="commonInputProps"
+              @blur="onValueUpdate"
+            />
+          </template>
         </template>
 
         <div v-else class="font-italic text--disabled">
@@ -136,6 +146,17 @@ export default defineComponent({
       }
       return {
         input: (v: Record<string, any> | unknown[]) => this.$emit('input', this.property, v),
+      };
+    },
+    /**
+     * Common props for inline input
+     */
+    commonInputProps() {
+      return {
+        readonly: !this.$listeners.input,
+        placeholder: this.$t('value'),
+        dense: true,
+        hideDetails: true,
       };
     },
   },

@@ -7,13 +7,13 @@
       <v-tooltip top>
         <template #activator="{ attrs, on }">
           <v-chip
-            href="https://github.com/ezpaarse-project/ezreeport/releases?q=ezreeport-vue&expanded=true"
+            :href="`https://github.com/ezpaarse-project/ezreeport/releases?q=${client.name}&expanded=true`"
             target="_blank"
             rel="noopener noreferrer"
             v-bind="attrs"
             v-on="on"
           >
-            v{{ clientVersion }}
+            v{{ client.version }}
           </v-chip>
         </template>
 
@@ -45,7 +45,7 @@
                 <v-chip
                   :color="versionCompat.color"
                   :outlined="!server.version"
-                  href="https://github.com/ezpaarse-project/ezreeport/releases?q=ezreeport-report&expanded=true"
+                  :href="`https://github.com/ezpaarse-project/ezreeport/releases?q=${server.name}&expanded=true`"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="mr-2"
@@ -85,9 +85,10 @@
 </template>
 
 <script lang="ts">
-import type { health } from 'ezreeport-sdk-js';
+import type { health } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
-import { version } from '~/../package.json';
+import { version, name } from '~/../package.json';
+import ezReeportMixin from '~/mixins/ezr';
 
 interface StatusItem {
   name: string,
@@ -97,9 +98,13 @@ interface StatusItem {
 }
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   data: () => ({
     statuses: [] as health.PingResult[],
-    clientVersion: version,
+    client: {
+      name,
+      version,
+    },
     server: {
       name: '',
       version: '',
@@ -109,19 +114,26 @@ export default defineComponent({
     error: '',
   }),
   computed: {
+    perms() {
+      const has = this.$ezReeport.hasGeneralPermission;
+      return {
+        checkAll: has('health-get'),
+        readAll: has('health-get-all'),
+      };
+    },
     items(): StatusItem[] {
       return this.statuses.map(this.parsePingResult);
     },
     versionCompat() {
       if (this.server.version) {
-        const [clientMajor, clientMinor] = this.clientVersion.split('.', 3);
+        const [sdkMajor, sdkMinor] = this.$ezReeport.sdk.version.split('.', 3);
         const [serverMajor, serverMinor] = this.server.version.split('.', 3);
 
-        if (+clientMajor !== +serverMajor) {
+        if (+sdkMajor !== +serverMajor) {
           return { color: 'error', tooltip: this.$t('version-tooltip.mismatch') };
         }
 
-        if (+clientMinor !== +serverMinor) {
+        if (+sdkMinor !== +serverMinor) {
           return { color: 'warning', tooltip: this.$t('version-tooltip.mismatch') };
         }
       }
@@ -140,6 +152,10 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.health.checkAllConnectedService();
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
+
         this.statuses = content;
 
         const { content: result } = await this.$ezReeport.sdk.health.getAllConnectedServices();
@@ -181,6 +197,8 @@ en:
     client: 'Client version (SDK: v{sdk})'
     server: 'API version'
     mismatch: 'Client version is not compatible with API version. It may result in unwanted behavior.'
+  errors:
+    no_data: 'An error occurred when fetching data'
 fr:
   title: 'Status'
   refresh-tooltip: 'Rafraîchir la liste des status'
@@ -188,4 +206,6 @@ fr:
     client: 'Version du Client (SDK: v{sdk})'
     server: "Version de l'API"
     mismatch: "La version du client n'est pas compatible avec la version de l'API. Cela peut résulter en un comportement anormal."
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>

@@ -1,0 +1,24 @@
+[
+  {
+    "path": "src/sdk/package.json",
+    "release": true
+  },
+  {
+    "path": "src/services/mail/package.json",
+    "release": true
+  },
+  {
+    "path": "src/services/report/package.json",
+    "release": true
+  },
+  {
+    "path": "src/vue/package.json",
+    "release": true
+  },
+  {
+    "path": "src/vue/example/package.json"
+  },
+  {
+    "path": "tests/package.json"
+  }
+]

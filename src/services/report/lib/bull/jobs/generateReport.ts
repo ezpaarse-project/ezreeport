@@ -59,10 +59,10 @@ export default async (job: Queue.Job<GenerationData>) => {
       recurrence: task.recurrence,
       name: task.name,
       targets: task.targets,
-      institution: task.institution,
+      namespace: task.namespaceId,
     },
     contact,
-    date: task.lastRun?.toString() ?? formatISO(new Date()),
+    date: formatISO(res.detail.createdAt ?? new Date()),
   };
 
   if (res.success && res.detail.files.report) {

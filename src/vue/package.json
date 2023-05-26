@@ -1,5 +1,5 @@
 {
-  "name": "ezreeport-vue",
+  "name": "@ezpaarse-project/ezreeport-vue",
   "description": "",
   "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
   "bugs": {
@@ -7,86 +7,83 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ezpaarse-project/ezreeport.git"
+    "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
   },
   "license": "CeCILL",
   "author": "oxypomme",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.9",
   "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/ezreeport-vue.js",
-      "require": "./dist/ezreeport-vue.umd.cjs"
+      "import": "./dist/ezreeport-vue.js"
+    },
+    "./dist/style.css": {
+      "import": "./dist/style.css",
+      "require": "./dist/style.css"
     }
   },
   "main": "./dist/ezreeport-vue.umd.cjs",
   "module": "./dist/ezreeport-vue.js",
-  "types": "./dist/ezreeport-vue.d.ts",
+  "types": "./src/index.ts",
   "files": [
-    "dist"
+    "dist",
+    "src/index.ts"
   ],
   "scripts": {
-    "build": "vite build",
+    "build": "NODE_ENV=production vite build",
     "build:doc": "storybook build",
     "dev": "storybook dev -p 6006",
-    "lint": "eslint --fix .",
-    "start": "nuxt dev example",
-    "watch": "vite build --watch"
+    "lint": "eslint --fix src plugins vite.config.ts .storybook",
+    "example": "npm --prefix example run dev",
+    "watch": "NODE_ENV=production vite build --watch"
   },
   "lint-staged": {
-    "*.{ts,vue}": [
+    "!(example)/*.{ts,vue}": [
       "eslint --fix"
     ]
   },
-  "peerDependencies": {
-    "@mdi/font": "^7.1.96",
-    "sass": "1.32.13",
+  "dependencies": {
+    "@mdi/font": "^7.2.96",
     "vue": "^2.7.10",
     "vue-i18n": "^8.28.2",
     "vuetify": "^2.6.14"
   },
-  "dependencies": {
-    "@highlightjs/vue-plugin": "^1.0.2",
-    "@vitejs/plugin-vue2": "^2.2.0",
-    "date-fns": "^2.29.3",
-    "ezreeport-sdk-js": "file:../sdk",
-    "highlight.js": "^10.7.2",
-    "js-yaml": "^4.1.0",
-    "unplugin-vue-components": "^0.22.12",
-    "uuid": "^9.0.0",
-    "vite": "^4.0.4",
-    "vuedraggable": "^2.24.3"
-  },
   "devDependencies": {
-    "@storybook/addon-essentials": "^7.0.0-beta.28",
-    "@storybook/addon-interactions": "^7.0.0-beta.28",
-    "@storybook/addon-links": "^7.0.0-beta.28",
-    "@storybook/addons": "^7.0.0-beta.28",
-    "@storybook/blocks": "^7.0.0-beta.28",
-    "@storybook/testing-library": "^0.0.13",
-    "@storybook/vue": "^7.0.0-beta.28",
-    "@storybook/vue-vite": "^7.0.0-beta.28",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "storybook": "^7.0.0-beta.28",
-    "@nuxt/types": "^2.15.8",
-    "@nuxt/typescript-build": "^2.1.0",
-    "@nuxtjs/i18n": "^7.3.1",
-    "@nuxtjs/proxy": "^2.1.0",
-    "@nuxtjs/vuetify": "^1.12.3",
+    "chroma-js": "^2.4.2",
+    "@ezpaarse-project/ezreeport-sdk-js": "1.0.0-beta.2",
+    "@highlightjs/vue-plugin": "^1.0.2",
+    "@intlify/unplugin-vue-i18n": "^0.10.0",
     "@rushstack/eslint-patch": "^1.2.0",
+    "@storybook/addon-essentials": "^7.0.4",
+    "@storybook/addon-interactions": "^7.0.4",
+    "@storybook/addon-links": "^7.0.4",
+    "@storybook/addons": "^7.0.4",
+    "@storybook/blocks": "^7.0.4",
+    "@storybook/testing-library": "^0.1.0",
+    "@storybook/vue": "^7.0.4",
+    "@storybook/vue-vite": "^7.0.4",
+    "@types/chroma-js": "^2.4.0",
     "@types/js-yaml": "^4.0.5",
     "@types/uuid": "^9.0.0",
+    "@types/validator": "^13.7.15",
+    "@vitejs/plugin-vue2": "^2.2.0",
     "@vue/eslint-config-airbnb-with-typescript": "^7.0.0",
-    "core-js": "^3.25.3",
+    "date-fns": "^2.29.3",
     "eslint-plugin-storybook": "^0.6.10",
-    "eslint-plugin-vue": "^9.9.0",
-    "nuxt": "^2.15.8",
-    "typescript": "^4.9.4",
-    "vue-server-renderer": "^2.7.10",
-    "vue-template-compiler": "^2.7.10"
-  },
-  "engines": {
-    "node": "^16"
+    "eslint-plugin-vue": "^9.10.0",
+    "highlight.js": "^10.7.2",
+    "js-yaml": "^4.1.0",
+    "lodash": "^4.17.21",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "remark-gfm": "^3.0.1",
+    "sass": "1.32.13",
+    "storybook": "^7.0.4",
+    "typescript": "^5.0.4",
+    "unplugin-vue-components": "^0.24.1",
+    "uuid": "^9.0.0",
+    "validator": "^13.9.0",
+    "vite": "^4.2.1",
+    "vuedraggable": "^2.24.3"
   }
 }

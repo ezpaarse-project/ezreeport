@@ -61,23 +61,27 @@
 
       <template #[`item.task`]="{ value: task }">
         <div class="text-center">
-          <a
-            v-if="task"
-            href="#"
-            @click.prevent="showTaskDialog(task.id)"
-          >
-            {{ task.name }}
-          </a>
-          <span v-else>...</span>
+          <template v-if="task">
+            <a
+              v-if="$ezReeport.data.auth.permissions?.namespaces[task.namespace?.id ?? '']?.['tasks-get-task']"
+              href="#"
+              @click.prevent="showTaskDialog(task.id)"
+            >
+              {{ task.name }}
+            </a>
+            <span v-else>{{ task.name }}</span>
+          </template>
+
+          <v-progress-circular v-else indeterminate class="my-2" />
         </div>
       </template>
 
-      <template #[`item.institution`]="{ value: institution }">
-        <InstitutionRichListItem
-          v-if="institution"
-          :institution="institution"
+      <template #[`item.namespace`]="{ value: namespace }">
+        <NamespaceRichListItem
+          v-if="namespace"
+          :namespace="namespace"
         />
-        <span v-else>...</span>
+        <v-progress-circular v-else indeterminate class="my-2" />
       </template>
     </v-data-table>
   </div>
@@ -85,10 +89,11 @@
 
 <script lang="ts">
 import { isBefore, parseISO } from 'date-fns';
-import type { history, institutions, tasks } from 'ezreeport-sdk-js';
+import type { history, namespaces, tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 import type { DataOptions } from 'vuetify';
 import type { DataTableHeader } from '~/types/vuetify';
+import ezReeportMixin from '~/mixins/ezr';
 
 type AnyHistory = history.History | history.HistoryWithTask;
 
@@ -102,7 +107,7 @@ interface HistoryItem {
   message: string,
   date: string,
   task?: history.HistoryWithTask['task'],
-  institution?: institutions.Institution,
+  namespace?: namespaces.Namespace,
   files?: {
     report?: string,
     detail?: string,
@@ -113,6 +118,7 @@ interface HistoryItem {
 const today = new Date();
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   props: {
     history: {
       type: Array as PropType<AnyHistory[]>,
@@ -122,7 +128,7 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    hideInstitution: {
+    hideNamespace: {
       type: Boolean,
       default: false,
     },
@@ -151,10 +157,10 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const has = this.$ezReeport.hasNamespacedPermission;
       return {
-        readFile: perms?.['reports-get-year-yearMonth-filename'],
-        readOneTask: perms?.['tasks-get-task'],
+        readFile: has('reports-get-year-yearMonth-filename', []),
+        readOneTask: has('tasks-get-task', []),
       };
     },
     /**
@@ -177,11 +183,11 @@ export default defineComponent({
           text: this.$t('headers.date').toString(),
         },
       ];
-      if (!this.hideInstitution && this.perms.readOneTask) {
+      if (!this.hideNamespace && this.perms.readOneTask) {
         headers.splice(1, 0, {
-          value: 'institution',
-          text: this.$t('headers.institution').toString(),
-          sort: (a?: institutions.Institution, b?: institutions.Institution) => (a?.name ?? '').localeCompare(b?.name ?? ''),
+          value: 'namespace',
+          text: this.$ezReeport.tcNamespace(true),
+          sort: (a?: namespaces.Namespace, b?: namespaces.Namespace) => (a?.name ?? '').localeCompare(b?.name ?? ''),
         });
       }
       if (!this.hideTask && this.perms.readOneTask) {
@@ -230,11 +236,11 @@ export default defineComponent({
       }
 
       let task: history.HistoryWithTask['task'] | undefined;
-      let institution: institutions.Institution | undefined;
+      let namespace: namespaces.Namespace | undefined;
       if ('task' in entry) {
         task = entry.task;
-        institution = this.$ezReeport.institutions.data
-          .find(({ id }) => id === entry.task.institution);
+        namespace = this.$ezReeport.data.namespaces.data
+          .find(({ id }) => id === entry.task.namespace.id);
       }
 
       const data = entry.data as any | undefined;
@@ -244,7 +250,7 @@ export default defineComponent({
         message: entry.message,
         date: entry.createdAt.toLocaleDateString(),
         task,
-        institution,
+        namespace,
         files: (!data?.destroyAt || isBefore(today, parseISO(data.destroyAt))) && data?.files,
       };
     },
@@ -330,7 +336,6 @@ en:
     message: 'Message'
     date: 'Date'
     task: 'Task'
-    institution: 'Institution'
   files:
     detail: 'Detail (JSON)'
     report: 'Report'
@@ -340,7 +345,6 @@ fr:
     message: 'Message'
     date: 'Date'
     task: 'Tâche'
-    institution: 'Établissement'
   files:
     detail: 'Détail (JSON)'
     report: 'Rapport'

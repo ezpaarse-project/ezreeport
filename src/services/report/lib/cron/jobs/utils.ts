@@ -2,7 +2,7 @@
 import { Recurrence } from '~/lib/prisma';
 import { addReportToMailQueue } from '~/lib/bull';
 import { formatISO } from '~/lib/date-fns';
-import logger from '~/lib/logger';
+import { appLogger as logger } from '~/lib/logger';
 import config from '~/lib/config';
 
 const { team } = config.get('report');
@@ -30,7 +30,7 @@ export const sendError = async (error: Error, origin: string, _timer: string) =>
         recurrence: Recurrence.DAILY, // TODO[feat]: based on cron
         name: `[CRON] ${origin}`,
         targets: [], // unused because of success: false
-        institution: process.env.NODE_ENV ?? 'dev',
+        namespace: process.env.NODE_ENV ?? 'dev',
       },
       date,
       url: `/ErrCron-${origin}-${date}.txt`,

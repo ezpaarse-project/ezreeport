@@ -1,7 +1,7 @@
 import type Queue from 'bull';
 import { addTaskToGenQueue } from '~/lib/bull';
 import { endOfDay, isBefore, isSameDay } from '~/lib/date-fns';
-import logger from '~/lib/logger';
+import { appLogger as logger } from '~/lib/logger';
 import { formatInterval } from '~/lib/utils';
 import { getAllTasks } from '~/models/tasks';
 import type { CronData } from '..';
@@ -9,7 +9,7 @@ import { sendError } from './utils';
 
 export default async (job: Queue.Job<CronData>) => {
   const start = new Date();
-  logger.debug(`[cron] [${job.name}] Started`);
+  logger.verbose(`[cron] [${job.name}] Started`);
 
   try {
     const tasks = await getAllTasks({ filter: { enabled: true } });

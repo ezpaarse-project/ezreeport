@@ -14,7 +14,7 @@ switch (buildTarget) {
     break;
 
   case 'types':
-    params = { build: { outDir: 'dist/types', write: false }, plugins: [dts({ outputDir: 'dist/types' })] };
+    params = { build: { outDir: 'dist/types', write: false }, plugins: [dts({ outputDir: 'dist/types', copyDtsFiles: true })] };
     break;
 
   default:

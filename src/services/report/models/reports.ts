@@ -2,7 +2,7 @@ import Joi from 'joi';
 import { compact, merge, omit } from 'lodash';
 import { randomUUID } from 'node:crypto';
 import EventEmitter from 'node:events';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Prisma, Recurrence, Task } from '~/lib/prisma';
 import fetchers, { type Fetchers } from '~/generators/fetchers';
@@ -17,19 +17,19 @@ import {
   parseISO,
   startOfDay
 } from '~/lib/date-fns';
-import logger from '~/lib/logger';
+import { appLogger as logger } from '~/lib/logger';
 import { calcNextDate, calcPeriod } from '~/models/recurrence';
 import { ArgumentError, ConflitError } from '~/types/errors';
-import { findInstitutionByIds, findInstitutionContact } from './institutions';
 import { editTaskByIdWithHistory } from './tasks';
 import {
-  isNewTemplate,
-  isNewTemplateDB,
+  getTemplateByName,
+  isTaskTemplate,
   type AnyTemplate,
-  type AnyTemplateDB
+  type AnyTaskTemplate
 } from './templates';
+import { type TypedNamespace, getNamespaceById } from './namespaces';
 
-const { ttl, templatesDir, outDir } = config.get('report');
+const { ttl, outDir } = config.get('report');
 
 type ReportResult = {
   success: boolean,
@@ -45,7 +45,7 @@ type ReportResult = {
     },
     sendingTo?: string[],
     period?: Interval,
-    runAs?: string,
+    auth?: TypedNamespace['fetchLogin'],
     stats?: Omit<Awaited<ReturnType<Renderers[keyof Renderers]>>, 'path'>,
     error?: {
       message: string,
@@ -72,7 +72,12 @@ const reportresultSchema = Joi.object<ReportResult>({
       start: [Joi.date().iso().required(), Joi.number().integer().required()],
       end: [Joi.date().iso().required(), Joi.number().integer().required()],
     }),
-    runAs: Joi.string(),
+    auth: Joi.object<ReportResult['detail']['auth']>(
+      // Object like { elastic: { user: 'foobar' } }
+      Object.fromEntries(
+        Object.keys(fetchers).map((key) => [key, Joi.object()]),
+      ),
+    ),
     stats: Joi.object<ReportResult['detail']['stats']>({
       pageCount: Joi.number().integer().required(),
       size: Joi.number().integer().required(),
@@ -112,17 +117,23 @@ export const isValidResult = (data: unknown): data is ReportResult => {
  */
 const normaliseFilename = (filename: string): string => filename.toLowerCase().replace(/[/ .]/g, '-');
 
-const fetchData = (params: {
+type FetchParams = {
   template: AnyTemplate,
-  taskTemplate: AnyTemplateDB,
+  taskTemplate: AnyTaskTemplate,
   period: Interval,
-  user: string,
-  institution?: ElasticInstitution,
+  namespace?: TypedNamespace,
   recurrence: Recurrence
-}, events: EventEmitter) => {
+};
+
+const fetchData = (params: FetchParams, events: EventEmitter) => {
   const {
-    template, taskTemplate, period, user, institution, recurrence,
+    template,
+    taskTemplate,
+    period,
+    namespace,
+    recurrence,
   } = params;
+
   return Promise.all(
     template.layouts.map(async (layout, i) => {
       if (
@@ -130,21 +141,21 @@ const fetchData = (params: {
       ) {
         return;
       }
+      const fetcher = layout.fetcher ?? 'elastic';
       const fetchOptions: GeneratorParam<Fetchers, keyof Fetchers> = merge(
         template.fetchOptions ?? {},
         layout.fetchOptions ?? {},
         {
-          indexSuffix: '',
           ...(taskTemplate.fetchOptions ?? {}),
           recurrence,
           period,
           // template,
-          indexPrefix: institution?.indexPrefix ?? '*',
-          user,
+          indexPrefix: namespace?.fetchOptions?.[fetcher]?.indexPrefix,
+          auth: namespace?.fetchLogin?.[fetcher] ?? { username: '' },
         },
       );
       template.layouts[i].fetchOptions = fetchOptions;
-      template.layouts[i].data = await fetchers[layout.fetcher ?? 'elastic'](fetchOptions, events);
+      template.layouts[i].data = await fetchers[fetcher](fetchOptions, events);
     }),
   );
 };
@@ -181,7 +192,12 @@ export const generateReport = async (
   const filepath = join(basePath, filename);
   const namepath = `${todayStr}/${filename}`;
 
-  logger.debug(`[gen] Generation of report "${namepath}" started`);
+  const namespace = await getNamespaceById(task.namespaceId) as TypedNamespace;
+  if (!namespace) {
+    throw new Error(`Namespace "${task.namespaceId}" not found`);
+  }
+
+  logger.verbose(`[gen] Generation of report "${namepath}" started`);
   events.emit('creation');
 
   let result: ReportResult = {
@@ -206,25 +222,8 @@ export const generateReport = async (
       throw new Error("Targets can't be null");
     }
 
-    // Get institution
-    const [rawInstitution = { _source: null }] = await findInstitutionByIds([task.institution]);
-    if (!rawInstitution._source) {
-      throw new Error(`Institution "${task.institution}" not found`);
-    }
-    const institution = rawInstitution._source?.institution;
-
-    // Get username who will run the requests
-    const contact = (
-      await findInstitutionContact(rawInstitution._id.toString())
-    ) ?? { _source: null };
-
-    if (!contact._source) {
-      throw new Error(`No suitable contact found for your institution "${task.institution}". Please add doc_contact or tech_contact.`);
-    }
-    const { _source: { username: user } } = contact;
-    result.detail.runAs = user;
-
-    events.emit('contactFound', contact._source);
+    result.detail.auth = namespace.fetchLogin;
+    events.emit('authFound', result.detail.auth);
 
     // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
     let period = calcPeriod(parseISO(task.nextRun.toString()), task.recurrence);
@@ -250,22 +249,14 @@ export const generateReport = async (
 
     // Parse task template
     const taskTemplate = task.template;
-    if (!isNewTemplateDB(taskTemplate) || (typeof taskTemplate !== 'object' || Array.isArray(taskTemplate))) {
+    if (!isTaskTemplate(taskTemplate) || (typeof taskTemplate !== 'object' || Array.isArray(taskTemplate))) {
       // As validation throws an error, this line should be called only if 2nd assertion fails
       throw new ArgumentError("Task's template is not an object");
     }
 
-    // Check if not trying to access unwanted file
-    const extendsPath = join(templatesDir, `${taskTemplate.extends}.json`);
-    if (new RegExp(`^${templatesDir}/.*\\.json$`, 'i').test(extendsPath) === false) {
-      throw new Error(`Task's layout must be in the "${templatesDir}" folder. Resolved: "${extendsPath}"`);
-    }
-
-    // Resolve import
-    const template = JSON.parse(await readFile(extendsPath, 'utf-8'));
-    if (!isNewTemplate(template)) {
-      // As validation throws an error, this line shouldn't be called
-      return {} as ReportResult;
+    const { body: template = null } = await getTemplateByName(taskTemplate.extends) ?? {};
+    if (!template) {
+      throw new Error(`No template named "${taskTemplate.extends}" was found`);
     }
 
     // Insert task's layouts
@@ -283,13 +274,12 @@ export const generateReport = async (
       taskTemplate,
       period,
       recurrence: task.recurrence,
-      institution,
-      user,
+      namespace,
     }, events);
     // Cleanup
     delete template.fetchOptions;
     events.emit('templateFetched', template);
-    logger.debug('[gen] Data fetched');
+    logger.verbose('[gen] Data fetched');
 
     // Render report
     const renderOptions: GeneratorParam<Renderers, keyof Renderers> = merge(
@@ -307,7 +297,7 @@ export const generateReport = async (
     );
     template.renderOptions = renderOptions;
     const stats = await renderers[template.renderer ?? 'vega-pdf'](renderOptions, events);
-    logger.debug(`[gen] Report wroted to "${namepath}.rep.pdf"`);
+    logger.verbose(`[gen] Report wroted to "${namepath}.rep.pdf"`);
 
     await writeFile(
       `${filepath}.deb.json`,
@@ -319,7 +309,7 @@ export const generateReport = async (
       'utf-8',
     );
     result.detail.files.debug = `${namepath}.deb.json`;
-    logger.debug(`[gen] Template writed to "${namepath}.deb.json"`);
+    logger.verbose(`[gen] Template wrote to "${namepath}.deb.json"`);
 
     result = merge<ReportResult, DeepPartial<ReportResult>>(
       result,
@@ -408,6 +398,6 @@ export const generateReport = async (
     ),
     'utf-8',
   );
-  logger.debug(`[gen] Detail writed to "${namepath}.det.json"`);
+  logger.verbose(`[gen] Detail wrote to "${namepath}.det.json"`);
   return result;
 };

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import LoadingToolbar from './LoadingToolbar.vue';
 
 const meta: Meta<typeof LoadingToolbar> = {
-  title: 'Utils (Internal)/LoadingToolbar',
+
   component: LoadingToolbar,
   args: {
     text: 'My component',

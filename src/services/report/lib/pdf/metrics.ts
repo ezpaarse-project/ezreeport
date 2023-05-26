@@ -85,25 +85,29 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
         value = value[label?.field ?? 'value'];
       }
 
-      if (label?.format) {
-        switch (label.format.type) {
-          case 'date':
-            if (typeof value === 'string') {
-              const d = parseISO(value);
-              if (!isValid(d)) throw new Error('Date is not in ISO format');
-              value = d.getTime();
-            }
+      try {
+        if (label?.format) {
+          switch (label.format.type) {
+            case 'date':
+              if (typeof value === 'string') {
+                const d = parseISO(value);
+                if (!isValid(d)) throw new Error('Date is not in ISO format');
+                value = d.getTime();
+              }
 
-            if (!label.format.params?.[0]) {
-              label.format.params = ['dd/MM/yyyy'];
-            }
+              if (!label.format.params?.[0]) {
+                label.format.params = ['dd/MM/yyyy'];
+              }
 
-            value = format(value, label.format.params[0]);
-            break;
+              value = format(value, label.format.params[0]);
+              break;
 
-          default:
-            break;
+            default:
+              break;
+          }
         }
+      } catch (error) {
+        throw new Error(`An error occurred wile formatting "${key}" ("${value}"): ${(error as Error).message}`);
       }
 
       if (value) {

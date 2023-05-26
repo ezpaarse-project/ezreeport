@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import DatePicker from './DatePicker.vue';
 
 const meta: Meta<typeof DatePicker> = {
-  title: 'Utils (Internal)/Forms/DatePicker',
+
   component: DatePicker,
   args: {
     label: 'Story',

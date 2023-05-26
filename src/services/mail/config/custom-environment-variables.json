@@ -18,7 +18,7 @@
     "concurrence": { "__name": "WORKERS_CONCURRENCE", "__format": "number" },
     "maxExecTime": { "__name": "WORKERS_MAX_EXEC_TIME", "__format": "number" }
   },
-  "email": {
+  "mail": {
     "sender": "EMAIL_SENDER",
     "team": "EMAIL_SUPPORT_TEAM",
     "attempts": { "__name": "EMAIL_ATTEMPTS", "__format": "number" },

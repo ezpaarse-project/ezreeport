@@ -384,12 +384,12 @@ const printText = (
         word = word.trimStart();
       }
 
-      const { width: writedW } = printText({
+      const { width: wroteW } = printText({
         ...params,
         element: { ...params.element, content: word },
       });
       // eslint-disable-next-line no-param-reassign
-      params.cursor.x += writedW;
+      params.cursor.x += wroteW;
     }
   }
 

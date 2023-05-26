@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import TaskDialogUpdate from './TaskDialogUpdate.vue';
 
 const meta: Meta<typeof TaskDialogUpdate> = {
-  title: 'Tasks/Internal/Dialogs/TaskDialogUpdate',
+
   component: TaskDialogUpdate,
   args: {
     id: '7398ffd9-ab64-48d0-a854-5f0b28b3dca9',

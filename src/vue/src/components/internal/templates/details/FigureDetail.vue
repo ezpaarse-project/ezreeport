@@ -1,7 +1,7 @@
 <template>
   <v-sheet rounded outlined class="pa-2">
     <div class="d-flex">
-      {{ $t('headers.figure') }}
+      {{ $t('headers.figure', { i: figureIndex }) }}
 
       <template v-if="locked">
         <v-spacer />
@@ -61,13 +61,17 @@
 </template>
 
 <script lang="ts">
-import type { templates } from 'ezreeport-sdk-js';
+import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 
 export default defineComponent({
   props: {
     figure: {
       type: Object as PropType<templates.Figure>,
+      required: true,
+    },
+    figureIndex: {
+      type: Number,
       required: true,
     },
     grid: {
@@ -146,7 +150,7 @@ en:
     square: 'Square'
 fr:
   headers:
-    figure: 'Visualisation'
+    figure: 'Visualisation #{i}'
     type: 'Type de visualisation'
     data: 'Données de la visualisation'
     figureParams: 'Paramètres de la visualisation'

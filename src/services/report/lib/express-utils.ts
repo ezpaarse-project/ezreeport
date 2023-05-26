@@ -7,8 +7,11 @@ import {
 } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
-import { checkRight } from '../middlewares/auth';
-import { getRoleValue, registerRouteWithRole, Roles } from '../models/roles';
+import { registerRoute, registerRouteWithAccess } from '~/models/access';
+import { requireAdmin, requireNamespace, requireUser } from '../middlewares/auth';
+import { Access } from './prisma';
+import { HTTPError } from '~/types/errors';
+import { appLogger } from './logger';
 
 type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 type HTTPPath = `/${string}`;
@@ -22,7 +25,7 @@ interface HandlerData {
 
 const handlerDataSchema = Joi.object<HandlerData>({
   data: Joi.any().required(),
-  code: Joi.number().allow(...Object.values(StatusCodes)),
+  code: Joi.number().valid(...Object.values(StatusCodes)),
   meta: Joi.any(),
 });
 
@@ -33,10 +36,28 @@ const isHandlerData = (data: unknown): data is HandlerData => {
   return !!validation.value && !validation.error;
 };
 
+const parseRouteName = <R extends Router & { _permPrefix?: string }>(
+  router:R,
+  route: HTTPRoute,
+) => {
+  const [method, path] = route.split(' ', 2);
+  // Parse route name
+  let routeName = path.slice(1).replace(/\//g, '-').replace(/:/g, '');
+  routeName = `${method.toLowerCase()}-${routeName}`.replace(/-$/, '');
+  if (router._permPrefix) {
+    routeName = `${router._permPrefix}-${routeName}`;
+  }
+  if (routeName === method.toLowerCase()) {
+    throw new Error('Something went wrong when parsing routeName: check if router have a "_permPerfix"');
+  }
+
+  return routeName;
+};
+
 /**
- * @see {@link CustomRouterType.createRoute}
+ * @see {@link CustomRouterType.createBasicRoute}
  */
-export const createRoute = <R extends Router>(
+export const createBasicRoute = <R extends Router>(
   router: R,
   route: HTTPRoute,
   handler: RouteHandler,
@@ -45,16 +66,17 @@ export const createRoute = <R extends Router>(
   const [method, path] = route.split(' ', 2);
 
   const asyncHandler: RequestHandler = (req, res) => {
-    let result: Promise<unknown>;
+    let promise: Promise<unknown>;
+
     try {
       // Call handler
-      result = Promise.resolve(handler(req, res));
+      promise = Promise.resolve(handler(req, res));
     } catch (error) {
-      result = Promise.reject(error);
+      promise = Promise.reject(error);
     }
 
-    if (result) {
-      result
+    if (promise) {
+      promise
         .then((v) => {
           // If response wasn't already sent
           if (!res.headersSent) {
@@ -63,7 +85,12 @@ export const createRoute = <R extends Router>(
             res.sendJson(val.data, val.code, val.meta);
           }
         })
-        .catch((err) => res.errorJson(err));
+        .catch((err) => {
+          if (!(err instanceof HTTPError)) {
+            appLogger.error(err.message);
+          }
+          res.errorJson(err);
+        });
     }
   };
 
@@ -75,39 +102,71 @@ export const createRoute = <R extends Router>(
 };
 
 /**
- * @see {@link CustomRouterType.createSecuredRoute}
+ * @see {@link CustomRouterType.createNamespacedRoute}
  */
-export const createSecuredRoute = <R extends Router & { _permPrefix?: string }>(
+export const createNamespacedRoute = <R extends Router & { _permPrefix?: string }>(
   router: R,
   route: HTTPRoute,
-  minRole: Roles,
+  minAccess: Access,
   handler: RouteHandler,
   ...middlewares: RequestHandler[]
 ): R => {
-  const [method, path] = route.split(' ', 2);
+  const routeName = parseRouteName(router, route);
 
-  // Parse routename
-  let routeName = path.slice(1).replace(/\//g, '-').replace(/:/g, '');
-  routeName = `${method.toLowerCase()}-${routeName}`.replace(/-$/, '');
-  if (router._permPrefix) {
-    routeName = `${router._permPrefix}-${routeName}`;
-  }
-  if (routeName === method.toLowerCase()) {
-    throw new Error('Something went wrong when parsing routeName: check if router have a "_permPerfix"');
-  }
-
-  // Register route priority
-  const minRolePriority = getRoleValue(minRole);
-  registerRouteWithRole(
+  // Register route accessibility
+  registerRouteWithAccess(
     routeName,
-    minRolePriority,
+    minAccess,
   );
 
-  return createRoute(
+  return createBasicRoute(
+    router,
+    route,
+    // Route handler
+    handler,
+    // Route middlewares
+    requireUser,
+    requireNamespace(minAccess),
+    ...middlewares,
+  );
+};
+
+/**
+ * @see {@link CustomRouterType.createRoute}
+ */
+export const createRoute = <R extends Router>(
+  router: R,
+  route: HTTPRoute,
+  handler: RouteHandler,
+  ...middlewares: RequestHandler[]
+): R => {
+  const routeName = parseRouteName(router, route);
+
+  registerRoute(routeName, false);
+
+  return createBasicRoute(router, route, handler, ...middlewares);
+};
+
+/**
+ * @see {@link CustomRouterType.createAdminRoute}
+ */
+export const createAdminRoute = <R extends Router>(
+  router: R,
+  route: HTTPRoute,
+  handler: RouteHandler,
+  ...middlewares: RequestHandler[]
+): R => {
+  const routeName = parseRouteName(router, route);
+
+  registerRoute(routeName, true);
+
+  return createBasicRoute(
     router,
     route,
     handler,
-    checkRight(minRolePriority),
+    // Route middlewares
+    requireUser,
+    requireAdmin,
     ...middlewares,
   );
 };
@@ -117,6 +176,24 @@ export const createSecuredRoute = <R extends Router & { _permPrefix?: string }>(
  */
 type CustomRouterType = {
   _permPrefix: string,
+
+  /**
+   * Create basic route
+   *
+   * Unlike any `create*Method` method, **the route won't be registered in permission system**
+   *
+   * @param route The name of route
+   * @param handler The executor of route. It can directly return data,
+   * or an object like `{ data, code, meta }` where `data` and `meta` **AREN'T PROMISES**
+   * and `code` is a StatusCode.
+   * @param middlewares The middlewares. They're passed to express **BEFORE** `handler`
+   *
+   * @returns The custom router
+   */
+  createBasicRoute<R extends Router & CustomRouterType>(
+    this: R,
+    ...params: ExcludeFirst<Parameters<typeof createBasicRoute>>
+  ): R,
 
   /**
    * Create route
@@ -135,14 +212,17 @@ type CustomRouterType = {
   ): R,
 
   /**
-   * Create secured route that will check elastic's role of user.
+   * Create secured route that will check user and will get namespaces.
    *
-   * Route is secured by {@link checkRight}, so :
-   * - `req.user` with `username` & `email` from Elastic user.
-   * - You can safely add `checkInstitution` middleware
+   * Route is secured by {@link requireUser}, so :
+   * - `req.user` with data from DB
+   *
+   * {@link requireNamespace} is also applied, so :
+   * - `req.namespaces` with allowed namespaces that the user want
+   * - `req.namespaceIds` with allowed namespaces' ids that the user want
    *
    * @param route The name of route
-   * @param minRole The minimum role
+   * @param minRole The minimum role in the namespace
    * @param handler The executor of route. It can directly return data,
    * or an object like `{ data, code, meta }` where `data` and `meta` **AREN'T PROMISES**
    * and `code` is a StatusCode.
@@ -150,14 +230,33 @@ type CustomRouterType = {
    *
    * @returns The custom router
    */
-  createSecuredRoute<R extends Router & CustomRouterType>(
+  createNamespacedRoute<R extends Router & CustomRouterType>(
     this: R,
-    ...params: ExcludeFirst<Parameters<typeof createSecuredRoute>>
+    ...params: ExcludeFirst<Parameters<typeof createNamespacedRoute>>
+  ): R,
+
+  /**
+   * Create secured route that will check user & admin status.
+   *
+   * Route is secured by {@link requireUser} and {@link requireAdmin}, so :
+   * - `req.user` with data from DB
+   *
+   * @param route The name of route
+   * @param handler The executor of route. It can directly return data,
+   * or an object like `{ data, code, meta }` where `data` and `meta` **AREN'T PROMISES**
+   * and `code` is a StatusCode.
+   * @param middlewares The middlewares. They're passed to express **BEFORE** `handler`
+   *
+   * @returns The custom router
+   */
+  createAdminRoute<R extends Router & CustomRouterType>(
+    this: R,
+    ...params: ExcludeFirst<Parameters<typeof createAdminRoute>>
   ): R,
 };
 
 /**
- * Warpper for creating an express router with some custom functions
+ * Wrapper for creating an express router with some custom functions
  *
  * @param prefix Router prefix, used for perms
  * @param opts Router options passed to express
@@ -168,12 +267,20 @@ export const CustomRouter = (prefix: string, opts?: RouterOptions): Router & Cus
   const additional: CustomRouterType = {
     _permPrefix: prefix,
 
+    createBasicRoute(...params) {
+      return createBasicRoute(this, ...params);
+    },
+
     createRoute(...params) {
       return createRoute(this, ...params);
     },
 
-    createSecuredRoute(...params) {
-      return createSecuredRoute(this, ...params);
+    createNamespacedRoute(...params) {
+      return createNamespacedRoute(this, ...params);
+    },
+
+    createAdminRoute(...params) {
+      return createAdminRoute(this, ...params);
     },
   };
   return Object.assign(

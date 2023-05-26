@@ -2,6 +2,7 @@ import type Queue from 'bull';
 import { enUS } from 'date-fns/locale';
 import { readFile, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
+import { glob } from 'glob';
 import config from '~/lib/config';
 import {
   endOfDay,
@@ -10,8 +11,7 @@ import {
   isBefore,
   parseISO
 } from '~/lib/date-fns';
-import glob from '~/lib/glob';
-import logger from '~/lib/logger';
+import { appLogger as logger } from '~/lib/logger';
 import { formatInterval, isFulfilled } from '~/lib/utils';
 import { isValidResult } from '~/models/reports';
 import type { CronData } from '..';
@@ -23,7 +23,7 @@ type FileCheckResult = { file: string, dur: Duration };
 
 export default async (job: Queue.Job<CronData>) => {
   const start = new Date();
-  logger.debug(`[cron] [${job.name}] Started`);
+  logger.verbose(`[cron] [${job.name}] Started`);
 
   try {
     const today = endOfDay(start);
@@ -33,7 +33,7 @@ export default async (job: Queue.Job<CronData>) => {
     const filesToDelete = (await Promise.allSettled(
       detailFiles.map(async (filePath) => {
         try {
-          logger.debug(`[cron] [${job.name}] Checking "${filePath}"`);
+          logger.verbose(`[cron] [${job.name}] Checking "${filePath}"`);
           const fileContent = JSON.parse(await readFile(filePath, 'utf-8'));
 
           if (!isValidResult(fileContent)) {

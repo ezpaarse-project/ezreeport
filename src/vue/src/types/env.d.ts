@@ -1,9 +1,9 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_EZMESURE_TOKEN: string
+  readonly VITE_AUTH_TOKEN: string
   readonly VITE_REPORT_API: string
-  readonly VITE_LOGO_URL: string
+  readonly VITE_NAMESPACES_LOGO_URL: string
   // more env variables...
 }
 

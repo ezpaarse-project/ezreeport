@@ -92,3 +92,4 @@ sw.*
 *.swp
 
 storybook-static
+.vite

@@ -2,11 +2,11 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import TemplateDialogRead from './TemplateDialogRead.vue';
 
 const meta: Meta<typeof TemplateDialogRead> = {
-  title: 'Templates/Internal/Dialogs/TemplateDialogRead',
+
   component: TemplateDialogRead,
   args: {
     value: true,
-    name: 'basic',
+    name: 'scratch',
   },
   argTypes: {
     input: { action: 'input' },

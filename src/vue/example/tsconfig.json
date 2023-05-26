@@ -21,5 +21,9 @@
       "@nuxtjs/vuetify",
       "@nuxtjs/i18n",
     ]
-  }
+  },
+  "include": [
+    "./**/*.ts",
+    "./**/*.vue",
+  ],
 }

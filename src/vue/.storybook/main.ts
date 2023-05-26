@@ -1,18 +1,41 @@
 /* eslint-disable import/no-import-module-exports */
-import { mergeConfig, type UserConfig } from 'vite';
+import { mergeConfig } from 'vite';
 import type { StorybookConfig } from '@storybook/types';
 import type { StorybookConfigVite } from '@storybook/builder-vite';
-import viteConfig from '../vite.config';
+import remarkGfm from 'remark-gfm';
 
 const config: StorybookConfig & StorybookConfigVite = {
   stories: [
-    '../src/**/*.mdx',
-    '../src/**/*.stories.@(js|jsx|ts|tsx)',
+    {
+      directory: '../src/components/internal',
+      titlePrefix: 'Internal',
+      files: '**/*.@(stories.@(js|jsx|ts|tsx))',
+    },
+    {
+      directory: '../src/components/public',
+      titlePrefix: 'Public',
+      files: '**/*.@(stories.@(js|jsx|ts|tsx)|mdx)',
+    },
+    {
+      directory: '../src/components',
+      titlePrefix: 'Get Started',
+      files: 'GetStarted.mdx',
+    },
   ],
   addons: [
     '@storybook/addon-links',
     '@storybook/addon-essentials',
     '@storybook/addon-interactions',
+    {
+      name: '@storybook/addon-docs',
+      options: {
+        mdxPluginOptions: {
+          mdxCompileOptions: {
+            remarkPlugins: [remarkGfm],
+          },
+        },
+      },
+    },
   ],
   framework: {
     name: '@storybook/vue-vite',
@@ -21,27 +44,23 @@ const config: StorybookConfig & StorybookConfigVite = {
   docs: {
     autodocs: 'tag',
   },
+  core: {
+    builder: '@storybook/builder-vite',
+  },
   typescript: {
     check: false,
   },
-  viteFinal: async (cfg) => {
-    const defConfig = viteConfig as UserConfig;
-
-    return mergeConfig(cfg, {
-      resolve: defConfig.resolve,
-      server: defConfig.server,
-      css: defConfig.css,
-      optimizeDeps: {
-        include: [
-          'vuetify',
-          'vue-i18n',
-          'vuetify/src/locale',
-          '@storybook/addon-essentials/docs/mdx-react-shim',
-          '@storybook/blocks',
-        ],
-      },
-    });
-  },
+  viteFinal: (cfg) => mergeConfig(cfg, {
+    optimizeDeps: {
+      include: [
+        'vuetify',
+        'vue-i18n',
+        'vuetify/src/locale',
+        '@storybook/addon-essentials/docs/mdx-react-shim',
+        '@storybook/blocks',
+      ],
+    },
+  }),
 };
 
 module.exports = config;

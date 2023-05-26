@@ -1,6 +1,5 @@
 import Joi from 'joi';
-import { join } from 'node:path';
-import config from '~/lib/config';
+import { parseISO } from 'date-fns';
 import {
   endOfDay,
   formatISO,
@@ -10,17 +9,15 @@ import {
 import prisma from '~/lib/prisma';
 import {
   Recurrence,
+  type Namespace,
   type History,
   type Prisma,
   type Task
 } from '~/lib/prisma';
 import { calcNextDate } from '~/models/recurrence';
 import { ArgumentError } from '~/types/errors';
-import { templateDBSchema } from './templates';
-
-// TODO[feat]: More checks to make custom errors
-
-const { templatesDir } = config.get('report');
+import { getTemplateByName, taskTemplateSchema } from './templates';
+import { appLogger } from '~/lib/logger';
 
 type InputTask = Pick<Prisma.TaskCreateInput, 'name' | 'template' | 'targets' | 'recurrence' | 'nextRun' | 'enabled'>;
 type InputHistory = Pick<Prisma.HistoryCreateWithoutTaskInput, 'type' | 'message' | 'data'>;
@@ -30,8 +27,7 @@ type InputHistory = Pick<Prisma.HistoryCreateWithoutTaskInput, 'type' | 'message
  */
 const taskSchema = Joi.object<Prisma.TaskCreateInput>({
   name: Joi.string().trim().required(),
-  institution: Joi.string(), // Validated before called
-  template: templateDBSchema.required(),
+  template: taskTemplateSchema.required(),
   targets: Joi.array().items(Joi.string().trim().email()).required(),
   recurrence: Joi.string().valid(
     Recurrence.DAILY,
@@ -41,7 +37,7 @@ const taskSchema = Joi.object<Prisma.TaskCreateInput>({
     Recurrence.BIENNIAL,
     Recurrence.YEARLY,
   ).required(),
-  nextRun: Joi.date().iso().greater('now'),
+  nextRun: Joi.date().iso().required(),
   enabled: Joi.boolean().default(true),
 });
 
@@ -53,7 +49,7 @@ const taskSchema = Joi.object<Prisma.TaskCreateInput>({
  *
  * @throws If not valid
  */
-const isValidTask = (data: unknown): data is InputTask => {
+export const isValidTask = (data: unknown): data is InputTask => {
   const validation = taskSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
@@ -61,45 +57,96 @@ const isValidTask = (data: unknown): data is InputTask => {
   return true;
 };
 
+const createTaskSchema = taskSchema.append({
+  nextRun: Joi.date().iso().greater('now'),
+  namespace: Joi.string().required(),
+});
+
+/**
+ * Check if input data is a task creation
+ *
+ * @param data The input data
+ * @returns `true` if valid
+ *
+ * @throws If not valid
+ */
+export const isValidCreateTask = (data: unknown): data is (InputTask & { namespace: string }) => {
+  const validation = createTaskSchema.validate(data, {});
+  if (validation.error != null) {
+    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
+  }
+  return true;
+};
+
+type FullTask = Pick<Task, 'id' | 'name' | 'template' | 'targets' | 'recurrence' | 'nextRun' | 'lastRun' | 'enabled' | 'createdAt' | 'updatedAt'> & {
+  namespace: Pick<Namespace, 'id' | 'name' | 'logoId' | 'createdAt' | 'updatedAt'>,
+  history: History[]
+};
+
+const prismaTaskSelect = {
+  id: true,
+  name: true,
+  template: true,
+  targets: true,
+  recurrence: true,
+  nextRun: true,
+  lastRun: true,
+  enabled: true,
+  createdAt: true,
+  updatedAt: true,
+
+  namespace: {
+    select: {
+      id: true,
+      name: true,
+      logoId: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  },
+  history: {
+    orderBy: {
+      createdAt: 'asc',
+    },
+  },
+} satisfies Prisma.TaskSelect;
+
 /**
  * Get count of tasks in DB
  *
- * @param institution The institution of the task. If provided,
- * will restrict search to the instituion provided
+ * @param namespace The namespace of the task. If provided,
+ * will restrict search to the namespace provided
  *
  * @returns The task count
  */
-export const getCountTask = async (institution?: Task['institution']): Promise<number> => {
-  await prisma.$connect();
-
-  const count = await prisma.task.count({
-    where: {
-      institution,
+export const getCountTask = (
+  namespaceIds?: Namespace['id'][],
+): Promise<number> => prisma.task.count({
+  where: {
+    namespaceId: {
+      in: namespaceIds,
     },
-  });
-
-  await prisma.$disconnect();
-  return count;
-};
+  },
+});
 
 /**
  * Get all tasks in DB
  *
  * @param opts Requests options
- * @param institution The institution of the task. If provided,
- * will restrict search to the instituion provided
+ * @param namespaceIds The namespaces of the task. If provided,
+ * will restrict search to the namespace provided
  *
  * @returns Tasks list
  */
 // TODO[feat]: Custom sort
-export const getAllTasks = async <Keys extends Array<keyof Task>>(
+export const getAllTasks = <Keys extends Array<keyof Task>>(
   opts?: {
     count?: number,
     previous?: Task['id'],
     select?: Keys,
-    filter?: Omit<Prisma.TaskWhereInput, 'institution'>
+    filter?: Omit<Prisma.TaskWhereInput, 'namespace'>
   },
-  institution?: Task['institution'],
+  namespaceIds?: Namespace['id'][],
 ): Promise<Pick<Task, Keys[number]>[]> => {
   const select: Prisma.TaskSelect = opts?.select && Object.assign(
     {},
@@ -108,107 +155,80 @@ export const getAllTasks = async <Keys extends Array<keyof Task>>(
     })),
   );
 
-  await prisma.$connect();
-
-  const tasks = await prisma.task.findMany({
+  return prisma.task.findMany({
     take: opts?.count,
     skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
     cursor: opts?.previous ? { id: opts.previous } : undefined,
     select,
     where: {
       ...(opts?.filter ?? {}),
-      institution,
+      namespaceId: {
+        in: namespaceIds,
+      },
     },
     orderBy: {
       createdAt: 'asc',
     },
-  }) as Pick<Task, Keys[number]>[];
-
-  await prisma.$disconnect();
-  return tasks;
+  }) as Promise<Pick<Task, Keys[number]>[]>;
 };
 
 /**
  * Get specific task in DB
  *
  * @param id The id of the task
- * @param institution The institution of the task. If provided,
- * will restrict search to the instituion provided
+ * @param namespaceIds The namespaces of the task. If provided,
+ * will restrict search to the namespace provided
  *
  * @returns Task
  */
-export const getTaskById = async (id: Task['id'], institution?: Task['institution']): Promise<(Task & { history: History[] }) | null> => {
-  await prisma.$connect();
-
-  const task = await prisma.task.findFirst({
-    where: {
-      id,
-      institution,
+export const getTaskById = (id: Task['id'], namespaceIds?: Namespace['id'][]): Promise<FullTask | null> => prisma.task.findFirst({
+  where: {
+    id,
+    namespaceId: {
+      in: namespaceIds,
     },
-    include: {
-      history: {
-        orderBy: {
-          createdAt: 'asc',
-        },
-      },
-    },
-  });
-
-  await prisma.$disconnect();
-  return task;
-};
+  },
+  select: prismaTaskSelect,
+});
 
 /**
  * Create task in DB
  *
  * @param data The input data
  * @param creator The user creating the task
- * @param institution The institution of the task. If provided,
- * will restrict search to the instituion provided
+ * @param id Wanted id
  *
  * @returns The created task
  */
-export const createTask = async (data: unknown, creator: string, institution: Task['institution']): Promise<Task> => {
-  // Validate body
-  if (!isValidTask(data)) {
-    // As validation throws an error, this line shouldn't be called
-    return {} as Task;
+export const createTask = async (
+  { namespace, nextRun, ...data }: InputTask & { namespace: string },
+  creator: string,
+  id?: string,
+): Promise<FullTask> => {
+  // Check if "parent" template exist
+  if (typeof data.template === 'object' && 'extends' in data.template && !await getTemplateByName(`${data.template.extends}`)) {
+    throw new ArgumentError(`No template named "${data.template.extends}" was found`);
   }
 
-  // Check if not trying to access unwanted file
-  if (typeof data.template === 'object' && 'extends' in data.template) {
-    const extendsPath = join(templatesDir, `${data.template.extends}.json`);
-    if (new RegExp(`^${templatesDir}/.*\\.json$`, 'i').test(extendsPath) === false) {
-      throw new ArgumentError(`Task's layout must be in the "${templatesDir}" folder. Resolved: "${extendsPath}"`);
-    }
+  let nR = nextRun;
+  if (!nR) {
+    nR = calcNextDate(new Date(), data.recurrence);
   }
-
-  let { nextRun } = data;
-  if (!nextRun) {
-    nextRun = calcNextDate(new Date(), data.recurrence);
-  }
-
-  await prisma.$connect();
 
   const task = await prisma.task.create({
     data: {
       ...data,
-      nextRun,
-      institution,
+      id,
+      namespaceId: namespace,
+      nextRun: nR,
       history: {
         create: { type: 'creation', message: `Tâche créée par ${creator}` },
       },
     },
-    include: {
-      history: {
-        orderBy: {
-          createdAt: 'asc',
-        },
-      },
-    },
+    select: prismaTaskSelect,
   });
 
-  await prisma.$disconnect();
+  appLogger.verbose(`[models] Task "${id}" created`);
   return task;
 };
 
@@ -216,35 +236,27 @@ export const createTask = async (data: unknown, creator: string, institution: Ta
  * Delete specific task in DB
  *
  * @param id The id of the task
- * @param institution The institution of the task. If provided,
- * will restrict search to the instituion provided
+ * @param namespaceIds The namespaces of the task. If provided,
+ * will restrict search to the namespace provided
  *
  * @returns The edited task
  */
-export const deleteTaskById = async (id: Task['id'], institution?: Task['institution']): Promise<Task | null> => {
+export const deleteTaskById = async (id: Task['id'], namespaceIds?: Namespace['id'][]): Promise<FullTask | null> => {
   // Check if task exist
-  const task = await getTaskById(id, institution);
-  if (!task) {
+  const existingTask = await getTaskById(id, namespaceIds);
+  if (!existingTask) {
     return null;
   }
 
-  await prisma.$connect();
-
-  const deletedTask = await prisma.task.delete({
+  const task = await prisma.task.delete({
     where: {
       id,
     },
-    include: {
-      history: {
-        orderBy: {
-          createdAt: 'asc',
-        },
-      },
-    },
+    select: prismaTaskSelect,
   });
 
-  await prisma.$disconnect();
-  return deletedTask;
+  appLogger.verbose(`[models] Task "${id}" deleted`);
+  return task;
 };
 
 /**
@@ -253,74 +265,63 @@ export const deleteTaskById = async (id: Task['id'], institution?: Task['institu
  * @param id The id of the task
  * @param data The input data
  * @param entry The new history entry. If not provided, edit is considered as "silent"
- * @param institution The institution of the task. If provided,
- * will restrict search to the instituion provided
+ * @param namespaceIds The namespaces of the task. If provided,
+ * will restrict search to the namespace provided
  *
  * @returns The edited task, or null if task doesn't exist
  */
 export const editTaskByIdWithHistory = async (
   id: Task['id'],
-  data: InputTask & { lastRun?: Task['lastRun'] },
+  { nextRun, ...data }: InputTask & { lastRun?: Task['lastRun'] },
   entry?: InputHistory,
-  institution?: Task['institution'],
-) => {
+  namespaceIds?: Namespace['id'][],
+): Promise<FullTask | null> => {
   // Check if task exist
-  const task = await getTaskById(id, institution);
-  if (!task) {
+  const existingTask = await getTaskById(id, namespaceIds);
+  if (!existingTask) {
     return null;
   }
 
-  // Check if not trying to access unwanted file
-  if (typeof data.template === 'object' && 'extends' in data.template) {
-    const extendsPath = join(templatesDir, `${data.template.extends}.json`);
-    if (new RegExp(`^${templatesDir}/.*\\.json$`, 'i').test(extendsPath) === false) {
-      throw new ArgumentError(`Task's layout must be in the "${templatesDir}" folder. Resolved: "${extendsPath}"`);
+  // Check if "parent" template exist
+  if (typeof data.template === 'object' && 'extends' in data.template && !await getTemplateByName(`${data.template.extends}`)) {
+    throw new ArgumentError(`No template named "${data.template.extends}" was found`);
+  }
+
+  let nR = typeof nextRun === 'object' ? nextRun : parseISO(nextRun);
+  const isNextRunChanged = !isSameDay(nR, existingTask.nextRun);
+  if (isNextRunChanged && isBefore(nR, new Date())) {
+    throw new ArgumentError('Body is not valid: "nextRun" must be greater than "now" or stays unmodified');
+  }
+
+  // If next run isn't changed...
+  if (!isNextRunChanged) {
+    //  ... but recurrence changed, update nextRun
+    if (data.recurrence !== existingTask.recurrence) {
+      nR = calcNextDate(existingTask.lastRun ?? new Date(), data.recurrence);
+    }
+
+    // ... but task is re-enabled
+    if (data.enabled && existingTask.enabled === false) {
+      const today = endOfDay(new Date());
+      nR = existingTask.nextRun;
+      while (isBefore(nR, today)) {
+        nR = calcNextDate(nR, existingTask.recurrence);
+      }
     }
   }
 
-  // If next run isn't changed but recurrence changed
-  let { nextRun } = data;
-  if (
-    data.recurrence !== task.recurrence
-      && (!data.nextRun || isSameDay(new Date(data.nextRun), task.nextRun))
-  ) {
-    nextRun = calcNextDate(task.lastRun ?? new Date(), data.recurrence);
-  }
-
-  // If next run isn't changed but task is re-enabled
-  if (data.enabled && data.enabled !== task.enabled && !data.nextRun) {
-    const today = endOfDay(new Date());
-    nextRun = task.nextRun;
-    while (isBefore(nextRun, today)) {
-      nextRun = calcNextDate(nextRun, task.recurrence);
-    }
-  }
-
-  // Falling back to task's nextRun
-  if (nextRun === '') {
-    nextRun = task.nextRun;
-  }
-
-  await prisma.$connect();
-
-  const editedTask = await prisma.task.update({
+  const task = await prisma.task.update({
     where: { id },
     data: {
       ...data,
-      nextRun,
+      nextRun: nR,
       history: entry && { create: { ...entry, createdAt: formatISO(new Date()) } },
     },
-    include: {
-      history: {
-        orderBy: {
-          createdAt: 'asc',
-        },
-      },
-    },
+    select: prismaTaskSelect,
   });
 
-  await prisma.$disconnect();
-  return editedTask;
+  appLogger.verbose(`[models] Task "${id}" edited`);
+  return task;
 };
 
 /**
@@ -329,27 +330,19 @@ export const editTaskByIdWithHistory = async (
  * @param data The input data
  * @param id The id of the task
  * @param editor The user editing the task. Used for creating default history
- * @param institution The institution of the task. If provided,
- * will restrict search to the instituion provided
+ * @param namespaceIds The namespaces of the task. If provided,
+ * will restrict search to the namespace provided
  *
  * @returns The edited task, or null if task doesn't exist
  */
 export const editTaskById = (
   id: Task['id'],
-  data: unknown,
+  data: InputTask,
   editor: string,
-  institution?: Task['institution'],
-) => {
-  // Validate body
-  if (!isValidTask(data)) {
-    // As validation throws an error, this line shouldn't be called
-    return Promise.resolve(null);
-  }
-
-  return editTaskByIdWithHistory(
-    id,
-    data,
-    { type: 'edition', message: `Tâche éditée par ${editor}` },
-    institution,
-  );
-};
+  namespaceIds?: Namespace['id'][],
+): Promise<FullTask | null> => editTaskByIdWithHistory(
+  id,
+  data,
+  { type: 'edition', message: `Tâche éditée par ${editor}` },
+  namespaceIds,
+);

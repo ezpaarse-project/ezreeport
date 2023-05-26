@@ -1,5 +1,12 @@
 <template>
   <v-dialog :fullscreen="currentTab === 1" :value="value" max-width="1000" scrollable @input="$emit('input', $event)">
+    <TaskDialogGeneration
+      v-if="task && perms.runTask"
+      v-model="generationDialogShown"
+      :task="task"
+      @generated="fetch()"
+    />
+
     <v-card :loading="loading" :tile="currentTab === 1">
       <v-card-title>
         <v-text-field
@@ -21,7 +28,7 @@
         <CustomSwitch
           v-if="task"
           v-model="task.enabled"
-          :label="$t(task?.enabled ? 'item.active' : 'item.inactive')"
+          :label="$t(task?.enabled ? 'item.active' : 'item.inactive').toString()"
           :disabled="loading"
           class="text-body-2"
           reverse
@@ -33,10 +40,24 @@
 
       </v-card-title>
 
-      <v-tabs v-model="currentTab" style="flex-grow: 0;">
+      <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
         <v-tab v-for="tab in tabs" :key="tab.name">
-          {{ tab.label }}
-          <v-icon v-if="!tab.valid" color="warning" small right>mdi-alert</v-icon>
+          {{ $t(`tabs.${tab.name}`) }}
+
+          <v-tooltip top v-if="tab.valid !== true" color="warning">
+            <template #activator="{ attrs, on }">
+              <v-icon
+                color="warning"
+                small
+                v-bind="attrs"
+                v-on="on"
+              >
+                mdi-alert
+              </v-icon>
+            </template>
+
+            <span>{{ tab.valid }}</span>
+          </v-tooltip>
         </v-tab>
       </v-tabs>
 
@@ -46,16 +67,14 @@
         <v-tabs-items v-model="currentTab" class="mt-2">
           <v-tab-item>
             <!-- Details -->
-            <v-form v-if="task" v-model="valid" @input="isDetailValid = $event">
+            <v-form v-if="task" v-model="valid">
               <v-row>
                 <v-col>
                   <v-combobox
                     v-model="task.targets"
                     :label="$t('headers.targets')"
                     :rules="rules.targets"
-                    class="mt-1"
                     multiple
-                    outlined
                   >
                     <template #append>
                       <div />
@@ -79,8 +98,11 @@
                 </v-col>
 
                 <v-col>
-                  <div>{{ $t('headers.institution') }}:</div>
-                  <InstitutionSelect v-model="task.institution" hide-all />
+                  <div>{{ $ezReeport.tcNamespace(true) }}:</div>
+                  <NamespaceSelect
+                    :value="task.namespace.id"
+                    hide-all
+                  />
 
                   <div>{{ $t('headers.dates') }}:</div>
                   <v-container>
@@ -109,6 +131,10 @@
               :template.sync="task.template"
             />
           </v-tab-item>
+
+          <v-tab-item>
+            <InternalHistoryTable v-if="task" :history="task.history" hide-task hide-namespace />
+          </v-tab-item>
         </v-tabs-items>
 
         <ErrorOverlay v-model="error" />
@@ -117,6 +143,10 @@
       <v-divider />
 
       <v-card-actions>
+        <v-btn v-if="perms.runTask" color="warning" @click="showGenerateDialog">
+          {{ $t('actions.generate') }}
+        </v-btn>
+
         <v-spacer />
 
         <v-btn @click="$emit('input', false)">
@@ -124,7 +154,11 @@
         </v-btn>
 
         <v-btn
-          :disabled="!task || !valid || !isNameValid || !isTemplateValid || !perms.update"
+          v-if="perms.update"
+          :disabled="!task
+            || !valid
+            || !isNameValid
+            || templateValidation !== true"
           :loading="loading"
           color="success"
           @click="save"
@@ -137,16 +171,18 @@
 </template>
 
 <script lang="ts">
-import { addDays } from 'date-fns';
-import type { tasks } from 'ezreeport-sdk-js';
+import { addDays, formatISO, parseISO } from 'date-fns';
+import type { tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
+import isEmail from 'validator/lib/isEmail';
 import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
-import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
+import ezReeportMixin from '~/mixins/ezr';
+import { tabs } from './TaskDialogRead.vue';
 
 type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTemplate };
 
 export default defineComponent({
-  components: { CustomSwitch },
+  mixins: [ezReeportMixin],
   props: {
     value: {
       type: Boolean,
@@ -162,12 +198,13 @@ export default defineComponent({
     updated: (task: tasks.FullTask) => !!task,
   },
   data: () => ({
+    generationDialogShown: false,
+
     task: undefined as CustomTask | undefined,
     currentTab: 0,
 
     minDate: addDays(new Date(), 1),
     valid: false,
-    isDetailValid: false,
 
     loading: false,
     error: '',
@@ -179,7 +216,7 @@ export default defineComponent({
     rules() {
       return {
         name: [
-          (v: string) => v.length > 0 || this.$t('errors.empty'),
+          (v: string) => !!v || this.$t('errors.empty'),
         ],
         targets: [
           (v: string[]) => v.length > 0 || this.$t('errors.empty'),
@@ -191,17 +228,18 @@ export default defineComponent({
      * Tabs data
      */
     tabs() {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [detailTab, templateTab, ...otherTabs] = tabs;
       return [
         {
-          name: 'details',
-          label: this.$t('tabs.details'),
-          valid: this.isDetailValid,
+          ...detailTab,
+          valid: this.valid || this.$t('errors._default'),
         },
         {
-          name: 'template',
-          label: this.$t('tabs.template'),
-          valid: this.isTemplateValid,
+          ...templateTab,
+          valid: this.templateValidation,
         },
+        ...otherTabs.map((v) => ({ ...v, valid: true })),
       ];
     },
     /**
@@ -214,10 +252,13 @@ export default defineComponent({
      * User permissions
      */
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const has = this.$ezReeport.hasNamespacedPermission;
+      const namespaces = this.task ? [this.task.namespace.id] : [];
       return {
-        readOne: perms?.['tasks-get-task'],
-        update: perms?.['tasks-put-task'],
+        readOne: has('tasks-get-task', namespaces),
+        update: has('tasks-put-task', namespaces),
+
+        runTask: has('tasks-post-task-run', namespaces),
       };
     },
     /**
@@ -231,16 +272,28 @@ export default defineComponent({
     /**
      * Is task's template valid
      */
-    isTemplateValid(): boolean {
-      if (!this.task?.template.inserts) {
+    templateValidation(): true | string {
+      if (!this.task || !this.task.template.inserts) {
         return true;
       }
-      return this.task.template.inserts.findIndex(({ _: { hasError } }) => hasError) < 0;
+
+      const invalidInsert = this.task.template.inserts.find(({ _: { valid } }) => valid !== true);
+      if (invalidInsert) {
+        return this.$t(
+          'errors.layouts._detail',
+          {
+            at: invalidInsert.at,
+            valid: invalidInsert._.valid,
+          },
+        ).toString();
+      }
+
+      return true;
     },
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
     id() {
@@ -254,11 +307,9 @@ export default defineComponent({
     /**
      * Check if given string is a mail address
      *
-     * ! ULTRA Simple email validation
-     *
-     * @param s The string
+     * @param email The string
      */
-    validateMail: (s: string) => /[a-z0-9.-]*@[a-z0-9.-]*\.[a-z-]*/i.test(s),
+    validateMail: (email: string) => isEmail(email),
     /**
      * Fetch task info
      */
@@ -271,6 +322,9 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.tasks.getTask(this.id);
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
 
         // Add additional data
         content.template.inserts = addAdditionalDataToLayouts(content.template.inserts ?? []);
@@ -286,7 +340,7 @@ export default defineComponent({
      * Save and edit task
      */
     async save() {
-      if (!this.task || !this.valid || !this.isNameValid || !this.isTemplateValid) {
+      if (!this.task || !this.valid || !this.isNameValid || this.templateValidation !== true) {
         return;
       }
 
@@ -306,18 +360,19 @@ export default defineComponent({
           }),
         );
 
-        const { content } = await this.$ezReeport.sdk.tasks.updateTask(
+        const nextRun = formatISO(this.task.nextRun, { representation: 'date' });
+
+        const { content } = await this.$ezReeport.sdk.tasks.upsertTask(
           this.task.id,
           {
             name: this.task.name,
-            institution: this.task.institution,
             template: {
               ...this.task.template,
               inserts,
             },
             targets: this.task.targets,
             recurrence: this.task.recurrence,
-            nextRun: this.task.nextRun,
+            nextRun: parseISO(`${nextRun}T00:00:00.000Z`),
             enabled: this.task.enabled,
           },
         );
@@ -329,6 +384,16 @@ export default defineComponent({
         this.error = (error as Error).message;
       }
       this.loading = false;
+    },
+    /**
+     * Prepare and show task generation dialog
+     */
+    showGenerateDialog() {
+      if (!this.perms.runTask) {
+        return;
+      }
+
+      this.generationDialogShown = true;
     },
   },
 });
@@ -342,12 +407,12 @@ export default defineComponent({
 en:
   headers:
     name: 'Report name'
-    institution: 'Institution'
     targets: 'Receivers'
     dates: 'Dates'
   tabs:
     details: 'Details'
     template: 'Template'
+    activity: 'Activity'
   task:
     lastRun: 'Last run'
     nextRun: 'Next run'
@@ -355,20 +420,25 @@ en:
     active: 'Active'
     inactive: 'Inactive'
   errors:
+    _default: 'An error is in this form'
+    layouts:
+      _detail: 'Page {at}: {valid}'
     empty: 'This field must be set'
     format: "One or more address aren't valid"
+    no_data: 'An error occurred when fetching data'
   actions:
+    generate: 'Generate'
     cancel: 'Cancel'
     save: 'Save'
 fr:
   headers:
     name: 'Nom du rapport'
-    institution: 'Institution'
     targets: 'Destinataires'
     dates: 'Dates'
   tabs:
     details: 'Détails'
     template: 'Modèle'
+    activity: 'Activité'
   task:
     lastRun: 'Dernière itération'
     nextRun: 'Prochaine itération'
@@ -376,9 +446,14 @@ fr:
     active: 'Actif'
     inactive: 'Inactif'
   errors:
+    _default: 'Une erreur est présente dans ce formulaire'
+    layouts:
+      _detail: 'Page {at}: {valid}'
     empty: 'Ce champ doit être rempli'
     format: 'Une ou plusieurs addresses ne sont pas valides'
+    no_data: 'Une erreur est survenue lors de la récupération des données'
   actions:
+    generate: 'Générer'
     cancel: 'Annuler'
     save: 'Sauvegarder'
 </i18n>

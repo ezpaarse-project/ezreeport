@@ -35,9 +35,9 @@
 
               <CustomSwitch
                 v-if="(perms.start && perms.stop)"
-                :input-value="item.isRunning"
+                :value="item.isRunning"
                 :disabled="loading"
-                :label="$t(item.isRunning ? 'item.active' : 'item.inactive')"
+                :label="$t(item.isRunning ? 'item.active' : 'item.inactive').toString()"
                 reverse
                 class="mr-4"
                 @click.stop="updateCronStatus(item)"
@@ -46,33 +46,38 @@
           </v-list-item-content>
         </template>
 
-        <div
-          v-for="entry in item.detail"
-          :key="entry.key"
-        >
-          <v-list-item
-            v-if="entry.value"
-            style="min-height: 0px"
-          >
-            <v-list-item-content class="py-1">
-              <v-list-item-subtitle class="d-flex align-center">
-                <v-icon small>
-                  {{ entry.icon }}
-                </v-icon>
-                <span class="ml-1">{{ $t(`cron.${entry.key}`) }}: {{ entry.value }}</span>
-              </v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-        </div>
+        <v-row>
+          <v-col>
+            <template v-for="entry in item.detail">
+              <v-list-item
+                v-if="entry.value"
+                style="min-height: 0px"
+                :key="entry.key"
+              >
+                <v-list-item-content class="py-1">
+                  <v-list-item-subtitle class="d-flex align-center">
+                    <v-icon small>
+                      {{ entry.icon }}
+                    </v-icon>
+                    <span class="ml-1">{{ $t(`cron.${entry.key}`) }}: {{ entry.value }}</span>
+                  </v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
+          </v-col>
 
-        <v-btn
-          v-if="perms.force"
-          color="warning"
-          :disabled="loading"
-          @click="forceCronRun(item)"
-        >
-          {{ $t('cron.force').toString() }}
-        </v-btn>
+          <v-col cols="2">
+            <v-btn
+              v-if="perms.force"
+              :disabled="loading"
+              color="warning"
+              class="d-block mx-auto"
+              @click="forceCronRun(item)"
+            >
+              {{ $t('cron.force').toString() }}
+            </v-btn>
+          </v-col>
+        </v-row>
       </v-list-group>
 
       <ErrorOverlay v-model="error" />
@@ -82,8 +87,8 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import type { crons } from 'ezreeport-sdk-js';
-import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
+import type { crons } from '@ezpaarse-project/ezreeport-sdk-js';
+import ezReeportMixin from '~/mixins/ezr';
 
 type CronAction = typeof crons.startCron | typeof crons.stopCron | typeof crons.forceCron;
 
@@ -101,9 +106,7 @@ interface CronItem {
 }
 
 export default defineComponent({
-  components: {
-    CustomSwitch,
-  },
+  mixins: [ezReeportMixin],
   data: () => ({
     crons: [] as crons.Cron[],
     openedCrons: {} as Record<string, boolean>,
@@ -113,14 +116,14 @@ export default defineComponent({
   }),
   computed: {
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const has = this.$ezReeport.hasGeneralPermission;
       return {
-        readAll: perms?.['crons-get'],
-        readOne: perms?.['crons-get-cron'],
+        readAll: has('crons-get'),
+        readOne: has('crons-get-cron'),
 
-        start: perms?.['crons-put-cron-start'],
-        stop: perms?.['crons-put-cron-stop'],
-        force: perms?.['crons-post-cron-force'],
+        start: has('crons-put-cron-start'),
+        stop: has('crons-put-cron-stop'),
+        force: has('crons-post-cron-force'),
       };
     },
     items(): CronItem[] {
@@ -129,7 +132,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
   },
@@ -149,6 +152,10 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.crons.getAllCrons();
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
+
         this.crons = content;
         this.error = '';
       } catch (error) {
@@ -237,6 +244,8 @@ en:
   item:
     active: 'Active'
     inactive: 'Inactive'
+  errors:
+    no_data: 'An error occurred when fetching data'
 fr:
   title: 'Crons'
   refresh-tooltip: 'Rafraîchir la liste des crons'
@@ -248,4 +257,6 @@ fr:
   item:
     active: 'Actif'
     inactive: 'Inactif'
+  errors:
+    no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>

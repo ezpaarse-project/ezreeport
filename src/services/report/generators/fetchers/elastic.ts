@@ -15,14 +15,21 @@ interface FetchOptions {
   recurrence: Recurrence,
   period: Interval,
   filters?: ElasticFilters,
-  indexPrefix: string,
-  indexSuffix: string,
-  user: string,
+  /**
+   * @deprecated Not used anymore
+   */
+  indexPrefix?: string,
+  /**
+   * @deprecated Replaced by `index`
+   */
+  indexSuffix?: string,
+  index?: string,
+  auth: { username: string },
   fetchCount?: string,
   aggs?: (ElasticAggregation & { name?: string })[];
 }
 
-const optionScehma = Joi.object<FetchOptions>({
+const optionSchema = Joi.object<FetchOptions>({
   recurrence: Joi.string().valid(
     Recurrence.DAILY,
     Recurrence.WEEKLY,
@@ -36,9 +43,12 @@ const optionScehma = Joi.object<FetchOptions>({
     end: Joi.date().required(),
   }).required(),
   filters: Joi.object(),
-  indexPrefix: Joi.string().required(),
-  indexSuffix: Joi.string().required(),
-  user: Joi.string().required(),
+  indexPrefix: Joi.string().allow(''), // @deprecated Use `index` instead
+  indexSuffix: Joi.string().allow(''), // @deprecated Use `index` instead
+  index: Joi.string().allow(''),
+  auth: Joi.object({
+    username: Joi.string().required(),
+  }).required(),
   fetchCount: Joi.string(),
   aggs: Joi.array(),
 });
@@ -52,7 +62,7 @@ const optionScehma = Joi.object<FetchOptions>({
  * @throws If not valid
  */
 const isFetchOptions = (data: unknown): data is FetchOptions => {
-  const validation = optionScehma.validate(data, {});
+  const validation = optionSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Fetch options are not valid: ${validation.error.message}`);
   }
@@ -68,9 +78,13 @@ export default async (
     // As validation throws an error, this line shouldn't be called
     return [];
   }
+  const index = (options.index ?? `${options.indexPrefix}${options.indexSuffix}`) || null;
+  if (!index) {
+    throw new ArgumentError('You must precise an index before trying to fetch data from elastic');
+  }
 
   const baseOpts: ElasticTypes.SearchRequest = {
-    index: options.indexPrefix + options.indexSuffix,
+    index,
     body: {
       query: {
         bool: {
@@ -119,7 +133,13 @@ export default async (
   }
 
   const data: Prisma.JsonValue = {};
-  const { body } = await elasticSearch(opts, options.user);
+  const { body } = await elasticSearch(opts, options.auth.username);
+
+  // Checks any errors
+  if (body._shards.failures?.length) {
+    const reasons = body._shards.failures.map((err) => err.reason.reason).join(' ; ');
+    throw new Error(`An error occurred when fetching data : ${reasons}`);
+  }
 
   if (options.aggs) {
     // eslint-disable-next-line no-restricted-syntax
@@ -159,7 +179,7 @@ export default async (
   }
 
   if (options.fetchCount) {
-    const { body: { count } } = await elasticCount(baseOpts, options.user);
+    const { body: { count } } = await elasticCount(baseOpts, options.auth.username);
     data[options.fetchCount] = count;
   }
 

@@ -11,7 +11,6 @@
       v-model="readTaskDialogShown"
       :id="focusedId"
       @updated="onTaskEdited"
-      @deleted="onTaskDeleted"
     />
     <TaskDialogUpdate
       v-if="perms.update"
@@ -24,116 +23,140 @@
       v-model="deleteTaskPopoverShown"
       :task="focusedTask"
       :coords="deleteTaskPopoverCoords"
-      @deleted="onTaskEdited"
+      @deleted="onTaskDeleted"
     />
 
     <v-row>
-      <InstitutionSelect
-        v-model="currentInstitution"
-        @input="fetch()"
-      />
+      <v-col>
+        <NamespaceSelect
+          v-model="actualCurrentNamespace"
+          :allowed-namespaces="allowedNamespaces"
+          hide-refresh
+          @input="fetch()"
+        />
+      </v-col>
     </v-row>
 
     <v-row>
-      <v-data-table
-        :headers="headers"
-        :items="items"
-        :loading="loading"
-        :options.sync="options"
-        :server-items-length="totalItems"
-        :items-per-page-options="[5, 10, 15]"
-        class="data-table"
-        item-key="id"
-        @click:row="showTaskDialog"
-        @update:options="onPaginationChange"
-      >
-        <template #top>
-          <LoadingToolbar :text="$t('title').toString()">
-            <RefreshButton
-              :loading="loading"
-              :tooltip="$t('refresh-tooltip').toString()"
-              @click="fetch"
+      <v-col>
+        <v-data-table
+          :headers="headers"
+          :items="items"
+          :loading="loading"
+          :options.sync="options"
+          :server-items-length="totalItems"
+          :items-per-page-options="[5, 10, 15]"
+          class="data-table"
+          item-key="id"
+          @click:row="showTaskDialog"
+          @update:options="onPaginationChange"
+        >
+          <template #top>
+            <LoadingToolbar :text="$t('title').toString()">
+              <v-tooltip top v-if="perms.create">
+                <template #activator="{ on, attrs }">
+                  <v-btn icon color="success" @click="showCreateDialog" v-bind="attrs" v-on="on">
+                    <v-icon>mdi-plus</v-icon>
+                  </v-btn>
+                </template>
+
+                {{$t('actions.create')}}
+              </v-tooltip>
+            </LoadingToolbar>
+          </template>
+
+          <template #[`item.namespace`]="{ value: namespace }">
+            <NamespaceRichListItem
+              v-if="namespace"
+              :namespace="namespace"
             />
+            <v-progress-circular v-else indeterminate class="my-2" />
+          </template>
 
-            <v-btn icon color="success" @click="showCreateDialog">
-              <v-icon>mdi-plus</v-icon>
-            </v-btn>
-          </LoadingToolbar>
-        </template>
+          <template #[`item.recurrence`]="{ value: recurrence }">
+            <div class="text-center">
+              <RecurrenceChip
+                :value="recurrence"
+              />
+            </div>
+          </template>
 
-        <template #[`item.institution`]="{ value: institution }">
-          <InstitutionRichListItem
-            v-if="institution"
-            :institution="institution"
-          />
-          <v-progress-circular v-else indeterminate class="my-2" />
-        </template>
-
-        <template #[`item.recurrence`]="{ value: recurrence }">
-          <div class="text-center">
-            <RecurrenceChip
-              :value="recurrence"
+          <template #[`item.enabled`]="{ value: enabled, item }">
+            <CustomSwitch
+              :value="enabled"
+              :readonly="loading"
+              :disabled="!rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task-enable']
+                || !rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task-disable']
+              "
+              :label="$t(enabled ? 'item.active' : 'item.inactive').toString()"
+              reverse
+              @click.stop="toggleTask(item)"
             />
-          </div>
-        </template>
+          </template>
 
-        <template #[`item.enabled`]="{ value: enabled, item }">
-          <CustomSwitch
-            :input-value="enabled"
-            :readonly="!perms.enable || !perms.disable"
-            :label="$t(enabled ? 'item.active' : 'item.inactive')"
-            :disabled="loading"
-            reverse
-            @click.stop="toggleTask(item)"
-          />
-        </template>
+          <template #[`item.actions`]="{ item }">
+            <v-tooltip top v-if="rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-delete-task']">
+              <template #activator="{ attrs, on }">
+                <v-btn icon color="error" @click.stop="showDeletePopover(item, $event)" v-on="on" v-bind="attrs">
+                  <v-icon>mdi-delete</v-icon>
+                </v-btn>
+              </template>
+              <span>{{ $t('actions.delete') }}</span>
+            </v-tooltip>
+          </template>
 
-        <template #[`item.actions`]="{ item }">
-          <v-tooltip>
-            <template #activator="{ attrs, on }">
-              <v-btn icon color="info" @click.stop="showEditDialog(item)" v-on="on" v-bind="attrs">
-                <v-icon>mdi-pencil</v-icon>
-              </v-btn>
-            </template>
-            <span>{{ $t('actions.edit') }}</span>
-          </v-tooltip>
-
-          <v-tooltip>
-            <template #activator="{ attrs, on }">
-              <v-btn icon color="error" @click.stop="showDeletePopover(item, $event)" v-on="on" v-bind="attrs">
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
-            </template>
-            <span>{{ $t('actions.delete') }}</span>
-          </v-tooltip>
-        </template>
-
-        <template v-if="error" #[`body.append`]>
-          <ErrorOverlay v-model="error" />
-        </template>
-      </v-data-table>
+          <template v-if="error" #[`body.append`]>
+            <ErrorOverlay v-model="error" />
+          </template>
+        </v-data-table>
+      </v-col>
     </v-row>
   </v-col>
 </template>
 
 <script lang="ts">
-import type { institutions, tasks } from 'ezreeport-sdk-js';
+import type { namespaces, tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
-import CustomSwitch from '~/components/internal/utils/forms/CustomSwitch';
 import type { DataOptions } from 'vuetify';
 import type { DataTableHeader } from '~/types/vuetify';
+import ezReeportMixin from '~/mixins/ezr';
+import type { PropType } from 'vue';
 
 interface TaskItem {
   id: string,
   name: string,
-  institution?: institutions.Institution,
+  namespace?: namespaces.Namespace,
   recurrence: tasks.Recurrence,
   enabled: boolean,
   nextRun?: string,
 }
 
 export default defineComponent({
-  components: { CustomSwitch },
+  mixins: [ezReeportMixin],
+  props: {
+    /**
+     * Current value of namespace filter
+     */
+    currentNamespace: {
+      type: String as PropType<string | undefined>,
+      default: undefined,
+    },
+    /**
+     * Allowed namespaces in namespace filter
+     */
+    allowedNamespaces: {
+      type: Array as PropType<string[] | undefined>,
+      default: undefined,
+    },
+  },
+  emits: {
+    /**
+     * Triggered when namespace filter changed by user
+     *
+     * @param id The namespace id
+     */
+    'update:currentNamespace': (id: string | undefined) => id !== null,
+  },
   data: () => ({
     readTaskDialogShown: false,
     createTaskDialogShown: false,
@@ -142,13 +165,13 @@ export default defineComponent({
     deleteTaskPopoverCoords: { x: 0, y: 0 },
 
     options: {
-      sortBy: ['institution', 'enabled', 'nextRun'],
+      sortBy: ['namespace', 'enabled', 'nextRun'],
       sortDesc: [false, true, false],
       multiSort: true,
     } as DataOptions,
     lastIds: {} as Record<number, string | undefined>,
 
-    currentInstitution: '',
+    innerCurrentNamespace: '',
     tasks: [] as tasks.Task[],
     totalItems: 0,
     focusedId: '' as string,
@@ -157,6 +180,15 @@ export default defineComponent({
     error: '',
   }),
   computed: {
+    actualCurrentNamespace: {
+      get(): string {
+        return this.currentNamespace || this.innerCurrentNamespace;
+      },
+      set(id: string) {
+        this.innerCurrentNamespace = id;
+        this.$emit('update:currentNamespace', id || undefined);
+      },
+    },
     headers(): DataTableHeader<TaskItem>[] {
       return [
         {
@@ -164,9 +196,9 @@ export default defineComponent({
           text: this.$t('headers.name').toString(),
         },
         {
-          value: 'institution',
-          text: this.$t('headers.institution').toString(),
-          sort: (a?: institutions.Institution, b?: institutions.Institution) => (a?.name ?? '').localeCompare(b?.name ?? ''),
+          value: 'namespace',
+          text: this.$ezReeport.tcNamespace(true),
+          sort: (a?: namespaces.Namespace, b?: namespaces.Namespace) => (a?.name ?? '').localeCompare(b?.name ?? ''),
         },
         {
           value: 'recurrence',
@@ -187,23 +219,24 @@ export default defineComponent({
         },
       ];
     },
-    institutions(): institutions.Institution[] {
-      return this.$ezReeport.institutions.data;
+    namespaces(): namespaces.Namespace[] {
+      return this.$ezReeport.data.namespaces.data;
     },
     items() {
       return this.tasks.map(this.parseTask);
     },
+    rawNamespacePerms() {
+      return this.$ezReeport.data.auth.permissions?.namespaces;
+    },
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
-      return {
-        readAll: perms?.['tasks-get'],
-        readOne: perms?.['tasks-get-task'],
-        update: perms?.['tasks-put-task'],
-        create: perms?.['tasks-post'],
-        delete: perms?.['tasks-delete-task'],
+      const has = this.$ezReeport.hasNamespacedPermission;
 
-        enable: perms?.['tasks-put-task-enable'],
-        disable: perms?.['tasks-put-task-disable'],
+      return {
+        readAll: has('tasks-get', []),
+        readOne: has('tasks-get-task', []),
+        update: has('tasks-put-task', []),
+        create: has('tasks-post', []),
+        delete: has('tasks-delete-task', []),
       };
     },
     focusedTask() {
@@ -212,23 +245,32 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.auth.permissions': function () {
+    '$ezReeport.data.auth.permissions': function () {
       this.fetch();
-      this.fetchInstitutions();
+      this.fetchNamespaces();
+    },
+    currentNamespace(value: string | undefined) {
+      if (value !== this.innerCurrentNamespace) {
+        this.innerCurrentNamespace = value ?? '';
+        this.fetch();
+      }
     },
   },
   mounted() {
-    this.fetch();
-    this.fetchInstitutions();
+    this.innerCurrentNamespace = this.currentNamespace ?? '';
+    this.$nextTick(() => {
+      this.fetch();
+      this.fetchNamespaces();
+    });
   },
   methods: {
     /**
-     * Fetch institutions
+     * Fetch namespaces
      */
-    async fetchInstitutions() {
+    async fetchNamespaces() {
       this.loading = true;
       try {
-        this.$ezReeport.institutions.fetch();
+        this.$ezReeport.fetchNamespaces();
       } catch (error) {
         this.error = (error as Error).message;
       }
@@ -262,8 +304,12 @@ export default defineComponent({
               previous: this.lastIds[page - 1],
               count: this.options.itemsPerPage,
             },
-            this.currentInstitution || undefined,
+            this.innerCurrentNamespace ? [this.innerCurrentNamespace] : this.allowedNamespaces,
           );
+          if (!content) {
+            throw new Error(this.$t('errors.no_data').toString());
+          }
+
           this.tasks = content;
           this.totalItems = meta.total;
 
@@ -290,7 +336,7 @@ export default defineComponent({
         name: task.name,
         recurrence: task.recurrence,
         enabled: task.enabled,
-        institution: this.institutions.find(({ id }) => task.institution === id),
+        namespace: this.namespaces.find(({ id }) => task.namespaceId === id),
         nextRun: task.nextRun && task.enabled
           ? task.nextRun.toLocaleString(undefined, { year: 'numeric', month: 'numeric', day: 'numeric' })
           : undefined,
@@ -301,25 +347,29 @@ export default defineComponent({
      *
      * @param item The item
      */
-    showTaskDialog({ id }: TaskItem) {
+    showTaskDialog({ id, namespace }: TaskItem) {
+      const hasPermission = (perm: string) => this.rawNamespacePerms?.[namespace?.id ?? '']?.[perm];
+      if (
+        !hasPermission('tasks-get-task')
+        && !hasPermission('tasks-put-task')
+      ) {
+        return;
+      }
+
       this.focusedId = id;
-      this.readTaskDialogShown = true;
+      if (hasPermission('tasks-put-task')) {
+        this.updateTaskDialogShown = true;
+      } else {
+        this.readTaskDialogShown = true;
+      }
     },
     /**
      * Prepare and show task creation dialog
      */
-    showCreateDialog() {
+    async showCreateDialog() {
       this.focusedId = '';
+      await this.$nextTick();
       this.createTaskDialogShown = true;
-    },
-    /**
-     * Prepare and show task edition dialog
-     *
-     * @param item The item
-     */
-    showEditDialog({ id }: TaskItem) {
-      this.focusedId = id;
-      this.updateTaskDialogShown = true;
     },
     /**
      * Prepare and show task deletion popover
@@ -327,7 +377,11 @@ export default defineComponent({
      * @param item The item
      * @param event The base event
      */
-    async showDeletePopover({ id }: TaskItem, event: MouseEvent) {
+    async showDeletePopover({ id, namespace }: TaskItem, event: MouseEvent) {
+      if (!this.rawNamespacePerms?.[namespace?.id ?? '']?.['tasks-delete-task']) {
+        return;
+      }
+
       this.focusedId = id;
       this.deleteTaskPopoverCoords = {
         x: event.clientX,
@@ -341,11 +395,11 @@ export default defineComponent({
      *
      * @param item The item
      */
-    async toggleTask({ id, enabled }: tasks.Task) {
+    async toggleTask({ id, enabled, namespace }: TaskItem) {
       if (
         this.tasks.findIndex((t) => t.id === id) < 0
-        || (enabled && !this.perms.disable)
-        || (!enabled && !this.perms.enable)
+        || (enabled && !this.rawNamespacePerms?.[namespace?.id ?? '']?.['tasks-put-task-enable'])
+        || (!enabled && !this.rawNamespacePerms?.[namespace?.id ?? '']?.['tasks-put-task-disable'])
       ) {
         return;
       }
@@ -389,7 +443,7 @@ export default defineComponent({
       }
 
       const tasks = [...this.tasks];
-      tasks.splice(index, 1, task);
+      tasks.splice(index, 1, { ...task, namespaceId: task.namespace.id });
       this.tasks = tasks;
     },
   },
@@ -406,10 +460,8 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   title: 'Periodic report list'
-  refresh-tooltip: 'Refresh report list'
   headers:
     name: 'Report name'
-    institution: 'Institution'
     recurrence: 'Recurrence'
     status: 'Status'
     next: 'Next run'
@@ -418,14 +470,13 @@ en:
     active: 'Active'
     inactive: 'Inactive'
   actions:
+    create: 'Create'
     edit: 'Edit'
     delete: 'Delete'
 fr:
   title: 'Liste des rapports périodiques'
-  refresh-tooltip: 'Rafraîchir la liste des rapports'
-  header:
+  headers:
     name: 'Nom du rapport'
-    institution: 'Établissement'
     recurrence: 'Fréquence'
     status: 'Statut'
     next: 'Prochaine itération'
@@ -434,6 +485,7 @@ fr:
     active: 'Actif'
     inactive: 'Inactif'
   actions:
+    create: 'Créer'
     edit: 'Éditer'
     delete: 'Supprimer'
 </i18n>

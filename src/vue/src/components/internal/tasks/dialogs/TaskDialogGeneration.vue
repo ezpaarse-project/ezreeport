@@ -26,39 +26,39 @@
       <v-card-text style="position: relative">
         <v-slide-y-transition>
           <v-alert v-if="reportStatus" :type="reportStatus" text class="mt-2">
-            <div class="d-flex align-center">
+            <div>
               {{ $t('results.' + reportStatus, { error: result?.detail.error?.message }) }}
-
-              <v-spacer />
-
-              <v-menu v-if="perms.getFile">
-                <template #activator="{ on, attrs }">
-                  <v-btn
-                    small
-                    :color="reportStatus"
-                    v-bind="attrs"
-                    v-on="on">
-                    {{ $t('actions.download') }}
-                  </v-btn>
-                </template>
-
-                <v-list>
-                  <v-list-item
-                    v-if="reportStatus !== 'error'"
-                    ripple
-                    @click="downloadFile('report')"
-                  >
-                    <v-icon>mdi-download</v-icon> {{ $t('files.report') }}
-                  </v-list-item>
-                  <v-list-item
-                    ripple
-                    @click="downloadFile('detail')"
-                  >
-                    <v-icon>mdi-download</v-icon> {{ $t('files.detail') }}
-                  </v-list-item>
-                </v-list>
-              </v-menu>
             </div>
+
+            <v-menu v-if="perms.getFile">
+              <template #activator="{ on, attrs }">
+                <v-btn
+                  :color="reportStatus"
+                  small
+                  block
+                  class="mt-2"
+                  v-bind="attrs"
+                  v-on="on">
+                  {{ $t('actions.download') }}
+                </v-btn>
+              </template>
+
+              <v-list>
+                <v-list-item
+                  v-if="reportStatus !== 'error'"
+                  ripple
+                  @click="downloadFile('report')"
+                >
+                  <v-icon>mdi-download</v-icon> {{ $t('files.report') }}
+                </v-list-item>
+                <v-list-item
+                  ripple
+                  @click="downloadFile('detail')"
+                >
+                  <v-icon>mdi-download</v-icon> {{ $t('files.detail') }}
+                </v-list-item>
+              </v-list>
+            </v-menu>
           </v-alert>
         </v-slide-y-transition>
 
@@ -143,7 +143,8 @@
         </v-btn>
 
         <v-btn
-          :disabled="!perms.runTask && (generationType === 'test' && targets.length <= 0)"
+          v-if="perms.runTask"
+          :disabled="generationType === 'test' && targets.length <= 0"
           :loading="progress >= 0"
           color="success"
           @click="start"
@@ -156,14 +157,24 @@
 </template>
 
 <script lang="ts">
-import { addDays, differenceInDays, min } from 'date-fns';
-import type { tasks, reports } from 'ezreeport-sdk-js';
+import {
+  addDays,
+  differenceInDays,
+  formatISO,
+  min,
+  parseISO,
+} from 'date-fns';
+import type { tasks, reports } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
+import isEmail from 'validator/lib/isEmail';
 import { calcPeriod, type Period } from '~/lib/tasks/recurrence';
+import ezReeportMixin from '~/mixins/ezr';
 
 const today = new Date();
+const maxDate = addDays(today, -1);
 
 export default defineComponent({
+  mixins: [ezReeportMixin],
   props: {
     value: {
       type: Boolean,
@@ -185,7 +196,7 @@ export default defineComponent({
     job: undefined as reports.GenerationStartedEvent | undefined,
     reportStatus: '' as '' | 'success' | 'error',
     period: { start: today, end: today } as Period,
-    max: addDays(today, -1),
+    max: maxDate,
 
     progress: -1,
     error: '',
@@ -194,6 +205,13 @@ export default defineComponent({
     this.targets = this.task.targets;
     this.error = '';
     this.resetPeriod();
+  },
+  watch: {
+    value(val: boolean) {
+      if (val) {
+        this.resetPeriod();
+      }
+    },
   },
   computed: {
     options() {
@@ -215,10 +233,14 @@ export default defineComponent({
       };
     },
     perms() {
-      const perms = this.$ezReeport.auth.permissions;
+      const has = this.$ezReeport.hasNamespacedPermission;
+      const namespaces = [this.task.namespace.id];
       return {
-        runTask: perms?.['tasks-post-task-run'] && perms?.['queues-get-queue-jobId'],
-        getFile: perms?.['reports-get-year-yearMonth-filename'] && perms?.['queues-get-queue-jobId'],
+        runTask: has('tasks-post-task-run', namespaces)
+          && has('queues-get-queue-jobs-jobId', namespaces),
+
+        getFile: has('reports-get-year-yearMonth-filename', namespaces)
+          && has('queues-get-queue-jobs-jobId', namespaces),
       };
     },
     periodRange: {
@@ -239,11 +261,9 @@ export default defineComponent({
     /**
      * Check if given string is a mail address
      *
-     * ! ULTRA Simple email validation
-     *
-     * @param s The string
+     * @param email The string
      */
-    validateMail: (s: string) => /[a-z0-9.-]*@[a-z0-9.-]*\.[a-z-]*/i.test(s),
+    validateMail: (email: string) => isEmail(email),
     /**
      * Remove item in target list
      *
@@ -338,11 +358,17 @@ export default defineComponent({
       this.result = undefined;
       this.progress = 0;
       try {
+        const periodStart = formatISO(this.period.start, { representation: 'date' });
+        const periodEnd = formatISO(this.period.end, { representation: 'date' });
+
         const gen = this.$ezReeport.sdk.reports.startAndListenGeneration(
           this.task.id,
           {
             testEmails: this.generationType === 'test' ? this.targets : undefined,
-            period: this.period,
+            period: {
+              start: parseISO(`${periodStart}T00:00:00.000Z`),
+              end: parseISO(`${periodEnd}T23:59:59.999Z`),
+            },
           },
         );
 
@@ -383,11 +409,11 @@ en:
     targets: 'Receivers'
     period: 'Report period'
   labels:
-    prod: 'labels.prod' # TODO: English translations
-    test: 'labels.test' # TODO: English translations
+    prod: 'Normal generation'
+    test: 'Test generation'
   descriptions:
-    prod: 'descriptions.prod' # TODO: English translations
-    test: 'descriptions.test' # TODO: English translations
+    prod: 'The report will be sent to the usual recipients. The generation will be displayed in the history and will update the next iteration date.'
+    test: 'The report will be sent to the indicated recipients.'
   errors:
     length: 'Please enter at least 1 address'
     format: "One or more address aren't valid"
@@ -397,7 +423,7 @@ en:
     download: 'Download'
   results:
     success: 'The report was generated with success'
-    error: 'An error occured while generating: {error}'
+    error: 'An error occurred while generating: {error}'
   files:
     detail: 'Detail (JSON)'
     report: 'Report'
@@ -408,13 +434,13 @@ fr:
     targets: 'Destinataires'
     period: 'Période du rapport'
   labels:
-    prod: 'Génération prod'
+    prod: 'Génération normale'
     test: 'Génération test'
   descriptions:
-    prod: "Le rapport sera envoyé aux destinataires habituels. La génération sera affichée dans l'historique et mettera à jour la date de prochaine itération."
+    prod: "Le rapport sera envoyé aux destinataires habituels. La génération sera affichée dans l'historique et mettra à jour la date de prochaine itération."
     test: "Le rapport sera envoyé aux destinataires indiqués."
   errors:
-    length: 'Veuillez rentrer au moins 1 addresse'
+    length: 'Veuillez rentrer au moins 1 adresse'
     format: 'Une ou plusieurs addresses ne sont pas valides'
   actions:
     ok: 'Valider'

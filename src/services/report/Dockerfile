@@ -1,12 +1,11 @@
-FROM node:18.14.0-alpine3.17 as builder
+# ---- Build prod dependencies (like node-canvas)
+
+FROM node:18.16.0-alpine3.17 AS npm-builder
 LABEL maintainer="ezTeam <ezteam@couperin.org>"
 
 WORKDIR /usr/build/report
 
 ENV NODE_ENV=production
-
-COPY ./package.json ./
-COPY ./prisma ./prisma
 
 # Update APK registry
 RUN apk update \
@@ -15,30 +14,40 @@ RUN apk update \
 	# see https://github.com/Automattic/node-canvas/issues/866
 	&& apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev giflib-dev
 
-# Install service dependecies (it will build node-canvas)
-# npm ci isn't possible because project uses npm workspaces
-RUN npm i --omit=dev \
-	# Install prisma dependecies
-	&& npm i -g prisma prisma-erd-generator @mermaid-js/mermaid-cli
+# Install service dependencies (it will build node-canvas)
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+# ---- Build prisma-client
+
+FROM npm-builder AS prisma
+
+RUN apk update \
+	&& apk upgrade -U -a \
+	&& apk add --no-cache --update python3 \
+	&& ln -sf python3 /usr/bin/python
+
+# Install dev dependencies
+RUN npm ci
+COPY . ./
 
 # Generate prisma-client
-RUN DISABLE_ERD=true prisma generate
+RUN npx prisma generate
 
-# ----
+# ---- Prod image
 
-FROM node:18.14.0-alpine3.17
+FROM node:18.16.0-alpine3.17
 LABEL maintainer="ezTeam <ezteam@couperin.org>"
 EXPOSE 8080
 
 WORKDIR /usr/src/report
 
-# fixme: app not starting
 ENV NODE_ENV=production
 
-COPY . ./
-COPY --from=builder /usr/build/report/.prisma ./.prisma
-COPY --from=builder /usr/build/report/node_modules ./node_modules
-
 RUN apk add --no-cache cairo jpeg pango giflib
+
+COPY --from=npm-builder /usr/build/report/node_modules ./node_modules
+COPY --from=prisma /usr/build/report/.prisma ./.prisma
+COPY . ./
 
 CMD [ "npm", "run", "start" ]

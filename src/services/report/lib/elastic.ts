@@ -1,7 +1,7 @@
 import { Client, type estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { setTimeout } from 'node:timers/promises';
 import config from './config';
-import logger from './logger';
+import { appLogger as logger } from './logger';
 
 const {
   url,
@@ -146,25 +146,6 @@ export const elasticCheckIndex = async (index: string): Promise<boolean> => {
   const elastic = await getElasticClient();
 
   const { body } = await elastic.indices.exists({ index, allow_no_indices: false });
-
-  return body;
-};
-
-/**
- * Get specific user in elastic security
- *
- * @param name The user's username
- *
- * @returns The user data
- */
-export const elasticGetUser = async (
-  name: string,
-): Promise<Record<string, ElasticUser | undefined>> => {
-  const elastic = await getElasticClient();
-
-  const { body } = await elastic.security.getUser<Record<string, ElasticUser | undefined>>({
-    username: name,
-  });
 
   return body;
 };

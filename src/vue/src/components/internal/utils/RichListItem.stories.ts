@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue';
 import RichListItem from './RichListItem.vue';
 
 const meta: Meta<typeof RichListItem> = {
-  title: 'Utils (Internal)/RichListItem',
+
   component: RichListItem,
   args: {
     title: 'Name',

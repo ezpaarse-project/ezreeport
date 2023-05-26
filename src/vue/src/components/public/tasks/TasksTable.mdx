@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/blocks';
+import { Meta, Story, Controls } from '@storybook/blocks';
 
 import * as TasksTableStories from './TasksTable.stories';
 
@@ -6,8 +6,25 @@ import * as TasksTableStories from './TasksTable.stories';
 
 # Task Table
 
-...
+List and manage of all task user have access to. You can see details about a task by clicking on it.
+
+> **Note**
+> This components show only if any `namespaces.tasks-get` permission is granted to the authed user.
+
+## Props / Events / Slots
+
+<Controls />
 
 ## Usage
+
+### Default
+
+```html
+<template>
+  <ezr-provider ...>
+    <ezr-task-table />
+  </ezr-provider>
+</template>
+```
 
 <Story of={TasksTableStories.Basic} />

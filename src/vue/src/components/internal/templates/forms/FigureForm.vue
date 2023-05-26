@@ -1,13 +1,26 @@
 <template>
   <v-sheet rounded outlined class="pa-2">
-    <v-form @input="$emit('validation', $event)">
+    <v-form @input="onValidationChange">
       <div class="d-flex">
         <div>
           <v-icon v-if="draggable" style="cursor: grab" small>mdi-drag</v-icon>
 
-          {{ $t('headers.figure') }}
+          {{ $t('headers.figure', { i: figureIndex }) }}
 
-          <v-icon v-if="figure._.hasError" color="warning" small>mdi-alert</v-icon>
+          <v-tooltip top v-if="figure._.valid !== true" color="warning">
+            <template #activator="{ attrs, on }">
+              <v-icon
+                color="warning"
+                small
+                v-bind="attrs"
+                v-on="on"
+              >
+                mdi-alert
+              </v-icon>
+            </template>
+
+            <span>{{ figure._.valid }}</span>
+          </v-tooltip>
         </div>
 
         <v-spacer />
@@ -53,14 +66,13 @@
       </v-sheet>
 
       <v-sheet
-        v-if="figure.params"
         rounded
         outlined
         class="my-2 pa-2"
       >
         <ToggleableObjectTree
           :label="$t('headers.figureParams').toString()"
-          :value="figure.params"
+          :value="figure.params || {}"
           @input="
             !Array.isArray($event)
               && $emit('update:figure', { ...figure, params: $event })
@@ -91,6 +103,10 @@ export default defineComponent({
       type: Object as PropType<AnyCustomFigure>,
       required: true,
     },
+    figureIndex: {
+      type: Number,
+      required: true,
+    },
     grid: {
       type: Object as PropType<{ rows: number, cols: number }>,
       default: () => ({ cols: 2, rows: 2 }),
@@ -107,20 +123,27 @@ export default defineComponent({
   emits: {
     'update:figure': (val: AnyCustomFigure) => !!val,
     'delete:figure': (val: AnyCustomFigure) => !!val,
-    validation: (val: boolean) => val !== undefined,
+    validation: (val: true | string) => !!val,
   },
   data: () => ({
     dataMap: {} as Record<string, string | unknown[] | undefined>,
   }),
   computed: {
-    rules() {
+    /**
+     * Validation rules
+     */
+    rules(): Record<string, ((v: any) => true | string)[]> {
       return {
         type: [
-          (v: string) => !!v || this.$t('errors.empty'),
+          (v) => !!v || this.$t('errors.empty').toString(),
         ],
         data: [],
         slots: [
-          (v: number[]) => {
+          (v) => {
+            if (!v) {
+              return true;
+            }
+
             const slots = [...v].sort();
             if (slots.length === this.grid.cols * this.grid.rows) {
               return true;
@@ -141,20 +164,44 @@ export default defineComponent({
                 && (col === 0 || s - slots[col - 1] === this.grid.cols),
             );
 
-            return isSameRow || isSameCol || this.$t('errors.slots');
+            return isSameRow || isSameCol || this.$t('errors.slots').toString();
           },
         ],
       };
     },
+    /**
+     * Keeps track of validation state within the form
+     */
+    validationMap() {
+      const validationMap = new Map<keyof AnyCustomFigure, true | string>();
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [field, rules] of Object.entries(this.rules)) {
+        const key = field as keyof AnyCustomFigure;
+        validationMap.set(
+          key,
+          rules.map((cb) => cb(this.figure[key])).find((v) => v !== true) || true,
+        );
+      }
+
+      return validationMap;
+    },
+    /**
+     * Available slots
+     */
     availableSlots() {
       const length = this.grid.cols * this.grid.rows;
 
+      const takenSet = new Set(this.takenSlots);
+      const slotsSet = new Set(this.figure.slots);
       return Array.from({ length }, (_, i) => ({
-        text: i,
-        valued: i,
-        disabled: this.takenSlots.includes(i) && !this.figure.slots?.includes(i),
+        text: this.$t(`slots[${i}]`),
+        value: i,
+        disabled: takenSet.has(i) && !slotsSet.has(i),
       }));
     },
+    /**
+     * Localized figure types
+     */
     figureTypes() {
       return figureTypes.map((value) => ({
         label: this.$t(`figure_types.${value}`),
@@ -178,6 +225,10 @@ export default defineComponent({
       if (value !== this.figure.data) {
         this.$emit('update:figure', { ...this.figure, data: value });
       }
+    },
+    onValidationChange() {
+      const validationResult = [...this.validationMap.values()].find((v) => v !== true) || true;
+      this.$emit('validation', validationResult);
     },
   },
 });
@@ -211,12 +262,17 @@ en:
     trail: 'Trail'
     circle: 'Circle'
     square: 'Square'
+  slots:
+    - 'Top left'
+    - 'Top right'
+    - 'Bottom left'
+    - 'Bottom right'
   errors:
     empty: 'This field is required'
     slots: "This combinaison of slots is not possible"
 fr:
   headers:
-    figure: 'Visualisation'
+    figure: 'Visualisation #{i}'
     type: 'Type de visualisation'
     data: 'Données de la visualisation'
     figureParams: 'Paramètres de la visualisation'
@@ -237,6 +293,11 @@ fr:
     trail: 'Trail' # TODO French translation
     circle: 'Cercle'
     square: 'Carré'
+  slots:
+    - 'Haut à gauche'
+    - 'Haut à droite'
+    - 'Bas à gauche'
+    - 'Bas à droite'
   errors:
     empty: 'Ce champ est requis'
     slots: "Cette combinaison d'emplacement n'est pas possible"

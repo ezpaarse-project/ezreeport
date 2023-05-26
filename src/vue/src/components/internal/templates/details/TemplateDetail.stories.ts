@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/vue';
-import type { templates } from 'ezreeport-sdk-js';
+import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import mockTasks from '~/mock/tasks';
 import mockTemplates from '~/mock/templates';
 import { addAdditionalData } from '~/lib/templates/customTemplates';
 import TemplateDetail from './TemplateDetail.vue';
 
 const meta: Meta<typeof TemplateDetail> = {
-  title: 'Templates/Internal/Details/TemplateDetail',
+
   component: TemplateDetail,
 };
 
@@ -41,8 +41,8 @@ export const Task: Story = {
 export const Template: Story = {
   args: {
     template: {
-      ...mockTemplates[0].template,
-      layouts: mapLayouts(mockTemplates[0].template.layouts),
+      ...mockTemplates[0].body,
+      layouts: mapLayouts(mockTemplates[0].body.layouts),
     },
   },
   render: (args) => ({
