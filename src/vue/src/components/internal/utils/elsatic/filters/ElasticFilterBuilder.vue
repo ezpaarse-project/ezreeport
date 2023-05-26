@@ -1,16 +1,16 @@
 <template>
   <div>
     <ElasticQueryElementPopover
-      v-if="selectedQueryElement"
+      v-if="selectedFilterElement"
       v-model="elementPopoverShown"
       :coords="elementPopoverCoords"
-      :element="selectedQueryElement"
+      :element="selectedFilterElement"
       v-on="elementPopoverListeners"
     />
 
     <v-chip-group column>
       <v-chip
-        v-for="(item, i) in queryChips"
+        v-for="(item, i) in filterChips"
         :key="item.key"
         :color="item.type"
         :close="!isReadonly"
@@ -44,11 +44,11 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import type { QueryElement } from './ElasticQueryElementPopover.vue';
+import type { FilterElement } from './ElasticFilterElementPopover.vue';
 
 type FlattenQueryMap = Map<string, string | number | boolean>;
 
-interface QueryChip {
+interface FilterChip {
   key: string;
   type: string;
   i18n: string;
@@ -84,14 +84,14 @@ export default defineComponent({
     /**
      * Extract values and some info from Elastic query (value)
      */
-    queryElements(): QueryElement[] {
+    filterElements(): FilterElement[] {
       const flattened = this.flatten(this.value);
-      const res: QueryElement[] = [];
+      const res: FilterElement[] = [];
       // eslint-disable-next-line no-restricted-syntax
       for (const [key, value] of flattened) {
         const parts = key.split('.');
 
-        const base: Omit<QueryElement, 'values'> = {
+        const base: Omit<FilterElement, 'values'> = {
           raw: key,
           modifier: '',
           operator: 'IS',
@@ -132,8 +132,8 @@ export default defineComponent({
     /**
      * Parse query elements into data for chips
      */
-    queryChips(): QueryChip[] {
-      return this.queryElements.map((item) => {
+    filterChips(): FilterChip[] {
+      return this.filterElements.map((item) => {
         let type = 'info';
         switch (item.modifier) {
           case 'NOT':
@@ -159,8 +159,8 @@ export default defineComponent({
     /**
      * Currently selected query element
      */
-    selectedQueryElement(): QueryElement {
-      return this.queryElements[this.selectedIndex] || { values: [] };
+    selectedFilterElement(): FilterElement {
+      return this.filterElements[this.selectedIndex] || { values: [] };
     },
     /**
      * Listeners for element popover
@@ -239,57 +239,57 @@ export default defineComponent({
      *
      * @param element The element
      */
-    onElementEdited(element: QueryElement) {
-      const elements = [...this.queryElements];
+    onElementEdited(element: FilterElement) {
+      const elements = [...this.filterElements];
       const index = elements.findIndex(({ raw }) => element.raw === raw);
       if (index < 0) {
         return;
       }
 
       elements.splice(index, 1, element);
-      this.serializeQueryElements(elements);
+      this.serializeFilterElements(elements);
     },
     /**
      * Update query value when a chip is deleted
      *
      * @param chip The chip
      */
-    onChipDeleted(chip: QueryChip) {
-      const elements = [...this.queryElements];
+    onChipDeleted(chip: FilterChip) {
+      const elements = [...this.filterElements];
       const index = elements.findIndex(({ raw }) => chip.key === raw);
       if (index < 0) {
         return;
       }
 
       elements.splice(index, 1);
-      this.serializeQueryElements(elements);
+      this.serializeFilterElements(elements);
     },
     /**
      * Update query value when a element is created
      */
     onElementCreated() {
-      const index = this.queryElements.length;
-      const el: Omit<QueryElement, 'raw'> = {
+      const index = this.filterElements.length;
+      const el: Omit<FilterElement, 'raw'> = {
         key: `field-${index}`,
         modifier: '',
         operator: 'EXISTS',
         values: [''],
       };
-      this.serializeQueryElements([el, ...this.queryElements]);
+      this.serializeFilterElements([el, ...this.filterElements]);
     },
     /**
      * Serialize given element and update query value
      *
-     * @param queryElements The new elements
+     * @param filterElements The new elements
      */
-    serializeQueryElements(queryElements: Omit<QueryElement, 'raw'>[]) {
+    serializeFilterElements(filterElements: Omit<FilterElement, 'raw'>[]) {
       const query = {
         filter: [] as Record<string, any>[],
         must_not: [] as Record<string, any>[],
       };
 
       // eslint-disable-next-line no-restricted-syntax
-      for (const element of queryElements) {
+      for (const element of filterElements) {
         // Prepare value
         const values = element.values.map((val) => ({
           [element.key]: val,

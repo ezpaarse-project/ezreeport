@@ -61,7 +61,7 @@
             >
               <span class="text--secondary">{{ $t('headers.fetchFilters') }}</span>
 
-              <ElasticQueryBuilder
+              <ElasticFilterBuilder
                 :value="fetchOptions.filters"
                 @input="onFetchOptionUpdate({ filters: $event })"
               />

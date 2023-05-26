@@ -71,7 +71,7 @@
                     class="my-2 pa-2"
                   >
                     <span class="text--secondary">{{ 'Fetcher filters' }}</span>
-                    <ElasticQueryBuilder
+                    <ElasticFilterBuilder
                       :value="layout.fetchOptions?.filters || {}"
                     />
                   </v-sheet>

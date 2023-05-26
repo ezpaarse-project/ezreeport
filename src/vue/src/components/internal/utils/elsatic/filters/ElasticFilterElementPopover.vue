@@ -91,7 +91,7 @@ const operators = ['IS', 'EXISTS'] as const;
 type Modifiers = typeof modifiers[number];
 type Operators = typeof operators[number];
 
-export interface QueryElement {
+export interface FilterElement {
   raw: string;
   modifier: Modifiers;
   operator: Operators;
@@ -110,13 +110,13 @@ export default defineComponent({
       required: true,
     },
     element: {
-      type: Object as PropType<QueryElement>,
+      type: Object as PropType<FilterElement>,
       required: true,
     },
   },
   emits: {
     input: (show: boolean) => show !== undefined,
-    'update:element': (el: QueryElement) => !!el,
+    'update:element': (el: FilterElement) => !!el,
   },
   data: () => ({
     valid: false,

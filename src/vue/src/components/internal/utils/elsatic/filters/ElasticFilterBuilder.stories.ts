@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/vue';
 import tasks from '~/mock/tasks';
 import { query } from '~/mock/elastic';
-import ElasticQueryBuilder from './ElasticQueryBuilder.vue';
+import ElasticFilterBuilder from './ElasticFilterBuilder.vue';
 
-const meta: Meta<typeof ElasticQueryBuilder> = {
-  title: 'Utils (Internal)/Elastic/ElasticQueryBuilder',
-  component: ElasticQueryBuilder,
+const meta: Meta<typeof ElasticFilterBuilder> = {
+  title: 'Utils (Internal)/Elastic/ElasticFilterBuilder',
+  component: ElasticFilterBuilder,
   args: {
     value: query,
   },
@@ -13,13 +13,13 @@ const meta: Meta<typeof ElasticQueryBuilder> = {
 
 export default meta;
 
-type Story = StoryObj<typeof ElasticQueryBuilder>;
+type Story = StoryObj<typeof ElasticFilterBuilder>;
 
 export const Readonly: Story = {
   render: (args) => ({
-    components: { ElasticQueryBuilder },
+    components: { ElasticFilterBuilder },
     props: Object.keys(args),
-    template: '<ElasticQueryBuilder v-bind="$props" v-on="$props" />',
+    template: '<ElasticFilterBuilder v-bind="$props" v-on="$props" />',
   }),
 };
 
@@ -28,9 +28,9 @@ export const Editable: Story = {
     input: { action: 'input' },
   },
   render: (args) => ({
-    components: { ElasticQueryBuilder },
+    components: { ElasticFilterBuilder },
     props: Object.keys(args),
-    template: '<ElasticQueryBuilder v-bind="$props" v-on="$props" />',
+    template: '<ElasticFilterBuilder v-bind="$props" v-on="$props" />',
   }),
 };
 
@@ -39,8 +39,8 @@ export const BibCNRS: Story = {
     value: (tasks[0].template.fetchOptions as any).filters,
   },
   render: (args) => ({
-    components: { ElasticQueryBuilder },
+    components: { ElasticFilterBuilder },
     props: Object.keys(args),
-    template: '<ElasticQueryBuilder v-bind="$props" v-on="$props" />',
+    template: '<ElasticFilterBuilder v-bind="$props" v-on="$props" />',
   }),
 };
