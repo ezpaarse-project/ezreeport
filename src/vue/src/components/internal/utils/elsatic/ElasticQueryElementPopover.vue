@@ -27,11 +27,11 @@
           <v-row>
             <v-col>
               <v-text-field
+                v-model="innerKey"
                 :label="$t('headers.key')"
-                :value="element.key"
                 :readonly="isReadonly"
                 :rules="rules.key"
-                @input="!isReadonly && $emit('update:element', { ...element, key: $event })"
+                @blur="updateKey"
               />
             </v-col>
           </v-row>
@@ -120,7 +120,16 @@ export default defineComponent({
   },
   data: () => ({
     valid: false,
+
+    innerKey: '',
   }),
+  watch: {
+    value() {
+      if (this.value) {
+        this.innerKey = this.element.key;
+      }
+    },
+  },
   computed: {
     /**
      * If component is in readonly mode
@@ -167,6 +176,16 @@ export default defineComponent({
     },
   },
   methods: {
+    /**
+     * Update element's key
+     */
+    updateKey() {
+      if (this.isReadonly) {
+        return;
+      }
+
+      this.$emit('update:element', { ...this.element, key: this.innerKey });
+    },
     /**
      * Update element's values
      *
