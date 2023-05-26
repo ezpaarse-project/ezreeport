@@ -66,7 +66,7 @@ export default defineComponent({
     },
   },
   emits: {
-    input: (val: Object) => !!val,
+    input: (val: Record<string, any>) => !!val,
   },
   data: () => ({
     elementPopoverShown: false,

@@ -219,6 +219,11 @@ export default defineComponent({
           (v: string[]) => v.length > 0 || this.$t('errors.empty'),
           (v: string[]) => v.every(this.validateMail) || this.$t('errors.format'),
         ],
+        template: {
+          index: [
+            (v?: string) => (v && v.length > 0) || this.$t('errors.no_index'),
+          ],
+        },
       };
     },
     /**
@@ -275,7 +280,14 @@ export default defineComponent({
         ).toString();
       }
 
-      return true;
+      const indexValidation = this.rules.template.index.map(
+        (rule) => rule(
+          (this.task?.template.fetchOptions as Record<string, any> | undefined)?.index,
+        ),
+      );
+      return [
+        ...indexValidation,
+      ].find((v) => v !== true)?.toString() ?? true;
     },
   },
   methods: {
@@ -363,6 +375,7 @@ en:
       _detail: 'Page {at}: {valid}'
     empty: 'This field must be set'
     format: "One or more address aren't valid"
+    no_index: 'An index must be provided in the fetch options'
   actions:
     cancel: 'Cancel'
     save: 'Save'
@@ -386,6 +399,7 @@ fr:
       _detail: 'Page {at}: {valid}'
     empty: 'Ce champ doit être rempli'
     format: 'Une ou plusieurs addresses ne sont pas valides'
+    no_index: 'Un index doit être défini dans les options de récupération'
   actions:
     cancel: 'Annuler'
     save: 'Sauvegarder'

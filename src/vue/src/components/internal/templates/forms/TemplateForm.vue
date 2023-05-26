@@ -43,26 +43,33 @@
             outlined
             class="my-2 pa-2"
           >
-            <span class="text--secondary">{{ $t('headers.advancedOptions') }}</span>
+            <span class="text--secondary">{{ $t('headers.fetchOptions') }}</span>
+
+            <v-text-field
+              :value="fetchOptions.index"
+              :label="$t('headers.fetchIndex').toString()"
+              :rules="rules.index"
+              dense
+              class="pt-4"
+              @input="onFetchOptionUpdate({ index: $event })"
+            />
 
             <v-sheet
               rounded
               outlined
               class="my-2 pa-2"
             >
-              <span class="text--secondary">{{ $t('headers.filters') }}</span>
+              <span class="text--secondary">{{ $t('headers.fetchFilters') }}</span>
 
               <ElasticQueryBuilder
-                :value="template.fetchOptions?.filters || {}"
-                @input="onTemplateUpdate(
-                  Object.assign(template, { fetchOptions: { filters: $event } }),
-                )"
+                :value="fetchOptions.filters"
+                @input="onFetchOptionUpdate({ filters: $event })"
               />
             </v-sheet>
 
             <ToggleableObjectTree
               :label="$t('headers.advancedOptions').toString()"
-              :value="template.fetchOptions || {}"
+              :value="fetchOptions.others"
               @input="
                 !Array.isArray($event)
                   && onTemplateUpdate({ ...template, fetchOptions: $event })
@@ -157,6 +164,7 @@
 </template>
 
 <script lang="ts">
+import { omit } from 'lodash';
 import { defineComponent, type PropType } from 'vue';
 import {
   addAdditionalDataToLayouts,
@@ -205,6 +213,16 @@ export default defineComponent({
       return {
         realAll: has('templates-get'),
         readOne: has('templates-get-name(*)'),
+      };
+    },
+    /**
+     * General validation rules
+     */
+    rules() {
+      return {
+        index: [
+          (v: string) => v.length > 0 || this.$t('errors.empty'),
+        ],
       };
     },
     /**
@@ -315,6 +333,41 @@ export default defineComponent({
         ).toString();
       }
       return true;
+    },
+    /**
+     * Fetch options of the template
+     */
+    fetchOptions() {
+      const opts = {
+        index: '',
+        filters: {} as Record<string, any>,
+        others: {} as Record<string, any>,
+      };
+
+      if (!this.template.fetchOptions) {
+        return opts;
+      }
+
+      // Extract filters with compatible type definition
+      if (
+        'filters' in this.template.fetchOptions
+        && this.template.fetchOptions.filters
+        && typeof this.template.fetchOptions.filters === 'object'
+      ) {
+        opts.filters = this.template.fetchOptions.filters;
+      }
+
+      // Extract index with compatible type definition
+      if (
+        this.taskTemplate?.fetchOptions
+        && 'index' in this.taskTemplate.fetchOptions
+        && this.taskTemplate.fetchOptions.index
+      ) {
+        opts.index = this.taskTemplate.fetchOptions.index.toString();
+      }
+
+      opts.others = omit(this.template.fetchOptions, ['filters', 'index']);
+      return opts;
     },
   },
   watch: {
@@ -511,6 +564,15 @@ export default defineComponent({
       });
       this.onLayoutListUpdate(layouts);
     },
+    onFetchOptionUpdate(value: Record<string, any>) {
+      this.onTemplateUpdate({
+        ...this.template,
+        fetchOptions: {
+          ...this.template.fetchOptions,
+          ...value,
+        },
+      });
+    },
   },
 });
 </script>
@@ -530,7 +592,8 @@ en:
     fetcher: 'Fetcher'
     base: 'Base template'
     fetchOptions: 'Fetch options'
-    filters: 'Fetch filters'
+    fetchFilters: 'Fetch filters'
+    fetchIndex: 'Elastic index'
     advancedOptions: 'Advanced options'
     renderOptions: 'Render options'
     layouts: 'Page editor ({count} pages)'
@@ -538,6 +601,7 @@ en:
     see-extends: 'See base'
   errors:
     no_data: 'An error occurred when fetching data'
+    empty: 'This field must be set'
     layouts:
       _detail: 'Page {at}: {valid}'
     figures:
@@ -551,7 +615,8 @@ fr:
     fetcher: 'Outil de récupération'
     base: 'Modèle de base'
     fetchOptions: 'Options de récupération'
-    filters: 'Filtres de récupération'
+    fetchFilters: 'Filtres de récupération'
+    fetchIndex: 'Index Elastic'
     advancedOptions: 'Options avancées'
     renderOptions: 'Options de rendu'
     layouts: 'Éditeur de pages ({count} pages)'
@@ -559,6 +624,7 @@ fr:
     see-extends: 'Voir la base'
   errors:
     no_data: 'Une erreur est survenue lors de la récupération des données'
+    empty: 'Ce champ doit être rempli'
     layouts:
       _detail: 'Page {at}: {valid}'
     figures:

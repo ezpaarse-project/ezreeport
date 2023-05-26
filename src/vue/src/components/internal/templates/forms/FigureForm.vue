@@ -183,7 +183,7 @@ export default defineComponent({
         );
       }
 
-      return validationMap;
+      return Object.fromEntries(validationMap.entries());
     },
     /**
      * Available slots
@@ -227,7 +227,7 @@ export default defineComponent({
       }
     },
     onValidationChange() {
-      const validationResult = [...this.validationMap.values()].find((v) => v !== true) || true;
+      const validationResult = Object.values(this.validationMap).find((v) => v !== true) || true;
       this.$emit('validation', validationResult);
     },
   },

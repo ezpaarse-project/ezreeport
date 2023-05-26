@@ -44,21 +44,34 @@
             outlined
             class="my-2 pa-2"
           >
+            <span class="text--secondary">{{ $t('headers.fetchOptions') }}</span>
+
+            <v-text-field
+              :value="fetchOptions.index"
+              :label="$t('headers.fetchIndex').toString()"
+              dense
+              readonly
+              hide-details
+              class="pt-4"
+            />
+
             <v-sheet
-              v-if="'filters' in template.fetchOptions && template.fetchOptions.filters"
+              v-if="Object.keys(fetchOptions.filters).length > 0"
               rounded
               outlined
               class="my-2 pa-2"
             >
-              <span class="text--secondary">{{ 'Fetcher filters' }}</span>
+              <span class="text--secondary">{{ $t('headers.fetchFilters') }}</span>
+
               <ElasticQueryBuilder
-                :value="template.fetchOptions.filters"
+                :value="fetchOptions.filters"
               />
             </v-sheet>
 
             <ToggleableObjectTree
-              :label="$t('headers.fetchOptions').toString()"
-              :value="template.fetchOptions"
+              v-if="Object.keys(fetchOptions.others).length > 0"
+              :label="$t('headers.advancedOptions').toString()"
+              :value="fetchOptions.others"
             />
           </v-sheet>
 
@@ -128,6 +141,7 @@
 </template>
 
 <script lang="ts">
+import { omit } from 'lodash';
 import { defineComponent, type PropType } from 'vue';
 import {
   addAdditionalDataToLayouts,
@@ -238,6 +252,41 @@ export default defineComponent({
 
       return this.mergedLayouts[this.selectedLayoutIndex];
     },
+    /**
+     * Fetch options of the template
+     */
+    fetchOptions() {
+      const opts = {
+        index: '',
+        filters: {} as Record<string, any>,
+        others: {} as Record<string, any>,
+      };
+
+      if (!this.template.fetchOptions) {
+        return opts;
+      }
+
+      // Extract filters with compatible type definition
+      if (
+        'filters' in this.template.fetchOptions
+        && this.template.fetchOptions.filters
+        && typeof this.template.fetchOptions.filters === 'object'
+      ) {
+        opts.filters = this.template.fetchOptions.filters;
+      }
+
+      // Extract index with compatible type definition
+      if (
+        this.taskTemplate?.fetchOptions
+        && 'index' in this.taskTemplate.fetchOptions
+        && this.taskTemplate.fetchOptions.index
+      ) {
+        opts.index = this.taskTemplate.fetchOptions.index.toString();
+      }
+
+      opts.others = omit(this.template.fetchOptions, ['filters', 'index']);
+      return opts;
+    },
   },
   watch: {
     template() {
@@ -317,6 +366,8 @@ en:
     fetcher: 'Fetcher'
     base: 'Base template'
     fetchOptions: 'Fetch options'
+    fetchFilters: 'Fetch filters'
+    fetchIndex: 'Elastic index'
     renderOptions: 'Render options'
     layouts: 'Page viewer ({count} pages)'
   actions:
@@ -328,6 +379,8 @@ fr:
     fetcher: 'Outil de récupération'
     base: 'Modèle de base'
     fetchOptions: 'Options de récupération'
+    fetchFilters: 'Filtres de récupération'
+    fetchIndex: 'Index Elastic'
     renderOptions: 'Options de rendu'
     layouts: 'Visionneur de pages ({count} pages)'
   actions:
