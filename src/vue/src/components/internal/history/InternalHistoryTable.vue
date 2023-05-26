@@ -83,6 +83,10 @@
         />
         <v-progress-circular v-else indeterminate class="my-2" />
       </template>
+
+      <template #[`item.date`]="{ value: date }">
+        {{ date.label }}
+      </template>
     </v-data-table>
   </div>
 </template>
@@ -105,7 +109,10 @@ interface HistoryItem {
     color?: string,
   },
   message: string,
-  date: string,
+  date: {
+    value: Date,
+    label: string,
+  },
   task?: history.HistoryWithTask['task'],
   namespace?: namespaces.Namespace,
   files?: {
@@ -181,6 +188,7 @@ export default defineComponent({
         {
           value: 'date',
           text: this.$t('headers.date').toString(),
+          sort: (a: HistoryItem['date'], b: HistoryItem['date']) => a.value.valueOf() - b.value.valueOf(),
         },
       ];
       if (!this.hideNamespace && this.perms.readOneTask) {
@@ -248,7 +256,10 @@ export default defineComponent({
         id: entry.id,
         type,
         message: entry.message,
-        date: entry.createdAt.toLocaleDateString(),
+        date: {
+          value: entry.createdAt,
+          label: entry.createdAt.toLocaleDateString(),
+        },
         task,
         namespace,
         files: (!data?.destroyAt || isBefore(today, parseISO(data.destroyAt))) && data?.files,
