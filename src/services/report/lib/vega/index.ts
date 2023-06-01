@@ -69,6 +69,7 @@ type VegaParams = {
   title: Title,
   dataLabel?: {
     format: 'percent' | 'numeric',
+    position?: 'out' | 'in',
     showLabel?: boolean
     minValue?: number,
   }
@@ -99,6 +100,19 @@ export const createVegaLSpec = (
     data = inputData[params.dataKey];
   }
 
+  // Calculating arc radius if needed
+  let radius: { outer: number, inner: number, center: number } | undefined;
+  if (type === 'arc') {
+    const outer = params.height / 2.5;
+    const inner = outer / 2;
+
+    radius = {
+      outer,
+      inner,
+      center: inner + ((outer - inner) / 2),
+    };
+  }
+
   const timeFormat = calcVegaFormat(params.recurrence);
 
   const layers: Layer[] = [];
@@ -108,7 +122,8 @@ export const createVegaLSpec = (
       mark: {
         type,
         point: true,
-        radius2: params.height / 5,
+        radius: radius?.outer,
+        radius2: radius?.inner,
       },
     },
     params.dataLayer ?? {},
@@ -182,13 +197,35 @@ export const createVegaLSpec = (
 
   // Adding datalabels
   if (params.dataLabel) {
+    const pos: Record<string, number> = {};
+    switch (params.dataLabel.position) {
+      case 'out':
+        if (radius?.center) {
+          const spacing = (0.2 * radius.inner);
+          pos.radius = radius.outer - spacing;
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (dataLayer.mark as any).radius -= 2 * spacing;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (dataLayer.mark as any).radius2 -= 2 * spacing;
+        }
+        break;
+
+      case 'in':
+      default:
+        if (radius?.center) {
+          pos.radius = radius.center;
+        }
+        break;
+    }
+
     const dLLayer: Layer = {
       mark: {
         type: 'text',
         align: 'center',
         baseline: 'top',
         dy: 5,
-        radius: type === 'arc' ? (params.height ?? 0) / 2.9 : undefined,
+        radius: type === 'arc' ? pos.radius : undefined,
       },
       encoding: {
         text: {
@@ -209,7 +246,7 @@ export const createVegaLSpec = (
     switch (params.dataLabel.format) {
       case 'percent': {
         const totalDocs = data.reduce((prev, value) => prev + value[params.value.field], 0);
-        const minValue = params.dataLabel.minValue ?? 0.02;
+        const minValue = params.dataLabel.minValue ?? 0.03;
         condition = `datum['${params.value.field}'] / ${totalDocs} >= ${minValue}`;
 
         format = (v) => {
