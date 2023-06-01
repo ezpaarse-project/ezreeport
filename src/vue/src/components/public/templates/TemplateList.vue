@@ -69,15 +69,6 @@
 
             <v-spacer />
 
-            <v-tooltip top v-if="perms.update">
-              <template #activator="{ attrs, on }">
-                <v-btn icon color="info" @click.stop="showEditDialog(template)" v-on="on" v-bind="attrs">
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-              </template>
-              <span>{{ $t('actions.edit') }}</span>
-            </v-tooltip>
-
             <v-tooltip top v-if="perms.delete">
               <template #activator="{ attrs, on }">
                 <v-btn icon color="error" @click.stop="showDeletePopover(template, $event)" v-bind="attrs" v-on="on">
@@ -241,9 +232,20 @@ export default defineComponent({
      * Prepare and open read dialog
      */
     async showTemplateDialog({ name }: templates.Template) {
+      if (
+        !this.perms.readOne
+        && !this.perms.update
+      ) {
+        return;
+      }
+
       this.focusedName = name;
       await this.$nextTick();
-      this.readTemplateDialogShown = true;
+      if (this.perms.update) {
+        this.updateTemplateDialogShown = true;
+      } else {
+        this.readTemplateDialogShown = true;
+      }
     },
     /**
      * Prepare and show template creation dialog

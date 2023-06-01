@@ -347,7 +347,7 @@ export default defineComponent({
      *
      * @param item The item
      */
-    showTaskDialog({ id, namespace }: TaskItem) {
+    async showTaskDialog({ id, namespace }: TaskItem) {
       const hasPermission = (perm: string) => this.rawNamespacePerms?.[namespace?.id ?? '']?.[perm];
       if (
         !hasPermission('tasks-get-task')
@@ -357,6 +357,7 @@ export default defineComponent({
       }
 
       this.focusedId = id;
+      await this.$nextTick();
       if (hasPermission('tasks-put-task')) {
         this.updateTaskDialogShown = true;
       } else {
