@@ -19,7 +19,7 @@
     "maxExecTime": 10000
   },
   "mail": {
-    "sender": "ezreeport@inist.fr",
+    "sender": "ezREEPORT <ezreeport@inist.fr>",
     "team": "ezteam@couperin.org",
     "attempts": 5,
     "interval": 2000
