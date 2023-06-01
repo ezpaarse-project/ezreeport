@@ -87,7 +87,10 @@ export default defineComponent({
     availableSlots() {
       const length = this.grid.cols * this.grid.rows;
 
-      return Array.from({ length }, (_, i) => i);
+      return Array.from({ length }, (_, i) => ({
+        text: this.$t(`slots[${i}]`),
+        value: i,
+      }));
     },
     figureTypes() {
       const types = [
@@ -132,6 +135,11 @@ en:
     data: 'Figure data'
     figureParams: 'Figure params'
     slots: 'Figure slot(s)'
+  slots:
+    - 'Top left'
+    - 'Top right'
+    - 'Bottom left'
+    - 'Bottom right'
   figure_types:
     table: 'Table'
     md: 'Markdown'
@@ -155,6 +163,11 @@ fr:
     data: 'Données de la visualisation'
     figureParams: 'Paramètres de la visualisation'
     slots: 'Emplacements de la visualisation'
+  slots:
+    - 'Haut à gauche'
+    - 'Haut à droite'
+    - 'Bas à gauche'
+    - 'Bas à droite'
   figure_types:
     table: 'Table'
     md: 'Markdown'
