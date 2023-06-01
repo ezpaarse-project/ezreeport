@@ -26,11 +26,10 @@ export type MailOptions = {
 };
 
 export const sendMail = async (options: MailOptions) => {
-  const attachments: Mail.Attachment[] = options.attachments ?? [];
-
-  attachments.push(
-    ...images.map((img) => ({ path: join('templates/images', img), cid: img })),
-  );
+  const attachments: Mail.Attachment[] = [
+    ...images.map((img) => ({ path: join('templates/images', img), cid: img, filename: img })),
+    ...(options.attachments ?? []),
+  ];
 
   return transporter.sendMail({
     from: sender,
