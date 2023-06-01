@@ -435,7 +435,7 @@ const printImage = async (
   } else {
     // Local images
     const path = join('assets', meta.src);
-    if (new RegExp(`^${assetsDir}/.*\\.json$`, 'i').test(path) === false) {
+    if (new RegExp(`^${assetsDir}/.*$`, 'i').test(path) === false) {
       throw new Error(`Md's image must be in the "${assetsDir}" folder. Resolved: "${path}"`);
     }
     const mime = lookup(path);
