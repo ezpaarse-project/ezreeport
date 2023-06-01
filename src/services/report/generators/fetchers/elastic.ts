@@ -113,7 +113,7 @@ export default async (
   if (opts.body) {
     if (options.aggs) {
       const calendarInterval = calcElasticInterval(options.recurrence);
-      opts.size = 0;
+      opts.size = 1; // keeping at least one record so we can check if there's data or not
       opts.body.aggs = options.aggs.reduce(
         (prev, { name: _name, ...rawAgg }, i) => {
           let agg = rawAgg;
