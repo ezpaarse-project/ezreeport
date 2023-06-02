@@ -1,3 +1,10 @@
+# ezreeport-mail [1.0.0-beta.7](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.0.0-beta.6...ezreeport-mail@1.0.0-beta.7) (2023-06-01)
+
+
+### Bug Fixes
+
+* **mail:** trying to fix inline attachements visiblity ([dc7c378](https://github.com/ezpaarse-project/ezreeport/commit/dc7c37890e0639c9e316e51466caba776bf1ca8e))
+
 # ezreeport-mail [1.0.0-beta.6](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.0.0-beta.5...ezreeport-mail@1.0.0-beta.6) (2023-05-25)
 
 

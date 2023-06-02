@@ -1,3 +1,11 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.10](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.9...@ezpaarse-project/ezreeport-vue@1.0.0-beta.10) (2023-06-01)
+
+
+### Bug Fixes
+
+* **vue:** fixed namespace select in update ([18354fc](https://github.com/ezpaarse-project/ezreeport/commit/18354fc415d984a575d62e17ed1a697611e2ec53))
+* **vue:** fixed sort in history table ([de51a0d](https://github.com/ezpaarse-project/ezreeport/commit/de51a0da4d1bdc23df852c1e53b518dfca024470))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.9](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.8...@ezpaarse-project/ezreeport-vue@1.0.0-beta.9) (2023-05-25)
 
 

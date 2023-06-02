@@ -1,3 +1,15 @@
+# ezreeport-report [1.0.0-beta.8](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.7...ezreeport-report@1.0.0-beta.8) (2023-06-01)
+
+
+### Bug Fixes
+
+* **report:** fixed local images in markdown ([e3bfd29](https://github.com/ezpaarse-project/ezreeport/commit/e3bfd2935982848999ee9450ddb16f871cd5b8ff))
+
+
+### Features
+
+* **report:** explicit error when no data is fetched in elastic ([41cf8ee](https://github.com/ezpaarse-project/ezreeport/commit/41cf8ee8314cfcf317eba39ac9774ed78491d96f))
+
 # ezreeport-report [1.0.0-beta.7](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.6...ezreeport-report@1.0.0-beta.7) (2023-05-25)
 
 

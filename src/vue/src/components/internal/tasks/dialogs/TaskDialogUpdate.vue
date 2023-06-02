@@ -99,10 +99,7 @@
 
                 <v-col>
                   <div>{{ $ezReeport.tcNamespace(true) }}:</div>
-                  <NamespaceSelect
-                    :value="task.namespace.id"
-                    hide-all
-                  />
+                  <NamespaceRichListItem :namespace="task.namespace" />
 
                   <div>{{ $t('headers.dates') }}:</div>
                   <v-container>
