@@ -149,7 +149,6 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
           ...(taskTemplate.fetchOptions ?? {}),
           recurrence,
           period,
-          // template,
           indexPrefix: namespace?.fetchOptions?.[fetcher]?.indexPrefix,
           auth: namespace?.fetchLogin?.[fetcher] ?? { username: '' },
         },
