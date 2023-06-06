@@ -1,9 +1,5 @@
 <template>
-  <v-card
-    rounded
-    outlined
-    class="my-2 pa-2"
-  >
+  <CustomSection :label="$t('headers.tags').toString()">
     <TagPopover
       v-if="currentTag"
       v-model="tagPopoverShown"
@@ -13,18 +9,15 @@
       @deleted="onTagDeleted"
     />
 
-    <div class="d-flex align-center">
-      <span class="text--secondary">{{ $t('headers.tags') }}:</span>
-
+    <template #actions>
       <v-tooltip top>
         <template #activator="{ attrs, on }">
           <v-menu offset-y v-bind="attrs" v-on="on">
             <template v-slot:activator="{ on: onMenu, attrs: attrsMenu }">
               <v-btn
                 color="success"
-                small
+                x-small
                 icon
-                class="ml-1"
                 v-bind="{ ...attrs, ...attrsMenu }"
                 v-on="{ ...on, ...onMenu }"
               >
@@ -63,7 +56,7 @@
 
         <span>{{ $t('actions.add-tag') }}</span>
       </v-tooltip>
-    </div>
+    </template>
 
     <v-chip-group column v-if="value.length > 0">
       <ReadableChip
@@ -76,7 +69,7 @@
         {{ tag.name }}
       </ReadableChip>
     </v-chip-group>
-  </v-card>
+  </CustomSection>
 </template>
 
 <script lang="ts">

@@ -38,13 +38,7 @@
             "
           />
 
-          <v-sheet
-            rounded
-            outlined
-            class="my-2 pa-2"
-          >
-            <span class="text--secondary">{{ $t('headers.fetchOptions') }}</span>
-
+          <CustomSection :label="$t('headers.fetchOptions').toString()" :default-value="true" collapsable>
             <v-text-field
               :value="fetchOptions.index"
               :label="$t('headers.fetchIndex').toString()"
@@ -54,35 +48,41 @@
               @input="onFetchOptionUpdate({ index: $event })"
             />
 
-            <v-sheet
-              rounded
-              outlined
-              class="my-2 pa-2"
-            >
-              <span class="text--secondary">{{ $t('headers.fetchFilters') }}</span>
+            <CustomSection
+              :label="$t('headers.fetchFilters').toString()"
+              :collapse-disabled="fetchOptions.filtersCount <= 0"
+              collapsable>
+              <template #actions>
+                <v-btn
+                  icon
+                  x-small
+                  color="success"
+                  @click="onFilterCreated"
+                >
+                  <v-icon>mdi-plus</v-icon>
+                </v-btn>
+              </template>
 
               <ElasticFilterBuilder
+                ref="filterBuilder"
                 :value="fetchOptions.filters"
                 @input="onFetchOptionUpdate({ filters: $event })"
               />
-            </v-sheet>
+            </CustomSection>
 
-            <ToggleableObjectTree
-              :label="$t('headers.advancedOptions').toString()"
-              :value="fetchOptions.others"
-              @input="
-                !Array.isArray($event)
-                  && onTemplateUpdate({ ...template, fetchOptions: $event })
-              "
-            />
-          </v-sheet>
+            <CustomSection>
+              <ToggleableObjectTree
+                :label="$t('headers.advancedOptions').toString()"
+                :value="fetchOptions.others"
+                @input="
+                  !Array.isArray($event)
+                    && onFetchOptionUpdate({ ...$event })
+                "
+              />
+            </CustomSection>
+          </CustomSection>
 
-          <v-sheet
-            v-if="fullTemplate"
-            rounded
-            outlined
-            class="my-2 pa-2"
-          >
+          <CustomSection v-if="fullTemplate">
             <ToggleableObjectTree
               :label="$t('headers.renderOptions').toString()"
               :value="fullTemplate.renderOptions || {}"
@@ -91,7 +91,7 @@
                   && onTemplateUpdate({ ...fullTemplate, renderOptions: $event })
               "
             />
-          </v-sheet>
+          </CustomSection>
         </v-col>
       </v-row>
 
@@ -176,6 +176,9 @@ import {
   type CustomTaskLayout,
 } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
+import type ElasticFilterBuilderConstructor from '../../utils/elsatic/filters/ElasticFilterBuilder.vue';
+
+type ElasticFilterBuilder = InstanceType<typeof ElasticFilterBuilderConstructor>;
 
 export default defineComponent({
   mixins: [ezReeportMixin],
@@ -341,6 +344,7 @@ export default defineComponent({
       const opts = {
         index: '',
         filters: {} as Record<string, any>,
+        filtersCount: 0,
         others: {} as Record<string, any>,
       };
 
@@ -355,6 +359,16 @@ export default defineComponent({
         && typeof this.template.fetchOptions.filters === 'object'
       ) {
         opts.filters = this.template.fetchOptions.filters;
+        opts.filtersCount = Object.values(opts.filters).reduce(
+          (prev, value) => {
+            let count = 0;
+            if (Array.isArray(value)) {
+              count = value.length;
+            }
+            return prev + count;
+          },
+          0,
+        );
       }
 
       // Extract index with compatible type definition
@@ -573,6 +587,10 @@ export default defineComponent({
         },
       });
     },
+    onFilterCreated() {
+      const builder = this.$refs.filterBuilder as ElasticFilterBuilder | undefined;
+      builder?.onElementCreated();
+    },
   },
 });
 </script>
@@ -592,7 +610,7 @@ en:
     fetcher: 'Fetcher'
     base: 'Base template'
     fetchOptions: 'Fetch options'
-    fetchFilters: 'Fetch filters'
+    fetchFilters: 'Filters'
     fetchIndex: 'Elastic index'
     advancedOptions: 'Advanced options'
     renderOptions: 'Render options'
@@ -615,7 +633,7 @@ fr:
     fetcher: 'Outil de récupération'
     base: 'Modèle de base'
     fetchOptions: 'Options de récupération'
-    fetchFilters: 'Filtres de récupération'
+    fetchFilters: 'Filtres'
     fetchIndex: 'Index Elastic'
     advancedOptions: 'Options avancées'
     renderOptions: 'Options de rendu'

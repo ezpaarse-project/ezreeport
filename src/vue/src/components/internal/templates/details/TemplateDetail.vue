@@ -38,14 +38,7 @@
             readonly
           />
 
-          <v-sheet
-            v-if="template.fetchOptions"
-            rounded
-            outlined
-            class="my-2 pa-2"
-          >
-            <span class="text--secondary">{{ $t('headers.fetchOptions') }}</span>
-
+          <CustomSection v-if="template.fetchOptions" :label="$t('headers.fetchOptions').toString()">
             <v-text-field
               :value="fetchOptions.index"
               :label="$t('headers.fetchIndex').toString()"
@@ -55,38 +48,26 @@
               class="pt-4"
             />
 
-            <v-sheet
-              v-if="Object.keys(fetchOptions.filters).length > 0"
-              rounded
-              outlined
-              class="my-2 pa-2"
-            >
-              <span class="text--secondary">{{ $t('headers.fetchFilters') }}</span>
-
+            <CustomSection v-if="Object.keys(fetchOptions.filters).length > 0" :label="$t('headers.fetchFilters').toString()">
               <ElasticFilterBuilder
                 :value="fetchOptions.filters"
               />
-            </v-sheet>
+            </CustomSection>
 
-            <ToggleableObjectTree
-              v-if="Object.keys(fetchOptions.others).length > 0"
-              :label="$t('headers.advancedOptions').toString()"
-              :value="fetchOptions.others"
-            />
-          </v-sheet>
+            <CustomSection v-if="Object.keys(fetchOptions.others).length > -1">
+              <ToggleableObjectTree
+                :label="$t('headers.advancedOptions').toString()"
+                :value="fetchOptions.others"
+              />
+            </CustomSection>
+          </CustomSection>
 
-          <v-sheet
-            v-if="fullTemplate?.renderOptions"
-            rounded
-            outlined
-            class="my-2 pa-2"
-          >
+          <CustomSection v-if="fullTemplate?.renderOptions">
             <ToggleableObjectTree
-              v-if="fullTemplate?.renderOptions"
               :label="$t('headers.renderOptions').toString()"
               :value="fullTemplate.renderOptions"
             />
-          </v-sheet>
+          </CustomSection>
         </v-col>
       </v-row>
 

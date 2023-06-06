@@ -1,13 +1,5 @@
 <template>
-  <v-sheet
-    rounded
-    outlined
-    class="my-2 pa-2"
-  >
-    <div class="text--secondary">
-      {{ $t('headers.tags') }}:
-    </div>
-
+  <CustomSection :label="$t('headers.tags').toString()">
     <v-chip-group column>
       <ReadableChip
         v-for="tag in value"
@@ -20,7 +12,7 @@
         {{ tag.name }}
       </ReadableChip>
     </v-chip-group>
-  </v-sheet>
+  </CustomSection>
 </template>
 
 <script lang="ts">

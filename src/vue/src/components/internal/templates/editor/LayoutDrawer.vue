@@ -40,7 +40,7 @@
       </template>
 
       <!-- Items -->
-      <draggable
+      <Draggable
         :value="items"
         :move="onLayoutMove"
         :disabled="mode === 'view'"
@@ -129,20 +129,20 @@
             </v-sheet>
           </v-hover>
         </div>
-      </draggable>
+      </Draggable>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import draggable, { type MoveEvent } from 'vuedraggable';
+import Draggable, { type MoveEvent } from 'vuedraggable';
 import { defineComponent, type PropType } from 'vue';
 import { addAdditionalData, type AnyCustomLayout } from '~/lib/templates/customTemplates';
 import { figureIcons } from '~/lib/templates/figures';
 
 export default defineComponent({
   components: {
-    draggable,
+    Draggable,
   },
   props: {
     value: {

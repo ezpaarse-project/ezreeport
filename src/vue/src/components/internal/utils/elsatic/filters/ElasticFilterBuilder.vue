@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <ElasticQueryElementPopover
+  <div v-if="filterChips.length > 0">
+    <ElasticFilterElementPopover
       v-if="selectedFilterElement"
       v-model="elementPopoverShown"
       :coords="elementPopoverCoords"
@@ -17,7 +17,7 @@
         label
         outlined
         @click="openPopover(i, $event)"
-        @click:close="!isReadonly && onChipDeleted(item)"
+        @click:close="!isReadonly && onElementDeleted(item)"
       >
         <i18n :path="item.i18n" tag="span">
           <template #key>
@@ -33,10 +33,6 @@
           </template>
 
         </i18n>
-      </v-chip>
-
-      <v-chip v-if="!isReadonly" icon color="success" @click="onElementCreated">
-        <v-icon>mdi-plus</v-icon>
       </v-chip>
     </v-chip-group>
   </div>
@@ -130,7 +126,7 @@ export default defineComponent({
       return res.sort((a, b) => a.key.localeCompare(b.key));
     },
     /**
-     * Parse query elements into data for chips
+     * Parse filters elements into data for chips
      */
     filterChips(): FilterChip[] {
       return this.filterElements.map((item) => {
@@ -157,7 +153,7 @@ export default defineComponent({
       });
     },
     /**
-     * Currently selected query element
+     * Currently selected filter element
      */
     selectedFilterElement(): FilterElement {
       return this.filterElements[this.selectedIndex] || { values: [] };
@@ -235,7 +231,7 @@ export default defineComponent({
       this.elementPopoverShown = true;
     },
     /**
-     * Update query value when a element is edited
+     * Update filter value when a element is edited
      *
      * @param element The element
      */
@@ -250,13 +246,13 @@ export default defineComponent({
       this.serializeFilterElements(elements);
     },
     /**
-     * Update query value when a chip is deleted
+     * Update filter value when a element is deleted
      *
-     * @param chip The chip
+     * @param element The element
      */
-    onChipDeleted(chip: FilterChip) {
+    onElementDeleted(element: FilterChip) {
       const elements = [...this.filterElements];
-      const index = elements.findIndex(({ raw }) => chip.key === raw);
+      const index = elements.findIndex(({ raw }) => element.key === raw);
       if (index < 0) {
         return;
       }
@@ -265,7 +261,9 @@ export default defineComponent({
       this.serializeFilterElements(elements);
     },
     /**
-     * Update query value when a element is created
+     * Update filter value when a element is created
+     *
+     * Note: called by parent via ref
      */
     onElementCreated() {
       const index = this.filterElements.length;
@@ -278,7 +276,7 @@ export default defineComponent({
       this.serializeFilterElements([el, ...this.filterElements]);
     },
     /**
-     * Serialize given element and update query value
+     * Serialize given element and update filter value
      *
      * @param filterElements The new elements
      */

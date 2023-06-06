@@ -49,12 +49,7 @@
       />
 
       <!-- TODO: choose if custom param -->
-      <v-sheet
-        v-else
-        rounded
-        outlined
-        class="my-2 pa-2"
-      >
+      <CustomSection v-else>
         <ToggleableObjectTree
           :label="$t('headers.data').toString()"
           :value="Array.isArray(figure.data) ? figure.data : []"
@@ -63,13 +58,9 @@
               && $emit('update:figure', { ...figure, data: $event })
           "
         />
-      </v-sheet>
+      </CustomSection>
 
-      <v-sheet
-        rounded
-        outlined
-        class="my-2 pa-2"
-      >
+      <CustomSection>
         <ToggleableObjectTree
           :label="$t('headers.figureParams').toString()"
           :value="figure.params || {}"
@@ -78,7 +69,7 @@
               && $emit('update:figure', { ...figure, params: $event })
           "
         />
-      </v-sheet>
+      </CustomSection>
 
       <v-select
         :label="$t('headers.slots')"
