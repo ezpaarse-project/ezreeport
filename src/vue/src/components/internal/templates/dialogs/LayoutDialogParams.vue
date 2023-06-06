@@ -171,8 +171,8 @@
 import { omit } from 'lodash';
 import { defineComponent, type PropType } from 'vue';
 import type { AnyCustomLayout } from '~/lib/templates/customTemplates';
-import type ElasticFilterBuilderConstructor from '../../utils/elsatic/filters/ElasticFilterBuilder.vue';
-import type ElasticAggsBuilderConstructor from '../../utils/elsatic/aggs/ElasticAggsBuilder.vue';
+import type ElasticFilterBuilderConstructor from '../../utils/elastic/filters/ElasticFilterBuilder.vue';
+import type ElasticAggsBuilderConstructor from '../../utils/elastic/aggs/ElasticAggsBuilder.vue';
 
 type ElasticFilterBuilder = InstanceType<typeof ElasticFilterBuilderConstructor>;
 type ElasticAggsBuilder = InstanceType<typeof ElasticAggsBuilderConstructor>;

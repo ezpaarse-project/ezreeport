@@ -178,7 +178,7 @@ import {
   type CustomTaskLayout,
 } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
-import type ElasticFilterBuilderConstructor from '../../utils/elsatic/filters/ElasticFilterBuilder.vue';
+import type ElasticFilterBuilderConstructor from '../../utils/elastic/filters/ElasticFilterBuilder.vue';
 
 type ElasticFilterBuilder = InstanceType<typeof ElasticFilterBuilderConstructor>;
 
