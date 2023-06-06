@@ -5,7 +5,8 @@
       v-model="elementPopoverShown"
       :coords="elementPopoverCoords"
       :element="selectedFilterElement"
-      v-on="elementPopoverListeners"
+      :readonly="readonly"
+      @update:element="onElementEdited"
     />
 
     <v-chip-group column>
@@ -13,11 +14,11 @@
         v-for="(item, i) in filterChips"
         :key="item.key"
         :color="item.type"
-        :close="!isReadonly"
+        :close="!readonly"
         label
         outlined
         @click="openPopover(i, $event)"
-        @click:close="!isReadonly && onElementDeleted(item)"
+        @click:close="!readonly && onElementDeleted(item)"
       >
         <i18n :path="item.i18n" tag="span">
           <template #key>
@@ -60,6 +61,10 @@ export default defineComponent({
       type: Object,
       required: true,
     },
+    readonly: {
+      type: Boolean,
+      required: false,
+    },
   },
   emits: {
     input: (val: Record<string, any>) => !!val,
@@ -71,12 +76,6 @@ export default defineComponent({
     selectedIndex: -1,
   }),
   computed: {
-    /**
-     * If component is in readonly mode
-     */
-    isReadonly() {
-      return !this.$listeners.input;
-    },
     /**
      * Extract values and some info from Elastic query (value)
      */
@@ -157,17 +156,6 @@ export default defineComponent({
      */
     selectedFilterElement(): FilterElement {
       return this.filterElements[this.selectedIndex] || { values: [] };
-    },
-    /**
-     * Listeners for element popover
-     */
-    elementPopoverListeners() {
-      if (this.isReadonly) {
-        return {};
-      }
-      return {
-        'update:element': this.onElementEdited,
-      };
     },
   },
   methods: {

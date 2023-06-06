@@ -39,15 +39,15 @@ export default defineComponent({
       default: undefined,
     },
     collapsable: {
-      type: Boolean as PropType<boolean | undefined>,
+      type: Boolean,
       default: false,
     },
     collapseDisabled: {
-      type: Boolean as PropType<boolean | undefined>,
+      type: Boolean,
       default: false,
     },
     defaultValue: {
-      type: Boolean as PropType<boolean | undefined>,
+      type: Boolean,
       default: false,
     },
   },

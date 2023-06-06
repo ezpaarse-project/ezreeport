@@ -40,6 +40,7 @@
 
           <CustomSection :label="$t('headers.fetchOptions').toString()" :default-value="true" collapsable>
             <v-text-field
+              v-if="taskTemplate"
               :value="fetchOptions.index"
               :label="$t('headers.fetchIndex').toString()"
               :rules="rules.index"
@@ -51,7 +52,8 @@
             <CustomSection
               :label="$t('headers.fetchFilters').toString()"
               :collapse-disabled="fetchOptions.filtersCount <= 0"
-              collapsable>
+              collapsable
+            >
               <template #actions>
                 <v-btn
                   icon

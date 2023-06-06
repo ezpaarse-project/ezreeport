@@ -1,8 +1,7 @@
 <template>
   <v-dialog
     :value="value"
-    :persistent="!valid"
-    width="600"
+    width="1000"
     @input="$emit('input', $event)"
   >
     <v-card>
@@ -16,6 +15,7 @@
         <v-form v-model="valid">
           <v-row>
             <v-col>
+              <!-- At field -->
               <v-text-field
                 :value="layout.at ?? index"
                 :label="$t('headers.position')"
@@ -23,78 +23,159 @@
                 :rules="rules.position"
                 type="number"
                 min="0"
+                hide-details
                 @input="onPositionChange"
               />
             </v-col>
           </v-row>
 
           <v-row>
-            <v-col>
-              <template v-if="!layout.data">
-                <v-select
-                  :value="layout.fetcher || 'elastic'"
-                  :label="$t('headers.fetcher')"
-                  :items="availableFetchers"
-                  :rules="rules.fetcher"
-                  :readonly="readonly"
-                  @change="$emit('update:layout', { ...layout, fetcher: $event })"
-                />
+            <v-col style="position: relative;">
+              <v-overlay :value="isStaticData" absolute />
 
-                <v-sheet
-                  rounded
-                  outlined
-                  class="my-2 pa-2"
-                >
-                  <ToggleableObjectTree
-                    v-if="readonly"
-                    :label="$t('headers.fetchOptions').toString()"
-                    :value="layout.fetchOptions || {}"
-                  />
-                  <ToggleableObjectTree
-                    v-else
-                    :label="$t('headers.fetchOptions').toString()"
-                    :value="layout.fetchOptions || {}"
-                    @input="
-                      !Array.isArray($event)
-                        && $emit('update:layout', { ...layout, fetchOptions: $event })
-                    "
+              <!-- Fetcher field -->
+              <v-select
+                :value="layout.fetcher || 'elastic'"
+                :label="$t('headers.fetcher')"
+                :items="availableFetchers"
+                :rules="rules.fetcher"
+                :readonly="readonly"
+                @change="$emit('update:layout', { ...layout, fetcher: $event })"
+              />
+
+              <!-- Fetch Count -->
+              <div class="mx-2">
+                <span class="text--secondary">{{ $t('headers.fetchCount') }}</span>
+
+                <div class="d-flex align-center mb-4">
+                  <v-checkbox
+                    :input-value="fetchOptions.isFetchCount"
+                    :readonly="readonly"
+                    hide-details
+                    class="mt-0"
+                    @change="onFetchOptionUpdate({
+                      fetchCount: (fetchOptions.isFetchCount ? undefined : ''),
+                    })"
                   />
 
-                  <v-sheet
-                    v-if="layout.fetcher === 'elastic'"
-                    rounded
-                    outlined
-                    class="my-2 pa-2"
+                  <v-text-field
+                    :value="fetchOptions.fetchCount"
+                    :placeholder="$t('headers.fetchKey').toString()"
+                    :disabled="!fetchOptions.isFetchCount"
+                    :readonly="readonly"
+                    dense
+                    hide-details
+                    @input="onFetchOptionUpdate({ fetchCount: $event })"
+                  />
+                </div>
+              </div>
+
+              <!--  Filters -->
+              <CustomSection
+                :label="$t('headers.fetchFilters').toString()"
+                :collapse-disabled="fetchOptions.filtersCount <= 0"
+                collapsable
+              >
+                <template #actions v-if="!readonly">
+                  <v-btn
+                    icon
+                    x-small
+                    color="success"
+                    @click="onFilterCreated"
                   >
-                    <span class="text--secondary">{{ 'Fetcher filters' }}</span>
-                    <ElasticFilterBuilder
-                      :value="layout.fetchOptions?.filters || {}"
-                    />
-                  </v-sheet>
-                </v-sheet>
-              </template>
+                    <v-icon>mdi-plus</v-icon>
+                  </v-btn>
+                </template>
 
-              <template v-if="layout.fetcher === ''">
-                <!-- TODO: choose type of data str/object -->
-                <v-textarea
-                  :value="layout.data || ''"
-                  :label="$t('headers.data')"
-                  :rules="rules.data"
+                <ElasticFilterBuilder
+                  ref="filterBuilder"
+                  :value="fetchOptions.filters"
                   :readonly="readonly"
-                  @blur="onMdChange"
+                  @input="onFetchOptionUpdate({ filters: $event })"
                 />
-              </template>
+              </CustomSection>
+
+              <!-- Aggregations -->
+              <CustomSection
+                :label="$t('headers.fetchAggs').toString()"
+                :collapse-disabled="fetchOptions.aggs.length <= 0"
+                collapsable
+              >
+                <template #actions v-if="!readonly">
+                  <v-btn
+                    icon
+                    x-small
+                    color="success"
+                    @click="onAggCreated"
+                  >
+                    <v-icon>mdi-plus</v-icon>
+                  </v-btn>
+                </template>
+
+                <ElasticAggsBuilder
+                  ref="aggBuilder"
+                  :value="fetchOptions.aggs"
+                  :readonly="readonly"
+                  @input="onFetchOptionUpdate({ aggs: $event })"
+                />
+              </CustomSection>
+
+              <!-- Advanced -->
+              <CustomSection>
+                <ToggleableObjectTree
+                  v-if="readonly"
+                  :label="$t('headers.advancedOptions').toString()"
+                  :value="fetchOptions.others || {}"
+                />
+                <ToggleableObjectTree
+                  v-else
+                  :label="$t('headers.advancedOptions').toString()"
+                  :value="fetchOptions.others || {}"
+                  @input="
+                    !Array.isArray($event)
+                      && onFetchOptionUpdate({ ...$event })
+                  "
+                />
+              </CustomSection>
+            </v-col>
+
+            <!-- TODO: choose type of data str/object -->
+            <v-divider vertical />
+
+            <v-col style="position: relative;">
+              <v-overlay :value="!isStaticData" absolute />
+              <v-textarea
+                :value="layout.data || ''"
+                :label="$t('headers.data')"
+                :rules="rules.data"
+                :readonly="readonly"
+                @blur="onMdChange"
+              />
             </v-col>
           </v-row>
         </v-form>
       </v-card-text>
+
+      <v-card-actions>
+        <v-spacer />
+
+        <v-btn @click="$emit('input', false)">
+          {{ $t('actions.close') }}
+        </v-btn>
+      </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script lang="ts">
+import { omit } from 'lodash';
 import { defineComponent, type PropType } from 'vue';
 import type { AnyCustomLayout } from '~/lib/templates/customTemplates';
+import type ElasticFilterBuilderConstructor from '../../utils/elsatic/filters/ElasticFilterBuilder.vue';
+import type ElasticAggsBuilderConstructor from '../../utils/elsatic/aggs/ElasticAggsBuilder.vue';
+
+type ElasticFilterBuilder = InstanceType<typeof ElasticFilterBuilderConstructor>;
+type ElasticAggsBuilder = InstanceType<typeof ElasticAggsBuilderConstructor>;
 
 export default defineComponent({
   props: {
@@ -123,7 +204,8 @@ export default defineComponent({
   data: () => ({
     valid: false,
 
-    availableFetchers: ['', 'elastic'],
+    availableFetchers: ['elastic'],
+    isStaticData: false,
   }),
   computed: {
     rules() {
@@ -141,6 +223,71 @@ export default defineComponent({
         ],
       };
     },
+    /**
+     * Fetch options of the layout
+     */
+    fetchOptions() {
+      const opts = {
+        isFetchCount: false,
+        fetchCount: undefined as string | undefined,
+        filters: {} as Record<string, any>,
+        filtersCount: 0,
+        others: {} as Record<string, any>,
+        aggs: [] as any[],
+      };
+
+      if (!this.layout.fetchOptions) {
+        return opts;
+      }
+
+      // Extract filters with compatible type definition
+      if (
+        'filters' in this.layout.fetchOptions
+        && this.layout.fetchOptions.filters
+        && typeof this.layout.fetchOptions.filters === 'object'
+      ) {
+        opts.filters = this.layout.fetchOptions.filters;
+        opts.filtersCount = Object.values(opts.filters).reduce(
+          (prev, value) => {
+            let count = 0;
+            if (Array.isArray(value)) {
+              count = value.length;
+            }
+            return prev + count;
+          },
+          0,
+        );
+      }
+
+      // Extract fetch count with compatible type definition
+      if (
+        'fetchCount' in this.layout.fetchOptions
+        && this.layout.fetchOptions.fetchCount != null
+        && typeof this.layout.fetchOptions.fetchCount === 'string'
+      ) {
+        opts.fetchCount = this.layout.fetchOptions.fetchCount;
+        opts.isFetchCount = typeof opts.fetchCount === 'string';
+      }
+
+      // Extract aggs with compatible type definition
+      if (
+        'aggs' in this.layout.fetchOptions
+        && this.layout.fetchOptions.aggs != null
+        && Array.isArray(this.layout.fetchOptions.aggs)
+      ) {
+        opts.aggs = this.layout.fetchOptions.aggs;
+      }
+      if (
+        'aggregations' in this.layout.fetchOptions
+        && this.layout.fetchOptions.aggregations != null
+        && Array.isArray(this.layout.fetchOptions.aggregations)
+      ) {
+        opts.aggs = this.layout.fetchOptions.aggregations;
+      }
+
+      opts.others = omit(this.layout.fetchOptions, ['filters', 'fetchCount', 'aggs', 'aggregations']);
+      return opts;
+    },
   },
   methods: {
     onPositionChange(value: string) {
@@ -153,6 +300,26 @@ export default defineComponent({
       if (value !== this.layout.data) {
         this.$emit('update:layout', { ...this.layout, data: value });
       }
+    },
+    onFetchOptionUpdate(value: Record<string, any>) {
+      this.$emit(
+        'update:layout',
+        {
+          ...this.layout,
+          fetchOptions: {
+            ...this.layout.fetchOptions,
+            ...value,
+          },
+        },
+      );
+    },
+    onAggCreated() {
+      const builder = this.$refs.aggBuilder as ElasticAggsBuilder | undefined;
+      builder?.onElementCreated();
+    },
+    onFilterCreated() {
+      const builder = this.$refs.filterBuilder as ElasticFilterBuilder | undefined;
+      builder?.onElementCreated();
     },
   },
 });
@@ -169,7 +336,14 @@ en:
     position: 'Page number'
     fetcher: 'Fetcher'
     fetchOptions: 'Fetch options'
+    fetchFilters: 'Filters'
+    fetchCount: 'Should fetch document count ?'
+    fetchKey: 'Key to use in figures'
+    fetchAggs: 'Aggregations'
+    advancedOptions: 'Advanced options'
     data: 'Figures data'
+  actions:
+    close: 'Close'
   errors:
     empty: 'This field is required'
     valid: 'The value must be valid'
@@ -181,7 +355,14 @@ fr:
     position: 'Numéro de page'
     fetcher: 'Outil de récupération'
     fetchOptions: 'Options de récupération'
+    fetchFilters: 'Filtres'
+    fetchCount: 'Récupérer le nombre de documents ?'
+    fetchKey: 'Clé à utiliser dans les visus'
+    fetchAggs: 'Aggregations'
+    advancedOptions: 'Options avancées'
     data: 'Données des visualisations'
+  actions:
+    close: 'Fermer'
   errors:
     empty: 'Ce champ est requis'
     valid: 'La valeur doit être valide'

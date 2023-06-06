@@ -13,7 +13,7 @@
   >
     <v-card>
       <v-card-title>
-        {{ $t(`title-${isReadonly ? 'read' : 'edit'}`) }}
+        {{ $t(`title-${readonly ? 'read' : 'edit'}`) }}
 
         <v-spacer />
 
@@ -29,7 +29,7 @@
               <v-text-field
                 v-model="innerKey"
                 :label="$t('headers.key')"
-                :readonly="isReadonly"
+                :readonly="readonly"
                 :rules="rules.key"
                 @blur="updateKey"
               />
@@ -41,6 +41,7 @@
               <v-select
                 :label="$t('headers.operator')"
                 :value="element.operator"
+                :readonly="readonly"
                 :items="operators"
                 :rules="rules.operator"
                 @input="updateOperator"
@@ -51,6 +52,7 @@
               <v-select
                 :label="$t('headers.modifier')"
                 :value="element.modifier"
+                :readonly="readonly"
                 :items="modifiers"
                 :rules="rules.modifier"
                 @input="updateModifier"
@@ -64,6 +66,7 @@
                 v-if="element.operator !== 'EXISTS'"
                 :label="$t('headers.value')"
                 :value="element.values"
+                :readonly="readonly"
                 :deletable-chips="element.values.length > 1"
                 :rules="rules.value"
                 multiple
@@ -113,6 +116,10 @@ export default defineComponent({
       type: Object as PropType<FilterElement>,
       required: true,
     },
+    readonly: {
+      type: Boolean,
+      required: false,
+    },
   },
   emits: {
     input: (show: boolean) => show !== undefined,
@@ -131,12 +138,6 @@ export default defineComponent({
     },
   },
   computed: {
-    /**
-     * If component is in readonly mode
-     */
-    isReadonly(): boolean {
-      return !this.$listeners['update:element'];
-    },
     /**
      * Possible modifiers
      */
@@ -180,7 +181,7 @@ export default defineComponent({
      * Update element's key
      */
     updateKey() {
-      if (this.isReadonly) {
+      if (this.readonly) {
         return;
       }
 
@@ -192,7 +193,7 @@ export default defineComponent({
      * @param values The wanted values
      */
     updateValue(values: string[]) {
-      if (this.isReadonly || !this.valid) {
+      if (this.readonly || !this.valid) {
         return;
       }
 
@@ -204,7 +205,7 @@ export default defineComponent({
      * @param modifier The wanted modifier
      */
     updateModifier(modifier: Modifiers) {
-      if (this.isReadonly || !this.valid) {
+      if (this.readonly || !this.valid) {
         return;
       }
 
@@ -216,7 +217,7 @@ export default defineComponent({
      * @param operator The wanted operator
      */
     updateOperator(operator: Operators) {
-      if (this.isReadonly || !this.valid) {
+      if (this.readonly || !this.valid) {
         return;
       }
 

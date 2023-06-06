@@ -38,8 +38,9 @@
             readonly
           />
 
-          <CustomSection v-if="template.fetchOptions" :label="$t('headers.fetchOptions').toString()">
+          <CustomSection v-if="template.fetchOptions" :label="$t('headers.fetchOptions').toString()" :default-value="true" collapsable>
             <v-text-field
+              v-if="taskTemplate"
               :value="fetchOptions.index"
               :label="$t('headers.fetchIndex').toString()"
               dense
@@ -48,9 +49,10 @@
               class="pt-4"
             />
 
-            <CustomSection v-if="Object.keys(fetchOptions.filters).length > 0" :label="$t('headers.fetchFilters').toString()">
+            <CustomSection v-if="Object.keys(fetchOptions.filters).length > 0" :label="$t('headers.fetchFilters').toString()" collapsable>
               <ElasticFilterBuilder
                 :value="fetchOptions.filters"
+                readonly
               />
             </CustomSection>
 
@@ -347,8 +349,9 @@ en:
     fetcher: 'Fetcher'
     base: 'Base template'
     fetchOptions: 'Fetch options'
-    fetchFilters: 'Fetch filters'
+    fetchFilters: 'Filters'
     fetchIndex: 'Elastic index'
+    advancedOptions: 'Options avancées'
     renderOptions: 'Render options'
     layouts: 'Page viewer ({count} pages)'
   actions:
@@ -360,8 +363,9 @@ fr:
     fetcher: 'Outil de récupération'
     base: 'Modèle de base'
     fetchOptions: 'Options de récupération'
-    fetchFilters: 'Filtres de récupération'
+    fetchFilters: 'Filtres'
     fetchIndex: 'Index Elastic'
+    advancedOptions: 'Options avancées'
     renderOptions: 'Options de rendu'
     layouts: 'Visionneur de pages ({count} pages)'
   actions:
