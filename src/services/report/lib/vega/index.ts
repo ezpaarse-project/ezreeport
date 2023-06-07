@@ -51,6 +51,7 @@ type SubEncoding<T extends keyof Encoding> = Exclude<Encoding[T], undefined | nu
 type CustomLayer = Omit<Layer, 'mark'> & { mark: Omit<Layer['mark'], 'type'> };
 
 type VegaParams = {
+  // Auto fields
   /**
    * Width of the graph, should match PDF viewport
    */
@@ -60,12 +61,13 @@ type VegaParams = {
    */
   height: number;
   debugExport?: boolean,
+  recurrence: Recurrence,
+  // Figure specific
   dataKey?: string,
   dataLayer?: CustomLayer;
   value: SubEncoding<'x' | 'y' | 'theta'> & { field: string };
   label: SubEncoding<'x' | 'y' | 'color'> & { field: string },
   color?: Encoding['color'] & { field: string },
-  recurrence: Recurrence,
   title: Title,
   dataLabel?: {
     format: 'percent' | 'numeric',

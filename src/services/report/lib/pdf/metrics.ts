@@ -3,17 +3,20 @@ import type { PDFReport } from '.';
 import { format, isValid, parseISO } from '../date-fns';
 
 type MetricParams = {
+  // Auto fields
   start: Position,
   width: number,
   height: number,
-  labels?: Record<string, {
+  // Figure specific
+  labels?: {
+    dataKey: string,
     text?: string,
     field?: string,
     format?: {
       type: 'date',
       params?: string[]
     }
-  } | undefined>
+  }[]
 };
 
 export type InputMetricParams = Omit<MetricParams, 'width' | 'height' | 'start'>;
@@ -74,12 +77,12 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
     rawData = inputData;
   } else {
     const dataKeys = Object.keys(inputData);
-    const labelKeys = Object.keys(params.labels ?? {});
+    const labelKeys = params.labels?.map(({ dataKey }) => dataKey) ?? [];
     // Sort metrics by label position in object
     dataKeys.sort((a, b) => labelKeys.indexOf(a) - labelKeys.indexOf(b));
     // eslint-disable-next-line no-restricted-syntax
     for (const key of dataKeys) {
-      const label = (params.labels ?? {})[key];
+      const label = params.labels?.find(({ dataKey }) => dataKey === key);
       let value = inputData[key];
       if (typeof value === 'object') {
         value = value[label?.field ?? 'value'];
