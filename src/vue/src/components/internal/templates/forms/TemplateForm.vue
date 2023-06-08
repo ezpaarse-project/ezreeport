@@ -30,8 +30,10 @@
           <v-select
             v-if="fullTemplate"
             :label="$t('headers.renderer')"
-            :value="fullTemplate.renderer || 'vega-pdf'"
+            :value="fullTemplate.renderer"
             :items="availableRenderer"
+            placeholder="vega-pdf"
+            persistent-placeholder
             @change="
               fullTemplate
                 && onTemplateUpdate({ ...fullTemplate, renderer: $event })

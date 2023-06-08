@@ -12,7 +12,7 @@
           :label="$t('headers.name')"
           :rules="rules.name"
           :readonly="readonly"
-          hide-details
+          hide-details="auto"
           @blur="onElementUpdate({ name: innerName })"
           class="mr-2"
         />
@@ -52,7 +52,33 @@
               :readonly="readonly"
               hide-details
               @change="onTypeUpdate"
-            />
+            >
+              <template #append-outer v-if="typeDefinition">
+                <v-menu
+                  v-model="showDefinition"
+                  offset-y
+                >
+                  <template #activator="{ on, attrs }">
+                    <v-btn
+                      icon
+                      small
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+                      <v-icon>mdi-information</v-icon>
+                    </v-btn>
+                  </template>
+
+                  <v-card>
+                    <v-card-title class="py-1">
+                      {{ $t('headers.typeHelper') }}
+                    </v-card-title>
+
+                    <TSPreview :value="typeDefinition.type" :is-array="typeDefinition.isArray" />
+                  </v-card>
+                </v-menu>
+              </template>
+            </v-select>
 
             <v-divider class="my-4" />
 
@@ -105,6 +131,7 @@
 
             <!-- Sub aggregations -->
             <CustomSection
+              v-if="!typeDefinition || typeDefinition.canHaveSub"
               :label="$t('headers.subAggs').toString()"
               :collapse-disabled="(element.aggs || element.aggregations || []).length <= 0"
               collapsable
@@ -151,12 +178,18 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import { aggsTypes, sortOptions, sizeKeyByType } from '~/lib/elastic/aggs';
+import {
+  aggsTypes,
+  sortOptions,
+  sizeKeyByType,
+  aggsDefinition,
+  type AggDefinition,
+} from '~/lib/elastic/aggs';
 import type ElasticAggsBuilderConstructor from './ElasticAggsBuilder.vue';
 
 type ElasticAggsBuilder = InstanceType<typeof ElasticAggsBuilderConstructor>;
 
-const aggsSet = new Set(aggsTypes);
+const aggsSet = new Set<string>(aggsTypes);
 /**
  * Root keys handled by the simple edition
  */
@@ -211,6 +244,7 @@ export default defineComponent({
   data: () => ({
     innerName: '',
     showAdvanced: false,
+    showDefinition: false,
   }),
   watch: {
     value() {
@@ -314,6 +348,9 @@ export default defineComponent({
         text: this.$t(`sorts.${value}`),
         value,
       }));
+    },
+    typeDefinition(): AggDefinition | undefined {
+      return (aggsDefinition as Record<string, AggDefinition>)[this.type.value];
     },
   },
   methods: {
@@ -422,6 +459,7 @@ en:
     simpleEdition: 'Simple edition'
     advancedEdition: 'Advanced edition'
     type: 'Aggregation type'
+    typeHelper: 'Possible format of data'
     field: 'Concerned field'
     count: 'Max count of results'
     sort: 'Sort on field...'
@@ -432,6 +470,7 @@ en:
     desc: 'descending'
   errors:
     required: 'This field must be set'
+    not_valid_json: "Given JSON isn't valid"
   types:
     auto_date_histogram: 'Auto date histogram'
     avg: 'Average (avg)'
@@ -468,6 +507,7 @@ fr:
     simpleEdition: 'Édition simple'
     advancedEdition: 'Édition avancée'
     type: "Type d'aggregation"
+    typeHelper: 'Format probable des données'
     field: 'Champ concerné'
     count: 'Nombre de résultats maximum'
     sort: 'Trier sur le champ...'
@@ -478,6 +518,7 @@ fr:
     desc: 'descendant'
   errors:
     required: 'Ce champ doit être rempli'
+    not_valid_json: "Le JSON donné n'est pas valide"
   types:
     auto_date_histogram: 'Histogramme de date automatique (auto_date_histogram)'
     avg: 'Moyenne (avg)'

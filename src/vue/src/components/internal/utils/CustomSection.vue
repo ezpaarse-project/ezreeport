@@ -16,7 +16,7 @@
         </v-btn>
       </slot>
 
-      <span class="text--secondary ">{{ label }}</span>
+      <span class="text--secondary mx-1">{{ label }}</span>
 
       <slot name="actions" />
     </div>

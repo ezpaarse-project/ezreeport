@@ -43,7 +43,8 @@
             isDraggable,
             isHovered,
             index,
-          }">
+          }"
+        >
           <FigureDetail
             v-if="mode !== 'allowed-edition'"
             :figure="figure"
@@ -69,7 +70,6 @@
             @validation="onValidation(figure, $event)"
           />
         </template>
-
       </SlotItemGrid>
     </div>
   </div>

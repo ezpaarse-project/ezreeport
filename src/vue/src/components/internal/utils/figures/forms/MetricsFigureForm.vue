@@ -1,0 +1,369 @@
+<template>
+  <div>
+    <MetricsFigurePopover
+      v-if="currentLabel"
+      v-model="labelPopoverShown"
+      :element="currentLabel"
+      :coords="labelPopoverCoords"
+      :readonly="readonly"
+      :currentKeyFields="currentKeyFields"
+      @updated="onCurrentLabelUpdated"
+    />
+
+    <CustomSection :label="$t('headers.labels').toString()" style="border: none;">
+      <template #actions>
+        <v-btn
+          icon
+          x-small
+          color="success"
+          @click="showLabelPopover($event)"
+        >
+          <v-icon>mdi-plus</v-icon>
+        </v-btn>
+      </template>
+
+      <v-list dense rounded>
+        <v-list-item
+          v-for="(label, i) in labels"
+          :key="label._.dataKeyField"
+          :draggable="label._.dragged"
+          :ripple="!label._.dragged"
+          :class="[label._.dragged && 'v-item--active primary--text']"
+          v-on="getEventListeners(label, i)"
+        >
+          <v-list-item-action v-if="!readonly">
+            <v-btn
+              icon
+              small
+              @click="onLabelDelete(label)"
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-list-item-action>
+
+          <v-list-item-content>
+            <v-list-item-title>
+              {{ label.dataKey }}<span style="font-weight: normal;">.{{ label.field || 'value' }}</span>
+            </v-list-item-title>
+
+            <v-list-item-subtitle v-if="label.text">
+              {{ label.text }}
+            </v-list-item-subtitle>
+          </v-list-item-content>
+
+          <v-list-item-action
+            v-if="!readonly"
+            class="metric--handle"
+            @mousedown="allowDrag(label)"
+            @mouseup="disallowDrag(label)"
+          >
+            <v-icon>mdi-drag-horizontal-variant</v-icon>
+          </v-list-item-action>
+        </v-list-item>
+      </v-list>
+    </CustomSection>
+  </div>
+</template>
+
+<script lang="ts">
+import { omit } from 'lodash';
+import { defineComponent, type PropType } from 'vue';
+
+const dragFormat = 'custom/figure-metric-json';
+
+// Extracted from `src/services/report/lib/pdf/metrics.ts`
+export type Label = {
+  dataKey: string,
+  text?: string,
+  field?: string,
+  format?: {
+    type: string,
+    params?: string[]
+  }
+};
+type CustomLabel = Label & {
+  _: {
+    dataKeyField: string,
+    dragged: boolean,
+  }
+};
+// Extracted from `src/services/report/lib/pdf/metrics.ts`
+type MetricParams = {
+  labels: Label[]
+};
+
+export default defineComponent({
+  props: {
+    value: {
+      type: Object as PropType<MetricParams>,
+      required: true,
+    },
+    readonly: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: {
+    input: (val: MetricParams) => !!val,
+  },
+  data: () => ({
+    labelPopoverShown: false,
+    labelPopoverCoords: { x: 0, y: 0 },
+    currentLabel: undefined as Label | undefined,
+
+    innerLabels: [] as CustomLabel[],
+    draggedIndex: -1,
+  }),
+  computed: {
+    labels: {
+      get(): CustomLabel[] {
+        if (this.innerLabels.length > 0) {
+          return this.innerLabels;
+        }
+        return this.value.labels.map((l) => ({
+          ...l,
+          _: {
+            dragged: false,
+            dataKeyField: `${l.dataKey}.${l.field || 'value'}`,
+          },
+        }));
+      },
+      set(val: CustomLabel[]) {
+        this.innerLabels = val;
+      },
+    },
+    currentKeyFields() {
+      return this.labels.map(({ _: { dataKeyField } }) => dataKeyField);
+    },
+  },
+  methods: {
+    /**
+     * Update value when a label is deleted
+     *
+     * @param label The label to delete
+     */
+    onLabelDelete(label: CustomLabel) {
+      const index = this.labels.findIndex(
+        ({ _: { dataKeyField } }) => dataKeyField === label._.dataKeyField,
+      );
+      if (index < 0) {
+        return;
+      }
+
+      const labels = [...this.value.labels];
+      labels.splice(index, 1);
+      this.$emit('input', { ...this.value, labels });
+    },
+    /**
+     * Update value when a label is updated
+     *
+     * @param label The new label
+     */
+    onCurrentLabelUpdated(label: Label) {
+      if (!this.currentLabel) {
+        return;
+      }
+
+      const value = omit(label, '_');
+      const labels = [...this.value.labels];
+      const { dataKey: dK, field: f } = this.currentLabel;
+      const index = this.labels.findIndex(
+        ({ dataKey, field }) => dataKey === dK && field === f,
+      );
+      if (index < 0) {
+        labels.push(value);
+      } else {
+        labels.splice(index, 1, value);
+      }
+      this.$emit('input', { ...this.value, labels });
+      this.currentLabel = label;
+    },
+    /**
+     * Show popover for creating/editing label
+     */
+    async showLabelPopover(e: MouseEvent, label?: CustomLabel) {
+      if (label) {
+        this.currentLabel = label;
+      } else {
+        this.currentLabel = { dataKey: '' };
+        // const labels = [...this.value.labels, this.currentLabel];
+        // this.$emit('input', { ...this.value, labels });
+      }
+
+      const coords = { x: e.clientX, y: e.clientY };
+      const target = (e.currentTarget as HTMLElement | undefined);
+      if (target && label) {
+        const bounding = target.getBoundingClientRect();
+
+        // Adding close icon offset
+        coords.x = bounding.x + 60;
+        coords.y = bounding.y + (bounding.height / 2);
+      }
+
+      this.labelPopoverCoords = coords;
+      await this.$nextTick();
+      this.labelPopoverShown = true;
+    },
+    /**
+     * Allow drag of item when it's handle is clicked
+     *
+     * @param label The label allowed to be dragged
+     */
+    allowDrag(label: CustomLabel) {
+      const index = this.labels.findIndex(
+        ({ _: { dataKeyField } }) => dataKeyField === label._.dataKeyField,
+      );
+
+      if (index >= 0 && !this.readonly) {
+        const labels = [...this.labels];
+        labels.splice(index, 1, { ...label, _: { ...label._, dragged: true } });
+        this.labels = labels;
+      }
+    },
+    /**
+     * Disallow drag of item when it's handle is no longer clicked
+     *
+     * @param label The label disallowed to be dragged
+     */
+    disallowDrag(label: CustomLabel) {
+      const index = this.labels.findIndex(
+        ({ _: { dataKeyField } }) => dataKeyField === label._.dataKeyField,
+      );
+
+      if (index >= 0 && !this.readonly) {
+        const labels = [...this.labels];
+        labels.splice(index, 1, { ...label, _: { ...label._, dragged: false } });
+        this.labels = labels;
+      }
+    },
+    /**
+     * Get event listeners for
+     */
+    getEventListeners(label: CustomLabel, i: number) {
+      let events = {};
+      if (!this.readonly) {
+        events = {
+          ...events,
+          dragstart: (e: DragEvent) => { e.stopPropagation(); this.onDragStart(e, label, i); },
+          dragend: (e: DragEvent) => { e.stopPropagation(); this.onDragEnd(); },
+          dragover: (e: DragEvent) => { e.stopPropagation(); this.onDragOver(e); },
+          dragenter: (e: DragEvent) => { e.stopPropagation(); this.onDragEnter(e, i); },
+          drop: (e: DragEvent) => { e.stopPropagation(); this.onDragDrop(e); },
+        };
+      }
+      if (this.draggedIndex < 0) {
+        events = {
+          ...events,
+          click: (e: MouseEvent) => { this.showLabelPopover(e, label); },
+        };
+      }
+
+      return events;
+    },
+    /**
+     * Init dragged data
+     *
+     * @param ev The event
+     * @param label The dragged item
+     * @param index The index of the dragged item
+     */
+    onDragStart(ev: DragEvent, label: CustomLabel, index: number) {
+      if (!this.readonly) {
+        // Init data
+        this.draggedIndex = index;
+        const img = new Image();
+        ev.dataTransfer?.setDragImage(img, 0, 0);
+        ev.dataTransfer?.setData(
+          dragFormat,
+          JSON.stringify({
+            index,
+            item: label,
+          }),
+        );
+      }
+    },
+    /**
+     * Update labels & inner dragged state
+     */
+    async onDragEnd() {
+      if (!this.readonly && this.draggedIndex >= 0) {
+        this.disallowDrag(this.labels[this.draggedIndex]);
+
+        const labels = this.labels.map((l) => omit(l, '_'));
+        this.$emit('input', { ...this.value, labels });
+        await this.$nextTick();
+        this.labels = [];
+        this.draggedIndex = -1;
+      }
+    },
+    /**
+     * Allow dropping on this element
+     *
+     * @param ev The event
+     */
+    onDragOver(ev: DragEvent) {
+      if (!this.readonly && ev.dataTransfer?.types.includes(dragFormat)) {
+        ev.preventDefault();
+      }
+    },
+    /**
+     * Update labels state that current slot is hovered
+     *
+     * @param ev The event
+     * @param slot The slot
+     */
+    onDragEnter(ev: DragEvent, newIndex: number) {
+      if (
+        !this.readonly
+        && newIndex !== this.draggedIndex
+        && ev.dataTransfer?.types.includes(dragFormat)
+      ) {
+        const labels = [...this.labels];
+        labels.splice(this.draggedIndex, 1);
+        labels.splice(newIndex, 0, this.labels[this.draggedIndex]);
+        this.labels = labels;
+
+        this.draggedIndex = newIndex;
+      }
+    },
+    /**
+     * End dragging data
+     *
+     * @param ev The event
+     */
+    onDragDrop(ev: DragEvent) {
+      const data = ev.dataTransfer?.getData(dragFormat);
+      if (!this.readonly && data) {
+        ev.dataTransfer?.clearData(dragFormat);
+      }
+    },
+  },
+});
+</script>
+
+<style scoped>
+.metric--handle {
+  cursor: grab;
+}
+
+.v-item--active::before {
+  background-color: currentColor;
+  bottom: 0;
+  content: "";
+  left: 0;
+  opacity: 0.12;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+</style>
+
+<i18n lang="yaml">
+en:
+  headers:
+    labels: 'Elements'
+fr:
+  headers:
+    labels: 'Élements'
+</i18n>

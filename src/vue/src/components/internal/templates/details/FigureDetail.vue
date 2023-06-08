@@ -1,6 +1,6 @@
 <template>
   <v-sheet rounded outlined class="pa-2">
-    <div class="d-flex">
+    <div class="d-flex align-center">
       {{ $t('headers.figure', { i: figureIndex }) }}
 
       <template v-if="locked">

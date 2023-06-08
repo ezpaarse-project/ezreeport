@@ -1,27 +1,32 @@
 <template>
-  <v-sheet rounded outlined class="pa-2">
+  <v-sheet
+    :draggable="preventDrag"
+    rounded
+    outlined
+    class="pa-2"
+    @mousedown="onDragAttempt"
+    @dragstart="preventEvent"
+  >
     <v-form @input="onValidationChange">
-      <div class="d-flex">
-        <div>
-          <v-icon v-if="draggable" style="cursor: grab" small>mdi-drag</v-icon>
+      <div class="d-flex align-center">
+        <v-icon v-if="draggable" class="figure-handle">mdi-drag</v-icon>
 
-          {{ $t('headers.figure', { i: figureIndex }) }}
+        {{ $t('headers.figure', { i: figureIndex }) }}
 
-          <v-tooltip top v-if="figure._.valid !== true" color="warning">
-            <template #activator="{ attrs, on }">
-              <v-icon
-                color="warning"
-                small
-                v-bind="attrs"
-                v-on="on"
-              >
-                mdi-alert
-              </v-icon>
-            </template>
+        <v-tooltip top v-if="figure._.valid !== true" color="warning">
+          <template #activator="{ attrs, on }">
+            <v-icon
+              color="warning"
+              small
+              v-bind="attrs"
+              v-on="on"
+            >
+              mdi-alert
+            </v-icon>
+          </template>
 
-            <span>{{ figure._.valid }}</span>
-          </v-tooltip>
-        </div>
+          <span>{{ figure._.valid }}</span>
+        </v-tooltip>
 
         <v-spacer />
 
@@ -37,6 +42,7 @@
         :rules="rules.type"
         item-text="label"
         item-value="value"
+        hide-details="auto"
         @change="onFigureTypeChange"
       />
 
@@ -60,15 +66,8 @@
         />
       </CustomSection>
 
-      <CustomSection>
-        <ToggleableObjectTree
-          :label="$t('headers.figureParams').toString()"
-          :value="figure.params || {}"
-          @input="
-            !Array.isArray($event)
-              && $emit('update:figure', { ...figure, params: $event })
-          "
-        />
+      <CustomSection v-if="figureParamsForm" :label="$t('headers.figureParams').toString()" collapsable>
+        <component :is="figureParamsForm" :value="figure.params || {}" @input="$emit('update:figure', { ...figure, params: $event })" />
       </CustomSection>
 
       <v-select
@@ -87,6 +86,7 @@
 import { defineComponent, type PropType } from 'vue';
 import type { AnyCustomFigure } from '~/lib/templates/customTemplates';
 import { figureTypes } from '~/lib/templates/figures';
+import figureFormMap from '~/components/internal/utils/figures';
 
 export default defineComponent({
   props: {
@@ -118,6 +118,7 @@ export default defineComponent({
   },
   data: () => ({
     dataMap: {} as Record<string, string | unknown[] | undefined>,
+    preventDrag: false,
   }),
   computed: {
     /**
@@ -199,6 +200,17 @@ export default defineComponent({
         value,
       }));
     },
+    /**
+     * Components that holds figure params
+     */
+    figureParamsForm() {
+      const component = figureFormMap[this.figure.type];
+      if (component !== undefined) {
+        return component;
+      }
+      // eslint-disable-next-line no-underscore-dangle
+      return figureFormMap._default;
+    },
   },
   methods: {
     onFigureTypeChange(type: string) {
@@ -221,12 +233,24 @@ export default defineComponent({
       const validationResult = Object.values(this.validationMap).find((v) => v !== true) || true;
       this.$emit('validation', validationResult);
     },
+    onDragAttempt(ev: DragEvent) {
+      if (!(ev.target as HTMLElement).classList.contains('figure-handle')) {
+        this.preventDrag = true;
+      }
+    },
+    preventEvent(ev: Event) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      this.preventDrag = false;
+    },
   },
 });
 </script>
 
 <style scoped>
-
+.figure-handle {
+  cursor: grab;
+}
 </style>
 
 <i18n lang="yaml">

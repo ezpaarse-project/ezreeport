@@ -23,7 +23,7 @@
                 :rules="rules.position"
                 type="number"
                 min="0"
-                hide-details
+                hide-details="auto"
                 @input="onPositionChange"
               />
             </v-col>
@@ -35,11 +35,13 @@
 
               <!-- Fetcher field -->
               <v-select
-                :value="layout.fetcher || 'elastic'"
+                :value="layout.fetcher"
                 :label="$t('headers.fetcher')"
                 :items="availableFetchers"
                 :rules="rules.fetcher"
                 :readonly="readonly"
+                placeholder="elastic"
+                persistent-placeholder
                 @change="$emit('update:layout', { ...layout, fetcher: $event })"
               />
 
@@ -216,7 +218,7 @@ export default defineComponent({
           (v: string) => +v >= 0 || this.$t('errors.negative'),
         ],
         fetcher: [
-          (v: string) => !!v || !!this.layout.data || this.$t('errors.fetcher'),
+          // (v: string) => !!v || !!this.layout.data || this.$t('errors.fetcher'),
         ],
         data: [
           (v: string) => !!v || !!this.layout.fetcher || this.$t('errors.fetcher'),
