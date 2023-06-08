@@ -129,10 +129,10 @@ export default defineComponent({
       return {
         dataKey: [
           (v: string) => v.length > 0 || this.$t('errors.empty'),
-          this.isDuplicate || this.$t('errors.no_duplicate'),
+          !this.isDuplicate || this.$t('errors.no_duplicate'),
         ],
         field: [
-          this.isDuplicate || this.$t('errors.no_duplicate'),
+          !this.isDuplicate || this.$t('errors.no_duplicate'),
         ],
       };
     },
@@ -150,10 +150,9 @@ export default defineComponent({
     },
     isDuplicate() {
       const kF = `${this.innerDataKey}.${this.innerField || 'value'}`;
-      if (this.currentKeyField === kF) { return true; }
+      if (this.currentKeyField === kF) { return false; }
 
-      const isDup = this.currentKeyFieldsSet.has(kF);
-      return !isDup;
+      return this.currentKeyFieldsSet.has(kF);
     },
   },
   watch: {

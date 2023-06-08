@@ -185,9 +185,9 @@ export default defineComponent({
       if (label) {
         this.currentLabel = label;
       } else {
-        this.currentLabel = { dataKey: '' };
-        // const labels = [...this.value.labels, this.currentLabel];
-        // this.$emit('input', { ...this.value, labels });
+        this.currentLabel = { dataKey: `agg${this.labels.length}` };
+        const labels = [...this.value.labels, this.currentLabel];
+        this.$emit('input', { ...this.value, labels });
       }
 
       const coords = { x: e.clientX, y: e.clientY };
@@ -307,10 +307,10 @@ export default defineComponent({
       }
     },
     /**
-     * Update labels state that current slot is hovered
+     * Update labels state that current element is hovered
      *
      * @param ev The event
-     * @param slot The slot
+     * @param newIndex The new index
      */
     onDragEnter(ev: DragEvent, newIndex: number) {
       if (
