@@ -1,9 +1,9 @@
-import axios from 'axios';
 import type { Font } from 'jspdf';
 import { marked } from 'marked';
 import { lookup } from 'mime-types';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import http from '~/lib/http-requests';
 import config from '~/lib/config';
 import type { PDFReport } from '.';
 import { loadImageAsset } from './utils';
@@ -424,7 +424,9 @@ const printImage = async (
   let imageData = '';
   if (meta.src.match(/^https?:\/\//i)) {
     // Remote images
-    const { data: file } = await axios.get(meta.src, { responseType: 'arraybuffer' });
+    // TODO [sec]: Limit downloaded data size
+    // TODO [sec]: Check content-type ?
+    const { data: file } = await http.get(meta.src, { responseType: 'arraybuffer' });
     // TODO [fix]: What if not contained in URL ?
     const mime = lookup(meta.src);
     const raw = file.toString('base64');
