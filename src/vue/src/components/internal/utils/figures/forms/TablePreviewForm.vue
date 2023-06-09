@@ -51,7 +51,6 @@
               <v-icon>mdi-delete</v-icon>
             </v-btn>
             <v-btn
-              v-if="!readonly"
               icon
               x-small
               @click="openColumnPopover($event, column)"

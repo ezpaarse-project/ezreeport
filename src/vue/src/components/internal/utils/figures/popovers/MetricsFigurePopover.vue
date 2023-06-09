@@ -79,10 +79,11 @@
           </span>
 
           <!-- Advanced -->
-          <CustomSection>
+          <CustomSection v-if="unsupportedParams.shouldShow">
             <ToggleableObjectTree
+              :value="unsupportedParams.value"
               :label="$t('headers.advanced').toString()"
-              v-model="unsupportedParams"
+              v-on="unsupportedParams.listeners"
             />
           </CustomSection>
         </v-card-text>
@@ -96,11 +97,17 @@ import { defineComponent, type PropType } from 'vue';
 import { omit, merge } from 'lodash';
 import type { Label } from '../forms/MetricsFigureForm.vue';
 
+/**
+ * Possible type for formatting a metric
+ */
 const formatTypes = [
   '',
   'date',
 ];
 
+/**
+ * Keys of label supported by the popover
+ */
 const supportedKeys = [
   '_',
   'dataKey',
@@ -111,22 +118,37 @@ const supportedKeys = [
 
 export default defineComponent({
   props: {
+    /**
+     * Is the popover shown
+     */
     value: {
       type: Boolean,
       required: true,
     },
-    element: {
-      type: Object as PropType<Label>,
-      required: true,
-    },
+    /**
+     * Coordinates of popover
+     */
     coords: {
       type: Object as PropType<{ x: number, y: number }>,
       required: true,
     },
+    /**
+     * Current metric edited
+     */
+    element: {
+      type: Object as PropType<Label>,
+      required: true,
+    },
+    /**
+     * Currents key/field used by other metrics
+     */
     currentKeyFields: {
       type: Array as PropType<string[]>,
       default: () => [],
     },
+    /**
+     * Is the popover readonly
+     */
     readonly: {
       type: Boolean,
       default: false,
@@ -142,6 +164,9 @@ export default defineComponent({
     valid: false,
   }),
   computed: {
+    /**
+     * Validation rules
+     */
     rules() {
       return {
         dataKey: [
@@ -153,31 +178,53 @@ export default defineComponent({
         ],
       };
     },
+    /**
+     * Possible type for formatting a metric with localisation
+     */
     possibleFormatTypes() {
       return formatTypes.map((value) => ({
         text: this.$t(`formats.${value || '_other'}`),
         value,
       }));
     },
+    /**
+     * Set of currents key/field used by other metrics
+     */
     currentKeyFieldsSet() {
       return new Set(this.currentKeyFields);
     },
+    /**
+     * key/field of given element
+     */
     currentKeyField() {
       return `${this.element.dataKey}.${this.element.field || 'value'}`;
     },
+    /**
+     * Is the current key/field is a duplicate of any other metric
+     */
     isDuplicate() {
       const kF = `${this.innerDataKey}.${this.innerField || 'value'}`;
       if (this.currentKeyField === kF) { return false; }
 
       return this.currentKeyFieldsSet.has(kF);
     },
-    unsupportedParams: {
-      get(): Record<string, any> {
-        return omit(this.element, supportedKeys);
-      },
-      set(val: Record<string, any>) {
-        this.$emit('input', merge(this.value, val));
-      },
+    /**
+     * Data used by ObjectTree to edit unsupported options
+     */
+    unsupportedParams() {
+      let listeners = {};
+      if (!this.readonly) {
+        listeners = {
+          input: (val: Record<string, any>) => { this.$emit('updated', merge(this.element, val)); },
+        };
+      }
+
+      const value = omit(this.element, supportedKeys);
+      return {
+        shouldShow: !this.readonly || Object.keys(value).length > 0,
+        value,
+        listeners,
+      };
     },
   },
   watch: {

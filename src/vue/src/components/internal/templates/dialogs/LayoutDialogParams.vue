@@ -101,6 +101,7 @@
 
               <!--  Filters -->
               <CustomSection
+                v-if="!readonly || fetchOptions.filtersCount > 0"
                 :label="$t('headers.fetchFilters').toString()"
                 :collapse-disabled="fetchOptions.filtersCount <= 0"
                 collapsable
@@ -126,6 +127,7 @@
 
               <!-- Aggregations -->
               <CustomSection
+                v-if="!readonly || fetchOptions.aggs.length > 0"
                 :label="$t('headers.fetchAggs').toString()"
                 :collapse-disabled="fetchOptions.aggs.length <= 0"
                 collapsable
@@ -150,26 +152,17 @@
               </CustomSection>
 
               <!-- Advanced -->
-              <CustomSection>
+              <CustomSection v-if="!readonly || fetchOptions.othersCount > 0">
                 <ToggleableObjectTree
-                  v-if="readonly"
                   :label="$t('headers.advancedOptions').toString()"
                   :value="fetchOptions.others || {}"
-                />
-                <ToggleableObjectTree
-                  v-else
-                  :label="$t('headers.advancedOptions').toString()"
-                  :value="fetchOptions.others || {}"
-                  @input="
-                    !Array.isArray($event)
-                      && onFetchOptionUpdate({ ...$event })
-                  "
+                  v-on="fetchOptions.otherListeners"
                 />
               </CustomSection>
             </v-col>
 
             <!-- TODO: choose type of data str/object -->
-            <v-divider vertical />
+            <!-- <v-divider vertical />
 
             <v-col style="position: relative;">
               <v-overlay :value="!isStaticData" absolute />
@@ -180,7 +173,7 @@
                 :readonly="readonly"
                 @blur="onMdChange"
               />
-            </v-col>
+            </v-col> -->
           </v-row>
         </v-form>
       </v-card-text>
@@ -264,6 +257,8 @@ export default defineComponent({
         filters: {} as Record<string, any>,
         filtersCount: 0,
         others: {} as Record<string, any>,
+        othersCount: 0,
+        otherListeners: {} as Record<string, (e: any) => void>,
         aggs: [] as any[],
       };
 
@@ -317,6 +312,10 @@ export default defineComponent({
       }
 
       opts.others = omit(this.layout.fetchOptions, ['filters', 'fetchCount', 'aggs', 'aggregations']);
+      opts.othersCount = Object.keys(opts.others).length;
+      if (!this.readonly) {
+        opts.otherListeners = { input: (e) => this.onFetchOptionUpdate({ ...e }) };
+      }
       return opts;
     },
     countDefinition() {

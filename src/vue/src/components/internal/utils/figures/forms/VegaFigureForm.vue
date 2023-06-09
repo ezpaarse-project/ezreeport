@@ -150,10 +150,11 @@
     </CustomSection>
 
     <!-- Advanced -->
-    <CustomSection>
+    <CustomSection v-if="unsupportedParams.shouldShow">
       <ToggleableObjectTree
+        :value="unsupportedParams.value"
         :label="$t('headers.advanced').toString()"
-        v-model="unsupportedParams"
+        v-on="unsupportedParams.listeners"
       />
     </CustomSection>
   </v-form>
@@ -163,9 +164,16 @@
 import { pick, merge } from 'lodash';
 import { defineComponent, type PropType } from 'vue';
 
+/**
+ * Possibles vars in title
+ */
 const templateVars = [
   'length',
 ];
+
+/**
+ * Possible formats for data labels
+ */
 const dataLabelFormats = [
   'percent',
   'numeric',
@@ -181,6 +189,13 @@ type VegaParams = {
     showLabel?: boolean,
     minValue?: number,
   },
+};
+type SubVegaParamsKeys = Exclude<keyof VegaParams, 'title' | 'dataKey'>;
+
+type DataLabelUpdate = {
+  format?: string | null,
+  showLabel?: boolean,
+  minValue?: number,
 };
 
 /**
@@ -207,20 +222,18 @@ const supportedParams = {
   },
 };
 
-type SubVegaParamsKeys = Exclude<keyof VegaParams, 'title' | 'dataKey'>;
-
-type DataLabelUpdate = {
-  format?: string | null,
-  showLabel?: boolean,
-  minValue?: number,
-};
-
 export default defineComponent({
   props: {
+    /**
+     * Parameters of figure
+     */
     value: {
       type: Object as PropType<VegaParams>,
       required: true,
     },
+    /**
+     * Is the form readonly
+     */
     readonly: {
       type: Boolean,
       default: false,
@@ -235,25 +248,41 @@ export default defineComponent({
     innerTitle: vm.value.title,
   }),
   computed: {
+    /**
+     * Possible vars in title with localisation
+     */
     possibleVars() {
       return templateVars.map((text) => ({
         value: `{{ ${text} }}`,
         text,
       }));
     },
+    /**
+     * Possible formats for data labels with localisation
+     */
     possibleDataLabelFormats() {
       return dataLabelFormats.map((value) => ({
         text: this.$t(`dataLabel.formats.${value}`),
         value,
       }));
     },
-    unsupportedParams: {
-      get(): Record<string, any> {
-        return pick(this.value, this.objectDiff(this.value, supportedParams));
-      },
-      set(val: Record<string, any>) {
-        this.$emit('input', merge(this.value, val));
-      },
+    /**
+     * Data used by ObjectTree to edit unsupported options
+     */
+    unsupportedParams() {
+      let listeners = {};
+      if (!this.readonly) {
+        listeners = {
+          input: (val: Record<string, any>) => { this.$emit('input', merge(this.value, val)); },
+        };
+      }
+
+      const diff = this.objectDiff(this.value, supportedParams);
+      return {
+        shouldShow: !this.readonly || diff.length > 0,
+        value: pick(this.value, diff),
+        listeners,
+      };
     },
   },
   watch: {

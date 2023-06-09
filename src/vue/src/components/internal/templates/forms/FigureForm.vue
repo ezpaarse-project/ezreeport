@@ -73,7 +73,11 @@
         collapsable
         style="background: transparent;"
       >
-        <component :is="figureParamsForm" :value="figure.params || {}" @input="$emit('update:figure', { ...figure, params: $event })" />
+        <component
+          :is="figureParamsForm"
+          :value="figure.params || {}"
+          @input="$emit('update:figure', { ...figure, params: $event })"
+        />
       </CustomSection>
 
       <v-select

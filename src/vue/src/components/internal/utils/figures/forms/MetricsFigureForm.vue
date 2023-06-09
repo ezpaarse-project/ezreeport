@@ -13,6 +13,7 @@
     <CustomSection :label="$t('headers.labels').toString()" style="border: none;">
       <template #actions>
         <v-btn
+          v-if="!readonly"
           icon
           x-small
           color="success"
@@ -64,10 +65,11 @@
     </CustomSection>
 
     <!-- Advanced -->
-    <CustomSection>
+    <CustomSection v-if="unsupportedParams.shouldShow">
       <ToggleableObjectTree
+        :value="unsupportedParams.value"
         :label="$t('headers.advanced').toString()"
-        v-model="unsupportedParams"
+        v-on="unsupportedParams.listeners"
       />
     </CustomSection>
   </div>
@@ -147,13 +149,20 @@ export default defineComponent({
     currentKeyFields() {
       return this.labels.map(({ _: { dataKeyField } }) => dataKeyField);
     },
-    unsupportedParams: {
-      get(): Record<string, any> {
-        return omit(this.value, supportedKeys);
-      },
-      set(val: Record<string, any>) {
-        this.$emit('input', merge(this.value, val));
-      },
+    unsupportedParams() {
+      let listeners = {};
+      if (!this.readonly) {
+        listeners = {
+          input: (val: Record<string, any>) => { this.$emit('input', merge(this.value, val)); },
+        };
+      }
+
+      const value = omit(this.value, supportedKeys);
+      return {
+        shouldShow: !this.readonly || Object.keys(value).length > 0,
+        value,
+        listeners,
+      };
     },
   },
   methods: {

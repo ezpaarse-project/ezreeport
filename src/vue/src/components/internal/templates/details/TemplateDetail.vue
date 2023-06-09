@@ -33,8 +33,10 @@
           <v-select
             v-if="fullTemplate"
             :label="$t('headers.renderer')"
-            :value="fullTemplate.renderer || 'vega-pdf'"
-            :items="[fullTemplate.renderer || 'vega-pdf']"
+            :value="fullTemplate.renderer"
+            :items="[fullTemplate.renderer]"
+            placeholder="vega-pdf"
+            persistent-placeholder
             readonly
           />
 

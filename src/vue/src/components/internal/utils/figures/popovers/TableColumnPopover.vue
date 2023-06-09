@@ -37,10 +37,11 @@
           />
 
           <!-- Advanced -->
-          <CustomSection>
+          <CustomSection v-if="unsupportedParams.shouldShow">
             <ToggleableObjectTree
+              :value="unsupportedParams.value"
               :label="$t('headers.advanced').toString()"
-              v-model="unsupportedParams"
+              v-on="unsupportedParams.listeners"
             />
           </CustomSection>
         </v-card-text>
@@ -54,6 +55,9 @@ import { defineComponent, type PropType } from 'vue';
 import { merge, omit } from 'lodash';
 import type { TableColumn } from '../forms/TablePreviewForm.vue';
 
+/**
+ * Keys of label supported by the popover
+ */
 const supportedKeys = [
   '_',
   'header',
@@ -62,25 +66,40 @@ const supportedKeys = [
 
 export default defineComponent({
   props: {
+    /**
+     * Is the popover shown
+     */
     value: {
       type: Boolean,
       required: true,
     },
-    column: {
-      type: Object as PropType<TableColumn>,
-      required: true,
-    },
+    /**
+     * Coordinates of popover
+     */
     coords: {
       type: Object as PropType<{ x: number, y: number }>,
       required: true,
     },
-    readonly: {
-      type: Boolean,
-      default: false,
+    /**
+     * Current column edited
+     */
+    column: {
+      type: Object as PropType<TableColumn>,
+      required: true,
     },
+    /**
+     * Current key used by other columns
+     */
     currentDataKeys: {
       type: Array as PropType<string[]>,
       default: () => [],
+    },
+    /**
+     * Is the popover readonly
+     */
+    readonly: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: {
@@ -93,14 +112,9 @@ export default defineComponent({
     innerDataKey: '',
   }),
   computed: {
-    currentDataKeySet() {
-      return new Set(this.currentDataKeys);
-    },
-    isDuplicate() {
-      if (this.column.dataKey === this.innerDataKey) { return false; }
-
-      return this.currentDataKeySet.has(this.innerDataKey);
-    },
+    /**
+     * Validation rules
+     */
     rules() {
       return {
         dataKey: [
@@ -112,13 +126,37 @@ export default defineComponent({
         ],
       };
     },
-    unsupportedParams: {
-      get(): Record<string, any> {
-        return omit(this.column, supportedKeys);
-      },
-      set(val: Record<string, any>) {
-        this.$emit('input', merge(this.value, val));
-      },
+    /**
+     * Set of currents key used by other columns
+     */
+    currentDataKeySet() {
+      return new Set(this.currentDataKeys);
+    },
+    /**
+     * Is the current key is a duplicate of any other column
+     */
+    isDuplicate() {
+      if (this.column.dataKey === this.innerDataKey) { return false; }
+
+      return this.currentDataKeySet.has(this.innerDataKey);
+    },
+    /**
+     * Data used by ObjectTree to edit unsupported options
+     */
+    unsupportedParams() {
+      let listeners = {};
+      if (!this.readonly) {
+        listeners = {
+          input: (val: Record<string, any>) => { this.$emit('updated', merge(this.column, val)); },
+        };
+      }
+
+      const value = omit(this.column, supportedKeys);
+      return {
+        shouldShow: !this.readonly || Object.keys(value).length > 0,
+        value,
+        listeners,
+      };
     },
   },
   watch: {
