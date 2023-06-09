@@ -77,6 +77,14 @@
               </template>
             </i18n>
           </span>
+
+          <!-- Advanced -->
+          <CustomSection>
+            <ToggleableObjectTree
+              :label="$t('headers.advanced').toString()"
+              v-model="unsupportedParams"
+            />
+          </CustomSection>
         </v-card-text>
       </v-form>
     </v-card>
@@ -85,11 +93,20 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
+import { omit, merge } from 'lodash';
 import type { Label } from '../forms/MetricsFigureForm.vue';
 
 const formatTypes = [
   '',
   'date',
+];
+
+const supportedKeys = [
+  '_',
+  'dataKey',
+  'text',
+  'field',
+  'format',
 ];
 
 export default defineComponent({
@@ -154,6 +171,14 @@ export default defineComponent({
 
       return this.currentKeyFieldsSet.has(kF);
     },
+    unsupportedParams: {
+      get(): Record<string, any> {
+        return omit(this.element, supportedKeys);
+      },
+      set(val: Record<string, any>) {
+        this.$emit('input', merge(this.value, val));
+      },
+    },
   },
   watch: {
     value(val: boolean) {
@@ -202,6 +227,7 @@ en:
     text: 'Text to show'
     type: 'Type of data'
     formatParams: 'Params to format data'
+    advanced: 'Advanced parameters'
   errors:
     empty: 'This field must be set'
     no_duplicate: 'This couple Key/Field is already used'
@@ -217,6 +243,7 @@ fr:
     text: 'Texte à afficher'
     type: 'Type de donnée'
     formatParams: 'Paramètre pour formatter les données'
+    advanced: 'Paramètres avancés'
   errors:
     empty: 'Ce champ doit être rempli'
     no_duplicate: 'Ce couple Clé/Champ est déjà utilisé'

@@ -66,7 +66,8 @@
     <tbody>
       <tr>
         <td v-for="{ dataKey } in columns" :key="`${dataKey}-value`">
-          {{ dataKey }}
+          <i v-if="keyPrefix">{{ keyPrefix }}</i>
+          <span>{{ dataKey }}</span>
         </td>
       </tr>
     </tbody>
@@ -99,6 +100,10 @@ export default defineComponent({
     readonly: {
       type: Boolean,
       default: false,
+    },
+    keyPrefix: {
+      type: String,
+      default: '',
     },
   },
   emits: {

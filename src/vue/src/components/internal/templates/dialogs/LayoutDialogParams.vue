@@ -68,7 +68,34 @@
                     dense
                     hide-details
                     @input="onFetchOptionUpdate({ fetchCount: $event })"
-                  />
+                  >
+                    <template #append-outer v-if="fetchOptions.fetchCount">
+                      <!-- Type def -->
+                      <v-menu
+                        v-model="showDefinition"
+                        offset-y
+                      >
+                        <template #activator="{ on, attrs }">
+                          <v-btn
+                            icon
+                            small
+                            v-bind="attrs"
+                            v-on="on"
+                          >
+                            <v-icon>mdi-information</v-icon>
+                          </v-btn>
+                        </template>
+
+                        <v-card>
+                          <v-card-title class="py-1">
+                            {{ $t('headers.typeHelper') }}
+                          </v-card-title>
+
+                          <TSPreview :value="countDefinition.type" />
+                        </v-card>
+                      </v-menu>
+                    </template>
+                  </v-text-field>
                 </div>
               </div>
 
@@ -173,6 +200,7 @@
 import { omit } from 'lodash';
 import { defineComponent, type PropType } from 'vue';
 import type { AnyCustomLayout } from '~/lib/templates/customTemplates';
+import { aggsDefinition } from '~/lib/elastic/aggs';
 import type ElasticFilterBuilderConstructor from '../../utils/elastic/filters/ElasticFilterBuilder.vue';
 import type ElasticAggsBuilderConstructor from '../../utils/elastic/aggs/ElasticAggsBuilder.vue';
 
@@ -208,6 +236,7 @@ export default defineComponent({
 
     availableFetchers: ['elastic'],
     isStaticData: false,
+    showDefinition: false,
   }),
   computed: {
     rules() {
@@ -290,6 +319,9 @@ export default defineComponent({
       opts.others = omit(this.layout.fetchOptions, ['filters', 'fetchCount', 'aggs', 'aggregations']);
       return opts;
     },
+    countDefinition() {
+      return aggsDefinition.sum;
+    },
   },
   methods: {
     onPositionChange(value: string) {
@@ -340,6 +372,7 @@ en:
     fetchOptions: 'Fetch options'
     fetchFilters: 'Filters'
     fetchCount: 'Should fetch document count ?'
+    typeHelper: 'Format of data'
     fetchKey: 'Key to use in figures'
     fetchAggs: 'Aggregations'
     advancedOptions: 'Advanced options'
@@ -359,6 +392,7 @@ fr:
     fetchOptions: 'Options de récupération'
     fetchFilters: 'Filtres'
     fetchCount: 'Récupérer le nombre de documents ?'
+    typeHelper: 'Format des données'
     fetchKey: 'Clé à utiliser dans les visus'
     fetchAggs: 'Aggregations'
     advancedOptions: 'Options avancées'

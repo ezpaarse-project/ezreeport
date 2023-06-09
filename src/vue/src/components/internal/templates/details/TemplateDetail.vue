@@ -91,16 +91,19 @@
 
         <v-divider />
 
-        <v-card-text v-show="!templateEditorCollapsed" class="pb-0" style="height: 650px">
-          <v-row class="fill-height">
+        <v-card-text
+          v-show="!templateEditorCollapsed"
+          :class="['pa-0', $vuetify.theme.dark ? 'grey darken-3' : 'grey lighten-4']"
+          style="height: 650px"
+        >
+          <v-row class="fill-height ma-0">
             <LayoutDrawer
               v-model="selectedLayoutIndex"
               :items="mergedLayouts"
               mode="view"
-              class="ml-n1"
             />
 
-            <v-divider vertical style="margin-left: 1px" />
+            <v-divider vertical />
 
             <LayoutViewer
               v-if="selectedLayout"
@@ -117,7 +120,7 @@
 
     <v-slide-x-reverse-transition>
       <v-col v-if="rawTemplateShown" cols="6">
-        <JSONPreview :value="template" class="mt-4" />
+        <JSONPreview :value="template" style="overflow: auto; max-height: 865px; margin-top: 65px;" />
       </v-col>
     </v-slide-x-reverse-transition>
   </v-row>

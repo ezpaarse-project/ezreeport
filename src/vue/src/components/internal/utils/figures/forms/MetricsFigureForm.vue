@@ -62,11 +62,19 @@
         </v-list-item>
       </v-list>
     </CustomSection>
+
+    <!-- Advanced -->
+    <CustomSection>
+      <ToggleableObjectTree
+        :label="$t('headers.advanced').toString()"
+        v-model="unsupportedParams"
+      />
+    </CustomSection>
   </div>
 </template>
 
 <script lang="ts">
-import { omit } from 'lodash';
+import { merge, omit } from 'lodash';
 import { defineComponent, type PropType } from 'vue';
 
 const dragFormat = 'custom/figure-metric-json';
@@ -91,6 +99,10 @@ type CustomLabel = Label & {
 type MetricParams = {
   labels: Label[]
 };
+
+const supportedKeys = [
+  'labels',
+];
 
 export default defineComponent({
   props: {
@@ -134,6 +146,14 @@ export default defineComponent({
     },
     currentKeyFields() {
       return this.labels.map(({ _: { dataKeyField } }) => dataKeyField);
+    },
+    unsupportedParams: {
+      get(): Record<string, any> {
+        return omit(this.value, supportedKeys);
+      },
+      set(val: Record<string, any>) {
+        this.$emit('input', merge(this.value, val));
+      },
     },
   },
   methods: {
@@ -363,7 +383,9 @@ export default defineComponent({
 en:
   headers:
     labels: 'Elements'
+    advanced: 'Advanced parameters'
 fr:
   headers:
     labels: 'Élements'
+    advanced: 'Paramètres avancés'
 </i18n>

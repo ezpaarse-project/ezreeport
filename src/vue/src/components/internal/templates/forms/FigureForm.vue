@@ -4,6 +4,7 @@
     rounded
     outlined
     class="pa-2"
+    style="overflow: auto;"
     @mousedown="onDragAttempt"
     @dragstart="preventEvent"
   >
@@ -66,7 +67,12 @@
         />
       </CustomSection>
 
-      <CustomSection v-if="figureParamsForm" :label="$t('headers.figureParams').toString()" collapsable>
+      <CustomSection
+        v-if="figureParamsForm"
+        :label="$t('headers.figureParams').toString()"
+        collapsable
+        style="background: transparent;"
+      >
         <component :is="figureParamsForm" :value="figure.params || {}" @input="$emit('update:figure', { ...figure, params: $event })" />
       </CustomSection>
 

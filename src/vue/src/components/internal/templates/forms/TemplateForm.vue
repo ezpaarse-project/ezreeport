@@ -132,13 +132,16 @@
 
         <v-divider />
 
-        <v-card-text v-show="!templateEditorCollapsed" class="pb-0" style="height: 650px">
-          <v-row class="fill-height">
+        <v-card-text
+          v-show="!templateEditorCollapsed"
+          :class="['pa-0', $vuetify.theme.dark ? 'grey darken-3' : 'grey lighten-4']"
+          style="height: 650px"
+        >
+          <v-row class="fill-height ma-0">
             <LayoutDrawer
               v-model="selectedLayoutIndex"
               :items="mergedLayouts"
               :mode="modes.drawerMode"
-              class="ml-n1"
               @update:items="onLayoutListUpdate"
             />
 
@@ -149,7 +152,7 @@
               :items="selectedLayout.figures"
               :grid="grid"
               :mode="modes.viewerMode"
-              class="editor-panel ma-0"
+              class="editor-panel"
               @update:items="onFigureListUpdate"
             />
           </v-row>
@@ -161,7 +164,7 @@
 
     <v-slide-x-reverse-transition>
       <v-col v-if="rawTemplateShown" cols="5">
-        <JSONPreview :value="template" class="mt-4" />
+        <JSONPreview :value="template" style="overflow: auto; max-height: 865px; margin-top: 65px;" />
       </v-col>
     </v-slide-x-reverse-transition>
   </v-row>

@@ -54,6 +54,7 @@
               @change="onTypeUpdate"
             >
               <template #append-outer v-if="typeDefinition">
+                <!-- Type def -->
                 <v-menu
                   v-model="showDefinition"
                   offset-y
@@ -350,7 +351,28 @@ export default defineComponent({
       }));
     },
     typeDefinition(): AggDefinition | undefined {
-      return (aggsDefinition as Record<string, AggDefinition>)[this.type.value];
+      const def = (aggsDefinition as Record<string, AggDefinition>)[this.type.value];
+      if (def?.type) {
+        // Add aggregations as unknown
+        const aggs = this.element.aggs ?? this.element.aggregations;
+        const aggsDef = Object.values(aggs ?? {}).reduce(
+          (prev: Record<string, ObjectConstructor>, k: any, i: number) => ({
+            ...prev,
+            [k.name || `agg${i}`]: Object,
+          }),
+          {},
+        );
+
+        return {
+          ...def,
+          type: {
+            ...def.type,
+            ...aggsDef,
+          },
+        };
+      }
+
+      return def;
     },
   },
   methods: {

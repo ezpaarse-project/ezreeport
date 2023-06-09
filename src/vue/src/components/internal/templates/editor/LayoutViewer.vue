@@ -1,7 +1,10 @@
 <template>
   <div class="d-flex flex-column">
     <template v-if="mode !== 'view'">
-      <div class="d-flex align-center pa-2" style="min-height: 44px;">
+      <div
+        :class="['d-flex align-center pa-2', $vuetify.theme.dark ? 'grey darken-4' : 'white']"
+        style="min-height: 44px;"
+      >
         <template>
           {{$t('headers.figures')}}
 

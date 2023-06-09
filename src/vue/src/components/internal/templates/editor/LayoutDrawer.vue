@@ -13,7 +13,10 @@
     <div class="d-flex flex-column" style="width: 100%;">
       <template v-if="mode !== 'view'">
         <!-- Toolbar -->
-        <div class="d-flex align-center pa-2" style="min-height: 44px;">
+        <div
+          :class="['d-flex align-center pa-2', $vuetify.theme.dark ? 'grey darken-4' : 'white']"
+          style="min-height: 44px;"
+        >
           {{ $t('headers.layouts') }}
 
           <v-spacer />

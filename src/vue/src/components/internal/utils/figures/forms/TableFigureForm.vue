@@ -5,6 +5,8 @@
       :label="$t('headers.dataKey')"
       :hint="$t('hints.dataKey')"
       :readonly="readonly"
+      persistent-hint
+      class="mb-4"
       @input="onParamUpdate({ dataKey: $event || undefined })"
     />
 
@@ -59,8 +61,17 @@
       <TablePreviewForm
         :value="value.columns"
         :readonly="readonly"
+        :key-prefix="`${value.dataKey}[].`"
         ref="columnsTable"
         @input="onParamUpdate({ columns: $event })"
+      />
+    </CustomSection>
+
+    <!-- Advanced -->
+    <CustomSection>
+      <ToggleableObjectTree
+        :label="$t('headers.advanced').toString()"
+        v-model="unsupportedParams"
       />
     </CustomSection>
   </v-form>
@@ -68,6 +79,7 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
+import { omit, merge } from 'lodash';
 import type TablePreviewFormConstructor from './TablePreviewForm.vue';
 import { TableColumn } from './TablePreviewForm.vue';
 
@@ -75,6 +87,13 @@ type TablePreviewForm = InstanceType<typeof TablePreviewFormConstructor>;
 
 const templateVars = [
   'length',
+];
+
+const supportedKeys = [
+  'dataKey',
+  'title',
+  'maxLength',
+  'columns',
 ];
 
 // Extracted from `src/services/report/...`
@@ -109,6 +128,14 @@ export default defineComponent({
         value: `{{ ${text} }}`,
         text,
       }));
+    },
+    unsupportedParams: {
+      get(): Record<string, any> {
+        return omit(this.value, supportedKeys);
+      },
+      set(val: Record<string, any>) {
+        this.$emit('input', merge(this.value, val));
+      },
     },
   },
   watch: {
@@ -149,6 +176,7 @@ en:
     title: 'Title'
     maxLength: 'Maximum count of rows'
     columns: 'Columns'
+    advanced: 'Advanced parameters'
   hints:
     dataKey: 'Needed if provided data is not iterable'
   vars:
@@ -159,6 +187,7 @@ fr:
     title: 'Titre'
     maxLength: 'Nombre maximum de lignes'
     columns: 'Colonnes'
+    advanced: 'Paramètres avancés'
   hints:
     dataKey: 'Obligatoire si les données ne sont pas itérable'
   vars:
