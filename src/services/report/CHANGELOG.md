@@ -1,3 +1,17 @@
+# ezreeport-report [1.0.0-beta.9](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.8...ezreeport-report@1.0.0-beta.9) (2023-06-12)
+
+
+### Bug Fixes
+
+* **report:** fixed error with aggregations and size check ([4f39320](https://github.com/ezpaarse-project/ezreeport/commit/4f3932089009367f223c305fd02e40128737e9c0))
+
+
+### Features
+
+* **report:** added position of data labels ([d957f16](https://github.com/ezpaarse-project/ezreeport/commit/d957f165fb9d7dcea53b541f3d94a14550435d41))
+* **report:** better way to order labels for metrics ([daffb91](https://github.com/ezpaarse-project/ezreeport/commit/daffb916de325d15065185b8b95f6b724ffcc70f))
+* **report:** handle sub aggregation parsing ([fdd4b3d](https://github.com/ezpaarse-project/ezreeport/commit/fdd4b3de70e0859ed0fec695877805eeb3b607bc))
+
 # ezreeport-report [1.0.0-beta.8](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.7...ezreeport-report@1.0.0-beta.8) (2023-06-01)
 
 
