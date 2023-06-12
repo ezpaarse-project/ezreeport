@@ -30,11 +30,14 @@ interface Margin {
 }
 
 interface RenderOptions {
+  // Auto fields
   doc: PDFReportOptions
-  grid?: Grid,
-  layouts: AnyLayout[],
   recurrence: Recurrence,
   debug?: boolean
+  // Resolved fields
+  layouts: AnyLayout[],
+  // Template specific
+  grid?: Grid,
 }
 
 const optionSchema = Joi.object<RenderOptions>({

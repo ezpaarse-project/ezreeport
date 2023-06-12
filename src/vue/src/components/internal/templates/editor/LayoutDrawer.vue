@@ -1,12 +1,11 @@
 <template>
   <div class="layout-drawer-container">
-    <LayoutPopoverParams
+    <LayoutDialogParams
       v-if="selectedLayout"
-      v-model="paramsLayoutPopoverShown"
+      v-model="paramsLayoutDialogShown"
       :layout="selectedLayout"
       :index="value"
       :readonly="mode === 'view'"
-      :coords="paramsLayoutPopoverCoords"
       @update:layout="onLayoutUpdate"
       @update:index="selectedLayout && onLayoutPositionUpdate(selectedLayout, $event)"
     />
@@ -14,7 +13,10 @@
     <div class="d-flex flex-column" style="width: 100%;">
       <template v-if="mode !== 'view'">
         <!-- Toolbar -->
-        <div class="d-flex align-center pa-2" style="min-height: 44px;">
+        <div
+          :class="['d-flex align-center pa-2', $vuetify.theme.dark ? 'grey darken-4' : 'white']"
+          style="min-height: 44px;"
+        >
           {{ $t('headers.layouts') }}
 
           <v-spacer />
@@ -41,7 +43,7 @@
       </template>
 
       <!-- Items -->
-      <draggable
+      <Draggable
         :value="items"
         :move="onLayoutMove"
         :disabled="mode === 'view'"
@@ -92,7 +94,7 @@
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
 
-              <v-btn icon x-small @click="showLayoutParamsPopover(i, $event)">
+              <v-btn icon x-small @click="showLayoutParamsDialog(i, $event)">
                 <v-icon>mdi-cog</v-icon>
               </v-btn>
             </template>
@@ -130,20 +132,20 @@
             </v-sheet>
           </v-hover>
         </div>
-      </draggable>
+      </Draggable>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import draggable, { type MoveEvent } from 'vuedraggable';
+import Draggable, { type MoveEvent } from 'vuedraggable';
 import { defineComponent, type PropType } from 'vue';
 import { addAdditionalData, type AnyCustomLayout } from '~/lib/templates/customTemplates';
 import { figureIcons } from '~/lib/templates/figures';
 
 export default defineComponent({
   components: {
-    draggable,
+    Draggable,
   },
   props: {
     value: {
@@ -168,8 +170,8 @@ export default defineComponent({
     'update:items': (val: AnyCustomLayout[]) => val.length >= 0,
   },
   data: () => ({
-    paramsLayoutPopoverShown: false,
-    paramsLayoutPopoverCoords: {
+    paramsLayoutDialogShown: false,
+    paramsLayoutDialogCoords: {
       x: 0,
       y: 0,
     },
@@ -302,19 +304,19 @@ export default defineComponent({
       }
     },
     /**
-     * Show params popover for given layout
+     * Show params dialog for given layout
      *
      * @param index The index of the layout in the template/task
      * @param event The base event
      */
-    async showLayoutParamsPopover(index: number, event: MouseEvent) {
+    async showLayoutParamsDialog(index: number, event: MouseEvent) {
       this.$emit('input', index);
-      this.paramsLayoutPopoverCoords = {
+      this.paramsLayoutDialogCoords = {
         x: event.clientX,
         y: event.clientY,
       };
       await this.$nextTick();
-      this.paramsLayoutPopoverShown = true;
+      this.paramsLayoutDialogShown = true;
     },
   },
 });

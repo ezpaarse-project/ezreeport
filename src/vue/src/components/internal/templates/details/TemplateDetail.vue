@@ -33,35 +33,45 @@
           <v-select
             v-if="fullTemplate"
             :label="$t('headers.renderer')"
-            :value="fullTemplate.renderer || 'vega-pdf'"
-            :items="[fullTemplate.renderer || 'vega-pdf']"
+            :value="fullTemplate.renderer"
+            :items="[fullTemplate.renderer]"
+            placeholder="vega-pdf"
+            persistent-placeholder
             readonly
           />
 
-          <v-sheet
-            v-if="template.fetchOptions"
-            rounded
-            outlined
-            class="my-2 pa-2"
-          >
-            <ToggleableObjectTree
-              :label="$t('headers.fetchOptions').toString()"
-              :value="template.fetchOptions"
+          <CustomSection v-if="template.fetchOptions" :label="$t('headers.fetchOptions').toString()" :default-value="true" collapsable>
+            <v-text-field
+              v-if="taskTemplate"
+              :value="fetchOptions.index"
+              :label="$t('headers.fetchIndex').toString()"
+              dense
+              readonly
+              hide-details
+              class="pt-4"
             />
-          </v-sheet>
 
-          <v-sheet
-            v-if="fullTemplate?.renderOptions"
-            rounded
-            outlined
-            class="my-2 pa-2"
-          >
+            <CustomSection v-if="Object.keys(fetchOptions.filters).length > 0" :label="$t('headers.fetchFilters').toString()" collapsable>
+              <ElasticFilterBuilder
+                :value="fetchOptions.filters"
+                readonly
+              />
+            </CustomSection>
+
+            <CustomSection v-if="Object.keys(fetchOptions.others).length > -1">
+              <ToggleableObjectTree
+                :label="$t('headers.advancedOptions').toString()"
+                :value="fetchOptions.others"
+              />
+            </CustomSection>
+          </CustomSection>
+
+          <CustomSection v-if="fullTemplate?.renderOptions">
             <ToggleableObjectTree
-              v-if="fullTemplate?.renderOptions"
               :label="$t('headers.renderOptions').toString()"
               :value="fullTemplate.renderOptions"
             />
-          </v-sheet>
+          </CustomSection>
         </v-col>
       </v-row>
 
@@ -83,16 +93,19 @@
 
         <v-divider />
 
-        <v-card-text v-show="!templateEditorCollapsed" class="pb-0" style="height: 650px">
-          <v-row style="height: 100%">
+        <v-card-text
+          v-show="!templateEditorCollapsed"
+          :class="['pa-0', $vuetify.theme.dark ? 'grey darken-3' : 'grey lighten-4']"
+          style="height: 650px"
+        >
+          <v-row class="fill-height ma-0">
             <LayoutDrawer
               v-model="selectedLayoutIndex"
               :items="mergedLayouts"
               mode="view"
-              class="ml-n1"
             />
 
-            <v-divider vertical style="margin-left: 1px" />
+            <v-divider vertical />
 
             <LayoutViewer
               v-if="selectedLayout"
@@ -109,13 +122,14 @@
 
     <v-slide-x-reverse-transition>
       <v-col v-if="rawTemplateShown" cols="6">
-        <JSONPreview :value="template" class="mt-4" />
+        <JSONPreview :value="template" style="overflow: auto; max-height: 865px; margin-top: 65px;" />
       </v-col>
     </v-slide-x-reverse-transition>
   </v-row>
 </template>
 
 <script lang="ts">
+import { omit } from 'lodash';
 import { defineComponent, type PropType } from 'vue';
 import {
   addAdditionalDataToLayouts,
@@ -226,6 +240,41 @@ export default defineComponent({
 
       return this.mergedLayouts[this.selectedLayoutIndex];
     },
+    /**
+     * Fetch options of the template
+     */
+    fetchOptions() {
+      const opts = {
+        index: '',
+        filters: {} as Record<string, any>,
+        others: {} as Record<string, any>,
+      };
+
+      if (!this.template.fetchOptions) {
+        return opts;
+      }
+
+      // Extract filters with compatible type definition
+      if (
+        'filters' in this.template.fetchOptions
+        && this.template.fetchOptions.filters
+        && typeof this.template.fetchOptions.filters === 'object'
+      ) {
+        opts.filters = this.template.fetchOptions.filters;
+      }
+
+      // Extract index with compatible type definition
+      if (
+        this.taskTemplate?.fetchOptions
+        && 'index' in this.taskTemplate.fetchOptions
+        && this.taskTemplate.fetchOptions.index
+      ) {
+        opts.index = this.taskTemplate.fetchOptions.index.toString();
+      }
+
+      opts.others = omit(this.template.fetchOptions, ['filters', 'index']);
+      return opts;
+    },
   },
   watch: {
     template() {
@@ -305,6 +354,9 @@ en:
     fetcher: 'Fetcher'
     base: 'Base template'
     fetchOptions: 'Fetch options'
+    fetchFilters: 'Filters'
+    fetchIndex: 'Elastic index'
+    advancedOptions: 'Options avancées'
     renderOptions: 'Render options'
     layouts: 'Page viewer ({count} pages)'
   actions:
@@ -316,6 +368,9 @@ fr:
     fetcher: 'Outil de récupération'
     base: 'Modèle de base'
     fetchOptions: 'Options de récupération'
+    fetchFilters: 'Filtres'
+    fetchIndex: 'Index Elastic'
+    advancedOptions: 'Options avancées'
     renderOptions: 'Options de rendu'
     layouts: 'Visionneur de pages ({count} pages)'
   actions:

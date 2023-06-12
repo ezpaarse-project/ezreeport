@@ -219,6 +219,11 @@ export default defineComponent({
           (v: string[]) => v.length > 0 || this.$t('errors.empty'),
           (v: string[]) => v.every(this.validateMail) || this.$t('errors.format'),
         ],
+        template: {
+          index: [
+            (v?: string) => (v && v.length > 0) || this.$t('errors.no_index'),
+          ],
+        },
       };
     },
     /**
@@ -285,7 +290,14 @@ export default defineComponent({
         ).toString();
       }
 
-      return true;
+      const indexValidation = this.rules.template.index.map(
+        (rule) => rule(
+          (this.task?.template.fetchOptions as Record<string, any> | undefined)?.index,
+        ),
+      );
+      return [
+        ...indexValidation,
+      ].find((v) => v !== true)?.toString() ?? true;
     },
   },
   watch: {
@@ -423,6 +435,7 @@ en:
     empty: 'This field must be set'
     format: "One or more address aren't valid"
     no_data: 'An error occurred when fetching data'
+    no_index: 'An index must be provided in the fetch options'
   actions:
     generate: 'Generate'
     cancel: 'Cancel'
@@ -449,6 +462,7 @@ fr:
     empty: 'Ce champ doit être rempli'
     format: 'Une ou plusieurs addresses ne sont pas valides'
     no_data: 'Une erreur est survenue lors de la récupération des données'
+    no_index: 'Un index doit être défini dans les options de récupération'
   actions:
     generate: 'Générer'
     cancel: 'Annuler'

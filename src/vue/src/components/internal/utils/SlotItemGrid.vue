@@ -6,12 +6,12 @@
       :draggable="isDraggable"
       :style="resolved.css"
       class="slot"
-      @dragstart="onDragStart($event, item, i)"
-      @dragend="onDragEnd"
-      @dragover="onDragOver"
-      @dragenter="onDragEnter($event, resolved.slots[0])"
-      @dragleave="onDragLeave($event, resolved.slots[0])"
-      @drop="onDragDrop($event, resolved.slots, i)"
+      @dragstart.stop="onDragStart($event, item, i)"
+      @dragend.stop="onDragEnd"
+      @dragover.stop="onDragOver"
+      @dragenter.stop="onDragEnter($event, resolved.slots[0])"
+      @dragleave.stop="onDragLeave($event, resolved.slots[0])"
+      @drop.stop="onDragDrop($event, resolved.slots, i)"
     >
       <slot
         name="item"
@@ -33,10 +33,10 @@
         ]"
         outlined
         rounded
-        @dragover="onDragOver"
-        @dragenter="onDragEnter($event, i)"
-        @dragleave="onDragLeave($event, i)"
-        @drop="onDragDrop($event, [i])"
+        @dragover.stop="onDragOver"
+        @dragenter.stop="onDragEnter($event, i)"
+        @dragleave.stop="onDragLeave($event, i)"
+        @drop.stop="onDragDrop($event, [i])"
       />
     </template>
   </div>
@@ -49,7 +49,7 @@ import type { CSSProperties } from 'vue/types/jsx';
 type Item = { _: { id: string }, slots?: number[] };
 type DragData = { index: number, item: Item };
 
-const dragFormat = 'custom/item-json';
+const dragFormat = 'custom/grid-item-json';
 
 export default defineComponent({
   props: {

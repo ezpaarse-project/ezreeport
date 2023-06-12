@@ -1,6 +1,6 @@
 <template>
   <v-sheet rounded outlined class="pa-2">
-    <div class="d-flex">
+    <div class="d-flex align-center">
       {{ $t('headers.figure', { i: figureIndex }) }}
 
       <template v-if="locked">
@@ -26,29 +26,26 @@
       readonly
     />
 
-    <v-sheet
-      v-else-if="Array.isArray(figure.data)"
-      rounded
-      outlined
-      class="my-2 pa-2"
-    >
+    <CustomSection v-else-if="Array.isArray(figure.data)">
       <ToggleableObjectTree
         :label="$t('headers.data').toString()"
         :value="figure.data"
       />
-    </v-sheet>
+    </CustomSection>
 
-    <v-sheet
-      v-if="figure.params"
-      rounded
-      outlined
-      class="my-2 pa-2"
+    <CustomSection
+      v-if="figureParamsForm"
+      :label="$t('headers.figureParams').toString()"
+      collapsable
+      style="background: transparent;"
     >
-      <ToggleableObjectTree
-        :label="$t('headers.figureParams').toString()"
-        :value="figure.params"
+      <component
+        :is="figureParamsForm"
+        :value="figure.params || {}"
+        readonly
+        @input="$emit('update:figure', { ...figure, params: $event })"
       />
-    </v-sheet>
+    </CustomSection>
 
     <v-select
       :label="$t('headers.slots')"
@@ -63,6 +60,7 @@
 <script lang="ts">
 import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
+import figureFormMap from '~/components/internal/utils/figures';
 
 export default defineComponent({
   props: {
@@ -118,6 +116,17 @@ export default defineComponent({
         label: this.$t(`figure_types.${value}`),
         value,
       }));
+    },
+    /**
+     * Components that holds figure params
+     */
+    figureParamsForm() {
+      const component = figureFormMap[this.figure.type];
+      if (component !== undefined) {
+        return component;
+      }
+      // eslint-disable-next-line no-underscore-dangle
+      return figureFormMap._default;
     },
   },
 });

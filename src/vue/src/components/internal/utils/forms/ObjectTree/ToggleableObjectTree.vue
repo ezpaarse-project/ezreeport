@@ -2,7 +2,7 @@
   <div>
     <ObjectTreePropertyPopover v-if="$listeners.input" ref="propertyPopoverRef" />
 
-    <span v-if="label" class="text--secondary">
+    <div v-if="label" class="text--secondary d-flex align-center">
       <v-btn
         :disabled="length <= 0"
         icon
@@ -22,7 +22,7 @@
       >
         <v-icon>mdi-plus</v-icon>
       </v-btn>
-    </span>
+    </div>
     <ObjectTree
       v-if="!collapsed"
       :value="value"

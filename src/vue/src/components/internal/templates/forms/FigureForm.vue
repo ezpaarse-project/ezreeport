@@ -1,27 +1,33 @@
 <template>
-  <v-sheet rounded outlined class="pa-2">
+  <v-sheet
+    :draggable="preventDrag"
+    rounded
+    outlined
+    class="pa-2"
+    style="overflow: auto;"
+    @mousedown="onDragAttempt"
+    @dragstart="preventEvent"
+  >
     <v-form @input="onValidationChange">
-      <div class="d-flex">
-        <div>
-          <v-icon v-if="draggable" style="cursor: grab" small>mdi-drag</v-icon>
+      <div class="d-flex align-center">
+        <v-icon v-if="draggable" class="figure-handle">mdi-drag</v-icon>
 
-          {{ $t('headers.figure', { i: figureIndex }) }}
+        {{ $t('headers.figure', { i: figureIndex }) }}
 
-          <v-tooltip top v-if="figure._.valid !== true" color="warning">
-            <template #activator="{ attrs, on }">
-              <v-icon
-                color="warning"
-                small
-                v-bind="attrs"
-                v-on="on"
-              >
-                mdi-alert
-              </v-icon>
-            </template>
+        <v-tooltip top v-if="figure._.valid !== true" color="warning">
+          <template #activator="{ attrs, on }">
+            <v-icon
+              color="warning"
+              small
+              v-bind="attrs"
+              v-on="on"
+            >
+              mdi-alert
+            </v-icon>
+          </template>
 
-            <span>{{ figure._.valid }}</span>
-          </v-tooltip>
-        </div>
+          <span>{{ figure._.valid }}</span>
+        </v-tooltip>
 
         <v-spacer />
 
@@ -37,6 +43,7 @@
         :rules="rules.type"
         item-text="label"
         item-value="value"
+        hide-details="auto"
         @change="onFigureTypeChange"
       />
 
@@ -49,12 +56,7 @@
       />
 
       <!-- TODO: choose if custom param -->
-      <v-sheet
-        v-else
-        rounded
-        outlined
-        class="my-2 pa-2"
-      >
+      <CustomSection v-else>
         <ToggleableObjectTree
           :label="$t('headers.data').toString()"
           :value="Array.isArray(figure.data) ? figure.data : []"
@@ -63,22 +65,20 @@
               && $emit('update:figure', { ...figure, data: $event })
           "
         />
-      </v-sheet>
+      </CustomSection>
 
-      <v-sheet
-        rounded
-        outlined
-        class="my-2 pa-2"
+      <CustomSection
+        v-if="figureParamsForm"
+        :label="$t('headers.figureParams').toString()"
+        collapsable
+        style="background: transparent;"
       >
-        <ToggleableObjectTree
-          :label="$t('headers.figureParams').toString()"
+        <component
+          :is="figureParamsForm"
           :value="figure.params || {}"
-          @input="
-            !Array.isArray($event)
-              && $emit('update:figure', { ...figure, params: $event })
-          "
+          @input="$emit('update:figure', { ...figure, params: $event })"
         />
-      </v-sheet>
+      </CustomSection>
 
       <v-select
         :label="$t('headers.slots')"
@@ -96,6 +96,7 @@
 import { defineComponent, type PropType } from 'vue';
 import type { AnyCustomFigure } from '~/lib/templates/customTemplates';
 import { figureTypes } from '~/lib/templates/figures';
+import figureFormMap from '~/components/internal/utils/figures';
 
 export default defineComponent({
   props: {
@@ -127,6 +128,7 @@ export default defineComponent({
   },
   data: () => ({
     dataMap: {} as Record<string, string | unknown[] | undefined>,
+    preventDrag: false,
   }),
   computed: {
     /**
@@ -183,7 +185,7 @@ export default defineComponent({
         );
       }
 
-      return validationMap;
+      return Object.fromEntries(validationMap.entries());
     },
     /**
      * Available slots
@@ -208,6 +210,17 @@ export default defineComponent({
         value,
       }));
     },
+    /**
+     * Components that holds figure params
+     */
+    figureParamsForm() {
+      const component = figureFormMap[this.figure.type];
+      if (component !== undefined) {
+        return component;
+      }
+      // eslint-disable-next-line no-underscore-dangle
+      return figureFormMap._default;
+    },
   },
   methods: {
     onFigureTypeChange(type: string) {
@@ -227,15 +240,27 @@ export default defineComponent({
       }
     },
     onValidationChange() {
-      const validationResult = [...this.validationMap.values()].find((v) => v !== true) || true;
+      const validationResult = Object.values(this.validationMap).find((v) => v !== true) || true;
       this.$emit('validation', validationResult);
+    },
+    onDragAttempt(ev: DragEvent) {
+      if (!(ev.target as HTMLElement).classList.contains('figure-handle')) {
+        this.preventDrag = true;
+      }
+    },
+    preventEvent(ev: Event) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      this.preventDrag = false;
     },
   },
 });
 </script>
 
 <style scoped>
-
+.figure-handle {
+  cursor: grab;
+}
 </style>
 
 <i18n lang="yaml">

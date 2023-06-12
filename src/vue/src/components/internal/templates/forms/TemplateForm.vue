@@ -30,35 +30,63 @@
           <v-select
             v-if="fullTemplate"
             :label="$t('headers.renderer')"
-            :value="fullTemplate.renderer || 'vega-pdf'"
+            :value="fullTemplate.renderer"
             :items="availableRenderer"
+            placeholder="vega-pdf"
+            persistent-placeholder
             @change="
               fullTemplate
                 && onTemplateUpdate({ ...fullTemplate, renderer: $event })
             "
           />
 
-          <v-sheet
-            rounded
-            outlined
-            class="my-2 pa-2"
-          >
-            <ToggleableObjectTree
-              :label="$t('headers.fetchOptions').toString()"
-              :value="template.fetchOptions || {}"
-              @input="
-                !Array.isArray($event)
-                  && onTemplateUpdate({ ...template, fetchOptions: $event })
-              "
+          <CustomSection :label="$t('headers.fetchOptions').toString()" :default-value="true" collapsable>
+            <v-text-field
+              v-if="taskTemplate"
+              :value="fetchOptions.index"
+              :label="$t('headers.fetchIndex').toString()"
+              :rules="rules.index"
+              dense
+              class="pt-4"
+              @input="onFetchOptionUpdate({ index: $event })"
             />
-          </v-sheet>
 
-          <v-sheet
-            v-if="fullTemplate"
-            rounded
-            outlined
-            class="my-2 pa-2"
-          >
+            <CustomSection
+              :label="$t('headers.fetchFilters').toString()"
+              :collapse-disabled="fetchOptions.filtersCount <= 0"
+              collapsable
+            >
+              <template #actions>
+                <v-btn
+                  icon
+                  x-small
+                  color="success"
+                  @click="onFilterCreated"
+                >
+                  <v-icon>mdi-plus</v-icon>
+                </v-btn>
+              </template>
+
+              <ElasticFilterBuilder
+                ref="filterBuilder"
+                :value="fetchOptions.filters"
+                @input="onFetchOptionUpdate({ filters: $event })"
+              />
+            </CustomSection>
+
+            <CustomSection>
+              <ToggleableObjectTree
+                :label="$t('headers.advancedOptions').toString()"
+                :value="fetchOptions.others"
+                @input="
+                  !Array.isArray($event)
+                    && onFetchOptionUpdate({ ...$event })
+                "
+              />
+            </CustomSection>
+          </CustomSection>
+
+          <CustomSection v-if="fullTemplate">
             <ToggleableObjectTree
               :label="$t('headers.renderOptions').toString()"
               :value="fullTemplate.renderOptions || {}"
@@ -67,7 +95,7 @@
                   && onTemplateUpdate({ ...fullTemplate, renderOptions: $event })
               "
             />
-          </v-sheet>
+          </CustomSection>
         </v-col>
       </v-row>
 
@@ -104,13 +132,16 @@
 
         <v-divider />
 
-        <v-card-text v-show="!templateEditorCollapsed" class="pb-0" style="height: 650px">
-          <v-row style="height: 100%">
+        <v-card-text
+          v-show="!templateEditorCollapsed"
+          :class="['pa-0', $vuetify.theme.dark ? 'grey darken-3' : 'grey lighten-4']"
+          style="height: 650px"
+        >
+          <v-row class="fill-height ma-0">
             <LayoutDrawer
               v-model="selectedLayoutIndex"
               :items="mergedLayouts"
               :mode="modes.drawerMode"
-              class="ml-n1"
               @update:items="onLayoutListUpdate"
             />
 
@@ -121,7 +152,7 @@
               :items="selectedLayout.figures"
               :grid="grid"
               :mode="modes.viewerMode"
-              class="editor-panel ma-0"
+              class="editor-panel"
               @update:items="onFigureListUpdate"
             />
           </v-row>
@@ -133,13 +164,14 @@
 
     <v-slide-x-reverse-transition>
       <v-col v-if="rawTemplateShown" cols="5">
-        <JSONPreview :value="template" class="mt-4" />
+        <JSONPreview :value="template" style="overflow: auto; max-height: 865px; margin-top: 65px;" />
       </v-col>
     </v-slide-x-reverse-transition>
   </v-row>
 </template>
 
 <script lang="ts">
+import { omit } from 'lodash';
 import { defineComponent, type PropType } from 'vue';
 import {
   addAdditionalDataToLayouts,
@@ -151,6 +183,9 @@ import {
   type CustomTaskLayout,
 } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
+import type ElasticFilterBuilderConstructor from '../../utils/elastic/filters/ElasticFilterBuilder.vue';
+
+type ElasticFilterBuilder = InstanceType<typeof ElasticFilterBuilderConstructor>;
 
 export default defineComponent({
   mixins: [ezReeportMixin],
@@ -171,7 +206,6 @@ export default defineComponent({
     templateEditorCollapsed: true,
 
     availableTemplates: [] as string[],
-    availableFetchers: ['', 'elastic'],
     availableRenderer: ['vega-pdf'],
 
     extendedTemplate: undefined as CustomTemplate | undefined,
@@ -189,6 +223,16 @@ export default defineComponent({
       return {
         realAll: has('templates-get'),
         readOne: has('templates-get-name(*)'),
+      };
+    },
+    /**
+     * General validation rules
+     */
+    rules() {
+      return {
+        index: [
+          (v: string) => v.length > 0 || this.$t('errors.empty'),
+        ],
       };
     },
     /**
@@ -299,6 +343,52 @@ export default defineComponent({
         ).toString();
       }
       return true;
+    },
+    /**
+     * Fetch options of the template
+     */
+    fetchOptions() {
+      const opts = {
+        index: '',
+        filters: {} as Record<string, any>,
+        filtersCount: 0,
+        others: {} as Record<string, any>,
+      };
+
+      if (!this.template.fetchOptions) {
+        return opts;
+      }
+
+      // Extract filters with compatible type definition
+      if (
+        'filters' in this.template.fetchOptions
+        && this.template.fetchOptions.filters
+        && typeof this.template.fetchOptions.filters === 'object'
+      ) {
+        opts.filters = this.template.fetchOptions.filters;
+        opts.filtersCount = Object.values(opts.filters).reduce(
+          (prev, value) => {
+            let count = 0;
+            if (Array.isArray(value)) {
+              count = value.length;
+            }
+            return prev + count;
+          },
+          0,
+        );
+      }
+
+      // Extract index with compatible type definition
+      if (
+        this.taskTemplate?.fetchOptions
+        && 'index' in this.taskTemplate.fetchOptions
+        && this.taskTemplate.fetchOptions.index
+      ) {
+        opts.index = this.taskTemplate.fetchOptions.index.toString();
+      }
+
+      opts.others = omit(this.template.fetchOptions, ['filters', 'index']);
+      return opts;
     },
   },
   watch: {
@@ -495,6 +585,19 @@ export default defineComponent({
       });
       this.onLayoutListUpdate(layouts);
     },
+    onFetchOptionUpdate(value: Record<string, any>) {
+      this.onTemplateUpdate({
+        ...this.template,
+        fetchOptions: {
+          ...this.template.fetchOptions,
+          ...value,
+        },
+      });
+    },
+    onFilterCreated() {
+      const builder = this.$refs.filterBuilder as ElasticFilterBuilder | undefined;
+      builder?.onElementCreated();
+    },
   },
 });
 </script>
@@ -514,12 +617,16 @@ en:
     fetcher: 'Fetcher'
     base: 'Base template'
     fetchOptions: 'Fetch options'
+    fetchFilters: 'Filters'
+    fetchIndex: 'Elastic index'
+    advancedOptions: 'Advanced options'
     renderOptions: 'Render options'
     layouts: 'Page editor ({count} pages)'
   actions:
     see-extends: 'See base'
   errors:
     no_data: 'An error occurred when fetching data'
+    empty: 'This field must be set'
     layouts:
       _detail: 'Page {at}: {valid}'
     figures:
@@ -533,12 +640,16 @@ fr:
     fetcher: 'Outil de récupération'
     base: 'Modèle de base'
     fetchOptions: 'Options de récupération'
+    fetchFilters: 'Filtres'
+    fetchIndex: 'Index Elastic'
+    advancedOptions: 'Options avancées'
     renderOptions: 'Options de rendu'
     layouts: 'Éditeur de pages ({count} pages)'
   actions:
     see-extends: 'Voir la base'
   errors:
     no_data: 'Une erreur est survenue lors de la récupération des données'
+    empty: 'Ce champ doit être rempli'
     layouts:
       _detail: 'Page {at}: {valid}'
     figures:
