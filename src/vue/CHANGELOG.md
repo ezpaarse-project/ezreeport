@@ -1,3 +1,24 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.11](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.10...@ezpaarse-project/ezreeport-vue@1.0.0-beta.11) (2023-06-12)
+
+
+### Bug Fixes
+
+* **vue:** added slot labels when in read mode ([10c51cf](https://github.com/ezpaarse-project/ezreeport/commit/10c51cf3e290d5ad29c0526c6974292039333ca8))
+* **vue:** fixed issue when updating query key ([6da4e78](https://github.com/ezpaarse-project/ezreeport/commit/6da4e784e59cc7c74674547f6731f22f45b0783d))
+* **vue:** fixed issues with 0 values in elastic query builder ([5f87e08](https://github.com/ezpaarse-project/ezreeport/commit/5f87e08fd07e78dfa1aeffd3198b4f35aa2592e5))
+
+
+### Features
+
+* **vue:** added elastic filters in template + layouts ([c8302ac](https://github.com/ezpaarse-project/ezreeport/commit/c8302ac68424dac776d2e36ea7a13a3d3a920ed0))
+* **vue:** added elastic index option ([5434644](https://github.com/ezpaarse-project/ezreeport/commit/5434644dbdf430cbcb93285d58259d7e745a5a2b))
+* **vue:** added elastic params on task/templates ([44d8805](https://github.com/ezpaarse-project/ezreeport/commit/44d8805dc688d9ebea028ed36ed38ee9b75ca106))
+* **vue:** added figure parameters for metric ([5fb423a](https://github.com/ezpaarse-project/ezreeport/commit/5fb423a70cbf6586798563d914588e60aafc62e7))
+* **vue:** added figure parameters for table ([823adff](https://github.com/ezpaarse-project/ezreeport/commit/823adff90893d1207e9dc39dc5fde05e1f87e2eb))
+* **vue:** added figure parameters for vega ([46c53c4](https://github.com/ezpaarse-project/ezreeport/commit/46c53c42c89cac8392939187b4c01b1a299cc448))
+* **vue:** created elastic query builder component ([ad05195](https://github.com/ezpaarse-project/ezreeport/commit/ad05195d900655eee1af1fbfb83d8356a8cf1519))
+* **vue:** now open edit dialog when possible in templates ([1160133](https://github.com/ezpaarse-project/ezreeport/commit/11601336e524141152a64b1386e52c49636d75b4))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.10](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.9...@ezpaarse-project/ezreeport-vue@1.0.0-beta.10) (2023-06-01)
 
 
