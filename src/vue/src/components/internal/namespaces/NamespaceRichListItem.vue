@@ -28,7 +28,11 @@ export default defineComponent({
       if (!this.namespace.logoId) {
         return undefined;
       }
-      return new URL(this.namespace.logoId, this.$ezReeport.data.namespaces.logoUrl).href;
+      try {
+        return new URL(this.namespace.logoId, this.$ezReeport.data.namespaces.logoUrl).href;
+      } catch (error) {
+        return undefined;
+      }
     },
   },
 });
