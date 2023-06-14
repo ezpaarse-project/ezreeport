@@ -1,5 +1,5 @@
 <template>
-  <v-dialog :fullscreen="currentTab === 1" :value="value" max-width="1000" scrollable @input="$emit('input', $event)">
+  <v-dialog :fullscreen="tabs[currentTab].fullScreen" :value="value" max-width="1000" scrollable @input="$emit('input', $event)">
     <TaskDialogGeneration
       v-if="task && perms.runTask"
       v-model="generationDialogShown"
@@ -7,7 +7,7 @@
       @generated="fetch()"
     />
 
-    <v-card :loading="loading" :tile="currentTab === 1">
+    <v-card :loading="loading" :tile="tabs[currentTab].fullScreen">
       <v-card-title>
         <template v-if="task">
           {{ task.name }}
@@ -36,6 +36,7 @@
       <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
         <v-tab v-for="tab in tabs" :key="tab.name">
           {{ $t(`tabs.${tab.name}`) }}
+          <v-icon v-if="tab.fullScreen" class="ml-1">mdi-arrow-expand</v-icon>
         </v-tab>
       </v-tabs>
 
@@ -100,11 +101,11 @@
           </v-tab-item>
 
           <v-tab-item>
-            <TemplateDetail v-if="task" :template="task.template" />
+            <InternalHistoryTable v-if="task" :history="task.history" hide-task hide-namespace />
           </v-tab-item>
 
           <v-tab-item>
-            <InternalHistoryTable v-if="task" :history="task.history" hide-task hide-namespace />
+            <TemplateDetail v-if="task" :template="task.template" />
           </v-tab-item>
         </v-tabs-items>
 
@@ -130,11 +131,13 @@ import ezReeportMixin from '~/mixins/ezr';
 
 type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTemplate };
 
-export const tabs = [
+export type Tab = { name: string, fullScreen?: boolean };
+
+export const tabs: Tab[] = [
   { name: 'details' },
-  { name: 'template' },
   { name: 'activity' },
-] as const;
+  { name: 'template', fullScreen: true },
+];
 
 export default defineComponent({
   mixins: [ezReeportMixin],

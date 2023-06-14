@@ -1,5 +1,5 @@
 <template>
-  <v-dialog :fullscreen="currentTab === 1" :value="value" max-width="1000" scrollable @input="$emit('input', $event)">
+  <v-dialog :fullscreen="tabs[currentTab]?.fullScreen" :value="value" max-width="1000" scrollable @input="$emit('input', $event)">
     <TaskDialogGeneration
       v-if="task && perms.runTask"
       v-model="generationDialogShown"
@@ -7,7 +7,7 @@
       @generated="fetch()"
     />
 
-    <v-card :loading="loading" :tile="currentTab === 1">
+    <v-card :loading="loading" :tile="tabs[currentTab]?.fullScreen">
       <v-card-title>
         <v-text-field
           v-if="task"
@@ -43,12 +43,18 @@
       <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
         <v-tab v-for="tab in tabs" :key="tab.name">
           {{ $t(`tabs.${tab.name}`) }}
+          <v-icon v-if="tab.fullScreen" small class="ml-1">mdi-arrow-expand</v-icon>
 
-          <v-tooltip top v-if="tab.valid !== true" color="warning">
+          <v-tooltip
+            top
+            v-if="tab.valid !== true"
+            color="warning"
+          >
             <template #activator="{ attrs, on }">
               <v-icon
                 color="warning"
                 small
+                class="ml-1"
                 v-bind="attrs"
                 v-on="on"
               >
@@ -123,14 +129,14 @@
           </v-tab-item>
 
           <v-tab-item>
+            <InternalHistoryTable v-if="task" :history="task.history" hide-task hide-namespace />
+          </v-tab-item>
+
+          <v-tab-item>
             <TemplateForm
               v-if="task"
               :template.sync="task.template"
             />
-          </v-tab-item>
-
-          <v-tab-item>
-            <InternalHistoryTable v-if="task" :history="task.history" hide-task hide-namespace />
           </v-tab-item>
         </v-tabs-items>
 
@@ -174,7 +180,7 @@ import { defineComponent } from 'vue';
 import isEmail from 'validator/lib/isEmail';
 import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
-import { tabs } from './TaskDialogRead.vue';
+import { tabs, type Tab } from './TaskDialogRead.vue';
 
 type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTemplate };
 
@@ -229,20 +235,15 @@ export default defineComponent({
     /**
      * Tabs data
      */
-    tabs() {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [detailTab, templateTab, ...otherTabs] = tabs;
-      return [
-        {
-          ...detailTab,
-          valid: this.valid || this.$t('errors._default'),
-        },
-        {
-          ...templateTab,
-          valid: this.templateValidation,
-        },
-        ...otherTabs.map((v) => ({ ...v, valid: true })),
-      ];
+    tabs(): (Tab & { valid: true | string })[] {
+      const data: (Tab & { valid?: true | string })[] = [...tabs];
+
+      // Add validation data
+      const { 0: detailTab, 2: templateTab } = data;
+      data[0] = { ...detailTab, valid: this.valid || this.$t('errors._default').toString() };
+      data[2] = { ...templateTab, valid: this.templateValidation };
+
+      return data.map((tab) => ({ ...tab, valid: tab.valid ?? true }));
     },
     /**
      * name field is outside of the v-form, so we need to manually check using rules
