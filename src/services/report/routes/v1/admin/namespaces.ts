@@ -3,7 +3,10 @@ import Joi from 'joi';
 import { CustomRouter } from '~/lib/express-utils';
 import { requireAPIKey } from '~/middlewares/auth';
 import {
-  addUserToNamespace, isValidMembership, removeUserFromNamespace, updateUserOfNamespace
+  addUserToNamespace,
+  isValidMembership,
+  removeUserFromNamespace,
+  updateUserOfNamespace
 } from '~/models/memberships';
 import {
   createNamespace,
@@ -16,6 +19,7 @@ import {
   replaceManyNamespaces,
   isValidNamespace
 } from '~/models/namespaces';
+import { getUserByUsername } from '~/models/users';
 import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';
 
 const router = CustomRouter('namespaces')
@@ -174,6 +178,11 @@ const router = CustomRouter('namespaces')
       throw new NotFoundError(`Namespace "${id}" not found`);
     }
 
+    const user = await getUserByUsername(username);
+    if (!user) {
+      throw new NotFoundError(`User "${username}" not found`);
+    }
+
     const membership = namespace.memberships.find((m) => m.username === username);
     if (!membership) {
       throw new NotFoundError(`User "${username}" is not in namespace "${namespace}"`);
@@ -191,6 +200,11 @@ const router = CustomRouter('namespaces')
     const namespace = await getNamespaceById(id);
     if (!namespace) {
       throw new NotFoundError(`Namespace "${id}" not found`);
+    }
+
+    const user = await getUserByUsername(username);
+    if (!user) {
+      throw new NotFoundError(`User "${username}" not found`);
     }
 
     if (!isValidMembership(req.body)) {
@@ -222,6 +236,11 @@ const router = CustomRouter('namespaces')
     const namespace = await getNamespaceById(id);
     if (!namespace) {
       throw new NotFoundError(`Namespace "${id}" not found`);
+    }
+
+    const user = await getUserByUsername(username);
+    if (!user) {
+      throw new NotFoundError(`User "${username}" not found`);
     }
 
     await removeUserFromNamespace(username, id);
