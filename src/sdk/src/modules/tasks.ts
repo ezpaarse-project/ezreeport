@@ -1,4 +1,5 @@
 import axios, { axiosWithErrorFormatter, type ApiResponse, type PaginatedApiResponse } from '../lib/axios';
+import type { JsonObject } from '../lib/utils';
 import { parseHistory, type History, type RawHistory } from './history';
 import type { Namespace } from './namespaces';
 import {
@@ -14,7 +15,7 @@ import type { Layout } from './templates';
 interface AdditionalRawTaskData {
   template: {
     extends: string,
-    fetchOptions?: object,
+    fetchOptions?: JsonObject,
     inserts?: (Layout & { at: number })[],
   },
   targets: string[],

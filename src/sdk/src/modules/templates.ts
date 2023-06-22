@@ -1,10 +1,6 @@
 import { parseISO } from 'date-fns';
 import axios, { type ApiResponse } from '../lib/axios';
-
-// Extracted from Prisma
-type JsonObject = { [Key in string]?: JsonValue };
-type JsonArray = JsonValue[];
-type JsonValue = string | number | boolean | JsonObject | JsonArray | null;
+import type { JsonObject } from '../lib/utils';
 
 export interface Figure {
   type: string,
