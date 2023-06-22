@@ -1,30 +1,32 @@
 <template>
   <v-col v-if="perms.readAll">
-    <TaskDialogCreate
-      v-if="perms.create"
-      v-model="createTaskDialogShown"
-      :id="focusedId"
-      @created="onTaskCreated"
-    />
-    <TaskDialogRead
-      v-if="perms.readOne"
-      v-model="readTaskDialogShown"
-      :id="focusedId"
-      @updated="onTaskEdited"
-    />
-    <TaskDialogUpdate
-      v-if="perms.update"
-      v-model="updateTaskDialogShown"
-      :id="focusedId"
-      @updated="onTaskEdited"
-    />
-    <TaskPopoverDelete
-      v-if="perms.delete && focusedTask"
-      v-model="deleteTaskPopoverShown"
-      :task="focusedTask"
-      :coords="deleteTaskPopoverCoords"
-      @deleted="onTaskDeleted"
-    />
+    <TemplateProvider>
+      <TaskDialogCreate
+        v-if="perms.create"
+        v-model="createTaskDialogShown"
+        :id="focusedId"
+        @created="onTaskCreated"
+      />
+      <TaskDialogRead
+        v-if="perms.readOne"
+        v-model="readTaskDialogShown"
+        :id="focusedId"
+        @updated="onTaskEdited"
+      />
+      <TaskDialogUpdate
+        v-if="perms.update"
+        v-model="updateTaskDialogShown"
+        :id="focusedId"
+        @updated="onTaskEdited"
+      />
+      <TaskPopoverDelete
+        v-if="perms.delete && focusedTask"
+        v-model="deleteTaskPopoverShown"
+        :task="focusedTask"
+        :coords="deleteTaskPopoverCoords"
+        @deleted="onTaskDeleted"
+      />
+    </TemplateProvider>
 
     <v-row>
       <v-col>
@@ -358,11 +360,12 @@ export default defineComponent({
 
       this.focusedId = id;
       await this.$nextTick();
-      if (hasPermission('tasks-put-task')) {
-        this.updateTaskDialogShown = true;
-      } else {
-        this.readTaskDialogShown = true;
-      }
+      this.readTaskDialogShown = true;
+      // if (hasPermission('tasks-put-task')) {
+      //   this.updateTaskDialogShown = true;
+      // } else {
+      //   this.readTaskDialogShown = true;
+      // }
     },
     /**
      * Prepare and show task creation dialog

@@ -8,8 +8,8 @@
   >
     <v-card :loading="loading" :tile="fullscreen">
       <v-card-title>
-        <template v-if="item">
-          {{ item.name }}
+        <template v-if="data">
+          {{ data.name }}
         </template>
 
         <v-spacer />
@@ -22,10 +22,10 @@
       <v-divider />
 
       <v-card-text style="position: relative">
-        <template v-if="item">
-          <TagsForm v-model="item.tags" :availableTags="availableTags" />
+        <template v-if="data">
+          <TagsForm v-model="data.tags" :availableTags="availableTags" />
 
-          <TemplateForm :template.sync="item.body" />
+          <TemplateForm />
         </template>
 
         <ErrorOverlay v-model="error" />
@@ -42,8 +42,7 @@
 
         <v-btn
           v-if="perms.update"
-          :disabled="!item
-            || templateValidation !== true"
+          :disabled="!data || templateStore.isCurrentValid !== true"
           :loading="loading"
           color="success"
           @click="save"
@@ -58,13 +57,10 @@
 <script lang="ts">
 import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
-import {
-  addAdditionalDataToLayouts,
-  type CustomTemplate,
-} from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
+import useTemplateStore, { isFullTemplate } from '~/stores/template';
 
-type CustomFullTemplate = Omit<templates.FullTemplate, 'body'> & { body: CustomTemplate };
+type BodyLessFullTemplate = Omit<templates.FullTemplate, 'body'>;
 
 export default defineComponent({
   mixins: [ezReeportMixin],
@@ -90,8 +86,13 @@ export default defineComponent({
     input: (show: boolean) => show !== undefined,
     updated: (template: templates.FullTemplate) => !!template,
   },
+  setup() {
+    const templateStore = useTemplateStore();
+
+    return { templateStore };
+  },
   data: () => ({
-    item: undefined as CustomFullTemplate | undefined,
+    data: undefined as BodyLessFullTemplate | undefined,
 
     error: '',
     loading: false,
@@ -107,16 +108,6 @@ export default defineComponent({
         update: has('templates-put-name(*)'),
       };
     },
-    /**
-     * Is template valid
-     */
-    templateValidation(): boolean {
-      if (!this.item || !this.item.body) {
-        return true;
-      }
-
-      return !this.item.body.layouts.find(({ _: { valid } }) => valid !== true);
-    },
   },
   watch: {
     // eslint-disable-next-line func-names
@@ -126,6 +117,8 @@ export default defineComponent({
     value(val: boolean) {
       if (val) {
         this.fetch();
+      } else {
+        this.templateStore.SET_CURRENT(undefined);
       }
     },
   },
@@ -135,7 +128,7 @@ export default defineComponent({
      */
     async fetch() {
       if (!this.perms.readOne) {
-        this.item = undefined;
+        this.$emit('input', false);
         return;
       }
 
@@ -146,10 +139,10 @@ export default defineComponent({
           throw new Error(this.$t('errors.no_data').toString());
         }
 
-        // Add additional data
-        content.body.layouts = addAdditionalDataToLayouts(content.body.layouts ?? []);
+        const { body, ...data } = content;
+        this.templateStore.SET_CURRENT(body);
+        this.data = data;
 
-        this.item = content as CustomFullTemplate;
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
@@ -160,7 +153,7 @@ export default defineComponent({
      * Save and edit template
      */
     async save() {
-      if (!this.item || this.templateValidation !== true) {
+      if (!this.data || this.templateStore.isCurrentValid !== true) {
         return;
       }
 
@@ -169,25 +162,18 @@ export default defineComponent({
         return;
       }
 
+      const body = this.templateStore.GET_CURRENT();
+      if (!body || !isFullTemplate(body)) {
+        return;
+      }
+
       this.loading = true;
       try {
-        // Remove frontend data from payload
-        const layouts = this.item.body.layouts?.map(
-          ({ _, ...insert }) => ({
-            ...insert,
-            // eslint-disable-next-line @typescript-eslint/no-shadow
-            figures: insert.figures.map(({ _, ...figure }) => figure),
-          }),
-        );
-
         const { content } = await this.$ezReeport.sdk.templates.upsertTemplate(
-          this.item.name,
+          this.data.name,
           {
-            body: {
-              ...this.item.body,
-              layouts,
-            },
-            tags: this.item.tags ?? [],
+            body,
+            tags: this.data.tags ?? [],
           },
         );
 

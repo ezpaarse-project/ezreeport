@@ -181,7 +181,7 @@ export default defineComponent({
       required: true,
     },
     task: {
-      type: Object as PropType<tasks.FullTask>,
+      type: Object as PropType<Omit<tasks.FullTask, 'template'>>,
       required: true,
     },
   },

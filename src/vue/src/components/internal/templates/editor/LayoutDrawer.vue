@@ -1,50 +1,43 @@
 <template>
   <div class="layout-drawer-container">
-    <LayoutDialogParams
+    <LayoutParamsPopover
       v-if="selectedLayout"
       v-model="paramsLayoutDialogShown"
-      :layout="selectedLayout"
-      :index="value"
+      :coords="paramsLayoutDialogCoords"
+      :id="value"
       :readonly="mode === 'view'"
-      @update:layout="onLayoutUpdate"
-      @update:index="selectedLayout && onLayoutPositionUpdate(selectedLayout, $event)"
     />
 
-    <div class="d-flex flex-column" style="width: 100%;">
-      <template v-if="mode !== 'view'">
-        <!-- Toolbar -->
-        <div
-          :class="['d-flex align-center pa-2', $vuetify.theme.dark ? 'grey darken-4' : 'white']"
-          style="min-height: 44px;"
-        >
-          {{ $t('headers.layouts') }}
+    <div class="d-flex flex-column">
+      <!-- Toolbar -->
+      <div :class="['d-flex align-center pa-2', $vuetify.theme.dark ? 'grey darken-4' : 'white']">
+        {{ $t('headers.layouts') }}
 
-          <v-spacer />
+        <v-spacer />
 
-          <v-tooltip top>
-            <template #activator="{ attrs, on }">
-              <v-btn
-                small
-                icon
-                color="success"
-                v-bind="attrs"
-                @click="onLayoutCreate"
-                v-on="on"
-              >
-                <v-icon>mdi-plus</v-icon>
-              </v-btn>
-            </template>
+        <v-tooltip v-if="mode !== 'view'" top>
+          <template #activator="{ attrs, on }">
+            <v-btn
+              small
+              icon
+              color="success"
+              v-bind="attrs"
+              @click="onLayoutCreate"
+              v-on="on"
+            >
+              <v-icon>mdi-plus</v-icon>
+            </v-btn>
+          </template>
 
-            <span>{{$t('actions.create-tooltip')}}</span>
-          </v-tooltip>
-        </div>
+          <span>{{$t('actions.create-tooltip')}}</span>
+        </v-tooltip>
+      </div>
 
-        <v-divider />
-      </template>
+      <v-divider />
 
       <!-- Items -->
       <Draggable
-        :value="items"
+        :value="templateStore.currentLayouts"
         :move="onLayoutMove"
         :disabled="mode === 'view'"
         :component-data="{
@@ -57,13 +50,13 @@
         @change="onLayoutDragged"
       >
         <div
-          v-for="(layout, i) in items"
+          v-for="(layout, i) in templateStore.currentLayouts"
           :key="layout._.id"
           class="drawer-item--draggable"
         >
           <div class="d-flex">
-            <span :class="[value === i && 'primary--text']">
-              #{{ i }}
+            <span :class="[value === layout._.id && 'primary--text']">
+              #{{ i + 1 }}
 
               <v-tooltip top v-if="layout._.valid !== true" color="warning">
                 <template #activator="{ attrs, on }">
@@ -77,7 +70,7 @@
                   </v-icon>
                 </template>
 
-                <span>{{ layout._.valid}}</span>
+                <span>{{ validationMap.get(layout._.id) }}</span>
               </v-tooltip>
             </span>
 
@@ -94,7 +87,7 @@
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
 
-              <v-btn icon x-small @click="showLayoutParamsDialog(i, $event)">
+              <v-btn icon x-small @click="showLayoutParamsDialog(layout._.id, $event)">
                 <v-icon>mdi-cog</v-icon>
               </v-btn>
             </template>
@@ -105,17 +98,17 @@
 
           <v-hover v-slot="{ hover }">
             <v-sheet
-              :color="(value === i && 'primary')
+              :color="(value === layout._.id && 'primary')
                 || (hover && 'grey')
                 || undefined"
               rounded
               outlined
               class="layout-preview mb-3 pa-2"
-              @click="$emit('input', i)"
+              @click="$emit('input', layout._.id)"
             >
               <SlotItemGrid
                 :items="layout.figures"
-                :grid="grid"
+                :grid="templateStore.currentGrid"
               >
                 <template #item="{ item: figure }">
                   <v-sheet
@@ -142,6 +135,7 @@ import Draggable, { type MoveEvent } from 'vuedraggable';
 import { defineComponent, type PropType } from 'vue';
 import { addAdditionalData, type AnyCustomLayout } from '~/lib/templates/customTemplates';
 import { figureIcons } from '~/lib/templates/figures';
+import useTemplateStore from '~/stores/template';
 
 export default defineComponent({
   components: {
@@ -149,25 +143,22 @@ export default defineComponent({
   },
   props: {
     value: {
-      type: Number,
-      required: true,
-    },
-    items: {
-      type: Array as PropType<AnyCustomLayout[]>,
+      type: String,
       required: true,
     },
     mode: {
       type: String as PropType<'view' | 'task-edition' | 'template-edition'>,
       default: 'view',
     },
-    grid: {
-      type: Object as PropType<{ rows: number, cols: number }>,
-      default: () => ({ cols: 2, rows: 2 }),
-    },
   },
   emits: {
-    input: (val: number) => !!val,
+    input: (val: string) => !!val,
     'update:items': (val: AnyCustomLayout[]) => val.length >= 0,
+  },
+  setup() {
+    const templateStore = useTemplateStore();
+
+    return { templateStore };
   },
   data: () => ({
     paramsLayoutDialogShown: false,
@@ -184,57 +175,48 @@ export default defineComponent({
      * The current layout selected
      */
     selectedLayout() {
-      return this.items[this.value];
+      return this.templateStore.currentLayouts.find(({ _: { id } }) => id === this.value);
+    },
+    validationMap() {
+      return new Map<string, string | true>(
+        this.templateStore.currentLayouts.map(
+          (l) => {
+            if (l._.valid === true) {
+              return [l._.id, true];
+            }
+            let error = this.$t(l._.valid.i18nKey);
+            if (l._.valid.figure !== undefined) {
+              error = this.$t('errors.figures._detail', { at: l._.valid.figure, valid: error });
+            }
+            return [l._.id, error.toString()];
+          },
+        ),
+      );
     },
   },
   methods: {
     /**
-     * Update a layout in current template
-     *
-     * @param value The new layout
-     */
-    onLayoutUpdate(value: AnyCustomLayout) {
-      const index = this.items.findIndex(({ _: { id } }) => id === value._.id);
-
-      if (this.mode === 'view' || !this.items[index]) {
-        return;
-      }
-
-      const items = [...this.items];
-      items.splice(index, 1, value);
-      this.$emit('update:items', items);
-    },
-    /**
      * Update a layout position in current template
      *
      * @param layout The layout
-     * @param value The new index
+     * @param newIndex The new index
      */
-    onLayoutPositionUpdate(layout: AnyCustomLayout, value: number) {
-      const index = this.items.findIndex(({ _: { id } }) => id === layout._.id);
-
-      if (this.mode === 'view' || !this.items[index]) {
+    onLayoutPositionUpdate(layout: AnyCustomLayout, newIndex: number) {
+      if (this.mode === 'view') {
         return;
       }
 
-      const items = [...this.items];
-
       if (this.mode === 'task-edition') {
-        const item = { ...items[index] };
-        item.at = value;
-        items.splice(index, 1, item);
+        const item = { ...layout };
+        item.at = newIndex;
+        this.templateStore.UPDATE_LAYOUT(layout._.id, item);
       }
 
       if (this.mode === 'template-edition') {
         // Delete current position
-        items.splice(index, 1);
+        this.templateStore.UPDATE_LAYOUT(layout._.id, undefined);
         // Insert at new position
-        items.splice(value, 0, layout);
-      }
-
-      this.$emit('update:items', items);
-      if (this.selectedLayout._.id === layout._.id) {
-        this.$emit('input', value);
+        this.templateStore.ADD_LAYOUT(layout, newIndex);
       }
     },
     /**
@@ -264,53 +246,47 @@ export default defineComponent({
     /**
      * Add a new layout to the current template
      */
-    onLayoutCreate() {
+    async onLayoutCreate() {
       if (this.mode === 'view') {
         return;
       }
 
       const defaultLayout: AnyCustomLayout = addAdditionalData({ figures: [] });
+
       if (this.mode === 'task-edition') {
-        defaultLayout.at = this.items.length;
+        defaultLayout.at = this.templateStore.currentLayouts.length;
       }
 
-      this.$emit('update:items', [...this.items, defaultLayout]);
-      // Select created template
-      this.$emit('input', this.items.length);
+      this.templateStore.ADD_LAYOUT(defaultLayout);
+      this.$emit('input', defaultLayout._.id);
 
       // Scroll to bottom
-      this.$nextTick(() => {
-        const el = (this.$refs.drawerRef as Vue).$el;
-        el.scrollTop = el.scrollHeight;
-      });
+      await this.$nextTick();
+      const el = (this.$refs.drawerRef as Vue).$el;
+      el.scrollTop = el.scrollHeight;
     },
     /**
      * Delete a layout in current template
      *
      * @param layout The layout
      */
-    onLayoutDelete(layout: AnyCustomLayout) {
-      const index = this.items.findIndex(({ _: { id } }) => id === layout._.id);
-      if (this.mode === 'view' || !this.items[index]) {
+    async onLayoutDelete(layout: AnyCustomLayout) {
+      // const items = this.templateStore.currentLayouts;
+      // const index = items.findIndex(({ _: { id } }) => id === layout._.id);
+      if (this.mode === 'view') {
         return;
       }
-      const items = [...this.items];
-      items.splice(index, 1);
-      this.$emit('update:items', items);
 
-      if (this.value > 0 && (layout.at ?? index) <= this.value) {
-        // Select previous layout
-        this.$emit('input', this.value - 1);
-      }
+      this.templateStore.UPDATE_LAYOUT(layout._.id, undefined);
     },
     /**
      * Show params dialog for given layout
      *
-     * @param index The index of the layout in the template/task
+     * @param id The id of the layout
      * @param event The base event
      */
-    async showLayoutParamsDialog(index: number, event: MouseEvent) {
-      this.$emit('input', index);
+    async showLayoutParamsDialog(id: string, event: MouseEvent) {
+      this.$emit('input', id);
       this.paramsLayoutDialogCoords = {
         x: event.clientX,
         y: event.clientY,
@@ -324,10 +300,11 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .layout-drawer-container {
-  position: relative;
-  width: 20%;
   height: 100%;
-  display: flex;
+
+  > .flex-column {
+    height: 100%;
+  }
 
   &::v-deep(.drawer) {
     flex: 1;
@@ -363,9 +340,25 @@ en:
     layouts: 'Pages'
   actions:
     create-tooltip: 'Add a page'
+  errors:
+    empty: 'This field must be set'
+    layouts:
+      mixed: 'All figures must be placed the same way (auto or manually)'
+      length: 'All pages must contains at least one figure'
+    figures:
+      _detail: 'Figure {at}: {valid}'
+      slots: 'This combinaison of slots is not possible'
 fr:
   headers:
     layouts: 'Pages'
   actions:
     create-tooltip: 'Ajouter une page'
+  errors:
+    empty: 'Ce champ doit être rempli'
+    layouts:
+      mixed: 'Toutes les visualisations doivent être placée de la même façon (auto ou manuellement)'
+      length: 'Chaque page doit contenir au moins une visualisation'
+    figures:
+      _detail: 'Visualisation {at}: {valid}'
+      slots: "Cette combinaison d'emplacement n'est pas possible"
 </i18n>

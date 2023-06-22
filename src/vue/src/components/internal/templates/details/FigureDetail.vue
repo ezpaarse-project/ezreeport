@@ -1,118 +1,112 @@
 <template>
-  <v-sheet rounded outlined class="pa-2">
-    <div class="d-flex align-center">
-      {{ $t('headers.figure', { i: figureIndex }) }}
-
-      <template v-if="locked">
-        <v-spacer />
-
-        <v-icon color="black" dense>mdi-lock</v-icon>
-      </template>
-    </div>
-
-    <v-select
-      :label="$t('headers.type')"
-      :value="figure.type"
-      :items="figureTypes"
-      item-text="label"
-      item-value="value"
+  <v-sheet
+    v-if="figure"
+    rounded
+    outlined
+    class="pa-2"
+  >
+    <!-- TODO: Move to only dialog for whole template -->
+    <FigureDialogEdition
+      v-model="isFigureDialogEditionShown"
+      :figure="figure"
+      :param-form="figureParamsForm"
       readonly
     />
 
-    <v-textarea
-      v-if="figure.data && figure.type === 'md'"
-      :value="figure.data"
-      :label="$t('headers.data')"
-      readonly
-    />
+    <v-form>
+      <div class="d-flex align-center">
+        {{ figureTitle }}
+      </div>
 
-    <CustomSection v-else-if="Array.isArray(figure.data)">
-      <ToggleableObjectTree
-        :label="$t('headers.data').toString()"
-        :value="figure.data"
-      />
-    </CustomSection>
-
-    <CustomSection
-      v-if="figureParamsForm"
-      :label="$t('headers.figureParams').toString()"
-      collapsable
-      style="background: transparent;"
-    >
-      <component
-        :is="figureParamsForm"
-        :value="figure.params || {}"
+      <v-select
+        :label="$t('headers.type')"
+        :value="figure.type"
+        :items="figureTypes"
         readonly
-        @input="$emit('update:figure', { ...figure, params: $event })"
-      />
-    </CustomSection>
+        item-text="label"
+        item-value="value"
+      >
+        <template #prepend>
+          <v-icon>{{ figureIcons[figure.type] }}</v-icon>
+        </template>
+      </v-select>
 
-    <v-select
-      :label="$t('headers.slots')"
-      :value="figure.slots || []"
-      :items="availableSlots"
-      multiple
-      readonly
-    />
+      <v-btn v-if="figureParamsForm" x-large block @click="isFigureDialogEditionShown = true">
+        {{ $t('headers.configuration') }}
+      </v-btn>
+
+      <v-select
+        :label="$t('headers.slots')"
+        :value="figure.slots || []"
+        :items="availableSlots"
+        readonly
+        multiple
+      />
+    </v-form>
   </v-sheet>
 </template>
 
 <script lang="ts">
-import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
+import type { AnyCustomFigure } from '~/lib/templates/customTemplates';
+import { figureTypes, figureIcons } from '~/lib/templates/figures';
 import figureFormMap from '~/components/internal/utils/figures';
+import useTemplateStore from '~/stores/template';
 
 export default defineComponent({
   props: {
-    figure: {
-      type: Object as PropType<templates.Figure>,
+    id: {
+      type: String,
       required: true,
     },
-    figureIndex: {
-      type: Number,
+    layoutId: {
+      type: String,
       required: true,
     },
-    grid: {
-      type: Object as PropType<{ rows: number, cols: number }>,
-      default: () => ({ cols: 2, rows: 2 }),
-    },
-    locked: {
-      type: Boolean,
-      default: false,
+    takenSlots: {
+      type: Array as PropType<number[]>,
+      default: () => [],
     },
   },
-  computed: {
-    availableSlots() {
-      const length = this.grid.cols * this.grid.rows;
+  setup() {
+    const templateStore = useTemplateStore();
 
+    return { templateStore };
+  },
+  data: () => ({
+    isFigureDialogEditionShown: false,
+    figureIcons,
+  }),
+  computed: {
+    figure(): AnyCustomFigure | undefined {
+      const layout = this.templateStore.currentLayouts.find(
+        ({ _: { id } }) => id === this.layoutId,
+      );
+      return layout?.figures.find(({ _: { id } }) => id === this.id);
+    },
+    /**
+     * Available slots
+     */
+    availableSlots() {
+      if (!this.figure) {
+        return [];
+      }
+
+      const length = this.templateStore.currentGrid.cols * this.templateStore.currentGrid.rows;
+
+      const takenSet = new Set(this.takenSlots);
+      const slotsSet = new Set(this.figure.slots);
       return Array.from({ length }, (_, i) => ({
         text: this.$t(`slots[${i}]`),
         value: i,
+        disabled: takenSet.has(i) && !slotsSet.has(i),
       }));
     },
+    /**
+     * Localized figure types
+     */
     figureTypes() {
-      const types = [
-        // Vega types
-        'arc',
-        'area',
-        'bar',
-        // 'image',
-        'line',
-        'point',
-        'rect',
-        'rule',
-        'text',
-        'tick',
-        'trail',
-        'circle',
-        'square',
-        // Custom types
-        'table',
-        'md',
-        'metric',
-      ];
-
-      return types.map((value) => ({
+      return figureTypes.map((value) => ({
         label: this.$t(`figure_types.${value}`),
         value,
       }));
@@ -121,6 +115,10 @@ export default defineComponent({
      * Components that holds figure params
      */
     figureParamsForm() {
+      if (!this.figure) {
+        return undefined;
+      }
+
       const component = figureFormMap[this.figure.type];
       if (component !== undefined) {
         return component;
@@ -128,27 +126,36 @@ export default defineComponent({
       // eslint-disable-next-line no-underscore-dangle
       return figureFormMap._default;
     },
+    /**
+     * Returns the title of the figure
+     */
+    figureTitle() {
+      if (!this.figure) {
+        return '';
+      }
+
+      const title = this.figure.params?.title;
+      if (title) {
+        return title;
+      }
+
+      return this.$t(`figure_types.${this.figure.type}`);
+    },
   },
 });
 </script>
 
 <style scoped>
-
 </style>
 
 <i18n lang="yaml">
 en:
   headers:
-    figure: 'Figure'
+    figure: '{type} Figure'
     type: 'Figure type'
     data: 'Figure data'
     figureParams: 'Figure params'
     slots: 'Figure slot(s)'
-  slots:
-    - 'Top left'
-    - 'Top right'
-    - 'Bottom left'
-    - 'Bottom right'
   figure_types:
     table: 'Table'
     md: 'Markdown'
@@ -165,18 +172,18 @@ en:
     trail: 'Trail'
     circle: 'Circle'
     square: 'Square'
+  slots:
+    - 'Top left'
+    - 'Top right'
+    - 'Bottom left'
+    - 'Bottom right'
 fr:
   headers:
-    figure: 'Visualisation #{i}'
+    figure: 'Visualisation {type}'
     type: 'Type de visualisation'
     data: 'Données de la visualisation'
     figureParams: 'Paramètres de la visualisation'
     slots: 'Emplacements de la visualisation'
-  slots:
-    - 'Haut à gauche'
-    - 'Haut à droite'
-    - 'Bas à gauche'
-    - 'Bas à droite'
   figure_types:
     table: 'Table'
     md: 'Markdown'
@@ -193,4 +200,9 @@ fr:
     trail: 'Trail' # TODO French translation
     circle: 'Cercle'
     square: 'Carré'
+  slots:
+    - 'Haut à gauche'
+    - 'Haut à droite'
+    - 'Bas à gauche'
+    - 'Bas à droite'
 </i18n>

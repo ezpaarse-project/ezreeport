@@ -7,69 +7,42 @@
     />
 
     <v-col style="position: relative">
-      <v-switch :label="$t('show-raw')" v-model="rawTemplateShown" />
-
       <v-row>
         <!-- Global options -->
         <v-col>
           <v-select
             v-if="taskTemplate"
-            :label="$t('headers.base')"
             :value="taskTemplate.extends"
-            :items="[taskTemplate.extends]"
+            :label="$t('headers.base')"
+            :items="availableTemplates || [taskTemplate.extends]"
             readonly
+            @change="onTemplateUpdate({ extends: $event })"
           >
             <template #append-outer>
-              <v-btn
-                v-if="perms.readOne"
-                :disabled="loading || !taskTemplate"
-                @click="openBaseDialog()"
-              >
+              <v-btn v-if="perms.readOne" @click="openBaseDialog()">
                 {{ $t('actions.see-extends') }}
               </v-btn>
             </template>
           </v-select>
 
-          <v-select
-            v-if="fullTemplate"
-            :label="$t('headers.renderer')"
-            :value="fullTemplate.renderer"
-            :items="[fullTemplate.renderer]"
-            placeholder="vega-pdf"
-            persistent-placeholder
+          <v-text-field
+            v-if="taskTemplate"
+            :value="templateStore.currentFetchOptions?.index"
+            :label="$t('headers.fetchIndex').toString()"
             readonly
+            dense
+            class="pt-4"
+            @input="onFetchOptionUpdate({ index: $event })"
           />
 
-          <CustomSection v-if="template.fetchOptions" :label="$t('headers.fetchOptions').toString()" :default-value="true" collapsable>
-            <v-text-field
-              v-if="taskTemplate"
-              :value="fetchOptions.index"
-              :label="$t('headers.fetchIndex').toString()"
-              dense
+          <CustomSection
+            :label="$t('headers.fetchFilters').toString()"
+            :collapse-disabled="(templateStore.currentFetchOptions?.filtersCount ?? 0) <= 0"
+            collapsable
+          >
+            <ElasticFilterBuilder
+              :value="templateStore.currentFetchOptions?.filters ?? {}"
               readonly
-              hide-details
-              class="pt-4"
-            />
-
-            <CustomSection v-if="Object.keys(fetchOptions.filters).length > 0" :label="$t('headers.fetchFilters').toString()" collapsable>
-              <ElasticFilterBuilder
-                :value="fetchOptions.filters"
-                readonly
-              />
-            </CustomSection>
-
-            <CustomSection v-if="Object.keys(fetchOptions.others).length > -1">
-              <ToggleableObjectTree
-                :label="$t('headers.advancedOptions').toString()"
-                :value="fetchOptions.others"
-              />
-            </CustomSection>
-          </CustomSection>
-
-          <CustomSection v-if="fullTemplate?.renderOptions">
-            <ToggleableObjectTree
-              :label="$t('headers.renderOptions').toString()"
-              :value="fullTemplate.renderOptions"
             />
           </CustomSection>
         </v-col>
@@ -88,7 +61,7 @@
             <v-icon>mdi-chevron-{{ templateEditorCollapsed === false ? 'up' : 'down' }}</v-icon>
           </v-btn>
 
-          {{ $t('headers.layouts', { count: mergedLayouts.length }) }}
+          {{ $t('headers.layouts', { count: templateStore.currentLayouts.length }) }}
         </v-card-subtitle>
 
         <v-divider />
@@ -96,70 +69,103 @@
         <v-card-text
           v-show="!templateEditorCollapsed"
           :class="['pa-0', $vuetify.theme.dark ? 'grey darken-3' : 'grey lighten-4']"
-          style="height: 650px"
         >
-          <v-row class="fill-height ma-0">
-            <LayoutDrawer
-              v-model="selectedLayoutIndex"
-              :items="mergedLayouts"
-              mode="view"
-            />
+          <v-row class="ma-0" style="height: 600px;">
+            <v-col cols="2" class="pa-0" style="height: 100%;">
+              <LayoutDrawer
+                v-model="selectedLayoutId"
+                mode="view"
+              />
+            </v-col>
 
             <v-divider vertical />
 
-            <LayoutViewer
-              v-if="selectedLayout"
-              :items="selectedLayout.figures"
-              :grid="grid"
-              mode="view"
-              class="editor-panel ma-0"
-            />
+            <v-col class="pa-0" style="margin-left: 1px;">
+              <LayoutViewer
+                v-if="selectedLayout"
+                :value="selectedLayoutId"
+                mode="view"
+                style="height: 100%;"
+              />
+            </v-col>
           </v-row>
         </v-card-text>
       </v-card>
+
+      <CustomSection :label="$t('headers.advancedOptions').toString()" :default-value="true" collapsable>
+        <v-switch :label="$t('show-raw')" v-model="rawTemplateShown" />
+
+        <v-select
+          v-if="fullTemplate"
+          :label="$t('headers.renderer')"
+          :value="fullTemplate.renderer"
+          :items="availableRenderer"
+          placeholder="vega-pdf"
+          persistent-placeholder
+          readonly
+        />
+
+        <CustomSection>
+          <ToggleableObjectTree
+            :label="$t('headers.fetchOptions').toString()"
+            :value="templateStore.currentFetchOptions?.others ?? {}"
+          />
+        </CustomSection>
+
+        <CustomSection v-if="fullTemplate">
+          <ToggleableObjectTree
+            :label="$t('headers.renderOptions').toString()"
+            :value="fullTemplate.renderOptions || {}"
+          />
+        </CustomSection>
+      </CustomSection>
+
       <ErrorOverlay v-model="error" />
     </v-col>
 
     <v-slide-x-reverse-transition>
-      <v-col v-if="rawTemplateShown" cols="6">
-        <JSONPreview :value="template" style="overflow: auto; max-height: 865px; margin-top: 65px;" />
+      <v-col v-if="rawTemplateShown" cols="5">
+        <JSONPreview :value="templateStore.GET_CURRENT()" />
       </v-col>
     </v-slide-x-reverse-transition>
   </v-row>
 </template>
 
 <script lang="ts">
-import { omit } from 'lodash';
-import { defineComponent, type PropType } from 'vue';
-import {
-  addAdditionalDataToLayouts,
-  type AnyCustomLayout,
-  type AnyCustomTemplate,
-  type CustomTaskTemplate,
-  type CustomTemplate,
-} from '~/lib/templates/customTemplates';
+import { defineComponent } from 'vue';
+import { type AnyCustomTemplate, type CustomTemplate, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
+import useTemplateStore, { isFullTemplate, isTaskTemplate } from '~/stores/template';
+import type ElasticFilterBuilderConstructor from '../../utils/elastic/filters/ElasticFilterBuilder.vue';
+
+type ElasticFilterBuilder = InstanceType<typeof ElasticFilterBuilderConstructor>;
 
 export default defineComponent({
   mixins: [ezReeportMixin],
-  props: {
-    template: {
-      type: Object as PropType<AnyCustomTemplate>,
-      required: true,
-    },
+  setup() {
+    const templateStore = useTemplateStore();
+
+    return { templateStore };
   },
   data: () => ({
     readTemplateDialogShown: false,
     rawTemplateShown: false,
     templateEditorCollapsed: true,
 
-    extendedTemplate: undefined as CustomTemplate | undefined,
-    selectedLayoutIndex: 0,
+    availableRenderer: ['vega-pdf'],
+
+    selectedLayoutId: '',
 
     loading: false,
     error: '',
   }),
   computed: {
+    /**
+     * The current reviewed template
+     */
+    template(): AnyCustomTemplate | undefined {
+      return this.templateStore.current;
+    },
     /**
      * User permissions
      */
@@ -175,9 +181,10 @@ export default defineComponent({
      * Used to simplify casts in TS
      */
     taskTemplate(): CustomTaskTemplate | undefined {
-      if ('extends' in this.template) {
+      if (isTaskTemplate(this.template)) {
         return this.template;
       }
+
       return undefined;
     },
     /**
@@ -186,164 +193,88 @@ export default defineComponent({
      * Used to simplify casts in TS
      */
     fullTemplate(): CustomTemplate | undefined {
-      // Not using this.taskTemplate cause of TS casting
-      if ('extends' in this.template) {
-        return undefined;
+      if (isFullTemplate(this.template)) {
+        return this.template;
       }
-      return this.template;
+      return undefined;
     },
     /**
      * The base template. If the provided template is from a task,
      * return the template that it extends, return self otherwise
      */
     baseTemplate(): CustomTemplate | undefined {
-      if (this.taskTemplate) {
-        return this.extendedTemplate;
+      if (isTaskTemplate(this.template)) {
+        return this.templateStore.extended;
       }
       return this.fullTemplate;
     },
-    /**
-     * The grid of the template. Used to get possible slots for figures.
-     */
-    grid() {
-      const grid = this.baseTemplate?.renderOptions?.grid ?? { cols: 2, rows: 2 };
-      if (!grid || typeof grid !== 'object' || Array.isArray(grid)) {
-        return undefined;
-      }
-      return grid as { cols: number, rows: number };
-    },
-    /**
-     * The merged list of the task layouts and the base template
-     */
-    mergedLayouts(): AnyCustomLayout[] {
-      if (this.fullTemplate) {
-        return this.fullTemplate.layouts;
-      }
-
-      // Base layouts
-      const layouts = [...(this.baseTemplate?.layouts ?? [])];
-      // Layouts to insert
-      const inserts = [...(this.taskTemplate?.inserts ?? [])];
-      // eslint-disable-next-line no-restricted-syntax
-      for (const layout of inserts) {
-        layouts.splice(layout.at, 0, layout);
-      }
-      return layouts;
-    },
-    /**
-     * The current layout selected, based on layoutIndexSelected
-     */
-    selectedLayout(): AnyCustomLayout | undefined {
-      if (this.selectedLayoutIndex < 0 || this.selectedLayoutIndex >= this.mergedLayouts.length) {
-        return undefined;
-      }
-
-      return this.mergedLayouts[this.selectedLayoutIndex];
-    },
-    /**
-     * Fetch options of the template
-     */
-    fetchOptions() {
-      const opts = {
-        index: '',
-        filters: {} as Record<string, any>,
-        others: {} as Record<string, any>,
-      };
-
-      if (!this.template.fetchOptions) {
-        return opts;
-      }
-
-      // Extract filters with compatible type definition
-      if (
-        'filters' in this.template.fetchOptions
-        && this.template.fetchOptions.filters
-        && typeof this.template.fetchOptions.filters === 'object'
-      ) {
-        opts.filters = this.template.fetchOptions.filters;
-      }
-
-      // Extract index with compatible type definition
-      if (
-        this.taskTemplate?.fetchOptions
-        && 'index' in this.taskTemplate.fetchOptions
-        && this.taskTemplate.fetchOptions.index
-      ) {
-        opts.index = this.taskTemplate.fetchOptions.index.toString();
-      }
-
-      opts.others = omit(this.template.fetchOptions, ['filters', 'index']);
-      return opts;
+    selectedLayout() {
+      return this.templateStore.currentLayouts.find(
+        ({ _: { id } }) => id === this.selectedLayoutId,
+      );
     },
   },
   watch: {
-    template() {
-      this.fetchBase();
-
-      // Show editor if needed
-      if ('inserts' in this.template) {
-        this.templateEditorCollapsed = (this.template.inserts?.length ?? 0) === 0;
-      }
-      if ('layouts' in this.template) {
-        this.templateEditorCollapsed = this.template.layouts.length === 0;
-      }
+    // eslint-disable-next-line func-names
+    'templateStore.current': function () {
+      this.initEditorCollapsed();
     },
   },
   mounted() {
-    this.fetchBase();
-
-    // Show editor if needed
-    if ('inserts' in this.template) {
-      this.templateEditorCollapsed = (this.template.inserts?.length ?? 0) === 0;
-    }
-    if ('layouts' in this.template) {
-      this.templateEditorCollapsed = this.template.layouts.length === 0;
-    }
+    this.initEditorCollapsed();
   },
   methods: {
     /**
-     * Fetch base template that the current template is extending
-     *
-     * Doesn't do anything if it's not the template of task
+     * Show editor if needed
      */
-    async fetchBase() {
-      if (!this.taskTemplate || !this.perms.readOne) {
-        return;
+    initEditorCollapsed() {
+      if (this.taskTemplate) {
+        this.templateEditorCollapsed = (this.taskTemplate.inserts?.length ?? 0) === 0;
       }
 
-      this.loading = true;
-      try {
-        const { content } = await this.$ezReeport.sdk.templates.getTemplate(
-          this.taskTemplate.extends,
-        );
-
-        // Add additional data
-        content.body.layouts = addAdditionalDataToLayouts(content.body.layouts);
-
-        this.extendedTemplate = content.body as CustomTemplate;
-        this.error = '';
-      } catch (error) {
-        this.error = (error as Error).message;
+      if (this.fullTemplate) {
+        this.templateEditorCollapsed = this.fullTemplate.layouts.length === 0;
       }
-      this.loading = false;
     },
     /**
      * Prepare and open dialog of base template
      */
     async openBaseDialog() {
-      await this.fetchBase();
-      await this.$nextTick();
       this.readTemplateDialogShown = true;
+      // TODO: AAAAAA
+    },
+    /**
+     * Called when the template is updated
+     *
+     * @param value The new template
+     */
+    onTemplateUpdate(value: Partial<AnyCustomTemplate>) {
+      if (!this.template) {
+        return;
+      }
+
+      this.template = {
+        ...this.template,
+        ...value,
+      };
+    },
+    onFetchOptionUpdate(value: Record<string, any>) {
+      this.onTemplateUpdate({
+        fetchOptions: {
+          ...(this.templateStore.current?.fetchOptions ?? {}),
+          ...value,
+        },
+      });
+    },
+    onFilterCreated() {
+      const builder = this.$refs.filterBuilder as ElasticFilterBuilder | undefined;
+      builder?.onElementCreated();
     },
   },
 });
 </script>
 
 <style lang="scss" scoped>
-.editor-panel {
-  height: 100%;
-  flex: 1;
-}
 </style>
 
 <i18n lang="yaml">
@@ -356,9 +287,9 @@ en:
     fetchOptions: 'Fetch options'
     fetchFilters: 'Filters'
     fetchIndex: 'Elastic index'
-    advancedOptions: 'Options avancées'
+    advancedOptions: 'Advanced options'
     renderOptions: 'Render options'
-    layouts: 'Page viewer ({count} pages)'
+    layouts: 'Page editor ({count} pages)'
   actions:
     see-extends: 'See base'
 fr:
@@ -372,7 +303,7 @@ fr:
     fetchIndex: 'Index Elastic'
     advancedOptions: 'Options avancées'
     renderOptions: 'Options de rendu'
-    layouts: 'Visionneur de pages ({count} pages)'
+    layouts: 'Éditeur de pages ({count} pages)'
   actions:
     see-extends: 'Voir la base'
 </i18n>

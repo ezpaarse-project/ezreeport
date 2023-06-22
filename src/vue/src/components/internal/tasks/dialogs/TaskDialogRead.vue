@@ -105,7 +105,7 @@
           </v-tab-item>
 
           <v-tab-item>
-            <TemplateDetail v-if="task" :template="task.template" />
+            <TemplateDetail v-if="task" />
           </v-tab-item>
         </v-tabs-items>
 
@@ -126,10 +126,10 @@
 <script lang="ts">
 import type { namespaces, tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
-import { addAdditionalDataToLayouts, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
+import useTemplateStore from '~/stores/template';
 
-type CustomTask = Omit<tasks.FullTask, 'template'> & { template: CustomTaskTemplate };
+type TemplateLessTask = Omit<tasks.FullTask, 'template'>;
 
 export type Tab = { name: string, fullScreen?: boolean };
 
@@ -155,10 +155,15 @@ export default defineComponent({
     updated: (task: tasks.FullTask) => !!task,
     input: (show: boolean) => show !== undefined,
   },
+  setup() {
+    const templateStore = useTemplateStore();
+
+    return { templateStore };
+  },
   data: () => ({
     generationDialogShown: false,
 
-    task: undefined as CustomTask | undefined,
+    task: undefined as TemplateLessTask | undefined,
     tabs,
     currentTab: 0,
 
@@ -206,6 +211,8 @@ export default defineComponent({
     value(val: boolean) {
       if (val) {
         this.fetch();
+      } else {
+        this.templateStore.SET_CURRENT(undefined);
       }
     },
   },
@@ -226,10 +233,10 @@ export default defineComponent({
           throw new Error(this.$t('errors.no_data').toString());
         }
 
-        // Add additional data
-        content.template.inserts = addAdditionalDataToLayouts(content.template.inserts ?? []);
+        const { template, ...data } = content;
+        this.templateStore.SET_CURRENT(template);
 
-        this.task = content as CustomTask;
+        this.task = data;
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
@@ -256,11 +263,14 @@ export default defineComponent({
           : this.$ezReeport.sdk.tasks.enableTask;
 
         const { content } = await action(this.id);
+        if (!content) {
+          throw new Error(this.$t('errors.no_data').toString());
+        }
 
-        // Add additional data
-        content.template.inserts = addAdditionalDataToLayouts(content.template.inserts ?? []);
+        const { template, ...data } = content;
+        this.templateStore.SET_CURRENT(template);
 
-        this.task = content as CustomTask;
+        this.task = data;
         this.error = '';
         this.$emit('updated', content);
       } catch (error) {

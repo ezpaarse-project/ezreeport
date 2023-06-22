@@ -156,10 +156,10 @@
 import { addDays, formatISO, parseISO } from 'date-fns';
 import type { tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
-import { cloneDeep } from 'lodash';
 import isEmail from 'validator/lib/isEmail';
 import type { CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
+import useTemplateStore, { isTaskTemplate, mapRulesToVuetify } from '~/stores/template';
 import { tabs, type Tab } from './TaskDialogRead.vue';
 
 type CustomCreateTask = Omit<tasks.FullTask, 'createdAt' | 'id' | 'history' | 'namespace' | 'template'> & {
@@ -168,16 +168,6 @@ type CustomCreateTask = Omit<tasks.FullTask, 'createdAt' | 'id' | 'history' | 'n
 };
 
 const minDate = addDays(new Date(), 1);
-
-const initTask = {
-  name: '',
-  template: { extends: 'scratch' } as CustomTaskTemplate,
-  targets: [],
-  recurrence: 'DAILY' as tasks.Recurrence,
-  namespace: '',
-  nextRun: minDate,
-  enabled: true,
-} as CustomCreateTask;
 
 export default defineComponent({
   mixins: [ezReeportMixin],
@@ -190,6 +180,11 @@ export default defineComponent({
   emits: {
     input: (show: boolean) => show !== undefined,
     created: (task: tasks.FullTask) => !!task,
+  },
+  setup() {
+    const templateStore = useTemplateStore();
+
+    return { templateStore };
   },
   data: () => ({
     task: undefined as CustomCreateTask | undefined,
@@ -204,7 +199,18 @@ export default defineComponent({
   watch: {
     value(val: boolean) {
       if (val) {
-        this.task = cloneDeep(initTask);
+        this.templateStore.SET_CURRENT({ inserts: [], extends: 'scratch' });
+        this.task = {
+          name: '',
+          template: { extends: 'scratch' } as CustomTaskTemplate,
+          targets: [],
+          recurrence: 'DAILY' as tasks.Recurrence,
+          namespace: '',
+          nextRun: minDate,
+          enabled: true,
+        };
+      } else {
+        this.templateStore.SET_CURRENT(undefined);
       }
     },
   },
@@ -221,11 +227,7 @@ export default defineComponent({
           (v: string[]) => v.length > 0 || this.$t('errors.empty'),
           (v: string[]) => v.every(this.validateMail) || this.$t('errors.format'),
         ],
-        template: {
-          index: [
-            (v?: string) => (v && v.length > 0) || this.$t('errors.no_index'),
-          ],
-        },
+        template: mapRulesToVuetify(this.templateStore.rules.template, (k) => this.$t(k)),
       };
     },
     /**
@@ -265,29 +267,19 @@ export default defineComponent({
      * Is task's template valid
      */
     templateValidation(): true | string {
-      if (!this.task || !this.task.template.inserts) {
+      const valid = this.templateStore.isCurrentValid;
+      if (!this.task || valid === true) {
         return true;
       }
 
-      const invalidInsert = this.task.template.inserts.find(({ _: { valid } }) => valid !== true);
-      if (invalidInsert) {
-        return this.$t(
-          'errors.layouts._detail',
-          {
-            at: invalidInsert.at,
-            valid: invalidInsert._.valid,
-          },
-        ).toString();
+      let err = this.$t(valid.i18nKey);
+      if (valid.figure !== undefined) {
+        err = this.$t('errors.figures._detail', { valid: err, at: valid.figure });
       }
-
-      const indexValidation = this.rules.template.index.map(
-        (rule) => rule(
-          (this.task?.template.fetchOptions as Record<string, any> | undefined)?.index,
-        ),
-      );
-      return [
-        ...indexValidation,
-      ].find((v) => v !== true)?.toString() ?? true;
+      if (valid.layout !== undefined) {
+        err = this.$t('errors.layouts._detail', { valid: err, at: valid.layout });
+      }
+      return err.toString();
     },
   },
   methods: {
@@ -310,27 +302,20 @@ export default defineComponent({
         return;
       }
 
+      const template = this.templateStore.GET_CURRENT();
+      if (!template || !isTaskTemplate(template)) {
+        return;
+      }
+
       this.loading = true;
       try {
-        // Remove frontend data from payload
-        const inserts = this.task.template.inserts?.map(
-          ({ _, ...insert }) => ({
-            ...insert,
-            // eslint-disable-next-line @typescript-eslint/no-shadow
-            figures: insert.figures.map(({ _, ...figure }) => figure),
-          }),
-        );
-
         const nextRun = formatISO(this.task.nextRun, { representation: 'date' });
 
         const { content } = await this.$ezReeport.sdk.tasks.createTask(
           {
             name: this.task.name,
             namespace: this.task.namespace,
-            template: {
-              ...this.task.template,
-              inserts,
-            },
+            template,
             targets: this.task.targets,
             recurrence: this.task.recurrence,
             nextRun: parseISO(`${nextRun}T00:00:00.000Z`),
@@ -371,11 +356,16 @@ en:
     inactive: 'Inactive'
   errors:
     _default: 'An error is in this form'
+    format: "One or more address aren't valid"
+    no_data: 'An error occurred when fetching data'
+    empty: 'This field must be set'
     layouts:
       _detail: 'Page {at}: {valid}'
-    empty: 'This field must be set'
-    format: "One or more address aren't valid"
-    no_index: 'An index must be provided in the fetch options'
+      mixed: 'All figures must be placed the same way (auto or manually)'
+      length: 'All pages must contains at least one figure'
+    figures:
+      _detail: 'Figure {at}: {valid}'
+      slots: 'This combinaison of slots is not possible'
   actions:
     cancel: 'Cancel'
     save: 'Save'
@@ -395,11 +385,16 @@ fr:
     inactive: 'Inactif'
   errors:
     _default: 'Une erreur est présente dans ce formulaire'
-    layouts:
-      _detail: 'Page {at}: {valid}'
-    empty: 'Ce champ doit être rempli'
     format: 'Une ou plusieurs addresses ne sont pas valides'
-    no_index: 'Un index doit être défini dans les options de récupération'
+    no_data: 'Une erreur est survenue lors de la récupération des données'
+    empty: 'Ce champ doit être rempli'
+    layouts:
+      _detail: 'Page {page}: {valid}'
+      mixed: 'Toutes les visualisations doivent être placée de la même façon (auto ou manuellement)'
+      length: 'Chaque page doit contenir au moins une visualisation'
+    figures:
+      _detail: 'Visualisation {at}: {valid}'
+      slots: "Cette combinaison d'emplacement n'est pas possible"
   actions:
     cancel: 'Annuler'
     save: 'Sauvegarder'

@@ -1,37 +1,38 @@
 <template>
   <v-col v-if="perms.readAll">
-    <TemplateDialogRead
-      v-if="perms.readOne && focusedName"
-      v-model="readTemplateDialogShown"
-      :name="focusedName"
-      fullscreen
-    />
+    <TemplateProvider>
+      <TemplateDialogRead
+        v-if="perms.readOne && focusedName"
+        v-model="readTemplateDialogShown"
+        :name="focusedName"
+        fullscreen
+      />
 
-    <TemplateDialogUpdate
-      v-if="perms.update && focusedName"
-      v-model="updateTemplateDialogShown"
-      :name="focusedName"
-      :available-tags="availableTags"
-      fullscreen
-      @updated="onTemplateEdited"
-    />
+      <TemplateDialogUpdate
+        v-if="perms.update && focusedName"
+        v-model="updateTemplateDialogShown"
+        :name="focusedName"
+        :available-tags="availableTags"
+        fullscreen
+      />
 
-    <TemplateDialogCreate
-      v-if="perms.create"
-      v-model="createTemplateDialogShown"
-      :available-tags="availableTags"
-      fullscreen
-      @created="onTemplateCreated"
-    />
+      <TemplateDialogCreate
+        v-if="perms.create"
+        v-model="createTemplateDialogShown"
+        :available-tags="availableTags"
+        fullscreen
+        @created="onTemplateCreated"
+      />
 
-    <TemplatePopoverDelete
-      v-if="perms.delete && focusedTemplate"
-      v-model="deleteTemplatePopoverShown"
-      :coords="deleteTemplatePopoverCoords"
-      :template="focusedTemplate"
-      fullscreen
-      @deleted="onTemplateDeleted"
-    />
+      <TemplatePopoverDelete
+        v-if="perms.delete && focusedTemplate"
+        v-model="deleteTemplatePopoverShown"
+        :coords="deleteTemplatePopoverCoords"
+        :template="focusedTemplate"
+        fullscreen
+        @deleted="onTemplateDeleted"
+      />
+    </TemplateProvider>
 
     <LoadingToolbar
       :text="$t('title').toString()"
@@ -111,7 +112,7 @@
 import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import ezReeportMixin from '~/mixins/ezr';
-import { Tag } from '~/components/templates/forms/TagsForm.vue';
+import { Tag } from '~/components/internal/templates/forms/TagsForm.vue';
 
 const MAX_TAGS_SHOWN = 4;
 

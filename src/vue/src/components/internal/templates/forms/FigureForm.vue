@@ -1,18 +1,18 @@
 <template>
   <v-sheet
+    v-if="figure"
     :draggable="preventDrag"
     rounded
     outlined
     class="pa-2"
-    style="overflow: auto;"
     @mousedown="onDragAttempt"
     @dragstart="preventEvent"
   >
-    <v-form @input="onValidationChange">
+    <v-form>
       <div class="d-flex align-center">
         <v-icon v-if="draggable" class="figure-handle">mdi-drag</v-icon>
 
-        {{ $t('headers.figure', { i: figureIndex }) }}
+        {{ figureTitle }}
 
         <v-tooltip top v-if="figure._.valid !== true" color="warning">
           <template #activator="{ attrs, on }">
@@ -26,12 +26,12 @@
             </v-icon>
           </template>
 
-          <span>{{ figure._.valid }}</span>
+          <span>{{ $t(figure._.valid.i18nKey) }}</span>
         </v-tooltip>
 
         <v-spacer />
 
-        <v-btn icon color="error" x-small @click="$emit('delete:figure', figure)">
+        <v-btn icon color="error" x-small @click="onFigureDelete">
           <v-icon>mdi-delete</v-icon>
         </v-btn>
       </div>
@@ -40,23 +40,21 @@
         :label="$t('headers.type')"
         :value="figure.type"
         :items="figureTypes"
-        :rules="rules.type"
         item-text="label"
         item-value="value"
-        hide-details="auto"
         @change="onFigureTypeChange"
-      />
+      >
+        <template #prepend>
+          <v-icon>{{ figureIcons[figure.type] }}</v-icon>
+        </template>
+      </v-select>
 
-      <v-textarea
-        v-if="figure.type === 'md'"
-        :value="figure.data || ''"
-        :label="$t('headers.data')"
-        :rules="rules.data"
-        @blur="onMdChange"
-      />
+      <v-btn v-if="figureParamsForm" x-large block @click="isFigureDialogEditionShown = true">
+        {{ $t('headers.configuration') }}
+      </v-btn>
 
       <!-- TODO: choose if custom param -->
-      <CustomSection v-else>
+      <!-- <CustomSection v-else>
         <ToggleableObjectTree
           :label="$t('headers.data').toString()"
           :value="Array.isArray(figure.data) ? figure.data : []"
@@ -65,9 +63,9 @@
               && $emit('update:figure', { ...figure, data: $event })
           "
         />
-      </CustomSection>
+      </CustomSection> -->
 
-      <CustomSection
+      <!-- <CustomSection
         v-if="figureParamsForm"
         :label="$t('headers.figureParams').toString()"
         collapsable
@@ -78,7 +76,7 @@
           :value="figure.params || {}"
           @input="$emit('update:figure', { ...figure, params: $event })"
         />
-      </CustomSection>
+      </CustomSection> -->
 
       <v-select
         :label="$t('headers.slots')"
@@ -86,7 +84,7 @@
         :items="availableSlots"
         :rules="rules.slots"
         multiple
-        @change="$emit('update:figure', { ...figure, slots: $event })"
+        @change="figure = { ...figure, slots: $event }"
       />
     </v-form>
   </v-sheet>
@@ -95,22 +93,19 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
 import type { AnyCustomFigure } from '~/lib/templates/customTemplates';
-import { figureTypes } from '~/lib/templates/figures';
+import { figureTypes, figureIcons } from '~/lib/templates/figures';
 import figureFormMap from '~/components/internal/utils/figures';
+import useTemplateStore, { mapRulesToVuetify } from '~/stores/template';
 
 export default defineComponent({
   props: {
-    figure: {
-      type: Object as PropType<AnyCustomFigure>,
+    id: {
+      type: String,
       required: true,
     },
-    figureIndex: {
-      type: Number,
+    layoutId: {
+      type: String,
       required: true,
-    },
-    grid: {
-      type: Object as PropType<{ rows: number, cols: number }>,
-      default: () => ({ cols: 2, rows: 2 }),
     },
     takenSlots: {
       type: Array as PropType<number[]>,
@@ -121,77 +116,41 @@ export default defineComponent({
       default: false,
     },
   },
-  emits: {
-    'update:figure': (val: AnyCustomFigure) => !!val,
-    'delete:figure': (val: AnyCustomFigure) => !!val,
-    validation: (val: true | string) => !!val,
+  setup() {
+    const templateStore = useTemplateStore();
+
+    return { templateStore };
   },
   data: () => ({
     dataMap: {} as Record<string, string | unknown[] | undefined>,
     preventDrag: false,
+    isFigureDialogEditionShown: false,
+    figureIcons,
   }),
   computed: {
-    /**
-     * Validation rules
-     */
-    rules(): Record<string, ((v: any) => true | string)[]> {
-      return {
-        type: [
-          (v) => !!v || this.$t('errors.empty').toString(),
-        ],
-        data: [],
-        slots: [
-          (v) => {
-            if (!v) {
-              return true;
-            }
-
-            const slots = [...v].sort();
-            if (slots.length === this.grid.cols * this.grid.rows) {
-              return true;
-            }
-
-            // Check if slot combinaison is possible, extracted from vega-pdf
-            // TODO[feat]: support complex squares
-            const isSameRow = slots.every(
-              // Every slot on same row
-              (s, row) => Math.floor(s / this.grid.cols) === Math.floor(slots[0] / this.grid.cols)
-                // Possible (ex: we have 3 cols, and we're asking for col 1 & 3 but not 2)
-                && (row === 0 || s - slots[row - 1] === 1),
-            );
-            const isSameCol = slots.every(
-              // Every slot on same colon
-              (s, col) => s % this.grid.cols === slots[0] % this.grid.cols
-                // Possible (ex: we have 3 rows, and we're asking for row 1 & 3 but not 2)
-                && (col === 0 || s - slots[col - 1] === this.grid.cols),
-            );
-
-            return isSameRow || isSameCol || this.$t('errors.slots').toString();
-          },
-        ],
-      };
-    },
-    /**
-     * Keeps track of validation state within the form
-     */
-    validationMap() {
-      const validationMap = new Map<keyof AnyCustomFigure, true | string>();
-      // eslint-disable-next-line no-restricted-syntax
-      for (const [field, rules] of Object.entries(this.rules)) {
-        const key = field as keyof AnyCustomFigure;
-        validationMap.set(
-          key,
-          rules.map((cb) => cb(this.figure[key])).find((v) => v !== true) || true,
+    figure: {
+      get(): AnyCustomFigure | undefined {
+        const layout = this.templateStore.currentLayouts.find(
+          ({ _: { id } }) => id === this.layoutId,
         );
-      }
-
-      return Object.fromEntries(validationMap.entries());
+        return layout?.figures.find(({ _: { id } }) => id === this.id);
+      },
+      set(val: AnyCustomFigure) {
+        this.templateStore.UPDATE_FIGURE(this.layoutId, this.id, val);
+      },
+    },
+    rules() {
+      return mapRulesToVuetify(this.templateStore.rules.figures, (k) => this.$t(k));
     },
     /**
      * Available slots
      */
     availableSlots() {
-      const length = this.grid.cols * this.grid.rows;
+      if (!this.figure) {
+        return [];
+      }
+
+      const length = this.templateStore.currentGrid.cols * this.templateStore.currentGrid.rows;
 
       const takenSet = new Set(this.takenSlots);
       const slotsSet = new Set(this.figure.slots);
@@ -214,6 +173,10 @@ export default defineComponent({
      * Components that holds figure params
      */
     figureParamsForm() {
+      if (!this.figure) {
+        return undefined;
+      }
+
       const component = figureFormMap[this.figure.type];
       if (component !== undefined) {
         return component;
@@ -221,27 +184,39 @@ export default defineComponent({
       // eslint-disable-next-line no-underscore-dangle
       return figureFormMap._default;
     },
+    /**
+     * Returns the title of the figure
+     */
+    figureTitle() {
+      if (!this.figure) {
+        return '';
+      }
+
+      const title = this.figure.params?.title;
+      if (title) {
+        return title;
+      }
+
+      return this.$t(`figure_types.${this.figure.type}`);
+    },
   },
   methods: {
     onFigureTypeChange(type: string) {
+      if (!this.figure) {
+        return;
+      }
+
       // Backup data for current type
       this.dataMap[this.figure.type] = this.figure.data;
       // Update type
-      this.$emit('update:figure', {
+      this.figure = {
         ...this.figure,
         data: this.dataMap[type],
         type,
-      });
+      };
     },
-    onMdChange(e: Event) {
-      const { value } = e.target as HTMLInputElement;
-      if (value !== this.figure.data) {
-        this.$emit('update:figure', { ...this.figure, data: value });
-      }
-    },
-    onValidationChange() {
-      const validationResult = Object.values(this.validationMap).find((v) => v !== true) || true;
-      this.$emit('validation', validationResult);
+    onFigureDelete() {
+      this.templateStore.UPDATE_FIGURE(this.layoutId, this.id, undefined);
     },
     onDragAttempt(ev: DragEvent) {
       if (!(ev.target as HTMLElement).classList.contains('figure-handle')) {
@@ -266,7 +241,7 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   headers:
-    figure: 'Figure'
+    figure: '{type} Figure'
     type: 'Figure type'
     data: 'Figure data'
     figureParams: 'Figure params'
@@ -293,11 +268,17 @@ en:
     - 'Bottom left'
     - 'Bottom right'
   errors:
-    empty: 'This field is required'
-    slots: "This combinaison of slots is not possible"
+    empty: 'This field must be set'
+    layouts:
+      _detail: 'Page {at}: {valid}'
+      mixed: 'All figures must be placed the same way (auto or manually)'
+      length: 'All pages must contains at least one figure'
+    figures:
+      _detail: 'Figure {at}: {valid}'
+      slots: 'This combinaison of slots is not possible'
 fr:
   headers:
-    figure: 'Visualisation #{i}'
+    figure: 'Visualisation {type}'
     type: 'Type de visualisation'
     data: 'Données de la visualisation'
     figureParams: 'Paramètres de la visualisation'
@@ -324,6 +305,12 @@ fr:
     - 'Bas à gauche'
     - 'Bas à droite'
   errors:
-    empty: 'Ce champ est requis'
-    slots: "Cette combinaison d'emplacement n'est pas possible"
+    empty: 'Ce champ doit être rempli'
+    layouts:
+      _detail: 'Page {at}: {valid}'
+      mixed: 'Toutes les visualisations doivent être placée de la même façon (auto ou manuellement)'
+      length: 'Chaque page doit contenir au moins une visualisation'
+    figures:
+      _detail: 'Visualisation {at}: {valid}'
+      slots: "Cette combinaison d'emplacement n'est pas possible"
 </i18n>

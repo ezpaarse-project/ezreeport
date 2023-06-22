@@ -12,7 +12,7 @@ const data: tasks.FullTask[] = [
       updatedAt: new Date(Date.parse('2023-03-24T13:23:04.688Z')),
     },
     template: {
-      extends: 'tests/slot-tests',
+      extends: 'test/slot-tests',
       inserts: [
         {
           at: 0,

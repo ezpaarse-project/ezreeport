@@ -94,6 +94,7 @@ export default defineComponent({
     },
   },
   provide() {
+    // Non reactive properties
     const $ezReeport = {
       sdk,
 
@@ -116,6 +117,7 @@ export default defineComponent({
       ) => this.hasNamespacedPermission(permission, namespaces),
     };
 
+    // Reactive properties
     Object.defineProperties(
       $ezReeport,
       {

@@ -32,14 +32,14 @@
                 @click="onTagAdded(tag)"
               >
                 <v-list-item-title>
-                  <v-chip
+                  <ReadableChip
                     :color="tag.color"
                     small
                     class="mr-2"
                     style="pointer-events: none;"
                   >
                     {{ tag.name }}
-                  </v-chip>
+                  </ReadableChip>
                 </v-list-item-title>
               </v-list-item>
 
@@ -103,13 +103,27 @@ export default defineComponent({
     currentTag: undefined as Tag | undefined,
   }),
   computed: {
+    availableTagMap() {
+      const map = new Map<string, Omit<Tag, 'name'>>();
+      // eslint-disable-next-line no-restricted-syntax
+      for (const { name, ...tag } of this.availableTags) {
+        map.set(name, tag);
+      }
+
+      return map;
+    },
     /**
      * availableTags minus actual tags
      */
     actualAvailableTags(): templates.FullTemplate['tags'] {
-      return this.availableTags.filter(
-        (tag) => !this.value.find(({ name }) => tag.name === name),
-      );
+      const valueSet = new Set(this.value);
+      const availableTags = [];
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [name, tag] of this.availableTagMap) {
+        availableTags.push({ name, ...tag });
+      }
+
+      return availableTags.filter((tag) => !valueSet.has(tag));
     },
   },
   methods: {
