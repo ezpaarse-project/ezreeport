@@ -16,7 +16,6 @@
     "sdk",
     "vue"
   ],
-  "eslint.packageManager": "npm",
   "eslint.workingDirectories": [
     {
       "mode": "auto"

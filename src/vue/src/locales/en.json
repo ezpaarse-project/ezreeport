@@ -1,0 +1,88 @@
+{
+  "template": "template|templates",
+  "layout": "page|pages",
+  "figure": "figure|figures",
+
+  "yes": "Yes",
+  "no": "No",
+  "create": "Create",
+  "edit": "Edit",
+  "delete": "Delete",
+  "cancel": "Cancel",
+  "open": "Open",
+
+  "tasks": {
+    "name": "Report name",
+    "targets": "Receivers",
+    "dates": "Dates",
+    "lastRun": "Last run",
+    "nextRun": "Next run",
+    "enabled": {
+      "true": "Active",
+      "false": "Inactive"
+    },
+
+    "tabs": {
+      "details": "Details",
+      "template": "Template"
+    },
+
+    "errors": {
+      "_default": "An error is in this form"
+    }
+  },
+
+  "templates": {
+    "base": ""
+  },
+
+  "layouts": {
+    "errors": {
+      "_detail": "Page {at}: {valid}",
+      "mixed_positions": "All figures must be placed the same way (auto or manually)",
+      "length": "All pages must contains at least one figure"
+    }
+  },
+
+  "figures": {
+    "types": {
+      "table": "Table",
+      "md": "Markdown",
+      "metric": "Metrics",
+      "arc": "Arc",
+      "area": "Area",
+      "bar": "Bar",
+      "line": "Line",
+      "point": "Point",
+      "rect": "Rect",
+      "rule": "Rule",
+      "text": "Text",
+      "tick": "Tick",
+      "trail": "Trail",
+      "circle": "Circle",
+      "square": "Square",
+
+      "unknown": "Unknown"
+    },
+
+    "errors": {
+      "_detail": "Figure {at}: {valid}",
+      "slot_incompatibility": "This combinaison of slots is not possible",
+      "no_elements": "This figure doesn't have any elements defined"
+    }
+  },
+
+  "fetchOptions": {
+    "aggName": "Aggregation name",
+    "index": "Elastic index",
+    "filters": "Filters"
+  },
+
+  "errors": {
+    "empty": "This field must be set",
+    "fetch": "An error occurred when fetching data",
+    "email_format": "One or more address aren't valid",
+    "valid": "The value must be valid",
+    "negative": "The value must be positive"
+  }
+}

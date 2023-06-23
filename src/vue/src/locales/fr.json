@@ -1,0 +1,84 @@
+{
+  "template": "modèle|modèles",
+  "layout": "page|pages",
+  "figure": "visualisation|visualisations",
+
+  "yes": "Oui",
+  "no": "No",
+  "create": "Créer",
+  "edit": "Éditer",
+  "delete": "Supprimer",
+  "cancel": "Annuler",
+  "open": "Ouvrir",
+
+  "tasks": {
+    "name": "Nom du rapport",
+    "targets": "Destinataires",
+    "dates": "Dates",
+    "lastRun": "Dernière itération",
+    "nextRun": "Prochaine itération",
+    "enabled": {
+      "true": "Actif",
+      "false": "Inactif"
+    },
+
+    "tabs": {
+      "details": "Détails",
+      "template": "Modèle"
+    },
+
+    "errors": {
+      "_default": "Une erreur est présente dans ce formulaire"
+    }
+  },
+
+  "layouts": {
+    "errors": {
+      "_detail": "Page {at}: {valid}",
+      "mixed_positions": "Toutes les visualisations doivent être placée de la même façon (auto ou manuellement)",
+      "length": "Chaque page doit contenir au moins une visualisation"
+    }
+  },
+
+  "figures": {
+    "types": {
+      "table": "Table",
+      "md": "Markdown",
+      "metric": "Métriques",
+      "arc": "Circulaire",
+      "area": "Aire",
+      "bar": "Bâtons",
+      "line": "Courbes",
+      "point": "Nuage de point",
+      "rect": "Rectangle",
+      "rule": "Règle",
+      "text": "Texte",
+      "tick": "Tick",
+      "trail": "Trail",
+      "circle": "Cercle",
+      "square": "Carré",
+
+      "unknown": "Inconnu"
+    },
+
+     "errors": {
+      "_detail": "Visualisation {at}: {valid}",
+      "slot_incompatibility": "Cette combinaison d'emplacement n'est pas possible",
+      "no_elements": "Cette visualisation n'a pas d'éléments de défini"
+    }
+  },
+
+  "fetchOptions": {
+    "aggName": "Nom de l'aggregation",
+    "index": "Index Elastic",
+    "filters": "Filtres"
+  },
+
+  "errors": {
+    "empty": "Ce champ doit être rempli",
+    "fetch": "Une erreur est survenue lors de la récupération des données",
+    "email_format": "Une ou plusieurs addresses ne sont pas valides",
+    "valid": "La valeur doit être valide",
+    "negative": "La valeur doit être positive"
+  }
+}

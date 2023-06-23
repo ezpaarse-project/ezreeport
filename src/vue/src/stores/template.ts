@@ -15,8 +15,13 @@ import pinia from '.';
 // Utility types
 export type AnyTemplate = templates.FullTemplate['body'] | tasks.FullTask['template'];
 export type Grid = { cols: number, rows: number };
-export type ValidationResult = { i18nKey: string, figure?: number, layout?: number } | true;
 export type ValidationRule<T = any> = (v: T) => ValidationResult;
+export type ValidationResult = true | {
+  i18nKey: string,
+  figure?: number,
+  layout?: number,
+  field?: string
+};
 export type FetchOptions = {
   index: string | undefined;
   isFetchCount: boolean;
@@ -71,7 +76,7 @@ export const transformFetchOptions = (fetchOptions: any): FetchOptions => {
   }
 
   // Extract fetch count with compatible type definition
-  if (fetchOptions.fetchCount && typeof fetchOptions.fetchCount === 'string') {
+  if (fetchOptions.fetchCount != null && typeof fetchOptions.fetchCount === 'string') {
     opts.fetchCount = fetchOptions.fetchCount;
     opts.isFetchCount = typeof opts.fetchCount === 'string';
   }
@@ -85,7 +90,7 @@ export const transformFetchOptions = (fetchOptions: any): FetchOptions => {
   }
 
   // Extract index with compatible type definition
-  if (fetchOptions.index) {
+  if (fetchOptions.index != null) {
     opts.index = fetchOptions.index.toString();
   }
 
@@ -226,7 +231,7 @@ const useTemplatePinia = defineStore('ezr_template', {
     /**
      * Validation rules
      */
-    rules(): Record<'template' | 'layouts' | 'figures', Record<string, ValidationRule[]>> {
+    rules(): Record<string, Record<string, ValidationRule[]>> {
       return {
         template: {
           index: [
@@ -235,7 +240,7 @@ const useTemplatePinia = defineStore('ezr_template', {
                 return true;
               }
 
-              return v?.length > 0 || { i18nKey: 'errors.empty' };
+              return v?.length > 0 || { i18nKey: '$ezreeport.errors.empty' };
             },
           ],
         },
@@ -249,12 +254,12 @@ const useTemplatePinia = defineStore('ezr_template', {
               for (const figure of v) {
                 const isFigAuto = (figure.slots?.length ?? 0) === 0 ?? true;
                 if (isAuto !== isFigAuto) {
-                  return { i18nKey: 'errors.layouts.mixed' };
+                  return { i18nKey: '$ezreeport.layouts.errors.mixed_positions' };
                 }
               }
               return true;
             },
-            (v: AnyCustomFigure[]) => v.length > 0 || { i18nKey: 'errors.layouts.length' },
+            (v: AnyCustomFigure[]) => v.length > 0 || { i18nKey: '$ezreeport.layouts.errors.length' },
           ],
         },
 
@@ -286,7 +291,7 @@ const useTemplatePinia = defineStore('ezr_template', {
                   && (col === 0 || s - slots[col - 1] === grid.cols),
               );
 
-              return isSameRow || isSameCol || { i18nKey: 'errors.figures.slots' };
+              return isSameRow || isSameCol || { i18nKey: '$ezreeport.figures.errors.slot_incompatibility' };
             },
           ],
         },
@@ -395,8 +400,6 @@ const useTemplatePinia = defineStore('ezr_template', {
       if (layoutIndex < 0) {
         return;
       }
-
-      // TODO: TaskDialogCreate
 
       if (layout) {
         layouts.splice(layoutIndex, 1, layout);
