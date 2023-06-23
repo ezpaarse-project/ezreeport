@@ -37,19 +37,19 @@
               mdi-drag-vertical-variant
             </v-icon>
 
-            <span>
-              {{ column.header }}
-            </span>
+            {{ column.header }}
 
             <v-btn
               v-if="!readonly"
               icon
               x-small
               class="ml-1"
+              color="error"
               @click="onColumnDeleted(column)"
             >
               <v-icon>mdi-delete</v-icon>
             </v-btn>
+
             <v-btn
               icon
               x-small

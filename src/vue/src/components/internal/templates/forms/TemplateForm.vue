@@ -23,7 +23,7 @@
           >
             <template #append-outer>
               <v-btn v-if="perms.readOne" @click="openBaseDialog()">
-                {{ $t('actions.see-extends') }}
+                {{ $t('$ezreeport.open') }}
               </v-btn>
             </template>
           </v-select>
@@ -31,7 +31,7 @@
           <v-text-field
             v-if="taskTemplate"
             :value="templateStore.currentFetchOptions?.index"
-            :label="$t('headers.fetchIndex').toString()"
+            :label="$t('$ezreeport.fetchOptions.index').toString()"
             :rules="rules.index"
             dense
             class="pt-4"
@@ -39,7 +39,7 @@
           />
 
           <CustomSection
-            :label="$t('headers.fetchFilters').toString()"
+            :label="$t('$ezreeport.fetchOptions.filters').toString()"
             :collapse-disabled="(templateStore.currentFetchOptions?.filtersCount ?? 0) <= 0"
             collapsable
           >
@@ -296,11 +296,14 @@ export default defineComponent({
       }
 
       let error = this.$t(valid.i18nKey);
+      if (valid.field) {
+        error += ` (${valid.field})`;
+      }
       if (valid.figure !== undefined) {
-        error = this.$t('errors.figures._detail', { at: valid.figure, valid: error });
+        error = this.$t('$ezreeport.figures.errors._detail', { at: valid.figure, valid: error });
       }
       if (valid.layout !== undefined) {
-        error = this.$t('errors.layouts._detail', { at: valid.layout, valid: error });
+        error = this.$t('$ezreeport.layouts.errors._detail', { at: valid.layout, valid: error });
       }
       return error;
     },
@@ -414,7 +417,7 @@ fr:
   errors:
     empty: 'Ce champ doit être rempli'
     layouts:
-      _detail: 'Page {page}: {valid}'
+      _detail: 'Page {at}: {valid}'
       mixed: 'Toutes les visualisations doivent être placée de la même façon (auto ou manuellement)'
       length: 'Chaque page doit contenir au moins une visualisation'
     figures:

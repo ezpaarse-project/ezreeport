@@ -8,11 +8,33 @@
     @mousedown="onDragAttempt"
     @dragstart="preventEvent"
   >
+    <!-- TODO: Move to only dialog for whole template -->
+    <FigureDialogParams
+      v-model="isFigureDialogParamsShown"
+      :id="id"
+      :layout-id="layoutId"
+    />
+
     <v-form>
       <div class="d-flex align-center">
         <v-icon v-if="draggable" class="figure-handle">mdi-drag</v-icon>
 
-        {{ figureTitle }}
+        <div v-if="figure.type === 'md' || figure.type === 'metric'" class="py-2">
+          {{ figureTitle }}
+        </div>
+        <v-text-field
+          v-else
+          :label="$t('headers.title')"
+          :value="figure.params.title"
+          :placeholder="figureTitle"
+          dense
+          hide-details
+          persistent-placeholder
+          class="py-1"
+          @input="figureTitle = $event"
+        />
+
+        <v-spacer />
 
         <v-tooltip top v-if="figure._.valid !== true" color="warning">
           <template #activator="{ attrs, on }">
@@ -29,10 +51,12 @@
           <span>{{ $t(figure._.valid.i18nKey) }}</span>
         </v-tooltip>
 
-        <v-spacer />
-
         <v-btn icon color="error" x-small @click="onFigureDelete">
           <v-icon>mdi-delete</v-icon>
+        </v-btn>
+
+        <v-btn icon x-small @click="isFigureDialogParamsShown = true">
+          <v-icon>mdi-cog</v-icon>
         </v-btn>
       </div>
 
@@ -42,41 +66,14 @@
         :items="figureTypes"
         item-text="label"
         item-value="value"
+        hide-details
+        class="my-2"
         @change="onFigureTypeChange"
       >
         <template #prepend>
           <v-icon>{{ figureIcons[figure.type] }}</v-icon>
         </template>
       </v-select>
-
-      <v-btn v-if="figureParamsForm" x-large block @click="isFigureDialogEditionShown = true">
-        {{ $t('headers.configuration') }}
-      </v-btn>
-
-      <!-- TODO: choose if custom param -->
-      <!-- <CustomSection v-else>
-        <ToggleableObjectTree
-          :label="$t('headers.data').toString()"
-          :value="Array.isArray(figure.data) ? figure.data : []"
-          @input="
-            Array.isArray($event)
-              && $emit('update:figure', { ...figure, data: $event })
-          "
-        />
-      </CustomSection> -->
-
-      <!-- <CustomSection
-        v-if="figureParamsForm"
-        :label="$t('headers.figureParams').toString()"
-        collapsable
-        style="background: transparent;"
-      >
-        <component
-          :is="figureParamsForm"
-          :value="figure.params || {}"
-          @input="$emit('update:figure', { ...figure, params: $event })"
-        />
-      </CustomSection> -->
 
       <v-select
         :label="$t('headers.slots')"
@@ -94,7 +91,6 @@
 import { defineComponent, type PropType } from 'vue';
 import type { AnyCustomFigure } from '~/lib/templates/customTemplates';
 import { figureTypes, figureIcons } from '~/lib/templates/figures';
-import figureFormMap from '~/components/internal/utils/figures';
 import useTemplateStore, { mapRulesToVuetify } from '~/stores/template';
 
 export default defineComponent({
@@ -124,7 +120,7 @@ export default defineComponent({
   data: () => ({
     dataMap: {} as Record<string, string | unknown[] | undefined>,
     preventDrag: false,
-    isFigureDialogEditionShown: false,
+    isFigureDialogParamsShown: false,
     figureIcons,
   }),
   computed: {
@@ -165,39 +161,35 @@ export default defineComponent({
      */
     figureTypes() {
       return figureTypes.map((value) => ({
-        label: this.$t(`figure_types.${value}`),
+        label: this.$t(`$ezreeport.figures.types.${value}`),
         value,
       }));
     },
     /**
-     * Components that holds figure params
-     */
-    figureParamsForm() {
-      if (!this.figure) {
-        return undefined;
-      }
-
-      const component = figureFormMap[this.figure.type];
-      if (component !== undefined) {
-        return component;
-      }
-      // eslint-disable-next-line no-underscore-dangle
-      return figureFormMap._default;
-    },
-    /**
      * Returns the title of the figure
      */
-    figureTitle() {
-      if (!this.figure) {
-        return '';
-      }
+    figureTitle: {
+      get(): string {
+        const title = this.figure?.params?.title;
+        if (title) {
+          return title.toString();
+        }
 
-      const title = this.figure.params?.title;
-      if (title) {
-        return title;
-      }
+        return this.$t(`$ezreeport.figures.types.${this.figure?.type || 'unknown'}`).toString();
+      },
+      set(title: string) {
+        if (!this.figure) {
+          return;
+        }
 
-      return this.$t(`figure_types.${this.figure.type}`);
+        this.figure = {
+          ...this.figure,
+          params: {
+            ...this.figure.params,
+            title,
+          },
+        };
+      },
     },
   },
   methods: {
@@ -241,76 +233,22 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   headers:
-    figure: '{type} Figure'
-    type: 'Figure type'
-    data: 'Figure data'
-    figureParams: 'Figure params'
+    type: 'Type'
     slots: 'Figure slot(s)'
-  figure_types:
-    table: 'Table'
-    md: 'Markdown'
-    metric: 'Metrics'
-    arc: 'Arc'
-    area: 'Area'
-    bar: 'Bar'
-    line: 'Line'
-    point: 'Point'
-    rect: 'Rect'
-    rule: 'Rule'
-    text: 'Text'
-    tick: 'Tick'
-    trail: 'Trail'
-    circle: 'Circle'
-    square: 'Square'
+    title: "Title"
   slots:
     - 'Top left'
     - 'Top right'
     - 'Bottom left'
     - 'Bottom right'
-  errors:
-    empty: 'This field must be set'
-    layouts:
-      _detail: 'Page {at}: {valid}'
-      mixed: 'All figures must be placed the same way (auto or manually)'
-      length: 'All pages must contains at least one figure'
-    figures:
-      _detail: 'Figure {at}: {valid}'
-      slots: 'This combinaison of slots is not possible'
 fr:
   headers:
-    figure: 'Visualisation {type}'
-    type: 'Type de visualisation'
-    data: 'Données de la visualisation'
-    figureParams: 'Paramètres de la visualisation'
-    slots: 'Emplacements de la visualisation'
-  figure_types:
-    table: 'Table'
-    md: 'Markdown'
-    metric: 'Métriques'
-    arc: 'Circulaire'
-    area: 'Aire'
-    bar: 'Bâtons'
-    line: 'Courbes'
-    point: 'Nuage de point'
-    rect: 'Rectangle'
-    rule: 'Règle'
-    text: 'Texte'
-    tick: 'Tick' # TODO French translation
-    trail: 'Trail' # TODO French translation
-    circle: 'Cercle'
-    square: 'Carré'
+    type: 'Type'
+    slots: 'Emplacement(s)'
+    title: 'Titre'
   slots:
     - 'Haut à gauche'
     - 'Haut à droite'
     - 'Bas à gauche'
     - 'Bas à droite'
-  errors:
-    empty: 'Ce champ doit être rempli'
-    layouts:
-      _detail: 'Page {at}: {valid}'
-      mixed: 'Toutes les visualisations doivent être placée de la même façon (auto ou manuellement)'
-      length: 'Chaque page doit contenir au moins une visualisation'
-    figures:
-      _detail: 'Visualisation {at}: {valid}'
-      slots: "Cette combinaison d'emplacement n'est pas possible"
 </i18n>

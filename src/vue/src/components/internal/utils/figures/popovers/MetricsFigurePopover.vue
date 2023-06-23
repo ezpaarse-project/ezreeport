@@ -12,27 +12,32 @@
     <v-card>
       <v-form v-model="valid">
         <v-card-title>
-          <v-text-field
-            v-model="innerDataKey"
-            :label="$t('headers.dataKey')"
-            :readonly="readonly"
-            :rules="rules.dataKey"
-            hide-details="auto"
-            @blur="onLabelUpdated({ dataKey: innerDataKey, field: innerField || undefined })"
-          />
+          <div class="d-flex" style="gap: 2rem">
+            <v-combobox
+              :value="innerDataKey"
+              :label="$t('$ezreeport.fetchOptions.aggName')"
+              :items="availableAggs"
+              :readonly="readonly"
+              :rules="rules.dataKey"
+              hide-details="auto"
+              @update:search-input="innerDataKey = $event"
+              @blur="onLabelKeyUpdated"
+            />
+
+            <v-text-field
+              v-model="innerField"
+              :label="$t('headers.field')"
+              :readonly="readonly"
+              :rules="rules.field"
+              placeholder="value"
+              persistent-placeholder
+              hide-details="auto"
+              @blur="onLabelKeyUpdated"
+            />
+          </div>
         </v-card-title>
 
         <v-card-text>
-          <v-text-field
-            v-model="innerField"
-            :label="$t('headers.field')"
-            :readonly="readonly"
-            :rules="rules.field"
-            placeholder="value"
-            persistent-placeholder
-            @blur="onLabelUpdated({ dataKey: innerDataKey, field: innerField || undefined })"
-          />
-
           <v-text-field
             :value="element.text"
             :label="$t('headers.text')"
@@ -53,30 +58,31 @@
           />
 
           <!-- TODO: Since only date is supported, and date only take one argument -->
-          <!-- Format -->
-          <v-text-field
-            :value="element.format?.params?.[0] || ''"
-            :label="$t('headers.formatParams')"
-            :readonly="readonly"
-            :disabled="!element.format?.type"
-            hide-details="auto"
-            @input="onLabelFormatUpdated({ params: $event ? [$event] : undefined })"
-          />
-          <!-- Format hints -->
-          <span v-if="element.format?.type" class="text--secondary fake-hint">
-            <i18n v-if="element.format?.type === 'date'" path="hints.dateFormat" tag="span">
-              <template #link>
-                <a
-                  href="https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Unicode Technical Standard #35
-                  <v-icon x-small style="color: inherit;">mdi-open-in-new</v-icon>
-                </a>
-              </template>
-            </i18n>
-          </span>
+          <template v-if="element.format?.type">
+            <!-- Format -->
+            <v-text-field
+              :value="element.format?.params?.[0] || ''"
+              :label="$t('headers.formatParams')"
+              :readonly="readonly"
+              hide-details="auto"
+              @input="onLabelFormatUpdated({ params: $event ? [$event] : undefined })"
+            />
+            <!-- Format hints -->
+            <span class="text--secondary fake-hint">
+              <i18n v-if="element.format?.type === 'date'" path="hints.dateFormat" tag="span">
+                <template #link>
+                  <a
+                    href="https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Unicode Technical Standard #35
+                    <v-icon x-small style="color: inherit;">mdi-open-in-new</v-icon>
+                  </a>
+                </template>
+              </i18n>
+            </span>
+          </template>
 
           <!-- Advanced -->
           <CustomSection v-if="unsupportedParams.shouldShow">
@@ -146,6 +152,10 @@ export default defineComponent({
       type: Array as PropType<string[]>,
       default: () => [],
     },
+    availableAggs: {
+      type: Array as PropType<string[]>,
+      default: () => [],
+    },
     /**
      * Is the popover readonly
      */
@@ -170,7 +180,7 @@ export default defineComponent({
     rules() {
       return {
         dataKey: [
-          (v: string) => v.length > 0 || this.$t('errors.empty'),
+          (v: string) => v?.length > 0 || this.$t('errors.empty'),
           !this.isDuplicate || this.$t('errors.no_duplicate'),
         ],
         field: [
@@ -241,6 +251,10 @@ export default defineComponent({
         this.$emit('updated', { ...this.element, ...data });
       }
     },
+    async onLabelKeyUpdated() {
+      await this.$nextTick();
+      this.onLabelUpdated({ dataKey: this.innerDataKey, field: this.innerField || undefined });
+    },
     onLabelFormatUpdated(data: Partial<Label['format']>) {
       let format: Partial<Label['format']> | undefined = {
         ...(this.element.format ?? {}),
@@ -269,7 +283,6 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   headers:
-    dataKey: 'Key to get data'
     field: 'Precise field'
     text: 'Text to show'
     type: 'Type of data'
@@ -285,7 +298,6 @@ en:
     dateFormat: 'Format of the date, based on {link}'
 fr:
   headers:
-    dataKey: 'Clé a utiliser pour récupérer les données'
     field: 'Champ précis'
     text: 'Texte à afficher'
     type: 'Type de donnée'

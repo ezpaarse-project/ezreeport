@@ -1,175 +1,162 @@
 <template>
-  <v-form v-model="valid">
-    <!-- Data key -->
-    <v-text-field
-      :value="value.dataKey"
-      :label="$t('headers.dataKey')"
-      :readonly="readonly"
-      @input="onParamUpdate({ dataKey: $event || undefined })"
-    />
-
-    <!-- Title -->
-    <v-combobox
-      :value="innerTitle"
-      :items="possibleVars"
-      :label="$t('headers.title')"
-      :return-object="false"
-      :readonly="readonly"
-      no-filter
-      hide-details
-      ref="titleCB"
-      @input="onAutocompleteChoice"
-      @update:search-input="innerTitle = $event"
-      @blur="onParamUpdate({ title: innerTitle || undefined })"
-    >
-      <template #item="{ item, on, attrs }">
-        <v-list-item two-line v-bind="attrs" v-on="on">
-          <v-list-item-content>
-            <v-list-item-title>{{ item.value }}</v-list-item-title>
-            <v-list-item-subtitle>{{ $t(`vars.${item.text}`) }}</v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
-      </template>
-
-      <template #append>
-        <div />
-      </template>
-    </v-combobox>
-
-    <!-- Value -->
-    <CustomSection
-      :label="$t('headers.value').toString()"
-      :default-value="true"
-      collapsable
-    >
-      <div class="d-flex align-end">
-        <i class="mb-1">
-          {{ value.dataKey }}[].
-        </i>
-        <v-text-field
-          :value="value.value.field"
-          :label="$t('value.headers.field')"
-          :readonly="readonly"
-          hide-details
-          @input="onSubParamUpdate('value', { field: $event })"
-        />
-      </div>
-      <i18n path="hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
-        <template #code>
-          <code>{{ $t('hints.dot_notation.code') }}</code>
-        </template>
-      </i18n>
-
-      <v-text-field
-        :value="value.value.title"
-        :label="$t('value.headers.title')"
+  <v-row>
+    <v-col>
+      <FigureElasticForm
+        :layout-id="layoutId"
         :readonly="readonly"
-        @input="onSubParamUpdate('value', { title: $event })"
       />
-    </CustomSection>
+    </v-col>
 
-    <!-- Label -->
-    <CustomSection
-      :label="$t('headers.label').toString()"
-      :default-value="true"
-      collapsable
-    >
-      <div class="d-flex align-end">
-        <i class="mb-1">
-          {{ value.dataKey }}[].
-        </i>
-        <v-text-field
-          :value="value.label.field"
-          :label="$t('label.headers.field')"
+    <v-divider vertical class="mt-4" />
+    <v-col>
+      <v-form v-if="figureParams" v-model="valid">
+        <!-- Data key -->
+        <v-combobox
+          :value="figureParams?.dataKey"
+          :label="$t('$ezreeport.fetchOptions.aggName')"
+          :items="availableAggs"
           :readonly="readonly"
-          hide-details
-          @input="onSubParamUpdate('label', { field: $event })"
-        />
-      </div>
-      <i18n path="hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
-        <template #code>
-          <code>{{ $t('hints.dot_notation.code') }}</code>
-        </template>
-      </i18n>
-
-      <v-text-field
-        :value="value.label.title"
-        :label="$t('label.headers.title')"
-        :readonly="readonly"
-        hide-details
-        @input="onSubParamUpdate('label', { title: $event })"
-      />
-
-      <v-checkbox
-        :input-value="value.label.legend !== null"
-        :label="$t('label.headers.showLegend')"
-        :readonly="readonly"
-        hide-details
-        @change="onSubParamUpdate('label', { legend: $event })"
-        @click.prevent=""
-      />
-    </CustomSection>
-
-    <!-- Data Labels -->
-    <CustomSection
-      :label="$t(value.dataLabel ? 'headers.dataLabel' : 'dataLabel.headers.show').toString()"
-      collapsable
-    >
-      <template #collapse>
-        <v-switch
-          :input-value="!!value.dataLabel"
-          :readonly="readonly"
-          dense
-          hide-details
-          class="mt-0"
-          @change="onDataLabelUpdate({ format: $event ? 'numeric' : null })"
-          @click.prevent=""
-        />
-      </template>
-
-      <template v-if="value.dataLabel">
-        <v-select
-          :value="value.dataLabel.format"
-          :items="possibleDataLabelFormats"
-          :label="$t('dataLabel.headers.format')"
-          :readonly="readonly"
-          hide-details
-          @change="onDataLabelUpdate({ format: $event })"
+          hide-details="auto"
+          @input="onParamUpdate({ dataKey: $event || undefined })"
         />
 
-        <v-checkbox
-          :input-value="value.dataLabel.showLabel"
-          :label="$t('dataLabel.headers.showLabels')"
-          :readonly="readonly"
-          hide-details
-          @change="onDataLabelUpdate({ showLabel: $event })"
-          @click.prevent=""
-        />
-      </template>
+        <!-- Value -->
+        <CustomSection
+          :label="$t('headers.value').toString()"
+          :default-value="true"
+          collapsable
+        >
+          <div class="d-flex align-end">
+            <i class="mb-1">
+              {{ figureParams.dataKey }}[].
+            </i>
+            <v-text-field
+              :value="figureParams.value?.field"
+              :label="$t('value.headers.field')"
+              :readonly="readonly"
+              hide-details
+              @input="onSubParamUpdate('value', { field: $event })"
+            />
+          </div>
+          <i18n path="hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
+            <template #code>
+              <code>{{ $t('hints.dot_notation.code') }}</code>
+            </template>
+          </i18n>
 
-    </CustomSection>
+          <v-text-field
+            :value="figureParams.value?.title"
+            :label="$t('value.headers.title')"
+            :readonly="readonly"
+            @input="onSubParamUpdate('value', { title: $event })"
+          />
+        </CustomSection>
 
-    <!-- Advanced -->
-    <CustomSection v-if="unsupportedParams.shouldShow">
-      <ToggleableObjectTree
-        :value="unsupportedParams.value"
-        :label="$t('headers.advanced').toString()"
-        v-on="unsupportedParams.listeners"
-      />
-    </CustomSection>
-  </v-form>
+        <!-- Label -->
+        <CustomSection
+          :label="$t('headers.label').toString()"
+          :default-value="true"
+          collapsable
+        >
+          <div class="d-flex align-end">
+            <i class="mb-1">
+              {{ figureParams.dataKey }}[].
+            </i>
+            <v-text-field
+              :value="figureParams.label?.field"
+              :label="$t('label.headers.field')"
+              :readonly="readonly"
+              hide-details
+              @input="onSubParamUpdate('label', { field: $event })"
+            />
+          </div>
+          <i18n path="hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
+            <template #code>
+              <code>{{ $t('hints.dot_notation.code') }}</code>
+            </template>
+          </i18n>
+
+          <v-text-field
+            :value="figureParams.label?.title"
+            :label="$t('label.headers.title')"
+            :readonly="readonly"
+            hide-details
+            @input="onSubParamUpdate('label', { title: $event })"
+          />
+
+          <v-checkbox
+            :input-value="figureParams.label?.legend !== null"
+            :label="$t('label.headers.showLegend')"
+            :readonly="readonly"
+            hide-details
+            @change="onSubParamUpdate('label', { legend: $event })"
+            @click.prevent=""
+          />
+        </CustomSection>
+
+        <!-- Data Labels -->
+        <CustomSection
+          :label="$t(figureParams.dataLabel ? 'headers.dataLabel' : 'dataLabel.headers.show').toString()"
+          collapsable
+        >
+          <template #collapse>
+            <v-switch
+              :input-value="!!figureParams.dataLabel"
+              :readonly="readonly"
+              dense
+              hide-details
+              class="mt-0"
+              @change="onDataLabelUpdate({ format: $event ? 'numeric' : null })"
+              @click.prevent=""
+            />
+          </template>
+
+          <template v-if="figureParams.dataLabel">
+            <v-select
+              :value="figureParams.dataLabel.format"
+              :items="possibleDataLabelFormats"
+              :label="$t('dataLabel.headers.format')"
+              :readonly="readonly"
+              hide-details
+              @change="onDataLabelUpdate({ format: $event })"
+            />
+
+            <v-checkbox
+              :input-value="figureParams.dataLabel.showLabel"
+              :label="$t('dataLabel.headers.showLabels')"
+              :readonly="readonly"
+              hide-details
+              @change="onDataLabelUpdate({ showLabel: $event })"
+              @click.prevent=""
+            />
+          </template>
+
+        </CustomSection>
+
+        <!-- Advanced -->
+        <CustomSection v-if="unsupportedParams.shouldShow">
+          <ToggleableObjectTree
+            :value="unsupportedParams.value"
+            :label="$t('headers.advanced').toString()"
+            v-on="unsupportedParams.listeners"
+          />
+        </CustomSection>
+      </v-form>
+    </v-col>
+  </v-row>
 </template>
 
 <script lang="ts">
 import { pick, merge } from 'lodash';
-import { defineComponent, type PropType } from 'vue';
+import { defineComponent } from 'vue';
+import useTemplateStore from '~/stores/template';
 
-/**
- * Possibles vars in title
- */
-const templateVars = [
-  'length',
-];
+// /**
+//  * Possibles vars in title
+//  */
+// const templateVars = [
+//   'length',
+// ];
 
 /**
  * Possible formats for data labels
@@ -224,11 +211,12 @@ const supportedParams = {
 
 export default defineComponent({
   props: {
-    /**
-     * Parameters of figure
-     */
-    value: {
-      type: Object as PropType<VegaParams>,
+    id: {
+      type: String,
+      required: true,
+    },
+    layoutId: {
+      type: String,
       required: true,
     },
     /**
@@ -242,20 +230,47 @@ export default defineComponent({
   emits: {
     input: (val: VegaParams) => !!val,
   },
-  data: (vm) => ({
-    valid: false,
+  setup() {
+    const templateStore = useTemplateStore();
 
-    innerTitle: vm.value.title,
+    return { templateStore };
+  },
+  data: () => ({
+    valid: false,
   }),
   computed: {
-    /**
-     * Possible vars in title with localisation
-     */
-    possibleVars() {
-      return templateVars.map((text) => ({
-        value: `{{ ${text} }}`,
-        text,
-      }));
+    figureParams: {
+      get(): VegaParams | undefined {
+        const layout = this.templateStore.currentLayouts.find(
+          ({ _: { id } }) => id === this.layoutId,
+        );
+        const figure = layout?.figures.find(({ _: { id } }) => id === this.id);
+
+        if (!figure?.params) {
+          return undefined;
+        }
+        // TODO: Better Validation
+        return figure.params as VegaParams;
+      },
+      set(params: VegaParams) {
+        const layout = this.templateStore.currentLayouts.find(
+          ({ _: { id } }) => id === this.layoutId,
+        );
+        const figure = layout?.figures.find(({ _: { id } }) => id === this.id);
+
+        if (!figure) {
+          return;
+        }
+
+        this.templateStore.UPDATE_FIGURE(
+          this.layoutId,
+          this.id,
+          {
+            ...figure,
+            params,
+          },
+        );
+      },
     },
     /**
      * Possible formats for data labels with localisation
@@ -273,22 +288,33 @@ export default defineComponent({
       let listeners = {};
       if (!this.readonly) {
         listeners = {
-          input: (val: Record<string, any>) => { this.$emit('input', merge(this.value, val)); },
+          input: (val: Record<string, any>) => {
+            this.figureParams = merge(this.figureParams, val);
+          },
         };
       }
 
-      const diff = this.objectDiff(this.value, supportedParams);
+      const diff = this.objectDiff(this.figureParams ?? {}, supportedParams);
       return {
         shouldShow: !this.readonly || diff.length > 0,
-        value: pick(this.value, diff),
+        value: pick(this.figureParams, diff),
         listeners,
       };
     },
-  },
-  watch: {
-    // eslint-disable-next-line func-names
-    'value.title': function (title: string) {
-      this.innerTitle = title;
+    availableAggs() {
+      const layout = this.templateStore.currentLayouts.find(
+        ({ _: { id } }) => id === this.layoutId,
+      );
+      if (!layout || !layout.fetchOptions) {
+        return [];
+      }
+
+      const aggs = 'aggs' in layout.fetchOptions ? layout.fetchOptions.aggs : layout.fetchOptions.aggregations;
+      if (!Array.isArray(aggs)) {
+        return [];
+      }
+
+      return (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
     },
   },
   methods: {
@@ -330,22 +356,18 @@ export default defineComponent({
       );
       return diffs;
     },
-    async onAutocompleteChoice(choice: string) {
-      if (choice) {
-        const actual = this.innerTitle;
-        await this.$nextTick();
-        this.innerTitle = actual + choice;
-        (this.$refs.titleCB as HTMLElement)?.focus();
-      }
-    },
     onParamUpdate(data: Partial<VegaParams>) {
-      if (this.valid) {
-        this.$emit('input', { ...this.value, ...data });
+      if (this.valid && this.figureParams) {
+        this.figureParams = { ...this.figureParams, ...data };
       }
     },
     onSubParamUpdate<T extends SubVegaParamsKeys>(subParam: T, data: Partial<VegaParams[T]>) {
+      if (!this.figureParams) {
+        return;
+      }
+
       const subParamValue = {
-        ...(this.value[subParam] ?? {}),
+        ...(this.figureParams[subParam] ?? {}),
         ...(data ?? {}),
       };
       this.onParamUpdate({ [subParam]: subParamValue });
@@ -371,7 +393,6 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   headers:
-    dataKey: 'Key to get data'
     title: 'Title'
     value: 'Data parameters'
     label: 'Series parameter'
@@ -402,7 +423,6 @@ en:
       percent: 'Percent'
 fr:
   headers:
-    dataKey: 'Clé a utiliser pour récupérer les données'
     title: 'Titre'
     value: 'Paramètres des données'
     label: 'Paramètres des séries'

@@ -89,9 +89,10 @@ export default defineComponent({
      * Note: called by parent via ref
      */
     async onElementCreated() {
-      this.$emit('input', [...this.value, { name: `agg${this.value.length}` }]);
+      const newIndex = this.value.length;
+      this.$emit('input', [...this.value, { name: `agg${newIndex}` }]);
       await this.$nextTick();
-      this.selectedIndex = this.value.length;
+      this.selectedIndex = newIndex;
     },
     /**
      * Update agg value when a element is edited

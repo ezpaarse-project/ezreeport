@@ -1,83 +1,96 @@
 <template>
-  <div>
-    <MetricsFigurePopover
-      v-if="currentLabel"
-      v-model="labelPopoverShown"
-      :element="currentLabel"
-      :coords="labelPopoverCoords"
-      :readonly="readonly"
-      :currentKeyFields="currentKeyFields"
-      @updated="onCurrentLabelUpdated"
-    />
-
-    <CustomSection :label="$t('headers.labels').toString()" style="border: none;">
-      <template #actions>
-        <v-btn
-          v-if="!readonly"
-          icon
-          x-small
-          color="success"
-          @click="showLabelPopover($event)"
-        >
-          <v-icon>mdi-plus</v-icon>
-        </v-btn>
-      </template>
-
-      <v-list dense rounded>
-        <v-list-item
-          v-for="(label, i) in labels"
-          :key="label._.dataKeyField"
-          :draggable="label._.dragged"
-          :ripple="!label._.dragged"
-          :class="[label._.dragged && 'v-item--active primary--text']"
-          v-on="getEventListeners(label, i)"
-        >
-          <v-list-item-action v-if="!readonly">
-            <v-btn
-              icon
-              small
-              @click="onLabelDelete(label)"
-            >
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-          </v-list-item-action>
-
-          <v-list-item-content>
-            <v-list-item-title>
-              {{ label.dataKey }}<span style="font-weight: normal;">.{{ label.field || 'value' }}</span>
-            </v-list-item-title>
-
-            <v-list-item-subtitle v-if="label.text">
-              {{ label.text }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
-
-          <v-list-item-action
-            v-if="!readonly"
-            class="metric--handle"
-            @mousedown="allowDrag(label)"
-            @mouseup="disallowDrag(label)"
-          >
-            <v-icon>mdi-drag-horizontal-variant</v-icon>
-          </v-list-item-action>
-        </v-list-item>
-      </v-list>
-    </CustomSection>
-
-    <!-- Advanced -->
-    <CustomSection v-if="unsupportedParams.shouldShow">
-      <ToggleableObjectTree
-        :value="unsupportedParams.value"
-        :label="$t('headers.advanced').toString()"
-        v-on="unsupportedParams.listeners"
+  <v-row>
+    <v-col>
+      <FigureElasticForm
+        :layout-id="layoutId"
+        :readonly="readonly"
       />
-    </CustomSection>
-  </div>
+    </v-col>
+
+    <v-divider vertical class="mt-4" />
+
+    <v-col>
+      <MetricsFigurePopover
+        v-if="currentLabel"
+        v-model="labelPopoverShown"
+        :element="currentLabel"
+        :coords="labelPopoverCoords"
+        :readonly="readonly"
+        :currentKeyFields="currentFigureKeyFields"
+        :availableAggs="availableAggs"
+        @updated="onCurrentLabelUpdated"
+      />
+
+      <CustomSection :label="$t('headers.labels').toString()">
+        <template #actions>
+          <v-btn
+            v-if="!readonly"
+            icon
+            x-small
+            color="success"
+            @click="showLabelPopover($event)"
+          >
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+        </template>
+
+        <v-list dense rounded>
+          <v-list-item
+            v-for="(label, i) in labels"
+            :key="label._.dataKeyField"
+            :draggable="label._.dragged"
+            :ripple="!label._.dragged"
+            :class="[label._.dragged && 'v-item--active primary--text']"
+            v-on="getEventListeners(label, i)"
+          >
+            <v-list-item-action v-if="!readonly">
+              <v-btn
+                icon
+                small
+                @click="onLabelDelete(label)"
+              >
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </v-list-item-action>
+
+            <v-list-item-content>
+              <v-list-item-title>
+                {{ label.dataKey }}<span style="font-weight: normal;">.{{ label.field || 'value' }}</span>
+              </v-list-item-title>
+
+              <v-list-item-subtitle v-if="label.text">
+                {{ label.text }}
+              </v-list-item-subtitle>
+            </v-list-item-content>
+
+            <v-list-item-action
+              v-if="!readonly"
+              class="metric--handle"
+              @mousedown="allowDrag(label)"
+              @mouseup="disallowDrag(label)"
+            >
+              <v-icon>mdi-drag-horizontal-variant</v-icon>
+            </v-list-item-action>
+          </v-list-item>
+        </v-list>
+      </CustomSection>
+
+      <!-- Advanced -->
+      <CustomSection v-if="unsupportedFigureParams.shouldShow">
+        <ToggleableObjectTree
+          :value="unsupportedFigureParams.value"
+          :label="$t('headers.advanced').toString()"
+          v-on="unsupportedFigureParams.listeners"
+        />
+      </CustomSection>
+    </v-col>
+  </v-row>
 </template>
 
 <script lang="ts">
 import { merge, omit } from 'lodash';
-import { defineComponent, type PropType } from 'vue';
+import { defineComponent } from 'vue';
+import useTemplateStore from '~/stores/template';
 
 const dragFormat = 'custom/figure-metric-json';
 
@@ -108,8 +121,12 @@ const supportedKeys = [
 
 export default defineComponent({
   props: {
-    value: {
-      type: Object as PropType<MetricParams>,
+    id: {
+      type: String,
+      required: true,
+    },
+    layoutId: {
+      type: String,
       required: true,
     },
     readonly: {
@@ -117,8 +134,10 @@ export default defineComponent({
       default: false,
     },
   },
-  emits: {
-    input: (val: MetricParams) => !!val,
+  setup() {
+    const templateStore = useTemplateStore();
+
+    return { templateStore };
   },
   data: () => ({
     labelPopoverShown: false,
@@ -129,12 +148,56 @@ export default defineComponent({
     draggedIndex: -1,
   }),
   computed: {
+    figureParams: {
+      get(): MetricParams | undefined {
+        const layout = this.templateStore.currentLayouts.find(
+          ({ _: { id } }) => id === this.layoutId,
+        );
+
+        const figure = layout?.figures.find(({ _: { id } }) => id === this.id);
+        if (!figure?.params) {
+          return undefined;
+        }
+
+        const params: MetricParams = { labels: [] };
+        if ('labels' in figure.params && Array.isArray(figure.params.labels)) {
+          // TODO: Better Validation
+          params.labels = figure.params.labels as Label[];
+        }
+
+        return params;
+      },
+      set(params: MetricParams) {
+        const layout = this.templateStore.currentLayouts.find(
+          ({ _: { id } }) => id === this.layoutId,
+        );
+
+        const figure = layout?.figures.find(({ _: { id } }) => id === this.id);
+        if (!figure) {
+          return;
+        }
+
+        this.templateStore.UPDATE_FIGURE(
+          this.layoutId,
+          this.id,
+          {
+            ...figure,
+            params,
+          },
+        );
+      },
+    },
     labels: {
       get(): CustomLabel[] {
         if (this.innerLabels.length > 0) {
           return this.innerLabels;
         }
-        return this.value.labels.map((l) => ({
+
+        if (!this.figureParams?.labels) {
+          return [];
+        }
+
+        return this.figureParams.labels.map((l) => ({
           ...l,
           _: {
             dragged: false,
@@ -146,23 +209,45 @@ export default defineComponent({
         this.innerLabels = val;
       },
     },
-    currentKeyFields() {
+    currentFigureKeyFields() {
       return this.labels.map(({ _: { dataKeyField } }) => dataKeyField);
     },
-    unsupportedParams() {
+    unsupportedFigureParams() {
       let listeners = {};
       if (!this.readonly) {
         listeners = {
-          input: (val: Record<string, any>) => { this.$emit('input', merge(this.value, val)); },
+          input: (val: Record<string, any>) => {
+            this.figureParams = merge(this.figureParams, val);
+          },
         };
       }
 
-      const value = omit(this.value, supportedKeys);
+      const value = omit(this.figureParams, supportedKeys);
       return {
         shouldShow: !this.readonly || Object.keys(value).length > 0,
         value,
         listeners,
       };
+    },
+    availableAggs() {
+      const layout = this.templateStore.currentLayouts.find(
+        ({ _: { id } }) => id === this.layoutId,
+      );
+      if (!layout || !layout.fetchOptions) {
+        return [];
+      }
+
+      const aggs = 'aggs' in layout.fetchOptions ? layout.fetchOptions.aggs : layout.fetchOptions.aggregations;
+      if (!Array.isArray(aggs)) {
+        return [];
+      }
+
+      const available = (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
+      const currentFigureKeySet = new Set(this.labels.map((l) => l.dataKey));
+      return available.filter(
+        (agg) => !currentFigureKeySet.has(agg)
+          || agg === this.currentLabel?.dataKey,
+      );
     },
   },
   methods: {
@@ -175,13 +260,13 @@ export default defineComponent({
       const index = this.labels.findIndex(
         ({ _: { dataKeyField } }) => dataKeyField === label._.dataKeyField,
       );
-      if (index < 0) {
+      if (index < 0 || !this.figureParams) {
         return;
       }
 
-      const labels = [...this.value.labels];
+      const labels = [...this.figureParams.labels];
       labels.splice(index, 1);
-      this.$emit('input', { ...this.value, labels });
+      this.figureParams = { ...this.figureParams, labels };
     },
     /**
      * Update value when a label is updated
@@ -189,12 +274,12 @@ export default defineComponent({
      * @param label The new label
      */
     onCurrentLabelUpdated(label: Label) {
-      if (!this.currentLabel) {
+      if (!this.currentLabel || !this.figureParams) {
         return;
       }
 
       const value = omit(label, '_');
-      const labels = [...this.value.labels];
+      const labels = [...this.figureParams.labels];
       const { dataKey: dK, field: f } = this.currentLabel;
       const index = this.labels.findIndex(
         ({ dataKey, field }) => dataKey === dK && field === f,
@@ -204,19 +289,23 @@ export default defineComponent({
       } else {
         labels.splice(index, 1, value);
       }
-      this.$emit('input', { ...this.value, labels });
+      this.figureParams = { ...this.figureParams, labels };
       this.currentLabel = label;
     },
     /**
      * Show popover for creating/editing label
      */
     async showLabelPopover(e: MouseEvent, label?: CustomLabel) {
+      if (!this.figureParams) {
+        return;
+      }
+
       if (label) {
         this.currentLabel = label;
       } else {
         this.currentLabel = { dataKey: `agg${this.labels.length}` };
-        const labels = [...this.value.labels, this.currentLabel];
-        this.$emit('input', { ...this.value, labels });
+        const labels = [...this.figureParams.labels, this.currentLabel];
+        this.figureParams = { ...this.figureParams, labels };
       }
 
       const coords = { x: e.clientX, y: e.clientY };
@@ -315,15 +404,17 @@ export default defineComponent({
      * Update labels & inner dragged state
      */
     async onDragEnd() {
-      if (!this.readonly && this.draggedIndex >= 0) {
-        this.disallowDrag(this.labels[this.draggedIndex]);
-
-        const labels = this.labels.map((l) => omit(l, '_'));
-        this.$emit('input', { ...this.value, labels });
-        await this.$nextTick();
-        this.labels = [];
-        this.draggedIndex = -1;
+      if (!this.figureParams || this.readonly || this.draggedIndex < 0) {
+        return;
       }
+
+      this.disallowDrag(this.labels[this.draggedIndex]);
+
+      const labels = this.labels.map((l) => omit(l, '_'));
+      this.figureParams = { ...this.figureParams, labels };
+      await this.$nextTick();
+      this.labels = [];
+      this.draggedIndex = -1;
     },
     /**
      * Allow dropping on this element
@@ -343,17 +434,19 @@ export default defineComponent({
      */
     onDragEnter(ev: DragEvent, newIndex: number) {
       if (
-        !this.readonly
-        && newIndex !== this.draggedIndex
-        && ev.dataTransfer?.types.includes(dragFormat)
+        this.readonly
+        || newIndex === this.draggedIndex
+        || !ev.dataTransfer?.types.includes(dragFormat)
       ) {
-        const labels = [...this.labels];
-        labels.splice(this.draggedIndex, 1);
-        labels.splice(newIndex, 0, this.labels[this.draggedIndex]);
-        this.labels = labels;
-
-        this.draggedIndex = newIndex;
+        return;
       }
+
+      const labels = [...this.labels];
+      labels.splice(this.draggedIndex, 1);
+      labels.splice(newIndex, 0, this.labels[this.draggedIndex]);
+      this.labels = labels;
+
+      this.draggedIndex = newIndex;
     },
     /**
      * End dragging data

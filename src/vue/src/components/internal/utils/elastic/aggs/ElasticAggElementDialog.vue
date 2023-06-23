@@ -9,7 +9,7 @@
         <!-- Name -->
         <v-text-field
           v-model="innerName"
-          :label="$t('headers.name')"
+          :label="$t('$ezreeport.fetchOptions.aggName')"
           :rules="rules.name"
           :readonly="readonly"
           hide-details="auto"
@@ -477,7 +477,6 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   headers:
-    name: 'Key to use in figures'
     simpleEdition: 'Simple edition'
     advancedEdition: 'Advanced edition'
     type: 'Aggregation type'
@@ -525,7 +524,6 @@ en:
     _key: 'By key (_key)'
 fr:
   headers:
-    name: 'Clé à utiliser dans les visualisations'
     simpleEdition: 'Édition simple'
     advancedEdition: 'Édition avancée'
     type: "Type d'aggregation"
