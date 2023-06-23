@@ -5,6 +5,7 @@
       v-model="elementPopoverShown"
       :coords="elementPopoverCoords"
       :element="selectedFilterElement"
+      :used-raws="usedRaws"
       :readonly="readonly"
       @update:element="onElementEdited"
     />
@@ -43,8 +44,6 @@
 import { defineComponent } from 'vue';
 import type { FilterElement } from './ElasticFilterElementPopover.vue';
 
-type FlattenQueryMap = Map<string, string | number | boolean>;
-
 interface FilterChip {
   key: string;
   type: string;
@@ -79,50 +78,39 @@ export default defineComponent({
     /**
      * Extract values and some info from Elastic query (value)
      */
-    filterElements(): FilterElement[] {
-      const flattened = this.flatten(this.value);
-      const res: FilterElement[] = [];
-      // eslint-disable-next-line no-restricted-syntax
-      for (const [key, value] of flattened) {
-        const parts = key.split('.');
-
-        const base: Omit<FilterElement, 'values'> = {
-          raw: key,
-          modifier: '',
-          operator: 'IS',
-          key: parts.at(-1) ?? '',
+    filterElements: {
+      get() {
+        const elements: FilterElement[] = [
+          ...(this.value.filter ?? []).map((filter: any) => this.elasticToElement(filter, '')),
+          ...(this.value.must_not ?? []).map((filter: any) => this.elasticToElement(filter, 'NOT')),
+        ];
+        return elements.sort((a, b) => a.key.localeCompare(b.key));
+      },
+      set(elements: FilterElement[]) {
+        const query = {
+          filter: [] as Record<string, any>[],
+          must_not: [] as Record<string, any>[],
         };
 
-        // Check negations
-        if (parts[0] === 'must_not') {
-          base.modifier = 'NOT';
-        }
+        // eslint-disable-next-line no-restricted-syntax
+        for (const element of elements) {
+          const filter = this.elementToElastic(element);
+          if (element) {
+          // Add filter to query
+            switch (element.modifier) {
+              case 'NOT':
+                query.must_not.push(filter);
+                break;
 
-        // Check if operator is exist
-        if (parts[2] === 'exists') {
-          base.operator = 'EXISTS';
-          base.key = value.toString();
-        }
-
-        // If already matched...
-        const existingIndex = res.findIndex(
-          (el) => el.key === base.key && el.modifier === base.modifier,
-        );
-        if (existingIndex >= 0) {
-          // ...add it to the list of values
-          if (res[existingIndex].operator !== 'EXISTS') {
-            res[existingIndex].values.push(value);
+              default:
+                query.filter.push(filter);
+                break;
+            }
           }
-        } else {
-          // ...else add into res
-          res.push({
-            ...base,
-            values: [value],
-          });
         }
-      }
 
-      return res.sort((a, b) => a.key.localeCompare(b.key));
+        this.$emit('input', query);
+      },
     },
     /**
      * Parse filters elements into data for chips
@@ -157,51 +145,112 @@ export default defineComponent({
     selectedFilterElement(): FilterElement {
       return this.filterElements[this.selectedIndex] || { values: [] };
     },
+    usedRaws(): string[] {
+      return this.filterElements.map(({ raw }) => raw);
+    },
   },
   methods: {
     /**
-     * Recursively set values of a map following nested object
+     * Transform raw elastic filter into a usable element
      *
-     * Based on https://stackoverflow.com/a/34514143
+     * @param filter Raw elastic filter
+     * @param modifier Modifier of the filter
      *
-     * @param currentNode current node of the nested object
-     * @param target the current state of the map
-     * @param flattenedKey the previous keys
+     * @returns undefined if not supported
      */
-    traverseAndFlatten(
-      currentNode: Record<string, any>,
-      target: FlattenQueryMap,
-      flattenedKey?: string,
-    ) {
-      // eslint-disable-next-line no-restricted-syntax
-      for (const [key, value] of Object.entries(currentNode)) {
-        let newKey;
-        if (flattenedKey === undefined) {
-          newKey = key;
-        } else {
-          newKey = `${flattenedKey}.${key}`;
+    elasticToElement(filter: any, modifier: FilterElement['modifier']): FilterElement | undefined {
+      const res = {
+        raw: '',
+        modifier,
+        operator: '',
+        key: '',
+        values: [] as any[],
+      };
+
+      const keys = Object.keys(filter);
+      if (keys.length !== 1) {
+        return undefined;
+      }
+
+      // Gets operator of filter
+      switch (keys[0]) {
+        case 'exists': {
+          res.operator = 'EXISTS';
+          res.key = filter.exists.field;
+          break;
         }
 
-        if (typeof value === 'object') {
-          this.traverseAndFlatten(value, target, newKey);
-        } else {
-          target.set(newKey, value);
+        case 'match_phrase': {
+          res.operator = 'IS';
+          const fields = Object.keys(filter.match_phrase);
+          if (fields.length !== 1) {
+            return undefined;
+          }
+          // eslint-disable-next-line prefer-destructuring
+          res.key = fields[0];
+          res.values = [filter.match_phrase[fields[0]]];
+          break;
         }
+
+        case 'bool': {
+          res.operator = 'IS';
+          const subElements: FilterElement[] = (filter.bool.should ?? [])
+            .map((f: any) => this.elasticToElement(f, modifier))
+            .filter((v: any) => v !== undefined);
+
+          const subElementsKeys = subElements.map(({ key }) => key);
+          const keySet = new Set(subElementsKeys);
+          if (keySet.size !== 1) {
+            return undefined;
+          }
+
+          // eslint-disable-next-line prefer-destructuring
+          res.key = subElementsKeys[0];
+          res.values = subElements.map(({ values }) => values).flat();
+          break;
+        }
+
+        default:
+          return undefined;
       }
+      res.raw = `${res.key}.${res.operator}`;
+
+      return res as FilterElement;
     },
     /**
-     * Flatten nested object into a ES6 Map
+     * Transform usable element into raw elastic filter
      *
-     * Based on https://stackoverflow.com/a/34514143
+     * @param element Usable element
      *
-     * @param obj nested object
-     *
-     * @returns The Map
+     * @returns undefined if not supported
      */
-    flatten(obj: Object): FlattenQueryMap {
-      const flattenedMap = new Map<string, string | number | boolean>();
-      this.traverseAndFlatten(obj, flattenedMap);
-      return flattenedMap;
+    elementToElastic(element: Omit<FilterElement, 'raw'>): any {
+      switch (element.operator) {
+        case 'EXISTS': {
+          return { exists: { field: element.key } };
+        }
+
+        case 'IS': {
+          if (element.values.length <= 1) {
+            return { match_phrase: { [element.key]: element.values[0] } };
+          }
+          return {
+            bool: {
+              should: element.values.map(
+                (v) => this.elementToElastic({
+                  key: element.key,
+                  modifier: '',
+                  operator: 'IS',
+                  values: [v],
+                }),
+              ),
+            },
+          };
+        }
+
+        default:
+          return undefined;
+      }
     },
     /**
      * Prepare and open element popover
@@ -223,7 +272,7 @@ export default defineComponent({
      *
      * @param element The element
      */
-    onElementEdited(element: FilterElement) {
+    async onElementEdited(element: FilterElement) {
       const elements = [...this.filterElements];
       const index = elements.findIndex(({ raw }) => element.raw === raw);
       if (index < 0) {
@@ -231,7 +280,15 @@ export default defineComponent({
       }
 
       elements.splice(index, 1, element);
-      this.serializeFilterElements(elements);
+      this.filterElements = elements;
+
+      // Update current
+      await this.$nextTick();
+      const newIndex = this.filterElements.findIndex(({ raw }) => `${element.key}.${element.operator}` === raw);
+      if (newIndex < 0) {
+        this.elementPopoverShown = false;
+      }
+      this.selectedIndex = newIndex;
     },
     /**
      * Update filter value when a element is deleted
@@ -246,7 +303,7 @@ export default defineComponent({
       }
 
       elements.splice(index, 1);
-      this.serializeFilterElements(elements);
+      this.filterElements = elements;
     },
     /**
      * Update filter value when a element is created
@@ -254,77 +311,18 @@ export default defineComponent({
      * Note: called by parent via ref
      */
     onElementCreated() {
-      const index = this.filterElements.length;
+      const elements = [...this.filterElements];
+
+      const index = elements.length;
       const el: Omit<FilterElement, 'raw'> = {
         key: `field-${index}`,
         modifier: '',
         operator: 'EXISTS',
-        values: [''],
-      };
-      this.serializeFilterElements([el, ...this.filterElements]);
-    },
-    /**
-     * Serialize given element and update filter value
-     *
-     * @param filterElements The new elements
-     */
-    serializeFilterElements(filterElements: Omit<FilterElement, 'raw'>[]) {
-      const query = {
-        filter: [] as Record<string, any>[],
-        must_not: [] as Record<string, any>[],
+        values: [],
       };
 
-      // eslint-disable-next-line no-restricted-syntax
-      for (const element of filterElements) {
-        // Prepare value
-        const values = element.values.map((val) => ({
-          [element.key]: val,
-        }));
-
-        // Find correct type of filter
-        let type: string;
-        switch (typeof element.values[0]) {
-          // TODO
-          // case 'string':
-          //   type = ''
-          //   break;
-
-          default:
-            type = 'match_phrase';
-            break;
-        }
-
-        // Prepare filter
-        const filter: Record<string, any> = {};
-        switch (element.operator) {
-          case 'EXISTS':
-            [filter.exists] = values.map(() => ({ field: element.key }));
-            break;
-
-          default:
-            if (values.length <= 1) {
-              [filter[type]] = values;
-            } else {
-              filter.bool = {
-                should: values.map((el) => ({ [type]: el })),
-              };
-            }
-            break;
-        }
-
-        // Add filter to query
-        switch (element.modifier) {
-          case 'NOT':
-            query.must_not.push(filter);
-            break;
-
-          default:
-            query.filter.push(filter);
-            break;
-        }
-      }
-
-      this.$emit('input', query);
+      elements.push(el as FilterElement);
+      this.filterElements = elements;
     },
   },
 });

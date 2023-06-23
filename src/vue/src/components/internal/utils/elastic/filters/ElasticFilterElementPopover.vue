@@ -31,8 +31,14 @@
                 :label="$t('headers.key')"
                 :readonly="readonly"
                 :rules="rules.key"
+                hide-details="auto"
                 @blur="updateKey"
               />
+              <i18n path="hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
+                <template #code>
+                  <code>{{ $t('hints.dot_notation.code') }}</code>
+                </template>
+              </i18n>
             </v-col>
           </v-row>
 
@@ -40,7 +46,7 @@
             <v-col>
               <v-select
                 :label="$t('headers.operator')"
-                :value="element.operator"
+                v-model="innerOperator"
                 :readonly="readonly"
                 :items="operators"
                 :rules="rules.operator"
@@ -49,13 +55,12 @@
             </v-col>
 
             <v-col>
-              <v-select
+              <v-checkbox
                 :label="$t('headers.modifier')"
-                :value="element.modifier"
+                :value="element.modifier === 'NOT'"
                 :readonly="readonly"
-                :items="modifiers"
                 :rules="rules.modifier"
-                @input="updateModifier"
+                @change="updateModifier($event ? 'NOT' : '')"
               />
             </v-col>
           </v-row>
@@ -116,6 +121,10 @@ export default defineComponent({
       type: Object as PropType<FilterElement>,
       required: true,
     },
+    usedRaws: {
+      type: Array as PropType<string[]>,
+      default: () => [],
+    },
     readonly: {
       type: Boolean,
       required: false,
@@ -129,11 +138,19 @@ export default defineComponent({
     valid: false,
 
     innerKey: '',
+    innerOperator: '' as Operators,
   }),
   watch: {
     value() {
       if (this.value) {
         this.innerKey = this.element.key;
+        this.innerOperator = this.element.operator;
+      }
+    },
+    element() {
+      if (this.value) {
+        this.innerKey = this.element.key;
+        this.innerOperator = this.element.operator;
       }
     },
   },
@@ -163,17 +180,26 @@ export default defineComponent({
       return {
         key: [
           (v: string) => !!v || this.$t('errors.empty'),
+          () => !this.isDuplicate || this.$t('errors.no_duplicate'),
         ],
         operator: [
           (v: string) => operators.includes(v as any) || this.$t('errors.valid'),
+          () => !this.isDuplicate || this.$t('errors.no_duplicate'),
         ],
-        modifier: [
-          (v: string) => modifiers.includes(v as any) || this.$t('errors.valid'),
-        ],
+        modifier: [],
         value: [
           (v: string[]) => v.length > 0 || this.$t('errors.empty'),
         ],
       };
+    },
+    usedRawsSet() {
+      return new Set(this.usedRaws);
+    },
+    isDuplicate() {
+      const raw = `${this.innerKey}.${this.innerOperator}`;
+      if (this.element.raw === raw) { return false; }
+
+      return this.usedRawsSet.has(raw);
     },
   },
   methods: {
@@ -181,11 +207,15 @@ export default defineComponent({
      * Update element's key
      */
     updateKey() {
-      if (this.readonly) {
+      if (this.readonly || !this.valid) {
         return;
       }
 
-      this.$emit('update:element', { ...this.element, key: this.innerKey });
+      this.$emit('update:element', {
+        ...this.element,
+        key: this.innerKey,
+        operator: this.innerOperator,
+      });
     },
     /**
      * Update element's values
@@ -213,32 +243,43 @@ export default defineComponent({
     },
     /**
      * Update element's operator
-     *
-     * @param operator The wanted operator
      */
-    updateOperator(operator: Operators) {
-      if (this.readonly || !this.valid) {
+    async updateOperator() {
+      await this.$nextTick();
+      if (this.readonly || !this.valid || this.isDuplicate) {
         return;
       }
 
-      this.$emit('update:element', { ...this.element, operator });
+      this.$emit('update:element', {
+        ...this.element,
+        key: this.innerKey,
+        operator: this.innerOperator,
+        values: this.innerOperator === 'EXISTS' ? [] : ['value'],
+      });
     },
   },
 });
 </script>
 
 <style scoped>
-
+.fake-hint {
+  font-size: 12px;
+  line-height: 12px;
+}
 </style>
 
 <i18n lang="yaml">
 en:
   title-edit: 'Edit query element'
   title-read: 'Query element'
+  hints:
+    dot_notation:
+      value: 'Support dot notation. Eg: {code}'
+      code: 'key.value'
   headers:
     key: 'Field'
     operator: 'Operator'
-    modifier: 'Modifier'
+    modifier: 'Reverse ?'
     value: 'Value'
   operators:
     IS: 'is'
@@ -248,13 +289,18 @@ en:
   errors:
     empty: 'This field must be set'
     valid: 'The value must be valid'
+    no_duplicate: 'This filter already exist or conflicts with another one'
 fr:
   title-edit: "Éditer l'élément de requête"
   title-read: 'Élément de requête'
+  hints:
+    dot_notation:
+      value: 'Supporte la notation avec des points. Ex: {code}'
+      code: 'cle.valeur'
   headers:
     key: 'Champ'
     operator: 'Opérateur'
-    modifier: 'Modificateur'
+    modifier: 'Inverser ?'
     value: 'Valeur'
   operators:
     IS: 'est'
@@ -264,4 +310,5 @@ fr:
   errors:
     empty: 'Ce champ doit être rempli'
     valid: 'La valeur doit être valide'
+    no_duplicate: 'Ce filtre existe déjà ou est incompatible avec un autre'
 </i18n>
