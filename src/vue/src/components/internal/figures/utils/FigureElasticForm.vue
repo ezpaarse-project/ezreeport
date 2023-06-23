@@ -122,8 +122,8 @@
 import { defineComponent } from 'vue';
 import useTemplateStore, { transformFetchOptions, type FetchOptions } from '~/stores/template';
 import { aggsDefinition } from '~/lib/elastic/aggs';
-import type ElasticAggsBuilderConstructor from '../../elastic/aggs/ElasticAggsBuilder.vue';
-import type ElasticFilterBuilderConstructor from '../../elastic/filters/ElasticFilterBuilder.vue';
+import type ElasticAggsBuilderConstructor from '../../utils/elastic/aggs/ElasticAggsBuilder.vue';
+import type ElasticFilterBuilderConstructor from '../../utils/elastic/filters/ElasticFilterBuilder.vue';
 
 type ElasticAggsBuilder = InstanceType<typeof ElasticAggsBuilderConstructor>;
 type ElasticFilterBuilder = InstanceType<typeof ElasticFilterBuilderConstructor>;

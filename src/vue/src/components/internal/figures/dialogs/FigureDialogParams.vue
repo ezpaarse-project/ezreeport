@@ -57,7 +57,7 @@
 import { defineComponent } from 'vue';
 import type { AnyCustomFigure } from '~/lib/templates/customTemplates';
 import useTemplateStore, { type ValidationResult } from '~/stores/template';
-import figureFormMap from '../../utils/figures';
+import figureFormMap from '../types/forms';
 
 export default defineComponent({
   props: {
@@ -158,3 +158,5 @@ en:
 fr:
   title: 'Paramètres de {title}'
 </i18n>
+../../figures/forms
+../../figures/types/forms
