@@ -24,7 +24,7 @@
         </div>
         <v-text-field
           v-else
-          :label="$t('headers.title')"
+          :label="$t('figures.title')"
           :value="figure.params.title"
           :placeholder="figureTitle"
           dense
@@ -61,7 +61,7 @@
       </div>
 
       <v-select
-        :label="$t('headers.type')"
+        :label="$t('$ezreeport.figures.type')"
         :value="figure.type"
         :items="figureTypes"
         item-text="label"
@@ -76,7 +76,7 @@
       </v-select>
 
       <v-select
-        :label="$t('headers.slots')"
+        :label="$t('$ezreeport.figures.slots')"
         :value="figure.slots || []"
         :items="availableSlots"
         :rules="rules.slots"
@@ -151,7 +151,7 @@ export default defineComponent({
       const takenSet = new Set(this.takenSlots);
       const slotsSet = new Set(this.figure.slots);
       return Array.from({ length }, (_, i) => ({
-        text: this.$t(`slots[${i}]`),
+        text: this.$t(`$ezreeport.figures.slots_list[${i}]`),
         value: i,
         disabled: takenSet.has(i) && !slotsSet.has(i),
       }));
@@ -161,7 +161,7 @@ export default defineComponent({
      */
     figureTypes() {
       return figureTypes.map((value) => ({
-        label: this.$t(`$ezreeport.figures.types.${value}`),
+        label: this.$t(`$ezreeport.figures.type_list.${value}`),
         value,
       }));
     },
@@ -175,7 +175,7 @@ export default defineComponent({
           return title.toString();
         }
 
-        return this.$t(`$ezreeport.figures.types.${this.figure?.type || 'unknown'}`).toString();
+        return this.$t(`$ezreeport.figures.type_list.${this.figure?.type || 'unknown'}`).toString();
       },
       set(title: string) {
         if (!this.figure) {
@@ -232,23 +232,9 @@ export default defineComponent({
 
 <i18n lang="yaml">
 en:
-  headers:
-    type: 'Type'
-    slots: 'Figure slot(s)'
+  figures:
     title: "Title"
-  slots:
-    - 'Top left'
-    - 'Top right'
-    - 'Bottom left'
-    - 'Bottom right'
 fr:
-  headers:
-    type: 'Type'
-    slots: 'Emplacement(s)'
+  figures:
     title: 'Titre'
-  slots:
-    - 'Haut à gauche'
-    - 'Haut à droite'
-    - 'Bas à gauche'
-    - 'Bas à droite'
 </i18n>

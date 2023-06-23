@@ -6,20 +6,26 @@
     class="pa-2"
   >
     <!-- TODO: Move to only dialog for whole template -->
-    <FigureDialogEdition
-      v-model="isFigureDialogEditionShown"
-      :figure="figure"
-      :param-form="figureParamsForm"
+    <FigureDialogParams
+      v-model="isFigureDialogParamsShown"
+      :id="id"
+      :layout-id="layoutId"
       readonly
     />
 
     <v-form>
       <div class="d-flex align-center">
         {{ figureTitle }}
+
+        <v-spacer />
+
+        <v-btn icon x-small @click="isFigureDialogParamsShown = true">
+          <v-icon>mdi-cog</v-icon>
+        </v-btn>
       </div>
 
       <v-select
-        :label="$t('headers.type')"
+        :label="$t('$ezreeport.figures.type')"
         :value="figure.type"
         :items="figureTypes"
         readonly
@@ -31,12 +37,8 @@
         </template>
       </v-select>
 
-      <v-btn v-if="figureParamsForm" x-large block @click="isFigureDialogEditionShown = true">
-        {{ $t('headers.configuration') }}
-      </v-btn>
-
       <v-select
-        :label="$t('headers.slots')"
+        :label="$t('$ezreeport.figures.slots')"
         :value="figure.slots || []"
         :items="availableSlots"
         readonly
@@ -50,8 +52,8 @@
 import { defineComponent, type PropType } from 'vue';
 import type { AnyCustomFigure } from '~/lib/templates/customTemplates';
 import { figureTypes, figureIcons } from '~/lib/templates/figures';
-import figureFormMap from '~/components/internal/utils/figures';
 import useTemplateStore from '~/stores/template';
+import figureFormMap from '../types/forms';
 
 export default defineComponent({
   props: {
@@ -74,7 +76,7 @@ export default defineComponent({
     return { templateStore };
   },
   data: () => ({
-    isFigureDialogEditionShown: false,
+    isFigureDialogParamsShown: false,
     figureIcons,
   }),
   computed: {
@@ -97,7 +99,7 @@ export default defineComponent({
       const takenSet = new Set(this.takenSlots);
       const slotsSet = new Set(this.figure.slots);
       return Array.from({ length }, (_, i) => ({
-        text: this.$t(`slots[${i}]`),
+        text: this.$t(`$ezreeport.figures.slots_list[${i}]`),
         value: i,
         disabled: takenSet.has(i) && !slotsSet.has(i),
       }));
@@ -107,7 +109,7 @@ export default defineComponent({
      */
     figureTypes() {
       return figureTypes.map((value) => ({
-        label: this.$t(`figure_types.${value}`),
+        label: this.$t(`$ezreeport.figures.type_list.${value}`),
         value,
       }));
     },
@@ -130,16 +132,12 @@ export default defineComponent({
      * Returns the title of the figure
      */
     figureTitle() {
-      if (!this.figure) {
-        return '';
-      }
-
-      const title = this.figure.params?.title;
+      const title = this.figure?.params?.title;
       if (title) {
-        return title;
+        return title.toString();
       }
 
-      return this.$t(`figure_types.${this.figure.type}`);
+      return this.$t(`$ezreeport.figures.type_list.${this.figure?.type || 'unknown'}`).toString();
     },
   },
 });
@@ -147,62 +145,3 @@ export default defineComponent({
 
 <style scoped>
 </style>
-
-<i18n lang="yaml">
-en:
-  headers:
-    figure: '{type} Figure'
-    type: 'Figure type'
-    data: 'Figure data'
-    figureParams: 'Figure params'
-    slots: 'Figure slot(s)'
-  figure_types:
-    table: 'Table'
-    md: 'Markdown'
-    metric: 'Metrics'
-    arc: 'Arc'
-    area: 'Area'
-    bar: 'Bar'
-    line: 'Line'
-    point: 'Point'
-    rect: 'Rect'
-    rule: 'Rule'
-    text: 'Text'
-    tick: 'Tick'
-    trail: 'Trail'
-    circle: 'Circle'
-    square: 'Square'
-  slots:
-    - 'Top left'
-    - 'Top right'
-    - 'Bottom left'
-    - 'Bottom right'
-fr:
-  headers:
-    figure: 'Visualisation {type}'
-    type: 'Type de visualisation'
-    data: 'Données de la visualisation'
-    figureParams: 'Paramètres de la visualisation'
-    slots: 'Emplacements de la visualisation'
-  figure_types:
-    table: 'Table'
-    md: 'Markdown'
-    metric: 'Métriques'
-    arc: 'Circulaire'
-    area: 'Aire'
-    bar: 'Bâtons'
-    line: 'Courbes'
-    point: 'Nuage de point'
-    rect: 'Rectangle'
-    rule: 'Règle'
-    text: 'Texte'
-    tick: 'Tick' # TODO French translation
-    trail: 'Trail' # TODO French translation
-    circle: 'Cercle'
-    square: 'Carré'
-  slots:
-    - 'Haut à gauche'
-    - 'Haut à droite'
-    - 'Bas à gauche'
-    - 'Bas à droite'
-</i18n>

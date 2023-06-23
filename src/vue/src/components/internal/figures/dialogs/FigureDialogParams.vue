@@ -127,7 +127,7 @@ export default defineComponent({
         return title;
       }
 
-      return this.$t(`$ezreeport.figures.types.${this.figure?.type || 'unknown'}`);
+      return this.$t(`$ezreeport.figures.type_list.${this.figure?.type || 'unknown'}`);
     },
     /**
      * Components that holds figure params

@@ -41,7 +41,10 @@
   },
 
   "figures": {
-    "types": {
+    "type": "Type",
+    "slots": "Emplacement(s)",
+
+    "type_list": {
       "table": "Table",
       "md": "Markdown",
       "metric": "Métriques",
@@ -61,7 +64,14 @@
       "unknown": "Inconnu"
     },
 
-     "errors": {
+    "slots_list": [
+      "Haut à gauche",
+      "Haut à droite",
+      "Bas à gauche",
+      "Bas à droite"
+    ],
+
+    "errors": {
       "_detail": "Visualisation {at}: {valid}",
       "slot_incompatibility": "Cette combinaison d'emplacement n'est pas possible",
       "no_elements": "Cette visualisation n'a pas d'éléments de défini"

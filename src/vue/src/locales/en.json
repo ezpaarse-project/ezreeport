@@ -45,7 +45,10 @@
   },
 
   "figures": {
-    "types": {
+    "type": "Type",
+    "slots": "Figure slot(s)",
+
+    "type_list": {
       "table": "Table",
       "md": "Markdown",
       "metric": "Metrics",
@@ -64,6 +67,13 @@
 
       "unknown": "Unknown"
     },
+
+    "slots_list": [
+      "Top left",
+      "Top right",
+      "Bottom left",
+      "Bottom right"
+    ],
 
     "errors": {
       "_detail": "Figure {at}: {valid}",
