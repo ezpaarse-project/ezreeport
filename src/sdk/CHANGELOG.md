@@ -1,3 +1,10 @@
+# @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.2...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.3) (2023-06-26)
+
+
+### Bug Fixes
+
+* **sdk:** fixed type of task fetch options ([cefbba0](https://github.com/ezpaarse-project/ezreeport/commit/cefbba0dabfadc3330c46c64b09496bce888d995))
+
 # @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.1...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.2) (2023-05-25)
 
 
