@@ -1,3 +1,29 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.12](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.11...@ezpaarse-project/ezreeport-vue@1.0.0-beta.12) (2023-06-26)
+
+
+### Bug Fixes
+
+* **vue:** added try/catch on URL creation ([e0c3559](https://github.com/ezpaarse-project/ezreeport/commit/e0c3559131cadc6f01361cfefb4dd21ff130ea40))
+* **vue:** fixed aggregation duplication ([53a6c49](https://github.com/ezpaarse-project/ezreeport/commit/53a6c492a4f396c50b8d4dd666521f58aef547bb))
+* **vue:** fixed figure details ([c3eb0e2](https://github.com/ezpaarse-project/ezreeport/commit/c3eb0e299d16701f44069a3e493858a27d0c35a1))
+* **vue:** fixed minor issues with template tags ([3b1e318](https://github.com/ezpaarse-project/ezreeport/commit/3b1e3188863e30d0c7921ff208f81caedb91cf08))
+
+
+### Features
+
+* **report:** redone figure forms ([1187815](https://github.com/ezpaarse-project/ezreeport/commit/1187815b66a2a66307cf112996d91ada3cb08bbb))
+* **vue:** added delimiters to task targets ([d3a0ecd](https://github.com/ezpaarse-project/ezreeport/commit/d3a0ecd8a4c5fbedec3a06f252ba4e0f7c737732))
+* **vue:** added option to pass i18n instance ([8f21900](https://github.com/ezpaarse-project/ezreeport/commit/8f21900af11e28d27d65378e763af58be61dd175))
+* **vue:** dropped auto mode for figures ([720dd8f](https://github.com/ezpaarse-project/ezreeport/commit/720dd8f31aefc4a189e172f09c2b632eb4784d69))
+
+
+
+
+
+### Dependencies
+
+* **@ezpaarse-project/ezreeport-sdk-js:** upgraded to 1.0.0-beta.3
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.11](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.10...@ezpaarse-project/ezreeport-vue@1.0.0-beta.11) (2023-06-12)
 
 
