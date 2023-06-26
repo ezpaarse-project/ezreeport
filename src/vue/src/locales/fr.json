@@ -38,7 +38,6 @@
   "layouts": {
     "errors": {
       "_detail": "Page {at}: {valid}",
-      "mixed_positions": "Toutes les visualisations doivent être placée de la même façon (auto ou manuellement)",
       "length": "Chaque page doit contenir au moins une visualisation"
     }
   },
@@ -76,6 +75,7 @@
 
     "errors": {
       "_detail": "Visualisation {at}: {valid}",
+      "no_slots": "Au moins un emplacement doit être utilisé",
       "slot_incompatibility": "Cette combinaison d'emplacement n'est pas possible",
       "no_elements": "Cette visualisation n'a pas d'éléments de défini"
     }

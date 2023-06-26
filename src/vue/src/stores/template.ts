@@ -247,24 +247,13 @@ const useTemplatePinia = defineStore('ezr_template', {
 
         layouts: {
           figures: [
-            (v: AnyCustomFigure[]) => {
-              const isAuto = (v[0]?.slots?.length ?? 0) === 0 ?? true;
-
-              // eslint-disable-next-line no-restricted-syntax
-              for (const figure of v) {
-                const isFigAuto = (figure.slots?.length ?? 0) === 0 ?? true;
-                if (isAuto !== isFigAuto) {
-                  return { i18nKey: '$ezreeport.layouts.errors.mixed_positions' };
-                }
-              }
-              return true;
-            },
             (v: AnyCustomFigure[]) => v.length > 0 || { i18nKey: '$ezreeport.layouts.errors.length' },
           ],
         },
 
         figures: {
           slots: [
+            (v: AnyCustomFigure['slots']) => (v && v.length > 0) || { i18nKey: '$ezreeport.figures.errors.no_slots' },
             (v: AnyCustomFigure['slots']) => {
               if (!v) {
                 return true;

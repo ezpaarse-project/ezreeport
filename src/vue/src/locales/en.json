@@ -42,7 +42,6 @@
   "layouts": {
     "errors": {
       "_detail": "Page {at}: {valid}",
-      "mixed_positions": "All figures must be placed the same way (auto or manually)",
       "length": "All pages must contains at least one figure"
     }
   },
@@ -80,6 +79,7 @@
 
     "errors": {
       "_detail": "Figure {at}: {valid}",
+      "no_slots": "At least one slot must be provided",
       "slot_incompatibility": "This combinaison of slots is not possible",
       "no_elements": "This figure doesn't have any elements defined"
     }

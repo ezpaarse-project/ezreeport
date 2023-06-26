@@ -343,7 +343,6 @@ en:
   errors:
     empty: 'This field must be set'
     layouts:
-      mixed: 'All figures must be placed the same way (auto or manually)'
       length: 'All pages must contains at least one figure'
     figures:
       _detail: 'Figure {at}: {valid}'
@@ -356,7 +355,6 @@ fr:
   errors:
     empty: 'Ce champ doit être rempli'
     layouts:
-      mixed: 'Toutes les visualisations doivent être placée de la même façon (auto ou manuellement)'
       length: 'Chaque page doit contenir au moins une visualisation'
     figures:
       _detail: 'Visualisation {at}: {valid}'

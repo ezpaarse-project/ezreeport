@@ -100,15 +100,7 @@ export default defineComponent({
      * Item list with calculated position
      */
     itemsWithCSS() {
-      // TODO: better handle weird cases (0,3,auto)
-      // Place manual items before auto to help slot resolution
-      const items = [...this.items].sort((a, b) => {
-        if (!a.slots && b.slots) return 1;
-        if (a.slots && !b.slots) return -1;
-        return 0;
-      });
-
-      return items.map((item, index) => {
+      return this.items.map((item, index) => {
         const resolved = this.slotsToCSS(item, index);
         return {
           item,
@@ -173,30 +165,6 @@ export default defineComponent({
       return { slots, pos };
     },
     /**
-     * Resolve slots into grid area when items doesn't specify slots
-     *
-     * @param index The index of item in array
-     */
-    resolveAutoSlots(index: number) {
-      // col: index % this.grid.cols,
-      //   row: Math.floor(index / this.grid.cols),
-      let slots: number[] = [];
-      if (this.items.length === 1) {
-        // If only one figure, take whole viewport
-        slots = Array.from({ length: this.maxItemLength }, (_, i) => i);
-      } else if (this.items.length <= this.grid.cols) {
-        // If no second row, take whole height
-        slots = Array.from({ length: this.grid.rows }, (_, i) => (i * this.grid.cols) + index);
-      } else if (index === this.maxItemLength - 2 && index === this.items.length - 1) {
-        // If in penultimate slot and last figure, take whole remaining space
-        slots = Array.from({ length: this.grid.cols }, (_, i) => i + index);
-      } else if (this.items.length <= this.maxItemLength) {
-        slots = [index];
-      }
-
-      return this.resolveManualSlots(slots, index);
-    },
-    /**
      * Resolve item slots into usable CSS properties
      *
      * @param item The item
@@ -209,12 +177,7 @@ export default defineComponent({
       if (index >= this.maxItemLength) {
         return { slots: [], css: { display: 'none' } };
       }
-      let res;
-      if (!slots || slots.length <= 0) {
-        res = this.resolveAutoSlots(index);
-      } else {
-        res = this.resolveManualSlots(slots, index);
-      }
+      const res = this.resolveManualSlots(slots ?? [], index);
 
       return {
         slots: res.slots,
@@ -337,8 +300,8 @@ export default defineComponent({
 
     &--empty {
       border-style: dashed;
+      min-height: 1rem;
       height: 100%;
-
     }
 
     &--dragged {

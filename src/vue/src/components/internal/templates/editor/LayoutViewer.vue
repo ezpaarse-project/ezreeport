@@ -144,7 +144,13 @@ export default defineComponent({
         return;
       }
 
-      const defaultFigure: AnyCustomFigure = addAdditionalData({ type: 'md', params: {} });
+      const firstUnusedSlot = (this.takenSlots.at(-1) ?? -1) + 1;
+
+      const defaultFigure: AnyCustomFigure = addAdditionalData({
+        type: 'md',
+        params: {},
+        slots: [firstUnusedSlot],
+      });
       this.figures = [...this.figures, defaultFigure];
     },
   },
