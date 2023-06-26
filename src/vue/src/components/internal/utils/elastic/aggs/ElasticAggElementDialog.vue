@@ -1,7 +1,7 @@
 <template>
   <v-dialog
     :value="value"
-    :persistent="valid"
+    :persistent="!valid"
     width="600"
     @input="$emit('input', $event)"
   >
@@ -223,6 +223,13 @@ export default defineComponent({
       required: true,
     },
     /**
+     * Used names by aggregations
+     */
+    usedNames: {
+      type: Array as PropType<string[]>,
+      default: () => [],
+    },
+    /**
      * Should be readonly
      */
     readonly: {
@@ -309,7 +316,8 @@ export default defineComponent({
     rules() {
       return {
         name: [
-          (v: string) => v?.length > 0 || this.$t('errors.required'),
+          (v: string) => v?.length > 0 || this.$t('$ezreeport.errors.empty'),
+          () => !this.isDuplicate || this.$t('errors.no_duplicate'),
         ],
         advanced: [
           (v: string) => {
@@ -321,11 +329,24 @@ export default defineComponent({
               JSON.parse(v);
               return true;
             } catch (error) {
-              return this.$t('errors.not_valid_json');
+              return this.$t('$ezreeport.errors.json_format');
             }
           },
         ],
       };
+    },
+    usedNamesSet() {
+      return new Set(this.usedNames);
+    },
+    /**
+     * Is the current name is a duplicate of any other agg
+     */
+    isDuplicate() {
+      const name = this.innerName || `agg${this.elementIndex}`;
+      const currentName = this.element.name || `agg${this.elementIndex}`;
+      if (currentName === name) { return false; }
+
+      return this.usedNamesSet.has(name);
     },
     /**
      * Form validation state + name validation, which is outside of form
@@ -333,7 +354,7 @@ export default defineComponent({
     valid: {
       get(): boolean {
         return this.innerValid
-          || this.rules.name.every((rule) => rule(this.innerName ?? '') === true);
+          && this.rules.name.every((rule) => rule(this.innerName ?? '') === true);
       },
       set(value: boolean) {
         this.innerValid = value;
@@ -402,7 +423,7 @@ export default defineComponent({
      * @param data The new data
      */
     onElementUpdate(data: Record<string, any>) {
-      if (this.readonly) {
+      if (this.readonly || !this.valid) {
         return;
       }
 
@@ -510,8 +531,7 @@ en:
     asc: 'ascending'
     desc: 'descending'
   errors:
-    required: 'This field must be set'
-    not_valid_json: "Given JSON isn't valid"
+    no_duplicate: 'This name is already used'
   types:
     auto_date_histogram: 'Auto date histogram'
     avg: 'Average (avg)'
@@ -557,8 +577,7 @@ fr:
     asc: 'ascendant'
     desc: 'descendant'
   errors:
-    required: 'Ce champ doit être rempli'
-    not_valid_json: "Le JSON donné n'est pas valide"
+    no_duplicate: 'Ce nom est déjà utilisé'
   types:
     auto_date_histogram: 'Histogramme de date automatique (auto_date_histogram)'
     avg: 'Moyenne (avg)'

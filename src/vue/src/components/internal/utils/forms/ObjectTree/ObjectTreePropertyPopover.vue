@@ -147,7 +147,7 @@ export default defineComponent({
     valid: {
       get(): boolean {
         return this.innerValid
-          || this.rules.property.every((rule) => rule(this.item.property) === true);
+          && this.rules.property.every((rule) => rule(this.item.property) === true);
       },
       set(value: boolean) {
         this.innerValid = value;

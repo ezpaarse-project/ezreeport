@@ -95,6 +95,7 @@
     "empty": "This field must be set",
     "fetch": "An error occurred when fetching data",
     "email_format": "One or more address aren't valid",
+    "json_format": "Given JSON isn't valid",
     "valid": "The value must be valid",
     "negative": "The value must be positive"
   }

@@ -253,7 +253,7 @@ export default defineComponent({
     valid: {
       get(): boolean {
         return this.innerValid
-          || this.rules.name.every((rule) => rule(this.task?.name ?? '') === true);
+          && this.rules.name.every((rule) => rule(this.task?.name ?? '') === true);
       },
       set(value: boolean) {
         this.innerValid = value;

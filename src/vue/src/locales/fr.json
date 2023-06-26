@@ -91,6 +91,7 @@
     "empty": "Ce champ doit être rempli",
     "fetch": "Une erreur est survenue lors de la récupération des données",
     "email_format": "Une ou plusieurs addresses ne sont pas valides",
+    "json_format": "Le JSON donné n'est pas valide",
     "valid": "La valeur doit être valide",
     "negative": "La valeur doit être positive"
   }

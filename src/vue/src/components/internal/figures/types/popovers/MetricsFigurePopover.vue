@@ -204,17 +204,12 @@ export default defineComponent({
       return new Set(this.currentKeyFields);
     },
     /**
-     * key/field of given element
-     */
-    currentKeyField() {
-      return `${this.element.dataKey}.${this.element.field || 'value'}`;
-    },
-    /**
      * Is the current key/field is a duplicate of any other metric
      */
     isDuplicate() {
       const kF = `${this.innerDataKey}.${this.innerField || 'value'}`;
-      if (this.currentKeyField === kF) { return false; }
+      const currentKF = `${this.element.dataKey}.${this.element.field || 'value'}`;
+      if (currentKF === kF) { return false; }
 
       return this.currentKeyFieldsSet.has(kF);
     },

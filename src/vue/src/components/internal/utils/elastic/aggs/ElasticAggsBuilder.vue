@@ -6,6 +6,7 @@
       :element="selectedAggElement"
       :element-index="selectedIndex"
       :readonly="readonly"
+      :used-names="usedNames"
       @update:element="onElementEdited"
     />
 
@@ -65,6 +66,12 @@ export default defineComponent({
      */
     selectedAggElement(): Record<string, any> | undefined {
       return this.value[this.selectedIndex];
+    },
+    /**
+     * Used names by aggregations
+     */
+    usedNames(): string[] {
+      return this.value.map((agg, i) => agg.name || `agg${i}`);
     },
   },
   methods: {
