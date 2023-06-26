@@ -87,6 +87,7 @@
                     v-model="task.targets"
                     :label="$t('$ezreeport.tasks.targets')"
                     :rules="rules.targets"
+                    :delimiters="[',']"
                     multiple
                   >
                     <template #append>

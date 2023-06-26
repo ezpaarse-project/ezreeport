@@ -13,6 +13,7 @@
           v-if="task"
           v-model="task.name"
           :rules="rules.name"
+          :delimiters="[',']"
           :label="$t('$ezreeport.tasks.name')"
         />
         <RecurrenceChip
@@ -102,7 +103,7 @@
                   <div>{{ $ezReeport.tcNamespace(true) }}:</div>
                   <NamespaceSelect
                     v-model="task.namespace"
-                    :error-message="!task.namespace ? $t('$ezreeport.tasks.errors.empty').toString() : undefined"
+                    :error-message="!task.namespace ? $t('$ezreeport.errors.empty').toString() : undefined"
                     :needed-permissions="['tasks-post']"
                     hide-all
                   />
