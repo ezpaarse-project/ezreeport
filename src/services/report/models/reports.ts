@@ -146,6 +146,7 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
         template.fetchOptions ?? {},
         layout.fetchOptions ?? {},
         {
+          dateField: template.fetchOptions?.dateField ?? '',
           ...(taskTemplate.fetchOptions ?? {}),
           recurrence,
           period,

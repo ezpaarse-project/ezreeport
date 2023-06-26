@@ -21,6 +21,8 @@ interface FetchOptions {
   period: Interval,
   // Namespace specific
   auth: { username: string },
+  // Template specific
+  dateField: string,
   /**
    * @deprecated Not used anymore
   */
@@ -61,6 +63,7 @@ const optionSchema = Joi.object<FetchOptions>({
   filters: Joi.object(),
   aggs: Joi.array(),
   fetchCount: Joi.string(),
+  dateField: Joi.string().required(),
 });
 
 /**
@@ -197,7 +200,7 @@ export default async (
           ...(options.filters ?? {}),
           filter: {
             range: {
-              datetime: {
+              [options.dateField]: {
                 gte: formatISO(options.period.start),
                 lte: formatISO(options.period.end),
               },
