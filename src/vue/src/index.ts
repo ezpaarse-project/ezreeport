@@ -16,18 +16,22 @@ const i18nMessages = {
   en,
 };
 
+type Options = {
+  i18n?: InstanceType<typeof VueI18n>,
+};
+
 export default {
   version,
-  install(app: typeof VueApp) {
+  install(app: typeof VueApp, options?: Options) {
     app.use(PiniaVuePlugin);
     for (const [name, component] of Object.entries(components)) {
       app.component(name, component);
     }
 
-    // eslint-disable-next-line no-underscore-dangle
-    const i18n: VueI18n = app.prototype._i18n;
-    for (const [locale, msgs] of Object.entries(i18nMessages)) {
-      i18n.mergeLocaleMessage(locale, { [i18nKey]: (msgs as any) });
+    if (options?.i18n) {
+      for (const [locale, msgs] of Object.entries(i18nMessages)) {
+        options.i18n.mergeLocaleMessage(locale, { [i18nKey]: (msgs as any) });
+      }
     }
   },
 };
