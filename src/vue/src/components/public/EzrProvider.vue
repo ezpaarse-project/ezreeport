@@ -201,7 +201,7 @@ export default defineComponent({
         if (this.hasNamespacedPermission('auth-get-namespaces', [])) {
           const { content } = await sdk.auth.getCurrentNamespaces();
           if (!content) {
-            throw new Error(this.$t('errors.no_data').toString());
+            throw new Error(this.$t('$ezreeport.errors.fetch').toString());
           }
 
           this.namespaces.data = content;

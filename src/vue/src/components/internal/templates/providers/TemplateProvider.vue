@@ -69,7 +69,7 @@ export default defineComponent({
       try {
         const { content } = await this.$ezReeport.sdk.templates.getTemplate(name);
         if (!content) {
-          throw new Error(this.$t('errors.no_data').toString());
+          throw new Error(this.$t('$ezreeport.errors.fetch').toString());
         }
         content.body.layouts = addAdditionalDataToLayouts(content.body.layouts);
 
@@ -92,7 +92,7 @@ export default defineComponent({
       try {
         const { content } = await this.$ezReeport.sdk.templates.getAllTemplates();
         if (!content) {
-          throw new Error(this.$t('errors.no_data').toString());
+          throw new Error(this.$t('$ezreeport.errors.fetch').toString());
         }
 
         this.templateStore.available = content;

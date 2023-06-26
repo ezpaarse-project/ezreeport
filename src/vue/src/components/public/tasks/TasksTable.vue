@@ -309,7 +309,7 @@ export default defineComponent({
             this.innerCurrentNamespace ? [this.innerCurrentNamespace] : this.allowedNamespaces,
           );
           if (!content) {
-            throw new Error(this.$t('errors.no_data').toString());
+            throw new Error(this.$t('$ezreeport.errors.fetch').toString());
           }
 
           this.tasks = content;
@@ -360,12 +360,11 @@ export default defineComponent({
 
       this.focusedId = id;
       await this.$nextTick();
-      this.readTaskDialogShown = true;
-      // if (hasPermission('tasks-put-task')) {
-      //   this.updateTaskDialogShown = true;
-      // } else {
-      //   this.readTaskDialogShown = true;
-      // }
+      if (hasPermission('tasks-put-task')) {
+        this.updateTaskDialogShown = true;
+      } else {
+        this.readTaskDialogShown = true;
+      }
     },
     /**
      * Prepare and show task creation dialog

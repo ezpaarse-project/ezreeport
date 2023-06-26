@@ -161,7 +161,7 @@ export default defineComponent({
             this.currentNamespace ? [this.currentNamespace] : [],
           );
           if (!content) {
-            throw new Error(this.$t('errors.no_data').toString());
+            throw new Error(this.$t('$ezreeport.errors.fetch').toString());
           }
 
           this.history = content;

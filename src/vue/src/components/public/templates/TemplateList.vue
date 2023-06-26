@@ -35,8 +35,9 @@
     </TemplateProvider>
 
     <LoadingToolbar
-      :text="$t('title').toString()"
+      :text="$tc('$ezreeport.template', 2).toString()"
       :loading="loading"
+      style="text-transform: capitalize;"
     >
       <RefreshButton
         :loading="loading"
@@ -51,7 +52,7 @@
           </v-btn>
         </template>
 
-        {{$t('actions.create')}}
+        {{$t('$ezreeport.create')}}
       </v-tooltip>
     </LoadingToolbar>
 
@@ -76,7 +77,7 @@
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>
               </template>
-              <span>{{ $t('actions.delete') }}</span>
+              <span>{{ $t('$ezreeport.delete') }}</span>
             </v-tooltip>
           </v-list-item-title>
 
@@ -194,7 +195,7 @@ export default defineComponent({
       try {
         const { content } = await this.$ezReeport.sdk.templates.getAllTemplates();
         if (!content) {
-          throw new Error(this.$t('errors.no_data').toString());
+          throw new Error(this.$t('$ezreeport.errors.fetch').toString());
         }
 
         this.templates = content;
@@ -294,21 +295,7 @@ export default defineComponent({
 
 <i18n lang="yaml">
 en:
-  title: 'Templates'
   refresh-tooltip: 'Refresh template list'
-  errors:
-    no_data: 'An error occurred when fetching data'
-  actions:
-    create: 'Create'
-    edit: 'Edit'
-    delete: 'Delete'
 fr:
-  title: 'Modèles'
   refresh-tooltip: 'Rafraîchir la liste des modèles'
-  errors:
-    no_data: 'Une erreur est survenue lors de la récupération des données'
-  actions:
-    create: 'Créer'
-    edit: 'Éditer'
-    delete: 'Supprimer'
 </i18n>

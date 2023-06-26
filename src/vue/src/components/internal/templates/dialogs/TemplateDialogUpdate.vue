@@ -136,7 +136,7 @@ export default defineComponent({
       try {
         const { content } = await this.$ezReeport.sdk.templates.getTemplate(this.name);
         if (!content) {
-          throw new Error(this.$t('errors.no_data').toString());
+          throw new Error(this.$t('$ezreeport.errors.fetch').toString());
         }
 
         const { body, ...data } = content;
