@@ -5,8 +5,8 @@
       v-model="tagPopoverShown"
       :coords="tagPopoverCoords"
       :tag="currentTag"
-      @updated="onTagUpdated"
-      @deleted="onTagDeleted"
+      @update:tag="onTagUpdated"
+      @delete:tag="onTagDeleted"
     />
 
     <template #actions>
@@ -162,6 +162,7 @@ export default defineComponent({
         const tags = [...this.value];
         tags.splice(index, 1, tag);
         this.$emit('input', tags);
+        this.currentTag = tag;
       }
     },
     /**

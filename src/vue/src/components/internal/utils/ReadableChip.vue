@@ -2,6 +2,7 @@
   <v-chip
     :color="color"
     :style="{ color: textColor }"
+    class="readable-chip"
     v-bind="$attrs"
     v-on="$listeners"
   >
@@ -33,5 +34,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-
+.readable-chip {
+  transition-property: box-shadow, opacity, background-color, color;
+}
 </style>

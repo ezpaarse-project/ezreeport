@@ -249,7 +249,7 @@ export default defineComponent({
       return data.map((tab) => ({ ...tab, valid: tab.valid ?? true }));
     },
     /**
-     * Form validation state + name validation, which is outside of form + template validation
+     * Form validation state + name validation, which is outside of form
      */
     valid: {
       get(): boolean {
