@@ -1,3 +1,10 @@
+# ezreeport-report [1.0.0-beta.10](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.9...ezreeport-report@1.0.0-beta.10) (2023-06-26)
+
+
+### Bug Fixes
+
+* **report:** fixed 500 when deleting membership of a user that doesn't exist ([dc80e8b](https://github.com/ezpaarse-project/ezreeport/commit/dc80e8bb3c4f557d4c045d78872f937a69858b49))
+
 # ezreeport-report [1.0.0-beta.9](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.8...ezreeport-report@1.0.0-beta.9) (2023-06-12)
 
 
