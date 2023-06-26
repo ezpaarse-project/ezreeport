@@ -1,6 +1,7 @@
 <template>
   <v-dialog
     :value="value"
+    :persistent="valid"
     width="600"
     @input="$emit('input', $event)"
   >
@@ -41,137 +42,139 @@
       </v-card-title>
 
       <v-card-text>
-        <!-- Simple edition -->
-        <v-row v-if="!showAdvanced">
-          <v-col>
-            <!-- Type -->
-            <v-select
-              :value="type.value"
-              :items="availableTypes"
-              :label="$t('headers.type')"
-              :readonly="readonly"
-              hide-details
-              @change="onTypeUpdate"
-            >
-              <template #append-outer v-if="typeDefinition">
-                <!-- Type def -->
-                <v-menu
-                  v-model="showDefinition"
-                  offset-y
-                >
-                  <template #activator="{ on, attrs }">
+        <v-form v-model="valid">
+          <!-- Simple edition -->
+          <v-row v-if="!showAdvanced">
+            <v-col>
+              <!-- Type -->
+              <v-select
+                :value="type.value"
+                :items="availableTypes"
+                :label="$t('headers.type')"
+                :readonly="readonly"
+                hide-details
+                @change="onTypeUpdate"
+              >
+                <template #append-outer v-if="typeDefinition">
+                  <!-- Type def -->
+                  <v-menu
+                    v-model="showDefinition"
+                    offset-y
+                  >
+                    <template #activator="{ on, attrs }">
+                      <v-btn
+                        icon
+                        small
+                        v-bind="attrs"
+                        v-on="on"
+                      >
+                        <v-icon>mdi-information</v-icon>
+                      </v-btn>
+                    </template>
+
+                    <v-card>
+                      <v-card-title class="py-1">
+                        {{ $t('headers.typeHelper') }}
+                      </v-card-title>
+
+                      <TSPreview :value="typeDefinition.type" :is-array="typeDefinition.isArray" />
+                    </v-card>
+                  </v-menu>
+                </template>
+              </v-select>
+
+              <v-divider class="my-4" />
+
+              <!-- Field -->
+              <v-text-field
+                :value="type.data?.field"
+                :label="$t('headers.field')"
+                :readonly="readonly"
+                @input="onTypeFieldUpdate({ field: $event })"
+              />
+
+              <!-- Size -->
+              <v-text-field
+                :value="type.data?.size"
+                :label="$t('headers.count')"
+                :min="0"
+                :readonly="readonly"
+                type="number"
+                @input="onSizeUpdate"
+              />
+
+              <!-- Sort -->
+              <div class="d-flex align-center">
+                <v-combobox
+                  :value="order.value"
+                  :items="availableSorts"
+                  :label="$t('headers.sort')"
+                  :return-object="false"
+                  :readonly="readonly"
+                  class="mr-4"
+                  @input="onOrderUpdate"
+                />
+
+                <!-- Sort order -->
+                <v-tooltip top>
+                  <template #activator="{ attrs, on }">
                     <v-btn
                       icon
-                      small
+                      @click="onOrderDataUpdate(order.data === 'asc' ? 'desc' : 'asc')"
                       v-bind="attrs"
                       v-on="on"
                     >
-                      <v-icon>mdi-information</v-icon>
+                      <v-icon>mdi-{{ order.data === 'asc' ? 'sort-ascending' : 'sort-descending' }}</v-icon>
                     </v-btn>
                   </template>
 
-                  <v-card>
-                    <v-card-title class="py-1">
-                      {{ $t('headers.typeHelper') }}
-                    </v-card-title>
+                  <span>{{ $t('headers.sortOrder', { order: $t(`sortOrder.${order.data || 'desc'}`) }) }}</span>
+                </v-tooltip>
+              </div>
 
-                    <TSPreview :value="typeDefinition.type" :is-array="typeDefinition.isArray" />
-                  </v-card>
-                </v-menu>
-              </template>
-            </v-select>
-
-            <v-divider class="my-4" />
-
-            <!-- Field -->
-            <v-text-field
-              :value="type.data?.field"
-              :label="$t('headers.field')"
-              :readonly="readonly"
-              @input="onTypeFieldUpdate({ field: $event })"
-            />
-
-            <!-- Size -->
-            <v-text-field
-              :value="type.data?.size"
-              :label="$t('headers.count')"
-              :min="0"
-              :readonly="readonly"
-              type="number"
-              @input="onSizeUpdate"
-            />
-
-            <!-- Sort -->
-            <div class="d-flex align-center">
-              <v-combobox
-                :value="order.value"
-                :items="availableSorts"
-                :label="$t('headers.sort')"
-                :return-object="false"
-                :readonly="readonly"
-                class="mr-4"
-                @input="onOrderUpdate"
-              />
-
-              <!-- Sort order -->
-              <v-tooltip top>
-                <template #activator="{ attrs, on }">
+              <!-- Sub aggregations -->
+              <CustomSection
+                v-if="!typeDefinition || typeDefinition.canHaveSub"
+                :label="$t('headers.subAggs').toString()"
+                :collapse-disabled="(element.aggs || element.aggregations || []).length <= 0"
+                collapsable
+              >
+                <template #actions>
                   <v-btn
+                    v-if="!readonly"
                     icon
-                    @click="onOrderDataUpdate(order.data === 'asc' ? 'desc' : 'asc')"
-                    v-bind="attrs"
-                    v-on="on"
+                    x-small
+                    color="success"
+                    @click="onAggCreated"
                   >
-                    <v-icon>mdi-{{ order.data === 'asc' ? 'sort-ascending' : 'sort-descending' }}</v-icon>
+                    <v-icon>mdi-plus</v-icon>
                   </v-btn>
                 </template>
 
-                <span>{{ $t('headers.sortOrder', { order: $t(`sortOrder.${order.data || 'desc'}`) }) }}</span>
-              </v-tooltip>
-            </div>
+                <ElasticAggsBuilder
+                  ref="aggBuilder"
+                  :value="element.aggs || element.aggregations || []"
+                  :readonly="readonly"
+                  @input="onElementUpdate({ [element.aggregations ? 'aggregations' : 'aggs']: $event })"
+                />
+              </CustomSection>
+            </v-col>
+          </v-row>
 
-            <!-- Sub aggregations -->
-            <CustomSection
-              v-if="!typeDefinition || typeDefinition.canHaveSub"
-              :label="$t('headers.subAggs').toString()"
-              :collapse-disabled="(element.aggs || element.aggregations || []).length <= 0"
-              collapsable
-            >
-              <template #actions>
-                <v-btn
-                  v-if="!readonly"
-                  icon
-                  x-small
-                  color="success"
-                  @click="onAggCreated"
-                >
-                  <v-icon>mdi-plus</v-icon>
-                </v-btn>
-              </template>
-
-              <ElasticAggsBuilder
-                ref="aggBuilder"
-                :value="element.aggs || element.aggregations || []"
+          <!-- Advanced edition -->
+          <v-row v-if="showAdvanced">
+            <v-col>
+              <v-textarea
+                :value="formattedJSON.data"
+                :label="$t('headers.advancedEdition')"
+                :rows="formattedJSON.rows"
+                :rules="rules.advanced"
                 :readonly="readonly"
-                @input="onElementUpdate({ [element.aggregations ? 'aggregations' : 'aggs']: $event })"
+                outlined
               />
-            </CustomSection>
-          </v-col>
-        </v-row>
-
-        <!-- Advanced edition -->
-        <v-row v-if="showAdvanced">
-          <v-col>
-            <v-textarea
-              :value="formattedJSON.data"
-              :label="$t('headers.advancedEdition')"
-              :rows="formattedJSON.rows"
-              :rules="rules.advanced"
-              :readonly="readonly"
-              outlined
-            />
-          </v-col>
-        </v-row>
+            </v-col>
+          </v-row>
+        </v-form>
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -246,6 +249,8 @@ export default defineComponent({
     innerName: '',
     showAdvanced: false,
     showDefinition: false,
+
+    innerValid: false,
   }),
   watch: {
     value() {
@@ -323,6 +328,18 @@ export default defineComponent({
       };
     },
     /**
+     * Form validation state + name validation, which is outside of form
+     */
+    valid: {
+      get(): boolean {
+        return this.innerValid
+          || this.rules.name.every((rule) => rule(this.innerName ?? '') === true);
+      },
+      set(value: boolean) {
+        this.innerValid = value;
+      },
+    },
+    /**
      * Formatted JSON to show in a text-area
      */
     formattedJSON() {
@@ -350,6 +367,9 @@ export default defineComponent({
         value,
       }));
     },
+    /**
+     * Type definition of the aggregation
+     */
     typeDefinition(): AggDefinition | undefined {
       const def = (aggsDefinition as Record<string, AggDefinition>)[this.type.value];
       if (def?.type) {
@@ -394,7 +414,7 @@ export default defineComponent({
      * @param type The new type
      */
     onTypeUpdate(type: string) {
-      if (this.readonly) {
+      if (this.readonly || !this.valid) {
         return;
       }
 

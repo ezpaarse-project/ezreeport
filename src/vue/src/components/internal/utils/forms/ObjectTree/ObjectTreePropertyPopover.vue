@@ -85,7 +85,7 @@
 
         <v-spacer />
 
-        <v-btn :disabled="!valid || !isPropertyValid" color="success" @click="save">
+        <v-btn :disabled="!valid" color="success" @click="save">
           {{ $t('actions.save') }}
         </v-btn>
       </v-card-actions>
@@ -117,7 +117,7 @@ export default defineComponent({
       type: { } as ItemType,
       value: '' as any,
     },
-    valid: false,
+    innerValid: false,
 
     availableTypes: [String, Number, Object, Array, Boolean].map((Constructor) => ({
       text: Constructor.name,
@@ -142,10 +142,16 @@ export default defineComponent({
       };
     },
     /**
-     * property field is outside of the v-form, so we need to manually check using rules
+     * Form validation state + property validation, which is outside of form
      */
-    isPropertyValid() {
-      return this.rules.property.every((rule) => rule(this.item.property) === true);
+    valid: {
+      get(): boolean {
+        return this.innerValid
+          || this.rules.property.every((rule) => rule(this.item.property) === true);
+      },
+      set(value: boolean) {
+        this.innerValid = value;
+      },
     },
     /**
      * Is the value null ?
@@ -211,7 +217,7 @@ export default defineComponent({
      * Save data and close the dialog
      */
     save() {
-      if (!this.valid || !this.isPropertyValid) {
+      if (!this.valid) {
         return;
       }
       this.item.ref?.$emit('input', this.item.property, this.item.value);

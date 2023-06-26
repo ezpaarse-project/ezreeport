@@ -17,7 +17,7 @@
 
         <v-spacer />
 
-        <v-btn :disabled="!valid" icon text @click="$emit('input', false)">
+        <v-btn icon text @click="$emit('input', false)">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>

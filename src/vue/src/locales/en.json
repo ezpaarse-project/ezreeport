@@ -10,6 +10,8 @@
   "delete": "Delete",
   "cancel": "Cancel",
   "open": "Open",
+  "generate": "Generate",
+  "save": "Save",
 
   "tasks": {
     "name": "Report name",
@@ -24,6 +26,7 @@
 
     "tabs": {
       "details": "Details",
+      "activity": "Activity",
       "template": "Template"
     },
 

@@ -45,7 +45,7 @@
 
         <v-btn
           v-if="perms.create"
-          :disabled="!data || !isNameValid || templateStore.isCurrentValid !== true"
+          :disabled="!data || !valid || templateStore.isCurrentValid !== true"
           :loading="loading"
           color="success"
           @click="save"
@@ -131,9 +131,9 @@ export default defineComponent({
       };
     },
     /**
-     * name field is outside of the v-form, so we need to manually check using rules
+     * Name validation, which is outside of form
      */
-    isNameValid() {
+    valid() {
       return this.rules.name.every((rule) => rule(this.data?.name ?? '') === true);
     },
   },
@@ -142,7 +142,7 @@ export default defineComponent({
      * Save and create template
      */
     async save() {
-      if (!this.data || !this.isNameValid || this.templateStore.isCurrentValid !== true) {
+      if (!this.data || !this.valid || this.templateStore.isCurrentValid !== true) {
         return;
       }
 
@@ -187,9 +187,6 @@ en:
   refresh-tooltip: 'Refresh template'
   headers:
     name: 'Name of template'
-  errors:
-    empty: 'This field must be set'
-    no_data: 'An error occurred when fetching data'
   actions:
     cancel: 'Cancel'
     save: 'Save'
@@ -197,9 +194,6 @@ fr:
   refresh-tooltip: 'Rafraîchir le modèle'
   headers:
     name: 'Nom du modèle'
-  errors:
-    empty: 'Ce champ doit être rempli'
-    no_data: 'Une erreur est survenue lors de la récupération des données'
   actions:
     cancel: 'Annuler'
     save: 'Sauvegarder'

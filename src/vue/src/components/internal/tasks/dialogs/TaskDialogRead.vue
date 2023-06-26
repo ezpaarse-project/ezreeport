@@ -1,5 +1,11 @@
 <template>
-  <v-dialog :fullscreen="tabs[currentTab].fullScreen" :value="value" max-width="1000" scrollable @input="$emit('input', $event)">
+  <v-dialog
+    :fullscreen="tabs[currentTab].fullScreen"
+    :value="value"
+    max-width="1000"
+    scrollable
+    @input="$emit('input', $event)"
+  >
     <TaskDialogGeneration
       v-if="task && perms.runTask"
       v-model="generationDialogShown"
@@ -11,21 +17,21 @@
       <v-card-title>
         <template v-if="task">
           {{ task.name }}
-          <RecurrenceChip size="small" classes="text-body-2 ml-2" :value="task.recurrence" />
+          <RecurrenceChip size="small" classes="text-body-2 mx-2" :value="task.recurrence" />
         </template>
-
-        <v-spacer />
 
         <CustomSwitch
           v-if="task"
           :value="task.enabled"
           :disabled="!perms.enable || !perms.disable"
-          :label="$t(task?.enabled ? 'item.active' : 'item.inactive').toString()"
+          :label="$t(`$ezreeport.tasks.enabled.${task?.enabled}`).toString()"
           :readonly="loading"
           class="text-body-2"
           reverse
           @click.stop="toggle()"
         />
+
+        <v-spacer />
 
         <v-btn icon text @click="$emit('input', false)">
           <v-icon>mdi-close</v-icon>
@@ -35,7 +41,7 @@
 
       <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
         <v-tab v-for="tab in tabs" :key="tab.name">
-          {{ $t(`tabs.${tab.name}`) }}
+          {{ $t(`$ezreeport.tasks.tabs.${tab.name}`) }}
           <v-icon v-if="tab.fullScreen" class="ml-1">mdi-arrow-expand</v-icon>
         </v-tab>
       </v-tabs>
@@ -51,7 +57,7 @@
                 <v-combobox
                   v-if="task"
                   v-model="task.targets"
-                  :label="$t('headers.targets') + ':'"
+                  :label="`${$t('$ezreeport.tasks.targets')}:`"
                   multiple
                   disabled
                   class="target-cb"
@@ -81,19 +87,19 @@
                 />
                 <v-progress-circular v-else indeterminate class="my-2" />
 
-                {{ $t('headers.dates') }}:
+                <div>{{ $t('$ezreeport.tasks.dates') }}:</div>
                 <v-container>
                   <div v-if="task?.lastRun">
                     <v-icon small>
                       mdi-calendar-arrow-left
                     </v-icon>
-                    {{ $t('task.lastRun') }}: {{ dates.lastRun }}
+                    {{ $t('$ezreeport.tasks.lastRun') }}: {{ dates.lastRun }}
                   </div>
                   <div v-if="task?.nextRun">
                     <v-icon small>
                       mdi-calendar-arrow-right
                     </v-icon>
-                    {{ $t('task.nextRun') }}: {{ dates.nextRun }}
+                    {{ $t('$ezreeport.tasks.nextRun') }}: {{ dates.nextRun }}
                   </div>
                 </v-container>
               </v-col>
@@ -116,7 +122,7 @@
 
       <v-card-actions>
         <v-btn v-if="perms.runTask" color="warning" @click="showGenerateDialog">
-          {{ $t('actions.generate') }}
+          {{ $t('$ezreeport.generate') }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -230,7 +236,7 @@ export default defineComponent({
       try {
         const { content } = await this.$ezReeport.sdk.tasks.getTask(this.id);
         if (!content) {
-          throw new Error(this.$t('errors.no_data').toString());
+          throw new Error(this.$t('$ezreeport.errors.fetch').toString());
         }
 
         const { template, ...data } = content;
@@ -264,7 +270,7 @@ export default defineComponent({
 
         const { content } = await action(this.id);
         if (!content) {
-          throw new Error(this.$t('errors.no_data').toString());
+          throw new Error(this.$t('$ezreeport.errors.fetch').toString());
         }
 
         const { template, ...data } = content;
@@ -300,44 +306,3 @@ export default defineComponent({
   }
 }
 </style>
-
-<i18n lang="yaml">
-en:
-  refresh-tooltip: 'Refresh task'
-  headers:
-    targets: 'Receivers'
-    dates: 'Dates'
-  tabs:
-    details: 'Details'
-    template: 'Template'
-    activity: 'Activity'
-  task:
-    lastRun: 'Last run'
-    nextRun: 'Next run'
-  item:
-    active: 'Active'
-    inactive: 'Inactive'
-  actions:
-    generate: 'Generate'
-  errors:
-    no_data: 'An error occurred when fetching data'
-fr:
-  refresh-tooltip: 'Rafraîchir la tâche'
-  headers:
-    targets: 'Destinataires'
-    dates: 'Dates'
-  tabs:
-    details: 'Détails'
-    template: 'Modèle'
-    activity: 'Activité'
-  task:
-    lastRun: 'Dernière itération'
-    nextRun: 'Prochaine itération'
-  item:
-    active: 'Actif'
-    inactive: 'Inactif'
-  actions:
-    generate: 'Générer'
-  errors:
-    no_data: 'Une erreur est survenue lors de la récupération des données'
-</i18n>

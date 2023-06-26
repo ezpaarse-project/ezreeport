@@ -10,6 +10,8 @@
   "delete": "Supprimer",
   "cancel": "Annuler",
   "open": "Ouvrir",
+  "generate": "Générer",
+  "save": "Sauvegarder",
 
   "tasks": {
     "name": "Nom du rapport",
@@ -24,6 +26,7 @@
 
     "tabs": {
       "details": "Détails",
+      "activity": "Activité",
       "template": "Modèle"
     },
 

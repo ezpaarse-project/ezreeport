@@ -1,5 +1,12 @@
 <template>
-  <v-dialog :fullscreen="tabs[currentTab]?.fullScreen" :value="value" max-width="1000" scrollable @input="$emit('input', $event)">
+  <v-dialog
+    :value="value"
+    :fullscreen="tabs[currentTab]?.fullScreen"
+    :persistent="!valid"
+    max-width="1000"
+    scrollable
+    @input="$emit('input', $event)"
+  >
     <TaskDialogGeneration
       v-if="task && perms.runTask"
       v-model="generationDialogShown"
@@ -13,26 +20,26 @@
           v-if="task"
           v-model="task.name"
           :rules="rules.name"
-          :label="$t('headers.name')"
+          :label="$t('$ezreeport.tasks.name')"
         />
         <RecurrenceChip
           v-if="task"
           v-model="task.recurrence"
           selectable
           size="small"
-          classes="text-body-2 ml-2"
+          classes="text-body-2 mx-2"
         />
-
-        <v-spacer />
 
         <CustomSwitch
           v-if="task"
           v-model="task.enabled"
-          :label="$t(task?.enabled ? 'item.active' : 'item.inactive').toString()"
+          :label="$t(`$ezreeport.tasks.enabled.${task?.enabled}`).toString()"
           :disabled="loading"
           class="text-body-2"
           reverse
         />
+
+        <v-spacer />
 
         <v-btn icon text @click="$emit('input', false)">
           <v-icon>mdi-close</v-icon>
@@ -42,7 +49,7 @@
 
       <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
         <v-tab v-for="tab in tabs" :key="tab.name">
-          {{ $t(`tabs.${tab.name}`) }}
+          {{ $t(`$ezreeport.tasks.tabs.${tab.name}`) }}
           <v-icon v-if="tab.fullScreen" small class="ml-1">mdi-arrow-expand</v-icon>
 
           <v-tooltip
@@ -78,7 +85,7 @@
                 <v-col>
                   <v-combobox
                     v-model="task.targets"
-                    :label="$t('headers.targets')"
+                    :label="$t('$ezreeport.tasks.targets')"
                     :rules="rules.targets"
                     multiple
                   >
@@ -107,17 +114,17 @@
                   <div>{{ $ezReeport.tcNamespace(true) }}:</div>
                   <NamespaceRichListItem :namespace="task.namespace" />
 
-                  <div>{{ $t('headers.dates') }}:</div>
+                  <div>{{ $t('$ezreeport.tasks.dates') }}:</div>
                   <v-container>
                     <v-text-field
                       :value="dates.lastRun"
-                      :label="$t('task.lastRun')"
+                      :label="$t('$ezreeport.tasks.lastRun').toString()"
                       prepend-icon="mdi-calendar-arrow-left"
                       disabled
                     />
                     <DatePicker
                       v-model="task.nextRun"
-                      :label="$t('task.nextRun').toString()"
+                      :label="$t('$ezreeport.tasks.nextRun').toString()"
                       :min="minDate"
                       icon="mdi-calendar-arrow-right"
                     />
@@ -144,26 +151,23 @@
 
       <v-card-actions>
         <v-btn v-if="perms.runTask" color="warning" @click="showGenerateDialog">
-          {{ $t('actions.generate') }}
+          {{ $t('$ezreeport.generate') }}
         </v-btn>
 
         <v-spacer />
 
         <v-btn @click="$emit('input', false)">
-          {{ $t('actions.cancel') }}
+          {{ $t('$ezreeport.cancel') }}
         </v-btn>
 
         <v-btn
           v-if="perms.update"
-          :disabled="!task
-            || !valid
-            || !isNameValid
-            || templateValidation !== true"
+          :disabled="!task || !valid || templateValidation !== true"
           :loading="loading"
           color="success"
           @click="save"
         >
-          {{ $t('actions.save') }}
+          {{ $t('$ezreeport.save') }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -209,7 +213,7 @@ export default defineComponent({
     currentTab: 0,
 
     minDate: addDays(new Date(), 1),
-    valid: false,
+    innerValid: false,
 
     loading: false,
     error: '',
@@ -221,11 +225,11 @@ export default defineComponent({
     rules() {
       return {
         name: [
-          (v: string) => !!v || this.$t('errors.empty'),
+          (v: string) => !!v || this.$t('$ezreeport.errors.empty'),
         ],
         targets: [
-          (v: string[]) => v.length > 0 || this.$t('errors.empty'),
-          (v: string[]) => v.every(this.validateMail) || this.$t('errors.format'),
+          (v: string[]) => v.length > 0 || this.$t('$ezreeport.errors.empty'),
+          (v: string[]) => v.every(this.validateMail) || this.$t('$ezreeport.errors.email_format'),
         ],
         template: mapRulesToVuetify(this.templateStore.rules.template, (k) => this.$t(k)),
       };
@@ -238,16 +242,22 @@ export default defineComponent({
 
       // Add validation data
       const { 0: detailTab, 2: templateTab } = data;
-      data[0] = { ...detailTab, valid: this.valid || this.$t('errors._default').toString() };
+      data[0] = { ...detailTab, valid: this.valid || this.$t('$ezreeport.tasks.errors._default').toString() };
       data[2] = { ...templateTab, valid: this.templateValidation };
 
       return data.map((tab) => ({ ...tab, valid: tab.valid ?? true }));
     },
     /**
-     * name field is outside of the v-form, so we need to manually check using rules
+     * Form validation state + name validation, which is outside of form + template validation
      */
-    isNameValid() {
-      return this.rules.name.every((rule) => rule(this.task?.name ?? '') === true);
+    valid: {
+      get(): boolean {
+        return this.innerValid
+          || this.rules.name.every((rule) => rule(this.task?.name ?? '') === true);
+      },
+      set(value: boolean) {
+        this.innerValid = value;
+      },
     },
     /**
      * User permissions
@@ -281,10 +291,10 @@ export default defineComponent({
 
       let err = this.$t(valid.i18nKey);
       if (valid.figure !== undefined) {
-        err = this.$t('errors.figures._detail', { valid: err, at: valid.figure });
+        err = this.$t('$ezreeport.figures.errors._detail', { valid: err, at: valid.figure });
       }
       if (valid.layout !== undefined) {
-        err = this.$t('errors.layouts._detail', { valid: err, at: valid.layout });
+        err = this.$t('$ezreeport.layouts.errors._detail', { valid: err, at: valid.layout });
       }
       return err.toString();
     },
@@ -325,7 +335,7 @@ export default defineComponent({
       try {
         const { content } = await this.$ezReeport.sdk.tasks.getTask(this.id);
         if (!content) {
-          throw new Error(this.$t('errors.no_data').toString());
+          throw new Error(this.$t('$ezreeport.errors.fetch').toString());
         }
 
         // Add additional data
@@ -343,7 +353,7 @@ export default defineComponent({
      * Save and edit task
      */
     async save() {
-      if (!this.task || !this.valid || !this.isNameValid || this.templateValidation !== true) {
+      if (!this.task || !this.valid || this.templateValidation !== true) {
         return;
       }
 
@@ -398,68 +408,3 @@ export default defineComponent({
 <style scoped>
 
 </style>
-
-<i18n lang="yaml">
-en:
-  headers:
-    name: 'Report name'
-    targets: 'Receivers'
-    dates: 'Dates'
-  tabs:
-    details: 'Details'
-    template: 'Template'
-    activity: 'Activity'
-  task:
-    lastRun: 'Last run'
-    nextRun: 'Next run'
-  item:
-    active: 'Active'
-    inactive: 'Inactive'
-  errors:
-    _default: 'An error is in this form'
-    format: "One or more address aren't valid"
-    no_data: 'An error occurred when fetching data'
-    empty: 'This field must be set'
-    layouts:
-      _detail: 'Page {at}: {valid}'
-      mixed: 'All figures must be placed the same way (auto or manually)'
-      length: 'All pages must contains at least one figure'
-    figures:
-      _detail: 'Figure {at}: {valid}'
-      slots: 'This combinaison of slots is not possible'
-  actions:
-    generate: 'Generate'
-    cancel: 'Cancel'
-    save: 'Save'
-fr:
-  headers:
-    name: 'Nom du rapport'
-    targets: 'Destinataires'
-    dates: 'Dates'
-  tabs:
-    details: 'Détails'
-    template: 'Modèle'
-    activity: 'Activité'
-  task:
-    lastRun: 'Dernière itération'
-    nextRun: 'Prochaine itération'
-  item:
-    active: 'Actif'
-    inactive: 'Inactif'
-  errors:
-    _default: 'Une erreur est présente dans ce formulaire'
-    format: 'Une ou plusieurs addresses ne sont pas valides'
-    no_data: 'Une erreur est survenue lors de la récupération des données'
-    empty: 'Ce champ doit être rempli'
-    layouts:
-      _detail: 'Page {page}: {valid}'
-      mixed: 'Toutes les visualisations doivent être placée de la même façon (auto ou manuellement)'
-      length: 'Chaque page doit contenir au moins une visualisation'
-    figures:
-      _detail: 'Visualisation {at}: {valid}'
-      slots: "Cette combinaison d'emplacement n'est pas possible"
-  actions:
-    generate: 'Générer'
-    cancel: 'Annuler'
-    save: 'Sauvegarder'
-</i18n>

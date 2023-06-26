@@ -14,7 +14,7 @@
             v-if="taskTemplate"
             :value="taskTemplate.extends"
             :label="$t('headers.base')"
-            :items="availableTemplates || [taskTemplate.extends]"
+            :items="[taskTemplate.extends]"
             readonly
             @change="onTemplateUpdate({ extends: $event })"
           >
