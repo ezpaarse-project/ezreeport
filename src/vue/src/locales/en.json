@@ -88,6 +88,7 @@
   "fetchOptions": {
     "aggName": "Aggregation name",
     "index": "Elastic index",
+    "dateField": "'date' field of the index",
     "filters": "Filters"
   },
 

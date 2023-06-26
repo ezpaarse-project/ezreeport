@@ -25,15 +25,25 @@
             </template>
           </v-select>
 
-          <v-text-field
-            v-if="taskTemplate"
-            :value="templateStore.currentFetchOptions?.index"
-            :label="$t('headers.fetchIndex').toString()"
-            readonly
-            dense
-            class="pt-4"
-            @input="onFetchOptionUpdate({ index: $event })"
-          />
+          <div class="d-flex">
+            <v-text-field
+              v-if="taskTemplate"
+              :value="templateStore.currentFetchOptions?.index"
+              :label="$t('headers.fetchIndex').toString()"
+              readonly
+              dense
+              class="pt-4"
+              @input="onFetchOptionUpdate({ index: $event })"
+            />
+
+            <v-text-field
+              :value="templateStore.currentFetchOptions?.dateField"
+              :label="$t('$ezreeport.fetchOptions.dateField').toString()"
+              dense
+              class="pt-4"
+              @input="onFetchOptionUpdate({ dateField: $event })"
+            />
+          </div>
 
           <CustomSection
             :label="$t('headers.fetchFilters').toString()"

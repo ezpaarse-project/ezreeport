@@ -28,15 +28,29 @@
             </template>
           </v-select>
 
-          <v-text-field
-            v-if="taskTemplate"
-            :value="templateStore.currentFetchOptions?.index"
-            :label="$t('$ezreeport.fetchOptions.index').toString()"
-            :rules="rules.index"
-            dense
-            class="pt-4"
-            @input="onFetchOptionUpdate({ index: $event })"
-          />
+          <div class="d-flex" style="gap: 1rem">
+            <v-text-field
+              v-if="taskTemplate"
+              :value="templateStore.currentFetchOptions?.index"
+              :label="$t('$ezreeport.fetchOptions.index').toString()"
+              :rules="rules.index"
+              dense
+              class="pt-4"
+              @input="onFetchOptionUpdate({ index: $event })"
+            />
+
+            <v-text-field
+              :value="templateStore.currentFetchOptions?.dateField"
+              :label="$t('$ezreeport.fetchOptions.dateField').toString()"
+              :rules="rules.dateField"
+              :hint="dateField"
+              :placeholder="templateStore.extended?.fetchOptions?.dateField"
+              :persistent-placeholder="taskTemplate"
+              dense
+              class="pt-4"
+              @input="onFetchOptionUpdate({ dateField: $event })"
+            />
+          </div>
 
           <CustomSection
             :label="$t('$ezreeport.fetchOptions.filters').toString()"

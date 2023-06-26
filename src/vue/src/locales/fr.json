@@ -84,6 +84,7 @@
   "fetchOptions": {
     "aggName": "Nom de l'aggregation",
     "index": "Index Elastic",
+    "dateField": "Champ 'date' de l'index",
     "filters": "Filtres"
   },
 
