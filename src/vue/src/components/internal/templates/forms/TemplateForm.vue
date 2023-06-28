@@ -43,9 +43,8 @@
               :value="templateStore.currentFetchOptions?.dateField"
               :label="$t('$ezreeport.fetchOptions.dateField').toString()"
               :rules="rules.dateField"
-              :hint="dateField"
               :placeholder="templateStore.extended?.fetchOptions?.dateField"
-              :persistent-placeholder="taskTemplate"
+              :persistent-placeholder="!!taskTemplate"
               dense
               class="pt-4"
               @input="onFetchOptionUpdate({ dateField: $event })"
