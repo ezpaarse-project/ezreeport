@@ -5,21 +5,13 @@
     outlined
     class="pa-2"
   >
-    <!-- TODO: Move to only dialog for whole template -->
-    <FigureDialogParams
-      v-model="isFigureDialogParamsShown"
-      :id="id"
-      :layout-id="layoutId"
-      readonly
-    />
-
     <v-form>
       <div class="d-flex align-center">
         {{ figureTitle }}
 
         <v-spacer />
 
-        <v-btn icon x-small @click="isFigureDialogParamsShown = true">
+        <v-btn icon x-small @click="$emit('edit:figure', id)">
           <v-icon>mdi-cog</v-icon>
         </v-btn>
       </div>
@@ -70,13 +62,15 @@ export default defineComponent({
       default: () => [],
     },
   },
+  emits: {
+    'edit:figure': (id: string) => !!id,
+  },
   setup() {
     const templateStore = useTemplateStore();
 
     return { templateStore };
   },
   data: () => ({
-    isFigureDialogParamsShown: false,
     figureIcons,
   }),
   computed: {

@@ -8,13 +8,6 @@
     @mousedown="onDragAttempt"
     @dragstart="preventEvent"
   >
-    <!-- TODO: Move to only dialog for whole template -->
-    <FigureDialogParams
-      v-model="isFigureDialogParamsShown"
-      :id="id"
-      :layout-id="layoutId"
-    />
-
     <v-form>
       <div class="d-flex align-center">
         <v-icon v-if="draggable" class="figure-handle">mdi-drag</v-icon>
@@ -55,7 +48,7 @@
           <v-icon>mdi-delete</v-icon>
         </v-btn>
 
-        <v-btn icon x-small @click="isFigureDialogParamsShown = true">
+        <v-btn icon x-small @click="$emit('edit:figure', id)">
           <v-icon>mdi-cog</v-icon>
         </v-btn>
       </div>
@@ -81,7 +74,7 @@
         :items="availableSlots"
         :rules="rules.slots"
         multiple
-        @change="figure = { ...figure, slots: $event }"
+        @change="onSlotUpdate"
       />
     </v-form>
   </v-sheet>
@@ -112,6 +105,9 @@ export default defineComponent({
       default: false,
     },
   },
+  emits: {
+    'edit:figure': (id: string) => !!id,
+  },
   setup() {
     const templateStore = useTemplateStore();
 
@@ -120,7 +116,6 @@ export default defineComponent({
   data: () => ({
     dataMap: {} as Record<string, string | unknown[] | undefined>,
     preventDrag: false,
-    isFigureDialogParamsShown: false,
     figureIcons,
   }),
   computed: {
@@ -163,7 +158,9 @@ export default defineComponent({
       return figureTypes.map((value) => ({
         label: this.$t(`$ezreeport.figures.type_list.${value}`),
         value,
-      }));
+      })).sort(
+        (a, b) => a.label.toString().localeCompare(b.label.toString()),
+      );
     },
     /**
      * Returns the title of the figure
@@ -214,6 +211,16 @@ export default defineComponent({
       if (!(ev.target as HTMLElement).classList.contains('figure-handle')) {
         this.preventDrag = true;
       }
+    },
+    onSlotUpdate(slots: number[]) {
+      if (!this.figure) {
+        return;
+      }
+
+      this.figure = {
+        ...this.figure,
+        slots: slots.sort(),
+      };
     },
     preventEvent(ev: Event) {
       ev.preventDefault();
