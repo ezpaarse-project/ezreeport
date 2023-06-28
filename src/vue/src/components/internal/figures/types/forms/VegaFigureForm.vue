@@ -239,13 +239,16 @@ export default defineComponent({
     valid: false,
   }),
   computed: {
+    layout() {
+      const layout = this.templateStore.currentLayouts.find(
+        ({ _: { id } }) => id === this.layoutId,
+      );
+
+      return layout;
+    },
     figureParams: {
       get(): VegaParams | undefined {
-        const layout = this.templateStore.currentLayouts.find(
-          ({ _: { id } }) => id === this.layoutId,
-        );
-        const figure = layout?.figures.find(({ _: { id } }) => id === this.id);
-
+        const figure = this.layout?.figures.find(({ _: { id } }) => id === this.id);
         if (!figure?.params) {
           return undefined;
         }
@@ -253,11 +256,7 @@ export default defineComponent({
         return figure.params as VegaParams;
       },
       set(params: VegaParams) {
-        const layout = this.templateStore.currentLayouts.find(
-          ({ _: { id } }) => id === this.layoutId,
-        );
-        const figure = layout?.figures.find(({ _: { id } }) => id === this.id);
-
+        const figure = this.layout?.figures.find(({ _: { id } }) => id === this.id);
         if (!figure) {
           return;
         }
@@ -301,20 +300,24 @@ export default defineComponent({
         listeners,
       };
     },
+    /**
+     * Available aggregations
+     */
     availableAggs() {
-      const layout = this.templateStore.currentLayouts.find(
-        ({ _: { id } }) => id === this.layoutId,
-      );
-      if (!layout || !layout.fetchOptions) {
+      if (!this.layout?.fetchOptions) {
         return [];
       }
 
-      const aggs = 'aggs' in layout.fetchOptions ? layout.fetchOptions.aggs : layout.fetchOptions.aggregations;
+      const aggs = 'aggs' in this.layout.fetchOptions ? this.layout.fetchOptions.aggs : this.layout.fetchOptions.aggregations;
       if (!Array.isArray(aggs)) {
         return [];
       }
 
-      return (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
+      const available = (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
+      if (this.layout.fetchOptions?.fetchCount) {
+        available.push(this.layout.fetchOptions.fetchCount.toString());
+      }
+      return available;
     },
   },
   methods: {

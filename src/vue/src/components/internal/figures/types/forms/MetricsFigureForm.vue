@@ -18,7 +18,8 @@
         :readonly="readonly"
         :currentKeyFields="currentFigureKeyFields"
         :availableAggs="availableAggs"
-        @updated="onCurrentLabelUpdated"
+        @input="currentLabel = undefined"
+        @update:element="onCurrentLabelUpdated"
       />
 
       <CustomSection :label="$t('headers.labels').toString()">
@@ -243,11 +244,16 @@ export default defineComponent({
       }
 
       const available = (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
-      const currentFigureKeySet = new Set(this.labels.map((l) => l.dataKey));
-      return available.filter(
-        (agg) => !currentFigureKeySet.has(agg)
+      if (layout.fetchOptions?.fetchCount) {
+        available.push(layout.fetchOptions.fetchCount.toString());
+      }
+
+      const currentLabelsKeySet = new Set(this.labels.map((l) => l.dataKey));
+      const res = available.filter(
+        (agg) => !currentLabelsKeySet.has(agg)
           || agg === this.currentLabel?.dataKey,
       );
+      return res;
     },
   },
   methods: {
@@ -303,7 +309,7 @@ export default defineComponent({
       if (label) {
         this.currentLabel = label;
       } else {
-        this.currentLabel = { dataKey: `agg${this.labels.length}` };
+        this.currentLabel = { dataKey: this.availableAggs[0] || `agg${this.labels.length}` };
         const labels = [...this.figureParams.labels, this.currentLabel];
         this.figureParams = { ...this.figureParams, labels };
       }

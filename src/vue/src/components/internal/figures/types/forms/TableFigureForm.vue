@@ -225,7 +225,11 @@ export default defineComponent({
         return [];
       }
 
-      return (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
+      const available = (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
+      if (layout.fetchOptions?.fetchCount) {
+        available.push(layout.fetchOptions.fetchCount.toString());
+      }
+      return available;
     },
   },
   mounted() {

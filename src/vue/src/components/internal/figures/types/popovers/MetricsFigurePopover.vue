@@ -166,7 +166,7 @@ export default defineComponent({
   },
   emits: {
     input: (show: boolean) => show !== undefined,
-    updated: (element: Label) => !!element,
+    'update:element': (element: Label) => !!element,
   },
   data: () => ({
     innerDataKey: '',
@@ -220,7 +220,7 @@ export default defineComponent({
       let listeners = {};
       if (!this.readonly) {
         listeners = {
-          input: (val: Record<string, any>) => { this.$emit('updated', merge(this.element, val)); },
+          input: (val: Record<string, any>) => { this.$emit('update:element', merge(this.element, val)); },
         };
       }
 
@@ -243,7 +243,7 @@ export default defineComponent({
   methods: {
     onLabelUpdated(data: Partial<Label>) {
       if (this.valid) {
-        this.$emit('updated', { ...this.element, ...data });
+        this.$emit('update:element', { ...this.element, ...data });
       }
     },
     async onLabelKeyUpdated() {
