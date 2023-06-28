@@ -222,6 +222,9 @@ export default defineComponent({
       }
     },
   },
+  mounted() {
+    this.fetch();
+  },
   methods: {
     /**
      * Fetch task info

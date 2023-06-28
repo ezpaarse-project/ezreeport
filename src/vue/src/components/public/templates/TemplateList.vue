@@ -2,14 +2,14 @@
   <v-col v-if="perms.readAll">
     <TemplateProvider>
       <TemplateDialogRead
-        v-if="perms.readOne && focusedName"
+        v-if="perms.readOne && focusedName && readTemplateDialogShown"
         v-model="readTemplateDialogShown"
         :name="focusedName"
         fullscreen
       />
 
       <TemplateDialogUpdate
-        v-if="perms.update && focusedName"
+        v-if="perms.update && focusedName && updateTemplateDialogShown"
         v-model="updateTemplateDialogShown"
         :name="focusedName"
         :available-tags="availableTags"
@@ -17,7 +17,7 @@
       />
 
       <TemplateDialogCreate
-        v-if="perms.create"
+        v-if="perms.create && createTemplateDialogShown"
         v-model="createTemplateDialogShown"
         :available-tags="availableTags"
         fullscreen
@@ -25,7 +25,7 @@
       />
 
       <TemplatePopoverDelete
-        v-if="perms.delete && focusedTemplate"
+        v-if="perms.delete && focusedTemplate && deleteTemplatePopoverShown"
         v-model="deleteTemplatePopoverShown"
         :coords="deleteTemplatePopoverCoords"
         :template="focusedTemplate"

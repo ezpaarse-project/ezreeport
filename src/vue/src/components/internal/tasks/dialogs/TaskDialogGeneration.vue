@@ -201,18 +201,6 @@ export default defineComponent({
     progress: -1,
     error: '',
   }),
-  mounted() {
-    this.targets = this.task.targets;
-    this.error = '';
-    this.resetPeriod();
-  },
-  watch: {
-    value(val: boolean) {
-      if (val) {
-        this.resetPeriod();
-      }
-    },
-  },
   computed: {
     options() {
       return [
@@ -256,6 +244,18 @@ export default defineComponent({
         }
       },
     },
+  },
+  watch: {
+    value(val: boolean) {
+      if (val) {
+        this.resetPeriod();
+      }
+    },
+  },
+  mounted() {
+    this.targets = this.task.targets;
+    this.error = '';
+    this.resetPeriod();
   },
   methods: {
     /**

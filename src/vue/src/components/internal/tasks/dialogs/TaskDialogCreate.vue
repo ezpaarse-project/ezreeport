@@ -200,24 +200,6 @@ export default defineComponent({
     loading: false,
     error: '',
   }),
-  watch: {
-    value(val: boolean) {
-      if (val) {
-        this.templateStore.SET_CURRENT({ inserts: [], extends: 'scratch' });
-        this.task = {
-          name: '',
-          template: { extends: 'scratch' } as CustomTaskTemplate,
-          targets: [],
-          recurrence: 'DAILY' as tasks.Recurrence,
-          namespace: '',
-          nextRun: minDate,
-          enabled: true,
-        };
-      } else {
-        this.templateStore.SET_CURRENT(undefined);
-      }
-    },
-  },
   computed: {
     /**
      * Validation rules
@@ -292,6 +274,18 @@ export default defineComponent({
       return err.toString();
     },
   },
+  watch: {
+    value(val: boolean) {
+      if (val) {
+        this.init();
+      } else {
+        this.templateStore.SET_CURRENT(undefined);
+      }
+    },
+  },
+  mounted() {
+    this.init();
+  },
   methods: {
     /**
      * Check if given string is a mail address
@@ -299,6 +293,18 @@ export default defineComponent({
      * @param email The string
      */
     validateMail: (email: string) => isEmail(email),
+    init() {
+      this.templateStore.SET_CURRENT({ inserts: [], extends: 'scratch' });
+      this.task = {
+        name: '',
+        template: { extends: 'scratch' } as CustomTaskTemplate,
+        targets: [],
+        recurrence: 'DAILY' as tasks.Recurrence,
+        namespace: '',
+        nextRun: minDate,
+        enabled: true,
+      };
+    },
     /**
      * Save and edit task
      */
