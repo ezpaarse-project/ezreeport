@@ -47,7 +47,7 @@
           <v-row v-if="!showAdvanced">
             <v-col>
               <!-- Type -->
-              <v-select
+              <v-autocomplete
                 :value="type.value"
                 :items="availableTypes"
                 :label="$t('headers.type')"
@@ -81,7 +81,7 @@
                     </v-card>
                   </v-menu>
                 </template>
-              </v-select>
+              </v-autocomplete>
 
               <v-divider class="my-4" />
 
