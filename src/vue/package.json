@@ -75,6 +75,7 @@
     "dompurify": "^3.0.3",
     "eslint-plugin-storybook": "^0.6.12",
     "eslint-plugin-vue": "^9.14.1",
+    "fuse.js": "^6.6.2",
     "highlight.js": "^10.7.2",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
