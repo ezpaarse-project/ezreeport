@@ -288,7 +288,7 @@ export default defineComponent({
       if (!this.readonly) {
         listeners = {
           input: (val: Record<string, any>) => {
-            this.figureParams = merge(this.figureParams, val);
+            this.figureParams = merge({}, this.figureParams, val);
           },
         };
       }

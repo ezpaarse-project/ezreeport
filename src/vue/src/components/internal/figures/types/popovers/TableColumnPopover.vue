@@ -147,7 +147,7 @@ export default defineComponent({
       let listeners = {};
       if (!this.readonly) {
         listeners = {
-          input: (val: Record<string, any>) => { this.$emit('updated', merge(this.column, val)); },
+          input: (val: Record<string, any>) => { this.$emit('updated', merge({}, this.column, val)); },
         };
       }
 
