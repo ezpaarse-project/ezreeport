@@ -1,7 +1,9 @@
 import { compile as handlebars } from 'handlebars';
 import autoTable, { type UserOptions } from 'jspdf-autotable';
 import { get, merge } from 'lodash';
+
 import { appLogger as logger } from '~/lib/logger';
+
 import type { PDFReport } from '.';
 
 export type TableParams = {
@@ -55,19 +57,22 @@ export const addTableToPDF = async (
     }
   }
 
-  const options = merge({
-    margin: {
-      right: doc.margin.right,
-      left: doc.margin.left,
-      bottom: doc.offset.bottom,
-      top: doc.offset.top + 2 * fontSize,
+  const options = merge(
+    {
+      margin: {
+        right: doc.margin.right,
+        left: doc.margin.left,
+        bottom: doc.offset.bottom,
+        top: doc.offset.top + 2 * fontSize,
+      },
+      styles: {
+        overflow: 'ellipsize',
+        minCellWidth: 100,
+      },
+      rowPageBreak: 'avoid',
     },
-    styles: {
-      overflow: 'ellipsize',
-      minCellWidth: 100,
-    },
-    rowPageBreak: 'avoid',
-  }, params);
+    params,
+  );
 
   const y = options.startY || options.margin.top;
 

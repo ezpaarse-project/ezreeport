@@ -1,6 +1,8 @@
-import EventEmitter from 'events';
+import EventEmitter from 'node:events';
+
 import Joi from 'joi';
 import { merge } from 'lodash';
+
 import { Recurrence } from '~/lib/prisma';
 import {
   addPage,
@@ -15,6 +17,7 @@ import { addMetricToPDF } from '~/lib/pdf/metrics';
 import { addTableToPDF } from '~/lib/pdf/table';
 import { drawAreaRef } from '~/lib/pdf/utils';
 import { addVegaToPDF, createVegaLSpec, createVegaView } from '~/lib/vega';
+
 import { type AnyFigure } from '~/models/figures';
 import { layoutSchema, type AnyLayout } from '~/models/layouts';
 import { ArgumentError } from '~/types/errors';
@@ -389,7 +392,7 @@ const generatePdfWithVega = async (
             }
 
             // eslint-disable-next-line no-await-in-loop
-            await addTableToPDF(doc, figureData as any[], merge(figure.params, { margin }));
+            await addTableToPDF(doc, figureData as any[], merge({}, figure.params, { margin }));
             break;
           }
 

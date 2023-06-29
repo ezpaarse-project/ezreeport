@@ -1,10 +1,13 @@
+import EventEmitter from 'node:events';
+
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import Joi from 'joi';
 import { cloneDeep, merge } from 'lodash';
-import EventEmitter from 'node:events';
+
 import { Recurrence, type Prisma } from '~/lib/prisma';
 import { formatISO } from '~/lib/date-fns';
 import { elasticCount, elasticSearch } from '~/lib/elastic';
+
 import { calcElasticInterval } from '~/models/recurrence';
 import { ArgumentError } from '~/types/errors';
 
@@ -129,7 +132,7 @@ const reduceAggs = (
   let agg = rawAgg;
   // Add default calendar_interval
   if (rawAgg.date_histogram) {
-    agg = merge(agg, { date_histogram: { calendar_interval } });
+    agg = merge({}, agg, { date_histogram: { calendar_interval } });
   }
 
   // Handle sub aggregations
@@ -163,11 +166,18 @@ const setSubAggValues = (info: AggInfo, value: any) => {
     for (const subAgg of info.subAggs) {
       setSubAggValues(subAgg, data);
     }
-  } else {
-    const hits = data?.hits?.hits ?? [];
-    // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
-    value[info.name] = hits.map(({ _source }: any) => _source);
+    return;
   }
+
+  if ('buckets' in data) {
+    // eslint-disable-next-line no-param-reassign
+    value[info.name] = data.buckets;
+    return;
+  }
+
+  const hits = data?.hits?.hits ?? [];
+  // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
+  value[info.name] = hits.map(({ _source }: any) => _source);
 };
 
 /**
@@ -226,6 +236,9 @@ export default async (
       );
     }
   }
+
+  console.log('============ opts ================');
+  console.log(JSON.stringify(opts, undefined, 4));
 
   const data: Prisma.JsonValue = {};
   const { body } = await elasticSearch(opts, options.auth.username);

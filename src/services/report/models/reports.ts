@@ -1,12 +1,15 @@
 import Joi from 'joi';
 import { compact, merge, omit } from 'lodash';
+
 import { randomUUID } from 'node:crypto';
 import EventEmitter from 'node:events';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { Prisma, Recurrence, Task } from '~/lib/prisma';
+
 import fetchers, { type Fetchers } from '~/generators/fetchers';
 import renderers, { type Renderers } from '~/generators/renderers';
+
+import type { Prisma, Recurrence, Task } from '~/lib/prisma';
 import config from '~/lib/config';
 import {
   add,
@@ -18,8 +21,10 @@ import {
   startOfDay
 } from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
+
 import { calcNextDate, calcPeriod } from '~/models/recurrence';
 import { ArgumentError, ConflitError } from '~/types/errors';
+
 import { editTaskByIdWithHistory } from './tasks';
 import {
   getTemplateByName,
@@ -143,6 +148,7 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
       }
       const fetcher = layout.fetcher ?? 'elastic';
       const fetchOptions: GeneratorParam<Fetchers, keyof Fetchers> = merge(
+        {},
         template.fetchOptions ?? {},
         layout.fetchOptions ?? {},
         {
@@ -283,6 +289,7 @@ export const generateReport = async (
 
     // Render report
     const renderOptions: GeneratorParam<Renderers, keyof Renderers> = merge(
+      {},
       template.renderOptions ?? {},
       {
         doc: {
