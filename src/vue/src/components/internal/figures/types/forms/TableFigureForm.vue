@@ -55,7 +55,7 @@
         <CustomSection v-if="unsupportedParams.shouldShow">
           <ToggleableObjectTree
             :value="unsupportedParams.value"
-            :label="$t('$ezreeport.advancedParameters').toString()"
+            :label="$t('$ezreeport.advanced_parameters').toString()"
             v-on="unsupportedParams.listeners"
           />
         </CustomSection>
@@ -115,36 +115,33 @@ export default defineComponent({
     valid: false,
   }),
   computed: {
+    figure() {
+      const layout = this.templateStore.currentLayouts.find(
+        ({ _: { id } }) => id === this.layoutId,
+      );
+
+      return layout?.figures.find(({ _: { id } }) => id === this.id);
+    },
     figureParams: {
       get(): PDFParams | undefined {
-        const layout = this.templateStore.currentLayouts.find(
-          ({ _: { id } }) => id === this.layoutId,
-        );
-        const figure = layout?.figures.find(({ _: { id } }) => id === this.id);
-
-        if (!figure?.params) {
+        if (!this.figure?.params) {
           return undefined;
         }
 
         const params: PDFParams = { dataKey: '', columns: [] };
-        if ('dataKey' in figure.params && typeof figure.params.dataKey === 'string') {
-          params.dataKey = figure.params.dataKey;
+        if ('dataKey' in this.figure.params && typeof this.figure.params.dataKey === 'string') {
+          params.dataKey = this.figure.params.dataKey;
         }
 
-        if ('columns' in figure.params && Array.isArray(figure.params.columns)) {
+        if ('columns' in this.figure.params && Array.isArray(this.figure.params.columns)) {
           // TODO: Better Validation
-          params.columns = figure.params.columns as TableColumn[];
+          params.columns = this.figure.params.columns as TableColumn[];
         }
 
         return params;
       },
       set(params: PDFParams) {
-        const layout = this.templateStore.currentLayouts.find(
-          ({ _: { id } }) => id === this.layoutId,
-        );
-        const figure = layout?.figures.find(({ _: { id } }) => id === this.id);
-
-        if (!figure) {
+        if (!this.figure) {
           return;
         }
 
@@ -152,7 +149,7 @@ export default defineComponent({
           this.layoutId,
           this.id,
           {
-            ...figure,
+            ...this.figure,
             params,
           },
         );
@@ -163,12 +160,12 @@ export default defineComponent({
       if (!this.readonly && this.valid) {
         listeners = {
           input: (val: Record<string, any>) => {
-            this.figureParams = merge(this.figureParams, val);
+            this.figureParams = merge({}, this.figureParams, val);
           },
         };
       }
 
-      const value = omit(this.figureParams, supportedKeys);
+      const value = omit(this.figure?.params ?? {}, supportedKeys);
       return {
         shouldShow: !this.readonly || Object.keys(value).length > 0,
         value,

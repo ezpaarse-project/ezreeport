@@ -12,7 +12,8 @@
   "open": "Open",
   "generate": "Generate",
   "save": "Save",
-  "advancedParameters": "Advanced parameters",
+  "advanced_parameters": "Advanced parameters",
+  "show_json": "Show JSON",
 
   "tasks": {
     "name": "Report name",
@@ -37,7 +38,10 @@
   },
 
   "templates": {
-    "base": ""
+    "base": "Base template",
+    "renderer": "Renderer",
+    "renderOptions": "Render options",
+    "editor": "Page editor ({n} page)|Page editor ({n} pages)"
   },
 
   "layouts": {
@@ -91,10 +95,12 @@
   },
 
   "fetchOptions": {
+    "title": "Fetch options",
     "aggName": "Aggregation name",
     "index": "Elastic index",
     "dateField": "'date' field of the index",
-    "filters": "Filters"
+    "filters": "Filters",
+    "aggregations": "Aggregations"
   },
 
   "hints": {

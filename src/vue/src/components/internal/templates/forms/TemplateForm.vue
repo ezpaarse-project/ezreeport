@@ -14,7 +14,7 @@
           <v-select
             v-if="taskTemplate"
             :value="taskTemplate.extends"
-            :label="$t('headers.base')"
+            :label="$t('$ezreeport.templates.base')"
             :items="templateStore.available || [taskTemplate.extends]"
             :readonly="loading"
             item-value="name"
@@ -89,7 +89,7 @@
             <v-icon>mdi-chevron-{{ templateEditorCollapsed === false ? 'up' : 'down' }}</v-icon>
           </v-btn>
 
-          {{ $t('headers.layouts', { count: templateStore.currentLayouts.length }) }}
+          {{ $tc('$ezreeport.templates.editor', templateStore.currentLayouts.length) }}
 
           <v-tooltip top v-if="areLayoutsValid !== true" color="warning">
             <template #activator="{ attrs, on }">
@@ -135,12 +135,19 @@
         </v-card-text>
       </v-card>
 
-      <CustomSection :label="$t('headers.advancedOptions').toString()" :default-value="true" collapsable>
-        <v-switch :label="$t('show-raw')" v-model="rawTemplateShown" />
+      <CustomSection
+        :label="$t('$ezreeport.advanced_parameters').toString()"
+        :default-value="true"
+        collapsable
+      >
+        <v-switch
+          :label="$t('$ezreeport.show_json')"
+          v-model="rawTemplateShown"
+        />
 
         <v-select
           v-if="fullTemplate"
-          :label="$t('headers.renderer')"
+          :label="$t('$ezreeport.templates.renderer')"
           :value="fullTemplate.renderer"
           :items="availableRenderer"
           placeholder="vega-pdf"
@@ -153,7 +160,7 @@
 
         <CustomSection>
           <ToggleableObjectTree
-            :label="$t('headers.fetchOptions').toString()"
+            :label="$t('$ezreeport.fetchOptions.title').toString()"
             :value="templateStore.currentFetchOptions?.others ?? {}"
             @input="
               !Array.isArray($event)
@@ -164,7 +171,7 @@
 
         <CustomSection v-if="fullTemplate">
           <ToggleableObjectTree
-            :label="$t('headers.renderOptions').toString()"
+            :label="$t('$ezreeport.templates.renderOptions').toString()"
             :value="fullTemplate.renderOptions || {}"
             @input="
               fullTemplate && !Array.isArray($event)
@@ -179,7 +186,7 @@
 
     <v-slide-x-reverse-transition>
       <v-col v-if="rawTemplateShown" cols="5">
-        <JSONPreview :value="templateStore.GET_CURRENT()" />
+        <JSONPreview :value="rawTemplate" />
       </v-col>
     </v-slide-x-reverse-transition>
   </v-row>
@@ -187,10 +194,15 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, merge, pick } from 'lodash';
 import { type AnyCustomTemplate, type CustomTemplate, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
-import useTemplateStore, { isFullTemplate, isTaskTemplate, mapRulesToVuetify } from '~/stores/template';
+import useTemplateStore, {
+  isFullTemplate,
+  isTaskTemplate,
+  mapRulesToVuetify,
+  supportedFetchOptions,
+} from '~/stores/template';
 import type ElasticFilterBuilderConstructor from '../../utils/elastic/filters/ElasticFilterBuilder.vue';
 
 type ElasticFilterBuilder = InstanceType<typeof ElasticFilterBuilderConstructor>;
@@ -295,11 +307,17 @@ export default defineComponent({
         viewerMode: 'allowed-edition',
       };
     },
+    /**
+     * The selected template to edit it's figures
+     */
     selectedLayout() {
       return this.templateStore.currentLayouts.find(
         ({ _: { id } }) => id === this.selectedLayoutId,
       );
     },
+    /**
+     * The detailed error on any layout
+     */
     areLayoutsValid() {
       const layouts = this.templateStore.currentLayouts;
       const index = layouts.findIndex(({ _: { valid } }) => valid !== true);
@@ -319,6 +337,12 @@ export default defineComponent({
         error = this.$t('$ezreeport.layouts.errors._detail', { at: valid.layout, valid: error });
       }
       return error;
+    },
+    /**
+     * The template without any client side feature (ids, validation, etc.)
+     */
+    rawTemplate() {
+      return this.templateStore.GET_CURRENT();
     },
   },
   watch: {
@@ -368,10 +392,11 @@ export default defineComponent({
     },
     onFetchOptionUpdate(value: Record<string, any>) {
       this.onTemplateUpdate({
-        fetchOptions: {
-          ...(this.templateStore.current?.fetchOptions ?? {}),
-          ...value,
-        },
+        fetchOptions: merge(
+          {},
+          pick(this.templateStore.current?.fetchOptions ?? {}, supportedFetchOptions),
+          value,
+        ),
       });
     },
     onFilterCreated() {
@@ -388,50 +413,3 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 </style>
-
-<i18n lang="yaml">
-en:
-  show-raw: 'Show JSON'
-  headers:
-    renderer: 'Renderer'
-    fetcher: 'Fetcher'
-    base: 'Base template'
-    fetchOptions: 'Fetch options'
-    fetchFilters: 'Filters'
-    fetchIndex: 'Elastic index'
-    advancedOptions: 'Advanced options'
-    renderOptions: 'Render options'
-    layouts: 'Page editor ({count} pages)'
-  actions:
-    see-extends: 'See base'
-  errors:
-    empty: 'This field must be set'
-    layouts:
-      _detail: 'Page {at}: {valid}'
-      length: 'All pages must contains at least one figure'
-    figures:
-      _detail: 'Figure {at}: {valid}'
-      slots: 'This combinaison of slots is not possible'
-fr:
-  show-raw: 'Afficher JSON'
-  headers:
-    renderer: 'Moteur de rendu'
-    fetcher: 'Outil de récupération'
-    base: 'Modèle de base'
-    fetchOptions: 'Options de récupération'
-    fetchFilters: 'Filtres'
-    fetchIndex: 'Index Elastic'
-    advancedOptions: 'Options avancées'
-    renderOptions: 'Options de rendu'
-    layouts: 'Éditeur de pages ({count} pages)'
-  actions:
-    see-extends: 'Voir la base'
-  errors:
-    empty: 'Ce champ doit être rempli'
-    layouts:
-      _detail: 'Page {at}: {valid}'
-      length: 'Chaque page doit contenir au moins une visualisation'
-    figures:
-      _detail: 'Visualisation {at}: {valid}'
-      slots: "Cette combinaison d'emplacement n'est pas possible"
-</i18n>

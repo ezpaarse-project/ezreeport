@@ -38,7 +38,7 @@
               @input="onSubParamUpdate('value', { field: $event })"
             />
           </div>
-          <i18n path="hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
+          <i18n path="$ezreeport.hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
             <template #code>
               <code>{{ $t('$ezreeport.hints.dot_notation.code') }}</code>
             </template>
@@ -70,9 +70,9 @@
               @input="onSubParamUpdate('label', { field: $event })"
             />
           </div>
-          <i18n path="hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
+          <i18n path="$ezreeport.hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
             <template #code>
-              <code>{{ $t('hints.dot_notation.code') }}</code>
+              <code>{{ $t('$ezreeport.hints.dot_notation.code') }}</code>
             </template>
           </i18n>
 
@@ -154,7 +154,7 @@
         <CustomSection v-if="unsupportedParams.shouldShow">
           <ToggleableObjectTree
             :value="unsupportedParams.value"
-            :label="$t('$ezreeport.advancedParameters').toString()"
+            :label="$t('$ezreeport.advanced_parameters').toString()"
             v-on="unsupportedParams.listeners"
           />
         </CustomSection>
@@ -164,7 +164,7 @@
 </template>
 
 <script lang="ts">
-import { pick, merge } from 'lodash';
+import { pick, merge, omit } from 'lodash';
 import { defineComponent } from 'vue';
 import useTemplateStore from '~/stores/template';
 
@@ -312,16 +312,18 @@ export default defineComponent({
      * Data used by ObjectTree to edit unsupported options
      */
     unsupportedParams() {
+      const diff = this.objectDiff(this.figureParams ?? {}, supportedParams);
+
       let listeners = {};
       if (!this.readonly) {
         listeners = {
           input: (val: Record<string, any>) => {
-            this.figureParams = merge({}, this.figureParams, val);
+            const params = omit(this.figureParams, diff);
+            this.figureParams = merge({}, params as VegaParams, val);
           },
         };
       }
 
-      const diff = this.objectDiff(this.figureParams ?? {}, supportedParams);
       return {
         shouldShow: !this.readonly || diff.length > 0,
         value: pick(this.figureParams, diff),

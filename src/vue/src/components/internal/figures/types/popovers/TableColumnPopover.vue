@@ -20,9 +20,9 @@
             hide-details="auto"
             @blur="onColumnUpdated({ dataKey: innerDataKey })"
           />
-          <i18n v-if="valid" path="hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
+          <i18n v-if="valid" path="$ezreeport.hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
             <template #code>
-              <code>{{ $t('hints.dot_notation.code') }}</code>
+              <code>{{ $t('$ezreeport.hints.dot_notation.code') }}</code>
             </template>
           </i18n>
         </v-card-title>
@@ -40,7 +40,7 @@
           <CustomSection v-if="unsupportedParams.shouldShow">
             <ToggleableObjectTree
               :value="unsupportedParams.value"
-              :label="$t('headers.advanced').toString()"
+              :label="$t('$ezreeport.advanced_parameters').toString()"
               v-on="unsupportedParams.listeners"
             />
           </CustomSection>
@@ -52,7 +52,7 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import { merge, omit } from 'lodash';
+import { merge, omit, pick } from 'lodash';
 import type { TableColumn } from '../forms/TablePreviewForm.vue';
 
 /**
@@ -118,11 +118,11 @@ export default defineComponent({
     rules() {
       return {
         dataKey: [
-          (v: string) => v.length > 0 || this.$t('errors.empty'),
+          (v: string) => v.length > 0 || this.$t('$ezreeport.errors.empty'),
           !this.isDuplicate || this.$t('errors.no_duplicate'),
         ],
         header: [
-          (v: string) => v.length > 0 || this.$t('errors.empty'),
+          (v: string) => v.length > 0 || this.$t('$ezreeport.errors.empty'),
         ],
       };
     },
@@ -147,7 +147,10 @@ export default defineComponent({
       let listeners = {};
       if (!this.readonly) {
         listeners = {
-          input: (val: Record<string, any>) => { this.$emit('updated', merge({}, this.column, val)); },
+          input: (val: Record<string, any>) => {
+            const column = pick(this.column, supportedKeys);
+            this.$emit('updated', merge({}, column as TableColumn, val));
+          },
         };
       }
 
@@ -189,24 +192,12 @@ en:
   headers:
     dataKey: 'Key to get data'
     header: 'Name of the column'
-    advanced: 'Advanced parameters'
-  hints:
-    dot_notation:
-      value: 'Support dot notation. Eg: {code}'
-      code: 'key.value'
   errors:
-    empty: 'This field must be set'
     no_duplicate: 'This key is already used'
 fr:
   headers:
     dataKey: 'Clé a utiliser pour récupérer les données'
     header: 'Name of the column'
-    advanced: 'Paramètres avancés'
-  hints:
-    dot_notation:
-      value: 'Supporte la notation avec des points. Ex: {code}'
-      code: 'cle.valeur'
   errors:
-    empty: 'Ce champ doit être rempli'
     no_duplicate: 'Cette clé est déjà utilisé'
 </i18n>

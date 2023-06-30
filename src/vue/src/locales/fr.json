@@ -4,7 +4,7 @@
   "figure": "visualisation|visualisations",
 
   "yes": "Oui",
-  "no": "No",
+  "no": "Non",
   "create": "Créer",
   "edit": "Éditer",
   "delete": "Supprimer",
@@ -12,7 +12,8 @@
   "open": "Ouvrir",
   "generate": "Générer",
   "save": "Sauvegarder",
-  "advancedParameters": "Paramètres avancés",
+  "advanced_parameters": "Paramètres avancés",
+  "show_json": "Afficher en JSON",
 
   "tasks": {
     "name": "Nom du rapport",
@@ -34,6 +35,13 @@
     "errors": {
       "_default": "Une erreur est présente dans ce formulaire"
     }
+  },
+
+  "templates": {
+    "base": "Modèle de base",
+    "renderer": "Moteur de rendu",
+    "renderOptions": "Options de rendu",
+    "editor": "Éditeur de pages ({n} page)|Éditeur de pages ({n} pages)"
   },
 
   "layouts": {
@@ -87,10 +95,12 @@
   },
 
   "fetchOptions": {
+    "title": "Options de récupération",
     "aggName": "Nom de l'aggregation",
     "index": "Index Elastic",
     "dateField": "Champ 'date' de l'index",
-    "filters": "Filtres"
+    "filters": "Filtres",
+    "aggregations": "Aggregations"
   },
 
   "hints": {

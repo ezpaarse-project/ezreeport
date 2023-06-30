@@ -80,7 +80,7 @@
       <CustomSection v-if="unsupportedFigureParams.shouldShow">
         <ToggleableObjectTree
           :value="unsupportedFigureParams.value"
-          :label="$t('headers.advanced').toString()"
+          :label="$t('$ezreeport.advanced_parameters').toString()"
           v-on="unsupportedFigureParams.listeners"
         />
       </CustomSection>
@@ -149,32 +149,29 @@ export default defineComponent({
     draggedIndex: -1,
   }),
   computed: {
+    figure() {
+      const layout = this.templateStore.currentLayouts.find(
+        ({ _: { id } }) => id === this.layoutId,
+      );
+
+      return layout?.figures.find(({ _: { id } }) => id === this.id);
+    },
     figureParams: {
       get(): MetricParams | undefined {
-        const layout = this.templateStore.currentLayouts.find(
-          ({ _: { id } }) => id === this.layoutId,
-        );
-
-        const figure = layout?.figures.find(({ _: { id } }) => id === this.id);
-        if (!figure?.params) {
+        if (!this.figure?.params) {
           return undefined;
         }
 
         const params: MetricParams = { labels: [] };
-        if ('labels' in figure.params && Array.isArray(figure.params.labels)) {
+        if ('labels' in this.figure.params && Array.isArray(this.figure.params.labels)) {
           // TODO: Better Validation
-          params.labels = figure.params.labels as Label[];
+          params.labels = this.figure.params.labels as Label[];
         }
 
         return params;
       },
       set(params: MetricParams) {
-        const layout = this.templateStore.currentLayouts.find(
-          ({ _: { id } }) => id === this.layoutId,
-        );
-
-        const figure = layout?.figures.find(({ _: { id } }) => id === this.id);
-        if (!figure) {
+        if (!this.figure) {
           return;
         }
 
@@ -182,7 +179,7 @@ export default defineComponent({
           this.layoutId,
           this.id,
           {
-            ...figure,
+            ...this.figure,
             params,
           },
         );
@@ -223,7 +220,7 @@ export default defineComponent({
         };
       }
 
-      const value = omit(this.figureParams, supportedKeys);
+      const value = omit(this.figure?.params ?? {}, supportedKeys);
       return {
         shouldShow: !this.readonly || Object.keys(value).length > 0,
         value,
@@ -491,9 +488,7 @@ export default defineComponent({
 en:
   headers:
     labels: 'Elements'
-    advanced: 'Advanced parameters'
 fr:
   headers:
     labels: 'Élements'
-    advanced: 'Paramètres avancés'
 </i18n>

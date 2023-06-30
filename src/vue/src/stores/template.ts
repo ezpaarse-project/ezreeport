@@ -34,6 +34,8 @@ export type FetchOptions = {
   aggs: any[];
 };
 
+export const supportedFetchOptions = ['filters', 'fetchCount', 'aggs', 'aggregations', 'dateField'];
+
 // Utility functions
 export const isTaskTemplate = (template?: AnyTemplate): template is tasks.FullTask['template'] => !!template && 'extends' in template;
 export const isFullTemplate = (template?: AnyTemplate): template is templates.FullTemplate['body'] => !!template && 'layouts' in template;
@@ -101,7 +103,7 @@ export const transformFetchOptions = (fetchOptions: any): FetchOptions => {
     opts.dateField = fetchOptions.dateField.toString();
   }
 
-  opts.others = omit(fetchOptions, ['filters', 'fetchCount', 'aggs', 'aggregations', 'dateField']);
+  opts.others = omit(fetchOptions, supportedFetchOptions);
   opts.othersCount = Object.keys(opts.others).length;
   return opts;
 };
