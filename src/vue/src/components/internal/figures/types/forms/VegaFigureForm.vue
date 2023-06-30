@@ -112,14 +112,31 @@
           </template>
 
           <template v-if="figureParams.dataLabel">
-            <v-select
-              :value="figureParams.dataLabel.format"
-              :items="possibleDataLabelFormats"
-              :label="$t('dataLabel.headers.format')"
-              :readonly="readonly"
-              hide-details
-              @change="onDataLabelUpdate({ format: $event })"
-            />
+            <v-row>
+              <v-col>
+                <v-select
+                  :value="figureParams.dataLabel.format"
+                  :items="possibleDataLabelFormats"
+                  :label="$t('dataLabel.headers.format')"
+                  :readonly="readonly"
+                  hide-details
+                  @change="onDataLabelUpdate({ format: $event })"
+                />
+              </v-col>
+
+              <v-col>
+                <v-select
+                  :value="figureParams.dataLabel.position"
+                  :items="possibleDataLabelPositions"
+                  :label="$t('dataLabel.headers.position')"
+                  :readonly="readonly"
+                  :placeholder="$t('dataLabel.positions.in')"
+                  persistent-placeholder
+                  hide-details
+                  @change="onDataLabelUpdate({ format: $event })"
+                />
+              </v-col>
+            </v-row>
 
             <v-checkbox
               :input-value="figureParams.dataLabel.showLabel"
@@ -166,6 +183,14 @@ const dataLabelFormats = [
   'numeric',
 ];
 
+/**
+ * Possible positions for data labels
+ */
+const dataLabelPositions = [
+  'in',
+  'out',
+];
+
 type VegaParams = {
   title: string,
   dataKey: string,
@@ -175,6 +200,7 @@ type VegaParams = {
     format: string,
     showLabel?: boolean,
     minValue?: number,
+    position?: string,
   },
 };
 type SubVegaParamsKeys = Exclude<keyof VegaParams, 'title' | 'dataKey'>;
@@ -277,6 +303,15 @@ export default defineComponent({
     possibleDataLabelFormats() {
       return dataLabelFormats.map((value) => ({
         text: this.$t(`dataLabel.formats.${value}`),
+        value,
+      }));
+    },
+    /**
+     * Possible positions for data labels with localisation
+     */
+    possibleDataLabelPositions() {
+      return dataLabelPositions.map((value) => ({
+        text: this.$t(`dataLabel.positions.${value}`),
         value,
       }));
     },
@@ -396,7 +431,6 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   headers:
-    title: 'Title'
     value: 'Data parameters'
     label: 'Series parameter'
     dataLabel: 'Data Labels parameters'
@@ -421,12 +455,15 @@ en:
       show: 'Should show data labels ?'
       format: 'Values format'
       showLabels: 'Should show labels ?'
+      position: 'Position'
     formats:
       numeric: 'Numeric'
       percent: 'Percent'
+    positions:
+      in: 'In'
+      out: 'Out'
 fr:
   headers:
-    title: 'Titre'
     value: 'Paramètres des données'
     label: 'Paramètres des séries'
     dataLabel: 'Paramètres des étiquettes de données'
@@ -451,7 +488,11 @@ fr:
       show: 'Afficher les étiquettes de données ?'
       format: 'Format des données'
       showLabels: 'Afficher les labels ?'
+      position: 'Position'
     formats:
       numeric: 'Numérique'
       percent: 'Pourcentage'
+    positions:
+      in: 'Intérieur'
+      out: 'Extérieur'
 </i18n>
