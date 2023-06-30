@@ -20,33 +20,6 @@
           @input="onParamUpdate({ dataKey: $event || undefined })"
         />
 
-        <!-- TODO: Move to FigureForm -->
-        <!-- <v-combobox
-          :value="innerTitle"
-          :items="possibleVars"
-          :label="$t('headers.title')"
-          :return-object="false"
-          :readonly="readonly"
-          no-filter
-          ref="titleCB"
-          @input="onAutocompleteChoice"
-          @update:search-input="innerTitle = $event"
-          @blur="onParamUpdate({ title: innerTitle || undefined })"
-        >
-          <template #item="{ item, on, attrs }">
-            <v-list-item two-line v-bind="attrs" v-on="on">
-              <v-list-item-content>
-                <v-list-item-title>{{ item.value }}</v-list-item-title>
-                <v-list-item-subtitle>{{ $t(`vars.${item.text}`) }}</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-          </template>
-
-          <template #append>
-            <div />
-          </template>
-        </v-combobox> -->
-
         <v-text-field
           :value="figureParams?.maxLength"
           :label="$t('headers.maxLength')"
@@ -82,7 +55,7 @@
         <CustomSection v-if="unsupportedParams.shouldShow">
           <ToggleableObjectTree
             :value="unsupportedParams.value"
-            :label="$t('headers.advanced').toString()"
+            :label="$t('$ezreeport.advancedParameters').toString()"
             v-on="unsupportedParams.listeners"
           />
         </CustomSection>
@@ -96,13 +69,9 @@ import { defineComponent } from 'vue';
 import { omit, merge } from 'lodash';
 import useTemplateStore from '~/stores/template';
 import type TablePreviewFormConstructor from './TablePreviewForm.vue';
-import { TableColumn } from './TablePreviewForm.vue';
+import type { TableColumn } from './TablePreviewForm.vue';
 
 type TablePreviewForm = InstanceType<typeof TablePreviewFormConstructor>;
-
-// const templateVars = [
-//   'length',
-// ];
 
 const supportedKeys = [
   'dataKey',
@@ -189,12 +158,6 @@ export default defineComponent({
         );
       },
     },
-    // possibleVars() {
-    //   return templateVars.map((text) => ({
-    //     value: `{{ ${text} }}`,
-    //     text,
-    //   }));
-    // },
     unsupportedParams() {
       let listeners = {};
       if (!this.readonly && this.valid) {
@@ -255,18 +218,10 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   headers:
-    title: 'Title'
     maxLength: 'Maximum count of rows'
     columns: 'Columns'
-    advanced: 'Advanced parameters'
-  vars:
-    length: 'Actual count of items in table'
 fr:
   headers:
-    title: 'Titre'
     maxLength: 'Nombre maximum de lignes'
     columns: 'Colonnes'
-    advanced: 'Paramètres avancés'
-  vars:
-    length: "Nombre réel d'éléments dans le tableau"
 </i18n>

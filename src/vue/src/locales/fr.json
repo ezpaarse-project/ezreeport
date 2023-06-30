@@ -12,6 +12,7 @@
   "open": "Ouvrir",
   "generate": "Générer",
   "save": "Sauvegarder",
+  "advancedParameters": "Paramètres avancés",
 
   "tasks": {
     "name": "Nom du rapport",
@@ -73,6 +74,10 @@
       "Bas à droite"
     ],
 
+    "vars_list": {
+      "length": "Nombre réel d'éléments dans le tableau"
+    },
+
     "errors": {
       "_detail": "Visualisation {at}: {valid}",
       "no_slots": "Au moins un emplacement doit être utilisé",
@@ -86,6 +91,13 @@
     "index": "Index Elastic",
     "dateField": "Champ 'date' de l'index",
     "filters": "Filtres"
+  },
+
+  "hints": {
+    "dot_notation": {
+      "value": "Supporte la notation avec des points. Ex: {code}",
+      "code": "cle.valeur"
+    }
   },
 
   "errors": {

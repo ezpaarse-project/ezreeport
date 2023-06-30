@@ -15,17 +15,35 @@
         <div v-if="figure.type === 'md' || figure.type === 'metric'" class="py-2">
           {{ figureTitle }}
         </div>
-        <v-text-field
+        <v-combobox
           v-else
+          :value="innerTitle"
+          :items="possibleVars"
           :label="$t('figures.title')"
-          :value="figure.params.title"
+          :return-object="false"
           :placeholder="figureTitle"
+          no-filter
           dense
           hide-details
           persistent-placeholder
-          class="py-1"
-          @input="figureTitle = $event"
-        />
+          ref="titleCB"
+          @input="onAutocompleteChoice"
+          @update:search-input="innerTitle = $event"
+          @blur="figureTitle = $event"
+        >
+          <template #item="{ item, on, attrs }">
+            <v-list-item two-line v-bind="attrs" v-on="on">
+              <v-list-item-content>
+                <v-list-item-title>{{ item.value }}</v-list-item-title>
+                <v-list-item-subtitle>{{ $t(`$ezreeport.figures.vars_list.${item.text}`) }}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </template>
+
+          <template #append>
+            <div />
+          </template>
+        </v-combobox>
 
         <v-spacer />
 
@@ -86,6 +104,13 @@ import type { AnyCustomFigure } from '~/lib/templates/customTemplates';
 import { figureTypes, figureIcons } from '~/lib/templates/figures';
 import useTemplateStore, { mapRulesToVuetify } from '~/stores/template';
 
+/**
+ * Possibles vars in title
+ */
+const templateVars = [
+  'length',
+];
+
 export default defineComponent({
   props: {
     id: {
@@ -116,6 +141,7 @@ export default defineComponent({
   data: () => ({
     dataMap: {} as Record<string, string | unknown[] | undefined>,
     preventDrag: false,
+    innerTitle: '',
     figureIcons,
   }),
   computed: {
@@ -163,6 +189,17 @@ export default defineComponent({
       );
     },
     /**
+     * Localized possible variables in title
+     */
+    possibleVars() {
+      return templateVars.map((text) => ({
+        value: `{{ ${text} }}`,
+        text,
+      })).sort(
+        (a, b) => a.text.toString().localeCompare(b.text.toString()),
+      );
+    },
+    /**
      * Returns the title of the figure
      */
     figureTitle: {
@@ -190,6 +227,14 @@ export default defineComponent({
     },
   },
   methods: {
+    async onAutocompleteChoice(choice: string) {
+      if (choice) {
+        const actual = this.innerTitle ?? '';
+        await this.$nextTick();
+        this.innerTitle = actual + choice;
+        (this.$refs.titleCB as HTMLElement)?.focus();
+      }
+    },
     onFigureTypeChange(type: string) {
       if (!this.figure) {
         return;

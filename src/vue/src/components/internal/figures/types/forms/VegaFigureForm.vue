@@ -40,7 +40,7 @@
           </div>
           <i18n path="hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
             <template #code>
-              <code>{{ $t('hints.dot_notation.code') }}</code>
+              <code>{{ $t('$ezreeport.hints.dot_notation.code') }}</code>
             </template>
           </i18n>
 
@@ -154,7 +154,7 @@
         <CustomSection v-if="unsupportedParams.shouldShow">
           <ToggleableObjectTree
             :value="unsupportedParams.value"
-            :label="$t('headers.advanced').toString()"
+            :label="$t('$ezreeport.advancedParameters').toString()"
             v-on="unsupportedParams.listeners"
           />
         </CustomSection>
@@ -167,13 +167,6 @@
 import { pick, merge } from 'lodash';
 import { defineComponent } from 'vue';
 import useTemplateStore from '~/stores/template';
-
-// /**
-//  * Possibles vars in title
-//  */
-// const templateVars = [
-//   'length',
-// ];
 
 /**
  * Possible formats for data labels
@@ -434,13 +427,6 @@ en:
     value: 'Data parameters'
     label: 'Series parameter'
     dataLabel: 'Data Labels parameters'
-    advanced: 'Advanced parameters'
-  hints:
-    dot_notation:
-      value: 'Support dot notation. Eg: {code}'
-      code: 'key.value'
-  vars:
-    length: 'Actual count of items in figure'
   value:
     headers:
       field: 'Field'
@@ -467,13 +453,6 @@ fr:
     value: 'Paramètres des données'
     label: 'Paramètres des séries'
     dataLabel: 'Paramètres des étiquettes de données'
-    advanced: 'Paramètres avancés'
-  hints:
-    dot_notation:
-      value: 'Supporte la notation avec des points. Ex: {code}'
-      code: 'cle.valeur'
-  vars:
-    length: "Nombre réel d'éléments dans la visualisation"
   value:
     headers:
       field: 'Champ'

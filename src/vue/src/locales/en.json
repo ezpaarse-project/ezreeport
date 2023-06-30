@@ -12,6 +12,7 @@
   "open": "Open",
   "generate": "Generate",
   "save": "Save",
+  "advancedParameters": "Advanced parameters",
 
   "tasks": {
     "name": "Report name",
@@ -77,6 +78,10 @@
       "Bottom right"
     ],
 
+    "vars_list": {
+      "length": "Actual count of items in table"
+    },
+
     "errors": {
       "_detail": "Figure {at}: {valid}",
       "no_slots": "At least one slot must be provided",
@@ -90,6 +95,13 @@
     "index": "Elastic index",
     "dateField": "'date' field of the index",
     "filters": "Filters"
+  },
+
+  "hints": {
+    "dot_notation": {
+      "value": "Support dot notation. Eg: {code}",
+      "code": "key.value"
+    }
   },
 
   "errors": {
