@@ -203,7 +203,7 @@ export const generateReport = async (
     throw new Error(`Namespace "${task.namespaceId}" not found`);
   }
 
-  logger.verbose(`[gen] Generation of report "${namepath}" started`);
+  logger.verbose(`[gen] [${process.pid}] Generation of report "${namepath}" started`);
   events.emit('creation');
 
   let result: ReportResult = {
@@ -285,7 +285,7 @@ export const generateReport = async (
     // Cleanup
     delete template.fetchOptions;
     events.emit('templateFetched', template);
-    logger.verbose('[gen] Data fetched');
+    logger.verbose(`[gen] [${process.pid}] Data fetched`);
 
     // Render report
     const renderOptions: GeneratorParam<Renderers, keyof Renderers> = merge(
@@ -304,7 +304,8 @@ export const generateReport = async (
     );
     template.renderOptions = renderOptions;
     const stats = await renderers[template.renderer ?? 'vega-pdf'](renderOptions, events);
-    logger.verbose(`[gen] Report wroted to "${namepath}.rep.pdf"`);
+    result.detail.files.report = `${namepath}.rep.pdf`;
+    logger.verbose(`[gen] [${process.pid}] Report wrote to "${result.detail.files.report}"`);
 
     await writeFile(
       `${filepath}.deb.json`,
@@ -316,16 +317,13 @@ export const generateReport = async (
       'utf-8',
     );
     result.detail.files.debug = `${namepath}.deb.json`;
-    logger.verbose(`[gen] Template wrote to "${namepath}.deb.json"`);
+    logger.verbose(`[gen] [${process.pid}] Template wrote to "${result.detail.files.debug}"`);
 
-    result = merge<ReportResult, DeepPartial<ReportResult>>(
+    merge<ReportResult, DeepPartial<ReportResult>>(
       result,
       {
         detail: {
           took: differenceInMilliseconds(new Date(), result.detail.createdAt),
-          files: {
-            report: `${namepath}.rep.pdf`,
-          },
           sendingTo: targets,
           stats: omit(stats, 'path'),
         },
@@ -357,7 +355,7 @@ export const generateReport = async (
       );
     }
 
-    logger.info(`[gen] Report "${namepath}" successfully generated in ${(result.detail.took / 1000).toFixed(2)}s`);
+    logger.info(`[gen] [${process.pid}] Report "${namepath}" successfully generated in ${(result.detail.took / 1000).toFixed(2)}s`);
   } catch (error) {
     result = merge<ReportResult, DeepPartial<ReportResult>>(
       result,
@@ -392,7 +390,7 @@ export const generateReport = async (
         },
       );
     }
-    logger.error(`[gen] Report "${namepath}" failed to generate in ${(result.detail.took / 1000).toFixed(2)}s with error : ${(error as Error).message}`);
+    logger.error(`[gen] [${process.pid}] Report "${namepath}" failed to generate in ${(result.detail.took / 1000).toFixed(2)}s with error : ${(error as Error).message}`);
   }
 
   // Write result when process is ending
@@ -405,6 +403,6 @@ export const generateReport = async (
     ),
     'utf-8',
   );
-  logger.verbose(`[gen] Detail wrote to "${namepath}.det.json"`);
+  logger.verbose(`[gen] [${process.pid}] Detail wrote to "${result.detail.files.detail}"`);
   return result;
 };
