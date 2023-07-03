@@ -1,3 +1,18 @@
+# ezreeport-report [1.0.0-beta.11](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.10...ezreeport-report@1.0.0-beta.11) (2023-07-03)
+
+
+### Bug Fixes
+
+* **report:** fixed hard-coded dateField ([f3187c9](https://github.com/ezpaarse-project/ezreeport/commit/f3187c981c206cf70b7192a0557ab3001ad573eb))
+* **report:** fixed issue with merges and data fetching ([4f224b9](https://github.com/ezpaarse-project/ezreeport/commit/4f224b91eb7bdaee695a459ec0b75ec255eae056))
+
+
+### Features
+
+* **report:** added PID to multi-threaded tasks ([eda2865](https://github.com/ezpaarse-project/ezreeport/commit/eda28656f999f6db48562d071993bb549da49239))
+* **report:** added total option for pdf tables ([5b47231](https://github.com/ezpaarse-project/ezreeport/commit/5b472312f98cc45f4307dc38a7661f071434be9b))
+* **vue:** added columnStyle to column header ([94fec99](https://github.com/ezpaarse-project/ezreeport/commit/94fec9994bbc5a51cb87c746e54257105cd3c6b1))
+
 # ezreeport-report [1.0.0-beta.10](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.9...ezreeport-report@1.0.0-beta.10) (2023-06-26)
 
 
