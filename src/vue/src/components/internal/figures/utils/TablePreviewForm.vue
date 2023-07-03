@@ -1,13 +1,15 @@
 <template>
   <v-simple-table dense>
     <TableColumnPopover
-      v-if="currentColumn"
+      v-if="currentColumn && columnPopoverShown"
       v-model="columnPopoverShown"
       :coords="columnPopoverCoords"
       :column="currentColumn"
+      :total="totalMap[currentColumn.dataKey]"
       :current-data-keys="currentDataKeys"
       :readonly="readonly"
-      @updated="onCurrentColumnUpdated"
+      @update:column="onCurrentColumnUpdated"
+      @update:total="onCurrentColumnTotalUpdated"
     />
 
     <thead>
@@ -69,6 +71,13 @@
           <span>{{ dataKey }}</span>
         </td>
       </tr>
+      <tr v-if="totals.length > 0">
+        <td v-for="{ dataKey } in columns" :key="`${dataKey}-total`">
+          <template v-if="totalMap[dataKey]">
+            {{ $t('headers.total') }}
+          </template>
+        </td>
+      </tr>
     </tbody>
   </v-simple-table>
 </template>
@@ -96,6 +105,10 @@ export default defineComponent({
       type: Array as PropType<TableColumn[]>,
       required: true,
     },
+    totals: {
+      type: Array as PropType<string[]>,
+      default: () => [],
+    },
     readonly: {
       type: Boolean,
       default: false,
@@ -107,6 +120,7 @@ export default defineComponent({
   },
   emits: {
     input: (cols: TableColumn[]) => !!cols,
+    'update:totals': (totals: string[]) => !!totals,
   },
   data: () => ({
     columnPopoverShown: false,
@@ -132,6 +146,15 @@ export default defineComponent({
       set(val: CustomTableColumn[]) {
         this.innerColumns = val;
       },
+    },
+    totalMap(): Record<string, boolean | undefined> {
+      return this.totals.reduce(
+        (prev, dK) => ({
+          ...prev,
+          [dK]: true,
+        }),
+        {},
+      );
     },
     currentDataKeys() {
       return this.value.map(({ dataKey }) => dataKey);
@@ -161,6 +184,25 @@ export default defineComponent({
       columns.splice(index, 1, omit(column, '_'));
       this.$emit('input', columns);
       this.currentColumn = column;
+    },
+    /**
+     * Triggered when a column total is updated
+     *
+     * @param value Should show total or not
+     */
+    onCurrentColumnTotalUpdated(value: boolean) {
+      if (!this.currentColumn) {
+        return;
+      }
+
+      const totalSet = new Set(this.totals);
+      if (value) {
+        totalSet.add(this.currentColumn.dataKey);
+      } else {
+        totalSet.delete(this.currentColumn.dataKey);
+      }
+
+      this.$emit('update:totals', [...totalSet]);
     },
     /**
      * Triggered when a column is deleted
@@ -313,3 +355,12 @@ export default defineComponent({
 <style scoped>
 
 </style>
+
+<i18n lang="yaml">
+en:
+  headers:
+    total: 'Total'
+fr:
+  headers:
+    total: 'Total'
+</i18n>

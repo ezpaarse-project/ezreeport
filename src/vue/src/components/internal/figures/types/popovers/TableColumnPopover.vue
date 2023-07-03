@@ -4,6 +4,7 @@
     :position-x="coords.x"
     :position-y="coords.y"
     :close-on-content-click="false"
+    :close-on-click="valid"
     absolute
     max-width="450"
     min-width="450"
@@ -36,6 +37,15 @@
             @input="onColumnUpdated({ header: $event })"
           />
 
+          <v-checkbox
+            :label="$t('headers.total')"
+            :input-value="total"
+            :readonly="readonly"
+            hide-details
+            class="mt-0"
+            @change="$emit('update:total', $event)"
+          />
+
           <!-- Advanced -->
           <CustomSection v-if="unsupportedParams.shouldShow">
             <ToggleableObjectTree
@@ -53,7 +63,7 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
 import { merge, omit, pick } from 'lodash';
-import type { TableColumn } from '../forms/TablePreviewForm.vue';
+import type { TableColumn } from '../../utils/TablePreviewForm.vue';
 
 /**
  * Keys of label supported by the popover
@@ -88,6 +98,13 @@ export default defineComponent({
       required: true,
     },
     /**
+     * Should show total of column
+     */
+    total: {
+      type: Boolean,
+      default: false,
+    },
+    /**
      * Current key used by other columns
      */
     currentDataKeys: {
@@ -104,7 +121,8 @@ export default defineComponent({
   },
   emits: {
     input: (show: boolean) => show !== undefined,
-    updated: (element: TableColumn) => !!element,
+    'update:column': (element: TableColumn) => !!element,
+    'update:total': (total: boolean) => total !== undefined,
   },
   data: () => ({
     valid: false,
@@ -149,7 +167,7 @@ export default defineComponent({
         listeners = {
           input: (val: Record<string, any>) => {
             const column = pick(this.column, supportedKeys);
-            this.$emit('updated', merge({}, column as TableColumn, val));
+            this.$emit('update:column', merge({}, column as TableColumn, val));
           },
         };
       }
@@ -169,10 +187,13 @@ export default defineComponent({
       }
     },
   },
+  mounted() {
+    this.innerDataKey = this.column.dataKey;
+  },
   methods: {
     onColumnUpdated(data: Partial<TableColumn>) {
       if (this.valid) {
-        this.$emit('updated', { ...this.column, ...data });
+        this.$emit('update:column', { ...this.column, ...data });
       }
     },
   },
@@ -192,12 +213,14 @@ en:
   headers:
     dataKey: 'Key to get data'
     header: 'Name of the column'
+    total: 'Show total'
   errors:
     no_duplicate: 'This key is already used'
 fr:
   headers:
     dataKey: 'Clé a utiliser pour récupérer les données'
     header: 'Name of the column'
+    total: 'Afficher le total'
   errors:
     no_duplicate: 'Cette clé est déjà utilisé'
 </i18n>
