@@ -1,5 +1,5 @@
 import { compile as handlebars } from 'handlebars';
-import autoTable, { type UserOptions } from 'jspdf-autotable';
+import autoTable, { type CellDef, type UserOptions } from 'jspdf-autotable';
 import { get, merge } from 'lodash';
 
 import { appLogger as logger } from '~/lib/logger';
@@ -9,8 +9,9 @@ import type { PDFReport } from '.';
 export type TableParams = {
   title: string,
   dataKey?: string,
-  maxLength?: number;
-  maxHeight?: number;
+  maxLength?: number,
+  maxHeight?: number,
+  totals?: string[],
 } & Omit<UserOptions, 'body' | 'didParseCell' | 'willDrawCell' | 'didDrawCell' | 'didDrawPage'>;
 
 /**
@@ -74,6 +75,25 @@ export const addTableToPDF = async (
     params,
   );
 
+  if (options.totals && options.columns) {
+    const totalSet = new Set(options.totals);
+    options.foot = [
+      options.columns.map((col): CellDef => {
+        if (typeof col !== 'object' || !col.dataKey || !totalSet.has(col.dataKey.toString())) {
+          return { content: '' };
+        }
+
+        return {
+          content: tableData.reduce(
+            (prev, d) => prev + Number.parseInt(get(d, col.dataKey?.toString() ?? '') ?? '0', 10),
+            0,
+          ),
+          styles: options.columnStyles?.[col.dataKey],
+        };
+      }),
+    ];
+  }
+
   const y = options.startY || options.margin.top;
 
   // Table title
@@ -81,7 +101,7 @@ export const addTableToPDF = async (
     .setFont('Roboto', 'bold')
     .setFontSize(fontSize)
     .text(
-      handlebars(title)({ length: tableData.length }),
+      handlebars(title ?? '')({ length: tableData.length }),
       options.margin.left,
       y - 0.5 * fontSize,
     );
@@ -92,17 +112,15 @@ export const addTableToPDF = async (
     body: tableData,
     didParseCell: (hookData) => {
       // If dataKey is a property path
-      if (
-        hookData.row.section === 'body'
-        && /^\S+\./i.test(hookData.column.dataKey.toString())
-      ) {
+      if (hookData.row.section === 'body') {
+        let d = get(tableData[hookData.row.index], hookData.column.dataKey.toString()) ?? '';
+        switch (typeof d) {
+          default:
+            d = d.toString();
+            break;
+        }
         // eslint-disable-next-line no-param-reassign
-        hookData.cell.text = [
-          get(
-            tableData[hookData.row.index],
-            hookData.column.dataKey,
-          ) ?? '',
-        ];
+        hookData.cell.text = [d];
       }
     },
   });

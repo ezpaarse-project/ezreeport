@@ -237,9 +237,6 @@ export default async (
     }
   }
 
-  console.log('============ opts ================');
-  console.log(JSON.stringify(opts, undefined, 4));
-
   const data: Prisma.JsonValue = {};
   const { body } = await elasticSearch(opts, options.auth.username);
 
