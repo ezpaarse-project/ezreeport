@@ -37,7 +37,10 @@ export const addTableToPDF = async (
   }
 
   const {
-    maxLength, maxHeight, title, ...params
+    maxLength,
+    maxHeight,
+    title,
+    ...params
   } = spec;
   const fontSize = 10;
 
@@ -75,23 +78,50 @@ export const addTableToPDF = async (
     params,
   );
 
-  if (options.totals && options.columns) {
-    const totalSet = new Set(options.totals);
-    options.foot = [
-      options.columns.map((col): CellDef => {
-        if (typeof col !== 'object' || !col.dataKey || !totalSet.has(col.dataKey.toString())) {
-          return { content: '' };
-        }
+  if (options.columns) {
+    // Adding custom style to header
+    options.columns = options.columns.map((col) => {
+      if (
+        typeof col !== 'object'
+        || !col.header
+        || Array.isArray(col.header)
+      ) {
+        return col;
+      }
 
-        return {
-          content: tableData.reduce(
-            (prev, d) => prev + Number.parseInt(get(d, col.dataKey?.toString() ?? '') ?? '0', 10),
-            0,
-          ),
-          styles: options.columnStyles?.[col.dataKey],
+      let { header: colHeader } = col;
+      if (typeof colHeader !== 'object') {
+        colHeader = {
+          content: col.header.toString(),
+          styles: options.columnStyles?.[col.dataKey ?? ''],
         };
-      }),
-    ];
+      }
+
+      return {
+        ...col,
+        header: colHeader,
+      };
+    });
+
+    // Adding totals as footer
+    if (options.totals) {
+      const totalSet = new Set(options.totals);
+      options.foot = [
+        options.columns.map((col): CellDef => {
+          if (typeof col !== 'object' || !col.dataKey || !totalSet.has(col.dataKey.toString())) {
+            return { content: '' };
+          }
+
+          return {
+            content: tableData.reduce(
+              (prev, d) => prev + Number.parseInt(get(d, col.dataKey?.toString() ?? '') ?? '0', 10),
+              0,
+            ),
+            styles: options.columnStyles?.[col.dataKey],
+          };
+        }),
+      ];
+    }
   }
 
   const y = options.startY || options.margin.top;
