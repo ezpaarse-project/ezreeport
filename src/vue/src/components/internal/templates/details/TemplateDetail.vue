@@ -13,30 +13,40 @@
           <v-select
             v-if="taskTemplate"
             :value="taskTemplate.extends"
-            :label="$t('headers.base')"
+            :label="$t('$ezreeport.templates.base')"
             :items="[taskTemplate.extends]"
             readonly
             @change="onTemplateUpdate({ extends: $event })"
           >
             <template #append-outer>
               <v-btn v-if="perms.readOne" @click="openBaseDialog()">
-                {{ $t('actions.see-extends') }}
+                {{ $t('$ezreeport.open') }}
               </v-btn>
             </template>
           </v-select>
 
-          <v-text-field
-            v-if="taskTemplate"
-            :value="templateStore.currentFetchOptions?.index"
-            :label="$t('headers.fetchIndex').toString()"
-            readonly
-            dense
-            class="pt-4"
-            @input="onFetchOptionUpdate({ index: $event })"
-          />
+          <div class="d-flex">
+            <v-text-field
+              v-if="taskTemplate"
+              :value="templateStore.currentFetchOptions?.index"
+              :label="$t('$ezreeport.fetchOptions.index').toString()"
+              readonly
+              dense
+              class="pt-4"
+              @input="onFetchOptionUpdate({ index: $event })"
+            />
+
+            <v-text-field
+              :value="templateStore.currentFetchOptions?.dateField"
+              :label="$t('$ezreeport.fetchOptions.dateField').toString()"
+              dense
+              class="pt-4"
+              @input="onFetchOptionUpdate({ dateField: $event })"
+            />
+          </div>
 
           <CustomSection
-            :label="$t('headers.fetchFilters').toString()"
+            :label="$t('$ezreeport.fetchOptions.filters').toString()"
             :collapse-disabled="(templateStore.currentFetchOptions?.filtersCount ?? 0) <= 0"
             collapsable
           >
@@ -61,7 +71,7 @@
             <v-icon>mdi-chevron-{{ templateEditorCollapsed === false ? 'up' : 'down' }}</v-icon>
           </v-btn>
 
-          {{ $t('headers.layouts', { count: templateStore.currentLayouts.length }) }}
+          {{ $tc('$ezreeport.templates.editor', templateStore.currentLayouts.length) }}
         </v-card-subtitle>
 
         <v-divider />
@@ -92,12 +102,19 @@
         </v-card-text>
       </v-card>
 
-      <CustomSection :label="$t('headers.advancedOptions').toString()" :default-value="true" collapsable>
-        <v-switch :label="$t('show-raw')" v-model="rawTemplateShown" />
+      <CustomSection
+        :label="$t('$ezreeport.advanced_parameters').toString()"
+        :default-value="true"
+        collapsable
+      >
+        <v-switch
+          :label="$t('$ezreeport.show_json')"
+          v-model="rawTemplateShown"
+        />
 
         <v-select
           v-if="fullTemplate"
-          :label="$t('headers.renderer')"
+          :label="$t('$ezreeport.templates.renderer')"
           :value="fullTemplate.renderer"
           :items="availableRenderer"
           placeholder="vega-pdf"
@@ -107,14 +124,14 @@
 
         <CustomSection>
           <ToggleableObjectTree
-            :label="$t('headers.fetchOptions').toString()"
+            :label="$t('$ezreeport.fetchOptions.title').toString()"
             :value="templateStore.currentFetchOptions?.others ?? {}"
           />
         </CustomSection>
 
         <CustomSection v-if="fullTemplate">
           <ToggleableObjectTree
-            :label="$t('headers.renderOptions').toString()"
+            :label="$t('$ezreeport.templates.renderOptions').toString()"
             :value="fullTemplate.renderOptions || {}"
           />
         </CustomSection>
@@ -125,7 +142,7 @@
 
     <v-slide-x-reverse-transition>
       <v-col v-if="rawTemplateShown" cols="5">
-        <JSONPreview :value="templateStore.GET_CURRENT()" />
+        <JSONPreview :value="rawTemplate" />
       </v-col>
     </v-slide-x-reverse-transition>
   </v-row>
@@ -208,10 +225,19 @@ export default defineComponent({
       }
       return this.fullTemplate;
     },
+    /**
+     * The selected template to view it's figures
+     */
     selectedLayout() {
       return this.templateStore.currentLayouts.find(
         ({ _: { id } }) => id === this.selectedLayoutId,
       );
+    },
+    /**
+     * The template without any client side feature (ids, validation, etc.)
+     */
+    rawTemplate() {
+      return this.templateStore.GET_CURRENT();
     },
   },
   watch: {
@@ -276,34 +302,3 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 </style>
-
-<i18n lang="yaml">
-en:
-  show-raw: 'Show JSON'
-  headers:
-    renderer: 'Renderer'
-    fetcher: 'Fetcher'
-    base: 'Base template'
-    fetchOptions: 'Fetch options'
-    fetchFilters: 'Filters'
-    fetchIndex: 'Elastic index'
-    advancedOptions: 'Advanced options'
-    renderOptions: 'Render options'
-    layouts: 'Page editor ({count} pages)'
-  actions:
-    see-extends: 'See base'
-fr:
-  show-raw: 'Afficher JSON'
-  headers:
-    renderer: 'Moteur de rendu'
-    fetcher: 'Outil de récupération'
-    base: 'Modèle de base'
-    fetchOptions: 'Options de récupération'
-    fetchFilters: 'Filtres'
-    fetchIndex: 'Index Elastic'
-    advancedOptions: 'Options avancées'
-    renderOptions: 'Options de rendu'
-    layouts: 'Éditeur de pages ({count} pages)'
-  actions:
-    see-extends: 'Voir la base'
-</i18n>

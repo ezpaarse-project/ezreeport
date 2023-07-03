@@ -134,7 +134,7 @@ export default defineComponent({
       if (tag) {
         this.currentTag = tag;
       } else {
-        this.currentTag = { name: `Tag #${this.value.length || 0}`, color: '' };
+        this.currentTag = { name: `Tag #${this.value.length || 0}` };
         this.$emit('input', [...this.value, this.currentTag]);
       }
 

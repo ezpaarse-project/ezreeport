@@ -6,7 +6,7 @@
 
       <div class="d-flex align-center">
         <v-checkbox
-          :label="fetchOptions.isFetchCount ? '' : $t('no')"
+          :label="fetchOptions.isFetchCount ? '' : $t('$ezreeport.no')"
           :input-value="fetchOptions.isFetchCount"
           :readonly="readonly"
           hide-details
@@ -19,7 +19,7 @@
         <v-text-field
           v-if="fetchOptions.isFetchCount"
           :value="fetchOptions.fetchCount"
-          :placeholder="$t('headers.fetchKey').toString()"
+          :placeholder="$t('$ezreeport.fetchOptions.aggName').toString()"
           :readonly="readonly"
           hide-details="auto"
           dense
@@ -84,7 +84,7 @@
     <!-- Aggregations -->
     <CustomSection
       v-if="!readonly || fetchOptions.aggs.length > 0"
-      :label="$t('headers.fetchAggs').toString()"
+      :label="$t('$ezreeport.fetchOptions.aggregations').toString()"
       :collapse-disabled="fetchOptions.aggs.length <= 0"
       collapsable
     >
@@ -110,7 +110,7 @@
     <!-- Advanced -->
     <CustomSection v-if="!readonly || fetchOptions.othersCount > 0">
       <ToggleableObjectTree
-        :label="$t('headers.advanced').toString()"
+        :label="$t('$ezreeport.advanced_parameters').toString()"
         :value="fetchOptions.others || {}"
         v-on="fetchOptions.otherListeners"
       />
@@ -120,8 +120,9 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import useTemplateStore, { transformFetchOptions, type FetchOptions } from '~/stores/template';
+import useTemplateStore, { transformFetchOptions, type FetchOptions, supportedFetchOptions } from '~/stores/template';
 import { aggsDefinition } from '~/lib/elastic/aggs';
+import { pick } from 'lodash';
 import type ElasticAggsBuilderConstructor from '../../utils/elastic/aggs/ElasticAggsBuilder.vue';
 import type ElasticFilterBuilderConstructor from '../../utils/elastic/filters/ElasticFilterBuilder.vue';
 
@@ -184,7 +185,7 @@ export default defineComponent({
         {
           ...this.layout,
           fetchOptions: {
-            ...(this.layout.fetchOptions ?? {}),
+            ...pick(this.layout.fetchOptions ?? {}, supportedFetchOptions),
             ...data,
           },
         },
@@ -214,25 +215,13 @@ export default defineComponent({
 
 <i18n lang="yaml">
 en:
-  no: 'No'
   headers:
     labels: 'Elements'
-    advanced: 'Advanced parameters'
     fetchCount: 'Should fetch document count ?'
     typeHelper: 'Format of data'
-    fetchKey: 'Aggregation name'
-    fetchAggs: 'Aggregations'
-  errors:
-    empty: 'This field must be set'
 fr:
-  no: 'Non'
   headers:
     labels: 'Élements'
-    advanced: 'Paramètres avancés'
     fetchCount: 'Récupérer le nombre de documents ?'
     typeHelper: 'Format des données'
-    fetchKey: "Nom de l'aggregation"
-    fetchAggs: 'Aggregations'
-  errors:
-    empty: 'Ce champ doit être rempli'
 </i18n>

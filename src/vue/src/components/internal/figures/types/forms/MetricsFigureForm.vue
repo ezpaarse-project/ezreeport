@@ -18,7 +18,8 @@
         :readonly="readonly"
         :currentKeyFields="currentFigureKeyFields"
         :availableAggs="availableAggs"
-        @updated="onCurrentLabelUpdated"
+        @input="currentLabel = undefined"
+        @update:element="onCurrentLabelUpdated"
       />
 
       <CustomSection :label="$t('headers.labels').toString()">
@@ -79,7 +80,7 @@
       <CustomSection v-if="unsupportedFigureParams.shouldShow">
         <ToggleableObjectTree
           :value="unsupportedFigureParams.value"
-          :label="$t('headers.advanced').toString()"
+          :label="$t('$ezreeport.advanced_parameters').toString()"
           v-on="unsupportedFigureParams.listeners"
         />
       </CustomSection>
@@ -148,32 +149,29 @@ export default defineComponent({
     draggedIndex: -1,
   }),
   computed: {
+    figure() {
+      const layout = this.templateStore.currentLayouts.find(
+        ({ _: { id } }) => id === this.layoutId,
+      );
+
+      return layout?.figures.find(({ _: { id } }) => id === this.id);
+    },
     figureParams: {
       get(): MetricParams | undefined {
-        const layout = this.templateStore.currentLayouts.find(
-          ({ _: { id } }) => id === this.layoutId,
-        );
-
-        const figure = layout?.figures.find(({ _: { id } }) => id === this.id);
-        if (!figure?.params) {
+        if (!this.figure?.params) {
           return undefined;
         }
 
         const params: MetricParams = { labels: [] };
-        if ('labels' in figure.params && Array.isArray(figure.params.labels)) {
+        if ('labels' in this.figure.params && Array.isArray(this.figure.params.labels)) {
           // TODO: Better Validation
-          params.labels = figure.params.labels as Label[];
+          params.labels = this.figure.params.labels as Label[];
         }
 
         return params;
       },
       set(params: MetricParams) {
-        const layout = this.templateStore.currentLayouts.find(
-          ({ _: { id } }) => id === this.layoutId,
-        );
-
-        const figure = layout?.figures.find(({ _: { id } }) => id === this.id);
-        if (!figure) {
+        if (!this.figure) {
           return;
         }
 
@@ -181,7 +179,7 @@ export default defineComponent({
           this.layoutId,
           this.id,
           {
-            ...figure,
+            ...this.figure,
             params,
           },
         );
@@ -217,12 +215,12 @@ export default defineComponent({
       if (!this.readonly) {
         listeners = {
           input: (val: Record<string, any>) => {
-            this.figureParams = merge(this.figureParams, val);
+            this.figureParams = merge({}, this.figureParams, val);
           },
         };
       }
 
-      const value = omit(this.figureParams, supportedKeys);
+      const value = omit(this.figure?.params ?? {}, supportedKeys);
       return {
         shouldShow: !this.readonly || Object.keys(value).length > 0,
         value,
@@ -243,11 +241,16 @@ export default defineComponent({
       }
 
       const available = (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
-      const currentFigureKeySet = new Set(this.labels.map((l) => l.dataKey));
-      return available.filter(
-        (agg) => !currentFigureKeySet.has(agg)
+      if (layout.fetchOptions?.fetchCount) {
+        available.push(layout.fetchOptions.fetchCount.toString());
+      }
+
+      const currentLabelsKeySet = new Set(this.labels.map((l) => l.dataKey));
+      const res = available.filter(
+        (agg) => !currentLabelsKeySet.has(agg)
           || agg === this.currentLabel?.dataKey,
       );
+      return res;
     },
   },
   methods: {
@@ -303,7 +306,7 @@ export default defineComponent({
       if (label) {
         this.currentLabel = label;
       } else {
-        this.currentLabel = { dataKey: `agg${this.labels.length}` };
+        this.currentLabel = { dataKey: this.availableAggs[0] || `agg${this.labels.length}` };
         const labels = [...this.figureParams.labels, this.currentLabel];
         this.figureParams = { ...this.figureParams, labels };
       }
@@ -485,9 +488,7 @@ export default defineComponent({
 en:
   headers:
     labels: 'Elements'
-    advanced: 'Advanced parameters'
 fr:
   headers:
     labels: 'Élements'
-    advanced: 'Paramètres avancés'
 </i18n>

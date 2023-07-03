@@ -88,7 +88,7 @@
           <CustomSection v-if="unsupportedParams.shouldShow">
             <ToggleableObjectTree
               :value="unsupportedParams.value"
-              :label="$t('headers.advanced').toString()"
+              :label="$t('$ezreeport.advanced_parameters').toString()"
               v-on="unsupportedParams.listeners"
             />
           </CustomSection>
@@ -100,7 +100,7 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import { omit, merge } from 'lodash';
+import { omit, merge, pick } from 'lodash';
 import type { Label } from '../forms/MetricsFigureForm.vue';
 
 /**
@@ -166,7 +166,7 @@ export default defineComponent({
   },
   emits: {
     input: (show: boolean) => show !== undefined,
-    updated: (element: Label) => !!element,
+    'update:element': (element: Label) => !!element,
   },
   data: () => ({
     innerDataKey: '',
@@ -180,7 +180,7 @@ export default defineComponent({
     rules() {
       return {
         dataKey: [
-          (v: string) => v?.length > 0 || this.$t('errors.empty'),
+          (v: string) => v?.length > 0 || this.$t('$ezreeport.errors.empty'),
           !this.isDuplicate || this.$t('errors.no_duplicate'),
         ],
         field: [
@@ -220,7 +220,10 @@ export default defineComponent({
       let listeners = {};
       if (!this.readonly) {
         listeners = {
-          input: (val: Record<string, any>) => { this.$emit('updated', merge(this.element, val)); },
+          input: (val: Record<string, any>) => {
+            const element = pick(this.element, supportedKeys);
+            this.$emit('update:element', merge({}, element as Label, val));
+          },
         };
       }
 
@@ -243,7 +246,7 @@ export default defineComponent({
   methods: {
     onLabelUpdated(data: Partial<Label>) {
       if (this.valid) {
-        this.$emit('updated', { ...this.element, ...data });
+        this.$emit('update:element', { ...this.element, ...data });
       }
     },
     async onLabelKeyUpdated() {
@@ -282,9 +285,7 @@ en:
     text: 'Text to show'
     type: 'Type of data'
     formatParams: 'Params to format data'
-    advanced: 'Advanced parameters'
   errors:
-    empty: 'This field must be set'
     no_duplicate: 'This couple Key/Field is already used'
   formats:
     _other: 'Other'
@@ -297,9 +298,7 @@ fr:
     text: 'Texte à afficher'
     type: 'Type de donnée'
     formatParams: 'Paramètre pour formatter les données'
-    advanced: 'Paramètres avancés'
   errors:
-    empty: 'Ce champ doit être rempli'
     no_duplicate: 'Ce couple Clé/Champ est déjà utilisé'
   formats:
     _other: 'Autre'

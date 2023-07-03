@@ -30,7 +30,6 @@
         <v-spacer />
 
         <v-btn
-          :disabled="valid !== true"
           icon
           text
           @click="$emit('input', false)"

@@ -151,7 +151,12 @@
       <v-divider />
 
       <v-card-actions>
-        <v-btn v-if="perms.runTask" color="warning" @click="showGenerateDialog">
+        <v-btn
+          v-if="perms.runTask"
+          :disabled="isModified"
+          color="warning"
+          @click="showGenerateDialog"
+        >
           {{ $t('$ezreeport.generate') }}
         </v-btn>
 
@@ -182,9 +187,11 @@ import { defineComponent } from 'vue';
 import isEmail from 'validator/lib/isEmail';
 import ezReeportMixin from '~/mixins/ezr';
 import useTemplateStore, { isTaskTemplate, mapRulesToVuetify } from '~/stores/template';
+import type { CustomTaskTemplate } from '~/lib/templates/customTemplates';
+import hash from 'object-hash';
 import { tabs, type Tab } from './TaskDialogRead.vue';
 
-type CustomTask = Omit<tasks.FullTask, 'template'>;
+type TemplateLessTask = Omit<tasks.FullTask, 'template'>;
 
 export default defineComponent({
   mixins: [ezReeportMixin],
@@ -210,7 +217,8 @@ export default defineComponent({
   data: () => ({
     generationDialogShown: false,
 
-    task: undefined as CustomTask | undefined,
+    task: undefined as TemplateLessTask | undefined,
+    taskHash: '',
     currentTab: 0,
 
     minDate: addDays(new Date(), 1),
@@ -299,6 +307,17 @@ export default defineComponent({
       }
       return err.toString();
     },
+    isModified() {
+      if (!this.task) {
+        return false;
+      }
+
+      const newHash = this.genTaskHash({
+        ...this.task,
+        template: (this.templateStore.current as CustomTaskTemplate),
+      });
+      return newHash !== this.taskHash;
+    },
   },
   watch: {
     // eslint-disable-next-line func-names
@@ -324,6 +343,21 @@ export default defineComponent({
      */
     validateMail: (email: string) => isEmail(email),
     /**
+     * Gen task hash, used to detect any "breaking" change that blocks generation
+     *
+     * @param task The task
+     *
+     * @returns The hash
+     */
+    genTaskHash(task: TemplateLessTask & { template: CustomTaskTemplate }) {
+      return hash(
+        task,
+        {
+          excludeKeys: (key) => ['name', 'enabled', 'nextRun'].includes(key),
+        },
+      );
+    },
+    /**
      * Fetch task info
      */
     async fetch() {
@@ -344,6 +378,10 @@ export default defineComponent({
         this.templateStore.SET_CURRENT(template);
 
         this.task = data;
+        this.taskHash = this.genTaskHash({
+          ...data,
+          template: (this.templateStore.current as CustomTaskTemplate),
+        });
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;

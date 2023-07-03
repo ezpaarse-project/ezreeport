@@ -2,25 +2,25 @@
   <v-col v-if="perms.readAll">
     <TemplateProvider>
       <TaskDialogCreate
-        v-if="perms.create"
+        v-if="perms.create && createTaskDialogShown"
         v-model="createTaskDialogShown"
         :id="focusedId"
         @created="onTaskCreated"
       />
       <TaskDialogRead
-        v-if="perms.readOne"
+        v-if="perms.readOne && readTaskDialogShown"
         v-model="readTaskDialogShown"
         :id="focusedId"
         @updated="onTaskEdited"
       />
       <TaskDialogUpdate
-        v-if="perms.update"
+        v-if="perms.update && updateTaskDialogShown"
         v-model="updateTaskDialogShown"
         :id="focusedId"
         @updated="onTaskEdited"
       />
       <TaskPopoverDelete
-        v-if="perms.delete && focusedTask"
+        v-if="perms.delete && focusedTask && deleteTaskPopoverShown"
         v-model="deleteTaskPopoverShown"
         :task="focusedTask"
         :coords="deleteTaskPopoverCoords"

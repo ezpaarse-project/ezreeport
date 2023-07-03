@@ -1,10 +1,13 @@
+import EventEmitter from 'node:events';
+
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import Joi from 'joi';
 import { cloneDeep, merge } from 'lodash';
-import EventEmitter from 'node:events';
+
 import { Recurrence, type Prisma } from '~/lib/prisma';
 import { formatISO } from '~/lib/date-fns';
 import { elasticCount, elasticSearch } from '~/lib/elastic';
+
 import { calcElasticInterval } from '~/models/recurrence';
 import { ArgumentError } from '~/types/errors';
 
@@ -21,6 +24,8 @@ interface FetchOptions {
   period: Interval,
   // Namespace specific
   auth: { username: string },
+  // Template specific
+  dateField: string,
   /**
    * @deprecated Not used anymore
   */
@@ -61,6 +66,7 @@ const optionSchema = Joi.object<FetchOptions>({
   filters: Joi.object(),
   aggs: Joi.array(),
   fetchCount: Joi.string(),
+  dateField: Joi.string().required(),
 });
 
 /**
@@ -126,7 +132,7 @@ const reduceAggs = (
   let agg = rawAgg;
   // Add default calendar_interval
   if (rawAgg.date_histogram) {
-    agg = merge(agg, { date_histogram: { calendar_interval } });
+    agg = merge({}, agg, { date_histogram: { calendar_interval } });
   }
 
   // Handle sub aggregations
@@ -160,11 +166,18 @@ const setSubAggValues = (info: AggInfo, value: any) => {
     for (const subAgg of info.subAggs) {
       setSubAggValues(subAgg, data);
     }
-  } else {
-    const hits = data?.hits?.hits ?? [];
-    // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
-    value[info.name] = hits.map(({ _source }: any) => _source);
+    return;
   }
+
+  if ('buckets' in data) {
+    // eslint-disable-next-line no-param-reassign
+    value[info.name] = data.buckets;
+    return;
+  }
+
+  const hits = data?.hits?.hits ?? [];
+  // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
+  value[info.name] = hits.map(({ _source }: any) => _source);
 };
 
 /**
@@ -197,7 +210,7 @@ export default async (
           ...(options.filters ?? {}),
           filter: {
             range: {
-              datetime: {
+              [options.dateField]: {
                 gte: formatISO(options.period.start),
                 lte: formatISO(options.period.end),
               },

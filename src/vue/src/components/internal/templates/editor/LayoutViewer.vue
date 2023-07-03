@@ -1,5 +1,12 @@
 <template>
   <div class="d-flex flex-column">
+    <FigureDialogParams
+      v-if="editedFigureId && isFigureDialogParamsShown"
+      v-model="isFigureDialogParamsShown"
+      :id="editedFigureId"
+      :layout-id="value"
+    />
+
     <div :class="['d-flex align-center pa-2', $vuetify.theme.dark ? 'grey darken-4' : 'white']">
       {{$t('headers.page', { pageNumber: index + 1 })}}
 
@@ -46,6 +53,7 @@
               'figure-slot',
               isHovered && 'figure-slot--hovered primary--text',
             ]"
+            @edit:figure="openFigureDialogParams"
           />
           <FigureForm
             v-else
@@ -57,6 +65,7 @@
               'figure-slot',
               isHovered && 'figure-slot--hovered primary--text',
             ]"
+            @edit:figure="openFigureDialogParams"
           />
         </template>
       </SlotItemGrid>
@@ -85,6 +94,10 @@ export default defineComponent({
 
     return { templateStore };
   },
+  data: () => ({
+    isFigureDialogParamsShown: false,
+    editedFigureId: undefined as string | undefined,
+  }),
   computed: {
     index(): number {
       return this.templateStore.currentLayouts.findIndex(
@@ -152,6 +165,14 @@ export default defineComponent({
         slots: [firstUnusedSlot],
       });
       this.figures = [...this.figures, defaultFigure];
+    },
+    /**
+     * Prepare and opens figure params
+     */
+    async openFigureDialogParams(id: string) {
+      this.editedFigureId = id;
+      await this.$nextTick();
+      this.isFigureDialogParamsShown = true;
     },
   },
 });

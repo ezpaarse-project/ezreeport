@@ -20,33 +20,6 @@
           @input="onParamUpdate({ dataKey: $event || undefined })"
         />
 
-        <!-- TODO: Move to FigureForm -->
-        <!-- <v-combobox
-          :value="innerTitle"
-          :items="possibleVars"
-          :label="$t('headers.title')"
-          :return-object="false"
-          :readonly="readonly"
-          no-filter
-          ref="titleCB"
-          @input="onAutocompleteChoice"
-          @update:search-input="innerTitle = $event"
-          @blur="onParamUpdate({ title: innerTitle || undefined })"
-        >
-          <template #item="{ item, on, attrs }">
-            <v-list-item two-line v-bind="attrs" v-on="on">
-              <v-list-item-content>
-                <v-list-item-title>{{ item.value }}</v-list-item-title>
-                <v-list-item-subtitle>{{ $t(`vars.${item.text}`) }}</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-          </template>
-
-          <template #append>
-            <div />
-          </template>
-        </v-combobox> -->
-
         <v-text-field
           :value="figureParams?.maxLength"
           :label="$t('headers.maxLength')"
@@ -71,10 +44,14 @@
           <TablePreviewForm
             v-if="figureParams"
             :value="figureParams.columns"
+            :totals="figureParams.totals"
+            :colStyles="figureParams.columnStyles"
             :readonly="readonly"
             :key-prefix="`${figureParams.dataKey}[].`"
             ref="columnsTable"
             @input="onParamUpdate({ columns: $event })"
+            @update:totals="onParamUpdate({ totals: $event })"
+            @update:colStyles="onParamUpdate({ columnStyles: $event })"
           />
         </CustomSection>
 
@@ -82,7 +59,7 @@
         <CustomSection v-if="unsupportedParams.shouldShow">
           <ToggleableObjectTree
             :value="unsupportedParams.value"
-            :label="$t('headers.advanced').toString()"
+            :label="$t('$ezreeport.advanced_parameters').toString()"
             v-on="unsupportedParams.listeners"
           />
         </CustomSection>
@@ -96,28 +73,18 @@ import { defineComponent } from 'vue';
 import { omit, merge } from 'lodash';
 import useTemplateStore from '~/stores/template';
 import type TablePreviewFormConstructor from './TablePreviewForm.vue';
-import { TableColumn } from './TablePreviewForm.vue';
+import type { PDFParams, PDFStyle, TableColumn } from '../../utils/table';
 
 type TablePreviewForm = InstanceType<typeof TablePreviewFormConstructor>;
-
-// const templateVars = [
-//   'length',
-// ];
 
 const supportedKeys = [
   'dataKey',
   'title',
   'maxLength',
   'columns',
+  'totals',
+  'columnStyles',
 ];
-
-// Extracted from `src/services/report/...`
-type PDFParams = {
-  dataKey: string,
-  title?: string,
-  maxLength?: number,
-  columns: TableColumn[]
-};
 
 export default defineComponent({
   props: {
@@ -146,36 +113,43 @@ export default defineComponent({
     valid: false,
   }),
   computed: {
+    figure() {
+      const layout = this.templateStore.currentLayouts.find(
+        ({ _: { id } }) => id === this.layoutId,
+      );
+
+      return layout?.figures.find(({ _: { id } }) => id === this.id);
+    },
     figureParams: {
       get(): PDFParams | undefined {
-        const layout = this.templateStore.currentLayouts.find(
-          ({ _: { id } }) => id === this.layoutId,
-        );
-        const figure = layout?.figures.find(({ _: { id } }) => id === this.id);
-
-        if (!figure?.params) {
+        if (!this.figure?.params) {
           return undefined;
         }
 
         const params: PDFParams = { dataKey: '', columns: [] };
-        if ('dataKey' in figure.params && typeof figure.params.dataKey === 'string') {
-          params.dataKey = figure.params.dataKey;
+        if ('dataKey' in this.figure.params && typeof this.figure.params.dataKey === 'string') {
+          params.dataKey = this.figure.params.dataKey;
         }
 
-        if ('columns' in figure.params && Array.isArray(figure.params.columns)) {
+        if ('columns' in this.figure.params && Array.isArray(this.figure.params.columns)) {
           // TODO: Better Validation
-          params.columns = figure.params.columns as TableColumn[];
+          params.columns = this.figure.params.columns as TableColumn[];
+        }
+
+        if ('totals' in this.figure.params && Array.isArray(this.figure.params.totals)) {
+          // TODO: Better Validation
+          params.totals = this.figure.params.totals as string[];
+        }
+
+        if ('columnStyles' in this.figure.params && !Array.isArray(this.figure.params.columnStyles)) {
+          // TODO: Better Validation
+          params.columnStyles = this.figure.params.columnStyles as Record<string, PDFStyle>;
         }
 
         return params;
       },
       set(params: PDFParams) {
-        const layout = this.templateStore.currentLayouts.find(
-          ({ _: { id } }) => id === this.layoutId,
-        );
-        const figure = layout?.figures.find(({ _: { id } }) => id === this.id);
-
-        if (!figure) {
+        if (!this.figure) {
           return;
         }
 
@@ -183,29 +157,23 @@ export default defineComponent({
           this.layoutId,
           this.id,
           {
-            ...figure,
+            ...this.figure,
             params,
           },
         );
       },
     },
-    // possibleVars() {
-    //   return templateVars.map((text) => ({
-    //     value: `{{ ${text} }}`,
-    //     text,
-    //   }));
-    // },
     unsupportedParams() {
       let listeners = {};
       if (!this.readonly && this.valid) {
         listeners = {
           input: (val: Record<string, any>) => {
-            this.figureParams = merge(this.figureParams, val);
+            this.figureParams = merge({}, this.figureParams, val);
           },
         };
       }
 
-      const value = omit(this.figureParams, supportedKeys);
+      const value = omit(this.figure?.params ?? {}, supportedKeys);
       return {
         shouldShow: !this.readonly || Object.keys(value).length > 0,
         value,
@@ -225,7 +193,11 @@ export default defineComponent({
         return [];
       }
 
-      return (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
+      const available = (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
+      if (layout.fetchOptions?.fetchCount) {
+        available.push(layout.fetchOptions.fetchCount.toString());
+      }
+      return available;
     },
   },
   mounted() {
@@ -251,18 +223,10 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   headers:
-    title: 'Title'
     maxLength: 'Maximum count of rows'
     columns: 'Columns'
-    advanced: 'Advanced parameters'
-  vars:
-    length: 'Actual count of items in table'
 fr:
   headers:
-    title: 'Titre'
     maxLength: 'Nombre maximum de lignes'
     columns: 'Colonnes'
-    advanced: 'Paramètres avancés'
-  vars:
-    length: "Nombre réel d'éléments dans le tableau"
 </i18n>

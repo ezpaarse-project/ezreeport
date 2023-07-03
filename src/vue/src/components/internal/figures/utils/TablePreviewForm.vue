@@ -1,13 +1,16 @@
 <template>
   <v-simple-table dense>
-    <TableColumnPopover
-      v-if="currentColumn"
-      v-model="columnPopoverShown"
-      :coords="columnPopoverCoords"
+    <TableColumnDialog
+      v-if="currentColumn && columnDialogShown"
+      v-model="columnDialogShown"
       :column="currentColumn"
+      :total="totalMap[currentColumn.dataKey]"
+      :colStyle="colStyles[currentColumn.dataKey]"
       :current-data-keys="currentDataKeys"
       :readonly="readonly"
-      @updated="onCurrentColumnUpdated"
+      @update:column="onCurrentColumnUpdated"
+      @update:total="onCurrentColumnTotalUpdated"
+      @update:colStyle="onCurrentColumnStyleUpdated"
     />
 
     <thead>
@@ -53,7 +56,7 @@
             <v-btn
               icon
               x-small
-              @click="openColumnPopover($event, column)"
+              @click="openColumnDialog(column)"
             >
               <v-icon>mdi-cog</v-icon>
             </v-btn>
@@ -69,6 +72,13 @@
           <span>{{ dataKey }}</span>
         </td>
       </tr>
+      <tr v-if="totals.length > 0">
+        <td v-for="{ dataKey } in columns" :key="`${dataKey}-total`">
+          <template v-if="totalMap[dataKey]">
+            {{ $t('headers.total') }}
+          </template>
+        </td>
+      </tr>
     </tbody>
   </v-simple-table>
 </template>
@@ -76,13 +86,9 @@
 <script lang="ts">
 import { omit } from 'lodash';
 import { defineComponent, type PropType } from 'vue';
+import type { PDFStyle, TableColumn } from './table';
 
 const dragFormat = 'custom/figure-table-json';
-
-export type TableColumn = {
-  header: string,
-  dataKey: string,
-};
 
 type CustomTableColumn = TableColumn & {
   _: {
@@ -96,6 +102,14 @@ export default defineComponent({
       type: Array as PropType<TableColumn[]>,
       required: true,
     },
+    totals: {
+      type: Array as PropType<string[]>,
+      default: () => [],
+    },
+    colStyles: {
+      type: Object as PropType<Record<string, PDFStyle>>,
+      default: () => ({}),
+    },
     readonly: {
       type: Boolean,
       default: false,
@@ -107,10 +121,11 @@ export default defineComponent({
   },
   emits: {
     input: (cols: TableColumn[]) => !!cols,
+    'update:totals': (totals: string[]) => !!totals,
+    'update:colStyles': (colStyles: Record<string, PDFStyle>) => !!colStyles,
   },
   data: () => ({
-    columnPopoverShown: false,
-    columnPopoverCoords: { x: 0, y: 0 },
+    columnDialogShown: false,
 
     innerColumns: [] as CustomTableColumn[],
     currentColumn: undefined as TableColumn | undefined,
@@ -133,18 +148,25 @@ export default defineComponent({
         this.innerColumns = val;
       },
     },
+    totalMap(): Record<string, boolean | undefined> {
+      return this.totals.reduce(
+        (prev, dK) => ({
+          ...prev,
+          [dK]: true,
+        }),
+        {},
+      );
+    },
     currentDataKeys() {
       return this.value.map(({ dataKey }) => dataKey);
     },
   },
   methods: {
     /**
-     * Open popover for creating a column
-     *
-     * @param e The event
+     * Open dialog for creating a column
      */
-    createColumn(e: MouseEvent) {
-      this.openColumnPopover(e);
+    createColumn() {
+      this.openColumnDialog();
     },
     /**
      * Triggered when a column is updated
@@ -163,6 +185,44 @@ export default defineComponent({
       this.currentColumn = column;
     },
     /**
+     * Triggered when a column total is updated
+     *
+     * @param value Should show total or not
+     */
+    onCurrentColumnTotalUpdated(value: boolean) {
+      if (!this.currentColumn) {
+        return;
+      }
+
+      const totalSet = new Set(this.totals);
+      if (value) {
+        totalSet.add(this.currentColumn.dataKey);
+      } else {
+        totalSet.delete(this.currentColumn.dataKey);
+      }
+
+      this.$emit('update:totals', [...totalSet]);
+    },
+    /**
+     * Triggered when a column style is updated
+     *
+     * @param style The style data
+     */
+    onCurrentColumnStyleUpdated(value: PDFStyle | undefined) {
+      if (!this.currentColumn) {
+        return;
+      }
+
+      const styles = { ...this.colStyles };
+      if (value) {
+        styles[this.currentColumn.dataKey] = value;
+      } else {
+        delete styles[this.currentColumn.dataKey];
+      }
+
+      this.$emit('update:colStyles', styles);
+    },
+    /**
      * Triggered when a column is deleted
      *
      * @param column The column
@@ -178,12 +238,12 @@ export default defineComponent({
       this.$emit('input', columns);
     },
     /**
-     * Prepares and show popover
+     * Prepares and show dialog
      *
      * @param e The event
      * @param column The column. If not provided it creates a new one
      */
-    async openColumnPopover(e: MouseEvent, column?: TableColumn) {
+    async openColumnDialog(column?: TableColumn) {
       if (column) {
         this.currentColumn = column;
       } else {
@@ -192,9 +252,8 @@ export default defineComponent({
         this.$emit('input', [...this.value, this.currentColumn]);
       }
 
-      this.columnPopoverCoords = { x: e.clientX, y: e.clientY };
       await this.$nextTick();
-      this.columnPopoverShown = true;
+      this.columnDialogShown = true;
     },
 
     /**
@@ -313,3 +372,12 @@ export default defineComponent({
 <style scoped>
 
 </style>
+
+<i18n lang="yaml">
+en:
+  headers:
+    total: 'Total'
+fr:
+  headers:
+    total: 'Total'
+</i18n>

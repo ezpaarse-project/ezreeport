@@ -47,7 +47,7 @@
           <v-row v-if="!showAdvanced">
             <v-col>
               <!-- Type -->
-              <v-select
+              <v-autocomplete
                 :value="type.value"
                 :items="availableTypes"
                 :label="$t('headers.type')"
@@ -81,7 +81,7 @@
                     </v-card>
                   </v-menu>
                 </template>
-              </v-select>
+              </v-autocomplete>
 
               <v-divider class="my-4" />
 
@@ -377,7 +377,9 @@ export default defineComponent({
       return aggsTypes.map((value) => ({
         text: this.$t(`types.${value}`),
         value,
-      }));
+      })).sort(
+        (a, b) => a.text.toString().localeCompare(b.text.toString()),
+      );
     },
     /**
      * Possible sorts with localization
@@ -386,7 +388,9 @@ export default defineComponent({
       return sortOptions.map((value) => ({
         text: this.$t(`sorts.${value}`),
         value,
-      }));
+      })).sort(
+        (a, b) => a.text.toString().localeCompare(b.text.toString()),
+      );
     },
     /**
      * Type definition of the aggregation

@@ -12,6 +12,8 @@
   "open": "Open",
   "generate": "Generate",
   "save": "Save",
+  "advanced_parameters": "Advanced parameters",
+  "show_json": "Show JSON",
 
   "tasks": {
     "name": "Report name",
@@ -36,7 +38,10 @@
   },
 
   "templates": {
-    "base": ""
+    "base": "Base template",
+    "renderer": "Renderer",
+    "renderOptions": "Render options",
+    "editor": "Page editor ({n} page)|Page editor ({n} pages)"
   },
 
   "layouts": {
@@ -77,6 +82,10 @@
       "Bottom right"
     ],
 
+    "vars_list": {
+      "length": "Actual count of items in table"
+    },
+
     "errors": {
       "_detail": "Figure {at}: {valid}",
       "no_slots": "At least one slot must be provided",
@@ -86,9 +95,19 @@
   },
 
   "fetchOptions": {
+    "title": "Fetch options",
     "aggName": "Aggregation name",
     "index": "Elastic index",
-    "filters": "Filters"
+    "dateField": "'date' field of the index",
+    "filters": "Filters",
+    "aggregations": "Aggregations"
+  },
+
+  "hints": {
+    "dot_notation": {
+      "value": "Support dot notation. Eg: {code}",
+      "code": "key.value"
+    }
   },
 
   "errors": {

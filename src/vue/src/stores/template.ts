@@ -24,6 +24,7 @@ export type ValidationResult = true | {
 };
 export type FetchOptions = {
   index: string | undefined;
+  dateField: string | undefined;
   isFetchCount: boolean;
   fetchCount: string | undefined;
   filters: Record<string, any>;
@@ -32,6 +33,8 @@ export type FetchOptions = {
   othersCount: number;
   aggs: any[];
 };
+
+export const supportedFetchOptions = ['filters', 'fetchCount', 'aggs', 'aggregations', 'dateField'];
 
 // Utility functions
 export const isTaskTemplate = (template?: AnyTemplate): template is tasks.FullTask['template'] => !!template && 'extends' in template;
@@ -45,15 +48,16 @@ export const isFullTemplate = (template?: AnyTemplate): template is templates.Fu
  * @returns usable data
  */
 export const transformFetchOptions = (fetchOptions: any): FetchOptions => {
-  const opts = {
-    index: undefined as string | undefined,
+  const opts: FetchOptions = {
+    index: undefined,
+    dateField: undefined,
     isFetchCount: false,
-    fetchCount: undefined as string | undefined,
-    filters: {} as Record<string, any>,
+    fetchCount: undefined,
+    filters: {},
     filtersCount: 0,
-    others: {} as Record<string, any>,
+    others: {},
     othersCount: 0,
-    aggs: [] as any[],
+    aggs: [],
   };
 
   if (!fetchOptions) {
@@ -94,7 +98,12 @@ export const transformFetchOptions = (fetchOptions: any): FetchOptions => {
     opts.index = fetchOptions.index.toString();
   }
 
-  opts.others = omit(fetchOptions, ['filters', 'fetchCount', 'aggs', 'aggregations']);
+  // Extract date with compatible type definition
+  if (fetchOptions.dateField != null) {
+    opts.dateField = fetchOptions.dateField.toString();
+  }
+
+  opts.others = omit(fetchOptions, supportedFetchOptions);
   opts.othersCount = Object.keys(opts.others).length;
   return opts;
 };
@@ -241,6 +250,14 @@ const useTemplatePinia = defineStore('ezr_template', {
               }
 
               return v?.length > 0 || { i18nKey: '$ezreeport.errors.empty' };
+            },
+          ],
+          dateField: [
+            (v: string) => {
+              if (isFullTemplate(this.current)) {
+                return v?.length > 0 || { i18nKey: '$ezreeport.errors.empty' };
+              }
+              return !v || v.length > 0 || { i18nKey: '$ezreeport.errors.empty' };
             },
           ],
         },

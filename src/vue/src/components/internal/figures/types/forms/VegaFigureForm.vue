@@ -38,9 +38,9 @@
               @input="onSubParamUpdate('value', { field: $event })"
             />
           </div>
-          <i18n path="hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
+          <i18n path="$ezreeport.hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
             <template #code>
-              <code>{{ $t('hints.dot_notation.code') }}</code>
+              <code>{{ $t('$ezreeport.hints.dot_notation.code') }}</code>
             </template>
           </i18n>
 
@@ -70,9 +70,9 @@
               @input="onSubParamUpdate('label', { field: $event })"
             />
           </div>
-          <i18n path="hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
+          <i18n path="$ezreeport.hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
             <template #code>
-              <code>{{ $t('hints.dot_notation.code') }}</code>
+              <code>{{ $t('$ezreeport.hints.dot_notation.code') }}</code>
             </template>
           </i18n>
 
@@ -112,14 +112,31 @@
           </template>
 
           <template v-if="figureParams.dataLabel">
-            <v-select
-              :value="figureParams.dataLabel.format"
-              :items="possibleDataLabelFormats"
-              :label="$t('dataLabel.headers.format')"
-              :readonly="readonly"
-              hide-details
-              @change="onDataLabelUpdate({ format: $event })"
-            />
+            <v-row>
+              <v-col>
+                <v-select
+                  :value="figureParams.dataLabel.format"
+                  :items="possibleDataLabelFormats"
+                  :label="$t('dataLabel.headers.format')"
+                  :readonly="readonly"
+                  hide-details
+                  @change="onDataLabelUpdate({ format: $event })"
+                />
+              </v-col>
+
+              <v-col>
+                <v-select
+                  :value="figureParams.dataLabel.position"
+                  :items="possibleDataLabelPositions"
+                  :label="$t('dataLabel.headers.position')"
+                  :readonly="readonly"
+                  :placeholder="$t('dataLabel.positions.in')"
+                  persistent-placeholder
+                  hide-details
+                  @change="onDataLabelUpdate({ format: $event })"
+                />
+              </v-col>
+            </v-row>
 
             <v-checkbox
               :input-value="figureParams.dataLabel.showLabel"
@@ -137,7 +154,7 @@
         <CustomSection v-if="unsupportedParams.shouldShow">
           <ToggleableObjectTree
             :value="unsupportedParams.value"
-            :label="$t('headers.advanced').toString()"
+            :label="$t('$ezreeport.advanced_parameters').toString()"
             v-on="unsupportedParams.listeners"
           />
         </CustomSection>
@@ -147,16 +164,9 @@
 </template>
 
 <script lang="ts">
-import { pick, merge } from 'lodash';
+import { pick, merge, omit } from 'lodash';
 import { defineComponent } from 'vue';
 import useTemplateStore from '~/stores/template';
-
-// /**
-//  * Possibles vars in title
-//  */
-// const templateVars = [
-//   'length',
-// ];
 
 /**
  * Possible formats for data labels
@@ -164,6 +174,14 @@ import useTemplateStore from '~/stores/template';
 const dataLabelFormats = [
   'percent',
   'numeric',
+];
+
+/**
+ * Possible positions for data labels
+ */
+const dataLabelPositions = [
+  'in',
+  'out',
 ];
 
 type VegaParams = {
@@ -175,6 +193,7 @@ type VegaParams = {
     format: string,
     showLabel?: boolean,
     minValue?: number,
+    position?: string,
   },
 };
 type SubVegaParamsKeys = Exclude<keyof VegaParams, 'title' | 'dataKey'>;
@@ -239,13 +258,16 @@ export default defineComponent({
     valid: false,
   }),
   computed: {
+    layout() {
+      const layout = this.templateStore.currentLayouts.find(
+        ({ _: { id } }) => id === this.layoutId,
+      );
+
+      return layout;
+    },
     figureParams: {
       get(): VegaParams | undefined {
-        const layout = this.templateStore.currentLayouts.find(
-          ({ _: { id } }) => id === this.layoutId,
-        );
-        const figure = layout?.figures.find(({ _: { id } }) => id === this.id);
-
+        const figure = this.layout?.figures.find(({ _: { id } }) => id === this.id);
         if (!figure?.params) {
           return undefined;
         }
@@ -253,11 +275,7 @@ export default defineComponent({
         return figure.params as VegaParams;
       },
       set(params: VegaParams) {
-        const layout = this.templateStore.currentLayouts.find(
-          ({ _: { id } }) => id === this.layoutId,
-        );
-        const figure = layout?.figures.find(({ _: { id } }) => id === this.id);
-
+        const figure = this.layout?.figures.find(({ _: { id } }) => id === this.id);
         if (!figure) {
           return;
         }
@@ -282,39 +300,54 @@ export default defineComponent({
       }));
     },
     /**
+     * Possible positions for data labels with localisation
+     */
+    possibleDataLabelPositions() {
+      return dataLabelPositions.map((value) => ({
+        text: this.$t(`dataLabel.positions.${value}`),
+        value,
+      }));
+    },
+    /**
      * Data used by ObjectTree to edit unsupported options
      */
     unsupportedParams() {
+      const diff = this.objectDiff(this.figureParams ?? {}, supportedParams);
+
       let listeners = {};
       if (!this.readonly) {
         listeners = {
           input: (val: Record<string, any>) => {
-            this.figureParams = merge(this.figureParams, val);
+            const params = omit(this.figureParams, diff);
+            this.figureParams = merge({}, params as VegaParams, val);
           },
         };
       }
 
-      const diff = this.objectDiff(this.figureParams ?? {}, supportedParams);
       return {
         shouldShow: !this.readonly || diff.length > 0,
         value: pick(this.figureParams, diff),
         listeners,
       };
     },
+    /**
+     * Available aggregations
+     */
     availableAggs() {
-      const layout = this.templateStore.currentLayouts.find(
-        ({ _: { id } }) => id === this.layoutId,
-      );
-      if (!layout || !layout.fetchOptions) {
+      if (!this.layout?.fetchOptions) {
         return [];
       }
 
-      const aggs = 'aggs' in layout.fetchOptions ? layout.fetchOptions.aggs : layout.fetchOptions.aggregations;
+      const aggs = 'aggs' in this.layout.fetchOptions ? this.layout.fetchOptions.aggs : this.layout.fetchOptions.aggregations;
       if (!Array.isArray(aggs)) {
         return [];
       }
 
-      return (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
+      const available = (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
+      if (this.layout.fetchOptions?.fetchCount) {
+        available.push(this.layout.fetchOptions.fetchCount.toString());
+      }
+      return available;
     },
   },
   methods: {
@@ -393,17 +426,9 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   headers:
-    title: 'Title'
     value: 'Data parameters'
     label: 'Series parameter'
     dataLabel: 'Data Labels parameters'
-    advanced: 'Advanced parameters'
-  hints:
-    dot_notation:
-      value: 'Support dot notation. Eg: {code}'
-      code: 'key.value'
-  vars:
-    length: 'Actual count of items in figure'
   value:
     headers:
       field: 'Field'
@@ -418,22 +443,18 @@ en:
       show: 'Should show data labels ?'
       format: 'Values format'
       showLabels: 'Should show labels ?'
+      position: 'Position'
     formats:
       numeric: 'Numeric'
       percent: 'Percent'
+    positions:
+      in: 'In'
+      out: 'Out'
 fr:
   headers:
-    title: 'Titre'
     value: 'Paramètres des données'
     label: 'Paramètres des séries'
     dataLabel: 'Paramètres des étiquettes de données'
-    advanced: 'Paramètres avancés'
-  hints:
-    dot_notation:
-      value: 'Supporte la notation avec des points. Ex: {code}'
-      code: 'cle.valeur'
-  vars:
-    length: "Nombre réel d'éléments dans la visualisation"
   value:
     headers:
       field: 'Champ'
@@ -448,7 +469,11 @@ fr:
       show: 'Afficher les étiquettes de données ?'
       format: 'Format des données'
       showLabels: 'Afficher les labels ?'
+      position: 'Position'
     formats:
       numeric: 'Numérique'
       percent: 'Pourcentage'
+    positions:
+      in: 'Intérieur'
+      out: 'Extérieur'
 </i18n>

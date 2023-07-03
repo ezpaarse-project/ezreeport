@@ -122,6 +122,9 @@ export default defineComponent({
       }
     },
   },
+  mounted() {
+    this.fetch();
+  },
   methods: {
     /**
      * Fetch template

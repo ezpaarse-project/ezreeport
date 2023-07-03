@@ -1,12 +1,15 @@
 import Joi from 'joi';
 import { compact, merge, omit } from 'lodash';
+
 import { randomUUID } from 'node:crypto';
 import EventEmitter from 'node:events';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { Prisma, Recurrence, Task } from '~/lib/prisma';
+
 import fetchers, { type Fetchers } from '~/generators/fetchers';
 import renderers, { type Renderers } from '~/generators/renderers';
+
+import type { Prisma, Recurrence, Task } from '~/lib/prisma';
 import config from '~/lib/config';
 import {
   add,
@@ -18,8 +21,10 @@ import {
   startOfDay
 } from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
+
 import { calcNextDate, calcPeriod } from '~/models/recurrence';
 import { ArgumentError, ConflitError } from '~/types/errors';
+
 import { editTaskByIdWithHistory } from './tasks';
 import {
   getTemplateByName,
@@ -143,9 +148,11 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
       }
       const fetcher = layout.fetcher ?? 'elastic';
       const fetchOptions: GeneratorParam<Fetchers, keyof Fetchers> = merge(
+        {},
         template.fetchOptions ?? {},
         layout.fetchOptions ?? {},
         {
+          dateField: template.fetchOptions?.dateField ?? '',
           ...(taskTemplate.fetchOptions ?? {}),
           recurrence,
           period,
@@ -196,7 +203,7 @@ export const generateReport = async (
     throw new Error(`Namespace "${task.namespaceId}" not found`);
   }
 
-  logger.verbose(`[gen] Generation of report "${namepath}" started`);
+  logger.verbose(`[gen] [${process.pid}] Generation of report "${namepath}" started`);
   events.emit('creation');
 
   let result: ReportResult = {
@@ -278,10 +285,11 @@ export const generateReport = async (
     // Cleanup
     delete template.fetchOptions;
     events.emit('templateFetched', template);
-    logger.verbose('[gen] Data fetched');
+    logger.verbose(`[gen] [${process.pid}] Data fetched`);
 
     // Render report
     const renderOptions: GeneratorParam<Renderers, keyof Renderers> = merge(
+      {},
       template.renderOptions ?? {},
       {
         doc: {
@@ -296,7 +304,8 @@ export const generateReport = async (
     );
     template.renderOptions = renderOptions;
     const stats = await renderers[template.renderer ?? 'vega-pdf'](renderOptions, events);
-    logger.verbose(`[gen] Report wroted to "${namepath}.rep.pdf"`);
+    result.detail.files.report = `${namepath}.rep.pdf`;
+    logger.verbose(`[gen] [${process.pid}] Report wrote to "${result.detail.files.report}"`);
 
     await writeFile(
       `${filepath}.deb.json`,
@@ -308,16 +317,13 @@ export const generateReport = async (
       'utf-8',
     );
     result.detail.files.debug = `${namepath}.deb.json`;
-    logger.verbose(`[gen] Template wrote to "${namepath}.deb.json"`);
+    logger.verbose(`[gen] [${process.pid}] Template wrote to "${result.detail.files.debug}"`);
 
-    result = merge<ReportResult, DeepPartial<ReportResult>>(
+    merge<ReportResult, DeepPartial<ReportResult>>(
       result,
       {
         detail: {
           took: differenceInMilliseconds(new Date(), result.detail.createdAt),
-          files: {
-            report: `${namepath}.rep.pdf`,
-          },
           sendingTo: targets,
           stats: omit(stats, 'path'),
         },
@@ -349,7 +355,7 @@ export const generateReport = async (
       );
     }
 
-    logger.info(`[gen] Report "${namepath}" successfully generated in ${(result.detail.took / 1000).toFixed(2)}s`);
+    logger.info(`[gen] [${process.pid}] Report "${namepath}" successfully generated in ${(result.detail.took / 1000).toFixed(2)}s`);
   } catch (error) {
     result = merge<ReportResult, DeepPartial<ReportResult>>(
       result,
@@ -384,7 +390,7 @@ export const generateReport = async (
         },
       );
     }
-    logger.error(`[gen] Report "${namepath}" failed to generate in ${(result.detail.took / 1000).toFixed(2)}s with error : ${(error as Error).message}`);
+    logger.error(`[gen] [${process.pid}] Report "${namepath}" failed to generate in ${(result.detail.took / 1000).toFixed(2)}s with error : ${(error as Error).message}`);
   }
 
   // Write result when process is ending
@@ -397,6 +403,6 @@ export const generateReport = async (
     ),
     'utf-8',
   );
-  logger.verbose(`[gen] Detail wrote to "${namepath}.det.json"`);
+  logger.verbose(`[gen] [${process.pid}] Detail wrote to "${result.detail.files.detail}"`);
   return result;
 };

@@ -8,13 +8,6 @@
     @mousedown="onDragAttempt"
     @dragstart="preventEvent"
   >
-    <!-- TODO: Move to only dialog for whole template -->
-    <FigureDialogParams
-      v-model="isFigureDialogParamsShown"
-      :id="id"
-      :layout-id="layoutId"
-    />
-
     <v-form>
       <div class="d-flex align-center">
         <v-icon v-if="draggable" class="figure-handle">mdi-drag</v-icon>
@@ -22,17 +15,35 @@
         <div v-if="figure.type === 'md' || figure.type === 'metric'" class="py-2">
           {{ figureTitle }}
         </div>
-        <v-text-field
+        <v-combobox
           v-else
+          :value="innerTitle"
+          :items="possibleVars"
           :label="$t('figures.title')"
-          :value="figure.params.title"
+          :return-object="false"
           :placeholder="figureTitle"
+          no-filter
           dense
           hide-details
           persistent-placeholder
-          class="py-1"
-          @input="figureTitle = $event"
-        />
+          ref="titleCB"
+          @input="onAutocompleteChoice"
+          @update:search-input="innerTitle = $event"
+          @blur="figureTitle = $event"
+        >
+          <template #item="{ item, on, attrs }">
+            <v-list-item two-line v-bind="attrs" v-on="on">
+              <v-list-item-content>
+                <v-list-item-title>{{ item.value }}</v-list-item-title>
+                <v-list-item-subtitle>{{ $t(`$ezreeport.figures.vars_list.${item.text}`) }}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </template>
+
+          <template #append>
+            <div />
+          </template>
+        </v-combobox>
 
         <v-spacer />
 
@@ -55,14 +66,14 @@
           <v-icon>mdi-delete</v-icon>
         </v-btn>
 
-        <v-btn icon x-small @click="isFigureDialogParamsShown = true">
+        <v-btn icon x-small @click="$emit('edit:figure', id)">
           <v-icon>mdi-cog</v-icon>
         </v-btn>
       </div>
 
       <v-select
-        :label="$t('$ezreeport.figures.type')"
         :value="figure.type"
+        :label="$t('$ezreeport.figures.type')"
         :items="figureTypes"
         item-text="label"
         item-value="value"
@@ -81,7 +92,7 @@
         :items="availableSlots"
         :rules="rules.slots"
         multiple
-        @change="figure = { ...figure, slots: $event }"
+        @change="onSlotUpdate"
       />
     </v-form>
   </v-sheet>
@@ -92,6 +103,13 @@ import { defineComponent, type PropType } from 'vue';
 import type { AnyCustomFigure } from '~/lib/templates/customTemplates';
 import { figureTypes, figureIcons } from '~/lib/templates/figures';
 import useTemplateStore, { mapRulesToVuetify } from '~/stores/template';
+
+/**
+ * Possibles vars in title
+ */
+const templateVars = [
+  'length',
+];
 
 export default defineComponent({
   props: {
@@ -112,6 +130,9 @@ export default defineComponent({
       default: false,
     },
   },
+  emits: {
+    'edit:figure': (id: string) => !!id,
+  },
   setup() {
     const templateStore = useTemplateStore();
 
@@ -120,7 +141,7 @@ export default defineComponent({
   data: () => ({
     dataMap: {} as Record<string, string | unknown[] | undefined>,
     preventDrag: false,
-    isFigureDialogParamsShown: false,
+    innerTitle: '',
     figureIcons,
   }),
   computed: {
@@ -163,7 +184,20 @@ export default defineComponent({
       return figureTypes.map((value) => ({
         label: this.$t(`$ezreeport.figures.type_list.${value}`),
         value,
-      }));
+      })).sort(
+        (a, b) => a.label.toString().localeCompare(b.label.toString()),
+      );
+    },
+    /**
+     * Localized possible variables in title
+     */
+    possibleVars() {
+      return templateVars.map((text) => ({
+        value: `{{ ${text} }}`,
+        text,
+      })).sort(
+        (a, b) => a.text.toString().localeCompare(b.text.toString()),
+      );
     },
     /**
      * Returns the title of the figure
@@ -193,6 +227,14 @@ export default defineComponent({
     },
   },
   methods: {
+    async onAutocompleteChoice(choice: string) {
+      if (choice) {
+        const actual = this.innerTitle ?? '';
+        await this.$nextTick();
+        this.innerTitle = actual + choice;
+        (this.$refs.titleCB as HTMLElement)?.focus();
+      }
+    },
     onFigureTypeChange(type: string) {
       if (!this.figure) {
         return;
@@ -214,6 +256,16 @@ export default defineComponent({
       if (!(ev.target as HTMLElement).classList.contains('figure-handle')) {
         this.preventDrag = true;
       }
+    },
+    onSlotUpdate(slots: number[]) {
+      if (!this.figure) {
+        return;
+      }
+
+      this.figure = {
+        ...this.figure,
+        slots: slots.sort(),
+      };
     },
     preventEvent(ev: Event) {
       ev.preventDefault();

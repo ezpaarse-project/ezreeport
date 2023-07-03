@@ -1,9 +1,11 @@
+import { writeFile } from 'node:fs';
+import { join } from 'node:path';
+
 import { registerFont } from 'canvas';
 import { compile as handlebars } from 'handlebars';
 import type { ImageOptions } from 'jspdf';
 import { cloneDeep, merge, omit } from 'lodash';
-import { writeFile } from 'node:fs';
-import { join } from 'node:path';
+
 import {
   expressionFunction,
   Locale as VegaLocale,
@@ -14,11 +16,13 @@ import {
 import { compile, type TopLevelSpec } from 'vega-lite';
 import type { Mark, MarkDef } from 'vega-lite/build/src/mark';
 import type { UnitSpec } from 'vega-lite/build/src/spec';
+
 import { Recurrence } from '~/lib/prisma';
 import config from '~/lib/config';
 import { appLogger as logger } from '~/lib/logger';
 import type { PDFReport } from '~/lib/pdf';
 import { calcVegaFormat } from '~/models/recurrence';
+
 import localeFR from './locales/fr-FR.json';
 import VegaLogger from './logger';
 
@@ -278,9 +282,12 @@ export const createVegaLSpec = (
     // Showing label if needed
     if (params.dataLabel.showLabel) {
       layers.push({
-        mark: merge(cloneDeep(dLLayer.mark), {
-          dy: -7,
-        }),
+        mark: merge(
+          cloneDeep(dLLayer.mark),
+          {
+            dy: -7,
+          },
+        ),
         encoding: {
           text: {
             condition: {

@@ -1,8 +1,10 @@
 import type Queue from 'bull';
 import { enUS } from 'date-fns/locale';
+import { glob } from 'glob';
+
 import { readFile, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
-import { glob } from 'glob';
+
 import config from '~/lib/config';
 import {
   endOfDay,
@@ -13,7 +15,9 @@ import {
 } from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
 import { formatInterval, isFulfilled } from '~/lib/utils';
+
 import { isValidResult } from '~/models/reports';
+
 import type { CronData } from '..';
 import { sendError } from './utils';
 
@@ -23,7 +27,7 @@ type FileCheckResult = { file: string, dur: Duration };
 
 export default async (job: Queue.Job<CronData>) => {
   const start = new Date();
-  logger.verbose(`[cron] [${job.name}] Started`);
+  logger.verbose(`[cron] [${process.pid}] [${job.name}] Started`);
 
   try {
     const today = endOfDay(start);
@@ -33,7 +37,7 @@ export default async (job: Queue.Job<CronData>) => {
     const filesToDelete = (await Promise.allSettled(
       detailFiles.map(async (filePath) => {
         try {
-          logger.verbose(`[cron] [${job.name}] Checking "${filePath}"`);
+          logger.verbose(`[cron] [${process.pid}] [${job.name}] Checking "${filePath}"`);
           const fileContent = JSON.parse(await readFile(filePath, 'utf-8'));
 
           if (!isValidResult(fileContent)) {
@@ -54,7 +58,7 @@ export default async (job: Queue.Job<CronData>) => {
             .values(fileContent.detail.files)
             .map((file) => ({ file: join(outDir, file), dur } as FileCheckResult));
         } catch (error) {
-          logger.warn(`[cron] [${job.name}] Error on file "${filePath}" : ${(error as Error).message}`);
+          logger.warn(`[cron] [${process.pid}] [${job.name}] Error on file "${filePath}" : ${(error as Error).message}`);
           throw error;
         }
       }),
@@ -71,20 +75,20 @@ export default async (job: Queue.Job<CronData>) => {
           await unlink(file);
           await job.progress(i / filesToDelete.length);
 
-          logger.info(`[cron] [${job.name}] Deleted "${file}" (${formatDuration(dur, { format: ['years', 'months', 'days'], locale: enUS })} old)`);
+          logger.info(`[cron] [${process.pid}] [${job.name}] Deleted "${file}" (${formatDuration(dur, { format: ['years', 'months', 'days'], locale: enUS })} old)`);
           return file;
         } catch (error) {
-          logger.warn(`[cron] [${job.name}] Error on file deletion "${file}" : ${(error as Error).message}`);
+          logger.warn(`[cron] [${process.pid}] [${job.name}] Error on file deletion "${file}" : ${(error as Error).message}`);
           throw error;
         }
       }),
     )).filter(isFulfilled);
 
     const dur = formatInterval({ start, end: new Date() });
-    logger.info(`[cron] [${job.name}] In ${dur}s : Checked ${detailFiles.length} reports | Deleted ${deletedFiles.length}/${filesToDelete.length} files`);
+    logger.info(`[cron] [${process.pid}] [${job.name}] In ${dur}s : Checked ${detailFiles.length} reports | Deleted ${deletedFiles.length}/${filesToDelete.length} files`);
   } catch (error) {
     const dur = formatInterval({ start, end: new Date() });
-    logger.error(`[cron] Job ${job.name} failed in ${dur}s with error: ${(error as Error).message}`);
+    logger.error(`[cron] [${process.pid}] [${job.name}] Job failed in ${dur}s with error: ${(error as Error).message}`);
     await sendError(error as Error, job.name, job.data.timer);
   }
 };

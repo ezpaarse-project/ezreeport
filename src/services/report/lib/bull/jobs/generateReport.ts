@@ -1,16 +1,22 @@
 import type Queue from 'bull';
+
 import EventEmitter from 'node:events';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+
 import config from '~/lib/config';
 import { formatISO } from '~/lib/date-fns';
+import { appLogger as logger } from '~/lib/logger';
+
 import { generateReport } from '~/models/reports';
 import type { AnyTemplate } from '~/models/templates';
+
 import { addReportToMailQueue, type GenerationData } from '..';
 
 const { outDir } = config.get('report');
 
 export default async (job: Queue.Job<GenerationData>) => {
+  logger.verbose(`[bull] [${process.pid}] Received generation of "${job.data.task.name}"`);
   const {
     id: jobId,
     data: {

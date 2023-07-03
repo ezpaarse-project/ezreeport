@@ -96,19 +96,6 @@ export default defineComponent({
     error: '',
     loading: false,
   }),
-  watch: {
-    value(val: boolean) {
-      if (val) {
-        this.templateStore.SET_CURRENT({ layouts: [] });
-        this.data = {
-          name: '',
-          tags: [],
-        };
-      } else {
-        this.templateStore.SET_CURRENT(undefined);
-      }
-    },
-  },
   computed: {
     /**
      * Validation rules
@@ -137,7 +124,26 @@ export default defineComponent({
       return this.rules.name.every((rule) => rule(this.data?.name ?? '') === true);
     },
   },
+  watch: {
+    value(val: boolean) {
+      if (val) {
+        this.init();
+      } else {
+        this.templateStore.SET_CURRENT(undefined);
+      }
+    },
+  },
+  mounted() {
+    this.init();
+  },
   methods: {
+    init() {
+      this.templateStore.SET_CURRENT({ layouts: [] });
+      this.data = {
+        name: '',
+        tags: [],
+      };
+    },
     /**
      * Save and create template
      */
