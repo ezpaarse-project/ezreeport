@@ -72,8 +72,8 @@
       </div>
 
       <v-select
-        :label="$t('$ezreeport.figures.type')"
         :value="figure.type"
+        :label="$t('$ezreeport.figures.type')"
         :items="figureTypes"
         item-text="label"
         item-value="value"

@@ -1,10 +1,7 @@
 <template>
-  <v-menu
+  <v-dialog
     :value="value"
-    :position-x="coords.x"
-    :position-y="coords.y"
-    :close-on-content-click="false"
-    :close-on-click="valid"
+    :persistent="!valid"
     absolute
     max-width="450"
     min-width="450"
@@ -46,6 +43,43 @@
             @change="$emit('update:total', $event)"
           />
 
+          <!-- Style -->
+          <CustomSection
+            :label="$t('headers.style.title').toString()"
+            :default-value="true"
+            collapsable
+          >
+            <v-select
+              :value="colStyle.overflow"
+              :label="$t('headers.style.overflow')"
+              :items="overflowOptions"
+              :placeholder="$t('overflow_list.ellipsize')"
+              persistent-placeholder
+              hide-details
+              @change="onColStyleUpdate({ overflow: $event })"
+            />
+
+            <v-select
+              :value="colStyle.halign"
+              :label="$t('headers.style.halign')"
+              :items="alignOptions"
+              :placeholder="$t('align_list.left')"
+              persistent-placeholder
+              hide-details
+              @change="onColStyleUpdate({ halign: $event })"
+            />
+
+            <v-select
+              :value="colStyle.valign"
+              :label="$t('headers.style.valign')"
+              :items="alignOptions"
+              :placeholder="$t('align_list.center')"
+              persistent-placeholder
+              hide-details
+              @change="onColStyleUpdate({ valign: $event })"
+            />
+          </CustomSection>
+
           <!-- Advanced -->
           <CustomSection v-if="unsupportedParams.shouldShow">
             <ToggleableObjectTree
@@ -57,13 +91,13 @@
         </v-card-text>
       </v-form>
     </v-card>
-  </v-menu>
+  </v-dialog>
 </template>
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
 import { merge, omit, pick } from 'lodash';
-import type { TableColumn } from '../../utils/TablePreviewForm.vue';
+import type { PDFStyle, TableColumn } from '../../utils/table';
 
 /**
  * Keys of label supported by the popover
@@ -74,20 +108,33 @@ const supportedKeys = [
   'dataKey',
 ];
 
+/**
+ * Possible overflow for text
+ */
+const possibleOverflows = [
+  'linebreak',
+  'ellipsize',
+  'visible',
+  'hidden',
+];
+
+/**
+ * Possible alignement in cell
+ */
+const possibleAligns = [
+  'left',
+  'right',
+  'center',
+  'justify',
+];
+
 export default defineComponent({
   props: {
     /**
-     * Is the popover shown
+     * Is the dialog shown
      */
     value: {
       type: Boolean,
-      required: true,
-    },
-    /**
-     * Coordinates of popover
-     */
-    coords: {
-      type: Object as PropType<{ x: number, y: number }>,
       required: true,
     },
     /**
@@ -105,6 +152,13 @@ export default defineComponent({
       default: false,
     },
     /**
+     * Should show total of column
+     */
+    colStyle: {
+      type: Object as PropType<PDFStyle>,
+      default: () => ({}),
+    },
+    /**
      * Current key used by other columns
      */
     currentDataKeys: {
@@ -112,7 +166,7 @@ export default defineComponent({
       default: () => [],
     },
     /**
-     * Is the popover readonly
+     * Is the dialog readonly
      */
     readonly: {
       type: Boolean,
@@ -123,6 +177,7 @@ export default defineComponent({
     input: (show: boolean) => show !== undefined,
     'update:column': (element: TableColumn) => !!element,
     'update:total': (total: boolean) => total !== undefined,
+    'update:colStyle': (style: PDFStyle) => !!style,
   },
   data: () => ({
     valid: false,
@@ -179,6 +234,18 @@ export default defineComponent({
         listeners,
       };
     },
+    overflowOptions() {
+      return possibleOverflows.map((value) => ({
+        text: this.$t(`overflow_list.${value}`).toString(),
+        value,
+      })).sort((a, b) => a.text.localeCompare(b.text));
+    },
+    alignOptions() {
+      return possibleAligns.map((value) => ({
+        text: this.$t(`align_list.${value}`).toString(),
+        value,
+      })).sort((a, b) => a.text.localeCompare(b.text));
+    },
   },
   watch: {
     value(val: boolean) {
@@ -194,6 +261,11 @@ export default defineComponent({
     onColumnUpdated(data: Partial<TableColumn>) {
       if (this.valid) {
         this.$emit('update:column', { ...this.column, ...data });
+      }
+    },
+    onColStyleUpdate(data: Partial<PDFStyle>) {
+      if (this.valid) {
+        this.$emit('update:colStyle', { ...this.colStyle, ...data });
       }
     },
   },
@@ -214,6 +286,21 @@ en:
     dataKey: 'Key to get data'
     header: 'Name of the column'
     total: 'Show total'
+    style:
+      title: 'Styling options'
+      overflow: 'Overflow'
+      valign: "Vertical align"
+      halign: "Horizontal align"
+  overflow_list:
+    linebreak: 'Line break'
+    ellipsize: 'Shorten using ellipsis'
+    visible: 'Visible'
+    hidden: 'Hidden'
+  align_list:
+    left: 'Left'
+    right: 'Right'
+    center: 'Center'
+    justify: 'Justify'
   errors:
     no_duplicate: 'This key is already used'
 fr:
@@ -221,6 +308,21 @@ fr:
     dataKey: 'Clé a utiliser pour récupérer les données'
     header: 'Name of the column'
     total: 'Afficher le total'
+    style:
+      title: 'Options de style'
+      overflow: 'Débordement'
+      valign: "Alignement vertical"
+      halign: "Alignement horizontal"
+  overflow_list:
+    linebreak: 'Retour à la ligne'
+    ellipsize: 'Mettre des pointillés'
+    visible: 'Laisser dépasser'
+    hidden: 'Tronquer'
+  align_list:
+    left: 'Gauche'
+    right: 'Droite'
+    center: 'Centrer'
+    justify: 'Justifier'
   errors:
     no_duplicate: 'Cette clé est déjà utilisé'
 </i18n>

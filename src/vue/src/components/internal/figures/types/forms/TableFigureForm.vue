@@ -45,11 +45,13 @@
             v-if="figureParams"
             :value="figureParams.columns"
             :totals="figureParams.totals"
+            :colStyles="figureParams.columnStyles"
             :readonly="readonly"
             :key-prefix="`${figureParams.dataKey}[].`"
             ref="columnsTable"
             @input="onParamUpdate({ columns: $event })"
             @update:totals="onParamUpdate({ totals: $event })"
+            @update:colStyles="onParamUpdate({ columnStyles: $event })"
           />
         </CustomSection>
 
@@ -71,7 +73,7 @@ import { defineComponent } from 'vue';
 import { omit, merge } from 'lodash';
 import useTemplateStore from '~/stores/template';
 import type TablePreviewFormConstructor from './TablePreviewForm.vue';
-import type { TableColumn } from '../../utils/TablePreviewForm.vue';
+import type { PDFParams, PDFStyle, TableColumn } from '../../utils/table';
 
 type TablePreviewForm = InstanceType<typeof TablePreviewFormConstructor>;
 
@@ -81,16 +83,8 @@ const supportedKeys = [
   'maxLength',
   'columns',
   'totals',
+  'columnStyles',
 ];
-
-// Extracted from `src/services/report/...`
-type PDFParams = {
-  dataKey: string,
-  title?: string,
-  maxLength?: number,
-  columns: TableColumn[],
-  totals?: string[],
-};
 
 export default defineComponent({
   props: {
@@ -145,6 +139,11 @@ export default defineComponent({
         if ('totals' in this.figure.params && Array.isArray(this.figure.params.totals)) {
           // TODO: Better Validation
           params.totals = this.figure.params.totals as string[];
+        }
+
+        if ('columnStyles' in this.figure.params && !Array.isArray(this.figure.params.columnStyles)) {
+          // TODO: Better Validation
+          params.columnStyles = this.figure.params.columnStyles as Record<string, PDFStyle>;
         }
 
         return params;
