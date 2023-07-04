@@ -33,6 +33,7 @@
         <NamespaceSelect
           v-model="actualCurrentNamespace"
           :allowed-namespaces="allowedNamespaces"
+          show-task-count
           hide-refresh
           @input="fetch()"
         />

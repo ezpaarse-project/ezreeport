@@ -16,12 +16,19 @@
     </v-list-item-avatar>
 
     <v-list-item-content>
-      <v-list-item-title>{{ title }}</v-list-item-title>
+      <v-list-item-title>
+        <slot name="title">
+          {{ title }}
+        </slot>
+      </v-list-item-title>
+
       <v-list-item-subtitle
-        v-if="subtitle"
+        v-if="subtitle || $slots.subtitle"
         :class="[capitalizeSubtitle && 'text-capitalize']"
       >
-        {{ subtitle }}
+        <slot name="subtitle">
+          {{ subtitle }}
+        </slot>
       </v-list-item-subtitle>
     </v-list-item-content>
   </v-list-item>

@@ -60,6 +60,8 @@
           <NamespaceRichListItem
             v-else
             :namespace="item"
+            :show-task-count="showTaskCount"
+            :show-members-count="showMembersCount"
             v-bind="attrs"
             v-on="on"
           />
@@ -121,6 +123,14 @@ export default defineComponent({
     allowedNamespaces: {
       type: Array as PropType<string[] | undefined>,
       default: undefined,
+    },
+    showTaskCount: {
+      type: Boolean,
+      default: false,
+    },
+    showMembersCount: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: {
