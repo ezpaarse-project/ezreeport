@@ -97,7 +97,7 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
 import { merge, omit, pick } from 'lodash';
-import type { PDFStyle, TableColumn } from '../../utils/table';
+import type { PDFStyle, TableColumn } from '../utils/table';
 
 /**
  * Keys of label supported by the popover
@@ -315,7 +315,7 @@ fr:
       halign: "Alignement horizontal"
   overflow_list:
     linebreak: 'Retour à la ligne'
-    ellipsize: 'Mettre des pointillés'
+    ellipsize: 'Mettre des points de suspensions'
     visible: 'Laisser dépasser'
     hidden: 'Tronquer'
   align_list:
@@ -326,3 +326,4 @@ fr:
   errors:
     no_duplicate: 'Cette clé est déjà utilisé'
 </i18n>
+../forms/utils/table

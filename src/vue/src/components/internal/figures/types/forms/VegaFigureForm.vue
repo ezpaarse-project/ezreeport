@@ -185,7 +185,6 @@ const dataLabelPositions = [
 ];
 
 type VegaParams = {
-  title: string,
   dataKey: string,
   value: Record<string, any>,
   label: Record<string, any>,
@@ -285,7 +284,10 @@ export default defineComponent({
           this.id,
           {
             ...figure,
-            params,
+            params: {
+              title: figure.params?.title,
+              ...params,
+            },
           },
         );
       },

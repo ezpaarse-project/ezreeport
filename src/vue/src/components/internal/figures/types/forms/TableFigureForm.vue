@@ -35,7 +35,7 @@
               icon
               x-small
               color="success"
-              @click="onColumnCreated($event)"
+              @click="onColumnCreated"
             >
               <v-icon>mdi-plus</v-icon>
             </v-btn>
@@ -71,9 +71,11 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { omit, merge } from 'lodash';
+
 import useTemplateStore from '~/stores/template';
-import type TablePreviewFormConstructor from './TablePreviewForm.vue';
-import type { PDFParams, PDFStyle, TableColumn } from '../../utils/table';
+
+import type TablePreviewFormConstructor from '../utils/TablePreviewForm.vue';
+import type { PDFParams, PDFStyle, TableColumn } from '../utils/table';
 
 type TablePreviewForm = InstanceType<typeof TablePreviewFormConstructor>;
 
@@ -158,7 +160,10 @@ export default defineComponent({
           this.id,
           {
             ...this.figure,
-            params,
+            params: {
+              title: this.figure.params?.title,
+              ...params,
+            },
           },
         );
       },
@@ -209,8 +214,8 @@ export default defineComponent({
         this.figureParams = { ...this.figureParams, ...data };
       }
     },
-    onColumnCreated(e: MouseEvent) {
-      (this.$refs.columnsTable as TablePreviewForm | undefined)?.createColumn(e);
+    onColumnCreated() {
+      (this.$refs.columnsTable as TablePreviewForm | undefined)?.createColumn();
     },
   },
 });
@@ -230,3 +235,4 @@ fr:
     maxLength: 'Nombre maximum de lignes'
     columns: 'Colonnes'
 </i18n>
+./utils/table

@@ -27,6 +27,7 @@
           hide-details
           persistent-placeholder
           ref="titleCB"
+          class="pt-1"
           @input="onAutocompleteChoice"
           @update:search-input="innerTitle = $event"
           @blur="figureTitle = innerTitle"
