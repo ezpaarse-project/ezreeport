@@ -1,3 +1,18 @@
+# ezreeport-report [1.0.0-beta.12](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.11...ezreeport-report@1.0.0-beta.12) (2023-07-04)
+
+
+### Bug Fixes
+
+* **report:** fixed format of elastic default filters ([fc2bbd7](https://github.com/ezpaarse-project/ezreeport/commit/fc2bbd779fb7bec9493ae04c2befe670a1618fc8))
+* **report:** fixed hardcoded prefix ([6b537d9](https://github.com/ezpaarse-project/ezreeport/commit/6b537d94581200aa0ea21e754b9728580b0f9627))
+* **report:** fixed position of tables in reports ([0927545](https://github.com/ezpaarse-project/ezreeport/commit/09275458888c57aa524515f3b961a813e17354f3))
+
+
+### Features
+
+* **report:** added context to errors on generation ([31a5a04](https://github.com/ezpaarse-project/ezreeport/commit/31a5a0417e69e370ef593df7cd437cba04d52eb0))
+* **report:** added count of tasks/memberships in namespaces/users ([f5d3e8e](https://github.com/ezpaarse-project/ezreeport/commit/f5d3e8ef0da88c8be1ec2ca7646106b397f6036f))
+
 # ezreeport-report [1.0.0-beta.11](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.10...ezreeport-report@1.0.0-beta.11) (2023-07-03)
 
 
