@@ -213,6 +213,7 @@ export default async (
               [options.dateField]: {
                 gte: formatISO(options.period.start),
                 lte: formatISO(options.period.end),
+                format: 'date_optional_time',
               },
             },
           },
