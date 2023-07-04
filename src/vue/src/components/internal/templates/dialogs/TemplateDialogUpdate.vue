@@ -42,7 +42,7 @@
 
         <v-btn
           v-if="perms.update"
-          :disabled="!data || templateStore.isCurrentValid !== true"
+          :disabled="!data || templateStore.isCurrentValid !== true || !isModified"
           :loading="loading"
           color="success"
           @click="save"
@@ -55,8 +55,10 @@
 </template>
 
 <script lang="ts">
-import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
+import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
+import hash from 'object-hash';
+
 import ezReeportMixin from '~/mixins/ezr';
 import useTemplateStore, { isFullTemplate } from '~/stores/template';
 
@@ -93,6 +95,8 @@ export default defineComponent({
   },
   data: () => ({
     data: undefined as BodyLessFullTemplate | undefined,
+    dataHash: '',
+    bodyHash: '',
 
     error: '',
     loading: false,
@@ -107,6 +111,30 @@ export default defineComponent({
         readOne: has('templates-get-name(*)'),
         update: has('templates-put-name(*)'),
       };
+    },
+    /**
+     * If template body was modified since last fetch
+     */
+    isBodyModified() {
+      if (!this.templateStore.current) {
+        return false;
+      }
+
+      return hash(this.templateStore.current) !== this.bodyHash;
+    },
+    /**
+     * If template data was modified since last fetch
+     */
+    isModified() {
+      if (this.isBodyModified) {
+        return true;
+      }
+
+      if (!this.data) {
+        return false;
+      }
+
+      return hash(this.data) !== this.dataHash;
     },
   },
   watch: {
@@ -146,6 +174,9 @@ export default defineComponent({
         this.templateStore.SET_CURRENT(body);
         this.data = data;
 
+        this.bodyHash = this.templateStore.current ? hash(this.templateStore.current) : '';
+        this.dataHash = hash(data);
+
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
@@ -180,8 +211,15 @@ export default defineComponent({
           },
         );
 
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { body: _, ...data } = content;
+
         this.$emit('updated', content);
-        this.$emit('input', false);
+        this.data = data;
+
+        this.bodyHash = this.templateStore.current ? hash(this.templateStore.current) : '';
+        this.dataHash = hash(data);
+
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;

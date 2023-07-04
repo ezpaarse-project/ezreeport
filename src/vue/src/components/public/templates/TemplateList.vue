@@ -221,8 +221,10 @@ export default defineComponent({
     /**
      * Called when a template is created by a dialog
      */
-    onTemplateCreated() {
+    onTemplateCreated(template: templates.FullTemplate) {
       this.fetch();
+      this.createTemplateDialogShown = false;
+      this.showTemplateDialog(template);
     },
     /**
      * Called when a template is deleted by a dialog

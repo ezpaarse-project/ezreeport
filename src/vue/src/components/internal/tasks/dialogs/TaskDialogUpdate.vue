@@ -168,7 +168,7 @@
 
         <v-btn
           v-if="perms.update"
-          :disabled="!task || !valid || templateValidation !== true"
+          :disabled="!task || !valid || templateValidation !== true || !isModified"
           :loading="loading"
           color="success"
           @click="save"
@@ -181,14 +181,15 @@
 </template>
 
 <script lang="ts">
-import { addDays, formatISO, parseISO } from 'date-fns';
-import type { tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
+import type { tasks } from '@ezpaarse-project/ezreeport-sdk-js';
+import { addDays, formatISO, parseISO } from 'date-fns';
 import isEmail from 'validator/lib/isEmail';
+import hash from 'object-hash';
+
 import ezReeportMixin from '~/mixins/ezr';
 import useTemplateStore, { isTaskTemplate, mapRulesToVuetify } from '~/stores/template';
-import type { CustomTaskTemplate } from '~/lib/templates/customTemplates';
-import hash from 'object-hash';
+
 import { tabs, type Tab } from './TaskDialogRead.vue';
 
 type TemplateLessTask = Omit<tasks.FullTask, 'template'>;
@@ -219,6 +220,8 @@ export default defineComponent({
 
     task: undefined as TemplateLessTask | undefined,
     taskHash: '',
+    templateHash: '',
+
     currentTab: 0,
 
     minDate: addDays(new Date(), 1),
@@ -307,16 +310,29 @@ export default defineComponent({
       }
       return err.toString();
     },
+    /**
+     * If template was modified since last fetch
+     */
+    isTemplateModified() {
+      if (!this.templateStore.current) {
+        return false;
+      }
+
+      return hash(this.templateStore.current) !== this.templateHash;
+    },
+    /**
+     * If task was modified since last fetch
+     */
     isModified() {
+      if (this.isTemplateModified) {
+        return true;
+      }
+
       if (!this.task) {
         return false;
       }
 
-      const newHash = this.genTaskHash({
-        ...this.task,
-        template: (this.templateStore.current as CustomTaskTemplate),
-      });
-      return newHash !== this.taskHash;
+      return hash(this.task) !== this.taskHash;
     },
   },
   watch: {
@@ -343,21 +359,6 @@ export default defineComponent({
      */
     validateMail: (email: string) => isEmail(email),
     /**
-     * Gen task hash, used to detect any "breaking" change that blocks generation
-     *
-     * @param task The task
-     *
-     * @returns The hash
-     */
-    genTaskHash(task: TemplateLessTask & { template: CustomTaskTemplate }) {
-      return hash(
-        task,
-        {
-          excludeKeys: (key) => ['name', 'enabled', 'nextRun'].includes(key),
-        },
-      );
-    },
-    /**
      * Fetch task info
      */
     async fetch() {
@@ -376,12 +377,11 @@ export default defineComponent({
         // Add additional data
         const { template, ...data } = content;
         this.templateStore.SET_CURRENT(template);
-
         this.task = data;
-        this.taskHash = this.genTaskHash({
-          ...data,
-          template: (this.templateStore.current as CustomTaskTemplate),
-        });
+
+        this.taskHash = hash(data);
+        this.templateHash = this.templateStore.current ? hash(this.templateStore.current) : '';
+
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
@@ -422,8 +422,15 @@ export default defineComponent({
           },
         );
 
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { template: _, ...data } = content;
+
         this.$emit('updated', content);
-        this.$emit('input', false);
+        this.task = data;
+
+        this.taskHash = hash(data);
+        this.templateHash = this.templateStore.current ? hash(this.templateStore.current) : '';
+
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;

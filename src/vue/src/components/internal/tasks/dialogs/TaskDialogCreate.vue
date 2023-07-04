@@ -340,7 +340,6 @@ export default defineComponent({
         );
 
         this.$emit('created', content);
-        this.$emit('input', false);
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;

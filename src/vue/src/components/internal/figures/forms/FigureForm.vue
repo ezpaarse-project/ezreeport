@@ -21,11 +21,9 @@
           :items="possibleVars"
           :label="$t('figures.title')"
           :return-object="false"
-          :placeholder="defaultTitle"
           no-filter
           dense
           hide-details
-          persistent-placeholder
           ref="titleCB"
           class="pt-1"
           @input="onAutocompleteChoice"
@@ -201,12 +199,6 @@ export default defineComponent({
       );
     },
     /**
-     * Returns the default title of the figure
-     */
-    defaultTitle(): string {
-      return this.$t(`$ezreeport.figures.type_list.${this.figure?.type || 'unknown'}`).toString();
-    },
-    /**
      * Returns the title of the figure
      */
     figureTitle: {
@@ -216,7 +208,7 @@ export default defineComponent({
           return title.toString();
         }
 
-        return this.defaultTitle;
+        return this.$t(`$ezreeport.figures.type_list.${this.figure?.type || 'unknown'}`).toString();
       },
       set(title: string) {
         if (!this.figure) {

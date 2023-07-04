@@ -426,9 +426,12 @@ export default defineComponent({
     /**
      * Called when a task is created by a dialog
      */
-    onTaskCreated() {
+    onTaskCreated(task: tasks.FullTask) {
       // TODO? go to first page ?
       this.fetch();
+      this.createTaskDialogShown = false;
+      const t = this.parseTask({ ...task, namespaceId: task.namespace.id });
+      this.showTaskDialog(t);
     },
     /**
      * Called when a task is deleted by a dialog
