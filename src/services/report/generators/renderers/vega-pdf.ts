@@ -346,121 +346,125 @@ const generatePdfWithVega = async (
     events.emit('slotsGenerated', slots);
 
     for (let layoutIndex = 0; layoutIndex < options.layouts.length; layoutIndex += 1) {
-      const { data, figures } = options.layouts[layoutIndex];
+      try {
+        const { data, figures } = options.layouts[layoutIndex];
 
-      if (layoutIndex > 0) {
+        if (layoutIndex > 0) {
         // eslint-disable-next-line no-await-in-loop
-        await addPage();
-      }
-
-      // Limit number of figures to the number of possible slots
-      figures.length = Math.min(figures.length, slots.length);
-
-      for (let figureIndex = 0; figureIndex < figures.length; figureIndex += 1) {
-        const { figure, slot } = resolveSlot({
-          figureIndex,
-          figures,
-          grid,
-          margin: slotMargin,
-          slots,
-          viewport,
-        });
-
-        if (options.debug) {
-          drawAreaRef(doc.pdf, slot);
+          await addPage();
         }
 
-        switch (figure.type) {
-          case 'table': {
+        // Limit number of figures to the number of possible slots
+        figures.length = Math.min(figures.length, slots.length);
+
+        for (let figureIndex = 0; figureIndex < figures.length; figureIndex += 1) {
+          const { figure, slot } = resolveSlot({
+            figureIndex,
+            figures,
+            grid,
+            margin: slotMargin,
+            slots,
+            viewport,
+          });
+
+          if (options.debug) {
+            drawAreaRef(doc.pdf, slot);
+          }
+
+          switch (figure.type) {
+            case 'table': {
             // Print table
-            const margin: Partial<Record<'top' | 'right' | 'bottom' | 'left', number>> = {};
-            figure.params.tableWidth = slot.width;
+              const margin: Partial<Record<'top' | 'right' | 'bottom' | 'left', number>> = {};
+              figure.params.tableWidth = slot.width;
 
-            if (slot.x !== viewport.x) {
-              margin.left = slot.x;
+              if (slot.x !== viewport.x) {
+                margin.left = slot.x;
+              }
+
+              if (slot.y !== viewport.y) {
+                figure.params.startY = slot.y;
+              }
+
+              figure.params.maxHeight = slot.height;
+
+              const figureData = figure.data ?? data;
+              if (!figureData) {
+                throw new Error('No data found');
+              }
+
+              // eslint-disable-next-line no-await-in-loop
+              await addTableToPDF(doc, figureData as any[], merge({}, figure.params, { margin }));
+              break;
             }
 
-            if (slot.y !== viewport.y) {
-              figure.params.startY = slot.y;
-            }
-
-            figure.params.maxHeight = slot.height;
-
-            const figureData = figure.data ?? data;
-            if (!figureData) {
-              throw new Error('No data found');
-            }
-
-            // eslint-disable-next-line no-await-in-loop
-            await addTableToPDF(doc, figureData as any[], merge({}, figure.params, { margin }));
-            break;
-          }
-
-          case 'md': {
+            case 'md': {
             // Print MD
-            const figureData = figure.data ?? data;
-            if (!figureData) {
-              throw new Error('No data found');
-            }
+              const figureData = figure.data ?? data;
+              if (!figureData) {
+                throw new Error('No data found');
+              }
 
-            // eslint-disable-next-line no-await-in-loop
-            await addMdToPDF(doc, figureData.toString(), {
-              ...figure.params,
-              start: {
-                x: slot.x,
-                y: slot.y,
-              },
-              width: slot.width,
-              height: slot.height,
-            });
-            break;
-          }
-
-          case 'metric': {
-            // Print Metrics
-            const figureData = figure.data ?? data;
-            if (!figureData) {
-              throw new Error('No data found');
-            }
-
-            addMetricToPDF(doc, figureData as any[], {
-              ...figure.params,
-              start: {
-                x: slot.x,
-                y: slot.y,
-              },
-              width: slot.width,
-              height: slot.height,
-            });
-            break;
-          }
-
-          default: {
-            // Print Vega chart
-            const figureData = figure.data ?? data;
-            if (!figureData) {
-              throw new Error('No data found');
-            }
-
-            // Creating Vega view
-            const view = createVegaView(
-              createVegaLSpec(figure.type, figureData as any[], {
+              // eslint-disable-next-line no-await-in-loop
+              await addMdToPDF(doc, figureData.toString(), {
                 ...figure.params,
-                recurrence: options.recurrence,
+                start: {
+                  x: slot.x,
+                  y: slot.y,
+                },
                 width: slot.width,
                 height: slot.height,
-              }),
-            );
+              });
+              break;
+            }
 
-            // eslint-disable-next-line no-await-in-loop
-            await addVegaToPDF(doc, view, slot);
-            break;
+            case 'metric': {
+            // Print Metrics
+              const figureData = figure.data ?? data;
+              if (!figureData) {
+                throw new Error('No data found');
+              }
+
+              addMetricToPDF(doc, figureData as any[], {
+                ...figure.params,
+                start: {
+                  x: slot.x,
+                  y: slot.y,
+                },
+                width: slot.width,
+                height: slot.height,
+              });
+              break;
+            }
+
+            default: {
+            // Print Vega chart
+              const figureData = figure.data ?? data;
+              if (!figureData) {
+                throw new Error('No data found');
+              }
+
+              // Creating Vega view
+              const view = createVegaView(
+                createVegaLSpec(figure.type, figureData as any[], {
+                  ...figure.params,
+                  recurrence: options.recurrence,
+                  width: slot.width,
+                  height: slot.height,
+                }),
+              );
+
+              // eslint-disable-next-line no-await-in-loop
+              await addVegaToPDF(doc, view, slot);
+              break;
+            }
           }
+          events.emit('figureRendered', figure);
         }
-        events.emit('figureRendered', figure);
-      }
 
-      events.emit('layoutRendered', figures);
+        events.emit('layoutRendered', figures);
+      } catch (error) {
+        throw new Error(`(Render of layout ${layoutIndex + 1}): ${(error as Error).message}`, { cause: error });
+      }
     }
 
     return await renderDoc();

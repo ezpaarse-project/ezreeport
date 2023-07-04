@@ -161,7 +161,12 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
         },
       );
       template.layouts[i].fetchOptions = fetchOptions;
-      template.layouts[i].data = await fetchers[fetcher](fetchOptions, events);
+
+      try {
+        template.layouts[i].data = await fetchers[fetcher](fetchOptions, events);
+      } catch (error) {
+        throw new Error(`(Fetch Data of layout ${i + 1}): ${(error as Error).message}`, { cause: error });
+      }
     }),
   );
 };
