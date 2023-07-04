@@ -133,7 +133,7 @@
                   :placeholder="$t('dataLabel.positions.in')"
                   persistent-placeholder
                   hide-details
-                  @change="onDataLabelUpdate({ format: $event })"
+                  @change="onDataLabelUpdate({ position: $event })"
                 />
               </v-col>
             </v-row>
@@ -201,6 +201,7 @@ type DataLabelUpdate = {
   format?: string | null,
   showLabel?: boolean,
   minValue?: number,
+  position?: string,
 };
 
 /**
