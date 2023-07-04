@@ -21,7 +21,7 @@
           :items="possibleVars"
           :label="$t('figures.title')"
           :return-object="false"
-          :placeholder="figureTitle"
+          :placeholder="defaultTitle"
           no-filter
           dense
           hide-details
@@ -29,7 +29,7 @@
           ref="titleCB"
           @input="onAutocompleteChoice"
           @update:search-input="innerTitle = $event"
-          @blur="figureTitle = $event"
+          @blur="figureTitle = innerTitle"
         >
           <template #item="{ item, on, attrs }">
             <v-list-item two-line v-bind="attrs" v-on="on">
@@ -200,6 +200,12 @@ export default defineComponent({
       );
     },
     /**
+     * Returns the default title of the figure
+     */
+    defaultTitle(): string {
+      return this.$t(`$ezreeport.figures.type_list.${this.figure?.type || 'unknown'}`).toString();
+    },
+    /**
      * Returns the title of the figure
      */
     figureTitle: {
@@ -209,7 +215,7 @@ export default defineComponent({
           return title.toString();
         }
 
-        return this.$t(`$ezreeport.figures.type_list.${this.figure?.type || 'unknown'}`).toString();
+        return this.defaultTitle;
       },
       set(title: string) {
         if (!this.figure) {
@@ -225,6 +231,9 @@ export default defineComponent({
         };
       },
     },
+  },
+  mounted() {
+    this.innerTitle = this.figure?.params?.title?.toString() ?? '';
   },
   methods: {
     async onAutocompleteChoice(choice: string) {
