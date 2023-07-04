@@ -139,6 +139,7 @@ export const addTableToPDF = async (
   // Print table
   autoTable(doc.pdf, {
     ...options,
+    startY: y,
     body: tableData,
     didParseCell: (hookData) => {
       // If dataKey is a property path
