@@ -1,3 +1,10 @@
+# @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.4](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.3...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.4) (2023-07-04)
+
+
+### Features
+
+* **sdk:** updated types following API ([db7180e](https://github.com/ezpaarse-project/ezreeport/commit/db7180e9b4961d4095eeca943132fad55c273c69))
+
 # @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.2...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.3) (2023-06-26)
 
 
