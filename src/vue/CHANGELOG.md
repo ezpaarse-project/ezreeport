@@ -1,3 +1,26 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.14](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.13...@ezpaarse-project/ezreeport-vue@1.0.0-beta.14) (2023-07-04)
+
+
+### Bug Fixes
+
+* **vue:** fixed figures titles beign in placeholders ([5159015](https://github.com/ezpaarse-project/ezreeport/commit/515901573cda84e74e8ac61180338aa0eab739e3))
+* **vue:** fixed issues with figure titles ([bc1a3f9](https://github.com/ezpaarse-project/ezreeport/commit/bc1a3f9e71efce94c039b58bd97bc4be91bc0648))
+* **vue:** fixed position of dataLabel not being applied ([d4f89a9](https://github.com/ezpaarse-project/ezreeport/commit/d4f89a9ea3558e4dd805c281667c22eda3257f3e))
+
+
+### Features
+
+* **vue:** added task count in select in task table ([693376e](https://github.com/ezpaarse-project/ezreeport/commit/693376ee0cbe3a7511fc1f283c4e822ebb2f249b))
+* **vue:** no longer closing popup on save ([a3919e0](https://github.com/ezpaarse-project/ezreeport/commit/a3919e03190aa123964db90bfb2fff1ccf8850db))
+
+
+
+
+
+### Dependencies
+
+* **@ezpaarse-project/ezreeport-sdk-js:** upgraded to 1.0.0-beta.4
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.13](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.12...@ezpaarse-project/ezreeport-vue@1.0.0-beta.13) (2023-07-03)
 
 
