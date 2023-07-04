@@ -1,21 +1,25 @@
 import Joi from 'joi';
 import { isEqual } from 'lodash';
-import prisma from '~/lib/prisma';
+
 import fetchers from '~/generators/fetchers';
+
+import { parseBulkResults, type BulkResult } from '~/lib/utils';
+import { appLogger } from '~/lib/logger';
+import prisma from '~/lib/prisma';
 import type {
   Namespace,
   Prisma,
   Membership,
   Task
 } from '~/lib/prisma';
+
 import { ArgumentError } from '~/types/errors';
+
 import {
   membershipSchema,
   upsertBulkMembership,
   deleteBulkMembership
 } from './memberships';
-import { parseBulkResults, type BulkResult } from '~/lib/utils';
-import { appLogger } from '~/lib/logger';
 
 type InputNamespace = Pick<Prisma.NamespaceCreateInput, 'name' | 'fetchLogin' | 'fetchOptions' | 'logoId'>;
 
@@ -110,31 +114,15 @@ export const getAllNamespaces = async (
     logoId: true,
     createdAt: true,
     updatedAt: true,
+    _count: {
+      select: {
+        tasks: true,
+        memberships: true,
+      },
+    },
   },
   orderBy: {
     createdAt: 'desc',
-  },
-});
-
-/**
- * Get namespace entries in DB, filtered by given ids
- *
- * @param ids The namespaces' ids
- *
- * @returns The namespaces filtered by given ids
- */
-export const getNamespacesByIds = (ids: Namespace['id'][]) => prisma.namespace.findMany({
-  where: {
-    id: {
-      in: ids,
-    },
-  },
-  select: {
-    id: true,
-    name: true,
-    logoId: true,
-    createdAt: true,
-    updatedAt: true,
   },
 });
 

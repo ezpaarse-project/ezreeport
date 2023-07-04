@@ -1,21 +1,33 @@
 import Joi from 'joi';
 import { randomBytes } from 'node:crypto';
+
 import prisma from '~/lib/prisma';
 import type {
-  User, Prisma, Membership, Namespace
+  User,
+  Prisma,
+  Membership,
+  Namespace
 } from '~/lib/prisma';
-import { ArgumentError } from '~/types/errors';
-import { upsertBulkMembership, deleteBulkMembership, membershipSchema } from '~/models/memberships';
 import { BulkResult, parseBulkResults } from '~/lib/utils';
 import { appLogger } from '~/lib/logger';
 
+import { ArgumentError } from '~/types/errors';
+import { upsertBulkMembership, deleteBulkMembership, membershipSchema } from '~/models/memberships';
+
 type InputUser = Pick<Prisma.UserCreateInput, 'isAdmin'>;
 
+type FullUserMembershipNamespace = (
+  Pick<Namespace, 'id' | 'name' | 'logoId' | 'createdAt' | 'updatedAt'>
+  & { _count: { tasks: number } }
+);
+
+type FullUserMembership = (
+  Pick<Membership, 'access' | 'createdAt' | 'updatedAt'>
+  & { namespace: FullUserMembershipNamespace }
+);
+
 export type FullUser = User & {
-  memberships: (
-    Pick<Membership, 'access' | 'createdAt' | 'updatedAt'>
-    & { namespace: Pick<Namespace, 'id' | 'name' | 'logoId' | 'createdAt' | 'updatedAt'> }
-  )[]
+  memberships: FullUserMembership[]
 };
 
 /**
@@ -54,10 +66,15 @@ const prismaMembershipSelect = {
         logoId: true,
         createdAt: true,
         updatedAt: true,
+        _count: {
+          select: {
+            tasks: true,
+          },
+        },
       },
     },
   },
-};
+} satisfies Prisma.User$membershipsArgs;
 
 /**
  * Get count of users entries in DB
@@ -83,6 +100,13 @@ export const getAllUsers = async (
   take: opts?.count,
   skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
   cursor: opts?.previous ? { username: opts.previous } : undefined,
+  include: {
+    _count: {
+      select: {
+        memberships: true,
+      },
+    },
+  },
   orderBy: {
     createdAt: 'desc',
   },

@@ -1,9 +1,12 @@
 import type { Request, RequestHandler } from 'express';
 import { StatusCodes } from 'http-status-codes';
+
 import config from '~/lib/config';
+
 import { getAccessValue, Access } from '~/models/access';
 import { getAllNamespaces } from '~/models/namespaces';
 import { FullUser, getUserByToken } from '~/models/users';
+
 import { HTTPError } from '~/types/errors';
 
 const adminKey = config.get('adminKey');
@@ -68,6 +71,8 @@ const getPossibleNamespaces = async (
   if (req.user.isAdmin) {
     const { createdAt, updatedAt } = req.user;
     const namespaces = await getAllNamespaces();
+
+    // To avoid issues, return a fake namespace
     if (namespaces.length < 1) {
       namespaces.push({
         id: '_',
@@ -75,6 +80,10 @@ const getPossibleNamespaces = async (
         logoId: '',
         createdAt: new Date('a'),
         updatedAt: new Date('a'),
+        _count: {
+          tasks: 0,
+          memberships: 0,
+        },
       });
     }
 

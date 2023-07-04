@@ -1,7 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
-import { CustomRouter } from '~/lib/express-utils';
+
 import { requireAPIKey } from '~/middlewares/auth';
+
+import { CustomRouter } from '~/lib/express-utils';
+
 import {
   addUserToNamespace,
   isValidMembership,
