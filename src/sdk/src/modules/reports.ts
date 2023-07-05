@@ -28,7 +28,12 @@ interface RawReportResultDetail {
   stats?: object,
   error?: {
     message: string,
-    stack: string[]
+    stack: string[],
+    cause?: {
+      type: string,
+      layout: number,
+      figure?: number,
+    },
   },
   meta?: unknown
 }
