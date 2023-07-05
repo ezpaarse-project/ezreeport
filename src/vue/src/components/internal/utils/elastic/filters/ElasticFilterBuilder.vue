@@ -83,7 +83,7 @@ export default defineComponent({
         const elements: FilterElement[] = [
           ...(this.value.filter ?? []).map((filter: any) => this.elasticToElement(filter, '')),
           ...(this.value.must_not ?? []).map((filter: any) => this.elasticToElement(filter, 'NOT')),
-        ];
+        ].filter((v: any) => v !== undefined);
         return elements.sort((a, b) => a.key.localeCompare(b.key));
       },
       set(elements: FilterElement[]) {
@@ -95,8 +95,9 @@ export default defineComponent({
         // eslint-disable-next-line no-restricted-syntax
         for (const element of elements) {
           const filter = this.elementToElastic(element);
+
           if (element) {
-          // Add filter to query
+            // Add filter to query
             switch (element.modifier) {
               case 'NOT':
                 query.must_not.push(filter);
@@ -226,11 +227,10 @@ export default defineComponent({
      */
     elementToElastic(element: Omit<FilterElement, 'raw'>): any {
       switch (element.operator) {
-        case 'EXISTS': {
+        case 'EXISTS':
           return { exists: { field: element.key } };
-        }
 
-        case 'IS': {
+        case 'IS':
           if (element.values.length <= 1) {
             return { match_phrase: { [element.key]: element.values[0] } };
           }
@@ -246,7 +246,6 @@ export default defineComponent({
               ),
             },
           };
-        }
 
         default:
           return undefined;
@@ -291,13 +290,13 @@ export default defineComponent({
       this.selectedIndex = newIndex;
     },
     /**
-     * Update filter value when a element is deleted
+     * Update filter value when a chip is deleted
      *
-     * @param element The element
+     * @param chip The chip
      */
-    onElementDeleted(element: FilterChip) {
+    onElementDeleted(chip: FilterChip) {
       const elements = [...this.filterElements];
-      const index = elements.findIndex(({ raw }) => element.key === raw);
+      const index = elements.findIndex(({ raw }) => chip.key === raw);
       if (index < 0) {
         return;
       }

@@ -120,11 +120,11 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { pick } from 'lodash';
 import useTemplateStore, { transformFetchOptions, type FetchOptions, supportedFetchOptions } from '~/stores/template';
 import { aggsDefinition } from '~/lib/elastic/aggs';
-import { pick } from 'lodash';
-import type ElasticAggsBuilderConstructor from '../../utils/elastic/aggs/ElasticAggsBuilder.vue';
-import type ElasticFilterBuilderConstructor from '../../utils/elastic/filters/ElasticFilterBuilder.vue';
+import type ElasticAggsBuilderConstructor from '~/components/internal/utils/elastic/aggs/ElasticAggsBuilder.vue';
+import type ElasticFilterBuilderConstructor from '~/components/internal/utils/elastic/filters/ElasticFilterBuilder.vue';
 
 type ElasticAggsBuilder = InstanceType<typeof ElasticAggsBuilderConstructor>;
 type ElasticFilterBuilder = InstanceType<typeof ElasticFilterBuilderConstructor>;

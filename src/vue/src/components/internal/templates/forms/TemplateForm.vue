@@ -70,7 +70,7 @@
             <ElasticFilterBuilder
               ref="filterBuilder"
               :value="templateStore.currentFetchOptions?.filters ?? {}"
-              @input="onFetchOptionUpdate({ filters: $event })"
+              @input="onFilterUpdate"
             />
           </CustomSection>
         </v-col>
@@ -402,6 +402,14 @@ export default defineComponent({
     onFilterCreated() {
       const builder = this.$refs.filterBuilder as ElasticFilterBuilder | undefined;
       builder?.onElementCreated();
+    },
+    onFilterUpdate(filters: Record<string, any>) {
+      this.onTemplateUpdate({
+        fetchOptions: {
+          ...(this.template?.fetchOptions ?? {}),
+          filters,
+        },
+      });
     },
     loadTemplateBackup() {
       this.template = cloneDeep(this.currentTemplateBackup);
