@@ -1,3 +1,11 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.15](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.14...@ezpaarse-project/ezreeport-vue@1.0.0-beta.15) (2023-07-05)
+
+
+### Bug Fixes
+
+* **vue:** fixed elastic filters errors in templates ([5ff19f6](https://github.com/ezpaarse-project/ezreeport/commit/5ff19f651743c84e0f485471c1cdfbceea1b1beb))
+* **vue:** fixed extended template not beign reseted ([03b64ff](https://github.com/ezpaarse-project/ezreeport/commit/03b64ff5848995f57f00c05ca7f03b5bc6b93af6))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.14](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.13...@ezpaarse-project/ezreeport-vue@1.0.0-beta.14) (2023-07-04)
 
 
