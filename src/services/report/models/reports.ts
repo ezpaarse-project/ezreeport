@@ -36,6 +36,12 @@ import { type TypedNamespace, getNamespaceById } from './namespaces';
 
 const { ttl, outDir } = config.get('report');
 
+type ReportErrorCause = {
+  type: 'fetch' | 'render'
+  layout: number,
+  figure?: number,
+};
+
 type ReportResult = {
   success: boolean,
   detail: {
@@ -54,7 +60,8 @@ type ReportResult = {
     stats?: Omit<Awaited<ReturnType<Renderers[keyof Renderers]>>, 'path'>,
     error?: {
       message: string,
-      stack: string[]
+      stack: string[],
+      cause?: ReportErrorCause,
     },
     meta?: unknown
   }
@@ -90,6 +97,7 @@ const reportresultSchema = Joi.object<ReportResult>({
     error: Joi.object<ReportResult['detail']['error']>({
       message: Joi.string().required(),
       stack: Joi.array().items(Joi.string()).required(),
+      cause: Joi.object(),
     }),
     meta: Joi.any(),
   }).required(),
@@ -165,7 +173,9 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
       try {
         template.layouts[i].data = await fetchers[fetcher](fetchOptions, events);
       } catch (error) {
-        throw new Error(`(Fetch Data of layout ${i + 1}): ${(error as Error).message}`, { cause: error });
+        const err = error as Error;
+        err.cause = { ...(err.cause ?? {}), layout: i, type: 'fetch' };
+        throw err;
       }
     }),
   );
@@ -211,7 +221,7 @@ export const generateReport = async (
   logger.verbose(`[gen] [${process.pid}] Generation of report "${namepath}" started`);
   events.emit('creation');
 
-  let result: ReportResult = {
+  const result: ReportResult = {
     success: true,
     detail: {
       createdAt: today,
@@ -362,15 +372,17 @@ export const generateReport = async (
 
     logger.info(`[gen] [${process.pid}] Report "${namepath}" successfully generated in ${(result.detail.took / 1000).toFixed(2)}s`);
   } catch (error) {
-    result = merge<ReportResult, DeepPartial<ReportResult>>(
+    const err = error as Error;
+    merge<ReportResult, DeepPartial<ReportResult>>(
       result,
       {
         success: false,
         detail: {
           took: differenceInMilliseconds(new Date(), result.detail.createdAt),
           error: {
-            message: (error as Error).message,
-            stack: (error as Error).stack?.split('\n    '),
+            message: err.message,
+            stack: err.stack?.split('\n    '),
+            cause: err.cause as ReportErrorCause,
           },
         },
       },
