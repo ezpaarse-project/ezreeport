@@ -1,3 +1,10 @@
+# ezreeport-report [1.0.0-beta.13](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.12...ezreeport-report@1.0.0-beta.13) (2023-07-05)
+
+
+### Bug Fixes
+
+* **report:** fixed html entities in markdown ([e21b15c](https://github.com/ezpaarse-project/ezreeport/commit/e21b15c97a4fae6b406b75d4751a536b4ffaac3b))
+
 # ezreeport-report [1.0.0-beta.12](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.11...ezreeport-report@1.0.0-beta.12) (2023-07-04)
 
 
