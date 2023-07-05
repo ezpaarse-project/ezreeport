@@ -52,6 +52,7 @@
                 :items="availableTypes"
                 :label="$t('headers.type')"
                 :readonly="readonly"
+                :rules="rules.type"
                 hide-details
                 @change="onTypeUpdate"
               >
@@ -90,6 +91,7 @@
                 :value="type.data?.field"
                 :label="$t('headers.field')"
                 :readonly="readonly"
+                :rules="rules.field"
                 @input="onTypeFieldUpdate({ field: $event })"
               />
 
@@ -318,6 +320,12 @@ export default defineComponent({
         name: [
           (v: string) => v?.length > 0 || this.$t('$ezreeport.errors.empty'),
           () => !this.isDuplicate || this.$t('errors.no_duplicate'),
+        ],
+        type: [
+          (v: string) => v?.length > 0 || this.$t('$ezreeport.errors.empty'),
+        ],
+        field: [
+          (v: string) => v?.length > 0 || this.$t('$ezreeport.errors.empty'),
         ],
         advanced: [
           (v: string) => {
