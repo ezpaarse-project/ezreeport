@@ -315,13 +315,14 @@ export const createVegaLSpec = (
     ...(typeof params.title === 'object' && !Array.isArray(params.title) ? params.title : {}),
   };
   const handlebarsOpts = { length: data.length };
+  // Titles in vega can be a little... atypic...
   if (typeof params.title === 'string') {
     title.text = handlebars(params.title)(handlebarsOpts);
   } else if (Array.isArray(params.title)) {
     title.text = params.title.map((t) => handlebars(t)(handlebarsOpts));
-  } else if (typeof params.title.text === 'string') {
+  } else if (typeof params.title?.text === 'string') {
     title.text = handlebars(params.title.text)(handlebarsOpts);
-  } else if (Array.isArray(params.title.text)) {
+  } else if (Array.isArray(params.title?.text)) {
     title.text = params.title.text.map((t) => handlebars(t)(handlebarsOpts));
   }
 

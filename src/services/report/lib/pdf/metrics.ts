@@ -72,14 +72,26 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
     fontSize: doc.pdf.getFontSize(),
   };
 
+  if ((params.labels?.length ?? 0) <= 0) {
+    throw new Error('Metric figure must have at least one label');
+  }
+
   let rawData = [];
   if (Array.isArray(inputData)) {
     rawData = inputData;
   } else {
-    const dataKeys = Object.keys(inputData);
-    const labelKeys = params.labels?.map(({ dataKey }) => dataKey) ?? [];
-    // Sort metrics by label position in object
-    dataKeys.sort((a, b) => labelKeys.indexOf(a) - labelKeys.indexOf(b));
+    let dataKeys = Object.keys(inputData);
+    const labelPositionMap = new Map(params.labels?.map(({ dataKey }, i) => [dataKey, i]) ?? []);
+
+    // Remove unused data
+    dataKeys = dataKeys.filter((dataKey) => labelPositionMap.has(dataKey));
+    if (dataKeys.length <= 0) {
+      throw new Error('No used dataKeys found');
+    }
+
+    // Sort metrics by label position
+    dataKeys.sort((a, b) => (labelPositionMap.get(a) ?? 0) - (labelPositionMap.get(b) ?? 0));
+
     // eslint-disable-next-line no-restricted-syntax
     for (const key of dataKeys) {
       const label = params.labels?.find(({ dataKey }) => dataKey === key);
