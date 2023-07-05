@@ -37,6 +37,8 @@ export default defineComponent({
       if (isTaskTemplate(this.templateStore.current)) {
         const extended = await this.fetch(this.templateStore.current.extends);
         this.templateStore.extended = extended;
+      } else {
+        this.templateStore.extended = undefined;
       }
     },
     // eslint-disable-next-line func-names
