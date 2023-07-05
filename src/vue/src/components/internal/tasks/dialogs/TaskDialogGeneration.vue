@@ -27,7 +27,28 @@
         <v-slide-y-transition>
           <v-alert v-if="reportStatus" :type="reportStatus" text class="mt-2">
             <div>
-              {{ $t('results.' + reportStatus, { error: result?.detail.error?.message }) }}
+              <div :class="[result?.detail.error && 'text-decoration-underline']">{{ $t(`results.${reportStatus}`) }}</div>
+              <div v-if="result?.detail.error">
+                <i18n v-if="result.detail.error.cause" path="error_details.layout" tag="span">
+                  <template #type>
+                    {{ $t(`error_types.${result.detail.error.cause.type}`) }}
+                  </template>
+
+                  <template #layout>
+                    <span class="font-weight-bold">{{ result.detail.error.cause.layout }}</span>
+                  </template>
+                </i18n>
+                <i18n v-if="result.detail.error.cause?.figure != null" path="error_details.figure" tag="span" class="ml-1">
+                  <template #figure>
+                    <span class="font-weight-bold">{{ result.detail.error.cause?.figure }}</span>
+                  </template>
+                </i18n>
+                <i18n path="error_details.message" tag="span" class="ml-1">
+                  <template #message>
+                    <span class="font-weight-bold">{{ result.detail.error.message }}</span>
+                  </template>
+                </i18n>
+              </div>
             </div>
 
             <v-menu v-if="perms.getFile">
@@ -423,7 +444,14 @@ en:
     download: 'Download'
   results:
     success: 'The report was generated with success'
-    error: 'An error occurred while generating: {error}'
+    error: 'An error occurred during generation:'
+  error_types:
+    fetch: 'retrieving data from'
+    render: 'rendering'
+  error_details:
+    layout: 'Was {type} page {layout}.'
+    figure: 'More precisely, it occurred on a figure named: {figure}.'
+    message: 'Then occurred: {message}.'
   files:
     detail: 'Detail (JSON)'
     report: 'Report'
@@ -448,7 +476,14 @@ fr:
     download: 'Télécharger'
   results:
     success: 'Le rapport a été généré avec succès'
-    error: 'Une erreur est survenue lors de la génération: {error}'
+    error: 'Une erreur est survenue lors de la génération:'
+  error_types:
+    fetch: 'récupérer les données de'
+    render: 'rendre'
+  error_details:
+    layout: 'Était en train de {type} la page {layout}.'
+    figure: "Plus précisément, c'est arrivé sur la visualisation nommée: {figure}."
+    message: 'Est alors survenu: {message}.'
   files:
     detail: 'Détail (JSON)'
     report: 'Rapport'
