@@ -1,3 +1,26 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.16](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.15...@ezpaarse-project/ezreeport-vue@1.0.0-beta.16) (2023-07-06)
+
+
+### Bug Fixes
+
+* **vue:** fixed legend option in vega params ([f6b1656](https://github.com/ezpaarse-project/ezreeport/commit/f6b1656de382964f95f5e2856c182536b2dacbb1))
+
+
+### Features
+
+* **vue:** added missing hint on agg dialog ([c35ccb6](https://github.com/ezpaarse-project/ezreeport/commit/c35ccb6ef8992b74cbe3dfc7b3a49ac739c3c6b1))
+* **vue:** added missing validation to aggregation builder ([f349503](https://github.com/ezpaarse-project/ezreeport/commit/f349503a91d0fe9e586b34370624504682254192))
+* **vue:** better error message on generation ([16ae546](https://github.com/ezpaarse-project/ezreeport/commit/16ae546de0a4192a3d85b0d1bc246826e8ad70fb))
+* **vue:** creating an aggregation now opens dialog ([2f6d7d8](https://github.com/ezpaarse-project/ezreeport/commit/2f6d7d82f8acb8ee1a872067fc6ca5e337aa6ada))
+
+
+
+
+
+### Dependencies
+
+* **@ezpaarse-project/ezreeport-sdk-js:** upgraded to 1.0.0-beta.5
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.15](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.14...@ezpaarse-project/ezreeport-vue@1.0.0-beta.15) (2023-07-05)
 
 
