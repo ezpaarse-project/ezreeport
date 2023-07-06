@@ -1,3 +1,20 @@
+# ezreeport-report [1.0.0-beta.14](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.13...ezreeport-report@1.0.0-beta.14) (2023-07-06)
+
+
+### Bug Fixes
+
+* **report:** added padding in pages ([89c8798](https://github.com/ezpaarse-project/ezreeport/commit/89c8798e29e9c8f22e064e6c559728ad2702b38c))
+* **report:** fixed metrics overflow/not beign centered ([f2527ad](https://github.com/ezpaarse-project/ezreeport/commit/f2527ad264afe956f93ebeb57300bfee859e4449))
+* **report:** fixed space before table when no title was provided ([5f04b56](https://github.com/ezpaarse-project/ezreeport/commit/5f04b565e9a55d81aad2933bbec159d45c026915))
+* **report:** fixed title of tables/vega (+ their positions) ([ad25f75](https://github.com/ezpaarse-project/ezreeport/commit/ad25f753d357ed715dedc4285e05e9f463fc20d4))
+* **report:** various fixs on metrics ([9049d3a](https://github.com/ezpaarse-project/ezreeport/commit/9049d3a94d38e799468a915f11469710137fc7f5))
+* **vue:** fixed error stack beign false ([3904c01](https://github.com/ezpaarse-project/ezreeport/commit/3904c010fc1c430887563caaeae57dd4cbe48ec4))
+
+
+### Features
+
+* **report:** various fixs for vega and elastic ([80bda94](https://github.com/ezpaarse-project/ezreeport/commit/80bda942939807b0e704b89af8999c366a7d300f))
+
 # ezreeport-report [1.0.0-beta.13](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.12...ezreeport-report@1.0.0-beta.13) (2023-07-05)
 
 
