@@ -92,8 +92,14 @@
                 :label="$t('headers.field')"
                 :readonly="readonly"
                 :rules="rules.field"
+                hide-details="auto"
                 @input="onTypeFieldUpdate({ field: $event })"
               />
+              <i18n v-if="valid" path="$ezreeport.hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
+                <template #code>
+                  <code>{{ $t('$ezreeport.hints.dot_notation.code') }}</code>
+                </template>
+              </i18n>
 
               <!-- Size -->
               <v-text-field
@@ -524,7 +530,11 @@ export default defineComponent({
 </script>
 
 <style scoped>
-
+.fake-hint {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 12px;
+}
 </style>
 
 <i18n lang="yaml">
