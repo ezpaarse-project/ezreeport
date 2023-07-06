@@ -438,7 +438,7 @@ const generatePdfWithVega = async (
               }
 
               default: {
-              // Print Vega chart
+                // Print Vega chart
                 const figureData = figure.data ?? data;
                 if (!figureData) {
                   throw new Error('No data found');

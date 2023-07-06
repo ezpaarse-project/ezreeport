@@ -127,14 +127,16 @@ export const addTableToPDF = async (
   const y = options.startY || options.margin.top;
 
   // Table title
-  doc.pdf
-    .setFont('Roboto', 'bold')
-    .setFontSize(fontSize)
-    .text(
-      handlebars(title ?? '')({ length: tableData.length }),
-      options.margin.left,
-      y - 0.5 * fontSize,
-    );
+  if (title) {
+    doc.pdf
+      .setFont('Roboto', 'bold')
+      .setFontSize(fontSize)
+      .text(
+        handlebars(title)({ length: tableData.length }),
+        options.margin.left,
+        y - 0.5 * fontSize,
+      );
+  }
 
   // Print table
   autoTable(doc.pdf, {
