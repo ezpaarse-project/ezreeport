@@ -89,7 +89,7 @@
             :label="$t('label.headers.showLegend')"
             :readonly="readonly"
             hide-details
-            @change="onSubParamUpdate('label', { legend: $event })"
+            @change="onSubParamUpdate('label', { legend: $event ? {} : null })"
             @click.prevent=""
           />
         </CustomSection>
