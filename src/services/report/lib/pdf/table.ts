@@ -42,7 +42,6 @@ export const addTableToPDF = async (
     title,
     ...params
   } = spec;
-  const fontSize = 10;
 
   // Limit data if needed
   const tableData = [...data];
@@ -50,10 +49,41 @@ export const addTableToPDF = async (
     tableData.length = maxLength;
   }
 
-  if (maxHeight != null && maxHeight > 0) {
+  // Calc margin
+  const fontSize = 10;
+  const margin = merge(
+    {
+      right: doc.margin.right,
+      left: doc.margin.left,
+      bottom: doc.offset.bottom,
+      top: doc.offset.top,
+    },
+    params.margin,
+  );
+
+  let mH = maxHeight;
+  const y = params.startY || 0;
+  // Table title
+  if (title) {
+    doc.pdf
+      .setFont('Roboto', 'bold')
+      .setFontSize(fontSize)
+      .text(
+        handlebars(title)({ length: tableData.length }),
+        margin.left,
+        y + fontSize,
+      );
+
+    params.startY = y + (fontSize * 1.75);
+    if (mH != null && mH > 0) {
+      mH -= (fontSize * 1.75);
+    }
+  }
+
+  if (mH != null && mH > 0) {
     // default height of a cell is 29
-    // Removing title, header & some space
-    const maxTableHeight = maxHeight - (1.5 * fontSize) - (2 * 29);
+    // Removing header & some space
+    const maxTableHeight = mH - (2 * 29);
     const maxCells = Math.ceil(maxTableHeight / 29);
     if (tableData.length > maxCells) {
       logger.warn(`[pdf] Reducing table length from ${tableData.length} to ${maxCells} because table won't fit in slot.`);
@@ -63,12 +93,6 @@ export const addTableToPDF = async (
 
   const options = merge(
     {
-      margin: {
-        right: doc.margin.right,
-        left: doc.margin.left,
-        bottom: doc.offset.bottom,
-        top: doc.offset.top + 2 * fontSize,
-      },
       styles: {
         overflow: 'ellipsize',
         minCellWidth: 100,
@@ -76,6 +100,7 @@ export const addTableToPDF = async (
       rowPageBreak: 'avoid',
     },
     params,
+    { margin },
   );
 
   if (options.columns) {
@@ -124,24 +149,9 @@ export const addTableToPDF = async (
     }
   }
 
-  const y = options.startY || options.margin.top;
-
-  // Table title
-  if (title) {
-    doc.pdf
-      .setFont('Roboto', 'bold')
-      .setFontSize(fontSize)
-      .text(
-        handlebars(title)({ length: tableData.length }),
-        options.margin.left,
-        y - 0.5 * fontSize,
-      );
-  }
-
   // Print table
   autoTable(doc.pdf, {
     ...options,
-    startY: y,
     body: tableData,
     didParseCell: (hookData) => {
       // If dataKey is a property path

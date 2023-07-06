@@ -16,7 +16,12 @@ import { addMdToPDF } from '~/lib/pdf/markdown';
 import { addMetricToPDF } from '~/lib/pdf/metrics';
 import { addTableToPDF } from '~/lib/pdf/table';
 import { drawAreaRef } from '~/lib/pdf/utils';
-import { addVegaToPDF, createVegaLSpec, createVegaView } from '~/lib/vega';
+import {
+  addVegaToPDF,
+  createVegaLSpec,
+  createVegaView,
+  parseTitle
+} from '~/lib/vega';
 
 import { type AnyFigure } from '~/models/figures';
 import { layoutSchema, type AnyLayout } from '~/models/layouts';
@@ -374,16 +379,13 @@ const generatePdfWithVega = async (
 
             switch (figure.type) {
               case 'table': {
-              // Print table
+                // Print table
                 const margin: Partial<Record<'top' | 'right' | 'bottom' | 'left', number>> = {};
                 figure.params.tableWidth = slot.width;
 
+                figure.params.startY = slot.y;
                 if (slot.x !== viewport.x) {
                   margin.left = slot.x;
-                }
-
-                if (slot.y !== viewport.y) {
-                  figure.params.startY = slot.y;
                 }
 
                 figure.params.maxHeight = slot.height;
@@ -444,10 +446,28 @@ const generatePdfWithVega = async (
                   throw new Error('No data found');
                 }
 
+                // Figure title
+                const { title: vegaTitle, ...figParams } = figure.params;
+                if (vegaTitle) {
+                  const fontSize = 10;
+
+                  doc.pdf
+                    .setFont('Roboto', 'bold')
+                    .setFontSize(fontSize)
+                    .text(
+                      parseTitle(vegaTitle, figureData as any[], figure.params.dataKey),
+                      slot.x,
+                      slot.y + fontSize,
+                    );
+
+                  slot.y += (fontSize * 1.15);
+                  slot.height -= (fontSize * 1.15);
+                }
+
                 // Creating Vega view
                 const view = createVegaView(
                   createVegaLSpec(figure.type, figureData as any[], {
-                    ...figure.params,
+                    ...figParams,
                     recurrence: options.recurrence,
                     width: slot.width,
                     height: slot.height,

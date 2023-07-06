@@ -72,7 +72,6 @@ type VegaParams = {
   value: SubEncoding<'x' | 'y' | 'theta'> & { field: string };
   label: SubEncoding<'x' | 'y' | 'color'> & { field: string },
   color?: Encoding['color'] & { field: string },
-  title: Title,
   dataLabel?: {
     format: 'percent' | 'numeric',
     position?: 'out' | 'in',
@@ -81,7 +80,47 @@ type VegaParams = {
   }
 };
 
-export type InputVegaParams = Omit<VegaParams, 'width' | 'height'>;
+export type InputVegaParams = Omit<VegaParams, 'width' | 'height'> & { title: Title };
+
+/**
+ * Parse given title with handlebars vars. It's weird because Vega's title can be a lot of things
+ *
+ * @param title The Vega title
+ * @param inputData The data given to the figure
+ * @param dataKey The optional key to access data
+ *
+ * @returns The title to print
+ */
+export const parseTitle = (
+  title: Title,
+  inputData: Record<string, any[]> | any[],
+  dataKey?: string,
+): string | string[] => {
+  let data = [];
+  if (Array.isArray(inputData)) {
+    data = inputData;
+  } else {
+    if (!dataKey) {
+      throw new Error('Unable to parse title: data is not iterable, and no "dataKey" is present');
+    }
+    data = inputData[dataKey];
+  }
+
+  const handlebarsOpts = { length: data.length };
+  if (typeof title === 'string') {
+    return handlebars(title)(handlebarsOpts);
+  }
+  if (Array.isArray(title)) {
+    return title.map((t) => handlebars(t)(handlebarsOpts));
+  }
+  if (typeof title?.text === 'string') {
+    return handlebars(title.text)(handlebarsOpts);
+  }
+  if (Array.isArray(title?.text)) {
+    return title.text.map((t) => handlebars(t)(handlebarsOpts));
+  }
+  throw new Error('Unable to parse title: this format of params is not supported');
+};
 
 /**
  * Helper to create Vega-lite spec
@@ -185,6 +224,8 @@ export const createVegaLSpec = (
           type: 'nominal',
           timeUnit: timeFormat.timeUnit,
           ...params.label,
+          // @ts-expect-error
+          title: params.label.title || null,
           axis: {
             format: timeFormat.format,
             // @ts-ignore
@@ -309,36 +350,11 @@ export const createVegaLSpec = (
 
     layers.push(dLLayer);
   }
-
-  const title: Exclude<TopLevelSpec['title'], string | string[] | undefined> = {
-    text: '',
-    ...(typeof params.title === 'object' && !Array.isArray(params.title) ? params.title : {}),
-  };
-  const handlebarsOpts = { length: data.length };
-  // Titles in vega can be a little... atypic...
-  if (typeof params.title === 'string') {
-    title.text = handlebars(params.title)(handlebarsOpts);
-  } else if (Array.isArray(params.title)) {
-    title.text = params.title.map((t) => handlebars(t)(handlebarsOpts));
-  } else if (typeof params.title?.text === 'string') {
-    title.text = handlebars(params.title.text)(handlebarsOpts);
-  } else if (Array.isArray(params.title?.text)) {
-    title.text = params.title.text.map((t) => handlebars(t)(handlebarsOpts));
-  }
-
   const spec: TopLevelSpec = {
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     width: params.width,
     height: params.height,
     background: 'transparent',
-    title: merge<TopLevelSpec['title'], TopLevelSpec['title']>(
-      {
-        text: '',
-        anchor: 'start',
-        dy: -5,
-      },
-      title,
-    ),
     // Adding data
     datasets: {
       default: data,
