@@ -159,25 +159,28 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
   };
 
   // Calc positions of cells
-  const counts = { rows: 1, cols: 0 };
-  for (let i = 0; i < data.length; i += 1) {
-    if (cursor.x + cell.width >= params.width) {
-      cursor.x = 0;
-      cursor.y += cell.height + margin.y;
-      counts.rows += 1;
+  const counts = {
+    cols: Math.floor(params.width / (cell.width + margin.x)),
+    // Will be calculated later since we need cols
+    rows: 0,
+  };
+  counts.rows = Math.ceil(data.length / counts.cols);
+
+  for (let row = 0; row < counts.rows; row += 1) {
+    cursor.x = 0;
+
+    for (let col = 0; col < counts.cols; col += 1) {
+      slots.push({
+        ...cell,
+        x: cursor.x,
+        y: cursor.y,
+      });
+
+      cursor.x += cell.width + margin.x;
     }
 
-    const slot: Area = {
-      ...cell,
-      x: cursor.x,
-      y: cursor.y,
-    };
-
-    cursor.x += cell.width + margin.x;
-
-    slots.push(slot);
+    cursor.y += cell.height + margin.y;
   }
-  counts.cols = data.length / counts.rows;
 
   const totalSize: Size = {
     width: (counts.cols * cell.width) + ((counts.cols - 1) * margin.x),
@@ -192,6 +195,10 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
   // Print data
   for (let i = 0; i < data.length; i += 1) {
     const { key, value, sizes } = data[i];
+    if (!slots[i]) {
+      throw new Error(`slot ${i} not found`);
+    }
+
     const slot = {
       ...slots[i],
       x: offset.x + slots[i].x,

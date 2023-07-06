@@ -578,9 +578,6 @@ export const addMdToPDF = async (
             width: params.width,
             cursor,
           });
-          console.log('=========');
-          console.log(element.content, isTooWide);
-          console.log('');
 
           if (!isTooWide) {
             // Calculate next offset
