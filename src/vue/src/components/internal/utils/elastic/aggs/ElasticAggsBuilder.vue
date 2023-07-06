@@ -17,7 +17,7 @@
         :close="!readonly"
         label
         outlined
-        @click="openDialog(i, $event)"
+        @click="openDialog(i)"
         @click:close="!readonly && onElementDeleted(i)"
       >
         {{item.name || `agg${i}`}}
@@ -56,7 +56,6 @@ export default defineComponent({
   },
   data: () => ({
     elementDialogShown: false,
-    elementDialogCoords: { x: 0, y: 0 },
 
     selectedIndex: -1,
   }),
@@ -81,12 +80,8 @@ export default defineComponent({
      * @param index the index of chip
      * @param event The base event
      */
-    async openDialog(i: number, event: MouseEvent) {
+    async openDialog(i: number) {
       this.selectedIndex = i;
-      this.elementDialogCoords = {
-        x: event.clientX,
-        y: event.clientY,
-      };
       await this.$nextTick();
       this.elementDialogShown = true;
     },
@@ -99,7 +94,7 @@ export default defineComponent({
       const newIndex = this.value.length;
       this.$emit('input', [...this.value, { name: `agg${newIndex}` }]);
       await this.$nextTick();
-      this.selectedIndex = newIndex;
+      this.openDialog(newIndex);
     },
     /**
      * Update agg value when a element is edited
