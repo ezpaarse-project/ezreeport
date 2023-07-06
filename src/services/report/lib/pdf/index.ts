@@ -184,7 +184,7 @@ export const initDoc = async (params: PDFReportOptions): Promise<PDFReport> => {
     },
   };
   doc.offset = {
-    top: printHeader(),
+    top: 5 + printHeader(),
     right: doc.margin.right,
     bottom: 10 + await printFooter(),
     left: doc.margin.left,

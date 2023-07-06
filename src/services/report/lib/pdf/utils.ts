@@ -39,10 +39,15 @@ export const loadImageAsset = async (
 export const drawAreaRef = (pdf: jsPDF, area: Area, bg = 'green', marks = 'red', markWidth = 1) => {
   const def = {
     fill: pdf.getFillColor(),
+    font: pdf.getFont(),
+    fontSize: pdf.getFontSize(),
+    textColor: pdf.getTextColor(),
   };
   pdf
+    // Background
     .setFillColor(bg)
     .rect(area.x, area.y, area.width, area.height, 'F')
+    // Marks
     .setFillColor(marks)
     .rect(
       area.x,
@@ -58,5 +63,18 @@ export const drawAreaRef = (pdf: jsPDF, area: Area, bg = 'green', marks = 'red',
       area.height,
       'F',
     )
-    .setFillColor(def.fill);
+    // JSON
+    .setFontSize(7)
+    .setFont(def.font.fontName, 'bold')
+    .setTextColor(marks)
+    .text(
+      JSON.stringify(area),
+      area.x,
+      area.y + area.height + 12,
+    )
+    // Reset
+    .setFillColor(def.fill)
+    .setTextColor(def.textColor)
+    .setFont(def.font.fontName, def.font.fontStyle)
+    .setFontSize(def.fontSize);
 };

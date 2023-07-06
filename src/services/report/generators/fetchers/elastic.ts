@@ -175,6 +175,12 @@ const setSubAggValues = (info: AggInfo, value: any) => {
     return;
   }
 
+  if ('value' in data) {
+    // eslint-disable-next-line no-param-reassign
+    value[info.name] = data;
+    return;
+  }
+
   const hits = data?.hits?.hits ?? [];
   // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
   value[info.name] = hits.map(({ _source }: any) => _source);
@@ -202,21 +208,25 @@ export default async (
     throw new ArgumentError('You must precise an index before trying to fetch data from elastic');
   }
 
+  const { filter, ...otherFilters } = (options.filters ?? {}) as any;
   const baseOpts: ElasticTypes.SearchRequest = {
     index,
     body: {
       query: {
         bool: {
-          ...(options.filters ?? {}),
-          filter: {
-            range: {
-              [options.dateField]: {
-                gte: formatISO(options.period.start),
-                lte: formatISO(options.period.end),
-                format: 'date_optional_time',
+          ...otherFilters,
+          filter: [
+            {
+              range: {
+                [options.dateField]: {
+                  gte: formatISO(options.period.start),
+                  lte: formatISO(options.period.end),
+                  format: 'strict_date_optional_time',
+                },
               },
             },
-          },
+            ...filter,
+          ],
         },
       },
     },

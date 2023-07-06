@@ -4,7 +4,12 @@ import { join } from 'node:path';
 import { registerFont } from 'canvas';
 import { compile as handlebars } from 'handlebars';
 import type { ImageOptions } from 'jspdf';
-import { cloneDeep, merge, omit } from 'lodash';
+import {
+  cloneDeep,
+  get,
+  merge,
+  omit
+} from 'lodash';
 
 import {
   expressionFunction,
@@ -83,6 +88,12 @@ type VegaParams = {
 export type InputVegaParams = Omit<VegaParams, 'width' | 'height'> & { title: Title };
 
 /**
+ * Ratio between outer and inner radius.
+ * Higher means thinner, lower means wider
+ */
+const RADIUS_OUTER_INNER_RATIO = 0.5;
+
+/**
  * Parse given title with handlebars vars. It's weird because Vega's title can be a lot of things
  *
  * @param title The Vega title
@@ -148,8 +159,8 @@ export const createVegaLSpec = (
   // Calculating arc radius if needed
   let radius: { outer: number, inner: number, center: number } | undefined;
   if (type === 'arc') {
-    const outer = params.height / 2.5;
-    const inner = outer / 2;
+    const outer = Math.min(params.height, params.width) / 2;
+    const inner = outer * RADIUS_OUTER_INNER_RATIO;
 
     radius = {
       outer,
@@ -210,6 +221,18 @@ export const createVegaLSpec = (
           ...params.label,
         },
       });
+
+      // Default label params
+      if (
+        encoding.color
+        && 'legend' in encoding.color
+        && encoding.color.legend
+      ) {
+        encoding.color.legend = {
+          orient: 'top-right',
+          ...encoding.color.legend,
+        };
+      }
       break;
 
     case 'bar':
@@ -248,13 +271,12 @@ export const createVegaLSpec = (
     switch (params.dataLabel.position) {
       case 'out':
         if (radius?.center) {
-          const spacing = (0.2 * radius.inner);
-          pos.radius = radius.outer - spacing;
+          pos.radius = radius.outer;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const mark = dataLayer.mark as any;
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (dataLayer.mark as any).radius -= 2 * spacing;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (dataLayer.mark as any).radius2 -= 2 * spacing;
+          mark.radius -= (0.3 * radius.inner);
+          mark.radius2 = mark.radius * RADIUS_OUTER_INNER_RATIO;
         }
         break;
 
@@ -292,7 +314,7 @@ export const createVegaLSpec = (
     let format: ((v: string) => string) | undefined;
     switch (params.dataLabel.format) {
       case 'percent': {
-        const totalDocs = data.reduce((prev, value) => prev + value[params.value.field], 0);
+        const totalDocs = data.reduce((prev, value) => prev + get(value, params.value.field), 0);
         const minValue = params.dataLabel.minValue ?? 0.03;
         condition = `datum['${params.value.field}'] / ${totalDocs} >= ${minValue}`;
 
