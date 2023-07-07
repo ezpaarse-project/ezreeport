@@ -1,3 +1,11 @@
+# ezreeport-report [1.0.0-beta.15](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.14...ezreeport-report@1.0.0-beta.15) (2023-07-07)
+
+
+### Features
+
+* **report:** added missing terms by default in elastic ([7e99633](https://github.com/ezpaarse-project/ezreeport/commit/7e9963382de5481bf3b0e3ff10c7d66052f3396e))
+* **report:** added number format for metrics ([b8c9281](https://github.com/ezpaarse-project/ezreeport/commit/b8c9281e51f71e8dcd79529cddfd6edd39e3cd8f))
+
 # ezreeport-report [1.0.0-beta.14](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.13...ezreeport-report@1.0.0-beta.14) (2023-07-06)
 
 
