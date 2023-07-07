@@ -9,12 +9,12 @@
       <v-card-title>
         <!-- Name -->
         <v-text-field
-          v-model="innerName"
+          v-model="innerElement.name"
           :label="$t('$ezreeport.fetchOptions.aggName')"
           :rules="rules.name"
           :readonly="readonly"
           hide-details="auto"
-          @blur="onElementUpdate({ name: innerName })"
+          @blur="onElementUpdate({ name: innerElement.name })"
           class="mr-2"
         />
 
@@ -53,7 +53,7 @@
                 :label="$t('headers.type')"
                 :readonly="readonly"
                 :rules="rules.type"
-                hide-details
+                hide-details="auto"
                 @change="onTypeUpdate"
               >
                 <template #append-outer v-if="typeDefinition">
@@ -144,7 +144,9 @@
               <CustomSection
                 v-if="!typeDefinition || typeDefinition.canHaveSub"
                 :label="$t('headers.subAggs').toString()"
-                :collapse-disabled="(element.aggs || element.aggregations || []).length <= 0"
+                :collapse-disabled="
+                  (innerElement.aggs || innerElement.aggregations || []).length <= 0
+                "
                 collapsable
               >
                 <template #actions>
@@ -161,9 +163,9 @@
 
                 <ElasticAggsBuilder
                   ref="aggBuilder"
-                  :value="element.aggs || element.aggregations || []"
+                  :value="innerElement.aggs || innerElement.aggregations || []"
                   :readonly="readonly"
-                  @input="onElementUpdate({ [element.aggregations ? 'aggregations' : 'aggs']: $event })"
+                  @input="onElementUpdate({ [innerElement.aggregations ? 'aggregations' : 'aggs']: $event })"
                 />
               </CustomSection>
             </v-col>
@@ -179,6 +181,8 @@
                 :rules="rules.advanced"
                 :readonly="readonly"
                 outlined
+                @input="innerJSON = $event"
+                @blur="onJSONUpdate"
               />
             </v-col>
           </v-row>
@@ -197,6 +201,7 @@ import {
   aggsDefinition,
   type AggDefinition,
 } from '~/lib/elastic/aggs';
+import { cloneDeep, debounce } from 'lodash';
 import type ElasticAggsBuilderConstructor from './ElasticAggsBuilder.vue';
 
 type ElasticAggsBuilder = InstanceType<typeof ElasticAggsBuilderConstructor>;
@@ -261,26 +266,22 @@ export default defineComponent({
     'update:element': (index: number, el: Record<string, any>) => index >= 0 && !!el,
   },
   data: () => ({
-    innerName: '',
     showAdvanced: false,
     showDefinition: false,
 
+    innerElement: {} as Record<string, any>,
+    innerJSON: '',
+
+    elementHash: '',
+
     innerValid: false,
   }),
-  watch: {
-    value() {
-      if (this.value) {
-        this.innerName = this.element.name || `agg${this.elementIndex}`;
-        this.showAdvanced = this.isTooAdvanced;
-      }
-    },
-  },
   computed: {
     /**
      * Root keys in aggregations that are not handled by the simple mode
      */
     unknownKeys(): string[] {
-      return Object.keys(this.element).filter((k) => !handledKeys.has(k));
+      return Object.keys(this.innerElement).filter((k) => !handledKeys.has(k));
     },
     /**
      * Is the aggregation too advanced to be handled in the simple mode
@@ -297,7 +298,7 @@ export default defineComponent({
       const value = this.unknownKeys[0];
       return {
         value,
-        data: this.element[value],
+        data: this.innerElement[value],
       };
     },
     /**
@@ -356,7 +357,7 @@ export default defineComponent({
      * Is the current name is a duplicate of any other agg
      */
     isDuplicate() {
-      const name = this.innerName || `agg${this.elementIndex}`;
+      const name = this.innerElement.name || `agg${this.elementIndex}`;
       const currentName = this.element.name || `agg${this.elementIndex}`;
       if (currentName === name) { return false; }
 
@@ -368,7 +369,7 @@ export default defineComponent({
     valid: {
       get(): boolean {
         return this.innerValid
-          && this.rules.name.every((rule) => rule(this.innerName ?? '') === true);
+          && this.rules.name.every((rule) => rule(this.innerElement.name ?? '') === true);
       },
       set(value: boolean) {
         this.innerValid = value;
@@ -399,10 +400,25 @@ export default defineComponent({
      * Possible sorts with localization
      */
     availableSorts() {
-      return sortOptions.map((value) => ({
+      const options = sortOptions.map((value) => ({
         text: this.$t(`sorts.${value}`),
         value,
-      })).sort(
+      }));
+
+      const aggs: any[] | undefined = this.innerElement.aggs || this.innerElement.aggregations;
+      if (aggs) {
+        options.push(
+          ...aggs.map((a, i) => {
+            const n = a.name || `agg${i}`;
+            return {
+              text: n,
+              value: n,
+            };
+          }),
+        );
+      }
+
+      return options.sort(
         (a, b) => a.text.toString().localeCompare(b.text.toString()),
       );
     },
@@ -413,7 +429,7 @@ export default defineComponent({
       const def = (aggsDefinition as Record<string, AggDefinition>)[this.type.value];
       if (def?.type) {
         // Add aggregations as unknown
-        const aggs = this.element.aggs ?? this.element.aggregations;
+        const aggs = this.innerElement.aggs ?? this.innerElement.aggregations;
         const aggsDef = Object.values(aggs ?? {}).reduce(
           (prev: Record<string, ObjectConstructor>, k: any, i: number) => ({
             ...prev,
@@ -434,18 +450,45 @@ export default defineComponent({
       return def;
     },
   },
+  watch: {
+    value() {
+      if (this.value) {
+        this.init();
+      }
+    },
+  },
+  mounted() {
+    this.init();
+  },
   methods: {
+    /**
+     * Init few variables
+     */
+    init() {
+      this.innerElement = {
+        ...cloneDeep(this.element),
+        name: this.element.name || `agg${this.elementIndex}`,
+      };
+      this.showAdvanced = this.isTooAdvanced;
+    },
+    debouncedUpdateElement: debounce(
+      // eslint-disable-next-line func-names
+      function (this: any) { this.$emit('update:element', this.elementIndex, this.innerElement); return true; },
+      1000,
+    ),
     /**
      * When the aggregation is updated
      *
      * @param data The new data
      */
     onElementUpdate(data: Record<string, any>) {
+      this.innerElement = { ...this.innerElement, ...data };
+
       if (this.readonly || !this.valid) {
         return;
       }
 
-      this.$emit('update:element', this.elementIndex, { ...this.element, ...data });
+      this.debouncedUpdateElement();
     },
     /**
      * When type of aggregation is updated
@@ -453,18 +496,17 @@ export default defineComponent({
      * @param type The new type
      */
     onTypeUpdate(type: string) {
+      const el = { ...this.innerElement };
+      delete el[this.type.value];
+      el[type] = this.element[this.type.value] ?? {};
+      this.innerElement = el;
+
       if (this.readonly || !this.valid) {
         return;
       }
 
-      const el = { ...this.element };
-      delete el[this.type.value];
       // TODO: handle size change
-      this.$emit(
-        'update:element',
-        this.elementIndex,
-        { ...el, [type]: this.element[this.type.value] },
-      );
+      this.debouncedUpdateElement();
     },
     /**
      * When field in type of aggregation is updated
@@ -472,6 +514,10 @@ export default defineComponent({
      * @param data The new data
      */
     onTypeFieldUpdate(data: Record<string, any>) {
+      if (!this.type.value) {
+        return;
+      }
+
       this.onElementUpdate({
         [this.type.value]: {
           ...this.type.data,
@@ -500,6 +546,11 @@ export default defineComponent({
      * @param order The new order
      */
     onOrderUpdate(order: string) {
+      if (!order) {
+        this.onTypeFieldUpdate({ order: undefined });
+        return;
+      }
+
       this.onTypeFieldUpdate({
         order: {
           [order]: this.order.data ?? 'desc',
@@ -525,6 +576,17 @@ export default defineComponent({
       const builder = this.$refs.aggBuilder as ElasticAggsBuilder | undefined;
       builder?.onElementCreated();
     },
+    /**
+     * Update whole element using JSON
+     */
+    onJSONUpdate() {
+      if (this.readonly || !this.valid) {
+        return;
+      }
+
+      this.innerElement = JSON.parse(this.innerJSON);
+      this.debouncedUpdateElement();
+    },
   },
 });
 </script>
@@ -546,7 +608,7 @@ en:
     typeHelper: 'Possible format of data'
     field: 'Concerned field'
     count: 'Max count of results'
-    sort: 'Sort on field...'
+    sort: 'Sort on sub aggregation...'
     sortOrder: 'Sort order: {order}'
     subAggs: 'Sub aggregations'
   sortOrder:
@@ -592,7 +654,7 @@ fr:
     typeHelper: 'Format probable des données'
     field: 'Champ concerné'
     count: 'Nombre de résultats maximum'
-    sort: 'Trier sur le champ...'
+    sort: 'Trier sur la sous aggregation...'
     sortOrder: 'Sens du tri: {order}'
     subAggs: 'Sous aggregations'
   sortOrder:
