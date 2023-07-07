@@ -1,3 +1,15 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.17](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.16...@ezpaarse-project/ezreeport-vue@1.0.0-beta.17) (2023-07-07)
+
+
+### Bug Fixes
+
+* **vue:** fixed agg element dialog ([8b2fbb0](https://github.com/ezpaarse-project/ezreeport/commit/8b2fbb04dcb97661f8b7485c2d6f9c04ec4e0522))
+
+
+### Features
+
+* **vue:** added number format for metrics ([2fce9d8](https://github.com/ezpaarse-project/ezreeport/commit/2fce9d88dfa0dec120cceec042e3d0ff955edcbf))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.16](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.15...@ezpaarse-project/ezreeport-vue@1.0.0-beta.16) (2023-07-06)
 
 
