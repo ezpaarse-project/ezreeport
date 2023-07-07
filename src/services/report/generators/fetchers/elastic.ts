@@ -130,9 +130,13 @@ const reduceAggs = (
   aggsInfo: AggInfo,
 ) => {
   let agg = rawAgg;
-  // Add default calendar_interval
+  // Add calendar_interval
   if (rawAgg.date_histogram) {
     agg = merge({}, agg, { date_histogram: { calendar_interval } });
+  }
+  // Add default missing value
+  if (rawAgg.terms) {
+    agg = merge({}, { terms: { missing: 'Non renseigné' } }, agg);
   }
 
   // Handle sub aggregations
