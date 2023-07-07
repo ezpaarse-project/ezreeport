@@ -13,7 +13,7 @@ type MetricParams = {
     text?: string,
     field?: string,
     format?: {
-      type: 'date',
+      type: 'date' | 'number',
       params?: string[]
     }
   }[]
@@ -33,6 +33,84 @@ export type MetricData = BasicMetricData[] | ComplexMetricData;
 type MetricDefault = {
   font: Font,
   fontSize: number
+};
+
+/**
+ * Format given value into date using given params
+ *
+ * @param origValue The value
+ * @param params The params provided by the user
+ *
+ * @returns The date as a string
+ */
+const formatDate = (
+  origValue: string | number | Record<string, string | number>,
+  params: string[],
+): string => {
+  let value = origValue;
+  if (typeof value === 'object') {
+    throw new Error('Expected number / string, got Object');
+  }
+
+  if (typeof value === 'string') {
+    const d = parseISO(value);
+    if (!isValid(d)) throw new Error(`Date is not in ISO format: ${origValue}`);
+    value = d.getTime();
+  }
+
+  return format(value, params[0] || 'dd/MM/yyyy');
+};
+
+/**
+ * Format given value into number using given params
+ *
+ * @param origValue The value
+ * @param params The params provided by the user
+ *
+ * @returns The number as a string
+ */
+const formatNumber = (
+  origValue: string | number | Record<string, string | number>,
+  params: string[],
+): string => {
+  let value = origValue;
+  if (typeof value === 'object') {
+    throw new Error('Expected number, got Object');
+  }
+
+  if (typeof value === 'string') {
+    value = Number.parseInt(value, 10);
+  }
+
+  if (Number.isNaN(value)) {
+    throw new Error(`Cannot parse value into a number: ${origValue}`);
+  }
+
+  const locale = {
+    identifier: params[0] || 'fr-FR',
+    params: {} as Intl.NumberFormatOptions,
+    cb: (val: string) => val,
+  };
+  switch (locale.identifier) {
+    case 'fr':
+    case 'fr-FR':
+      locale.identifier = 'en-US';
+      locale.params.useGrouping = true;
+      locale.cb = (val) => val
+        .replace(/,/g, ' ')
+        .replace(/\./g, ',');
+      break;
+
+    default:
+      break;
+  }
+
+  value = value.toLocaleString(
+    locale.identifier,
+    locale.params,
+  );
+
+  return locale.cb(value);
 };
 
 /**
@@ -97,24 +175,19 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
       const label = params.labels?.find(({ dataKey }) => dataKey === key);
       let value = inputData[key];
       if (typeof value === 'object') {
-        value = value[label?.field ?? 'value'];
+        value = value[label?.field || 'value'];
       }
 
       try {
         if (label?.format) {
+          const formatParams = label.format.params ?? [];
           switch (label.format.type) {
             case 'date':
-              if (typeof value === 'string') {
-                const d = parseISO(value);
-                if (!isValid(d)) throw new Error('Date is not in ISO format');
-                value = d.getTime();
-              }
+              value = formatDate(value, formatParams);
+              break;
 
-              if (!label.format.params?.[0]) {
-                label.format.params = ['dd/MM/yyyy'];
-              }
-
-              value = format(value, label.format.params[0]);
+            case 'number':
+              value = formatNumber(value, formatParams);
               break;
 
             default:
