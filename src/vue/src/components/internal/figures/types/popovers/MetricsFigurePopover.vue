@@ -57,19 +57,22 @@
             @change="onLabelFormatUpdated({ type: $event || undefined })"
           />
 
-          <!-- TODO: Since only date is supported, and date only take one argument -->
+          <!-- TODO: Since only date/number is supported, and they only take one argument -->
           <template v-if="element.format?.type">
             <!-- Format -->
             <v-text-field
               :value="element.format?.params?.[0] || ''"
               :label="$t('headers.formatParams')"
               :readonly="readonly"
+              :placeholder="defaultFormatParam"
+              :persistent-placeholder="defaultFormatParam !== undefined"
               hide-details="auto"
               @input="onLabelFormatUpdated({ params: $event ? [$event] : undefined })"
             />
             <!-- Format hints -->
             <span class="text--secondary fake-hint">
-              <i18n v-if="element.format?.type === 'date'" path="hints.dateFormat" tag="span">
+              <!-- Date hint -->
+              <i18n v-if="element.format.type === 'date'" path="hints.dateFormat" tag="span">
                 <template #link>
                   <a
                     href="https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table"
@@ -81,6 +84,10 @@
                   </a>
                 </template>
               </i18n>
+              <!-- Default hint -->
+              <template v-else-if="formatParamHint">
+                {{ formatParamHint }}
+              </template>
             </span>
           </template>
 
@@ -109,6 +116,7 @@ import type { Label } from '../forms/MetricsFigureForm.vue';
 const formatTypes = [
   '',
   'date',
+  'number',
 ];
 
 /**
@@ -196,6 +204,35 @@ export default defineComponent({
         text: this.$t(`formats.${value || '_other'}`),
         value,
       }));
+    },
+    /**
+     * Default value of format param
+     */
+    defaultFormatParam() {
+      switch (this.element.format?.type) {
+        case 'date':
+          return 'dd/MM/yyyy';
+        case 'number':
+          return 'fr';
+
+        default:
+          return undefined;
+      }
+    },
+    /**
+     * Hint of format param
+     */
+    formatParamHint() {
+      if (!this.element.format) {
+        return undefined;
+      }
+      const key = `hints.${this.element.format.type}Format`;
+      const label = this.$t(key).toString();
+      // If 18n was fallback, then hint is not defined
+      if (label === key) {
+        return undefined;
+      }
+      return label;
     },
     /**
      * Set of currents key/field used by other metrics
@@ -290,8 +327,10 @@ en:
   formats:
     _other: 'Other'
     date: 'Date'
+    number: 'Number'
   hints:
     dateFormat: 'Format of the date, based on {link}'
+    numberFormat: 'Locale used to format'
 fr:
   headers:
     field: 'Champ précis'
@@ -303,6 +342,8 @@ fr:
   formats:
     _other: 'Autre'
     date: 'Date'
+    number: 'Nombre'
   hints:
     dateFormat: 'Format de la date, basé sur {link}'
+    numberFormat: 'Locale utilisée pour formatter'
 </i18n>
