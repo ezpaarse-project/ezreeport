@@ -235,12 +235,12 @@ export default defineComponent({
         return [];
       }
 
+      let available: string[] = [];
       const aggs = 'aggs' in layout.fetchOptions ? layout.fetchOptions.aggs : layout.fetchOptions.aggregations;
-      if (!Array.isArray(aggs)) {
-        return [];
+      if (Array.isArray(aggs)) {
+        available = (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
       }
 
-      const available = (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
       if (layout.fetchOptions?.fetchCount) {
         available.push(layout.fetchOptions.fetchCount.toString());
       }

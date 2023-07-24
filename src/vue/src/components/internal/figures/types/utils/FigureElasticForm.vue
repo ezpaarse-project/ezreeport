@@ -1,59 +1,61 @@
 <template>
   <v-form ref="form">
     <!-- Fetch Count -->
-    <div class="mx-2">
-      <span class="text--secondary">{{ $t('headers.fetchCount') }}</span>
-
-      <div class="d-flex align-center">
-        <v-checkbox
-          :label="fetchOptions.isFetchCount ? '' : $t('$ezreeport.no')"
+    <CustomSection
+      :label="$t('headers.fetchCount').toString()"
+      collapsable
+    >
+      <template #collapse>
+        <v-switch
           :input-value="fetchOptions.isFetchCount"
           :readonly="readonly"
+          dense
           hide-details
           class="mt-0"
           @change="onFetchOptionUpdate({
-            fetchCount: ($event ? '' : undefined),
+            fetchCount: ($event ? 'total_count' : undefined),
           })"
+          @click.prevent=""
         />
+      </template>
 
-        <v-text-field
-          v-if="fetchOptions.isFetchCount"
-          :value="fetchOptions.fetchCount"
-          :placeholder="$t('$ezreeport.fetchOptions.aggName').toString()"
-          :readonly="readonly"
-          hide-details="auto"
-          dense
-          @input="onFetchOptionUpdate({ fetchCount: $event })"
-        >
-          <template #append-outer v-if="fetchOptions.fetchCount">
-            <!-- Type def -->
-            <v-menu
-              v-model="showDefinition"
-              offset-y
-            >
-              <template #activator="{ on, attrs }">
-                <v-btn
-                  icon
-                  small
-                  v-bind="attrs"
-                  v-on="on"
-                >
-                  <v-icon>mdi-information</v-icon>
-                </v-btn>
-              </template>
+      <v-text-field
+        v-if="fetchOptions.isFetchCount"
+        :value="fetchOptions.fetchCount"
+        :label="$t('$ezreeport.fetchOptions.aggName').toString()"
+        :readonly="readonly"
+        hide-details="auto"
+        class="ml-2"
+        @input="onFetchOptionUpdate({ fetchCount: $event })"
+      >
+        <template #append-outer v-if="fetchOptions.fetchCount">
+          <!-- Type def -->
+          <v-menu
+            v-model="showDefinition"
+            offset-y
+          >
+            <template #activator="{ on, attrs }">
+              <v-btn
+                icon
+                small
+                v-bind="attrs"
+                v-on="on"
+              >
+                <v-icon>mdi-information</v-icon>
+              </v-btn>
+            </template>
 
-              <v-card>
-                <v-card-title class="py-1">
-                  {{ $t('headers.typeHelper') }}
-                </v-card-title>
+            <v-card>
+              <v-card-title class="py-1">
+                {{ $t('headers.typeHelper') }}
+              </v-card-title>
 
-                <TSPreview :value="countDefinition.type" />
-              </v-card>
-            </v-menu>
-          </template>
-        </v-text-field>
-      </div>
-    </div>
+              <TSPreview :value="countDefinition.type" />
+            </v-card>
+          </v-menu>
+        </template>
+      </v-text-field>
+    </CustomSection>
 
     <!--  Filters -->
     <CustomSection
