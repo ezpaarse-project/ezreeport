@@ -1,6 +1,8 @@
 /* eslint-disable func-names */
 import axios, { type AxiosRequestTransformer } from 'axios';
+
 import config from './config';
+import pckg from '../package.json';
 
 const { bannedDomains } = config.get('fetcher');
 const bannedDomainsRegexp = (bannedDomains as string[]).map(
@@ -28,6 +30,9 @@ const http = axios.create({
   transformRequest: [
     preventForbiddenDomains,
   ],
+  headers: {
+    'User-Agent': `ezREEPORT/${pckg.version}`,
+  },
 });
 
 export default http;
