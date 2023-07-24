@@ -4,7 +4,7 @@ import config from './config';
 
 const { bannedDomains } = config.get('fetcher');
 const bannedDomainsRegexp = (bannedDomains as string[]).map(
-  (domain) => new RegExp(`${domain.replace(/\./g, '\\.')}$`, 'i'),
+  (domain) => new RegExp(`^${domain}$`, 'i'),
 );
 
 /**
