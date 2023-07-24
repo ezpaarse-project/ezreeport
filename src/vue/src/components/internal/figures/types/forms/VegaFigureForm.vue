@@ -116,17 +116,30 @@
 
         <!-- Data Labels -->
         <CustomSection
+          :value="!figureParams.dataLabel || collapsedDl"
           :label="$t(figureParams.dataLabel ? 'headers.dataLabel' : 'dataLabel.headers.show').toString()"
           collapsable
         >
           <template #collapse>
+            <v-btn
+              v-if="!!figureParams.dataLabel"
+              icon
+              x-small
+              @click="collapsedDl = !collapsedDl"
+            >
+              <v-icon>mdi-chevron-{{ collapsedDl === false ? 'up' : 'down' }}</v-icon>
+            </v-btn>
+
             <v-switch
               :input-value="!!figureParams.dataLabel"
               :readonly="readonly"
               dense
               hide-details
               class="mt-0"
-              @change="onDataLabelUpdate({ format: $event ? 'numeric' : null })"
+              @change="(ev) => {
+                onDataLabelUpdate({ format: ev ? 'numeric' : null })
+                collapsedDl = !ev;
+              }"
               @click.prevent=""
             />
           </template>
@@ -144,28 +157,80 @@
                 />
               </v-col>
 
-              <v-col>
-                <v-select
-                  :value="figureParams.dataLabel.position"
-                  :items="possibleDataLabelPositions"
-                  :label="$t('dataLabel.headers.position')"
-                  :readonly="readonly"
-                  :placeholder="$t('dataLabel.positions.in')"
-                  persistent-placeholder
-                  hide-details
+              <v-col class="button-group-col">
+                <v-label>
+                  {{ $t('dataLabel.headers.position') }}
+                </v-label>
+
+                <v-btn-toggle
+                  :value="figureParams.dataLabel.position || 'in'"
+                  dense
+                  rounded
+                  color="primary"
                   @change="onDataLabelUpdate({ position: $event })"
-                />
+                >
+                  <v-btn
+                    v-for="pos in possibleDataLabelPositions"
+                    :key="`dlPos-${pos.value}`"
+                    :value="pos.value"
+                    :disabled="readonly"
+                    small
+                    outlined
+                  >
+                    {{ pos.text }}
+                  </v-btn>
+                </v-btn-toggle>
               </v-col>
             </v-row>
 
-            <v-checkbox
-              :input-value="figureParams.dataLabel.showLabel"
-              :label="$t('dataLabel.headers.showLabels')"
-              :readonly="readonly"
-              hide-details
-              @change="onDataLabelUpdate({ showLabel: $event })"
-              @click.prevent=""
-            />
+            <v-row>
+              <v-col class="button-group-col">
+                <v-label>
+                  {{$t('dataLabel.headers.shouldShow')}}
+                </v-label>
+
+                <v-btn-toggle
+                  :value="figureParams.dataLabel.showLabel || false"
+                  dense
+                  rounded
+                  color="primary"
+                  @change="onDataLabelUpdate({ showLabel: $event })"
+                >
+                  <v-btn :disabled="readonly" :value="false" small outlined>
+                    {{ $t('dataLabel.headers.showValue') }}
+                  </v-btn>
+
+                  <v-btn :disabled="readonly" :value="true" small outlined>
+                    {{ $t('dataLabel.headers.showLabels') }}
+                  </v-btn>
+                </v-btn-toggle>
+              </v-col>
+
+              <!-- DL Preview -->
+              <v-col class="button-group-col">
+                <v-label>
+                  {{$t('dataLabel.headers.preview')}}
+                </v-label>
+
+                <div
+                  :class="['dL-preview', figureParams.dataLabel.position || 'in']"
+                  :style="dataLabelPreviewStyle"
+                >
+                  <div v-if="figureParams.dataLabel.showLabel">
+                    {{ figureParams.dataKey }}[].{{ figureParams.label?.field }}
+                  </div>
+                  <div>
+                    <strong>
+                      {{ figureParams.dataKey }}[].{{ figureParams.value?.field }}
+                    </strong>
+                    <strong v-if="figureParams.dataLabel.format === 'percent'" class="ml-1">
+                      %
+                    </strong>
+                  </div>
+                </div>
+              </v-col>
+            </v-row>
+
           </template>
 
         </CustomSection>
@@ -184,6 +249,7 @@
 </template>
 
 <script lang="ts">
+import chroma from 'chroma-js';
 import { pick, merge, omit } from 'lodash';
 import { defineComponent } from 'vue';
 import useTemplateStore from '~/stores/template';
@@ -276,6 +342,8 @@ export default defineComponent({
   },
   data: () => ({
     valid: false,
+
+    collapsedDl: true,
   }),
   computed: {
     layout() {
@@ -394,6 +462,32 @@ export default defineComponent({
 
       return key && this.$t(key).toString();
     },
+    dataLabelPreviewStyle(): Record<string, any> {
+      const { primary } = this.$vuetify.theme.currentTheme;
+
+      let background = '';
+      if (typeof primary === 'string') {
+        background = primary;
+      } else if (typeof primary === 'number') {
+        background = primary.toString();
+      } else {
+        background = primary?.base || '#1976D2';
+      }
+
+      let color: string | undefined;
+      if (
+        !this.figureParams?.dataLabel?.position
+        || this.figureParams.dataLabel.position === 'in'
+      ) {
+        color = chroma.contrast(background, 'black') > 5 ? 'black' : 'white';
+      }
+
+      return {
+        '--preview-color': background,
+        '--preview-radius': this.figure?.type === 'arc' && '100% 100% 0 0',
+        color,
+      };
+    },
   },
   mounted() {
     // Default values (very common)
@@ -477,6 +571,55 @@ export default defineComponent({
   font-size: 12px;
   line-height: 12px;
 }
+
+.button-group-col {
+  position: relative;
+}
+
+.button-group-col:deep(.v-label) {
+  position: absolute !important;
+  max-width: 133%;
+  transform-origin: top left;
+  transform: translateY(4px) translateX(12px) scale(.75);
+}
+
+.button-group-col:deep(.v-label) + * {
+  margin-top: 1rem;
+  transform: translateY(4px);
+}
+
+.dL-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 0.5rem 0;
+  transition: color 0.5s;
+}
+
+.dL-preview > div {
+  z-index: 1;
+}
+
+.dL-preview::before {
+  content: '';
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-color: var(--preview-color);
+  border-radius: var(--preview-radius);
+  transition: top 0.5s, color 0.5s;
+}
+.dL-preview.in::before {
+  top: 0;
+  left: 0;
+}
+.dL-preview.out::before {
+  top: 90%;
+  left: 0;
+}
 </style>
 
 <i18n lang="yaml">
@@ -493,15 +636,18 @@ en:
     headers:
       field: 'Field'
       title: 'Title of axis'
-      legendTitle: "Label's title"
+      legendTitle: "Legend's title"
       legendParams: 'Legend parameters'
       showLegend: 'Should show legend ?'
   dataLabel:
     headers:
-      show: 'Should show data labels ?'
+      show: 'Should show values on chart ?'
       format: 'Values format'
-      showLabels: 'Should show labels ?'
-      position: 'Position'
+      shouldShow: 'Should be shown :'
+      preview: 'Preview :'
+      showValue: 'Values'
+      showLabels: 'Values & Series'
+      position: 'Position :'
     formats:
       numeric: 'Numeric'
       percent: 'Percent'
@@ -521,15 +667,18 @@ fr:
     headers:
       field: 'Champ'
       title: "Titre de l'axe"
-      legendTitle: "Titre des labels"
+      legendTitle: "Titre des légendes"
       legendParams: 'Paramètres de la légende'
       showLegend: 'Afficher la légende ?'
   dataLabel:
     headers:
       show: 'Afficher les étiquettes de données ?'
       format: 'Format des données'
-      showLabels: 'Afficher les labels ?'
-      position: 'Position'
+      shouldShow: 'Doit être affiché :'
+      preview: 'Prévisualisation :'
+      showValue: 'Valeurs'
+      showLabels: 'Valeurs & Séries'
+      position: 'Position :'
     formats:
       numeric: 'Numérique'
       percent: 'Pourcentage'
