@@ -34,7 +34,7 @@ export type FetchOptions = {
   aggs: any[];
 };
 
-export const supportedFetchOptions = ['filters', 'fetchCount', 'aggs', 'aggregations', 'dateField'];
+export const supportedFetchOptions = ['filters', 'fetchCount', 'aggs', 'aggregations', 'dateField', 'index'];
 
 // Utility functions
 export const isTaskTemplate = (template?: AnyTemplate): template is tasks.FullTask['template'] => !!template && 'extends' in template;

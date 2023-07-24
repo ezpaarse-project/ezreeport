@@ -35,7 +35,7 @@
                   </template>
 
                   <template #layout>
-                    <span class="font-weight-bold">{{ result.detail.error.cause.layout }}</span>
+                    <span class="font-weight-bold">{{ result.detail.error.cause.layout + 1 }}</span>
                   </template>
                 </i18n>
                 <i18n v-if="result.detail.error.cause?.figure != null" path="error_details.figure" tag="span" class="ml-1">
