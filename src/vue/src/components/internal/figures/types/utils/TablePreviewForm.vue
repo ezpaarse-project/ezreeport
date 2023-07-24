@@ -6,6 +6,7 @@
       :column="currentColumn"
       :total="totalMap[currentColumn.dataKey]"
       :colStyle="colStyles[currentColumn.dataKey]"
+      :key-prefix="keyPrefix"
       :current-data-keys="currentDataKeys"
       :readonly="readonly"
       @update:column="onCurrentColumnUpdated"
@@ -96,6 +97,8 @@ type CustomTableColumn = TableColumn & {
   },
 };
 
+const columnDefaults = ['key', 'doc_count'];
+
 export default defineComponent({
   props: {
     value: {
@@ -110,13 +113,13 @@ export default defineComponent({
       type: Object as PropType<Record<string, PDFStyle>>,
       default: () => ({}),
     },
+    dataKey: {
+      type: String,
+      default: '',
+    },
     readonly: {
       type: Boolean,
       default: false,
-    },
-    keyPrefix: {
-      type: String,
-      default: '',
     },
   },
   emits: {
@@ -159,6 +162,9 @@ export default defineComponent({
     },
     currentDataKeys() {
       return this.value.map(({ dataKey }) => dataKey);
+    },
+    keyPrefix() {
+      return `${this.dataKey}[].`;
     },
   },
   methods: {
@@ -248,7 +254,7 @@ export default defineComponent({
         this.currentColumn = column;
       } else {
         const id = this.value.length;
-        this.currentColumn = { dataKey: `agg${id}`, header: `Aggregation ${id}` };
+        this.currentColumn = { dataKey: columnDefaults[id] || `agg${id}`, header: `Column ${id}` };
         this.$emit('input', [...this.value, this.currentColumn]);
       }
 

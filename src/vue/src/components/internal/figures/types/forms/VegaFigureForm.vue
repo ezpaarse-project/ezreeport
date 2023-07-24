@@ -353,6 +353,16 @@ export default defineComponent({
       return available;
     },
   },
+  mounted() {
+    if (this.figureParams) {
+      if (!this.figureParams.value?.field) {
+        this.onSubParamUpdate('value', { field: 'doc_count' });
+      }
+      if (!this.figureParams.label?.field) {
+        this.onSubParamUpdate('label', { field: 'key' });
+      }
+    }
+  },
   methods: {
     /**
      * Gets difference between 2 objects

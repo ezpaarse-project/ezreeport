@@ -45,13 +45,13 @@
             v-if="figureParams"
             :value="figureParams.columns"
             :totals="figureParams.totals"
-            :colStyles="figureParams.columnStyles"
+            :col-styles="figureParams.columnStyles"
+            :data-key="figureParams.dataKey"
             :readonly="readonly"
-            :key-prefix="`${figureParams.dataKey}[].`"
             ref="columnsTable"
             @input="onParamUpdate({ columns: $event })"
             @update:totals="onParamUpdate({ totals: $event })"
-            @update:colStyles="onParamUpdate({ columnStyles: $event })"
+            @update:col-styles="onParamUpdate({ columnStyles: $event })"
           />
         </CustomSection>
 
