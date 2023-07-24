@@ -303,7 +303,7 @@ export default defineComponent({
           this.job.id,
         );
         if (!content) {
-          throw new Error(this.$t('errors.no_data').toString());
+          throw new Error(this.$t('$ezreeport.errors.fetch').toString());
         }
 
         this.$emit('updated', content);

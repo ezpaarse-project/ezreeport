@@ -1,0 +1,121 @@
+{
+  "template": "modèle|modèles",
+  "layout": "page|pages",
+  "figure": "visualisation|visualisations",
+
+  "yes": "Oui",
+  "no": "Non",
+  "create": "Créer",
+  "edit": "Éditer",
+  "delete": "Supprimer",
+  "cancel": "Annuler",
+  "open": "Ouvrir",
+  "generate": "Générer",
+  "save": "Sauvegarder",
+  "advanced_parameters": "Paramètres avancés",
+  "show_json": "Afficher en JSON",
+
+  "tasks": {
+    "name": "Nom du rapport",
+    "targets": "Destinataires",
+    "dates": "Dates",
+    "lastRun": "Dernière itération",
+    "nextRun": "Prochaine itération",
+    "enabled": {
+      "true": "Actif",
+      "false": "Inactif"
+    },
+
+    "tabs": {
+      "details": "Détails",
+      "activity": "Activité",
+      "template": "Modèle"
+    },
+
+    "errors": {
+      "_default": "Une erreur est présente dans ce formulaire"
+    }
+  },
+
+  "templates": {
+    "base": "Modèle de base",
+    "renderer": "Moteur de rendu",
+    "renderOptions": "Options de rendu",
+    "editor": "Éditeur de pages ({n} page)|Éditeur de pages ({n} pages)"
+  },
+
+  "layouts": {
+    "errors": {
+      "_detail": "Page {at}: {valid}",
+      "length": "Chaque page doit contenir au moins une visualisation"
+    }
+  },
+
+  "figures": {
+    "type": "Type",
+    "slots": "Emplacement(s)",
+
+    "type_list": {
+      "table": "Table",
+      "md": "Markdown",
+      "metric": "Métriques",
+      "arc": "Circulaire",
+      "area": "Aire",
+      "bar": "Bâtons",
+      "line": "Courbes",
+      "point": "Nuage de point",
+      "rect": "Rectangle",
+      "rule": "Règle",
+      "text": "Texte",
+      "tick": "Tick",
+      "trail": "Trail",
+      "circle": "Cercle",
+      "square": "Carré",
+
+      "unknown": "Inconnu"
+    },
+
+    "slots_list": [
+      "Haut à gauche",
+      "Haut à droite",
+      "Bas à gauche",
+      "Bas à droite"
+    ],
+
+    "vars_list": {
+      "length": "Nombre réel d'éléments dans le tableau"
+    },
+
+    "errors": {
+      "_detail": "Visualisation {at}: {valid}",
+      "no_slots": "Au moins un emplacement doit être utilisé",
+      "slot_incompatibility": "Cette combinaison d'emplacement n'est pas possible",
+      "no_elements": "Cette visualisation n'a pas d'éléments de défini"
+    }
+  },
+
+  "fetchOptions": {
+    "title": "Options de récupération",
+    "aggName": "Nom de l'aggregation",
+    "index": "Index Elastic",
+    "dateField": "Champ 'date' de l'index",
+    "filters": "Filtres",
+    "aggregations": "Aggregations"
+  },
+
+  "hints": {
+    "dot_notation": {
+      "value": "Supporte la notation avec des points. Ex: {code}",
+      "code": "cle.valeur"
+    }
+  },
+
+  "errors": {
+    "empty": "Ce champ doit être rempli",
+    "fetch": "Une erreur est survenue lors de la récupération des données",
+    "email_format": "Une ou plusieurs addresses ne sont pas valides",
+    "json_format": "Le JSON donné n'est pas valide",
+    "valid": "La valeur doit être valide",
+    "negative": "La valeur doit être positive"
+  }
+}

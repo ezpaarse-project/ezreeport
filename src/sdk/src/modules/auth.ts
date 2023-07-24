@@ -1,6 +1,11 @@
 import { parseISO } from 'date-fns';
 import axios, { ApiResponse } from '../lib/axios';
-import { parseNamespace, type Namespace, type RawNamespace } from './namespaces';
+import {
+  parseNamespace,
+  type Namespace,
+  type RawNamespace,
+  type TaskCount
+} from './namespaces';
 
 export enum Access {
   READ = 'READ',
@@ -42,14 +47,14 @@ interface RawUser {
   username: string,
   token: string,
   isAdmin: true,
-  memberships: RawMembership[],
+  memberships: (RawMembership & TaskCount)[],
 
   createdAt: string, // Date
   updatedAt?: string, // Date
 }
 
 export interface User extends Omit<RawUser, 'memberships' | 'createdAt' | 'updatedAt'> {
-  memberships: Membership[],
+  memberships: (Membership & TaskCount)[],
 
   createdAt: Date,
   updatedAt?: Date,
@@ -64,7 +69,7 @@ export interface User extends Omit<RawUser, 'memberships' | 'createdAt' | 'updat
  */
 const parseUser = (user: RawUser): User => ({
   ...user,
-  memberships: user.memberships.map(parseMembership),
+  memberships: user.memberships.map(parseMembership) as (Membership & TaskCount)[],
 
   createdAt: parseISO(user.createdAt),
   updatedAt: user.updatedAt ? parseISO(user.updatedAt) : undefined,
@@ -148,4 +153,4 @@ export const getCurrentPermissions = () => axios.$get<Permissions>('/me/permissi
  *
  * @returns Permissions
  */
-export const getCurrentNamespaces = () => axios.$get<Namespace[]>('/me/namespaces');
+export const getCurrentNamespaces = () => axios.$get<(Namespace & TaskCount)[]>('/me/namespaces');

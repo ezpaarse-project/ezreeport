@@ -1,36 +1,39 @@
 <template>
   <v-col v-if="perms.readAll">
-    <TaskDialogCreate
-      v-if="perms.create"
-      v-model="createTaskDialogShown"
-      :id="focusedId"
-      @created="onTaskCreated"
-    />
-    <TaskDialogRead
-      v-if="perms.readOne"
-      v-model="readTaskDialogShown"
-      :id="focusedId"
-      @updated="onTaskEdited"
-    />
-    <TaskDialogUpdate
-      v-if="perms.update"
-      v-model="updateTaskDialogShown"
-      :id="focusedId"
-      @updated="onTaskEdited"
-    />
-    <TaskPopoverDelete
-      v-if="perms.delete && focusedTask"
-      v-model="deleteTaskPopoverShown"
-      :task="focusedTask"
-      :coords="deleteTaskPopoverCoords"
-      @deleted="onTaskDeleted"
-    />
+    <TemplateProvider>
+      <TaskDialogCreate
+        v-if="perms.create && createTaskDialogShown"
+        v-model="createTaskDialogShown"
+        :id="focusedId"
+        @created="onTaskCreated"
+      />
+      <TaskDialogRead
+        v-if="perms.readOne && readTaskDialogShown"
+        v-model="readTaskDialogShown"
+        :id="focusedId"
+        @updated="onTaskEdited"
+      />
+      <TaskDialogUpdate
+        v-if="perms.update && updateTaskDialogShown"
+        v-model="updateTaskDialogShown"
+        :id="focusedId"
+        @updated="onTaskEdited"
+      />
+      <TaskPopoverDelete
+        v-if="perms.delete && focusedTask && deleteTaskPopoverShown"
+        v-model="deleteTaskPopoverShown"
+        :task="focusedTask"
+        :coords="deleteTaskPopoverCoords"
+        @deleted="onTaskDeleted"
+      />
+    </TemplateProvider>
 
     <v-row>
       <v-col>
         <NamespaceSelect
           v-model="actualCurrentNamespace"
           :allowed-namespaces="allowedNamespaces"
+          show-task-count
           hide-refresh
           @input="fetch()"
         />
@@ -307,7 +310,7 @@ export default defineComponent({
             this.innerCurrentNamespace ? [this.innerCurrentNamespace] : this.allowedNamespaces,
           );
           if (!content) {
-            throw new Error(this.$t('errors.no_data').toString());
+            throw new Error(this.$t('$ezreeport.errors.fetch').toString());
           }
 
           this.tasks = content;
@@ -347,7 +350,7 @@ export default defineComponent({
      *
      * @param item The item
      */
-    showTaskDialog({ id, namespace }: TaskItem) {
+    async showTaskDialog({ id, namespace }: TaskItem) {
       const hasPermission = (perm: string) => this.rawNamespacePerms?.[namespace?.id ?? '']?.[perm];
       if (
         !hasPermission('tasks-get-task')
@@ -357,6 +360,7 @@ export default defineComponent({
       }
 
       this.focusedId = id;
+      await this.$nextTick();
       if (hasPermission('tasks-put-task')) {
         this.updateTaskDialogShown = true;
       } else {
@@ -423,9 +427,12 @@ export default defineComponent({
     /**
      * Called when a task is created by a dialog
      */
-    onTaskCreated() {
+    onTaskCreated(task: tasks.FullTask) {
       // TODO? go to first page ?
       this.fetch();
+      this.createTaskDialogShown = false;
+      const t = this.parseTask({ ...task, namespaceId: task.namespace.id });
+      this.showTaskDialog(t);
     },
     /**
      * Called when a task is deleted by a dialog

@@ -15,7 +15,7 @@ Vue.use(Vuetify);
 Vue.prototype._i18n = i18n;
 
 // Setup ezReeport plugin
-Vue.use(ezReeport);
+Vue.use(ezReeport, { i18n });
 if (!import.meta.env.VITE_AUTH_TOKEN) {
   console.warn('[ezReeport-storybook] Auth token not found');
 }

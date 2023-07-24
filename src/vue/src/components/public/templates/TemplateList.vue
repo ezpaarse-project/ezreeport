@@ -1,41 +1,43 @@
 <template>
   <v-col v-if="perms.readAll">
-    <TemplateDialogRead
-      v-if="perms.readOne && focusedName"
-      v-model="readTemplateDialogShown"
-      :name="focusedName"
-      fullscreen
-    />
+    <TemplateProvider>
+      <TemplateDialogRead
+        v-if="perms.readOne && focusedName && readTemplateDialogShown"
+        v-model="readTemplateDialogShown"
+        :name="focusedName"
+        fullscreen
+      />
 
-    <TemplateDialogUpdate
-      v-if="perms.update && focusedName"
-      v-model="updateTemplateDialogShown"
-      :name="focusedName"
-      :available-tags="availableTags"
-      fullscreen
-      @updated="onTemplateEdited"
-    />
+      <TemplateDialogUpdate
+        v-if="perms.update && focusedName && updateTemplateDialogShown"
+        v-model="updateTemplateDialogShown"
+        :name="focusedName"
+        :available-tags="availableTags"
+        fullscreen
+      />
 
-    <TemplateDialogCreate
-      v-if="perms.create"
-      v-model="createTemplateDialogShown"
-      :available-tags="availableTags"
-      fullscreen
-      @created="onTemplateCreated"
-    />
+      <TemplateDialogCreate
+        v-if="perms.create && createTemplateDialogShown"
+        v-model="createTemplateDialogShown"
+        :available-tags="availableTags"
+        fullscreen
+        @created="onTemplateCreated"
+      />
 
-    <TemplatePopoverDelete
-      v-if="perms.delete && focusedTemplate"
-      v-model="deleteTemplatePopoverShown"
-      :coords="deleteTemplatePopoverCoords"
-      :template="focusedTemplate"
-      fullscreen
-      @deleted="onTemplateDeleted"
-    />
+      <TemplatePopoverDelete
+        v-if="perms.delete && focusedTemplate && deleteTemplatePopoverShown"
+        v-model="deleteTemplatePopoverShown"
+        :coords="deleteTemplatePopoverCoords"
+        :template="focusedTemplate"
+        fullscreen
+        @deleted="onTemplateDeleted"
+      />
+    </TemplateProvider>
 
     <LoadingToolbar
-      :text="$t('title').toString()"
+      :text="$tc('$ezreeport.template', 2).toString()"
       :loading="loading"
+      style="text-transform: capitalize;"
     >
       <RefreshButton
         :loading="loading"
@@ -50,7 +52,7 @@
           </v-btn>
         </template>
 
-        {{$t('actions.create')}}
+        {{$t('$ezreeport.create')}}
       </v-tooltip>
     </LoadingToolbar>
 
@@ -69,22 +71,13 @@
 
             <v-spacer />
 
-            <v-tooltip top v-if="perms.update">
-              <template #activator="{ attrs, on }">
-                <v-btn icon color="info" @click.stop="showEditDialog(template)" v-on="on" v-bind="attrs">
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-              </template>
-              <span>{{ $t('actions.edit') }}</span>
-            </v-tooltip>
-
             <v-tooltip top v-if="perms.delete">
               <template #activator="{ attrs, on }">
                 <v-btn icon color="error" @click.stop="showDeletePopover(template, $event)" v-bind="attrs" v-on="on">
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>
               </template>
-              <span>{{ $t('actions.delete') }}</span>
+              <span>{{ $t('$ezreeport.delete') }}</span>
             </v-tooltip>
           </v-list-item-title>
 
@@ -120,7 +113,7 @@
 import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import ezReeportMixin from '~/mixins/ezr';
-import { Tag } from '~/components/templates/forms/TagsForm.vue';
+import { Tag } from '~/components/internal/templates/forms/TagsForm.vue';
 
 const MAX_TAGS_SHOWN = 4;
 
@@ -202,7 +195,7 @@ export default defineComponent({
       try {
         const { content } = await this.$ezReeport.sdk.templates.getAllTemplates();
         if (!content) {
-          throw new Error(this.$t('errors.no_data').toString());
+          throw new Error(this.$t('$ezreeport.errors.fetch').toString());
         }
 
         this.templates = content;
@@ -228,8 +221,10 @@ export default defineComponent({
     /**
      * Called when a template is created by a dialog
      */
-    onTemplateCreated() {
+    onTemplateCreated(template: templates.FullTemplate) {
       this.fetch();
+      this.createTemplateDialogShown = false;
+      this.showTemplateDialog(template);
     },
     /**
      * Called when a template is deleted by a dialog
@@ -241,9 +236,20 @@ export default defineComponent({
      * Prepare and open read dialog
      */
     async showTemplateDialog({ name }: templates.Template) {
+      if (
+        !this.perms.readOne
+        && !this.perms.update
+      ) {
+        return;
+      }
+
       this.focusedName = name;
       await this.$nextTick();
-      this.readTemplateDialogShown = true;
+      if (this.perms.update) {
+        this.updateTemplateDialogShown = true;
+      } else {
+        this.readTemplateDialogShown = true;
+      }
     },
     /**
      * Prepare and show template creation dialog
@@ -291,21 +297,7 @@ export default defineComponent({
 
 <i18n lang="yaml">
 en:
-  title: 'Templates'
   refresh-tooltip: 'Refresh template list'
-  errors:
-    no_data: 'An error occurred when fetching data'
-  actions:
-    create: 'Create'
-    edit: 'Edit'
-    delete: 'Delete'
 fr:
-  title: 'Modèles'
   refresh-tooltip: 'Rafraîchir la liste des modèles'
-  errors:
-    no_data: 'Une erreur est survenue lors de la récupération des données'
-  actions:
-    create: 'Créer'
-    edit: 'Éditer'
-    delete: 'Supprimer'
 </i18n>

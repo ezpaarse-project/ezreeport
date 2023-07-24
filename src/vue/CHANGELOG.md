@@ -1,3 +1,133 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.16](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.15...@ezpaarse-project/ezreeport-vue@1.0.0-beta.16) (2023-07-06)
+
+
+### Bug Fixes
+
+* **vue:** fixed legend option in vega params ([f6b1656](https://github.com/ezpaarse-project/ezreeport/commit/f6b1656de382964f95f5e2856c182536b2dacbb1))
+
+
+### Features
+
+* **vue:** added missing hint on agg dialog ([c35ccb6](https://github.com/ezpaarse-project/ezreeport/commit/c35ccb6ef8992b74cbe3dfc7b3a49ac739c3c6b1))
+* **vue:** added missing validation to aggregation builder ([f349503](https://github.com/ezpaarse-project/ezreeport/commit/f349503a91d0fe9e586b34370624504682254192))
+* **vue:** better error message on generation ([16ae546](https://github.com/ezpaarse-project/ezreeport/commit/16ae546de0a4192a3d85b0d1bc246826e8ad70fb))
+* **vue:** creating an aggregation now opens dialog ([2f6d7d8](https://github.com/ezpaarse-project/ezreeport/commit/2f6d7d82f8acb8ee1a872067fc6ca5e337aa6ada))
+
+
+
+
+
+### Dependencies
+
+* **@ezpaarse-project/ezreeport-sdk-js:** upgraded to 1.0.0-beta.5
+
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.15](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.14...@ezpaarse-project/ezreeport-vue@1.0.0-beta.15) (2023-07-05)
+
+
+### Bug Fixes
+
+* **vue:** fixed elastic filters errors in templates ([5ff19f6](https://github.com/ezpaarse-project/ezreeport/commit/5ff19f651743c84e0f485471c1cdfbceea1b1beb))
+* **vue:** fixed extended template not beign reseted ([03b64ff](https://github.com/ezpaarse-project/ezreeport/commit/03b64ff5848995f57f00c05ca7f03b5bc6b93af6))
+
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.14](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.13...@ezpaarse-project/ezreeport-vue@1.0.0-beta.14) (2023-07-04)
+
+
+### Bug Fixes
+
+* **vue:** fixed figures titles beign in placeholders ([5159015](https://github.com/ezpaarse-project/ezreeport/commit/515901573cda84e74e8ac61180338aa0eab739e3))
+* **vue:** fixed issues with figure titles ([bc1a3f9](https://github.com/ezpaarse-project/ezreeport/commit/bc1a3f9e71efce94c039b58bd97bc4be91bc0648))
+* **vue:** fixed position of dataLabel not being applied ([d4f89a9](https://github.com/ezpaarse-project/ezreeport/commit/d4f89a9ea3558e4dd805c281667c22eda3257f3e))
+
+
+### Features
+
+* **vue:** added task count in select in task table ([693376e](https://github.com/ezpaarse-project/ezreeport/commit/693376ee0cbe3a7511fc1f283c4e822ebb2f249b))
+* **vue:** no longer closing popup on save ([a3919e0](https://github.com/ezpaarse-project/ezreeport/commit/a3919e03190aa123964db90bfb2fff1ccf8850db))
+
+
+
+
+
+### Dependencies
+
+* **@ezpaarse-project/ezreeport-sdk-js:** upgraded to 1.0.0-beta.4
+
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.13](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.12...@ezpaarse-project/ezreeport-vue@1.0.0-beta.13) (2023-07-03)
+
+
+### Bug Fixes
+
+* **vue:** fixed issue with colors and tags ([f1e449f](https://github.com/ezpaarse-project/ezreeport/commit/f1e449f698ca8496bd44f486f85634ecda9338bf))
+* **vue:** fixed issue with hint & placeholder of dateField ([80d1c98](https://github.com/ezpaarse-project/ezreeport/commit/80d1c986731f2f9d5f0c0db3fa088830b09cf484))
+* **vue:** fixed issue with merges ([a9f8926](https://github.com/ezpaarse-project/ezreeport/commit/a9f89264b0a31fedb9cfe57b5c0595697f6bca0f))
+* **vue:** fixed issues with advanced params ([1edbf1d](https://github.com/ezpaarse-project/ezreeport/commit/1edbf1d34cf7fd9ab4ff8c7c43912b37068aee5d))
+
+
+### Features
+
+* **vue:** added autocomplete when selecting aggregation ([c1cc21f](https://github.com/ezpaarse-project/ezreeport/commit/c1cc21f307f88f33079d4f8ef55d146d9c947550))
+* **vue:** added dateField to template ([b9e4a15](https://github.com/ezpaarse-project/ezreeport/commit/b9e4a15feb434d74909078b4cff20c5c3f790ef4))
+* **vue:** added options for total in tables ([8e8e823](https://github.com/ezpaarse-project/ezreeport/commit/8e8e823c8d596636961d6303b7dac9d844831dfc))
+* **vue:** added position for dataLabels ([9efa258](https://github.com/ezpaarse-project/ezreeport/commit/9efa258ac6dea2b2fdc470bb6e8f037745464c09))
+* **vue:** added search for aggregations ([d902470](https://github.com/ezpaarse-project/ezreeport/commit/d902470bd86d0a915f21e8debaf0197159e7deeb))
+* **vue:** added search for namespace select ([7be8ad1](https://github.com/ezpaarse-project/ezreeport/commit/7be8ad1c852bb2a7cb522cedbf67d1e2aaecd8ff))
+* **vue:** added style options for tables ([fc6bf84](https://github.com/ezpaarse-project/ezreeport/commit/fc6bf84cf4c45c1482bc555e4ac0356d3bb10349))
+* **vue:** better sorting of aggregations types ([f651cb4](https://github.com/ezpaarse-project/ezreeport/commit/f651cb4382241078ee91dd5ced55649eb5106e6a))
+* **vue:** blocking generation if task is modified ([d07eb5f](https://github.com/ezpaarse-project/ezreeport/commit/d07eb5f838fa7c91ba01e2c82bb667ae7c1a44b8))
+* **vue:** readded autocompletion for figure titles ([361c16c](https://github.com/ezpaarse-project/ezreeport/commit/361c16c49fcf78064fe95fff0ab3742fb188591d))
+
+
+### Performance Improvements
+
+* **vue:** deduplicated FigureDialogParams ([483003f](https://github.com/ezpaarse-project/ezreeport/commit/483003f4477ecb91c054fa9a0a5c87c0ecbf1077))
+
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.12](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.11...@ezpaarse-project/ezreeport-vue@1.0.0-beta.12) (2023-06-26)
+
+
+### Bug Fixes
+
+* **vue:** added try/catch on URL creation ([e0c3559](https://github.com/ezpaarse-project/ezreeport/commit/e0c3559131cadc6f01361cfefb4dd21ff130ea40))
+* **vue:** fixed aggregation duplication ([53a6c49](https://github.com/ezpaarse-project/ezreeport/commit/53a6c492a4f396c50b8d4dd666521f58aef547bb))
+* **vue:** fixed figure details ([c3eb0e2](https://github.com/ezpaarse-project/ezreeport/commit/c3eb0e299d16701f44069a3e493858a27d0c35a1))
+* **vue:** fixed minor issues with template tags ([3b1e318](https://github.com/ezpaarse-project/ezreeport/commit/3b1e3188863e30d0c7921ff208f81caedb91cf08))
+
+
+### Features
+
+* **report:** redone figure forms ([1187815](https://github.com/ezpaarse-project/ezreeport/commit/1187815b66a2a66307cf112996d91ada3cb08bbb))
+* **vue:** added delimiters to task targets ([d3a0ecd](https://github.com/ezpaarse-project/ezreeport/commit/d3a0ecd8a4c5fbedec3a06f252ba4e0f7c737732))
+* **vue:** added option to pass i18n instance ([8f21900](https://github.com/ezpaarse-project/ezreeport/commit/8f21900af11e28d27d65378e763af58be61dd175))
+* **vue:** dropped auto mode for figures ([720dd8f](https://github.com/ezpaarse-project/ezreeport/commit/720dd8f31aefc4a189e172f09c2b632eb4784d69))
+
+
+
+
+
+### Dependencies
+
+* **@ezpaarse-project/ezreeport-sdk-js:** upgraded to 1.0.0-beta.3
+
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.11](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.10...@ezpaarse-project/ezreeport-vue@1.0.0-beta.11) (2023-06-12)
+
+
+### Bug Fixes
+
+* **vue:** added slot labels when in read mode ([10c51cf](https://github.com/ezpaarse-project/ezreeport/commit/10c51cf3e290d5ad29c0526c6974292039333ca8))
+* **vue:** fixed issue when updating query key ([6da4e78](https://github.com/ezpaarse-project/ezreeport/commit/6da4e784e59cc7c74674547f6731f22f45b0783d))
+* **vue:** fixed issues with 0 values in elastic query builder ([5f87e08](https://github.com/ezpaarse-project/ezreeport/commit/5f87e08fd07e78dfa1aeffd3198b4f35aa2592e5))
+
+
+### Features
+
+* **vue:** added elastic filters in template + layouts ([c8302ac](https://github.com/ezpaarse-project/ezreeport/commit/c8302ac68424dac776d2e36ea7a13a3d3a920ed0))
+* **vue:** added elastic index option ([5434644](https://github.com/ezpaarse-project/ezreeport/commit/5434644dbdf430cbcb93285d58259d7e745a5a2b))
+* **vue:** added elastic params on task/templates ([44d8805](https://github.com/ezpaarse-project/ezreeport/commit/44d8805dc688d9ebea028ed36ed38ee9b75ca106))
+* **vue:** added figure parameters for metric ([5fb423a](https://github.com/ezpaarse-project/ezreeport/commit/5fb423a70cbf6586798563d914588e60aafc62e7))
+* **vue:** added figure parameters for table ([823adff](https://github.com/ezpaarse-project/ezreeport/commit/823adff90893d1207e9dc39dc5fde05e1f87e2eb))
+* **vue:** added figure parameters for vega ([46c53c4](https://github.com/ezpaarse-project/ezreeport/commit/46c53c42c89cac8392939187b4c01b1a299cc448))
+* **vue:** created elastic query builder component ([ad05195](https://github.com/ezpaarse-project/ezreeport/commit/ad05195d900655eee1af1fbfb83d8356a8cf1519))
+* **vue:** now open edit dialog when possible in templates ([1160133](https://github.com/ezpaarse-project/ezreeport/commit/11601336e524141152a64b1386e52c49636d75b4))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.10](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.9...@ezpaarse-project/ezreeport-vue@1.0.0-beta.10) (2023-06-01)
 
 

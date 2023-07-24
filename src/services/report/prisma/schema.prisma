@@ -23,9 +23,9 @@ model Task {
   template    Json
   /// Email adresses to send generated report
   targets     String[]
-  /// Defines when the report will be genereted
+  /// Defines when the report will be generated
   recurrence  Recurrence
-  /// Next time the report will be genereted
+  /// Next time the report will be generated
   nextRun     DateTime
   /// Last time the report has been generated
   lastRun     DateTime?
@@ -64,7 +64,7 @@ model History {
   message   String
   /// More data about what happened
   data      Json?
-  /// When the event occured
+  /// When the event occurred
   createdAt DateTime @default(now())
 }
 

@@ -3,17 +3,20 @@ import type { PDFReport } from '.';
 import { format, isValid, parseISO } from '../date-fns';
 
 type MetricParams = {
+  // Auto fields
   start: Position,
   width: number,
   height: number,
-  labels?: Record<string, {
+  // Figure specific
+  labels?: {
+    dataKey: string,
     text?: string,
     field?: string,
     format?: {
-      type: 'date',
+      type: 'date' | 'number',
       params?: string[]
     }
-  } | undefined>
+  }[]
 };
 
 export type InputMetricParams = Omit<MetricParams, 'width' | 'height' | 'start'>;
@@ -30,6 +33,84 @@ export type MetricData = BasicMetricData[] | ComplexMetricData;
 type MetricDefault = {
   font: Font,
   fontSize: number
+};
+
+/**
+ * Format given value into date using given params
+ *
+ * @param origValue The value
+ * @param params The params provided by the user
+ *
+ * @returns The date as a string
+ */
+const formatDate = (
+  origValue: string | number | Record<string, string | number>,
+  params: string[],
+): string => {
+  let value = origValue;
+  if (typeof value === 'object') {
+    throw new Error('Expected number / string, got Object');
+  }
+
+  if (typeof value === 'string') {
+    const d = parseISO(value);
+    if (!isValid(d)) throw new Error(`Date is not in ISO format: ${origValue}`);
+    value = d.getTime();
+  }
+
+  return format(value, params[0] || 'dd/MM/yyyy');
+};
+
+/**
+ * Format given value into number using given params
+ *
+ * @param origValue The value
+ * @param params The params provided by the user
+ *
+ * @returns The number as a string
+ */
+const formatNumber = (
+  origValue: string | number | Record<string, string | number>,
+  params: string[],
+): string => {
+  let value = origValue;
+  if (typeof value === 'object') {
+    throw new Error('Expected number, got Object');
+  }
+
+  if (typeof value === 'string') {
+    value = Number.parseInt(value, 10);
+  }
+
+  if (Number.isNaN(value)) {
+    throw new Error(`Cannot parse value into a number: ${origValue}`);
+  }
+
+  const locale = {
+    identifier: params[0] || 'fr-FR',
+    params: {} as Intl.NumberFormatOptions,
+    cb: (val: string) => val,
+  };
+  switch (locale.identifier) {
+    case 'fr':
+    case 'fr-FR':
+      locale.identifier = 'en-US';
+      locale.params.useGrouping = true;
+      locale.cb = (val) => val
+        .replace(/,/g, ' ')
+        .replace(/\./g, ',');
+      break;
+
+    default:
+      break;
+  }
+
+  value = value.toLocaleString(
+    locale.identifier,
+    locale.params,
+  );
+
+  return locale.cb(value);
 };
 
 /**
@@ -69,37 +150,44 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
     fontSize: doc.pdf.getFontSize(),
   };
 
+  if ((params.labels?.length ?? 0) <= 0) {
+    throw new Error('Metric figure must have at least one label');
+  }
+
   let rawData = [];
   if (Array.isArray(inputData)) {
     rawData = inputData;
   } else {
-    const dataKeys = Object.keys(inputData);
-    const labelKeys = Object.keys(params.labels ?? {});
-    // Sort metrics by label position in object
-    dataKeys.sort((a, b) => labelKeys.indexOf(a) - labelKeys.indexOf(b));
+    let dataKeys = Object.keys(inputData);
+    const labelPositionMap = new Map(params.labels?.map(({ dataKey }, i) => [dataKey, i]) ?? []);
+
+    // Remove unused data
+    dataKeys = dataKeys.filter((dataKey) => labelPositionMap.has(dataKey));
+    if (dataKeys.length <= 0) {
+      throw new Error('No used dataKeys found');
+    }
+
+    // Sort metrics by label position
+    dataKeys.sort((a, b) => (labelPositionMap.get(a) ?? 0) - (labelPositionMap.get(b) ?? 0));
+
     // eslint-disable-next-line no-restricted-syntax
     for (const key of dataKeys) {
-      const label = (params.labels ?? {})[key];
+      const label = params.labels?.find(({ dataKey }) => dataKey === key);
       let value = inputData[key];
       if (typeof value === 'object') {
-        value = value[label?.field ?? 'value'];
+        value = value[label?.field || 'value'];
       }
 
       try {
         if (label?.format) {
+          const formatParams = label.format.params ?? [];
           switch (label.format.type) {
             case 'date':
-              if (typeof value === 'string') {
-                const d = parseISO(value);
-                if (!isValid(d)) throw new Error('Date is not in ISO format');
-                value = d.getTime();
-              }
+              value = formatDate(value, formatParams);
+              break;
 
-              if (!label.format.params?.[0]) {
-                label.format.params = ['dd/MM/yyyy'];
-              }
-
-              value = format(value, label.format.params[0]);
+            case 'number':
+              value = formatNumber(value, formatParams);
               break;
 
             default:
@@ -144,25 +232,28 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
   };
 
   // Calc positions of cells
-  const counts = { rows: 1, cols: 0 };
-  for (let i = 0; i < data.length; i += 1) {
-    if (cursor.x + cell.width >= params.width) {
-      cursor.x = 0;
-      cursor.y += cell.height + margin.y;
-      counts.rows += 1;
+  const counts = {
+    cols: Math.floor(params.width / (cell.width + margin.x)),
+    // Will be calculated later since we need cols
+    rows: 0,
+  };
+  counts.rows = Math.ceil(data.length / counts.cols);
+
+  for (let row = 0; row < counts.rows; row += 1) {
+    cursor.x = 0;
+
+    for (let col = 0; col < counts.cols; col += 1) {
+      slots.push({
+        ...cell,
+        x: cursor.x,
+        y: cursor.y,
+      });
+
+      cursor.x += cell.width + margin.x;
     }
 
-    const slot: Area = {
-      ...cell,
-      x: cursor.x,
-      y: cursor.y,
-    };
-
-    cursor.x += cell.width + margin.x;
-
-    slots.push(slot);
+    cursor.y += cell.height + margin.y;
   }
-  counts.cols = data.length / counts.rows;
 
   const totalSize: Size = {
     width: (counts.cols * cell.width) + ((counts.cols - 1) * margin.x),
@@ -177,6 +268,10 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
   // Print data
   for (let i = 0; i < data.length; i += 1) {
     const { key, value, sizes } = data[i];
+    if (!slots[i]) {
+      throw new Error(`slot ${i} not found`);
+    }
+
     const slot = {
       ...slots[i],
       x: offset.x + slots[i].x,

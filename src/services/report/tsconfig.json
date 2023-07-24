@@ -9,6 +9,9 @@
     "require": ["tsconfig-paths/register"]
   },
   "compilerOptions": {
+    "lib": ["es2022"],
+    "module": "commonjs",
+    "target": "es2022",
     "resolveJsonModule": true,
     "paths": {
       "~/*": [

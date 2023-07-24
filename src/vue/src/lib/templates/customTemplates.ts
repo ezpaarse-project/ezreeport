@@ -1,10 +1,11 @@
 import type { templates, tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { v4 as uuid } from 'uuid';
+import type { ValidationResult } from '~/stores/template';
 
 interface CustomProperties {
   _: {
     id: string
-    valid: true | string,
+    valid: ValidationResult,
   }
 }
 
@@ -34,6 +35,15 @@ export const addAdditionalData = <T>(value: T): T & CustomProperties => ({
 });
 
 /**
+* Remove additional data to correctly render
+*
+* @param value The base object
+*/
+export const removeAdditionalData = <T extends CustomProperties>(
+  { _, ...v }: T,
+): Omit<T, keyof CustomProperties> => v;
+
+/**
 * Add additional data to layouts
 *
 * @param value The layouts
@@ -45,6 +55,23 @@ export const addAdditionalDataToLayouts = <T extends (templates.Layout | TaskLay
       const figures = l.figures.map(addAdditionalData);
       return {
         ...addAdditionalData(l),
+        figures,
+      };
+    },
+  );
+
+/**
+* Remove additional data to layouts
+*
+* @param value The layouts
+*/
+export const removeAdditionalDataToLayouts = <T extends (CustomLayout | CustomTaskLayout)>(
+  layouts: T[],
+): Omit<T, keyof CustomProperties>[] => layouts.map(
+    ({ _, ...l }) => {
+      const figures = l.figures.map(removeAdditionalData);
+      return {
+        ...l,
         figures,
       };
     },

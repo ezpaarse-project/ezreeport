@@ -1,75 +1,73 @@
 <template>
   <div class="d-flex flex-column">
-    <template v-if="mode !== 'view'">
-      <div class="d-flex align-center pa-2" style="min-height: 44px;">
-        <template>
-          {{$t('headers.figures')}}
+    <FigureDialogParams
+      v-if="editedFigureId && isFigureDialogParamsShown"
+      v-model="isFigureDialogParamsShown"
+      :id="editedFigureId"
+      :layout-id="value"
+    />
 
-          <v-spacer />
+    <div :class="['d-flex align-center pa-2', $vuetify.theme.dark ? 'grey darken-4' : 'white']">
+      {{$t('headers.page', { pageNumber: index + 1 })}}
 
-          <v-tooltip top>
-            <template #activator="{ attrs, on }">
-              <v-btn
-                :disabled="items.length >= grid.cols * grid.rows || mode !== 'allowed-edition'"
-                small
-                icon
-                color="success"
-                v-bind="attrs"
-                @click="onFigureCreate"
-                v-on="on"
-              >
-                <v-icon>mdi-plus</v-icon>
-              </v-btn>
-            </template>
+      <v-spacer />
 
-            <span>{{$t('actions.create-tooltip')}}</span>
-          </v-tooltip>
+      <v-tooltip top v-if="mode !== 'view'">
+        <template #activator="{ attrs, on }">
+          <v-btn
+            :disabled="!canCreate"
+            small
+            icon
+            color="success"
+            @click="onFigureCreate"
+            v-bind="attrs"
+            v-on="on"
+          >
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
         </template>
-      </div>
 
-      <v-divider />
-    </template>
+        <span>{{$t('actions.create-tooltip')}}</span>
+      </v-tooltip>
+    </div>
 
-    <div class="pa-2" style="overflow-y: auto; flex: 1;">
+    <v-divider />
+
+    <div class="pa-2" style="height: 100%;">
       <SlotItemGrid
-        :items="items"
-        :grid="grid"
+        :items="figures"
+        :grid="templateStore.currentGrid"
         show-unused
         v-on="gridListeners"
       >
         <template
-          #item="{
-            item: figure,
-            isDraggable,
-            isHovered,
-            index,
-          }">
+          #item="{ isDraggable, isHovered, item: figure }"
+        >
           <FigureDetail
             v-if="mode !== 'allowed-edition'"
-            :figure="figure"
-            :figure-index="index"
+            :id="figure._.id"
+            :layout-id="value"
             :locked="mode === 'denied-edition'"
+            :taken-slots="takenSlots"
             :class="[
               'figure-slot',
               isHovered && 'figure-slot--hovered primary--text',
             ]"
+            @edit:figure="openFigureDialogParams"
           />
           <FigureForm
             v-else
-            :figure="figure"
-            :figure-index="index"
+            :id="figure._.id"
+            :layout-id="value"
             :taken-slots="takenSlots"
             :draggable="isDraggable"
             :class="[
               'figure-slot',
               isHovered && 'figure-slot--hovered primary--text',
             ]"
-            @update:figure="onFigureUpdate"
-            @delete:figure="onFigureDelete"
-            @validation="onValidation(figure, $event)"
+            @edit:figure="openFigureDialogParams"
           />
         </template>
-
       </SlotItemGrid>
     </div>
   </div>
@@ -78,31 +76,48 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
 import { addAdditionalData, type AnyCustomFigure } from '~/lib/templates/customTemplates';
+import useTemplateStore from '~/stores/template';
 
 export default defineComponent({
   props: {
-    items: {
-      type: Array as PropType<AnyCustomFigure[]>,
+    value: {
+      type: String,
       required: true,
-    },
-    grid: {
-      type: Object as PropType<{ cols: number, rows: number }>,
-      default: () => ({ cols: 2, rows: 2 }),
     },
     mode: {
       type: String as PropType<'view' | 'allowed-edition' | 'denied-edition'>,
       default: 'view',
     },
   },
-  emits: {
-    'update:items': (v: AnyCustomFigure[]) => v.length >= 0,
+  setup() {
+    const templateStore = useTemplateStore();
+
+    return { templateStore };
   },
+  data: () => ({
+    isFigureDialogParamsShown: false,
+    editedFigureId: undefined as string | undefined,
+  }),
   computed: {
+    index(): number {
+      return this.templateStore.currentLayouts.findIndex(
+        ({ _: { id } }) => id === this.value,
+      );
+    },
+    figures: {
+      get(): AnyCustomFigure[] {
+        return this.templateStore.currentLayouts[this.index]?.figures ?? [];
+      },
+      set(figures: AnyCustomFigure[]) {
+        const layout = this.templateStore.currentLayouts[this.index] ?? {};
+        this.templateStore.UPDATE_LAYOUT(this.value, { ...layout, figures });
+      },
+    },
     /**
      * The slots taken by the figures
      */
     takenSlots(): number[] {
-      return this.items.reduce(
+      return this.figures.reduce(
         (taken, { slots }) => (slots ? [...taken, ...slots] : taken),
         [] as number[],
       );
@@ -112,11 +127,17 @@ export default defineComponent({
      */
     gridListeners() {
       if (this.mode !== 'allowed-edition') {
-        return { };
+        return {};
       }
       return {
         'update:items': this.onFigureListUpdate,
       };
+    },
+    canCreate() {
+      // eslint-disable-next-line prefer-destructuring
+      const grid = this.templateStore.currentGrid;
+
+      return this.figures.length < grid.cols * grid.rows && this.mode === 'allowed-edition';
     },
   },
   methods: {
@@ -126,22 +147,7 @@ export default defineComponent({
      * @param items the figure list
      */
     onFigureListUpdate(items: { slots?: number[] }[]) {
-      this.$emit('update:items', items as AnyCustomFigure[]);
-    },
-    /**
-     * Update a figure in current layout
-     *
-     * @param value The new figure
-     */
-    onFigureUpdate(value: AnyCustomFigure) {
-      const index = this.items.findIndex(({ _: { id } }) => id === value._.id);
-      if (this.mode !== 'allowed-edition' || !this.items[index]) {
-        return;
-      }
-
-      const items = [...this.items];
-      items.splice(index, 1, value);
-      this.$emit('update:items', items);
+      this.figures = items as AnyCustomFigure[];
     },
     /**
      * Add a new figure in current layout
@@ -151,39 +157,22 @@ export default defineComponent({
         return;
       }
 
-      const defaultFigure: AnyCustomFigure = addAdditionalData({ type: 'md', params: {} });
-      this.$emit('update:items', [...this.items, defaultFigure]);
-    },
-    /**
-     * Delete a figure in current layout
-     *
-     * @param index The index of the figure in the layout
-     */
-    onFigureDelete(value: AnyCustomFigure) {
-      const index = this.items.findIndex(({ _: { id } }) => id === value._.id);
-      if (this.mode !== 'allowed-edition' || !this.items[index]) {
-        return;
-      }
+      const firstUnusedSlot = (this.takenSlots.at(-1) ?? -1) + 1;
 
-      const items = [...this.items];
-      items.splice(index, 1);
-      this.$emit('update:items', items);
+      const defaultFigure: AnyCustomFigure = addAdditionalData({
+        type: 'md',
+        params: {},
+        slots: [firstUnusedSlot],
+      });
+      this.figures = [...this.figures, defaultFigure];
     },
     /**
-     * Set error state in figure
-     *
-     * @param figure The figure
-     * @param value The validation value
+     * Prepare and opens figure params
      */
-    onValidation(figure: AnyCustomFigure, value: true | string) {
-      this.onFigureUpdate({
-        ...figure,
-        // Set validation state
-        _: {
-          ...figure._,
-          valid: value,
-        },
-      });
+    async openFigureDialogParams(id: string) {
+      this.editedFigureId = id;
+      await this.$nextTick();
+      this.isFigureDialogParamsShown = true;
     },
   },
 });
@@ -203,12 +192,12 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   headers:
-    figures: 'Figures'
+    page: 'Figures of Page {pageNumber}'
   actions:
     create-tooltip: 'Add a figure'
 fr:
   headers:
-    figures: 'Visualisations'
+    page: 'Visualisations de la Page {pageNumber}'
   actions:
     create-tooltip: 'Ajouter une visualisation'
 </i18n>

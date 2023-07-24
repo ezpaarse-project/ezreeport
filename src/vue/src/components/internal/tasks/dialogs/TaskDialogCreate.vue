@@ -1,31 +1,39 @@
 <template>
-  <v-dialog :fullscreen="currentTab === 1" :value="value" max-width="1000" scrollable @input="$emit('input', $event)">
-    <v-card :loading="loading" :tile="currentTab === 1">
+  <v-dialog
+    :value="value"
+    :fullscreen="tabs[currentTab].fullScreen"
+    :persistent="!valid"
+    max-width="1000"
+    scrollable
+    @input="$emit('input', $event)"
+  >
+    <v-card :loading="loading" :tile="tabs[currentTab].fullScreen">
       <v-card-title>
         <v-text-field
           v-if="task"
           v-model="task.name"
           :rules="rules.name"
-          :label="$t('headers.name')"
+          :delimiters="[',']"
+          :label="$t('$ezreeport.tasks.name')"
         />
         <RecurrenceChip
           v-if="task"
           v-model="task.recurrence"
           selectable
           size="small"
-          classes="text-body-2 ml-2"
+          classes="text-body-2 mx-2"
         />
-
-        <v-spacer />
 
         <CustomSwitch
           v-if="task"
           v-model="task.enabled"
-          :label="$t(task?.enabled ? 'item.active' : 'item.inactive').toString()"
+          :label="$t(`$ezreeport.tasks.enabled.${task?.enabled}`).toString()"
           :disabled="loading"
           class="text-body-2"
           reverse
         />
+
+        <v-spacer />
 
         <v-btn icon text @click="$emit('input', false)">
           <v-icon>mdi-close</v-icon>
@@ -34,13 +42,15 @@
 
       <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
         <v-tab v-for="tab in tabs" :key="tab.name">
-          {{ $t(`tabs.${tab.name}`) }}
+          {{ $t(`$ezreeport.tasks.tabs.${tab.name}`) }}
+          <v-icon v-if="tab.fullScreen" class="ml-1">mdi-arrow-expand</v-icon>
 
           <v-tooltip top v-if="tab.valid !== true" color="warning">
             <template #activator="{ attrs, on }">
               <v-icon
                 color="warning"
                 small
+                class="ml-1"
                 v-bind="attrs"
                 v-on="on"
               >
@@ -64,7 +74,7 @@
                 <v-col>
                   <v-combobox
                     v-model="task.targets"
-                    :label="$t('headers.targets')"
+                    :label="$t('$ezreeport.tasks.targets')"
                     :rules="rules.targets"
                     multiple
                   >
@@ -93,16 +103,16 @@
                   <div>{{ $ezReeport.tcNamespace(true) }}:</div>
                   <NamespaceSelect
                     v-model="task.namespace"
-                    :error-message="!task.namespace ? $t('errors.empty').toString() : undefined"
+                    :error-message="!task.namespace ? $t('$ezreeport.errors.empty').toString() : undefined"
                     :needed-permissions="['tasks-post']"
                     hide-all
                   />
 
-                  <div>{{ $t('headers.dates') }}:</div>
+                  <div>{{ $t('$ezreeport.tasks.dates') }}:</div>
                   <v-container>
                     <DatePicker
                       v-model="task.nextRun"
-                      :label="$t('task.nextRun').toString()"
+                      :label="$t('$ezreeport.tasks.nextRun').toString()"
                       :min="minDate"
                       icon="mdi-calendar-arrow-right"
                     />
@@ -130,20 +140,16 @@
         <v-spacer />
 
         <v-btn @click="$emit('input', false)">
-          {{ $t('actions.cancel') }}
+          {{ $t('$ezreeport.cancel') }}
         </v-btn>
 
         <v-btn
-          :disabled="!task
-            || !valid
-            || !isNameValid
-            || templateValidation !== true
-            || !perms.create"
+          :disabled="!task || !valid || templateValidation !== true || !perms.create"
           :loading="loading"
           color="success"
           @click="save"
         >
-          {{ $t('actions.save') }}
+          {{ $t('$ezreeport.save') }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -154,11 +160,11 @@
 import { addDays, formatISO, parseISO } from 'date-fns';
 import type { tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
-import { cloneDeep } from 'lodash';
 import isEmail from 'validator/lib/isEmail';
 import type { CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
-import { tabs } from './TaskDialogRead.vue';
+import useTemplateStore, { isTaskTemplate, mapRulesToVuetify } from '~/stores/template';
+import { tabs, type Tab } from './TaskDialogRead.vue';
 
 type CustomCreateTask = Omit<tasks.FullTask, 'createdAt' | 'id' | 'history' | 'namespace' | 'template'> & {
   template: CustomTaskTemplate,
@@ -166,16 +172,6 @@ type CustomCreateTask = Omit<tasks.FullTask, 'createdAt' | 'id' | 'history' | 'n
 };
 
 const minDate = addDays(new Date(), 1);
-
-const initTask = {
-  name: '',
-  template: { extends: 'scratch' } as CustomTaskTemplate,
-  targets: [],
-  recurrence: 'DAILY' as tasks.Recurrence,
-  namespace: '',
-  nextRun: minDate,
-  enabled: true,
-} as CustomCreateTask;
 
 export default defineComponent({
   mixins: [ezReeportMixin],
@@ -189,23 +185,21 @@ export default defineComponent({
     input: (show: boolean) => show !== undefined,
     created: (task: tasks.FullTask) => !!task,
   },
+  setup() {
+    const templateStore = useTemplateStore();
+
+    return { templateStore };
+  },
   data: () => ({
     task: undefined as CustomCreateTask | undefined,
     currentTab: 0,
 
     minDate,
-    valid: false,
+    innerValid: false,
 
     loading: false,
     error: '',
   }),
-  watch: {
-    value(val: boolean) {
-      if (val) {
-        this.task = cloneDeep(initTask);
-      }
-    },
-  },
   computed: {
     /**
      * Validation rules
@@ -213,37 +207,42 @@ export default defineComponent({
     rules() {
       return {
         name: [
-          (v: string) => !!v || this.$t('errors.empty'),
+          (v: string) => !!v || this.$t('$ezreeport.errors.empty'),
         ],
         targets: [
-          (v: string[]) => v.length > 0 || this.$t('errors.empty'),
-          (v: string[]) => v.every(this.validateMail) || this.$t('errors.format'),
+          (v: string[]) => v.length > 0 || this.$t('$ezreeport.errors.empty'),
+          (v: string[]) => v.every(this.validateMail) || this.$t('$ezreeport.errors.email_format'),
         ],
+        template: mapRulesToVuetify(this.templateStore.rules.template, (k) => this.$t(k)),
       };
     },
     /**
      * Tabs data
      */
-    tabs() {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const [detailTab, templateTab, historyTab, ...otherTabs] = tabs;
-      return [
-        {
-          ...detailTab,
-          valid: this.valid || this.$t('errors._default'),
-        },
-        {
-          ...templateTab,
-          valid: this.templateValidation,
-        },
-        // ...otherTabs.map((v) => ({ ...v, valid: true })),
-      ];
+    tabs(): (Tab & { valid: true | string })[] {
+      const data: (Tab & { valid?: true | string })[] = [...tabs];
+
+      // Add validation data
+      const { 0: detailTab, 2: templateTab } = data;
+      data[0] = { ...detailTab, valid: this.valid || this.$t('$ezreeport.tasks.errors._default').toString() };
+      data[2] = { ...templateTab, valid: this.templateValidation };
+
+      // Remove unnecessary tabs
+      data.splice(1, 1); // activityTab
+
+      return data.map((tab) => ({ ...tab, valid: tab.valid ?? true }));
     },
     /**
-     * name field is outside of the v-form, so we need to manually check using rules
+     * Form validation state + name validation, which is outside of form
      */
-    isNameValid() {
-      return this.rules.name.every((rule) => rule(this.task?.name ?? '') === true);
+    valid: {
+      get(): boolean {
+        return this.innerValid
+          && this.rules.name.every((rule) => rule(this.task?.name ?? '') === true);
+      },
+      set(value: boolean) {
+        this.innerValid = value;
+      },
     },
     /**
      * User permissions
@@ -260,23 +259,32 @@ export default defineComponent({
      * Is task's template valid
      */
     templateValidation(): true | string {
-      if (!this.task || !this.task.template.inserts) {
+      const valid = this.templateStore.isCurrentValid;
+      if (!this.task || valid === true) {
         return true;
       }
 
-      const invalidInsert = this.task.template.inserts.find(({ _: { valid } }) => valid !== true);
-      if (invalidInsert) {
-        return this.$t(
-          'errors.layouts._detail',
-          {
-            at: invalidInsert.at,
-            valid: invalidInsert._.valid,
-          },
-        ).toString();
+      let err = this.$t(valid.i18nKey);
+      if (valid.figure !== undefined) {
+        err = this.$t('$ezreeport.figures.errors._detail', { valid: err, at: valid.figure });
       }
-
-      return true;
+      if (valid.layout !== undefined) {
+        err = this.$t('$ezreeport.layouts.errors._detail', { valid: err, at: valid.layout });
+      }
+      return err.toString();
     },
+  },
+  watch: {
+    value(val: boolean) {
+      if (val) {
+        this.init();
+      } else {
+        this.templateStore.SET_CURRENT(undefined);
+      }
+    },
+  },
+  mounted() {
+    this.init();
   },
   methods: {
     /**
@@ -285,11 +293,23 @@ export default defineComponent({
      * @param email The string
      */
     validateMail: (email: string) => isEmail(email),
+    init() {
+      this.templateStore.SET_CURRENT({ inserts: [], extends: 'scratch' });
+      this.task = {
+        name: '',
+        template: { extends: 'scratch' } as CustomTaskTemplate,
+        targets: [],
+        recurrence: 'DAILY' as tasks.Recurrence,
+        namespace: '',
+        nextRun: minDate,
+        enabled: true,
+      };
+    },
     /**
      * Save and edit task
      */
     async save() {
-      if (!this.task || !this.valid || !this.isNameValid || this.templateValidation !== true) {
+      if (!this.task || !this.valid || this.templateValidation !== true) {
         return;
       }
 
@@ -298,27 +318,20 @@ export default defineComponent({
         return;
       }
 
+      const template = this.templateStore.GET_CURRENT();
+      if (!template || !isTaskTemplate(template)) {
+        return;
+      }
+
       this.loading = true;
       try {
-        // Remove frontend data from payload
-        const inserts = this.task.template.inserts?.map(
-          ({ _, ...insert }) => ({
-            ...insert,
-            // eslint-disable-next-line @typescript-eslint/no-shadow
-            figures: insert.figures.map(({ _, ...figure }) => figure),
-          }),
-        );
-
         const nextRun = formatISO(this.task.nextRun, { representation: 'date' });
 
         const { content } = await this.$ezReeport.sdk.tasks.createTask(
           {
             name: this.task.name,
             namespace: this.task.namespace,
-            template: {
-              ...this.task.template,
-              inserts,
-            },
+            template,
             targets: this.task.targets,
             recurrence: this.task.recurrence,
             nextRun: parseISO(`${nextRun}T00:00:00.000Z`),
@@ -327,7 +340,6 @@ export default defineComponent({
         );
 
         this.$emit('created', content);
-        this.$emit('input', false);
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
@@ -341,52 +353,3 @@ export default defineComponent({
 <style scoped>
 
 </style>
-
-<i18n lang="yaml">
-en:
-  headers:
-    name: 'Report name'
-    targets: 'Receivers'
-    dates: 'Dates'
-  tabs:
-    details: 'Details'
-    template: 'Template'
-  task:
-    lastRun: 'Last run'
-    nextRun: 'Next run'
-  item:
-    active: 'Active'
-    inactive: 'Inactive'
-  errors:
-    _default: 'An error is in this form'
-    layouts:
-      _detail: 'Page {at}: {valid}'
-    empty: 'This field must be set'
-    format: "One or more address aren't valid"
-  actions:
-    cancel: 'Cancel'
-    save: 'Save'
-fr:
-  headers:
-    name: 'Nom du rapport'
-    targets: 'Destinataires'
-    dates: 'Dates'
-  tabs:
-    details: 'Détails'
-    template: 'Modèle'
-  task:
-    lastRun: 'Dernière itération'
-    nextRun: 'Prochaine itération'
-  item:
-    active: 'Actif'
-    inactive: 'Inactif'
-  errors:
-    _default: 'Une erreur est présente dans ce formulaire'
-    layouts:
-      _detail: 'Page {at}: {valid}'
-    empty: 'Ce champ doit être rempli'
-    format: 'Une ou plusieurs addresses ne sont pas valides'
-  actions:
-    cancel: 'Annuler'
-    save: 'Sauvegarder'
-</i18n>

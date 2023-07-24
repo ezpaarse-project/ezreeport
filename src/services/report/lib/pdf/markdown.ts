@@ -1,10 +1,14 @@
 import type { Font } from 'jspdf';
 import { marked } from 'marked';
 import { lookup } from 'mime-types';
+import { unescape } from 'lodash';
+
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+
 import http from '~/lib/http-requests';
 import config from '~/lib/config';
+
 import type { PDFReport } from '.';
 import { loadImageAsset } from './utils';
 
@@ -275,7 +279,7 @@ const renderer: marked.RendererObject = {
 
     elements.push({
       type: 'text',
-      content: text,
+      content: unescape(text),
       meta: {},
     });
 
@@ -494,7 +498,7 @@ export const addMdToPDF = async (
   const cursor = { ...def.cursor };
 
   try {
-    await marked.parse(data, { async: true });
+    await marked.parse(data, { async: true, mangle: false, headerIds: false });
 
     // eslint-disable-next-line no-restricted-syntax
     for (const element of elements) {
@@ -558,7 +562,7 @@ export const addMdToPDF = async (
             if (result) {
               if (meta.space) {
                 cursor.x = def.cursor.x;
-                cursor.y += result.height;
+                cursor.y += result.height + def.fontSize;
               } else {
                 cursor.x += result.width;
               }
@@ -576,9 +580,10 @@ export const addMdToPDF = async (
             width: params.width,
             cursor,
           });
+
           if (!isTooWide) {
             // Calculate next offset
-            cursor.x += width;
+            cursor.x += width + def.fontSize;
           }
           break;
         }

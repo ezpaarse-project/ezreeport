@@ -23,6 +23,7 @@ then add plugin :
 import Vue from 'vue';
 
 import ezReeportVuePlugin from '@ezpaarse-project/ezreeport-vue';
+import i18n from './path/to/your/instance/i18n';
 // Remove if not in TS
 import type { GlobalEzRComponents } from '@ezpaarse-project/ezreeport-vue';
 import '@ezpaarse-project/ezreeport-vue/dist/style.css';
@@ -32,7 +33,7 @@ declare module 'vue' {
   export interface GlobalComponents extends GlobalEzRComponents {}
 }
 
-Vue.use(ezReeportVuePlugin);
+Vue.use(ezReeportVuePlugin, { i18n });
 ```
 
 ### Webpack
@@ -70,13 +71,35 @@ export default defineConfig({
 
 You can use nuxt modules like `@nuxtjs/vuetify@^1.12.3` ([npm](https://www.npmjs.com/package/@nuxtjs/vuetify)) and `@nuxtjs/i18n@^7.3.1` ([npm](https://www.npmjs.com/package/@nuxtjs/i18n)) instead of raw dependencies.
 
+```ts
+// plugins/ezreeport-vue2.ts
+import Vue from 'vue';
+
+import ezReeportVuePlugin from '@ezpaarse-project/ezreeport-vue';
+// Remove if not in TS
+import type { GlobalEzRComponents } from '@ezpaarse-project/ezreeport-vue';
+import '@ezpaarse-project/ezreeport-vue/dist/style.css';
+
+// Remove if not in TS
+declare module 'vue' {
+  export interface GlobalComponents extends GlobalEzRComponents {}
+}
+
+// eslint-disable-next-line func-names
+const ezrNuxt: Plugin = ({ i18n }) => {
+  Vue.use(ezReeportVuePlugin, { i18n });
+};
+
+export default ezrNuxt;
+```
+
 Add plugin and webpack config into `nuxt.config.js|ts` :
 
 ```ts
 // nuxt.config.js|ts
 export default {
   plugins: [
-    '~/plugins/ezreeport-vue2.ts', // TODO: change path to your plugin file
+    '~/plugins/ezreeport-vue2.ts',
   ],
 
   buildModules: [

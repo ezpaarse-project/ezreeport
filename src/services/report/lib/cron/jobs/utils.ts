@@ -35,8 +35,8 @@ export const sendError = async (error: Error, origin: string, _timer: string) =>
       date,
       url: `/ErrCron-${origin}-${date}.txt`,
     });
-    logger.info('[cron] ');
+    logger.info(`[cron] [${process.pid}] [${origin}] Sent error to dev team by mail`);
   } catch (e) {
-    logger.error('[cron] ');
+    logger.error(`[cron] [${process.pid}] [${origin}] Cannot send error to dev team: ${(e as Error).message}`);
   }
 };

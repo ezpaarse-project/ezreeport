@@ -8,8 +8,8 @@
   >
     <v-card :loading="loading" :tile="fullscreen">
       <v-card-title>
-        <template v-if="item">
-          {{ item.name }}
+        <template v-if="data">
+          {{ data.name }}
         </template>
 
         <v-spacer />
@@ -28,10 +28,10 @@
       <v-divider />
 
       <v-card-text style="position: relative">
-        <template v-if="item">
-          <TagsDetail v-if="item.tags.length > 0" :value="item.tags" />
+        <template v-if="data">
+          <TagsDetail v-if="data.tags.length > 0" :value="data.tags" />
 
-          <TemplateDetail :template="item.body" />
+          <TemplateDetail />
         </template>
 
         <ErrorOverlay v-model="error" />
@@ -43,13 +43,10 @@
 <script lang="ts">
 import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
-import {
-  addAdditionalDataToLayouts,
-  type CustomTemplate,
-} from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
+import useTemplateStore from '~/stores/template';
 
-type CustomFullTemplate = Omit<templates.FullTemplate, 'body'> & { body: CustomTemplate };
+type BodyLessFullTemplate = Omit<templates.FullTemplate, 'body'>;
 
 export default defineComponent({
   mixins: [ezReeportMixin],
@@ -70,8 +67,13 @@ export default defineComponent({
   emits: {
     input: (show: boolean) => show !== undefined,
   },
+  setup() {
+    const templateStore = useTemplateStore();
+
+    return { templateStore };
+  },
   data: () => ({
-    item: undefined as CustomFullTemplate | undefined,
+    data: undefined as BodyLessFullTemplate | undefined,
 
     error: '',
     loading: false,
@@ -92,8 +94,12 @@ export default defineComponent({
     '$ezReeport.data.auth.permissions': function () {
       this.fetch();
     },
-    name() {
-      this.fetch();
+    value(val: boolean) {
+      if (val) {
+        this.fetch();
+      } else {
+        this.templateStore.SET_CURRENT(undefined);
+      }
     },
   },
   mounted() {
@@ -105,7 +111,7 @@ export default defineComponent({
      */
     async fetch() {
       if (!this.perms.readOne) {
-        this.item = undefined;
+        this.$emit('input', false);
         return;
       }
 
@@ -113,13 +119,13 @@ export default defineComponent({
       try {
         const { content } = await this.$ezReeport.sdk.templates.getTemplate(this.name);
         if (!content) {
-          throw new Error(this.$t('errors.no_data').toString());
+          throw new Error(this.$t('$ezreeport.errors.fetch').toString());
         }
 
-        // Add additional data
-        content.body.layouts = addAdditionalDataToLayouts(content.body.layouts ?? []);
+        const { body, ...data } = content;
+        this.templateStore.SET_CURRENT(body);
+        this.data = data;
 
-        this.item = content as CustomFullTemplate;
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
@@ -137,10 +143,6 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   refresh-tooltip: 'Refresh template'
-  errors:
-    no_data: 'An error occurred when fetching data'
 fr:
   refresh-tooltip: 'Rafraîchir le modèle'
-  errors:
-    no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>

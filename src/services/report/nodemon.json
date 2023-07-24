@@ -1,6 +1,7 @@
 {
   "ignore": [
-    "data/**"
+    "data/**",
+    "tmp/**"
   ],
   "ext": "ts,js,json",
   "execMap": {

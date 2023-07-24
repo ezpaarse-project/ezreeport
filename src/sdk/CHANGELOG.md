@@ -1,3 +1,24 @@
+# @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.5](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.4...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.5) (2023-07-06)
+
+
+### Features
+
+* **sdk:** added support for error cause in reports ([33b4adc](https://github.com/ezpaarse-project/ezreeport/commit/33b4adc12bb0193410afc8fe001753aa012bb2e7))
+
+# @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.4](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.3...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.4) (2023-07-04)
+
+
+### Features
+
+* **sdk:** updated types following API ([db7180e](https://github.com/ezpaarse-project/ezreeport/commit/db7180e9b4961d4095eeca943132fad55c273c69))
+
+# @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.2...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.3) (2023-06-26)
+
+
+### Bug Fixes
+
+* **sdk:** fixed type of task fetch options ([cefbba0](https://github.com/ezpaarse-project/ezreeport/commit/cefbba0dabfadc3330c46c64b09496bce888d995))
+
 # @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.1...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.2) (2023-05-25)
 
 

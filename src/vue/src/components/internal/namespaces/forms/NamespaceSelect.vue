@@ -1,29 +1,54 @@
 <template>
   <div class="d-flex align-center">
     <div class="select-wrapper mr-2">
-      <v-select
-        ref="menu"
+      <!-- Current Item -->
+      <div
+        v-if="current && !isInputShown"
+        :class="['d-flex mb-5 current-item', $vuetify.theme.dark && 'current-item--dark']"
+        tabindex="0"
+        @click="openInput($event)"
+        @keypress="() => {}"
+        @focus="openInput(undefined)"
+      >
+        <RichListItem
+          v-if="!current.id"
+          :title="current.name"
+          fallback-icon="mdi-filter-variant"
+        />
+        <NamespaceRichListItem
+          v-else
+          :namespace="current"
+        />
+
+        <v-spacer />
+
+        <v-icon>
+          mdi-menu-down
+        </v-icon>
+      </div>
+
+      <!-- Search box -->
+      <v-autocomplete
+        v-else
         :value="value"
-        item-text="name"
-        item-value="id"
-        :items="items"
+        :items="autocompleteItems"
         :loading="loading"
         :disabled="loading || !!error"
         :error-messages="errorMessage"
+        item-text="name"
+        item-value="id"
         menu-props="closeOnContentClick"
+        no-filter
+        ref="input"
         class="select-input"
-        @input="$emit('input', $event)"
+        @input="onNamespaceSelected"
+        @blur="isInputShown = false;"
+        @update:search-input="innerSearch = $event"
       >
-        <template #selection="{ item }">
-          <RichListItem
-            v-if="!item.id"
-            :title="item.name"
-            fallback-icon="mdi-filter-variant"
-          />
-          <NamespaceRichListItem
-            v-else
-            :namespace="item"
-          />
+        <template #prepend-inner>
+          <v-icon>
+            mdi-magnify
+          </v-icon>
         </template>
 
         <template #item="{ item, on, attrs }">
@@ -35,11 +60,13 @@
           <NamespaceRichListItem
             v-else
             :namespace="item"
+            :show-task-count="showTaskCount"
+            :show-members-count="showMembersCount"
             v-bind="attrs"
             v-on="on"
           />
         </template>
-      </v-select>
+      </v-autocomplete>
 
       <ErrorOverlay v-model="error" />
     </div>
@@ -55,14 +82,17 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
+import Fuse from 'fuse.js';
 import type { namespaces } from '@ezpaarse-project/ezreeport-sdk-js';
 import ezReeportMixin from '~/mixins/ezr';
 
-export interface NamespaceItem {
-  id: string,
-  name: string,
-  logoId?: string,
-}
+const fzfNamespaces = new Fuse<namespaces.Namespace>(
+  [],
+  {
+    keys: ['name'],
+    includeScore: true,
+  },
+);
 
 export default defineComponent({
   mixins: [ezReeportMixin],
@@ -94,6 +124,14 @@ export default defineComponent({
       type: Array as PropType<string[] | undefined>,
       default: undefined,
     },
+    showTaskCount: {
+      type: Boolean,
+      default: false,
+    },
+    showMembersCount: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: {
     input: (value: string) => !!value,
@@ -101,9 +139,11 @@ export default defineComponent({
   data: () => ({
     loading: false,
     error: '',
+    isInputShown: false,
+    innerSearch: '',
   }),
   computed: {
-    items(): NamespaceItem[] {
+    items(): namespaces.Namespace[] {
       let items = this.$ezReeport.data.namespaces.data;
 
       if (this.allowedNamespaces && Array.isArray(this.allowedNamespaces)) {
@@ -117,23 +157,42 @@ export default defineComponent({
         ));
       }
 
-      items.map(this.parseNamespace)
-        .sort((a, b) => a.name.localeCompare(b.name));
+      items.sort((a, b) => a.name.localeCompare(b.name));
 
       if (this.hideAll) {
         return items;
       }
 
       return [
-        { id: '', name: this.$t('all', { namespace: this.$ezReeport.tcNamespace(false, 2) }).toString() },
+        { id: '', name: this.$t('all', { namespace: this.$ezReeport.tcNamespace(false, 2) }).toString() } as namespaces.Namespace,
         ...items,
       ];
+    },
+    current() {
+      return this.items.find(({ id }) => id === this.value) as (namespaces.Namespace | undefined);
+    },
+    searchResults() {
+      if (!this.innerSearch) {
+        return [];
+      }
+      return fzfNamespaces.search(this.innerSearch);
+    },
+    autocompleteItems() {
+      if (this.searchResults.length > 0) {
+        return this.searchResults
+          .filter(({ score }) => (score ?? 1) < 0.6)
+          .map(({ item }) => item);
+      }
+      return this.items;
     },
   },
   watch: {
     // eslint-disable-next-line func-names
     '$ezReeport.data.auth.permissions': function () {
       this.fetch();
+    },
+    items() {
+      fzfNamespaces.setCollection(this.items);
     },
   },
   mounted() {
@@ -153,16 +212,33 @@ export default defineComponent({
       this.loading = false;
     },
     /**
+     * Open and focus input behind current item
      *
-     * Parse namespace into human readable format
-     *
-     * @param namespace The namespace
+     * @param mouseEv The mouve event. If provided it will open the suggestions
      */
-    parseNamespace: (namespace: namespaces.Namespace): NamespaceItem => ({
-      id: namespace.id,
-      name: namespace.name,
-      logoId: namespace.logoId,
-    }),
+    async openInput(mouseEv?: MouseEvent) {
+      this.isInputShown = true;
+      await this.$nextTick();
+
+      const input = (this.$refs.input as any);
+      if (mouseEv) {
+        input.onClick(mouseEv);
+        return;
+      }
+      input.focus();
+    },
+    /**
+     * Update value and hide input
+     *
+     * @param id The id of the namespace
+     */
+    onNamespaceSelected(id?: string) {
+      if (id == null) {
+        return;
+      }
+      this.$emit('input', id);
+      this.isInputShown = false;
+    },
   },
 });
 </script>
@@ -172,8 +248,32 @@ export default defineComponent({
   position: relative;
   flex: 1;
 
-  .select-input::v-deep .v-input__append-inner {
-    align-self: unset;
+  .select-input::v-deep {
+    .v-input__slot {
+      min-height: 56px;
+      align-items: center;
+    }
+    .v-input__prepend-inner {
+      align-self: center;
+      margin-top: 0;
+    }
+  }
+}
+
+.current-item {
+  transition: 0.3s cubic-bezier(0.25, 0.8, 0.5, 1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.42);
+
+  &:hover {
+    border-color: rgba(0, 0, 0, 0.87);
+  }
+
+  &--dark {
+    border-color: rgba(255, 255, 255, 0.7);
+
+    &:hover {
+      border-color: #FFFFFF;
+    }
   }
 }
 </style>

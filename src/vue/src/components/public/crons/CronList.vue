@@ -46,7 +46,7 @@
           </v-list-item-content>
         </template>
 
-        <v-row>
+        <v-row class="align-center">
           <v-col>
             <template v-for="entry in item.detail">
               <v-list-item
@@ -153,7 +153,7 @@ export default defineComponent({
       try {
         const { content } = await this.$ezReeport.sdk.crons.getAllCrons();
         if (!content) {
-          throw new Error(this.$t('errors.no_data').toString());
+          throw new Error(this.$t('$ezreeport.errors.fetch').toString());
         }
 
         this.crons = content;

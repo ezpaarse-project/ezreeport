@@ -8,8 +8,8 @@
   >
     <v-card :loading="loading" :tile="fullscreen">
       <v-card-title>
-        <template v-if="item">
-          {{ item.name }}
+        <template v-if="data">
+          {{ data.name }}
         </template>
 
         <v-spacer />
@@ -22,10 +22,10 @@
       <v-divider />
 
       <v-card-text style="position: relative">
-        <template v-if="item">
-          <TagsForm v-model="item.tags" :availableTags="availableTags" />
+        <template v-if="data">
+          <TagsForm v-model="data.tags" :availableTags="availableTags" />
 
-          <TemplateForm :template.sync="item.body" />
+          <TemplateForm />
         </template>
 
         <ErrorOverlay v-model="error" />
@@ -42,8 +42,7 @@
 
         <v-btn
           v-if="perms.update"
-          :disabled="!item
-            || templateValidation !== true"
+          :disabled="!data || templateStore.isCurrentValid !== true || !isModified"
           :loading="loading"
           color="success"
           @click="save"
@@ -56,15 +55,14 @@
 </template>
 
 <script lang="ts">
-import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
-import {
-  addAdditionalDataToLayouts,
-  type CustomTemplate,
-} from '~/lib/templates/customTemplates';
-import ezReeportMixin from '~/mixins/ezr';
+import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
+import hash from 'object-hash';
 
-type CustomFullTemplate = Omit<templates.FullTemplate, 'body'> & { body: CustomTemplate };
+import ezReeportMixin from '~/mixins/ezr';
+import useTemplateStore, { isFullTemplate } from '~/stores/template';
+
+type BodyLessFullTemplate = Omit<templates.FullTemplate, 'body'>;
 
 export default defineComponent({
   mixins: [ezReeportMixin],
@@ -90,8 +88,15 @@ export default defineComponent({
     input: (show: boolean) => show !== undefined,
     updated: (template: templates.FullTemplate) => !!template,
   },
+  setup() {
+    const templateStore = useTemplateStore();
+
+    return { templateStore };
+  },
   data: () => ({
-    item: undefined as CustomFullTemplate | undefined,
+    data: undefined as BodyLessFullTemplate | undefined,
+    dataHash: '',
+    bodyHash: '',
 
     error: '',
     loading: false,
@@ -108,14 +113,28 @@ export default defineComponent({
       };
     },
     /**
-     * Is template valid
+     * If template body was modified since last fetch
      */
-    templateValidation(): boolean {
-      if (!this.item || !this.item.body) {
+    isBodyModified() {
+      if (!this.templateStore.current) {
+        return false;
+      }
+
+      return hash(this.templateStore.current) !== this.bodyHash;
+    },
+    /**
+     * If template data was modified since last fetch
+     */
+    isModified() {
+      if (this.isBodyModified) {
         return true;
       }
 
-      return !this.item.body.layouts.find(({ _: { valid } }) => valid !== true);
+      if (!this.data) {
+        return false;
+      }
+
+      return hash(this.data) !== this.dataHash;
     },
   },
   watch: {
@@ -126,8 +145,13 @@ export default defineComponent({
     value(val: boolean) {
       if (val) {
         this.fetch();
+      } else {
+        this.templateStore.SET_CURRENT(undefined);
       }
     },
+  },
+  mounted() {
+    this.fetch();
   },
   methods: {
     /**
@@ -135,7 +159,7 @@ export default defineComponent({
      */
     async fetch() {
       if (!this.perms.readOne) {
-        this.item = undefined;
+        this.$emit('input', false);
         return;
       }
 
@@ -143,13 +167,16 @@ export default defineComponent({
       try {
         const { content } = await this.$ezReeport.sdk.templates.getTemplate(this.name);
         if (!content) {
-          throw new Error(this.$t('errors.no_data').toString());
+          throw new Error(this.$t('$ezreeport.errors.fetch').toString());
         }
 
-        // Add additional data
-        content.body.layouts = addAdditionalDataToLayouts(content.body.layouts ?? []);
+        const { body, ...data } = content;
+        this.templateStore.SET_CURRENT(body);
+        this.data = data;
 
-        this.item = content as CustomFullTemplate;
+        this.bodyHash = this.templateStore.current ? hash(this.templateStore.current) : '';
+        this.dataHash = hash(data);
+
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
@@ -160,7 +187,7 @@ export default defineComponent({
      * Save and edit template
      */
     async save() {
-      if (!this.item || this.templateValidation !== true) {
+      if (!this.data || this.templateStore.isCurrentValid !== true) {
         return;
       }
 
@@ -169,30 +196,30 @@ export default defineComponent({
         return;
       }
 
+      const body = this.templateStore.GET_CURRENT();
+      if (!body || !isFullTemplate(body)) {
+        return;
+      }
+
       this.loading = true;
       try {
-        // Remove frontend data from payload
-        const layouts = this.item.body.layouts?.map(
-          ({ _, ...insert }) => ({
-            ...insert,
-            // eslint-disable-next-line @typescript-eslint/no-shadow
-            figures: insert.figures.map(({ _, ...figure }) => figure),
-          }),
-        );
-
         const { content } = await this.$ezReeport.sdk.templates.upsertTemplate(
-          this.item.name,
+          this.data.name,
           {
-            body: {
-              ...this.item.body,
-              layouts,
-            },
-            tags: this.item.tags ?? [],
+            body,
+            tags: this.data.tags ?? [],
           },
         );
 
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { body: _, ...data } = content;
+
         this.$emit('updated', content);
-        this.$emit('input', false);
+        this.data = data;
+
+        this.bodyHash = this.templateStore.current ? hash(this.templateStore.current) : '';
+        this.dataHash = hash(data);
+
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;

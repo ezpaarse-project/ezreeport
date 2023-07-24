@@ -1,9 +1,16 @@
+import { writeFile } from 'node:fs';
+import { join } from 'node:path';
+
 import { registerFont } from 'canvas';
 import { compile as handlebars } from 'handlebars';
 import type { ImageOptions } from 'jspdf';
-import { cloneDeep, merge, omit } from 'lodash';
-import { writeFile } from 'node:fs';
-import { join } from 'node:path';
+import {
+  cloneDeep,
+  get,
+  merge,
+  omit
+} from 'lodash';
+
 import {
   expressionFunction,
   Locale as VegaLocale,
@@ -14,11 +21,13 @@ import {
 import { compile, type TopLevelSpec } from 'vega-lite';
 import type { Mark, MarkDef } from 'vega-lite/build/src/mark';
 import type { UnitSpec } from 'vega-lite/build/src/spec';
+
 import { Recurrence } from '~/lib/prisma';
 import config from '~/lib/config';
 import { appLogger as logger } from '~/lib/logger';
 import type { PDFReport } from '~/lib/pdf';
 import { calcVegaFormat } from '~/models/recurrence';
+
 import localeFR from './locales/fr-FR.json';
 import VegaLogger from './logger';
 
@@ -51,6 +60,7 @@ type SubEncoding<T extends keyof Encoding> = Exclude<Encoding[T], undefined | nu
 type CustomLayer = Omit<Layer, 'mark'> & { mark: Omit<Layer['mark'], 'type'> };
 
 type VegaParams = {
+  // Auto fields
   /**
    * Width of the graph, should match PDF viewport
    */
@@ -60,21 +70,68 @@ type VegaParams = {
    */
   height: number;
   debugExport?: boolean,
+  recurrence: Recurrence,
+  // Figure specific
   dataKey?: string,
   dataLayer?: CustomLayer;
   value: SubEncoding<'x' | 'y' | 'theta'> & { field: string };
   label: SubEncoding<'x' | 'y' | 'color'> & { field: string },
   color?: Encoding['color'] & { field: string },
-  recurrence: Recurrence,
-  title: Title,
   dataLabel?: {
     format: 'percent' | 'numeric',
+    position?: 'out' | 'in',
     showLabel?: boolean
     minValue?: number,
   }
 };
 
-export type InputVegaParams = Omit<VegaParams, 'width' | 'height'>;
+export type InputVegaParams = Omit<VegaParams, 'width' | 'height'> & { title: Title };
+
+/**
+ * Ratio between outer and inner radius.
+ * Higher means thinner, lower means wider
+ */
+const RADIUS_OUTER_INNER_RATIO = 0.5;
+
+/**
+ * Parse given title with handlebars vars. It's weird because Vega's title can be a lot of things
+ *
+ * @param title The Vega title
+ * @param inputData The data given to the figure
+ * @param dataKey The optional key to access data
+ *
+ * @returns The title to print
+ */
+export const parseTitle = (
+  title: Title,
+  inputData: Record<string, any[]> | any[],
+  dataKey?: string,
+): string | string[] => {
+  let data = [];
+  if (Array.isArray(inputData)) {
+    data = inputData;
+  } else {
+    if (!dataKey) {
+      throw new Error('Unable to parse title: data is not iterable, and no "dataKey" is present');
+    }
+    data = inputData[dataKey];
+  }
+
+  const handlebarsOpts = { length: data.length };
+  if (typeof title === 'string') {
+    return handlebars(title)(handlebarsOpts);
+  }
+  if (Array.isArray(title)) {
+    return title.map((t) => handlebars(t)(handlebarsOpts));
+  }
+  if (typeof title?.text === 'string') {
+    return handlebars(title.text)(handlebarsOpts);
+  }
+  if (Array.isArray(title?.text)) {
+    return title.text.map((t) => handlebars(t)(handlebarsOpts));
+  }
+  throw new Error('Unable to parse title: this format of params is not supported');
+};
 
 /**
  * Helper to create Vega-lite spec
@@ -99,6 +156,19 @@ export const createVegaLSpec = (
     data = inputData[params.dataKey];
   }
 
+  // Calculating arc radius if needed
+  let radius: { outer: number, inner: number, center: number } | undefined;
+  if (type === 'arc') {
+    const outer = Math.min(params.height, params.width) / 2;
+    const inner = outer * RADIUS_OUTER_INNER_RATIO;
+
+    radius = {
+      outer,
+      inner,
+      center: inner + ((outer - inner) / 2),
+    };
+  }
+
   const timeFormat = calcVegaFormat(params.recurrence);
 
   const layers: Layer[] = [];
@@ -108,7 +178,8 @@ export const createVegaLSpec = (
       mark: {
         type,
         point: true,
-        radius2: params.height / 5,
+        radius: radius?.outer,
+        radius2: radius?.inner,
       },
     },
     params.dataLayer ?? {},
@@ -150,6 +221,18 @@ export const createVegaLSpec = (
           ...params.label,
         },
       });
+
+      // Default label params
+      if (
+        encoding.color
+        && 'legend' in encoding.color
+        && encoding.color.legend
+      ) {
+        encoding.color.legend = {
+          orient: 'top-right',
+          ...encoding.color.legend,
+        };
+      }
       break;
 
     case 'bar':
@@ -164,6 +247,8 @@ export const createVegaLSpec = (
           type: 'nominal',
           timeUnit: timeFormat.timeUnit,
           ...params.label,
+          // @ts-expect-error
+          title: params.label.title || null,
           axis: {
             format: timeFormat.format,
             // @ts-ignore
@@ -182,13 +267,34 @@ export const createVegaLSpec = (
 
   // Adding datalabels
   if (params.dataLabel) {
+    const pos: Record<string, number> = {};
+    switch (params.dataLabel.position) {
+      case 'out':
+        if (radius?.center) {
+          pos.radius = radius.outer;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const mark = dataLayer.mark as any;
+
+          mark.radius -= (0.3 * radius.inner);
+          mark.radius2 = mark.radius * RADIUS_OUTER_INNER_RATIO;
+        }
+        break;
+
+      case 'in':
+      default:
+        if (radius?.center) {
+          pos.radius = radius.center;
+        }
+        break;
+    }
+
     const dLLayer: Layer = {
       mark: {
         type: 'text',
         align: 'center',
         baseline: 'top',
         dy: 5,
-        radius: type === 'arc' ? (params.height ?? 0) / 2.9 : undefined,
+        radius: type === 'arc' ? pos.radius : undefined,
       },
       encoding: {
         text: {
@@ -208,8 +314,8 @@ export const createVegaLSpec = (
     let format: ((v: string) => string) | undefined;
     switch (params.dataLabel.format) {
       case 'percent': {
-        const totalDocs = data.reduce((prev, value) => prev + value[params.value.field], 0);
-        const minValue = params.dataLabel.minValue ?? 0.02;
+        const totalDocs = data.reduce((prev, value) => prev + get(value, params.value.field), 0);
+        const minValue = params.dataLabel.minValue ?? 0.03;
         condition = `datum['${params.value.field}'] / ${totalDocs} >= ${minValue}`;
 
         format = (v) => {
@@ -239,9 +345,12 @@ export const createVegaLSpec = (
     // Showing label if needed
     if (params.dataLabel.showLabel) {
       layers.push({
-        mark: merge(cloneDeep(dLLayer.mark), {
-          dy: -7,
-        }),
+        mark: merge(
+          cloneDeep(dLLayer.mark),
+          {
+            dy: -7,
+          },
+        ),
         encoding: {
           text: {
             condition: {
@@ -263,35 +372,11 @@ export const createVegaLSpec = (
 
     layers.push(dLLayer);
   }
-
-  const title: Exclude<TopLevelSpec['title'], string | string[] | undefined> = {
-    text: '',
-    ...(typeof params.title === 'object' && !Array.isArray(params.title) ? params.title : {}),
-  };
-  const handlebarsOpts = { length: data.length };
-  if (typeof params.title === 'string') {
-    title.text = handlebars(params.title)(handlebarsOpts);
-  } else if (Array.isArray(params.title)) {
-    title.text = params.title.map((t) => handlebars(t)(handlebarsOpts));
-  } else if (typeof params.title.text === 'string') {
-    title.text = handlebars(params.title.text)(handlebarsOpts);
-  } else if (Array.isArray(params.title.text)) {
-    title.text = params.title.text.map((t) => handlebars(t)(handlebarsOpts));
-  }
-
   const spec: TopLevelSpec = {
     $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     width: params.width,
     height: params.height,
     background: 'transparent',
-    title: merge<TopLevelSpec['title'], TopLevelSpec['title']>(
-      {
-        text: '',
-        anchor: 'start',
-        dy: -5,
-      },
-      title,
-    ),
     // Adding data
     datasets: {
       default: data,

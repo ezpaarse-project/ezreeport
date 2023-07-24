@@ -1,5 +1,10 @@
 import { parseISO } from 'date-fns';
 
+// Extracted from Prisma
+export type JsonObject = { [Key in string]?: JsonValue };
+export type JsonArray = JsonValue[];
+export type JsonValue = string | number | boolean | JsonObject | JsonArray | null;
+
 /**
  * Async version of `setTimeout`
  *

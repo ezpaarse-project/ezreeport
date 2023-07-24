@@ -1,73 +1,78 @@
 <template>
   <v-row class="mx-0">
     <TemplateDialogRead
-      v-if="taskTemplate && perms.readOne"
+      v-if="taskTemplate && readTemplateDialogShown && perms.readOne"
       v-model="readTemplateDialogShown"
       :name="taskTemplate.extends"
+      @input="loadTemplateBackup"
     />
 
     <v-col style="position: relative">
-      <v-switch :label="$t('show-raw')" v-model="rawTemplateShown" />
-
       <v-row>
         <!-- Global options -->
         <v-col>
           <v-select
             v-if="taskTemplate"
             :value="taskTemplate.extends"
-            :label="$t('headers.base')"
-            :items="availableTemplates || [taskTemplate.extends]"
+            :label="$t('$ezreeport.templates.base')"
+            :items="templateStore.available || [taskTemplate.extends]"
             :readonly="loading"
-            @change="onExtendChange"
+            item-value="name"
+            item-text="name"
+            @change="onTemplateUpdate({ extends: $event })"
           >
             <template #append-outer>
               <v-btn v-if="perms.readOne" @click="openBaseDialog()">
-                {{ $t('actions.see-extends') }}
+                {{ $t('$ezreeport.open') }}
               </v-btn>
             </template>
           </v-select>
 
-          <v-select
-            v-if="fullTemplate"
-            :label="$t('headers.renderer')"
-            :value="fullTemplate.renderer || 'vega-pdf'"
-            :items="availableRenderer"
-            @change="
-              fullTemplate
-                && onTemplateUpdate({ ...fullTemplate, renderer: $event })
-            "
-          />
-
-          <v-sheet
-            rounded
-            outlined
-            class="my-2 pa-2"
-          >
-            <ToggleableObjectTree
-              :label="$t('headers.fetchOptions').toString()"
-              :value="template.fetchOptions || {}"
-              @input="
-                !Array.isArray($event)
-                  && onTemplateUpdate({ ...template, fetchOptions: $event })
-              "
+          <div class="d-flex" style="gap: 1rem">
+            <v-text-field
+              v-if="taskTemplate"
+              :value="templateStore.currentFetchOptions?.index"
+              :label="$t('$ezreeport.fetchOptions.index').toString()"
+              :rules="rules.index"
+              dense
+              class="pt-4"
+              @input="onFetchOptionUpdate({ index: $event })"
             />
-          </v-sheet>
 
-          <v-sheet
-            v-if="fullTemplate"
-            rounded
-            outlined
-            class="my-2 pa-2"
-          >
-            <ToggleableObjectTree
-              :label="$t('headers.renderOptions').toString()"
-              :value="fullTemplate.renderOptions || {}"
-              @input="
-                fullTemplate && !Array.isArray($event)
-                  && onTemplateUpdate({ ...fullTemplate, renderOptions: $event })
-              "
+            <v-text-field
+              :value="templateStore.currentFetchOptions?.dateField"
+              :label="$t('$ezreeport.fetchOptions.dateField').toString()"
+              :rules="rules.dateField"
+              :placeholder="templateStore.extended?.fetchOptions?.dateField"
+              :persistent-placeholder="!!taskTemplate"
+              dense
+              class="pt-4"
+              @input="onFetchOptionUpdate({ dateField: $event })"
             />
-          </v-sheet>
+          </div>
+
+          <CustomSection
+            :label="$t('$ezreeport.fetchOptions.filters').toString()"
+            :collapse-disabled="(templateStore.currentFetchOptions?.filtersCount ?? 0) <= 0"
+            collapsable
+          >
+            <template #actions>
+              <v-btn
+                icon
+                x-small
+                color="success"
+                @click="onFilterCreated"
+              >
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </template>
+
+            <ElasticFilterBuilder
+              ref="filterBuilder"
+              :value="templateStore.currentFetchOptions?.filters ?? {}"
+              @input="onFilterUpdate"
+            />
+          </CustomSection>
         </v-col>
       </v-row>
 
@@ -84,9 +89,9 @@
             <v-icon>mdi-chevron-{{ templateEditorCollapsed === false ? 'up' : 'down' }}</v-icon>
           </v-btn>
 
-          {{ $t('headers.layouts', { count: mergedLayouts.length }) }}
+          {{ $tc('$ezreeport.templates.editor', templateStore.currentLayouts.length) }}
 
-          <v-tooltip top v-if="layoutValidation !== true" color="warning">
+          <v-tooltip top v-if="areLayoutsValid !== true" color="warning">
             <template #activator="{ attrs, on }">
               <v-icon
                 color="warning"
@@ -98,104 +103,160 @@
               </v-icon>
             </template>
 
-            <span>{{ layoutValidation }}</span>
+            <span>{{ areLayoutsValid }}</span>
           </v-tooltip>
         </v-card-subtitle>
 
         <v-divider />
 
-        <v-card-text v-show="!templateEditorCollapsed" class="pb-0" style="height: 650px">
-          <v-row style="height: 100%">
-            <LayoutDrawer
-              v-model="selectedLayoutIndex"
-              :items="mergedLayouts"
-              :mode="modes.drawerMode"
-              class="ml-n1"
-              @update:items="onLayoutListUpdate"
-            />
+        <v-card-text
+          v-show="!templateEditorCollapsed"
+          :class="['pa-0', $vuetify.theme.dark ? 'grey darken-3' : 'grey lighten-4']"
+        >
+          <v-row class="ma-0" style="height: 600px;">
+            <v-col cols="2" class="pa-0" style="height: 100%;">
+              <LayoutDrawer
+                v-model="selectedLayoutId"
+                :mode="modes.drawerMode"
+              />
+            </v-col>
 
-            <v-divider vertical style="margin-left: 1px" />
+            <v-divider vertical />
 
-            <LayoutViewer
-              v-if="selectedLayout"
-              :items="selectedLayout.figures"
-              :grid="grid"
-              :mode="modes.viewerMode"
-              class="editor-panel ma-0"
-              @update:items="onFigureListUpdate"
-            />
+            <v-col class="pa-0" style="margin-left: 1px;">
+              <LayoutViewer
+                v-if="selectedLayout"
+                :value="selectedLayoutId"
+                :mode="selectedLayout.at !== undefined ? 'allowed-edition' : modes.viewerMode"
+                style="height: 100%;"
+              />
+            </v-col>
           </v-row>
         </v-card-text>
       </v-card>
+
+      <CustomSection
+        :label="$t('$ezreeport.advanced_parameters').toString()"
+        :default-value="true"
+        collapsable
+      >
+        <v-switch
+          :label="$t('$ezreeport.show_json')"
+          v-model="rawTemplateShown"
+        />
+
+        <v-select
+          v-if="fullTemplate"
+          :label="$t('$ezreeport.templates.renderer')"
+          :value="fullTemplate.renderer"
+          :items="availableRenderer"
+          placeholder="vega-pdf"
+          persistent-placeholder
+          @change="
+            fullTemplate
+              && onTemplateUpdate({ ...fullTemplate, renderer: $event })
+          "
+        />
+
+        <CustomSection>
+          <ToggleableObjectTree
+            :label="$t('$ezreeport.fetchOptions.title').toString()"
+            :value="templateStore.currentFetchOptions?.others ?? {}"
+            @input="
+              !Array.isArray($event)
+                && onFetchOptionUpdate({ ...$event })
+            "
+          />
+        </CustomSection>
+
+        <CustomSection v-if="fullTemplate">
+          <ToggleableObjectTree
+            :label="$t('$ezreeport.templates.renderOptions').toString()"
+            :value="fullTemplate.renderOptions || {}"
+            @input="
+              fullTemplate && !Array.isArray($event)
+                && onTemplateUpdate({ ...fullTemplate, renderOptions: $event })
+            "
+          />
+        </CustomSection>
+      </CustomSection>
 
       <ErrorOverlay v-model="error" />
     </v-col>
 
     <v-slide-x-reverse-transition>
       <v-col v-if="rawTemplateShown" cols="5">
-        <JSONPreview :value="template" class="mt-4" />
+        <JSONPreview :value="rawTemplate" />
       </v-col>
     </v-slide-x-reverse-transition>
   </v-row>
 </template>
 
 <script lang="ts">
-import { defineComponent, type PropType } from 'vue';
-import {
-  addAdditionalDataToLayouts,
-  type AnyCustomTemplate,
-  type CustomTemplate,
-  type CustomTaskTemplate,
-  type AnyCustomLayout,
-  type AnyCustomFigure,
-  type CustomTaskLayout,
-} from '~/lib/templates/customTemplates';
+import { defineComponent } from 'vue';
+import { cloneDeep, merge, pick } from 'lodash';
+import { type AnyCustomTemplate, type CustomTemplate, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
+import useTemplateStore, {
+  isFullTemplate,
+  isTaskTemplate,
+  mapRulesToVuetify,
+  supportedFetchOptions,
+} from '~/stores/template';
+import type ElasticFilterBuilderConstructor from '../../utils/elastic/filters/ElasticFilterBuilder.vue';
+
+type ElasticFilterBuilder = InstanceType<typeof ElasticFilterBuilderConstructor>;
 
 export default defineComponent({
   mixins: [ezReeportMixin],
-  props: {
-    template: {
-      type: Object as PropType<AnyCustomTemplate>,
-      default: undefined,
-    },
-  },
-  emits: {
-    'update:template': (val: AnyCustomTemplate) => !!val,
-    'update:full-template': (val: CustomTemplate) => !!val,
-    'update:task-template': (val: CustomTaskTemplate) => !!val,
+  setup() {
+    const templateStore = useTemplateStore();
+
+    return { templateStore };
   },
   data: () => ({
     readTemplateDialogShown: false,
     rawTemplateShown: false,
     templateEditorCollapsed: true,
 
-    availableTemplates: [] as string[],
-    availableFetchers: ['', 'elastic'],
+    currentTemplateBackup: undefined as AnyCustomTemplate | undefined,
+
     availableRenderer: ['vega-pdf'],
 
-    extendedTemplate: undefined as CustomTemplate | undefined,
-    selectedLayoutIndex: 0,
+    selectedLayoutId: '',
 
     loading: false,
     error: '',
   }),
   computed: {
     /**
+     * The current edited template
+     */
+    template: {
+      get(): AnyCustomTemplate | undefined {
+        if (this.currentTemplateBackup) {
+          return this.currentTemplateBackup;
+        }
+        return this.templateStore.current;
+      },
+      set(val: AnyCustomTemplate) {
+        this.templateStore.current = val;
+      },
+    },
+    /**
      * User permissions
      */
     perms() {
       const has = this.$ezReeport.hasGeneralPermission;
       return {
-        realAll: has('templates-get'),
         readOne: has('templates-get-name(*)'),
       };
     },
     /**
-     * Template as JSON
+     * General validation rules
      */
-    rawTemplate(): string {
-      return JSON.stringify(this.template, undefined, 2);
+    rules() {
+      return mapRulesToVuetify(this.templateStore.rules.template, (k) => this.$t(k));
     },
     /**
      * The template of a task. If the provided template isn't from a task, return undefined
@@ -203,9 +264,10 @@ export default defineComponent({
      * Used to simplify casts in TS
      */
     taskTemplate(): CustomTaskTemplate | undefined {
-      if ('extends' in this.template) {
+      if (isTaskTemplate(this.template)) {
         return this.template;
       }
+
       return undefined;
     },
     /**
@@ -214,59 +276,20 @@ export default defineComponent({
      * Used to simplify casts in TS
      */
     fullTemplate(): CustomTemplate | undefined {
-      // Not using this.taskTemplate cause of TS casting
-      if ('extends' in this.template) {
-        return undefined;
+      if (isFullTemplate(this.template)) {
+        return this.template;
       }
-      return this.template;
+      return undefined;
     },
     /**
      * The base template. If the provided template is from a task,
      * return the template that it extends, return self otherwise
      */
     baseTemplate(): CustomTemplate | undefined {
-      if (this.taskTemplate) {
-        return this.extendedTemplate;
+      if (isTaskTemplate(this.template)) {
+        return this.templateStore.extended;
       }
       return this.fullTemplate;
-    },
-    /**
-     * The grid of the template. Used to get possible slots for figures.
-     */
-    grid() {
-      const grid = this.baseTemplate?.renderOptions?.grid ?? { cols: 2, rows: 2 };
-      if (!grid || typeof grid !== 'object' || Array.isArray(grid)) {
-        return { cols: 2, rows: 2 };
-      }
-      return grid as { cols: number, rows: number };
-    },
-    /**
-     * The merged list of the task layouts and the base template
-     */
-    mergedLayouts(): AnyCustomLayout[] {
-      if (this.fullTemplate) {
-        return this.fullTemplate.layouts;
-      }
-
-      // Base layouts
-      const layouts = [...(this.baseTemplate?.layouts ?? [])];
-      // Layouts to insert
-      const inserts = [...(this.taskTemplate?.inserts ?? [])];
-      // eslint-disable-next-line no-restricted-syntax
-      for (const layout of inserts) {
-        layouts.splice(layout.at, 0, layout);
-      }
-      return layouts;
-    },
-    /**
-     * The current layout selected, based on layoutIndexSelected
-     */
-    selectedLayout(): AnyCustomLayout | undefined {
-      if (this.selectedLayoutIndex < 0 || this.selectedLayoutIndex >= this.mergedLayouts.length) {
-        return undefined;
-      }
-
-      return this.mergedLayouts[this.selectedLayoutIndex];
     },
     /**
      * Various modes base on current props for various components
@@ -275,7 +298,7 @@ export default defineComponent({
       if (this.taskTemplate) {
         return {
           drawerMode: 'task-edition',
-          viewerMode: this.selectedLayout?.at === undefined ? 'denied-edition' : 'allowed-edition',
+          viewerMode: 'denied-edition',
         };
       }
 
@@ -285,264 +308,116 @@ export default defineComponent({
       };
     },
     /**
-     * Is template layouts valid
+     * The selected template to edit it's figures
      */
-    layoutValidation(): true | string {
-      const invalidIndex = this.mergedLayouts.findIndex(({ _: { valid } }) => valid !== true);
-      if (invalidIndex >= 0) {
-        return this.$t(
-          'errors.layouts._detail',
-          {
-            at: invalidIndex,
-            valid: this.mergedLayouts[invalidIndex]._.valid,
-          },
-        ).toString();
+    selectedLayout() {
+      return this.templateStore.currentLayouts.find(
+        ({ _: { id } }) => id === this.selectedLayoutId,
+      );
+    },
+    /**
+     * The detailed error on any layout
+     */
+    areLayoutsValid() {
+      const layouts = this.templateStore.currentLayouts;
+      const index = layouts.findIndex(({ _: { valid } }) => valid !== true);
+      const valid = layouts[index]?._.valid ?? true;
+      if (valid === true) {
+        return true;
       }
-      return true;
+
+      let error = this.$t(valid.i18nKey);
+      if (valid.field) {
+        error += ` (${valid.field})`;
+      }
+      if (valid.figure !== undefined) {
+        error = this.$t('$ezreeport.figures.errors._detail', { at: valid.figure, valid: error });
+      }
+      if (valid.layout !== undefined) {
+        error = this.$t('$ezreeport.layouts.errors._detail', { at: valid.layout, valid: error });
+      }
+      return error;
+    },
+    /**
+     * The template without any client side feature (ids, validation, etc.)
+     */
+    rawTemplate() {
+      return this.templateStore.GET_CURRENT();
     },
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.data.auth.permissions': function () {
-      this.fetch();
-      this.fetchBase();
-    },
-    template() {
-      // Show editor if needed
-      if ('inserts' in this.template) {
-        this.templateEditorCollapsed = (this.template.inserts?.length ?? 0) === 0;
-      }
-      if ('layouts' in this.template) {
-        this.templateEditorCollapsed = this.template.layouts.length === 0;
-      }
+    'templateStore.current': function () {
+      this.initEditorCollapsed();
     },
   },
   mounted() {
-    // Fetch some info
-    this.fetch();
-    this.fetchBase();
-
-    // Show editor if needed
-    if ('inserts' in this.template) {
-      this.templateEditorCollapsed = (this.template.inserts?.length ?? 0) === 0;
-    }
-    if ('layouts' in this.template) {
-      this.templateEditorCollapsed = this.template.layouts.length === 0;
-    }
+    this.initEditorCollapsed();
   },
   methods: {
     /**
-     * Test if layout is valid
-     *
-     * @param layout The layout
+     * Show editor if needed
      */
-    validateLayout(layout: AnyCustomLayout): true | string {
-      if (layout._.valid !== true) return layout._.valid;
-
-      const isLayoutEmpty = layout.figures.length === 0;
-      if (!isLayoutEmpty) this.$t('errors.figures.length').toString();
-
-      const isLayoutManual = layout.figures.every(({ slots }) => !!slots);
-      const isLayoutAuto = layout.figures.every(({ slots }) => !slots);
-      if (isLayoutManual === isLayoutAuto) return this.$t('errors.figures.mixed').toString();
-
-      return true;
-    },
-    /**
-     * Fetch all available templates
-     */
-    async fetch() {
-      if (!this.perms.realAll) {
-        return;
+    initEditorCollapsed() {
+      if (this.taskTemplate) {
+        this.templateEditorCollapsed = (this.taskTemplate.inserts?.length ?? 0) === 0;
       }
 
-      this.loading = true;
-      try {
-        const { content } = await this.$ezReeport.sdk.templates.getAllTemplates();
-        if (!content) {
-          throw new Error(this.$t('errors.no_data').toString());
-        }
-
-        this.availableTemplates = content.map(({ name }) => name);
-        this.error = '';
-      } catch (error) {
-        this.error = (error as Error).message;
+      if (this.fullTemplate) {
+        this.templateEditorCollapsed = this.fullTemplate.layouts.length === 0;
       }
-      this.loading = false;
-    },
-    /**
-     * Fetch base template that the current template is extending
-     *
-     * Doesn't do anything if it's not the template of task
-     */
-    async fetchBase() {
-      if (!this.taskTemplate || !this.perms.readOne) {
-        return;
-      }
-
-      this.loading = true;
-      try {
-        const { content } = await this.$ezReeport.sdk.templates.getTemplate(
-          this.taskTemplate.extends,
-        );
-
-        // Add additional data
-        content.body.layouts = addAdditionalDataToLayouts(content.body.layouts);
-
-        this.extendedTemplate = content.body as CustomTemplate;
-        this.error = '';
-      } catch (error) {
-        this.error = (error as Error).message;
-      }
-      this.loading = false;
     },
     /**
      * Prepare and open dialog of base template
      */
     async openBaseDialog() {
-      await this.fetchBase();
+      this.currentTemplateBackup = cloneDeep(this.template);
       await this.$nextTick();
       this.readTemplateDialogShown = true;
-    },
-    /**
-     * Called when the base template change
-     *
-     * @param value
-     */
-    async onExtendChange(value: string) {
-      this.onTemplateUpdate({ ...this.template, extends: value });
-      await this.$nextTick();
-      this.fetchBase();
     },
     /**
      * Called when the template is updated
      *
      * @param value The new template
      */
-    onTemplateUpdate(value: AnyCustomTemplate) {
-      this.$emit('update:template', value);
-      if ('layouts' in value) {
-        this.$emit('update:full-template', value);
-      } else {
-        this.$emit('update:task-template', value);
-      }
-    },
-    /**
-     * Update template with new layouts
-     *
-     * @param value The new layouts
-     */
-    onLayoutListUpdate(value: AnyCustomLayout[]) {
-      const items = value.map((l) => ({
-        ...l,
-        _: {
-          ...l._,
-          valid: this.validateLayout(l),
-        },
-      }));
-
-      if (this.taskTemplate) {
-        const baseLayoutsIds = this.baseTemplate?.layouts.map(({ _: { id } }) => id) ?? [];
-        const inserts = items.filter(
-          ({ _: { id } }) => !baseLayoutsIds.includes(id),
-        ) as CustomTaskLayout[];
-
-        this.onTemplateUpdate({
-          ...this.taskTemplate,
-          inserts,
-        });
-      }
-
-      if (this.fullTemplate) {
-        this.onTemplateUpdate({
-          ...this.fullTemplate,
-          layouts: items,
-        });
-      }
-    },
-    /**
-     * Update current template with new figures
-     *
-     * @param value The new figures
-     */
-    onFigureListUpdate(value: AnyCustomFigure[]) {
-      if (!this.selectedLayout) {
+    onTemplateUpdate(value: Partial<AnyCustomTemplate>) {
+      if (!this.template) {
         return;
       }
 
-      const invalidIndex = value.findIndex(({ _: { valid } }) => valid !== true);
-      let valid: true | string = true;
-      if (invalidIndex >= 0) {
-        valid = this.$t(
-          'errors.figures._detail',
-          {
-            at: invalidIndex,
-            valid: value[invalidIndex]._.valid,
-          },
-        ).toString();
-      }
-
-      const layouts = [...this.mergedLayouts];
-      layouts.splice(this.selectedLayoutIndex, 1, {
-        ...this.selectedLayout,
-        // Set validation state based on figures
-        _: {
-          ...this.selectedLayout._,
-          valid,
-        },
-        // Set figures
-        figures: value,
+      this.template = {
+        ...this.template,
+        ...value,
+      };
+    },
+    onFetchOptionUpdate(value: Record<string, any>) {
+      this.onTemplateUpdate({
+        fetchOptions: merge(
+          {},
+          pick(this.templateStore.current?.fetchOptions ?? {}, supportedFetchOptions),
+          value,
+        ),
       });
-      this.onLayoutListUpdate(layouts);
+    },
+    onFilterCreated() {
+      const builder = this.$refs.filterBuilder as ElasticFilterBuilder | undefined;
+      builder?.onElementCreated();
+    },
+    onFilterUpdate(filters: Record<string, any>) {
+      this.onTemplateUpdate({
+        fetchOptions: {
+          ...(this.template?.fetchOptions ?? {}),
+          filters,
+        },
+      });
+    },
+    loadTemplateBackup() {
+      this.template = cloneDeep(this.currentTemplateBackup);
+      this.currentTemplateBackup = undefined;
     },
   },
 });
 </script>
 
 <style lang="scss" scoped>
-.editor-panel {
-  height: 100%;
-  flex: 1;
-}
 </style>
-
-<i18n lang="yaml">
-en:
-  show-raw: 'Show JSON'
-  headers:
-    renderer: 'Renderer'
-    fetcher: 'Fetcher'
-    base: 'Base template'
-    fetchOptions: 'Fetch options'
-    renderOptions: 'Render options'
-    layouts: 'Page editor ({count} pages)'
-  actions:
-    see-extends: 'See base'
-  errors:
-    no_data: 'An error occurred when fetching data'
-    layouts:
-      _detail: 'Page {at}: {valid}'
-    figures:
-      _detail: 'Figure {at}: {valid}'
-      length: 'All pages must contains at least one figure'
-      mixed: 'All figures must be placed the same way (auto or manually)'
-fr:
-  show-raw: 'Afficher JSON'
-  headers:
-    renderer: 'Moteur de rendu'
-    fetcher: 'Outil de récupération'
-    base: 'Modèle de base'
-    fetchOptions: 'Options de récupération'
-    renderOptions: 'Options de rendu'
-    layouts: 'Éditeur de pages ({count} pages)'
-  actions:
-    see-extends: 'Voir la base'
-  errors:
-    no_data: 'Une erreur est survenue lors de la récupération des données'
-    layouts:
-      _detail: 'Page {at}: {valid}'
-    figures:
-      _detail: 'Visualisation {at}: {valid}'
-      length: 'Chaque page doit contenir au moins une visualisation'
-      mixed: 'Toutes les visualisations doivent être placée de la même façon (auto ou manuellement)'
-</i18n>

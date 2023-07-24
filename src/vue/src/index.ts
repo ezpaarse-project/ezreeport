@@ -1,13 +1,37 @@
+/* eslint-disable no-restricted-syntax */
 import type VueApp from 'vue';
+import type VueI18n from 'vue-i18n';
+import { PiniaVuePlugin } from 'pinia';
 import components from './components';
+import { version } from '../package.json';
+
+import fr from './locales/fr.json';
+import en from './locales/en.json';
 
 import './style';
 
+const i18nKey = '$ezreeport';
+const i18nMessages = {
+  fr,
+  en,
+};
+
+type Options = {
+  i18n?: InstanceType<typeof VueI18n>,
+};
+
 export default {
-  install(app: typeof VueApp) {
-    // eslint-disable-next-line no-restricted-syntax
+  version,
+  install(app: typeof VueApp, options?: Options) {
+    app.use(PiniaVuePlugin);
     for (const [name, component] of Object.entries(components)) {
       app.component(name, component);
+    }
+
+    if (options?.i18n) {
+      for (const [locale, msgs] of Object.entries(i18nMessages)) {
+        options.i18n.mergeLocaleMessage(locale, { [i18nKey]: (msgs as any) });
+      }
     }
   },
 };

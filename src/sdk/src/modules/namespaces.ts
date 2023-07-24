@@ -15,7 +15,18 @@ export interface Namespace extends Omit<RawNamespace, 'createdAt' | 'updatedAt'>
   updatedAt?: Date,
 }
 
-// Private export
+export interface TaskCount {
+  _count: {
+    tasks: number,
+  }
+}
+
+export interface MembersCount {
+  _count: {
+    memberships: number,
+  }
+}
+
 /**
  * Transform raw data from JSON, to JS usable data
  *

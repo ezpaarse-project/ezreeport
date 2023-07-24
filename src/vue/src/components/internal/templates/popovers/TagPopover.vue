@@ -10,11 +10,13 @@
     min-width="450"
     @input="$emit('input', $event)"
   >
-    <v-card v-if="tagValue">
+    <v-card>
       <v-card-title>
         <v-text-field
-          v-model="tagValue.name"
+          v-model="innerName"
           :label="$t('headers.name')"
+          :rules="rules.name"
+          @blur="updateTag({ name: innerName })"
         />
 
         <v-spacer />
@@ -25,47 +27,41 @@
       </v-card-title>
 
       <v-card-text style="position: relative">
-        <v-menu
-          :close-on-content-click="false"
-          transition="fade-transition"
-          min-width="auto"
-        >
-          <template #activator="{ attrs, on }">
-            <v-text-field
-              :label="$t('headers.color')"
-              :value="tagValue.color"
-              readonly
-              v-bind="attrs"
-              v-on="on"
-            >
-              <template #prepend>
-                <v-chip :color="tagValue.color" small />
-              </template>
-            </v-text-field>
-          </template>
+        <v-form v-model="valid">
+          <v-menu
+            :close-on-content-click="false"
+            transition="fade-transition"
+            min-width="auto"
+          >
+            <template #activator="{ attrs, on }">
+              <v-text-field
+                :label="$t('headers.color')"
+                :value="tag.color || defaultColor"
+                :rules="rules.color"
+                readonly
+                v-bind="attrs"
+                v-on="on"
+              >
+                <template #prepend>
+                  <v-chip :color="tag.color" small />
+                </template>
+              </v-text-field>
+            </template>
 
-          <v-color-picker
-            v-model="tagValue.color"
-          />
-        </v-menu>
-
+            <v-color-picker
+              :value="tag.color || defaultColor"
+              @input="updateTag({ color: $event })"
+            />
+          </v-menu>
+        </v-form>
       </v-card-text>
 
       <v-card-actions>
-
         <v-btn
           color="error"
-          @click="onDelete">
-          {{ $t('actions.delete') }}
-        </v-btn>
-
-        <v-spacer />
-
-        <v-btn
-          color="success"
-          @click="onConfirm"
+          @click="onDelete"
         >
-          {{ $t('actions.confirm') }}
+          {{ $t('actions.delete') }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -73,9 +69,10 @@
 </template>
 
 <script lang="ts">
-import { cloneDeep } from 'lodash';
 import { defineComponent, type PropType } from 'vue';
-import { Tag } from '../forms/TagsForm.vue';
+import type { Tag } from '../forms/TagsForm.vue';
+
+const hexRegex = /^#[0-9A-F]{3}([0-9A-F]{3})?([0-9A-F]{2})?$/i;
 
 export default defineComponent({
   props: {
@@ -94,31 +91,75 @@ export default defineComponent({
   },
   emits: {
     input: (show: boolean) => show !== undefined,
-    updated: (tag: Tag, oldName: Tag['name']) => !!tag && !!oldName,
-    deleted: (tag: Tag) => !!tag,
+    'update:tag': (tag: Tag, oldName: Tag['name']) => !!tag && !!oldName,
+    'delete:tag': (tag: Tag) => !!tag,
   },
   data: () => ({
-    tagValue: undefined as Tag | undefined,
+    innerValid: false,
+    innerName: '',
   }),
+  computed: {
+    rules() {
+      return {
+        name: [
+          (v: string) => !!v || this.$t('$ezreeport.errors.empty'),
+        ],
+        color: [
+          (v?: string) => !v || hexRegex.test(v) || this.$t('errors.hex_format'),
+        ],
+      };
+    },
+    /**
+     * Form validation state + name validation, which is outside of form
+     */
+    valid: {
+      get(): boolean {
+        return this.innerValid
+          && this.rules.name.every((rule) => rule(this.innerName) === true);
+      },
+      set(value: boolean) {
+        this.innerValid = value;
+      },
+    },
+    defaultColor() {
+      if (this.$vuetify.theme.dark) {
+        return '#555555';
+      }
+      return '#E0E0E0';
+    },
+  },
   watch: {
     value(val: boolean) {
       if (val) {
-        this.tagValue = cloneDeep(this.tag);
+        this.innerName = this.tag.name;
       }
     },
   },
   methods: {
-    onDelete() {
-      if (this.tagValue) {
-        this.$emit('deleted', this.tagValue);
-        this.$emit('input', false);
+    updateTag(data: Partial<Tag>) {
+      if (!this.valid) {
+        return;
       }
+
+      // Removing value if default of vuetify
+      const defaultColorRegex = new RegExp(`^${this.defaultColor}(FF)?$`, 'i');
+      if (data.color && defaultColorRegex.test(data.color)) {
+        // eslint-disable-next-line no-param-reassign
+        data.color = undefined;
+      }
+
+      this.$emit(
+        'update:tag',
+        {
+          ...this.tag,
+          ...data,
+        },
+        this.tag.name,
+      );
     },
-    onConfirm() {
-      if (this.tagValue) {
-        this.$emit('updated', this.tagValue, this.tag.name);
-        this.$emit('input', false);
-      }
+    onDelete() {
+      this.$emit('delete:tag', this.tag);
+      this.$emit('input', false);
     },
   },
 });
@@ -136,6 +177,8 @@ en:
   actions:
     delete: 'Delete'
     confirm: 'Confirm'
+  errors:
+    hex_format: 'HEX_FORMAT'
 fr:
   headers:
     name: 'Nom'
@@ -143,4 +186,6 @@ fr:
   actions:
     delete: 'Supprimer'
     confirm: 'Confirmer'
+  errors:
+    hex_format: 'HEX_FORMAT'
 </i18n>

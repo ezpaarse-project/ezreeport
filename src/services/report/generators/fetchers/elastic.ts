@@ -1,35 +1,48 @@
+import EventEmitter from 'node:events';
+
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import Joi from 'joi';
 import { cloneDeep, merge } from 'lodash';
-import EventEmitter from 'node:events';
+
 import { Recurrence, type Prisma } from '~/lib/prisma';
 import { formatISO } from '~/lib/date-fns';
 import { elasticCount, elasticSearch } from '~/lib/elastic';
+
 import { calcElasticInterval } from '~/models/recurrence';
 import { ArgumentError } from '~/types/errors';
 
 type ElasticFilters = ElasticTypes.QueryDslQueryContainer;
 type ElasticAggregation = ElasticTypes.AggregationsAggregationContainer;
+type CustomAggregation = (
+  Omit<ElasticAggregation, 'aggregations' | 'aggs'>
+  & { name?: string, aggregations?: CustomAggregation[], aggs?: CustomAggregation[] }
+);
 
 interface FetchOptions {
+  // Auto fields
   recurrence: Recurrence,
   period: Interval,
-  filters?: ElasticFilters,
+  // Namespace specific
+  auth: { username: string },
+  // Template specific
+  dateField: string,
   /**
    * @deprecated Not used anymore
-   */
+  */
   indexPrefix?: string,
+  // Task specific
   /**
    * @deprecated Replaced by `index`
-   */
+  */
   indexSuffix?: string,
   index?: string,
-  auth: { username: string },
+  filters?: ElasticFilters,
+  aggs?: CustomAggregation[],
   fetchCount?: string,
-  aggs?: (ElasticAggregation & { name?: string })[];
 }
 
 const optionSchema = Joi.object<FetchOptions>({
+  // Auto fields
   recurrence: Joi.string().valid(
     Recurrence.DAILY,
     Recurrence.WEEKLY,
@@ -42,15 +55,18 @@ const optionSchema = Joi.object<FetchOptions>({
     start: Joi.date().required(),
     end: Joi.date().required(),
   }).required(),
-  filters: Joi.object(),
-  indexPrefix: Joi.string().allow(''), // @deprecated Use `index` instead
-  indexSuffix: Joi.string().allow(''), // @deprecated Use `index` instead
-  index: Joi.string().allow(''),
+  // Namespace specific
   auth: Joi.object({
     username: Joi.string().required(),
   }).required(),
-  fetchCount: Joi.string(),
+  indexPrefix: Joi.string().allow(''), // @deprecated Use `index` instead
+  // Task specific
+  indexSuffix: Joi.string().allow(''), // @deprecated Use `index` instead
+  index: Joi.string().allow(''),
+  filters: Joi.object(),
   aggs: Joi.array(),
+  fetchCount: Joi.string(),
+  dateField: Joi.string().required(),
 });
 
 /**
@@ -69,6 +85,119 @@ const isFetchOptions = (data: unknown): data is FetchOptions => {
   return true;
 };
 
+type AggInfo = {
+  name: string,
+  subAggs: AggInfo[],
+};
+
+/**
+ * Parse aggregations in order to calculate keys when cleaning elastic response
+ *
+ * @param agg The aggregation
+ * @param i The index, used to generate default name
+ *
+ * @returns The info about aggregation
+ */
+const parseAggInfo = (agg: CustomAggregation, i: number): AggInfo => {
+  const name = agg.name || `agg${i}`;
+
+  let subAggs: AggInfo[] = [];
+  if (agg.aggs || agg.aggregations) {
+    const key = agg.aggs ? 'aggs' : 'aggregations';
+    subAggs = agg[key]?.map(parseAggInfo) ?? [];
+  }
+
+  return {
+    name,
+    subAggs,
+  };
+};
+
+/**
+ * Transforms custom aggregation format into elastic one
+ *
+ * @param prev The previous aggregations
+ * @param param1 The aggregation
+ * @param calendar_interval The calendar interval guessed from task's recurrence
+ * @param aggsInfo Info about agg
+ *
+ * @returns The elastic aggregations
+ */
+const reduceAggs = (
+  prev: Record<string, ElasticAggregation>,
+  { name: _name, ...rawAgg }: CustomAggregation,
+  calendar_interval: string,
+  aggsInfo: AggInfo,
+) => {
+  let agg = rawAgg;
+  // Add calendar_interval
+  if (rawAgg.date_histogram) {
+    agg = merge({}, agg, { date_histogram: { calendar_interval } });
+  }
+  // Add default missing value
+  if (rawAgg.terms) {
+    agg = merge({}, { terms: { missing: 'Non renseigné' } }, agg);
+  }
+
+  // Handle sub aggregations
+  if (rawAgg.aggs || rawAgg.aggregations) {
+    const key = rawAgg.aggs ? 'aggs' : 'aggregations';
+    agg[key] = rawAgg[key]?.reduce(
+      (subPrev, subAgg, i) => reduceAggs(subPrev, subAgg, calendar_interval, aggsInfo.subAggs[i]),
+      {} as Record<string, ElasticAggregation>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ) as any;
+  }
+
+  return {
+    ...prev,
+    [aggsInfo.name]: agg as ElasticAggregation,
+  };
+};
+
+/**
+ * Cleans aggregation results from elastic
+ *
+ * @param info Info about aggregation
+ * @param value Value of the sub aggregation. WILL BE MODIFIED.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const setSubAggValues = (info: AggInfo, value: any) => {
+  const data = value[info.name];
+
+  if (info.subAggs.length > 0) {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const subAgg of info.subAggs) {
+      setSubAggValues(subAgg, data);
+    }
+    return;
+  }
+
+  if ('buckets' in data) {
+    // eslint-disable-next-line no-param-reassign
+    value[info.name] = data.buckets;
+    return;
+  }
+
+  if ('value' in data) {
+    // eslint-disable-next-line no-param-reassign
+    value[info.name] = data;
+    return;
+  }
+
+  const hits = data?.hits?.hits ?? [];
+  // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
+  value[info.name] = hits.map(({ _source }: any) => _source);
+};
+
+/**
+ * Fetch data from elastic
+ *
+ * @param options Params
+ * @param _events Event Emitter
+ *
+ * @returns The data fetched and cleaned
+ */
 export default async (
   options: Record<string, unknown> | FetchOptions,
   _events: EventEmitter = new EventEmitter(),
@@ -83,50 +212,41 @@ export default async (
     throw new ArgumentError('You must precise an index before trying to fetch data from elastic');
   }
 
+  const { filter, ...otherFilters } = (options.filters ?? {}) as any;
   const baseOpts: ElasticTypes.SearchRequest = {
     index,
     body: {
       query: {
         bool: {
-          ...(options.filters ?? {}),
-          filter: {
-            range: {
-              datetime: {
-                gte: formatISO(options.period.start),
-                lte: formatISO(options.period.end),
+          ...otherFilters,
+          filter: [
+            {
+              range: {
+                [options.dateField]: {
+                  gte: formatISO(options.period.start),
+                  lte: formatISO(options.period.end),
+                  format: 'strict_date_optional_time',
+                },
               },
             },
-          },
-        } as any,
+            ...filter,
+          ],
+        },
       },
     },
   };
   const opts = cloneDeep(baseOpts);
 
   // Generating names for aggregations if not defined
-  const aggsInfos = options.aggs?.map((agg, i) => ({
-    name: agg.name || `agg${i}`,
-    subAggs: Object.keys(agg.aggs ?? {}),
-  })) ?? [];
+  const aggsInfos = options.aggs?.map(parseAggInfo) ?? [];
 
   // Always true but TypeScript refers to ElasticTypes instead...
   if (opts.body) {
     if (options.aggs) {
       const calendarInterval = calcElasticInterval(options.recurrence);
-      opts.size = 0;
+      opts.size = 1; // keeping at least one record so we can check if there's data or not
       opts.body.aggs = options.aggs.reduce(
-        (prev, { name: _name, ...rawAgg }, i) => {
-          let agg = rawAgg;
-          // Add default calendar_interval
-          if (rawAgg.date_histogram) {
-            agg = merge(agg, { date_histogram: { calendar_interval: calendarInterval } });
-          }
-
-          return {
-            ...prev,
-            [aggsInfos[i].name]: agg,
-          };
-        },
+        (prev, agg, i) => reduceAggs(prev, agg, calendarInterval, aggsInfos[i]),
         {} as Record<string, ElasticAggregation>,
       );
     }
@@ -143,8 +263,9 @@ export default async (
 
   // Checks if there's data
   if (
-    (typeof body.hits.total === 'object' && body.hits.total.value === 0)
-    || body.hits.hits.length === 0
+    typeof body.hits.total === 'object'
+      ? body.hits.total.value === 0
+      : body.hits.hits.length === 0
   ) {
     throw new Error(`No data found for given request: ${JSON.stringify(opts)}`);
   }
@@ -169,14 +290,13 @@ export default async (
         }
 
         // Simplify access to sub-aggregations' result
-        // eslint-disable-next-line no-restricted-syntax
-        for (const bucket of aggRes.buckets) {
+        if (subAggs.length > 0) {
           // eslint-disable-next-line no-restricted-syntax
-          for (const subAgg of subAggs) {
-            bucket[subAgg] = bucket?.[subAgg]?.hits?.hits?.map?.(
-              //! May fail if hits.hits is not an array !
-              ({ _source }: { _source: unknown }) => _source,
-            );
+          for (const bucket of aggRes.buckets) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const subAgg of subAggs) {
+              setSubAggValues(subAgg, bucket);
+            }
           }
         }
         data[name] = aggRes.buckets;

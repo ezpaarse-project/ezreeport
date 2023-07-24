@@ -1,30 +1,23 @@
 <template>
-  <v-card
-    rounded
-    outlined
-    class="my-2 pa-2"
-  >
+  <CustomSection :label="$t('headers.tags').toString()">
     <TagPopover
       v-if="currentTag"
       v-model="tagPopoverShown"
       :coords="tagPopoverCoords"
       :tag="currentTag"
-      @updated="onTagUpdated"
-      @deleted="onTagDeleted"
+      @update:tag="onTagUpdated"
+      @delete:tag="onTagDeleted"
     />
 
-    <div class="d-flex align-center">
-      <span class="text--secondary">{{ $t('headers.tags') }}:</span>
-
+    <template #actions>
       <v-tooltip top>
         <template #activator="{ attrs, on }">
           <v-menu offset-y v-bind="attrs" v-on="on">
             <template v-slot:activator="{ on: onMenu, attrs: attrsMenu }">
               <v-btn
                 color="success"
-                small
+                x-small
                 icon
-                class="ml-1"
                 v-bind="{ ...attrs, ...attrsMenu }"
                 v-on="{ ...on, ...onMenu }"
               >
@@ -39,14 +32,14 @@
                 @click="onTagAdded(tag)"
               >
                 <v-list-item-title>
-                  <v-chip
+                  <ReadableChip
                     :color="tag.color"
                     small
                     class="mr-2"
                     style="pointer-events: none;"
                   >
                     {{ tag.name }}
-                  </v-chip>
+                  </ReadableChip>
                 </v-list-item-title>
               </v-list-item>
 
@@ -63,7 +56,7 @@
 
         <span>{{ $t('actions.add-tag') }}</span>
       </v-tooltip>
-    </div>
+    </template>
 
     <v-chip-group column v-if="value.length > 0">
       <ReadableChip
@@ -76,7 +69,7 @@
         {{ tag.name }}
       </ReadableChip>
     </v-chip-group>
-  </v-card>
+  </CustomSection>
 </template>
 
 <script lang="ts">
@@ -110,13 +103,27 @@ export default defineComponent({
     currentTag: undefined as Tag | undefined,
   }),
   computed: {
+    availableTagMap() {
+      const map = new Map<string, Omit<Tag, 'name'>>();
+      // eslint-disable-next-line no-restricted-syntax
+      for (const { name, ...tag } of this.availableTags) {
+        map.set(name, tag);
+      }
+
+      return map;
+    },
     /**
      * availableTags minus actual tags
      */
     actualAvailableTags(): templates.FullTemplate['tags'] {
-      return this.availableTags.filter(
-        (tag) => !this.value.find(({ name }) => tag.name === name),
-      );
+      const valueSet = new Set(this.value);
+      const availableTags = [];
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [name, tag] of this.availableTagMap) {
+        availableTags.push({ name, ...tag });
+      }
+
+      return availableTags.filter((tag) => !valueSet.has(tag));
     },
   },
   methods: {
@@ -127,7 +134,7 @@ export default defineComponent({
       if (tag) {
         this.currentTag = tag;
       } else {
-        this.currentTag = { name: `Tag #${this.value.length || 0}`, color: '' };
+        this.currentTag = { name: `Tag #${this.value.length || 0}` };
         this.$emit('input', [...this.value, this.currentTag]);
       }
 
@@ -155,6 +162,7 @@ export default defineComponent({
         const tags = [...this.value];
         tags.splice(index, 1, tag);
         this.$emit('input', tags);
+        this.currentTag = tag;
       }
     },
     /**

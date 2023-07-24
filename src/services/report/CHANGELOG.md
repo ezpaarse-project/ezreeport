@@ -1,3 +1,78 @@
+# ezreeport-report [1.0.0-beta.14](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.13...ezreeport-report@1.0.0-beta.14) (2023-07-06)
+
+
+### Bug Fixes
+
+* **report:** added padding in pages ([89c8798](https://github.com/ezpaarse-project/ezreeport/commit/89c8798e29e9c8f22e064e6c559728ad2702b38c))
+* **report:** fixed metrics overflow/not beign centered ([f2527ad](https://github.com/ezpaarse-project/ezreeport/commit/f2527ad264afe956f93ebeb57300bfee859e4449))
+* **report:** fixed space before table when no title was provided ([5f04b56](https://github.com/ezpaarse-project/ezreeport/commit/5f04b565e9a55d81aad2933bbec159d45c026915))
+* **report:** fixed title of tables/vega (+ their positions) ([ad25f75](https://github.com/ezpaarse-project/ezreeport/commit/ad25f753d357ed715dedc4285e05e9f463fc20d4))
+* **report:** various fixs on metrics ([9049d3a](https://github.com/ezpaarse-project/ezreeport/commit/9049d3a94d38e799468a915f11469710137fc7f5))
+* **vue:** fixed error stack beign false ([3904c01](https://github.com/ezpaarse-project/ezreeport/commit/3904c010fc1c430887563caaeae57dd4cbe48ec4))
+
+
+### Features
+
+* **report:** various fixs for vega and elastic ([80bda94](https://github.com/ezpaarse-project/ezreeport/commit/80bda942939807b0e704b89af8999c366a7d300f))
+
+# ezreeport-report [1.0.0-beta.13](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.12...ezreeport-report@1.0.0-beta.13) (2023-07-05)
+
+
+### Bug Fixes
+
+* **report:** fixed html entities in markdown ([e21b15c](https://github.com/ezpaarse-project/ezreeport/commit/e21b15c97a4fae6b406b75d4751a536b4ffaac3b))
+
+# ezreeport-report [1.0.0-beta.12](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.11...ezreeport-report@1.0.0-beta.12) (2023-07-04)
+
+
+### Bug Fixes
+
+* **report:** fixed format of elastic default filters ([fc2bbd7](https://github.com/ezpaarse-project/ezreeport/commit/fc2bbd779fb7bec9493ae04c2befe670a1618fc8))
+* **report:** fixed hardcoded prefix ([6b537d9](https://github.com/ezpaarse-project/ezreeport/commit/6b537d94581200aa0ea21e754b9728580b0f9627))
+* **report:** fixed position of tables in reports ([0927545](https://github.com/ezpaarse-project/ezreeport/commit/09275458888c57aa524515f3b961a813e17354f3))
+
+
+### Features
+
+* **report:** added context to errors on generation ([31a5a04](https://github.com/ezpaarse-project/ezreeport/commit/31a5a0417e69e370ef593df7cd437cba04d52eb0))
+* **report:** added count of tasks/memberships in namespaces/users ([f5d3e8e](https://github.com/ezpaarse-project/ezreeport/commit/f5d3e8ef0da88c8be1ec2ca7646106b397f6036f))
+
+# ezreeport-report [1.0.0-beta.11](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.10...ezreeport-report@1.0.0-beta.11) (2023-07-03)
+
+
+### Bug Fixes
+
+* **report:** fixed hard-coded dateField ([f3187c9](https://github.com/ezpaarse-project/ezreeport/commit/f3187c981c206cf70b7192a0557ab3001ad573eb))
+* **report:** fixed issue with merges and data fetching ([4f224b9](https://github.com/ezpaarse-project/ezreeport/commit/4f224b91eb7bdaee695a459ec0b75ec255eae056))
+
+
+### Features
+
+* **report:** added PID to multi-threaded tasks ([eda2865](https://github.com/ezpaarse-project/ezreeport/commit/eda28656f999f6db48562d071993bb549da49239))
+* **report:** added total option for pdf tables ([5b47231](https://github.com/ezpaarse-project/ezreeport/commit/5b472312f98cc45f4307dc38a7661f071434be9b))
+* **vue:** added columnStyle to column header ([94fec99](https://github.com/ezpaarse-project/ezreeport/commit/94fec9994bbc5a51cb87c746e54257105cd3c6b1))
+
+# ezreeport-report [1.0.0-beta.10](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.9...ezreeport-report@1.0.0-beta.10) (2023-06-26)
+
+
+### Bug Fixes
+
+* **report:** fixed 500 when deleting membership of a user that doesn't exist ([dc80e8b](https://github.com/ezpaarse-project/ezreeport/commit/dc80e8bb3c4f557d4c045d78872f937a69858b49))
+
+# ezreeport-report [1.0.0-beta.9](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.8...ezreeport-report@1.0.0-beta.9) (2023-06-12)
+
+
+### Bug Fixes
+
+* **report:** fixed error with aggregations and size check ([4f39320](https://github.com/ezpaarse-project/ezreeport/commit/4f3932089009367f223c305fd02e40128737e9c0))
+
+
+### Features
+
+* **report:** added position of data labels ([d957f16](https://github.com/ezpaarse-project/ezreeport/commit/d957f165fb9d7dcea53b541f3d94a14550435d41))
+* **report:** better way to order labels for metrics ([daffb91](https://github.com/ezpaarse-project/ezreeport/commit/daffb916de325d15065185b8b95f6b724ffcc70f))
+* **report:** handle sub aggregation parsing ([fdd4b3d](https://github.com/ezpaarse-project/ezreeport/commit/fdd4b3de70e0859ed0fec695877805eeb3b607bc))
+
 # ezreeport-report [1.0.0-beta.8](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.7...ezreeport-report@1.0.0-beta.8) (2023-06-01)
 
 

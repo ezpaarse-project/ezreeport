@@ -1,14 +1,17 @@
 import { compile as handlebars } from 'handlebars';
-import autoTable, { type UserOptions } from 'jspdf-autotable';
+import autoTable, { type CellDef, type UserOptions } from 'jspdf-autotable';
 import { get, merge } from 'lodash';
+
 import { appLogger as logger } from '~/lib/logger';
+
 import type { PDFReport } from '.';
 
 export type TableParams = {
   title: string,
   dataKey?: string,
-  maxLength?: number;
-  maxHeight?: number;
+  maxLength?: number,
+  maxHeight?: number,
+  totals?: string[],
 } & Omit<UserOptions, 'body' | 'didParseCell' | 'willDrawCell' | 'didDrawCell' | 'didDrawPage'>;
 
 /**
@@ -34,9 +37,11 @@ export const addTableToPDF = async (
   }
 
   const {
-    maxLength, maxHeight, title, ...params
+    maxLength,
+    maxHeight,
+    title,
+    ...params
   } = spec;
-  const fontSize = 10;
 
   // Limit data if needed
   const tableData = [...data];
@@ -44,10 +49,41 @@ export const addTableToPDF = async (
     tableData.length = maxLength;
   }
 
-  if (maxHeight != null && maxHeight > 0) {
+  // Calc margin
+  const fontSize = 10;
+  const margin = merge(
+    {
+      right: doc.margin.right,
+      left: doc.margin.left,
+      bottom: doc.offset.bottom,
+      top: doc.offset.top,
+    },
+    params.margin,
+  );
+
+  let mH = maxHeight;
+  const y = params.startY || 0;
+  // Table title
+  if (title) {
+    doc.pdf
+      .setFont('Roboto', 'bold')
+      .setFontSize(fontSize)
+      .text(
+        handlebars(title)({ length: tableData.length }),
+        margin.left,
+        y + fontSize,
+      );
+
+    params.startY = y + (fontSize * 1.75);
+    if (mH != null && mH > 0) {
+      mH -= (fontSize * 1.75);
+    }
+  }
+
+  if (mH != null && mH > 0) {
     // default height of a cell is 29
-    // Removing title, header & some space
-    const maxTableHeight = maxHeight - (1.5 * fontSize) - (2 * 29);
+    // Removing header & some space
+    const maxTableHeight = mH - (2 * 29);
     const maxCells = Math.ceil(maxTableHeight / 29);
     if (tableData.length > maxCells) {
       logger.warn(`[pdf] Reducing table length from ${tableData.length} to ${maxCells} because table won't fit in slot.`);
@@ -55,31 +91,63 @@ export const addTableToPDF = async (
     }
   }
 
-  const options = merge({
-    margin: {
-      right: doc.margin.right,
-      left: doc.margin.left,
-      bottom: doc.offset.bottom,
-      top: doc.offset.top + 2 * fontSize,
+  const options = merge(
+    {
+      styles: {
+        overflow: 'ellipsize',
+        minCellWidth: 100,
+      },
+      rowPageBreak: 'avoid',
     },
-    styles: {
-      overflow: 'ellipsize',
-      minCellWidth: 100,
-    },
-    rowPageBreak: 'avoid',
-  }, params);
+    params,
+    { margin },
+  );
 
-  const y = options.startY || options.margin.top;
+  if (options.columns) {
+    // Adding custom style to header
+    options.columns = options.columns.map((col) => {
+      if (
+        typeof col !== 'object'
+        || !col.header
+        || Array.isArray(col.header)
+      ) {
+        return col;
+      }
 
-  // Table title
-  doc.pdf
-    .setFont('Roboto', 'bold')
-    .setFontSize(fontSize)
-    .text(
-      handlebars(title)({ length: tableData.length }),
-      options.margin.left,
-      y - 0.5 * fontSize,
-    );
+      let { header: colHeader } = col;
+      if (typeof colHeader !== 'object') {
+        colHeader = {
+          content: col.header.toString(),
+          styles: options.columnStyles?.[col.dataKey ?? ''],
+        };
+      }
+
+      return {
+        ...col,
+        header: colHeader,
+      };
+    });
+
+    // Adding totals as footer
+    if (options.totals) {
+      const totalSet = new Set(options.totals);
+      options.foot = [
+        options.columns.map((col): CellDef => {
+          if (typeof col !== 'object' || !col.dataKey || !totalSet.has(col.dataKey.toString())) {
+            return { content: '' };
+          }
+
+          return {
+            content: tableData.reduce(
+              (prev, d) => prev + Number.parseInt(get(d, col.dataKey?.toString() ?? '') ?? '0', 10),
+              0,
+            ),
+            styles: options.columnStyles?.[col.dataKey],
+          };
+        }),
+      ];
+    }
+  }
 
   // Print table
   autoTable(doc.pdf, {
@@ -87,17 +155,15 @@ export const addTableToPDF = async (
     body: tableData,
     didParseCell: (hookData) => {
       // If dataKey is a property path
-      if (
-        hookData.row.section === 'body'
-        && /^\S+\./i.test(hookData.column.dataKey.toString())
-      ) {
+      if (hookData.row.section === 'body') {
+        let d = get(tableData[hookData.row.index], hookData.column.dataKey.toString()) ?? '';
+        switch (typeof d) {
+          default:
+            d = d.toString();
+            break;
+        }
         // eslint-disable-next-line no-param-reassign
-        hookData.cell.text = [
-          get(
-            tableData[hookData.row.index],
-            hookData.column.dataKey,
-          ) ?? '',
-        ];
+        hookData.cell.text = [d];
       }
     },
   });
