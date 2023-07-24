@@ -42,6 +42,8 @@
             :value="element.text"
             :label="$t('headers.text')"
             :readonly="readonly"
+            :placeholder="innerDataKey"
+            persistent-placeholder
             @input="onLabelUpdated({ text: $event || undefined })"
           />
 

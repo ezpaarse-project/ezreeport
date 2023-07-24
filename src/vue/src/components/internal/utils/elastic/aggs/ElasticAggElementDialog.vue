@@ -103,6 +103,7 @@
 
               <!-- Size -->
               <v-text-field
+                v-if="typeDefinition?.isArray"
                 :value="type.data?.size"
                 :label="$t('headers.count')"
                 :min="0"
@@ -112,7 +113,7 @@
               />
 
               <!-- Sort -->
-              <div class="d-flex align-center">
+              <div v-if="typeDefinition?.isArray" class="d-flex align-center">
                 <v-combobox
                   :value="order.value"
                   :items="availableSorts"

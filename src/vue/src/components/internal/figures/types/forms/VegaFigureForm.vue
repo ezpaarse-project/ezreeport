@@ -45,6 +45,7 @@
           </i18n>
 
           <v-text-field
+            v-if="figure?.type !== 'arc'"
             :value="figureParams.value?.title"
             :label="$t('value.headers.title')"
             :readonly="readonly"
@@ -77,6 +78,7 @@
           </i18n>
 
           <v-text-field
+            v-if="figure?.type !== 'arc'"
             :value="figureParams.label?.title"
             :label="$t('label.headers.title')"
             :readonly="readonly"
@@ -84,14 +86,32 @@
             @input="onSubParamUpdate('label', { title: $event })"
           />
 
-          <v-checkbox
-            :input-value="figureParams.label?.legend !== null"
-            :label="$t('label.headers.showLegend')"
-            :readonly="readonly"
-            hide-details
-            @change="onSubParamUpdate('label', { legend: $event ? {} : null })"
-            @click.prevent=""
-          />
+          <CustomSection v-if="legendLabelSection" :label="legendLabelSection" collapsable>
+            <template #collapse>
+              <v-switch
+                :input-value="figureParams.label?.legend !== null"
+                :readonly="readonly"
+                dense
+                hide-details
+                class="mt-0"
+                @change="onSubParamUpdate('label', { legend: $event ? {} : null })"
+                @click.prevent=""
+              />
+            </template>
+
+            <template v-if="figureParams.label?.legend !== null">
+              <v-text-field
+                v-if="figure?.type === 'arc'"
+                :value="figureParams.label?.title"
+                :label="$t('label.headers.legendTitle')"
+                :readonly="readonly"
+                :placeholder="figureParams.label?.field"
+                persistent-placeholder
+                hide-details
+                @input="onSubParamUpdate('label', { title: $event })"
+              />
+            </template>
+          </CustomSection>
         </CustomSection>
 
         <!-- Data Labels -->
@@ -265,18 +285,20 @@ export default defineComponent({
 
       return layout;
     },
+    figure() {
+      const figure = this.layout?.figures.find(({ _: { id } }) => id === this.id);
+      return figure;
+    },
     figureParams: {
       get(): VegaParams | undefined {
-        const figure = this.layout?.figures.find(({ _: { id } }) => id === this.id);
-        if (!figure?.params) {
+        if (!this.figure?.params) {
           return undefined;
         }
         // TODO: Better Validation
-        return figure.params as VegaParams;
+        return this.figure.params as VegaParams;
       },
       set(params: VegaParams) {
-        const figure = this.layout?.figures.find(({ _: { id } }) => id === this.id);
-        if (!figure) {
+        if (!this.figure) {
           return;
         }
 
@@ -284,9 +306,9 @@ export default defineComponent({
           this.layoutId,
           this.id,
           {
-            ...figure,
+            ...this.figure,
             params: {
-              title: figure.params?.title,
+              title: this.figure.params?.title,
               ...params,
             },
           },
@@ -341,19 +363,40 @@ export default defineComponent({
         return [];
       }
 
+      let available: string[] = [];
       const aggs = 'aggs' in this.layout.fetchOptions ? this.layout.fetchOptions.aggs : this.layout.fetchOptions.aggregations;
-      if (!Array.isArray(aggs)) {
-        return [];
+      if (Array.isArray(aggs)) {
+        available = (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
       }
 
-      const available = (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
       if (this.layout.fetchOptions?.fetchCount) {
         available.push(this.layout.fetchOptions.fetchCount.toString());
       }
       return available;
     },
+    /**
+     * Label to show in legend legend
+     */
+    legendLabelSection() {
+      let key = '';
+      switch (this.figure?.type) {
+        case 'bar':
+          break;
+
+        case 'arc':
+          key = this.figureParams?.label?.legend !== null ? 'label.headers.legendParams' : 'label.headers.showLegend';
+          break;
+
+        default:
+          key = 'label.headers.showLegend';
+          break;
+      }
+
+      return key && this.$t(key).toString();
+    },
   },
   mounted() {
+    // Default values (very common)
     if (this.figureParams) {
       if (!this.figureParams.value?.field) {
         this.onSubParamUpdate('value', { field: 'doc_count' });
@@ -450,6 +493,8 @@ en:
     headers:
       field: 'Field'
       title: 'Title of axis'
+      legendTitle: "Label's title"
+      legendParams: 'Legend parameters'
       showLegend: 'Should show legend ?'
   dataLabel:
     headers:
@@ -476,6 +521,8 @@ fr:
     headers:
       field: 'Champ'
       title: "Titre de l'axe"
+      legendTitle: "Titre des labels"
+      legendParams: 'Paramètres de la légende'
       showLegend: 'Afficher la légende ?'
   dataLabel:
     headers:
