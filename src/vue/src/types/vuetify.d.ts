@@ -13,3 +13,11 @@ export interface DataTableHeader<T, K extends keyof T = keyof T> {
   filter?: (value: any, search: string, item: T) => boolean,
   sort?: (a: any, b: any) => number
 }
+
+export interface SelectItem {
+  text?: string | number | object,
+  value?: string | number | object,
+  disabled?: boolean,
+  divider?: boolean,
+  header?: string
+}

@@ -63,16 +63,21 @@
       "area": "Aire",
       "bar": "Bâtons",
       "line": "Courbes",
-      "point": "Nuage de point",
+      "point": "Nuage de points",
       "rect": "Rectangle",
       "rule": "Règle",
       "text": "Texte",
-      "tick": "Tick",
-      "trail": "Trail",
-      "circle": "Cercle",
+      "tick": "Trait",
+      "trail": "Courbes à largeur variable",
+      "circle": "Nuage de cercles",
       "square": "Carré",
 
       "unknown": "Inconnu"
+    },
+
+    "type_groups": {
+      "common": "Communs",
+      "others": "Autres"
     },
 
     "slots_list": [

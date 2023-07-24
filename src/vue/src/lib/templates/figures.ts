@@ -1,22 +1,37 @@
-export const figureIcons: Record<string, string> = {
-  // Vega types
-  arc: 'mdi-chart-arc',
-  area: 'mdi-chart-areaspline-variant',
-  bar: 'mdi-chart-bar',
-  // image: 'mdi-image',
-  line: 'mdi-chart-line',
-  point: 'mdi-chart-scatter-plot',
-  rect: 'mdi-rectangle',
-  rule: 'mdi-vector-line',
-  text: 'mdi-text',
-  tick: '', // TODO
-  trail: 'mdi-chart-bell-curve',
-  circle: 'mdi-chart-scatter-plot', // TODO
-  square: 'mdi-square',
-  // Custom types
-  table: 'mdi-table',
-  md: 'mdi-image-text',
-  metric: 'mdi-counter',
+export const figureTypes = {
+  common: {
+    arc: { icon: 'mdi-chart-arc' },
+    bar: { icon: 'mdi-chart-bar' },
+    table: { icon: 'mdi-table' },
+    md: { icon: 'mdi-image-text' },
+    metric: { icon: 'mdi-counter' },
+  },
+  others: {
+    area: { icon: 'mdi-chart-areaspline-variant' },
+    bar: { icon: 'mdi-chart-bar' },
+    // image: { icon: 'mdi-image' },
+    line: { icon: 'mdi-chart-line' },
+    point: { icon: 'mdi-chart-scatter-plot' },
+    // rect: { icon: 'mdi-rectangle' },
+    // rule: { icon: 'mdi-vector-line' },
+    // text: { icon: 'mdi-text' },
+    // tick: { icon: '' }, // TODO
+    trail: { icon: 'mdi-chart-bell-curve' },
+    circle: { icon: 'mdi-chart-scatter-plot' },
+    // square: { icon: 'mdi-square' },
+  },
 };
 
-export const figureTypes = Object.keys(figureIcons);
+const extractIcons = () => {
+  const icons: Record<string, string> = {};
+  // eslint-disable-next-line no-restricted-syntax
+  for (const figures of Object.values(figureTypes)) {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [key, { icon }] of Object.entries(figures)) {
+      icons[key] = icon;
+    }
+  }
+
+  return icons;
+};
+export const figureIcons = extractIcons();

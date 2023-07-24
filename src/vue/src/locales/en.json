@@ -69,10 +69,15 @@
       "text": "Text",
       "tick": "Tick",
       "trail": "Trail",
-      "circle": "Circle",
+      "circle": "Point circles",
       "square": "Square",
 
       "unknown": "Unknown"
+    },
+
+    "type_groups": {
+      "common": "Common",
+      "others": "Others"
     },
 
     "slots_list": [

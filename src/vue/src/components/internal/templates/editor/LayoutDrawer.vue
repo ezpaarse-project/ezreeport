@@ -117,7 +117,7 @@
                     outlined
                   >
                     <v-icon :large="layout.figures.length <= 2">
-                      {{ figureIcons[figure.type] }}
+                      {{ figureIcons[figure.type] || 'mdi-help' }}
                     </v-icon>
                   </v-sheet>
                 </template>
