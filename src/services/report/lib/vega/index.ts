@@ -218,6 +218,8 @@ export const createVegaLSpec = (
             // @ts-ignore
             order: params.value.order ?? 'descending',
           },
+          // @ts-ignore
+          legend: params.label.legend ?? {},
           ...params.label,
         },
       });
