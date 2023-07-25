@@ -88,7 +88,7 @@
     ],
 
     "vars_list": {
-      "length": "Nombre réel d'éléments dans le tableau"
+      "length": "Nombre d'éléments affichés"
     },
 
     "errors": {

@@ -88,7 +88,7 @@
     ],
 
     "vars_list": {
-      "length": "Actual count of items in table"
+      "length": "Count of shown items"
     },
 
     "errors": {
