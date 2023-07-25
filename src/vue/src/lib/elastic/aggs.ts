@@ -11,6 +11,11 @@ export type AggDefinition = {
 };
 
 /**
+ * Root keys handled by the simple edition
+ */
+const handledKeys = new Set(['name', 'aggs', 'aggregations']);
+
+/**
  * Possible aggregations in an elastic request extracted both from TS types & documentation
  * Those who aren't supported by the interface are commented out
  *
@@ -276,3 +281,67 @@ export const sizeKeyByType: Record<string, string> = {
   diversified_sampler: 'shards',
   sampler: 'shard_size',
 } satisfies Partial<Record<keyof typeof aggsDefinition, string>>;
+
+/**
+ * Get unsupported keys of an aggregation
+ *
+ * @param agg The aggregation
+ *
+ * @returns The unsupported keys
+ */
+export const getUnknownKeysFromAgg = (
+  agg: any,
+) => {
+  if (!agg) {
+    return [];
+  }
+  return Object.keys(agg).filter((k) => !handledKeys.has(k));
+};
+
+/**
+ * Get aggregation's type
+ *
+ * @param agg The aggregation
+ *
+ * @returns The aggregation's type
+ */
+export const getTypeFromAgg = (agg: any): string | undefined => getUnknownKeysFromAgg(agg)[0];
+
+/**
+ * Get aggregation type definition, if available
+ *
+ * @param type The aggregation's type
+ * @param subAggs The possible sub aggregations
+ *
+ * @returns The aggregation type definition
+ */
+export const getTypeDefinitionFromAggType = (
+  type: string | undefined,
+  subAggs: Record<string, any> | undefined,
+): AggDefinition | undefined => {
+  if (!type) {
+    return undefined;
+  }
+
+  const def = (aggsDefinition as Record<string, AggDefinition>)[type];
+  if (def?.type) {
+    // Add aggregations as unknown
+    const aggsDef = Object.values(subAggs ?? {}).reduce(
+      (prev: Record<string, ObjectConstructor>, k: any, i: number) => ({
+        ...prev,
+        [k.name || `agg${i}`]: Object,
+      }),
+      {},
+    );
+
+    return {
+      ...def,
+      type: {
+        ...def.type,
+        ...aggsDef,
+      },
+    };
+  }
+
+  return def;
+};

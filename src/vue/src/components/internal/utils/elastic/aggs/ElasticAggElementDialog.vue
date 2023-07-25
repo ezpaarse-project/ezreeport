@@ -56,31 +56,11 @@
                 hide-details="auto"
                 @change="onTypeUpdate"
               >
-                <template #append-outer v-if="typeDefinition">
-                  <!-- Type def -->
-                  <v-menu
+                <template #append-outer>
+                  <ElasticAggTypeHelper
                     v-model="showDefinition"
-                    offset-y
-                  >
-                    <template #activator="{ on, attrs }">
-                      <v-btn
-                        icon
-                        small
-                        v-bind="attrs"
-                        v-on="on"
-                      >
-                        <v-icon>mdi-information</v-icon>
-                      </v-btn>
-                    </template>
-
-                    <v-card>
-                      <v-card-title class="py-1">
-                        {{ $t('headers.typeHelper') }}
-                      </v-card-title>
-
-                      <TSPreview :value="typeDefinition.type" :is-array="typeDefinition.isArray" />
-                    </v-card>
-                  </v-menu>
+                    :agg="innerElement"
+                  />
                 </template>
               </v-autocomplete>
 
@@ -199,7 +179,9 @@ import {
   aggsTypes,
   sortOptions,
   sizeKeyByType,
-  aggsDefinition,
+  getTypeDefinitionFromAggType,
+  getTypeFromAgg,
+  getUnknownKeysFromAgg,
   type AggDefinition,
 } from '~/lib/elastic/aggs';
 import { cloneDeep, debounce } from 'lodash';
@@ -208,10 +190,6 @@ import type ElasticAggsBuilderConstructor from './ElasticAggsBuilder.vue';
 type ElasticAggsBuilder = InstanceType<typeof ElasticAggsBuilderConstructor>;
 
 const aggsSet = new Set<string>(aggsTypes);
-/**
- * Root keys handled by the simple edition
- */
-const handledKeys = new Set(['name', 'aggs', 'aggregations']);
 
 export default defineComponent({
   props: {
@@ -282,7 +260,7 @@ export default defineComponent({
      * Root keys in aggregations that are not handled by the simple mode
      */
     unknownKeys(): string[] {
-      return Object.keys(this.innerElement).filter((k) => !handledKeys.has(k));
+      return getUnknownKeysFromAgg(this.innerElement);
     },
     /**
      * Is the aggregation too advanced to be handled in the simple mode
@@ -296,7 +274,7 @@ export default defineComponent({
      */
     type() {
       // Since there's should be only one unknown key, is the type of aggregation
-      const value = this.unknownKeys[0];
+      const value = getTypeFromAgg(this.innerElement) || '';
       return {
         value,
         data: this.innerElement[value],
@@ -427,28 +405,10 @@ export default defineComponent({
      * Type definition of the aggregation
      */
     typeDefinition(): AggDefinition | undefined {
-      const def = (aggsDefinition as Record<string, AggDefinition>)[this.type.value];
-      if (def?.type) {
-        // Add aggregations as unknown
-        const aggs = this.innerElement.aggs ?? this.innerElement.aggregations;
-        const aggsDef = Object.values(aggs ?? {}).reduce(
-          (prev: Record<string, ObjectConstructor>, k: any, i: number) => ({
-            ...prev,
-            [k.name || `agg${i}`]: Object,
-          }),
-          {},
-        );
-
-        return {
-          ...def,
-          type: {
-            ...def.type,
-            ...aggsDef,
-          },
-        };
-      }
-
-      return def;
+      return getTypeDefinitionFromAggType(
+        this.type.value,
+        this.innerElement.aggs ?? this.innerElement.aggregations,
+      );
     },
   },
   watch: {
@@ -606,7 +566,6 @@ en:
     simpleEdition: 'Simple edition'
     advancedEdition: 'Advanced edition'
     type: 'Aggregation type'
-    typeHelper: 'Possible format of data'
     field: 'Concerned field'
     count: 'Max count of results'
     sort: 'Sort on sub aggregation...'
@@ -652,7 +611,6 @@ fr:
     simpleEdition: 'Édition simple'
     advancedEdition: 'Édition avancée'
     type: "Type d'aggregation"
-    typeHelper: 'Format probable des données'
     field: 'Champ concerné'
     count: 'Nombre de résultats maximum'
     sort: 'Trier sur la sous aggregation...'

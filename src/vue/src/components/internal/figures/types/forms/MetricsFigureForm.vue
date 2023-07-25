@@ -235,20 +235,25 @@ export default defineComponent({
         return [];
       }
 
-      let available: string[] = [];
+      let available: any[] = [];
       const aggs = 'aggs' in layout.fetchOptions ? layout.fetchOptions.aggs : layout.fetchOptions.aggregations;
       if (Array.isArray(aggs)) {
-        available = (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
+        available = (aggs as { name: string }[]).map((agg, i) => ({
+          ...agg,
+          name: agg.name || `agg${i}`,
+        }));
       }
 
       if (layout.fetchOptions?.fetchCount) {
-        available.push(layout.fetchOptions.fetchCount.toString());
+        available.push({ name: layout.fetchOptions.fetchCount.toString() });
       }
 
       const currentLabelsKeySet = new Set(this.labels.map((l) => l.dataKey));
-      const res = available.filter(
-        (agg) => !currentLabelsKeySet.has(agg)
-          || agg === this.currentLabel?.dataKey,
+      const res = available.map(
+        (agg) => ({
+          ...agg,
+          disabled: currentLabelsKeySet.has(agg.name) && agg.name !== this.currentLabel?.dataKey,
+        }),
       );
       return res;
     },

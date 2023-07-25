@@ -14,7 +14,7 @@
           </template>
           <template #title v-else>
             <FigureTitleAutocomplete
-              :value="figure?.params?.title"
+              :value="figure?.params?.title || ''"
               class="ml-2"
               style="flex: 1"
               @input="figureTitle = $event"

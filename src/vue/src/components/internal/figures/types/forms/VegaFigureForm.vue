@@ -18,7 +18,14 @@
           :readonly="readonly"
           hide-details="auto"
           @input="onParamUpdate({ dataKey: $event || undefined })"
-        />
+        >
+          <template #append-outer>
+            <ElasticAggTypeHelper
+              v-model="showDefinition"
+              :agg="currentAgg"
+            />
+          </template>
+        </v-combobox>
 
         <!-- Value -->
         <CustomSection
@@ -343,6 +350,7 @@ export default defineComponent({
   data: () => ({
     valid: false,
 
+    showDefinition: false,
     collapsedDl: true,
   }),
   computed: {
@@ -382,6 +390,17 @@ export default defineComponent({
           },
         );
       },
+    },
+    /**
+     * Current aggregation targeted
+     */
+    currentAgg() {
+      if (!this.layout?.fetchOptions || !this.figureParams) {
+        return undefined;
+      }
+
+      const aggs = 'aggs' in this.layout.fetchOptions ? this.layout.fetchOptions.aggs : this.layout.fetchOptions.aggregations;
+      return (aggs as any[]).find(({ name }) => name === this.figureParams?.dataKey);
     },
     /**
      * Possible formats for data labels with localisation

@@ -19,10 +19,19 @@
               :items="availableAggs"
               :readonly="readonly"
               :rules="rules.dataKey"
+              item-value="name"
+              item-text="name"
               hide-details="auto"
               @update:search-input="innerDataKey = $event"
               @blur="onLabelKeyUpdated"
-            />
+            >
+              <template #append-outer>
+                <ElasticAggTypeHelper
+                  v-model="showDefinition"
+                  :agg="currentAgg"
+                />
+              </template>
+            </v-combobox>
 
             <v-text-field
               v-model="innerField"
@@ -162,8 +171,11 @@ export default defineComponent({
       type: Array as PropType<string[]>,
       default: () => [],
     },
+    /**
+     * Aggregations available to select
+     */
     availableAggs: {
-      type: Array as PropType<string[]>,
+      type: Array as PropType<any[]>,
       default: () => [],
     },
     /**
@@ -179,9 +191,12 @@ export default defineComponent({
     'update:element': (element: Label) => !!element,
   },
   data: () => ({
+    valid: false,
+
     innerDataKey: '',
     innerField: '',
-    valid: false,
+
+    showDefinition: false,
   }),
   computed: {
     /**
@@ -272,6 +287,12 @@ export default defineComponent({
         value,
         listeners,
       };
+    },
+    /**
+     * Current aggregation targeted
+     */
+    currentAgg() {
+      return this.availableAggs.find(({ name }) => name === this.element.dataKey);
     },
   },
   watch: {

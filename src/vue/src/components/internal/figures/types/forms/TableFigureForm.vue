@@ -18,7 +18,14 @@
           :readonly="readonly"
           hide-details="auto"
           @input="onParamUpdate({ dataKey: $event || undefined })"
-        />
+        >
+          <template #append-outer>
+            <ElasticAggTypeHelper
+              v-model="showDefinition"
+              :agg="currentAgg"
+            />
+          </template>
+        </v-combobox>
 
         <v-text-field
           :value="figureParams?.maxLength"
@@ -113,6 +120,8 @@ export default defineComponent({
   },
   data: () => ({
     valid: false,
+
+    showDefinition: false,
   }),
   computed: {
     figure() {
@@ -203,6 +212,21 @@ export default defineComponent({
         available.push(layout.fetchOptions.fetchCount.toString());
       }
       return available;
+    },
+    /**
+     * Current aggregation targeted
+     */
+    currentAgg() {
+      const layout = this.templateStore.currentLayouts.find(
+        ({ _: { id } }) => id === this.layoutId,
+      );
+
+      if (!layout?.fetchOptions || !this.figureParams) {
+        return undefined;
+      }
+
+      const aggs = 'aggs' in layout.fetchOptions ? layout.fetchOptions.aggs : layout.fetchOptions.aggregations;
+      return (aggs as any[]).find(({ name }) => name === this.figureParams?.dataKey);
     },
   },
   mounted() {

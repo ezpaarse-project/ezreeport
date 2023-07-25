@@ -17,7 +17,7 @@
         </div>
         <FigureTitleAutocomplete
           v-else
-          :value="figure?.params?.title"
+          :value="figure?.params?.title || ''"
           @input="figureTitle = $event"
         />
 
