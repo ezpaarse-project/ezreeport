@@ -15,34 +15,11 @@
         <div v-if="figure.type === 'md' || figure.type === 'metric'" class="py-2">
           {{ figureTitle }}
         </div>
-        <v-combobox
+        <FigureTitleAutocomplete
           v-else
-          :value="innerTitle"
-          :items="possibleVars"
-          :label="$t('figures.title')"
-          :return-object="false"
-          no-filter
-          dense
-          hide-details
-          ref="titleCB"
-          class="pt-1"
-          @input="onAutocompleteChoice"
-          @update:search-input="innerTitle = $event"
-          @blur="figureTitle = innerTitle"
-        >
-          <template #item="{ item, on, attrs }">
-            <v-list-item two-line v-bind="attrs" v-on="on">
-              <v-list-item-content>
-                <v-list-item-title>{{ item.value }}</v-list-item-title>
-                <v-list-item-subtitle>{{ $t(`$ezreeport.figures.vars_list.${item.text}`) }}</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-          </template>
-
-          <template #append>
-            <div />
-          </template>
-        </v-combobox>
+          :value="figure?.params?.title"
+          @input="figureTitle = $event"
+        />
 
         <v-spacer />
 
@@ -101,13 +78,6 @@ import type { AnyCustomFigure } from '~/lib/templates/customTemplates';
 import { figureIcons, figureTypes } from '~/lib/templates/figures';
 import useTemplateStore, { mapRulesToVuetify } from '~/stores/template';
 import type { SelectItem } from '~/types/vuetify';
-
-/**
- * Possibles vars in title
- */
-const templateVars = [
-  'length',
-];
 
 export default defineComponent({
   props: {
@@ -208,17 +178,6 @@ export default defineComponent({
       }
 
       return items;
-    },
-    /**
-     * Localized possible variables in title
-     */
-    possibleVars() {
-      return templateVars.map((text) => ({
-        value: `{{ ${text} }}`,
-        text,
-      })).sort(
-        (a, b) => a.text.toString().localeCompare(b.text.toString()),
-      );
     },
     /**
      * Returns the title of the figure
