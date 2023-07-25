@@ -38,12 +38,10 @@
           <span>{{ $t(figure._.valid.i18nKey) }}</span>
         </v-tooltip>
 
-        <v-btn icon color="error" x-small @click="onFigureDelete">
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
+        <v-btn color="primary" small class="ml-3" @click="$emit('edit:figure', id)">
+          {{ $t('$ezreeport.settings') }}
 
-        <v-btn icon x-small @click="$emit('edit:figure', id)">
-          <v-icon>mdi-cog</v-icon>
+          <v-icon right>mdi-cog</v-icon>
         </v-btn>
       </div>
 
@@ -68,6 +66,16 @@
         multiple
         @change="onSlotUpdate"
       />
+
+      <div class="d-flex">
+        <v-spacer />
+
+        <v-btn color="error" small @click="onFigureDelete">
+          {{ $t('$ezreeport.delete') }}
+
+          <v-icon right>mdi-delete</v-icon>
+        </v-btn>
+      </div>
     </v-form>
   </v-sheet>
 </template>

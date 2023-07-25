@@ -14,6 +14,7 @@
   "save": "Sauvegarder",
   "advanced_parameters": "Paramètres avancés",
   "show_json": "Afficher en JSON",
+  "settings": "Paramètres",
 
   "tasks": {
     "name": "Nom du rapport",

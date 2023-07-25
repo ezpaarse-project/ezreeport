@@ -1,13 +1,5 @@
 <template>
   <div class="layout-drawer-container">
-    <LayoutParamsPopover
-      v-if="selectedLayout"
-      v-model="paramsLayoutDialogShown"
-      :coords="paramsLayoutDialogCoords"
-      :id="value"
-      :readonly="mode === 'view'"
-    />
-
     <div class="d-flex flex-column">
       <!-- Toolbar -->
       <div :class="['d-flex align-center pa-2', $vuetify.theme.dark ? 'grey darken-4' : 'white']">
@@ -86,10 +78,6 @@
               >
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
-
-              <v-btn icon x-small @click="showLayoutParamsDialog(layout._.id, $event)">
-                <v-icon>mdi-cog</v-icon>
-              </v-btn>
             </template>
             <template v-else>
               <v-icon color="black" dense>mdi-lock</v-icon>
@@ -161,12 +149,6 @@ export default defineComponent({
     return { templateStore };
   },
   data: () => ({
-    paramsLayoutDialogShown: false,
-    paramsLayoutDialogCoords: {
-      x: 0,
-      y: 0,
-    },
-
     figureIcons,
     collapsed: false,
   }),
@@ -278,21 +260,6 @@ export default defineComponent({
       }
 
       this.templateStore.UPDATE_LAYOUT(layout._.id, undefined);
-    },
-    /**
-     * Show params dialog for given layout
-     *
-     * @param id The id of the layout
-     * @param event The base event
-     */
-    async showLayoutParamsDialog(id: string, event: MouseEvent) {
-      this.$emit('input', id);
-      this.paramsLayoutDialogCoords = {
-        x: event.clientX,
-        y: event.clientY,
-      };
-      await this.$nextTick();
-      this.paramsLayoutDialogShown = true;
     },
   },
 });
