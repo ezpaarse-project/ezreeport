@@ -80,6 +80,7 @@ import { defineComponent } from 'vue';
 import { omit, merge } from 'lodash';
 
 import useTemplateStore from '~/stores/template';
+import { getTypeDefinitionFromAgg } from '~/lib/elastic/aggs';
 
 import type TablePreviewFormConstructor from '../utils/TablePreviewForm.vue';
 import type { PDFParams, PDFStyle, TableColumn } from '../utils/table';
@@ -202,16 +203,25 @@ export default defineComponent({
         return [];
       }
 
-      let available: string[] = [];
+      // Add already defined aggregations
+      let available: any[] = [];
       const aggs = 'aggs' in layout.fetchOptions ? layout.fetchOptions.aggs : layout.fetchOptions.aggregations;
       if (Array.isArray(aggs)) {
-        available = (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
+        available = [...aggs];
       }
 
-      if (layout.fetchOptions?.fetchCount) {
-        available.push(layout.fetchOptions.fetchCount.toString());
-      }
-      return available;
+      // Remove non iterable aggregations
+      available = available.filter((agg) => {
+        const typeDef = getTypeDefinitionFromAgg(agg);
+
+        // Allow unknown types, as user may be knowing what he do...
+        if (!typeDef) {
+          return true;
+        }
+        return typeDef.isArray;
+      });
+
+      return available.map((agg, i) => agg.name || `agg${i}`);
     },
     /**
      * Current aggregation targeted

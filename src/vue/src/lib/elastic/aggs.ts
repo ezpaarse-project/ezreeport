@@ -351,3 +351,15 @@ export const getTypeDefinitionFromAggType = (
 
   return def;
 };
+
+/**
+ * Get aggregation type definition, if available
+ *
+ * @param agg The aggregation
+ *
+ * @returns The aggregation type definition
+ */
+export const getTypeDefinitionFromAgg = (agg: any | undefined) => getTypeDefinitionFromAggType(
+  getTypeFromAgg(agg),
+  agg?.aggs ?? agg?.aggregations,
+);

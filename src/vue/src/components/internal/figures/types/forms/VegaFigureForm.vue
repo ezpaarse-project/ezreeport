@@ -256,9 +256,11 @@
 </template>
 
 <script lang="ts">
-import chroma from 'chroma-js';
-import { pick, merge, omit } from 'lodash';
 import { defineComponent } from 'vue';
+import { pick, merge, omit } from 'lodash';
+import chroma from 'chroma-js';
+
+import { getTypeDefinitionFromAgg } from '~/lib/elastic/aggs';
 import useTemplateStore from '~/stores/template';
 
 /**
@@ -450,16 +452,25 @@ export default defineComponent({
         return [];
       }
 
-      let available: string[] = [];
+      // Add already defined aggregations
+      let available: any[] = [];
       const aggs = 'aggs' in this.layout.fetchOptions ? this.layout.fetchOptions.aggs : this.layout.fetchOptions.aggregations;
       if (Array.isArray(aggs)) {
-        available = (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
+        available = [...aggs];
       }
 
-      if (this.layout.fetchOptions?.fetchCount) {
-        available.push(this.layout.fetchOptions.fetchCount.toString());
-      }
-      return available;
+      // Remove non iterable aggregations
+      available = available.filter((agg) => {
+        const typeDef = getTypeDefinitionFromAgg(agg);
+
+        // Allow unknown types, as user may be knowing what he do...
+        if (!typeDef) {
+          return true;
+        }
+        return typeDef.isArray;
+      });
+
+      return available.map((agg, i) => agg.name || `agg${i}`);
     },
     /**
      * Label to show in legend legend

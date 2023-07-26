@@ -235,6 +235,7 @@ export default defineComponent({
         return [];
       }
 
+      // Add already defined aggregations
       let available: any[] = [];
       const aggs = 'aggs' in layout.fetchOptions ? layout.fetchOptions.aggs : layout.fetchOptions.aggregations;
       if (Array.isArray(aggs)) {
@@ -244,10 +245,12 @@ export default defineComponent({
         }));
       }
 
+      // Add fetchCount if available
       if (layout.fetchOptions?.fetchCount) {
         available.push({ name: layout.fetchOptions.fetchCount.toString() });
       }
 
+      // Disable if already used
       const currentLabelsKeySet = new Set(this.labels.map((l) => l.dataKey));
       const res = available.map(
         (agg) => ({

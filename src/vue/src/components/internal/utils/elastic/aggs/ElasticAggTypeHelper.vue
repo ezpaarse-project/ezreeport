@@ -28,7 +28,7 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import { getTypeDefinitionFromAggType, getTypeFromAgg } from '~/lib/elastic/aggs';
+import { getTypeDefinitionFromAgg } from '~/lib/elastic/aggs';
 
 export default defineComponent({
   props: {
@@ -46,10 +46,7 @@ export default defineComponent({
   },
   computed: {
     typeDefinition() {
-      return getTypeDefinitionFromAggType(
-        getTypeFromAgg(this.agg),
-        this.agg?.aggs ?? this.agg?.aggregations,
-      );
+      return getTypeDefinitionFromAgg(this.agg);
     },
   },
 });
