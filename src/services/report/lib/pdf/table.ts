@@ -26,13 +26,16 @@ export const addTableToPDF = async (
   inputData: Record<string, any[]> | any[],
   spec: TableParams,
 ): Promise<void> => {
-  let data = [];
-  if (Array.isArray(inputData)) {
-    data = inputData;
-  } else {
+  let data = inputData as any[];
+  if (!Array.isArray(inputData)) {
     if (!spec.dataKey) {
       throw new Error('data is not iterable, and no "dataKey" is present');
     }
+
+    if (!Array.isArray(inputData[spec.dataKey])) {
+      throw new Error(`data.${spec.dataKey} is not iterable`);
+    }
+
     data = inputData[spec.dataKey];
   }
 
