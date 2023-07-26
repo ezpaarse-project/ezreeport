@@ -176,7 +176,7 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
 import {
-  aggsTypes,
+  aggsDefinition,
   sortOptions,
   sizeKeyByType,
   getTypeDefinitionFromAggType,
@@ -185,11 +185,12 @@ import {
   type AggDefinition,
 } from '~/lib/elastic/aggs';
 import { cloneDeep, debounce } from 'lodash';
+import type { SelectItem } from '~/types/vuetify';
 import type ElasticAggsBuilderConstructor from './ElasticAggsBuilder.vue';
 
 type ElasticAggsBuilder = InstanceType<typeof ElasticAggsBuilderConstructor>;
 
-const aggsSet = new Set<string>(aggsTypes);
+const aggsSet = new Set<string>(Object.keys(aggsDefinition));
 
 export default defineComponent({
   props: {
@@ -367,13 +368,47 @@ export default defineComponent({
     /**
      * Possible types of aggregations with localization
      */
-    availableTypes() {
-      return aggsTypes.map((value) => ({
-        text: this.$t(`types.${value}`),
-        value,
-      })).sort(
-        (a, b) => a.text.toString().localeCompare(b.text.toString()),
-      );
+    availableTypes(): SelectItem[] {
+      const singleValue = {
+        common: [] as SelectItem[],
+        others: [] as SelectItem[],
+      };
+      const multiValues = {
+        common: [] as SelectItem[],
+        others: [] as SelectItem[],
+      };
+
+      const entries: [string, AggDefinition][] = Object.entries(aggsDefinition);
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [value, definition] of entries) {
+        const key = definition.isCommon ? 'common' : 'others';
+        const item = { text: this.$t(`types.${value}`).toString(), value };
+        if (definition.isArray) {
+          multiValues[key].push(item);
+        } else {
+          singleValue[key].push(item);
+        }
+      }
+
+      return [
+        { header: this.$t('groups.commonSingle').toString() },
+        ...singleValue.common,
+
+        { divider: true },
+
+        { header: this.$t('groups.commonMulti').toString() },
+        ...multiValues.common,
+
+        { divider: true },
+
+        { header: this.$t('groups.otherSingle').toString() },
+        ...singleValue.others,
+
+        { divider: true },
+
+        { header: this.$t('groups.otherMulti').toString() },
+        ...multiValues.others,
+      ];
     },
     /**
      * Possible sorts with localization
@@ -576,6 +611,11 @@ en:
     desc: 'descending'
   errors:
     no_duplicate: 'This name is already used'
+  groups:
+    commonSingle: 'Common metric aggregations'
+    commonMulti: 'Common bucket aggregations'
+    otherSingle: 'Metric aggregations'
+    otherMulti: 'Common aggregations'
   types:
     auto_date_histogram: 'Auto date histogram'
     avg: 'Average (avg)'
@@ -621,6 +661,11 @@ fr:
     desc: 'descendant'
   errors:
     no_duplicate: 'Ce nom est déjà utilisé'
+  groups:
+    commonSingle: 'Aggregations de métriques communes' # TODO: Not really sure about that one
+    commonMulti: 'Aggregations par groupes communes'
+    otherSingle: 'Autres aggregations de métriques'
+    otherMulti: 'Autres aggregations par groupes'
   types:
     auto_date_histogram: 'Histogramme de date automatique (auto_date_histogram)'
     avg: 'Moyenne (avg)'

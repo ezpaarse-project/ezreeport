@@ -7,6 +7,7 @@ type TypeDefinition = {
 export type AggDefinition = {
   canHaveSub?: true,
   isArray?: true,
+  isCommon?: true,
   type?: TypeDefinition,
 };
 
@@ -34,6 +35,7 @@ export const aggsDefinition = {
     canHaveSub: true,
   },
   avg: {
+    isCommon: true,
     type: {
       value: Number,
     },
@@ -54,6 +56,7 @@ export const aggsDefinition = {
   // 'bucket_selector': {},
   // 'bucket_sort': {},
   cardinality: {
+    isCommon: true,
     type: {
       value: Number,
     },
@@ -70,6 +73,7 @@ export const aggsDefinition = {
   // 'cumulative_sum': {},
   date_histogram: {
     isArray: true,
+    isCommon: true,
     type: {
       key: Number,
       doc_count: Number,
@@ -130,6 +134,7 @@ export const aggsDefinition = {
   // 'line': {},
   // 'matrix_stats': {},
   max: {
+    isCommon: true,
     type: {
       value: Number,
     },
@@ -141,6 +146,7 @@ export const aggsDefinition = {
     },
   },
   min: {
+    isCommon: true,
     type: {
       value: Number,
     },
@@ -178,7 +184,7 @@ export const aggsDefinition = {
     },
     canHaveSub: true,
   },
-  rate: {},
+  // rate: {},
   // 'reverse_nested': {},
   sampler: {
     type: {
@@ -228,12 +234,14 @@ export const aggsDefinition = {
     },
   },
   sum: {
+    isCommon: true,
     type: {
       value: Number,
     },
   },
   // 'sum_bucket': {},
   terms: {
+    isCommon: true,
     isArray: true,
     type: {
       key: [String, Number],
@@ -261,8 +269,6 @@ export const aggsDefinition = {
     canHaveSub: true,
   },
 } satisfies Record<string, AggDefinition>;
-
-export const aggsTypes = Object.keys(aggsDefinition);
 
 /**
  * Additional possible sort options in a elastic request
