@@ -8,6 +8,7 @@
       :readonly="readonly"
       :used-names="usedNames"
       @update:element="onElementEdited"
+      @update:loading="onElementLoading"
     />
 
     <v-list dense rounded>
@@ -19,6 +20,7 @@
       >
         <v-list-item-action>
           <v-btn
+            :loading="loadingMap[item.name]"
             icon
             small
             @click="!readonly && onElementDeleted(i)"
@@ -81,6 +83,7 @@ export default defineComponent({
   data: () => ({
     elementDialogShown: false,
 
+    loadingMap: {} as Record<string, boolean>,
     selectedIndex: -1,
   }),
   computed: {
@@ -154,6 +157,18 @@ export default defineComponent({
       const elements = [...this.value];
       elements.splice(index, 1);
       this.$emit('input', elements);
+    },
+    /**
+     * Notify that an item is loading
+     *
+     * @param loading
+     */
+    onElementLoading(loading: boolean) {
+      const key = this.selectedAggElement?.name || `agg${this.selectedIndex}`;
+      this.loadingMap = {
+        ...this.loadingMap,
+        [key]: loading,
+      };
     },
   },
 });

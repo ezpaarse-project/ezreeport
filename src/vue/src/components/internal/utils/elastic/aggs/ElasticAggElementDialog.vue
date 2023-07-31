@@ -1,7 +1,7 @@
 <template>
   <v-dialog
     :value="value"
-    :persistent="!valid"
+    :persistent="!valid || loading"
     width="600"
     @input="$emit('input', $event)"
   >
@@ -36,7 +36,7 @@
         </v-tooltip>
 
         <!-- Close -->
-        <v-btn icon text @click="$emit('input', false)">
+        <v-btn :loading="loading" icon text @click="$emit('input', false)">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
@@ -244,6 +244,12 @@ export default defineComponent({
      * @param el The new state of the aggregation
      */
     'update:element': (index: number, el: Record<string, any>) => index >= 0 && !!el,
+    /**
+     * Triggered when element is updated
+     *
+     * @param loading The new loading state
+     */
+    'update:loading': (loading: boolean) => loading !== undefined,
   },
   data: () => ({
     showAdvanced: false,
@@ -255,6 +261,7 @@ export default defineComponent({
     elementHash: '',
 
     innerValid: false,
+    loading: false,
   }),
   computed: {
     /**
@@ -477,11 +484,21 @@ export default defineComponent({
       };
       this.showAdvanced = this.isTooAdvanced;
     },
-    debouncedUpdateElement: debounce(
+    debouncedEmitUpdateElement: debounce(
       // eslint-disable-next-line func-names
-      function (this: any) { this.$emit('update:element', this.elementIndex, this.innerElement); return true; },
+      function (this: any) {
+        this.$emit('update:element', this.elementIndex, this.innerElement);
+        this.$emit('update:loading', false);
+        this.loading = false;
+        return true;
+      },
       1000,
     ),
+    updateElement() {
+      this.loading = true;
+      this.$emit('update:loading', true);
+      this.debouncedEmitUpdateElement();
+    },
     /**
      * When the aggregation is updated
      *
@@ -494,7 +511,7 @@ export default defineComponent({
         return;
       }
 
-      this.debouncedUpdateElement();
+      this.updateElement();
     },
     /**
      * When type of aggregation is updated
@@ -512,7 +529,7 @@ export default defineComponent({
       }
 
       // TODO: handle size change
-      this.debouncedUpdateElement();
+      this.updateElement();
     },
     /**
      * When field in type of aggregation is updated
@@ -591,7 +608,7 @@ export default defineComponent({
       }
 
       this.innerElement = JSON.parse(this.innerJSON);
-      this.debouncedUpdateElement();
+      this.updateElement();
     },
   },
 });
