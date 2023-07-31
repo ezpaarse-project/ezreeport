@@ -8,7 +8,7 @@ import {
   cloneDeep,
   get,
   merge,
-  omit
+  omit,
 } from 'lodash';
 
 import {
@@ -16,7 +16,7 @@ import {
   Locale as VegaLocale,
   parse,
   scheme,
-  View
+  View,
 } from 'vega';
 import { compile, type TopLevelSpec } from 'vega-lite';
 import type { Mark, MarkDef } from 'vega-lite/build/src/mark';

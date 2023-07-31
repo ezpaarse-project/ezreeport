@@ -1,6 +1,6 @@
-import { jsPDF as PDF } from 'jspdf';
 import { existsSync } from 'node:fs';
 import { readFile, stat, unlink } from 'node:fs/promises';
+import { jsPDF as PDF } from 'jspdf';
 import config from '~/lib/config';
 import { format } from '~/lib/date-fns';
 import './fonts/Roboto-bold.js';

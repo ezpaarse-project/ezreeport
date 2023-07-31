@@ -3,7 +3,7 @@ import { CustomRouter } from '~/lib/express-utils';
 import { requireUser } from '~/middlewares/auth';
 import {
   createTemplate,
-  deleteTemplateByName, editTemplateByName, getAllTemplates, getTemplateByName, isFullTemplate
+  deleteTemplateByName, editTemplateByName, getAllTemplates, getTemplateByName, isFullTemplate,
 } from '~/models/templates';
 
 const router = CustomRouter('templates')

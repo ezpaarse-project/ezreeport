@@ -1,9 +1,8 @@
+import { readFile, unlink } from 'node:fs/promises';
+import { join } from 'node:path';
 import type Queue from 'bull';
 import { enUS } from 'date-fns/locale';
 import { glob } from 'glob';
-
-import { readFile, unlink } from 'node:fs/promises';
-import { join } from 'node:path';
 
 import config from '~/lib/config';
 import {
@@ -11,7 +10,7 @@ import {
   formatDuration,
   intervalToDuration,
   isBefore,
-  parseISO
+  parseISO,
 } from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
 import { formatInterval, isFulfilled } from '~/lib/utils';

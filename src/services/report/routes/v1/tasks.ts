@@ -14,7 +14,7 @@ import {
   getCountTask,
   getTaskById,
   isValidCreateTask,
-  isValidTask
+  isValidTask,
 } from '~/models/tasks';
 import { Access } from '~/models/access';
 import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';

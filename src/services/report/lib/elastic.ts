@@ -1,5 +1,5 @@
-import { Client, type estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { setTimeout } from 'node:timers/promises';
+import { Client, type estypes as ElasticTypes } from '@elastic/elasticsearch';
 import config from './config';
 import { appLogger as logger } from './logger';
 

@@ -3,7 +3,7 @@ import {
   getAllCrons,
   getCron,
   startCron,
-  stopCron
+  stopCron,
 } from '~/lib/cron';
 import { CustomRouter } from '~/lib/express-utils';
 

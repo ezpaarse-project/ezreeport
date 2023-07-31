@@ -3,7 +3,7 @@ import {
   type Request,
   type RequestHandler,
   type Response,
-  type RouterOptions
+  type RouterOptions,
 } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';

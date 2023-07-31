@@ -13,7 +13,7 @@ import {
   startOfMonth,
   startOfQuarter,
   startOfWeek,
-  startOfYear
+  startOfYear,
 } from '~/lib/date-fns';
 
 /**

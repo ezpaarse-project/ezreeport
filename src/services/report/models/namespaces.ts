@@ -10,7 +10,7 @@ import type {
   Namespace,
   Prisma,
   Membership,
-  Task
+  Task,
 } from '~/lib/prisma';
 
 import { ArgumentError } from '~/types/errors';
@@ -18,7 +18,7 @@ import { ArgumentError } from '~/types/errors';
 import {
   membershipSchema,
   upsertBulkMembership,
-  deleteBulkMembership
+  deleteBulkMembership,
 } from './memberships';
 
 type InputNamespace = Pick<Prisma.NamespaceCreateInput, 'name' | 'fetchLogin' | 'fetchOptions' | 'logoId'>;

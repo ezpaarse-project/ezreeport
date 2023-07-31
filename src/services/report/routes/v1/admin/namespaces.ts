@@ -9,7 +9,7 @@ import {
   addUserToNamespace,
   isValidMembership,
   removeUserFromNamespace,
-  updateUserOfNamespace
+  updateUserOfNamespace,
 } from '~/models/memberships';
 import {
   createNamespace,
@@ -20,7 +20,7 @@ import {
   getNamespaceById,
   isValidBulkNamespace,
   replaceManyNamespaces,
-  isValidNamespace
+  isValidNamespace,
 } from '~/models/namespaces';
 import { getUserByUsername } from '~/models/users';
 import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';
