@@ -1,13 +1,13 @@
+import { Stream } from 'stream';
 import { parseISO } from 'date-fns';
 import type { ResponseType } from 'axios';
-import { Stream } from 'stream';
 import axios, { axiosWithErrorFormatter } from '../lib/axios';
 import createEventfulPromise from '../lib/promises';
 import {
   parsePeriod,
   setTimeoutAsync,
   type Period,
-  type RawPeriod
+  type RawPeriod,
 } from '../lib/utils';
 import { getJob, type FullJob, type Job } from './queues';
 import type { RawFullTask } from './tasks';

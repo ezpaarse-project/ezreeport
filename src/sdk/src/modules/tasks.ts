@@ -8,7 +8,7 @@ import {
   type Task,
   type RawTaskWithNamespace,
   type TaskWithNamespace,
-  type RawTask
+  type RawTask,
 } from './tasks.base';
 import type { Layout } from './templates';
 

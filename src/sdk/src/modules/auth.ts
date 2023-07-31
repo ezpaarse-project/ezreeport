@@ -4,7 +4,7 @@ import {
   parseNamespace,
   type Namespace,
   type RawNamespace,
-  type TaskCount
+  type TaskCount,
 } from './namespaces';
 
 export enum Access {
