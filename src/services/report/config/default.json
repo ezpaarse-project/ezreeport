@@ -11,6 +11,9 @@
     "requiredStatus": "green",
     "maxTries": 10
   },
+  "fetcher": {
+    "bannedDomains": []
+  },
   "redis": {
     "host": "redis",
     "port": 6379,

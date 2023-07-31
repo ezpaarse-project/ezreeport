@@ -1,8 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { jsPDF } from 'jspdf';
-import axios from 'axios';
 import { lookup } from 'mime-types';
+import http from '~/lib/http-requests';
 
 import config from '~/lib/config';
 import { loadImageAsset } from '~/lib/pdf/utils';
@@ -28,9 +28,8 @@ export default class MdImgElement extends MdElement<string> {
   }
 
   private async fetchRemote() {
-    console.log(`fetching [${this.src}]`);
-
-    const { data: file, headers } = await axios.get(this.src, { responseType: 'arraybuffer' });
+    // TODO [sec]: Limit downloaded data size
+    const { data: file, headers } = await http.get(this.src, { responseType: 'arraybuffer' });
 
     let mime: string = headers['Content-Type'] || headers['content-type'];
     if (!mime) {

@@ -3,6 +3,9 @@
   "port": { "__name": "HTTP_PORT", "__format": "number" },
   "allowedOrigins": "API_ALLOWED_ORIGINS",
   "adminKey": "REPORT_ADMIN_KEY",
+  "fetcher": {
+    "bannedDomains": { "__name": "REPORT_FETCHER_BANNED_DOMAINS", "__format": "json" }
+  },
   "elasticsearch": {
     "url": "ELASTIC_URL",
     "apiKey": "ELASTIC_API_KEY",
