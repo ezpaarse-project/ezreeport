@@ -7,7 +7,7 @@ type Area = { x: number, y: number, width: number, height: number };
  * Loads an image with some info
  *
  * @param data Image src
- * @return base64 & other usefull information
+ * @return base64 & other useful information
  */
 export const loadImageAsset = async (
   data: string,
