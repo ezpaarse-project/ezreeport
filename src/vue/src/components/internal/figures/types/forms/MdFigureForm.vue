@@ -89,7 +89,10 @@ export default defineComponent({
       const html = DOMPurify.sanitize(
         marked(
           data,
-          { mangle: false, headerIds: false },
+          {
+            mangle: false,
+            headerIds: false,
+          },
         ),
       );
       this.renderedMD = html;

@@ -27,39 +27,6 @@
           </template>
         </v-combobox>
 
-        <!-- Value -->
-        <CustomSection
-          :label="$t('headers.value').toString()"
-          :default-value="true"
-          collapsable
-        >
-          <div class="d-flex align-end">
-            <i class="mb-1">
-              {{ figureParams.dataKey }}[].
-            </i>
-            <v-text-field
-              :value="figureParams.value?.field"
-              :label="$t('value.headers.field')"
-              :readonly="readonly"
-              hide-details
-              @input="onSubParamUpdate('value', { field: $event })"
-            />
-          </div>
-          <i18n path="$ezreeport.hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
-            <template #code>
-              <code>{{ $t('$ezreeport.hints.dot_notation.code') }}</code>
-            </template>
-          </i18n>
-
-          <v-text-field
-            v-if="figure?.type !== 'arc'"
-            :value="figureParams.value?.title"
-            :label="$t('value.headers.title')"
-            :readonly="readonly"
-            @input="onSubParamUpdate('value', { title: $event })"
-          />
-        </CustomSection>
-
         <!-- Label -->
         <CustomSection
           :label="$t('headers.label').toString()"
@@ -119,6 +86,39 @@
               />
             </template>
           </CustomSection>
+        </CustomSection>
+
+        <!-- Value -->
+        <CustomSection
+          :label="$t('headers.value').toString()"
+          :default-value="true"
+          collapsable
+        >
+          <div class="d-flex align-end">
+            <i class="mb-1">
+              {{ figureParams.dataKey }}[].
+            </i>
+            <v-text-field
+              :value="figureParams.value?.field"
+              :label="$t('value.headers.field')"
+              :readonly="readonly"
+              hide-details
+              @input="onSubParamUpdate('value', { field: $event })"
+            />
+          </div>
+          <i18n path="$ezreeport.hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
+            <template #code>
+              <code>{{ $t('$ezreeport.hints.dot_notation.code') }}</code>
+            </template>
+          </i18n>
+
+          <v-text-field
+            v-if="figure?.type !== 'arc'"
+            :value="figureParams.value?.title"
+            :label="$t('value.headers.title')"
+            :readonly="readonly"
+            @input="onSubParamUpdate('value', { title: $event })"
+          />
         </CustomSection>
 
         <!-- Data Labels -->
