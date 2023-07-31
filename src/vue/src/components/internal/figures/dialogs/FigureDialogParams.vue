@@ -15,6 +15,7 @@
           <template #title v-else>
             <FigureTitleAutocomplete
               :value="figure?.params?.title || ''"
+              :readonly="readonly"
               class="ml-2"
               style="flex: 1"
               @input="figureTitle = $event"

@@ -18,7 +18,7 @@
         :close="!readonly"
         @click="openDialog(i)"
       >
-        <v-list-item-action>
+        <v-list-item-action v-if="!readonly">
           <v-btn
             :loading="loadingMap[item.name]"
             icon

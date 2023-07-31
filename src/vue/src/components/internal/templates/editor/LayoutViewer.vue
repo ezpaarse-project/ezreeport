@@ -5,6 +5,7 @@
       v-model="isFigureDialogParamsShown"
       :id="editedFigureId"
       :layout-id="value"
+      :readonly="mode !== 'allowed-edition'"
     />
 
     <div :class="['d-flex align-center pa-2', $vuetify.theme.dark ? 'grey darken-4' : 'white']">
@@ -47,7 +48,6 @@
             v-if="mode !== 'allowed-edition'"
             :id="figure._.id"
             :layout-id="value"
-            :locked="mode === 'denied-edition'"
             :taken-slots="takenSlots"
             :class="[
               'figure-slot',
@@ -139,6 +139,7 @@ export default defineComponent({
 
       return this.takenSlots.length < grid.cols * grid.rows && this.mode === 'allowed-edition';
     },
+
   },
   methods: {
     /**

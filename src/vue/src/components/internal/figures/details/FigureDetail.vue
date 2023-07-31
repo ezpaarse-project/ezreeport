@@ -11,18 +11,20 @@
 
         <v-spacer />
 
-        <v-btn icon x-small @click="$emit('edit:figure', id)">
-          <v-icon>mdi-cog</v-icon>
+        <v-btn color="primary" small class="ml-3" @click="$emit('edit:figure', id)">
+          {{ $t('$ezreeport.settings') }}
+
+          <v-icon right>mdi-cog</v-icon>
         </v-btn>
       </div>
 
       <v-select
-        :label="$t('$ezreeport.figures.type')"
         :value="figure.type"
+        :label="$t('$ezreeport.figures.type')"
         :items="figureTypes"
         readonly
-        item-text="label"
-        item-value="value"
+        hide-details
+        class="my-2"
       >
         <template #prepend>
           <v-icon>{{ figureIcons[figure.type] || 'mdi-help' }}</v-icon>
