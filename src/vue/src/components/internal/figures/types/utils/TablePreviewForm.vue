@@ -125,7 +125,7 @@ export default defineComponent({
   emits: {
     input: (cols: TableColumn[]) => !!cols,
     'update:totals': (totals: string[]) => !!totals,
-    'update:colStyles': (colStyles: Record<string, PDFStyle>) => !!colStyles,
+    'update:col-styles': (colStyles: Record<string, PDFStyle>) => !!colStyles,
   },
   data: () => ({
     columnDialogShown: false,
@@ -226,7 +226,7 @@ export default defineComponent({
         delete styles[this.currentColumn.dataKey];
       }
 
-      this.$emit('update:colStyles', styles);
+      this.$emit('update:col-styles', styles);
     },
     /**
      * Triggered when a column is deleted

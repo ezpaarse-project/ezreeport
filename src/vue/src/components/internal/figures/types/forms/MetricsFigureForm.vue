@@ -314,7 +314,7 @@ export default defineComponent({
       if (label) {
         this.currentLabel = label;
       } else {
-        this.currentLabel = { dataKey: this.availableAggs[0] || `agg${this.labels.length}` };
+        this.currentLabel = { dataKey: this.availableAggs[0]?.name || `agg${this.labels.length}` };
         const labels = [...this.figureParams.labels, this.currentLabel];
         this.figureParams = { ...this.figureParams, labels };
       }

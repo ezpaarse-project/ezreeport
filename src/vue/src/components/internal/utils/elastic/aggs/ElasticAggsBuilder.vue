@@ -32,7 +32,7 @@
         <v-list-item-content>
           <v-list-item-title>{{ item.name }}</v-list-item-title>
 
-          <i18n tag="v-list-item-subtitle" path="aggSummary" class="font-weight-light">
+          <i18n tag="v-list-item-subtitle" path="aggSummary" class="font-weight-light text--secondary">
             <template #type>
               <span class="font-weight-medium">
                 {{ item.type }}

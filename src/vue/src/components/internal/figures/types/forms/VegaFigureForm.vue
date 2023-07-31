@@ -320,6 +320,7 @@ const supportedParams = {
     format: '',
     showLabel: [false, undefined],
     minValue: [0, undefined],
+    position: '',
   },
 };
 

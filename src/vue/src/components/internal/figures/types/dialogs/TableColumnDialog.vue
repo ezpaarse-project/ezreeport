@@ -54,35 +54,69 @@
             :default-value="true"
             collapsable
           >
-            <v-select
-              :value="colStyle.overflow"
-              :label="$t('headers.style.overflow')"
-              :items="overflowOptions"
-              :placeholder="$t('overflow_list.ellipsize')"
-              persistent-placeholder
-              hide-details
-              @change="onColStyleUpdate({ overflow: $event })"
-            />
+            <v-row>
+              <v-col>
+                <v-select
+                  :value="colStyle.overflow"
+                  :label="$t('headers.style.overflow')"
+                  :items="overflowOptions"
+                  :placeholder="$t('overflow_list.ellipsize')"
+                  persistent-placeholder
+                  hide-details
+                  @change="onColStyleUpdate({ overflow: $event })"
+                />
+              </v-col>
+            </v-row>
 
-            <v-select
-              :value="colStyle.halign"
-              :label="$t('headers.style.halign')"
-              :items="alignOptions"
-              :placeholder="$t('align_list.left')"
-              persistent-placeholder
-              hide-details
-              @change="onColStyleUpdate({ halign: $event })"
-            />
+            <v-row>
+              <v-col class="button-group-col">
+                <v-label>
+                  {{ $t('headers.style.halign') }}
+                </v-label>
 
-            <v-select
-              :value="colStyle.valign"
-              :label="$t('headers.style.valign')"
-              :items="alignOptions"
-              :placeholder="$t('align_list.center')"
-              persistent-placeholder
-              hide-details
-              @change="onColStyleUpdate({ valign: $event })"
-            />
+                <v-btn-toggle
+                  :value="colStyle.halign || 'left'"
+                  mandatory
+                  dense
+                  rounded
+                  color="primary"
+                  @change="onColStyleUpdate({ halign: $event })"
+                >
+                  <v-btn
+                    v-for="align in ['left', 'right', 'center', 'justify']"
+                    :key="`h-${align}`"
+                    :value="align"
+                    outlined
+                  >
+                    <v-icon>mdi-format-align-{{ align }}</v-icon>
+                  </v-btn>
+                </v-btn-toggle>
+              </v-col>
+
+              <v-col class="button-group-col">
+                <v-label>
+                  {{ $t('headers.style.valign') }}
+                </v-label>
+
+                <v-btn-toggle
+                  :value="colStyle.halign || 'middle'"
+                  mandatory
+                  dense
+                  rounded
+                  color="primary"
+                  @change="onColStyleUpdate({ halign: $event })"
+                >
+                  <v-btn
+                    v-for="align in ['top', 'middle', 'bottom']"
+                    :key="`v-${align}`"
+                    :value="align"
+                    outlined
+                  >
+                    <v-icon>mdi-format-align-{{ align }}</v-icon>
+                  </v-btn>
+                </v-btn-toggle>
+              </v-col>
+            </v-row>
           </CustomSection>
 
           <!-- Advanced -->
@@ -93,6 +127,7 @@
               v-on="unsupportedParams.listeners"
             />
           </CustomSection>
+
         </v-card-text>
       </v-form>
     </v-card>
@@ -121,16 +156,6 @@ const possibleOverflows = [
   'ellipsize',
   'visible',
   'hidden',
-];
-
-/**
- * Possible alignement in cell
- */
-const possibleAligns = [
-  'left',
-  'right',
-  'center',
-  'justify',
 ];
 
 export default defineComponent({
@@ -252,12 +277,6 @@ export default defineComponent({
         value,
       })).sort((a, b) => a.text.localeCompare(b.text));
     },
-    alignOptions() {
-      return possibleAligns.map((value) => ({
-        text: this.$t(`align_list.${value}`).toString(),
-        value,
-      })).sort((a, b) => a.text.localeCompare(b.text));
-    },
   },
   watch: {
     value(val: boolean) {
@@ -290,6 +309,22 @@ export default defineComponent({
   font-size: 12px;
   line-height: 12px;
 }
+
+.button-group-col {
+  position: relative;
+}
+
+.button-group-col:deep(.v-label) {
+  position: absolute !important;
+  max-width: 133%;
+  transform-origin: top left;
+  transform: translateY(4px) translateX(12px) scale(.75);
+}
+
+.button-group-col:deep(.v-label) + * {
+  margin-top: 1rem;
+  transform: translateY(4px);
+}
 </style>
 
 <i18n lang="yaml">
@@ -308,11 +343,6 @@ en:
     ellipsize: 'Shorten using ellipsis'
     visible: 'Visible'
     hidden: 'Hidden'
-  align_list:
-    left: 'Left'
-    right: 'Right'
-    center: 'Center'
-    justify: 'Justify'
   errors:
     no_duplicate: 'This key is already used'
 fr:
@@ -330,12 +360,6 @@ fr:
     ellipsize: 'Mettre des points de suspensions'
     visible: 'Laisser dépasser'
     hidden: 'Tronquer'
-  align_list:
-    left: 'Gauche'
-    right: 'Droite'
-    center: 'Centrer'
-    justify: 'Justifier'
   errors:
     no_duplicate: 'Cette clé est déjà utilisé'
 </i18n>
-../forms/utils/table
