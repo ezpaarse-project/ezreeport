@@ -18,6 +18,7 @@
 
       <TemplateDialogCreate
         v-if="perms.create && createTemplateDialogShown"
+        ref="dialogCreate"
         v-model="createTemplateDialogShown"
         :available-tags="availableTags"
         fullscreen
@@ -71,6 +72,20 @@
 
             <v-spacer />
 
+            <v-tooltip top v-if="perms.create && perms.readOne">
+              <template #activator="{ attrs, on }">
+                <v-btn
+                  icon
+                  @click.stop="duplicateTemplate(template)"
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  <v-icon>mdi-content-copy</v-icon>
+                </v-btn>
+              </template>
+              <span>{{ $t('$ezreeport.duplicate') }}</span>
+            </v-tooltip>
+
             <v-tooltip top v-if="perms.delete">
               <template #activator="{ attrs, on }">
                 <v-btn icon color="error" @click.stop="showDeletePopover(template, $event)" v-bind="attrs" v-on="on">
@@ -113,7 +128,8 @@
 import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import ezReeportMixin from '~/mixins/ezr';
-import { Tag } from '~/components/internal/templates/forms/TagsForm.vue';
+import type { Tag } from '~/components/internal/templates/forms/TagsForm.vue';
+import type TemplateDialogCreate from '~/components/internal/templates/dialogs/TemplateDialogCreate.vue';
 
 const MAX_TAGS_SHOWN = 4;
 
@@ -123,6 +139,7 @@ export default defineComponent({
     readTemplateDialogShown: false,
     updateTemplateDialogShown: false,
     createTemplateDialogShown: false,
+    skipCreateInit: false,
     deleteTemplatePopoverShown: false,
     deleteTemplatePopoverCoords: { x: 0, y: 0 },
 
@@ -283,6 +300,23 @@ export default defineComponent({
       };
       await this.$nextTick();
       this.deleteTemplatePopoverShown = true;
+    },
+    /**
+     * Duplicate and open template
+     *
+     * @param template The template to duplicate
+     */
+    async duplicateTemplate(template: templates.Template) {
+      if (
+        !this.perms.readOne
+        && !this.perms.create
+      ) {
+        return;
+      }
+
+      await this.showCreateDialog();
+      (this.$refs.dialogCreate as InstanceType<typeof TemplateDialogCreate>)
+        ?.openFromTemplate(template);
     },
   },
 });

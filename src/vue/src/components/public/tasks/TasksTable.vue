@@ -3,6 +3,7 @@
     <TemplateProvider>
       <TaskDialogCreate
         v-if="perms.create && createTaskDialogShown"
+        ref="dialogCreate"
         v-model="createTaskDialogShown"
         :id="focusedId"
         @created="onTaskCreated"
@@ -97,10 +98,24 @@
             />
           </template>
 
-          <template #[`item.actions`]="{ item }">
-            <v-tooltip top v-if="rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-delete-task']">
+          <template #[`item.actions`]="{ item: task }">
+            <v-tooltip top v-if="perms.create && perms.readOne">
               <template #activator="{ attrs, on }">
-                <v-btn icon color="error" @click.stop="showDeletePopover(item, $event)" v-on="on" v-bind="attrs">
+                <v-btn
+                  icon
+                  @click.stop="duplicateTask(task)"
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  <v-icon>mdi-content-copy</v-icon>
+                </v-btn>
+              </template>
+              <span>{{ $t('$ezreeport.duplicate') }}</span>
+            </v-tooltip>
+
+            <v-tooltip top v-if="rawNamespacePerms?.[task.namespace?.id ?? '']?.['tasks-delete-task']">
+              <template #activator="{ attrs, on }">
+                <v-btn icon color="error" @click.stop="showDeletePopover(task, $event)" v-on="on" v-bind="attrs">
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>
               </template>
@@ -119,11 +134,11 @@
 
 <script lang="ts">
 import type { namespaces, tasks } from '@ezpaarse-project/ezreeport-sdk-js';
-import { defineComponent } from 'vue';
+import { defineComponent, type PropType } from 'vue';
 import type { DataOptions } from 'vuetify';
 import type { DataTableHeader } from '~/types/vuetify';
 import ezReeportMixin from '~/mixins/ezr';
-import type { PropType } from 'vue';
+import type TaskDialogCreate from '~/components/internal/tasks/dialogs/TaskDialogCreate.vue';
 
 interface TaskItem {
   id: string,
@@ -452,6 +467,23 @@ export default defineComponent({
       const tasks = [...this.tasks];
       tasks.splice(index, 1, { ...task, namespaceId: task.namespace.id });
       this.tasks = tasks;
+    },
+    /**
+     * Duplicate and open task
+     *
+     * @param task The task to duplicate
+     */
+    async duplicateTask(task: tasks.Task) {
+      if (
+        !this.perms.readOne
+        && !this.perms.create
+      ) {
+        return;
+      }
+
+      await this.showCreateDialog();
+      (this.$refs.dialogCreate as InstanceType<typeof TaskDialogCreate>)
+        ?.openFromTask(task);
     },
   },
 });

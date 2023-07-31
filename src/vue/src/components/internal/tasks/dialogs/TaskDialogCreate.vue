@@ -305,6 +305,34 @@ export default defineComponent({
         enabled: true,
       };
     },
+    async openFromTask({ id }: tasks.Task) {
+      this.$emit('input', true);
+
+      this.loading = true;
+      try {
+        const { content } = await this.$ezReeport.sdk.tasks.getTask(id);
+        if (!content) {
+          throw new Error(this.$t('$ezreeport.errors.fetch').toString());
+        }
+
+        const { template, ...data } = content;
+        this.templateStore.SET_CURRENT(template);
+        this.task = {
+          name: '',
+          template: { extends: template.extends } as CustomTaskTemplate,
+          targets: data.targets,
+          recurrence: data.recurrence,
+          namespace: data.namespace.id,
+          nextRun: minDate,
+          enabled: data.enabled,
+        };
+
+        this.error = '';
+      } catch (error) {
+        this.error = (error as Error).message;
+      }
+      this.loading = false;
+    },
     /**
      * Save and edit task
      */

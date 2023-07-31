@@ -139,10 +139,34 @@ export default defineComponent({
   methods: {
     init() {
       this.templateStore.SET_CURRENT({ layouts: [] });
+
       this.data = {
         name: '',
         tags: [],
       };
+    },
+    async openFromTemplate({ name }: templates.Template) {
+      this.$emit('input', true);
+
+      this.loading = true;
+      try {
+        const { content } = await this.$ezReeport.sdk.templates.getTemplate(name);
+        if (!content) {
+          throw new Error(this.$t('$ezreeport.errors.fetch').toString());
+        }
+
+        const { body, ...data } = content;
+        this.templateStore.SET_CURRENT(body);
+        this.data = {
+          name: '',
+          tags: data.tags,
+        };
+
+        this.error = '';
+      } catch (error) {
+        this.error = (error as Error).message;
+      }
+      this.loading = false;
     },
     /**
      * Save and create template
