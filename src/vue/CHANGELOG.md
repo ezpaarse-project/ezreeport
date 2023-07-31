@@ -1,3 +1,35 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.18](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.17...@ezpaarse-project/ezreeport-vue@1.0.0-beta.18) (2023-07-31)
+
+
+### Bug Fixes
+
+* **vue:** fixed description of variables ([43037d5](https://github.com/ezpaarse-project/ezreeport/commit/43037d58b3647b9efff5b3888b159398f837f328))
+* **vue:** fixed figures that take impossible slots in certain conditions ([c494a33](https://github.com/ezpaarse-project/ezreeport/commit/c494a33190b22013bc6f75de6ec499ffcd211795))
+* **vue:** fixed issues with dateFiled being empty ([86a5e50](https://github.com/ezpaarse-project/ezreeport/commit/86a5e50458d566b49ef91591395150ea2aa6737b))
+* **vue:** fixed readonly figures ([a383294](https://github.com/ezpaarse-project/ezreeport/commit/a3832941d9789b19d7b441fd84d23e39cc0c99b4))
+
+
+### Features
+
+* **vue:** added a loading state when debounced update is used ([845b940](https://github.com/ezpaarse-project/ezreeport/commit/845b940cb55104788f912f26e7db62d863efb077))
+* **vue:** added default values for value/labels of table/vega figures ([93fa1bd](https://github.com/ezpaarse-project/ezreeport/commit/93fa1bd2dff93ba2a36526de0a620985c4255e39))
+* **vue:** added title edition in popups ([1a6ad92](https://github.com/ezpaarse-project/ezreeport/commit/1a6ad9259893b17a493ee812bc7adc257544e819))
+* **vue:** added type definition when using an aggregation in figure ([4510a89](https://github.com/ezpaarse-project/ezreeport/commit/4510a896790beea10c792ad516dfc19c34c31ada))
+* **vue:** added way to duplicate layouts ([6b783d9](https://github.com/ezpaarse-project/ezreeport/commit/6b783d900409b4bea3df45db5f0f624264866d18))
+* **vue:** better doc count ux ([a15ede4](https://github.com/ezpaarse-project/ezreeport/commit/a15ede4e91ec2126ac95b831811e41a9a75e7b2b))
+* **vue:** filtered available aggregations ([b0c4604](https://github.com/ezpaarse-project/ezreeport/commit/b0c46049ebb8c731dbe06d1482ffc79aa60b9981))
+* **vue:** grouped aggregations types ([c32521b](https://github.com/ezpaarse-project/ezreeport/commit/c32521b95cbc0e2cc1fe5748c0994ba24eb97508))
+* **vue:** grouped and sorted figure types ([0b14bf5](https://github.com/ezpaarse-project/ezreeport/commit/0b14bf5d45df56d6b0da8a5bbaef0ca8d3dbfa61))
+* **vue:** hiding field on certain conditions ([4950cc6](https://github.com/ezpaarse-project/ezreeport/commit/4950cc658b20e13f7f017e2acd6de29f1f8718fe))
+* **vue:** removed layout params popover ([71be4be](https://github.com/ezpaarse-project/ezreeport/commit/71be4be640bd351225473e9e9c7d7cc0c128f9cc))
+* **vue:** reworked data label options ([328f776](https://github.com/ezpaarse-project/ezreeport/commit/328f776df4d663e90cf1c90cd7c0e50a75ecaaf5))
+* **vue:** showing aggregations as list and not as chips ([5e24e65](https://github.com/ezpaarse-project/ezreeport/commit/5e24e65e809083696a721cc995ce70b3c70181c7))
+
+
+### Reverts
+
+* **vue:** revert upgrade of "sass" ([5c1f694](https://github.com/ezpaarse-project/ezreeport/commit/5c1f69429cbb28468d9eed34af1ca0f0285bdd28))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.17](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.16...@ezpaarse-project/ezreeport-vue@1.0.0-beta.17) (2023-07-07)
 
 
