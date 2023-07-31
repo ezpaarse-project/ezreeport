@@ -303,6 +303,7 @@ export const createVegaLSpec = (
         color: {
           legend: null,
           scale: {
+            // @ts-ignore
             scheme: 'tableau10-labels',
           },
         },
