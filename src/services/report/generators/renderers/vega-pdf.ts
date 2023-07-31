@@ -10,7 +10,7 @@ import {
   initDoc,
   renderDoc,
   type PDFReportOptions,
-  type PDFStats
+  type PDFStats,
 } from '~/lib/pdf';
 import { addMdToPDF } from '~/lib/pdf/markdown';
 import { addMetricToPDF } from '~/lib/pdf/metrics';
@@ -20,7 +20,7 @@ import {
   addVegaToPDF,
   createVegaLSpec,
   createVegaView,
-  parseTitle
+  parseTitle,
 } from '~/lib/vega';
 
 import { type AnyFigure } from '~/models/figures';

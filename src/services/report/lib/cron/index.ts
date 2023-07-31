@@ -1,5 +1,5 @@
-import Queue from 'bull';
 import { join } from 'node:path';
+import Queue from 'bull';
 import config from '~/lib/config';
 import { appLogger as logger } from '~/lib/logger';
 import { formatInterval } from '~/lib/utils';

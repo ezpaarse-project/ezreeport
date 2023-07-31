@@ -1,8 +1,7 @@
-import type Queue from 'bull';
-
 import EventEmitter from 'node:events';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import type Queue from 'bull';
 
 import config from '~/lib/config';
 import { formatISO } from '~/lib/date-fns';

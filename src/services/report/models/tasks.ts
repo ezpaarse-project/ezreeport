@@ -4,7 +4,7 @@ import {
   endOfDay,
   formatISO,
   isBefore,
-  isSameDay
+  isSameDay,
 } from '~/lib/date-fns';
 import prisma from '~/lib/prisma';
 import {
@@ -12,7 +12,7 @@ import {
   type Namespace,
   type History,
   type Prisma,
-  type Task
+  type Task,
 } from '~/lib/prisma';
 import { calcNextDate } from '~/models/recurrence';
 import { ArgumentError } from '~/types/errors';

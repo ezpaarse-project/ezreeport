@@ -1,5 +1,5 @@
-import Queue, { type Job } from 'bull';
 import { join } from 'path';
+import Queue, { type Job } from 'bull';
 import type { Recurrence, Task } from '~/lib/prisma';
 import config from '~/lib/config';
 import { appLogger as logger } from '~/lib/logger';

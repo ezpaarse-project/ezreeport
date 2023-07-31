@@ -10,7 +10,7 @@ services:
       - 6389:6379
 
   report:
-    image: node:18.16.0
+    image: node:18.17.0
     working_dir: /usr/src/report
     volumes:
       - ./src/services/report:/usr/src/report
@@ -19,7 +19,7 @@ services:
       - 9230:9229 # Debug port
 
   mail:
-    image: node:18.16.0
+    image: node:18.17.0
     working_dir: /usr/src/mail
     volumes:
       - ./src/services/mail:/usr/src/mail

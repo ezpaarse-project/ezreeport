@@ -1,12 +1,12 @@
-import Joi from 'joi';
 import { randomBytes } from 'node:crypto';
+import Joi from 'joi';
 
 import prisma from '~/lib/prisma';
 import type {
   User,
   Prisma,
   Membership,
-  Namespace
+  Namespace,
 } from '~/lib/prisma';
 import { BulkResult, parseBulkResults } from '~/lib/utils';
 import { appLogger } from '~/lib/logger';

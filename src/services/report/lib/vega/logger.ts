@@ -3,7 +3,7 @@ import {
   Error,
   Info,
   Warn,
-  type LoggerInterface
+  type LoggerInterface,
 } from 'vega';
 import { appLogger as logger } from '~/lib/logger';
 

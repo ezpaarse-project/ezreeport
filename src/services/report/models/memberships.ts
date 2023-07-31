@@ -6,7 +6,7 @@ import {
   type Membership,
   type Prisma,
   type User,
-  type Namespace
+  type Namespace,
 } from '~/lib/prisma';
 import type { BulkResult } from '~/lib/utils';
 import { ArgumentError } from '~/types/errors';

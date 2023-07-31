@@ -1,4 +1,4 @@
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 
@@ -14,7 +14,7 @@ switch (buildTarget) {
     break;
 
   case 'types':
-    params = { build: { outDir: 'dist/types', write: false }, plugins: [dts({ outputDir: 'dist/types', copyDtsFiles: true })] };
+    params = { build: { outDir: 'dist/types', write: false }, plugins: [dts({ outDir: 'dist/types', copyDtsFiles: true })] };
     break;
 
   default:

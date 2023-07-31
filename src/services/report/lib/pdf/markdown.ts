@@ -1,11 +1,10 @@
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import axios from 'axios';
 import type { Font } from 'jspdf';
 import { marked } from 'marked';
 import { lookup } from 'mime-types';
 import { unescape } from 'lodash';
-
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 
 import config from '~/lib/config';
 

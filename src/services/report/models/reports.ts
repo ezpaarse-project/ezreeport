@@ -1,10 +1,9 @@
-import Joi from 'joi';
-import { compact, merge, omit } from 'lodash';
-
 import { randomUUID } from 'node:crypto';
 import EventEmitter from 'node:events';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { compact, merge, omit } from 'lodash';
+import Joi from 'joi';
 
 import fetchers, { type Fetchers } from '~/generators/fetchers';
 import renderers, { type Renderers } from '~/generators/renderers';
@@ -18,7 +17,7 @@ import {
   format,
   formatISO,
   parseISO,
-  startOfDay
+  startOfDay,
 } from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
 
@@ -30,7 +29,7 @@ import {
   getTemplateByName,
   isTaskTemplate,
   type AnyTemplate,
-  type AnyTaskTemplate
+  type AnyTaskTemplate,
 } from './templates';
 import { type TypedNamespace, getNamespaceById } from './namespaces';
 

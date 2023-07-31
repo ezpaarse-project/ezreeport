@@ -7,7 +7,7 @@ import {
   getQueues,
   getCountJobs,
   resumeQueue,
-  retryJob
+  retryJob,
 } from '~/lib/bull';
 import { CustomRouter } from '~/lib/express-utils';
 import { Access } from '~/models/access';
