@@ -382,7 +382,17 @@ export default defineComponent({
       // eslint-disable-next-line no-restricted-syntax
       for (const [value, definition] of entries) {
         const key = definition.isCommon ? 'common' : 'others';
-        const item = { text: this.$t(`types.${value}`).toString(), value };
+        const item = {
+          text: this.$t(
+            '$ezreeport.fetchOptions.agg_option',
+            {
+              label: this.$t(`$ezreeport.fetchOptions.agg_types.${value}`),
+              type: value,
+            },
+          ).toString(),
+          value,
+        };
+
         if (definition.isArray) {
           multiValues[key].push(item);
         } else {
@@ -616,33 +626,6 @@ en:
     commonMulti: 'Common bucket aggregations'
     otherSingle: 'Metric aggregations'
     otherMulti: 'Common aggregations'
-  types:
-    auto_date_histogram: 'Auto date histogram'
-    avg: 'Average (avg)'
-    boxplot: 'Boxplot'
-    cardinality: 'Unique count'
-    categorize_text: 'Categorize text'
-    date_histogram: 'Date histogram'
-    diversified_sampler: 'Diversified sampler'
-    extended_stats: 'Extended stats'
-    geo_bounds: 'Geo bounds'
-    geo_centroid: 'Geo centroid'
-    histogram: 'Histogram'
-    max: 'Maximum (max)'
-    median_absolute_deviation: 'Median absolute deviation'
-    min: 'Minimum (min)'
-    percentiles: 'Percentiles'
-    rare_terms: 'Rare terms'
-    rate: 'Rate'
-    sampler: 'Sampler'
-    significant_terms: 'Significant terms'
-    significant_text: 'Significant text'
-    stats: 'Stats'
-    string_stats: 'String stats'
-    sum: 'Sum'
-    terms: 'Terms'
-    value_count: 'Value count'
-    variable_width_histogram: 'Variable width histogram'
   sorts:
     _count: 'By doc count (_count)'
     _key: 'By key (_key)'
@@ -666,33 +649,6 @@ fr:
     commonMulti: 'Aggregations par groupes communes'
     otherSingle: 'Autres aggregations de métriques'
     otherMulti: 'Autres aggregations par groupes'
-  types:
-    auto_date_histogram: 'Histogramme de date automatique (auto_date_histogram)'
-    avg: 'Moyenne (avg)'
-    boxplot: 'Diagramme en boîte (boxplot)'
-    cardinality: 'Compte unique (cardinality)'
-    categorize_text: 'Catégoriser le texte (categorize_text)'
-    date_histogram: 'Histogramme de date (date_histogram)'
-    diversified_sampler: 'Échantillonneur diversifié (diversified_sampler)'
-    extended_stats: 'Statistiques étendues (extended_stats)'
-    geo_bounds: 'Limites géographiques (geo_bounds)'
-    geo_centroid: 'Centroïde géographique (geo_centroid)'
-    histogram: 'Histogramme (histogram)'
-    max: 'Maximum (max)'
-    median_absolute_deviation: 'Écart absolu médian (median_absolute_deviation)'
-    min: 'Minimum (min)'
-    percentiles: 'Percentiles (percentiles)'
-    rare_terms: 'Termes rares (rare_terms)'
-    rate: 'Taux (rate)'
-    sampler: 'Échantillonneur (sampler)'
-    significant_terms: 'Termes significatifs (significant_terms)'
-    significant_text: 'Texte significatif (significant_text)'
-    stats: 'Statistiques (stats)'
-    string_stats: 'Statistiques de chaînes de caractères (string_stats)'
-    sum: 'Somme (sum)'
-    terms: 'Termes (terms)'
-    value_count: 'Nombre de valeurs (value_count)'
-    variable_width_histogram: 'Histogramme à largeur variable (variable_width_histogram)'
   sorts:
     _count: 'Par nombre de résultat (_count)'
     _key: 'Par clé (_key)'

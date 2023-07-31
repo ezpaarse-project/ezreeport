@@ -106,7 +106,37 @@
     "index": "Index Elastic",
     "dateField": "Champ 'date' de l'index",
     "filters": "Filtres",
-    "aggregations": "Aggregations"
+    "aggregations": "Aggregations",
+
+    "agg_option": "{label} ({type})",
+    "agg_types": {
+      "auto_date_histogram": "Histogramme de date automatique",
+      "avg": "Moyenne",
+      "boxplot": "Diagramme en boîte",
+      "cardinality": "Compte unique",
+      "categorize_text": "Catégoriser le texte",
+      "date_histogram": "Histogramme de date",
+      "diversified_sampler": "Échantillonneur diversifié",
+      "extended_stats": "Statistiques étendues",
+      "geo_bounds": "Limites géographiques",
+      "geo_centroid": "Centroïde géographique",
+      "histogram": "Histogramme",
+      "max": "Maximum",
+      "median_absolute_deviation": "Écart absolu médian",
+      "min": "Minimum",
+      "percentiles": "Percentiles",
+      "rare_terms": "Termes rares",
+      "rate": "Taux",
+      "sampler": "Échantillonneur",
+      "significant_terms": "Termes significatifs",
+      "significant_text": "Texte significatif",
+      "stats": "Statistiques",
+      "string_stats": "Statistiques de chaînes de caractères",
+      "sum": "Somme",
+      "terms": "Termes",
+      "value_count": "Nombre de valeurs",
+      "variable_width_histogram": "Histogramme à largeur variable"
+    }
   },
 
   "hints": {
