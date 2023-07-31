@@ -10,14 +10,19 @@
     <v-card>
       <v-form v-model="valid">
         <v-card-title>
-          <v-text-field
-            v-model="innerDataKey"
-            :label="$t('headers.dataKey')"
-            :rules="rules.dataKey"
-            :readonly="readonly"
-            hide-details="auto"
-            @blur="onColumnUpdated({ dataKey: innerDataKey })"
-          />
+          <div class="d-flex align-end">
+            <i style="font-size: 0.8em;">
+              {{ keyPrefix }}
+            </i>
+            <v-text-field
+              v-model="innerDataKey"
+              :label="$t('headers.dataKey')"
+              :rules="rules.dataKey"
+              :readonly="readonly"
+              hide-details="auto"
+              @blur="onColumnUpdated({ dataKey: innerDataKey })"
+            />
+          </div>
           <i18n v-if="valid" path="$ezreeport.hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
             <template #code>
               <code>{{ $t('$ezreeport.hints.dot_notation.code') }}</code>
@@ -164,6 +169,13 @@ export default defineComponent({
     currentDataKeys: {
       type: Array as PropType<string[]>,
       default: () => [],
+    },
+    /**
+     * The prefix of the field
+     */
+    keyPrefix: {
+      type: String,
+      default: '',
     },
     /**
      * Is the dialog readonly

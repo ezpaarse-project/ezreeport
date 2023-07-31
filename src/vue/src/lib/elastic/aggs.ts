@@ -7,8 +7,14 @@ type TypeDefinition = {
 export type AggDefinition = {
   canHaveSub?: true,
   isArray?: true,
+  isCommon?: true,
   type?: TypeDefinition,
 };
+
+/**
+ * Root keys handled by the simple edition
+ */
+const handledKeys = new Set(['name', 'aggs', 'aggregations']);
 
 /**
  * Possible aggregations in an elastic request extracted both from TS types & documentation
@@ -29,6 +35,7 @@ export const aggsDefinition = {
     canHaveSub: true,
   },
   avg: {
+    isCommon: true,
     type: {
       value: Number,
     },
@@ -49,6 +56,7 @@ export const aggsDefinition = {
   // 'bucket_selector': {},
   // 'bucket_sort': {},
   cardinality: {
+    isCommon: true,
     type: {
       value: Number,
     },
@@ -65,6 +73,7 @@ export const aggsDefinition = {
   // 'cumulative_sum': {},
   date_histogram: {
     isArray: true,
+    isCommon: true,
     type: {
       key: Number,
       doc_count: Number,
@@ -125,6 +134,7 @@ export const aggsDefinition = {
   // 'line': {},
   // 'matrix_stats': {},
   max: {
+    isCommon: true,
     type: {
       value: Number,
     },
@@ -136,6 +146,7 @@ export const aggsDefinition = {
     },
   },
   min: {
+    isCommon: true,
     type: {
       value: Number,
     },
@@ -173,7 +184,7 @@ export const aggsDefinition = {
     },
     canHaveSub: true,
   },
-  rate: {},
+  // rate: {},
   // 'reverse_nested': {},
   sampler: {
     type: {
@@ -223,12 +234,14 @@ export const aggsDefinition = {
     },
   },
   sum: {
+    isCommon: true,
     type: {
       value: Number,
     },
   },
   // 'sum_bucket': {},
   terms: {
+    isCommon: true,
     isArray: true,
     type: {
       key: [String, Number],
@@ -257,8 +270,6 @@ export const aggsDefinition = {
   },
 } satisfies Record<string, AggDefinition>;
 
-export const aggsTypes = Object.keys(aggsDefinition);
-
 /**
  * Additional possible sort options in a elastic request
  */
@@ -276,3 +287,79 @@ export const sizeKeyByType: Record<string, string> = {
   diversified_sampler: 'shards',
   sampler: 'shard_size',
 } satisfies Partial<Record<keyof typeof aggsDefinition, string>>;
+
+/**
+ * Get unsupported keys of an aggregation
+ *
+ * @param agg The aggregation
+ *
+ * @returns The unsupported keys
+ */
+export const getUnknownKeysFromAgg = (
+  agg: any,
+) => {
+  if (!agg) {
+    return [];
+  }
+  return Object.keys(agg).filter((k) => !handledKeys.has(k));
+};
+
+/**
+ * Get aggregation's type
+ *
+ * @param agg The aggregation
+ *
+ * @returns The aggregation's type
+ */
+export const getTypeFromAgg = (agg: any): string | undefined => getUnknownKeysFromAgg(agg)[0];
+
+/**
+ * Get aggregation type definition, if available
+ *
+ * @param type The aggregation's type
+ * @param subAggs The possible sub aggregations
+ *
+ * @returns The aggregation type definition
+ */
+export const getTypeDefinitionFromAggType = (
+  type: string | undefined,
+  subAggs: Record<string, any> | undefined,
+): AggDefinition | undefined => {
+  if (!type) {
+    return undefined;
+  }
+
+  const def = (aggsDefinition as Record<string, AggDefinition>)[type];
+  if (def?.type) {
+    // Add aggregations as unknown
+    const aggsDef = Object.values(subAggs ?? {}).reduce(
+      (prev: Record<string, ObjectConstructor>, k: any, i: number) => ({
+        ...prev,
+        [k.name || `agg${i}`]: Object,
+      }),
+      {},
+    );
+
+    return {
+      ...def,
+      type: {
+        ...def.type,
+        ...aggsDef,
+      },
+    };
+  }
+
+  return def;
+};
+
+/**
+ * Get aggregation type definition, if available
+ *
+ * @param agg The aggregation
+ *
+ * @returns The aggregation type definition
+ */
+export const getTypeDefinitionFromAgg = (agg: any | undefined) => getTypeDefinitionFromAggType(
+  getTypeFromAgg(agg),
+  agg?.aggs ?? agg?.aggregations,
+);

@@ -11,21 +11,23 @@
 
         <v-spacer />
 
-        <v-btn icon x-small @click="$emit('edit:figure', id)">
-          <v-icon>mdi-cog</v-icon>
+        <v-btn color="primary" small class="ml-3" @click="$emit('edit:figure', id)">
+          {{ $t('$ezreeport.settings') }}
+
+          <v-icon right>mdi-cog</v-icon>
         </v-btn>
       </div>
 
       <v-select
-        :label="$t('$ezreeport.figures.type')"
         :value="figure.type"
+        :label="$t('$ezreeport.figures.type')"
         :items="figureTypes"
         readonly
-        item-text="label"
-        item-value="value"
+        hide-details
+        class="my-2"
       >
         <template #prepend>
-          <v-icon>{{ figureIcons[figure.type] }}</v-icon>
+          <v-icon>{{ figureIcons[figure.type] || 'mdi-help' }}</v-icon>
         </template>
       </v-select>
 
@@ -45,6 +47,7 @@ import { defineComponent, type PropType } from 'vue';
 import type { AnyCustomFigure } from '~/lib/templates/customTemplates';
 import { figureTypes, figureIcons } from '~/lib/templates/figures';
 import useTemplateStore from '~/stores/template';
+import type { SelectItem } from '~/types/vuetify';
 import figureFormMap from '../types/forms';
 
 export default defineComponent({
@@ -102,10 +105,35 @@ export default defineComponent({
      * Localized figure types
      */
     figureTypes() {
-      return figureTypes.map((value) => ({
-        label: this.$t(`$ezreeport.figures.type_list.${value}`),
-        value,
-      }));
+      const items: SelectItem[] = [];
+
+      const entries = Object.entries(figureTypes);
+      for (let i = 0; i < entries.length; i += 1) {
+        const [category, figures] = entries[i];
+
+        // localize figure type
+        const subItems = Object.entries(figures).map(
+          ([value]) => ({
+            value,
+            text: this.$t(`$ezreeport.figures.type_list.${value}`).toString(),
+          }),
+        ).sort(
+          (a, b) => a.text.localeCompare(b.text),
+        );
+
+        // add localized header
+        items.push(
+          { header: this.$t(`$ezreeport.figures.type_groups.${category}`).toString() },
+          ...subItems,
+        );
+
+        // add divider if not last
+        if (i < entries.length - 1) {
+          items.push({ divider: true });
+        }
+      }
+
+      return items;
     },
     /**
      * Components that holds figure params

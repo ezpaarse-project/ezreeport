@@ -8,7 +8,20 @@
   >
     <v-card>
       <v-card-title>
-        {{ $t('title', { title: dialogTitle }) }}
+        <i18n path="dialog-title" tag="div" class="d-flex align-end" style="width: 50%;">
+          <template #title v-if="figure?.type === 'md' || figure?.type === 'metric'">
+            {{ figureTitle }}
+          </template>
+          <template #title v-else>
+            <FigureTitleAutocomplete
+              :value="figure?.params?.title || ''"
+              :readonly="readonly"
+              class="ml-2"
+              style="flex: 1"
+              @input="figureTitle = $event"
+            />
+          </template>
+        </i18n>
 
         <div v-if="figure" class="ml-1">
           <v-tooltip top v-if="valid !== true" color="warning">
@@ -118,17 +131,6 @@ export default defineComponent({
       return err;
     },
     /**
-     * Returns the title of the figure
-     */
-    dialogTitle() {
-      const title = this.figure?.params?.title;
-      if (title) {
-        return title;
-      }
-
-      return this.$t(`$ezreeport.figures.type_list.${this.figure?.type || 'unknown'}`);
-    },
-    /**
      * Components that holds figure params
      */
     figureParamsForm() {
@@ -143,6 +145,36 @@ export default defineComponent({
       // eslint-disable-next-line no-underscore-dangle
       return figureFormMap._default;
     },
+    /**
+     * Returns the title of the figure
+     */
+    figureTitle: {
+      get(): string {
+        const title = this.figure?.params?.title;
+        if (title) {
+          return title.toString();
+        }
+
+        return this.$t(`$ezreeport.figures.type_list.${this.figure?.type || 'unknown'}`).toString();
+      },
+      set(title: string) {
+        if (!this.figure) {
+          return;
+        }
+
+        this.templateStore.UPDATE_FIGURE(
+          this.layoutId,
+          this.id,
+          {
+            ...this.figure,
+            params: {
+              ...this.figure.params,
+              title,
+            },
+          },
+        );
+      },
+    },
   },
 });
 </script>
@@ -153,9 +185,7 @@ export default defineComponent({
 
 <i18n lang="yaml">
 en:
-  title: "{title}'s parameters"
+  dialog-title: "{title}'s parameters"
 fr:
-  title: 'Paramètres de {title}'
+  dialog-title: 'Paramètres de {title}'
 </i18n>
-../../figures/forms
-../../figures/types/forms

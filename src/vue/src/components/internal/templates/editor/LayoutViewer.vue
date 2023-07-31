@@ -5,6 +5,7 @@
       v-model="isFigureDialogParamsShown"
       :id="editedFigureId"
       :layout-id="value"
+      :readonly="mode !== 'allowed-edition'"
     />
 
     <div :class="['d-flex align-center pa-2', $vuetify.theme.dark ? 'grey darken-4' : 'white']">
@@ -47,7 +48,6 @@
             v-if="mode !== 'allowed-edition'"
             :id="figure._.id"
             :layout-id="value"
-            :locked="mode === 'denied-edition'"
             :taken-slots="takenSlots"
             :class="[
               'figure-slot',
@@ -137,8 +137,9 @@ export default defineComponent({
       // eslint-disable-next-line prefer-destructuring
       const grid = this.templateStore.currentGrid;
 
-      return this.figures.length < grid.cols * grid.rows && this.mode === 'allowed-edition';
+      return this.takenSlots.length < grid.cols * grid.rows && this.mode === 'allowed-edition';
     },
+
   },
   methods: {
     /**
@@ -157,7 +158,21 @@ export default defineComponent({
         return;
       }
 
-      const firstUnusedSlot = (this.takenSlots.at(-1) ?? -1) + 1;
+      // Resolve the first unused slot
+      const grid = this.templateStore.currentGrid;
+      const maxElements = grid.cols * grid.rows;
+      const usedSlots = new Set(this.takenSlots);
+      let firstUnusedSlot = 0;
+      for (firstUnusedSlot = 0; firstUnusedSlot < maxElements; firstUnusedSlot += 1) {
+        if (!usedSlots.has(firstUnusedSlot)) {
+          break;
+        }
+      }
+
+      // Since slot overflow can still occur (if there's no space left) and cause too much errors
+      if (firstUnusedSlot >= maxElements) {
+        return;
+      }
 
       const defaultFigure: AnyCustomFigure = addAdditionalData({
         type: 'md',

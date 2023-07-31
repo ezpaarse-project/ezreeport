@@ -1,7 +1,7 @@
 <template>
   <v-dialog
     :value="value"
-    :persistent="!valid"
+    :persistent="!valid || loading"
     width="600"
     @input="$emit('input', $event)"
   >
@@ -36,7 +36,7 @@
         </v-tooltip>
 
         <!-- Close -->
-        <v-btn icon text @click="$emit('input', false)">
+        <v-btn :loading="loading" icon text @click="$emit('input', false)">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
@@ -56,31 +56,11 @@
                 hide-details="auto"
                 @change="onTypeUpdate"
               >
-                <template #append-outer v-if="typeDefinition">
-                  <!-- Type def -->
-                  <v-menu
+                <template #append-outer>
+                  <ElasticAggTypeHelper
                     v-model="showDefinition"
-                    offset-y
-                  >
-                    <template #activator="{ on, attrs }">
-                      <v-btn
-                        icon
-                        small
-                        v-bind="attrs"
-                        v-on="on"
-                      >
-                        <v-icon>mdi-information</v-icon>
-                      </v-btn>
-                    </template>
-
-                    <v-card>
-                      <v-card-title class="py-1">
-                        {{ $t('headers.typeHelper') }}
-                      </v-card-title>
-
-                      <TSPreview :value="typeDefinition.type" :is-array="typeDefinition.isArray" />
-                    </v-card>
-                  </v-menu>
+                    :agg="innerElement"
+                  />
                 </template>
               </v-autocomplete>
 
@@ -103,6 +83,7 @@
 
               <!-- Size -->
               <v-text-field
+                v-if="typeDefinition?.isArray"
                 :value="type.data?.size"
                 :label="$t('headers.count')"
                 :min="0"
@@ -112,7 +93,7 @@
               />
 
               <!-- Sort -->
-              <div class="d-flex align-center">
+              <div v-if="typeDefinition?.isArray" class="d-flex align-center">
                 <v-combobox
                   :value="order.value"
                   :items="availableSorts"
@@ -195,22 +176,21 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
 import {
-  aggsTypes,
+  aggsDefinition,
   sortOptions,
   sizeKeyByType,
-  aggsDefinition,
+  getTypeDefinitionFromAggType,
+  getTypeFromAgg,
+  getUnknownKeysFromAgg,
   type AggDefinition,
 } from '~/lib/elastic/aggs';
 import { cloneDeep, debounce } from 'lodash';
+import type { SelectItem } from '~/types/vuetify';
 import type ElasticAggsBuilderConstructor from './ElasticAggsBuilder.vue';
 
 type ElasticAggsBuilder = InstanceType<typeof ElasticAggsBuilderConstructor>;
 
-const aggsSet = new Set<string>(aggsTypes);
-/**
- * Root keys handled by the simple edition
- */
-const handledKeys = new Set(['name', 'aggs', 'aggregations']);
+const aggsSet = new Set<string>(Object.keys(aggsDefinition));
 
 export default defineComponent({
   props: {
@@ -264,6 +244,12 @@ export default defineComponent({
      * @param el The new state of the aggregation
      */
     'update:element': (index: number, el: Record<string, any>) => index >= 0 && !!el,
+    /**
+     * Triggered when element is updated
+     *
+     * @param loading The new loading state
+     */
+    'update:loading': (loading: boolean) => loading !== undefined,
   },
   data: () => ({
     showAdvanced: false,
@@ -275,13 +261,14 @@ export default defineComponent({
     elementHash: '',
 
     innerValid: false,
+    loading: false,
   }),
   computed: {
     /**
      * Root keys in aggregations that are not handled by the simple mode
      */
     unknownKeys(): string[] {
-      return Object.keys(this.innerElement).filter((k) => !handledKeys.has(k));
+      return getUnknownKeysFromAgg(this.innerElement);
     },
     /**
      * Is the aggregation too advanced to be handled in the simple mode
@@ -295,7 +282,7 @@ export default defineComponent({
      */
     type() {
       // Since there's should be only one unknown key, is the type of aggregation
-      const value = this.unknownKeys[0];
+      const value = getTypeFromAgg(this.innerElement) || '';
       return {
         value,
         data: this.innerElement[value],
@@ -388,13 +375,57 @@ export default defineComponent({
     /**
      * Possible types of aggregations with localization
      */
-    availableTypes() {
-      return aggsTypes.map((value) => ({
-        text: this.$t(`types.${value}`),
-        value,
-      })).sort(
-        (a, b) => a.text.toString().localeCompare(b.text.toString()),
-      );
+    availableTypes(): SelectItem[] {
+      const singleValue = {
+        common: [] as SelectItem[],
+        others: [] as SelectItem[],
+      };
+      const multiValues = {
+        common: [] as SelectItem[],
+        others: [] as SelectItem[],
+      };
+
+      const entries: [string, AggDefinition][] = Object.entries(aggsDefinition);
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [value, definition] of entries) {
+        const key = definition.isCommon ? 'common' : 'others';
+        const item = {
+          text: this.$t(
+            '$ezreeport.fetchOptions.agg_option',
+            {
+              label: this.$t(`$ezreeport.fetchOptions.agg_types.${value}`),
+              type: value,
+            },
+          ).toString(),
+          value,
+        };
+
+        if (definition.isArray) {
+          multiValues[key].push(item);
+        } else {
+          singleValue[key].push(item);
+        }
+      }
+
+      return [
+        { header: this.$t('groups.commonSingle').toString() },
+        ...singleValue.common,
+
+        { divider: true },
+
+        { header: this.$t('groups.commonMulti').toString() },
+        ...multiValues.common,
+
+        { divider: true },
+
+        { header: this.$t('groups.otherSingle').toString() },
+        ...singleValue.others,
+
+        { divider: true },
+
+        { header: this.$t('groups.otherMulti').toString() },
+        ...multiValues.others,
+      ];
     },
     /**
      * Possible sorts with localization
@@ -426,28 +457,10 @@ export default defineComponent({
      * Type definition of the aggregation
      */
     typeDefinition(): AggDefinition | undefined {
-      const def = (aggsDefinition as Record<string, AggDefinition>)[this.type.value];
-      if (def?.type) {
-        // Add aggregations as unknown
-        const aggs = this.innerElement.aggs ?? this.innerElement.aggregations;
-        const aggsDef = Object.values(aggs ?? {}).reduce(
-          (prev: Record<string, ObjectConstructor>, k: any, i: number) => ({
-            ...prev,
-            [k.name || `agg${i}`]: Object,
-          }),
-          {},
-        );
-
-        return {
-          ...def,
-          type: {
-            ...def.type,
-            ...aggsDef,
-          },
-        };
-      }
-
-      return def;
+      return getTypeDefinitionFromAggType(
+        this.type.value,
+        this.innerElement.aggs ?? this.innerElement.aggregations,
+      );
     },
   },
   watch: {
@@ -471,11 +484,21 @@ export default defineComponent({
       };
       this.showAdvanced = this.isTooAdvanced;
     },
-    debouncedUpdateElement: debounce(
+    debouncedEmitUpdateElement: debounce(
       // eslint-disable-next-line func-names
-      function (this: any) { this.$emit('update:element', this.elementIndex, this.innerElement); return true; },
+      function (this: any) {
+        this.$emit('update:element', this.elementIndex, this.innerElement);
+        this.$emit('update:loading', false);
+        this.loading = false;
+        return true;
+      },
       1000,
     ),
+    updateElement() {
+      this.loading = true;
+      this.$emit('update:loading', true);
+      this.debouncedEmitUpdateElement();
+    },
     /**
      * When the aggregation is updated
      *
@@ -488,7 +511,7 @@ export default defineComponent({
         return;
       }
 
-      this.debouncedUpdateElement();
+      this.updateElement();
     },
     /**
      * When type of aggregation is updated
@@ -506,7 +529,7 @@ export default defineComponent({
       }
 
       // TODO: handle size change
-      this.debouncedUpdateElement();
+      this.updateElement();
     },
     /**
      * When field in type of aggregation is updated
@@ -585,7 +608,7 @@ export default defineComponent({
       }
 
       this.innerElement = JSON.parse(this.innerJSON);
-      this.debouncedUpdateElement();
+      this.updateElement();
     },
   },
 });
@@ -605,7 +628,6 @@ en:
     simpleEdition: 'Simple edition'
     advancedEdition: 'Advanced edition'
     type: 'Aggregation type'
-    typeHelper: 'Possible format of data'
     field: 'Concerned field'
     count: 'Max count of results'
     sort: 'Sort on sub aggregation...'
@@ -616,33 +638,11 @@ en:
     desc: 'descending'
   errors:
     no_duplicate: 'This name is already used'
-  types:
-    auto_date_histogram: 'Auto date histogram'
-    avg: 'Average (avg)'
-    boxplot: 'Boxplot'
-    cardinality: 'Unique count'
-    categorize_text: 'Categorize text'
-    date_histogram: 'Date histogram'
-    diversified_sampler: 'Diversified sampler'
-    extended_stats: 'Extended stats'
-    geo_bounds: 'Geo bounds'
-    geo_centroid: 'Geo centroid'
-    histogram: 'Histogram'
-    max: 'Maximum (max)'
-    median_absolute_deviation: 'Median absolute deviation'
-    min: 'Minimum (min)'
-    percentiles: 'Percentiles'
-    rare_terms: 'Rare terms'
-    rate: 'Rate'
-    sampler: 'Sampler'
-    significant_terms: 'Significant terms'
-    significant_text: 'Significant text'
-    stats: 'Stats'
-    string_stats: 'String stats'
-    sum: 'Sum'
-    terms: 'Terms'
-    value_count: 'Value count'
-    variable_width_histogram: 'Variable width histogram'
+  groups:
+    commonSingle: 'Common metric aggregations'
+    commonMulti: 'Common bucket aggregations'
+    otherSingle: 'Metric aggregations'
+    otherMulti: 'Common aggregations'
   sorts:
     _count: 'By doc count (_count)'
     _key: 'By key (_key)'
@@ -651,7 +651,6 @@ fr:
     simpleEdition: 'Édition simple'
     advancedEdition: 'Édition avancée'
     type: "Type d'aggregation"
-    typeHelper: 'Format probable des données'
     field: 'Champ concerné'
     count: 'Nombre de résultats maximum'
     sort: 'Trier sur la sous aggregation...'
@@ -662,33 +661,11 @@ fr:
     desc: 'descendant'
   errors:
     no_duplicate: 'Ce nom est déjà utilisé'
-  types:
-    auto_date_histogram: 'Histogramme de date automatique (auto_date_histogram)'
-    avg: 'Moyenne (avg)'
-    boxplot: 'Diagramme en boîte (boxplot)'
-    cardinality: 'Compte unique (cardinality)'
-    categorize_text: 'Catégoriser le texte (categorize_text)'
-    date_histogram: 'Histogramme de date (date_histogram)'
-    diversified_sampler: 'Échantillonneur diversifié (diversified_sampler)'
-    extended_stats: 'Statistiques étendues (extended_stats)'
-    geo_bounds: 'Limites géographiques (geo_bounds)'
-    geo_centroid: 'Centroïde géographique (geo_centroid)'
-    histogram: 'Histogramme (histogram)'
-    max: 'Maximum (max)'
-    median_absolute_deviation: 'Écart absolu médian (median_absolute_deviation)'
-    min: 'Minimum (min)'
-    percentiles: 'Percentiles (percentiles)'
-    rare_terms: 'Termes rares (rare_terms)'
-    rate: 'Taux (rate)'
-    sampler: 'Échantillonneur (sampler)'
-    significant_terms: 'Termes significatifs (significant_terms)'
-    significant_text: 'Texte significatif (significant_text)'
-    stats: 'Statistiques (stats)'
-    string_stats: 'Statistiques de chaînes de caractères (string_stats)'
-    sum: 'Somme (sum)'
-    terms: 'Termes (terms)'
-    value_count: 'Nombre de valeurs (value_count)'
-    variable_width_histogram: 'Histogramme à largeur variable (variable_width_histogram)'
+  groups:
+    commonSingle: 'Aggregations de métriques communes' # TODO: Not really sure about that one
+    commonMulti: 'Aggregations par groupes communes'
+    otherSingle: 'Autres aggregations de métriques'
+    otherMulti: 'Autres aggregations par groupes'
   sorts:
     _count: 'Par nombre de résultat (_count)'
     _key: 'Par clé (_key)'

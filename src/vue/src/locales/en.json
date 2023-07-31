@@ -14,6 +14,7 @@
   "save": "Save",
   "advanced_parameters": "Advanced parameters",
   "show_json": "Show JSON",
+  "settings": "Settings",
 
   "tasks": {
     "name": "Report name",
@@ -69,10 +70,15 @@
       "text": "Text",
       "tick": "Tick",
       "trail": "Trail",
-      "circle": "Circle",
+      "circle": "Point circles",
       "square": "Square",
 
       "unknown": "Unknown"
+    },
+
+    "type_groups": {
+      "common": "Common",
+      "others": "Others"
     },
 
     "slots_list": [
@@ -83,7 +89,7 @@
     ],
 
     "vars_list": {
-      "length": "Actual count of items in table"
+      "length": "Count of shown items"
     },
 
     "errors": {
@@ -100,7 +106,37 @@
     "index": "Elastic index",
     "dateField": "'date' field of the index",
     "filters": "Filters",
-    "aggregations": "Aggregations"
+    "aggregations": "Aggregations",
+
+    "agg_option": "{label}",
+    "agg_types": {
+      "auto_date_histogram": "Auto date histogram",
+      "avg": "Average",
+      "boxplot": "Boxplot",
+      "cardinality": "Unique count",
+      "categorize_text": "Categorize text",
+      "date_histogram": "Date histogram",
+      "diversified_sampler": "Diversified sampler",
+      "extended_stats": "Extended stats",
+      "geo_bounds": "Geo bounds",
+      "geo_centroid": "Geo centroid",
+      "histogram": "Histogram",
+      "max": "Maximum",
+      "median_absolute_deviation": "Median absolute deviation",
+      "min": "Minimum",
+      "percentiles": "Percentiles",
+      "rare_terms": "Rare terms",
+      "rate": "Rate",
+      "sampler": "Sampler",
+      "significant_terms": "Significant terms",
+      "significant_text": "Significant text",
+      "stats": "Stats",
+      "string_stats": "String stats",
+      "sum": "Sum",
+      "terms": "Terms",
+      "value_count": "Value count",
+      "variable_width_histogram": "Variable width histogram"
+    }
   },
 
   "hints": {

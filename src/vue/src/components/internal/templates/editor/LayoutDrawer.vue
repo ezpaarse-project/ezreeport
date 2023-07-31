@@ -1,13 +1,5 @@
 <template>
   <div class="layout-drawer-container">
-    <LayoutParamsPopover
-      v-if="selectedLayout"
-      v-model="paramsLayoutDialogShown"
-      :coords="paramsLayoutDialogCoords"
-      :id="value"
-      :readonly="mode === 'view'"
-    />
-
     <div class="d-flex flex-column">
       <!-- Toolbar -->
       <div :class="['d-flex align-center pa-2', $vuetify.theme.dark ? 'grey darken-4' : 'white']">
@@ -76,9 +68,17 @@
 
             <v-spacer />
 
-            <template v-if="mode !== 'task-edition' || layout.at !== undefined">
+            <template v-if="mode !== 'view'">
               <v-btn
-                v-if="mode !== 'view'"
+                icon
+                x-small
+                @click="onLayoutDuplicate(layout)"
+              >
+                <v-icon>mdi-content-copy</v-icon>
+              </v-btn>
+
+              <v-btn
+                v-if="mode !== 'task-edition' || layout.at !== undefined"
                 icon
                 color="error"
                 x-small
@@ -86,12 +86,8 @@
               >
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
-
-              <v-btn icon x-small @click="showLayoutParamsDialog(layout._.id, $event)">
-                <v-icon>mdi-cog</v-icon>
-              </v-btn>
             </template>
-            <template v-else>
+            <template v-if="mode === 'view' || (mode === 'task-edition' && layout.at === undefined)">
               <v-icon color="black" dense>mdi-lock</v-icon>
             </template>
           </div>
@@ -117,7 +113,7 @@
                     outlined
                   >
                     <v-icon :large="layout.figures.length <= 2">
-                      {{ figureIcons[figure.type] }}
+                      {{ figureIcons[figure.type] || 'mdi-help' }}
                     </v-icon>
                   </v-sheet>
                 </template>
@@ -161,12 +157,6 @@ export default defineComponent({
     return { templateStore };
   },
   data: () => ({
-    paramsLayoutDialogShown: false,
-    paramsLayoutDialogCoords: {
-      x: 0,
-      y: 0,
-    },
-
     figureIcons,
     collapsed: false,
   }),
@@ -270,9 +260,7 @@ export default defineComponent({
      *
      * @param layout The layout
      */
-    async onLayoutDelete(layout: AnyCustomLayout) {
-      // const items = this.templateStore.currentLayouts;
-      // const index = items.findIndex(({ _: { id } }) => id === layout._.id);
+    onLayoutDelete(layout: AnyCustomLayout) {
       if (this.mode === 'view') {
         return;
       }
@@ -280,19 +268,26 @@ export default defineComponent({
       this.templateStore.UPDATE_LAYOUT(layout._.id, undefined);
     },
     /**
-     * Show params dialog for given layout
+     * Duplicate a layout in current template
      *
-     * @param id The id of the layout
-     * @param event The base event
+     * @param layout The layout to duplicate
      */
-    async showLayoutParamsDialog(id: string, event: MouseEvent) {
-      this.$emit('input', id);
-      this.paramsLayoutDialogCoords = {
-        x: event.clientX,
-        y: event.clientY,
-      };
-      await this.$nextTick();
-      this.paramsLayoutDialogShown = true;
+    onLayoutDuplicate(layout: AnyCustomLayout) {
+      if (this.mode === 'view') {
+        return;
+      }
+
+      const index = this.templateStore.currentLayouts.findIndex(
+        ({ _: { id } }) => layout._.id === id,
+      );
+
+      const newLayout = addAdditionalData(layout);
+      if (this.mode === 'task-edition') {
+        newLayout.at = (layout.at ? layout.at : index) + 1;
+      }
+
+      this.templateStore.ADD_LAYOUT(newLayout, index + 1);
+      this.$emit('input', newLayout._.id);
     },
   },
 });

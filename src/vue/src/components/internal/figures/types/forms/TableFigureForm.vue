@@ -18,7 +18,14 @@
           :readonly="readonly"
           hide-details="auto"
           @input="onParamUpdate({ dataKey: $event || undefined })"
-        />
+        >
+          <template #append-outer>
+            <ElasticAggTypeHelper
+              v-model="showDefinition"
+              :agg="currentAgg"
+            />
+          </template>
+        </v-combobox>
 
         <v-text-field
           :value="figureParams?.maxLength"
@@ -45,13 +52,13 @@
             v-if="figureParams"
             :value="figureParams.columns"
             :totals="figureParams.totals"
-            :colStyles="figureParams.columnStyles"
+            :col-styles="figureParams.columnStyles"
+            :data-key="figureParams.dataKey"
             :readonly="readonly"
-            :key-prefix="`${figureParams.dataKey}[].`"
             ref="columnsTable"
             @input="onParamUpdate({ columns: $event })"
             @update:totals="onParamUpdate({ totals: $event })"
-            @update:colStyles="onParamUpdate({ columnStyles: $event })"
+            @update:col-styles="onParamUpdate({ columnStyles: $event })"
           />
         </CustomSection>
 
@@ -73,6 +80,7 @@ import { defineComponent } from 'vue';
 import { omit, merge } from 'lodash';
 
 import useTemplateStore from '~/stores/template';
+import { getTypeDefinitionFromAgg } from '~/lib/elastic/aggs';
 
 import type TablePreviewFormConstructor from '../utils/TablePreviewForm.vue';
 import type { PDFParams, PDFStyle, TableColumn } from '../utils/table';
@@ -113,6 +121,8 @@ export default defineComponent({
   },
   data: () => ({
     valid: false,
+
+    showDefinition: false,
   }),
   computed: {
     figure() {
@@ -193,16 +203,40 @@ export default defineComponent({
         return [];
       }
 
+      // Add already defined aggregations
+      let available: any[] = [];
       const aggs = 'aggs' in layout.fetchOptions ? layout.fetchOptions.aggs : layout.fetchOptions.aggregations;
-      if (!Array.isArray(aggs)) {
-        return [];
+      if (Array.isArray(aggs)) {
+        available = [...aggs];
       }
 
-      const available = (aggs as { name: string }[]).map((agg, i) => agg.name || `agg${i}`);
-      if (layout.fetchOptions?.fetchCount) {
-        available.push(layout.fetchOptions.fetchCount.toString());
+      // Remove non iterable aggregations
+      available = available.filter((agg) => {
+        const typeDef = getTypeDefinitionFromAgg(agg);
+
+        // Allow unknown types, as user may be knowing what he do...
+        if (!typeDef) {
+          return true;
+        }
+        return typeDef.isArray;
+      });
+
+      return available.map((agg, i) => agg.name || `agg${i}`);
+    },
+    /**
+     * Current aggregation targeted
+     */
+    currentAgg() {
+      const layout = this.templateStore.currentLayouts.find(
+        ({ _: { id } }) => id === this.layoutId,
+      );
+
+      if (!layout?.fetchOptions || !this.figureParams) {
+        return undefined;
       }
-      return available;
+
+      const aggs = 'aggs' in layout.fetchOptions ? layout.fetchOptions.aggs : layout.fetchOptions.aggregations;
+      return (aggs as any[]).find(({ name }) => name === this.figureParams?.dataKey);
     },
   },
   mounted() {
@@ -235,4 +269,3 @@ fr:
     maxLength: 'Nombre maximum de lignes'
     columns: 'Colonnes'
 </i18n>
-./utils/table

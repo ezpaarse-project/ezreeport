@@ -15,34 +15,11 @@
         <div v-if="figure.type === 'md' || figure.type === 'metric'" class="py-2">
           {{ figureTitle }}
         </div>
-        <v-combobox
+        <FigureTitleAutocomplete
           v-else
-          :value="innerTitle"
-          :items="possibleVars"
-          :label="$t('figures.title')"
-          :return-object="false"
-          no-filter
-          dense
-          hide-details
-          ref="titleCB"
-          class="pt-1"
-          @input="onAutocompleteChoice"
-          @update:search-input="innerTitle = $event"
-          @blur="figureTitle = innerTitle"
-        >
-          <template #item="{ item, on, attrs }">
-            <v-list-item two-line v-bind="attrs" v-on="on">
-              <v-list-item-content>
-                <v-list-item-title>{{ item.value }}</v-list-item-title>
-                <v-list-item-subtitle>{{ $t(`$ezreeport.figures.vars_list.${item.text}`) }}</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-          </template>
-
-          <template #append>
-            <div />
-          </template>
-        </v-combobox>
+          :value="figure?.params?.title?.toString() || ''"
+          @input="figureTitle = $event"
+        />
 
         <v-spacer />
 
@@ -61,12 +38,10 @@
           <span>{{ $t(figure._.valid.i18nKey) }}</span>
         </v-tooltip>
 
-        <v-btn icon color="error" x-small @click="onFigureDelete">
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
+        <v-btn color="primary" small class="ml-3" @click="$emit('edit:figure', id)">
+          {{ $t('$ezreeport.settings') }}
 
-        <v-btn icon x-small @click="$emit('edit:figure', id)">
-          <v-icon>mdi-cog</v-icon>
+          <v-icon right>mdi-cog</v-icon>
         </v-btn>
       </div>
 
@@ -74,14 +49,12 @@
         :value="figure.type"
         :label="$t('$ezreeport.figures.type')"
         :items="figureTypes"
-        item-text="label"
-        item-value="value"
         hide-details
         class="my-2"
         @change="onFigureTypeChange"
       >
         <template #prepend>
-          <v-icon>{{ figureIcons[figure.type] }}</v-icon>
+          <v-icon>{{ figureIcons[figure.type] || 'mdi-help' }}</v-icon>
         </template>
       </v-select>
 
@@ -93,6 +66,16 @@
         multiple
         @change="onSlotUpdate"
       />
+
+      <div class="d-flex">
+        <v-spacer />
+
+        <v-btn color="error" small @click="onFigureDelete">
+          {{ $t('$ezreeport.delete') }}
+
+          <v-icon right>mdi-delete</v-icon>
+        </v-btn>
+      </div>
     </v-form>
   </v-sheet>
 </template>
@@ -100,15 +83,9 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
 import type { AnyCustomFigure } from '~/lib/templates/customTemplates';
-import { figureTypes, figureIcons } from '~/lib/templates/figures';
+import { figureIcons, figureTypes } from '~/lib/templates/figures';
 import useTemplateStore, { mapRulesToVuetify } from '~/stores/template';
-
-/**
- * Possibles vars in title
- */
-const templateVars = [
-  'length',
-];
+import type { SelectItem } from '~/types/vuetify';
 
 export default defineComponent({
   props: {
@@ -180,23 +157,35 @@ export default defineComponent({
      * Localized figure types
      */
     figureTypes() {
-      return figureTypes.map((value) => ({
-        label: this.$t(`$ezreeport.figures.type_list.${value}`),
-        value,
-      })).sort(
-        (a, b) => a.label.toString().localeCompare(b.label.toString()),
-      );
-    },
-    /**
-     * Localized possible variables in title
-     */
-    possibleVars() {
-      return templateVars.map((text) => ({
-        value: `{{ ${text} }}`,
-        text,
-      })).sort(
-        (a, b) => a.text.toString().localeCompare(b.text.toString()),
-      );
+      const items: SelectItem[] = [];
+
+      const entries = Object.entries(figureTypes);
+      for (let i = 0; i < entries.length; i += 1) {
+        const [category, figures] = entries[i];
+
+        // localize figure type
+        const subItems = Object.entries(figures).map(
+          ([value]) => ({
+            value,
+            text: this.$t(`$ezreeport.figures.type_list.${value}`).toString(),
+          }),
+        ).sort(
+          (a, b) => a.text.localeCompare(b.text),
+        );
+
+        // add localized header
+        items.push(
+          { header: this.$t(`$ezreeport.figures.type_groups.${category}`).toString() },
+          ...subItems,
+        );
+
+        // add divider if not last
+        if (i < entries.length - 1) {
+          items.push({ divider: true });
+        }
+      }
+
+      return items;
     },
     /**
      * Returns the title of the figure

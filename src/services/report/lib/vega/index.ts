@@ -146,13 +146,16 @@ export const createVegaLSpec = (
   inputData: Record<string, any[]> | any[],
   params: VegaParams,
 ): TopLevelSpec => {
-  let data = [];
-  if (Array.isArray(inputData)) {
-    data = inputData;
-  } else {
+  let data = inputData as any[];
+  if (!Array.isArray(inputData)) {
     if (!params.dataKey) {
       throw new Error('data is not iterable, and no "dataKey" is present');
     }
+
+    if (!Array.isArray(inputData[params.dataKey])) {
+      throw new Error(`data.${params.dataKey} is not iterable`);
+    }
+
     data = inputData[params.dataKey];
   }
 
@@ -218,6 +221,8 @@ export const createVegaLSpec = (
             // @ts-ignore
             order: params.value.order ?? 'descending',
           },
+          // @ts-ignore
+          legend: params.label.legend ?? {},
           ...params.label,
         },
       });

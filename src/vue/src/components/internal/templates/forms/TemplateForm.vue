@@ -36,7 +36,7 @@
               :rules="rules.index"
               dense
               class="pt-4"
-              @input="onFetchOptionUpdate({ index: $event })"
+              @input="onFetchOptionUpdate({ index: $event || undefined })"
             />
 
             <v-text-field
@@ -47,7 +47,7 @@
               :persistent-placeholder="!!taskTemplate"
               dense
               class="pt-4"
-              @input="onFetchOptionUpdate({ dateField: $event })"
+              @input="onFetchOptionUpdate({ dateField: $event || undefined })"
             />
           </div>
 
@@ -391,12 +391,17 @@ export default defineComponent({
       };
     },
     onFetchOptionUpdate(value: Record<string, any>) {
+      const picked = pick(this.templateStore.current?.fetchOptions ?? {}, supportedFetchOptions);
+      // Remove undefined properties
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [key, val] of Object.entries(value)) {
+        if (val === undefined) {
+          delete picked[key];
+        }
+      }
+
       this.onTemplateUpdate({
-        fetchOptions: merge(
-          {},
-          pick(this.templateStore.current?.fetchOptions ?? {}, supportedFetchOptions),
-          value,
-        ),
+        fetchOptions: merge({}, picked, value),
       });
     },
     onFilterCreated() {

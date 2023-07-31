@@ -8,26 +8,52 @@
       :readonly="readonly"
       :used-names="usedNames"
       @update:element="onElementEdited"
+      @update:loading="onElementLoading"
     />
 
-    <v-chip-group column>
-      <v-chip
-        v-for="(item, i) in value"
-        :key="item.name || `agg${i}`"
+    <v-list dense rounded>
+      <v-list-item
+        v-for="(item, i) in items"
+        :key="item.name"
         :close="!readonly"
-        label
-        outlined
         @click="openDialog(i)"
-        @click:close="!readonly && onElementDeleted(i)"
       >
-        {{item.name || `agg${i}`}}
-      </v-chip>
-    </v-chip-group>
+        <v-list-item-action v-if="!readonly">
+          <v-btn
+            :loading="loadingMap[item.name]"
+            icon
+            small
+            @click="!readonly && onElementDeleted(i)"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-list-item-action>
+
+        <v-list-item-content>
+          <v-list-item-title>{{ item.name }}</v-list-item-title>
+
+          <i18n tag="v-list-item-subtitle" path="aggSummary" class="font-weight-light">
+            <template #type>
+              <span class="font-weight-medium">
+                {{ item.type }}
+              </span>
+            </template>
+
+            <template #field>
+              <span class="font-weight-medium">
+                {{ item.field }}
+              </span>
+            </template>
+          </i18n>
+        </v-list-item-content>
+      </v-list-item>
+    </v-list>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
+import { getTypeFromAgg } from '~/lib/elastic/aggs';
 
 export default defineComponent({
   props: {
@@ -57,6 +83,7 @@ export default defineComponent({
   data: () => ({
     elementDialogShown: false,
 
+    loadingMap: {} as Record<string, boolean>,
     selectedIndex: -1,
   }),
   computed: {
@@ -67,10 +94,24 @@ export default defineComponent({
       return this.value[this.selectedIndex];
     },
     /**
+     * Values with localized info
+     */
+    items() {
+      return this.value.map((agg, i) => {
+        const type = getTypeFromAgg(agg);
+
+        return {
+          name: agg.name || `agg${i}`,
+          type: this.$t(type ? `$ezreeport.fetchOptions.agg_types.${type}` : 'unknown'),
+          field: agg[type || '']?.field || 'unknown',
+        };
+      });
+    },
+    /**
      * Used names by aggregations
      */
     usedNames(): string[] {
-      return this.value.map((agg, i) => agg.name || `agg${i}`);
+      return this.items.map((agg) => agg.name);
     },
   },
   methods: {
@@ -117,6 +158,18 @@ export default defineComponent({
       elements.splice(index, 1);
       this.$emit('input', elements);
     },
+    /**
+     * Notify that an item is loading
+     *
+     * @param loading
+     */
+    onElementLoading(loading: boolean) {
+      const key = this.selectedAggElement?.name || `agg${this.selectedIndex}`;
+      this.loadingMap = {
+        ...this.loadingMap,
+        [key]: loading,
+      };
+    },
   },
 });
 </script>
@@ -124,3 +177,10 @@ export default defineComponent({
 <style scoped>
 
 </style>
+
+<i18n lang="yaml">
+en:
+  aggSummary: '{type} of {field}'
+fr:
+  aggSummary: '{type} sur {field}'
+</i18n>
