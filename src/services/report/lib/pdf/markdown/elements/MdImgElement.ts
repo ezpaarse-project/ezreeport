@@ -29,7 +29,10 @@ export default class MdImgElement extends MdElement<string> {
 
   private async fetchRemote() {
     // TODO [sec]: Limit downloaded data size
-    const { data: file, headers } = await http.get(this.src, { responseType: 'arraybuffer' });
+    const { data: file, headers } = await http.get(
+      this.src,
+      { responseType: 'arraybuffer' },
+    );
 
     let mime: string = headers['Content-Type'] || headers['content-type'];
     if (!mime) {
@@ -37,6 +40,9 @@ export default class MdImgElement extends MdElement<string> {
     }
     if (!mime) {
       throw new Error(`Cannot resolve MIME type of [${this.src}]`);
+    }
+    if (!/^image/i.test(mime)) {
+      throw new Error(`Only images are support, not [${mime}] (from [${this.src}])`);
     }
 
     const raw = file.toString('base64');
