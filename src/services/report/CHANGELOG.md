@@ -1,3 +1,20 @@
+# ezreeport-report [1.0.0-beta.16](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.15...ezreeport-report@1.0.0-beta.16) (2023-07-31)
+
+
+### Bug Fixes
+
+* **report:** fixed bloqued domains not fully supporting regexs ([f5d6da9](https://github.com/ezpaarse-project/ezreeport/commit/f5d6da94b580ff2fbfb99a3e9d063c4d37009cab))
+* **report:** fixed data validation for table and vega figures ([acc61ce](https://github.com/ezpaarse-project/ezreeport/commit/acc61ce69b8c4e6b17e5cf438dd82c898a47c087))
+* **report:** fixed default legend options not beign applied ([f08c476](https://github.com/ezpaarse-project/ezreeport/commit/f08c47634226fed054c3fd8c9063395957b91425))
+
+
+### Features
+
+* **report:** added way to ban some domains from beign fetched ([3844066](https://github.com/ezpaarse-project/ezreeport/commit/3844066717a4cfb723408c231a215375b7746fae))
+* **report:** check if mime type is supported ([b9a84a9](https://github.com/ezpaarse-project/ezreeport/commit/b9a84a94012ed7f1c8c18789df2acb6a1e1c1538))
+* **report:** http requests have now an indentifiable User-Agent ([512d83d](https://github.com/ezpaarse-project/ezreeport/commit/512d83d8e2620ef62822903174ed6a9bc88d0c69))
+* **report:** rework markdown rendering ([69ec2e2](https://github.com/ezpaarse-project/ezreeport/commit/69ec2e293be125fe12f64c8e490ae6ef5d570bd0))
+
 # ezreeport-report [1.0.0-beta.15](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.14...ezreeport-report@1.0.0-beta.15) (2023-07-07)
 
 
