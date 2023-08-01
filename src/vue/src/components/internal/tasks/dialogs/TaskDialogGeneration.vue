@@ -182,13 +182,12 @@ import {
   addDays,
   differenceInDays,
   formatISO,
-  min,
   parseISO,
 } from 'date-fns';
 import type { tasks, reports } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 import isEmail from 'validator/lib/isEmail';
-import { calcPeriod, type Period } from '~/lib/tasks/recurrence';
+import { calcPeriodByRecurrence, calcPeriodByDate, type Period } from '~/lib/tasks/recurrence';
 import ezReeportMixin from '~/mixins/ezr';
 
 const today = new Date();
@@ -257,11 +256,14 @@ export default defineComponent({
         return [this.period.start, this.period.end];
       },
       set(value: [Date]) {
-        // Enforcing that the period is compatible with recurrence
-        const days = differenceInDays(this.period.end, this.period.start);
-        const newPeriod = { start: value[0], end: min([addDays(value[0], days), this.max]) };
-        if (differenceInDays(newPeriod.end, newPeriod.start) === days) {
-          this.period = newPeriod;
+        const period = calcPeriodByDate(
+          this.$ezReeport.sdk.tasks.Recurrence,
+          value[0],
+          this.task.recurrence,
+        );
+
+        if (differenceInDays(this.max, period.end) >= 0) {
+          this.period = period;
         }
       },
     },
@@ -413,7 +415,11 @@ export default defineComponent({
      * Calc period based on recurrence
      */
     resetPeriod() {
-      this.period = calcPeriod(this.$ezReeport.sdk.tasks.Recurrence, today, this.task.recurrence);
+      this.period = calcPeriodByRecurrence(
+        this.$ezReeport.sdk.tasks.Recurrence,
+        today,
+        this.task.recurrence,
+      );
     },
   },
 });

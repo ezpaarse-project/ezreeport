@@ -9,10 +9,10 @@ import {
   startOfQuarter,
   endOfQuarter,
   getYear,
-  isAfter,
   startOfYear,
   endOfYear,
   setDefaultOptions,
+  isBefore,
 } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { tasks } from '@ezpaarse-project/ezreeport-sdk-js';
@@ -26,6 +26,62 @@ export type Period = {
   end: Date,
 };
 
+const getMidYear = (date: Date | number) => new Date(getYear(date), 5, 30);
+
+/**
+ * Get period based on given Date
+ *
+*  @param Recurrence Recurrence list (`this.$ezReeport.sdk.tasks.Recurrence`)
+ * @param target
+ * @param recurrence The recurrence
+ *
+ * @returns The period
+ */
+export const calcPeriodByDate = (
+  Recurrence: typeof tasks.Recurrence,
+  target: Date,
+  recurrence: tasks.Recurrence,
+): Period => {
+  let period;
+
+  switch (recurrence) {
+    case Recurrence.DAILY:
+      period = { start: startOfDay(target), end: endOfDay(target) };
+      break;
+
+    case Recurrence.WEEKLY:
+      period = { start: startOfWeek(target), end: endOfWeek(target) };
+      break;
+
+    case Recurrence.MONTHLY:
+      period = { start: startOfMonth(target), end: endOfMonth(target) };
+      break;
+
+    case Recurrence.QUARTERLY:
+      period = { start: startOfQuarter(target), end: endOfQuarter(target) };
+      break;
+
+    case Recurrence.BIENNIAL: {
+      const midYear = getMidYear(target);
+      if (isBefore(target, midYear)) {
+        period = { start: startOfYear(midYear), end: midYear };
+      } else {
+        period = { start: add(midYear, { days: 1 }), end: endOfYear(target) };
+      }
+      break;
+    }
+
+    case Recurrence.YEARLY:
+      period = { start: startOfYear(target), end: endOfYear(target) };
+      break;
+
+    default:
+      throw new Error('Recurrence not found');
+  }
+
+  return period;
+};
+
 /**
  * Get previous period based on Recurrence
  *
@@ -35,55 +91,49 @@ export type Period = {
  *
  * @returns The period
  */
-export const calcPeriod = (
+export const calcPeriodByRecurrence = (
   Recurrence: typeof tasks.Recurrence,
   today: Date,
   recurrence: tasks.Recurrence,
 ): Period => {
-  let period;
+  let target = today;
 
   switch (recurrence) {
-    case Recurrence.DAILY: {
-      const target = add(today, { days: -1 });
-      period = { start: startOfDay(target), end: endOfDay(target) };
+    case Recurrence.DAILY:
+      target = add(today, { days: -1 });
       break;
-    }
-    case Recurrence.WEEKLY: {
-      const target = add(today, { weeks: -1 });
-      period = { start: startOfWeek(target), end: endOfWeek(target) };
+
+    case Recurrence.WEEKLY:
+      target = add(today, { weeks: -1 });
       break;
-    }
-    case Recurrence.MONTHLY: {
-      const target = add(today, { months: -1 });
-      period = { start: startOfMonth(target), end: endOfMonth(target) };
+
+    case Recurrence.MONTHLY:
+      target = add(today, { months: -1 });
       break;
-    }
-    case Recurrence.QUARTERLY: {
-      const target = add(today, { months: -3 });
-      period = { start: startOfQuarter(target), end: endOfQuarter(target) };
+
+    case Recurrence.QUARTERLY:
+      target = add(today, { months: -3 });
       break;
-    }
+
     case Recurrence.BIENNIAL: {
-      const year = getYear(today);
-      const midYear = new Date(year, 5, 30);
-      if (isAfter(today, midYear)) {
-        // Target is first half of current year
-        period = { start: startOfYear(midYear), end: midYear };
-      } else {
+      const midYear = getMidYear(today);
+      if (isBefore(today, midYear)) {
         // Target is second half of previous year
-        const target = add(midYear, { years: -1, days: 1 });
-        period = { start: target, end: endOfYear(target) };
+        target = add(today, { years: -1 });
+      } else {
+        // Target is first half of current year
+        target = add(today, { months: -6 });
       }
       break;
     }
+
     case Recurrence.YEARLY: {
-      const target = add(today, { years: -1 });
-      period = { start: startOfYear(target), end: endOfYear(target) };
+      target = add(today, { years: -1 });
       break;
     }
     default:
       throw new Error('Recurrence not found');
   }
 
-  return period;
+  return calcPeriodByDate(Recurrence, target, recurrence);
 };
