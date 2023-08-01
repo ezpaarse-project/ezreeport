@@ -1,3 +1,17 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.19](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.18...@ezpaarse-project/ezreeport-vue@1.0.0-beta.19) (2023-08-01)
+
+
+### Bug Fixes
+
+* **vue:** fixed generation period beign weird ([1139f68](https://github.com/ezpaarse-project/ezreeport/commit/1139f68ab8cfd137c92c0a1295f6e070f2061e91))
+* **vue:** fixed infinite loop while change column styles ([15fe4df](https://github.com/ezpaarse-project/ezreeport/commit/15fe4dff250131d789abf8a0a9b4de0e4d4e9b2b))
+* **vue:** minor fixes on figure params ([af69420](https://github.com/ezpaarse-project/ezreeport/commit/af69420ebcf45d0a79d734169187b5e5a73d3a86))
+
+
+### Features
+
+* **vue:** added task/template duplication ([52ea70d](https://github.com/ezpaarse-project/ezreeport/commit/52ea70d4255b4adde167113190d05817f37583a7))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.18](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.17...@ezpaarse-project/ezreeport-vue@1.0.0-beta.18) (2023-07-31)
 
 
