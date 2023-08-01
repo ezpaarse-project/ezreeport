@@ -83,7 +83,7 @@
                   @change="onColStyleUpdate({ halign: $event })"
                 >
                   <v-btn
-                    v-for="align in ['left', 'right', 'center', 'justify']"
+                    v-for="align in haligns"
                     :key="`h-${align}`"
                     :value="align"
                     outlined
@@ -99,15 +99,15 @@
                 </v-label>
 
                 <v-btn-toggle
-                  :value="colStyle.halign || 'middle'"
+                  :value="colStyle.valign || 'center'"
                   mandatory
                   dense
                   rounded
                   color="primary"
-                  @change="onColStyleUpdate({ halign: $event })"
+                  @change="onColStyleUpdate({ valign: $event })"
                 >
                   <v-btn
-                    v-for="align in ['top', 'middle', 'bottom']"
+                    v-for="align in valigns"
                     :key="`v-${align}`"
                     :value="align"
                     outlined
@@ -156,7 +156,10 @@ const possibleOverflows = [
   'ellipsize',
   'visible',
   'hidden',
-];
+] as const;
+
+const haligns = ['left', 'right', 'center', 'justify'] as const;
+const valigns = ['top', 'middle', 'bottom'] as const;
 
 export default defineComponent({
   props: {
@@ -218,6 +221,9 @@ export default defineComponent({
   },
   data: () => ({
     valid: false,
+
+    haligns,
+    valigns,
 
     innerDataKey: '',
   }),
