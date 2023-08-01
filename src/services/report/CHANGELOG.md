@@ -1,3 +1,10 @@
+# ezreeport-report [1.0.0-beta.18](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.17...ezreeport-report@1.0.0-beta.18) (2023-08-01)
+
+
+### Features
+
+* **report:** added way to setup banned domains via file ([6ff95f4](https://github.com/ezpaarse-project/ezreeport/commit/6ff95f4c925821b2bec0cf2944c57efc88019ef3))
+
 # ezreeport-report [1.0.0-beta.17](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.16...ezreeport-report@1.0.0-beta.17) (2023-08-01)
 
 
