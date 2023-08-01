@@ -1,3 +1,10 @@
+# ezreeport-report [1.0.0-beta.17](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.16...ezreeport-report@1.0.0-beta.17) (2023-08-01)
+
+
+### Bug Fixes
+
+* **report:** fixed errors in REPORT_FETCHER_BANNED_DOMAINS ([123472d](https://github.com/ezpaarse-project/ezreeport/commit/123472dd601c66f6088bc60bd134c8ad350b0945))
+
 # ezreeport-report [1.0.0-beta.16](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.15...ezreeport-report@1.0.0-beta.16) (2023-07-31)
 
 
