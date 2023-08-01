@@ -2,3 +2,4 @@ node_modules
 data
 logs
 .prisma
+config/banned_domains.json
