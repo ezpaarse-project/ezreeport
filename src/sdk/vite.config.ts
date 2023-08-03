@@ -1,10 +1,9 @@
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
-import dts from 'vite-plugin-dts';
 
 // TODO: fix node build
 
-const buildTarget = (process.env.BUILD_TARGET || 'browser') as 'browser' | 'node' | 'types';
+const buildTarget = (process.env.BUILD_TARGET || 'browser') as 'browser' | 'node';
 console.log('i Building for', buildTarget);
 
 let params;
@@ -13,19 +12,12 @@ switch (buildTarget) {
     params = { build: { target: 'node14', outDir: 'dist/node', lib: { formats: ['es', 'csj'] } } };
     break;
 
-  case 'types':
-    params = { build: { outDir: 'dist/types', write: false }, plugins: [dts({ outDir: 'dist/types', copyDtsFiles: true })] };
-    break;
-
   default:
     params = { build: { target: 'modules', outDir: 'dist/browser', lib: { formats: ['es', 'umd'] } } };
     break;
 }
 
 export default defineConfig({
-  plugins: [
-    ...(params.plugins ?? []),
-  ],
   build: {
     sourcemap: true,
     ...(params.build ?? {}),

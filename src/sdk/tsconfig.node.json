@@ -6,6 +6,8 @@
     "outDir": "dist/node",
     "noEmit": false,
     "sourceMap": true,
+    "declaration": true,
+    "declarationDir": "dist/types",
     "lib": [],
   },
 }
