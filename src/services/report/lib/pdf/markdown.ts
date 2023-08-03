@@ -1,7 +1,7 @@
-import type { PDFReport } from '~/lib/pdf';
+import { MdParser, type MdImgRemoteRequestor } from '@ezpaarse-project/jspdf-md';
 
-import type { MdDefault } from './elements/MdElement';
-import MdParser from './MdParser';
+import http from '~/lib/http-requests';
+import type { PDFReport } from '~/lib/pdf';
 
 type MdParams = {
   start: Position
@@ -10,6 +10,16 @@ type MdParams = {
 };
 
 export type InputMdParams = Omit<MdParams, 'width' | 'height' | 'start'>;
+
+const fetcher: MdImgRemoteRequestor = async (url, method) => {
+  const { data, headers } = await http({
+    method,
+    url,
+    responseType: 'arraybuffer',
+  });
+
+  return { data, headers: headers as Record<string, string> };
+};
 
 /**
  * Add text (as Markdown) to PDF
@@ -24,23 +34,16 @@ export const addMdToPDF = async (
   data: string,
   params: MdParams,
 ) => {
-  // Prepare MD
-  const def: MdDefault = {
-    cursor: { ...params.start },
-    font: doc.pdf.getFont(),
-    fontSize: doc.pdf.getFontSize(),
-    fontColor: doc.pdf.getTextColor(),
-    drawColor: doc.pdf.getDrawColor(),
-  };
-
   const mdDoc = await (new MdParser(data)).parse();
 
-  await mdDoc.loadImages();
+  await mdDoc.loadImages(
+    fetcher,
+    'assets',
+  );
 
   mdDoc.render(
     doc.pdf,
-    def,
-    params.start,
+    { pageBreak: false },
     {
       x: params.start.x,
       y: params.start.y,
