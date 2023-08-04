@@ -122,6 +122,22 @@ export const isValidResult = (data: unknown): data is ReportResult => {
  */
 const normaliseFilename = (filename: string): string => filename.toLowerCase().replace(/[/ .]/g, '-');
 
+/**
+ * Shorthand to write JSON data about generation
+ *
+ * @param name The name of the file **without extension*
+ * @param content The content to write
+ */
+const writeInfoFile = (name: string, content: unknown) => writeFile(
+  `${name}.json`,
+  JSON.stringify(
+    content,
+    undefined,
+    process.env.NODE_ENV !== 'production' ? 2 : undefined,
+  ),
+  'utf-8',
+);
+
 type FetchParams = {
   template: AnyTemplate,
   taskTemplate: AnyTaskTemplate,
@@ -228,6 +244,8 @@ export const generateReport = async (
 
   await mkdir(basePath, { recursive: true });
 
+  let template: AnyTemplate | null = null;
+
   try {
     const targets = compact(task.targets);
     if (targets.length <= 0) {
@@ -270,7 +288,7 @@ export const generateReport = async (
       throw new ArgumentError("Task's template is not an object");
     }
 
-    const { body: template = null } = await getTemplateByName(taskTemplate.extends) ?? {};
+    ({ body: template } = await getTemplateByName(taskTemplate.extends) ?? { body: null });
     if (!template) {
       throw new Error(`No template named "${taskTemplate.extends}" was found`);
     }
@@ -316,18 +334,6 @@ export const generateReport = async (
     const stats = await renderers['vega-pdf'](renderOptions, events);
     result.detail.files.report = `${namepath}.rep.pdf`;
     logger.verbose(`[gen] [${process.pid}] Report wrote to "${result.detail.files.report}"`);
-
-    await writeFile(
-      `${filepath}.deb.json`,
-      JSON.stringify(
-        { ...template, renderOptions: { ...omit(template.renderOptions, 'layouts') } },
-        undefined,
-        process.env.NODE_ENV !== 'production' ? 2 : undefined,
-      ),
-      'utf-8',
-    );
-    result.detail.files.debug = `${namepath}.deb.json`;
-    logger.verbose(`[gen] [${process.pid}] Template wrote to "${result.detail.files.debug}"`);
 
     merge<ReportResult, DeepPartial<ReportResult>>(
       result,
@@ -405,16 +411,13 @@ export const generateReport = async (
     logger.error(`[gen] [${process.pid}] Report "${namepath}" failed to generate in ${(result.detail.took / 1000).toFixed(2)}s with error : ${(error as Error).message}`);
   }
 
-  // Write result when process is ending
-  await writeFile(
-    `${filepath}.det.json`,
-    JSON.stringify(
-      result,
-      undefined,
-      process.env.NODE_ENV !== 'production' ? 2 : undefined,
-    ),
-    'utf-8',
-  );
+  // Write debug when process is ending
+  await writeInfoFile(`${filepath}.deb`, omit(template, 'renderOptions.layouts'));
+  result.detail.files.debug = `${namepath}.deb.json`;
+  logger.verbose(`[gen] [${process.pid}] Template wrote to "${result.detail.files.debug}"`);
+
+  // Write detail when process is ending
+  await writeInfoFile(`${filepath}.det`, result);
   logger.verbose(`[gen] [${process.pid}] Detail wrote to "${result.detail.files.detail}"`);
   return result;
 };
