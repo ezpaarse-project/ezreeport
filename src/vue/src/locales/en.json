@@ -41,7 +41,6 @@
 
   "templates": {
     "base": "Base template",
-    "renderer": "Renderer",
     "renderOptions": "Render options",
     "editor": "Page editor ({n} page)|Page editor ({n} pages)"
   },

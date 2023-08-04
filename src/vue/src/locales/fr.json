@@ -41,7 +41,6 @@
 
   "templates": {
     "base": "Modèle de base",
-    "renderer": "Moteur de rendu",
     "renderOptions": "Options de rendu",
     "editor": "Éditeur de pages ({n} page)|Éditeur de pages ({n} pages)"
   },

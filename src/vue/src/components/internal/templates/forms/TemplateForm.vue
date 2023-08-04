@@ -145,19 +145,6 @@
           v-model="rawTemplateShown"
         />
 
-        <v-select
-          v-if="fullTemplate"
-          :label="$t('$ezreeport.templates.renderer')"
-          :value="fullTemplate.renderer"
-          :items="availableRenderer"
-          placeholder="vega-pdf"
-          persistent-placeholder
-          @change="
-            fullTemplate
-              && onTemplateUpdate({ ...fullTemplate, renderer: $event })
-          "
-        />
-
         <CustomSection>
           <ToggleableObjectTree
             :label="$t('$ezreeport.fetchOptions.title').toString()"
