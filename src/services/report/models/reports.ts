@@ -155,14 +155,14 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
           ...(taskTemplate.fetchOptions ?? {}),
           recurrence,
           period,
-          indexPrefix: namespace?.fetchOptions?.[fetcher]?.indexPrefix,
-          auth: namespace?.fetchLogin?.[fetcher] ?? { username: '' },
+          indexPrefix: namespace?.fetchOptions?.elastic?.indexPrefix,
+          auth: namespace?.fetchLogin?.elastic ?? { username: '' },
         },
       );
       template.layouts[i].fetchOptions = fetchOptions;
 
       try {
-        template.layouts[i].data = await fetchers[fetcher](fetchOptions, events);
+        template.layouts[i].data = await fetchers.elastic(fetchOptions, events);
       } catch (error) {
         const err = error as Error;
         err.cause = { ...(err.cause ?? {}), layout: i, type: 'fetch' };
@@ -313,7 +313,7 @@ export const generateReport = async (
       },
     );
     template.renderOptions = renderOptions;
-    const stats = await renderers[template.renderer ?? 'vega-pdf'](renderOptions, events);
+    const stats = await renderers['vega-pdf'](renderOptions, events);
     result.detail.files.report = `${namepath}.rep.pdf`;
     logger.verbose(`[gen] [${process.pid}] Report wrote to "${result.detail.files.report}"`);
 
