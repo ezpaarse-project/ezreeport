@@ -46,79 +46,91 @@
           :key="layout._.id"
           class="drawer-item--draggable"
         >
-          <div class="d-flex">
-            <span :class="[value === layout._.id && 'primary--text']">
-              #{{ i + 1 }}
-
-              <v-tooltip top v-if="layout._.valid !== true" color="warning">
-                <template #activator="{ attrs, on }">
-                  <v-icon
-                    color="warning"
-                    small
-                    v-bind="attrs"
-                    v-on="on"
-                  >
-                    mdi-alert
-                  </v-icon>
-                </template>
-
-                <span>{{ validationMap.get(layout._.id) }}</span>
-              </v-tooltip>
+          <!-- Header -->
+          <div class="flex-column drawer-item--header">
+            <span
+              :class="[value === layout._.id && 'primary--text']"
+              style="font-size: 1.25em;"
+            >
+              {{ i + 1 }}
             </span>
 
-            <v-spacer />
+            <v-tooltip top v-if="layout._.valid !== true" color="warning">
+              <template #activator="{ attrs, on }">
+                <v-icon
+                  color="warning"
+                  small
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  mdi-alert
+                </v-icon>
+              </template>
 
-            <template v-if="mode !== 'view'">
-              <v-btn
-                icon
-                x-small
-                @click="onLayoutDuplicate(layout)"
-              >
-                <v-icon>mdi-content-copy</v-icon>
-              </v-btn>
+              <span>{{ validationMap.get(layout._.id) }}</span>
+            </v-tooltip>
 
-              <v-btn
-                v-if="mode !== 'task-edition' || layout.at !== undefined"
-                icon
-                color="error"
-                x-small
-                @click="onLayoutDelete(layout)"
-              >
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
-            </template>
             <template v-if="mode === 'view' || (mode === 'task-edition' && layout.at === undefined)">
               <v-icon color="black" dense>mdi-lock</v-icon>
             </template>
           </div>
 
-          <v-hover v-slot="{ hover }">
-            <v-sheet
-              :color="(value === layout._.id && 'primary')
-                || (hover && 'grey')
-                || undefined"
-              rounded
-              outlined
-              class="layout-preview mb-3 pa-2"
-              @click="$emit('input', layout._.id)"
-            >
-              <SlotItemGrid
-                :items="layout.figures"
-                :grid="templateStore.currentGrid"
+          <!-- Layout -->
+          <v-hover>
+            <template #default="{ hover }">
+              <v-sheet
+                :color="value === layout._.id ? 'primary' : undefined"
+                rounded
+                outlined
+                class="layout-preview mb-3 pa-2"
+                @click="$emit('input', layout._.id)"
               >
-                <template #item="{ item: figure }">
-                  <v-sheet
-                    class="figure-preview"
-                    rounded
-                    outlined
+                <SlotItemGrid
+                  :items="layout.figures"
+                  :grid="templateStore.currentGrid"
+                >
+                  <template #item="{ item: figure }">
+                    <v-sheet
+                      class="figure-preview"
+                      rounded
+                      outlined
+                    >
+                      <v-icon :large="layout.figures.length <= 2">
+                        {{ figureIcons[figure.type] || 'mdi-help' }}
+                      </v-icon>
+                    </v-sheet>
+                  </template>
+                </SlotItemGrid>
+
+                <!-- Actions -->
+                <v-fade-transition>
+                  <v-overlay
+                    v-if="hover"
+                    absolute
+                    :color="`grey ${!$vuetify.theme.dark ? 'darken-3' : ''}`"
                   >
-                    <v-icon :large="layout.figures.length <= 2">
-                      {{ figureIcons[figure.type] || 'mdi-help' }}
-                    </v-icon>
-                  </v-sheet>
-                </template>
-              </SlotItemGrid>
-            </v-sheet>
+                    <template v-if="mode !== 'view'">
+                      <v-btn
+                        small
+                        icon
+                        @click="onLayoutDuplicate(layout)"
+                      >
+                        <v-icon>mdi-content-copy</v-icon>
+                      </v-btn>
+
+                      <v-btn
+                        v-if="mode !== 'task-edition' || layout.at !== undefined"
+                        small
+                        icon
+                        @click="onLayoutDelete(layout)"
+                      >
+                        <v-icon>mdi-delete</v-icon>
+                      </v-btn>
+                    </template>
+                  </v-overlay>
+                </v-fade-transition>
+              </v-sheet>
+            </template>
           </v-hover>
         </div>
       </Draggable>
@@ -307,7 +319,33 @@ export default defineComponent({
   }
 }
 
+.drawer-item {
+  &--draggable {
+    display: flex;
+
+    &::v-deep(.v-overlay__content) {
+      position: absolute;
+      top: 0.25rem;
+      right: 0.25rem;
+    }
+  }
+
+  &--header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+
+    margin-right: 0.25rem;
+    min-width: 16px;
+  }
+}
+
 .layout-preview {
+  flex: 1;
+  overflow: hidden;
+
+  position: relative;
   align-items: center;
   justify-content: center;
 
