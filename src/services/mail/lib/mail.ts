@@ -1,13 +1,17 @@
-import mjml2html from 'mjml';
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
+
+import mjml2html from 'mjml';
 import { createTransport } from 'nodemailer';
 import type Mail from 'nodemailer/lib/mailer';
 import nunjucks from 'nunjucks';
+
 import config from '~/lib/config';
 
-const smtp = config.get('smtp');
-const { sender } = config.get('mail'); // TODO[feat]: some properties are not used
+const {
+  smtp,
+  mail: { sender }, // TODO[feat]: some properties are not used (attempts, interval)
+} = config;
 
 nunjucks.configure('templates');
 const images = readdirSync('templates/images');

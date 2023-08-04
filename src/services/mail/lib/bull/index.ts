@@ -1,11 +1,16 @@
-import Queue from 'bull';
 import { join } from 'node:path';
+
+import Queue from 'bull';
+
 import config from '~/lib/config';
 import { appLogger as logger } from '~/lib/logger';
-import { type Recurrence } from '~/models/recurrence';
 
-const { ...redis } = config.get('redis');
-const { concurrence, maxExecTime } = config.get('workers');
+import type { Recurrence } from '~/models/recurrence';
+
+const {
+  redis,
+  workers: { concurrence, maxExecTime },
+} = config;
 
 //! Should be synced with report
 export type MailData = {

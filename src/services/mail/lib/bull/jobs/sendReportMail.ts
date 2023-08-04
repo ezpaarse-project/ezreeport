@@ -7,8 +7,10 @@ import { b64ToString, isFulfilled, stringToB64 } from '~/lib/utils';
 import { recurrenceToStr } from '~/models/recurrence';
 import type { MailData } from '..';
 
-const { team } = config.get('mail');
-const { url: APIurl } = config.get('api');
+const {
+  mail: { team },
+  api: { url: APIurl },
+} = config;
 
 export default async (job: Job<MailData>) => {
   const filename = job.data.url.replace(/^.*\//, '');
