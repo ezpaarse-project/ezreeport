@@ -53,7 +53,6 @@ export const addTableToPDF = async (
   }
 
   // Calc margin
-  const fontSize = 10;
   const margin = merge(
     {
       right: doc.margin.right,
@@ -68,18 +67,34 @@ export const addTableToPDF = async (
   const y = params.startY || 0;
   // Table title
   if (title) {
+    const parsed = handlebars(title)({ length: tableData.length });
+    const textMaxWidth = typeof params.tableWidth === 'number' ? params.tableWidth : undefined;
+
+    const fontSize = doc.pdf.getFontSize();
+    const font = doc.pdf.getFont();
+
     doc.pdf
       .setFont('Roboto', 'bold')
-      .setFontSize(fontSize)
-      .text(
-        handlebars(title)({ length: tableData.length }),
-        margin.left,
-        y + fontSize,
-      );
+      .setFontSize(10);
 
-    params.startY = y + (fontSize * 1.75);
+    const { h } = doc.pdf.getTextDimensions(
+      parsed,
+      { maxWidth: textMaxWidth },
+    );
+
+    doc.pdf
+      .text(
+        parsed,
+        margin.left,
+        y + h,
+        { maxWidth: textMaxWidth },
+      )
+      .setFontSize(fontSize)
+      .setFont(font.fontName, font.fontStyle);
+
+    params.startY = y + (1.25 * h);
     if (mH != null && mH > 0) {
-      mH -= (fontSize * 1.75);
+      mH -= (1.25 * h);
     }
   }
 

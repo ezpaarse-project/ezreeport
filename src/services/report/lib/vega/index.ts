@@ -276,11 +276,11 @@ export const createVegaLSpec = (
     switch (params.dataLabel.position) {
       case 'out':
         if (radius?.center) {
-          pos.radius = radius.outer;
+          pos.radius = radius.outer - (params.dataLabel.showLabel ? 22 : 11);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const mark = dataLayer.mark as any;
 
-          mark.radius -= (0.3 * radius.inner);
+          mark.radius = 0.8 * pos.radius;
           mark.radius2 = mark.radius * RADIUS_OUTER_INNER_RATIO;
         }
         break;
@@ -297,7 +297,7 @@ export const createVegaLSpec = (
       mark: {
         type: 'text',
         align: 'center',
-        baseline: 'top',
+        baseline: 'middle',
         dy: 5,
         radius: type === 'arc' ? pos.radius : undefined,
       },

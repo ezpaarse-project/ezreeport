@@ -449,19 +449,31 @@ const generatePdfWithVega = async (
                 // Figure title
                 const { title: vegaTitle, ...figParams } = figure.params;
                 if (vegaTitle) {
-                  const fontSize = 10;
+                  const fontSize = doc.pdf.getFontSize();
+                  const font = doc.pdf.getFont();
+
+                  const text = parseTitle(
+                    vegaTitle,
+                    figureData as any[],
+                    figure.params.dataKey,
+                  );
 
                   doc.pdf
                     .setFont('Roboto', 'bold')
-                    .setFontSize(fontSize)
-                    .text(
-                      parseTitle(vegaTitle, figureData as any[], figure.params.dataKey),
-                      slot.x,
-                      slot.y + fontSize,
-                    );
+                    .setFontSize(10);
 
-                  slot.y += (fontSize * 1.15);
-                  slot.height -= (fontSize * 1.15);
+                  const { h } = doc.pdf.getTextDimensions(
+                    Array.isArray(text) ? text.join('\n') : text,
+                    { maxWidth: slot.width },
+                  );
+
+                  doc.pdf
+                    .text(text, slot.x, slot.y + h, { maxWidth: slot.width })
+                    .setFontSize(fontSize)
+                    .setFont(font.fontName, font.fontStyle);
+
+                  slot.y += (1.25 * h);
+                  slot.height -= (1.25 * h);
                 }
 
                 // Creating Vega view
