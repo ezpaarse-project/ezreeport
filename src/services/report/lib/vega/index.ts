@@ -31,7 +31,7 @@ import { calcVegaFormat } from '~/models/recurrence';
 import localeFR from './locales/fr-FR.json';
 import VegaLogger from './logger';
 
-const { outDir } = config.get('report');
+const { outDir } = config.report;
 
 registerFont('lib/vega/fonts/Roboto-light.ttf', { family: 'Roboto', weight: 'normal' });
 registerFont('lib/vega/fonts/Roboto-medium.ttf', { family: 'Roboto', weight: 'bold' });

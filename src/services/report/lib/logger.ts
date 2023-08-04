@@ -1,7 +1,7 @@
 import winston from 'winston';
 import config from '~/lib/config';
 
-const level = config.get('logLevel');
+const level = config.logLevel;
 
 const formatter = (info: winston.Logform.TransformableInfo) => `${info.timestamp}${info.label ? ` [${info.label}]` : ''} ${info.level}: ${info.message} ${(info instanceof Error ? `\n\n${info.stack}\n` : '')}`;
 

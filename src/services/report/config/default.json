@@ -3,6 +3,10 @@
   "port": 8080,
   "allowedOrigins": "*",
   "adminKey": "00000000-0000-0000-0000-000000000000",
+  "defaultTemplateName": "scratch",
+  "fetcher": {
+    "bannedDomains": []
+  },
   "elasticsearch": {
     "url": "https://host.docker.internal:9000",
     "username": "elastic",
@@ -10,9 +14,6 @@
     "apiKey": "",
     "requiredStatus": "green",
     "maxTries": 10
-  },
-  "fetcher": {
-    "bannedDomains": []
   },
   "redis": {
     "host": "redis",

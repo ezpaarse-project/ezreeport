@@ -26,7 +26,7 @@ import {
 } from './templates';
 import { type TypedNamespace, getNamespaceById } from './namespaces';
 
-const { ttl, outDir } = config.get('report');
+const { ttl, outDir } = config.report;
 
 type ReportErrorCause = {
   type: 'fetch' | 'render'

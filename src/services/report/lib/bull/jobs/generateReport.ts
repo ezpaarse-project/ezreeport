@@ -12,7 +12,7 @@ import type { AnyTemplate } from '~/models/templates';
 
 import { addReportToMailQueue, type GenerationData } from '..';
 
-const { outDir } = config.get('report');
+const { outDir } = config.report;
 
 export default async (job: Queue.Job<GenerationData>) => {
   logger.verbose(`[bull] [${process.pid}] Received generation of "${job.data.task.name}"`);

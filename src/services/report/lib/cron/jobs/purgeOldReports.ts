@@ -14,7 +14,7 @@ import { isValidResult } from '~/models/reports';
 import type { CronData } from '..';
 import { sendError } from './utils';
 
-const { outDir } = config.get('report');
+const { outDir } = config.report;
 
 type FileCheckResult = { file: string, dur: Duration };
 

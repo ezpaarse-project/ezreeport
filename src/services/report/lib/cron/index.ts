@@ -6,8 +6,10 @@ import { formatInterval } from '~/lib/utils';
 import { NotFoundError } from '~/types/errors';
 import { baseQueueOptions } from '../bull';
 
-const { options: cronOptions, timers: cronTimers } = config.get('crons');
-const { maxExecTime } = config.get('workers');
+const {
+  crons: { options: cronOptions, timers: cronTimers },
+  workers: { maxExecTime },
+} = config;
 
 type Crons = keyof typeof cronTimers;
 

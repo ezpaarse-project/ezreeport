@@ -5,8 +5,10 @@ import config from '~/lib/config';
 import { appLogger as logger } from '~/lib/logger';
 import { NotFoundError } from '~/types/errors';
 
-const { ...redis } = config.get('redis');
-const { concurrence, maxExecTime } = config.get('workers');
+const {
+  redis,
+  workers: { concurrence, maxExecTime },
+} = config;
 
 export type GenerationData = {
   /**

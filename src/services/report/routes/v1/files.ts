@@ -8,7 +8,7 @@ import { Access } from '~/models/access';
 import { getTaskById } from '~/models/tasks';
 import { HTTPError } from '~/types/errors';
 
-const { outDir } = config.get('report');
+const { outDir } = config.report;
 
 const router = CustomRouter('reports')
   /**

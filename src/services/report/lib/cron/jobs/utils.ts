@@ -5,7 +5,7 @@ import { formatISO } from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
 import config from '~/lib/config';
 
-const { team } = config.get('report');
+const { team } = config.report;
 
 /**
  * Send generic error as a generation error

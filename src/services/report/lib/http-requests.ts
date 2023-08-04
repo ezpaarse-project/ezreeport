@@ -20,7 +20,7 @@ const warnNoBannedDomains = () => appLogger.warn(`[http-requests] No banned doma
  * Setup banned domains via ENV, if not available tries to get them from a config file
  */
 const setupBannedDomains = async () => {
-  let { bannedDomains } = config.get('fetcher');
+  let { bannedDomains } = config.fetcher;
   // If no env var provided, try to get the via the config file
   if (bannedDomains?.length <= 0) {
     try {

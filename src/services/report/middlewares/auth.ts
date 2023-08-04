@@ -9,7 +9,7 @@ import { FullUser, getUserByToken } from '~/models/users';
 
 import { HTTPError } from '~/types/errors';
 
-const adminKey = config.get('adminKey');
+const { adminKey } = config;
 
 export const requireUser: RequestHandler = (req, res, next) => {
   // Getting token

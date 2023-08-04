@@ -9,7 +9,7 @@ import './fonts/Roboto-italic.js';
 import './fonts/Roboto-normal.js';
 import { loadImageAsset } from './utils';
 
-const { logos } = config.get('pdf');
+const { logos } = config.pdf;
 
 let doc: {
   // Calc at init

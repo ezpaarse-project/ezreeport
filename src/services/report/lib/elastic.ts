@@ -10,7 +10,7 @@ const {
   apiKey,
   requiredStatus,
   maxTries,
-} = config.get('elasticsearch');
+} = config.elasticsearch;
 
 enum ElasticStatus {
   red,

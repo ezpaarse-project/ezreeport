@@ -1,7 +1,7 @@
 import cors from 'cors';
 import config from '~/lib/config';
 
-const allowedOrigins = (config.get('allowedOrigins')).split(',');
+const allowedOrigins = config.allowedOrigins.split(',');
 
 export default cors({
   origin: (origin, next) => {

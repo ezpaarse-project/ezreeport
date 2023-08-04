@@ -8,36 +8,35 @@ import formatMiddleware from './middlewares/format';
 import loggerMiddleware from './middlewares/logger';
 import { createTemplate, getTemplateByName, type FullTemplate } from './models/templates';
 
-const port = config.get('port');
-const DEFAULT_TEMPLATE_NAME = 'scratch';
+const { port, defaultTemplateName } = config;
 
 /**
  * Add default template if not already present
  */
 const initTemplates = async () => {
-  logger.verbose(`[init] Checking existence of "${DEFAULT_TEMPLATE_NAME}"...`);
+  logger.verbose(`[init] Checking existence of "${defaultTemplateName}"...`);
   let template: FullTemplate | null;
   try {
-    template = await getTemplateByName(DEFAULT_TEMPLATE_NAME);
+    template = await getTemplateByName(defaultTemplateName);
   } catch (error) {
-    logger.error(`[init] Couldn't get template "${DEFAULT_TEMPLATE_NAME}":`, (error as Error).message);
+    logger.error(`[init] Couldn't get template "${defaultTemplateName}":`, (error as Error).message);
     return;
   }
 
   if (template) {
-    logger.verbose(`[init] Template "${DEFAULT_TEMPLATE_NAME}" found`);
+    logger.verbose(`[init] Template "${defaultTemplateName}" found`);
     return;
   }
 
-  logger.verbose(`[init] Template "${DEFAULT_TEMPLATE_NAME}" not found, creating it...`);
+  logger.verbose(`[init] Template "${defaultTemplateName}" not found, creating it...`);
   try {
     await createTemplate(
-      DEFAULT_TEMPLATE_NAME,
+      defaultTemplateName,
       { body: { layouts: [] } } satisfies Pick<FullTemplate, 'body'>,
     );
-    logger.info(`[init] Template "${DEFAULT_TEMPLATE_NAME}" created`);
+    logger.info(`[init] Template "${defaultTemplateName}" created`);
   } catch (error) {
-    logger.error(`[init] Couldn't create template "${DEFAULT_TEMPLATE_NAME}":`, (error as Error).message);
+    logger.error(`[init] Couldn't create template "${defaultTemplateName}":`, (error as Error).message);
   }
 };
 

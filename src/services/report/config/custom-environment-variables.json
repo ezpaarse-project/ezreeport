@@ -3,6 +3,7 @@
   "port": { "__name": "HTTP_PORT", "__format": "number" },
   "allowedOrigins": "API_ALLOWED_ORIGINS",
   "adminKey": "REPORT_ADMIN_KEY",
+  "defaultTemplateName": "REPORT_DEFAULT_TEMPLATE_NAME",
   "fetcher": {
     "bannedDomains": { "__name": "REPORT_FETCHER_BANNED_DOMAINS", "__format": "json" }
   },
