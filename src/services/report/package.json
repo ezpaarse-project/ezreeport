@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "^7.17.0",
+    "@ezpaarse-project/jspdf-md": "^1.1.0",
     "@prisma/client": "^5.0.0",
     "axios": "^1.4.0",
     "bull": "^4.10.2",
@@ -44,8 +45,6 @@
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.31",
     "lodash": "^4.17.21",
-    "marked": "^5.1.2",
-    "mime-types": "^2.1.35",
     "swagger-ui-express": "^5.0.0",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
