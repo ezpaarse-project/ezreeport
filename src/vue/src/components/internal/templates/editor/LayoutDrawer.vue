@@ -188,7 +188,7 @@ export default defineComponent({
             }
             let error = this.$t(l._.valid.i18nKey);
             if (l._.valid.figure !== undefined) {
-              error = this.$t('errors.figures._detail', { at: l._.valid.figure, valid: error });
+              error = this.$t('errors.figures._detail', { at: l._.valid.figure + 1, valid: error });
             }
             return [l._.id, error.toString()];
           },

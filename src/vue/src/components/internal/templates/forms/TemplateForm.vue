@@ -318,10 +318,10 @@ export default defineComponent({
         error += ` (${valid.field})`;
       }
       if (valid.figure !== undefined) {
-        error = this.$t('$ezreeport.figures.errors._detail', { at: valid.figure, valid: error });
+        error = this.$t('$ezreeport.figures.errors._detail', { at: valid.figure + 1, valid: error });
       }
       if (valid.layout !== undefined) {
-        error = this.$t('$ezreeport.layouts.errors._detail', { at: valid.layout, valid: error });
+        error = this.$t('$ezreeport.layouts.errors._detail', { at: valid.layout + 1, valid: error });
       }
       return error;
     },

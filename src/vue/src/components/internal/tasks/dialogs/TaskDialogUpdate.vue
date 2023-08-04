@@ -303,10 +303,10 @@ export default defineComponent({
 
       let err = this.$t(valid.i18nKey);
       if (valid.figure !== undefined) {
-        err = this.$t('$ezreeport.figures.errors._detail', { valid: err, at: valid.figure });
+        err = this.$t('$ezreeport.figures.errors._detail', { valid: err, at: valid.figure + 1 });
       }
       if (valid.layout !== undefined) {
-        err = this.$t('$ezreeport.layouts.errors._detail', { valid: err, at: valid.layout });
+        err = this.$t('$ezreeport.layouts.errors._detail', { valid: err, at: valid.layout + 1 });
       }
       return err.toString();
     },
