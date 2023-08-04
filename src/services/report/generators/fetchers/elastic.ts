@@ -212,7 +212,7 @@ export default async (
     throw new ArgumentError('You must precise an index before trying to fetch data from elastic');
   }
 
-  const { filter, ...otherFilters } = (options.filters ?? {}) as any;
+  const { filter, ...otherFilters } = ((options.filters as any) ?? { filter: [] });
   const baseOpts: ElasticTypes.SearchRequest = {
     index,
     body: {
