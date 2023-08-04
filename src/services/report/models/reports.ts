@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import EventEmitter from 'node:events';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+
 import { compact, merge, omit } from 'lodash';
 import Joi from 'joi';
 
@@ -10,15 +11,7 @@ import renderers, { type Renderers } from '~/generators/renderers';
 
 import type { Prisma, Recurrence, Task } from '~/lib/prisma';
 import config from '~/lib/config';
-import {
-  add,
-  differenceInMilliseconds,
-  endOfDay,
-  format,
-  formatISO,
-  parseISO,
-  startOfDay,
-} from '~/lib/date-fns';
+import * as dfns from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
 
 import { calcNextDate, calcPeriod } from '~/models/recurrence';
@@ -66,7 +59,7 @@ type ReportResult = {
   }
 };
 
-const reportresultSchema = Joi.object<ReportResult>({
+const reportResultSchema = Joi.object<ReportResult>({
   success: Joi.boolean().required(),
   detail: Joi.object<ReportResult['detail']>({
     createdAt: Joi.date().iso().required(),
@@ -113,7 +106,7 @@ const reportresultSchema = Joi.object<ReportResult>({
  * @throw If input data isn't a valid ReportResult
  */
 export const isValidResult = (data: unknown): data is ReportResult => {
-  const validation = reportresultSchema.validate(data, {});
+  const validation = reportResultSchema.validate(data, {});
   if (validation.error != null) {
     throw new Error(`Result is not valid: ${validation.error.message}`);
   }
@@ -153,7 +146,6 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
       ) {
         return;
       }
-      const fetcher = layout.fetcher ?? 'elastic';
       const fetchOptions: GeneratorParam<Fetchers, keyof Fetchers> = merge(
         {},
         template.fetchOptions ?? {},
@@ -202,7 +194,7 @@ export const generateReport = async (
   events: EventEmitter = new EventEmitter(),
 ): Promise<ReportResult> => {
   const today = new Date();
-  const todayStr = format(today, 'yyyy/yyyy-MM');
+  const todayStr = dfns.format(today, 'yyyy/yyyy-MM');
   const basePath = join(outDir, todayStr, '/');
 
   let filename = `ezREEPORT_${normaliseFilename(task.name)}`;
@@ -224,7 +216,7 @@ export const generateReport = async (
     success: true,
     detail: {
       createdAt: today,
-      destroyAt: add(today, { days: ttl.days }),
+      destroyAt: dfns.add(today, { days: ttl.days }),
       took: 0,
       taskId: task.id,
       files: {
@@ -246,25 +238,29 @@ export const generateReport = async (
     events.emit('authFound', result.detail.auth);
 
     // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
-    let period = calcPeriod(parseISO(task.nextRun.toString()), task.recurrence);
-    const distance = differenceInMilliseconds(period.end, period.start);
+    let period = calcPeriod(dfns.parseISO(task.nextRun.toString()), task.recurrence);
+    const distance = dfns.differenceInMilliseconds(period.end, period.start);
 
     // Parse custom period
     if (customPeriod) {
-      const cp = {
-        start: startOfDay(parseISO(customPeriod.start)),
-        end: endOfDay(parseISO(customPeriod.end)),
+      const parsedPeriod = {
+        start: dfns.startOfDay(dfns.parseISO(customPeriod.start)),
+        end: dfns.endOfDay(dfns.parseISO(customPeriod.end)),
       };
-      if (differenceInMilliseconds(cp.end, cp.start) !== distance) {
-        throw new ConflitError(`Custom period "${customPeriod.start} to ${customPeriod.end}" doesn't match task's recurrence (${task.recurrence} : "${formatISO(period.start)} to ${formatISO(period.end)}")`);
+      const expectedPeriodEnd = dfns.add(
+        calcNextDate(parsedPeriod.start, task.recurrence),
+        { days: -1 },
+      );
+      if (!dfns.isSameDay(expectedPeriodEnd, parsedPeriod.end)) {
+        throw new ConflitError(`Custom period "${customPeriod.start} to ${customPeriod.end}" doesn't match task's recurrence (${task.recurrence}). Should be : "${customPeriod.start} to ${dfns.formatISO(expectedPeriodEnd)}")`);
       }
-      period = cp;
+      period = parsedPeriod;
     }
     result.detail.period = period;
 
     // Re-calc ttl if not in any debug mode
     if (writeHistory && !debug) {
-      result.detail.destroyAt = add(today, { seconds: ttl.iterations * (distance / 1000) });
+      result.detail.destroyAt = dfns.add(today, { seconds: ttl.iterations * (distance / 1000) });
     }
 
     // Parse task template
@@ -337,7 +333,7 @@ export const generateReport = async (
       result,
       {
         detail: {
-          took: differenceInMilliseconds(new Date(), result.detail.createdAt),
+          took: dfns.differenceInMilliseconds(new Date(), result.detail.createdAt),
           sendingTo: targets,
           stats: omit(stats, 'path'),
         },
@@ -361,8 +357,8 @@ export const generateReport = async (
             destroyAt: result.detail.destroyAt.toISOString(),
             files: result.detail.files,
             period: {
-              start: formatISO(period.start),
-              end: formatISO(period.end),
+              start: dfns.formatISO(period.start),
+              end: dfns.formatISO(period.end),
             },
           },
         },
@@ -377,7 +373,7 @@ export const generateReport = async (
       {
         success: false,
         detail: {
-          took: differenceInMilliseconds(new Date(), result.detail.createdAt),
+          took: dfns.differenceInMilliseconds(new Date(), result.detail.createdAt),
           error: {
             message: err.message,
             stack: err.stack?.split('\n    '),

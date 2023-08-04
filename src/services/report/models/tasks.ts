@@ -1,11 +1,6 @@
 import Joi from 'joi';
 import { parseISO } from 'date-fns';
-import {
-  endOfDay,
-  formatISO,
-  isBefore,
-  isSameDay,
-} from '~/lib/date-fns';
+import * as dfns from '~/lib/date-fns';
 import prisma from '~/lib/prisma';
 import {
   Recurrence,
@@ -288,8 +283,8 @@ export const editTaskByIdWithHistory = async (
   }
 
   let nR = typeof nextRun === 'object' ? nextRun : parseISO(nextRun);
-  const isNextRunChanged = !isSameDay(nR, existingTask.nextRun);
-  if (isNextRunChanged && isBefore(nR, new Date())) {
+  const isNextRunChanged = !dfns.isSameDay(nR, existingTask.nextRun);
+  if (isNextRunChanged && dfns.isBefore(nR, new Date())) {
     throw new ArgumentError('Body is not valid: "nextRun" must be greater than "now" or stays unmodified');
   }
 
@@ -302,9 +297,9 @@ export const editTaskByIdWithHistory = async (
 
     // ... but task is re-enabled
     if (data.enabled && existingTask.enabled === false) {
-      const today = endOfDay(new Date());
+      const today = dfns.endOfDay(new Date());
       nR = existingTask.nextRun;
-      while (isBefore(nR, today)) {
+      while (dfns.isBefore(nR, today)) {
         nR = calcNextDate(nR, existingTask.recurrence);
       }
     }
@@ -315,7 +310,7 @@ export const editTaskByIdWithHistory = async (
     data: {
       ...data,
       nextRun: nR,
-      history: entry && { create: { ...entry, createdAt: formatISO(new Date()) } },
+      history: entry && { create: { ...entry, createdAt: dfns.formatISO(new Date()) } },
     },
     select: prismaTaskSelect,
   });

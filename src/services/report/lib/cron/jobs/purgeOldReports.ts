@@ -5,13 +5,7 @@ import { enUS } from 'date-fns/locale';
 import { glob } from 'glob';
 
 import config from '~/lib/config';
-import {
-  endOfDay,
-  formatDuration,
-  intervalToDuration,
-  isBefore,
-  parseISO,
-} from '~/lib/date-fns';
+import * as dfns from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
 import { formatInterval, isFulfilled } from '~/lib/utils';
 
@@ -29,7 +23,7 @@ export default async (job: Queue.Job<CronData>) => {
   logger.verbose(`[cron] [${process.pid}] [${job.name}] Started`);
 
   try {
-    const today = endOfDay(start);
+    const today = dfns.endOfDay(start);
 
     const detailFiles = await glob(join(outDir, '**/*.det.json'));
     // List all files to delete
@@ -44,13 +38,13 @@ export default async (job: Queue.Job<CronData>) => {
           }
 
           // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
-          const destroyAt = parseISO(fileContent.detail.destroyAt.toString());
-          if (isBefore(today, destroyAt)) {
+          const destroyAt = dfns.parseISO(fileContent.detail.destroyAt.toString());
+          if (dfns.isBefore(today, destroyAt)) {
             return [];
           }
 
-          const dur = intervalToDuration({
-            start: parseISO(fileContent.detail.createdAt.toString()),
+          const dur = dfns.intervalToDuration({
+            start: dfns.parseISO(fileContent.detail.createdAt.toString()),
             end: today,
           });
           return Object
@@ -74,7 +68,7 @@ export default async (job: Queue.Job<CronData>) => {
           await unlink(file);
           await job.progress(i / filesToDelete.length);
 
-          logger.info(`[cron] [${process.pid}] [${job.name}] Deleted "${file}" (${formatDuration(dur, { format: ['years', 'months', 'days'], locale: enUS })} old)`);
+          logger.info(`[cron] [${process.pid}] [${job.name}] Deleted "${file}" (${dfns.formatDuration(dur, { format: ['years', 'months', 'days'], locale: enUS })} old)`);
           return file;
         } catch (error) {
           logger.warn(`[cron] [${process.pid}] [${job.name}] Error on file deletion "${file}" : ${(error as Error).message}`);

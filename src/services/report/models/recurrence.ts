@@ -1,20 +1,6 @@
 import type { TimeUnit } from 'vega-lite/build/src/timeunit';
 import { Recurrence } from '~/lib/prisma';
-import {
-  add,
-  endOfDay,
-  endOfMonth,
-  endOfQuarter,
-  endOfWeek,
-  endOfYear,
-  getYear,
-  isAfter,
-  startOfDay,
-  startOfMonth,
-  startOfQuarter,
-  startOfWeek,
-  startOfYear,
-} from '~/lib/date-fns';
+import * as dfns from '~/lib/date-fns';
 
 /**
  * Calculate next run date for the task
@@ -50,7 +36,7 @@ export const calcNextDate = (initial: Date, recurrence: Recurrence): Date => {
       throw new Error('Recurrence not found');
   }
 
-  return add(initial, duration);
+  return dfns.add(initial, duration);
 };
 
 /**
@@ -62,52 +48,47 @@ export const calcNextDate = (initial: Date, recurrence: Recurrence): Date => {
  * @returns The period
  */
 export const calcPeriod = (today: Date, recurrence: Recurrence): Interval => {
-  let period;
-
   switch (recurrence) {
     case Recurrence.DAILY: {
-      const target = add(today, { days: -1 });
-      period = { start: startOfDay(target), end: endOfDay(target) };
-      break;
+      const target = dfns.add(today, { days: -1 });
+      return { start: dfns.startOfDay(target), end: dfns.endOfDay(target) };
     }
+
     case Recurrence.WEEKLY: {
-      const target = add(today, { weeks: -1 });
-      period = { start: startOfWeek(target), end: endOfWeek(target) };
-      break;
+      const target = dfns.add(today, { weeks: -1 });
+      return { start: dfns.startOfWeek(target), end: dfns.endOfWeek(target) };
     }
+
     case Recurrence.MONTHLY: {
-      const target = add(today, { months: -1 });
-      period = { start: startOfMonth(target), end: endOfMonth(target) };
-      break;
+      const target = dfns.add(today, { months: -1 });
+      return { start: dfns.startOfMonth(target), end: dfns.endOfMonth(target) };
     }
+
     case Recurrence.QUARTERLY: {
-      const target = add(today, { months: -3 });
-      period = { start: startOfQuarter(target), end: endOfQuarter(target) };
-      break;
+      const target = dfns.add(today, { months: -3 });
+      return { start: dfns.startOfQuarter(target), end: dfns.endOfQuarter(target) };
     }
+
     case Recurrence.BIENNIAL: {
-      const year = getYear(today);
+      const year = dfns.getYear(today);
       const midYear = new Date(year, 5, 30);
-      if (isAfter(today, midYear)) {
+      if (dfns.isAfter(today, midYear)) {
         // Target is first half of current year
-        period = { start: startOfYear(midYear), end: midYear };
-      } else {
-        // Target is second half of previous year
-        const target = add(midYear, { years: -1, days: 1 });
-        period = { start: target, end: endOfYear(target) };
+        return { start: dfns.startOfYear(midYear), end: midYear };
       }
-      break;
+      // Target is second half of previous year
+      const target = dfns.add(midYear, { years: -1, days: 1 });
+      return { start: target, end: dfns.endOfYear(target) };
     }
+
     case Recurrence.YEARLY: {
-      const target = add(today, { years: -1 });
-      period = { start: startOfYear(target), end: endOfYear(target) };
-      break;
+      const target = dfns.add(today, { years: -1 });
+      return { start: dfns.startOfYear(target), end: dfns.endOfYear(target) };
     }
+
     default:
       throw new Error('Recurrence not found');
   }
-
-  return period;
 };
 
 /**
