@@ -6,16 +6,19 @@ import { appLogger as logger } from './lib/logger';
 import corsMiddleware from './middlewares/cors';
 import formatMiddleware from './middlewares/format';
 import loggerMiddleware from './middlewares/logger';
-import { createTemplate, getTemplateByName, type FullTemplate } from './models/templates';
+import { createTemplate, getTemplateByName } from './models/templates';
 
-const { port, defaultTemplateName } = config;
+const {
+  port,
+  defaultTemplate: { name: defaultTemplateName },
+} = config;
 
 /**
  * Add default template if not already present
  */
 const initTemplates = async () => {
   logger.verbose(`[init] Checking existence of "${defaultTemplateName}"...`);
-  let template: FullTemplate | null;
+  let template;
   try {
     template = await getTemplateByName(defaultTemplateName);
   } catch (error) {
@@ -24,16 +27,17 @@ const initTemplates = async () => {
   }
 
   if (template) {
+    config.defaultTemplate.id = template.id;
     logger.verbose(`[init] Template "${defaultTemplateName}" found`);
     return;
   }
 
   logger.verbose(`[init] Template "${defaultTemplateName}" not found, creating it...`);
   try {
-    await createTemplate(
-      defaultTemplateName,
-      { body: { layouts: [] } } satisfies Pick<FullTemplate, 'body'>,
+    const { id } = await createTemplate(
+      { name: defaultTemplateName, body: { layouts: [] }, tags: [] },
     );
+    config.defaultTemplate.id = id;
     logger.info(`[init] Template "${defaultTemplateName}" created`);
   } catch (error) {
     logger.error(`[init] Couldn't create template "${defaultTemplateName}":`, (error as Error).message);

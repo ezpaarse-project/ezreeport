@@ -22,7 +22,7 @@ export type GenerationData = {
   /**
    * Should write generation in task history (also disable first level of debug)
    */
-  writeHistory?: boolean,
+  writeActivity?: boolean,
   /**
    * Period overriding
    */

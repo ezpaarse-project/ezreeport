@@ -1,42 +1,57 @@
 import { StatusCodes } from 'http-status-codes';
+
+import config from '~/lib/config';
 import { CustomRouter } from '~/lib/express-utils';
+
 import { requireUser } from '~/middlewares/auth';
+
 import {
   createTemplate,
-  deleteTemplateByName, editTemplateByName, getAllTemplates, getTemplateByName, isFullTemplate,
+  deleteTemplateById,
+  editTemplateById,
+  getAllTemplates,
+  getTemplateById,
+  isFullTemplate,
 } from '~/models/templates';
 
 const router = CustomRouter('templates')
   /**
    * Get possibles templates
    */
-  .createRoute('GET /', (_req, _res) => getAllTemplates(), requireUser)
+  .createRoute('GET /', async (_req, _res) => {
+    const templates = await getAllTemplates();
+
+    return {
+      data: templates,
+      meta: {
+        default: config.defaultTemplate.id,
+      },
+    };
+  }, requireUser)
 
   /**
    * Create template
-   *
-   * @deprecated Use `PUT /:name(*)` instead
    */
   .createAdminRoute('POST /', (req, _res) => {
-    const { name, ...data } = req.body;
+    const data = req.body;
 
     if (!isFullTemplate(data)) {
       // As validation throws an error, this line shouldn't be called
       return {};
     }
 
-    return createTemplate(name, data);
+    return createTemplate(data);
   })
 
   /**
    * Get specific template
    */
-  .createRoute('GET /:name(*)', async (req, _res) => {
-    const { name } = req.params;
+  .createRoute('GET /:template', async (req, _res) => {
+    const { template: id } = req.params;
 
-    const template = await getTemplateByName(name);
+    const template = await getTemplateById(id);
     if (!template) {
-      throw new Error(`No template named "${name}" was found`);
+      throw new Error(`No template named "${id}" was found`);
     }
 
     return template;
@@ -45,21 +60,21 @@ const router = CustomRouter('templates')
   /**
    * Edit or create template
    */
-  .createAdminRoute('PUT /:name(*)', async (req, _res) => {
-    const { name } = req.params;
+  .createAdminRoute('PUT /:template', async (req, _res) => {
+    const { template: id } = req.params;
 
     if (!isFullTemplate(req.body)) {
       // As validation throws an error, this line shouldn't be called
       return {};
     }
 
-    let template = await getTemplateByName(name);
+    let template = await getTemplateById(id);
     let code;
     if (template) {
-      template = await editTemplateByName(name, req.body);
+      template = await editTemplateById(id, req.body);
       code = StatusCodes.OK;
     } else {
-      template = await createTemplate(name, req.body);
+      template = await createTemplate(req.body, id);
       code = StatusCodes.CREATED;
     }
 
@@ -72,10 +87,10 @@ const router = CustomRouter('templates')
   /**
    * Delete template
    */
-  .createAdminRoute('DELETE /:name(*)', async (req, _res) => {
-    const { name } = req.params;
+  .createAdminRoute('DELETE /:template', async (req, _res) => {
+    const { template: id } = req.params;
 
-    await deleteTemplateByName(name);
+    await deleteTemplateById(id);
   });
 
 export default router;

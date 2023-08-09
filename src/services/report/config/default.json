@@ -3,7 +3,10 @@
   "port": 8080,
   "allowedOrigins": "*",
   "adminKey": "00000000-0000-0000-0000-000000000000",
-  "defaultTemplateName": "scratch",
+  "defaultTemplate": {
+    "name": "scratch",
+    "id": ""
+  },
   "fetcher": {
     "bannedDomains": []
   },

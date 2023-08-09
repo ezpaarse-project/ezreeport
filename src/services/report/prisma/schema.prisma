@@ -13,30 +13,35 @@ datasource db {
 /// A report task
 model Task {
   /// Id of the report
-  id          String     @id @default(uuid())
+  id           String         @id @default(uuid())
   /// The name of the report
-  name        String
+  name         String
   /// The "owner" of the report
-  namespace   Namespace  @relation(fields: [namespaceId], references: [id], onDelete: Cascade)
-  namespaceId String
+  namespace    Namespace      @relation(fields: [namespaceId], references: [id], onDelete: Cascade)
+  namespaceId  String
   /// The template used to generate the report
-  template    Json
+  template     Json
+  // The template extended by the report
+  extends      Template       @relation(fields: [extendedId], references: [id], onDelete: NoAction)
+  extendedId   String         @map("templateId")
+  /// Last template extended by the report. If null then it's mean it's still linked. If set, extendedId must match default one
+  lastExtended Json?
   /// Email adresses to send generated report
-  targets     String[]
+  targets      String[]
   /// Defines when the report will be generated
-  recurrence  Recurrence
+  recurrence   Recurrence
   /// Next time the report will be generated
-  nextRun     DateTime
+  nextRun      DateTime
   /// Last time the report has been generated
-  lastRun     DateTime?
+  lastRun      DateTime?
   /// Is the generation of the report is enabled
-  enabled     Boolean    @default(true)
+  enabled      Boolean        @default(true)
   /// Activity of the task
-  history     History[]
+  activity     TaskActivity[]
   /// When the report was created
-  createdAt   DateTime   @default(now())
+  createdAt    DateTime       @default(now())
   /// When the report was updated for the last time
-  updatedAt   DateTime?  @updatedAt
+  updatedAt    DateTime?      @updatedAt
 
   @@index([namespaceId])
 }
@@ -52,7 +57,7 @@ enum Recurrence {
 }
 
 /// An activity event linked to a report (generation, edition, etc.)
-model History {
+model TaskActivity {
   /// Id of the event
   id        String   @id @default(uuid())
   /// Task linked to the event
@@ -135,8 +140,10 @@ model Namespace {
 
 /// Base template used by reports
 model Template {
+  /// The id of the template
+  id        String    @id @default(uuid())
   /// The name of the template
-  name      String    @id
+  name      String    @unique
   /// Tags of the template
   tags      Json[]    @default([])
   /// The layouts used to generate the report
@@ -145,5 +152,6 @@ model Template {
   createdAt DateTime  @default(now())
   /// When the template was updated for the last time
   updatedAt DateTime? @updatedAt
+  /// Tasks using template
+  tasks     Task[]
 }
-

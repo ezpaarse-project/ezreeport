@@ -19,7 +19,7 @@ import { ArgumentError, ConflitError } from '~/types/errors';
 
 import { editTaskByIdWithHistory } from './tasks';
 import {
-  getTemplateByName,
+  getTemplateById,
   isTaskTemplate,
   type AnyTemplate,
   type AnyTaskTemplate,
@@ -288,9 +288,9 @@ export const generateReport = async (
       throw new ArgumentError("Task's template is not an object");
     }
 
-    ({ body: template } = await getTemplateByName(taskTemplate.extends) ?? { body: null });
+    ({ body: template } = await getTemplateById(task.extendedId) ?? { body: null });
     if (!template) {
-      throw new Error(`No template named "${taskTemplate.extends}" was found`);
+      throw new Error(`No template "${task.extendedId}" was found`);
     }
 
     // Insert task's layouts
@@ -351,6 +351,7 @@ export const generateReport = async (
         task.id,
         {
           ...task,
+          extends: task.extendedId,
           template: task.template as Prisma.InputJsonObject,
           nextRun: calcNextDate(today, task.recurrence),
           lastRun: today,
@@ -394,6 +395,7 @@ export const generateReport = async (
         task.id,
         {
           ...task,
+          extends: task.extendedId,
           template: task.template as Prisma.InputJsonObject,
           enabled: false,
         },

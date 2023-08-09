@@ -21,7 +21,7 @@ export default async (job: Queue.Job<GenerationData>) => {
     data: {
       task,
       origin,
-      writeHistory,
+      writeActivity,
       debug,
       customPeriod,
     },
@@ -49,7 +49,7 @@ export default async (job: Queue.Job<GenerationData>) => {
     task,
     origin,
     customPeriod,
-    writeHistory,
+    writeActivity,
     debug,
     {
       jobId,

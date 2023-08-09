@@ -1,17 +1,17 @@
-import type { History, Namespace } from '~/lib/prisma';
+import type { TaskActivity, Namespace } from '~/lib/prisma';
 import prisma from '~/lib/prisma';
 
 /**
- * Get count of history entries in DB
+ * Get count of tasks' activity entries in DB
  *
  * @param namespaceIds The namespaces of the task. If provided,
  * will restrict search to the namespace provided
  *
  * @returns The entries count
  */
-export const getCountHistory = (
+export const getCountTaskActivity = (
   namespaceIds?: string[],
-): Promise<number> => prisma.history.count({
+): Promise<number> => prisma.taskActivity.count({
   where: {
     task: {
       namespaceId: {
@@ -22,22 +22,22 @@ export const getCountHistory = (
 });
 
 /**
- * Get all history entry in DB
+ * Get all taskActivity entry in DB
  *
  * @param opts Requests options
  * @param namespaceIds The namespaces of the task. If provided,
  * will restrict search to the namespace provided
  *
- * @returns History entry list
+ * @returns TaskActivity entry list
  */
 // TODO[feat]: Custom sort
-export const getAllHistoryEntries = (
+export const getAllTaskActivityEntries = (
   opts?: {
     count?: number,
-    previous?: History['id']
+    previous?: TaskActivity['id']
   },
   namespaceIds?: Namespace['id'][],
-) => prisma.history.findMany({
+) => prisma.taskActivity.findMany({
   take: opts?.count,
   skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
   cursor: opts?.previous ? { id: opts.previous } : undefined,

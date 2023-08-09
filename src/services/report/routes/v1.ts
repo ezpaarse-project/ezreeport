@@ -7,9 +7,9 @@ import authRouter from './v1/auth';
 import cronsRouter from './v1/crons';
 import filesRouter from './v1/files';
 import healthRouter from './v1/health';
-import historyRouter from './v1/history';
 import queuesRouter from './v1/queues';
 import tasksRouter from './v1/tasks';
+import tasksActivityRouter from './v1/tasksActivity';
 import templatesRouter from './v1/templates';
 import unsubscribeRouter from './v1/unsubscribe';
 
@@ -31,8 +31,8 @@ const router = Router()
    */
   .use('/me', authRouter)
   .use('/reports', filesRouter)
-  .use('/history', historyRouter)
   .use('/tasks', tasksRouter)
+  .use('/tasks-activity', tasksActivityRouter)
 
   /**
    * Other routes

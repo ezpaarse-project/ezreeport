@@ -1,10 +1,12 @@
 import { StatusCodes } from 'http-status-codes';
 import Joi from 'joi';
 import { pick } from 'lodash';
+
 import type { Prisma } from '~/lib/prisma';
 import { addTaskToGenQueue } from '~/lib/bull';
 import { CustomRouter } from '~/lib/express-utils';
 import { b64ToString } from '~/lib/utils';
+
 import {
   createTask,
   deleteTaskById,
@@ -17,6 +19,8 @@ import {
   isValidTask,
 } from '~/models/tasks';
 import { Access } from '~/models/access';
+import { getTemplateById, linkTaskToTemplate, unlinkTaskFromTemplate } from '~/models/templates';
+
 import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';
 
 type UnsubData = {
@@ -57,17 +61,6 @@ const router = CustomRouter('tasks')
       {
         count: c,
         previous: p?.toString(),
-        select: [
-          'id',
-          'name',
-          'namespaceId',
-          'recurrence',
-          'nextRun',
-          'lastRun',
-          'enabled',
-          'createdAt',
-          'updatedAt',
-        ],
       },
       req.namespaceIds,
     );
@@ -181,6 +174,7 @@ const router = CustomRouter('tasks')
       id,
       {
         ...pick(task, 'name', 'targets', 'recurrence', 'nextRun'),
+        extends: task.extends.id,
         nextRun: task.nextRun,
         template: task.template as Prisma.InputJsonObject,
         enabled: true,
@@ -204,13 +198,14 @@ const router = CustomRouter('tasks')
     }
 
     if (!task.enabled) {
-      throw new HTTPError(`Task with id '${id}' is already disabled`, StatusCodes.CONFLICT);
+      return;
     }
 
-    const editedTask = await editTaskByIdWithHistory(
+    await editTaskByIdWithHistory(
       id,
       {
         ...pick(task, 'name', 'targets', 'recurrence'),
+        extends: task.extends.id,
         nextRun: task.nextRun,
         template: task.template as Prisma.InputJsonObject,
         enabled: false,
@@ -218,8 +213,53 @@ const router = CustomRouter('tasks')
       { type: 'edition', message: `Tâche désactivée par ${req.user?.username}` },
       req.namespaceIds,
     );
+  })
 
-    return editedTask;
+  /**
+   * Link a task to a template
+   */
+  .createNamespacedRoute('PUT /:task/link/:template', Access.READ_WRITE, async (req, _res) => {
+    const { task: taskId, template: templateId } = req.params;
+
+    const task = await getTaskById(taskId, req.namespaceIds);
+    if (!task) {
+      throw new HTTPError(`Task with id '${taskId}' not found for namespaces '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
+    }
+
+    const template = await getTemplateById(templateId);
+    if (!template) {
+      throw new HTTPError(`Template with id '${templateId}' not found`, StatusCodes.NOT_FOUND);
+    }
+
+    if (!task.lastExtended) {
+      throw new HTTPError(`Task with id '${taskId}' is already linked to a template`, StatusCodes.CONFLICT);
+    }
+
+    await linkTaskToTemplate(taskId, template.id, req.user?.username ?? '');
+
+    return getTaskById(taskId, req.namespaceIds);
+  })
+
+  /**
+   * Unlink a task from it's template
+   */
+  .createNamespacedRoute('DELETE /:task/link/:template', Access.READ_WRITE, async (req, _res) => {
+    const { task: taskId, template: templateId } = req.params;
+
+    const task = await getTaskById(taskId, req.namespaceIds);
+    if (!task) {
+      throw new HTTPError(`Task with id '${taskId}' not found for namespaces '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
+    }
+
+    if (task.extends.id !== templateId) {
+      throw new HTTPError(`Task with id '${taskId}' is not linked with template '${templateId}'`, StatusCodes.NOT_FOUND);
+    }
+
+    if (task.lastExtended) {
+      throw new HTTPError(`Task with id '${taskId}' is already unlinked`, StatusCodes.CONFLICT);
+    }
+
+    await unlinkTaskFromTemplate(taskId, req.user?.username ?? '');
   })
 
   /**
@@ -262,16 +302,17 @@ const router = CustomRouter('tasks')
       throw new HTTPError('Missing part of custom period', StatusCodes.BAD_REQUEST);
     }
 
-    const { namespace, ...taskData } = task;
+    const { namespace, extends: extendedTemplate, ...taskData } = task;
     const job = await addTaskToGenQueue({
       task: {
         ...taskData,
+        extendedId: extendedTemplate.id,
         namespaceId: namespace.id,
         targets: testEmails || task.targets,
       },
       customPeriod,
       origin: req.user?.username ?? '',
-      writeHistory: testEmails === undefined,
+      writeActivity: testEmails === undefined,
       debug: !!req.query.debug && process.env.NODE_ENV !== 'production',
     });
 
@@ -312,7 +353,7 @@ const router = CustomRouter('tasks')
 
     await editTaskByIdWithHistory(
       task.id,
-      { ...task, template: task.template as Prisma.JsonObject },
+      { ...task, template: task.template as Prisma.JsonObject, extends: task.extends.id },
       { type: 'unsubscription', message: `${data.email} s'est désinscrit de la liste de diffusion.` },
     );
 
