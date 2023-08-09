@@ -1,4 +1,5 @@
 import { parseISO } from 'date-fns';
+
 import { type RawNamespace, type Namespace, parseNamespace } from './namespaces';
 
 export enum Recurrence {

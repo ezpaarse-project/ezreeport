@@ -1,6 +1,7 @@
 export {
   type FullTask,
   type InputTask,
+  type TaskList,
   getAllTasks,
   getTask,
   createTask,
@@ -9,6 +10,8 @@ export {
   deleteTask,
   enableTask,
   disableTask,
+  linkTaskToTemplate,
+  unlinkTaskToTemplate,
 } from './tasks';
 
 export {

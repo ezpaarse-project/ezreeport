@@ -1,9 +1,11 @@
 import { parseISO } from 'date-fns';
+
 import { axiosWithErrorFormatter, type PaginatedApiResponse } from '../lib/axios';
+
 import { parseTaskWithNamespace, type RawTaskWithNamespace, type TaskWithNamespace } from './tasks.base';
 
 // Private export
-export interface RawHistory {
+export interface RawActivity {
   id: string,
   taskId: string,
   type: string,
@@ -13,15 +15,15 @@ export interface RawHistory {
   createdAt: string, // Date
 }
 
-export interface History extends Omit<RawHistory, 'createdAt'> {
+export interface Activity extends Omit<RawActivity, 'createdAt'> {
   createdAt: Date,
 }
 
-interface RawHistoryWithTask extends Omit<RawHistory, 'taskId'> {
+interface RawActivityWithTask extends Omit<RawActivity, 'taskId'> {
   task: RawTaskWithNamespace
 }
 
-export interface HistoryWithTask extends Omit<History, 'taskId'> {
+export interface ActivityWithTask extends Omit<Activity, 'taskId'> {
   task: TaskWithNamespace
 }
 
@@ -33,7 +35,7 @@ export interface HistoryWithTask extends Omit<History, 'taskId'> {
  *
  * @returns Parsed history entry
  */
-export const parseHistory = (entry: RawHistory): History => ({
+export const parseActivity = (entry: RawActivity): Activity => ({
   ...entry,
 
   createdAt: parseISO(entry.createdAt),
@@ -46,7 +48,7 @@ export const parseHistory = (entry: RawHistory): History => ({
  *
  * @returns Parsed history entry
  */
-const parseHistoryWithTask = (entry: RawHistoryWithTask): HistoryWithTask => ({
+const parseActivityWithTask = (entry: RawActivityWithTask): ActivityWithTask => ({
   ...entry,
   task: parseTaskWithNamespace(entry.task),
 
@@ -64,12 +66,12 @@ const parseHistoryWithTask = (entry: RawHistoryWithTask): HistoryWithTask => ({
  * @returns All history entries' info
  */
 export const getAllEntries = async (
-  paginationOpts?: { previous?: History['id'], count?: number },
+  paginationOpts?: { previous?: Activity['id'], count?: number },
   namespaces?: string[],
-): Promise<PaginatedApiResponse<HistoryWithTask[]>> => {
-  const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawHistoryWithTask[]>, 'get'>(
+): Promise<PaginatedApiResponse<ActivityWithTask[]>> => {
+  const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawActivityWithTask[]>, 'get'>(
     'get',
-    '/history',
+    '/tasks-activity',
     {
       params: {
         namespaces,
@@ -80,6 +82,6 @@ export const getAllEntries = async (
 
   return {
     ...response,
-    content: content.map(parseHistoryWithTask),
+    content: content.map(parseActivityWithTask),
   };
 };

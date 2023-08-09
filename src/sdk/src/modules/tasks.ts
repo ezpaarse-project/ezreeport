@@ -1,7 +1,15 @@
 import axios, { axiosWithErrorFormatter, type ApiResponse, type PaginatedApiResponse } from '../lib/axios';
 import type { JsonObject } from '../lib/utils';
-import { parseHistory, type History, type RawHistory } from './history';
+
+import { parseActivity, type Activity, type RawActivity } from './tasksActivity';
 import type { Namespace } from './namespaces';
+import {
+  parseTemplate,
+  type Layout,
+  type RawTemplate,
+  type Template,
+} from './templates';
+
 import {
   parseTask,
   parseTaskWithNamespace,
@@ -10,20 +18,29 @@ import {
   type TaskWithNamespace,
   type RawTask,
 } from './tasks.base';
-import type { Layout } from './templates';
 
 interface AdditionalRawTaskData {
   template: {
-    extends: string,
     fetchOptions?: JsonObject,
     inserts?: (Layout & { at: number })[],
   },
+  extends: RawTemplate,
+  lastExtended?: {
+    id: string,
+    tags: RawTemplate['tags']
+  }
   targets: string[],
-  history: RawHistory[]
+  activity: RawActivity[]
 }
 
-interface AdditionalTaskData extends Omit<AdditionalRawTaskData, 'history'> {
-  history: History[],
+interface AdditionalTaskData extends Omit<AdditionalRawTaskData, 'activity' | 'extends' | 'lastExtended'> {
+  activity: Activity[],
+  extends: Template,
+  lastExtended?: {
+    id: Template['id'],
+    name: Template['name'],
+    tags: Template['tags']
+  }
 }
 
 // Private export
@@ -42,16 +59,18 @@ export interface FullTask extends TaskWithNamespace, AdditionalTaskData {
  */
 const parseFullTask = (task: RawFullTask): FullTask => {
   const {
-    history,
+    activity,
     template,
     targets,
+    extends: extended,
     ...rawTask
   } = task;
 
   return {
     ...parseTaskWithNamespace(rawTask),
 
-    history: history.map(parseHistory),
+    extends: parseTemplate(extended),
+    activity: activity.map(parseActivity),
     template,
     targets,
   };
@@ -61,7 +80,11 @@ export interface InputTask extends Pick<FullTask, 'name' | 'template' | 'targets
   namespace?: Task['namespaceId'],
   nextRun?: FullTask['nextRun'],
   enabled?: FullTask['enabled'],
+  extends: string,
 }
+
+type RawTaskList = (RawTask & { tags: RawTemplate['tags'] })[];
+export type TaskList = (Task & { tags: Template['tags'] })[];
 
 /**
  * Get all available tasks
@@ -76,8 +99,8 @@ export interface InputTask extends Pick<FullTask, 'name' | 'template' | 'targets
 export const getAllTasks = async (
   paginationOpts?: { previous?: Task['id'], count?: number },
   namespaces?: Namespace['id'][],
-): Promise<PaginatedApiResponse<Task[]>> => {
-  const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawTask[]>, 'get'>(
+): Promise<PaginatedApiResponse<TaskList>> => {
+  const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawTaskList>, 'get'>(
     'get',
     '/tasks',
     {
@@ -90,7 +113,10 @@ export const getAllTasks = async (
 
   return {
     ...response,
-    content: content.map(parseTask),
+    content: content.map(({ tags, ...task }) => ({
+      tags,
+      ...parseTask(task),
+    })),
   };
 };
 
@@ -125,15 +151,16 @@ export const createTask = async (
  *
  * Needs `namespaces[namespaceId].tasks-get-task` permission
  *
- * @param id Task's id
+ * @param taskOrId Task or Task's id
  * @param namespaces
  *
  * @returns Task's info
  */
 export const getTask = async (
-  id: Task['id'],
+  taskOrId: Task | Task['id'],
   namespaces?: Namespace['id'][],
 ): Promise<ApiResponse<FullTask>> => {
+  const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   const { content, ...response } = await axios.$get<RawFullTask>(`/tasks/${id}`, { params: { namespaces } });
 
   return {
@@ -147,20 +174,19 @@ export const getTask = async (
  *
  * Needs `namespaces[namespaceId].tasks-put-task` permission
  *
- * @param id Task's id
- * @param task Task's data
+ * @param task Task's data **with id**
  * @param namespaces
  *
  * @returns Updated/Created Task's info
  */
 export const upsertTask = async (
-  id: Task['id'],
-  task: InputTask,
+  task: InputTask & { id: Task['id'] },
   namespaces?: Namespace['id'][],
 ): Promise<ApiResponse<FullTask>> => {
+  const { id, ...t } = task;
   const { content, ...response } = await axios.$put<RawFullTask>(
     `/tasks/${id}`,
-    task,
+    t,
     { params: { namespaces } },
   );
 
@@ -175,8 +201,7 @@ export const upsertTask = async (
  *
  * Needs `namespaces[namespaceId].tasks-put-task` permission
  *
- * @param id Task's id
- * @param task New Task's data
+ * @param task Task's data **with id**
  * @param namespaces
  *
  * @deprecated Use `upsertTask` instead
@@ -190,15 +215,15 @@ export const updateTask = upsertTask;
  *
  * Needs `namespaces[namespaceId].tasks-delete-task` permission
  *
- * @param id Task's id
+ * @param taskOrId Task or Task's id
  * @param namespaces
- *
- * @returns Deleted Task's info
  */
 export const deleteTask = async (
-  id: Task['id'],
+  taskOrId: Task | Task['id'],
   namespaces?: Namespace['id'][],
 ): Promise<void> => {
+  const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+
   await axios.$delete(`/tasks/${id}`, { params: { namespaces } });
 };
 
@@ -207,15 +232,17 @@ export const deleteTask = async (
  *
  * Needs `namespaces[namespaceId].tasks-put-task-enable` permission
  *
- * @param id Task's id
+ * @param taskOrId Task or Task's id
  * @param namespaces
  *
  * @returns Updated task's info
  */
 export const enableTask = async (
-  id: Task['id'],
+  taskOrId: Task | Task['id'],
   namespaces?: Namespace['id'][],
 ): Promise<ApiResponse<FullTask>> => {
+  const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+
   const { content, ...response } = await axios.$put<RawFullTask>(
     `/tasks/${id}/enable`,
     undefined,
@@ -233,15 +260,17 @@ export const enableTask = async (
  *
  * Needs `namespaces[namespaceId].tasks-put-task-disable` permission
  *
- * @param id Task's id
+ * @param taskOrId Task or Task's id
  * @param namespaces
  *
  * @returns Updated task's info
  */
 export const disableTask = async (
-  id: Task['id'],
+  taskOrId: Task | Task['id'],
   namespaces?: Namespace['id'][],
 ): Promise<ApiResponse<FullTask>> => {
+  const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+
   const { content, ...response } = await axios.$put<RawFullTask>(
     `/tasks/${id}/disable`,
     undefined,
@@ -252,4 +281,58 @@ export const disableTask = async (
     ...response,
     content: parseFullTask(content),
   };
+};
+
+/**
+ * Link a task to a template
+ *
+ * Needs `namespaces[namespaceId].tasks-put-task-link-template` permission
+ *
+ * @param taskOrId Task or Task's id
+ * @param templateOrId Template or Template's id
+ * @param namespaces
+ *
+ * @returns Updated task's info
+ */
+export const linkTaskToTemplate = async (
+  taskOrId: Task | Task['id'],
+  templateOrId: Template | Template['id'],
+  namespaces?: Namespace['id'][],
+) => {
+  const taskId = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  const templateId = typeof templateOrId === 'string' ? templateOrId : templateOrId.id;
+
+  const { content, ...response } = await axios.$put<RawFullTask>(
+    `/tasks/${taskId}/link/${templateId}`,
+    undefined,
+    { params: { namespaces } },
+  );
+
+  return {
+    ...response,
+    content: parseFullTask(content),
+  };
+};
+
+/**
+ * Unlink a task to a template
+ *
+ * Needs `namespaces[namespaceId].tasks-delete-task-link-template` permission
+ *
+ * @param taskOrId Task or Task's id
+ * @param templateOrId Template or Template's id
+ * @param namespaces
+ */
+export const unlinkTaskToTemplate = async (
+  taskOrId: Task | Task['id'],
+  templateOrId: Template | Template['id'],
+  namespaces?: Namespace['id'][],
+) => {
+  const taskId = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  const templateId = typeof templateOrId === 'string' ? templateOrId : templateOrId.id;
+
+  await axios.$delete<RawFullTask>(
+    `/tasks/${taskId}/link/${templateId}`,
+    { params: { namespaces } },
+  );
 };
