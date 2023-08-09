@@ -1,6 +1,9 @@
 import { parseISO } from 'date-fns';
+
 import axios, { type ApiResponse } from '../lib/axios';
 import type { JsonObject } from '../lib/utils';
+
+import { parseTask, type RawTask, type Task } from './tasks.base';
 
 export interface Figure {
   type: string,
@@ -18,6 +21,7 @@ export interface Layout {
 
 // Private export
 export interface RawTemplate {
+  id: string,
   name: string,
   renderer: string,
   pageCount: number,
@@ -42,7 +46,7 @@ export interface Template extends Omit<RawTemplate, 'createdAt' | 'updatedAt'> {
  *
  * @returns Parsed template
  */
-const parseTemplate = (template: RawTemplate): Template => ({
+export const parseTemplate = (template: RawTemplate): Template => ({
   ...template,
 
   createdAt: parseISO(template.createdAt),
@@ -57,11 +61,13 @@ export interface RawFullTemplate extends RawTemplate {
     fetchOptions?: JsonObject,
     layouts: Layout[]
   }
+  tasks: RawTask[],
 }
 
-export interface FullTemplate extends Omit<RawFullTemplate, 'createdAt' | 'updatedAt'> {
+export interface FullTemplate extends Omit<RawFullTemplate, 'tasks' | 'createdAt' | 'updatedAt'> {
   createdAt: Date,
   updatedAt?: Date,
+  tasks: Task[],
 }
 
 /**
@@ -72,18 +78,22 @@ export interface FullTemplate extends Omit<RawFullTemplate, 'createdAt' | 'updat
  * @returns Parsed template
  */
 const parseFullTemplate = (template: RawFullTemplate): FullTemplate => {
-  const { body, ...rawTemplate } = template;
+  const { body, tasks, ...rawTemplate } = template;
 
   return {
     ...parseTemplate(rawTemplate),
+    tasks: tasks.map(parseTask),
     body,
   };
 };
 
 export interface InputTemplate {
+  name: FullTemplate['name']
   body: FullTemplate['body']
   tags: FullTemplate['tags']
 }
+
+type TemplateListResponse = ApiResponse<Template[]> & { meta: { default: string } };
 
 /**
  * Get all available templates
@@ -92,11 +102,12 @@ export interface InputTemplate {
  *
  * @returns All templates' info
  */
-export const getAllTemplates = async (): Promise<ApiResponse<Template[]>> => {
+export const getAllTemplates = async (): Promise<TemplateListResponse> => {
   const { content, ...response } = await axios.$get<RawTemplate[]>('/templates');
+  const r = response as typeof response & { meta: { default: string } };
 
   return {
-    ...response,
+    ...r,
     content: content.map(parseTemplate),
   };
 };
@@ -104,14 +115,15 @@ export const getAllTemplates = async (): Promise<ApiResponse<Template[]>> => {
 /**
  * Get template info
  *
- * Needs `general.templates-get-name(*)` permission
+ * Needs `general.templates-get-template` permission
  *
- * @param name Template's name
+ * @param templateOrId Template or Template's id
  *
  * @returns Template info
  */
-export const getTemplate = async (name: Template['name']): Promise<ApiResponse<FullTemplate>> => {
-  const { content, ...response } = await axios.$get<RawFullTemplate>(`/templates/${name}`);
+export const getTemplate = async (templateOrId: Template | Template['id']): Promise<ApiResponse<FullTemplate>> => {
+  const id = typeof templateOrId === 'string' ? templateOrId : templateOrId.id;
+  const { content, ...response } = await axios.$get<RawFullTemplate>(`/templates/${id}`);
 
   return {
     ...response,
@@ -127,12 +139,10 @@ export const getTemplate = async (name: Template['name']): Promise<ApiResponse<F
  * @param template Template's data
  * @param namespaces
  *
- * @deprecated use `upsertTemplate` instead
- *
  * @returns Created template's info
  */
 export const createTemplate = async (
-  template: InputTemplate & { name: Template['name'] },
+  template: InputTemplate,
 ): Promise<ApiResponse<FullTemplate>> => {
   const { content, ...response } = await axios.$post<RawFullTemplate>(
     '/templates',
@@ -148,21 +158,21 @@ export const createTemplate = async (
 /**
  * Update or create a template
  *
- * Needs `general.templates-put-name(*)` permission
+ * Needs `general.templates-put-template` permission
  *
- * @param id Template's id
- * @param template Template's data
+ * @param template Template's data **with id**
  * @param namespaces
  *
  * @returns Updated/Created Template's info
  */
 export const upsertTemplate = async (
-  name: Template['name'],
-  template: InputTemplate,
+  template: InputTemplate & { id: Template['id'] },
 ): Promise<ApiResponse<FullTemplate>> => {
+  const { id, ...t } = template;
+
   const { content, ...response } = await axios.$put<RawFullTemplate>(
-    `/templates/${name}`,
-    template,
+    `/templates/${id}`,
+    t,
   );
 
   return {
@@ -174,7 +184,7 @@ export const upsertTemplate = async (
 /**
  * Update a template
  *
- * Needs `general.templates-put-name(*)` permission
+ * Needs `general.templates-put-template` permission
  *
  * @param id Template's id
  * @param template New Template's data
@@ -189,13 +199,12 @@ export const updateTemplate = upsertTemplate;
 /**
  * Delete a template
  *
- * Needs `general.templates-delete-name(*)` permission
+ * Needs `general.templates-delete-template` permission
  *
- * @param id Template's id
+ * @param templateOrId Template or Template's id
  * @param namespaces
- *
- * @returns Deleted Template's info
  */
-export const deleteTemplate = async (name: Template['name']): Promise<void> => {
-  await axios.$delete<RawFullTemplate>(`/templates/${name}`);
+export const deleteTemplate = async (templateOrId: Template | Template['id']): Promise<void> => {
+  const id = typeof templateOrId === 'string' ? templateOrId : templateOrId.id;
+  await axios.$delete<RawFullTemplate>(`/templates/${id}`);
 };

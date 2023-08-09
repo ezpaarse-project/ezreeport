@@ -1,4 +1,5 @@
 import { parseISO } from 'date-fns';
+
 import axios, { axiosWithErrorFormatter, type PaginatedApiResponse, type ApiResponse } from '../lib/axios';
 
 export interface Job<Data> {
@@ -69,36 +70,43 @@ export const getAllQueues = () => axios.$get<Queue[]>('/queues');
  *
  * Needs `general.queues-put-queue-pause` permission
  *
- * @param queueName Name of the queue
+ * @param queueOrName Queue or queue's name
  *
  * @returns queue info
  */
-export const pauseQueue = async (queueName: string): Promise<ApiResponse<Queue>> => axios.$put<Queue>(`/queues/${queueName}/pause`);
+export const pauseQueue = async (queueOrName: Queue | Queue['name']): Promise<ApiResponse<Queue>> => {
+  const queueName = typeof queueOrName === 'string' ? queueOrName : queueOrName.name;
+  return axios.$put<Queue>(`/queues/${queueName}/pause`);
+};
 
 /**
  * Resume queue
  *
  * Needs `general.queues-put-queue-resume` permission
  *
- * @param queueName Name of the queue
+ * @param queueOrName Queue or queue's name
  *
  * @returns queue info
  */
-export const resumeQueue = async (queueName: string): Promise<ApiResponse<Queue>> => axios.$put<Queue>(`/queues/${queueName}/resume`);
+export const resumeQueue = async (queueOrName: Queue | Queue['name']): Promise<ApiResponse<Queue>> => {
+  const queueName = typeof queueOrName === 'string' ? queueOrName : queueOrName.name;
+  return axios.$put<Queue>(`/queues/${queueName}/resume`);
+};
 
 /**
  * Get queue info
  *
  * Needs `general.queues-get-queue-jobs` permission
  *
- * @param queueName Name of the queue
+ * @param queueOrName Queue or queue's name
  *
  * @returns queue info
  */
 export const getQueueJobs = async <Data, Result>(
-  queueName: string,
+  queueOrName: Queue | Queue['name'],
   paginationOpts?: { previous?: Job<Data>['id'], count?: number },
 ): Promise<PaginatedApiResponse<FullJob<Data, Result>[]>> => {
+  const queueName = typeof queueOrName === 'string' ? queueOrName : queueOrName.name;
   const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawFullJob<Data, Result>[]>, 'get'>(
     'get',
     `/queues/${queueName}/jobs`,
@@ -118,17 +126,20 @@ export const getQueueJobs = async <Data, Result>(
  *
  * Needs `namespaces[namespaceId].queues-get-queue-jobs-jobId` permission
  *
- * @param queueName Name of queue where job is
- * @param jobId Id of the job in queue
+ * @param queueOrName Queue or queue's name where job is
+ * @param jobOrId Job or job's id in queue
  * @param namespaces
  *
  * @returns Job full info
  */
 export const getJob = async <Data, Result>(
-  queueName: Job<Data>['queue'],
-  jobId: Job<Data>['id'],
+  queueOrName: Queue | Queue['name'],
+  jobOrId: Job<Data> | Job<Data>['id'],
   namespaces?: string[],
 ): Promise<ApiResponse<FullJob<Data, Result>>> => {
+  const queueName = typeof queueOrName === 'string' ? queueOrName : queueOrName.name;
+  const jobId = typeof jobOrId === 'string' || typeof jobOrId === 'number' ? jobOrId : jobOrId.id;
+
   const { content, ...response } = await axios.$get<RawFullJob<Data, Result>>(`/queues/${queueName}/jobs/${jobId}`, { params: { namespaces } });
   return {
     ...response,
@@ -141,17 +152,20 @@ export const getJob = async <Data, Result>(
  *
  * Needs `namespaces[namespaceId].queues-post-queue-jobs-jobId-retry` permission
  *
- * @param queueName Name of queue where job is
- * @param jobId Id of the job in queue
+ * @param queueOrName Queue or queue's name where job is
+ * @param jobOrId Job or job's id in queue
  * @param namespaces
  *
  * @returns queue info
  */
 export const retryJob = async <Data, Result>(
-  queueName: Job<Data>['queue'],
-  jobId: Job<Data>['id'],
+  queueOrName: Queue | Queue['name'],
+  jobOrId: Job<Data> | Job<Data>['id'],
   namespaces?: string[],
 ): Promise<ApiResponse<FullJob<Data, Result>>> => {
+  const queueName = typeof queueOrName === 'string' ? queueOrName : queueOrName.name;
+  const jobId = typeof jobOrId === 'string' || typeof jobOrId === 'number' ? jobOrId : jobOrId.id;
+
   const { content, ...response } = await axios.$post<RawFullJob<Data, Result>>(`/queues/${queueName}/jobs/${jobId}/retry`, { params: { namespaces } });
   return {
     ...response,

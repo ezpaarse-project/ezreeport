@@ -1,6 +1,7 @@
 import { Stream } from 'stream';
 import { parseISO } from 'date-fns';
 import type { ResponseType } from 'axios';
+
 import axios, { axiosWithErrorFormatter } from '../lib/axios';
 import createEventfulPromise from '../lib/promises';
 import {
@@ -9,7 +10,14 @@ import {
   type Period,
   type RawPeriod,
 } from '../lib/utils';
-import { getJob, type FullJob, type Job } from './queues';
+
+import {
+  getJob,
+  type
+  FullJob,
+  type Job,
+  type Queue,
+} from './queues';
 import type { RawFullTask } from './tasks';
 
 interface RawReportResultDetail {
@@ -95,14 +103,14 @@ type FullReportJob = FullJob<RawReportData, RawReportResult>;
  *
  * Needs `namespaces[namespaceId].tasks-post-task-run` permission
  *
- * @param taskId Id of the task
+ * @param taskOrId Id of the task
  * @param params Other params for overriding default
  * @param namespaces
  *
  * @returns Job info to track progress
  */
 export const startGeneration = (
-  taskId: RawFullTask['id'],
+  taskOrId: RawFullTask | RawFullTask['id'],
   params?: {
     /**
      * Override targets of task. Also enable first level of debugging
@@ -115,18 +123,21 @@ export const startGeneration = (
     period?: Period,
   },
   namespaces?: string[],
-) => axios.$post<ReportJob>(
-  `/tasks/${taskId}/run`,
-  null,
-  {
-    params: {
-      test_emails: params?.testEmails,
-      period_start: params?.period?.start,
-      period_end: params?.period?.end,
-      namespaces,
+) => {
+  const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  return axios.$post<ReportJob>(
+    `/tasks/${id}/run`,
+    null,
+    {
+      params: {
+        test_emails: params?.testEmails,
+        period_start: params?.period?.start,
+        period_end: params?.period?.end,
+        namespaces,
+      },
     },
-  },
-);
+  );
+};
 
 export type GenerationStartedEvent = { id: string | number, queue: string };
 export type GenerationProgressEvent = { progress: number, status: FullReportJob['status'] };
@@ -205,7 +216,6 @@ interface ResponseTypeMap {
   text: string
   stream: Stream
 }
-type GetJobParams = Parameters<typeof getJob>;
 
 /**
  * Get report's related file
@@ -258,17 +268,17 @@ export const getReportFileByName = <Result extends keyof ResponseTypeMap = 'text
  * Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename`
  * & `namespaces[namespaceId].queues-get-queue-jobs-jobId ` permission
  *
- * @param queueName Name of queue where job is
- * @param jobId Id of the job in queue
+ * @param queueOrName Queue or queue's name where job is
+ * @param jobOrId Job or job's id in queue
  * @param namespaces
  * @param responseType Wanted response type
  *
  * @returns The report's content
  */
 export const getReportFileByJob = async <Result extends keyof ResponseTypeMap = 'text'>(
-  queueName: GetJobParams[0],
-  jobId: GetJobParams[1],
-  namespaces?: GetJobParams[2],
+  queueName: Queue | Queue['name'],
+  jobId: Job<RawReportData> | Job<RawReportData>['id'],
+  namespaces?: string[],
   responseType?: Result,
 ) => {
   const { content: { result } } = await getJob<RawReportData, RawReportResult>(
@@ -314,8 +324,8 @@ export const getReportDetailByName = async (
  * Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename`
  * & `namespaces[namespaceId].queues-get-queue-jobs-jobId` permission
  *
- * @param queueName Name of queue where job is
- * @param jobId Id of the job in queue
+ * @param queueOrName Queue or queue's name where job is
+ * @param jobOrId Job or job's id in queue
  * @param namespaces
  * @param responseType Wanted response type. **If provided with anything but `json` you will have to
  * cast in your type to avoid auto-completion issues.**
@@ -323,9 +333,9 @@ export const getReportDetailByName = async (
  * @returns The detail's content
  */
 export const getReportDetailByJob = async (
-  queueName: GetJobParams[0],
-  jobId: GetJobParams[1],
-  namespaces?: GetJobParams[2],
+  queueName: Queue | Queue['name'],
+  jobId: Job<RawReportData> | Job<RawReportData>['id'],
+  namespaces?: string[],
   responseType?: keyof ResponseTypeMap,
 ) => {
   const { content: { result } } = await getJob<RawReportData, RawReportResult>(
@@ -368,17 +378,17 @@ export const getReportDebugByName = <Result extends keyof ResponseTypeMap = 'jso
  * Needs `namespaces[namespaceId].reports-get-year-yearMonth-filename`
  * & `namespaces[namespaceId].queues-get-queue-jobs-jobId ` permission
  *
- * @param queueName Name of queue where job is
- * @param jobId Id of the job in queue
+ * @param queueOrName Queue or queue's name where job is
+ * @param jobOrId Job or job's id in queue
  * @param namespaces
  * @param responseType Wanted response type
  *
  * @returns The debug's content
  */
 export const getReportDebugByJob = async <Result extends keyof ResponseTypeMap = 'json'>(
-  queueName: GetJobParams[0],
-  jobId: GetJobParams[1],
-  namespaces?: GetJobParams[2],
+  queueName: Queue | Queue['name'],
+  jobId: Job<RawReportData> | Job<RawReportData>['id'],
+  namespaces?: string[],
   responseType?: Result,
 ) => {
   const { content: { result } } = await getJob<RawReportData, RawReportResult>(

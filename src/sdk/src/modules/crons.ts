@@ -1,4 +1,5 @@
 import { parseISO } from 'date-fns';
+
 import axios, { type ApiResponse } from '../lib/axios';
 
 interface RawCron {
@@ -46,11 +47,12 @@ export const getAllCrons = async (): Promise<ApiResponse<Cron[]>> => {
  *
  * Needs `general.crons-get-cron` permission
  *
- * @param name Cron name
+ * @param cronOrName Cron or Cron name
  *
  * @returns Cron's info
  */
-export const getCron = async (name: Cron['name']): Promise<ApiResponse<Cron>> => {
+export const getCron = async (cronOrName: Cron | Cron['name']): Promise<ApiResponse<Cron>> => {
+  const name = typeof cronOrName === 'string' ? cronOrName : cronOrName.name;
   const { content, ...response } = await axios.$get<RawCron>(`/crons/${name}`);
   return {
     ...response,
@@ -63,11 +65,12 @@ export const getCron = async (name: Cron['name']): Promise<ApiResponse<Cron>> =>
  *
  * Needs `general.crons-put-cron-start` permission
  *
- * @param name Cron name
+ * @param cronOrName Cron or Cron name
  *
  * @returns Cron's info
  */
-export const startCron = async (name: Cron['name']) => {
+export const startCron = async (cronOrName: Cron | Cron['name']) => {
+  const name = typeof cronOrName === 'string' ? cronOrName : cronOrName.name;
   const { content, ...response } = await axios.$put<RawCron>(`/crons/${name}/start`);
   return {
     ...response,
@@ -80,11 +83,12 @@ export const startCron = async (name: Cron['name']) => {
  *
  * Needs `general.crons-put-cron-stop` permission
  *
- * @param name Cron name
+ * @param cronOrName Cron or Cron name
  *
  * @returns Cron's info
  */
-export const stopCron = async (name: Cron['name']) => {
+export const stopCron = async (cronOrName: Cron | Cron['name']) => {
+  const name = typeof cronOrName === 'string' ? cronOrName : cronOrName.name;
   const { content, ...response } = await axios.$put<RawCron>(`/crons/${name}/stop`);
   return {
     ...response,
@@ -97,11 +101,12 @@ export const stopCron = async (name: Cron['name']) => {
  *
  * Needs `general.crons-post-cron-force` permission
  *
- * @param name Cron name
+ * @param cronOrName Cron or Cron name
  *
  * @returns Cron's info
  */
-export const forceCron = async (name: Cron['name']) => {
+export const forceCron = async (cronOrName: Cron | Cron['name']) => {
+  const name = typeof cronOrName === 'string' ? cronOrName : cronOrName.name;
   const { content, ...response } = await axios.$post<RawCron>(`/crons/${name}/force`);
   return {
     ...response,
