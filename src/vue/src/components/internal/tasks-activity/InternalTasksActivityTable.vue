@@ -93,15 +93,15 @@
 
 <script lang="ts">
 import { isBefore, parseISO } from 'date-fns';
-import type { history, namespaces, tasks } from '@ezpaarse-project/ezreeport-sdk-js';
+import type { tasksActivity, namespaces, tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent, type PropType } from 'vue';
 import type { DataOptions } from 'vuetify';
 import type { DataTableHeader } from '~/types/vuetify';
 import ezReeportMixin from '~/mixins/ezr';
 
-type AnyHistory = history.History | history.HistoryWithTask;
+type AnyActivity = tasksActivity.Activity | tasksActivity.ActivityWithTask;
 
-interface HistoryItem {
+interface ActivityItem {
   id: string,
   type: {
     text: string,
@@ -113,7 +113,7 @@ interface HistoryItem {
     value: Date,
     label: string,
   },
-  task?: history.HistoryWithTask['task'],
+  task?: tasksActivity.ActivityWithTask['task'],
   namespace?: namespaces.Namespace,
   files?: {
     report?: string,
@@ -127,8 +127,8 @@ const today = new Date();
 export default defineComponent({
   mixins: [ezReeportMixin],
   props: {
-    history: {
-      type: Array as PropType<AnyHistory[]>,
+    activity: {
+      type: Array as PropType<AnyActivity[]>,
       required: true,
     },
     hideTask: {
@@ -173,8 +173,8 @@ export default defineComponent({
     /**
      * Data table headers
      */
-    headers(): DataTableHeader<HistoryItem>[] {
-      const headers: DataTableHeader<HistoryItem>[] = [
+    headers(): DataTableHeader<ActivityItem>[] {
+      const headers: DataTableHeader<ActivityItem>[] = [
         {
           value: 'type',
           text: this.$t('headers.type').toString(),
@@ -188,7 +188,7 @@ export default defineComponent({
         {
           value: 'date',
           text: this.$t('headers.date').toString(),
-          sort: (a: HistoryItem['date'], b: HistoryItem['date']) => a.value.valueOf() - b.value.valueOf(),
+          sort: (a: ActivityItem['date'], b: ActivityItem['date']) => a.value.valueOf() - b.value.valueOf(),
         },
       ];
       if (!this.hideNamespace && this.perms.readOneTask) {
@@ -210,18 +210,18 @@ export default defineComponent({
     /**
      * Data table items
      */
-    items(): HistoryItem[] {
-      return this.history.map(this.parseHistory);
+    items(): ActivityItem[] {
+      return this.activity.map(this.parseActivity);
     },
   },
   methods: {
     /**
-     * Parse history entry into a human readable format
+     * Parse activity entry into a human readable format
      *
-     * @param entry The history entry
+     * @param entry The activity entry
      */
-    parseHistory(entry: AnyHistory) {
-      const type: HistoryItem['type'] = { text: entry.type };
+    parseActivity(entry: AnyActivity) {
+      const type: ActivityItem['type'] = { text: entry.type };
       switch (entry.type) {
         case 'generation-success':
           type.icon = 'mdi-file-outline';
@@ -243,7 +243,7 @@ export default defineComponent({
           break;
       }
 
-      let task: history.HistoryWithTask['task'] | undefined;
+      let task: tasksActivity.ActivityWithTask['task'] | undefined;
       let namespace: namespaces.Namespace | undefined;
       if ('task' in entry) {
         task = entry.task;
@@ -266,16 +266,16 @@ export default defineComponent({
       };
     },
     /**
-     * Fetch file linked to an history entry
+     * Fetch file linked to an activity entry
      *
-     * @param entry The history entry
+     * @param entry The activity entry
      * @param type The type of file
      */
     async fetchFile(
-      item: HistoryItem,
-      type: keyof Required<HistoryItem>['files'],
+      item: ActivityItem,
+      type: keyof Required<ActivityItem>['files'],
     ): Promise<{ blob: Blob, fileName: string } | undefined> {
-      const entry = this.history.find(({ id }) => id === item.id);
+      const entry = this.activity.find(({ id }) => id === item.id);
       // Check if file is linked
       if (!entry || !item.files?.[type]) {
         return undefined;
@@ -300,12 +300,12 @@ export default defineComponent({
       return { blob, fileName: item.files[type] ?? '' };
     },
     /**
-     * Download file linked to an history entry
+     * Download file linked to an activity entry
      *
-     * @param entry The history entry
+     * @param entry The activity entry
      * @param type The type of file
      */
-    async downloadFile(item: HistoryItem, type: 'report' | 'detail' | 'debug') {
+    async downloadFile(item: ActivityItem, type: 'report' | 'detail' | 'debug') {
       this.loading = true;
       try {
         const res = await this.fetchFile(item, type);

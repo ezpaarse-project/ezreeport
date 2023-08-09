@@ -19,10 +19,10 @@
           />
         </LoadingToolbar>
 
-        <InternalHistoryTable
-          :history="history"
+        <InternalTaskActivityTable
+          :activity="tasksActivity"
           :options="options"
-          class="history-table"
+          class="tasksActivity-table"
         />
 
         <v-data-footer
@@ -36,7 +36,7 @@
 </template>
 
 <script lang="ts">
-import type { history } from '@ezpaarse-project/ezreeport-sdk-js';
+import type { tasksActivity } from '@ezpaarse-project/ezreeport-sdk-js';
 import { type PropType, defineComponent } from 'vue';
 import { DataOptions, DataPagination } from 'vuetify';
 import ezReeportMixin from '~/mixins/ezr';
@@ -68,7 +68,7 @@ export default defineComponent({
     lastIds: {} as Record<number, string | undefined>,
 
     currentNamespace: '',
-    history: [] as history.HistoryWithTask[],
+    tasksActivity: [] as tasksActivity.ActivityWithTask[],
 
     loading: false,
     error: '',
@@ -77,7 +77,7 @@ export default defineComponent({
     perms() {
       const has = this.$ezReeport.hasNamespacedPermission;
       return {
-        readAll: has('history-get', []),
+        readAll: has('tasksActivity-get', []),
       };
     },
     footerOptions: {
@@ -153,7 +153,7 @@ export default defineComponent({
         this.loading = true;
         try {
           // TODO: sort (not supported by API)
-          const { content, meta } = await this.$ezReeport.sdk.history.getAllEntries(
+          const { content, meta } = await this.$ezReeport.sdk.tasksActivity.getAllEntries(
             {
               previous: this.lastIds[page - 1],
               count: this.paginationData.itemsPerPage,
@@ -164,7 +164,7 @@ export default defineComponent({
             throw new Error(this.$t('$ezreeport.errors.fetch').toString());
           }
 
-          this.history = content;
+          this.tasksActivity = content;
           this.paginationData.page = page;
           this.paginationData.itemsLength = meta.total;
 
@@ -176,7 +176,7 @@ export default defineComponent({
         }
         this.loading = false;
       } else {
-        this.history = [];
+        this.tasksActivity = [];
       }
     },
   },
@@ -184,7 +184,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.history-table::v-deep .v-data-table {
+.tasksActivity-table::v-deep .v-data-table {
   border-top-left-radius: 0;
     border-top-right-radius: 0;
 }

@@ -16,13 +16,17 @@
   "advanced_parameters": "Paramètres avancés",
   "show_json": "Afficher en JSON",
   "settings": "Paramètres",
+  "preview": "Prévisualisation",
+  "unknown": "Inconnu",
 
   "tasks": {
     "name": "Nom du rapport",
     "targets": "Destinataires",
     "dates": "Dates",
+    "recurrence": "Fréquence",
     "lastRun": "Dernière itération",
     "nextRun": "Prochaine itération",
+    "status": "Statut",
     "enabled": {
       "true": "Actif",
       "false": "Inactif"
@@ -42,7 +46,12 @@
   "templates": {
     "base": "Modèle de base",
     "renderOptions": "Options de rendu",
-    "editor": "Éditeur de pages ({n} page)|Éditeur de pages ({n} pages)"
+    "editor": "Éditeur de pages ({n} page)|Éditeur de pages ({n} pages)",
+
+    "tabs": {
+      "template": "Modèle",
+      "tasks": "Tâches liées"
+    }
   },
 
   "layouts": {
@@ -152,6 +161,7 @@
     "email_format": "Une ou plusieurs addresses ne sont pas valides",
     "json_format": "Le JSON donné n'est pas valide",
     "valid": "La valeur doit être valide",
-    "negative": "La valeur doit être positive"
+    "negative": "La valeur doit être positive",
+    "no_extends": "Impossible de récupérer le modèle de base"
   }
 }

@@ -1,55 +1,138 @@
 <template>
   <v-row class="mx-0">
-    <TemplateDialogRead
-      v-if="taskTemplate && readTemplateDialogShown && perms.readOne"
+    <!-- Preview -->
+    <v-dialog
+      v-if="templateStore.extended && perms.readOne"
       v-model="readTemplateDialogShown"
-      :name="taskTemplate.extends"
-      @input="loadTemplateBackup"
-    />
+    >
+      <v-card>
+        <v-card-title>{{ $t('preview_title', { name: selectedTemplate?.text }) }}</v-card-title>
+
+        <v-card-text>
+          <LayoutPreview
+            :layouts="templateStore.extended.layouts"
+            :grid="templateStore.currentGrid"
+          />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
 
     <v-col style="position: relative">
       <v-row>
         <!-- Global options -->
         <v-col>
-          <v-select
-            v-if="taskTemplate"
-            :value="taskTemplate.extends"
-            :label="$t('$ezreeport.templates.base')"
-            :items="templateStore.available || [taskTemplate.extends]"
-            :readonly="loading"
-            item-value="name"
-            item-text="name"
-            @change="onTemplateUpdate({ extends: $event })"
-          >
-            <template #append-outer>
-              <v-btn v-if="perms.readOne" @click="openBaseDialog()">
-                {{ $t('$ezreeport.open') }}
-              </v-btn>
-            </template>
-          </v-select>
+          <div class="d-flex align-center">
+            <v-tooltip v-if="taskTemplate" top>
+              <template #activator="{ attrs: tipAttrs, on: tipOn }">
+                <div
+                  style="flex: 1"
+                  v-bind="lastExtended ? tipAttrs : undefined"
+                  v-on="lastExtended ? tipOn : undefined"
+                >
+                  <v-select
+                    :value="lastExtended?.id || templateStore.extendedId"
+                    :label="$t('$ezreeport.templates.base')"
+                    :items="availableTemplates || [templateStore.extendedId]"
+                    :readonly="loading"
+                    :disabled="!!lastExtended"
+                    outlined
+                    class="mt-2"
+                    @change="onExtendedUpdate"
+                  >
+                    <template #item="{ item, on, attrs }">
+                      <v-list-item v-bind="attrs" v-on="on">
+                        <v-list-item-content>
+                          <v-list-item-title>{{ item.text }}</v-list-item-title>
+                          <v-list-item-subtitle>
+                            <MiniTagsDetail :model-value="item.tags" />
+                          </v-list-item-subtitle>
+                        </v-list-item-content>
+                      </v-list-item>
+                    </template>
 
-          <div class="d-flex" style="gap: 1rem">
-            <v-text-field
-              v-if="taskTemplate"
-              :value="templateStore.currentFetchOptions?.index"
-              :label="$t('$ezreeport.fetchOptions.index').toString()"
-              :rules="rules.index"
-              dense
-              class="pt-4"
-              @input="onFetchOptionUpdate({ index: $event || undefined })"
-            />
+                    <template #selection="{ item, on, attrs }">
+                      <v-list-item v-bind="attrs" v-on="on">
+                        <v-list-item-content>
+                          <v-list-item-title>
+                            {{ item.text }}
 
-            <v-text-field
-              :value="templateStore.currentFetchOptions?.dateField"
-              :label="$t('$ezreeport.fetchOptions.dateField').toString()"
-              :rules="rules.dateField"
-              :placeholder="templateStore.extended?.fetchOptions?.dateField"
-              :persistent-placeholder="!!taskTemplate"
-              dense
-              class="pt-4"
-              @input="onFetchOptionUpdate({ dateField: $event || undefined })"
-            />
+                            <i v-if="!item.found" class="text--secondary">
+                              {{ $t('deleted_base') }}
+                            </i>
+                          </v-list-item-title>
+                          <v-list-item-subtitle>
+                            <MiniTagsDetail :model-value="item.tags" />
+                          </v-list-item-subtitle>
+                        </v-list-item-content>
+                      </v-list-item>
+                    </template>
+                  </v-select>
+                </div>
+              </template>
+
+              {{ $t('tooltips.no_unlink_extends') }}
+            </v-tooltip>
+
+            <div class="mb-6 ml-3">
+              <v-tooltip left v-if="!noLink">
+                <template #activator="{ attrs, on }">
+                  <span v-bind="attrs" v-on="on">
+                    <v-btn
+                      :disabled="isModified"
+                      icon
+                      @click="$emit('update:link', !linked.value)"
+                    >
+                      <v-icon v-if="linked.value" color="success">mdi-link-variant</v-icon>
+                      <v-icon v-else color="error">mdi-link-variant-off</v-icon>
+                    </v-btn>
+                  </span>
+                </template>
+
+                {{ linked.tooltip }}
+              </v-tooltip>
+
+              <v-tooltip top v-if="perms.readOne">
+                <template #activator="{ attrs, on }">
+                  <v-btn
+                    icon
+                    @click="openBaseDialog()"
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    <v-icon>mdi-eye</v-icon>
+                  </v-btn>
+                </template>
+
+                {{ $t('tooltips.preview') }}
+              </v-tooltip>
+            </div>
           </div>
+
+          <v-row>
+            <v-col v-if="taskTemplate">
+              <v-text-field
+                :value="templateStore.currentFetchOptions?.index"
+                :label="$t('$ezreeport.fetchOptions.index').toString()"
+                :rules="rules.index"
+                dense
+                class="pt-4"
+                @input="onFetchOptionUpdate({ index: $event || undefined })"
+              />
+            </v-col>
+
+            <v-col>
+              <v-text-field
+                :value="templateStore.currentFetchOptions?.dateField"
+                :label="$t('$ezreeport.fetchOptions.dateField').toString()"
+                :rules="rules.dateField"
+                :placeholder="templateStore.extended?.fetchOptions?.dateField"
+                :persistent-placeholder="!!taskTemplate"
+                dense
+                class="pt-4"
+                @input="onFetchOptionUpdate({ dateField: $event || undefined })"
+              />
+            </v-col>
+          </v-row>
 
           <CustomSection
             :label="$t('$ezreeport.fetchOptions.filters').toString()"
@@ -180,8 +263,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, type PropType } from 'vue';
 import { cloneDeep, merge, pick } from 'lodash';
+import type { tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { type AnyCustomTemplate, type CustomTemplate, type CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
 import useTemplateStore, {
@@ -195,6 +279,23 @@ import type ElasticFilterBuilderConstructor from '../../utils/elastic/filters/El
 type ElasticFilterBuilder = InstanceType<typeof ElasticFilterBuilderConstructor>;
 
 export default defineComponent({
+  props: {
+    lastExtended: {
+      type: Object as PropType<tasks.FullTask['lastExtended']>,
+      default: () => undefined,
+    },
+    isModified: {
+      type: Boolean,
+      default: false,
+    },
+    noLink: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: {
+    'update:link': (value: boolean) => value !== undefined,
+  },
   mixins: [ezReeportMixin],
   setup() {
     const templateStore = useTemplateStore();
@@ -231,12 +332,67 @@ export default defineComponent({
       },
     },
     /**
+     * Options for selecting template
+     */
+    availableTemplates() {
+      const templates = this.templateStore.available.map((t) => ({
+        value: t.id,
+        text: t.name,
+        tags: t.tags,
+        found: true,
+      }));
+
+      if (
+        this.lastExtended
+        && !templates.some(({ value }) => value === this.lastExtended?.id)
+      ) {
+        templates.push({
+          value: this.lastExtended.id,
+          text: this.lastExtended.name,
+          tags: this.lastExtended.tags,
+          found: false,
+        });
+      }
+
+      return templates;
+    },
+    /**
+     * Selected option
+     */
+    selectedTemplate() {
+      return this.availableTemplates.find(({ value }) => value === this.templateStore.extendedId);
+    },
+    /**
+     * Infos about link between template and task
+     */
+    linked(): { value: boolean, tooltip: string } {
+      if (this.noLink) {
+        return { value: true, tooltip: '' };
+      }
+
+      if (this.lastExtended) {
+        return {
+          value: false,
+          tooltip: this.$t(
+            this.isModified ? 'tooltips.no_save_unlink' : 'tooltips.unlink',
+          ).toString(),
+        };
+      }
+
+      return {
+        value: true,
+        tooltip: this.$t(
+          this.isModified ? 'tooltips.no_save_link' : 'tooltips.link',
+        ).toString(),
+      };
+    },
+    /**
      * User permissions
      */
     perms() {
       const has = this.$ezReeport.hasGeneralPermission;
       return {
-        readOne: has('templates-get-name(*)'),
+        readOne: has('templates-get-template'),
       };
     },
     /**
@@ -340,6 +496,7 @@ export default defineComponent({
   },
   mounted() {
     this.initEditorCollapsed();
+    this.templateStore.refreshAvailableTemplates();
   },
   methods: {
     /**
@@ -361,6 +518,16 @@ export default defineComponent({
       this.currentTemplateBackup = cloneDeep(this.template);
       await this.$nextTick();
       this.readTemplateDialogShown = true;
+    },
+    /**
+     * Update in store the extended template
+     *
+     * @param id The id of the extended template
+     */
+    async onExtendedUpdate(id: string) {
+      this.loading = true;
+      await this.templateStore.SET_EXTENDED(id);
+      this.loading = false;
     },
     /**
      * Called when the template is updated
@@ -403,13 +570,32 @@ export default defineComponent({
         },
       });
     },
-    loadTemplateBackup() {
-      this.template = cloneDeep(this.currentTemplateBackup);
-      this.currentTemplateBackup = undefined;
-    },
   },
 });
 </script>
 
 <style lang="scss" scoped>
 </style>
+
+<i18n lang="yaml">
+en:
+  deleted_base: '(deleted)'
+  preview_title: 'Preview of {name}'
+  tooltips:
+    preview: 'See template'
+    link: 'The report is linked to the template, click to unlink'
+    unlink: 'The report is unlinked to the template, click to link'
+    no_save_link: 'You must save your changes before trying to unlink the template'
+    no_save_unlink: 'You must save your changes before trying to link the template'
+    no_unlink_extends: 'You must link the template before changing it'
+fr:
+  deleted_base: '(supprimé)'
+  preview_title: 'Prévisualisation de {name}'
+  tooltips:
+    preview: 'Voir le modèle'
+    link: 'Le rapport est lié au modèle, cliquer pour le délier'
+    unlink: 'Le rapport est délié au modèle, cliquer pour le re-lier'
+    no_save_link: "Vous devez sauvegarder vos modifications avant d'essayer de délier le modèle"
+    no_save_unlink: "Vous devez sauvegarder vos modifications avant d'essayer de lier le modèle"
+    no_unlink_extends: 'Vous devez lier le modèle avant de pouvoir le changer'
+</i18n>

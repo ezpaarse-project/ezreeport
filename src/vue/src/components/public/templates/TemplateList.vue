@@ -2,18 +2,19 @@
   <v-col v-if="perms.readAll">
     <TemplateProvider>
       <TemplateDialogRead
-        v-if="perms.readOne && focusedName && readTemplateDialogShown"
+        v-if="perms.readOne && focusedId && readTemplateDialogShown"
         v-model="readTemplateDialogShown"
-        :name="focusedName"
+        :id="focusedId"
         fullscreen
       />
 
       <TemplateDialogUpdate
-        v-if="perms.update && focusedName && updateTemplateDialogShown"
+        v-if="perms.update && focusedId && updateTemplateDialogShown"
         v-model="updateTemplateDialogShown"
-        :name="focusedName"
+        :id="focusedId"
         :available-tags="availableTags"
         fullscreen
+        @updated="fetch"
       />
 
       <TemplateDialogCreate
@@ -97,24 +98,7 @@
           </v-list-item-title>
 
           <v-list-item-subtitle>
-            <ReadableChip
-              v-for="tag in tagMap[template.name].value"
-              :key="tag.name"
-              :color="tag.color"
-              small
-              class="mr-2"
-              style="pointer-events: none;"
-            >
-              {{ tag.name }}
-            </ReadableChip>
-
-            <v-tooltip v-if="tagMap[template.name].tooltip" top>
-              <template #activator="{ attrs, on }">
-                <v-icon v-bind="attrs" v-on="on">mdi-dots-horizontal</v-icon>
-              </template>
-
-              <span>{{ tagMap[template.name].tooltip }}</span>
-            </v-tooltip>
+            <MiniTagsDetail :model-value="template.tags" />
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
@@ -128,10 +112,7 @@
 import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
 import ezReeportMixin from '~/mixins/ezr';
-import type { Tag } from '~/components/internal/templates/forms/TagsForm.vue';
 import type TemplateDialogCreate from '~/components/internal/templates/dialogs/TemplateDialogCreate.vue';
-
-const MAX_TAGS_SHOWN = 4;
 
 export default defineComponent({
   mixins: [ezReeportMixin],
@@ -143,7 +124,7 @@ export default defineComponent({
     deleteTemplatePopoverShown: false,
     deleteTemplatePopoverCoords: { x: 0, y: 0 },
 
-    focusedName: '',
+    focusedId: '',
     templates: [] as templates.Template[],
 
     loading: false,
@@ -157,36 +138,23 @@ export default defineComponent({
       const has = this.$ezReeport.hasGeneralPermission;
       return {
         readAll: has('templates-get'),
-        readOne: has('templates-get-name(*)'),
-        update: has('templates-put-name(*)'),
+        readOne: has('templates-get-template'),
+        update: has('templates-put-template'),
         create: has('templates-post'),
-        delete: has('templates-delete-name(*)'),
+        delete: has('templates-delete-template'),
       };
     },
     /**
      * Focused template
      */
     focusedTemplate() {
-      return this.templates.find(({ name }) => name === this.focusedName);
+      return this.templates.find(({ name }) => name === this.focusedId);
     },
     /**
      * List of all available tags
      */
     availableTags() {
       return [...new Set(this.templates.flatMap(({ tags }) => tags ?? []))];
-    },
-    tagMap() {
-      const map = new Map<string, { value: Tag[], tooltip?: string }>();
-
-      for (let i = 0; i < this.templates.length; i += 1) {
-        const { tags, name } = this.templates[i];
-        map.set(name, {
-          value: tags.slice(0, MAX_TAGS_SHOWN),
-          tooltip: tags.length > MAX_TAGS_SHOWN ? tags.slice(MAX_TAGS_SHOWN).map((t) => t.name).join(', ') : undefined,
-        });
-      }
-
-      return Object.fromEntries(map);
     },
   },
   watch: {
@@ -252,7 +220,7 @@ export default defineComponent({
     /**
      * Prepare and open read dialog
      */
-    async showTemplateDialog({ name }: templates.Template) {
+    async showTemplateDialog({ id }: templates.Template) {
       if (
         !this.perms.readOne
         && !this.perms.update
@@ -260,7 +228,7 @@ export default defineComponent({
         return;
       }
 
-      this.focusedName = name;
+      this.focusedId = id;
       await this.$nextTick();
       if (this.perms.update) {
         this.updateTemplateDialogShown = true;
@@ -272,7 +240,7 @@ export default defineComponent({
      * Prepare and show template creation dialog
      */
     async showCreateDialog() {
-      this.focusedName = '';
+      this.focusedId = '';
       await this.$nextTick();
       this.createTemplateDialogShown = true;
     },
@@ -282,7 +250,7 @@ export default defineComponent({
      * @param item The item
      */
     async showEditDialog({ name }: templates.Template) {
-      this.focusedName = name;
+      this.focusedId = name;
       await this.$nextTick();
       this.updateTemplateDialogShown = true;
     },
@@ -293,7 +261,7 @@ export default defineComponent({
      * @param event The base event
      */
     async showDeletePopover({ name }: templates.Template, event: MouseEvent) {
-      this.focusedName = name;
+      this.focusedId = name;
       this.deleteTemplatePopoverCoords = {
         x: event.clientX,
         y: event.clientY,

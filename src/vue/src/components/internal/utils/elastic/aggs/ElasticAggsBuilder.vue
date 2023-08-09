@@ -102,7 +102,7 @@ export default defineComponent({
 
         return {
           name: agg.name || `agg${i}`,
-          type: this.$t(type ? `$ezreeport.fetchOptions.agg_types.${type}` : 'unknown'),
+          type: this.$t(type ? `$ezreeport.fetchOptions.agg_types.${type}` : '$ezreeport.unknown'),
           field: agg[type || '']?.field || 'unknown',
         };
       });

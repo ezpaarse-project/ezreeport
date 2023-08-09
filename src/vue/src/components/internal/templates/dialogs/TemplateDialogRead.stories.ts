@@ -6,7 +6,7 @@ const meta: Meta<typeof TemplateDialogRead> = {
   component: TemplateDialogRead,
   args: {
     value: true,
-    name: 'scratch',
+    id: 'scratch',
   },
   argTypes: {
     input: { action: 'input' },

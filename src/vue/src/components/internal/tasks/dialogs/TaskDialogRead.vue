@@ -107,11 +107,80 @@
           </v-tab-item>
 
           <v-tab-item>
-            <InternalHistoryTable v-if="task" :history="task.history" hide-task hide-namespace />
+            <InternalTaskActivityTable
+              v-if="task"
+              :activity="task.activity"
+              hide-task
+              hide-namespace
+            />
           </v-tab-item>
 
           <v-tab-item>
-            <TemplateDetail v-if="task" />
+            <v-select
+              :value="task?.lastExtended?.id || task?.extends.id || ''"
+              :label="$t('$ezreeport.templates.base')"
+              :items="availableTemplates"
+              readonly
+              outlined
+              class="mt-2"
+            >
+              <template #append-outer>
+                <v-icon v-if="!task?.lastExtended" color="success">mdi-link-variant</v-icon>
+                <v-icon v-else color="error">mdi-link-variant-off</v-icon>
+              </template>
+
+              <template #selection="{ item, on, attrs }">
+                <v-list-item v-bind="attrs" v-on="on">
+                  <v-list-item-content>
+                    <v-list-item-title>{{ item.text }}</v-list-item-title>
+                    <v-list-item-subtitle>
+                      <MiniTagsDetail :model-value="item.tags" />
+                    </v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+              </template>
+            </v-select>
+
+            <v-row>
+              <v-col>
+                <v-text-field
+                  :value="templateStore.currentFetchOptions?.index"
+                  :label="$t('$ezreeport.fetchOptions.index').toString()"
+                  readonly
+                  dense
+                  class="pt-4"
+                />
+              </v-col>
+
+              <v-col>
+                <v-text-field
+                  :value="templateStore.currentFetchOptions?.dateField"
+                  :label="$t('$ezreeport.fetchOptions.dateField').toString()"
+                  readonly
+                  dense
+                  class="pt-4"
+                />
+              </v-col>
+            </v-row>
+
+            <CustomSection
+              :label="$t('$ezreeport.fetchOptions.filters').toString()"
+              :collapse-disabled="(templateStore.currentFetchOptions?.filtersCount ?? 0) <= 0"
+              collapsable
+            >
+              <ElasticFilterBuilder
+                ref="filterBuilder"
+                :value="templateStore.currentFetchOptions?.filters ?? {}"
+              />
+            </CustomSection>
+
+            <CustomSection :label="$t('$ezreeport.preview').toString()">
+              <LayoutPreview
+                :layouts="templateStore.currentLayouts"
+                :grid="templateStore.currentGrid"
+                outlined
+              />
+            </CustomSection>
           </v-tab-item>
         </v-tabs-items>
 
@@ -208,6 +277,29 @@ export default defineComponent({
         lastRun: this.task?.lastRun?.toLocaleString(),
       };
     },
+    availableTemplates() {
+      if (!this.task) {
+        return [];
+      }
+
+      if (this.task.lastExtended) {
+        return [
+          {
+            value: this.task.lastExtended.id,
+            text: this.task.lastExtended.name,
+            tags: this.task.lastExtended.tags,
+          },
+        ];
+      }
+
+      return [
+        {
+          value: this.task.extends.id,
+          text: this.task.extends.name,
+          tags: this.task.extends.tags,
+        },
+      ];
+    },
   },
   watch: {
     // eslint-disable-next-line func-names
@@ -243,7 +335,7 @@ export default defineComponent({
         }
 
         const { template, ...data } = content;
-        this.templateStore.SET_CURRENT(template);
+        this.templateStore.SET_CURRENT(template, data.extends.id);
 
         this.task = data;
         this.error = '';
@@ -277,7 +369,7 @@ export default defineComponent({
         }
 
         const { template, ...data } = content;
-        this.templateStore.SET_CURRENT(template);
+        this.templateStore.SET_CURRENT(template, data.extends.id);
 
         this.task = data;
         this.error = '';

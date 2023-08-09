@@ -8,9 +8,13 @@
   >
     <v-card :loading="loading" :tile="fullscreen">
       <v-card-title>
-        <template v-if="data">
-          {{ data.name }}
-        </template>
+        <v-skeleton-loader v-if="!data" type="card-heading" width="500" />
+        <v-text-field
+          v-else
+          v-model="data.name"
+          :rules="rules.name"
+          :label="$t('headers.name')"
+        />
 
         <v-spacer />
 
@@ -19,13 +23,61 @@
         </v-btn>
       </v-card-title>
 
+      <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
+        <v-tab>
+          {{ $t(`$ezreeport.templates.tabs.template`) }}
+          <v-icon small class="ml-1">mdi-arrow-expand</v-icon>
+
+          <v-tooltip
+            top
+            v-if="templateValidation !== true"
+            color="warning"
+          >
+            <template #activator="{ attrs, on }">
+              <v-icon
+                color="warning"
+                small
+                class="ml-1"
+                v-bind="attrs"
+                v-on="on"
+              >
+                mdi-alert
+              </v-icon>
+            </template>
+
+            <span>{{ templateValidation }}</span>
+          </v-tooltip>
+        </v-tab>
+
+        <v-tab>
+          {{ $t(`$ezreeport.templates.tabs.tasks`) }}
+          <v-icon small class="ml-1">mdi-arrow-expand</v-icon>
+        </v-tab>
+      </v-tabs>
+
       <v-divider />
 
       <v-card-text style="position: relative">
-        <template v-if="data">
-          <TagsForm v-model="data.tags" :availableTags="availableTags" />
+        <v-progress-circular
+          v-if="!data"
+          style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"
+          indeterminate
+          size="50"
+        />
+        <template v-else>
+          <v-tabs-items v-model="currentTab" class="mt-2">
+            <v-tab-item>
+              <div class="pa-2">
+                <TagsForm v-model="data.tags" :availableTags="availableTags" />
+              </div>
 
-          <TemplateForm />
+              <TemplateForm />
+            </v-tab-item>
+
+            <v-tab-item>
+              <SimpleTaskTable :value="data.tasks" />
+            </v-tab-item>
+          </v-tabs-items>
         </template>
 
         <ErrorOverlay v-model="error" />
@@ -71,7 +123,7 @@ export default defineComponent({
       type: Boolean,
       required: true,
     },
-    name: {
+    id: {
       type: String,
       required: true,
     },
@@ -98,18 +150,30 @@ export default defineComponent({
     dataHash: '',
     bodyHash: '',
 
+    currentTab: 0,
+
     error: '',
     loading: false,
   }),
   computed: {
+    /**
+     * Validation rules
+     */
+    rules() {
+      return {
+        name: [
+          (v: string) => !!v || this.$t('errors.empty'),
+        ],
+      };
+    },
     /**
      * User permissions
      */
     perms() {
       const has = this.$ezReeport.hasGeneralPermission;
       return {
-        readOne: has('templates-get-name(*)'),
-        update: has('templates-put-name(*)'),
+        readOne: has('templates-get-template'),
+        update: has('templates-put-template'),
       };
     },
     /**
@@ -134,7 +198,31 @@ export default defineComponent({
         return false;
       }
 
-      return hash(this.data) !== this.dataHash;
+      return this.dataHash !== this.hashData(this.data);
+    },
+    /**
+     * Name validation, which is outside of form
+     */
+    valid() {
+      return this.rules.name.every((rule) => rule(this.data?.name ?? '') === true);
+    },
+    /**
+     * Is task's template valid
+     */
+    templateValidation(): true | string {
+      const valid = this.templateStore.isCurrentValid;
+      if (valid === true) {
+        return true;
+      }
+
+      let err = this.$t(valid.i18nKey);
+      if (valid.figure !== undefined) {
+        err = this.$t('$ezreeport.figures.errors._detail', { valid: err, at: valid.figure + 1 });
+      }
+      if (valid.layout !== undefined) {
+        err = this.$t('$ezreeport.layouts.errors._detail', { valid: err, at: valid.layout + 1 });
+      }
+      return err.toString();
     },
   },
   watch: {
@@ -154,6 +242,15 @@ export default defineComponent({
     this.fetch();
   },
   methods: {
+    hashData: (data: object) => {
+      const excludedKeys = new Set<keyof BodyLessFullTemplate>(['tasks']);
+      return hash(
+        data,
+        {
+          excludeKeys: (key: string) => excludedKeys.has(key as keyof BodyLessFullTemplate),
+        },
+      );
+    },
     /**
      * Fetch template
      */
@@ -165,7 +262,7 @@ export default defineComponent({
 
       this.loading = true;
       try {
-        const { content } = await this.$ezReeport.sdk.templates.getTemplate(this.name);
+        const { content } = await this.$ezReeport.sdk.templates.getTemplate(this.id);
         if (!content) {
           throw new Error(this.$t('$ezreeport.errors.fetch').toString());
         }
@@ -175,7 +272,7 @@ export default defineComponent({
         this.data = data;
 
         this.bodyHash = this.templateStore.current ? hash(this.templateStore.current) : '';
-        this.dataHash = hash(data);
+        this.dataHash = this.hashData(data);
 
         this.error = '';
       } catch (error) {
@@ -191,7 +288,7 @@ export default defineComponent({
         return;
       }
 
-      if (!this.name || !this.perms.update) {
+      if (!this.id || !this.perms.update) {
         this.$emit('input', false);
         return;
       }
@@ -204,9 +301,10 @@ export default defineComponent({
       this.loading = true;
       try {
         const { content } = await this.$ezReeport.sdk.templates.upsertTemplate(
-          this.data.name,
           {
+            id: this.data.id,
             body,
+            name: this.data.name,
             tags: this.data.tags ?? [],
           },
         );
@@ -218,7 +316,7 @@ export default defineComponent({
         this.data = data;
 
         this.bodyHash = this.templateStore.current ? hash(this.templateStore.current) : '';
-        this.dataHash = hash(data);
+        this.dataHash = this.hashData(data);
 
         this.error = '';
       } catch (error) {

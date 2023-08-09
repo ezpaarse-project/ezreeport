@@ -2,39 +2,85 @@
   <v-dialog
     :value="value"
     :fullscreen="fullscreen"
-    :transition="fullscreen ? 'ezr_dialog-right-transition' : undefined"
-    scrollable
     @input="$emit('input', $event)"
   >
     <v-card :loading="loading" :tile="fullscreen">
       <v-card-title>
-        <template v-if="data">
+        <v-skeleton-loader v-if="!data" type="card-heading" width="500" />
+        <template v-else>
           {{ data.name }}
         </template>
 
         <v-spacer />
-
-        <RefreshButton
-          :loading="loading"
-          :tooltip="$t('refresh-tooltip').toString()"
-          @click="fetch"
-        />
 
         <v-btn icon text @click="$emit('input', false)">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
 
+      <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
+        <v-tab>
+          {{ $t(`$ezreeport.templates.tabs.template`) }}
+          <v-icon small class="ml-1">mdi-arrow-expand</v-icon>
+        </v-tab>
+
+        <v-tab>
+          {{ $t(`$ezreeport.templates.tabs.tasks`) }}
+          <v-icon small class="ml-1">mdi-arrow-expand</v-icon>
+        </v-tab>
+      </v-tabs>
+
       <v-divider />
 
-      <v-card-text style="position: relative">
-        <template v-if="data">
-          <TagsDetail v-if="data.tags.length > 0" :value="data.tags" />
+      <v-card-text>
+        <v-progress-circular
+          v-if="!data"
+          style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"
+          indeterminate
+          size="50"
+        />
+        <template v-else>
+          <v-tabs-items v-model="currentTab" class="mt-2">
+            <v-tab-item>
+              <TagsDetail :value="data.tags" />
 
-          <TemplateDetail />
+              <v-row>
+                <v-col>
+                  <v-text-field
+                    :value="templateStore.currentFetchOptions?.dateField"
+                    :label="$t('$ezreeport.fetchOptions.dateField').toString()"
+                    readonly
+                    dense
+                    class="pt-4"
+                  />
+                </v-col>
+              </v-row>
+
+              <CustomSection
+                :label="$t('$ezreeport.fetchOptions.filters').toString()"
+                :collapse-disabled="(templateStore.currentFetchOptions?.filtersCount ?? 0) <= 0"
+                collapsable
+              >
+                <ElasticFilterBuilder
+                  ref="filterBuilder"
+                  :value="templateStore.currentFetchOptions?.filters ?? {}"
+                />
+              </CustomSection>
+
+              <CustomSection :label="$t('$ezreeport.preview').toString()">
+                <LayoutPreview
+                  :layouts="templateStore.currentLayouts"
+                  :grid="templateStore.currentGrid"
+                  outlined
+                />
+              </CustomSection>
+            </v-tab-item>
+
+            <v-tab-item>
+              <SimpleTaskTable :value="data.tasks" />
+            </v-tab-item>
+          </v-tabs-items>
         </template>
-
-        <ErrorOverlay v-model="error" />
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -55,7 +101,7 @@ export default defineComponent({
       type: Boolean,
       required: true,
     },
-    name: {
+    id: {
       type: String,
       required: true,
     },
@@ -75,6 +121,8 @@ export default defineComponent({
   data: () => ({
     data: undefined as BodyLessFullTemplate | undefined,
 
+    currentTab: 0,
+
     error: '',
     loading: false,
   }),
@@ -85,7 +133,7 @@ export default defineComponent({
     perms() {
       const has = this.$ezReeport.hasGeneralPermission;
       return {
-        readOne: has('templates-get-name(*)'),
+        readOne: has('templates-get-template'),
       };
     },
   },
@@ -117,7 +165,7 @@ export default defineComponent({
 
       this.loading = true;
       try {
-        const { content } = await this.$ezReeport.sdk.templates.getTemplate(this.name);
+        const { content } = await this.$ezReeport.sdk.templates.getTemplate(this.id);
         if (!content) {
           throw new Error(this.$t('$ezreeport.errors.fetch').toString());
         }

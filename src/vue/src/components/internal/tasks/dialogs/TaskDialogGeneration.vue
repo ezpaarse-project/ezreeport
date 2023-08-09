@@ -45,7 +45,9 @@
                 </i18n>
                 <i18n path="error_details.message" tag="span" class="ml-1">
                   <template #message>
-                    <span class="font-weight-bold">{{ result.detail.error.message }}</span>
+                    <div>
+                      <code>{{ result.detail.error.message }}</code>
+                    </div>
                   </template>
                 </i18n>
               </div>
@@ -343,7 +345,6 @@ export default defineComponent({
     /**
      * Download file
      *
-     * @param entry The history entry
      * @param type The type of file
      */
     async downloadFile(type: 'report' | 'detail' | 'debug') {
@@ -439,7 +440,7 @@ en:
     prod: 'Normal generation'
     test: 'Test generation'
   descriptions:
-    prod: 'The report will be sent to the usual recipients. The generation will be displayed in the history and will update the next iteration date.'
+    prod: 'The report will be sent to the usual recipients. The generation will be displayed in the activity and will update the next iteration date.'
     test: 'The report will be sent to the indicated recipients.'
   errors:
     length: 'Please enter at least 1 address'
@@ -471,7 +472,7 @@ fr:
     prod: 'Génération normale'
     test: 'Génération test'
   descriptions:
-    prod: "Le rapport sera envoyé aux destinataires habituels. La génération sera affichée dans l'historique et mettra à jour la date de prochaine itération."
+    prod: "Le rapport sera envoyé aux destinataires habituels. La génération sera affichée dans l'activité et mettra à jour la date de prochaine itération."
     test: "Le rapport sera envoyé aux destinataires indiqués."
   errors:
     length: 'Veuillez rentrer au moins 1 adresse'
@@ -489,7 +490,7 @@ fr:
   error_details:
     layout: 'Était en train de {type} la page {layout}.'
     figure: "Plus précisément, c'est arrivé sur la visualisation nommée: {figure}."
-    message: 'Est alors survenu: {message}.'
+    message: 'Est alors survenu: {message}'
   files:
     detail: 'Détail (JSON)'
     report: 'Rapport'

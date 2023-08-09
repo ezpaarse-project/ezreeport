@@ -126,7 +126,7 @@
           <v-tab-item>
             <TemplateForm
               v-if="task"
-              :template.sync="task.template"
+              no-link
             />
           </v-tab-item>
         </v-tabs-items>
@@ -166,7 +166,7 @@ import ezReeportMixin from '~/mixins/ezr';
 import useTemplateStore, { isTaskTemplate, mapRulesToVuetify } from '~/stores/template';
 import { tabs, type Tab } from './TaskDialogRead.vue';
 
-type CustomCreateTask = Omit<tasks.FullTask, 'createdAt' | 'id' | 'history' | 'namespace' | 'template'> & {
+type CustomCreateTask = Omit<tasks.FullTask, 'createdAt' | 'id' | 'activity' | 'namespace' | 'template'> & {
   template: CustomTaskTemplate,
   namespace: string;
 };
@@ -294,10 +294,15 @@ export default defineComponent({
      */
     validateMail: (email: string) => isEmail(email),
     init() {
-      this.templateStore.SET_CURRENT({ inserts: [], extends: 'scratch' });
+      if (!this.templateStore.defaultTemplate) {
+        throw new Error(this.$t('$ezreeport.errors.no_extends').toString());
+      }
+
+      this.templateStore.SET_CURRENT({ inserts: [] }, this.templateStore.extendedId);
       this.task = {
         name: '',
-        template: { extends: 'scratch' } as CustomTaskTemplate,
+        template: {},
+        extends: this.templateStore.defaultTemplate,
         targets: [],
         recurrence: 'DAILY' as tasks.Recurrence,
         namespace: '',
@@ -305,21 +310,30 @@ export default defineComponent({
         enabled: true,
       };
     },
-    async openFromTask({ id }: tasks.Task) {
+    async openFromTask(task: tasks.Task) {
       this.$emit('input', true);
 
       this.loading = true;
       try {
-        const { content } = await this.$ezReeport.sdk.tasks.getTask(id);
+        const { content } = await this.$ezReeport.sdk.tasks.getTask(task);
         if (!content) {
           throw new Error(this.$t('$ezreeport.errors.fetch').toString());
         }
 
         const { template, ...data } = content;
-        this.templateStore.SET_CURRENT(template);
+
+        const extended = this.templateStore.available.find((t) => t.id === data.extends.id);
+        if (!extended && !this.templateStore.defaultTemplate) {
+          throw new Error(this.$t('$ezreeport.errors.no_extends').toString());
+        }
+
+        this.templateStore.SET_CURRENT(template, data.extends.id);
+
         this.task = {
           name: '',
-          template: { extends: template.extends } as CustomTaskTemplate,
+          template: {},
+          extends: extended ?? this.templateStore.defaultTemplate ?? {} as tasks.FullTask['extends'],
+          lastExtended: data.lastExtended,
           targets: data.targets,
           recurrence: data.recurrence,
           namespace: data.namespace.id,
@@ -347,7 +361,7 @@ export default defineComponent({
       }
 
       const template = this.templateStore.GET_CURRENT();
-      if (!template || !isTaskTemplate(template)) {
+      if (!template || !isTaskTemplate(template) || !this.templateStore.extendedId) {
         return;
       }
 
@@ -360,6 +374,7 @@ export default defineComponent({
             name: this.task.name,
             namespace: this.task.namespace,
             template,
+            extends: this.templateStore.extendedId,
             targets: this.task.targets,
             recurrence: this.task.recurrence,
             nextRun: parseISO(`${nextRun}T00:00:00.000Z`),

@@ -244,12 +244,10 @@ export default defineComponent({
         return undefined;
       }
       const key = `hints.${this.element.format.type}Format`;
-      const label = this.$t(key).toString();
-      // If 18n was fallback, then hint is not defined
-      if (label === key) {
+      if (this.$te(key)) {
         return undefined;
       }
-      return label;
+      return this.$t(key).toString();
     },
     /**
      * Set of currents key/field used by other metrics

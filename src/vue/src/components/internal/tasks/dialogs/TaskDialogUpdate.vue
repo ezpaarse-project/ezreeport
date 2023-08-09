@@ -13,6 +13,16 @@
       :task="task"
       @generated="fetch()"
     />
+    <TaskDialogLink
+      v-if="task && perms.update"
+      ref="taskDialogLink"
+      :taskId="task.id"
+      :extend-id="task.extends.id"
+      :lastExtendId="task.lastExtended?.id"
+      :defaultId="templateStore.defaultTemplateId"
+      @error="error = $event.message"
+      @success="fetch()"
+    />
 
     <v-card :loading="loading" :tile="tabs[currentTab]?.fullScreen">
       <v-card-title>
@@ -133,15 +143,24 @@
                 </v-col>
               </v-row>
             </v-form>
-
           </v-tab-item>
 
           <v-tab-item>
-            <InternalHistoryTable v-if="task" :history="task.history" hide-task hide-namespace />
+            <InternalTaskActivityTable
+              v-if="task"
+              :activity="task.activity"
+              hide-task
+              hide-namespace
+            />
           </v-tab-item>
 
           <v-tab-item>
-            <TemplateForm v-if="task" />
+            <TemplateForm
+              v-if="task"
+              :last-extended="task.lastExtended"
+              :is-modified="isModified"
+              @update:link="onLinkUpdate"
+            />
           </v-tab-item>
         </v-tabs-items>
 
@@ -191,6 +210,9 @@ import ezReeportMixin from '~/mixins/ezr';
 import useTemplateStore, { isTaskTemplate, mapRulesToVuetify } from '~/stores/template';
 
 import { tabs, type Tab } from './TaskDialogRead.vue';
+import type TaskDialogLinkConstructor from './TaskDialogLink.vue';
+
+type TaskDialogLink = InstanceType<typeof TaskDialogLinkConstructor>;
 
 type TemplateLessTask = Omit<tasks.FullTask, 'template'>;
 
@@ -314,8 +336,12 @@ export default defineComponent({
      * If template was modified since last fetch
      */
     isTemplateModified() {
-      if (!this.templateStore.current) {
+      if (!this.templateStore.current || !this.task) {
         return false;
+      }
+
+      if (this.templateStore.extendedId !== this.task.extends.id) {
+        return true;
       }
 
       return hash(this.templateStore.current) !== this.templateHash;
@@ -376,7 +402,7 @@ export default defineComponent({
 
         // Add additional data
         const { template, ...data } = content;
-        this.templateStore.SET_CURRENT(template);
+        this.templateStore.SET_CURRENT(template, data.extends.id);
         this.task = data;
 
         this.taskHash = hash(data);
@@ -402,7 +428,7 @@ export default defineComponent({
       }
 
       const template = this.templateStore.GET_CURRENT();
-      if (!template || !isTaskTemplate(template)) {
+      if (!template || !isTaskTemplate(template) || !this.templateStore.extendedId) {
         return;
       }
 
@@ -411,10 +437,11 @@ export default defineComponent({
         const nextRun = formatISO(this.task.nextRun, { representation: 'date' });
 
         const { content } = await this.$ezReeport.sdk.tasks.upsertTask(
-          this.task.id,
           {
+            id: this.task.id,
             name: this.task.name,
             template,
+            extends: this.templateStore.extendedId,
             targets: this.task.targets,
             recurrence: this.task.recurrence,
             nextRun: parseISO(`${nextRun}T00:00:00.000Z`),
@@ -446,6 +473,9 @@ export default defineComponent({
       }
 
       this.generationDialogShown = true;
+    },
+    onLinkUpdate(willBeLinked: boolean) {
+      (this.$refs.taskDialogLink as TaskDialogLink)?.open(willBeLinked);
     },
   },
 });

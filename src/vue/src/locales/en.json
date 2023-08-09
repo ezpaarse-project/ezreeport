@@ -16,13 +16,17 @@
   "advanced_parameters": "Advanced parameters",
   "show_json": "Show JSON",
   "settings": "Settings",
+  "preview": "Preview",
+  "unknown": "Unknown",
 
   "tasks": {
     "name": "Report name",
     "targets": "Receivers",
     "dates": "Dates",
+    "recurrence": "Recurrence",
     "lastRun": "Last run",
     "nextRun": "Next run",
+    "status": "Statut",
     "enabled": {
       "true": "Active",
       "false": "Inactive"
@@ -42,7 +46,12 @@
   "templates": {
     "base": "Base template",
     "renderOptions": "Render options",
-    "editor": "Page editor ({n} page)|Page editor ({n} pages)"
+    "editor": "Page editor ({n} page)|Page editor ({n} pages)",
+
+    "tabs": {
+      "template": "Template",
+      "tasks": "Linked tasks"
+    }
   },
 
   "layouts": {
@@ -152,6 +161,7 @@
     "email_format": "One or more address aren't valid",
     "json_format": "Given JSON isn't valid",
     "valid": "The value must be valid",
-    "negative": "The value must be positive"
+    "negative": "The value must be positive",
+    "no_extends": "Cannot get extended template"
   }
 }

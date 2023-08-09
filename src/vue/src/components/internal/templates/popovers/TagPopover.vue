@@ -70,7 +70,7 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import type { Tag } from '../forms/TagsForm.vue';
+import type Tag from '~/lib/templates/tags';
 
 const hexRegex = /^#[0-9A-F]{3}([0-9A-F]{3})?([0-9A-F]{2})?$/i;
 

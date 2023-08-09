@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
 import { omit } from 'lodash';
-import type { tasks, templates } from '@ezpaarse-project/ezreeport-sdk-js';
+import { type tasks, templates, auth } from '@ezpaarse-project/ezreeport-sdk-js';
 import type VueI18n from 'vue-i18n';
+
 import {
   type AnyCustomTemplate,
   type CustomTemplate,
@@ -10,6 +11,8 @@ import {
   addAdditionalDataToLayouts,
   removeAdditionalDataToLayouts,
 } from '~/lib/templates/customTemplates';
+
+import { watch } from 'vue';
 import pinia from '.';
 
 // Utility types
@@ -37,8 +40,8 @@ export type FetchOptions = {
 export const supportedFetchOptions = ['filters', 'fetchCount', 'aggs', 'aggregations', 'dateField', 'index'];
 
 // Utility functions
-export const isTaskTemplate = (template?: AnyTemplate): template is tasks.FullTask['template'] => !!template && 'extends' in template;
 export const isFullTemplate = (template?: AnyTemplate): template is templates.FullTemplate['body'] => !!template && 'layouts' in template;
+export const isTaskTemplate = (template?: AnyTemplate): template is tasks.FullTask['template'] => !!template && !isFullTemplate(template);
 
 /**
  * Transform raw `fetchOptions` into usable data
@@ -158,6 +161,47 @@ export const mapRulesToVuetify = (
     ]),
 );
 
+// Fetch functions
+/**
+ * Fetch given template
+ *
+ * @param id The template id
+ */
+const fetchTemplate = async (
+  id: string,
+): Promise<{ error?: { i18n?: string, message?: string }, value?: CustomTemplate }> => {
+  try {
+    const { content } = await templates.getTemplate(id);
+    if (!content) {
+      return { error: { i18n: '$ezreeport.errors.fetch' } };
+    }
+
+    content.body.layouts = addAdditionalDataToLayouts(content.body.layouts);
+    return { value: content.body as CustomTemplate };
+  } catch (error) {
+    return { error: { message: (error as Error).message } };
+  }
+};
+
+/**
+ * Fetch all available templates
+ */
+const refreshAvailableTemplates = async (): Promise<{
+  error?: { i18n?: string, message?: string }, value?: { content: templates.Template[], meta: any }
+}> => {
+  try {
+    const { content, meta } = await templates.getAllTemplates();
+
+    if (!content) {
+      return { error: { i18n: '$ezreeport.errors.fetch' } };
+    }
+
+    return { value: { content, meta } };
+  } catch (error) {
+    return { error: { message: (error as Error).message } };
+  }
+};
+
 // Pinia store
 const useTemplatePinia = defineStore('ezr_template', {
   state: () => ({
@@ -175,10 +219,19 @@ const useTemplatePinia = defineStore('ezr_template', {
      * Extended template. Avoid editing it
      */
     extended: undefined as CustomTemplate | undefined,
+    extendedId: undefined as string | undefined,
     /**
      * Available templates to extend. Avoid editing it directly
      */
     available: [] as templates.Template[],
+    /**
+     * Id of the default template
+     */
+    defaultTemplateId: '',
+    /**
+     * Current internal error
+     */
+    error: {} as { i18n?: string, message?: string },
   }),
   getters: {
     /**
@@ -303,6 +356,13 @@ const useTemplatePinia = defineStore('ezr_template', {
         },
       };
     },
+
+    /**
+     * Default template to extend when creating a task
+     */
+    defaultTemplate(): templates.Template | undefined {
+      return this.available.find(({ id }) => this.defaultTemplateId === id);
+    },
   },
   actions: {
     /**
@@ -310,11 +370,15 @@ const useTemplatePinia = defineStore('ezr_template', {
      *
      * @param template The template you want to create/edit/review
      */
-    SET_CURRENT(template: AnyTemplate | undefined) {
+    SET_CURRENT(template: AnyTemplate | undefined, extended?: string) {
       if (!template) {
         this.current = undefined;
         this.extended = undefined;
         return;
+      }
+
+      if (extended) {
+        this.SET_EXTENDED(extended);
       }
 
       if (isTaskTemplate(template)) {
@@ -332,6 +396,18 @@ const useTemplatePinia = defineStore('ezr_template', {
         ...template,
         layouts,
       };
+    },
+
+    async SET_EXTENDED(id: string) {
+      const { error, value } = await fetchTemplate(id);
+      if (error) {
+        this.error = error;
+      }
+
+      if (value) {
+        this.extendedId = id;
+        this.extended = value;
+      }
     },
 
     /**
@@ -503,9 +579,36 @@ const useTemplatePinia = defineStore('ezr_template', {
 
       this.isCurrentValid = isTemplateValid;
     },
+
+    async refreshAvailableTemplates() {
+      const { error, value } = await refreshAvailableTemplates();
+      if (error) {
+        this.error = error;
+      }
+
+      if (value) {
+        this.available = value.content;
+        this.defaultTemplateId = value.meta.default;
+      }
+    },
   },
 });
 
 const useTemplateStore = () => useTemplatePinia(pinia);
+
+const init = async () => {
+  const store = useTemplateStore();
+  store.refreshAvailableTemplates();
+  // Validate current on change
+  watch(
+    () => store.current,
+    () => store.validateCurrent(),
+  );
+};
+
+watch(
+  () => auth.isLogged(),
+  () => init(),
+);
 
 export default useTemplateStore;

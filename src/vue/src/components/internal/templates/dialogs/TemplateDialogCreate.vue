@@ -113,7 +113,7 @@ export default defineComponent({
     perms() {
       const has = this.$ezReeport.hasGeneralPermission;
       return {
-        readOne: has('templates-get-name(*)'),
+        readOne: has('templates-get-template'),
         create: has('templates-post'),
       };
     },
@@ -141,16 +141,18 @@ export default defineComponent({
       this.templateStore.SET_CURRENT({ layouts: [] });
 
       this.data = {
+        id: '',
         name: '',
+        tasks: [],
         tags: [],
       };
     },
-    async openFromTemplate({ name }: templates.Template) {
+    async openFromTemplate(template: templates.Template) {
       this.$emit('input', true);
 
       this.loading = true;
       try {
-        const { content } = await this.$ezReeport.sdk.templates.getTemplate(name);
+        const { content } = await this.$ezReeport.sdk.templates.getTemplate(template);
         if (!content) {
           throw new Error(this.$t('$ezreeport.errors.fetch').toString());
         }
@@ -158,7 +160,9 @@ export default defineComponent({
         const { body, ...data } = content;
         this.templateStore.SET_CURRENT(body);
         this.data = {
+          id: '',
           name: '',
+          tasks: data.tasks,
           tags: data.tags,
         };
 
@@ -188,10 +192,10 @@ export default defineComponent({
 
       this.loading = true;
       try {
-        const { content } = await this.$ezReeport.sdk.templates.upsertTemplate(
-          this.data.name,
+        const { content } = await this.$ezReeport.sdk.templates.createTemplate(
           {
             body,
+            name: this.data.name,
             tags: this.data?.tags ?? [],
           },
         );

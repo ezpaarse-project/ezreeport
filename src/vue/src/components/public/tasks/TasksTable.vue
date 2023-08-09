@@ -64,9 +64,17 @@
                   </v-btn>
                 </template>
 
-                {{$t('actions.create')}}
+                {{$t('$ezreeport.create')}}
               </v-tooltip>
             </LoadingToolbar>
+          </template>
+
+          <template #[`item.name`]="{ value: name, item: task }">
+            <div>
+              {{ name }}
+            </div>
+
+            <MiniTagsDetail :model-value="task.tags ?? []" />
           </template>
 
           <template #[`item.namespace`]="{ value: namespace }">
@@ -92,7 +100,7 @@
               :disabled="!rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task-enable']
                 || !rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task-disable']
               "
-              :label="$t(enabled ? 'item.active' : 'item.inactive').toString()"
+              :label="$t(`$ezreeport.tasks.enabled.${enabled}`).toString()"
               reverse
               @click.stop="toggleTask(item)"
             />
@@ -119,7 +127,7 @@
                   <v-icon>mdi-delete</v-icon>
                 </v-btn>
               </template>
-              <span>{{ $t('actions.delete') }}</span>
+              <span>{{ $t('$ezreeport.delete') }}</span>
             </v-tooltip>
           </template>
 
@@ -139,6 +147,7 @@ import type { DataOptions } from 'vuetify';
 import type { DataTableHeader } from '~/types/vuetify';
 import ezReeportMixin from '~/mixins/ezr';
 import type TaskDialogCreate from '~/components/internal/tasks/dialogs/TaskDialogCreate.vue';
+import type Tag from '~/lib/templates/tags';
 
 interface TaskItem {
   id: string,
@@ -147,6 +156,7 @@ interface TaskItem {
   recurrence: tasks.Recurrence,
   enabled: boolean,
   nextRun?: string,
+  tags: Tag[],
 }
 
 export default defineComponent({
@@ -190,7 +200,7 @@ export default defineComponent({
     lastIds: {} as Record<number, string | undefined>,
 
     innerCurrentNamespace: '',
-    tasks: [] as tasks.Task[],
+    tasks: [] as tasks.TaskList,
     totalItems: 0,
     focusedId: '' as string,
 
@@ -211,7 +221,7 @@ export default defineComponent({
       return [
         {
           value: 'name',
-          text: this.$t('headers.name').toString(),
+          text: this.$t('$ezreeport.tasks.name').toString(),
         },
         {
           value: 'namespace',
@@ -220,15 +230,15 @@ export default defineComponent({
         },
         {
           value: 'recurrence',
-          text: this.$t('headers.recurrence').toString(),
+          text: this.$t('$ezreeport.tasks.recurrence').toString(),
         },
         {
           value: 'enabled',
-          text: this.$t('headers.status').toString(),
+          text: this.$t('$ezreeport.tasks.status').toString(),
         },
         {
           value: 'nextRun',
-          text: this.$t('headers.next').toString(),
+          text: this.$t('$ezreeport.tasks.nextRun').toString(),
         },
         {
           value: 'actions' as keyof TaskItem,
@@ -348,7 +358,7 @@ export default defineComponent({
      *
      * @param task The task
      */
-    parseTask(task: tasks.Task): TaskItem {
+    parseTask(task: tasks.TaskList[number]): TaskItem {
       return {
         id: task.id,
         name: task.name,
@@ -358,6 +368,7 @@ export default defineComponent({
         nextRun: task.nextRun && task.enabled
           ? task.nextRun.toLocaleString(undefined, { year: 'numeric', month: 'numeric', day: 'numeric' })
           : undefined,
+        tags: task.tags,
       };
     },
     /**
@@ -446,7 +457,7 @@ export default defineComponent({
       // TODO? go to first page ?
       this.fetch();
       this.createTaskDialogShown = false;
-      const t = this.parseTask({ ...task, namespaceId: task.namespace.id });
+      const t = this.parseTask({ ...task, namespaceId: task.namespace.id, tags: [] });
       this.showTaskDialog(t);
     },
     /**
@@ -465,7 +476,11 @@ export default defineComponent({
       }
 
       const tasks = [...this.tasks];
-      tasks.splice(index, 1, { ...task, namespaceId: task.namespace.id });
+      tasks.splice(index, 1, {
+        ...task,
+        tags: task.lastExtended?.tags ?? task.extends.tags,
+        namespaceId: task.namespace.id,
+      });
       this.tasks = tasks;
     },
     /**
@@ -500,31 +515,9 @@ export default defineComponent({
 en:
   title: 'Periodic report list'
   headers:
-    name: 'Report name'
-    recurrence: 'Recurrence'
-    status: 'Status'
-    next: 'Next run'
     actions: 'Actions'
-  item:
-    active: 'Active'
-    inactive: 'Inactive'
-  actions:
-    create: 'Create'
-    edit: 'Edit'
-    delete: 'Delete'
 fr:
   title: 'Liste des rapports périodiques'
   headers:
-    name: 'Nom du rapport'
-    recurrence: 'Fréquence'
-    status: 'Statut'
-    next: 'Prochaine itération'
     actions: 'Actions'
-  item:
-    active: 'Actif'
-    inactive: 'Inactif'
-  actions:
-    create: 'Créer'
-    edit: 'Éditer'
-    delete: 'Supprimer'
 </i18n>

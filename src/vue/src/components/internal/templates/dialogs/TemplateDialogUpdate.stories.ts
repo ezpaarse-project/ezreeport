@@ -6,7 +6,7 @@ const meta: Meta<typeof TemplateDialogUpdate> = {
   component: TemplateDialogUpdate,
   args: {
     value: true,
-    name: 'basique',
+    id: 'basique',
   },
   argTypes: {
     input: { action: 'input' },
