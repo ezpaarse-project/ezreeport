@@ -1,8 +1,9 @@
 export * as auth from './modules/auth.public';
 export * as crons from './modules/crons.public';
 export * as health from './modules/health.public';
-export * as history from './modules/tasksActivity.public'; // @deprecated
 export * as tasksActivity from './modules/tasksActivity.public';
+/** @deprecated Use `tasksActivity` instead */
+export * as history from './modules/tasksActivity.public';
 export * as namespaces from './modules/namespaces.public';
 export * as queues from './modules/queues.public';
 export * as reports from './modules/reports.public';

@@ -103,7 +103,7 @@ type FullReportJob = FullJob<RawReportData, RawReportResult>;
  *
  * Needs `namespaces[namespaceId].tasks-post-task-run` permission
  *
- * @param taskOrId Id of the task
+ * @param taskOrId Task or id of the task
  * @param params Other params for overriding default
  * @param namespaces
  *
@@ -152,7 +152,7 @@ type GenerationEvents = {
  * Needs `namespaces[namespaceId].tasks-post-task-run`
  * & `namespaces[namespaceId].queues-get-queue-jobs-jobId` permissions
  *
- * @param taskId Id of the task
+ * @param taskOrId Task or id of the task
  * @param params Other params for overriding default
  * @param namespaces
  *

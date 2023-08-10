@@ -26,10 +26,13 @@
     "dist"
   ],
   "scripts": {
-    "build": "run-s build:web build:node",
+    "build": "run-s build:web build:node build:doc",
     "build:node-vite": "tsc && BUILD_TARGET=node vite build",
     "build:node": "tsc --project tsconfig.node.json",
     "build:web": "tsc && BUILD_TARGET=browser vite build",
+    "build:docs": "typedoc src/index.ts",
+    "docs": "vite docs --open",
+    "dev": "run-p \"build:docs -- --watch\" docs",
     "lint": "eslint --fix .",
     "test": "npm run build && npm -w ezreeport-tests run test:sdk"
   },
@@ -45,6 +48,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.4.5",
+    "typedoc": "^0.24.8",
     "typescript": "^5.1.6",
     "vite": "^4.4.7"
   },

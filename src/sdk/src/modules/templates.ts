@@ -23,7 +23,6 @@ export interface Layout {
 export interface RawTemplate {
   id: string,
   name: string,
-  renderer: string,
   pageCount: number,
   tags: {
     name: string,
