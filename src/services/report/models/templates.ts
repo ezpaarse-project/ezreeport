@@ -130,7 +130,6 @@ export const isTaskTemplate = (data: unknown): data is AnyTaskTemplate => {
 };
 
 export interface FullTemplate extends Omit<PrismaTemplate, 'body'> {
-  renderer: keyof Renderers,
   pageCount: number,
   body: AnyTemplate,
   tasks: Omit<TaskList[number], 'tags'>[]
@@ -188,7 +187,6 @@ export const getAllTemplates = async (): Promise<Omit<FullTemplate, 'body' | 'ta
       const b = body as unknown as AnyTemplate;
       return {
         ...template,
-        renderer: b.renderer ?? 'vega-pdf',
         pageCount: b.layouts.length,
       };
     });
@@ -242,7 +240,6 @@ export const getTemplateById = async (id: string): Promise<FullTemplate | null> 
   return {
     ...template,
     body: template.body,
-    renderer: template.body.renderer ?? 'vega-pdf',
     pageCount: template.body.layouts.length,
   };
 };
@@ -276,7 +273,6 @@ export const getTemplateByName = async (name: string): Promise<FullTemplate | nu
   return {
     ...template,
     body: template.body,
-    renderer: template.body.renderer ?? 'vega-pdf',
     pageCount: template.body.layouts.length,
   };
 };
@@ -314,7 +310,6 @@ export const createTemplate = async (
   return {
     ...template,
     body: template.body,
-    renderer: template.body.renderer ?? 'vega-pdf',
     pageCount: template.body.layouts.length,
   };
 };
@@ -432,7 +427,6 @@ export const deleteTemplateById = async (id: string): Promise<FullTemplate | nul
   return {
     ...template,
     body: template.body,
-    renderer: template.body.renderer ?? 'vega-pdf',
     pageCount: template.body.layouts.length,
   };
 };
@@ -470,7 +464,6 @@ export const editTemplateById = async (
   return {
     ...template,
     body: template.body,
-    renderer: template.body.renderer ?? 'vega-pdf',
     pageCount: template.body.layouts.length,
   };
 };
