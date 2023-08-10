@@ -309,8 +309,6 @@ export default defineComponent({
 
     currentTemplateBackup: undefined as AnyCustomTemplate | undefined,
 
-    availableRenderer: ['vega-pdf'],
-
     selectedLayoutId: '',
 
     loading: false,
