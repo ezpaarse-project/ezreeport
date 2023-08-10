@@ -370,7 +370,31 @@
                       "type": "array",
                       "description": "Tasks here doesn't include \"layout\", \"targets\" & \"history\"",
                       "items": {
-                        "$ref": "#/components/schemas/Task"
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/Task"
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "tags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "color": {
+                                      "type": "string",
+                                      "nullable": true
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        ]
                       }
                     },
                     "meta": {
@@ -390,8 +414,8 @@
                         },
                         "lastId": {
                           "type": "string",
-                          "nullable": true,
-                          "description": "Id of last item in response"
+                          "description": "Id of last item in response",
+                          "nullable": true
                         }
                       }
                     }
@@ -999,6 +1023,113 @@
           "description": "The task id"
         }
       ]
+    },
+    "/tasks/{taskId}/link/{templateId}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "taskId",
+          "in": "path",
+          "required": true,
+          "description": "The task id"
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "templateId",
+          "in": "path",
+          "required": true,
+          "description": "The template id"
+        }
+      ],
+      "put": {
+        "summary": "Link task to a template",
+        "operationId": "put-tasks-taskId-link-templateId",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/TaskFull"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "description": "Link a task to a template, changing it's `extends` and reseting `lastExtends`.\n\nNeeds `namespaces[namespaceId].tasks-put-task-link-template` (see `/me/permissions` for more info).",
+        "security": [
+          {
+            "User Token": []
+          }
+        ],
+        "parameters": []
+      },
+      "delete": {
+        "summary": "Unlink a task to a template",
+        "operationId": "delete-tasks-taskId-link-templateId",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "description": "Unlink a task to a template, changing it's `extends` to the default one and setting `lastExtends` to the current one. It's also add in `template.inserts` the layouts of the current template.\n\nNeeds `namespaces[namespaceId].tasks-put-task-link-template` (see `/me/permissions` for more info)."
+      }
     },
     "/tasks/{taskId}/run": {
       "parameters": [
@@ -2358,7 +2489,28 @@
                     "content": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/Template"
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/Template"
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "pageCount": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "default": {
+                          "type": "string",
+                          "description": "Id of the default template"
+                        }
                       }
                     }
                   }
@@ -2454,7 +2606,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "description": "Add a template usable by tasks.\n\nNeeds `general.queues-post` (see `/me/permissions` for more info).",
+        "description": "Add a template usable by tasks.\n\nNeeds `general.templates-post` (see `/me/permissions` for more info).",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2484,20 +2636,19 @@
         ],
         "tags": [
           "templates"
-        ],
-        "deprecated": true
+        ]
       }
     },
-    "/templates/{layoutName}": {
+    "/templates/{templateId}": {
       "parameters": [
         {
           "schema": {
             "type": "string"
           },
-          "name": "layoutName",
+          "name": "templateId",
           "in": "path",
           "required": true,
-          "description": "Name of the layout"
+          "description": "The template id"
         }
       ],
       "get": {
@@ -2569,7 +2720,7 @@
           }
         ],
         "parameters": [],
-        "description": "Get specific template.\n\nNeeds `general.templates-get-name(*)` (see `/me/permissions` for more info).",
+        "description": "Get specific template.\n\nNeeds `general.templates-get-template` (see `/me/permissions` for more info).",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2687,7 +2838,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "description": "Update a template if found, create if not.\n\nNeeds `general.templates-put-name(*)` (see `/me/permissions` for more info).",
+        "description": "Update a template if found, create if not.\n\nNeeds `general.templates-put-template` (see `/me/permissions` for more info).",
         "security": [
           {
             "User Token": []
@@ -2726,7 +2877,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "description": "Delete template.\n\nNeeds `general.templates-delete-name(*)` (see `/me/permissions` for more info).",
+        "description": "Delete template.\n\nNeeds `general.templates-delete-template` (see `/me/permissions` for more info).",
         "security": [
           {
             "User Token": []
@@ -2737,9 +2888,9 @@
         ]
       }
     },
-    "/history": {
+    "/tasks-activity": {
       "get": {
-        "summary": "Get history entries",
+        "summary": "Get tasks' activity entries",
         "tags": [
           "history"
         ],
@@ -2922,7 +3073,10 @@
                       }
                     },
                     "content": {
-                      "$ref": "#/components/schemas/History"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Activity"
+                      }
                     },
                     "meta": {
                       "type": "object",
@@ -2941,8 +3095,8 @@
                         },
                         "lastId": {
                           "type": "string",
-                          "nullable": true,
-                          "description": "Id of last item in response"
+                          "description": "Id of last item in response",
+                          "nullable": true
                         }
                       }
                     }
@@ -2955,14 +3109,16 @@
                         "code": 200,
                         "message": "OK"
                       },
-                      "content": {
-                        "id": "string",
-                        "taskId": "string",
-                        "type": "string",
-                        "message": "string",
-                        "createdAt": "2019-08-24T14:15:22Z",
-                        "data": {}
-                      },
+                      "content": [
+                        {
+                          "id": "string",
+                          "taskId": "string",
+                          "type": "string",
+                          "message": "string",
+                          "createdAt": "2019-08-24T14:15:22Z",
+                          "data": {}
+                        }
+                      ],
                       "meta": {
                         "count": 1,
                         "lastId": "string",
@@ -2993,7 +3149,7 @@
             "User Token": []
           }
         ],
-        "description": "Get history entries of all tasks of given institution.\n\nNeeds `namespaces[namespaceId].history-get` (see `/me/permissions` for more info).",
+        "description": "Get activity entries of all tasks of given institution.\n\nNeeds `namespaces[namespaceId].history-get` (see `/me/permissions` for more info).",
         "parameters": [
           {
             "$ref": "#/components/parameters/previous"
@@ -3005,7 +3161,8 @@
             "$ref": "#/components/parameters/namespaces"
           }
         ]
-      }
+      },
+      "parameters": []
     },
     "/me": {
       "get": {
@@ -5151,7 +5308,7 @@
   },
   "components": {
     "schemas": {
-      "History": {
+      "Activity": {
         "type": "object",
         "x-examples": {
           "Example": {
@@ -5166,7 +5323,7 @@
             }
           }
         },
-        "description": "Task's history",
+        "description": "Task's activity",
         "properties": {
           "id": {
             "type": "string"
@@ -5194,7 +5351,11 @@
           "taskId",
           "type",
           "message"
-        ]
+        ],
+        "title": "",
+        "x-stoplight": {
+          "id": "ab7f02c5325d1"
+        }
       },
       "Task": {
         "type": "object",
@@ -5278,6 +5439,36 @@
           "template": {
             "$ref": "#/components/schemas/TaskTemplate"
           },
+          "extends": {
+            "$ref": "#/components/schemas/Template"
+          },
+          "lastExtended": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "color": {
+                      "type": "string",
+                      "nullable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
           "targets": {
             "type": "array",
             "description": "Emails address to send reports",
@@ -5323,11 +5514,11 @@
           "namespace": {
             "$ref": "#/components/schemas/Namespace"
           },
-          "history": {
+          "activity": {
             "type": "array",
             "description": "Activity of the task",
             "items": {
-              "$ref": "#/components/schemas/History"
+              "$ref": "#/components/schemas/Activity"
             }
           }
         }
@@ -5350,6 +5541,12 @@
                   "type": "string",
                   "format": "email"
                 }
+              },
+              "extends": {
+                "type": "string"
+              },
+              "namespace": {
+                "type": "string"
               }
             },
             "required": [
@@ -5365,11 +5562,8 @@
           "id": "zc8qc4z6s7cbi"
         },
         "type": "object",
+        "description": "Template used in tasks",
         "properties": {
-          "extends": {
-            "type": "string",
-            "description": "Base template that this one extends"
-          },
           "fetchOptions": {
             "type": "object",
             "description": "Options passed to fetcher (elastic)",
@@ -5394,8 +5588,7 @@
               ]
             }
           }
-        },
-        "description": "Template used in tasks"
+        }
       },
       "Job": {
         "type": "object",
@@ -5740,6 +5933,9 @@
         "additionalProperties": false,
         "description": "Report template with a few more info",
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "name": {
             "type": "string"
           },
@@ -5758,20 +5954,13 @@
               }
             }
           },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
           "updatedAt": {
             "type": "string",
             "format": "date-time"
           },
-          "renderer": {
+          "createdAt": {
             "type": "string",
-            "description": "Renderer needed to render this template"
-          },
-          "pageCount": {
-            "type": "number"
+            "format": "date-time"
           }
         }
       },
@@ -5784,6 +5973,9 @@
         "additionalProperties": false,
         "description": "Full info about template",
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "name": {
             "type": "string",
             "readOnly": true
@@ -5806,6 +5998,16 @@
           "body": {
             "$ref": "#/components/schemas/ReportTemplate"
           },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Task"
+            }
+          },
+          "pageCount": {
+            "type": "number",
+            "readOnly": true
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time",
@@ -5815,18 +6017,10 @@
             "type": "string",
             "format": "date-time",
             "readOnly": true
-          },
-          "renderer": {
-            "type": "string",
-            "description": "Renderer needed to render this template",
-            "readOnly": true
-          },
-          "pageCount": {
-            "type": "number",
-            "readOnly": true
           }
         },
         "required": [
+          "name",
           "tags",
           "body"
         ]
