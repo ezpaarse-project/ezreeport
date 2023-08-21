@@ -1,3 +1,26 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.20](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.19...@ezpaarse-project/ezreeport-vue@1.0.0-beta.20) (2023-08-21)
+
+
+### Bug Fixes
+
+* **vue:** fixed component registration ([5c2458b](https://github.com/ezpaarse-project/ezreeport/commit/5c2458b395564d4d5814b5d71ad184b5344bfd08))
+* **vue:** fixed layout and figure index in errors tooltips ([5495316](https://github.com/ezpaarse-project/ezreeport/commit/549531645613511a6347ea6aae8b4924e5d4c303))
+
+
+### Features
+
+* **vue:** dropping custom renderer/fetcher ([33b11fa](https://github.com/ezpaarse-project/ezreeport/commit/33b11fab38666a3873d97f2e7671d9514e628b71))
+* **vue:** following API changes ([30fc0c7](https://github.com/ezpaarse-project/ezreeport/commit/30fc0c7c3c0cc82ce06df1e38d8421d778f324cc))
+* **vue:** moved page action into a hover overlay ([294f109](https://github.com/ezpaarse-project/ezreeport/commit/294f109fb061079b58afcc4544d982f00370b92a))
+
+
+
+
+
+### Dependencies
+
+* **@ezpaarse-project/ezreeport-sdk-js:** upgraded to 1.0.0-beta.6
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.19](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.18...@ezpaarse-project/ezreeport-vue@1.0.0-beta.19) (2023-08-01)
 
 
