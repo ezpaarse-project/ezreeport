@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/sdk-doc.yml'
       - 'src/sdk/**'
+  workflow_dispatch:
 
 permissions:
   contents: read
