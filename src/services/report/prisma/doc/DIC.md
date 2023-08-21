@@ -31,22 +31,24 @@ Possible access level for memberships
 
 A report task
 
-| Property   | Type         | Description                                   | Attributes | Default  |
-|------------|--------------|-----------------------------------------------|------------|----------|
-| id         | `String`     | Id of the report                              | Id         | `uuid()` |
-| name       | `String`     | The name of the report                        |            |          |
-| namespace  | `Namespace`  | The "owner" of the report                     |            |          |
-| template   | `Json`       | The template used to generate the report      |            |          |
-| targets    | `String[]`   | Email adresses to send generated report       |            |          |
-| recurrence | `Recurrence` | Defines when the report will be genereted     |            |          |
-| nextRun    | `DateTime`   | Next time the report will be genereted        |            |          |
-| lastRun    | `DateTime?`  | Last time the report has been generated       |            |          |
-| enabled    | `Boolean`    | Is the generation of the report is enabled    |            | `true`   |
-| history    | `History[]`  | Activity of the task                          |            |          |
-| createdAt  | `DateTime`   | When the report was created                   |            | `now()`  |
-| updatedAt  | `DateTime?`  | When the report was updated for the last time |            |          |
+| Property     | Type             | Description                                                                                                               | Attributes | Default  |
+|--------------|------------------|---------------------------------------------------------------------------------------------------------------------------|------------|----------|
+| id           | `String`         | Id of the report                                                                                                          | Id         | `uuid()` |
+| name         | `String`         | The name of the report                                                                                                    |            |          |
+| namespace    | `Namespace`      | The "owner" of the report                                                                                                 |            |          |
+| template     | `Json`           | The template used to generate the report                                                                                  |            |          |
+| extends      | `Template`       |                                                                                                                           |            |          |
+| lastExtended | `Json?`          | Last template extended by the report. If null then it's mean it's still linked. If set, extendedId must match default one |            |          |
+| targets      | `String[]`       | Email adresses to send generated report                                                                                   |            |          |
+| recurrence   | `Recurrence`     | Defines when the report will be generated                                                                                 |            |          |
+| nextRun      | `DateTime`       | Next time the report will be generated                                                                                    |            |          |
+| lastRun      | `DateTime?`      | Last time the report has been generated                                                                                   |            |          |
+| enabled      | `Boolean`        | Is the generation of the report is enabled                                                                                |            | `true`   |
+| activity     | `TaskActivity[]` | Activity of the task                                                                                                      |            |          |
+| createdAt    | `DateTime`       | When the report was created                                                                                               |            | `now()`  |
+| updatedAt    | `DateTime?`      | When the report was updated for the last time                                                                             |            |          |
 
-### History
+### TaskActivity
 
 An activity event linked to a report (generation, edition, etc.)
 
@@ -57,7 +59,7 @@ An activity event linked to a report (generation, edition, etc.)
 | type      | `String`   | Type of the event                |            |          |
 | message   | `String`   | Message describing what happened |            |          |
 | data      | `Json?`    | More data about what happened    |            |          |
-| createdAt | `DateTime` | When the event occured           |            | `now()`  |
+| createdAt | `DateTime` | When the event occurred          |            | `now()`  |
 
 ### User
 
@@ -67,7 +69,7 @@ A user of ezREEPORT
 |-------------|----------------|---------------------------------------------|------------|---------|
 | username    | `String`       | The username of the user                    | Id         |         |
 | token       | `String`       | Token used to identify user                 | Unique     |         |
-| isAdmin     | `Boolean`      | Is the user an administrator of ezREEPORT   |            |         |
+| isAdmin     | `Boolean`      | Is the user an administrator of ezREEPORT   |            | `false` |
 | memberships | `Membership[]` | Namespaces of the user                      |            |         |
 | createdAt   | `DateTime`     | When the user was created                   |            | `now()` |
 | updatedAt   | `DateTime?`    | When the user was updated for the last time |            |         |
@@ -104,10 +106,12 @@ A namespace for grouping users and reports
 
 Base template used by reports
 
-| Property  | Type        | Description                                     | Attributes | Default |
-|-----------|-------------|-------------------------------------------------|------------|---------|
-| name      | `String`    | The name of the template                        | Id         |         |
-| tags      | `Json[]`    | Tags of the template                            |            |         |
-| body      | `Json`      | The layouts used to generate the report         |            |         |
-| createdAt | `DateTime`  | When the template was created                   |            | `now()` |
-| updatedAt | `DateTime?` | When the template was updated for the last time |            |         |
+| Property  | Type        | Description                                     | Attributes | Default  |
+|-----------|-------------|-------------------------------------------------|------------|----------|
+| id        | `String`    | The id of the template                          | Id         | `uuid()` |
+| name      | `String`    | The name of the template                        | Unique     |          |
+| tags      | `Json[]`    | Tags of the template                            |            |          |
+| body      | `Json`      | The layouts used to generate the report         |            |          |
+| createdAt | `DateTime`  | When the template was created                   |            | `now()`  |
+| updatedAt | `DateTime?` | When the template was updated for the last time |            |          |
+| tasks     | `Task[]`    | Tasks using template                            |            |          |
