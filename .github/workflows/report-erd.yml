@@ -9,6 +9,7 @@ on:
     paths:
       - '.github/workflows/report-erd.yml'
       - 'src/services/report/prisma/schema.prisma'
+  workflow_dispatch:
 
 env:
   PRISMA_SCHEMA: src/services/report/prisma/schema.prisma
