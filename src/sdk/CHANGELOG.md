@@ -1,3 +1,16 @@
+# @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.6](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.5...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.6) (2023-08-21)
+
+
+### Bug Fixes
+
+* **sdk:** fixed issues about types not beign detected when installing package ([d405db8](https://github.com/ezpaarse-project/ezreeport/commit/d405db886ccb86f4f8392172ef6fa51acd528c46))
+
+
+### Features
+
+* **sdk:** can now use object instead of ids ([9f22ea4](https://github.com/ezpaarse-project/ezreeport/commit/9f22ea44124bc976d91f66217b38c7057c36cbd8))
+* **sdk:** following API changes ([7ad722e](https://github.com/ezpaarse-project/ezreeport/commit/7ad722ee52cbf50a92093876da4076c83485cd9f))
+
 # @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.5](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.4...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.5) (2023-07-06)
 
 
