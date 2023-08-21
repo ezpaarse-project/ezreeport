@@ -9,6 +9,7 @@ on:
     paths:
       - '.github/workflows/report-erd.yml'
       - 'src/services/report/prisma/schema.prisma'
+  workflow_dispatch:
 
 env:
   PRISMA_SCHEMA: src/services/report/prisma/schema.prisma
@@ -27,26 +28,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout 🛎️
         uses: actions/checkout@v3
 
-      - name: Generate ERD
+      - name: Generate ERD 🔧
         run: 'curl -X POST -d "$(cat ${{ env.PRISMA_SCHEMA }})" -H "Content-Type: text/plain" -H "X-Api-Key: ${{ env.ERD_WS_KEY }}" -o "${{ env.OUT_ERD_PATH }}" ${{ env.ERD_WS }}/erd/'
 
-      - name: Generate Data dictionary
+      - name: Generate Data dictionary 🔧
         run: 'curl -X POST -d "$(cat ${{ env.PRISMA_SCHEMA }})" -H "Content-Type: text/plain" -H "X-Api-Key: ${{ env.ERD_WS_KEY }}" -o "${{ env.OUT_DIC_PATH }}" ${{ env.ERD_WS }}/dict/\?name\=${{ env.DIC_NAME }}'
 
-      - name: Setup Node
+      - name: Setup Node ⚙️
         uses: actions/setup-node@v3
         with:
             node-version-file: .nvmrc
             cache: npm
 
-      - name: Commit files
+      - name: Install dependencies ⚙️
+        run: npm ci
+
+      - name: Commit files 🚀
         run: |
           HUSKY=0
-          npm ci
-
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add .
