@@ -1,3 +1,21 @@
+# ezreeport-report [1.0.0-beta.19](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.18...ezreeport-report@1.0.0-beta.19) (2023-08-21)
+
+
+### Bug Fixes
+
+* **report:** fixed error when no filter are provided ([54dee6a](https://github.com/ezpaarse-project/ezreeport/commit/54dee6a70cb101dee0b0c8032569875759fe7c13))
+* **report:** fixed figures beign "flatten" if dataLabel were outside of figure ([4331390](https://github.com/ezpaarse-project/ezreeport/commit/4331390dd73698dc7c4e9a290e628ceef0ad8bdc))
+* **report:** fixed period check on custom generations ([38ca4fe](https://github.com/ezpaarse-project/ezreeport/commit/38ca4fe8207834afd87dbb730ab62b504a2c8843))
+
+
+### Features
+
+* **report:** moved MD parser/render to @ezpaarse-project/jspdf-md ([2fb273d](https://github.com/ezpaarse-project/ezreeport/commit/2fb273dbfd14a9890a88ac19a812d3843fc16501))
+* **report:** now logging md-to-pdf ([0234292](https://github.com/ezpaarse-project/ezreeport/commit/0234292226074191b6d83924b5c57c0e3bdeabba))
+* **report:** refactored activity and templates ([91753b8](https://github.com/ezpaarse-project/ezreeport/commit/91753b8a059427b9139d8464341e23ca384378aa))
+* **report:** removed renderer from some API results ([a3fb363](https://github.com/ezpaarse-project/ezreeport/commit/a3fb3633d77c3159ff61c0f46010090a6cef079a))
+* **report:** starting to drop custom renderer/fetcher ([b356b72](https://github.com/ezpaarse-project/ezreeport/commit/b356b72605e9f918d05e22934fcec4e4f32a488a))
+
 # ezreeport-report [1.0.0-beta.18](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.17...ezreeport-report@1.0.0-beta.18) (2023-08-01)
 
 
