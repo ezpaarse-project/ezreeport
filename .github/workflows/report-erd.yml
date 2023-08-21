@@ -16,7 +16,7 @@ env:
   OUT_ERD_PATH: src/services/report/prisma/doc/ERD.svg
   OUT_DIC_PATH: src/services/report/prisma/doc/DIC.md
   DIC_NAME: ezREEPORT
-  COMMIT_NAME: 'doc(report): updated database documentation[skip ci]'
+  COMMIT_NAME: 'docs(report): updated database documentation[skip ci]'
   COMMIT_BODY: '${{ github.event.compare }}'
   COMMIT_FOOTER: 'Co-authored-by: @${{ github.event.sender.login }}'
   ERD_WS: https://p-erd.oxypomme.fr/
