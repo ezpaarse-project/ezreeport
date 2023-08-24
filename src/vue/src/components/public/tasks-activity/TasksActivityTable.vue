@@ -19,7 +19,7 @@
           />
         </LoadingToolbar>
 
-        <InternalTaskActivityTable
+        <InternalTasksActivityTable
           :activity="tasksActivity"
           :options="options"
           class="tasksActivity-table"

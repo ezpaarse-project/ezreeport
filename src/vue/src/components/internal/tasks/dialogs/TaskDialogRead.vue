@@ -107,7 +107,7 @@
           </v-tab-item>
 
           <v-tab-item>
-            <InternalTaskActivityTable
+            <InternalTasksActivityTable
               v-if="task"
               :activity="task.activity"
               hide-task
