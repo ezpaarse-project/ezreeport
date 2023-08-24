@@ -1,3 +1,10 @@
+# ezreeport-report [1.0.0-beta.20](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.19...ezreeport-report@1.0.0-beta.20) (2023-08-24)
+
+
+### Bug Fixes
+
+* **report:** minor fixs ([5f82016](https://github.com/ezpaarse-project/ezreeport/commit/5f8201638e7351386e93742f43f152c9e0fd92d0))
+
 # ezreeport-report [1.0.0-beta.19](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.18...ezreeport-report@1.0.0-beta.19) (2023-08-21)
 
 
