@@ -1,3 +1,10 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.21](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.20...@ezpaarse-project/ezreeport-vue@1.0.0-beta.21) (2023-08-24)
+
+
+### Bug Fixes
+
+* **vue:** minor fix ([afd7b0e](https://github.com/ezpaarse-project/ezreeport/commit/afd7b0eb9efd1a8a3e0c4c82a50576a067d59f67))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.20](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.19...@ezpaarse-project/ezreeport-vue@1.0.0-beta.20) (2023-08-21)
 
 
