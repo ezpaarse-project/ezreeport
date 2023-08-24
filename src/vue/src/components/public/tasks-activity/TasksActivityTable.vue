@@ -77,7 +77,7 @@ export default defineComponent({
     perms() {
       const has = this.$ezReeport.hasNamespacedPermission;
       return {
-        readAll: has('tasksActivity-get', []),
+        readAll: has('tasks-activity-get', []),
       };
     },
     footerOptions: {
