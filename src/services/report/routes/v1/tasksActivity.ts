@@ -3,7 +3,7 @@ import { CustomRouter } from '~/lib/express-utils';
 import { getAllTaskActivityEntries, getCountTaskActivity } from '~/models/tasksActivity';
 import { Access } from '~/models/access';
 
-const router = CustomRouter('history')
+const router = CustomRouter('tasks-activity')
   /**
    * List all history entries.
    */

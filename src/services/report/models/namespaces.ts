@@ -47,7 +47,7 @@ export type TypedNamespace = Omit<Namespace, 'fetchLogin' | 'fetchOptions'> & Na
 /**
  * Joi schema
  */
-const namespaceSchema = Joi.object<Prisma.NamespaceCreateInput>({
+const namespaceSchema = Joi.object<InputNamespace>({
   name: Joi.string().required(),
   fetchLogin: Joi
     .object(
@@ -65,7 +65,7 @@ const namespaceSchema = Joi.object<Prisma.NamespaceCreateInput>({
       ),
     )
     .required(),
-  logoId: Joi.string(),
+  logoId: Joi.string().allow(null),
 });
 
 /**
