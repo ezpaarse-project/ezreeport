@@ -28,7 +28,7 @@ const setupBannedDomains = async () => {
       const rawDomains = await readFile(BANNED_DOMAINS_FILEPATH, 'utf-8');
       bannedDomains = JSON.parse(rawDomains);
     } catch (error) {
-      appLogger.error(`[http-requests] An error occurred when reading banned domains: ${error}`);
+      appLogger.error(`[http-requests] An [error] occurred when reading banned domains: [${error}]`);
     }
   }
 
@@ -39,7 +39,7 @@ const setupBannedDomains = async () => {
       (domain) => new RegExp(`^${domain}$`, 'i'),
     );
   } catch (error) {
-    appLogger.error(`[http-requests] An error occurred when registering banned domains: ${error}`);
+    appLogger.error(`[http-requests] An [error] occurred when registering banned domains: [${error}]`);
   }
 
   // Warn if no domains was provided
@@ -47,7 +47,7 @@ const setupBannedDomains = async () => {
     warnNoBannedDomains();
     return;
   }
-  appLogger.verbose(`[http-requests] Registered banned domains: [${bannedDomainsRegexp.join(', ')}]`);
+  appLogger.verbose(`[http-requests] Registered banned domains: [${bannedDomainsRegexp.join('], [')}]`);
 };
 
 /**
