@@ -30,19 +30,17 @@ const router: FastifyPluginAsync = async (fastify) => {
     }),
   );
 
-  const PingServiceParams = Type.Object({
-    service: Type.String(),
-  });
-  type PingServiceParamsType = Static<typeof PingServiceParams>;
-
   /**
    * Ping specific service
    */
-  fastify.get<{ Params: PingServiceParamsType }>(
+  const GetServiceParams = Type.Object({
+    service: Type.String(),
+  });
+  fastify.get<{ Params: Static<typeof GetServiceParams> }>(
     '/:service',
     {
       schema: {
-        params: PingServiceParams,
+        params: GetServiceParams,
       },
     },
     async (request) => {
