@@ -5,6 +5,8 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { appLogger } from './lib/logger';
 import config from './lib/config';
 
+import formatPlugin from './fastify/plugins/format';
+import loggerPlugin from './fastify/plugins/logger';
 import routes from './fastify';
 
 import { initTemplates } from './init';
@@ -28,6 +30,10 @@ const start = async () => {
       origin: allowedOrigins,
     },
   );
+
+  // Register logger and format
+  await fastify.register(formatPlugin);
+  await fastify.register(loggerPlugin);
 
   // Register routes
   await fastify.register(routes);
