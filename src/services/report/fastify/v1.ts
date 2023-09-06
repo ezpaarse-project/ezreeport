@@ -3,6 +3,8 @@ import type { FastifyPluginAsync } from 'fastify';
 import fastifyStatic from '@fastify/static';
 import { absolutePath as swaggerUiPath } from 'swagger-ui-dist';
 
+import health from './v1/health';
+
 const router: FastifyPluginAsync = async (fastify) => {
   fastify.decorateReply('apiVersion', 1);
 
@@ -22,6 +24,8 @@ const router: FastifyPluginAsync = async (fastify) => {
   fastify.get('/doc/openapi.json', (request, reply) => {
     reply.sendFile('openapi.json', join(__dirname, 'v1'));
   });
+
+  await fastify.register(health, { prefix: '/health' });
 };
 
 export default router;
