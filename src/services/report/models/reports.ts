@@ -4,7 +4,6 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { compact, merge, omit } from 'lodash';
-import Joi from 'joi';
 
 import fetchWithElastic, { ElasticFetchOptions } from '~/generators/elastic';
 import renderPdfWithVega, { VegaRenderOptions } from '~/generators/vega-pdf';
@@ -13,8 +12,7 @@ import type { Recurrence, Task } from '~/lib/prisma';
 import config from '~/lib/config';
 import * as dfns from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
-import type { PDFStats } from '~/lib/pdf';
-import { Value } from '~/lib/typebox';
+import { type Static, Type, Value } from '~/lib/typebox';
 
 import { calcNextDate, calcPeriod } from '~/models/recurrence';
 import { ConflictError } from '~/types/errors';
@@ -25,87 +23,94 @@ import { type TypedNamespace, getNamespaceById } from './namespaces';
 
 const { ttl, outDir } = config.report;
 
-type ReportErrorCause = {
-  type: 'fetch' | 'render'
-  layout: number,
-  figure?: number,
-};
-
-type ReportResult = {
-  success: boolean,
-  detail: {
-    createdAt: Date,
-    destroyAt: Date,
-    took: number,
-    taskId: Task['id'],
-    files: {
-      detail: string,
-      report?: string,
-      debug?: string,
-    },
-    sendingTo?: string[],
-    period?: Interval,
-    auth?: TypedNamespace['fetchLogin'],
-    stats?: Omit<PDFStats, 'path'>,
-    error?: {
-      message: string,
-      stack: string[],
-      cause?: ReportErrorCause,
-    },
-    meta?: unknown
-  }
-};
-
-const reportResultSchema = Joi.object<ReportResult>({
-  success: Joi.boolean().required(),
-  detail: Joi.object<ReportResult['detail']>({
-    createdAt: Joi.date().iso().required(),
-    destroyAt: Joi.date().iso().required(),
-    took: Joi.number().integer().required(),
-    taskId: Joi.string().uuid().required(),
-    files: Joi.object<ReportResult['detail']['files']>({
-      detail: Joi.string().required(),
-      report: Joi.string(),
-      debug: Joi.string(),
-    }).required(),
-    sendingTo: Joi.array().items(Joi.string().email()).min(1),
-    period: Joi.object<ReportResult['detail']['period']>({
-      start: [Joi.date().iso().required(), Joi.number().integer().required()],
-      end: [Joi.date().iso().required(), Joi.number().integer().required()],
-    }),
-    auth: Joi.object<ReportResult['detail']['auth']>({
-      elastic: Joi.string().required(),
-    }),
-    stats: Joi.object<ReportResult['detail']['stats']>({
-      pageCount: Joi.number().integer().required(),
-      size: Joi.number().integer().required(),
-    }),
-    error: Joi.object<ReportResult['detail']['error']>({
-      message: Joi.string().required(),
-      stack: Joi.array().items(Joi.string()).required(),
-      cause: Joi.object(),
-    }),
-    meta: Joi.any(),
-  }).required(),
+const ReportErrorCause = Type.Object({
+  type: Type.Union([
+    Type.Literal('fetch'),
+    Type.Literal('render'),
+  ]),
+  layout: Type.Integer(),
+  figure: Type.Optional(
+    Type.Integer(),
+  ),
 });
 
-/**
- * Check if input data is a valid ReportResult
- *
- * @param data The input data
- * @returns `true` if valid
- *
- * @throws If not valid
- *
- * @throw If input data isn't a valid ReportResult
- */
-export const isValidResult = (data: unknown): data is ReportResult => {
-  const validation = reportResultSchema.validate(data, {});
-  if (validation.error != null) {
-    throw new Error(`Result is not valid: ${validation.error.message}`);
-  }
-  return true;
-};
+type ReportErrorCauseType = Static<typeof ReportErrorCause>;
+
+export const ReportResult = Type.Object({
+  success: Type.Boolean(),
+
+  detail: Type.Object({
+    createdAt: Type.String({ /* format: 'date-time' */ }),
+
+    destroyAt: Type.String({ /* format: 'date-time' */ }),
+
+    took: Type.Integer(),
+
+    taskId: Type.String(),
+
+    files: Type.Object({
+      detail: Type.String(),
+
+      report: Type.Optional(
+        Type.String(),
+      ),
+
+      debug: Type.Optional(
+        Type.String(),
+      ),
+    }),
+
+    sendingTo: Type.Optional(
+      Type.Array(
+        Type.String({ /* format: 'email' */ }),
+      ),
+    ),
+
+    period: Type.Optional(
+      Type.Object({
+        start: Type.String({ /* format: 'date-time' */ }),
+
+        end: Type.String({ /* format: 'date-time' */ }),
+      }),
+    ),
+
+    auth: Type.Optional(
+      Type.Object({
+        elastic: Type.Optional(
+          Type.Object({
+            username: Type.String(),
+          }),
+        ),
+      }),
+    ),
+
+    stats: Type.Optional(
+      Type.Object({
+        pageCount: Type.Integer(),
+
+        path: Type.String(),
+
+        size: Type.Integer(),
+      }),
+    ),
+
+    error: Type.Optional(
+      Type.Object({
+        message: Type.String(),
+
+        stack: Type.Array(
+          Type.String(),
+        ),
+
+        cause: ReportErrorCause,
+      }),
+    ),
+
+    meta: Type.Any(),
+  }),
+});
+
+export type ReportResultType = Static<typeof ReportResult>;
 
 /**
  * Put filename in lowercase & remove chars that can cause issues.
@@ -202,7 +207,7 @@ export const generateReport = async (
   debug = false,
   meta = {},
   events: EventEmitter = new EventEmitter(),
-): Promise<ReportResult> => {
+): Promise<ReportResultType> => {
   const today = new Date();
   const todayStr = dfns.format(today, 'yyyy/yyyy-MM');
   const basePath = join(outDir, todayStr, '/');
@@ -222,11 +227,11 @@ export const generateReport = async (
   logger.verbose(`[gen] [${process.pid}] Generation of report "${namepath}" started`);
   events.emit('creation');
 
-  const result: ReportResult = {
+  const result: ReportResultType = {
     success: true,
     detail: {
-      createdAt: today,
-      destroyAt: dfns.add(today, { days: ttl.days }),
+      createdAt: today.toISOString(),
+      destroyAt: dfns.add(today, { days: ttl.days }).toISOString(),
       took: 0,
       taskId: task.id,
       files: {
@@ -268,11 +273,16 @@ export const generateReport = async (
       }
       period = parsedPeriod;
     }
-    result.detail.period = period;
+    result.detail.period = {
+      start: new Date(period.start).toISOString(),
+      end: new Date(period.end).toISOString(),
+    };
 
     // Re-calc ttl if not in any debug mode
     if (writeHistory && !debug) {
-      result.detail.destroyAt = dfns.add(today, { seconds: ttl.iterations * (distance / 1000) });
+      result.detail.destroyAt = dfns
+        .add(today, { seconds: ttl.iterations * (distance / 1000) })
+        .toISOString();
     }
 
     // Parse task template
@@ -325,11 +335,11 @@ export const generateReport = async (
     result.detail.files.report = `${namepath}.rep.pdf`;
     logger.verbose(`[gen] [${process.pid}] Report wrote to "${result.detail.files.report}"`);
 
-    merge<ReportResult, DeepPartial<ReportResult>>(
+    merge<ReportResultType, DeepPartial<ReportResultType>>(
       result,
       {
         detail: {
-          took: dfns.differenceInMilliseconds(new Date(), result.detail.createdAt),
+          took: dfns.differenceInMilliseconds(new Date(), today),
           sendingTo: targets,
           stats: omit(stats, 'path'),
         },
@@ -345,7 +355,7 @@ export const generateReport = async (
           message: `Rapport "${namepath}" généré par ${origin}`,
           data: {
             ...meta,
-            destroyAt: result.detail.destroyAt.toISOString(),
+            destroyAt: result.detail.destroyAt,
             files: result.detail.files,
             period: {
               start: dfns.formatISO(period.start),
@@ -359,16 +369,16 @@ export const generateReport = async (
     logger.info(`[gen] [${process.pid}] Report "${namepath}" successfully generated in ${(result.detail.took / 1000).toFixed(2)}s`);
   } catch (error) {
     const err = error as Error;
-    merge<ReportResult, DeepPartial<ReportResult>>(
+    merge<ReportResultType, DeepPartial<ReportResultType>>(
       result,
       {
         success: false,
         detail: {
-          took: dfns.differenceInMilliseconds(new Date(), result.detail.createdAt),
+          took: dfns.differenceInMilliseconds(new Date(), today),
           error: {
             message: err.message,
             stack: err.stack?.split('\n    '),
-            cause: err.cause as ReportErrorCause,
+            cause: err.cause as ReportErrorCauseType,
           },
         },
       },
@@ -383,7 +393,7 @@ export const generateReport = async (
           message: `Rapport "${namepath}" non généré par ${origin} suite à une erreur.`,
           data: {
             ...meta,
-            destroyAt: result.detail.destroyAt.toISOString(),
+            destroyAt: result.detail.destroyAt,
             files: result.detail.files,
           },
         },

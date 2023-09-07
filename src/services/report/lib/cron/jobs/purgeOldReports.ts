@@ -8,8 +8,9 @@ import config from '~/lib/config';
 import * as dfns from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
 import { formatInterval, isFulfilled } from '~/lib/utils';
+import { Value } from '~/lib/typebox';
 
-import { isValidResult } from '~/models/reports';
+import { ReportResult } from '~/models/reports';
 
 import type { CronData } from '..';
 import { sendError } from './utils';
@@ -31,20 +32,18 @@ export default async (job: Queue.Job<CronData>) => {
       detailFiles.map(async (filePath) => {
         try {
           logger.verbose(`[cron] [${process.pid}] [${job.name}] Checking "${filePath}"`);
-          const fileContent = JSON.parse(await readFile(filePath, 'utf-8'));
+          const fileContent = Value.Cast(
+            ReportResult,
+            JSON.parse(await readFile(filePath, 'utf-8')),
+          );
 
-          if (!isValidResult(fileContent)) {
-            return [];
-          }
-
-          // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
-          const destroyAt = dfns.parseISO(fileContent.detail.destroyAt.toString());
+          const destroyAt = dfns.parseISO(fileContent.detail.destroyAt);
           if (dfns.isBefore(today, destroyAt)) {
             return [];
           }
 
           const dur = dfns.intervalToDuration({
-            start: dfns.parseISO(fileContent.detail.createdAt.toString()),
+            start: dfns.parseISO(fileContent.detail.createdAt),
             end: today,
           });
           return Object

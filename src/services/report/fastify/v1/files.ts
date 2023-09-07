@@ -5,12 +5,12 @@ import type { FastifyPluginAsync } from 'fastify';
 import fastifyStatic from '@fastify/static';
 
 import config from '~/lib/config';
-import { Type, type Static } from '~/lib/typebox';
+import { Type, type Static, Value } from '~/lib/typebox';
 
 import authPlugin from '~/fastify/plugins/auth';
 
 import { Access } from '~/models/access';
-import { isValidResult } from '~/models/reports';
+import { ReportResult, type ReportResultType } from '~/models/reports';
 import { getTaskById } from '~/models/tasks';
 import { ArgumentError, NotFoundError } from '~/types/errors';
 
@@ -37,11 +37,11 @@ const router: FastifyPluginAsync = async (fastify) => {
     yearMonth: Type.String({ minLength: 1 }),
     filename: Type.String({ minLength: 1 }),
   });
-  const GetReportQueryParams = Type.Optional(
-    Type.Object({
-      download: Type.Any(),
-    }),
-  );
+  const GetReportQueryParams = Type.Object({
+    download: Type.Optional(
+      Type.Any(),
+    ),
+  });
   fastify.get<{
     Params: Static<typeof GetReportParams>,
     Querystring: Static<typeof GetReportQueryParams>
@@ -69,16 +69,14 @@ const router: FastifyPluginAsync = async (fastify) => {
         throw new ArgumentError(`File path must be in the "${outDir}" folder. Resolved: "${detailPath}"`);
       }
 
-      let detailFile: unknown = {};
+      let detailFile: ReportResultType | undefined;
       try {
-        detailFile = JSON.parse(await readFile(detailPath, 'utf-8'));
+        detailFile = Value.Cast(
+          ReportResult,
+          JSON.parse(await readFile(detailPath, 'utf-8')),
+        );
       } catch (error) {
         throw new ArgumentError(`File "${year}/${yearMonth}/${reportFilename}.det.json" not found`);
-      }
-
-      if (!isValidResult(detailFile)) {
-        // As validation throws an error, this line shouldn't be called
-        return '';
       }
 
       const task = await getTaskById(detailFile.detail.taskId, request.namespaceIds);
