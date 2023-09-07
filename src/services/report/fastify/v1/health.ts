@@ -2,7 +2,7 @@ import type { FastifyPluginAsync } from 'fastify';
 
 import { Type, type Static } from '~/lib/typebox';
 
-import * as hc from '~/models/healthchecks';
+import * as checks from '~/models/healthchecks';
 
 const router: FastifyPluginAsync = async (fastify) => {
   /**
@@ -12,9 +12,9 @@ const router: FastifyPluginAsync = async (fastify) => {
     '/',
     async () => ({
       content: {
-        current: hc.serviceName,
-        currentVersion: hc.serviceVersion,
-        services: hc.services,
+        current: checks.serviceName,
+        currentVersion: checks.serviceVersion,
+        services: checks.services,
       },
     }),
   );
@@ -26,7 +26,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     '/all',
     async () => ({
       content: Promise.all(
-        [...hc.services].map((s) => hc.ping(s)),
+        [...checks.services].map((s) => checks.ping(s)),
       ),
     }),
   );
@@ -47,13 +47,13 @@ const router: FastifyPluginAsync = async (fastify) => {
     async (request) => {
       const { service } = request.params;
 
-      if (!hc.isService(service)) {
+      if (!checks.isService(service)) {
         // As validation throws an error, this line shouldn't be called
         return {};
       }
 
       return {
-        content: await hc.ping(service),
+        content: await checks.ping(service),
       };
     },
   );

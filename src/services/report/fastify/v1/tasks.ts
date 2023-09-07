@@ -12,17 +12,7 @@ import * as tasks from '~/models/tasks';
 import { getTemplateById, linkTaskToTemplate, unlinkTaskFromTemplate } from '~/models/templates';
 import { ArgumentError, NotFoundError, HTTPError } from '~/types/errors';
 
-const PaginationQuery = Type.Partial(
-  Type.Object({
-    previous: Type.String(),
-    count: Type.Number(),
-  }),
-);
-
-const SpecificTaskParams = Type.Object({
-  task: Type.String({ minLength: 1 }),
-});
-type SpecificTaskParamsType = Static<typeof SpecificTaskParams>;
+import { PaginationQuery, type PaginationQueryType } from '../utils/pagination';
 
 const router: FastifyPluginAsync = async (fastify) => {
   await fastify.register(authPlugin, { prefix: 'tasks' });
@@ -31,7 +21,7 @@ const router: FastifyPluginAsync = async (fastify) => {
    * List all active tasks of authed user's namespace.
    */
   fastify.get<{
-    Querystring: Static<typeof PaginationQuery>
+    Querystring: PaginationQueryType
   }>(
     '/',
     {
@@ -101,6 +91,11 @@ const router: FastifyPluginAsync = async (fastify) => {
       };
     },
   );
+
+  const SpecificTaskParams = Type.Object({
+    task: Type.String({ minLength: 1 }),
+  });
+  type SpecificTaskParamsType = Static<typeof SpecificTaskParams>;
 
   /**
    * Get specific task
