@@ -5,11 +5,10 @@ import type {
   FastifySchema,
 } from 'fastify';
 import { StatusCodes } from 'http-status-codes';
-import { Type } from '@sinclair/typebox';
-import { Value } from '@sinclair/typebox/value';
 
 import { merge } from 'lodash';
 import config from '~/lib/config';
+import { Type, Value } from '~/lib/typebox';
 
 import {
   getAccessValue,
@@ -116,9 +115,13 @@ const getPossibleNamespaces = async (
 /**
  * Query params that can be provided for `requireAccess`
  */
-const querystring = Type.Object({
-  namespaces: Type.Optional(Type.Array(Type.String())),
-});
+const NamespaceQuery = Type.Partial(
+  Type.Object({
+    namespaces: Type.Array(
+      Type.String({ minLength: 1 }),
+    ),
+  }),
+);
 
 /**
  * Prepare a pre-validation hook to lock ressource behind a specific access level
@@ -132,7 +135,7 @@ const requireAccess = (minAccess: Access): preValidationHookHandler => async (re
 
   // Get ids wanted by user
   let wantedIds: string[] | undefined;
-  if (Value.Check(querystring, request.query)) {
+  if (Value.Check(NamespaceQuery, request.query)) {
     ({ namespaces: wantedIds } = request.query);
   }
 
@@ -174,11 +177,19 @@ const pluginConfig = Type.Object({
  * The config of the routes using the plugin
  */
 const authConfig = Type.Object({
-  auth: Type.Optional(Type.Object({
-    requireAPIKey: Type.Optional(Type.Boolean()),
-    requireUser: Type.Optional(Type.Boolean()),
-    access: Type.Optional(Type.Enum(Access)),
-  })),
+  auth: Type.Optional(
+    Type.Object({
+      requireAPIKey: Type.Optional(
+        Type.Boolean(),
+      ),
+      requireUser: Type.Optional(
+        Type.Boolean(),
+      ),
+      access: Type.Optional(
+        Type.Enum(Access),
+      ),
+    }),
+  ),
 });
 
 /**
@@ -242,7 +253,7 @@ const authPlugin: FastifyPluginAsync = async (fastify, pluginOpts) => {
         {},
         routeOpts.schema ?? {},
         {
-          querystring,
+          querystring: NamespaceQuery,
         },
       );
 

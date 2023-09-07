@@ -3,9 +3,9 @@ import { readFile } from 'node:fs/promises';
 
 import type { FastifyPluginAsync } from 'fastify';
 import fastifyStatic from '@fastify/static';
-import { Type, type Static } from '@sinclair/typebox';
 
 import config from '~/lib/config';
+import { Type, type Static } from '~/lib/typebox';
 
 import authPlugin from '~/fastify/plugins/auth';
 
@@ -33,13 +33,15 @@ const router: FastifyPluginAsync = async (fastify) => {
    * Get specific report
    */
   const GetReportParams = Type.Object({
-    year: Type.String(),
-    yearMonth: Type.String(),
-    filename: Type.String(),
+    year: Type.String({ minLength: 1 }),
+    yearMonth: Type.String({ minLength: 1 }),
+    filename: Type.String({ minLength: 1 }),
   });
-  const GetReportQueryParams = Type.Object({
-    download: Type.Optional(Type.Any()),
-  });
+  const GetReportQueryParams = Type.Optional(
+    Type.Object({
+      download: Type.Any(),
+    }),
+  );
   fastify.get<{
     Params: Static<typeof GetReportParams>,
     Querystring: Static<typeof GetReportQueryParams>

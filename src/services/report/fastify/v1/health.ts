@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
-import { Type, type Static } from '@sinclair/typebox';
+
+import { Type, type Static } from '~/lib/typebox';
 
 import * as hc from '~/models/healthchecks';
 
@@ -34,7 +35,7 @@ const router: FastifyPluginAsync = async (fastify) => {
    * Ping specific service
    */
   const GetServiceParams = Type.Object({
-    service: Type.String(),
+    service: Type.String({ minLength: 1 }),
   });
   fastify.get<{ Params: Static<typeof GetServiceParams> }>(
     '/:service',
