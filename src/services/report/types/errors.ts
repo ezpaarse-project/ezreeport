@@ -19,7 +19,7 @@ export class ArgumentError extends HTTPError {
   }
 }
 
-export class ConflitError extends HTTPError {
+export class ConflictError extends HTTPError {
   constructor(message: string) {
     super(message, StatusCodes.CONFLICT);
   }

@@ -24,7 +24,7 @@ const adminPerRoute = new Map<string, boolean>();
  * @param access Access level
  */
 export const registerRouteWithAccess = (route: string, access: Access) => {
-  appLogger.verbose(`[perms] Route "${route}" registered with minimum access: "${access}"`);
+  appLogger.verbose(`[perms] Route [${route}] registered with minimum access: [${access}]`);
   accessPerRoute.set(route, accessValues[access]);
 };
 
@@ -35,7 +35,7 @@ export const registerRouteWithAccess = (route: string, access: Access) => {
  * @param isAdminRequired Is admin required
  */
 export const registerRoute = (route: string, isAdminRequired: boolean) => {
-  appLogger.verbose(`[perms] Route "${route}" registered with admin required: "${isAdminRequired}"`);
+  appLogger.verbose(`[perms] Route [${route}] registered with admin required: [${isAdminRequired}]`);
   adminPerRoute.set(route, isAdminRequired);
 };
 

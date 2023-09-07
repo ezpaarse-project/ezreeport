@@ -10,7 +10,7 @@ import authPlugin from '~/fastify/plugins/auth';
 import { Access } from '~/models/access';
 import * as tasks from '~/models/tasks';
 import { getTemplateById, linkTaskToTemplate, unlinkTaskFromTemplate } from '~/models/templates';
-import { ArgumentError, NotFoundError, HTTPError } from '~/types/errors';
+import { ArgumentError, NotFoundError, ConflictError } from '~/types/errors';
 
 import { PaginationQuery, type PaginationQueryType } from '../utils/pagination';
 
@@ -316,7 +316,7 @@ const router: FastifyPluginAsync = async (fastify) => {
       }
 
       if (!taskItem.lastExtended) {
-        throw new HTTPError(`Task with id '${taskId}' is already linked to a template`, StatusCodes.CONFLICT);
+        throw new ConflictError(`Task with id '${taskId}' is already linked to a template`);
       }
 
       await linkTaskToTemplate(
@@ -361,7 +361,7 @@ const router: FastifyPluginAsync = async (fastify) => {
       }
 
       if (taskItem.lastExtended) {
-        throw new HTTPError(`Task with id '${taskId}' is already unlinked`, StatusCodes.CONFLICT);
+        throw new ConflictError(`Task with id '${taskId}' is already unlinked`);
       }
 
       await unlinkTaskFromTemplate(
