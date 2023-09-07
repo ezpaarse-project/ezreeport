@@ -8,6 +8,7 @@ import tasksActivity from './v1/tasksActivity';
 import files from './v1/files';
 import auth from './v1/auth';
 import health from './v1/health';
+import crons from './v1/crons';
 
 const router: FastifyPluginAsync = async (fastify) => {
   fastify.decorateReply('apiVersion', 1);
@@ -29,6 +30,7 @@ const router: FastifyPluginAsync = async (fastify) => {
   await fastify.register(files, { prefix: '/reports' });
   await fastify.register(auth, { prefix: '/me' });
   await fastify.register(health, { prefix: '/health' });
+  await fastify.register(crons, { prefix: '/crons' });
 };
 
 export default router;
