@@ -8,15 +8,15 @@ import {
   type Namespace,
   type TaskActivity,
   type Prisma,
-  type Task,
-  type Template,
+  type Task as PrismaTask,
+  type Template as PrismaTemplate,
 } from '~/lib/prisma';
 
 import { calcNextDate } from '~/models/recurrence';
 
 import { ArgumentError } from '~/types/errors';
 
-import { TaskTemplateBody, getTemplateById } from './templates';
+import { FullTemplateBody, TaskTemplate, getTemplateById } from './templates';
 
 // #region Input types
 
@@ -27,7 +27,7 @@ type InputActivity = Pick<Prisma.TaskActivityCreateWithoutTaskInput, 'type' | 'm
  */
 export const InputTaskBody = Type.Object({
   name: Type.String({ minLength: 1 }),
-  template: TaskTemplateBody,
+  template: TaskTemplate,
   extends: Type.String({ minLength: 1 }),
   targets: Type.Array(
     Type.String({ format: 'email' }),
@@ -55,19 +55,22 @@ export const CreateTaskBody = Type.Intersect([
 
 // #region Output types
 
-type LastExtended = { id: Template['id'], name: Template['name'], tags: Template['tags'] } | null;
+const LastExtended = Type.Intersect([
+  Type.Object({ id: Type.String() }),
+  Type.Pick(FullTemplateBody, ['name', 'tags']),
+]);
 
 export type TaskList = (
-  Pick<Task, 'id' | 'name' | 'namespaceId' | 'recurrence' | 'nextRun' | 'lastRun' | 'enabled' | 'createdAt' | 'updatedAt'>
-  & { tags: Template['tags'] }
+  Pick<PrismaTask, 'id' | 'name' | 'namespaceId' | 'recurrence' | 'nextRun' | 'lastRun' | 'enabled' | 'createdAt' | 'updatedAt'>
+  & { tags: PrismaTemplate['tags'] }
 )[];
 
-type FullTask = Pick<Task, 'id' | 'name' | 'targets' | 'recurrence' | 'nextRun' | 'lastRun' | 'enabled' | 'createdAt' | 'updatedAt'>
+type FullTask = Pick<PrismaTask, 'id' | 'name' | 'targets' | 'recurrence' | 'nextRun' | 'lastRun' | 'enabled' | 'createdAt' | 'updatedAt'>
 & {
-  template: Static<typeof TaskTemplateBody>,
+  template: Static<typeof TaskTemplate>,
   namespace: Pick<Namespace, 'id' | 'name' | 'logoId' | 'createdAt' | 'updatedAt'>,
-  extends: Pick<Template, 'id' | 'name' | 'tags' | 'createdAt' | 'updatedAt'>,
-  lastExtended: LastExtended,
+  extends: Pick<PrismaTemplate, 'id' | 'name' | 'tags' | 'createdAt' | 'updatedAt'>,
+  lastExtended: Static<typeof LastExtended>,
   activity: TaskActivity[],
 };
 
@@ -114,6 +117,19 @@ const prismaTaskSelect = {
 } satisfies Prisma.TaskSelect;
 
 /**
+ * Cast Prisma's task into a standard Task
+ *
+ * @param data The data from Prisma
+ *
+ * @returns A standard Task
+ */
+const castFullTask = <T extends Omit<PrismaTask, 'extendedId' | 'namespaceId'>>(data: T): T & Pick<FullTask, 'template' | 'lastExtended'> => ({
+  ...data,
+  template: Value.Cast(TaskTemplate, data.template),
+  lastExtended: Value.Cast(LastExtended, data.lastExtended),
+});
+
+/**
  * Get count of tasks in DB
  *
  * @param namespace The namespace of the task. If provided,
@@ -144,7 +160,7 @@ export const getCountTask = (
 export const getAllTasks = async (
   opts?: {
     count?: number,
-    previous?: Task['id'],
+    previous?: PrismaTask['id'],
   },
   namespaceIds?: Namespace['id'][],
 ): Promise<TaskList> => {
@@ -179,8 +195,8 @@ export const getAllTasks = async (
   return Promise.all(
     // Add tags from extended or last extended
     tasks.map(async ({ extendedId, lastExtended, ...task }) => {
-      const lE = lastExtended as LastExtended;
-      if (lE && lE.tags.length > 0) {
+      const lE = Value.Cast(LastExtended, lastExtended);
+      if (lE?.tags && lE.tags.length > 0) {
         return {
           ...task,
           tags: lE.tags,
@@ -205,7 +221,7 @@ export const getAllTasks = async (
  */
 export const getAllTasksToGenerate = async (
   date: Date | string,
-): Promise<Task[]> => prisma.task.findMany({
+): Promise<PrismaTask[]> => prisma.task.findMany({
   where: {
     enabled: true,
     nextRun: {
@@ -223,7 +239,7 @@ export const getAllTasksToGenerate = async (
  *
  * @returns Task
  */
-export const getTaskById = async (id: Task['id'], namespaceIds?: Namespace['id'][]): Promise<FullTask | null> => {
+export const getTaskById = async (id: PrismaTask['id'], namespaceIds?: Namespace['id'][]): Promise<FullTask | null> => {
   const task = await prisma.task.findFirst({
     where: {
       id,
@@ -238,11 +254,7 @@ export const getTaskById = async (id: Task['id'], namespaceIds?: Namespace['id']
     return null;
   }
 
-  return {
-    ...task,
-    template: Value.Cast(TaskTemplateBody, task.template),
-    lastExtended: task.lastExtended as LastExtended, // TODO: Cast
-  };
+  return castFullTask(task);
 };
 
 /**
@@ -286,11 +298,7 @@ export const createTask = async (
   });
 
   appLogger.verbose(`[models] Task "${id}" created`);
-  return {
-    ...task,
-    template: Value.Cast(TaskTemplateBody, task.template),
-    lastExtended: task.lastExtended as LastExtended, // TODO: Cast
-  };
+  return castFullTask(task);
 };
 
 /**
@@ -302,7 +310,7 @@ export const createTask = async (
  *
  * @returns The edited task
  */
-export const deleteTaskById = async (id: Task['id'], namespaceIds?: Namespace['id'][]): Promise<FullTask | null> => {
+export const deleteTaskById = async (id: PrismaTask['id'], namespaceIds?: Namespace['id'][]): Promise<FullTask | null> => {
   // Check if task exist
   const existingTask = await getTaskById(id, namespaceIds);
   if (!existingTask) {
@@ -317,11 +325,7 @@ export const deleteTaskById = async (id: Task['id'], namespaceIds?: Namespace['i
   });
 
   appLogger.verbose(`[models] Task "${id}" deleted`);
-  return {
-    ...task,
-    template: Value.Cast(TaskTemplateBody, task.template),
-    lastExtended: task.lastExtended as LastExtended, // TODO: Cast
-  };
+  return castFullTask(task);
 };
 
 /**
@@ -336,8 +340,8 @@ export const deleteTaskById = async (id: Task['id'], namespaceIds?: Namespace['i
  * @returns The edited task, or null if task doesn't exist
  */
 export const patchTaskByIdWithHistory = async (
-  id: Task['id'],
-  input: Partial<InputTaskBodyType> & { lastRun?: Task['lastRun'] },
+  id: PrismaTask['id'],
+  input: Partial<InputTaskBodyType> & { lastRun?: PrismaTask['lastRun'] },
   entry?: InputActivity,
   namespaceIds?: Namespace['id'][],
 ): Promise<FullTask | null> => {
@@ -392,11 +396,7 @@ export const patchTaskByIdWithHistory = async (
   });
 
   appLogger.verbose(`[models] Task "${id}" edited`);
-  return {
-    ...task,
-    template: Value.Cast(TaskTemplateBody, task.template),
-    lastExtended: task.lastExtended as LastExtended, // TODO: Cast
-  };
+  return castFullTask(task);
 };
 
 /**
@@ -411,7 +411,7 @@ export const patchTaskByIdWithHistory = async (
  * @returns The edited task, or null if task doesn't exist
  */
 export const patchTaskById = (
-  id: Task['id'],
+  id: PrismaTask['id'],
   data: InputTaskBodyType,
   editor: string,
   namespaceIds?: Namespace['id'][],

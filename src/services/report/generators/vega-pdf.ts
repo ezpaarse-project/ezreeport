@@ -2,6 +2,7 @@ import EventEmitter from 'node:events';
 
 import Joi from 'joi';
 import { merge } from 'lodash';
+import { Mark } from 'vega-lite/build/src/mark';
 
 import { Recurrence } from '~/lib/prisma';
 import {
@@ -23,8 +24,8 @@ import {
   parseTitle,
 } from '~/lib/vega';
 
-import { type AnyFigure } from '~/models/figures';
-import { layoutSchema, type AnyLayout } from '~/models/layouts';
+import type { FigureType } from '~/models/figures';
+import type { LayoutType } from '~/models/layouts';
 import { ArgumentError } from '~/types/errors';
 
 interface Grid {
@@ -37,18 +38,19 @@ interface Margin {
   horizontal: number,
 }
 
-interface RenderOptions {
+export interface VegaRenderOptions {
   // Auto fields
   doc: PDFReportOptions
   recurrence: Recurrence,
   debug?: boolean
   // Resolved fields
-  layouts: AnyLayout[],
+  layouts: LayoutType[],
   // Template specific
   grid?: Grid,
 }
 
-const optionSchema = Joi.object<RenderOptions>({
+// TODO typebox
+const optionSchema = Joi.object<VegaRenderOptions>({
   doc: Joi.object({
     name: Joi.string().required(),
     period: Joi.object({
@@ -69,7 +71,7 @@ const optionSchema = Joi.object<RenderOptions>({
     Recurrence.BIENNIAL,
     Recurrence.YEARLY,
   ).required(),
-  layouts: Joi.array().items(layoutSchema).required(),
+  layouts: Joi.array().items().required(),
   debug: Joi.boolean(),
 });
 
@@ -81,7 +83,7 @@ const optionSchema = Joi.object<RenderOptions>({
  *
  * @throws If not valid
  */
-const isRenderOptions = (data: unknown): data is RenderOptions => {
+const isRenderOptions = (data: unknown): data is VegaRenderOptions => {
   const validation = optionSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Fetch options are not valid: ${validation.error.message}`);
@@ -229,7 +231,7 @@ const resolveSlot = (params: {
   /**
    * Current layout's figures
    */
-  figures: AnyFigure[],
+  figures: FigureType[],
   /**
    * Current iteration of figure
    */
@@ -312,8 +314,8 @@ const resolveSlot = (params: {
  *
  * @return Stats about PDF
  */
-const generatePdfWithVega = async (
-  options: RenderOptions,
+const renderPdfWithVega = async (
+  options: VegaRenderOptions,
   events: EventEmitter = new EventEmitter(),
 ): Promise<PDFStats> => {
   // Check options even if type is explicit, because it can be a merge between multiple sources
@@ -396,7 +398,11 @@ const generatePdfWithVega = async (
                 }
 
                 // eslint-disable-next-line no-await-in-loop
-                await addTableToPDF(doc, figureData as any[], merge({}, figure.params, { margin }));
+                await addTableToPDF(
+                  doc,
+                  figureData as any[],
+                  merge({}, figure.params, { margin }),
+                );
                 break;
               }
 
@@ -478,12 +484,16 @@ const generatePdfWithVega = async (
 
                 // Creating Vega view
                 const view = createVegaView(
-                  createVegaLSpec(figure.type, figureData as any[], {
-                    ...figParams,
-                    recurrence: options.recurrence,
-                    width: slot.width,
-                    height: slot.height,
-                  }),
+                  createVegaLSpec(
+                    figure.type as Mark,
+                    figureData as any[],
+                    {
+                      ...figParams,
+                      recurrence: options.recurrence,
+                      width: slot.width,
+                      height: slot.height,
+                    } as any,
+                  ),
                 );
 
                 // eslint-disable-next-line no-await-in-loop
@@ -517,4 +527,4 @@ const generatePdfWithVega = async (
   }
 };
 
-export default generatePdfWithVega;
+export default renderPdfWithVega;

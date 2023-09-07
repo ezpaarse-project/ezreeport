@@ -1,8 +1,6 @@
 import Joi from 'joi';
 import { isEqual } from 'lodash';
 
-import fetchers from '~/generators/fetchers';
-
 import { parseBulkResults, type BulkResult } from '~/lib/utils';
 import { appLogger } from '~/lib/logger';
 import prisma from '~/lib/prisma';
@@ -50,20 +48,16 @@ export type TypedNamespace = Omit<Namespace, 'fetchLogin' | 'fetchOptions'> & Na
 const namespaceSchema = Joi.object<Prisma.NamespaceCreateInput>({
   name: Joi.string().required(),
   fetchLogin: Joi
-    .object(
-      // Object like { elastic: { user: 'foobar' } }
-      Object.fromEntries(
-        Object.keys(fetchers).map((key) => [key, Joi.object()]),
-      ),
-    )
+    .object({
+      elastic: Joi.object({
+        username: Joi.string().required(),
+      }),
+    })
     .required(),
   fetchOptions: Joi
-    .object(
-      // Object like { elastic: { indexPrefix: {} } }
-      Object.fromEntries(
-        Object.keys(fetchers).map((key) => [key, Joi.object()]),
-      ),
-    )
+    .object({
+      elastic: Joi.object({}),
+    })
     .required(),
   logoId: Joi.string(),
 });

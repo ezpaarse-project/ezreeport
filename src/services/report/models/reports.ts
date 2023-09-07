@@ -6,24 +6,21 @@ import { join } from 'node:path';
 import { compact, merge, omit } from 'lodash';
 import Joi from 'joi';
 
-import fetchers, { type Fetchers } from '~/generators/fetchers';
-import renderers, { type Renderers } from '~/generators/renderers';
+import fetchWithElastic, { ElasticFetchOptions } from '~/generators/elastic';
+import renderPdfWithVega, { VegaRenderOptions } from '~/generators/vega-pdf';
 
 import type { Recurrence, Task } from '~/lib/prisma';
 import config from '~/lib/config';
 import * as dfns from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
+import type { PDFStats } from '~/lib/pdf';
+import { Value } from '~/lib/typebox';
 
 import { calcNextDate, calcPeriod } from '~/models/recurrence';
-import { ArgumentError, ConflitError } from '~/types/errors';
+import { ConflictError } from '~/types/errors';
 
 import { patchTaskByIdWithHistory } from './tasks';
-import {
-  getTemplateById,
-  isTaskTemplate,
-  type AnyTemplate,
-  type AnyTaskTemplate,
-} from './templates';
+import * as templates from './templates';
 import { type TypedNamespace, getNamespaceById } from './namespaces';
 
 const { ttl, outDir } = config.report;
@@ -49,7 +46,7 @@ type ReportResult = {
     sendingTo?: string[],
     period?: Interval,
     auth?: TypedNamespace['fetchLogin'],
-    stats?: Omit<Awaited<ReturnType<Renderers[keyof Renderers]>>, 'path'>,
+    stats?: Omit<PDFStats, 'path'>,
     error?: {
       message: string,
       stack: string[],
@@ -76,12 +73,9 @@ const reportResultSchema = Joi.object<ReportResult>({
       start: [Joi.date().iso().required(), Joi.number().integer().required()],
       end: [Joi.date().iso().required(), Joi.number().integer().required()],
     }),
-    auth: Joi.object<ReportResult['detail']['auth']>(
-      // Object like { elastic: { user: 'foobar' } }
-      Object.fromEntries(
-        Object.keys(fetchers).map((key) => [key, Joi.object()]),
-      ),
-    ),
+    auth: Joi.object<ReportResult['detail']['auth']>({
+      elastic: Joi.string().required(),
+    }),
     stats: Joi.object<ReportResult['detail']['stats']>({
       pageCount: Joi.number().integer().required(),
       size: Joi.number().integer().required(),
@@ -139,8 +133,8 @@ const writeInfoFile = (name: string, content: unknown) => writeFile(
 );
 
 type FetchParams = {
-  template: AnyTemplate,
-  taskTemplate: AnyTaskTemplate,
+  template: templates.TemplateType,
+  taskTemplate: templates.TaskTemplateType,
   period: Interval,
   namespace?: TypedNamespace,
   recurrence: Recurrence
@@ -162,7 +156,7 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
       ) {
         return;
       }
-      const fetchOptions: GeneratorParam<Fetchers, keyof Fetchers> = merge(
+      const fetchOptions: ElasticFetchOptions = merge(
         {},
         template.fetchOptions ?? {},
         layout.fetchOptions ?? {},
@@ -178,7 +172,7 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
       template.layouts[i].fetchOptions = fetchOptions;
 
       try {
-        template.layouts[i].data = await fetchers.elastic(fetchOptions, events);
+        template.layouts[i].data = await fetchWithElastic(fetchOptions, events);
       } catch (error) {
         const err = error as Error;
         err.cause = { ...(err.cause ?? {}), layout: i, type: 'fetch' };
@@ -196,7 +190,7 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
  * @param writeHistory Should write generation in task history (also disable first level of debug)
  * @param debug Enable second level of debug
  * @param meta Additional data
- * @param events Event handler (passed to {@link generatePdfWithVega})
+ * @param events Event handler (passed to {@link renderPdfWithVega})
  *
  * @returns Job detail
  */
@@ -244,7 +238,7 @@ export const generateReport = async (
 
   await mkdir(basePath, { recursive: true });
 
-  let template: AnyTemplate | null = null;
+  let template: templates.TemplateType | null = null;
 
   try {
     const targets = compact(task.targets);
@@ -270,7 +264,7 @@ export const generateReport = async (
         { days: -1 },
       );
       if (!dfns.isSameDay(expectedPeriodEnd, parsedPeriod.end)) {
-        throw new ConflitError(`Custom period "${customPeriod.start} to ${customPeriod.end}" doesn't match task's recurrence (${task.recurrence}). Should be : "${customPeriod.start} to ${dfns.formatISO(expectedPeriodEnd)}")`);
+        throw new ConflictError(`Custom period "${customPeriod.start} to ${customPeriod.end}" doesn't match task's recurrence (${task.recurrence}). Should be : "${customPeriod.start} to ${dfns.formatISO(expectedPeriodEnd)}")`);
       }
       period = parsedPeriod;
     }
@@ -282,13 +276,9 @@ export const generateReport = async (
     }
 
     // Parse task template
-    const taskTemplate = task.template;
-    if (!isTaskTemplate(taskTemplate) || (typeof taskTemplate !== 'object' || Array.isArray(taskTemplate))) {
-      // As validation throws an error, this line should be called only if 2nd assertion fails
-      throw new ArgumentError("Task's template is not an object");
-    }
+    const taskTemplate = Value.Cast(templates.TaskTemplate, task.template);
+    ({ body: template } = await templates.getTemplateById(task.extendedId) ?? { body: null });
 
-    ({ body: template } = await getTemplateById(task.extendedId) ?? { body: null });
     if (!template) {
       throw new Error(`No template "${task.extendedId}" was found`);
     }
@@ -316,7 +306,7 @@ export const generateReport = async (
     logger.verbose(`[gen] [${process.pid}] Data fetched`);
 
     // Render report
-    const renderOptions: GeneratorParam<Renderers, keyof Renderers> = merge(
+    const renderOptions: VegaRenderOptions = merge(
       {},
       template.renderOptions ?? {},
       {
@@ -331,7 +321,7 @@ export const generateReport = async (
       },
     );
     template.renderOptions = renderOptions;
-    const stats = await renderers['vega-pdf'](renderOptions, events);
+    const stats = await renderPdfWithVega(renderOptions, events);
     result.detail.files.report = `${namepath}.rep.pdf`;
     logger.verbose(`[gen] [${process.pid}] Report wrote to "${result.detail.files.report}"`);
 

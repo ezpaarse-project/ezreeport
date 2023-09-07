@@ -18,7 +18,7 @@ type CustomAggregation = (
   & { name?: string, aggregations?: CustomAggregation[], aggs?: CustomAggregation[] }
 );
 
-interface FetchOptions {
+export interface ElasticFetchOptions {
   // Auto fields
   recurrence: Recurrence,
   period: Interval,
@@ -41,7 +41,7 @@ interface FetchOptions {
   fetchCount?: string,
 }
 
-const optionSchema = Joi.object<FetchOptions>({
+const optionSchema = Joi.object<ElasticFetchOptions>({
   // Auto fields
   recurrence: Joi.string().valid(
     Recurrence.DAILY,
@@ -77,7 +77,7 @@ const optionSchema = Joi.object<FetchOptions>({
  *
  * @throws If not valid
  */
-const isFetchOptions = (data: unknown): data is FetchOptions => {
+const isFetchOptions = (data: unknown): data is ElasticFetchOptions => {
   const validation = optionSchema.validate(data, {});
   if (validation.error != null) {
     throw new ArgumentError(`Fetch options are not valid: ${validation.error.message}`);
@@ -198,8 +198,8 @@ const setSubAggValues = (info: AggInfo, value: any) => {
  *
  * @returns The data fetched and cleaned
  */
-export default async (
-  options: Record<string, unknown> | FetchOptions,
+const fetchWithElastic = async (
+  options: Record<string, unknown> | ElasticFetchOptions,
   _events: EventEmitter = new EventEmitter(),
 ) => {
   // Check options even if type is explicit, because it can be a merge between multiple sources
@@ -313,3 +313,5 @@ export default async (
 
   return data;
 };
+
+export default fetchWithElastic;
