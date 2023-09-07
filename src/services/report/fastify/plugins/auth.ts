@@ -44,6 +44,17 @@ const requireUser: preValidationHookHandler = async (request) => {
 };
 
 /**
+ * Pre-validation hook that checks if a user is an admin
+ *
+ * @param request The fastify Request
+ */
+const requireAdmin: preValidationHookHandler = async (request) => {
+  if (!request.user?.isAdmin) {
+    throw new HTTPError('Admin status is required', StatusCodes.UNAUTHORIZED);
+  }
+};
+
+/**
  * Pre-validation hook that checks if an API key is provided and valid
  *
  * @param request The fastify Request
@@ -182,6 +193,9 @@ const authConfig = Type.Object({
       requireAPIKey: Type.Optional(
         Type.Boolean(),
       ),
+      requireAdmin: Type.Optional(
+        Type.Boolean(),
+      ),
       requireUser: Type.Optional(
         Type.Boolean(),
       ),
@@ -213,6 +227,7 @@ const authPlugin: FastifyPluginAsync = async (fastify, pluginOpts) => {
     }
 
     // Prepare for registration
+    let registered = false;
     const shouldRegister = routeOpts.method !== 'HEAD' && !/^\/v\d+\//i.test(routeOpts.prefix);
     const method = routeOpts.method.toString().toLowerCase();
     const url = routeOpts.routePath
@@ -228,26 +243,37 @@ const authPlugin: FastifyPluginAsync = async (fastify, pluginOpts) => {
         : [routeOpts.preValidation];
     }
 
-    // If require admin
-    if (routeOpts.config.auth.requireAPIKey) {
+    // If require API key
+    if (!registered && routeOpts.config.auth.requireAPIKey) {
       preValidation.push(requireAPIKey);
+      registered = true;
+    }
+
+    // If require admin
+    if (!registered && routeOpts.config.auth.requireAdmin) {
+      preValidation.push(
+        requireUser,
+        requireAdmin,
+      );
 
       if (shouldRegister) {
         registerRoute(routeName, true);
       }
+      registered = true;
     }
 
-    // If just require a user
-    if (routeOpts.config.auth.requireUser) {
+    // If require a user
+    if (!registered && routeOpts.config.auth.requireUser) {
       preValidation.push(requireUser);
 
       if (shouldRegister) {
         registerRoute(routeName, false);
       }
+      registered = true;
     }
 
-    // If just require access
-    if (routeOpts.config.auth.access) {
+    // If require access to namespaces
+    if (!registered && routeOpts.config.auth.access) {
       // eslint-disable-next-line no-param-reassign
       routeOpts.schema = merge<Object, FastifySchema, FastifySchema>(
         {},
@@ -265,6 +291,7 @@ const authPlugin: FastifyPluginAsync = async (fastify, pluginOpts) => {
       if (shouldRegister) {
         registerRouteWithAccess(routeName, routeOpts.config.auth.access);
       }
+      registered = true;
     }
 
     // Add new hooks
