@@ -9,7 +9,7 @@ import Joi from 'joi';
 import fetchers, { type Fetchers } from '~/generators/fetchers';
 import renderers, { type Renderers } from '~/generators/renderers';
 
-import type { Prisma, Recurrence, Task } from '~/lib/prisma';
+import type { Recurrence, Task } from '~/lib/prisma';
 import config from '~/lib/config';
 import * as dfns from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
@@ -17,7 +17,7 @@ import { appLogger as logger } from '~/lib/logger';
 import { calcNextDate, calcPeriod } from '~/models/recurrence';
 import { ArgumentError, ConflitError } from '~/types/errors';
 
-import { editTaskByIdWithHistory } from './tasks';
+import { patchTaskByIdWithHistory } from './tasks';
 import {
   getTemplateById,
   isTaskTemplate,
@@ -347,15 +347,9 @@ export const generateReport = async (
     );
 
     if (writeHistory) {
-      await editTaskByIdWithHistory(
+      await patchTaskByIdWithHistory(
         task.id,
-        {
-          ...task,
-          extends: task.extendedId,
-          template: task.template as Prisma.InputJsonObject,
-          nextRun: calcNextDate(today, task.recurrence),
-          lastRun: today,
-        },
+        { nextRun: calcNextDate(today, task.recurrence).toString(), lastRun: today },
         {
           type: 'generation-success',
           message: `Rapport "${namepath}" généré par ${origin}`,
@@ -391,14 +385,9 @@ export const generateReport = async (
     );
 
     if (writeHistory) {
-      await editTaskByIdWithHistory(
+      await patchTaskByIdWithHistory(
         task.id,
-        {
-          ...task,
-          extends: task.extendedId,
-          template: task.template as Prisma.InputJsonObject,
-          enabled: false,
-        },
+        { enabled: false },
         {
           type: 'generation-error',
           message: `Rapport "${namepath}" non généré par ${origin} suite à une erreur.`,

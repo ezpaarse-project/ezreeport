@@ -1,6 +1,6 @@
 import * as dfns from '~/lib/date-fns';
 import { appLogger } from '~/lib/logger';
-import { Type, type Static } from '~/lib/typebox';
+import { Type, type Static, Value } from '~/lib/typebox';
 
 import prisma from '~/lib/prisma';
 import {
@@ -38,6 +38,7 @@ export const InputTaskBody = Type.Object({
     Type.Boolean(),
   ),
 });
+
 type InputTaskBodyType = Static<typeof InputTaskBody>;
 
 /**
@@ -61,8 +62,9 @@ export type TaskList = (
   & { tags: Template['tags'] }
 )[];
 
-type FullTask = Pick<Task, 'id' | 'name' | 'template' | 'targets' | 'recurrence' | 'nextRun' | 'lastRun' | 'enabled' | 'createdAt' | 'updatedAt'>
+type FullTask = Pick<Task, 'id' | 'name' | 'targets' | 'recurrence' | 'nextRun' | 'lastRun' | 'enabled' | 'createdAt' | 'updatedAt'>
 & {
+  template: Static<typeof TaskTemplateBody>,
   namespace: Pick<Namespace, 'id' | 'name' | 'logoId' | 'createdAt' | 'updatedAt'>,
   extends: Pick<Template, 'id' | 'name' | 'tags' | 'createdAt' | 'updatedAt'>,
   lastExtended: LastExtended,
@@ -221,15 +223,27 @@ export const getAllTasksToGenerate = async (
  *
  * @returns Task
  */
-export const getTaskById = (id: Task['id'], namespaceIds?: Namespace['id'][]): Promise<FullTask | null> => prisma.task.findFirst({
-  where: {
-    id,
-    namespaceId: {
-      in: namespaceIds,
+export const getTaskById = async (id: Task['id'], namespaceIds?: Namespace['id'][]): Promise<FullTask | null> => {
+  const task = await prisma.task.findFirst({
+    where: {
+      id,
+      namespaceId: {
+        in: namespaceIds,
+      },
     },
-  },
-  select: prismaTaskSelect,
-}) as Promise<FullTask | null>;
+    select: prismaTaskSelect,
+  });
+
+  if (!task) {
+    return null;
+  }
+
+  return {
+    ...task,
+    template: Value.Cast(TaskTemplateBody, task.template),
+    lastExtended: task.lastExtended as LastExtended, // TODO: Cast
+  };
+};
 
 /**
  * Create task in DB
@@ -252,7 +266,7 @@ export const createTask = async (
     ...data
   } = input;
 
-  let nR = nextRun && dfns.parseISO(nextRun);
+  let nR = dfns.parseISO(nextRun);
   if (!nR) {
     nR = calcNextDate(new Date(), data.recurrence);
   }
@@ -272,7 +286,11 @@ export const createTask = async (
   });
 
   appLogger.verbose(`[models] Task "${id}" created`);
-  return task as FullTask;
+  return {
+    ...task,
+    template: Value.Cast(TaskTemplateBody, task.template),
+    lastExtended: task.lastExtended as LastExtended, // TODO: Cast
+  };
 };
 
 /**
@@ -299,7 +317,11 @@ export const deleteTaskById = async (id: Task['id'], namespaceIds?: Namespace['i
   });
 
   appLogger.verbose(`[models] Task "${id}" deleted`);
-  return task as FullTask;
+  return {
+    ...task,
+    template: Value.Cast(TaskTemplateBody, task.template),
+    lastExtended: task.lastExtended as LastExtended, // TODO: Cast
+  };
 };
 
 /**
@@ -313,9 +335,9 @@ export const deleteTaskById = async (id: Task['id'], namespaceIds?: Namespace['i
  *
  * @returns The edited task, or null if task doesn't exist
  */
-export const editTaskByIdWithHistory = async (
+export const patchTaskByIdWithHistory = async (
   id: Task['id'],
-  input: InputTaskBodyType & { lastRun?: Task['lastRun'] },
+  input: Partial<InputTaskBodyType> & { lastRun?: Task['lastRun'] },
   entry?: InputActivity,
   namespaceIds?: Namespace['id'][],
 ): Promise<FullTask | null> => {
@@ -332,25 +354,28 @@ export const editTaskByIdWithHistory = async (
     throw new ArgumentError(`No template named "${data.template.extends}" was found`);
   }
 
-  let nR = typeof nextRun === 'object' ? nextRun : dfns.parseISO(nextRun);
-  const isNextRunChanged = !dfns.isSameDay(nR, existingTask.nextRun);
-  if (isNextRunChanged && dfns.isBefore(nR, new Date())) {
-    throw new ArgumentError('Body is not valid: "nextRun" must be greater than "now" or stays unmodified');
-  }
-
-  // If next run isn't changed...
-  if (!isNextRunChanged) {
-    //  ... but recurrence changed, update nextRun
-    if (data.recurrence !== existingTask.recurrence) {
-      nR = calcNextDate(existingTask.lastRun ?? new Date(), data.recurrence);
+  let nR: Date = existingTask.nextRun;
+  if (nextRun) {
+    nR = dfns.parseISO(nextRun);
+    const isNextRunChanged = !dfns.isSameDay(nR, existingTask.nextRun);
+    if (isNextRunChanged && dfns.isBefore(nR, new Date())) {
+      throw new ArgumentError('Body is not valid: "nextRun" must be greater than "now" or stays unmodified');
     }
 
-    // ... but task is re-enabled
-    if (data.enabled && existingTask.enabled === false) {
-      const today = dfns.endOfDay(new Date());
-      nR = existingTask.nextRun;
-      while (dfns.isBefore(nR, today)) {
-        nR = calcNextDate(nR, existingTask.recurrence);
+    // If next run isn't changed...
+    if (!isNextRunChanged) {
+      //  ... but recurrence changed, update nextRun
+      if (data.recurrence && data.recurrence !== existingTask.recurrence) {
+        nR = calcNextDate(existingTask.lastRun ?? new Date(), data.recurrence);
+      }
+
+      // ... but task is re-enabled
+      if (data.enabled && existingTask.enabled === false) {
+        const today = dfns.endOfDay(new Date());
+        nR = existingTask.nextRun;
+        while (dfns.isBefore(nR, today)) {
+          nR = calcNextDate(nR, existingTask.recurrence);
+        }
       }
     }
   }
@@ -367,7 +392,11 @@ export const editTaskByIdWithHistory = async (
   });
 
   appLogger.verbose(`[models] Task "${id}" edited`);
-  return task as FullTask;
+  return {
+    ...task,
+    template: Value.Cast(TaskTemplateBody, task.template),
+    lastExtended: task.lastExtended as LastExtended, // TODO: Cast
+  };
 };
 
 /**
@@ -381,12 +410,12 @@ export const editTaskByIdWithHistory = async (
  *
  * @returns The edited task, or null if task doesn't exist
  */
-export const editTaskById = (
+export const patchTaskById = (
   id: Task['id'],
   data: InputTaskBodyType,
   editor: string,
   namespaceIds?: Namespace['id'][],
-): Promise<FullTask | null> => editTaskByIdWithHistory(
+): Promise<FullTask | null> => patchTaskByIdWithHistory(
   id,
   data,
   { type: 'edition', message: `Tâche éditée par ${editor}` },

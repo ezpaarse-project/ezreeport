@@ -2,7 +2,6 @@ import type { FastifyPluginAsync } from 'fastify';
 import { StatusCodes } from 'http-status-codes';
 
 import { assertIsSchema, Type, type Static } from '~/lib/typebox';
-import { Prisma } from '~/lib/prisma';
 import { addTaskToGenQueue } from '~/lib/bull';
 import { b64ToString } from '~/lib/utils';
 
@@ -180,7 +179,7 @@ const router: FastifyPluginAsync = async (fastify) => {
       assertIsSchema(tasks.InputTaskBody, request.body);
 
       return {
-        content: await tasks.editTaskById(
+        content: await tasks.patchTaskById(
           id,
           request.body,
           request.user?.username ?? '',
@@ -229,27 +228,21 @@ const router: FastifyPluginAsync = async (fastify) => {
     async (request) => {
       const { task: id } = request.params;
 
-      const item = await tasks.getTaskById(id, request.namespaceIds);
+      const item = await tasks.patchTaskByIdWithHistory(
+        id,
+        { enabled: true },
+        {
+          type: 'edition',
+          message: `Tâche activée par ${request.user?.username}`,
+        },
+        request.namespaceIds,
+      );
+
       if (!item) {
         throw new NotFoundError(`Task with id '${id}' not found for allowed namespace(s)`);
       }
 
-      return {
-        content: await tasks.editTaskByIdWithHistory(
-          id,
-          {
-            ...item,
-            extends: item.extends.id,
-            template: item.template || Prisma.JsonNull,
-            enabled: true,
-          },
-          {
-            type: 'edition',
-            message: `Tâche activée par ${request.user?.username}`,
-          },
-          request.namespaceIds,
-        ),
-      };
+      return { content: item };
     },
   );
 
@@ -273,27 +266,21 @@ const router: FastifyPluginAsync = async (fastify) => {
     async (request) => {
       const { task: id } = request.params;
 
-      const item = await tasks.getTaskById(id, request.namespaceIds);
+      const item = await tasks.patchTaskByIdWithHistory(
+        id,
+        { enabled: false },
+        {
+          type: 'edition',
+          message: `Tâche désactivée par ${request.user?.username}`,
+        },
+        request.namespaceIds,
+      );
+
       if (!item) {
         throw new NotFoundError(`Task with id '${id}' not found for allowed namespace(s)`);
       }
 
-      return {
-        content: await tasks.editTaskByIdWithHistory(
-          id,
-          {
-            ...item,
-            extends: item.extends.id,
-            template: item.template || Prisma.JsonNull,
-            enabled: false,
-          },
-          {
-            type: 'edition',
-            message: `Tâche activée par ${request.user?.username}`,
-          },
-          request.namespaceIds,
-        ),
-      };
+      return { content: item };
     },
   );
 
@@ -507,13 +494,9 @@ const router: FastifyPluginAsync = async (fastify) => {
       }
       item.targets.splice(emailIndex, 1);
 
-      await tasks.editTaskByIdWithHistory(
+      await tasks.patchTaskByIdWithHistory(
         item.id,
-        {
-          ...item,
-          extends: item.extends.id,
-          template: item.template || Prisma.JsonNull,
-        },
+        { targets: item.targets },
         {
           type: 'unsubscription',
           message: `${request.body.email} s'est désinscrit de la liste de diffusion.`,
