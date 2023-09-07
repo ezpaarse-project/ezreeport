@@ -1,9 +1,14 @@
 import Joi from 'joi';
+
 import type { Prisma } from '~/lib/prisma';
+import { Type } from '~/lib/typebox';
+
 import type { Fetchers } from '~/generators/fetchers';
 import fetchers from '~/generators/fetchers';
+
 import { ArgumentError } from '~/types/errors';
-import { type AnyFigure, figureSchema } from './figures';
+
+import { type AnyFigure, figureSchema, FigureBody } from './figures';
 
 /**
  * Layout is a page of report
@@ -19,6 +24,8 @@ export interface Layout<
   data?: Prisma.JsonValue,
   /**
   * Name of the fetcher
+  *
+  * @deprecated
   *
   * @see {fetchers} For more info
   */
@@ -41,6 +48,9 @@ export interface Layout<
 
 export type AnyLayout = Layout<keyof Fetchers>;
 
+/**
+ * @deprecated Use TypeBox & ajv instead
+ */
 export const layoutSchema = Joi.object<AnyLayout>({
   data: Joi.any(),
   fetcher: Joi.string().valid(...Object.keys(fetchers)),
@@ -48,8 +58,40 @@ export const layoutSchema = Joi.object<AnyLayout>({
   figures: Joi.array().items(figureSchema).required(),
 });
 
+export const LayoutBody = Type.Object({
+  data: Type.Optional(
+    Type.Any(),
+  ),
+
+  fetcher: Type.Optional(
+    Type.Literal('elastic'),
+  ),
+
+  figures: Type.Array(FigureBody, { minItems: 1 }),
+
+  fetchOptions: Type.Optional(
+    Type.Object({
+      aggs: Type.Optional(
+        Type.Array(
+          Type.Record(Type.String(), Type.Any()),
+        ),
+      ),
+
+      fetchCount: Type.Optional(
+        Type.String({ minLength: 1 }),
+      ),
+
+      filters: Type.Optional(
+        Type.Record(Type.String(), Type.Any()),
+      ),
+    }),
+  ),
+});
+
 /**
  * Check if input data is a layout
+ *
+ * @deprecated Use TypeBox & ajv instead
  *
  * @param data The input data
  * @returns `true` if valid

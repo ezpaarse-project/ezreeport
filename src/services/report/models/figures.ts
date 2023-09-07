@@ -1,9 +1,11 @@
 import Joi from 'joi';
 import type { Mark } from 'vega-lite/build/src/mark';
+
 import type { InputMdParams } from '~/lib/pdf/markdown';
 import type { InputMetricParams, MetricData } from '~/lib/pdf/metrics';
 import type { TableParams } from '~/lib/pdf/table';
 import type { InputVegaParams } from '~/lib/vega';
+import { Type } from '~/lib/typebox';
 
 type FigureType = Mark | 'table' | 'md' | 'metric';
 
@@ -39,6 +41,8 @@ export type AnyFigure = Figure<Mark> | Figure<'table'> | Figure<'md'> | Figure<'
 
 /**
  * Joi validation
+ *
+ * @deprecated Use TypeBox & ajv instead
  */
 export const figureSchema = Joi.object<AnyFigure>({
   type: Joi.string<FigureType>().required(),
@@ -48,4 +52,18 @@ export const figureSchema = Joi.object<AnyFigure>({
   ],
   params: Joi.object().required(),
   slots: Joi.array().items(Joi.number()),
+});
+
+export const FigureBody = Type.Object({
+  type: Type.String(),
+
+  data: Type.Optional(
+    Type.Any(),
+  ),
+
+  params: Type.Record(Type.String(), Type.Any()),
+
+  slots: Type.Array(
+    Type.Integer(),
+  ),
 });

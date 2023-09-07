@@ -2,6 +2,7 @@ import Joi from 'joi';
 
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
+import { Type } from '~/lib/typebox';
 
 import prisma from '~/lib/prisma';
 import { Prisma, type Template as PrismaTemplate, type Task } from '~/lib/prisma';
@@ -11,7 +12,7 @@ import renderers, { type Renderers } from '~/generators/renderers';
 
 import { ArgumentError } from '~/types/errors';
 
-import { layoutSchema, type Layout } from './layouts';
+import { layoutSchema, type Layout, LayoutBody } from './layouts';
 import type { TaskList } from './tasks';
 
 /**
@@ -104,6 +105,9 @@ export interface TaskTemplate<F extends keyof Fetchers> {
 
 export type AnyTaskTemplate = TaskTemplate<keyof Fetchers>;
 
+/**
+ * @deprecated Use TypeBox & ajv instead
+ */
 export const taskTemplateSchema = Joi.object<AnyTaskTemplate>({
   fetchOptions: Joi.object(),
   inserts: Joi.array().items(
@@ -113,8 +117,31 @@ export const taskTemplateSchema = Joi.object<AnyTaskTemplate>({
   ),
 });
 
+export const TaskTemplateBody = Type.Object({
+  fetchOptions: Type.Object({
+    filters: Type.Optional(
+      Type.Record(Type.String(), Type.Any()),
+    ),
+
+    index: Type.String({ minLength: 1 }),
+  }),
+
+  inserts: Type.Optional(
+    Type.Array(
+      Type.Intersect([
+        LayoutBody,
+        Type.Object({
+          at: Type.Integer(),
+        }),
+      ]),
+    ),
+  ),
+});
+
 /**
  * Check if input data is a task's template
+ *
+ * @deprecated Use TypeBox & ajv instead
  *
  * @param data The input data
  * @returns `true` if valid
@@ -135,6 +162,9 @@ export interface FullTemplate extends Omit<PrismaTemplate, 'body'> {
   tasks: Omit<TaskList[number], 'tags'>[]
 }
 
+/**
+ * @deprecated Use TypeBox & ajv instead
+ */
 const fullTemplateSchema = Joi.object<Pick<FullTemplate, 'body' | 'tags' | 'name'>>({
   name: Joi.string().trim().required(),
   body: templateSchema.required(),
@@ -148,6 +178,8 @@ const fullTemplateSchema = Joi.object<Pick<FullTemplate, 'body' | 'tags' | 'name
 
 /**
  * Check if input data is a showcased template
+ *
+ * @deprecated Use TypeBox & ajv instead
  *
  * @param data The input data
  * @returns `true` if valid

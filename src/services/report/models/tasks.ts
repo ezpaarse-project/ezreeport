@@ -1,7 +1,6 @@
-import Joi from 'joi';
-
 import * as dfns from '~/lib/date-fns';
 import { appLogger } from '~/lib/logger';
+import { Type, type Static } from '~/lib/typebox';
 
 import prisma from '~/lib/prisma';
 import {
@@ -17,67 +16,43 @@ import { calcNextDate } from '~/models/recurrence';
 
 import { ArgumentError } from '~/types/errors';
 
-import { getTemplateById, taskTemplateSchema } from './templates';
+import { TaskTemplateBody, getTemplateById } from './templates';
 
-type InputTask = Pick<Prisma.TaskCreateInput, 'name' | 'template' | 'targets' | 'recurrence' | 'nextRun' | 'enabled'> & { extends: string };
+// #region Input types
+
 type InputActivity = Pick<Prisma.TaskActivityCreateWithoutTaskInput, 'type' | 'message' | 'data'>;
 
 /**
- * Joi schema
+ * TypeBox schema for edition tasks
  */
-const taskSchema = Joi.object<Prisma.TaskCreateInput>({
-  name: Joi.string().trim().required(),
-  template: taskTemplateSchema.required(),
-  extends: Joi.string().trim().required(),
-  targets: Joi.array().items(Joi.string().trim().email()).required(),
-  recurrence: Joi.string().valid(
-    Recurrence.DAILY,
-    Recurrence.WEEKLY,
-    Recurrence.MONTHLY,
-    Recurrence.QUARTERLY,
-    Recurrence.BIENNIAL,
-    Recurrence.YEARLY,
-  ).required(),
-  nextRun: Joi.date().iso().required(),
-  enabled: Joi.boolean().default(true),
+export const InputTaskBody = Type.Object({
+  name: Type.String({ minLength: 1 }),
+  template: TaskTemplateBody,
+  extends: Type.String({ minLength: 1 }),
+  targets: Type.Array(
+    Type.String({ format: 'email' }),
+  ),
+  recurrence: Type.Enum(Recurrence),
+  nextRun: Type.String({ format: 'date-time' }),
+  enabled: Type.Optional(
+    Type.Boolean(),
+  ),
 });
+type InputTaskBodyType = Static<typeof InputTaskBody>;
 
 /**
- * Check if input data is a task
- *
- * @param data The input data
- * @returns `true` if valid
- *
- * @throws If not valid
+ * TypeBox schema for creating tasks
  */
-export const isValidTask = (data: unknown): data is InputTask => {
-  const validation = taskSchema.validate(data, {});
-  if (validation.error != null) {
-    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
-  }
-  return true;
-};
+export const CreateTaskBody = Type.Intersect([
+  InputTaskBody,
+  Type.Object({
+    namespace: Type.String({ minLength: 1 }),
+  }),
+]);
 
-const createTaskSchema = taskSchema.append({
-  nextRun: Joi.date().iso().greater('now'),
-  namespace: Joi.string().required(),
-});
+// #endregion
 
-/**
- * Check if input data is a task creation
- *
- * @param data The input data
- * @returns `true` if valid
- *
- * @throws If not valid
- */
-export const isValidCreateTask = (data: unknown): data is (InputTask & { namespace: string }) => {
-  const validation = createTaskSchema.validate(data, {});
-  if (validation.error != null) {
-    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
-  }
-  return true;
-};
+// #region Output types
 
 type LastExtended = { id: Template['id'], name: Template['name'], tags: Template['tags'] } | null;
 
@@ -93,6 +68,10 @@ type FullTask = Pick<Task, 'id' | 'name' | 'template' | 'targets' | 'recurrence'
   lastExtended: LastExtended,
   activity: TaskActivity[],
 };
+
+// #endregion
+
+// #region Methods
 
 const prismaTaskSelect = {
   id: true,
@@ -262,7 +241,7 @@ export const getTaskById = (id: Task['id'], namespaceIds?: Namespace['id'][]): P
  * @returns The created task
  */
 export const createTask = async (
-  input: InputTask & { namespace: string },
+  input: Static<typeof CreateTaskBody>,
   creator: string,
   id?: string,
 ): Promise<FullTask> => {
@@ -273,7 +252,7 @@ export const createTask = async (
     ...data
   } = input;
 
-  let nR = nextRun;
+  let nR = nextRun && dfns.parseISO(nextRun);
   if (!nR) {
     nR = calcNextDate(new Date(), data.recurrence);
   }
@@ -336,7 +315,7 @@ export const deleteTaskById = async (id: Task['id'], namespaceIds?: Namespace['i
  */
 export const editTaskByIdWithHistory = async (
   id: Task['id'],
-  input: InputTask & { lastRun?: Task['lastRun'] },
+  input: InputTaskBodyType & { lastRun?: Task['lastRun'] },
   entry?: InputActivity,
   namespaceIds?: Namespace['id'][],
 ): Promise<FullTask | null> => {
@@ -404,7 +383,7 @@ export const editTaskByIdWithHistory = async (
  */
 export const editTaskById = (
   id: Task['id'],
-  data: InputTask,
+  data: InputTaskBodyType,
   editor: string,
   namespaceIds?: Namespace['id'][],
 ): Promise<FullTask | null> => editTaskByIdWithHistory(
@@ -413,3 +392,5 @@ export const editTaskById = (
   { type: 'edition', message: `Tâche éditée par ${editor}` },
   namespaceIds,
 );
+
+// #endregion
