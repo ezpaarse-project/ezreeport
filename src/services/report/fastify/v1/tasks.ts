@@ -35,12 +35,11 @@ const router: FastifyPluginAsync = async (fastify) => {
       },
     },
     async (request) => {
-      const { previous: p = undefined, count = '15' } = request.query;
-      const c = +count;
+      const { previous: p = undefined, count = 15 } = request.query;
 
       const list = await tasks.getAllTasks(
         {
-          count: c,
+          count,
           previous: p?.toString(),
         },
         request.namespaceIds,
@@ -51,7 +50,7 @@ const router: FastifyPluginAsync = async (fastify) => {
         meta: {
           total: await tasks.getCountTask(request.namespaceIds),
           count: list.length,
-          size: c,
+          size: count,
           lastId: list.at(-1)?.id,
         },
       };

@@ -81,7 +81,7 @@ const router: FastifyPluginAsync = async (fastify) => {
 
       const task = await getTaskById(detailFile.detail.taskId, request.namespaceIds);
       if (!task) {
-        throw new NotFoundError(`No report "${year}/${yearMonth}/${filename}" for your namespace`);
+        throw new NotFoundError(`No report "${year}/${yearMonth}/${filename}" for your namespaces`);
       }
 
       const path = join(year, yearMonth, filename);

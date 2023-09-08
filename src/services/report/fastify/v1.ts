@@ -9,6 +9,7 @@ import files from './v1/files';
 import auth from './v1/auth';
 import health from './v1/health';
 import crons from './v1/crons';
+import queues from './v1/queues';
 import templates from './v1/templates';
 
 const router: FastifyPluginAsync = async (fastify) => {
@@ -32,6 +33,7 @@ const router: FastifyPluginAsync = async (fastify) => {
   await fastify.register(auth, { prefix: '/me' });
   await fastify.register(health, { prefix: '/health' });
   await fastify.register(crons, { prefix: '/crons' });
+  await fastify.register(queues, { prefix: '/queues' });
   await fastify.register(templates, { prefix: '/templates' });
 };
 
