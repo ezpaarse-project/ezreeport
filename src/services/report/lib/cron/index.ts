@@ -30,11 +30,11 @@ const queueOptions: Queue.QueueOptions = {
 const cronQueue = new Queue<CronData>('ezReeport.daily-cron', { prefix: 'cron', ...queueOptions });
 cronQueue.on('failed', (job, err) => {
   if (job.attemptsMade === job.opts.attempts) {
-    logger.error(`[cron-job] Failed with error: ${err.message}`);
+    logger.error(`[cron-job] Failed with error: {${err.message}}`);
   }
 });
 cronQueue.on('error', (err) => {
-  logger.error(`[cron-queue] Failed with error: ${err.message}`);
+  logger.error(`[cron-queue] Failed with error: {${err.message}}`);
 });
 
 /**
@@ -49,7 +49,7 @@ cronQueue.on('error', (err) => {
     await Promise.all(
       jobs.map(async (j) => {
         await cronQueue.removeRepeatable(j.name, j);
-        logger.verbose(`[cron] ${j.name} (${j.cron}) deleted`);
+        logger.verbose(`[cron] Deleted old cron: [${j.name}] [${j.cron}]`);
       }),
     );
 
@@ -71,9 +71,9 @@ cronQueue.on('error', (err) => {
           try {
             //! TS type is kinda wrong here, it's not a promise
             cronQueue.process(key, join(__dirname, `jobs/${key}.ts`));
-            logger.verbose(`[cron] ${job.name} registered with "${timer}" for "${cronOptions.tz || 'default'}"`);
+            logger.verbose(`[cron] Adding cron: [${job.name}] [${timer}] [${cronOptions.tz || 'default'}]`);
           } catch (error) {
-            logger.error(`[cron] Failed to add process for ${key} ("${timer}" for "${cronOptions.tz || 'default'}") with error: ${(error as Error).message}`);
+            logger.error(`[cron] Failed to add process for [${key}] [${timer}] [${cronOptions.tz || 'default'} with error: {${(error as Error).message}}`);
             if (job.opts.repeat && 'key' in job.opts.repeat) {
               // @ts-expect-error
               await cronQueue.removeRepeatableByKey(job.opts.repeat?.key);
@@ -84,9 +84,9 @@ cronQueue.on('error', (err) => {
     );
 
     const dur = formatInterval({ start, end: new Date() });
-    logger.info(`[cron] Init completed in ${dur}s`);
+    logger.info(`[cron] Init completed in [${dur}]s`);
   } catch (error) {
-    logger.error(`[cron] Init failed with error: ${(error as Error).message}`);
+    logger.error(`[cron] Init failed with error: {${(error as Error).message}}`);
   }
 })();
 
@@ -108,14 +108,14 @@ const isCron = (name: string): name is Crons => Object.keys(cronTimers).includes
  */
 const getRawCron = async (name: string): Promise<Queue.JobInformation> => {
   if (!isCron(name)) {
-    throw new NotFoundError(`Cron "${name}" not found`);
+    throw new NotFoundError(`Cron [${name}] not found`);
   }
   let job = (await cronQueue.getRepeatableJobs()).find((j) => (name === j.name));
   if (!job) {
     job = pausedJobs[name];
   }
   if (!job) {
-    throw new NotFoundError(`Cron "${name}" not found`);
+    throw new NotFoundError(`Cron [${name}] not found`);
   }
   return job;
 };
@@ -177,7 +177,7 @@ export const getCron = async (name: string) => {
  */
 export const startCron = async (name: string) => {
   if (!isCron(name)) {
-    throw new NotFoundError(`Cron "${name}" not found`);
+    throw new NotFoundError(`Cron [${name}] not found`);
   }
 
   const job = pausedJobs[name];
@@ -202,7 +202,7 @@ export const startCron = async (name: string) => {
  */
 export const stopCron = async (name: string) => {
   if (!isCron(name)) {
-    throw new NotFoundError(`Cron "${name}" not found`);
+    throw new NotFoundError(`Cron [${name}] not found`);
   }
 
   const job = (await cronQueue.getRepeatableJobs()).find((j) => j.name === name);
@@ -223,7 +223,7 @@ export const stopCron = async (name: string) => {
  */
 export const forceCron = async (name: string) => {
   if (!isCron(name)) {
-    throw new NotFoundError(`Cron "${name}" not found`);
+    throw new NotFoundError(`Cron [${name}] not found`);
   }
 
   await cronQueue.add(name, { timer: cronTimers[name] });

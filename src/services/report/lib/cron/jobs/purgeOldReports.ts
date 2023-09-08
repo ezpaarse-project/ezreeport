@@ -29,9 +29,9 @@ export default async (job: Queue.Job<CronData>) => {
     const detailFiles = await glob(join(outDir, '**/*.det.json'));
     // List all files to delete
     const filesToDelete = (await Promise.allSettled(
-      detailFiles.map(async (filePath) => {
+      detailFiles.map(async (filePath): Promise<FileCheckResult[]> => {
         try {
-          logger.verbose(`[cron] [${process.pid}] [${job.name}] Checking "${filePath}"`);
+          logger.verbose(`[cron] [${process.pid}] [${job.name}] Checking [${filePath}]`);
           const fileContent = Value.Cast(
             ReportResult,
             JSON.parse(await readFile(filePath, 'utf-8')),
@@ -48,9 +48,9 @@ export default async (job: Queue.Job<CronData>) => {
           });
           return Object
             .values(fileContent.detail.files)
-            .map((file) => ({ file: join(outDir, file), dur } as FileCheckResult));
+            .map((file) => ({ file: join(outDir, file), dur }));
         } catch (error) {
-          logger.warn(`[cron] [${process.pid}] [${job.name}] Error on file "${filePath}" : ${(error as Error).message}`);
+          logger.warn(`[cron] [${process.pid}] [${job.name}] Error on file [${filePath}] : {${(error as Error).message}}`);
           throw error;
         }
       }),
@@ -67,20 +67,20 @@ export default async (job: Queue.Job<CronData>) => {
           await unlink(file);
           await job.progress(i / filesToDelete.length);
 
-          logger.info(`[cron] [${process.pid}] [${job.name}] Deleted "${file}" (${dfns.formatDuration(dur, { format: ['years', 'months', 'days'], locale: enUS })} old)`);
+          logger.info(`[cron] [${process.pid}] [${job.name}] Deleted [${file}] (${dfns.formatDuration(dur, { format: ['years', 'months', 'days'], locale: enUS })} old)`);
           return file;
         } catch (error) {
-          logger.warn(`[cron] [${process.pid}] [${job.name}] Error on file deletion "${file}" : ${(error as Error).message}`);
+          logger.warn(`[cron] [${process.pid}] [${job.name}] Error on file deletion [${file}] : {${(error as Error).message}}`);
           throw error;
         }
       }),
     )).filter(isFulfilled);
 
     const dur = formatInterval({ start, end: new Date() });
-    logger.info(`[cron] [${process.pid}] [${job.name}] In ${dur}s : Checked ${detailFiles.length} reports | Deleted ${deletedFiles.length}/${filesToDelete.length} files`);
+    logger.info(`[cron] [${process.pid}] [${job.name}] In [${dur}]s : Checked [${detailFiles.length}] reports | Deleted [${deletedFiles.length}]/[${filesToDelete.length}] files`);
   } catch (error) {
     const dur = formatInterval({ start, end: new Date() });
-    logger.error(`[cron] [${process.pid}] [${job.name}] Job failed in ${dur}s with error: ${(error as Error).message}`);
+    logger.error(`[cron] [${process.pid}] [${job.name}] Job failed in [${dur}]s with error: {${(error as Error).message}}`);
     await sendError(error as Error, job.name, job.data.timer);
   }
 };
