@@ -5,8 +5,8 @@ import { join } from 'node:path';
 
 import { compact, merge, omit } from 'lodash';
 
-import fetchWithElastic, { ElasticFetchOptions } from '~/generators/elastic';
-import renderPdfWithVega, { VegaRenderOptions } from '~/generators/vega-pdf';
+import fetchWithElastic, { type ElasticFetchOptionsType } from '~/generators/elastic';
+import renderPdfWithVega, { type VegaRenderOptionsType } from '~/generators/vega-pdf';
 
 import type { Recurrence, Task } from '~/lib/prisma';
 import config from '~/lib/config';
@@ -161,7 +161,7 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
       ) {
         return;
       }
-      const fetchOptions: ElasticFetchOptions = merge(
+      const fetchOptions: ElasticFetchOptionsType = merge(
         {},
         template.fetchOptions ?? {},
         layout.fetchOptions ?? {},
@@ -169,7 +169,10 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
           dateField: template.fetchOptions?.dateField ?? '',
           ...(taskTemplate.fetchOptions ?? {}),
           recurrence,
-          period,
+          period: {
+            start: dfns.getTime(period.start),
+            end: dfns.getTime(period.end),
+          },
           auth: namespace?.fetchLogin?.elastic ?? { username: '' },
         },
       );
@@ -318,14 +321,17 @@ export const generateReport = async (
     logger.verbose(`[gen] [${process.pid}] Data fetched`);
 
     // Render report
-    const renderOptions: VegaRenderOptions = merge(
+    const renderOptions: VegaRenderOptionsType = merge(
       {},
       template.renderOptions ?? {},
       {
         doc: {
           name: task.name,
           path: `${filepath}.rep`,
-          period,
+          period: {
+            start: dfns.getTime(period.start),
+            end: dfns.getTime(period.end),
+          },
         },
         recurrence: task.recurrence,
         debug,

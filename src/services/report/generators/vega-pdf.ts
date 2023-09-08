@@ -1,6 +1,5 @@
 import EventEmitter from 'node:events';
 
-import Joi from 'joi';
 import { merge } from 'lodash';
 import { Mark } from 'vega-lite/build/src/mark';
 
@@ -10,7 +9,6 @@ import {
   deleteDoc,
   initDoc,
   renderDoc,
-  type PDFReportOptions,
   type PDFStats,
 } from '~/lib/pdf';
 import { addMdToPDF } from '~/lib/pdf/markdown';
@@ -23,10 +21,10 @@ import {
   createVegaView,
   parseTitle,
 } from '~/lib/vega';
+import { Type, type Static, assertIsSchema } from '~/lib/typebox';
 
 import type { FigureType } from '~/models/figures';
-import type { LayoutType } from '~/models/layouts';
-import { ArgumentError } from '~/types/errors';
+import { Layout } from '~/models/layouts';
 
 interface Grid {
   rows: number,
@@ -38,58 +36,32 @@ interface Margin {
   horizontal: number,
 }
 
-export interface VegaRenderOptions {
+const VegaRenderOptions = Type.Object({
   // Auto fields
-  doc: PDFReportOptions
-  recurrence: Recurrence,
-  debug?: boolean
-  // Resolved fields
-  layouts: LayoutType[],
-  // Template specific
-  grid?: Grid,
-}
-
-// TODO typebox
-const optionSchema = Joi.object<VegaRenderOptions>({
-  doc: Joi.object({
-    name: Joi.string().required(),
-    period: Joi.object({
-      start: Joi.date().required(),
-      end: Joi.date().required(),
-    }).required(),
-    path: Joi.string().required(),
-  }).required(),
-  grid: Joi.object({
-    rows: Joi.number().required(),
-    cols: Joi.number().required(),
+  doc: Type.Object({
+    name: Type.String(),
+    period: Type.Object({
+      start: Type.Integer(),
+      end: Type.Integer(),
+    }),
+    path: Type.String(),
   }),
-  recurrence: Joi.string().valid(
-    Recurrence.DAILY,
-    Recurrence.WEEKLY,
-    Recurrence.MONTHLY,
-    Recurrence.QUARTERLY,
-    Recurrence.BIENNIAL,
-    Recurrence.YEARLY,
-  ).required(),
-  layouts: Joi.array().items().required(),
-  debug: Joi.boolean(),
+  recurrence: Type.Enum(Recurrence),
+  debug: Type.Optional(
+    Type.Boolean(),
+  ),
+  // Resolved fields
+  layouts: Type.Array(Layout),
+  // Template specfic
+  grid: Type.Optional(
+    Type.Object({
+      rows: Type.Integer({ minimum: 1 }),
+      cols: Type.Integer({ minimum: 1 }),
+    }),
+  ),
 });
 
-/**
- * Check if input data is fetch options
- *
- * @param data The input data
- * @returns `true` if valid
- *
- * @throws If not valid
- */
-const isRenderOptions = (data: unknown): data is VegaRenderOptions => {
-  const validation = optionSchema.validate(data, {});
-  if (validation.error != null) {
-    throw new ArgumentError(`Fetch options are not valid: ${validation.error.message}`);
-  }
-  return true;
-};
+export type VegaRenderOptionsType = Static<typeof VegaRenderOptions>;
 
 // FIXME: WTF + still can have space
 /**
@@ -315,14 +287,11 @@ const resolveSlot = (params: {
  * @return Stats about PDF
  */
 const renderPdfWithVega = async (
-  options: VegaRenderOptions,
+  options: VegaRenderOptionsType,
   events: EventEmitter = new EventEmitter(),
 ): Promise<PDFStats> => {
   // Check options even if type is explicit, because it can be a merge between multiple sources
-  if (!isRenderOptions(options)) {
-    // As validation throws an error, this line shouldn't be called
-    return {} as PDFStats;
-  }
+  assertIsSchema(VegaRenderOptions, options);
 
   try {
     const doc = await initDoc({ ...options.doc, path: `${options.doc.path}.pdf` });

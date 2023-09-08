@@ -67,7 +67,7 @@ export default async (job: Queue.Job<GenerationData>) => {
       namespace: task.namespaceId,
     },
     contact,
-    date: formatISO(res.detail.createdAt ?? new Date()),
+    date: res.detail.createdAt || formatISO(new Date()),
   };
 
   if (res.success && res.detail.files.report) {
