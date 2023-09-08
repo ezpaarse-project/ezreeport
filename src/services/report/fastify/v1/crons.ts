@@ -49,7 +49,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     },
     async (request) => {
       const { cron: name } = request.params;
-      return crons.getCron(name);
+      return { content: crons.getCron(name) };
     },
   );
 
@@ -72,7 +72,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     },
     async (request) => {
       const { cron: name } = request.params;
-      return crons.startCron(name);
+      return { content: crons.startCron(name) };
     },
   );
 
@@ -95,7 +95,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     },
     async (request) => {
       const { cron: name } = request.params;
-      return crons.stopCron(name);
+      return { content: crons.stopCron(name) };
     },
   );
 
@@ -118,7 +118,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     },
     async (request) => {
       const { cron: name } = request.params;
-      return crons.forceCron(name);
+      return { content: crons.forceCron(name) };
     },
   );
 };

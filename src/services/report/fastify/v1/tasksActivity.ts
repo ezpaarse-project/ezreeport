@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 
 import authPlugin from '~/fastify/plugins/auth';
-import { PaginationQuery, PaginationQueryType } from '~/fastify/utils/pagination';
+import { PaginationQuery, type PaginationQueryType } from '~/fastify/utils/pagination';
 
 import { Access } from '~/models/access';
 import * as tActivity from '~/models/tasksActivity';
@@ -27,13 +27,10 @@ const router: FastifyPluginAsync = async (fastify) => {
       },
     },
     async (request) => {
-      const { previous: p = undefined, count = 15 } = request.query;
+      const { previous, count = 15 } = request.query;
 
       const list = await tActivity.getAllTaskActivityEntries(
-        {
-          count,
-          previous: p?.toString(),
-        },
+        { count, previous },
         request.namespaceIds,
       );
 

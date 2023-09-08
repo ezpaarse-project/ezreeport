@@ -55,7 +55,9 @@ const router: FastifyPluginAsync = async (fastify) => {
       const { queue: name } = request.params;
       await queues.pauseQueue(name);
 
-      return (await queues.getQueues()).find((q) => q.name === name);
+      return {
+        content: (await queues.getQueues()).find((q) => q.name === name),
+      };
     },
   );
 
@@ -80,7 +82,9 @@ const router: FastifyPluginAsync = async (fastify) => {
       const { queue: name } = request.params;
       await queues.resumeQueue(name);
 
-      return (await queues.getQueues()).find((q) => q.name === name);
+      return {
+        content: (await queues.getQueues()).find((q) => q.name === name),
+      };
     },
   );
 
@@ -105,19 +109,13 @@ const router: FastifyPluginAsync = async (fastify) => {
     },
     async (request) => {
       const { queue: name } = request.params;
-      const { previous: p = undefined, count = 15 } = request.query;
+      const { previous, count = 15 } = request.query;
 
       // TODO: custom sort
-      const jobs = await queues.getJobs(
-        name,
-        {
-          count,
-          previous: p?.toString(),
-        },
-      );
+      const jobs = await queues.getJobs(name, { count, previous });
 
       return {
-        data: jobs,
+        content: jobs,
         meta: {
           total: await queues.getCountJobs(name),
           count: jobs.length,
@@ -167,7 +165,7 @@ const router: FastifyPluginAsync = async (fastify) => {
         throw new HTTPError(`Job "${jobId}" doesn't match your namespaces`, StatusCodes.FORBIDDEN);
       }
 
-      return job;
+      return { content: job };
     },
   );
 
@@ -204,7 +202,7 @@ const router: FastifyPluginAsync = async (fastify) => {
         throw new HTTPError(`Job "${jobId}" doesn't match your namespaces`, StatusCodes.FORBIDDEN);
       }
 
-      return queues.retryJob(name, jobId);
+      return { content: queues.retryJob(name, jobId) };
     },
   );
 };

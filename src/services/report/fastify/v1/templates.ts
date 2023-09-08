@@ -86,7 +86,7 @@ const router: FastifyPluginAsync = async (fastify) => {
         throw new Error(`No template named "${id}" was found`);
       }
 
-      return item;
+      return { content: item };
     },
   );
 
