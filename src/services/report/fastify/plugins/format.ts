@@ -38,7 +38,11 @@ const formatPlugin: FastifyPluginAsync = async (fastify) => {
 
     // Return NO_CONTENT if there's no data
     if (!payload || reply.statusCode === StatusCodes.NO_CONTENT) {
-      reply.code(StatusCodes.NO_CONTENT);
+      // If status wasn't modified
+      if (reply.statusCode === StatusCodes.OK) {
+        reply.code(StatusCodes.NO_CONTENT);
+      }
+
       return null;
     }
 

@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+
 import type { FastifyPluginAsync } from 'fastify';
 import fastifyStatic from '@fastify/static';
 import { absolutePath as swaggerUiPath } from 'swagger-ui-dist';
@@ -11,6 +12,7 @@ import health from './v1/health';
 import crons from './v1/crons';
 import queues from './v1/queues';
 import templates from './v1/templates';
+import unsubscribe from './v1/unsubscribe';
 
 const router: FastifyPluginAsync = async (fastify) => {
   fastify.decorateReply('apiVersion', 1);
@@ -21,7 +23,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     {
       prefix: '/doc/',
       root: [
-        join(__dirname, 'v1/doc'), // swagger-ui overrides + open api
+        join(__dirname, 'v1/public/doc'), // swagger-ui overrides + open api
         swaggerUiPath(), // swagger-ui
       ],
     },
@@ -35,6 +37,7 @@ const router: FastifyPluginAsync = async (fastify) => {
   await fastify.register(crons, { prefix: '/crons' });
   await fastify.register(queues, { prefix: '/queues' });
   await fastify.register(templates, { prefix: '/templates' });
+  await fastify.register(unsubscribe, { prefix: '/unsubscribe' });
 };
 
 export default router;
