@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 
 import { StatusCodes } from 'http-status-codes';
-import authPlugin from '~/fastify/plugins/auth';
+import authPlugin from '~/plugins/auth';
 
 import * as queues from '~/lib/bull';
 import { Type, type Static } from '~/lib/typebox';

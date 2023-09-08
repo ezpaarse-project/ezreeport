@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
 
-import authPlugin from '~/fastify/plugins/auth';
+import authPlugin from '~/plugins/auth';
 
 import { Access, getAllowedRoutes, getRoutes } from '~/models/access';
 

@@ -7,7 +7,7 @@ import fastifyStatic from '@fastify/static';
 import config from '~/lib/config';
 import { Type, type Static, Value } from '~/lib/typebox';
 
-import authPlugin from '~/fastify/plugins/auth';
+import authPlugin from '~/plugins/auth';
 
 import { Access } from '~/models/access';
 import { ReportResult, type ReportResultType } from '~/models/reports';

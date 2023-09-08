@@ -1,8 +1,8 @@
 import type { FastifyPluginAsync } from 'fastify';
 
 import { StatusCodes } from 'http-status-codes';
-import authPlugin from '~/fastify/plugins/auth';
-import { PaginationQuery, type PaginationQueryType } from '~/fastify/utils/pagination';
+import authPlugin from '~/plugins/auth';
+import { PaginationQuery, type PaginationQueryType } from '~/routes/utils/pagination';
 
 import { Type, type Static } from '~/lib/typebox';
 

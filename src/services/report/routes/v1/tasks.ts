@@ -5,7 +5,7 @@ import { assertIsSchema, Type, type Static } from '~/lib/typebox';
 import { addTaskToGenQueue } from '~/lib/bull';
 import { b64ToString } from '~/lib/utils';
 
-import authPlugin from '~/fastify/plugins/auth';
+import authPlugin from '~/plugins/auth';
 
 import { Access } from '~/models/access';
 import * as tasks from '~/models/tasks';

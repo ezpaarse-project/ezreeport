@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 
-import authPlugin from '~/fastify/plugins/auth';
-import { PaginationQuery, type PaginationQueryType } from '~/fastify/utils/pagination';
+import authPlugin from '~/plugins/auth';
+import { PaginationQuery, type PaginationQueryType } from '~/routes/utils/pagination';
 
 import { Access } from '~/models/access';
 import * as tActivity from '~/models/tasksActivity';

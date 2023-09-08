@@ -5,9 +5,9 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import { appLogger } from './lib/logger';
 import config from './lib/config';
 
-import formatPlugin from './fastify/plugins/format';
-import loggerPlugin from './fastify/plugins/logger';
-import routes from './fastify';
+import formatPlugin from './plugins/format';
+import loggerPlugin from './plugins/logger';
+import routes from './routes';
 
 import { initTemplates } from './init';
 
