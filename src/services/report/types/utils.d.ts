@@ -5,11 +5,6 @@ type DeepPartial<T> = T extends object
   }
   : T;
 
-/**
- * @deprecated
- */
-type ExcludeFirst<T extends unknown[]> = T extends [unknown, ...(infer R)] ? R : [];
-
 type Position = {
   x: number,
   y: number

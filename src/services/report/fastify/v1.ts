@@ -13,6 +13,8 @@ import crons from './v1/crons';
 import queues from './v1/queues';
 import templates from './v1/templates';
 import unsubscribe from './v1/unsubscribe';
+import adminNamespaces from './v1/admin/namespaces';
+import adminUsers from './v1/admin/users';
 
 const router: FastifyPluginAsync = async (fastify) => {
   fastify.decorateReply('apiVersion', 1);
@@ -38,6 +40,9 @@ const router: FastifyPluginAsync = async (fastify) => {
   await fastify.register(queues, { prefix: '/queues' });
   await fastify.register(templates, { prefix: '/templates' });
   await fastify.register(unsubscribe, { prefix: '/unsubscribe' });
+
+  await fastify.register(adminNamespaces, { prefix: '/admin/namespaces' });
+  await fastify.register(adminUsers, { prefix: '/admin/users' });
 };
 
 export default router;

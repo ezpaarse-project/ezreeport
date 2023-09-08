@@ -19,7 +19,7 @@ import { ConflictError } from '~/types/errors';
 
 import { patchTaskByIdWithHistory } from './tasks';
 import * as templates from './templates';
-import { type TypedNamespace, getNamespaceById } from './namespaces';
+import { type NamespaceBodyType, NamespaceBody, getNamespaceById } from './namespaces';
 
 const { ttl, outDir } = config.report;
 
@@ -141,7 +141,7 @@ type FetchParams = {
   template: templates.TemplateType,
   taskTemplate: templates.TaskTemplateType,
   period: Interval,
-  namespace?: TypedNamespace,
+  namespace?: NamespaceBodyType,
   recurrence: Recurrence
 };
 
@@ -170,7 +170,6 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
           ...(taskTemplate.fetchOptions ?? {}),
           recurrence,
           period,
-          indexPrefix: namespace?.fetchOptions?.elastic?.indexPrefix,
           auth: namespace?.fetchLogin?.elastic ?? { username: '' },
         },
       );
@@ -219,7 +218,10 @@ export const generateReport = async (
   const filepath = join(basePath, filename);
   const namepath = `${todayStr}/${filename}`;
 
-  const namespace = await getNamespaceById(task.namespaceId) as TypedNamespace;
+  const namespace = Value.Cast(
+    NamespaceBody,
+    await getNamespaceById(task.namespaceId),
+  );
   if (!namespace) {
     throw new Error(`Namespace "${task.namespaceId}" not found`);
   }

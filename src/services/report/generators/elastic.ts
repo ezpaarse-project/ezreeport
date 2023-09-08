@@ -26,15 +26,7 @@ export interface ElasticFetchOptions {
   auth: { username: string },
   // Template specific
   dateField: string,
-  /**
-   * @deprecated Not used anymore
-  */
-  indexPrefix?: string,
   // Task specific
-  /**
-   * @deprecated Replaced by `index`
-  */
-  indexSuffix?: string,
   index?: string,
   filters?: ElasticFilters,
   aggs?: CustomAggregation[],
@@ -59,9 +51,7 @@ const optionSchema = Joi.object<ElasticFetchOptions>({
   auth: Joi.object({
     username: Joi.string().required(),
   }).required(),
-  indexPrefix: Joi.string().allow(''), // @deprecated Use `index` instead
   // Task specific
-  indexSuffix: Joi.string().allow(''), // @deprecated Use `index` instead
   index: Joi.string().allow(''),
   filters: Joi.object(),
   aggs: Joi.array(),
@@ -207,7 +197,7 @@ const fetchWithElastic = async (
     // As validation throws an error, this line shouldn't be called
     return [];
   }
-  const index = (options.index ?? `${options.indexPrefix}${options.indexSuffix}`) || null;
+  const index = options.index || null;
   if (!index) {
     throw new ArgumentError('You must precise an index before trying to fetch data from elastic');
   }

@@ -1,4 +1,3 @@
-import Joi from 'joi';
 import { appLogger } from '~/lib/logger';
 import prisma from '~/lib/prisma';
 import {
@@ -9,32 +8,15 @@ import {
   type Namespace,
 } from '~/lib/prisma';
 import type { BulkResult } from '~/lib/utils';
-import { ArgumentError } from '~/types/errors';
+import { Type, type Static } from '~/lib/typebox';
 
 type InputMembership = Pick<Prisma.MembershipCreateInput, 'access'>;
 
-/**
- * Joi schema
- */
-export const membershipSchema = Joi.object<Prisma.MembershipCreateInput>({
-  access: Joi.string().valid(...Object.values(Access)).required(),
+export const MembershipBody = Type.Object({
+  access: Type.Enum(Access),
 });
 
-/**
- * Check if input data is a membership
- *
- * @param data The input data
- * @returns `true` if valid
- *
- * @throws If not valid
- */
-export const isValidMembership = (data: unknown): data is InputMembership => {
-  const validation = membershipSchema.validate(data, {});
-  if (validation.error != null) {
-    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
-  }
-  return true;
-};
+export type MembershipBodyType = Static<typeof MembershipBody>;
 
 /**
  * Checks if 2 memberships are the same
