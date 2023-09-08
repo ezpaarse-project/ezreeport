@@ -70,7 +70,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     '/:template',
     {
       schema: {
-        querystring: SpecificTemplateParams,
+        params: SpecificTemplateParams,
       },
       config: {
         auth: {
@@ -100,7 +100,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     '/:template',
     {
       schema: {
-        querystring: SpecificTemplateParams,
+        params: SpecificTemplateParams,
         body: templates.FullTemplateBody,
       },
       config: {
@@ -138,7 +138,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     '/:template',
     {
       schema: {
-        querystring: SpecificTemplateParams,
+        params: SpecificTemplateParams,
       },
       config: {
         auth: {

@@ -37,20 +37,20 @@ const router: FastifyPluginAsync = async (fastify) => {
     yearMonth: Type.String({ minLength: 1 }),
     filename: Type.String({ minLength: 1 }),
   });
-  const GetReportQueryParams = Type.Object({
+  const GetReportQuery = Type.Object({
     download: Type.Optional(
       Type.Any(),
     ),
   });
   fastify.get<{
     Params: Static<typeof GetReportParams>,
-    Querystring: Static<typeof GetReportQueryParams>
+    Querystring: Static<typeof GetReportQuery>
   }>(
     '/:year/:yearMonth/:filename',
     {
       schema: {
         params: GetReportParams,
-        querystring: GetReportQueryParams,
+        querystring: GetReportQuery,
       },
       config: {
         auth: {

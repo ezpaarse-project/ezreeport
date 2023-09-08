@@ -39,7 +39,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     '/:cron',
     {
       schema: {
-        querystring: SpecificCronParams,
+        params: SpecificCronParams,
       },
       config: {
         auth: {
@@ -62,7 +62,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     '/:cron/start',
     {
       schema: {
-        querystring: SpecificCronParams,
+        params: SpecificCronParams,
       },
       config: {
         auth: {
@@ -85,7 +85,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     '/:cron/stop',
     {
       schema: {
-        querystring: SpecificCronParams,
+        params: SpecificCronParams,
       },
       config: {
         auth: {
@@ -108,7 +108,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     '/:cron/force',
     {
       schema: {
-        querystring: SpecificCronParams,
+        params: SpecificCronParams,
       },
       config: {
         auth: {
