@@ -40,7 +40,7 @@ interface ErrorPong extends Pong {
  */
 export const isService = (service: string): service is Service => {
   if (!services.has(service)) {
-    throw new NotFoundError(`Service "${service}" not found`);
+    throw new NotFoundError(`Service [${service}] not found`);
   }
   return true;
 };
@@ -70,7 +70,7 @@ export const ping = async (
 
     const ms = differenceInMilliseconds(new Date(), start);
     if (!res) {
-      logger.warn(`[ping] Service "${service}" is not available after ${ms}/${timeout}ms`);
+      logger.warn(`[ping] Service [${service}] is not available after [${ms}]/[${timeout}]ms`);
     }
     return {
       name: service,
@@ -82,7 +82,7 @@ export const ping = async (
     return {
       name: service,
       status: false,
-      error: (error as Error).message,
+      error: error instanceof Error ? error.message : `Unexpected error: ${error}`,
     };
   }
 };

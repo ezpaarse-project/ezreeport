@@ -27,14 +27,13 @@ const ReportErrorCause = Type.Object({
   type: Type.Union([
     Type.Literal('fetch'),
     Type.Literal('render'),
+    Type.Literal('unknown'),
   ]),
   layout: Type.Integer(),
   figure: Type.Optional(
     Type.Integer(),
   ),
 });
-
-type ReportErrorCauseType = Static<typeof ReportErrorCause>;
 
 export const ReportResult = Type.Object({
   success: Type.Boolean(),
@@ -181,9 +180,11 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
       try {
         template.layouts[i].data = await fetchWithElastic(fetchOptions, events);
       } catch (error) {
-        const err = error as Error;
-        err.cause = { ...(err.cause ?? {}), layout: i, type: 'fetch' };
-        throw err;
+        if (!(error instanceof Error)) {
+          throw error;
+        }
+        error.cause = { ...(error.cause ?? {}), layout: i, type: 'fetch' };
+        throw error;
       }
     }),
   );
@@ -376,18 +377,27 @@ export const generateReport = async (
 
     logger.info(`[gen] [${process.pid}] Report "${namepath}" successfully generated in ${(result.detail.took / 1000).toFixed(2)}s`);
   } catch (error) {
-    const err = error as Error;
+    const err: ReportResultType['detail']['error'] = {
+      message: '',
+      stack: [],
+      cause: {
+        layout: -1,
+        type: 'unknown',
+      },
+    };
+    if (error instanceof Error) {
+      err.message = error.message;
+      err.stack = error.stack?.split('\n    ') ?? [];
+      err.cause = Value.Cast(ReportErrorCause, err.cause);
+    }
+
     merge<ReportResultType, DeepPartial<ReportResultType>>(
       result,
       {
         success: false,
         detail: {
           took: dfns.differenceInMilliseconds(new Date(), today),
-          error: {
-            message: err.message,
-            stack: err.stack?.split('\n    '),
-            cause: err.cause as ReportErrorCauseType,
-          },
+          error: err,
         },
       },
     );
@@ -407,7 +417,13 @@ export const generateReport = async (
         },
       );
     }
-    logger.error(`[gen] [${process.pid}] Report "${namepath}" failed to generate in ${(result.detail.took / 1000).toFixed(2)}s with error : ${(error as Error).message}`);
+
+    const dur = (result.detail.took / 1000).toFixed(2);
+    if (error instanceof Error) {
+      logger.error(`[gen] [${process.pid}] Report [${namepath}] failed to generate in [${dur}]s with error: {${error.message}}`);
+    } else {
+      logger.error(`[gen] [${process.pid}] An unexpected error occurred [${namepath}] failed to generate in [${dur}]s with error: {${error}}`);
+    }
   }
 
   // Write debug when process is ending

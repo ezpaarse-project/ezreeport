@@ -13,7 +13,11 @@ export const initTemplates = async () => {
   try {
     template = await getTemplateByName(defaultTemplateName);
   } catch (error) {
-    appLogger.error(`[init] Couldn't get template [${defaultTemplateName}]:`, (error as Error).message);
+    if (error instanceof Error) {
+      appLogger.error(`[init] Couldn't get template [${defaultTemplateName}]: {${error.message}}`);
+    } else {
+      appLogger.error(`[init] An unexpected error occurred when getting template [${defaultTemplateName}]: {${error}}`);
+    }
     return;
   }
 
@@ -31,7 +35,11 @@ export const initTemplates = async () => {
     config.defaultTemplate.id = id;
     appLogger.info(`[init] Template [${defaultTemplateName}] created`);
   } catch (error) {
-    appLogger.error(`[init] Couldn't create template [${defaultTemplateName}]:`, (error as Error).message);
+    if (error instanceof Error) {
+      appLogger.error(`[init] Couldn't create template [${defaultTemplateName}]: {${error.message}}`);
+    } else {
+      appLogger.error(`[init] An unexpected error occurred when creating template [${defaultTemplateName}]: {${error}}`);
+    }
   }
 };
 

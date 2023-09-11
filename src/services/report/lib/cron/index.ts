@@ -73,7 +73,12 @@ cronQueue.on('error', (err) => {
             cronQueue.process(key, join(__dirname, `jobs/${key}.ts`));
             logger.verbose(`[cron] Adding cron: [${job.name}] [${timer}] [${cronOptions.tz || 'default'}]`);
           } catch (error) {
-            logger.error(`[cron] Failed to add process for [${key}] [${timer}] [${cronOptions.tz || 'default'} with error: {${(error as Error).message}}`);
+            if (error instanceof Error) {
+              logger.error(`[cron] Failed to add process for [${key}] [${timer}] [${cronOptions.tz || 'default'}] with error: {${error.message}}`);
+            } else {
+              logger.error(`[cron] An unexpected error occurred when adding process for  [${key}] [${timer}] [${cronOptions.tz || 'default'}]: {${error}}`);
+            }
+
             if (job.opts.repeat && 'key' in job.opts.repeat) {
               // @ts-expect-error
               await cronQueue.removeRepeatableByKey(job.opts.repeat?.key);
@@ -86,7 +91,11 @@ cronQueue.on('error', (err) => {
     const dur = formatInterval({ start, end: new Date() });
     logger.info(`[cron] Init completed in [${dur}]s`);
   } catch (error) {
-    logger.error(`[cron] Init failed with error: {${(error as Error).message}}`);
+    if (error instanceof Error) {
+      logger.error(`[cron] Init failed with error: {${error.message}}`);
+    } else {
+      logger.error(`[cron] An unexpected error occurred at init: {${error}}`);
+    }
   }
 })();
 

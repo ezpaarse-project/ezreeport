@@ -50,7 +50,11 @@ export default async (job: Queue.Job<CronData>) => {
             .values(fileContent.detail.files)
             .map((file) => ({ file: join(outDir, file), dur }));
         } catch (error) {
-          logger.warn(`[cron] [${process.pid}] [${job.name}] Error on file [${filePath}] : {${(error as Error).message}}`);
+          if (error instanceof Error) {
+            logger.warn(`[cron] [${process.pid}] [${job.name}] Error on file [${filePath}]: {${error.message}}`);
+          } else {
+            logger.warn(`[cron] [${process.pid}] [${job.name}] Unexpected error occurred on file [${filePath}]: {${error}}`);
+          }
           throw error;
         }
       }),
@@ -70,7 +74,11 @@ export default async (job: Queue.Job<CronData>) => {
           logger.info(`[cron] [${process.pid}] [${job.name}] Deleted [${file}] (${dfns.formatDuration(dur, { format: ['years', 'months', 'days'], locale: enUS })} old)`);
           return file;
         } catch (error) {
-          logger.warn(`[cron] [${process.pid}] [${job.name}] Error on file deletion [${file}] : {${(error as Error).message}}`);
+          if (error instanceof Error) {
+            logger.warn(`[cron] [${process.pid}] [${job.name}] Error on file deletion [${file}]: {${error.message}}`);
+          } else {
+            logger.warn(`[cron] [${process.pid}] [${job.name}] Unexpected error occurred on file deletion [${file}]: {${error}}`);
+          }
           throw error;
         }
       }),
@@ -80,7 +88,11 @@ export default async (job: Queue.Job<CronData>) => {
     logger.info(`[cron] [${process.pid}] [${job.name}] In [${dur}]s : Checked [${detailFiles.length}] reports | Deleted [${deletedFiles.length}]/[${filesToDelete.length}] files`);
   } catch (error) {
     const dur = formatInterval({ start, end: new Date() });
-    logger.error(`[cron] [${process.pid}] [${job.name}] Job failed in [${dur}]s with error: {${(error as Error).message}}`);
-    await sendError(error as Error, job.name, job.data.timer);
+    if (error instanceof Error) {
+      logger.error(`[cron] [${process.pid}] [${job.name}] Job failed in [${dur}]s with error: {${error.message}}`);
+      await sendError(error, job.name, job.data.timer);
+    } else {
+      logger.warn(`[cron] [${process.pid}] [${job.name}] Unexpected error occurred after [${dur}]s: {${error}}`);
+    }
   }
 };

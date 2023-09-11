@@ -472,20 +472,23 @@ const renderPdfWithVega = async (
             }
             events.emit('figureRendered', figure);
           } catch (error) {
-            const err = error as Error;
+            if (!(error instanceof Error)) {
+              throw error;
+            }
             const figure = figures[figureIndex];
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const title = (figure?.params as any)?.title || figure?.type || (figureIndex + 1);
-            err.cause = { ...(err.cause ?? {}), figure: title };
-            throw err;
+            const title = figure?.params?.title || figure?.type || (figureIndex + 1);
+            error.cause = { ...(error.cause ?? {}), figure: title };
+            throw error;
           }
         }
 
         events.emit('layoutRendered', figures);
       } catch (error) {
-        const err = error as Error;
-        err.cause = { ...(err.cause ?? {}), layout: layoutIndex, type: 'render' };
-        throw err;
+        if (!(error instanceof Error)) {
+          throw error;
+        }
+        error.cause = { ...(error.cause ?? {}), layout: layoutIndex, type: 'render' };
+        throw error;
       }
     }
 

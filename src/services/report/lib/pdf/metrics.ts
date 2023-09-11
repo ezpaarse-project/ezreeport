@@ -195,7 +195,11 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
           }
         }
       } catch (error) {
-        throw new Error(`An error occurred wile formatting "${key}" ("${value}"): ${(error as Error).message}`);
+        if (!(error instanceof Error)) {
+          throw new Error(`An unexpected error occurred wile formatting "${key}" ("${value}"): ${error}`);
+        }
+        error.message = `An error occurred wile formatting "${key}" ("${value}"): ${error.message}`;
+        throw error;
       }
 
       if (value) {
