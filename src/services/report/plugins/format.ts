@@ -1,4 +1,5 @@
 import type { FastifyPluginAsync } from 'fastify';
+import fp from 'fastify-plugin';
 import { StatusCodes, getReasonPhrase } from 'http-status-codes';
 
 import { NotFoundError } from '~/types/errors';
@@ -8,7 +9,7 @@ import { NotFoundError } from '~/types/errors';
  *
  * @param fastify The fastify instance
  */
-const formatPlugin: FastifyPluginAsync = async (fastify) => {
+const formatBasePlugin: FastifyPluginAsync = async (fastify) => {
   // Custom error handler
   fastify.setErrorHandler(
     (error, request, reply) => {
@@ -66,8 +67,14 @@ const formatPlugin: FastifyPluginAsync = async (fastify) => {
     });
   });
 };
-// Tell fastify to not create a new scope
-// @ts-expect-error
-formatPlugin[Symbol.for('skip-override')] = true;
+
+// Register plugin
+const formatPlugin = fp(
+  formatBasePlugin,
+  {
+    name: 'ezr-format',
+    encapsulate: false,
+  },
+);
 
 export default formatPlugin;

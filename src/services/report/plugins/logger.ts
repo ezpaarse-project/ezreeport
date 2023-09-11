@@ -1,4 +1,5 @@
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
+import fp from 'fastify-plugin';
 
 import { differenceInMilliseconds } from '~/lib/date-fns';
 import { accessLogger } from '~/lib/logger';
@@ -31,7 +32,7 @@ const logRequest = (request: FastifyRequest, reply?: FastifyReply) => {
  *
  * @param fastify The fastify instance
  */
-const loggerPlugin: FastifyPluginAsync = async (fastify) => {
+const loggerBasePlugin: FastifyPluginAsync = async (fastify) => {
   // Register request date
   fastify.addHook('onRequest', async (request) => {
     requestDates.set(request.id, new Date());
@@ -47,8 +48,14 @@ const loggerPlugin: FastifyPluginAsync = async (fastify) => {
     logRequest(request);
   });
 };
-// Tell fastify to not create a new scope
-// @ts-expect-error
-loggerPlugin[Symbol.for('skip-override')] = true;
+
+// Register plugin
+const loggerPlugin = fp(
+  loggerBasePlugin,
+  {
+    name: 'ezr-logger',
+    encapsulate: false,
+  },
+);
 
 export default loggerPlugin;

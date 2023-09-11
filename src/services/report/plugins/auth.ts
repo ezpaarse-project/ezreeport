@@ -4,6 +4,7 @@ import type {
   FastifyPluginAsync,
   FastifySchema,
 } from 'fastify';
+import fp from 'fastify-plugin';
 import { StatusCodes } from 'http-status-codes';
 
 import { merge } from 'lodash';
@@ -212,7 +213,7 @@ const authConfig = Type.Object({
  * @param fastify The fastify instance
  * @param pluginOpts The plugin options
  */
-const authPlugin: FastifyPluginAsync = async (fastify, pluginOpts) => {
+const authBasePlugin: FastifyPluginAsync = async (fastify, pluginOpts) => {
   if (!Value.Check(pluginConfig, pluginOpts)) {
     return;
   }
@@ -299,8 +300,14 @@ const authPlugin: FastifyPluginAsync = async (fastify, pluginOpts) => {
     routeOpts.preValidation = preValidation;
   });
 };
-// Tell fastify to not create a new scope
-// @ts-expect-error
-authPlugin[Symbol.for('skip-override')] = true;
+
+// Register plugin
+const authPlugin = fp(
+  authBasePlugin,
+  {
+    name: 'ezr-auth',
+    encapsulate: false,
+  },
+);
 
 export default authPlugin;
