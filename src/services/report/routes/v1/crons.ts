@@ -14,10 +14,8 @@ const router: FastifyPluginAsync = async (fastify) => {
   fastify.get(
     '/',
     {
-      config: {
-        auth: {
-          requireAdmin: true,
-        },
+      ezrAuth: {
+        requireAdmin: true,
       },
     },
     async () => ({
@@ -41,10 +39,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificCronParams,
       },
-      config: {
-        auth: {
-          requireAdmin: true,
-        },
+      ezrAuth: {
+        requireAdmin: true,
       },
     },
     async (request) => {
@@ -64,10 +60,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificCronParams,
       },
-      config: {
-        auth: {
-          requireAdmin: true,
-        },
+      ezrAuth: {
+        requireAdmin: true,
       },
     },
     async (request) => {
@@ -87,10 +81,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificCronParams,
       },
-      config: {
-        auth: {
-          requireAdmin: true,
-        },
+      ezrAuth: {
+        requireAdmin: true,
       },
     },
     async (request) => {
@@ -110,10 +102,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificCronParams,
       },
-      config: {
-        auth: {
-          requireAdmin: true,
-        },
+      ezrAuth: {
+        requireAdmin: true,
       },
     },
     async (request) => {

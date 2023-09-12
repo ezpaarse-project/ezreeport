@@ -24,10 +24,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         querystring: PaginationQuery,
       },
-      config: {
-        auth: {
-          requireAPIKey: true,
-        },
+      ezrAuth: {
+        requireAPIKey: true,
       },
     },
     async (request) => {

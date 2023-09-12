@@ -25,10 +25,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         querystring: PaginationQuery,
       },
-      config: {
-        auth: {
-          requireAPIKey: true,
-        },
+      ezrAuth: {
+        requireAPIKey: true,
       },
     },
     async (request) => {
@@ -60,10 +58,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         body: BulkNamespaceBody,
       },
-      config: {
-        auth: {
-          requireAPIKey: true,
-        },
+      ezrAuth: {
+        requireAPIKey: true,
       },
     },
     async (request) => ({ content: namespaces.replaceManyNamespaces(request.body) }),
@@ -85,10 +81,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificNamespaceParams,
       },
-      config: {
-        auth: {
-          requireAPIKey: true,
-        },
+      ezrAuth: {
+        requireAPIKey: true,
       },
     },
     async (request) => {
@@ -118,10 +112,8 @@ const router: FastifyPluginAsync = async (fastify) => {
         params: SpecificNamespaceParams,
         body: namespaces.NamespaceBody,
       },
-      config: {
-        auth: {
-          requireAPIKey: true,
-        },
+      ezrAuth: {
+        requireAPIKey: true,
       },
     },
     async (request, reply) => {
@@ -152,10 +144,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificNamespaceParams,
       },
-      config: {
-        auth: {
-          requireAPIKey: true,
-        },
+      ezrAuth: {
+        requireAPIKey: true,
       },
     },
     async (request) => {
@@ -184,10 +174,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificMembershipParams,
       },
-      config: {
-        auth: {
-          requireAPIKey: true,
-        },
+      ezrAuth: {
+        requireAPIKey: true,
       },
     },
     async (request) => {
@@ -225,10 +213,8 @@ const router: FastifyPluginAsync = async (fastify) => {
         params: SpecificMembershipParams,
         body: memberships.MembershipBody,
       },
-      config: {
-        auth: {
-          requireAPIKey: true,
-        },
+      ezrAuth: {
+        requireAPIKey: true,
       },
     },
     async (request, reply) => {
@@ -270,10 +256,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificMembershipParams,
       },
-      config: {
-        auth: {
-          requireAPIKey: true,
-        },
+      ezrAuth: {
+        requireAPIKey: true,
       },
     },
     async (request) => {

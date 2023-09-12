@@ -1,4 +1,25 @@
+import type { RawServerBase, RawServerDefault } from 'fastify';
+import type { Access } from '~/.prisma/client';
 import type { FullUser } from '~/models/users';
+
+interface CustomOptions {
+  /**
+   * Config of auth plugin for specific route
+   */
+  ezrAuth?: {
+    /**
+     * Minimum access level to access at this route,
+     * Adds `request.user`, `request.namespaces` and `request.namespaceIds`.
+     * */
+    access?: Access;
+    /** Should require a user, without checking access. Adds `request.user`. */
+    requireUser?: boolean;
+    /** Should require an admin user. Adds `request.user`. */
+    requireAdmin?: boolean;
+    /** Should require an API key. */
+    requireAPIKey?: boolean;
+  }
+}
 
 declare module 'fastify' {
   export interface FastifyRequest {
@@ -25,4 +46,8 @@ declare module 'fastify' {
   export interface FastifyReply {
     apiVersion?: number;
   }
+
+  // eslint-disable-next-line max-len, @typescript-eslint/no-unused-vars
+  export interface RouteShorthandOptions<T extends RawServerBase = RawServerDefault> extends CustomOptions { }
+  export interface RouteOptions extends CustomOptions { }
 }

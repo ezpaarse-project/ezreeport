@@ -13,10 +13,8 @@ const router: FastifyPluginAsync = async (fastify) => {
   fastify.get(
     '/',
     {
-      config: {
-        auth: {
-          requireUser: true,
-        },
+      ezrAuth: {
+        requireUser: true,
       },
     },
     async (request) => ({ content: request.user }),
@@ -28,10 +26,8 @@ const router: FastifyPluginAsync = async (fastify) => {
   fastify.get(
     '/namespaces',
     {
-      config: {
-        auth: {
-          access: Access.READ,
-        },
+      ezrAuth: {
+        access: Access.READ,
       },
     },
     async (request) => ({
@@ -45,10 +41,8 @@ const router: FastifyPluginAsync = async (fastify) => {
   fastify.get(
     '/permissions',
     {
-      config: {
-        auth: {
-          access: Access.READ,
-        },
+      ezrAuth: {
+        access: Access.READ,
       },
     },
     async (request) => {

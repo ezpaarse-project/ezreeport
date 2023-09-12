@@ -17,10 +17,8 @@ const router: FastifyPluginAsync = async (fastify) => {
   fastify.get(
     '/',
     {
-      config: {
-        auth: {
-          requireUser: true,
-        },
+      ezrAuth: {
+        requireUser: true,
       },
     },
     async () => ({
@@ -42,10 +40,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         body: templates.FullTemplateBody,
       },
-      config: {
-        auth: {
-          requireAdmin: true,
-        },
+      ezrAuth: {
+        requireAdmin: true,
       },
     },
     async (request, reply) => {
@@ -72,10 +68,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificTemplateParams,
       },
-      config: {
-        auth: {
-          requireUser: true,
-        },
+      ezrAuth: {
+        requireUser: true,
       },
     },
     async (request) => {
@@ -103,10 +97,8 @@ const router: FastifyPluginAsync = async (fastify) => {
         params: SpecificTemplateParams,
         body: templates.FullTemplateBody,
       },
-      config: {
-        auth: {
-          requireAdmin: true,
-        },
+      ezrAuth: {
+        requireAdmin: true,
       },
     },
     async (request, reply) => {
@@ -140,10 +132,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificTemplateParams,
       },
-      config: {
-        auth: {
-          requireAdmin: true,
-        },
+      ezrAuth: {
+        requireAdmin: true,
       },
     },
     async (request) => {

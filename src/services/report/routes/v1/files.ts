@@ -52,10 +52,8 @@ const router: FastifyPluginAsync = async (fastify) => {
         params: GetReportParams,
         querystring: GetReportQuery,
       },
-      config: {
-        auth: {
-          access: Access.READ,
-        },
+      ezrAuth: {
+        access: Access.READ,
       },
     },
     async (request, response) => {

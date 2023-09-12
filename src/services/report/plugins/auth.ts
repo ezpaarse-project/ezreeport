@@ -186,28 +186,6 @@ const pluginConfig = Type.Object({
 });
 
 /**
- * The config of the routes using the plugin
- */
-const authConfig = Type.Object({
-  auth: Type.Optional(
-    Type.Object({
-      requireAPIKey: Type.Optional(
-        Type.Boolean(),
-      ),
-      requireAdmin: Type.Optional(
-        Type.Boolean(),
-      ),
-      requireUser: Type.Optional(
-        Type.Boolean(),
-      ),
-      access: Type.Optional(
-        Type.Enum(Access),
-      ),
-    }),
-  ),
-});
-
-/**
  * Fastify plugin to secure ressources by adding pre-validation hooks when a route is registered
  *
  * @param fastify The fastify instance
@@ -223,7 +201,7 @@ const authBasePlugin: FastifyPluginAsync = async (fastify, pluginOpts) => {
   fastify.decorateRequest('namespaceIds');
 
   fastify.addHook('onRoute', (routeOpts) => {
-    if (!Value.Check(authConfig, routeOpts.config) || !routeOpts.config.auth) {
+    if (!routeOpts.ezrAuth) {
       return;
     }
 
@@ -245,13 +223,13 @@ const authBasePlugin: FastifyPluginAsync = async (fastify, pluginOpts) => {
     }
 
     // If require API key
-    if (!registered && routeOpts.config.auth.requireAPIKey) {
+    if (!registered && routeOpts.ezrAuth.requireAPIKey) {
       preValidation.push(requireAPIKey);
       registered = true;
     }
 
     // If require admin
-    if (!registered && routeOpts.config.auth.requireAdmin) {
+    if (!registered && routeOpts.ezrAuth.requireAdmin) {
       preValidation.push(
         requireUser,
         requireAdmin,
@@ -264,7 +242,7 @@ const authBasePlugin: FastifyPluginAsync = async (fastify, pluginOpts) => {
     }
 
     // If require a user
-    if (!registered && routeOpts.config.auth.requireUser) {
+    if (!registered && routeOpts.ezrAuth.requireUser) {
       preValidation.push(requireUser);
 
       if (shouldRegister) {
@@ -274,7 +252,7 @@ const authBasePlugin: FastifyPluginAsync = async (fastify, pluginOpts) => {
     }
 
     // If require access to namespaces
-    if (!registered && routeOpts.config.auth.access) {
+    if (!registered && routeOpts.ezrAuth.access) {
       // eslint-disable-next-line no-param-reassign
       routeOpts.schema = merge<Object, FastifySchema, FastifySchema>(
         {},
@@ -286,11 +264,11 @@ const authBasePlugin: FastifyPluginAsync = async (fastify, pluginOpts) => {
 
       preValidation.push(
         requireUser,
-        requireAccess(routeOpts.config.auth.access),
+        requireAccess(routeOpts.ezrAuth.access),
       );
 
       if (shouldRegister) {
-        registerRouteWithAccess(routeName, routeOpts.config.auth.access);
+        registerRouteWithAccess(routeName, routeOpts.ezrAuth.access);
       }
       registered = true;
     }

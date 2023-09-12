@@ -28,10 +28,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         querystring: PaginationQuery,
       },
-      config: {
-        auth: {
-          access: Access.READ,
-        },
+      ezrAuth: {
+        access: Access.READ,
       },
     },
     async (request) => {
@@ -65,10 +63,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         body: tasks.CreateTaskBody,
       },
-      config: {
-        auth: {
-          access: Access.READ_WRITE,
-        },
+      ezrAuth: {
+        access: Access.READ_WRITE,
       },
       preHandler: async (request) => {
         // Check if namespace is valid
@@ -104,10 +100,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificTaskParams,
       },
-      config: {
-        auth: {
-          access: Access.READ,
-        },
+      ezrAuth: {
+        access: Access.READ,
       },
     },
     async (request) => {
@@ -139,10 +133,8 @@ const router: FastifyPluginAsync = async (fastify) => {
         params: SpecificTaskParams,
         body: UpsertTaskBody,
       },
-      config: {
-        auth: {
-          access: Access.READ_WRITE,
-        },
+      ezrAuth: {
+        access: Access.READ_WRITE,
       },
     },
     async (request, reply) => {
@@ -210,10 +202,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificTaskParams,
       },
-      config: {
-        auth: {
-          access: Access.READ_WRITE,
-        },
+      ezrAuth: {
+        access: Access.READ_WRITE,
       },
     },
     async (request) => {
@@ -248,10 +238,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificTaskParams,
       },
-      config: {
-        auth: {
-          access: Access.READ_WRITE,
-        },
+      ezrAuth: {
+        access: Access.READ_WRITE,
       },
     },
     async (request) => {
@@ -292,10 +280,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: LinkTaskTemplateParams,
       },
-      config: {
-        auth: {
-          access: Access.READ_WRITE,
-        },
+      ezrAuth: {
+        access: Access.READ_WRITE,
       },
     },
     async (request) => {
@@ -338,10 +324,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: LinkTaskTemplateParams,
       },
-      config: {
-        auth: {
-          access: Access.READ_WRITE,
-        },
+      ezrAuth: {
+        access: Access.READ_WRITE,
       },
     },
     async (request) => {
@@ -394,10 +378,8 @@ const router: FastifyPluginAsync = async (fastify) => {
         params: SpecificTaskParams,
         querystring: GenerateTaskQuery,
       },
-      config: {
-        auth: {
-          access: Access.READ_WRITE,
-        },
+      ezrAuth: {
+        access: Access.READ_WRITE,
       },
     },
     async (request) => {

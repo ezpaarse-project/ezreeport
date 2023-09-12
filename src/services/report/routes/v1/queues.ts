@@ -18,10 +18,8 @@ const router: FastifyPluginAsync = async (fastify) => {
   fastify.get(
     '/',
     {
-      config: {
-        auth: {
-          requireAdmin: true,
-        },
+      ezrAuth: {
+        requireAdmin: true,
       },
     },
     async () => ({
@@ -45,10 +43,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificQueueParams,
       },
-      config: {
-        auth: {
-          requireAdmin: true,
-        },
+      ezrAuth: {
+        requireAdmin: true,
       },
     },
     async (request) => {
@@ -72,10 +68,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificQueueParams,
       },
-      config: {
-        auth: {
-          requireAdmin: true,
-        },
+      ezrAuth: {
+        requireAdmin: true,
       },
     },
     async (request) => {
@@ -101,10 +95,8 @@ const router: FastifyPluginAsync = async (fastify) => {
         params: SpecificQueueParams,
         querystring: PaginationQuery,
       },
-      config: {
-        auth: {
-          requireAdmin: true,
-        },
+      ezrAuth: {
+        requireAdmin: true,
       },
     },
     async (request) => {
@@ -147,10 +139,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificJobParams,
       },
-      config: {
-        auth: {
-          access: Access.READ,
-        },
+      ezrAuth: {
+        access: Access.READ,
       },
     },
     async (request) => {
@@ -184,10 +174,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificJobParams,
       },
-      config: {
-        auth: {
-          access: Access.READ_WRITE,
-        },
+      ezrAuth: {
+        access: Access.READ_WRITE,
       },
     },
     async (request) => {

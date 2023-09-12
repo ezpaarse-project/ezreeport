@@ -7,7 +7,7 @@ import { Access } from '~/models/access';
 import * as tActivity from '~/models/tasksActivity';
 
 const router: FastifyPluginAsync = async (fastify) => {
-  await fastify.register(authPlugin, { prefix: 'history' });
+  await fastify.register(authPlugin, { prefix: 'tasks-activity' });
 
   /**
    * List all history entries.
@@ -20,10 +20,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         querystring: PaginationQuery,
       },
-      config: {
-        auth: {
-          access: Access.READ,
-        },
+      ezrAuth: {
+        access: Access.READ,
       },
     },
     async (request) => {
