@@ -17,7 +17,7 @@ import { type Static, Type, Value } from '~/lib/typebox';
 import { calcNextDate, calcPeriod } from '~/models/recurrence';
 import { ConflictError } from '~/types/errors';
 
-import { patchTaskByIdWithHistory } from './tasks';
+import { InputTaskBodyType, patchTaskByIdWithHistory } from './tasks';
 import * as templates from './templates';
 import { type NamespaceBodyType, NamespaceBody, getNamespaceById } from './namespaces';
 
@@ -87,8 +87,6 @@ export const ReportResult = Type.Object({
       Type.Object({
         pageCount: Type.Integer(),
 
-        path: Type.String(),
-
         size: Type.Integer(),
       }),
     ),
@@ -136,15 +134,71 @@ const writeInfoFile = (name: string, content: unknown) => writeFile(
   'utf-8',
 );
 
-type FetchParams = {
-  template: templates.TemplateType,
-  taskTemplate: templates.TaskTemplateType,
-  period: Interval,
-  namespace?: NamespaceBodyType,
-  recurrence: Recurrence
+/**
+ * Get report period of task, using custom one if possible
+ *
+ * @param task The task concerned
+ * @param customPeriod The provided custom period
+ *
+ * @returns
+ */
+const getReportPeriod = (
+  task: Task,
+  customPeriod?: { start: string, end: string },
+) => {
+  if (customPeriod) {
+    // Parse custom period
+    const parsedPeriod = {
+      start: dfns.startOfDay(dfns.parseISO(customPeriod.start)),
+      end: dfns.endOfDay(dfns.parseISO(customPeriod.end)),
+    };
+    // Check if compatible with task
+    const expectedPeriodEnd = dfns.add(
+      calcNextDate(parsedPeriod.start, task.recurrence),
+      { days: -1 },
+    );
+
+    if (!dfns.isSameDay(expectedPeriodEnd, parsedPeriod.end)) {
+      throw new ConflictError(`Custom period "${customPeriod.start} to ${customPeriod.end}" doesn't match task's recurrence (${task.recurrence}). Should be : "${customPeriod.start} to ${dfns.formatISO(expectedPeriodEnd)}")`);
+    }
+
+    return parsedPeriod;
+  }
+
+  // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
+  return calcPeriod(dfns.parseISO(task.nextRun.toString()), task.recurrence);
 };
 
-const fetchData = (params: FetchParams, events: EventEmitter) => {
+/**
+ * Shorthand to fetch data of layouts
+ *
+ * @param params The params of the function
+ * @param events The event manager passed to fetcher
+ *
+ * @returns Promise with all requests
+ */
+const fetchData = (
+  params: {
+    /** The resolved template */
+    template: templates.TemplateType,
+    /** The template of the task */
+    taskTemplate: templates.TaskTemplateType,
+    /** Period of the report */
+    period: Interval,
+    /** Namespace of the report */
+    namespace?: NamespaceBodyType,
+    /** Recurrence of task */
+    recurrence: Recurrence
+  },
+  events: EventEmitter,
+): Promise<{
+  /** index of the layout */
+  index: number,
+  /** data fetched */
+  data: unknown,
+  /** resolved options of fetcher */
+  options?: ElasticFetchOptionsType
+}[]> => {
   const {
     template,
     taskTemplate,
@@ -155,11 +209,17 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
 
   return Promise.all(
     template.layouts.map(async (layout, i) => {
+      // If there's static data, do not request it
       if (
-        layout.data || layout.figures.every(({ data }) => !!data)
+        layout.data
+        || layout.figures.every(({ data }) => !!data)
       ) {
-        return;
+        return {
+          index: i,
+          data: layout.data,
+        };
       }
+
       const fetchOptions: ElasticFetchOptionsType = merge(
         {},
         template.fetchOptions ?? {},
@@ -175,10 +235,14 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
           auth: namespace?.fetchLogin?.elastic ?? { username: '' },
         },
       );
-      template.layouts[i].fetchOptions = fetchOptions;
 
+      // Fetch elastic and return resolved fetch options
       try {
-        template.layouts[i].data = await fetchWithElastic(fetchOptions, events);
+        return {
+          index: i,
+          options: fetchOptions,
+          data: await fetchWithElastic(fetchOptions, events),
+        };
       } catch (error) {
         if (!(error instanceof Error)) {
           throw error;
@@ -188,6 +252,64 @@ const fetchData = (params: FetchParams, events: EventEmitter) => {
       }
     }),
   );
+};
+
+/**
+ * Shorthand to render layouts
+ *
+ * @param params The params of the function
+ * @param events The event manager passed to fetcher
+ *
+ * @returns Promise with resolved
+ */
+const renderTemplate = async (
+  params: {
+    /** Render options of template */
+    baseRenderOptions: templates.TemplateType['renderOptions'],
+    /** Layouts of template */
+    layouts: templates.TemplateType['layouts'],
+    /** Concerned task */
+    task: Task,
+    /** Filepath of report */
+    path: string,
+    /** Period of report */
+    period: Interval,
+    /** Is debug active */
+    debug?: boolean,
+  },
+  events: EventEmitter,
+) => {
+  const {
+    baseRenderOptions,
+    task,
+    path,
+    period,
+    debug,
+    layouts,
+  } = params;
+
+  const renderOptions: VegaRenderOptionsType = merge(
+    {},
+    baseRenderOptions ?? {},
+    {
+      doc: {
+        name: task.name,
+        path,
+        period: {
+          start: dfns.getTime(period.start),
+          end: dfns.getTime(period.end),
+        },
+      },
+      recurrence: task.recurrence,
+      debug,
+      layouts,
+    },
+  );
+
+  return {
+    options: renderOptions,
+    stats: await renderPdfWithVega(renderOptions, events),
+  };
 };
 
 /**
@@ -260,25 +382,8 @@ export const generateReport = async (
     result.detail.auth = namespace.fetchLogin;
     events.emit('authFound', result.detail.auth);
 
-    // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
-    let period = calcPeriod(dfns.parseISO(task.nextRun.toString()), task.recurrence);
+    const period = getReportPeriod(task, customPeriod);
     const distance = dfns.differenceInMilliseconds(period.end, period.start);
-
-    // Parse custom period
-    if (customPeriod) {
-      const parsedPeriod = {
-        start: dfns.startOfDay(dfns.parseISO(customPeriod.start)),
-        end: dfns.endOfDay(dfns.parseISO(customPeriod.end)),
-      };
-      const expectedPeriodEnd = dfns.add(
-        calcNextDate(parsedPeriod.start, task.recurrence),
-        { days: -1 },
-      );
-      if (!dfns.isSameDay(expectedPeriodEnd, parsedPeriod.end)) {
-        throw new ConflictError(`Custom period "${customPeriod.start} to ${customPeriod.end}" doesn't match task's recurrence (${task.recurrence}). Should be : "${customPeriod.start} to ${dfns.formatISO(expectedPeriodEnd)}")`);
-      }
-      period = parsedPeriod;
-    }
     result.detail.period = {
       start: new Date(period.start).toISOString(),
       end: new Date(period.end).toISOString(),
@@ -309,114 +414,77 @@ export const generateReport = async (
 
     events.emit('templateResolved', template);
 
-    await fetchData({
-      template,
-      taskTemplate,
-      period,
-      recurrence: task.recurrence,
-      namespace,
-    }, events);
-    // Cleanup
+    // Fetch data and keep resolved data and fetch options
+    const requestsResults = await fetchData(
+      {
+        template,
+        taskTemplate,
+        period,
+        recurrence: task.recurrence,
+        namespace,
+      },
+      events,
+    );
+    // eslint-disable-next-line no-restricted-syntax
+    for (const { index, data, options } of requestsResults) {
+      template.layouts[index].fetchOptions = options;
+      template.layouts[index].data = data;
+    }
+
+    // Cleanup & notifications
     delete template.fetchOptions;
     events.emit('templateFetched', template);
     logger.verbose(`[gen] [${process.pid}] Data fetched`);
 
     // Render report
-    const renderOptions: VegaRenderOptionsType = merge(
-      {},
-      template.renderOptions ?? {},
+    const renderResult = await renderTemplate(
       {
-        doc: {
-          name: task.name,
-          path: `${filepath}.rep`,
-          period: {
-            start: dfns.getTime(period.start),
-            end: dfns.getTime(period.end),
-          },
-        },
-        recurrence: task.recurrence,
-        debug,
+        baseRenderOptions: template.renderOptions,
         layouts: template.layouts,
+        task,
+        path: `${filepath}.rep`,
+        period,
+        debug,
       },
+      events,
     );
-    template.renderOptions = renderOptions;
-    const stats = await renderPdfWithVega(renderOptions, events);
+    template.renderOptions = renderResult.options;
     result.detail.files.report = `${namepath}.rep.pdf`;
     logger.verbose(`[gen] [${process.pid}] Report wrote to "${result.detail.files.report}"`);
 
-    merge<ReportResultType, DeepPartial<ReportResultType>>(
-      result,
-      {
-        detail: {
-          took: dfns.differenceInMilliseconds(new Date(), today),
-          sendingTo: targets,
-          stats: omit(stats, 'path'),
-        },
-      },
-    );
-
-    if (writeHistory) {
-      await patchTaskByIdWithHistory(
-        task.id,
-        { nextRun: calcNextDate(today, task.recurrence).toString(), lastRun: today },
-        {
-          type: 'generation-success',
-          message: `Rapport "${namepath}" généré par ${origin}`,
-          data: {
-            ...meta,
-            destroyAt: result.detail.destroyAt,
-            files: result.detail.files,
-            period: {
-              start: dfns.formatISO(period.start),
-              end: dfns.formatISO(period.end),
-            },
-          },
-        },
-      );
-    }
+    // Update result
+    result.detail = {
+      ...result.detail,
+      took: dfns.differenceInMilliseconds(new Date(), today),
+      sendingTo: targets,
+      stats: omit(renderResult.stats, 'path'),
+    };
 
     logger.info(`[gen] [${process.pid}] Report "${namepath}" successfully generated in ${(result.detail.took / 1000).toFixed(2)}s`);
   } catch (error) {
     const err: ReportResultType['detail']['error'] = {
-      message: '',
+      message: `${error}`,
       stack: [],
       cause: {
         layout: -1,
         type: 'unknown',
       },
     };
+
+    // Parse error
     if (error instanceof Error) {
       err.message = error.message;
       err.stack = error.stack?.split('\n    ') ?? [];
       err.cause = Value.Cast(ReportErrorCause, err.cause);
     }
 
-    merge<ReportResultType, DeepPartial<ReportResultType>>(
-      result,
-      {
-        success: false,
-        detail: {
-          took: dfns.differenceInMilliseconds(new Date(), today),
-          error: err,
-        },
-      },
-    );
-
-    if (writeHistory) {
-      await patchTaskByIdWithHistory(
-        task.id,
-        { enabled: false },
-        {
-          type: 'generation-error',
-          message: `Rapport "${namepath}" non généré par ${origin} suite à une erreur.`,
-          data: {
-            ...meta,
-            destroyAt: result.detail.destroyAt,
-            files: result.detail.files,
-          },
-        },
-      );
-    }
+    // Update result
+    result.success = false;
+    result.detail = {
+      ...result.detail,
+      took: dfns.differenceInMilliseconds(new Date(), today),
+      error: err,
+    };
 
     const dur = (result.detail.took / 1000).toFixed(2);
     if (error instanceof Error) {
@@ -426,13 +494,85 @@ export const generateReport = async (
     }
   }
 
-  // Write debug when process is ending
-  await writeInfoFile(`${filepath}.deb`, omit(template, 'renderOptions.layouts'));
-  result.detail.files.debug = `${namepath}.deb.json`;
-  logger.verbose(`[gen] [${process.pid}] Template wrote to "${result.detail.files.debug}"`);
+  // Update task if needed
+  if (writeHistory) {
+    // Default data
+    let taskData: Partial<InputTaskBodyType> & { lastRun: Date } = {
+      lastRun: today,
+    };
+    const activityData = {
+      type: '',
+      message: '',
+      data: {
+        ...meta,
+        destroyAt: result.detail.destroyAt,
+        files: result.detail.files,
+        period: undefined as { start: string, end: string } | undefined,
+      },
+    };
+
+    if (result.success) {
+      // If generation is a success
+      taskData = {
+        ...taskData,
+        nextRun: calcNextDate(today, task.recurrence).toString(),
+      };
+
+      activityData.type = 'generation-success';
+      activityData.message = `Rapport "${namepath}" généré par ${origin}`;
+      activityData.data.period = result.detail.period;
+    } else {
+      // If an error was throw when generating
+      taskData = {
+        ...taskData,
+        enabled: false,
+      };
+
+      activityData.type = 'generation-error';
+      activityData.message = `Rapport "${namepath}" non généré par ${origin} suite à une erreur.`;
+    }
+
+    // Apply modifications
+    try {
+      await patchTaskByIdWithHistory(
+        task.id,
+        taskData,
+        activityData,
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error(`[gen] [${process.pid}] Unable to update task [${task.id}]: {${error.message}}`);
+      } else {
+        logger.error(`[gen] [${process.pid}] An unexpected error occurred when updating task [${task.id}]: {${error}}`);
+      }
+    }
+  }
 
   // Write detail when process is ending
-  await writeInfoFile(`${filepath}.det`, result);
-  logger.verbose(`[gen] [${process.pid}] Detail wrote to "${result.detail.files.detail}"`);
+  try {
+    await writeInfoFile(`${filepath}.det`, result);
+    logger.verbose(`[gen] [${process.pid}] Detail wrote to [${result.detail.files.detail}]`);
+    result.detail.files.detail = `${namepath}.deb.json`;
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(`[gen] [${process.pid}] Unable to write detail [${task.id}]: {${error.message}}`);
+    } else {
+      logger.error(`[gen] [${process.pid}] An unexpected error occurred when writing detail [${task.id}]: {${error}}`);
+    }
+  }
+
+  // Write debug when process is ending
+  try {
+    await writeInfoFile(`${filepath}.deb`, omit(template, 'renderOptions.layouts'));
+    result.detail.files.debug = `${namepath}.deb.json`;
+    logger.verbose(`[gen] [${process.pid}] Template wrote to [${result.detail.files.debug}]`);
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(`[gen] [${process.pid}] Unable to write debug [${task.id}]: {${error.message}}`);
+    } else {
+      logger.error(`[gen] [${process.pid}] An unexpected error occurred when writing debug [${task.id}]: {${error}}`);
+    }
+  }
+
   return result;
 };

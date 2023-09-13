@@ -39,7 +39,7 @@ export const InputTaskBody = Type.Object({
   ),
 });
 
-type InputTaskBodyType = Static<typeof InputTaskBody>;
+export type InputTaskBodyType = Static<typeof InputTaskBody>;
 
 /**
  * TypeBox schema for creating tasks
