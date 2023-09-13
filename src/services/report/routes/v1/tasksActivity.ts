@@ -7,7 +7,7 @@ import { Access } from '~/models/access';
 import * as tActivity from '~/models/tasksActivity';
 
 const router: FastifyPluginAsync = async (fastify) => {
-  await fastify.register(authPlugin, { prefix: 'tasksActivity' });
+  await fastify.register(authPlugin, { prefix: 'tasks-activity' });
 
   /**
    * List all history entries.
