@@ -1,252 +1,281 @@
+import type { FastifyPluginAsync } from 'fastify';
+
 import { StatusCodes } from 'http-status-codes';
-import Joi from 'joi';
+import authPlugin from '~/plugins/auth';
+import { PaginationQuery, type PaginationQueryType } from '~/routes/utils/pagination';
 
-import { requireAPIKey } from '~/middlewares/auth';
+import { Type, type Static } from '~/lib/typebox';
 
-import { CustomRouter } from '~/lib/express-utils';
-
-import {
-  addUserToNamespace,
-  isValidMembership,
-  removeUserFromNamespace,
-  updateUserOfNamespace,
-} from '~/models/memberships';
-import {
-  createNamespace,
-  deleteNamespaceById,
-  getAllNamespaces,
-  editNamespaceById,
-  getCountNamespaces,
-  getNamespaceById,
-  isValidBulkNamespace,
-  replaceManyNamespaces,
-  isValidNamespace,
-} from '~/models/namespaces';
+import { NotFoundError, HTTPError } from '~/types/errors';
+import * as memberships from '~/models/memberships';
+import * as namespaces from '~/models/namespaces';
 import { getUserByUsername } from '~/models/users';
-import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';
 
-const router = CustomRouter('namespaces')
+const router: FastifyPluginAsync = async (fastify) => {
+  await fastify.register(authPlugin, { prefix: 'namespaces' });
+
   /**
    * List all namespaces
    */
-  .createBasicRoute('GET /', async (req, _res) => {
-    const { previous: p = undefined, count = '15' } = req.query;
-    const c = +count;
-
-    const entries = await getAllNamespaces(
-      {
-        count: c,
-        previous: p?.toString(),
+  fastify.get<{
+    Querystring: PaginationQueryType,
+  }>(
+    '/',
+    {
+      schema: {
+        querystring: PaginationQuery,
       },
-    );
-
-    return {
-      data: entries,
-      code: StatusCodes.OK,
-      meta: {
-        total: await getCountNamespaces(),
-        count: entries.length,
-        size: c,
-        lastId: entries.at(-1)?.id,
+      ezrAuth: {
+        requireAPIKey: true,
       },
-    };
-  }, requireAPIKey)
+    },
+    async (request) => {
+      const { previous, count = 15 } = request.query;
 
-  /**
-   * Create a new namespace
-   *
-   * @deprecated Use `PUT /:namespace` instead
-   */
-  .createBasicRoute('POST /', async (req, _res) => {
-    const { id, ...body } = req.body;
+      const list = await namespaces.getAllNamespaces({ count, previous });
 
-    const validation = Joi.string().validate(id);
-    if (validation.error) {
-      throw new ArgumentError(`id is not valid: ${validation.error?.message}`);
-    }
-    // Validate body
-    if (!isValidNamespace(body)) {
-      // As validation throws an error, this line shouldn't be called
-      return {};
-    }
-
-    return {
-      data: await createNamespace(
-        id,
-        body,
-      ),
-      code: StatusCodes.CREATED,
-    };
-  }, requireAPIKey)
+      return {
+        content: list,
+        meta: {
+          total: await namespaces.getCountNamespaces(),
+          count: list.length,
+          size: count,
+          lastId: list.at(-1)?.id,
+        },
+      };
+    },
+  );
 
   /**
    * Replace namespaces and/or memberships
    */
-  .createBasicRoute('PUT /', (req, _res) => {
-    // Validate body
-    if (!isValidBulkNamespace(req.body)) {
-      // As validation throws an error, this line shouldn't be called
-      return null;
-    }
+  const BulkNamespaceBody = Type.Array(namespaces.BulkNamespace);
+  fastify.put<{
+    Body: Static<typeof BulkNamespaceBody>,
+  }>(
+    '/',
+    {
+      schema: {
+        body: BulkNamespaceBody,
+      },
+      ezrAuth: {
+        requireAPIKey: true,
+      },
+    },
+    async (request) => ({ content: namespaces.replaceManyNamespaces(request.body) }),
+  );
 
-    return replaceManyNamespaces(req.body);
-  }, requireAPIKey)
+  const SpecificNamespaceParams = Type.Object({
+    namespace: Type.String(),
+  });
+  type SpecificNamespaceParamsType = Static<typeof SpecificNamespaceParams>;
 
   /**
    * Get specific namespace
    */
-  .createBasicRoute('GET /:namespace', async (req, _res) => {
-    const { namespace: id } = req.params;
+  fastify.get<{
+    Params: SpecificNamespaceParamsType,
+  }>(
+    '/:namespace',
+    {
+      schema: {
+        params: SpecificNamespaceParams,
+      },
+      ezrAuth: {
+        requireAPIKey: true,
+      },
+    },
+    async (request) => {
+      const { namespace: id } = request.params;
 
-    const namespace = await getNamespaceById(id);
-    if (!namespace) {
-      throw new HTTPError(`Namespace with id '${id}' not found`, StatusCodes.NOT_FOUND);
-    }
+      const item = await namespaces.getNamespaceById(id);
+      if (!item) {
+        throw new HTTPError(`Namespace with id '${id}' not found`, StatusCodes.NOT_FOUND);
+      }
 
-    return namespace;
-  }, requireAPIKey)
+      return {
+        content: item,
+      };
+    },
+  );
 
   /**
    * Update or create a namespace
-   */
-  .createBasicRoute('PUT /:namespace', async (req, _res) => {
-    const { namespace: id } = req.params;
+  */
+  fastify.put<{
+    Params: SpecificNamespaceParamsType,
+    Body: namespaces.NamespaceBodyType,
+  }>(
+    '/:namespace',
+    {
+      schema: {
+        params: SpecificNamespaceParams,
+        body: namespaces.NamespaceBody,
+      },
+      ezrAuth: {
+        requireAPIKey: true,
+      },
+    },
+    async (request, reply) => {
+      const { namespace: id } = request.params;
 
-    // Validate body
-    if (!isValidNamespace(req.body)) {
-      // As validation throws an error, this line shouldn't be called
-      return Promise.resolve(null);
-    }
+      const item = await namespaces.getNamespaceById(id);
+      if (!item) {
+        reply.status(StatusCodes.CREATED);
+        return {
+          content: await namespaces.createNamespace(id, request.body),
+        };
+      }
 
-    let namespace = await getNamespaceById(id);
-    let code;
-    if (namespace) {
-      namespace = await editNamespaceById(id, req.body);
-      code = StatusCodes.OK;
-    } else {
-      namespace = await createNamespace(id, req.body);
-      code = StatusCodes.CREATED;
-    }
-
-    return {
-      code,
-      data: namespace,
-    };
-  }, requireAPIKey)
+      return {
+        content: await namespaces.editNamespaceById(id, request.body),
+      };
+    },
+  );
 
   /**
    * Delete a namespace
-   */
-  .createBasicRoute('DELETE /:namespace', async (req, _res) => {
-    const { namespace: id } = req.params;
+  */
+  fastify.delete<{
+    Params: SpecificNamespaceParamsType,
+  }>(
+    '/:namespace',
+    {
+      schema: {
+        params: SpecificNamespaceParams,
+      },
+      ezrAuth: {
+        requireAPIKey: true,
+      },
+    },
+    async (request) => {
+      const { namespace: id } = request.params;
 
-    await deleteNamespaceById(id);
-  }, requireAPIKey)
+      await namespaces.deleteNamespaceById(id);
+    },
+  );
 
-  /**
-   * Add a user to a namespace
-   *
-   * @deprecated Use `PUT /:namespace/members/:username` instead
-   */
-  .createBasicRoute('POST /:namespace/members', async (req, _res) => {
-    const { namespace: id } = req.params;
-    const { username, ...data } = req.body;
-
-    const namespace = await getNamespaceById(id);
-    if (!namespace) {
-      throw new NotFoundError(`Namespace "${id}" not found`);
-    }
-
-    if (!isValidMembership(data)) {
-      // As validation throws an error, this line shouldn't be called
-      return {};
-    }
-
-    await addUserToNamespace(username, id, data);
-
-    return {
-      code: StatusCodes.CREATED,
-      data: await getNamespaceById(id),
-    };
-  }, requireAPIKey)
+  const SpecificMembershipParams = Type.Intersect([
+    SpecificNamespaceParams,
+    Type.Object({
+      username: Type.String(),
+    }),
+  ]);
+  type SpecificMembershipParamsType = Static<typeof SpecificMembershipParams>;
 
   /**
    * Get membership of a namespace
-   */
-  .createBasicRoute('GET /:namespace/members/:username', async (req, _res) => {
-    const { namespace: id, username } = req.params;
+  */
+  fastify.get<{
+    Params: SpecificMembershipParamsType,
+  }>(
+    '/:namespace/members/:username',
+    {
+      schema: {
+        params: SpecificMembershipParams,
+      },
+      ezrAuth: {
+        requireAPIKey: true,
+      },
+    },
+    async (request) => {
+      const { namespace: id, username } = request.params;
 
-    const namespace = await getNamespaceById(id);
-    if (!namespace) {
-      throw new NotFoundError(`Namespace "${id}" not found`);
-    }
+      const namespace = await namespaces.getNamespaceById(id);
+      if (!namespace) {
+        throw new NotFoundError(`Namespace "${id}" not found`);
+      }
 
-    const user = await getUserByUsername(username);
-    if (!user) {
-      throw new NotFoundError(`User "${username}" not found`);
-    }
+      const userItem = await getUserByUsername(username);
+      if (!userItem) {
+        throw new NotFoundError(`User "${username}" not found`);
+      }
 
-    const membership = namespace.memberships.find((m) => m.username === username);
-    if (!membership) {
-      throw new NotFoundError(`User "${username}" is not in namespace "${namespace}"`);
-    }
+      const membershipItem = namespace.memberships.find((m) => m.username === username);
+      if (!membershipItem) {
+        throw new NotFoundError(`User "${username}" is not in namespace "${namespace}"`);
+      }
 
-    return membership;
-  }, requireAPIKey)
+      return membershipItem;
+    },
+  );
 
   /**
    * Update or adds a user of a namespace
-   */
-  .createBasicRoute('PUT /:namespace/members/:username', async (req, _res) => {
-    const { namespace: id, username } = req.params;
+  */
+  fastify.put<{
+    Params: SpecificMembershipParamsType,
+    Body: memberships.MembershipBodyType,
+  }>(
+    '/:namespace/members/:username',
+    {
+      schema: {
+        params: SpecificMembershipParams,
+        body: memberships.MembershipBody,
+      },
+      ezrAuth: {
+        requireAPIKey: true,
+      },
+    },
+    async (request, reply) => {
+      const { namespace: id, username } = request.params;
 
-    const namespace = await getNamespaceById(id);
-    if (!namespace) {
-      throw new NotFoundError(`Namespace "${id}" not found`);
-    }
+      let namespaceItem = await namespaces.getNamespaceById(id);
+      if (!namespaceItem) {
+        throw new NotFoundError(`Namespace "${id}" not found`);
+      }
 
-    const user = await getUserByUsername(username);
-    if (!user) {
-      throw new NotFoundError(`User "${username}" not found`);
-    }
+      const userItem = await getUserByUsername(username);
+      if (!userItem) {
+        throw new NotFoundError(`User "${username}" not found`);
+      }
 
-    if (!isValidMembership(req.body)) {
-      // As validation throws an error, this line shouldn't be called
-      return {};
-    }
+      const isMembershipExist = namespaceItem.memberships.some((m) => m.username === username);
+      if (!isMembershipExist) {
+        reply.status(StatusCodes.CREATED);
+        await memberships.addUserToNamespace(username, id, request.body);
+      } else {
+        await memberships.updateUserOfNamespace(username, id, request.body);
+      }
 
-    let code;
-    if (namespace.memberships.find((m) => m.username === username)) {
-      await updateUserOfNamespace(username, id, req.body);
-      code = StatusCodes.OK;
-    } else {
-      await addUserToNamespace(username, id, req.body);
-      code = StatusCodes.CREATED;
-    }
-
-    return {
-      code,
-      data: (await getNamespaceById(id))?.memberships.find((m) => m.username === username),
-    };
-  }, requireAPIKey)
+      namespaceItem = await namespaces.getNamespaceById(id);
+      return {
+        content: namespaceItem?.memberships.find((m) => m.username === username),
+      };
+    },
+  );
 
   /**
    * Removes a user from a namespace
-   */
-  .createBasicRoute('DELETE /:namespace/members/:username', async (req, _res) => {
-    const { namespace: id, username } = req.params;
+  */
+  fastify.delete<{
+    Params: SpecificMembershipParamsType,
+  }>(
+    '/:namespace/members/:username',
+    {
+      schema: {
+        params: SpecificMembershipParams,
+      },
+      ezrAuth: {
+        requireAPIKey: true,
+      },
+    },
+    async (request) => {
+      const { namespace: id, username } = request.params;
 
-    const namespace = await getNamespaceById(id);
-    if (!namespace) {
-      throw new NotFoundError(`Namespace "${id}" not found`);
-    }
+      const namespace = await namespaces.getNamespaceById(id);
+      if (!namespace) {
+        throw new NotFoundError(`Namespace "${id}" not found`);
+      }
 
-    const user = await getUserByUsername(username);
-    if (!user) {
-      throw new NotFoundError(`User "${username}" not found`);
-    }
+      const user = await getUserByUsername(username);
+      if (!user) {
+        throw new NotFoundError(`User "${username}" not found`);
+      }
 
-    await removeUserFromNamespace(username, id);
-  }, requireAPIKey);
+      await memberships.removeUserFromNamespace(username, id);
+    },
+  );
+};
 
 export default router;

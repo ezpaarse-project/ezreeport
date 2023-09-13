@@ -1,48 +1,94 @@
-import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { StatusCodes } from 'http-status-codes';
+import { readFile } from 'node:fs/promises';
+
+import type { FastifyPluginAsync } from 'fastify';
+import fastifyStatic from '@fastify/static';
+
 import config from '~/lib/config';
-import { CustomRouter } from '~/lib/express-utils';
-import { isValidResult } from '~/models/reports';
+import { Type, type Static, Value } from '~/lib/typebox';
+
+import authPlugin from '~/plugins/auth';
+
 import { Access } from '~/models/access';
+import { ReportResult, type ReportResultType } from '~/models/reports';
 import { getTaskById } from '~/models/tasks';
-import { HTTPError } from '~/types/errors';
+import { ArgumentError, NotFoundError } from '~/types/errors';
 
 const { outDir } = config.report;
 
-const router = CustomRouter('reports')
+const router: FastifyPluginAsync = async (fastify) => {
+  await fastify.register(authPlugin, { prefix: 'reports' });
+
+  // Setup decorator
+  await fastify.register(
+    fastifyStatic,
+    {
+      prefix: '/reports/',
+      root: outDir,
+      serve: false,
+    },
+  );
+
   /**
    * Get specific report
    */
-  .createNamespacedRoute('GET /:year/:yearMonth/:filename', Access.READ, async (req, res) => {
-    const { year, yearMonth, filename } = req.params;
-    const reportFilename = filename.replace(/\..*$/, '');
-    const basePath = join(outDir, year, yearMonth);
-
-    // Check if not trying to access unwanted file
-    const path = join(basePath, `${reportFilename}.det.json`);
-    if (new RegExp(`^${outDir}/.*\\.det\\.json$`, 'i').test(path) === false) {
-      throw new HTTPError(`File path must be in the "${outDir}" folder. Resolved: "${path}"`, StatusCodes.BAD_REQUEST);
-    }
-
-    const detailFile = JSON.parse(await readFile(path, 'utf-8')) as unknown;
-    if (!isValidResult(detailFile)) {
-      // As validation throws an error, this line shouldn't be called
-      return;
-    }
-
-    const task = await getTaskById(detailFile.detail.taskId, req.namespaceIds);
-    if (task) {
-      // Check if wanted file isn't already read
-      if (filename === `${reportFilename}.det.json`) {
-        res.send(detailFile);
-      } else {
-        // FIXME: handle No such file error
-        res.send(await readFile(join(basePath, filename)));
-      }
-    } else {
-      throw new HTTPError(`No report "${year}/${yearMonth}/${filename}" for your namespace`, StatusCodes.NOT_FOUND);
-    }
+  const GetReportParams = Type.Object({
+    year: Type.String({ minLength: 1 }),
+    yearMonth: Type.String({ minLength: 1 }),
+    filename: Type.String({ minLength: 1 }),
   });
+  const GetReportQuery = Type.Object({
+    download: Type.Optional(
+      Type.Any(),
+    ),
+  });
+  fastify.get<{
+    Params: Static<typeof GetReportParams>,
+    Querystring: Static<typeof GetReportQuery>
+  }>(
+    '/:year/:yearMonth/:filename',
+    {
+      schema: {
+        params: GetReportParams,
+        querystring: GetReportQuery,
+      },
+      ezrAuth: {
+        access: Access.READ,
+      },
+    },
+    async (request, response) => {
+      const { year, yearMonth, filename } = request.params;
+      const reportFilename = filename.replace(/\..*$/, '');
+      const basePath = join(outDir, year, yearMonth);
+
+      // Check if not trying to access unwanted file
+      const detailPath = join(basePath, `${reportFilename}.det.json`);
+      if (new RegExp(`^${outDir}/.*\\.det\\.json$`, 'i').test(detailPath) === false) {
+        throw new ArgumentError(`File path must be in the "${outDir}" folder. Resolved: "${detailPath}"`);
+      }
+
+      let detailFile: ReportResultType | undefined;
+      try {
+        detailFile = Value.Cast(
+          ReportResult,
+          JSON.parse(await readFile(detailPath, 'utf-8')),
+        );
+      } catch (error) {
+        throw new ArgumentError(`File "${year}/${yearMonth}/${reportFilename}.det.json" not found`);
+      }
+
+      const task = await getTaskById(detailFile.detail.taskId, request.namespaceIds);
+      if (!task) {
+        throw new NotFoundError(`No report "${year}/${yearMonth}/${filename}" for your namespaces`);
+      }
+
+      const path = join(year, yearMonth, filename);
+      if (request.query.download) {
+        return response.download(path, filename);
+      }
+      return response.sendFile(path);
+    },
+  );
+};
 
 export default router;

@@ -1,234 +1,240 @@
+import type { FastifyPluginAsync } from 'fastify';
 import { StatusCodes } from 'http-status-codes';
-import Joi from 'joi';
 
-import { requireAPIKey } from '~/middlewares/auth';
+import authPlugin from '~/plugins/auth';
+import { PaginationQuery, type PaginationQueryType } from '~/routes/utils/pagination';
 
-import { CustomRouter } from '~/lib/express-utils';
+import { Type, type Static } from '~/lib/typebox';
 
-import {
-  addUserToNamespace,
-  isValidMembership,
-  removeUserFromNamespace,
-  updateUserOfNamespace,
-} from '~/models/memberships';
-import {
-  createUser,
-  deleteUserByUsername,
-  getAllUsers,
-  editUserByUsername,
-  replaceManyUsers,
-  getCountUsers,
-  getUserByUsername,
-  isValidBulkUser,
-  isValidUser,
-} from '~/models/users';
-import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';
+import { NotFoundError } from '~/types/errors';
+import * as memberships from '~/models/memberships';
+import * as users from '~/models/users';
 
-const router = CustomRouter('users')
+const router: FastifyPluginAsync = async (fastify) => {
+  await fastify.register(authPlugin, { prefix: 'users' });
+
   /**
    * List all user
    */
-  .createBasicRoute('GET /', async (req, _res) => {
-    const { previous: p = undefined, count = '15' } = req.query;
-    const c = +count;
-
-    const entries = await getAllUsers(
-      {
-        count: c,
-        previous: p?.toString(),
+  fastify.get<{
+    Querystring: PaginationQueryType,
+  }>(
+    '/',
+    {
+      schema: {
+        querystring: PaginationQuery,
       },
-    );
-
-    return {
-      data: entries,
-      code: StatusCodes.OK,
-      meta: {
-        total: await getCountUsers(),
-        count: entries.length,
-        size: c,
-        lastId: entries.at(-1)?.username,
+      ezrAuth: {
+        requireAPIKey: true,
       },
-    };
-  }, requireAPIKey)
+    },
+    async (request) => {
+      const { previous, count = 15 } = request.query;
+
+      const list = await users.getAllUsers({ count, previous });
+
+      return {
+        content: list,
+        meta: {
+          total: await users.getCountUsers(),
+          count: list.length,
+          size: count,
+          lastId: list.at(-1)?.username,
+        },
+      };
+    },
+  );
 
   /**
-   * Create a new user
-   *
-   * @deprecated Use `PUT /:username` instead
+   * Replace all users by given data
    */
-  .createBasicRoute('POST /', async (req, _res) => {
-    const { username, ...data } = req.body;
+  const BulkUserBody = Type.Array(users.BulkUser);
+  fastify.put<{
+    Body: Static<typeof BulkUserBody>,
+  }>(
+    '/',
+    {
+      schema: {
+        body: BulkUserBody,
+      },
+    },
+    async (request) => ({ content: users.replaceManyUsers(request.body) }),
+  );
 
-    const validation = Joi.string().validate(username);
-    if (validation.error) {
-      throw new ArgumentError(`username is not valid: ${validation.error?.message}`);
-    }
-
-    if (!isValidUser(data)) {
-      // As validation throws an error, this line shouldn't be called
-      return {};
-    }
-
-    return {
-      code: StatusCodes.CREATED,
-      data: await createUser(username, data),
-    };
-  }, requireAPIKey)
-
-  /**
-   * Update users
-   */
-  .createBasicRoute('PUT /', async (req, _res) => {
-    // Validate body
-    if (!isValidBulkUser(req.body)) {
-      // As validation throws an error, this line shouldn't be called
-      return null;
-    }
-
-    return replaceManyUsers(req.body);
-  }, requireAPIKey)
+  const SpecificUserParams = Type.Object({
+    username: Type.String(),
+  });
+  type SpecificUserParamsType = Static<typeof SpecificUserParams>;
 
   /**
    * Get specific user
    */
-  .createBasicRoute('GET /:username', async (req, _res) => {
-    const { username } = req.params;
+  fastify.get<{
+    Params: SpecificUserParamsType,
+  }>(
+    '/:username',
+    {
+      schema: {
+        params: SpecificUserParams,
+      },
+    },
+    async (request) => {
+      const { username } = request.params;
 
-    const user = await getUserByUsername(username);
-    if (!user) {
-      throw new HTTPError(`User with username '${username}' not found`, StatusCodes.NOT_FOUND);
-    }
+      const item = await users.getUserByUsername(username);
+      if (!item) {
+        throw new NotFoundError(`User with username '${username}' not found`);
+      }
 
-    return user;
-  }, requireAPIKey)
+      return { content: item };
+    },
+  );
 
   /**
    * Update or create a user
    */
-  .createBasicRoute('PUT /:username', async (req, _res) => {
-    const { username } = req.params;
+  fastify.put<{
+    Params: SpecificUserParamsType,
+    Body: users.UserBodyType,
+  }>(
+    '/:username',
+    {
+      schema: {
+        params: SpecificUserParams,
+        body: users.UserBody,
+      },
+    },
+    async (request, reply) => {
+      const { username } = request.params;
 
-    // Validate body
-    if (!isValidUser(req.body)) {
-      // As validation throws an error, this line shouldn't be called
-      return null;
-    }
-
-    let user = await getUserByUsername(username);
-    let code;
-    if (user) {
-      user = await editUserByUsername(username, req.body);
-      code = StatusCodes.OK;
-    } else {
-      user = await createUser(username, req.body);
-      code = StatusCodes.CREATED;
-    }
-
-    return {
-      code,
-      data: user,
-    };
-  }, requireAPIKey)
+      const item = await users.getUserByUsername(username);
+      if (!item) {
+        reply.code(StatusCodes.CREATED);
+        return {
+          content: await users.createUser(username, request.body),
+        };
+      }
+      return {
+        content: await users.editUserByUsername(username, request.body),
+      };
+    },
+  );
 
   /**
    * Delete a user
    */
-  .createBasicRoute('DELETE /:username', async (req, _res) => {
-    const { username } = req.params;
+  fastify.delete<{
+    Params: SpecificUserParamsType,
+  }>(
+    '/:username',
+    {
+      schema: {
+        params: SpecificUserParams,
+      },
+    },
+    async (request) => {
+      const { username } = request.params;
 
-    await deleteUserByUsername(username);
-  }, requireAPIKey)
+      await users.deleteUserByUsername(username);
+    },
+  );
 
-  /**
-   * Add a user to a namespace
-   *
-   * @deprecated Use `PUT /:username/memberships/:namespace` instead
-   */
-  .createBasicRoute('POST /:username/memberships', async (req, _res) => {
-    const { username } = req.params;
-    const { user, ...data } = req.body;
-
-    const userExists = !!await getUserByUsername(username);
-    if (!userExists) {
-      throw new NotFoundError(`User "${username}" not found`);
-    }
-
-    if (!isValidMembership(data)) {
-      // As validation throws an error, this line shouldn't be called
-      return {};
-    }
-
-    await addUserToNamespace(username, user, data);
-
-    return {
-      code: StatusCodes.CREATED,
-      data: getUserByUsername(username),
-    };
-  }, requireAPIKey)
+  const SpecificMembershipParams = Type.Intersect([
+    SpecificUserParams,
+    Type.Object({
+      namespace: Type.String(),
+    }),
+  ]);
+  type SpecificMembershipParamsType = Static<typeof SpecificMembershipParams>;
 
   /**
    * Get a membership of a user
    */
-  .createBasicRoute('GET /:username/memberships/:namespace', async (req, _res) => {
-    const { username, namespace } = req.params;
+  fastify.get<{
+    Params: SpecificMembershipParamsType,
+  }>(
+    '/:username/memberships/:namespace',
+    {
+      schema: {
+        params: SpecificMembershipParams,
+      },
+    },
+    async (request) => {
+      const { username, namespace: namespaceId } = request.params;
 
-    const user = await getUserByUsername(username);
-    if (!user) {
-      throw new NotFoundError(`User "${username}" not found`);
-    }
+      const userItem = await users.getUserByUsername(username);
+      if (!userItem) {
+        throw new NotFoundError(`User "${username}" not found`);
+      }
 
-    const membership = user.memberships.find(({ namespace: { id } }) => id === namespace);
-    if (!membership) {
-      throw new NotFoundError(`User "${username}" is not in namespace "${namespace}"`);
-    }
-
-    return membership;
-  }, requireAPIKey)
+      const membershipItem = userItem.memberships.find((m) => m.namespace.id === namespaceId);
+      if (!membershipItem) {
+        throw new NotFoundError(`User "${username}" is not in namespace "${namespaceId}"`);
+      }
+      return { content: membershipItem };
+    },
+  );
 
   /**
    * Update or add a user of a namespace
    */
-  .createBasicRoute('PUT /:username/memberships/:namespace', async (req, _res) => {
-    const { username, namespace } = req.params;
+  fastify.put<{
+    Params: SpecificMembershipParamsType,
+    Body: memberships.MembershipBodyType,
+  }>(
+    '/:username/memberships/:namespace',
+    {
+      schema: {
+        params: SpecificMembershipParams,
+        body: memberships.MembershipBody,
+      },
+    },
+    async (request, reply) => {
+      const { username, namespace: namespaceId } = request.params;
 
-    const user = await getUserByUsername(username);
-    if (!user) {
-      throw new NotFoundError(`User "${username}" not found`);
-    }
+      let userItem = await users.getUserByUsername(username);
+      if (!userItem) {
+        throw new NotFoundError(`User "${username}" not found`);
+      }
 
-    if (!isValidMembership(req.body)) {
-      // As validation throws an error, this line shouldn't be called
-      return {};
-    }
+      const isMembershipExist = userItem.memberships.some((m) => m.namespace.id === namespaceId);
+      if (!isMembershipExist) {
+        reply.code(StatusCodes.CREATED);
+        await memberships.addUserToNamespace(username, namespaceId, request.body);
+      } else {
+        await memberships.updateUserOfNamespace(username, namespaceId, request.body);
+      }
 
-    let code;
-    if (user.memberships.find(({ namespace: { id } }) => id === namespace)) {
-      await updateUserOfNamespace(username, namespace, req.body);
-      code = StatusCodes.OK;
-    } else {
-      await addUserToNamespace(username, namespace, req.body);
-      code = StatusCodes.CREATED;
-    }
-
-    return {
-      code,
-      data: (await getUserByUsername(username))?.memberships
-        .find(({ namespace: { id } }) => id === namespace),
-    };
-  }, requireAPIKey)
+      userItem = await users.getUserByUsername(username);
+      return {
+        content: userItem?.memberships.find((m) => m.namespace.id === namespaceId),
+      };
+    },
+  );
 
   /**
    * Removes a user from a namespace
    */
-  .createBasicRoute('DELETE /:username/memberships/:namespace', async (req, _res) => {
-    const { username, namespace } = req.params;
+  fastify.delete<{
+    Params: SpecificMembershipParamsType,
+  }>(
+    '/:username/memberships/:namespace',
+    {
+      schema: {
+        params: SpecificMembershipParams,
+      },
+    },
+    async (request) => {
+      const { username, namespace: namespaceId } = request.params;
 
-    const user = await getUserByUsername(username);
-    if (!user) {
-      throw new NotFoundError(`User "${username}" not found`);
-    }
+      const userItem = await users.getUserByUsername(username);
+      if (!userItem) {
+        throw new NotFoundError(`User "${username}" not found`);
+      }
 
-    await removeUserFromNamespace(username, namespace);
-  }, requireAPIKey);
+      await memberships.removeUserFromNamespace(username, namespaceId);
+    },
+  );
+};
 
 export default router;

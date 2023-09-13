@@ -1,7 +1,7 @@
 import EventEmitter from 'node:events';
 
-import Joi from 'joi';
 import { merge } from 'lodash';
+import { Mark } from 'vega-lite/build/src/mark';
 
 import { Recurrence } from '~/lib/prisma';
 import {
@@ -9,7 +9,6 @@ import {
   deleteDoc,
   initDoc,
   renderDoc,
-  type PDFReportOptions,
   type PDFStats,
 } from '~/lib/pdf';
 import { addMdToPDF } from '~/lib/pdf/markdown';
@@ -22,10 +21,10 @@ import {
   createVegaView,
   parseTitle,
 } from '~/lib/vega';
+import { Type, type Static, assertIsSchema } from '~/lib/typebox';
 
-import { type AnyFigure } from '~/models/figures';
-import { layoutSchema, type AnyLayout } from '~/models/layouts';
-import { ArgumentError } from '~/types/errors';
+import type { FigureType } from '~/models/figures';
+import { Layout } from '~/models/layouts';
 
 interface Grid {
   rows: number,
@@ -37,57 +36,32 @@ interface Margin {
   horizontal: number,
 }
 
-interface RenderOptions {
+const VegaRenderOptions = Type.Object({
   // Auto fields
-  doc: PDFReportOptions
-  recurrence: Recurrence,
-  debug?: boolean
-  // Resolved fields
-  layouts: AnyLayout[],
-  // Template specific
-  grid?: Grid,
-}
-
-const optionSchema = Joi.object<RenderOptions>({
-  doc: Joi.object({
-    name: Joi.string().required(),
-    period: Joi.object({
-      start: Joi.date().required(),
-      end: Joi.date().required(),
-    }).required(),
-    path: Joi.string().required(),
-  }).required(),
-  grid: Joi.object({
-    rows: Joi.number().required(),
-    cols: Joi.number().required(),
+  doc: Type.Object({
+    name: Type.String(),
+    period: Type.Object({
+      start: Type.Integer(),
+      end: Type.Integer(),
+    }),
+    path: Type.String(),
   }),
-  recurrence: Joi.string().valid(
-    Recurrence.DAILY,
-    Recurrence.WEEKLY,
-    Recurrence.MONTHLY,
-    Recurrence.QUARTERLY,
-    Recurrence.BIENNIAL,
-    Recurrence.YEARLY,
-  ).required(),
-  layouts: Joi.array().items(layoutSchema).required(),
-  debug: Joi.boolean(),
+  recurrence: Type.Enum(Recurrence),
+  debug: Type.Optional(
+    Type.Boolean(),
+  ),
+  // Resolved fields
+  layouts: Type.Array(Layout),
+  // Template specfic
+  grid: Type.Optional(
+    Type.Object({
+      rows: Type.Integer({ minimum: 1 }),
+      cols: Type.Integer({ minimum: 1 }),
+    }),
+  ),
 });
 
-/**
- * Check if input data is fetch options
- *
- * @param data The input data
- * @returns `true` if valid
- *
- * @throws If not valid
- */
-const isRenderOptions = (data: unknown): data is RenderOptions => {
-  const validation = optionSchema.validate(data, {});
-  if (validation.error != null) {
-    throw new ArgumentError(`Fetch options are not valid: ${validation.error.message}`);
-  }
-  return true;
-};
+export type VegaRenderOptionsType = Static<typeof VegaRenderOptions>;
 
 // FIXME: WTF + still can have space
 /**
@@ -229,7 +203,7 @@ const resolveSlot = (params: {
   /**
    * Current layout's figures
    */
-  figures: AnyFigure[],
+  figures: FigureType[],
   /**
    * Current iteration of figure
    */
@@ -312,15 +286,12 @@ const resolveSlot = (params: {
  *
  * @return Stats about PDF
  */
-const generatePdfWithVega = async (
-  options: RenderOptions,
+const renderPdfWithVega = async (
+  options: VegaRenderOptionsType,
   events: EventEmitter = new EventEmitter(),
 ): Promise<PDFStats> => {
   // Check options even if type is explicit, because it can be a merge between multiple sources
-  if (!isRenderOptions(options)) {
-    // As validation throws an error, this line shouldn't be called
-    return {} as PDFStats;
-  }
+  assertIsSchema(VegaRenderOptions, options);
 
   try {
     const doc = await initDoc({ ...options.doc, path: `${options.doc.path}.pdf` });
@@ -396,7 +367,11 @@ const generatePdfWithVega = async (
                 }
 
                 // eslint-disable-next-line no-await-in-loop
-                await addTableToPDF(doc, figureData as any[], merge({}, figure.params, { margin }));
+                await addTableToPDF(
+                  doc,
+                  figureData as any[],
+                  merge({}, figure.params, { margin }),
+                );
                 break;
               }
 
@@ -478,12 +453,16 @@ const generatePdfWithVega = async (
 
                 // Creating Vega view
                 const view = createVegaView(
-                  createVegaLSpec(figure.type, figureData as any[], {
-                    ...figParams,
-                    recurrence: options.recurrence,
-                    width: slot.width,
-                    height: slot.height,
-                  }),
+                  createVegaLSpec(
+                    figure.type as Mark,
+                    figureData as any[],
+                    {
+                      ...figParams,
+                      recurrence: options.recurrence,
+                      width: slot.width,
+                      height: slot.height,
+                    } as any,
+                  ),
                 );
 
                 // eslint-disable-next-line no-await-in-loop
@@ -493,20 +472,23 @@ const generatePdfWithVega = async (
             }
             events.emit('figureRendered', figure);
           } catch (error) {
-            const err = error as Error;
+            if (!(error instanceof Error)) {
+              throw error;
+            }
             const figure = figures[figureIndex];
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const title = (figure?.params as any)?.title || figure?.type || (figureIndex + 1);
-            err.cause = { ...(err.cause ?? {}), figure: title };
-            throw err;
+            const title = figure?.params?.title || figure?.type || (figureIndex + 1);
+            error.cause = { ...(error.cause ?? {}), figure: title };
+            throw error;
           }
         }
 
         events.emit('layoutRendered', figures);
       } catch (error) {
-        const err = error as Error;
-        err.cause = { ...(err.cause ?? {}), layout: layoutIndex, type: 'render' };
-        throw err;
+        if (!(error instanceof Error)) {
+          throw error;
+        }
+        error.cause = { ...(error.cause ?? {}), layout: layoutIndex, type: 'render' };
+        throw error;
       }
     }
 
@@ -517,4 +499,4 @@ const generatePdfWithVega = async (
   }
 };
 
-export default generatePdfWithVega;
+export default renderPdfWithVega;

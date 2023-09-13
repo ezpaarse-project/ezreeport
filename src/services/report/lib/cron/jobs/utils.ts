@@ -37,6 +37,10 @@ export const sendError = async (error: Error, origin: string, _timer: string) =>
     });
     logger.info(`[cron] [${process.pid}] [${origin}] Sent error to dev team by mail`);
   } catch (e) {
-    logger.error(`[cron] [${process.pid}] [${origin}] Cannot send error to dev team: ${(e as Error).message}`);
+    if (e instanceof Error) {
+      logger.error(`[cron] [${process.pid}] [${origin}] Cannot send error to dev team: {${e.message}}`);
+    } else {
+      logger.error(`[cron] [${process.pid}] [${origin}] Unexpected error when sending error to dev team: {${e}}`);
+    }
   }
 };

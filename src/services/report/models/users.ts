@@ -1,5 +1,4 @@
 import { randomBytes } from 'node:crypto';
-import Joi from 'joi';
 
 import prisma from '~/lib/prisma';
 import type {
@@ -10,9 +9,9 @@ import type {
 } from '~/lib/prisma';
 import { BulkResult, parseBulkResults } from '~/lib/utils';
 import { appLogger } from '~/lib/logger';
+import { Type, type Static } from '~/lib/typebox';
 
-import { ArgumentError } from '~/types/errors';
-import { upsertBulkMembership, deleteBulkMembership, membershipSchema } from '~/models/memberships';
+import { upsertBulkMembership, deleteBulkMembership, MembershipBody } from '~/models/memberships';
 
 type InputUser = Pick<Prisma.UserCreateInput, 'isAdmin'>;
 
@@ -30,28 +29,13 @@ export type FullUser = User & {
   memberships: FullUserMembership[]
 };
 
-/**
- * Joi schema
- */
-const userSchema = Joi.object<Prisma.UserCreateInput>({
-  isAdmin: Joi.boolean().default(false),
+export const UserBody = Type.Object({
+  isAdmin: Type.Optional(
+    Type.Boolean(),
+  ),
 });
 
-/**
- * Check if input data is a user
- *
- * @param data The input data
- * @returns `true` if valid
- *
- * @throws If not valid
- */
-export const isValidUser = (data: unknown): data is InputUser => {
-  const validation = userSchema.validate(data, {});
-  if (validation.error != null) {
-    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
-  }
-  return true;
-};
+export type UserBodyType = Static<typeof UserBody>;
 
 const prismaMembershipSelect = {
   select: {
@@ -244,41 +228,27 @@ export const editUserByUsername = async (
   return user;
 };
 
-interface BulkUserMembership extends Omit<Membership, 'username' | 'namespaceId' | 'createdAt' | 'updatedAt'> {
-  namespace: Membership['namespaceId']
-}
+export const BulkUser = Type.Intersect([
+  UserBody,
 
-interface BulkUser extends InputUser {
-  username: User['username'],
-  memberships?: BulkUserMembership[],
-}
+  Type.Object({
+    username: Type.String(),
 
-const bulkUserSchema = Joi.array<BulkUser[]>().items(
-  userSchema.append({
-    username: Joi.string().required(),
-    memberships: Joi.array().items(
-      membershipSchema.append({
-        namespace: Joi.string().required(),
-      }),
+    memberships: Type.Optional(
+      Type.Array(
+        Type.Intersect([
+          MembershipBody,
+
+          Type.Object({
+            namespace: Type.String(),
+          }),
+        ]),
+      ),
     ),
   }),
-);
+]);
 
-/**
- * Check if input data is many users
- *
- * @param data The input data
- * @returns `true` if valid
- *
- * @throws If not valid
- */
-export const isValidBulkUser = (data: unknown): data is BulkUser[] => {
-  const validation = bulkUserSchema.validate(data, {});
-  if (validation.error != null) {
-    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
-  }
-  return true;
-};
+export type BulkUserType = Static<typeof BulkUser>;
 
 /**
  * Checks if 2 users are the same
@@ -302,7 +272,7 @@ const hasUserChanged = (current: User, input: InputUser): boolean => (
  */
 const upsertBulkUser = async (
   tx: Prisma.TransactionClient,
-  { username, memberships: _, ...inputUser }: BulkUser,
+  { username, memberships: _, ...inputUser }: BulkUserType,
 ): Promise<BulkResult<User>> => {
   const existingUser = await tx.user.findUnique({ where: { username } });
 
@@ -354,7 +324,7 @@ const deleteBulkUser = async (
  * @returns List of updated user
  */
 export const replaceManyUsers = async (
-  data: BulkUser[],
+  data: BulkUserType[],
 ): Promise<{
   users: BulkResult<User>[],
   memberships: BulkResult<Membership>[]

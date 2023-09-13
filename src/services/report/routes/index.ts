@@ -1,33 +1,13 @@
-import { Router } from 'express';
-import { StatusCodes } from 'http-status-codes';
-import swaggerUi from 'swagger-ui-express';
-import { HTTPError } from '~/types/errors';
-import openapi from './v1.openapi.json';
+import type { FastifyPluginAsync } from 'fastify';
 
 import v1 from './v1';
 
-const router = Router()
-  /**
-   * Default version
-   */
-  .use('/', (_req, res, next) => { res.apiVersion = 1; next(); }, v1)
+const router: FastifyPluginAsync = async (fastify) => {
+  // Default version
+  await fastify.register(v1);
 
-  /**
-   * API Versions
-   */
-  .use('/v1', v1)
-
-  /**
-   * API Docs
-   */
-  .use('/doc/openapi.json', (_req, res) => res.json(openapi))
-  .use('/doc', swaggerUi.serve, swaggerUi.setup(openapi))
-
-  /**
-   * 404 Fallback
-   */
-  .use('*', (_req, res) => {
-    res.errorJson(new HTTPError('Route not found', StatusCodes.NOT_FOUND));
-  });
+  // API versions
+  await fastify.register(v1, { prefix: '/v1' });
+};
 
 export default router;

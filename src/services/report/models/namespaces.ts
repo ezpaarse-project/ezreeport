@@ -1,7 +1,4 @@
-import Joi from 'joi';
 import { isEqual } from 'lodash';
-
-import fetchers from '~/generators/fetchers';
 
 import { parseBulkResults, type BulkResult } from '~/lib/utils';
 import { appLogger } from '~/lib/logger';
@@ -12,11 +9,10 @@ import type {
   Membership,
   Task,
 } from '~/lib/prisma';
-
-import { ArgumentError } from '~/types/errors';
+import { Type, type Static } from '~/lib/typebox';
 
 import {
-  membershipSchema,
+  MembershipBody,
   upsertBulkMembership,
   deleteBulkMembership,
 } from './memberships';
@@ -28,61 +24,25 @@ type FullNamespace = Namespace & {
   tasks: Task[],
 };
 
-interface NamespaceOptions {
-  fetchLogin: {
-    'elastic'?: { username: string }
-  },
-  fetchOptions: {
-    'elastic'?: {
-      /**
-       * @deprecated Use `index` in tasks instead
-       */
-      indexPrefix?: string
-    }
-  },
-}
+export const NamespaceBody = Type.Object({
+  name: Type.String(),
 
-export type TypedNamespace = Omit<Namespace, 'fetchLogin' | 'fetchOptions'> & NamespaceOptions;
+  fetchLogin: Type.Object({
+    elastic: Type.Object({
+      username: Type.String(),
+    }),
+  }),
 
-/**
- * Joi schema
- */
-const namespaceSchema = Joi.object<InputNamespace>({
-  name: Joi.string().required(),
-  fetchLogin: Joi
-    .object(
-      // Object like { elastic: { user: 'foobar' } }
-      Object.fromEntries(
-        Object.keys(fetchers).map((key) => [key, Joi.object()]),
-      ),
-    )
-    .required(),
-  fetchOptions: Joi
-    .object(
-      // Object like { elastic: { indexPrefix: {} } }
-      Object.fromEntries(
-        Object.keys(fetchers).map((key) => [key, Joi.object()]),
-      ),
-    )
-    .required(),
-  logoId: Joi.string().allow(null),
+  fetchOptions: Type.Object({
+    elastic: Type.Object({}),
+  }),
+
+  logoId: Type.Optional(
+    Type.String(),
+  ),
 });
 
-/**
- * Check if input data is a namespace
- *
- * @param data The input data
- * @returns `true` if valid
- *
- * @throws If not valid
- */
-export const isValidNamespace = (data: unknown): data is InputNamespace => {
-  const validation = namespaceSchema.validate(data, {});
-  if (validation.error != null) {
-    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
-  }
-  return true;
-};
+export type NamespaceBodyType = Static<typeof NamespaceBody>;
 
 /**
  * Get count of namespaces entries in DB
@@ -247,37 +207,25 @@ export const editNamespaceById = (id: Namespace['id'], data: InputNamespace): Pr
   return namespace;
 };
 
-interface BulkNamespace extends InputNamespace {
-  id: Namespace['id'],
-  members?: Omit<Membership, 'namespaceId'>[],
-}
+export const BulkNamespace = Type.Intersect([
+  NamespaceBody,
 
-const bulkNamespaceSchema = Joi.array<BulkNamespace[]>().items(
-  namespaceSchema.append({
-    id: Joi.string().required(),
-    members: Joi.array().items(
-      membershipSchema.append({
-        username: Joi.string().required(),
-      }),
+  Type.Object({
+    id: Type.String(),
+
+    members: Type.Array(
+      Type.Intersect([
+        MembershipBody,
+
+        Type.Object({
+          username: Type.String(),
+        }),
+      ]),
     ),
   }),
-);
+]);
 
-/**
- * Check if input data is many namespaces
- *
- * @param data The input data
- * @returns `true` if valid
- *
- * @throws If not valid
- */
-export const isValidBulkNamespace = (data: unknown): data is BulkNamespace[] => {
-  const validation = bulkNamespaceSchema.validate(data, {});
-  if (validation.error != null) {
-    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
-  }
-  return true;
-};
+export type BulkNamespaceType = Static<typeof BulkNamespace>;
 
 /**
  * Checks if 2 namespace are the same
@@ -304,7 +252,7 @@ const hasNamespaceChanged = (current: Namespace, input: InputNamespace): boolean
  */
 const upsertBulkNamespace = async (
   tx: Prisma.TransactionClient,
-  { id, members: _, ...inputNamespace }: BulkNamespace,
+  { id, members: _, ...inputNamespace }: BulkNamespaceType,
 ): Promise<BulkResult<Namespace>> => {
   const existingNamespace = await tx.namespace.findUnique({ where: { id } });
 
@@ -317,7 +265,9 @@ const upsertBulkNamespace = async (
       type: 'created',
       data,
     };
-  } if (hasNamespaceChanged(existingNamespace, inputNamespace)) {
+  }
+
+  if (hasNamespaceChanged(existingNamespace, inputNamespace)) {
     const data = await tx.namespace.update({
       where: { id },
       data: inputNamespace,
@@ -363,7 +313,7 @@ const deleteBulkNamespace = async (
  * @returns The results
  */
 export const replaceManyNamespaces = async (
-  data: BulkNamespace[],
+  data: BulkNamespaceType[],
 ): Promise<{
   namespaces: BulkResult<Namespace>[],
   members: BulkResult<Membership>[]

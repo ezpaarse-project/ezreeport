@@ -29,10 +29,14 @@ export default async (job: Queue.Job<CronData>) => {
     );
 
     const dur = formatInterval({ start, end: new Date() });
-    logger.info(`[cron] [${process.pid}] [${job.name}] Generated ${length} report(s) in ${dur}s`);
+    logger.info(`[cron] [${process.pid}] [${job.name}] Generated [${length}] report(s) in [${dur}]s`);
   } catch (error) {
     const dur = formatInterval({ start, end: new Date() });
-    logger.error(`[cron] [${process.pid}] [${job.name}] Job failed in ${dur}s with error: ${(error as Error).message}`);
-    await sendError(error as Error, job.name, job.data.timer);
+    if (error instanceof Error) {
+      logger.error(`[cron] [${process.pid}] [${job.name}] Job failed in [${dur}]s with error: {${error.message}}`);
+      await sendError(error, job.name, job.data.timer);
+    } else {
+      logger.error(`[cron] [${process.pid}] [${job.name}] Unexpected error occurred after [${dur}]s: {${error}}`);
+    }
   }
 };

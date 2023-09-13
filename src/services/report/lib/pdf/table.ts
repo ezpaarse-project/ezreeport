@@ -7,7 +7,7 @@ import { appLogger as logger } from '~/lib/logger';
 import type { PDFReport } from '.';
 
 export type TableParams = {
-  title: string,
+  title?: string,
   dataKey?: string,
   maxLength?: number,
   maxHeight?: number,

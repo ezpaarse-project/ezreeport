@@ -1,89 +1,63 @@
 import EventEmitter from 'node:events';
 
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
-import Joi from 'joi';
 import { cloneDeep, merge } from 'lodash';
 
 import { Recurrence, type Prisma } from '~/lib/prisma';
 import { formatISO } from '~/lib/date-fns';
 import { elasticCount, elasticSearch } from '~/lib/elastic';
+import { Type, type Static, assertIsSchema } from '~/lib/typebox';
 
 import { calcElasticInterval } from '~/models/recurrence';
 import { ArgumentError } from '~/types/errors';
 
-type ElasticFilters = ElasticTypes.QueryDslQueryContainer;
 type ElasticAggregation = ElasticTypes.AggregationsAggregationContainer;
-type CustomAggregation = (
-  Omit<ElasticAggregation, 'aggregations' | 'aggs'>
-  & { name?: string, aggregations?: CustomAggregation[], aggs?: CustomAggregation[] }
+
+const CustomAggregation = Type.Recursive(
+  (This) => Type.Intersect([
+    // Simplification of ElasticAggregation
+    Type.Record(Type.String(), Type.Any()),
+
+    Type.Partial(
+      Type.Object({
+        name: Type.String({ minLength: 1 }),
+        aggregations: Type.Array(This),
+        aggs: Type.Array(This),
+      }),
+    ),
+  ]),
 );
 
-interface FetchOptions {
-  // Auto fields
-  recurrence: Recurrence,
-  period: Interval,
-  // Namespace specific
-  auth: { username: string },
-  // Template specific
-  dateField: string,
-  /**
-   * @deprecated Not used anymore
-  */
-  indexPrefix?: string,
-  // Task specific
-  /**
-   * @deprecated Replaced by `index`
-  */
-  indexSuffix?: string,
-  index?: string,
-  filters?: ElasticFilters,
-  aggs?: CustomAggregation[],
-  fetchCount?: string,
-}
+type CustomAggregationType = Static<typeof CustomAggregation>;
 
-const optionSchema = Joi.object<FetchOptions>({
+const ElasticFetchOptions = Type.Object({
   // Auto fields
-  recurrence: Joi.string().valid(
-    Recurrence.DAILY,
-    Recurrence.WEEKLY,
-    Recurrence.MONTHLY,
-    Recurrence.QUARTERLY,
-    Recurrence.BIENNIAL,
-    Recurrence.YEARLY,
-  ).required(),
-  period: Joi.object({
-    start: Joi.date().required(),
-    end: Joi.date().required(),
-  }).required(),
+  recurrence: Type.Enum(Recurrence),
+  period: Type.Object({
+    start: Type.Integer(),
+    end: Type.Integer(),
+  }),
   // Namespace specific
-  auth: Joi.object({
-    username: Joi.string().required(),
-  }).required(),
-  indexPrefix: Joi.string().allow(''), // @deprecated Use `index` instead
+  auth: Type.Object({
+    username: Type.String({ minLength: 1 }),
+  }),
+  // Template specific
+  dateField: Type.String({ minLength: 1 }),
   // Task specific
-  indexSuffix: Joi.string().allow(''), // @deprecated Use `index` instead
-  index: Joi.string().allow(''),
-  filters: Joi.object(),
-  aggs: Joi.array(),
-  fetchCount: Joi.string(),
-  dateField: Joi.string().required(),
+  index: Type.String({ minLength: 1 }),
+  filters: Type.Optional(
+    // Simplification of Elastic's filters
+    Type.Record(Type.String(), Type.Any()),
+  ),
+  aggs: Type.Optional(
+    Type.Array(CustomAggregation),
+  ),
+  fetchCount: Type.Optional(
+    Type.String({ minLength: 1 }),
+  ),
 });
 
-/**
- * Check if input data is fetch options
- *
- * @param data The input data
- * @returns `true` if valid
- *
- * @throws If not valid
- */
-const isFetchOptions = (data: unknown): data is FetchOptions => {
-  const validation = optionSchema.validate(data, {});
-  if (validation.error != null) {
-    throw new ArgumentError(`Fetch options are not valid: ${validation.error.message}`);
-  }
-  return true;
-};
+export type ElasticFetchOptionsType = Static<typeof ElasticFetchOptions>;
 
 type AggInfo = {
   name: string,
@@ -98,7 +72,7 @@ type AggInfo = {
  *
  * @returns The info about aggregation
  */
-const parseAggInfo = (agg: CustomAggregation, i: number): AggInfo => {
+const parseAggInfo = (agg: CustomAggregationType, i: number): AggInfo => {
   const name = agg.name || `agg${i}`;
 
   let subAggs: AggInfo[] = [];
@@ -125,7 +99,7 @@ const parseAggInfo = (agg: CustomAggregation, i: number): AggInfo => {
  */
 const reduceAggs = (
   prev: Record<string, ElasticAggregation>,
-  { name: _name, ...rawAgg }: CustomAggregation,
+  { name: _name, ...rawAgg }: CustomAggregationType,
   calendar_interval: string,
   aggsInfo: AggInfo,
 ) => {
@@ -151,7 +125,7 @@ const reduceAggs = (
 
   return {
     ...prev,
-    [aggsInfo.name]: agg as ElasticAggregation,
+    [aggsInfo.name]: agg,
   };
 };
 
@@ -198,21 +172,19 @@ const setSubAggValues = (info: AggInfo, value: any) => {
  *
  * @returns The data fetched and cleaned
  */
-export default async (
-  options: Record<string, unknown> | FetchOptions,
+const fetchWithElastic = async (
+  options: Record<string, unknown> | ElasticFetchOptionsType,
   _events: EventEmitter = new EventEmitter(),
 ) => {
   // Check options even if type is explicit, because it can be a merge between multiple sources
-  if (!isFetchOptions(options)) {
-    // As validation throws an error, this line shouldn't be called
-    return [];
-  }
-  const index = (options.index ?? `${options.indexPrefix}${options.indexSuffix}`) || null;
+  assertIsSchema(ElasticFetchOptions, options);
+
+  const index = options.index || null;
   if (!index) {
     throw new ArgumentError('You must precise an index before trying to fetch data from elastic');
   }
 
-  const { filter, ...otherFilters } = ((options.filters as any) ?? { filter: [] });
+  const { filter, ...otherFilters } = (options.filters ?? { filter: [] });
   const baseOpts: ElasticTypes.SearchRequest = {
     index,
     body: {
@@ -313,3 +285,5 @@ export default async (
 
   return data;
 };
+
+export default fetchWithElastic;

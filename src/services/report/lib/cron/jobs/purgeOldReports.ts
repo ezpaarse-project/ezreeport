@@ -8,8 +8,9 @@ import config from '~/lib/config';
 import * as dfns from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
 import { formatInterval, isFulfilled } from '~/lib/utils';
+import { Value } from '~/lib/typebox';
 
-import { isValidResult } from '~/models/reports';
+import { ReportResult } from '~/models/reports';
 
 import type { CronData } from '..';
 import { sendError } from './utils';
@@ -28,30 +29,32 @@ export default async (job: Queue.Job<CronData>) => {
     const detailFiles = await glob(join(outDir, '**/*.det.json'));
     // List all files to delete
     const filesToDelete = (await Promise.allSettled(
-      detailFiles.map(async (filePath) => {
+      detailFiles.map(async (filePath): Promise<FileCheckResult[]> => {
         try {
-          logger.verbose(`[cron] [${process.pid}] [${job.name}] Checking "${filePath}"`);
-          const fileContent = JSON.parse(await readFile(filePath, 'utf-8'));
+          logger.verbose(`[cron] [${process.pid}] [${job.name}] Checking [${filePath}]`);
+          const fileContent = Value.Cast(
+            ReportResult,
+            JSON.parse(await readFile(filePath, 'utf-8')),
+          );
 
-          if (!isValidResult(fileContent)) {
-            return [];
-          }
-
-          // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
-          const destroyAt = dfns.parseISO(fileContent.detail.destroyAt.toString());
+          const destroyAt = dfns.parseISO(fileContent.detail.destroyAt);
           if (dfns.isBefore(today, destroyAt)) {
             return [];
           }
 
           const dur = dfns.intervalToDuration({
-            start: dfns.parseISO(fileContent.detail.createdAt.toString()),
+            start: dfns.parseISO(fileContent.detail.createdAt),
             end: today,
           });
           return Object
             .values(fileContent.detail.files)
-            .map((file) => ({ file: join(outDir, file), dur } as FileCheckResult));
+            .map((file) => ({ file: join(outDir, file), dur }));
         } catch (error) {
-          logger.warn(`[cron] [${process.pid}] [${job.name}] Error on file "${filePath}" : ${(error as Error).message}`);
+          if (error instanceof Error) {
+            logger.warn(`[cron] [${process.pid}] [${job.name}] Error on file [${filePath}]: {${error.message}}`);
+          } else {
+            logger.warn(`[cron] [${process.pid}] [${job.name}] Unexpected error occurred on file [${filePath}]: {${error}}`);
+          }
           throw error;
         }
       }),
@@ -68,20 +71,28 @@ export default async (job: Queue.Job<CronData>) => {
           await unlink(file);
           await job.progress(i / filesToDelete.length);
 
-          logger.info(`[cron] [${process.pid}] [${job.name}] Deleted "${file}" (${dfns.formatDuration(dur, { format: ['years', 'months', 'days'], locale: enUS })} old)`);
+          logger.info(`[cron] [${process.pid}] [${job.name}] Deleted [${file}] (${dfns.formatDuration(dur, { format: ['years', 'months', 'days'], locale: enUS })} old)`);
           return file;
         } catch (error) {
-          logger.warn(`[cron] [${process.pid}] [${job.name}] Error on file deletion "${file}" : ${(error as Error).message}`);
+          if (error instanceof Error) {
+            logger.warn(`[cron] [${process.pid}] [${job.name}] Error on file deletion [${file}]: {${error.message}}`);
+          } else {
+            logger.warn(`[cron] [${process.pid}] [${job.name}] Unexpected error occurred on file deletion [${file}]: {${error}}`);
+          }
           throw error;
         }
       }),
     )).filter(isFulfilled);
 
     const dur = formatInterval({ start, end: new Date() });
-    logger.info(`[cron] [${process.pid}] [${job.name}] In ${dur}s : Checked ${detailFiles.length} reports | Deleted ${deletedFiles.length}/${filesToDelete.length} files`);
+    logger.info(`[cron] [${process.pid}] [${job.name}] In [${dur}]s : Checked [${detailFiles.length}] reports | Deleted [${deletedFiles.length}]/[${filesToDelete.length}] files`);
   } catch (error) {
     const dur = formatInterval({ start, end: new Date() });
-    logger.error(`[cron] [${process.pid}] [${job.name}] Job failed in ${dur}s with error: ${(error as Error).message}`);
-    await sendError(error as Error, job.name, job.data.timer);
+    if (error instanceof Error) {
+      logger.error(`[cron] [${process.pid}] [${job.name}] Job failed in [${dur}]s with error: {${error.message}}`);
+      await sendError(error, job.name, job.data.timer);
+    } else {
+      logger.warn(`[cron] [${process.pid}] [${job.name}] Unexpected error occurred after [${dur}]s: {${error}}`);
+    }
   }
 };

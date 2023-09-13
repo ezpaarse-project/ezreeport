@@ -1,48 +1,116 @@
-import {
-  forceCron,
-  getAllCrons,
-  getCron,
-  startCron,
-  stopCron,
-} from '~/lib/cron';
-import { CustomRouter } from '~/lib/express-utils';
+import type { FastifyPluginAsync } from 'fastify';
 
-const router = CustomRouter('crons')
+import authPlugin from '~/plugins/auth';
+
+import * as crons from '~/lib/cron';
+import { Type, type Static } from '~/lib/typebox';
+
+const router: FastifyPluginAsync = async (fastify) => {
+  await fastify.register(authPlugin, { prefix: 'crons' });
+
   /**
-   * Get all possible crons
+   * List all crons
    */
-  .createAdminRoute('GET /', async (_req, _res) => getAllCrons())
+  fastify.get(
+    '/',
+    {
+      ezrAuth: {
+        requireAdmin: true,
+      },
+    },
+    async () => ({
+      content: await crons.getAllCrons(),
+    }),
+  );
+
+  const SpecificCronParams = Type.Object({
+    cron: Type.String({ minLength: 1 }),
+  });
+  type SpecificCronParamsType = Static<typeof SpecificCronParams>;
 
   /**
    * Get info about specific cron
    */
-  .createAdminRoute('GET /:cron', async (req, _res) => {
-    const { cron } = req.params;
-    return getCron(cron);
-  })
+  fastify.get<{
+    Params: SpecificCronParamsType
+  }>(
+    '/:cron',
+    {
+      schema: {
+        params: SpecificCronParams,
+      },
+      ezrAuth: {
+        requireAdmin: true,
+      },
+    },
+    async (request) => {
+      const { cron: name } = request.params;
+      return { content: await crons.getCron(name) };
+    },
+  );
 
   /**
    * Start specific cron
    */
-  .createAdminRoute('PUT /:cron/start', async (req, _res) => {
-    const { cron } = req.params;
-    return startCron(cron);
-  })
+  fastify.put<{
+    Params: SpecificCronParamsType
+  }>(
+    '/:cron/start',
+    {
+      schema: {
+        params: SpecificCronParams,
+      },
+      ezrAuth: {
+        requireAdmin: true,
+      },
+    },
+    async (request) => {
+      const { cron: name } = request.params;
+      return { content: await crons.startCron(name) };
+    },
+  );
 
   /**
    * Stop specific cron
    */
-  .createAdminRoute('PUT /:cron/stop', async (req, _res) => {
-    const { cron } = req.params;
-    return stopCron(cron);
-  })
+  fastify.put<{
+    Params: SpecificCronParamsType
+  }>(
+    '/:cron/stop',
+    {
+      schema: {
+        params: SpecificCronParams,
+      },
+      ezrAuth: {
+        requireAdmin: true,
+      },
+    },
+    async (request) => {
+      const { cron: name } = request.params;
+      return { content: await crons.stopCron(name) };
+    },
+  );
 
   /**
    * Force a specific cron to run
    */
-  .createAdminRoute('POST /:cron/force', async (req, _res) => {
-    const { cron } = req.params;
-    return forceCron(cron);
-  });
+  fastify.post<{
+    Params: SpecificCronParamsType
+  }>(
+    '/:cron/force',
+    {
+      schema: {
+        params: SpecificCronParams,
+      },
+      ezrAuth: {
+        requireAdmin: true,
+      },
+    },
+    async (request) => {
+      const { cron: name } = request.params;
+      return { content: await crons.forceCron(name) };
+    },
+  );
+};
 
 export default router;

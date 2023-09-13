@@ -1,165 +1,120 @@
-import Joi from 'joi';
-
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
+import { type Static, Type, Value } from '~/lib/typebox';
 
 import prisma from '~/lib/prisma';
 import { Prisma, type Template as PrismaTemplate, type Task } from '~/lib/prisma';
 
-import type { Fetchers } from '~/generators/fetchers';
-import renderers, { type Renderers } from '~/generators/renderers';
+import { Layout } from './layouts';
 
-import { ArgumentError } from '~/types/errors';
+export const Template = Type.Object({
+  layouts: Type.Array(
+    Layout,
+  ),
 
-import { layoutSchema, type Layout } from './layouts';
-import type { TaskList } from './tasks';
+  fetchOptions: Type.Optional(
+    Type.Object({
+      filters: Type.Optional(
+        Type.Record(Type.String(), Type.Any()),
+      ),
 
-/**
- * Template is the report
- *
- *  This interface describe a template in a template file (not in a task's `template` property)
- */
-export interface Template<
- R extends keyof Renderers,
- F extends keyof Fetchers,
-> {
-  /**
-  * Layouts that compose the template
-  *
-  * @see {Layout} for more info
-  */
-  layouts: Layout<F>[]
-  /**
-  * Options passed to the fetcher.
-  *
-  * Overrode by layouts `fetchOptions`.
-  * Overrode by default `fetchOptions`.
-  *
-  * @see {fetchers} For more info
-  */
-  fetchOptions?: Layout<F>['fetchOptions'],
-  /**
-  * Name of the renderer
-  *
-  * @see {renderers} For more info
-  */
-  renderer?: R,
-  /**
-  * Options passed to the renderer.
-  *
-  * Overrode by default `rendererOptions`.
-  *
-  * @see {renderers} For more info
-  */
-  renderOptions?: |
-  Omit<GeneratorParam<Renderers, R>, 'layouts' | 'doc'> &
-  { doc: Omit<GeneratorParam<Renderers, R>['doc'], 'period'> },
-}
+      dateField: Type.String({ minLength: 1 }),
+    }),
+  ),
 
-export type AnyTemplate = Template<keyof Renderers, keyof Fetchers>;
+  renderer: Type.Optional(
+    Type.Literal('vega-pdf'),
+  ),
 
-const templateSchema = Joi.object<AnyTemplate>({
-  layouts: Joi.array().items(layoutSchema).required(),
-  fetchOptions: Joi.object(),
-  renderer: Joi.string().valid(...Object.keys(renderers)),
-  renderOptions: Joi.object(),
-});
-
-/**
- * Check if input data is a template file
- *
- * @param data The input data
- * @returns `true` if valid
- *
- * @throws If not valid
- */
-export const isTemplate = (data: unknown): data is AnyTemplate => {
-  const validation = templateSchema.validate(data, {});
-  if (validation.error != null) {
-    throw new ArgumentError(`Template is not valid: ${validation.error.message}`);
-  }
-  return true;
-};
-
-/**
-* The interface describe options allowed in Task's
-*/
-export interface TaskTemplate<F extends keyof Fetchers> {
-  /**
-  * Options passed to the fetcher.
-  *
-  * Overrode by layouts `fetchOptions`.
-  * Overrode by function `fetchOptions`.
-  *
-  * @see {fetchers} For more info
-  */
-  fetchOptions?: Layout<F>['fetchOptions'],
-  /**
-  * Additional layouts
-  *
-  * @see {Layout} for more info
-  */
-  inserts: (Layout<F> & { at: number })[]
-}
-
-export type AnyTaskTemplate = TaskTemplate<keyof Fetchers>;
-
-export const taskTemplateSchema = Joi.object<AnyTaskTemplate>({
-  fetchOptions: Joi.object(),
-  inserts: Joi.array().items(
-    layoutSchema.append({
-      at: Joi.number(),
+  renderOptions: Type.Optional(
+    Type.Object({
+      grid: Type.Optional(
+        Type.Object({
+          cols: Type.Integer({ minimum: 1 }),
+          rows: Type.Integer({ minimum: 1 }),
+        }),
+      ),
     }),
   ),
 });
 
-/**
- * Check if input data is a task's template
- *
- * @param data The input data
- * @returns `true` if valid
- *
- * @throws If not valid
- */
-export const isTaskTemplate = (data: unknown): data is AnyTaskTemplate => {
-  const validation = taskTemplateSchema.validate(data, {});
-  if (validation.error != null) {
-    throw new ArgumentError(`Template is not valid: ${validation.error.message}`);
-  }
-  return true;
-};
+export type TemplateType = Static<typeof Template>;
 
-export interface FullTemplate extends Omit<PrismaTemplate, 'body'> {
+export const TaskTemplate = Type.Object({
+  fetchOptions: Type.Object({
+    filters: Type.Optional(
+      Type.Record(Type.String(), Type.Any()),
+    ),
+
+    dateField: Type.Optional(
+      Type.String({ minLength: 1 }),
+    ),
+
+    index: Type.String({ minLength: 1 }),
+  }),
+
+  inserts: Type.Optional(
+    Type.Array(
+      Type.Intersect([
+        Layout,
+        Type.Object({
+          at: Type.Integer({ minimum: 0 }),
+        }),
+      ]),
+    ),
+  ),
+});
+
+export type TaskTemplateType = Static<typeof TaskTemplate>;
+
+export const TagTemplate = Type.Object({
+  name: Type.String({ minLength: 1 }),
+
+  color: Type.Optional(
+    Type.String(),
+  ),
+});
+
+export type TagTemplateType = Static<typeof TagTemplate>;
+
+export const FullTemplateBody = Type.Object({
+  name: Type.String({ minLength: 1 }),
+
+  body: Template,
+
+  tags: Type.Optional(
+    Type.Array(
+      TagTemplate,
+    ),
+  ),
+});
+
+export type FullTemplateBodyType = Static<typeof FullTemplateBody>;
+
+export interface FullTemplate extends Omit<PrismaTemplate, 'body' | 'tags'> {
+  body: TemplateType,
+  tags: TagTemplateType[],
   pageCount: number,
-  body: AnyTemplate,
-  tasks: Omit<TaskList[number], 'tags'>[]
+  tasks: Pick<Task, 'id' | 'name' | 'namespaceId' | 'recurrence' | 'nextRun' | 'lastRun' | 'enabled' | 'createdAt' | 'updatedAt'>[],
 }
 
-const fullTemplateSchema = Joi.object<Pick<FullTemplate, 'body' | 'tags' | 'name'>>({
-  name: Joi.string().trim().required(),
-  body: templateSchema.required(),
-  tags: Joi.array().items(
-    Joi.object({
-      name: Joi.string().required(),
-      color: Joi.string(),
-    }),
-  ),
-});
+type TemplateList = Omit<FullTemplate, 'body' | 'tasks'>[];
 
 /**
- * Check if input data is a showcased template
+ * Cast Prisma's template into a standard Template
  *
- * @param data The input data
- * @returns `true` if valid
+ * @param data The data from Prisma
  *
- * @throws If not valid
+ * @returns A standard Template
  */
-export const isFullTemplate = (data: unknown): data is Pick<FullTemplate, 'body' | 'name' | 'tags'> => {
-  const validation = fullTemplateSchema.validate(data, {});
-  if (validation.error != null) {
-    throw new ArgumentError(`Given data is not valid: ${validation.error.message}`);
-  }
-  return true;
+const castFullTemplate = <T extends PrismaTemplate>(data: T): T & Omit<FullTemplate, 'tasks'> => {
+  const body = Value.Cast(Template, data.body);
+  return {
+    ...data,
+    body,
+    tags: Value.Cast(Type.Array(TagTemplate), data.tags),
+    pageCount: body.layouts.length,
+  };
 };
 
 /**
@@ -167,27 +122,18 @@ export const isFullTemplate = (data: unknown): data is Pick<FullTemplate, 'body'
 *
 * @returns General info of all templates
 */
-export const getAllTemplates = async (): Promise<Omit<FullTemplate, 'body' | 'tasks'>[]> => {
+export const getAllTemplates = async (): Promise<TemplateList> => {
   const res = await prisma.template.findMany();
 
   return res
-    .filter((template) => {
-      try {
-        if (!isTemplate(template.body)) {
-          // As validation throws an error, this line shouldn't be called
-          return false;
-        }
-        return true;
-      } catch (error) {
-        return false;
-      }
-    })
+    .filter((template) => Value.Check(Template, template.body))
     .map(({ body, ...template }) => {
       // We did the type check in .filter
-      const b = body as unknown as AnyTemplate;
+      const { layouts } = body as Static<typeof Template>;
       return {
         ...template,
-        pageCount: b.layouts.length,
+        tags: Value.Cast(Type.Array(TagTemplate), template.tags),
+        pageCount: layouts.length,
       };
     });
 };
@@ -232,16 +178,7 @@ export const getTemplateById = async (id: string): Promise<FullTemplate | null> 
     return null;
   }
 
-  if (!isTemplate(template.body)) {
-    // As validation throws an error, this line shouldn't be called
-    return {} as FullTemplate;
-  }
-
-  return {
-    ...template,
-    body: template.body,
-    pageCount: template.body.layouts.length,
-  };
+  return castFullTemplate(template);
 };
 
 /**
@@ -265,16 +202,7 @@ export const getTemplateByName = async (name: string): Promise<FullTemplate | nu
     return null;
   }
 
-  if (!isTemplate(template.body)) {
-    // As validation throws an error, this line shouldn't be called
-    return {} as FullTemplate;
-  }
-
-  return {
-    ...template,
-    body: template.body,
-    pageCount: template.body.layouts.length,
-  };
+  return castFullTemplate(template);
 };
 
 /**
@@ -286,15 +214,13 @@ export const getTemplateByName = async (name: string): Promise<FullTemplate | nu
  * @returns The created template
  */
 export const createTemplate = async (
-  data: Pick<FullTemplate, 'body' | 'name' | 'tags'>,
+  data: FullTemplateBodyType,
   id?: string,
 ): Promise<FullTemplate> => {
   const template = await prisma.template.create({
     data: {
       id,
       ...data,
-      tags: data.tags as Prisma.InputJsonValue[],
-      body: data.body as object,
     },
     include: {
       tasks: tasksInclude,
@@ -302,16 +228,7 @@ export const createTemplate = async (
   });
   appLogger.verbose(`[models] Template "${template.id}" created`);
 
-  if (!isTemplate(template.body)) {
-    // As validation throws an error, this line shouldn't be called
-    return {} as FullTemplate;
-  }
-
-  return {
-    ...template,
-    body: template.body,
-    pageCount: template.body.layouts.length,
-  };
+  return castFullTemplate(template);
 };
 
 // Thanks Prisma for begin so friendly with types...
@@ -344,28 +261,20 @@ export const unlinkTaskFromTemplate = async (id: Task['id'], origin: string, tx:
     where: { id },
     include: { extends: true },
   });
-  const template = task.extends.body;
 
-  if (!isTaskTemplate(task.template)) {
-    // As validation throws an error, this line shouldn't be called
-    return {} as Task;
-  }
-
-  if (!isTemplate(template)) {
-    // As validation throws an error, this line shouldn't be called
-    return {} as Task;
-  }
+  const taskTemplate = Value.Cast(TaskTemplate, task.template);
+  const template = Value.Cast(Template, task.extends.body);
 
   // eslint-disable-next-line no-restricted-syntax
-  for (const { at, ...layout } of (task.template.inserts ?? [])) {
+  for (const { at, ...layout } of (taskTemplate.inserts ?? [])) {
     template.layouts.splice(at, 0, layout);
   }
 
-  task.template.inserts = template.layouts.map((l, i) => ({ ...l, at: i }));
+  taskTemplate.inserts = template.layouts.map((l, i) => ({ ...l, at: i }));
 
   const res = await tx.task.update({
     data: {
-      template: task.template,
+      template: taskTemplate,
       extendedId: config.defaultTemplate.id,
       lastExtended: {
         id: task.extends.id,
@@ -418,22 +327,12 @@ export const deleteTemplateById = async (id: string): Promise<FullTemplate | nul
 
   appLogger.verbose(`[models] Template "${id}" deleted`);
 
-  // Here only for type completion (should always returns true)
-  if (!isTemplate(template.body)) {
-    // As validation throws an error, this line shouldn't be called
-    return {} as FullTemplate;
-  }
-
-  return {
-    ...template,
-    body: template.body,
-    pageCount: template.body.layouts.length,
-  };
+  return castFullTemplate(template);
 };
 
 export const editTemplateById = async (
   id: string,
-  data: Pick<FullTemplate, 'body' | 'name' | 'tags'>,
+  data: FullTemplateBodyType,
 ): Promise<FullTemplate | null> => {
   const res = await getTemplateById(id);
   if (!res) {
@@ -455,15 +354,5 @@ export const editTemplateById = async (
   });
   appLogger.verbose(`[models] Template "${id}" updated`);
 
-  // Here only for type completion (should always returns true)
-  if (!isTemplate(template.body)) {
-    // As validation throws an error, this line shouldn't be called
-    return {} as FullTemplate;
-  }
-
-  return {
-    ...template,
-    body: template.body,
-    pageCount: template.body.layouts.length,
-  };
+  return castFullTemplate(template);
 };

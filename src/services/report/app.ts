@@ -1,72 +1,53 @@
-import express from 'express';
-import routes from './routes';
+import Fastify from 'fastify';
+import fastifyCors from '@fastify/cors';
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
+
+import { appLogger } from './lib/logger';
 import config from './lib/config';
-import './lib/date-fns'; // Setup default options for date-fns
-import { appLogger as logger } from './lib/logger';
-import corsMiddleware from './middlewares/cors';
-import formatMiddleware from './middlewares/format';
-import loggerMiddleware from './middlewares/logger';
-import { createTemplate, getTemplateByName } from './models/templates';
 
-const {
-  port,
-  defaultTemplate: { name: defaultTemplateName },
-} = config;
+import formatPlugin from './plugins/format';
+import loggerPlugin from './plugins/logger';
+import routes from './routes';
 
-/**
- * Add default template if not already present
- */
-const initTemplates = async () => {
-  logger.verbose(`[init] Checking existence of "${defaultTemplateName}"...`);
-  let template;
+import { initTemplates } from './init';
+
+const { port, allowedOrigins: rawOrigins } = config;
+
+const start = async () => {
+  // Create Fastify instance
+  const fastify = Fastify({
+    logger: false,
+  });
+
+  // Register TypeBox
+  fastify.withTypeProvider<TypeBoxTypeProvider>();
+
+  // Register cors
+  const allowedOrigins = rawOrigins.split(',');
+  await fastify.register(
+    fastifyCors,
+    {
+      origin: allowedOrigins,
+    },
+  );
+
+  // Register logger and format
+  await fastify.register(formatPlugin);
+  await fastify.register(loggerPlugin);
+
+  // Register routes
+  await fastify.register(routes);
+
+  // Start listening
   try {
-    template = await getTemplateByName(defaultTemplateName);
-  } catch (error) {
-    logger.error(`[init] Couldn't get template "${defaultTemplateName}":`, (error as Error).message);
-    return;
-  }
+    const address = await fastify.listen({ port, host: '::' });
+    appLogger.info(`[node] Service running in [${process.env.NODE_ENV}] mode`);
+    appLogger.info(`[http] Service listening on [${address}] in [${process.uptime().toFixed(2)}]s`);
 
-  if (template) {
-    config.defaultTemplate.id = template.id;
-    logger.verbose(`[init] Template "${defaultTemplateName}" found`);
-    return;
-  }
-
-  logger.verbose(`[init] Template "${defaultTemplateName}" not found, creating it...`);
-  try {
-    const { id } = await createTemplate(
-      { name: defaultTemplateName, body: { layouts: [] }, tags: [] },
-    );
-    config.defaultTemplate.id = id;
-    logger.info(`[init] Template "${defaultTemplateName}" created`);
-  } catch (error) {
-    logger.error(`[init] Couldn't create template "${defaultTemplateName}":`, (error as Error).message);
+    initTemplates();
+  } catch (err) {
+    appLogger.error(err);
+    process.exit(1);
   }
 };
-
-express()
-  /**
-   * General middlewares
-   */
-  .use(
-    express.json(),
-    corsMiddleware,
-    loggerMiddleware,
-    formatMiddleware,
-  )
-
-  /**
-   * Router
-   */
-  .use('/', routes)
-
-  /**
-   * Start server
-   */
-  .listen(port, () => {
-    logger.info(`[node] Service running in ${process.env.NODE_ENV} mode`);
-    logger.info(`[http] Service listening on port ${port} in ${process.uptime().toFixed(2)}s`);
-
-    // Add "raw" template if not already present
-    initTemplates();
-  });
+start();

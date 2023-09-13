@@ -1,266 +1,355 @@
+import type { FastifyPluginAsync } from 'fastify';
 import { StatusCodes } from 'http-status-codes';
-import Joi from 'joi';
-import { pick } from 'lodash';
 
-import type { Prisma } from '~/lib/prisma';
+import { assertIsSchema, Type, type Static } from '~/lib/typebox';
 import { addTaskToGenQueue } from '~/lib/bull';
-import { CustomRouter } from '~/lib/express-utils';
 import { b64ToString } from '~/lib/utils';
 
-import {
-  createTask,
-  deleteTaskById,
-  editTaskById,
-  editTaskByIdWithHistory,
-  getAllTasks,
-  getCountTask,
-  getTaskById,
-  isValidCreateTask,
-  isValidTask,
-} from '~/models/tasks';
+import authPlugin from '~/plugins/auth';
+
 import { Access } from '~/models/access';
+import * as tasks from '~/models/tasks';
 import { getTemplateById, linkTaskToTemplate, unlinkTaskFromTemplate } from '~/models/templates';
+import { ArgumentError, NotFoundError, ConflictError } from '~/types/errors';
 
-import { ArgumentError, HTTPError, NotFoundError } from '~/types/errors';
+import { PaginationQuery, type PaginationQueryType } from '../utils/pagination';
 
-type UnsubData = {
-  unsubId: string,
-  email: string
-};
+const router: FastifyPluginAsync = async (fastify) => {
+  await fastify.register(authPlugin, { prefix: 'tasks' });
 
-const unsubSchema = Joi.object<UnsubData>({
-  unsubId: Joi.string().required(),
-  email: Joi.string().email().required(),
-});
-
-/**
- * Check if input data is a unsubscribe data
- *
- * @param data The input data
- * @returns `true` if valid
- *
- * @throws If not valid
- */
-const isValidUnsubData = (data: unknown): data is UnsubData => {
-  const validation = unsubSchema.validate(data, {});
-  if (validation.error != null) {
-    throw new ArgumentError(`Body is not valid: ${validation.error.message}`);
-  }
-  return true;
-};
-
-const router = CustomRouter('tasks')
   /**
    * List all active tasks of authed user's namespace.
    */
-  .createNamespacedRoute('GET /', Access.READ, async (req, _res) => {
-    const { previous: p = undefined, count = '15' } = req.query;
-    const c = +count;
-
-    const tasks = await getAllTasks(
-      {
-        count: c,
-        previous: p?.toString(),
+  fastify.get<{
+    Querystring: PaginationQueryType
+  }>(
+    '/',
+    {
+      schema: {
+        querystring: PaginationQuery,
       },
-      req.namespaceIds,
-    );
-
-    return {
-      data: tasks,
-      meta: {
-        total: await getCountTask(req.namespaceIds),
-        count: tasks.length,
-        size: c,
-        lastId: tasks.at(-1)?.id,
+      ezrAuth: {
+        access: Access.READ,
       },
-    };
-  })
+    },
+    async (request) => {
+      const { previous, count = 15 } = request.query;
+
+      const list = await tasks.getAllTasks(
+        { count, previous },
+        request.namespaceIds,
+      );
+
+      return {
+        content: list,
+        meta: {
+          total: await tasks.getCountTask(request.namespaceIds),
+          count: list.length,
+          size: count,
+          lastId: list.at(-1)?.id,
+        },
+      };
+    },
+  );
 
   /**
    * Create a new task
    */
-  .createNamespacedRoute('POST /', Access.READ_WRITE, async (req, _res) => {
-    if (!req.namespaceIds?.includes(req.body.namespace)) {
-      throw new HTTPError("The provided namespace doesn't exist or you don't have access to this namespace", StatusCodes.BAD_REQUEST);
-    }
+  fastify.post<{
+    Body: Static<typeof tasks.CreateTaskBody>
+  }>(
+    '/',
+    {
+      schema: {
+        body: tasks.CreateTaskBody,
+      },
+      ezrAuth: {
+        access: Access.READ_WRITE,
+      },
+      preHandler: async (request) => {
+        // Check if namespace is valid
+        if (!request.namespaceIds?.includes(request.body.namespace)) {
+          throw new ArgumentError("The provided namespace doesn't exist or you don't have access to this namespace");
+        }
+      },
+    },
+    async (request, reply) => {
+      reply.code(StatusCodes.CREATED);
+      return {
+        content: await tasks.createTask(
+          request.body,
+          request.user?.username ?? '',
+        ),
+      };
+    },
+  );
 
-    // Validate body
-    if (!isValidCreateTask(req.body)) {
-      // As validation throws an error, this line shouldn't be called
-      return {};
-    }
-
-    return {
-      data: await createTask(
-        req.body,
-        req.user?.username ?? '',
-      ),
-      code: StatusCodes.CREATED,
-    };
-  })
+  const SpecificTaskParams = Type.Object({
+    task: Type.String({ minLength: 1 }),
+  });
+  type SpecificTaskParamsType = Static<typeof SpecificTaskParams>;
 
   /**
    * Get specific task
    */
-  .createNamespacedRoute('GET /:task', Access.READ, async (req, _res) => {
-    const { task: id } = req.params;
+  fastify.get<{
+    Params: SpecificTaskParamsType
+  }>(
+    '/:task',
+    {
+      schema: {
+        params: SpecificTaskParams,
+      },
+      ezrAuth: {
+        access: Access.READ,
+      },
+    },
+    async (request) => {
+      const { task: id } = request.params;
 
-    const task = await getTaskById(id, req.namespaceIds);
-    if (!task) {
-      throw new HTTPError(`Task with id '${id}' not found for namespace(s) '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
-    }
+      const item = await tasks.getTaskById(id, request.namespaceIds);
+      if (!item) {
+        throw new NotFoundError(`Task with id '${id}' not found for allowed namespace(s)`);
+      }
 
-    return task;
-  })
+      return { content: item };
+    },
+  );
 
   /**
    * Update or create a task
    */
-  .createNamespacedRoute('PUT /:task', Access.READ_WRITE, async (req, _res) => {
-    const { task: id } = req.params;
+  const UpsertTaskBody = Type.Union([
+    tasks.InputTaskBody,
+    tasks.CreateTaskBody,
+  ]);
+  fastify.put<{
+    Params: SpecificTaskParamsType,
+    Body: Static<typeof UpsertTaskBody>
+  }>(
+    '/:task',
+    {
+      schema: {
+        params: SpecificTaskParams,
+        body: UpsertTaskBody,
+      },
+      ezrAuth: {
+        access: Access.READ_WRITE,
+      },
+    },
+    async (request, reply) => {
+      const { task: id } = request.params;
 
-    let task = await getTaskById(id);
-    if (task) {
-      // Validate body
-      if (!isValidTask(req.body)) {
-        // As validation throws an error, this line shouldn't be called
-        return {};
+      const item = await tasks.getTaskById(id, request.namespaceIds);
+      // If task doesn't exist yet, we need to create it
+      if (!item) {
+        // As body can be both types, we need to assert the correct type
+        assertIsSchema(tasks.CreateTaskBody, request.body);
+
+        // Check if namespace is valid
+        if (!request.namespaceIds?.includes(request.body.namespace)) {
+          throw new ArgumentError("The provided namespace doesn't exist or you don't have access to this namespace");
+        }
+
+        reply.status(StatusCodes.CREATED);
+        return {
+          content: await tasks.createTask(request.body, request.user?.username ?? '', id),
+        };
       }
+      // If task already exist, we need to update it
 
-      task = await editTaskById(
-        id,
-        req.body,
-        req.user?.username ?? '',
-        req.namespaceIds,
-      );
-    } else {
-      // Validate body
-      if (!isValidCreateTask(req.body)) {
-        // As validation throws an error, this line shouldn't be called
-        return {};
-      }
+      // As body can be both types, we need to assert the correct type
+      assertIsSchema(tasks.InputTaskBody, request.body);
 
-      task = await createTask(req.body, req.user?.username ?? '', id);
-    }
-
-    return task;
-  })
+      return {
+        content: await tasks.patchTaskById(
+          id,
+          request.body,
+          request.user?.username ?? '',
+          request.namespaceIds,
+        ),
+      };
+    },
+  );
 
   /**
    * Delete a task
-   */
-  .createNamespacedRoute('DELETE /:task', Access.READ_WRITE, async (req, _res) => {
-    const { task: id } = req.params;
+  */
+  fastify.delete<{
+    Params: SpecificTaskParamsType,
+  }>(
+    '/:task',
+    {
+      schema: {
+        params: SpecificTaskParams,
+      },
+    },
+    async (request) => {
+      const { task: id } = request.params;
 
-    await deleteTaskById(id, req.namespaceIds);
-  })
+      await tasks.deleteTaskById(id, request.namespaceIds);
+    },
+  );
 
   /**
    * Shorthand to quickly enable a task
    */
-  .createNamespacedRoute('PUT /:task/enable', Access.READ_WRITE, async (req, _res) => {
-    const { task: id } = req.params;
-
-    const task = await getTaskById(id, req.namespaceIds);
-    if (!task) {
-      throw new HTTPError(`Task with id '${id}' not found for namespace '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
-    }
-
-    if (task.enabled) {
-      throw new HTTPError(`Task with id '${id}' is already enabled`, StatusCodes.CONFLICT);
-    }
-
-    const editedTask = await editTaskByIdWithHistory(
-      id,
-      {
-        ...pick(task, 'name', 'targets', 'recurrence', 'nextRun'),
-        extends: task.extends.id,
-        nextRun: task.nextRun,
-        template: task.template as Prisma.InputJsonObject,
-        enabled: true,
+  fastify.put<{
+    Params: SpecificTaskParamsType,
+  }>(
+    '/:task/enable',
+    {
+      schema: {
+        params: SpecificTaskParams,
       },
-      { type: 'edition', message: `Tâche activée par ${req.user?.username}` },
-      req.namespaceIds,
-    );
+      ezrAuth: {
+        access: Access.READ_WRITE,
+      },
+    },
+    async (request) => {
+      const { task: id } = request.params;
 
-    return editedTask;
-  })
+      const item = await tasks.patchTaskByIdWithHistory(
+        id,
+        { enabled: true },
+        {
+          type: 'edition',
+          message: `Tâche activée par ${request.user?.username}`,
+        },
+        request.namespaceIds,
+      );
+
+      if (!item) {
+        throw new NotFoundError(`Task with id '${id}' not found for allowed namespace(s)`);
+      }
+
+      return { content: item };
+    },
+  );
 
   /**
    * Shorthand to quickly disable a task
    */
-  .createNamespacedRoute('PUT /:task/disable', Access.READ_WRITE, async (req, _res) => {
-    const { task: id } = req.params;
-
-    const task = await getTaskById(id, req.namespaceIds);
-    if (!task) {
-      throw new HTTPError(`Task with id '${id}' not found for namespaces '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
-    }
-
-    if (!task.enabled) {
-      return;
-    }
-
-    await editTaskByIdWithHistory(
-      id,
-      {
-        ...pick(task, 'name', 'targets', 'recurrence'),
-        extends: task.extends.id,
-        nextRun: task.nextRun,
-        template: task.template as Prisma.InputJsonObject,
-        enabled: false,
+  fastify.put<{
+    Params: SpecificTaskParamsType,
+  }>(
+    '/:task/disable',
+    {
+      schema: {
+        params: SpecificTaskParams,
       },
-      { type: 'edition', message: `Tâche désactivée par ${req.user?.username}` },
-      req.namespaceIds,
-    );
-  })
+      ezrAuth: {
+        access: Access.READ_WRITE,
+      },
+    },
+    async (request) => {
+      const { task: id } = request.params;
+
+      const item = await tasks.patchTaskByIdWithHistory(
+        id,
+        { enabled: false },
+        {
+          type: 'edition',
+          message: `Tâche désactivée par ${request.user?.username}`,
+        },
+        request.namespaceIds,
+      );
+
+      if (!item) {
+        throw new NotFoundError(`Task with id '${id}' not found for allowed namespace(s)`);
+      }
+
+      return { content: item };
+    },
+  );
 
   /**
    * Link a task to a template
    */
-  .createNamespacedRoute('PUT /:task/link/:template', Access.READ_WRITE, async (req, _res) => {
-    const { task: taskId, template: templateId } = req.params;
+  const LinkTaskTemplateParams = Type.Intersect([
+    SpecificTaskParams,
+    Type.Object({
+      template: Type.String({ minLength: 1 }),
+    }),
+  ]);
+  fastify.put<{
+    Params: Static<typeof LinkTaskTemplateParams>,
+  }>(
+    '/:task/link/:template',
+    {
+      schema: {
+        params: LinkTaskTemplateParams,
+      },
+      ezrAuth: {
+        access: Access.READ_WRITE,
+      },
+    },
+    async (request) => {
+      const { task: taskId, template: templateId } = request.params;
 
-    const task = await getTaskById(taskId, req.namespaceIds);
-    if (!task) {
-      throw new HTTPError(`Task with id '${taskId}' not found for namespaces '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
-    }
+      const taskItem = await tasks.getTaskById(taskId, request.namespaceIds);
+      if (!taskItem) {
+        throw new NotFoundError(`Task with id '${taskId}' not found for allowed namespace(s)`);
+      }
 
-    const template = await getTemplateById(templateId);
-    if (!template) {
-      throw new HTTPError(`Template with id '${templateId}' not found`, StatusCodes.NOT_FOUND);
-    }
+      const templateItem = await getTemplateById(templateId);
+      if (!templateItem) {
+        throw new NotFoundError(`Template with id '${templateId}' not found`);
+      }
 
-    if (!task.lastExtended) {
-      throw new HTTPError(`Task with id '${taskId}' is already linked to a template`, StatusCodes.CONFLICT);
-    }
+      if (!taskItem.lastExtended) {
+        throw new ConflictError(`Task with id '${taskId}' is already linked to a template`);
+      }
 
-    await linkTaskToTemplate(taskId, template.id, req.user?.username ?? '');
+      await linkTaskToTemplate(
+        taskId,
+        templateId,
+        request.user?.username ?? '',
+      );
 
-    return getTaskById(taskId, req.namespaceIds);
-  })
+      return {
+        content: await tasks.getTaskById(taskId, request.namespaceIds),
+      };
+    },
+  );
 
   /**
    * Unlink a task from it's template
    */
-  .createNamespacedRoute('DELETE /:task/link/:template', Access.READ_WRITE, async (req, _res) => {
-    const { task: taskId, template: templateId } = req.params;
+  fastify.delete<{
+    Params: Static<typeof LinkTaskTemplateParams>,
+  }>(
+    '/:task/link/:template',
+    {
+      schema: {
+        params: LinkTaskTemplateParams,
+      },
+      ezrAuth: {
+        access: Access.READ_WRITE,
+      },
+    },
+    async (request) => {
+      const { task: taskId, template: templateId } = request.params;
 
-    const task = await getTaskById(taskId, req.namespaceIds);
-    if (!task) {
-      throw new HTTPError(`Task with id '${taskId}' not found for namespaces '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
-    }
+      const taskItem = await tasks.getTaskById(taskId, request.namespaceIds);
+      if (!taskItem) {
+        throw new NotFoundError(`Task with id '${taskId}' not found for allowed namespace(s)`);
+      }
 
-    if (task.extends.id !== templateId) {
-      throw new HTTPError(`Task with id '${taskId}' is not linked with template '${templateId}'`, StatusCodes.NOT_FOUND);
-    }
+      if (taskItem.extends.id !== templateId) {
+        throw new NotFoundError(`Task with id '${taskId}' is not linked with template '${templateId}'`);
+      }
 
-    if (task.lastExtended) {
-      throw new HTTPError(`Task with id '${taskId}' is already unlinked`, StatusCodes.CONFLICT);
-    }
+      if (taskItem.lastExtended) {
+        throw new ConflictError(`Task with id '${taskId}' is already unlinked`);
+      }
 
-    await unlinkTaskFromTemplate(taskId, req.user?.username ?? '');
-  })
+      await unlinkTaskFromTemplate(
+        taskId,
+        request.user?.username ?? '',
+      );
+    },
+  );
 
   /**
    * Force generation of report
@@ -268,96 +357,130 @@ const router = CustomRouter('tasks')
    * Parameter `test_emails` overrides task emails & enable first level of debug
    * Parameter `debug` is not accessible in PROD and enable second level of debug
    */
-  .createNamespacedRoute('POST /:task/run', Access.READ_WRITE, async (req, _res) => {
-    const { task: id } = req.params;
-    let { test_emails: testEmails } = req.query;
-    const {
-      period_start: periodStart,
-      period_end: periodEnd,
-    } = req.query;
+  const GenerateTaskQuery = Type.Partial(
+    Type.Object({
+      period_start: Type.String({ minLength: 1 }),
+      period_end: Type.String({ minLength: 1 }),
+      test_emails: Type.Array(
+        Type.String({ format: 'email' }),
+        { minItems: 1 },
+      ),
+      debug: Type.Any(),
+    }),
+  );
+  fastify.post<{
+    Params: SpecificTaskParamsType,
+    Querystring: Static<typeof GenerateTaskQuery>
+  }>(
+    '/:task/run',
+    {
+      schema: {
+        params: SpecificTaskParams,
+        querystring: GenerateTaskQuery,
+      },
+      ezrAuth: {
+        access: Access.READ_WRITE,
+      },
+    },
+    async (request) => {
+      const { task: id } = request.params;
+      const {
+        test_emails: testEmails,
+        period_start: periodStart,
+        period_end: periodEnd,
+      } = request.query;
 
-    // Transform emails into array if needed
-    // TODO[refactor]
-    if (testEmails != null) {
-      if (!Array.isArray(testEmails)) testEmails = [testEmails.toString()];
-      else testEmails = testEmails.map((email) => email.toString());
-    }
-
-    const task = await getTaskById(id, req.namespaceIds);
-    if (!task) {
-      throw new HTTPError(`Task with id '${id}' not found for namespace '${req.namespaceIds}'`, StatusCodes.NOT_FOUND);
-    }
-
-    let customPeriod: { start: string, end: string } | undefined;
-    if (periodStart && periodEnd) {
-      if (Array.isArray(periodStart) || Array.isArray(periodEnd)) {
-        throw new HTTPError("Custom period can't be an array", StatusCodes.BAD_REQUEST);
+      const item = await tasks.getTaskById(id, request.namespaceIds);
+      if (!item) {
+        throw new NotFoundError(`Task with id '${id}' not found for allowed namespace(s)`);
       }
 
-      customPeriod = {
-        start: periodStart.toString(),
-        end: periodEnd.toString(),
+      // Parse custom period
+      let customPeriod: { start: string, end: string } | undefined;
+      if (periodStart || periodEnd) {
+        if (!(periodStart && periodEnd)) {
+          throw new ArgumentError('Missing part of custom period');
+        }
+        customPeriod = {
+          start: periodStart.toString(),
+          end: periodEnd.toString(),
+        };
+      }
+
+      const job = await addTaskToGenQueue({
+        task: {
+          ...item,
+          extendedId: item.extends.id,
+          namespaceId: item.namespace.id,
+          targets: testEmails || item.targets,
+        },
+        customPeriod,
+        origin: request.user?.username ?? '',
+        writeActivity: testEmails === undefined,
+        debug: !!request.query.debug && process.env.NODE_ENV !== 'production',
+      });
+
+      return {
+        content: {
+          id: job.id,
+          queue: 'generation',
+          data: job.data,
+        },
       };
-    } else if ((periodStart && !periodEnd) || (!periodStart && periodEnd)) {
-      throw new HTTPError('Missing part of custom period', StatusCodes.BAD_REQUEST);
-    }
-
-    const { namespace, extends: extendedTemplate, ...taskData } = task;
-    const job = await addTaskToGenQueue({
-      task: {
-        ...taskData,
-        extendedId: extendedTemplate.id,
-        namespaceId: namespace.id,
-        targets: testEmails || task.targets,
-      },
-      customPeriod,
-      origin: req.user?.username ?? '',
-      writeActivity: testEmails === undefined,
-      debug: !!req.query.debug && process.env.NODE_ENV !== 'production',
-    });
-
-    return {
-      id: job.id,
-      queue: 'generation',
-      data: job.data,
-    };
-  })
+    },
+  );
 
   /**
    * Shorthand to remove given email in given task
    */
-  .createRoute('PUT /:task/unsubscribe', async (req, _res) => {
-    const { task: id } = req.params;
-    const data = req.body;
-
-    if (!isValidUnsubData(data)) {
-      // As validation throws an error, this line shouldn't be called
-      return {};
-    }
-
-    const [taskId64, to64] = decodeURIComponent(data.unsubId).split(':');
-    if (id !== b64ToString(taskId64) || data.email !== b64ToString(to64)) {
-      throw new ArgumentError('Integrity check failed');
-    }
-
-    const task = await getTaskById(id);
-    if (!task) {
-      throw new NotFoundError(`Task ${id} not found`);
-    }
-
-    const index = task.targets.findIndex((email: string) => email === data.email);
-    if (index < 0) {
-      throw new ArgumentError(`Email "${data.email}" not found in targets of task "${task.id}"`);
-    }
-    task.targets.splice(index, 1);
-
-    await editTaskByIdWithHistory(
-      task.id,
-      { ...task, template: task.template as Prisma.JsonObject, extends: task.extends.id },
-      { type: 'unsubscription', message: `${data.email} s'est désinscrit de la liste de diffusion.` },
-    );
-
-    return getTaskById(task.id);
+  const UnsubscribeBody = Type.Object({
+    unsubId: Type.String(),
+    email: Type.String({ format: 'email' }),
   });
+  fastify.put<{
+    Params: SpecificTaskParamsType,
+    Body: Static<typeof UnsubscribeBody>,
+  }>(
+    '/:task/unsubscribe',
+    {
+      schema: {
+        params: SpecificTaskParams,
+        body: UnsubscribeBody,
+      },
+    },
+    async (request) => {
+      const { task: id } = request.params;
+
+      const [taskId64, to64] = decodeURIComponent(request.body.unsubId).split(':');
+      if (id !== b64ToString(taskId64) || request.body.email !== b64ToString(to64)) {
+        throw new ArgumentError('Integrity check failed');
+      }
+
+      const item = await tasks.getTaskById(id);
+      if (!item) {
+        throw new NotFoundError(`Task with id '${id}' not found`);
+      }
+
+      const emailIndex = item.targets.findIndex((email: string) => email === request.body.email);
+      if (emailIndex < 0) {
+        throw new ArgumentError(`Email "${request.body.email}" not found in targets of task "${item.id}"`);
+      }
+      item.targets.splice(emailIndex, 1);
+
+      await tasks.patchTaskByIdWithHistory(
+        item.id,
+        { targets: item.targets },
+        {
+          type: 'unsubscription',
+          message: `${request.body.email} s'est désinscrit de la liste de diffusion.`,
+        },
+      );
+
+      return {
+        content: await tasks.getTaskById(id),
+      };
+    },
+  );
+};
 
 export default router;

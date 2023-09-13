@@ -1,38 +1,71 @@
-import { CustomRouter } from '~/lib/express-utils';
-import { requireUser } from '~/middlewares/auth';
+import type { FastifyPluginAsync } from 'fastify';
+
+import authPlugin from '~/plugins/auth';
+
 import { Access, getAllowedRoutes, getRoutes } from '~/models/access';
 
-const router = CustomRouter('auth')
+const router: FastifyPluginAsync = async (fastify) => {
+  await fastify.register(authPlugin, { prefix: 'auth' });
+
   /**
    * Get all user info
    */
-  .createRoute('GET /', (req, _res) => req.user, requireUser)
+  fastify.get(
+    '/',
+    {
+      ezrAuth: {
+        requireUser: true,
+      },
+    },
+    async (request) => ({ content: request.user }),
+  );
 
   /**
    * Get namespaces that user can access
    */
-  .createNamespacedRoute('GET /namespaces', Access.READ, (req, _res) => req.namespaces?.map(({ namespace }) => namespace) ?? [])
+  fastify.get(
+    '/namespaces',
+    {
+      ezrAuth: {
+        access: Access.READ,
+      },
+    },
+    async (request) => ({
+      content: request.namespaces?.map(({ namespace }) => namespace) ?? [],
+    }),
+  );
 
   /**
    * Get user's permissions per route
    */
-  .createNamespacedRoute('GET /permissions', Access.READ, (req, _res) => {
-    const map = new Map<string, Record<string, boolean>>();
+  fastify.get(
+    '/permissions',
+    {
+      ezrAuth: {
+        access: Access.READ,
+      },
+    },
+    async (request) => {
+      const map = new Map<string, Record<string, boolean>>();
 
-    // eslint-disable-next-line no-restricted-syntax
-    for (const membership of req.namespaces ?? []) {
-      map.set(
-        membership.namespace.id,
-        Object.fromEntries(
-          getAllowedRoutes(membership.access),
-        ),
-      );
-    }
+      // eslint-disable-next-line no-restricted-syntax
+      for (const membership of request.namespaces ?? []) {
+        map.set(
+          membership.namespace.id,
+          Object.fromEntries(
+            getAllowedRoutes(membership.access),
+          ),
+        );
+      }
 
-    return {
-      general: Object.fromEntries(getRoutes(req.user?.isAdmin ?? false)),
-      namespaces: Object.fromEntries(map),
-    };
-  });
+      return {
+        content: {
+          general: Object.fromEntries(getRoutes(request.user?.isAdmin ?? false)),
+          namespaces: Object.fromEntries(map),
+        },
+      };
+    },
+  );
+};
 
 export default router;

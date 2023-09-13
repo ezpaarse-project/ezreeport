@@ -1,87 +1,163 @@
-import { StatusCodes } from 'http-status-codes';
-import { Task } from '~/.prisma/client';
-import {
-  getJob,
-  getJobs,
-  pauseQueue,
-  getQueues,
-  getCountJobs,
-  resumeQueue,
-  retryJob,
-} from '~/lib/bull';
-import { CustomRouter } from '~/lib/express-utils';
-import { Access } from '~/models/access';
-import { HTTPError } from '~/types/errors';
+import type { FastifyPluginAsync } from 'fastify';
 
-const router = CustomRouter('queues')
+import { StatusCodes } from 'http-status-codes';
+import authPlugin from '~/plugins/auth';
+
+import * as queues from '~/lib/bull';
+import { Type, type Static } from '~/lib/typebox';
+import { PaginationQuery, type PaginationQueryType } from '../utils/pagination';
+import { Access } from '~/.prisma/client';
+import { HTTPError, NotFoundError } from '~/types/errors';
+
+const router: FastifyPluginAsync = async (fastify) => {
+  await fastify.register(authPlugin, { prefix: 'queues' });
+
   /**
    * Get all possible queues
    */
-  .createAdminRoute('GET /', (_req, _res) => getQueues())
+  fastify.get(
+    '/',
+    {
+      ezrAuth: {
+        requireAdmin: true,
+      },
+    },
+    async () => ({
+      content: await queues.getQueues(),
+    }),
+  );
+
+  const SpecificQueueParams = Type.Object({
+    queue: Type.String({ minLength: 1 }),
+  });
+  type SpecificQueueParamsType = Static<typeof SpecificQueueParams>;
 
   /**
    * Pause specific queue
    */
-  .createAdminRoute('PUT /:queue/pause', async (req, _res) => {
-    const { queue } = req.params;
-    await pauseQueue(queue);
+  fastify.put<{
+    Params: SpecificQueueParamsType
+  }>(
+    '/:queue/pause',
+    {
+      schema: {
+        params: SpecificQueueParams,
+      },
+      ezrAuth: {
+        requireAdmin: true,
+      },
+    },
+    async (request) => {
+      const { queue: name } = request.params;
+      await queues.pauseQueue(name);
 
-    return (await getQueues()).find(({ name }) => name === queue);
-  })
+      return {
+        content: (await queues.getQueues()).find((q) => q.name === name),
+      };
+    },
+  );
 
   /**
    * Resume specific queue
    */
-  .createAdminRoute('PUT /:queue/resume', async (req, _res) => {
-    const { queue } = req.params;
-    await resumeQueue(queue);
+  fastify.put<{
+    Params: SpecificQueueParamsType
+  }>(
+    '/:queue/resume',
+    {
+      schema: {
+        params: SpecificQueueParams,
+      },
+      ezrAuth: {
+        requireAdmin: true,
+      },
+    },
+    async (request) => {
+      const { queue: name } = request.params;
+      await queues.resumeQueue(name);
 
-    return (await getQueues()).find(({ name }) => name === queue);
-  })
+      return {
+        content: (await queues.getQueues()).find((q) => q.name === name),
+      };
+    },
+  );
 
   /**
    * Get jobs of a specific queue
    */
-  .createAdminRoute('GET /:queue/jobs', async (req, _res) => {
-    const { queue } = req.params;
-    const { previous: p = undefined, count = '15' } = req.query;
-    const c = +count;
-
-    // TODO: custom sort
-    const jobs = await getJobs(queue, { count: c, previous: p?.toString() });
-
-    return {
-      data: jobs,
-      meta: {
-        total: await getCountJobs(queue),
-        count: jobs.length,
-        size: c,
-        lastId: jobs.at(-1)?.id,
+  fastify.get<{
+    Params: SpecificQueueParamsType,
+    Querystring: PaginationQueryType,
+  }>(
+    '/:queue/jobs',
+    {
+      schema: {
+        params: SpecificQueueParams,
+        querystring: PaginationQuery,
       },
-    };
-  })
+      ezrAuth: {
+        requireAdmin: true,
+      },
+    },
+    async (request) => {
+      const { queue: name } = request.params;
+      const { previous, count = 15 } = request.query;
+
+      // TODO: custom sort
+      const jobs = await queues.getJobs(name, { count, previous });
+
+      return {
+        content: jobs,
+        meta: {
+          total: await queues.getCountJobs(name),
+          count: jobs.length,
+          size: count,
+          lastId: jobs.at(-1)?.id,
+        },
+      };
+    },
+  );
+
+  const SpecificJobParams = Type.Intersect([
+    SpecificQueueParams,
+    Type.Object({
+      jobId: Type.String({ minLength: 1 }),
+    }),
+  ]);
+  type SpecificJobParamsType = Static<typeof SpecificJobParams>;
 
   /**
    * Get specific job info
    *
    * Can't access to other namespace's jobs
    */
-  .createNamespacedRoute('GET /:queue/jobs/:jobId', Access.READ, async (req, _res) => {
-    const { queue, jobId } = req.params;
-    const job = await getJob(queue, jobId);
-    if (!job) {
-      throw new HTTPError(`Job "${jobId}" not found`, StatusCodes.NOT_FOUND);
-    }
+  fastify.get<{
+    Params: SpecificJobParamsType
+  }>(
+    '/:queue/jobs/:jobId',
+    {
+      schema: {
+        params: SpecificJobParams,
+      },
+      ezrAuth: {
+        access: Access.READ,
+      },
+    },
+    async (request) => {
+      const { queue: name, jobId } = request.params;
+      const job = await queues.getJob(name, jobId);
+      if (!job) {
+        throw new NotFoundError(`Job "${jobId}" not found`);
+      }
 
-    if (
-      !req.namespaceIds?.length
-      || !req.namespaceIds.includes((job.data.task as Task).namespaceId)
-    ) {
-      throw new HTTPError(`Job "${jobId}" doesn't match your namespace "${req.namespaceIds}"`, StatusCodes.FORBIDDEN);
-    }
+      const namespaceId = 'file' in job.data ? job.data.task.namespace : job.data.task.namespaceId;
+      if (!request.namespaceIds?.includes(namespaceId)) {
+        throw new HTTPError(`Job "${jobId}" doesn't match your namespaces`, StatusCodes.FORBIDDEN);
+      }
 
-    return job;
-  })
+      return { content: job };
+    },
+  );
 
   /**
    * Retry specific job
@@ -90,21 +166,33 @@ const router = CustomRouter('queues')
    *
    * Throw an error if job wasn't failed
    */
-  .createNamespacedRoute('POST /:queue/jobs/:jobId/retry', Access.READ_WRITE, async (req, _res) => {
-    const { queue, jobId } = req.params;
-    const job = await getJob(queue, jobId);
-    if (!job) {
-      throw new HTTPError(`Job "${jobId}" not found`, StatusCodes.NOT_FOUND);
-    }
+  fastify.post<{
+    Params: SpecificJobParamsType
+  }>(
+    '/:queue/jobs/:jobId/retry',
+    {
+      schema: {
+        params: SpecificJobParams,
+      },
+      ezrAuth: {
+        access: Access.READ_WRITE,
+      },
+    },
+    async (request) => {
+      const { queue: name, jobId } = request.params;
+      const job = await queues.getJob(name, jobId);
+      if (!job) {
+        throw new NotFoundError(`Job "${jobId}" not found`);
+      }
 
-    if (
-      !req.namespaceIds?.length
-      || !req.namespaceIds.includes((job.data.task as Task).namespaceId)
-    ) {
-      throw new HTTPError(`Job "${jobId}" doesn't match your namespace "${req.namespaceIds}"`, StatusCodes.FORBIDDEN);
-    }
+      const namespaceId = 'file' in job.data ? job.data.task.namespace : job.data.task.namespaceId;
+      if (!request.namespaceIds?.includes(namespaceId)) {
+        throw new HTTPError(`Job "${jobId}" doesn't match your namespaces`, StatusCodes.FORBIDDEN);
+      }
 
-    return retryJob(queue, jobId);
-  });
+      return { content: queues.retryJob(name, jobId) };
+    },
+  );
+};
 
 export default router;

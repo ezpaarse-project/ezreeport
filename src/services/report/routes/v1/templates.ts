@@ -1,96 +1,147 @@
+import type { FastifyPluginAsync } from 'fastify';
 import { StatusCodes } from 'http-status-codes';
 
+import authPlugin from '~/plugins/auth';
+
 import config from '~/lib/config';
-import { CustomRouter } from '~/lib/express-utils';
+import { Type, type Static } from '~/lib/typebox';
 
-import { requireUser } from '~/middlewares/auth';
+import * as templates from '~/models/templates';
 
-import {
-  createTemplate,
-  deleteTemplateById,
-  editTemplateById,
-  getAllTemplates,
-  getTemplateById,
-  isFullTemplate,
-} from '~/models/templates';
+const router: FastifyPluginAsync = async (fastify) => {
+  await fastify.register(authPlugin, { prefix: 'templates' });
 
-const router = CustomRouter('templates')
   /**
-   * Get possibles templates
+   * List all history entries.
    */
-  .createRoute('GET /', async (_req, _res) => {
-    const templates = await getAllTemplates();
-
-    return {
-      data: templates,
+  fastify.get(
+    '/',
+    {
+      ezrAuth: {
+        requireUser: true,
+      },
+    },
+    async () => ({
+      content: await templates.getAllTemplates(),
       meta: {
         default: config.defaultTemplate.id,
       },
-    };
-  }, requireUser)
+    }),
+  );
 
   /**
    * Create template
    */
-  .createAdminRoute('POST /', (req, _res) => {
-    const data = req.body;
+  fastify.post<{
+    Body: templates.FullTemplateBodyType,
+  }>(
+    '/',
+    {
+      schema: {
+        body: templates.FullTemplateBody,
+      },
+      ezrAuth: {
+        requireAdmin: true,
+      },
+    },
+    async (request, reply) => {
+      reply.status(StatusCodes.CREATED);
+      return {
+        content: await templates.createTemplate(request.body),
+      };
+    },
+  );
 
-    if (!isFullTemplate(data)) {
-      // As validation throws an error, this line shouldn't be called
-      return {};
-    }
-
-    return createTemplate(data);
-  })
+  const SpecificTemplateParams = Type.Object({
+    template: Type.String({ minLength: 1 }),
+  });
+  type SpecificTemplateParamsType = Static<typeof SpecificTemplateParams>;
 
   /**
    * Get specific template
    */
-  .createRoute('GET /:template', async (req, _res) => {
-    const { template: id } = req.params;
+  fastify.get<{
+    Params: SpecificTemplateParamsType
+  }>(
+    '/:template',
+    {
+      schema: {
+        params: SpecificTemplateParams,
+      },
+      ezrAuth: {
+        requireUser: true,
+      },
+    },
+    async (request) => {
+      const { template: id } = request.params;
 
-    const template = await getTemplateById(id);
-    if (!template) {
-      throw new Error(`No template named "${id}" was found`);
-    }
+      const item = await templates.getTemplateById(id);
+      if (!item) {
+        throw new Error(`No template named "${id}" was found`);
+      }
 
-    return template;
-  }, requireUser)
+      return { content: item };
+    },
+  );
 
   /**
    * Edit or create template
    */
-  .createAdminRoute('PUT /:template', async (req, _res) => {
-    const { template: id } = req.params;
+  fastify.put<{
+    Params: SpecificTemplateParamsType,
+    Body: templates.FullTemplateBodyType,
+  }>(
+    '/:template',
+    {
+      schema: {
+        params: SpecificTemplateParams,
+        body: templates.FullTemplateBody,
+      },
+      ezrAuth: {
+        requireAdmin: true,
+      },
+    },
+    async (request, reply) => {
+      const { template: id } = request.params;
 
-    if (!isFullTemplate(req.body)) {
-      // As validation throws an error, this line shouldn't be called
-      return {};
-    }
+      const item = await templates.getTemplateById(id);
+      if (!item) {
+        reply.status(StatusCodes.CREATED);
+        return {
+          content: await templates.createTemplate(request.body),
+        };
+      }
 
-    let template = await getTemplateById(id);
-    let code;
-    if (template) {
-      template = await editTemplateById(id, req.body);
-      code = StatusCodes.OK;
-    } else {
-      template = await createTemplate(req.body, id);
-      code = StatusCodes.CREATED;
-    }
-
-    return {
-      code,
-      data: template,
-    };
-  })
+      return {
+        content: await templates.editTemplateById(
+          id,
+          request.body,
+        ),
+      };
+    },
+  );
 
   /**
    * Delete template
    */
-  .createAdminRoute('DELETE /:template', async (req, _res) => {
-    const { template: id } = req.params;
+  fastify.delete<{
+    Params: SpecificTemplateParamsType
+  }>(
+    '/:template',
+    {
+      schema: {
+        params: SpecificTemplateParams,
+      },
+      ezrAuth: {
+        requireAdmin: true,
+      },
+    },
+    async (request) => {
+      const { template: id } = request.params;
 
-    await deleteTemplateById(id);
-  });
+      await templates.deleteTemplateById(id);
+    },
+  );
+};
 
 export default router;

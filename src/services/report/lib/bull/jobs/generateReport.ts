@@ -8,7 +8,7 @@ import { formatISO } from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
 
 import { generateReport } from '~/models/reports';
-import type { AnyTemplate } from '~/models/templates';
+import type { TemplateType } from '~/models/templates';
 
 import { addReportToMailQueue, type GenerationData } from '..';
 
@@ -33,7 +33,7 @@ export default async (job: Queue.Job<GenerationData>) => {
   let contact: string | undefined;
 
   const events = new EventEmitter();
-  events.on('templateResolved', async (template: AnyTemplate) => {
+  events.on('templateResolved', async (template: TemplateType) => {
     expectedPageCount = template.layouts.length;
   });
   events.on('layoutRendered', async () => {
@@ -67,7 +67,7 @@ export default async (job: Queue.Job<GenerationData>) => {
       namespace: task.namespaceId,
     },
     contact,
-    date: formatISO(res.detail.createdAt ?? new Date()),
+    date: res.detail.createdAt || formatISO(new Date()),
   };
 
   if (res.success && res.detail.files.report) {
