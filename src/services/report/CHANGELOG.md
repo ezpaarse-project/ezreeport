@@ -1,3 +1,25 @@
+# ezreeport-report [1.0.0-beta.21](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.20...ezreeport-report@1.0.0-beta.21) (2023-09-13)
+
+
+### Bug Fixes
+
+* **report:** fixed issues with fastify schemas ([ebb0b79](https://github.com/ezpaarse-project/ezreeport/commit/ebb0b79fb3ce6abdef3ce90f272c0444535e34cc))
+* **report:** fixed issues with response format ([8217fd0](https://github.com/ezpaarse-project/ezreeport/commit/8217fd0de5ef42a3b760ab7561c7110fb6796688))
+* **report:** fixed promises not begin awaited in health routes ([dd18270](https://github.com/ezpaarse-project/ezreeport/commit/dd18270e42fe266082228ed2a5f1343d454ee9b9))
+* **report:** fixed promises not beign awaited in crons routes ([249f2ee](https://github.com/ezpaarse-project/ezreeport/commit/249f2ee9c5995ebdcca836c358f6f51ae0439a21))
+* **report:** fixed wrong perm prefix for task activity routes ([661d85e](https://github.com/ezpaarse-project/ezreeport/commit/661d85eb1f03e0e20c72453ec8282f8fe20974e9))
+
+
+### Features
+
+* **report:** added missing requireAdmin in auth plugin ([62db6fe](https://github.com/ezpaarse-project/ezreeport/commit/62db6fecc223a1c0279fa40b32602b520b8c2d25))
+* **report:** editTaskBy id is now a patch ([5747c55](https://github.com/ezpaarse-project/ezreeport/commit/5747c55fc64fcf49fb0a61239eb83a52658c1154))
+
+
+### Reverts
+
+* **report:** fixed wrong perm prefix for task activity routes ([6b12211](https://github.com/ezpaarse-project/ezreeport/commit/6b12211b6203aa90777eb02d52addc53274a36f2))
+
 # ezreeport-report [1.0.0-beta.20](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.19...ezreeport-report@1.0.0-beta.20) (2023-08-24)
 
 
