@@ -25,7 +25,7 @@ const router: FastifyPluginAsync = async (fastify) => {
   fastify.get(
     '/all',
     async () => ({
-      content: Promise.all(
+      content: await Promise.all(
         [...checks.services].map((s) => checks.ping(s)),
       ),
     }),
