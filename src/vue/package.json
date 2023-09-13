@@ -87,7 +87,7 @@
     "remark-gfm": "^3.0.1",
     "sass": "1.32.13",
     "storybook": "^7.4.1",
-    "typescript": "^5.2.2",
+    "typescript": "<5.2.0",
     "unplugin-vue-components": "^0.25.2",
     "uuid": "^9.0.1",
     "validator": "^13.11.0",
