@@ -1,3 +1,15 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.22](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.21...@ezpaarse-project/ezreeport-vue@1.0.0-beta.22) (2023-09-13)
+
+
+### Bug Fixes
+
+* **vue:** fixed activity table ([f80d93b](https://github.com/ezpaarse-project/ezreeport/commit/f80d93ba3bf7c710b4ebd8c72eb67953ff978fb7))
+
+
+### Reverts
+
+* **vue:** revert typescript upgrade ([6bf3c16](https://github.com/ezpaarse-project/ezreeport/commit/6bf3c16c885c59949e9a43e1e37e2c54b2e2ee4c))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.21](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.20...@ezpaarse-project/ezreeport-vue@1.0.0-beta.21) (2023-08-24)
 
 
