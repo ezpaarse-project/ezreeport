@@ -206,8 +206,7 @@ export default defineComponent({
       // eslint-disable-next-line no-param-reassign
       this.loading = true;
       try {
-        const items = [...this.crons];
-        const index = items.findIndex(({ name }) => name === item.name);
+        const index = this.crons.findIndex(({ name }) => name === item.name);
         if (index < 0) {
           throw new Error(
             this.$t('cron.not-found', { name: item.name }).toString(),
@@ -215,9 +214,8 @@ export default defineComponent({
         }
 
         const { content } = await action(item.name);
-
-        items.splice(index, 1, content);
-        this.crons = items;
+    
+        this.crons.splice(index, 1, content);
       } catch (error) {
         this.error = (error as Error).message;
       }
