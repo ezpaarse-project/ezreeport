@@ -1100,7 +1100,10 @@
             "User Token": []
           }
         ],
-        "parameters": []
+        "parameters": [],
+        "tags": [
+          "tasks"
+        ]
       },
       "delete": {
         "summary": "Unlink a task to a template",
@@ -1128,7 +1131,10 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "description": "Unlink a task to a template, changing it's `extends` to the default one and setting `lastExtends` to the current one. It's also add in `template.inserts` the layouts of the current template.\n\nNeeds `namespaces[namespaceId].tasks-put-task-link-template` (see `/me/permissions` for more info)."
+        "description": "Unlink a task to a template, changing it's `extends` to the default one and setting `lastExtends` to the current one. It's also add in `template.inserts` the layouts of the current template.\n\nNeeds `namespaces[namespaceId].tasks-put-task-link-template` (see `/me/permissions` for more info).",
+        "tags": [
+          "tasks"
+        ]
       }
     },
     "/tasks/{taskId}/run": {
@@ -2103,7 +2109,107 @@
           "required": true,
           "description": "Cron name"
         }
-      ]
+      ],
+      "patch": {
+        "summary": "",
+        "operationId": "patch-crons-cron",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "daily-report",
+                        "running": true,
+                        "nextRun": "2022-11-16T09:10:00.000+01:00"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/Cron"
+                    }
+                  }
+                },
+                "examples": {
+                  "Example": {
+                    "value": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "generateReports",
+                        "running": true,
+                        "nextRun": "2022-11-16T09:10:00.000Z",
+                        "lastRun": "2022-11-16T09:09:59.248Z"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "description": "Update specific cron.\n\nNeeds `general.crons-patch-cron` (see `/me/permissions` for more info).",
+        "security": [
+          {
+            "User Token": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "running": {
+                    "type": "boolean",
+                    "nullable": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "cron"
+        ]
+      }
     },
     "/crons/{cron}/start": {
       "parameters": [
@@ -2200,7 +2306,8 @@
           {
             "User Token": []
           }
-        ]
+        ],
+        "deprecated": true
       }
     },
     "/crons/{cron}/stop": {
@@ -2298,7 +2405,8 @@
           {
             "User Token": []
           }
-        ]
+        ],
+        "deprecated": true
       }
     },
     "/crons/{cron}/force": {

@@ -26,6 +26,5 @@
     ".env": "dotenv",
     ".env.defaults": "dotenv"
   },
-  "jestTestExplorer.pathToJest": "./tests/node_modules/.bin/jest",
   "typescript.tsdk": "./src/services/report/node_modules/typescript/lib"
 }

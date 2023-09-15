@@ -51,7 +51,7 @@ const requireUser: preValidationHookHandler = async (request) => {
  */
 const requireAdmin: preValidationHookHandler = async (request) => {
   if (!request.user?.isAdmin) {
-    throw new HTTPError('Admin status is required', StatusCodes.UNAUTHORIZED);
+    throw new HTTPError('Admin status is required', StatusCodes.FORBIDDEN);
   }
 };
 
