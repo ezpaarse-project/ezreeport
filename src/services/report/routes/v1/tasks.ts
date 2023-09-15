@@ -416,7 +416,7 @@ const router: FastifyPluginAsync = async (fastify) => {
         },
         customPeriod,
         origin: request.user?.username ?? '',
-        writeActivity: testEmails === undefined,
+        writeActivity: !!testEmails,
         debug: !!request.query.debug && process.env.NODE_ENV !== 'production',
       });
 

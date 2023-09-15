@@ -133,41 +133,62 @@ const reduceAggs = (
 };
 
 /**
- * Cleans aggregation results from elastic
+ * Cleans aggregation results from elastic and flattens the result
  *
  * @param info Info about aggregation
  * @param aggs Value of the sub aggregation.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const cleanAggValues = (info: AggInfo, aggs: any): any[] => {
-  const data = aggs[info.name];
+  const aggValue = aggs[info.name];
+  const buckets = 'buckets' in aggValue ? aggValue.buckets : [aggValue];
 
-  // If agg is a simple value
-  if ('value' in data) {
-    // eslint-disable-next-line no-param-reassign
-    return data.value;
+  const data = [];
+
+  if (info.subAggs.length <= 0) {
+    return buckets;
   }
 
-  // If agg is a plain hit
-  if ('hits' in data) {
-    const hits = data.hits?.hits ?? [];
-    // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
-    return hits.map(({ _source }: any) => _source);
-  }
+  // eslint-disable-next-line no-restricted-syntax
+  for (const bucket of buckets) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const subBuckets = new Map<string, any[]>();
 
-  // If agg is a bucket of other aggregations
-  if ('buckets' in data) {
-    // eslint-disable-next-line no-param-reassign
-    const { buckets } = data;
-
+    // Cleaning values
     // eslint-disable-next-line no-restricted-syntax
     for (const subAgg of info.subAggs) {
-      for (let i = 0; i < buckets.length; i += 1) {
-        buckets[i] = cleanAggValues(subAgg, buckets[i]);
-      }
+      subBuckets.set(subAgg.name, cleanAggValues(subAgg, bucket));
     }
 
-    return buckets;
+    // Getting combinations of all subArgs within bucket
+    const subBucketEntries = Array.from(subBuckets.entries());
+    const bucketCombinations = subBucketEntries.reduce(
+      (combinationsSoFar, [aggName, bs]) => {
+        // If no value in bucket
+        if (bs.length === 0) { return combinationsSoFar; }
+
+        // Merge previous results with new one
+        return bs.flatMap((b) => {
+          if (combinationsSoFar.length === 0) {
+            return { [aggName]: b };
+          }
+
+          return combinationsSoFar.map((c) => ({ ...c, [aggName]: b }));
+        });
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      [] as any[],
+    );
+
+    // Merging current bucket value with cleaned + combinations
+    data.push(
+      bucketCombinations.map(
+        (b) => ({
+          ...bucket,
+          ...b,
+        }),
+      ),
+    );
   }
 
   return data;
@@ -233,7 +254,7 @@ const fetchWithElastic = async (
     }
   }
 
-  let data: Prisma.JsonValue = {};
+  const data: Prisma.JsonObject = {};
   const { body } = await elasticSearch(opts, options.auth.username);
 
   // Checks any errors
@@ -254,7 +275,7 @@ const fetchWithElastic = async (
   if (options.aggs) {
     // eslint-disable-next-line no-restricted-syntax
     for (const aggInfo of aggsInfos) {
-      data = cleanAggValues(aggInfo, body.aggregations);
+      data[aggInfo.name] = cleanAggValues(aggInfo, body.aggregations);
     }
   }
 
