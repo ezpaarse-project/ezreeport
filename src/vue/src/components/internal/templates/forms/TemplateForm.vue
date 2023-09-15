@@ -21,8 +21,8 @@
       <v-row>
         <!-- Global options -->
         <v-col>
-          <div class="d-flex align-center">
-            <v-tooltip v-if="taskTemplate" top>
+          <div v-if="taskTemplate" class="d-flex align-center">
+            <v-tooltip top>
               <template #activator="{ attrs: tipAttrs, on: tipOn }">
                 <div
                   style="flex: 1"
