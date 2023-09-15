@@ -35,7 +35,11 @@ export interface PaginatedApiResponse<T> extends ApiResponse<T> {
   }
 }
 
-const agent = axios.create({});
+const agent = axios.create({
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 /**
  * Start axios request with basic error handling
