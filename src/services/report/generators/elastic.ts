@@ -61,9 +61,11 @@ export type ElasticFetchOptionsType = Static<typeof ElasticFetchOptions>;
 
 type AggInfo = {
   name: string,
+  type: string,
   subAggs: AggInfo[],
 };
 
+const handledKeys = new Set(['name', 'aggs', 'aggregations']);
 /**
  * Parse aggregations in order to calculate keys when cleaning elastic response
  *
@@ -83,6 +85,7 @@ const parseAggInfo = (agg: CustomAggregationType, i: number): AggInfo => {
 
   return {
     name,
+    type: Object.keys(agg).filter((k) => !handledKeys.has(k))[0],
     subAggs,
   };
 };
@@ -133,35 +136,41 @@ const reduceAggs = (
  * Cleans aggregation results from elastic
  *
  * @param info Info about aggregation
- * @param value Value of the sub aggregation. WILL BE MODIFIED.
+ * @param aggs Value of the sub aggregation.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const setSubAggValues = (info: AggInfo, value: any) => {
-  const data = value[info.name];
+const cleanAggValues = (info: AggInfo, aggs: any): any[] => {
+  const data = aggs[info.name];
 
-  if (info.subAggs.length > 0) {
-    // eslint-disable-next-line no-restricted-syntax
-    for (const subAgg of info.subAggs) {
-      setSubAggValues(subAgg, data);
-    }
-    return;
-  }
-
-  if ('buckets' in data) {
-    // eslint-disable-next-line no-param-reassign
-    value[info.name] = data.buckets;
-    return;
-  }
-
+  // If agg is a simple value
   if ('value' in data) {
     // eslint-disable-next-line no-param-reassign
-    value[info.name] = data;
-    return;
+    return data.value;
   }
 
-  const hits = data?.hits?.hits ?? [];
-  // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
-  value[info.name] = hits.map(({ _source }: any) => _source);
+  // If agg is a plain hit
+  if ('hits' in data) {
+    const hits = data.hits?.hits ?? [];
+    // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
+    return hits.map(({ _source }: any) => _source);
+  }
+
+  // If agg is a bucket of other aggregations
+  if ('buckets' in data) {
+    // eslint-disable-next-line no-param-reassign
+    const { buckets } = data;
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const subAgg of info.subAggs) {
+      for (let i = 0; i < buckets.length; i += 1) {
+        buckets[i] = cleanAggValues(subAgg, buckets[i]);
+      }
+    }
+
+    return buckets;
+  }
+
+  return data;
 };
 
 /**
@@ -224,7 +233,7 @@ const fetchWithElastic = async (
     }
   }
 
-  const data: Prisma.JsonValue = {};
+  let data: Prisma.JsonValue = {};
   const { body } = await elasticSearch(opts, options.auth.username);
 
   // Checks any errors
@@ -244,37 +253,8 @@ const fetchWithElastic = async (
 
   if (options.aggs) {
     // eslint-disable-next-line no-restricted-syntax
-    for (const { name, subAggs } of aggsInfos) {
-      if (!body.aggregations?.[name]) {
-        throw new Error(`Aggregation "${name}" not found`);
-      }
-      const aggRes = body.aggregations[name];
-
-      if ('buckets' in aggRes) {
-        // Transform object data into arrays
-        if (
-          typeof aggRes.buckets === 'object'
-          && !Array.isArray(aggRes.buckets)
-        ) {
-          aggRes.buckets = Object.entries(aggRes.buckets).map(
-            ([key, value]) => ({ value, key }),
-          );
-        }
-
-        // Simplify access to sub-aggregations' result
-        if (subAggs.length > 0) {
-          // eslint-disable-next-line no-restricted-syntax
-          for (const bucket of aggRes.buckets) {
-            // eslint-disable-next-line no-restricted-syntax
-            for (const subAgg of subAggs) {
-              setSubAggValues(subAgg, bucket);
-            }
-          }
-        }
-        data[name] = aggRes.buckets;
-      } else {
-        data[name] = aggRes as Prisma.JsonObject;
-      }
+    for (const aggInfo of aggsInfos) {
+      data = cleanAggValues(aggInfo, body.aggregations);
     }
   }
 
