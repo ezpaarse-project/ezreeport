@@ -13,6 +13,44 @@ import { ArgumentError } from '~/types/errors';
 
 type ElasticAggregation = ElasticTypes.AggregationsAggregationContainer;
 
+/**
+ * All types of bucket aggregations in elastic
+ */
+const bucketAggregations = new Set([
+  'adjacency_matrix',
+  'auto_date_histogram',
+  'avg_bucket',
+  'bucket_script',
+  'bucket_selector',
+  'bucket_sort',
+  'categorize_text',
+  'date_histogram',
+  'date_range',
+  'extended_stats_bucket',
+  'geo_distance',
+  'geohash_grid',
+  'geo_line',
+  'geotile_grid',
+  'global',
+  'histogram',
+  'ip_range',
+  'max_bucket',
+  'min_bucket',
+  'missing',
+  'multi_terms',
+  'nested',
+  'parent',
+  'range',
+  'rare_terms',
+  'reverse_nested',
+  'significant_terms',
+  'significant_text',
+  'stats_bucket',
+  'sum_bucket',
+  'terms',
+  'variable_width_histogram',
+]);
+
 const CustomAggregation = Type.Recursive(
   (This) => Type.Intersect([
     // Simplification of ElasticAggregation
@@ -106,14 +144,10 @@ const reduceAggs = (
   calendar_interval: string,
   aggsInfo: AggInfo,
 ): Record<string, ElasticAggregation> => {
-  let agg = rawAgg as ElasticAggregation;
+  const agg = rawAgg as ElasticAggregation;
   // Add calendar_interval
   if (rawAgg.date_histogram) {
     merge(agg, { date_histogram: { calendar_interval } });
-  }
-  // Add default missing value
-  if (rawAgg.terms) {
-    agg = merge({}, { terms: { missing: 'Non renseigné' } }, agg);
   }
 
   // Handle sub aggregations
@@ -162,12 +196,12 @@ const cleanAggValues = (info: AggInfo, aggs: any): any[] => {
     // Getting combinations of all subArgs within bucket
     const subBucketEntries = Array.from(subBuckets.entries());
     const bucketCombinations = subBucketEntries.reduce(
-      (combinationsSoFar, [aggName, bs]) => {
+      (combinationsSoFar, [aggName, sb]) => {
         // If no value in bucket
-        if (bs.length === 0) { return combinationsSoFar; }
+        if (sb.length === 0) { return combinationsSoFar; }
 
         // Merge previous results with new one
-        return bs.flatMap((b) => {
+        return sb.flatMap((b) => {
           if (combinationsSoFar.length === 0) {
             return { [aggName]: b };
           }
@@ -181,7 +215,7 @@ const cleanAggValues = (info: AggInfo, aggs: any): any[] => {
 
     // Merging current bucket value with cleaned + combinations
     data.push(
-      bucketCombinations.map(
+      ...bucketCombinations.map(
         (b) => ({
           ...bucket,
           ...b,
@@ -278,9 +312,9 @@ const fetchWithElastic = async (
       const cleaned = cleanAggValues(aggInfo, body.aggregations);
 
       // Remove redundant arrays
-      let values = cleaned.flat();
-      // Aggregations with single value must be an object and not an array
-      if (cleaned.length === 1) {
+      let values = cleaned;
+      // Metrics aggregations must be an object and not an array
+      if (!bucketAggregations.has(aggInfo.type) && cleaned.length === 1) {
         ([values] = cleaned);
       }
       data[aggInfo.name] = values;
