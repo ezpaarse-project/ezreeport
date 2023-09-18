@@ -105,11 +105,11 @@ const reduceAggs = (
   { name: _name, ...rawAgg }: CustomAggregationType,
   calendar_interval: string,
   aggsInfo: AggInfo,
-) => {
-  let agg = rawAgg;
+): Record<string, ElasticAggregation> => {
+  let agg = rawAgg as ElasticAggregation;
   // Add calendar_interval
   if (rawAgg.date_histogram) {
-    agg = merge({}, agg, { date_histogram: { calendar_interval } });
+    merge(agg, { date_histogram: { calendar_interval } });
   }
   // Add default missing value
   if (rawAgg.terms) {
@@ -121,9 +121,8 @@ const reduceAggs = (
     const key = rawAgg.aggs ? 'aggs' : 'aggregations';
     agg[key] = rawAgg[key]?.reduce(
       (subPrev, subAgg, i) => reduceAggs(subPrev, subAgg, calendar_interval, aggsInfo.subAggs[i]),
-      {} as Record<string, ElasticAggregation>,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ) as any;
+      {},
+    );
   }
 
   return {
@@ -214,13 +213,13 @@ const fetchWithElastic = async (
     throw new ArgumentError('You must precise an index before trying to fetch data from elastic');
   }
 
-  const { filter, ...otherFilters } = (options.filters ?? { filter: [] });
+  const { filter, ...query } = (options.filters ?? { filter: [] });
   const baseOpts: ElasticTypes.SearchRequest = {
     index,
     body: {
       query: {
         bool: {
-          ...otherFilters,
+          ...query,
           filter: [
             {
               range: {
@@ -242,16 +241,17 @@ const fetchWithElastic = async (
   // Generating names for aggregations if not defined
   const aggsInfos = options.aggs?.map(parseAggInfo) ?? [];
 
-  // Always true but TypeScript refers to ElasticTypes instead...
-  if (opts.body) {
-    if (options.aggs) {
-      const calendarInterval = calcElasticInterval(options.recurrence);
-      opts.size = 1; // keeping at least one record so we can check if there's data or not
-      opts.body.aggs = options.aggs.reduce(
-        (prev, agg, i) => reduceAggs(prev, agg, calendarInterval, aggsInfos[i]),
-        {} as Record<string, ElasticAggregation>,
-      );
-    }
+  if (
+    options.aggs
+    // Always true but TypeScript refers to ElasticTypes instead...
+    && opts.body
+  ) {
+    const calendarInterval = calcElasticInterval(options.recurrence);
+    opts.size = 1; // keeping at least one record so we can check if there's data or not
+    opts.body.aggs = options.aggs.reduce(
+      (prev, agg, i) => reduceAggs(prev, agg, calendarInterval, aggsInfos[i]),
+      {},
+    );
   }
 
   const data: Prisma.JsonObject = {};
@@ -275,7 +275,15 @@ const fetchWithElastic = async (
   if (options.aggs) {
     // eslint-disable-next-line no-restricted-syntax
     for (const aggInfo of aggsInfos) {
-      data[aggInfo.name] = cleanAggValues(aggInfo, body.aggregations);
+      const cleaned = cleanAggValues(aggInfo, body.aggregations);
+
+      // Remove redundant arrays
+      let values = cleaned.flat();
+      // Aggregations with single value must be an object and not an array
+      if (cleaned.length === 1) {
+        ([values] = cleaned);
+      }
+      data[aggInfo.name] = values;
     }
   }
 
