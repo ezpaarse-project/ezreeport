@@ -202,7 +202,7 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
         throw error;
       }
 
-      if (value) {
+      if (value !== undefined) {
         rawData.push({
           key: label?.text ?? key,
           value,
