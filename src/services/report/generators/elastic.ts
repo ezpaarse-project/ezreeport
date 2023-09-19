@@ -174,10 +174,17 @@ const reduceAggs = (
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const cleanAggValues = (info: AggInfo, aggs: any): any[] => {
   const aggValue = aggs[info.name];
-  const buckets = 'buckets' in aggValue ? aggValue.buckets : [aggValue];
+  let buckets = 'buckets' in aggValue ? aggValue.buckets : [aggValue];
 
   const data = [];
 
+  // If bucket are still an object, tries to map it as an array
+  if (typeof buckets === 'object' && !Array.isArray(buckets)) {
+    buckets = Object.entries(buckets)
+      .map(([key, value]) => ({ key, value }));
+  }
+
+  // If no sub-agg, no further treatment is needed
   if (info.subAggs.length <= 0) {
     return buckets;
   }
