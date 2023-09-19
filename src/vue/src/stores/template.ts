@@ -596,19 +596,4 @@ const useTemplatePinia = defineStore('ezr_template', {
 
 const useTemplateStore = () => useTemplatePinia(pinia);
 
-const init = async () => {
-  const store = useTemplateStore();
-  store.refreshAvailableTemplates();
-  // Validate current on change
-  watch(
-    () => store.current,
-    () => store.validateCurrent(),
-  );
-};
-
-watch(
-  () => auth.isLogged(),
-  () => init(),
-);
-
 export default useTemplateStore;
