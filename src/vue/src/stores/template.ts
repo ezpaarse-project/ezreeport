@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { omit } from 'lodash';
-import { type tasks, templates, auth } from '@ezpaarse-project/ezreeport-sdk-js';
+import { type tasks, templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import type VueI18n from 'vue-i18n';
 
 import {
@@ -12,7 +12,6 @@ import {
   removeAdditionalDataToLayouts,
 } from '~/lib/templates/customTemplates';
 
-import { watch } from 'vue';
 import pinia from '.';
 
 // Utility types
@@ -155,7 +154,8 @@ export const mapRulesToVuetify = (
         (value: any) => {
           const res = rule(value);
           if (res === true) { return true; }
-          return $t(res.i18nKey);
+          const { i18nKey, ...params } = res;
+          return $t(i18nKey, params);
         }
       )),
     ]),
@@ -302,15 +302,15 @@ const useTemplatePinia = defineStore('ezr_template', {
                 return true;
               }
 
-              return v?.length > 0 || { i18nKey: '$ezreeport.errors.empty' };
+              return v?.length > 0 || { i18nKey: '$ezreeport.errors.empty', field: 'index' };
             },
           ],
           dateField: [
             (v: string) => {
               if (isFullTemplate(this.current)) {
-                return v?.length > 0 || { i18nKey: '$ezreeport.errors.empty' };
+                return v?.length > 0 || { i18nKey: '$ezreeport.errors.empty', field: 'dateField' };
               }
-              return !v || v.length > 0 || { i18nKey: '$ezreeport.errors.empty' };
+              return !v || v.length > 0 || { i18nKey: '$ezreeport.errors.empty', field: 'dateField' };
             },
           ],
         },

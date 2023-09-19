@@ -179,16 +179,16 @@ export default defineComponent({
     rules() {
       return {
         key: [
-          (v: string) => !!v || this.$t('errors.empty'),
-          () => !this.isDuplicate || this.$t('errors.no_duplicate'),
+          (v: string) => !!v || this.$t('errors.empty', { field: 'filter/key' }),
+          () => !this.isDuplicate || this.$t('errors.no_duplicate', { field: 'filter/key' }),
         ],
         operator: [
-          (v: string) => operators.includes(v as any) || this.$t('errors.valid'),
-          () => !this.isDuplicate || this.$t('errors.no_duplicate'),
+          (v: string) => operators.includes(v as any) || this.$t('errors.valid', { field: 'filter/operator' }),
+          () => !this.isDuplicate || this.$t('errors.no_duplicate', { field: 'filter/operator' }),
         ],
         modifier: [],
         value: [
-          (v: string[]) => v.length > 0 || this.$t('errors.empty'),
+          (v: string[]) => v.length > 0 || this.$t('errors.empty', { field: 'filter/value' }),
         ],
       };
     },

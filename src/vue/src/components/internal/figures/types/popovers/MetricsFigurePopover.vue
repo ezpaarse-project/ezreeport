@@ -205,11 +205,11 @@ export default defineComponent({
     rules() {
       return {
         dataKey: [
-          (v: string) => v?.length > 0 || this.$t('$ezreeport.errors.empty'),
-          !this.isDuplicate || this.$t('errors.no_duplicate'),
+          (v: string) => v?.length > 0 || this.$t('$ezreeport.errors.empty', { field: 'metric/dataKey' }),
+          !this.isDuplicate || this.$t('errors.no_duplicate', { field: 'metric/dataKey' }),
         ],
         field: [
-          !this.isDuplicate || this.$t('errors.no_duplicate'),
+          !this.isDuplicate || this.$t('errors.no_duplicate', { field: 'metric/field' }),
         ],
       };
     },

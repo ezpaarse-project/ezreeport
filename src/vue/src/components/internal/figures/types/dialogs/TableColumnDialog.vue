@@ -234,11 +234,11 @@ export default defineComponent({
     rules() {
       return {
         dataKey: [
-          (v: string) => v.length > 0 || this.$t('$ezreeport.errors.empty'),
-          !this.isDuplicate || this.$t('errors.no_duplicate'),
+          (v: string) => v.length > 0 || this.$t('$ezreeport.errors.empty', { field: 'table/dataKey' }),
+          !this.isDuplicate || this.$t('errors.no_duplicate', { field: 'table/dataKey' }),
         ],
         header: [
-          (v: string) => v.length > 0 || this.$t('$ezreeport.errors.empty'),
+          (v: string) => v.length > 0 || this.$t('$ezreeport.errors.empty', { field: 'table/header' }),
         ],
       };
     },

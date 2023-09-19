@@ -312,14 +312,14 @@ export default defineComponent({
     rules() {
       return {
         name: [
-          (v: string) => v?.length > 0 || this.$t('$ezreeport.errors.empty'),
-          () => !this.isDuplicate || this.$t('errors.no_duplicate'),
+          (v: string) => v?.length > 0 || this.$t('$ezreeport.errors.empty', { field: 'aggregation/name' }),
+          () => !this.isDuplicate || this.$t('errors.no_duplicate', { field: 'aggregation/name' }),
         ],
         type: [
-          (v: string) => v?.length > 0 || this.$t('$ezreeport.errors.empty'),
+          (v: string) => v?.length > 0 || this.$t('$ezreeport.errors.empty', { field: 'aggregation/type' }),
         ],
         field: [
-          (v: string) => v?.length > 0 || this.$t('$ezreeport.errors.empty'),
+          (v: string) => v?.length > 0 || this.$t('$ezreeport.errors.empty', { field: 'aggregation/field' }),
         ],
         advanced: [
           (v: string) => {
@@ -331,7 +331,7 @@ export default defineComponent({
               JSON.parse(v);
               return true;
             } catch (error) {
-              return this.$t('$ezreeport.errors.json_format');
+              return this.$t('$ezreeport.errors.json_format', { field: 'aggregation/advanced' });
             }
           },
         ],
