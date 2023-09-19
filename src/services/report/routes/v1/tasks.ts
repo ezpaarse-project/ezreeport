@@ -183,6 +183,9 @@ const router: FastifyPluginAsync = async (fastify) => {
       schema: {
         params: SpecificTaskParams,
       },
+      ezrAuth: {
+        access: Access.READ_WRITE,
+      },
     },
     async (request) => {
       const { task: id } = request.params;
