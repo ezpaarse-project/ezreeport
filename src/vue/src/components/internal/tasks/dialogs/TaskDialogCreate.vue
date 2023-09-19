@@ -293,12 +293,13 @@ export default defineComponent({
      * @param email The string
      */
     validateMail: (email: string) => isEmail(email),
-    init() {
+    async init() {
+      await this.templateStore.refreshAvailableTemplates();
       if (!this.templateStore.defaultTemplate) {
         throw new Error(this.$t('$ezreeport.errors.no_extends').toString());
       }
 
-      this.templateStore.SET_CURRENT({ inserts: [] }, this.templateStore.extendedId);
+      this.templateStore.SET_CURRENT({ inserts: [] }, this.templateStore.defaultTemplateId);
       this.task = {
         name: '',
         template: {},
