@@ -11,6 +11,10 @@
 
         <v-spacer />
 
+        <span class="text--secondary" style="font-size: 1.5em; opacity: 0.5;">
+          {{ (index ?? 0) + 1 }}
+        </span>
+
         <v-btn color="primary" small class="ml-3" @click="$emit('edit:figure', id)">
           {{ $t('$ezreeport.settings') }}
 
@@ -77,11 +81,18 @@ export default defineComponent({
     figureIcons,
   }),
   computed: {
-    figure(): AnyCustomFigure | undefined {
+    figures() {
       const layout = this.templateStore.currentLayouts.find(
         ({ _: { id } }) => id === this.layoutId,
       );
-      return layout?.figures.find(({ _: { id } }) => id === this.id);
+
+      return layout?.figures;
+    },
+    index() {
+      return this.figures?.findIndex(({ _: { id } }) => id === this.id);
+    },
+    figure(): AnyCustomFigure | undefined {
+      return this.figures?.find(({ _: { id } }) => id === this.id);
     },
     /**
      * Available slots
