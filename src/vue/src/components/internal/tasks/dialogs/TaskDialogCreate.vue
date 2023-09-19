@@ -322,6 +322,7 @@ export default defineComponent({
 
         const { template, ...data } = content;
 
+        await this.templateStore.refreshAvailableTemplates();
         const extended = this.templateStore.available.find((t) => t.id === data.extends.id);
         if (!extended && !this.templateStore.defaultTemplate) {
           throw new Error(this.$t('$ezreeport.errors.no_extends').toString());
