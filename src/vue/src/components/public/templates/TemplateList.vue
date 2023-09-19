@@ -178,12 +178,14 @@ export default defineComponent({
 
       this.loading = true;
       try {
-        const { content } = await this.$ezReeport.sdk.templates.getAllTemplates();
+        const { content, meta } = await this.$ezReeport.sdk.templates.getAllTemplates();
         if (!content) {
           throw new Error(this.$t('$ezreeport.errors.fetch').toString());
         }
 
-        this.templates = content;
+        this.templates = content
+          // hide default template
+          .filter(({ id }) => id !== meta.default);
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
