@@ -475,7 +475,7 @@ export const generateReport = async (
     if (error instanceof Error) {
       err.message = error.message;
       err.stack = error.stack?.split('\n    ') ?? [];
-      err.cause = Value.Cast(ReportErrorCause, err.cause);
+      err.cause = Value.Cast(ReportErrorCause, error.cause);
     }
 
     // Update result
