@@ -29,51 +29,23 @@
                   v-bind="lastExtended ? tipAttrs : undefined"
                   v-on="lastExtended ? tipOn : undefined"
                 >
-                  <v-select
-                    :value="lastExtended?.id || templateStore.extendedId"
-                    :label="$t('$ezreeport.templates.base')"
-                    :items="availableTemplates || [templateStore.extendedId]"
-                    :readonly="loading"
-                    :disabled="!!lastExtended"
-                    outlined
-                    class="mt-2"
-                    @change="onExtendedUpdate"
-                  >
-                    <template #item="{ item, on, attrs }">
-                      <v-list-item v-bind="attrs" v-on="on">
-                        <v-list-item-content>
-                          <v-list-item-title>{{ item.text }}</v-list-item-title>
-                          <v-list-item-subtitle>
-                            <MiniTagsDetail :model-value="item.tags" />
-                          </v-list-item-subtitle>
-                        </v-list-item-content>
-                      </v-list-item>
-                    </template>
-
-                    <template #selection="{ item, on, attrs }">
-                      <v-list-item v-bind="attrs" v-on="on">
-                        <v-list-item-content>
-                          <v-list-item-title>
-                            {{ item.text }}
-
-                            <i v-if="!item.found" class="text--secondary">
-                              {{ $t('deleted_base') }}
-                            </i>
-                          </v-list-item-title>
-                          <v-list-item-subtitle>
-                            <MiniTagsDetail :model-value="item.tags" />
-                          </v-list-item-subtitle>
-                        </v-list-item-content>
-                      </v-list-item>
-                    </template>
-                  </v-select>
+                  <TemplateSelect
+                    :value="
+                      lastExtended?.id
+                        || templateStore.extendedId
+                        || templateStore.defaultTemplateId
+                    "
+                    :disabled="loading || !!lastExtended"
+                    :label="$t('$ezreeport.templates.base').toString()"
+                    @input="onExtendedUpdate"
+                  />
                 </div>
               </template>
 
               {{ $t('tooltips.no_unlink_extends') }}
             </v-tooltip>
 
-            <div class="mb-6 ml-3">
+            <div>
               <v-tooltip left v-if="!noLink">
                 <template #activator="{ attrs, on }">
                   <span v-bind="attrs" v-on="on">

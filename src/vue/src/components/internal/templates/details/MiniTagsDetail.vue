@@ -4,6 +4,7 @@
       v-for="tag in tagChips"
       :key="tag.name"
       :color="tag.color"
+      :disabled="disabled"
       x-small
       class="mr-2"
       style="pointer-events: none;"
@@ -29,6 +30,7 @@ const MAX_TAGS_SHOWN = 4;
 
 const props = defineProps<{
   modelValue: Tag[],
+  disabled?: boolean,
 }>();
 
 const tagChips = computed(() => props.modelValue.slice(0, MAX_TAGS_SHOWN));
