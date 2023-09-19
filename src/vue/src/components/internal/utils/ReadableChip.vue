@@ -2,6 +2,7 @@
   <v-chip
     :color="color"
     :style="{ color: textColor }"
+    :disabled="disabled"
     class="readable-chip"
     v-bind="$attrs"
     v-on="$listeners"
@@ -12,12 +13,16 @@
 
 <script lang="ts">
 import chroma from 'chroma-js';
-import { defineComponent, type PropType } from 'vue';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
   props: {
     color: {
-      type: String as PropType<string | undefined>,
+      type: String,
+      default: undefined,
+    },
+    disabled: {
+      type: Boolean,
       default: undefined,
     },
   },

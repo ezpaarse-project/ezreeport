@@ -18,6 +18,8 @@
   "settings": "Settings",
   "preview": "Preview",
   "unknown": "Unknown",
+  "filter": "Filter",
+  "reset": "Reset",
 
   "tasks": {
     "name": "Report name",
