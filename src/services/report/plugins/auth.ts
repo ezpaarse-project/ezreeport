@@ -60,9 +60,10 @@ const requireAdmin: preValidationHookHandler = async (request) => {
  *
  * @param request The fastify Request
  */
-const requireAPIKey: preValidationHookHandler = (request) => {
+const requireAPIKey: preValidationHookHandler = async (request) => {
   // Getting token
   const token = request.headers['x-api-key'] ?? '';
+
   // If no username given/found
   if (!token) {
     throw new HTTPError(`'${request.method} ${request.originalUrl}' requires API Key`, StatusCodes.UNAUTHORIZED);
