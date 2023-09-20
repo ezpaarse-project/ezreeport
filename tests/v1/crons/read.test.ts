@@ -1,3 +1,5 @@
+import { randomBytes } from 'node:crypto';
+
 import {
   describe,
   beforeAll,
@@ -9,6 +11,9 @@ import { HttpStatusCode } from 'axios';
 
 import { setup, crons, errorStatusMatcher } from '../../lib/sdk';
 import { createUser, deleteUser } from '../../lib/admin';
+
+const CRON_NAME = 'generateReports';
+const NO_CRON_NAME = randomBytes(6).toString('hex');
 
 describe(
   '[crons]: Test read features',
@@ -47,15 +52,35 @@ describe(
           'crons.getCron(cronOrName)',
           () => {
             it(
-              'Should get cron [generateReports] by name',
+              `Should get cron [${CRON_NAME}] by name`,
               async () => {
-                const res = await crons.getCron('generateReports');
+                const res = await crons.getCron(CRON_NAME);
 
                 expect(res).toHaveProperty('status.code', HttpStatusCode.Ok);
 
                 const cron = res?.content;
-                expect(cron.name).toBeDefined();
+                expect(cron.name).toBe(CRON_NAME);
                 expect(cron.running).toBeDefined();
+              },
+            );
+
+            it(
+              'Cron [<random>] shouldn\'t be found',
+              async () => {
+                // Make test fails if call is successful
+                expect.assertions(2);
+
+                try {
+                  await crons.getCron(NO_CRON_NAME);
+                } catch (e) {
+                  expect(e).toBeInstanceOf(Error);
+
+                  if (e instanceof Error) {
+                    expect(e.message).toMatch(
+                      errorStatusMatcher(HttpStatusCode.NotFound),
+                    );
+                  }
+                }
               },
             );
           },
