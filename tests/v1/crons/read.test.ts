@@ -137,5 +137,60 @@ describe(
         });
       },
     );
+
+    describe(
+      'As not logged in',
+      () => {
+        describe(
+          'crons.getAllCrons()',
+          () => {
+            it(
+              'Should throw a auth error',
+              async () => {
+                // Make test fails if call is successful
+                expect.assertions(2);
+
+                try {
+                  await crons.getAllCrons();
+                } catch (e) {
+                  expect(e).toBeInstanceOf(Error);
+
+                  if (e instanceof Error) {
+                    expect(e.message).toMatch(
+                      errorStatusMatcher(HttpStatusCode.Unauthorized),
+                    );
+                  }
+                }
+              },
+            );
+          },
+        );
+
+        describe(
+          'crons.getCron(cronOrName)',
+          () => {
+            it(
+              'Should throw a auth error',
+              async () => {
+                // Make test fails if call is successful
+                expect.assertions(2);
+
+                try {
+                  await crons.getAllCrons();
+                } catch (e) {
+                  expect(e).toBeInstanceOf(Error);
+
+                  if (e instanceof Error) {
+                    expect(e.message).toMatch(
+                      errorStatusMatcher(HttpStatusCode.Unauthorized),
+                    );
+                  }
+                }
+              },
+            );
+          },
+        );
+      },
+    );
   },
 );

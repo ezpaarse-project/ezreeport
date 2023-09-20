@@ -10,6 +10,8 @@ import { HttpStatusCode } from 'axios';
 import { setup, crons, errorStatusMatcher } from '../../lib/sdk';
 import { createUser, deleteUser } from '../../lib/admin';
 
+const CRON_NAME = 'generateReports';
+
 describe(
   '[crons]: Test start/stop/force features',
   () => {
@@ -32,7 +34,7 @@ describe(
               'Should stop the cron',
               async () => {
                 const res = await crons.updateCron({
-                  name: 'generateReports',
+                  name: CRON_NAME,
                   running: false,
                 });
 
@@ -48,7 +50,7 @@ describe(
               'Should start the cron',
               async () => {
                 const res = await crons.updateCron({
-                  name: 'generateReports',
+                  name: CRON_NAME,
                   running: true,
                 });
 
@@ -64,7 +66,7 @@ describe(
             afterAll(async () => {
               // Resetting the cron
               await crons.updateCron({
-                name: 'generateReports',
+                name: CRON_NAME,
                 running: true,
               });
             });
@@ -77,7 +79,7 @@ describe(
             it(
               'Should run the cron',
               async () => {
-                const res = await crons.forceCron('generateReports');
+                const res = await crons.forceCron(CRON_NAME);
                 const now = new Date();
 
                 expect(res).toHaveProperty('status.code', HttpStatusCode.Ok);
@@ -106,12 +108,21 @@ describe(
       'As user',
       () => {
         let username = '';
+        let token = '';
+        let adminToken = '';
+        let adminUsername = '';
+        let cron: crons.Cron | undefined;
 
         beforeAll(async () => {
+          // Create an admin for this test suite
+          ({ token: adminToken, username: adminUsername } = await createUser({ isAdmin: true }));
+
+          // Get cron
+          setup.login(adminToken);
+          ({ content: cron } = await crons.getCron(CRON_NAME));
+
           // Create an user for this test suite
-          const { token, username: name } = await createUser();
-          username = name;
-          setup.login(token);
+          ({ token, username } = await createUser());
         });
 
         describe(
@@ -124,7 +135,8 @@ describe(
                 expect.assertions(2);
 
                 try {
-                  await crons.updateCron({ name: 'generateReports' });
+                  setup.login(token);
+                  await crons.updateCron({ name: CRON_NAME });
                 } catch (e) {
                   expect(e).toBeInstanceOf(Error);
 
@@ -134,6 +146,17 @@ describe(
                     );
                   }
                 }
+              },
+            );
+
+            it(
+              "Shouldn't be modified",
+              async () => {
+                setup.login(adminToken);
+                const { content: newCron } = await crons.getCron(CRON_NAME);
+                setup.logout();
+
+                expect(newCron).toStrictEqual(cron);
               },
             );
           },
@@ -148,7 +171,8 @@ describe(
                 expect.assertions(2);
 
                 try {
-                  await crons.forceCron('generateReports');
+                  setup.login(token);
+                  await crons.forceCron(CRON_NAME);
                 } catch (e) {
                   expect(e).toBeInstanceOf(Error);
 
@@ -160,11 +184,121 @@ describe(
                 }
               },
             );
+
+            it(
+              "Shouldn't be modified",
+              async () => {
+                setup.login(adminToken);
+                const { content: newCron } = await crons.getCron(CRON_NAME);
+                setup.logout();
+
+                expect(newCron).toStrictEqual(cron);
+              },
+            );
           },
         );
 
         afterAll(async () => {
+          // Delete temp admin
+          await deleteUser(adminUsername);
           // Delete temp user
+          await deleteUser(username);
+        });
+      },
+    );
+
+    describe(
+      'As not logged in',
+      () => {
+        let username = '';
+        let adminToken = '';
+        let cron: crons.Cron | undefined;
+
+        beforeAll(async () => {
+          // Create an admin for this test suite
+          ({ token: adminToken, username } = await createUser({ isAdmin: true }));
+
+          // Get cron
+          setup.login(adminToken);
+          ({ content: cron } = await crons.getCron(CRON_NAME));
+        });
+
+        describe(
+          'crons.updateCron(cron)',
+          () => {
+            it(
+              'Should throw a auth error',
+              async () => {
+                // Make test fails if call is successful
+                expect.assertions(2);
+
+                try {
+                  setup.logout();
+                  await crons.updateCron({ name: CRON_NAME });
+                } catch (e) {
+                  expect(e).toBeInstanceOf(Error);
+
+                  if (e instanceof Error) {
+                    expect(e.message).toMatch(
+                      errorStatusMatcher(HttpStatusCode.Unauthorized),
+                    );
+                  }
+                }
+              },
+            );
+
+            it(
+              "Shouldn't be modified",
+              async () => {
+                setup.login(adminToken);
+                const { content: newCron } = await crons.getCron(CRON_NAME);
+                setup.logout();
+
+                expect(newCron).toStrictEqual(cron);
+              },
+            );
+          },
+        );
+
+        describe(
+          'crons.forceCron(cron)',
+          () => {
+            it(
+              'Should throw a auth error',
+              async () => {
+                // Make test fails if call is successful
+                expect.assertions(2);
+
+                try {
+                  setup.logout();
+                  await crons.forceCron('generateReports');
+                } catch (e) {
+                  expect(e).toBeInstanceOf(Error);
+
+                  if (e instanceof Error) {
+                    expect(e.message).toMatch(
+                      errorStatusMatcher(HttpStatusCode.Unauthorized),
+                    );
+                  }
+                }
+              },
+            );
+
+            it(
+              "Shouldn't be modified",
+              async () => {
+                setup.login(adminToken);
+                const { content: newCron } = await crons.getCron(CRON_NAME);
+                setup.logout();
+
+                expect(newCron).toStrictEqual(cron);
+              },
+            );
+          },
+        );
+
+        afterAll(async () => {
+          // Delete temp admin
           await deleteUser(username);
         });
       },
