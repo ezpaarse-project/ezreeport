@@ -45,6 +45,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     },
     async (request) => {
       const { cron: name } = request.params;
+
       return { content: await crons.getCron(name) };
     },
   );
@@ -68,7 +69,9 @@ const router: FastifyPluginAsync = async (fastify) => {
     },
     async (request) => {
       const { cron: name } = request.params;
-      return { content: await crons.startCron(name) };
+      await crons.startCron(name);
+
+      return { content: await crons.getCron(name) };
     },
   );
 
@@ -91,7 +94,9 @@ const router: FastifyPluginAsync = async (fastify) => {
     },
     async (request) => {
       const { cron: name } = request.params;
-      return { content: await crons.stopCron(name) };
+      await crons.stopCron(name);
+
+      return { content: await crons.getCron(name) };
     },
   );
 
@@ -120,18 +125,16 @@ const router: FastifyPluginAsync = async (fastify) => {
     async (request) => {
       const { cron: name } = request.params;
 
-      let item;
-
       // Enable cron if needed
       if (request.body.running === true) {
-        item = await crons.startCron(name);
+        await crons.startCron(name);
       }
       // Disabling cron if needed
       if (request.body.running === false) {
-        item = await crons.stopCron(name);
+        await crons.stopCron(name);
       }
 
-      return { content: item };
+      return { content: await crons.getCron(name) };
     },
   );
 
@@ -152,6 +155,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     },
     async (request) => {
       const { cron: name } = request.params;
+
       return { content: await crons.forceCron(name) };
     },
   );

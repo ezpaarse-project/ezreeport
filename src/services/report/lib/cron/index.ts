@@ -181,8 +181,6 @@ export const getCron = async (name: string) => {
  * Start specific cron
  *
  * @param name The cron name
- *
- * @returns The cron info
  */
 export const startCron = async (name: string) => {
   if (!isCron(name)) {
@@ -198,16 +196,12 @@ export const startCron = async (name: string) => {
     );
     delete pausedJobs[name];
   }
-
-  return getCron(name);
 };
 
 /**
  * Stop specific cron
  *
  * @param name The cron name
- *
- * @returns The cron info
  */
 export const stopCron = async (name: string) => {
   if (!isCron(name)) {
@@ -219,8 +213,6 @@ export const stopCron = async (name: string) => {
     await cronQueue.removeRepeatable(job.name, job);
     pausedJobs[name] = job;
   }
-
-  return getCron(name);
 };
 
 /**
