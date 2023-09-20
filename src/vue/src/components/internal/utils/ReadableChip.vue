@@ -13,16 +13,16 @@
 
 <script lang="ts">
 import chroma from 'chroma-js';
-import { defineComponent } from 'vue';
+import { defineComponent, type PropType } from 'vue';
 
 export default defineComponent({
   props: {
     color: {
-      type: String,
+      type: String as PropType<string | undefined>,
       default: undefined,
     },
     disabled: {
-      type: Boolean,
+      type: Boolean as PropType<boolean | undefined>,
       default: undefined,
     },
   },

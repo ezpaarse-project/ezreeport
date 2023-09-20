@@ -30,6 +30,8 @@ import ezReeportMixin from '~/mixins/ezr';
 
 export type Sizes = 'x-small' | 'small' | 'normal' | 'large' | 'x-large';
 
+type CSSClasses = string | Record<string, boolean> | string[];
+
 export default defineComponent({
   mixins: [ezReeportMixin],
   props: {
@@ -46,11 +48,11 @@ export default defineComponent({
       default: false,
     },
     classes: {
-      type: [String, Object, Array],
+      type: [String, Object, Array] as PropType<CSSClasses | undefined>,
       default: undefined,
     },
     on: {
-      type: Object,
+      type: Object as PropType<Record<string, Function> | undefined>,
       default: undefined,
     },
   },

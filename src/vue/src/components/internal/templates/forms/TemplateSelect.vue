@@ -69,7 +69,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, type PropType } from 'vue';
 import Fuse from 'fuse.js';
 import type { templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import useTemplateStore from '~/stores/template';
@@ -94,7 +94,7 @@ export default defineComponent({
       required: true,
     },
     label: {
-      type: String,
+      type: String as PropType<string | undefined>,
       default: undefined,
     },
     disabled: {

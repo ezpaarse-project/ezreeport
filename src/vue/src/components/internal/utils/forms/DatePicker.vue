@@ -84,15 +84,15 @@ export default defineComponent({
       default: 'mdi-calendar',
     },
     solo: {
-      type: Boolean,
+      type: Boolean as PropType<boolean | undefined>,
       default: undefined,
     },
     filled: {
-      type: Boolean,
+      type: Boolean as PropType<boolean | undefined>,
       default: undefined,
     },
     outlined: {
-      type: Boolean,
+      type: Boolean as PropType<boolean | undefined>,
       default: undefined,
     },
   },

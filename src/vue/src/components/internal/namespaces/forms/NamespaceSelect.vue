@@ -102,7 +102,7 @@ export default defineComponent({
       required: true,
     },
     errorMessage: {
-      type: String,
+      type: String as PropType<string | undefined>,
       default: undefined,
     },
     neededPermissions: {
