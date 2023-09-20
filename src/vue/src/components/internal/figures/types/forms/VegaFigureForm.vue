@@ -539,7 +539,7 @@ export default defineComponent({
      * @param v2 Second object to compare
      * @param prefix Prefix of returned keys. Should be empty on the first iteration
      *
-     * @returns Keys that are in v1 but not in v2
+     * @returns Keys that aren't the same in v1 but not in v2
      */
     objectDiff(
       v1: Record<string, any>,

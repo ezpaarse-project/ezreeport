@@ -77,7 +77,10 @@ import useTemplateStore from '~/stores/template';
 const fzfTemplates = new Fuse<templates.Template>(
   [],
   {
-    keys: ['name', 'tags.name'],
+    keys: [
+      { name: 'name', weight: 1 },
+      { name: 'tags.name', weight: 0.5 },
+    ],
     includeScore: true,
   },
 );
