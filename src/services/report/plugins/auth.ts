@@ -115,9 +115,19 @@ const getPossibleNamespaces = async (
  */
 const NamespaceQuery = Type.Partial(
   Type.Object({
-    namespaces: Type.Array(
+    namespaces: Type.Union([
+      Type.Array(
+        Type.String({ minLength: 1 }),
+      ),
       Type.String({ minLength: 1 }),
-    ),
+    ]),
+
+    'namespaces[]': Type.Union([
+      Type.Array(
+        Type.String({ minLength: 1 }),
+      ),
+      Type.String({ minLength: 1 }),
+    ]),
   }),
 );
 
@@ -131,10 +141,14 @@ const NamespaceQuery = Type.Partial(
 const requireAccess = (minAccess: Access): preValidationHookHandler => async (request) => {
   const possibleNamespaces = await getPossibleNamespaces(request, minAccess);
 
-  // Get ids wanted by user
+  // Get ids wanted by user (support both `namespaces` & `namespaces[]`)
   let wantedIds: string[] | undefined;
-  if (Value.Check(NamespaceQuery, request.query)) {
-    ({ namespaces: wantedIds } = request.query);
+  if (
+    Value.Check(NamespaceQuery, request.query)
+    && (request.query.namespaces || request.query['namespaces[]'])
+  ) {
+    const rawN = request.query.namespaces || request.query['namespaces[]'] || '';
+    wantedIds = Array.isArray(rawN) ? rawN : [rawN];
   }
 
   let ids = new Set(possibleNamespaces.map(({ namespace: { id } }) => id) ?? []);
@@ -145,10 +159,6 @@ const requireAccess = (minAccess: Access): preValidationHookHandler => async (re
   }
 
   if (wantedIds) {
-    if (!Array.isArray(wantedIds)) {
-      throw new HTTPError('Given namespaces ids are not an array', StatusCodes.BAD_REQUEST);
-    }
-
     ids = new Set(
       wantedIds
         .map((id) => id.toString())
