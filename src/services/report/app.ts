@@ -9,7 +9,7 @@ import formatPlugin from './plugins/format';
 import loggerPlugin from './plugins/logger';
 import routes from './routes';
 
-import { initTemplates } from './init';
+import { initNamespaces, initTemplates } from './init';
 
 const { port, allowedOrigins: rawOrigins } = config;
 
@@ -44,7 +44,11 @@ const start = async () => {
     appLogger.info(`[node] Service running in [${process.env.NODE_ENV}] mode`);
     appLogger.info(`[http] Service listening on [${address}] in [${process.uptime().toFixed(2)}]s`);
 
-    initTemplates();
+    await Promise.all([
+      initTemplates(),
+      initNamespaces(),
+    ]);
+    appLogger.info(`[init] ezREEPORT ready after [${process.uptime().toFixed(2)}]s`);
   } catch (err) {
     appLogger.error(err);
     process.exit(1);

@@ -97,21 +97,6 @@ const getPossibleNamespaces = async (
     const { createdAt, updatedAt } = request.user;
     const namespaces = await getAllNamespaces();
 
-    // To avoid issues, return a fake namespace
-    if (namespaces.length < 1) {
-      namespaces.push({
-        id: '_',
-        name: '_',
-        logoId: '',
-        createdAt: new Date('a'),
-        updatedAt: new Date('a'),
-        _count: {
-          tasks: 0,
-          memberships: 0,
-        },
-      });
-    }
-
     return namespaces.map((namespace) => ({
       access: Access.SUPER_USER,
       createdAt,
