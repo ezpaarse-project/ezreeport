@@ -14,7 +14,7 @@ const router: FastifyPluginAsync = async (fastify) => {
       content: {
         current: checks.serviceName,
         currentVersion: checks.serviceVersion,
-        services: checks.services,
+        services: [...checks.services],
       },
     }),
   );
