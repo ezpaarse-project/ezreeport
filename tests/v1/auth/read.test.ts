@@ -37,7 +37,7 @@ describe(
 
                 expect(res).toHaveProperty('status.code', HttpStatusCode.Ok);
 
-                const user = res?.content;
+                const user = res.content;
                 expect(user.username).toBe(username);
                 expect(user.token).toBe(token);
                 expect(user.isAdmin).toBe(true);
@@ -57,8 +57,9 @@ describe(
                 const res = await auth.getCurrentNamespaces();
 
                 expect(res).toHaveProperty('status.code', HttpStatusCode.Ok);
+                expect(res.content).toBeInstanceOf(Array);
 
-                const namespace = res?.content[0];
+                const namespace = res.content[0];
                 expect(namespace.id).toBeDefined();
                 expect(namespace.name).toBeDefined();
                 expect(namespace.createdAt).toBeDefined();
@@ -77,14 +78,14 @@ describe(
 
                 expect(res).toHaveProperty('status.code', HttpStatusCode.Ok);
 
-                const generalPermissions = res?.content.general;
+                const generalPermissions = res.content.general;
                 expect(generalPermissions).toBeDefined();
                 // eslint-disable-next-line no-restricted-syntax
                 for (const [name] of Object.entries(permissions.general)) {
                   expect(generalPermissions).toHaveProperty(name, true);
                 }
 
-                const namespacesPermissions = Object.values(res?.content.namespaces)[0];
+                const namespacesPermissions = Object.values(res.content.namespaces)[0];
                 expect(namespacesPermissions).toBeDefined();
                 // eslint-disable-next-line no-restricted-syntax
                 for (const name of permissions.namespaces) {
@@ -124,7 +125,7 @@ describe(
 
                 expect(res).toHaveProperty('status.code', HttpStatusCode.Ok);
 
-                const user = res?.content;
+                const user = res.content;
                 expect(user.username).toBe(username);
                 expect(user.token).toBe(token);
                 expect(user.isAdmin).toBe(false);
@@ -144,8 +145,9 @@ describe(
                 const res = await auth.getCurrentNamespaces();
 
                 expect(res).toHaveProperty('status.code', HttpStatusCode.Ok);
+                expect(res.content).toBeInstanceOf(Array);
 
-                const namespace = res?.content[0];
+                const namespace = res.content[0];
                 if (namespace) {
                   expect(namespace.id).toBeDefined();
                   expect(namespace.name).toBeDefined();
@@ -166,7 +168,7 @@ describe(
 
                 expect(res).toHaveProperty('status.code', HttpStatusCode.Ok);
 
-                const generalPermissions = res?.content.general;
+                const generalPermissions = res.content.general;
                 expect(generalPermissions).toBeDefined();
                 // eslint-disable-next-line no-restricted-syntax
                 for (const [name, requireAdmin] of Object.entries(permissions.general)) {

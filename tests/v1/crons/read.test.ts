@@ -39,8 +39,9 @@ describe(
                 const res = await crons.getAllCrons();
 
                 expect(res).toHaveProperty('status.code', HttpStatusCode.Ok);
+                expect(res.content).toBeInstanceOf(Array);
 
-                const cron = res?.content[0];
+                const cron = res.content[0];
                 expect(cron.name).toBeDefined();
                 expect(cron.running).toBeDefined();
               },
@@ -58,7 +59,7 @@ describe(
 
                 expect(res).toHaveProperty('status.code', HttpStatusCode.Ok);
 
-                const cron = res?.content;
+                const cron = res.content;
                 expect(cron.name).toBe(CRON_NAME);
                 expect(cron.running).toBeDefined();
               },

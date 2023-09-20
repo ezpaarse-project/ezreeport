@@ -43,7 +43,7 @@ describe(
 
                 expect(res).toHaveProperty('status.code', HttpStatusCode.Ok);
 
-                const cron = res?.content;
+                const cron = res.content;
                 expect(cron.name).toBe(CRON_NAME);
                 expect(cron.running).toBe(false);
               },
@@ -59,10 +59,10 @@ describe(
 
                 expect(res).toHaveProperty('status.code', HttpStatusCode.Ok);
 
-                const cron = res?.content;
+                const cron = res.content;
                 expect(cron.name).toBe(CRON_NAME);
                 expect(cron.running).toBe(true);
-                expect(cron.nextRun).toBeDefined();
+                expect(cron.nextRun).toBeInstanceOf(Date);
               },
             );
 
@@ -107,10 +107,10 @@ describe(
 
                 expect(res).toHaveProperty('status.code', HttpStatusCode.Ok);
 
-                const cron = res?.content;
+                const cron = res.content;
                 expect(cron.name).toBe(CRON_NAME);
                 expect(cron.running).toBeDefined();
-                expect(cron.lastRun).toBeDefined();
+                expect(cron.lastRun).toBeInstanceOf(Date);
 
                 const lastRun = (cron.lastRun?.getTime() ?? 0) / 1000;
                 expect(lastRun).toBeCloseTo(now.getTime() / 1000);
