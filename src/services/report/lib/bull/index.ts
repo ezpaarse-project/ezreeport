@@ -3,7 +3,7 @@ import Queue, { type Job } from 'bull';
 import type { Recurrence, Task } from '~/lib/prisma';
 import config from '~/lib/config';
 import { appLogger as logger } from '~/lib/logger';
-import { NotFoundError } from '~/types/errors';
+import { ConflictError, NotFoundError } from '~/types/errors';
 
 const {
   redis,
@@ -294,7 +294,17 @@ export const retryJob = async (queue: string, id: string) => {
     return null;
   }
 
-  await job.retry();
+  try {
+    await job.retry();
+  } catch (error) {
+    if (
+      error instanceof Error
+      && error.message.includes('job has been already retried')
+    ) {
+      throw new ConflictError('The job has been already retried or has not failed');
+    }
+    throw error;
+  }
 
   return formatJob(job);
 };
