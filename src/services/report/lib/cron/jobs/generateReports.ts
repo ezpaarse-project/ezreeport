@@ -1,4 +1,4 @@
-import type Queue from 'bull';
+import type { Job } from 'bullmq';
 
 import { addTaskToGenQueue } from '~/lib/bull';
 import { endOfDay } from '~/lib/date-fns';
@@ -10,7 +10,7 @@ import { getAllTasksToGenerate } from '~/models/tasks';
 import type { CronData } from '..';
 import { sendError } from './utils';
 
-export default async (job: Queue.Job<CronData>) => {
+export default async (job: Job<CronData>) => {
   const start = new Date();
   logger.verbose(`[cron] [${process.pid}] [${job.name}] Started`);
 
@@ -23,7 +23,7 @@ export default async (job: Queue.Job<CronData>) => {
       tasks.map(
         async (task, i, arr) => {
           await addTaskToGenQueue({ task, origin: 'daily-cron-job' });
-          await job.progress(i / arr.length);
+          await job.updateProgress(i / arr.length);
         },
       ),
     );

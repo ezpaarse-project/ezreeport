@@ -361,10 +361,20 @@ const router: FastifyPluginAsync = async (fastify) => {
     Type.Object({
       period_start: Type.String({ minLength: 1 }),
       period_end: Type.String({ minLength: 1 }),
-      test_emails: Type.Array(
+      test_emails: Type.Union([
+        Type.Array(
+          Type.String({ format: 'email' }),
+          { minItems: 1 },
+        ),
         Type.String({ format: 'email' }),
-        { minItems: 1 },
-      ),
+      ]),
+      'test_emails[]': Type.Union([
+        Type.Array(
+          Type.String({ format: 'email' }),
+          { minItems: 1 },
+        ),
+        Type.String({ format: 'email' }),
+      ]),
       debug: Type.Any(),
     }),
   );
@@ -385,7 +395,6 @@ const router: FastifyPluginAsync = async (fastify) => {
     async (request) => {
       const { task: id } = request.params;
       const {
-        test_emails: testEmails,
         period_start: periodStart,
         period_end: periodEnd,
       } = request.query;
@@ -393,6 +402,12 @@ const router: FastifyPluginAsync = async (fastify) => {
       const item = await tasks.getTaskById(id, request.namespaceIds);
       if (!item) {
         throw new NotFoundError(`Task with id '${id}' not found for allowed namespace(s)`);
+      }
+
+      // Parse emails
+      let testEmails = request.query.test_emails || request.query['test_emails[]'] || [];
+      if (!Array.isArray(testEmails)) {
+        testEmails = [testEmails];
       }
 
       // Parse custom period
@@ -407,7 +422,7 @@ const router: FastifyPluginAsync = async (fastify) => {
         };
       }
 
-      const job = await addTaskToGenQueue({
+      const flow = await addTaskToGenQueue({
         task: {
           ...item,
           extendedId: item.extends.id,
@@ -419,12 +434,13 @@ const router: FastifyPluginAsync = async (fastify) => {
         writeActivity: testEmails === undefined,
         debug: !!request.query.debug && process.env.NODE_ENV !== 'production',
       });
+      const job = flow.children?.[0].job;
 
       return {
         content: {
-          id: job.id,
+          id: job?.id,
           queue: 'generation',
-          data: job.data,
+          data: job?.data,
         },
       };
     },

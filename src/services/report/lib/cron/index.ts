@@ -1,55 +1,65 @@
 import { join } from 'node:path';
-import Queue from 'bull';
+
+import { Queue, Worker, type WorkerOptions } from 'bullmq';
+
 import config from '~/lib/config';
 import { appLogger as logger } from '~/lib/logger';
 import { formatInterval } from '~/lib/utils';
+
 import { NotFoundError } from '~/types/errors';
-import { baseQueueOptions } from '../bull';
 
 const {
+  redis,
   crons: { options: cronOptions, timers: cronTimers },
   workers: { maxExecTime },
 } = config;
 
 type Crons = keyof typeof cronTimers;
 
+type JobInformation = Awaited<ReturnType<Queue['getRepeatableJobs']>>[number];
+
 export type CronData = {
   timer: string,
 };
 
-const pausedJobs: Partial<Record<Crons, Queue.JobInformation>> = {};
+const pausedJobs: Partial<Record<Crons, JobInformation>> = {};
+const workers: Worker[] = [];
 
-const queueOptions: Queue.QueueOptions = {
-  ...baseQueueOptions,
-  limiter: {
-    max: Object.keys(cronTimers).length,
-    duration: maxExecTime,
-  },
+const limiter: WorkerOptions['limiter'] = {
+  max: Object.keys(cronTimers).length,
+  duration: maxExecTime,
 };
 
-const cronQueue = new Queue<CronData>('ezReeport.daily-cron', { prefix: 'cron', ...queueOptions });
-cronQueue.on('failed', (job, err) => {
-  if (job.attemptsMade === job.opts.attempts) {
-    logger.error(`[cron-job] Failed with error: {${err.message}}`);
+let cronQueue: Queue<CronData> | undefined;
+
+const getQueue = () => {
+  if (!cronQueue) {
+    throw new Error('crons are not initialized');
   }
-});
-cronQueue.on('error', (err) => {
-  logger.error(`[cron-queue] Failed with error: {${err.message}}`);
-});
+  return cronQueue;
+};
 
 /**
  * Init crons
  */
-(async () => {
+export const initCrons = async () => {
   try {
     const start = new Date();
     logger.verbose('[cron] Init started');
+
+    cronQueue = new Queue<CronData>('ezReeport.daily-cron', { prefix: 'cron', connection: redis });
+    cronQueue.on('error', (err) => {
+      logger.error(`[cron-queue] Failed with error: {${err.message}}`);
+    });
+    logger.verbose(`[cron] Created queue [${cronQueue.name}]`);
+
+    const q = getQueue();
     // Cleaning next jobs before adding cron to avoid issues
     const jobs = await cronQueue.getRepeatableJobs();
     await Promise.all(
       jobs.map(async (j) => {
-        await cronQueue.removeRepeatable(j.name, j);
-        logger.verbose(`[cron] Deleted old cron: [${j.name}] [${j.cron}]`);
+        await q.removeRepeatable(j.name, j);
+        logger.verbose(`[cron] Deleted old cron: [${j.name}] [${j.pattern}]`);
       }),
     );
 
@@ -58,20 +68,35 @@ cronQueue.on('error', (err) => {
       Object.entries(cronTimers).map(
         async ([key, timer]) => {
           // Using `.add` instead of `.addBulk` because the later doesn't support repeat option
-          const job = await cronQueue.add(
+          const job = await q.add(
             key,
             { timer },
             {
               repeat: {
-                cron: timer,
+                pattern: timer,
                 tz: cronOptions.tz || undefined,
               },
             },
           );
+          logger.verbose(`[cron] Creating cron: [${job.name}] [${timer}] [${cronOptions.tz || 'default'}]`);
+
           try {
-            //! TS type is kinda wrong here, it's not a promise
-            cronQueue.process(key, join(__dirname, `jobs/${key}.ts`));
-            logger.verbose(`[cron] Adding cron: [${job.name}] [${timer}] [${cronOptions.tz || 'default'}]`);
+            const worker = new Worker(
+              `${q.name}.${key}`,
+              join(__dirname, `jobs/${key}.ts`),
+              { limiter, connection: redis },
+            );
+            worker.on('completed', (j) => {
+              logger.verbose(`[cron-job] [${job.name}] job [${j?.id}] completed`);
+            });
+            worker.on('failed', (j, err) => {
+              logger.error(`[cron-job] [${job.name}] job [${j?.id}] failed with error: {${err.message}}`);
+            });
+            worker.on('error', (err) => {
+              logger.error(`[cron-job] [${job.name}] worker failed with error: {${err.message}}`);
+            });
+            workers.push(worker);
+            logger.verbose(`[cron] Creating worker [${worker.name}] with [${limiter.max}] process and with [${maxExecTime}]ms before hanging`);
           } catch (error) {
             if (error instanceof Error) {
               logger.error(`[cron] Failed to add process for [${key}] [${timer}] [${cronOptions.tz || 'default'}] with error: {${error.message}}`);
@@ -80,8 +105,7 @@ cronQueue.on('error', (err) => {
             }
 
             if (job.opts.repeat && 'key' in job.opts.repeat) {
-              // @ts-expect-error
-              await cronQueue.removeRepeatableByKey(job.opts.repeat?.key);
+              await q.removeRepeatableByKey(`${job.opts.repeat?.key}`);
             }
           }
         },
@@ -97,7 +121,7 @@ cronQueue.on('error', (err) => {
       logger.error(`[cron] An unexpected error occurred at init: {${error}}`);
     }
   }
-})();
+};
 
 /**
  * Check if given name is a valid cron name
@@ -115,11 +139,11 @@ const isCron = (name: string): name is Crons => Object.keys(cronTimers).includes
  *
  * @returns The cron info
  */
-const getRawCron = async (name: string): Promise<Queue.JobInformation> => {
+const getRawCron = async (name: string): Promise<JobInformation> => {
   if (!isCron(name)) {
     throw new NotFoundError(`Cron [${name}] not found`);
   }
-  let job = (await cronQueue.getRepeatableJobs()).find((j) => (name === j.name));
+  let job = (await getQueue().getRepeatableJobs()).find((j) => (name === j.name));
   if (!job) {
     job = pausedJobs[name];
   }
@@ -130,7 +154,7 @@ const getRawCron = async (name: string): Promise<Queue.JobInformation> => {
 };
 
 const getLastRun = async (name: Crons) => {
-  const lastJob = (await cronQueue.getJobs(['completed'])).filter((j) => j.name === name).at(0);
+  const lastJob = (await getQueue().getJobs(['completed'])).filter((j) => j.name === name).at(0);
   return lastJob?.processedOn ? new Date(lastJob.processedOn) : null;
 };
 
@@ -142,8 +166,8 @@ const getLastRun = async (name: Crons) => {
  * @returns The crons info
  */
 export const getAllCrons = async () => {
-  const jobs = await cronQueue.getRepeatableJobs();
-  const running = !(await cronQueue.isPaused());
+  const jobs = await getQueue().getRepeatableJobs();
+  const running = !(await getQueue().isPaused());
 
   return Promise.all(
     [...jobs, ...Object.values(pausedJobs)].map(async (j) => {
@@ -168,7 +192,7 @@ export const getAllCrons = async () => {
 export const getCron = async (name: string) => {
   const job = await getRawCron(name);
 
-  const running = !(await cronQueue.isPaused()) && !pausedJobs[name as Crons];
+  const running = !(await getQueue().isPaused()) && !pausedJobs[name as Crons];
   return {
     name: job.name,
     running,
@@ -191,10 +215,10 @@ export const startCron = async (name: string) => {
 
   const job = pausedJobs[name];
   if (job) {
-    await cronQueue.add(
+    await getQueue().add(
       name,
-      { timer: job.cron },
-      { repeat: { cron: job.cron } },
+      { timer: job.pattern },
+      { repeat: { pattern: job.pattern } },
     );
     delete pausedJobs[name];
   }
@@ -214,9 +238,9 @@ export const stopCron = async (name: string) => {
     throw new NotFoundError(`Cron [${name}] not found`);
   }
 
-  const job = (await cronQueue.getRepeatableJobs()).find((j) => j.name === name);
+  const job = (await getQueue().getRepeatableJobs()).find((j) => j.name === name);
   if (job) {
-    await cronQueue.removeRepeatable(job.name, job);
+    await getQueue().removeRepeatable(job.name, job);
     pausedJobs[name] = job;
   }
 
@@ -235,7 +259,7 @@ export const forceCron = async (name: string) => {
     throw new NotFoundError(`Cron [${name}] not found`);
   }
 
-  await cronQueue.add(name, { timer: cronTimers[name] });
+  await getQueue().add(name, { timer: cronTimers[name] });
 
   return { ...await getCron(name), lastRun: new Date() };
 };

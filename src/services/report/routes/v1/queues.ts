@@ -150,7 +150,7 @@ const router: FastifyPluginAsync = async (fastify) => {
         throw new NotFoundError(`Job "${jobId}" not found`);
       }
 
-      const namespaceId = 'file' in job.data ? job.data.task.namespace : job.data.task.namespaceId;
+      const namespaceId = 'namespaceId' in job.data ? job.data.namespaceId : job.data.task.namespaceId;
       if (!request.namespaceIds?.includes(namespaceId)) {
         throw new HTTPError(`Job "${jobId}" doesn't match your namespaces`, StatusCodes.FORBIDDEN);
       }
@@ -185,12 +185,12 @@ const router: FastifyPluginAsync = async (fastify) => {
         throw new NotFoundError(`Job "${jobId}" not found`);
       }
 
-      const namespaceId = 'file' in job.data ? job.data.task.namespace : job.data.task.namespaceId;
+      const namespaceId = 'namespaceId' in job.data ? job.data.namespaceId : job.data.task.namespaceId;
       if (!request.namespaceIds?.includes(namespaceId)) {
         throw new HTTPError(`Job "${jobId}" doesn't match your namespaces`, StatusCodes.FORBIDDEN);
       }
 
-      return { content: queues.retryJob(name, jobId) };
+      return { content: await queues.retryJob(name, jobId) };
     },
   );
 };

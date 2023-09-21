@@ -515,7 +515,7 @@ export const generateReport = async (
       // If generation is a success
       taskData = {
         ...taskData,
-        nextRun: calcNextDate(today, task.recurrence).toString(),
+        nextRun: calcNextDate(today, task.recurrence).toISOString(),
       };
 
       activityData.type = 'generation-success';

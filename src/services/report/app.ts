@@ -4,6 +4,8 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 
 import { appLogger } from './lib/logger';
 import config from './lib/config';
+import { initQueues } from './lib/bull';
+import { initCrons } from './lib/cron';
 
 import formatPlugin from './plugins/format';
 import loggerPlugin from './plugins/logger';
@@ -44,6 +46,8 @@ const start = async () => {
     appLogger.info(`[node] Service running in [${process.env.NODE_ENV}] mode`);
     appLogger.info(`[http] Service listening on [${address}] in [${process.uptime().toFixed(2)}]s`);
 
+    initQueues();
+    initCrons();
     initTemplates();
   } catch (err) {
     appLogger.error(err);
