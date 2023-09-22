@@ -33,7 +33,84 @@ const router: FastifyPluginAsync = async (fastify) => {
   type SpecificQueueParamsType = Static<typeof SpecificQueueParams>;
 
   /**
+   * Get specific queue
+   */
+  fastify.get<{
+    Params: SpecificQueueParamsType
+  }>(
+    '/:queue',
+    {
+      schema: {
+        params: SpecificQueueParams,
+      },
+      ezrAuth: {
+        requireAdmin: true,
+      },
+    },
+    async (request) => {
+      const { queue: name } = request.params;
+
+      const item = (await queues.getQueues()).find((q) => q.name === name);
+      if (!item) {
+        throw new NotFoundError(`Queue '${name}' not found`);
+      }
+
+      return { content: item };
+    },
+  );
+
+  /**
+   * Update specific queue
+   */
+  const UpdateQueueBody = Type.Partial(
+    Type.Object({
+      status: Type.Union([
+        Type.Literal('active'),
+        Type.Literal('paused'),
+      ]),
+    }),
+  );
+  fastify.patch<{
+    Params: SpecificQueueParamsType,
+    Body: Static<typeof UpdateQueueBody>,
+  }>(
+    '/:queue',
+    {
+      schema: {
+        params: SpecificQueueParams,
+        body: UpdateQueueBody,
+      },
+      ezrAuth: {
+        requireAdmin: true,
+      },
+    },
+    async (request) => {
+      const { queue: name } = request.params;
+
+      const item = (await queues.getQueues()).find((q) => q.name === name);
+      if (!item) {
+        throw new NotFoundError(`Queue '${name}' not found`);
+      }
+
+      // Starting queue if needed
+      if (request.body.status === 'active') {
+        await queues.resumeQueue(name);
+      }
+      // Pausing queue if needed
+      if (request.body.status === 'paused') {
+        await queues.pauseQueue(name);
+      }
+
+      return {
+        content: (await queues.getQueues()).find((q) => q.name === name),
+      };
+    },
+  );
+
+  /**
    * Pause specific queue
+   *
+   * @deprecated use `PATCH /:queue` with body
    */
   fastify.put<{
     Params: SpecificQueueParamsType
@@ -59,6 +136,8 @@ const router: FastifyPluginAsync = async (fastify) => {
 
   /**
    * Resume specific queue
+   *
+   * @deprecated use `PATCH /:queue` with body
    */
   fastify.put<{
     Params: SpecificQueueParamsType
@@ -150,7 +229,7 @@ const router: FastifyPluginAsync = async (fastify) => {
         throw new NotFoundError(`Job "${jobId}" not found`);
       }
 
-      const namespaceId = 'file' in job.data ? job.data.task.namespace : job.data.task.namespaceId;
+      const namespaceId = 'namespaceId' in job.data ? job.data.namespaceId : job.data.task.namespaceId;
       if (!request.namespaceIds?.includes(namespaceId)) {
         throw new HTTPError(`Job "${jobId}" doesn't match your namespaces`, StatusCodes.FORBIDDEN);
       }
@@ -185,7 +264,7 @@ const router: FastifyPluginAsync = async (fastify) => {
         throw new NotFoundError(`Job "${jobId}" not found`);
       }
 
-      const namespaceId = 'file' in job.data ? job.data.task.namespace : job.data.task.namespaceId;
+      const namespaceId = 'namespaceId' in job.data ? job.data.namespaceId : job.data.task.namespaceId;
       if (!request.namespaceIds?.includes(namespaceId)) {
         throw new HTTPError(`Job "${jobId}" doesn't match your namespaces`, StatusCodes.FORBIDDEN);
       }

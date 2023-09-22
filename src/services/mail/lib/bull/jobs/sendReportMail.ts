@@ -1,42 +1,56 @@
-import type { Job } from 'bull';
+import { Queue, Job } from 'bullmq';
 import { format, parseISO } from 'date-fns';
+
 import config from '~/lib/config';
 import { appLogger as logger } from '~/lib/logger';
 import { generateMail, sendMail, type MailOptions } from '~/lib/mail';
 import { b64ToString, isFulfilled, stringToB64 } from '~/lib/utils';
+
 import { recurrenceToStr } from '~/models/recurrence';
-import type { MailData } from '..';
+
+import type { MailResult } from '..';
 
 const {
+  redis,
   mail: { team },
   api: { url: APIurl },
 } = config;
 
-export default async (job: Job<MailData>) => {
-  const filename = job.data.url.replace(/^.*\//, '');
-  const date = parseISO(job.data.date);
+export default async (j: Job) => {
+  // Re-getting job from it's id and queue to get child jobs
+  // See https://github.com/taskforcesh/bullmq/issues/753
+  const queue = new Queue<MailResult>(j.queueName, { connection: redis });
+  const job = await Job.fromId(queue, j.id ?? '');
+  if (!job) {
+    throw new Error(`Cannot find job [${j.id}] in queue [${queue.name}]`);
+  }
+
+  const data: MailResult = Object.values(await job.getChildrenValues())[0].mailData;
+
+  const filename = data.url.replace(/^.*\//, '');
+  const date = parseISO(data.date);
   const dateStr = format(date, 'dd/MM/yyyy');
 
   try {
     const options: Omit<MailOptions, 'to' | 'body' | 'subject'> = {
       attachments: [{
         filename,
-        content: job.data.file,
+        content: data.file,
         encoding: 'base64',
       }],
     };
     const bodyData = {
-      recurrence: recurrenceToStr(job.data.task.recurrence),
-      name: job.data.task.name,
+      recurrence: recurrenceToStr(data.task.recurrence),
+      name: data.task.name,
       date: dateStr,
     };
 
-    if (job.data.success) {
+    if (data.success) {
       // Send one email per target to allow un-subscription prefill
       const targets = await Promise.allSettled(
-        job.data.task.targets.map(async (to) => {
+        data.task.targets.map(async (to) => {
           try {
-            const taskId64 = stringToB64(job.data.task.id);
+            const taskId64 = stringToB64(data.task.id);
             const to64 = stringToB64(to);
             const unsubId = encodeURIComponent(`${taskId64}:${to64}`);
 
@@ -44,7 +58,7 @@ export default async (job: Job<MailData>) => {
             await sendMail({
               ...options,
               to,
-              subject: `Reporting ezMESURE [${dateStr}] - ${job.data.task.name}`,
+              subject: `Reporting ezMESURE [${dateStr}] - ${data.task.name}`,
               body: await generateMail('success', { ...bodyData, unsubscribeLink }),
             });
 
@@ -64,11 +78,11 @@ export default async (job: Job<MailData>) => {
       }
     } else {
       // TODO[feat]: Ignore team if test report ?
-      const to = [job.data.contact ?? '', team];
+      const to = [data.contact ?? '', team];
 
       let error: string;
       try {
-        const { detail } = JSON.parse(b64ToString(job.data.file));
+        const { detail } = JSON.parse(b64ToString(data.file));
         error = detail.error.message;
       } catch (err) {
         error = 'Unknown error, see attachements';
@@ -77,7 +91,7 @@ export default async (job: Job<MailData>) => {
       await sendMail({
         ...options,
         to,
-        subject: `Erreur de Reporting ezMESURE [${dateStr}] - ${job.data.task.name}`,
+        subject: `Erreur de Reporting ezMESURE [${dateStr}] - ${data.task.name}`,
         body: await generateMail('error', { ...bodyData, error, date: format(date, 'dd/MM/yyyy à HH:mm:ss') }),
       });
       logger.info(`[mail] Error report "${filename}" sent to [${to.filter((v) => v).join(', ')}]`);

@@ -1476,6 +1476,154 @@
         ]
       }
     },
+    "/queues/{queue}": {
+      "get": {
+        "summary": "Get specific queue",
+        "tags": [
+          "queue"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "generation",
+                        "status": "active"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/Queue"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "get-queues-queue]",
+        "description": "Get the queue.\n\nNeeds `general.queues-get-queue` (see `/me/permissions` for more info).",
+        "security": [
+          {
+            "User Token": []
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "queue",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "patch": {
+        "summary": "Update queue",
+        "operationId": "patch-queues-queue",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "generation",
+                        "status": "active"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/Queue"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "description": "Update the part of the queue.\n\nNeeds `general.queues-patch-queue` (see `/me/permissions` for more info).",
+        "security": [
+          {
+            "User Token": []
+          }
+        ],
+        "tags": [
+          "queue"
+        ]
+      }
+    },
     "/queues/{queue}/pause": {
       "parameters": [
         {
@@ -1554,7 +1702,8 @@
         "description": "Pause the whole queue.\n\nNeeds `general.queues-put-queue-pause` (see `/me/permissions` for more info).",
         "tags": [
           "queue"
-        ]
+        ],
+        "deprecated": true
       }
     },
     "/queues/{queue}/resume": {
@@ -1635,7 +1784,8 @@
         ],
         "tags": [
           "queue"
-        ]
+        ],
+        "deprecated": true
       }
     },
     "/queues/{queue}/jobs": {
@@ -2111,7 +2261,7 @@
         }
       ],
       "patch": {
-        "summary": "",
+        "summary": "Update cron",
         "operationId": "patch-crons-cron",
         "responses": {
           "200": {
