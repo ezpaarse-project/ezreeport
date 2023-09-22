@@ -23,6 +23,10 @@
 
         <v-spacer />
 
+        <span class="text--secondary" style="font-size: 1.5em; opacity: 0.5;">
+          {{ (index ?? 0) + 1 }}
+        </span>
+
         <v-tooltip top v-if="figure._.valid !== true" color="warning">
           <template #activator="{ attrs, on }">
             <v-icon
@@ -121,12 +125,19 @@ export default defineComponent({
     figureIcons,
   }),
   computed: {
+    figures() {
+      const layout = this.templateStore.currentLayouts.find(
+        ({ _: { id } }) => id === this.layoutId,
+      );
+
+      return layout?.figures;
+    },
+    index() {
+      return this.figures?.findIndex(({ _: { id } }) => id === this.id);
+    },
     figure: {
       get(): AnyCustomFigure | undefined {
-        const layout = this.templateStore.currentLayouts.find(
-          ({ _: { id } }) => id === this.layoutId,
-        );
-        return layout?.figures.find(({ _: { id } }) => id === this.id);
+        return this.figures?.at(this.index ?? -1);
       },
       set(val: AnyCustomFigure) {
         this.templateStore.UPDATE_FIGURE(this.layoutId, this.id, val);
@@ -276,7 +287,7 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   figures:
-    title: "Title"
+    title: 'Title'
 fr:
   figures:
     title: 'Titre'

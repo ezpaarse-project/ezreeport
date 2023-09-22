@@ -13,6 +13,44 @@ import { ArgumentError } from '~/types/errors';
 
 type ElasticAggregation = ElasticTypes.AggregationsAggregationContainer;
 
+/**
+ * All types of bucket aggregations in elastic
+ */
+const bucketAggregations = new Set([
+  'adjacency_matrix',
+  'auto_date_histogram',
+  'avg_bucket',
+  'bucket_script',
+  'bucket_selector',
+  'bucket_sort',
+  'categorize_text',
+  'date_histogram',
+  'date_range',
+  'extended_stats_bucket',
+  'geo_distance',
+  'geohash_grid',
+  'geo_line',
+  'geotile_grid',
+  'global',
+  'histogram',
+  'ip_range',
+  'max_bucket',
+  'min_bucket',
+  'missing',
+  'multi_terms',
+  'nested',
+  'parent',
+  'range',
+  'rare_terms',
+  'reverse_nested',
+  'significant_terms',
+  'significant_text',
+  'stats_bucket',
+  'sum_bucket',
+  'terms',
+  'variable_width_histogram',
+]);
+
 const CustomAggregation = Type.Recursive(
   (This) => Type.Intersect([
     // Simplification of ElasticAggregation
@@ -61,9 +99,11 @@ export type ElasticFetchOptionsType = Static<typeof ElasticFetchOptions>;
 
 type AggInfo = {
   name: string,
+  type: string,
   subAggs: AggInfo[],
 };
 
+const handledKeys = new Set(['name', 'aggs', 'aggregations']);
 /**
  * Parse aggregations in order to calculate keys when cleaning elastic response
  *
@@ -83,6 +123,7 @@ const parseAggInfo = (agg: CustomAggregationType, i: number): AggInfo => {
 
   return {
     name,
+    type: Object.keys(agg).filter((k) => !handledKeys.has(k))[0],
     subAggs,
   };
 };
@@ -102,15 +143,11 @@ const reduceAggs = (
   { name: _name, ...rawAgg }: CustomAggregationType,
   calendar_interval: string,
   aggsInfo: AggInfo,
-) => {
-  let agg = rawAgg;
+): Record<string, ElasticAggregation> => {
+  const agg = rawAgg as ElasticAggregation;
   // Add calendar_interval
   if (rawAgg.date_histogram) {
-    agg = merge({}, agg, { date_histogram: { calendar_interval } });
-  }
-  // Add default missing value
-  if (rawAgg.terms) {
-    agg = merge({}, { terms: { missing: 'Non renseigné' } }, agg);
+    merge(agg, { date_histogram: { calendar_interval } });
   }
 
   // Handle sub aggregations
@@ -118,9 +155,8 @@ const reduceAggs = (
     const key = rawAgg.aggs ? 'aggs' : 'aggregations';
     agg[key] = rawAgg[key]?.reduce(
       (subPrev, subAgg, i) => reduceAggs(subPrev, subAgg, calendar_interval, aggsInfo.subAggs[i]),
-      {} as Record<string, ElasticAggregation>,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ) as any;
+      {},
+    );
   }
 
   return {
@@ -130,38 +166,72 @@ const reduceAggs = (
 };
 
 /**
- * Cleans aggregation results from elastic
+ * Cleans aggregation results from elastic and flattens the result
  *
  * @param info Info about aggregation
- * @param value Value of the sub aggregation. WILL BE MODIFIED.
+ * @param aggs Value of the sub aggregation.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const setSubAggValues = (info: AggInfo, value: any) => {
-  const data = value[info.name];
+const cleanAggValues = (info: AggInfo, aggs: any): any[] => {
+  const aggValue = aggs[info.name];
+  let buckets = 'buckets' in aggValue ? aggValue.buckets : [aggValue];
 
-  if (info.subAggs.length > 0) {
+  const data = [];
+
+  // If bucket are still an object, tries to map it as an array
+  if (typeof buckets === 'object' && !Array.isArray(buckets)) {
+    buckets = Object.entries(buckets)
+      .map(([key, value]) => ({ key, value }));
+  }
+
+  // If no sub-agg, no further treatment is needed
+  if (info.subAggs.length <= 0) {
+    return buckets;
+  }
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const bucket of buckets) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const subBuckets = new Map<string, any[]>();
+
+    // Cleaning values
     // eslint-disable-next-line no-restricted-syntax
     for (const subAgg of info.subAggs) {
-      setSubAggValues(subAgg, data);
+      subBuckets.set(subAgg.name, cleanAggValues(subAgg, bucket));
     }
-    return;
+
+    // Getting combinations of all subArgs within bucket
+    const subBucketEntries = Array.from(subBuckets.entries());
+    const bucketCombinations = subBucketEntries.reduce(
+      (combinationsSoFar, [aggName, sb]) => {
+        // If no value in bucket
+        if (sb.length === 0) { return combinationsSoFar; }
+
+        // Merge previous results with new one
+        return sb.flatMap((b) => {
+          if (combinationsSoFar.length === 0) {
+            return { [aggName]: b };
+          }
+
+          return combinationsSoFar.map((c) => ({ ...c, [aggName]: b }));
+        });
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      [] as any[],
+    );
+
+    // Merging current bucket value with cleaned + combinations
+    data.push(
+      ...bucketCombinations.map(
+        (b) => ({
+          ...bucket,
+          ...b,
+        }),
+      ),
+    );
   }
 
-  if ('buckets' in data) {
-    // eslint-disable-next-line no-param-reassign
-    value[info.name] = data.buckets;
-    return;
-  }
-
-  if ('value' in data) {
-    // eslint-disable-next-line no-param-reassign
-    value[info.name] = data;
-    return;
-  }
-
-  const hits = data?.hits?.hits ?? [];
-  // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
-  value[info.name] = hits.map(({ _source }: any) => _source);
+  return data;
 };
 
 /**
@@ -184,13 +254,13 @@ const fetchWithElastic = async (
     throw new ArgumentError('You must precise an index before trying to fetch data from elastic');
   }
 
-  const { filter, ...otherFilters } = (options.filters ?? { filter: [] });
+  const { filter, ...query } = (options.filters ?? { filter: [] });
   const baseOpts: ElasticTypes.SearchRequest = {
     index,
     body: {
       query: {
         bool: {
-          ...otherFilters,
+          ...query,
           filter: [
             {
               range: {
@@ -212,19 +282,20 @@ const fetchWithElastic = async (
   // Generating names for aggregations if not defined
   const aggsInfos = options.aggs?.map(parseAggInfo) ?? [];
 
-  // Always true but TypeScript refers to ElasticTypes instead...
-  if (opts.body) {
-    if (options.aggs) {
-      const calendarInterval = calcElasticInterval(options.recurrence);
-      opts.size = 1; // keeping at least one record so we can check if there's data or not
-      opts.body.aggs = options.aggs.reduce(
-        (prev, agg, i) => reduceAggs(prev, agg, calendarInterval, aggsInfos[i]),
-        {} as Record<string, ElasticAggregation>,
-      );
-    }
+  if (
+    options.aggs
+    // Always true but TypeScript refers to ElasticTypes instead...
+    && opts.body
+  ) {
+    const calendarInterval = calcElasticInterval(options.recurrence);
+    opts.size = 1; // keeping at least one record so we can check if there's data or not
+    opts.body.aggs = options.aggs.reduce(
+      (prev, agg, i) => reduceAggs(prev, agg, calendarInterval, aggsInfos[i]),
+      {},
+    );
   }
 
-  const data: Prisma.JsonValue = {};
+  const data: Prisma.JsonObject = {};
   const { body } = await elasticSearch(opts, options.auth.username);
 
   // Checks any errors
@@ -244,37 +315,16 @@ const fetchWithElastic = async (
 
   if (options.aggs) {
     // eslint-disable-next-line no-restricted-syntax
-    for (const { name, subAggs } of aggsInfos) {
-      if (!body.aggregations?.[name]) {
-        throw new Error(`Aggregation "${name}" not found`);
-      }
-      const aggRes = body.aggregations[name];
+    for (const aggInfo of aggsInfos) {
+      const cleaned = cleanAggValues(aggInfo, body.aggregations);
 
-      if ('buckets' in aggRes) {
-        // Transform object data into arrays
-        if (
-          typeof aggRes.buckets === 'object'
-          && !Array.isArray(aggRes.buckets)
-        ) {
-          aggRes.buckets = Object.entries(aggRes.buckets).map(
-            ([key, value]) => ({ value, key }),
-          );
-        }
-
-        // Simplify access to sub-aggregations' result
-        if (subAggs.length > 0) {
-          // eslint-disable-next-line no-restricted-syntax
-          for (const bucket of aggRes.buckets) {
-            // eslint-disable-next-line no-restricted-syntax
-            for (const subAgg of subAggs) {
-              setSubAggValues(subAgg, bucket);
-            }
-          }
-        }
-        data[name] = aggRes.buckets;
-      } else {
-        data[name] = aggRes as Prisma.JsonObject;
+      // Remove redundant arrays
+      let values = cleaned;
+      // Metrics aggregations must be an object and not an array
+      if (!bucketAggregations.has(aggInfo.type) && cleaned.length === 1) {
+        ([values] = cleaned);
       }
+      data[aggInfo.name] = values;
     }
   }
 

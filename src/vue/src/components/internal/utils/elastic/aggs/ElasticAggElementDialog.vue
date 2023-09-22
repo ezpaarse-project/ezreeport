@@ -64,8 +64,6 @@
                 </template>
               </v-autocomplete>
 
-              <v-divider class="my-4" />
-
               <!-- Field -->
               <v-text-field
                 :value="type.data?.field"
@@ -81,6 +79,39 @@
                 </template>
               </i18n>
 
+              <v-divider v-if="typeDefinition?.isArray || typeDefinition?.canHaveSub" class="my-4" />
+
+              <!-- Show missing -->
+              <CustomSection
+                v-if="typeDefinition?.isArray"
+                :label="$t('headers.showMissing').toString()"
+                collapsable
+              >
+                <template #collapse>
+                  <v-switch
+                    :input-value="!!type.data?.missing"
+                    :readonly="readonly"
+                    dense
+                    hide-details
+                    class="mt-0"
+                    @change="onTypeFieldUpdate({
+                      missing: ($event ? 'Non renseigné' : undefined),
+                    })"
+                    @click.prevent=""
+                  />
+                </template>
+
+                <v-text-field
+                  v-if="!!type.data?.missing"
+                  :value="type.data?.missing"
+                  :label="$t('headers.missing').toString()"
+                  :readonly="readonly"
+                  hide-details="auto"
+                  class="ml-2"
+                  @input="onTypeFieldUpdate({ missing: $event })"
+                />
+              </CustomSection>
+
               <!-- Size -->
               <v-text-field
                 v-if="typeDefinition?.isArray"
@@ -93,7 +124,7 @@
               />
 
               <!-- Sort -->
-              <div v-if="typeDefinition?.isArray" class="d-flex align-center">
+              <div v-if="typeDefinition?.isArray && typeDefinition?.canHaveSub" class="d-flex align-center">
                 <v-combobox
                   :value="order.value"
                   :items="availableSorts"
@@ -633,6 +664,8 @@ en:
     sort: 'Sort on sub aggregation...'
     sortOrder: 'Sort order: {order}'
     subAggs: 'Sub aggregations'
+    showMissing: 'Should show missing ?'
+    missing: 'Default value'
   sortOrder:
     asc: 'ascending'
     desc: 'descending'
@@ -656,6 +689,8 @@ fr:
     sort: 'Trier sur la sous aggregation...'
     sortOrder: 'Sens du tri: {order}'
     subAggs: 'Sous aggregations'
+    showMissing: 'Afficher les manquants ?'
+    missing: 'Valeur par défaut'
   sortOrder:
     asc: 'ascendant'
     desc: 'descendant'

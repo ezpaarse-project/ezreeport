@@ -31,16 +31,32 @@
               <div v-if="result?.detail.error">
                 <i18n v-if="result.detail.error.cause" path="error_details.layout" tag="span">
                   <template #type>
-                    {{ $t(`error_types.${result.detail.error.cause.type}`) }}
+                    {{
+                      result.detail.error.cause.type !== 'unknown'
+                        ? $t(`error_types.${result.detail.error.cause.type}`)
+                        : $t('$ezreeport.unknown')
+                    }}
                   </template>
 
                   <template #layout>
-                    <span class="font-weight-bold">{{ result.detail.error.cause.layout + 1 }}</span>
+                    <span class="font-weight-bold">
+                      {{
+                        result.detail.error.cause.layout >= 0
+                          ? result.detail.error.cause.layout + 1
+                          : $t('$ezreeport.unknown')
+                      }}
+                    </span>
                   </template>
                 </i18n>
                 <i18n v-if="result.detail.error.cause?.figure != null" path="error_details.figure" tag="span" class="ml-1">
                   <template #figure>
-                    <span class="font-weight-bold">{{ result.detail.error.cause?.figure }}</span>
+                    <span class="font-weight-bold">
+                      {{
+                        result.detail.error.cause.figure >= 0
+                          ? result.detail.error.cause.figure + 1
+                          : $t('$ezreeport.unknown')
+                      }}
+                    </span>
                   </template>
                 </i18n>
                 <i18n path="error_details.message" tag="span" class="ml-1">
@@ -457,7 +473,7 @@ en:
     render: 'rendering'
   error_details:
     layout: 'Was {type} page {layout}.'
-    figure: 'More precisely, it occurred on a figure named: {figure}.'
+    figure: 'More precisely, it occurred on a figure {figure}.'
     message: 'Then occurred: {message}.'
   files:
     detail: 'Detail (JSON)'
@@ -489,7 +505,7 @@ fr:
     render: 'rendre'
   error_details:
     layout: 'Était en train de {type} la page {layout}.'
-    figure: "Plus précisément, c'est arrivé sur la visualisation nommée: {figure}."
+    figure: "Plus précisément, c'est arrivé sur la visualisation {figure}."
     message: 'Est alors survenu: {message}'
   files:
     detail: 'Détail (JSON)'

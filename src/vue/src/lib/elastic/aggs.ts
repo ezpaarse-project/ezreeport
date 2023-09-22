@@ -79,7 +79,6 @@ export const aggsDefinition = {
       doc_count: Number,
       key_as_string: String,
     },
-    canHaveSub: true,
   },
   // 'date_range': {},
   // 'derivative': {},
