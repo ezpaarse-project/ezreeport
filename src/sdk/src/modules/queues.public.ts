@@ -4,6 +4,7 @@ export {
   type Queue,
   type InputQueue,
   getAllQueues,
+  getQueue,
   updateQueue,
   pauseQueue,
   resumeQueue,
