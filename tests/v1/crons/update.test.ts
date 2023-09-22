@@ -193,7 +193,7 @@ describe(
             );
 
             it(
-              `[${CRON_NAME}] shouldn't be modified`,
+              `Cron [${CRON_NAME}] shouldn't be modified`,
               async () => {
                 setup.login(adminToken);
                 const { content: newCron } = await crons.getCron(CRON_NAME);
@@ -204,7 +204,7 @@ describe(
             );
 
             it(
-              'Should throw a permission error even if [<random>] doesn\'t exist',
+              'Should throw a permission error even if cron [<random>] doesn\'t exist',
               async () => {
                 // Make test fails if call is successful
                 expect.assertions(2);

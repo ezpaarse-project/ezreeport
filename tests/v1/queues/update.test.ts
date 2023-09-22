@@ -16,19 +16,25 @@ const QUEUE_NAME = 'generation';
 const NO_QUEUE_NAME = randomBytes(6).toString('hex');
 
 const searchForIdToRetry = async (reverse = false) => {
-  let jobId: queues.Job<any>['id'] | undefined;
-  let previous: queues.Job<any>['id'] | undefined;
+  let jobId: queues.FullJob<any, any>['id'] | undefined;
+  let previous: queues.FullJob<any, any>['id'] | undefined;
   while (jobId == null) {
     // eslint-disable-next-line no-await-in-loop
     const { content: list, meta } = await queues.getQueueJobs(
       QUEUE_NAME,
       { previous },
     );
-    previous = meta.lastId as queues.Job<any>['id'];
+    previous = meta.lastId as queues.FullJob<any, any>['id'];
     if (list.length === 0) {
       throw new Error('No retry-able job found');
     }
-    jobId = list.find(({ status }) => (reverse ? status !== 'failed' : status === 'failed'))?.id;
+    const allowedStatus = new Set<string>(
+      ['completed', 'failed'] satisfies queues.FullJob<any, any>['status'][],
+    );
+    jobId = list.find(({ status }) => {
+      const isStatusOk = allowedStatus.has(status);
+      return reverse ? !isStatusOk : isStatusOk;
+    })?.id;
   }
   return jobId;
 };
@@ -49,7 +55,72 @@ describe(
         });
 
         describe(
-          'queues.retryJob(queue)',
+          'queues.updateQueue(queue)',
+          () => {
+            it(
+              `Should pause queue [${QUEUE_NAME}]`,
+              async () => {
+                const res = await queues.updateQueue({
+                  name: QUEUE_NAME,
+                  status: 'paused',
+                });
+
+                expect(res).toHaveProperty('status.code', HttpStatusCode.Ok);
+
+                const queue = res.content;
+                expect(queue.name).toBe(QUEUE_NAME);
+                expect(queue.status).toBe('paused');
+              },
+            );
+
+            it(
+              `Should resume queue [${QUEUE_NAME}]`,
+              async () => {
+                const res = await queues.updateQueue({
+                  name: QUEUE_NAME,
+                  status: 'active',
+                });
+
+                expect(res).toHaveProperty('status.code', HttpStatusCode.Ok);
+
+                const queue = res.content;
+                expect(queue.name).toBe(QUEUE_NAME);
+                expect(queue.status).toBe('active');
+              },
+            );
+
+            it(
+              'Queue [<random>] shouldn\'t be found',
+              async () => {
+                // Make test fails if call is successful
+                expect.assertions(2);
+
+                try {
+                  await queues.updateQueue({ name: NO_QUEUE_NAME });
+                } catch (e) {
+                  expect(e).toBeInstanceOf(Error);
+
+                  if (e instanceof Error) {
+                    expect(e.message).toMatch(
+                      errorStatusMatcher(HttpStatusCode.NotFound),
+                    );
+                  }
+                }
+              },
+            );
+
+            afterAll(async () => {
+              // Resetting the queue
+              await queues.updateQueue({
+                name: QUEUE_NAME,
+                status: 'active',
+              });
+            });
+          },
+        );
+
+        describe(
+          'queues.retryJob(queueOrName, jobIdOrName)',
           () => {
             it(
               `Should retry first failed job of queue [${QUEUE_NAME}]`,
@@ -60,7 +131,7 @@ describe(
                 expect(res).toHaveProperty('status.code', HttpStatusCode.Ok);
 
                 const job = res.content;
-                expect(job.id).toBe(QUEUE_NAME);
+                expect(job.id).toBeDefined();
                 expect(job.status).toBeDefined();
                 expect(job.progress).toBeDefined();
                 expect(job.data).toBeDefined();
@@ -110,7 +181,7 @@ describe(
             );
 
             it(
-              `First non failed job in queue [${QUEUE_NAME}] shouldn't be retry-able`,
+              `First non completed job in queue [${QUEUE_NAME}] shouldn't be retry-able`,
               async () => {
                 // Make test fails if call is successful
                 expect.assertions(2);
@@ -147,6 +218,7 @@ describe(
       () => {
         let user = { username: '', token: '' };
         let admin = { username: '', token: '' };
+        let queue: queues.Queue | undefined;
 
         beforeAll(async () => {
           // Create an admin for this test suite
@@ -157,10 +229,69 @@ describe(
 
           // Create an user for this test suite
           (user = await createUser());
+          ({ content: queue } = await queues.getQueue(QUEUE_NAME));
         });
 
         describe(
-          'queues.retryJob(queue)',
+          'queues.updateQueue(queue)',
+          () => {
+            it(
+              'Should throw a permission error',
+              async () => {
+                // Make test fails if call is successful
+                expect.assertions(2);
+
+                try {
+                  setup.login(user.token);
+                  await queues.updateQueue({ name: QUEUE_NAME });
+                } catch (e) {
+                  expect(e).toBeInstanceOf(Error);
+
+                  if (e instanceof Error) {
+                    expect(e.message).toMatch(
+                      errorStatusMatcher(HttpStatusCode.Forbidden),
+                    );
+                  }
+                }
+              },
+            );
+
+            it(
+              `Queue [${QUEUE_NAME}] shouldn't be modified`,
+              async () => {
+                setup.login(admin.token);
+                const { content: newQueue } = await queues.getQueue(QUEUE_NAME);
+                setup.logout();
+
+                expect(newQueue).toStrictEqual(queue);
+              },
+            );
+
+            it(
+              'Should throw a permission error even if queue [<random>] doesn\'t exist',
+              async () => {
+                // Make test fails if call is successful
+                expect.assertions(2);
+
+                try {
+                  setup.login(user.token);
+                  await queues.updateQueue({ name: NO_QUEUE_NAME });
+                } catch (e) {
+                  expect(e).toBeInstanceOf(Error);
+
+                  if (e instanceof Error) {
+                    expect(e.message).toMatch(
+                      errorStatusMatcher(HttpStatusCode.Forbidden),
+                    );
+                  }
+                }
+              },
+            );
+          },
+        );
+
+        describe(
+          'queues.retryJob(queueOrName, jobIdOrName)',
           () => {
             let jobId: queues.Job<any>['id'];
 
@@ -254,7 +385,7 @@ describe(
             );
 
             it(
-              `First non failed job in queue [${QUEUE_NAME}] shouldn't be retry-able`,
+              `First non completed job in queue [${QUEUE_NAME}] shouldn't be retry-able`,
               async () => {
                 // Make test fails if call is successful
                 expect.assertions(2);
@@ -306,7 +437,7 @@ describe(
         });
 
         describe(
-          'queues.getAllQueues()',
+          'queues.retryJob(queueOrName, jobIdOrName)',
           () => {
             it(
               'Should throw a auth error',

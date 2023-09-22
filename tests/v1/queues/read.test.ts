@@ -50,6 +50,44 @@ describe(
         );
 
         describe(
+          'queues.getQueue(<queueOrName>)',
+          () => {
+            it(
+              'Should get one queue',
+              async () => {
+                const res = await queues.getQueue(QUEUE_NAME);
+
+                expect(res).toHaveProperty('status.code', HttpStatusCode.Ok);
+
+                const queue = res.content;
+                expect(queue.name).toBe(QUEUE_NAME);
+                expect(queue.status).toBeDefined();
+              },
+            );
+
+            it(
+              'Queue [<random>] shouldn\'t be found',
+              async () => {
+                // Make test fails if call is successful
+                expect.assertions(2);
+
+                try {
+                  await queues.getQueue(NO_QUEUE_NAME);
+                } catch (e) {
+                  expect(e).toBeInstanceOf(Error);
+
+                  if (e instanceof Error) {
+                    expect(e.message).toMatch(
+                      errorStatusMatcher(HttpStatusCode.NotFound),
+                    );
+                  }
+                }
+              },
+            );
+          },
+        );
+
+        describe(
           'queues.getQueueJobs(queueOrName)',
           () => {
             it(
@@ -201,6 +239,31 @@ describe(
 
         describe(
           'queues.getQueue(queueOrName)',
+          () => {
+            it(
+              'Should throw a permission error',
+              async () => {
+                // Make test fails if call is successful
+                expect.assertions(2);
+
+                try {
+                  await queues.getQueue(QUEUE_NAME);
+                } catch (e) {
+                  expect(e).toBeInstanceOf(Error);
+
+                  if (e instanceof Error) {
+                    expect(e.message).toMatch(
+                      errorStatusMatcher(HttpStatusCode.Forbidden),
+                    );
+                  }
+                }
+              },
+            );
+          },
+        );
+
+        describe(
+          'queues.getQueueJobs(queueOrName)',
           () => {
             it(
               'Should throw a permission error',
@@ -366,6 +429,31 @@ describe(
 
         describe(
           'queues.getQueue(queueOrName)',
+          () => {
+            it(
+              'Should throw a permission error',
+              async () => {
+                // Make test fails if call is successful
+                expect.assertions(2);
+
+                try {
+                  await queues.getAllQueues();
+                } catch (e) {
+                  expect(e).toBeInstanceOf(Error);
+
+                  if (e instanceof Error) {
+                    expect(e.message).toMatch(
+                      errorStatusMatcher(HttpStatusCode.Unauthorized),
+                    );
+                  }
+                }
+              },
+            );
+          },
+        );
+
+        describe(
+          'queues.getQueueJobs(queueOrName)',
           () => {
             it(
               'Should throw a auth error',
