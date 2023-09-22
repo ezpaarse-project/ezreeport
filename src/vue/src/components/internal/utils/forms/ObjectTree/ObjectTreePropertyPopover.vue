@@ -131,13 +131,13 @@ export default defineComponent({
     rules() {
       return {
         property: [
-          (v: string | number) => !!v.toString() || this.$t('errors.empty'),
+          (v: string | number) => !!v.toString() || this.$t('errors.empty', { field: 'advanced/property' }),
         ],
         type: [
-          (v: ItemType) => !!v || this.$t('errors.empty'),
+          (v: ItemType) => !!v || this.$t('errors.empty', { field: 'advanced/type' }),
         ],
         value: [
-          (v: any) => this.item.type.Constructor.name === v.constructor.name || this.$t('errors.type'),
+          (v: any) => this.item.type.Constructor.name === v.constructor.name || this.$t('errors.type', { field: 'advanced/value' }),
         ],
       };
     },

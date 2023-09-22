@@ -39,7 +39,7 @@
         <v-btn
           v-if="perms.delete"
           :loading="loading"
-          color="success"
+          color="error"
           @click="save"
         >
           {{ $t('actions.confirm') }}

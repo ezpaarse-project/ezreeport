@@ -513,6 +513,7 @@ export default defineComponent({
         ...this.template,
         ...value,
       };
+      this.templateStore.validateCurrent();
     },
     onFetchOptionUpdate(value: Record<string, any>) {
       const picked = pick(this.templateStore.current?.fetchOptions ?? {}, supportedFetchOptions);
