@@ -56,6 +56,10 @@ export interface Queue {
   name: string,
 }
 
+export interface InputQueue {
+  status: Queue['status'],
+}
+
 /**
  * Get all available queues
  *
@@ -66,11 +70,41 @@ export interface Queue {
 export const getAllQueues = () => axios.$get<Queue[]>('/queues');
 
 /**
+ * Get specific queue
+ *
+ * Needs `general.queues-get-queue` permission
+ *
+ * @param queueOrName Queue or queue's name
+ *
+ * @returns queue info
+ */
+export const getQueue = async (queueOrName: Queue | Queue['name']): Promise<ApiResponse<Queue>> => {
+  const queueName = typeof queueOrName === 'string' ? queueOrName : queueOrName.name;
+  return axios.$get<Queue>(`/queues/${queueName}`);
+};
+
+/**
+ * Update specific queue
+ *
+ * Needs `general.queues-patch-queue` permission
+ *
+ * @param queueOrName Queue or queue's name
+ *
+ * @returns queue info
+ */
+export const updateQueue = async (queue: Partial<InputQueue> & { name: Queue['name'] }): Promise<ApiResponse<Queue>> => {
+  const { name, ...data } = queue;
+  return axios.$patch<Queue>(`/queues/${name}`, data);
+};
+
+/**
  * Pause queue
  *
  * Needs `general.queues-put-queue-pause` permission
  *
  * @param queueOrName Queue or queue's name
+ *
+ * @deprecated Use `updateQueue` instead
  *
  * @returns queue info
  */
@@ -85,6 +119,8 @@ export const pauseQueue = async (queueOrName: Queue | Queue['name']): Promise<Ap
  * Needs `general.queues-put-queue-resume` permission
  *
  * @param queueOrName Queue or queue's name
+ *
+ * @deprecated Use `updateQueue` instead
  *
  * @returns queue info
  */
