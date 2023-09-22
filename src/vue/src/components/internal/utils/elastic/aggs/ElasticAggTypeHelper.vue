@@ -37,7 +37,7 @@ export default defineComponent({
       required: true,
     },
     agg: {
-      type: Object as PropType<any | undefined>,
+      type: Object as PropType<Record<string, any> | undefined>,
       default: undefined,
     },
   },

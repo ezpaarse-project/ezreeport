@@ -102,7 +102,7 @@ export default defineComponent({
       required: true,
     },
     errorMessage: {
-      type: String,
+      type: String as PropType<string | undefined>,
       default: undefined,
     },
     neededPermissions: {
@@ -143,6 +143,22 @@ export default defineComponent({
     innerSearch: '',
   }),
   computed: {
+    baseItems() {
+      const baseItems = [];
+      if (!this.hideAll) {
+        baseItems.push(
+          {
+            id: '',
+            name: this.$t(
+              'all',
+              { namespace: this.$ezReeport.tcNamespace(false, 2) },
+            ).toString(),
+          } as namespaces.Namespace,
+        );
+      }
+
+      return baseItems;
+    },
     items(): namespaces.Namespace[] {
       let items = this.$ezReeport.data.namespaces.data;
 
@@ -159,17 +175,10 @@ export default defineComponent({
 
       items.sort((a, b) => a.name.localeCompare(b.name));
 
-      if (this.hideAll) {
-        return items;
-      }
-
-      return [
-        { id: '', name: this.$t('all', { namespace: this.$ezReeport.tcNamespace(false, 2) }).toString() } as namespaces.Namespace,
-        ...items,
-      ];
+      return items;
     },
     current() {
-      return this.items.find(({ id }) => id === this.value) as (namespaces.Namespace | undefined);
+      return [...this.baseItems, ...this.items].find(({ id }) => id === this.value);
     },
     searchResults() {
       if (!this.innerSearch) {
@@ -178,12 +187,15 @@ export default defineComponent({
       return fzfNamespaces.search(this.innerSearch);
     },
     autocompleteItems() {
-      if (this.searchResults.length > 0) {
-        return this.searchResults
-          .filter(({ score }) => (score ?? 1) < 0.6)
-          .map(({ item }) => item);
+      if (this.searchResults.length <= 0) {
+        return [...this.baseItems, ...this.items];
       }
-      return this.items;
+
+      const results = this.searchResults
+        .filter(({ score }) => (score ?? 1) < 0.6)
+        .map(({ item }) => item);
+
+      return [...this.baseItems, ...results];
     },
   },
   watch: {

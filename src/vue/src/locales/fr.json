@@ -18,6 +18,8 @@
   "settings": "Paramètres",
   "preview": "Prévisualisation",
   "unknown": "Inconnu",
+  "filter": "Filtrer",
+  "reset": "Réinitialiser",
 
   "tasks": {
     "name": "Nom du rapport",
