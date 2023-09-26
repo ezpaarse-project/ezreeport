@@ -357,7 +357,7 @@ fr:
     field: 'Champ précis'
     text: 'Texte à afficher'
     type: 'Type de donnée'
-    formatParams: 'Paramètre pour formatter les données'
+    formatParams: 'Paramètre pour formater les données'
   errors:
     no_duplicate: 'Ce couple Clé/Champ est déjà utilisé'
   formats:
@@ -366,5 +366,5 @@ fr:
     number: 'Nombre'
   hints:
     dateFormat: 'Format de la date, basé sur {link}'
-    numberFormat: 'Locale utilisée pour formatter'
+    numberFormat: 'Locale utilisée pour formater'
 </i18n>
