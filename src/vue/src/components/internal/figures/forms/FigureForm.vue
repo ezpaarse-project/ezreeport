@@ -23,10 +23,6 @@
 
         <v-spacer />
 
-        <span class="text--secondary" style="font-size: 1.5em; opacity: 0.5;">
-          {{ (index ?? 0) + 1 }}
-        </span>
-
         <v-tooltip top v-if="figure._.valid !== true" color="warning">
           <template #activator="{ attrs, on }">
             <v-icon
@@ -41,6 +37,10 @@
 
           <span>{{ $t(figure._.valid.i18nKey) }}</span>
         </v-tooltip>
+
+        <span class="text--secondary" style="font-size: 1.5em; opacity: 0.5;">
+          {{ (index ?? 0) + 1 }}
+        </span>
 
         <v-btn color="primary" small class="ml-3" @click="$emit('edit:figure', id)">
           {{ $t('$ezreeport.settings') }}
