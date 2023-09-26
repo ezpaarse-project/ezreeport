@@ -15,12 +15,6 @@ export const Layout = Type.Object({
 
   fetchOptions: Type.Optional(
     Type.Object({
-      aggs: Type.Optional(
-        Type.Array(
-          Type.Record(Type.String(), Type.Any()),
-        ),
-      ),
-
       fetchCount: Type.Optional(
         Type.String({ minLength: 1 }),
       ),

@@ -434,7 +434,7 @@ const router: FastifyPluginAsync = async (fastify) => {
         },
         customPeriod,
         origin: request.user?.username ?? '',
-        writeActivity: !!testEmails,
+        writeActivity: testEmails.length <= 0,
         debug: !!request.query.debug && process.env.NODE_ENV !== 'production',
       });
       const job = flow.children?.[0].job;

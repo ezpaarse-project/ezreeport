@@ -24,8 +24,8 @@ const getAllTemplates = async (DATA_FOLDER) => {
       .filter((t) => t.name !== 'scratch')
       .map(
         async (t) => {
-          const { content: template } = await $fetch('src', `/templates/${t.name}`);
-          await writeJSONData(path.join('templates', `${t.name}.json`), template);
+          const { content: template } = await $fetch('src', `/templates/${t.id || t.name}`);
+          await writeJSONData(path.join('templates', `${t.id || t.name}.json`), template);
           return template;
         },
       ),

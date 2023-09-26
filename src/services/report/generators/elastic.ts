@@ -1,11 +1,11 @@
 import EventEmitter from 'node:events';
 
-import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
-import { cloneDeep, merge } from 'lodash';
+import type { estypes as ElasticTypes, RequestParams } from '@elastic/elasticsearch';
+import { merge } from 'lodash';
 
 import { Recurrence, type Prisma } from '~/lib/prisma';
 import { formatISO } from '~/lib/date-fns';
-import { elasticCount, elasticSearch } from '~/lib/elastic';
+import { elasticCount, elasticMSearch } from '~/lib/elastic';
 import { Type, type Static, assertIsSchema } from '~/lib/typebox';
 
 import { calcElasticInterval } from '~/models/recurrence';
@@ -83,15 +83,21 @@ const ElasticFetchOptions = Type.Object({
   dateField: Type.String({ minLength: 1 }),
   // Task specific
   index: Type.String({ minLength: 1 }),
-  filters: Type.Optional(
-    // Simplification of Elastic's filters
-    Type.Record(Type.String(), Type.Any()),
-  ),
-  aggs: Type.Optional(
-    Type.Array(CustomAggregation),
-  ),
-  fetchCount: Type.Optional(
-    Type.String({ minLength: 1 }),
+  // Figure specific
+  requests: Type.Array(
+    Type.Object({
+      aggs: Type.Optional(
+        Type.Array(CustomAggregation),
+      ),
+      fetchCount: Type.Optional(
+        Type.String({ minLength: 1 }),
+      ),
+      // Merged
+      filters: Type.Optional(
+        // Simplification of Elastic's filters
+        Type.Record(Type.String(), Type.Any()),
+      ),
+    }),
   ),
 });
 
@@ -254,86 +260,114 @@ const fetchWithElastic = async (
     throw new ArgumentError('You must precise an index before trying to fetch data from elastic');
   }
 
-  const { filter, ...query } = (options.filters ?? { filter: [] });
-  const baseOpts: ElasticTypes.SearchRequest = {
+  const allAggsInfos: AggInfo[][] = [];
+  const opts: RequestParams.Msearch<ElasticTypes.MsearchMultisearchBody[]> = {
     index,
-    body: {
-      query: {
-        bool: {
-          ...query,
-          filter: [
-            {
-              range: {
-                [options.dateField]: {
-                  gte: formatISO(options.period.start),
-                  lte: formatISO(options.period.end),
-                  format: 'strict_date_optional_time',
+    body: options.requests.map((r) => {
+      const { filter, ...query } = (r.filters ?? { filter: [] });
+      let size: number | undefined;
+
+      let aggs: Record<string, ElasticAggregation> | undefined;
+      const info = r.aggs?.map(parseAggInfo) ?? [];
+      allAggsInfos.push(info);
+      if (r.aggs) {
+        const calendarInterval = calcElasticInterval(options.recurrence);
+        size = 1;
+        aggs = r.aggs.reduce(
+          (prev, agg, i) => reduceAggs(prev, agg, calendarInterval, info[i]),
+          {},
+        );
+      }
+
+      return {
+        query: {
+          bool: {
+            ...query,
+            filter: [
+              {
+                range: {
+                  [options.dateField]: {
+                    gte: formatISO(options.period.start),
+                    lte: formatISO(options.period.end),
+                    format: 'strict_date_optional_time',
+                  },
                 },
               },
-            },
-            ...filter,
-          ],
+              ...filter,
+            ],
+          },
         },
-      },
-    },
+        aggs,
+        size,
+      };
+    }),
   };
-  const opts = cloneDeep(baseOpts);
 
-  // Generating names for aggregations if not defined
-  const aggsInfos = options.aggs?.map(parseAggInfo) ?? [];
+  const results: Prisma.JsonObject[] = [];
+  // const { body } = await elasticSearch(opts, options.auth.username);
+  const { body: { responses } } = await elasticMSearch(
+    {
+      ...opts,
+      // add empty headers
+      body: opts.body.map((v) => [{}, v]).flat(),
+    },
+    options.auth.username,
+  );
 
-  if (
-    options.aggs
-    // Always true but TypeScript refers to ElasticTypes instead...
-    && opts.body
-  ) {
-    const calendarInterval = calcElasticInterval(options.recurrence);
-    opts.size = 1; // keeping at least one record so we can check if there's data or not
-    opts.body.aggs = options.aggs.reduce(
-      (prev, agg, i) => reduceAggs(prev, agg, calendarInterval, aggsInfos[i]),
-      {},
-    );
-  }
+  for (let i = 0; i < responses.length; i += 1) {
+    const response = responses[i];
+    const aggsInfos = allAggsInfos[i];
+    const request = options.requests[i];
+    const data: Prisma.JsonObject = {};
 
-  const data: Prisma.JsonObject = {};
-  const { body } = await elasticSearch(opts, options.auth.username);
-
-  // Checks any errors
-  if (body._shards.failures?.length) {
-    const reasons = body._shards.failures.map((err) => err.reason.reason).join(' ; ');
-    throw new Error(`An error occurred when fetching data : ${reasons}`);
-  }
-
-  // Checks if there's data
-  if (
-    typeof body.hits.total === 'object'
-      ? body.hits.total.value === 0
-      : body.hits.hits.length === 0
-  ) {
-    throw new Error(`No data found for given request: ${JSON.stringify(opts)}`);
-  }
-
-  if (options.aggs) {
-    // eslint-disable-next-line no-restricted-syntax
-    for (const aggInfo of aggsInfos) {
-      const cleaned = cleanAggValues(aggInfo, body.aggregations);
-
-      // Remove redundant arrays
-      let values = cleaned;
-      // Metrics aggregations must be an object and not an array
-      if (!bucketAggregations.has(aggInfo.type) && cleaned.length === 1) {
-        ([values] = cleaned);
-      }
-      data[aggInfo.name] = values;
+    // Checks any errors
+    if ('error' in response) {
+      throw new Error(response.error.reason);
     }
+
+    // Checks any errors
+    if (response._shards.failures?.length) {
+      const reasons = response._shards.failures.map((err) => err.reason.reason).join(' ; ');
+      throw new Error(`An error occurred when fetching data : ${reasons}`);
+    }
+
+    // Checks if there's data
+    if (
+      typeof response.hits.total === 'object'
+        ? response.hits.total.value === 0
+        : response.hits.hits.length === 0
+    ) {
+      throw new Error(`No data found for given request: ${JSON.stringify(opts.body[i])}`);
+    }
+
+    if (request.aggs) {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const aggInfo of aggsInfos) {
+        const cleaned = cleanAggValues(aggInfo, response.aggregations);
+
+        // Remove redundant arrays
+        let values = cleaned;
+        // Metrics aggregations must be an object and not an array
+        if (!bucketAggregations.has(aggInfo.type) && cleaned.length === 1) {
+          ([values] = cleaned);
+        }
+        data[aggInfo.name] = values;
+      }
+    }
+
+    if (request.fetchCount) {
+      // eslint-disable-next-line no-await-in-loop
+      const { body: { count } } = await elasticCount(
+        { body: { query: opts.body[i].query } },
+        options.auth.username,
+      );
+      data[request.fetchCount] = count;
+    }
+
+    results.push(data);
   }
 
-  if (options.fetchCount) {
-    const { body: { count } } = await elasticCount(baseOpts, options.auth.username);
-    data[options.fetchCount] = count;
-  }
-
-  return data;
+  return results;
 };
 
 export default fetchWithElastic;
