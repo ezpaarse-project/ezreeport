@@ -8,16 +8,15 @@ export const figureTypes = {
   },
   others: {
     area: { icon: 'mdi-chart-areaspline-variant' },
-    bar: { icon: 'mdi-chart-bar' },
     // image: { icon: 'mdi-image' },
     line: { icon: 'mdi-chart-line' },
-    point: { icon: 'mdi-chart-scatter-plot' },
+    // point: { icon: 'mdi-chart-scatter-plot' },
     // rect: { icon: 'mdi-rectangle' },
     // rule: { icon: 'mdi-vector-line' },
     // text: { icon: 'mdi-text' },
     // tick: { icon: '' }, // TODO
-    trail: { icon: 'mdi-chart-bell-curve' },
-    circle: { icon: 'mdi-chart-scatter-plot' },
+    // trail: { icon: 'mdi-chart-bell-curve' },
+    // circle: { icon: 'mdi-chart-scatter-plot' },
     // square: { icon: 'mdi-square' },
   },
 };
