@@ -165,8 +165,7 @@ const getReportPeriod = (
     return parsedPeriod;
   }
 
-  // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
-  return calcPeriod(dfns.parseISO(task.nextRun.toString()), task.recurrence);
+  return calcPeriod(new Date(), task.recurrence);
 };
 
 /**

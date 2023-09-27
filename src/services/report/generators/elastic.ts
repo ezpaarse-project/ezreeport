@@ -11,45 +11,18 @@ import { Type, type Static, assertIsSchema } from '~/lib/typebox';
 import { calcElasticInterval } from '~/models/recurrence';
 import { ArgumentError } from '~/types/errors';
 
+import aggsTypes from './elastic/aggs.json';
+
 type ElasticAggregation = ElasticTypes.AggregationsAggregationContainer;
 
 /**
  * All types of bucket aggregations in elastic
  */
-const bucketAggregations = new Set([
-  'adjacency_matrix',
-  'auto_date_histogram',
-  'avg_bucket',
-  'bucket_script',
-  'bucket_selector',
-  'bucket_sort',
-  'categorize_text',
-  'date_histogram',
-  'date_range',
-  'extended_stats_bucket',
-  'geo_distance',
-  'geohash_grid',
-  'geo_line',
-  'geotile_grid',
-  'global',
-  'histogram',
-  'ip_range',
-  'max_bucket',
-  'min_bucket',
-  'missing',
-  'multi_terms',
-  'nested',
-  'parent',
-  'range',
-  'rare_terms',
-  'reverse_nested',
-  'significant_terms',
-  'significant_text',
-  'stats_bucket',
-  'sum_bucket',
-  'terms',
-  'variable_width_histogram',
-]);
+const bucketAggregations = new Set<string>(
+  Object.entries(aggsTypes)
+    .filter(([, { returnsArray }]) => returnsArray)
+    .map(([key]) => key),
+);
 
 const CustomAggregation = Type.Recursive(
   (This) => Type.Intersect([
@@ -68,6 +41,13 @@ const CustomAggregation = Type.Recursive(
 
 type CustomAggregationType = Static<typeof CustomAggregation>;
 
+const SimpleAggregation = Type.Omit(
+  CustomAggregation,
+  ['aggs', 'aggregations'],
+);
+
+type SimpleAggregationType = Static<typeof SimpleAggregation>;
+
 const ElasticFetchOptions = Type.Object({
   // Auto fields
   recurrence: Type.Enum(Recurrence),
@@ -85,19 +65,33 @@ const ElasticFetchOptions = Type.Object({
   index: Type.String({ minLength: 1 }),
   // Figure specific
   requests: Type.Array(
-    Type.Object({
-      aggs: Type.Optional(
-        Type.Array(CustomAggregation),
-      ),
-      fetchCount: Type.Optional(
-        Type.String({ minLength: 1 }),
-      ),
-      // Merged
-      filters: Type.Optional(
-        // Simplification of Elastic's filters
-        Type.Record(Type.String(), Type.Any()),
-      ),
-    }),
+    Type.Intersect([
+      Type.Union([
+        Type.Object({
+          buckets: Type.Optional(
+            Type.Array(CustomAggregation),
+          ),
+          metric: Type.Optional(SimpleAggregation),
+        }),
+        // OR
+        Type.Object({
+          aggs: Type.Optional(
+            Type.Array(CustomAggregation),
+          ),
+        }),
+      ]),
+      // AND
+      Type.Object({
+        fetchCount: Type.Optional(
+          Type.String({ minLength: 1 }),
+        ),
+        // Merged
+        filters: Type.Optional(
+          // Simplification of Elastic's filters
+          Type.Record(Type.String(), Type.Any()),
+        ),
+      }),
+    ]),
   ),
 });
 
@@ -110,6 +104,10 @@ type AggInfo = {
 };
 
 const handledKeys = new Set(['name', 'aggs', 'aggregations']);
+
+const getAggType = (agg: Record<string, any>) => Object.keys(agg)
+  .filter((k) => !handledKeys.has(k))[0];
+
 /**
  * Parse aggregations in order to calculate keys when cleaning elastic response
  *
@@ -129,9 +127,31 @@ const parseAggInfo = (agg: CustomAggregationType, i: number): AggInfo => {
 
   return {
     name,
-    type: Object.keys(agg).filter((k) => !handledKeys.has(k))[0],
+    type: getAggType(agg),
     subAggs,
   };
+};
+
+/**
+ * Add metric to buckets (and sub buckets), making it a fully working agg
+ *
+ * @param bucket The current bucket
+ * @param metric The metric to add
+ *
+ * @returns Aggregation
+ */
+const metricBucketToAgg = (
+  bucket: CustomAggregationType,
+  metric: SimpleAggregationType,
+): CustomAggregationType => {
+  const key = bucket.aggs ? 'aggs' : 'aggregations';
+  const type = getAggType(bucket);
+  if (bucketAggregations.has(type)) {
+    const sub = bucket[key]?.map((b) => metricBucketToAgg(b, metric)) ?? [];
+    sub.push(metric);
+  }
+
+  return bucket;
 };
 
 /**
@@ -260,6 +280,7 @@ const fetchWithElastic = async (
     throw new ArgumentError('You must precise an index before trying to fetch data from elastic');
   }
 
+  const allAggsOptions: CustomAggregationType[][] = [];
   const allAggsInfos: AggInfo[][] = [];
   const opts: RequestParams.Msearch<ElasticTypes.MsearchMultisearchBody[]> = {
     index,
@@ -267,13 +288,28 @@ const fetchWithElastic = async (
       const { filter, ...query } = (r.filters ?? { filter: [] });
       let size: number | undefined;
 
+      let aggsOptions: CustomAggregationType[] | undefined;
+      if ('aggs' in r && r.aggs) {
+        // If aggs are already provided just take them
+        aggsOptions = r.aggs;
+      } else if ('buckets' in r && r.buckets && 'metric' in r && r.metric) {
+        // If aggs need to be merged from buckets and metric
+        const m = r.metric;
+        aggsOptions = r.buckets.map((b) => metricBucketToAgg(b, m));
+      } else if ('buckets' in r && r.buckets) {
+        aggsOptions = r.buckets;
+      } else if ('metric' in r && r.metric) {
+        aggsOptions = [r.metric];
+      }
+      allAggsOptions.push(aggsOptions ?? []);
+
       let aggs: Record<string, ElasticAggregation> | undefined;
-      const info = r.aggs?.map(parseAggInfo) ?? [];
+      const info = aggsOptions?.map(parseAggInfo) ?? [];
       allAggsInfos.push(info);
-      if (r.aggs) {
+      if (aggsOptions) {
         const calendarInterval = calcElasticInterval(options.recurrence);
         size = 1;
-        aggs = r.aggs.reduce(
+        aggs = aggsOptions.reduce(
           (prev, agg, i) => reduceAggs(prev, agg, calendarInterval, info[i]),
           {},
         );
@@ -318,6 +354,7 @@ const fetchWithElastic = async (
     const response = responses[i];
     const aggsInfos = allAggsInfos[i];
     const request = options.requests[i];
+    const aggs = allAggsOptions[i];
     const data: Prisma.JsonObject = {};
 
     // Checks any errors
@@ -340,14 +377,14 @@ const fetchWithElastic = async (
       throw new Error(`No data found for given request: ${JSON.stringify(opts.body[i])}`);
     }
 
-    if (request.aggs) {
+    if (aggs.length > 0) {
       // eslint-disable-next-line no-restricted-syntax
       for (const aggInfo of aggsInfos) {
         const cleaned = cleanAggValues(aggInfo, response.aggregations);
 
         // Remove redundant arrays
         let values = cleaned;
-        // Metrics aggregations must be an object and not an array
+        // Don't transform aggregations that are expected to returns array
         if (!bucketAggregations.has(aggInfo.type) && cleaned.length === 1) {
           ([values] = cleaned);
         }

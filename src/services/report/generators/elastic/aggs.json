@@ -1,0 +1,132 @@
+{
+  "terms": {
+    "type": "bucket",
+    "subAggregations": true,
+    "returnsArray": true
+  },
+  "range": {
+    "type": "bucket",
+    "subAggregations": false,
+    "returnsArray": true
+  },
+  "date_histogram": {
+    "type": "bucket",
+    "subAggregations": true,
+    "returnsArray": true
+  },
+  "histogram": {
+    "type": "bucket",
+    "subAggregations": true,
+    "returnsArray": true
+  },
+  "geo_grid": {
+    "type": "bucket",
+    "subAggregations": true,
+    "returnsArray": true
+  },
+  "filters": {
+    "type": "bucket",
+    "subAggregations": true,
+    "returnsArray": true
+  },
+  "significant_terms": {
+    "type": "bucket",
+    "subAggregations": true,
+    "returnsArray": true
+  },
+  "sampler": {
+    "type": "bucket",
+    "subAggregations": true,
+    "returnsArray": true
+  },
+  "adjacency_matrix": {
+    "type": "bucket",
+    "subAggregations": true,
+    "returnsArray": true
+  },
+  "average": {
+    "type": "metric",
+    "subAggregations": false,
+    "returnsArray": false
+  },
+  "sum": {
+    "type": "metric",
+    "subAggregations": false,
+    "returnsArray": false
+  },
+  "min": {
+    "type": "metric",
+    "subAggregations": false,
+    "returnsArray": false
+  },
+  "max": {
+    "type": "metric",
+    "subAggregations": false,
+    "returnsArray": false
+  },
+  "cardinality": {
+    "type": "metric",
+    "subAggregations": false,
+    "returnsArray": false
+  },
+  "percentiles": {
+    "type": "metric",
+    "subAggregations": false,
+    "returnsArray": false
+  },
+  "percentile_ranks": {
+    "type": "metric",
+    "subAggregations": false,
+    "returnsArray": false
+  },
+  "value_count": {
+    "type": "metric",
+    "subAggregations": false,
+    "returnsArray": false
+  },
+  "top_hits": {
+    "type": "metric",
+    "subAggregations": true,
+    "returnsArray": true
+  },
+  "stats": {
+    "type": "metric",
+    "subAggregations": false,
+    "returnsArray": false
+  },
+  "avg_bucket": {
+    "type": "pipeline",
+    "subAggregations": false,
+    "returnsArray": false
+  },
+  "cumulative_sum": {
+    "type": "pipeline",
+    "subAggregations": false,
+    "returnsArray": false
+  },
+  "derivative": {
+    "type": "pipeline",
+    "subAggregations": false,
+    "returnsArray": false
+  },
+  "max_bucket": {
+    "type": "pipeline",
+    "subAggregations": false,
+    "returnsArray": false
+  },
+  "min_bucket": {
+    "type": "pipeline",
+    "subAggregations": false,
+    "returnsArray": false
+  },
+  "moving_average": {
+    "type": "pipeline",
+    "subAggregations": false,
+    "returnsArray": false
+  },
+  "sum_bucket": {
+    "type": "pipeline",
+    "subAggregations": false,
+    "returnsArray": false
+  }
+}

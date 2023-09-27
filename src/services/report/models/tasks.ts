@@ -225,7 +225,7 @@ export const getAllTasksToGenerate = async (
   where: {
     enabled: true,
     nextRun: {
-      equals: date,
+      lte: date,
     },
   },
 });
