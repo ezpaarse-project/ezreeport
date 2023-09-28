@@ -21,7 +21,7 @@
         {{ $t('typeHelper') }}
       </v-card-title>
 
-      <TSPreview :value="typeDefinition.type" :is-array="typeDefinition.isArray" />
+      <TSPreview :value="typeDefinition.type" :is-array="typeDefinition.returnsArray" />
     </v-card>
   </v-menu>
 </template>

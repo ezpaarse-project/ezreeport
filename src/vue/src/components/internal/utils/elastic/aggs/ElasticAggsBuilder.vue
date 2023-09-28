@@ -32,7 +32,7 @@
         <v-list-item-content>
           <v-list-item-title>{{ item.name }}</v-list-item-title>
 
-          <i18n tag="v-list-item-subtitle" path="aggSummary" class="font-weight-light text--secondary">
+          <i18n tag="v-list-item-subtitle" path="$ezreeport.fetchOptions.aggSummary" class="font-weight-light text--secondary">
             <template #type>
               <span class="font-weight-medium">
                 {{ item.type }}
@@ -177,10 +177,3 @@ export default defineComponent({
 <style scoped>
 
 </style>
-
-<i18n lang="yaml">
-en:
-  aggSummary: '{type} of {field}'
-fr:
-  aggSummary: '{type} sur {field}'
-</i18n>

@@ -54,12 +54,27 @@
       <v-divider />
 
       <v-card-text>
-        <component
-          :is="figureParamsForm"
-          :id="id"
-          :layout-id="layoutId"
-          :readonly="readonly"
-        />
+        <!-- Figure params -->
+        <v-row>
+          <v-col>
+            <component
+              :is="figureParamsForm"
+              :id="id"
+              :layout-id="layoutId"
+              :readonly="readonly"
+              @update:fetchOptions="onFetchOptionUpdate"
+            />
+
+            <!-- Advanced -->
+            <CustomSection v-if="!readonly || 'fetchOptions.othersCount > 0'">
+              <ToggleableObjectTree
+                :label="$t('$ezreeport.advanced_parameters').toString()"
+                :value="{}"
+                v-on="{}"
+              />
+            </CustomSection>
+          </v-col>
+        </v-row>
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -67,8 +82,9 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { pick } from 'lodash';
 import type { AnyCustomFigure } from '~/lib/templates/customTemplates';
-import useTemplateStore, { type ValidationResult } from '~/stores/template';
+import useTemplateStore, { supportedFetchOptions, type FetchOptions, type ValidationResult } from '~/stores/template';
 import figureFormMap from '../types/forms';
 
 export default defineComponent({
@@ -174,6 +190,31 @@ export default defineComponent({
           },
         );
       },
+    },
+  },
+  methods: {
+    async onFetchOptionUpdate(data: Partial<FetchOptions>) {
+      if (!this.figure) {
+        return;
+      }
+
+      this.templateStore.UPDATE_FIGURE(
+        this.layoutId,
+        this.figure._.id,
+        {
+          ...this.figure,
+          fetchOptions: {
+            ...pick(this.figure.fetchOptions ?? {}, supportedFetchOptions),
+            ...data,
+          },
+        },
+      );
+
+      // Revalidate
+      if (data.fetchCount != null) {
+        await this.$nextTick();
+        (this.$refs.form as any)?.validate();
+      }
     },
   },
 });

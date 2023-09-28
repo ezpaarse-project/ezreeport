@@ -3,6 +3,7 @@
     <v-col>
       <FigureElasticForm
         :layout-id="layoutId"
+        :id="id"
         :readonly="readonly"
       />
     </v-col>
@@ -196,19 +197,12 @@ export default defineComponent({
       };
     },
     availableAggs() {
-      const layout = this.templateStore.currentLayouts.find(
-        ({ _: { id } }) => id === this.layoutId,
-      );
-      if (!layout || !layout.fetchOptions) {
+      if (!this.figure?.fetchOptions) {
         return [];
       }
 
       // Add already defined aggregations
-      let available: any[] = [];
-      const aggs = 'aggs' in layout.fetchOptions ? layout.fetchOptions.aggs : layout.fetchOptions.aggregations;
-      if (Array.isArray(aggs)) {
-        available = [...aggs];
-      }
+      let available = ('aggs' in this.figure.fetchOptions && this.figure.fetchOptions.aggs) || [];
 
       // Remove non iterable aggregations
       available = available.filter((agg) => {
@@ -218,7 +212,7 @@ export default defineComponent({
         if (!typeDef) {
           return true;
         }
-        return typeDef.isArray;
+        return typeDef.returnsArray;
       });
 
       return available.map((agg, i) => agg.name || `agg${i}`);
@@ -227,16 +221,12 @@ export default defineComponent({
      * Current aggregation targeted
      */
     currentAgg() {
-      const layout = this.templateStore.currentLayouts.find(
-        ({ _: { id } }) => id === this.layoutId,
-      );
-
-      if (!layout?.fetchOptions || !this.figureParams) {
+      if (!this.figure?.fetchOptions) {
         return undefined;
       }
 
-      const aggs = 'aggs' in layout.fetchOptions ? layout.fetchOptions.aggs : layout.fetchOptions.aggregations;
-      return (aggs as any[]).find(({ name }) => name === this.figureParams?.dataKey);
+      const aggs = ('aggs' in this.figure.fetchOptions && this.figure.fetchOptions.aggs) || [];
+      return aggs.find(({ name }) => name === this.figureParams?.dataKey);
     },
   },
   mounted() {

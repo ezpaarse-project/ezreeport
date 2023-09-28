@@ -114,6 +114,7 @@
   "fetchOptions": {
     "title": "Fetch options",
     "aggName": "Aggregation name",
+    "aggSummary": "{type} of {field}",
     "index": "Elastic index",
     "dateField": "'date' field of the index",
     "filters": "Filters",

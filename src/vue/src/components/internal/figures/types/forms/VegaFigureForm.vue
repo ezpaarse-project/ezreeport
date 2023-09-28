@@ -3,6 +3,7 @@
     <v-col>
       <FigureElasticForm
         :layout-id="layoutId"
+        :id="id"
         :readonly="readonly"
       />
     </v-col>
@@ -398,12 +399,12 @@ export default defineComponent({
      * Current aggregation targeted
      */
     currentAgg() {
-      if (!this.layout?.fetchOptions || !this.figureParams) {
+      if (!this.figure?.fetchOptions) {
         return undefined;
       }
 
-      const aggs = 'aggs' in this.layout.fetchOptions ? this.layout.fetchOptions.aggs : this.layout.fetchOptions.aggregations;
-      return (aggs as any[]).find(({ name }) => name === this.figureParams?.dataKey);
+      const aggs = ('aggs' in this.figure.fetchOptions && this.figure.fetchOptions.aggs) || [];
+      return aggs.find(({ name }) => name === this.figureParams?.dataKey);
     },
     /**
      * Possible formats for data labels with localisation
@@ -449,13 +450,13 @@ export default defineComponent({
      * Available aggregations
      */
     availableAggs() {
-      if (!this.layout?.fetchOptions) {
+      if (!this.figure?.fetchOptions) {
         return [];
       }
 
       // Add already defined aggregations
       let available: any[] = [];
-      const aggs = 'aggs' in this.layout.fetchOptions ? this.layout.fetchOptions.aggs : this.layout.fetchOptions.aggregations;
+      const aggs = ('aggs' in this.figure.fetchOptions && this.figure.fetchOptions.aggs) || [];
       if (Array.isArray(aggs)) {
         available = [...aggs];
       }
@@ -468,7 +469,7 @@ export default defineComponent({
         if (!typeDef) {
           return true;
         }
-        return typeDef.isArray;
+        return typeDef.returnsArray;
       });
 
       return available.map((agg, i) => agg.name || `agg${i}`);

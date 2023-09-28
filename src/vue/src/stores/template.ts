@@ -8,6 +8,7 @@ import {
   type CustomTemplate,
   type AnyCustomLayout,
   type AnyCustomFigure,
+  type AnyFetchOption,
   addAdditionalDataToLayouts,
   removeAdditionalDataToLayouts,
 } from '~/lib/templates/customTemplates';
@@ -34,9 +35,13 @@ export type FetchOptions = {
   others: Record<string, any>;
   othersCount: number;
   aggs: any[];
+  buckets: {
+    value: Record<string, any>[],
+    metric: Record<string, any> | undefined;
+  };
 };
 
-export const supportedFetchOptions = ['filters', 'fetchCount', 'aggs', 'aggregations', 'dateField', 'index'];
+export const supportedFetchOptions = ['filters', 'fetchCount', 'aggs', 'aggregations', 'dateField', 'index', 'buckets', 'metric'];
 
 // Utility functions
 export const isFullTemplate = (template?: AnyTemplate): template is templates.FullTemplate['body'] => !!template && 'layouts' in template;
@@ -45,11 +50,13 @@ export const isTaskTemplate = (template?: AnyTemplate): template is tasks.FullTa
 /**
  * Transform raw `fetchOptions` into usable data
  *
+ * @deprecated Types are better now
+ *
  * @param fetchOptions raw data
  *
  * @returns usable data
  */
-export const transformFetchOptions = (fetchOptions: any): FetchOptions => {
+export const transformFetchOptions = (fetchOptions: AnyFetchOption | undefined): FetchOptions => {
   const opts: FetchOptions = {
     index: undefined,
     dateField: undefined,
@@ -60,6 +67,10 @@ export const transformFetchOptions = (fetchOptions: any): FetchOptions => {
     others: {},
     othersCount: 0,
     aggs: [],
+    buckets: {
+      value: [],
+      metric: undefined,
+    },
   };
 
   if (!fetchOptions) {
@@ -82,26 +93,26 @@ export const transformFetchOptions = (fetchOptions: any): FetchOptions => {
   }
 
   // Extract fetch count with compatible type definition
-  if (fetchOptions.fetchCount != null && typeof fetchOptions.fetchCount === 'string') {
+  if ('fetchCount' in fetchOptions && fetchOptions.fetchCount != null) {
     opts.fetchCount = fetchOptions.fetchCount;
     opts.isFetchCount = typeof opts.fetchCount === 'string';
   }
 
   // Extract aggs with compatible type definition
-  if (fetchOptions.aggs && Array.isArray(fetchOptions.aggs)) {
+  if ('aggs' in fetchOptions && Array.isArray(fetchOptions.aggs)) {
     opts.aggs = fetchOptions.aggs;
   }
-  if (fetchOptions.aggregations && Array.isArray(fetchOptions.aggregations)) {
-    opts.aggs = fetchOptions.aggregations;
-  }
+  // if ('aggregattions' in fetchOptions && Array.isArray(fetchOptions.aggregations)) {
+  //   opts.aggs = fetchOptions.aggregations;
+  // }
 
   // Extract index with compatible type definition
-  if (fetchOptions.index != null) {
+  if ('index' in fetchOptions && fetchOptions.index != null) {
     opts.index = fetchOptions.index.toString();
   }
 
   // Extract date with compatible type definition
-  if (fetchOptions.dateField != null) {
+  if ('dateField' in fetchOptions && fetchOptions.dateField != null) {
     opts.dateField = fetchOptions.dateField.toString();
   }
 
@@ -571,11 +582,17 @@ const useTemplatePinia = defineStore('ezr_template', {
       }
 
       // Template validation
-      if (isTemplateValid === true) {
+      if (isTemplateValid === true && isTaskTemplate(this.current)) {
         isTemplateValid = execAllRules([
           { rules: this.rules.template.index, value: this.current.fetchOptions?.index },
         ]);
       }
+      // if (isTemplateValid === true && isFullTemplate(this.current)) {
+      //   isTemplateValid = execAllRules([]);
+      // }
+      // if (isTemplateValid === true) {
+      //   isTemplateValid = execAllRules([]);
+      // }
 
       this.isCurrentValid = isTemplateValid;
     },
