@@ -12,7 +12,7 @@
         v-if="currentLabel"
         v-model="labelPopoverShown"
         :element="currentLabel"
-        :linked-agg="buckets.get(currentLabel._.dataKeyField)?.bucket"
+        :linked-agg="aggs.get(currentLabel._.dataKeyField)?.agg"
         :coords="labelPopoverCoords"
         :readonly="readonly"
         :currentKeyFields="currentFigureKeyFields"
@@ -60,16 +60,16 @@
                 {{ label.text || `${label.dataKey}.${label.field || 'value'}` }}
               </v-list-item-title>
 
-              <i18n v-if="buckets.get(label._.dataKeyField)" tag="v-list-item-subtitle" path="$ezreeport.fetchOptions.aggSummary" class="font-weight-light text--secondary">
+              <i18n v-if="aggs.get(label._.dataKeyField)" tag="v-list-item-subtitle" path="$ezreeport.fetchOptions.aggSummary" class="font-weight-light text--secondary">
                 <template #type>
                   <span class="font-weight-medium">
-                    {{ buckets.get(label._.dataKeyField)?.formatted.type }}
+                    {{ aggs.get(label._.dataKeyField)?.formatted.type }}
                   </span>
                 </template>
 
                 <template #field>
                   <span class="font-weight-medium">
-                    {{ buckets.get(label._.dataKeyField)?.formatted.field }}
+                    {{ aggs.get(label._.dataKeyField)?.formatted.field }}
                   </span>
                 </template>
               </i18n>
@@ -122,7 +122,7 @@ type MetricParams = {
 };
 
 type AggMapElement = {
-  bucket: Record<string, any>,
+  agg: Record<string, any>,
   formatted: {
     name: string,
     type: string,
@@ -221,30 +221,27 @@ export default defineComponent({
         this.innerLabels = val;
       },
     },
-    buckets() {
+    aggs() {
       if (!this.figure?.fetchOptions) {
         return new Map<string, AggMapElement>();
       }
 
-      let buckets: Record<string, any>[] = [];
-      if ('buckets' in this.figure.fetchOptions) {
-        buckets = this.figure.fetchOptions.buckets ?? [];
-      }
+      let aggs: Record<string, any>[] = [];
       if ('aggs' in this.figure.fetchOptions) {
-        buckets = this.figure.fetchOptions.aggs ?? [];
+        aggs = this.figure.fetchOptions.aggs ?? [];
       }
 
       return new Map<string, AggMapElement>(
-        buckets.map((bucket, i) => {
-          const type = getTypeFromAgg(bucket);
+        aggs.map((agg, i) => {
+          const type = getTypeFromAgg(agg);
           return [
-            bucket.name,
+            agg.name,
             {
-              bucket,
+              agg,
               formatted: {
-                name: `${bucket.name}` || `agg${i}`,
+                name: `${agg.name}` || `agg${i}`,
                 type: this.$t(type ? `$ezreeport.fetchOptions.agg_types.${type}` : '$ezreeport.unknown').toString(),
-                field: bucket[type || '']?.field || 'unknown',
+                field: agg[type || '']?.field || 'unknown',
               },
             },
           ];
