@@ -1,132 +1,154 @@
 {
-  "terms": {
-    "type": "bucket",
-    "subAggregations": true,
-    "returnsArray": true
-  },
-  "range": {
-    "type": "bucket",
-    "subAggregations": false,
-    "returnsArray": true
-  },
-  "date_histogram": {
-    "type": "bucket",
-    "subAggregations": true,
-    "returnsArray": true
-  },
-  "histogram": {
-    "type": "bucket",
-    "subAggregations": true,
-    "returnsArray": true
-  },
-  "geo_grid": {
-    "type": "bucket",
-    "subAggregations": true,
-    "returnsArray": true
-  },
-  "filters": {
-    "type": "bucket",
-    "subAggregations": true,
-    "returnsArray": true
-  },
-  "significant_terms": {
-    "type": "bucket",
-    "subAggregations": true,
-    "returnsArray": true
-  },
-  "sampler": {
-    "type": "bucket",
-    "subAggregations": true,
-    "returnsArray": true
-  },
   "adjacency_matrix": {
-    "type": "bucket",
+    "returnsArray": true,
     "subAggregations": true,
-    "returnsArray": true
+    "type": "bucket"
   },
-  "average": {
-    "type": "metric",
-    "subAggregations": false,
-    "returnsArray": false
-  },
-  "sum": {
-    "type": "metric",
-    "subAggregations": false,
-    "returnsArray": false
-  },
-  "min": {
-    "type": "metric",
-    "subAggregations": false,
-    "returnsArray": false
-  },
-  "max": {
-    "type": "metric",
-    "subAggregations": false,
-    "returnsArray": false
-  },
-  "cardinality": {
-    "type": "metric",
-    "subAggregations": false,
-    "returnsArray": false
-  },
-  "percentiles": {
-    "type": "metric",
-    "subAggregations": false,
-    "returnsArray": false
-  },
-  "percentile_ranks": {
-    "type": "metric",
-    "subAggregations": false,
-    "returnsArray": false
-  },
-  "value_count": {
-    "type": "metric",
-    "subAggregations": false,
-    "returnsArray": false
-  },
-  "top_hits": {
-    "type": "metric",
+  "auto_date_histogram": {
+    "returnsArray": true,
     "subAggregations": true,
-    "returnsArray": true
+    "type": "bucket"
   },
-  "stats": {
-    "type": "metric",
+  "avg": {
+    "common": true,
+    "returnsArray": false,
     "subAggregations": false,
-    "returnsArray": false
+    "type": "metric"
   },
   "avg_bucket": {
-    "type": "pipeline",
+    "returnsArray": false,
     "subAggregations": false,
-    "returnsArray": false
+    "type": "pipeline"
+  },
+  "cardinality": {
+    "common": true,
+    "returnsArray": false,
+    "subAggregations": false,
+    "type": "metric"
   },
   "cumulative_sum": {
-    "type": "pipeline",
+    "returnsArray": false,
     "subAggregations": false,
-    "returnsArray": false
+    "type": "pipeline"
+  },
+  "date_histogram": {
+    "common": true,
+    "returnsArray": true,
+    "subAggregations": true,
+    "type": "bucket"
   },
   "derivative": {
-    "type": "pipeline",
+    "returnsArray": false,
     "subAggregations": false,
-    "returnsArray": false
+    "type": "pipeline"
+  },
+  "diversified_sampler": {
+    "returnsArray": false,
+    "subAggregations": true,
+    "type": "bucket"
+  },
+  "filters": {
+    "returnsArray": true,
+    "subAggregations": true,
+    "type": "bucket"
+  },
+  "geo_grid": {
+    "returnsArray": true,
+    "subAggregations": true,
+    "type": "bucket"
+  },
+  "histogram": {
+    "returnsArray": true,
+    "subAggregations": true,
+    "type": "bucket"
+  },
+  "max": {
+    "common": true,
+    "returnsArray": false,
+    "subAggregations": false,
+    "type": "metric"
   },
   "max_bucket": {
-    "type": "pipeline",
+    "returnsArray": false,
     "subAggregations": false,
-    "returnsArray": false
+    "type": "pipeline"
+  },
+  "min": {
+    "common": true,
+    "returnsArray": false,
+    "subAggregations": false,
+    "type": "metric"
   },
   "min_bucket": {
-    "type": "pipeline",
+    "returnsArray": false,
     "subAggregations": false,
-    "returnsArray": false
+    "type": "pipeline"
   },
   "moving_average": {
-    "type": "pipeline",
+    "returnsArray": false,
     "subAggregations": false,
-    "returnsArray": false
+    "type": "pipeline"
+  },
+  "percentile_ranks": {
+    "returnsArray": false,
+    "subAggregations": false,
+    "type": "metric"
+  },
+  "percentiles": {
+    "returnsArray": false,
+    "subAggregations": false,
+    "type": "metric"
+  },
+  "range": {
+    "returnsArray": true,
+    "subAggregations": false,
+    "type": "bucket"
+  },
+  "sampler": {
+    "returnsArray": true,
+    "subAggregations": true,
+    "type": "bucket"
+  },
+  "significant_terms": {
+    "returnsArray": true,
+    "subAggregations": true,
+    "type": "bucket"
+  },
+  "stats": {
+    "returnsArray": false,
+    "subAggregations": false,
+    "type": "metric"
+  },
+  "sum": {
+    "common": true,
+    "returnsArray": false,
+    "subAggregations": false,
+    "type": "metric"
   },
   "sum_bucket": {
-    "type": "pipeline",
+    "returnsArray": false,
     "subAggregations": false,
-    "returnsArray": false
+    "type": "pipeline"
+  },
+  "terms": {
+    "common": true,
+    "returnsArray": true,
+    "subAggregations": true,
+    "type": "bucket"
+  },
+  "top_hits": {
+    "returnsArray": true,
+    "subAggregations": true,
+    "type": "metric"
+  },
+  "value_count": {
+    "returnsArray": false,
+    "subAggregations": false,
+    "type": "metric"
+  },
+  "variable_width_histogram": {
+    "returnsArray": true,
+    "subAggregations": true,
+    "type": "bucket"
   }
 }

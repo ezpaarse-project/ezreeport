@@ -46,8 +46,6 @@ const SimpleAggregation = Type.Omit(
   ['aggs', 'aggregations'],
 );
 
-type SimpleAggregationType = Static<typeof SimpleAggregation>;
-
 const ElasticFetchOptions = Type.Object({
   // Auto fields
   recurrence: Type.Enum(Recurrence),
@@ -130,28 +128,6 @@ const parseAggInfo = (agg: CustomAggregationType, i: number): AggInfo => {
     type: getAggType(agg),
     subAggs,
   };
-};
-
-/**
- * Add metric to buckets (and sub buckets), making it a fully working agg
- *
- * @param bucket The current bucket
- * @param metric The metric to add
- *
- * @returns Aggregation
- */
-const metricBucketToAgg = (
-  bucket: CustomAggregationType,
-  metric: SimpleAggregationType,
-): CustomAggregationType => {
-  const key = bucket.aggs ? 'aggs' : 'aggregations';
-  const type = getAggType(bucket);
-  if (bucketAggregations.has(type)) {
-    const sub = bucket[key]?.map((b) => metricBucketToAgg(b, metric)) ?? [];
-    sub.push(metric);
-  }
-
-  return bucket;
 };
 
 /**
@@ -295,7 +271,27 @@ const fetchWithElastic = async (
       } else if ('buckets' in r && r.buckets && 'metric' in r && r.metric) {
         // If aggs need to be merged from buckets and metric
         const m = r.metric;
-        aggsOptions = r.buckets.map((b) => metricBucketToAgg(b, m));
+        const recursiveBucket = [...r.buckets]
+          .reverse()
+          .reduce(
+            (prev, { aggregations, aggs, ...v }) => {
+              const sub = aggregations || aggs || [];
+              if (!prev) {
+                return {
+                  ...v,
+                  aggs: [...sub, m],
+                };
+              }
+              return {
+                ...v,
+                aggs: [...sub, m, prev],
+              };
+            },
+            undefined as CustomAggregationType | undefined,
+          );
+        if (recursiveBucket) {
+          aggsOptions = [recursiveBucket];
+        }
       } else if ('buckets' in r && r.buckets) {
         aggsOptions = r.buckets;
       } else if ('metric' in r && r.metric) {
