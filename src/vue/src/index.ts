@@ -18,6 +18,7 @@ const i18nMessages = {
 
 type Options = {
   i18n?: InstanceType<typeof VueI18n>,
+  i18nSilentFallbackWarn?: boolean
 };
 
 export default {
@@ -29,6 +30,8 @@ export default {
     }
 
     if (options?.i18n) {
+      // eslint-disable-next-line no-param-reassign
+      options.i18n.silentFallbackWarn = options?.i18nSilentFallbackWarn ?? true;
       for (const [locale, msgs] of Object.entries(i18nMessages)) {
         options.i18n.mergeLocaleMessage(locale, { [i18nKey]: (msgs as any) });
       }
