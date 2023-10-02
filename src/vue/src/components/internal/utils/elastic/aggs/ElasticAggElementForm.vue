@@ -1,6 +1,6 @@
 <template>
   <v-card elevation="0">
-    <v-card-title>
+    <v-card-subtitle class="d-flex pb-0">
       <!-- Name -->
       <slot name="title">
         <i18n path="$ezreeport.fetchOptions.aggSummary">
@@ -26,11 +26,12 @@
           <v-btn
             :disabled="isTooAdvanced"
             icon
+            small
             @click="showAdvanced = !showAdvanced"
             v-bind="attrs"
             v-on="on"
           >
-            <v-icon>mdi-{{ showAdvanced ? 'list-box-outline' : 'code-json' }}</v-icon>
+            <v-icon small>mdi-{{ showAdvanced ? 'list-box-outline' : 'code-json' }}</v-icon>
           </v-btn>
         </template>
 
@@ -38,7 +39,7 @@
       </v-tooltip>
 
       <slot name="toolbar" />
-    </v-card-title>
+    </v-card-subtitle>
 
     <v-card-text>
       <v-form v-model="valid">
