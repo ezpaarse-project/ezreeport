@@ -28,7 +28,7 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import type { AggDefinition } from '~/lib/elastic/aggs';
+import type { AggDefinition, ElasticAgg } from '~/lib/elastic/aggs';
 
 export default defineComponent({
   props: {
@@ -43,7 +43,7 @@ export default defineComponent({
      * The current aggregation
      */
     element: {
-      type: Object as PropType<Record<string, any>>,
+      type: Object as PropType<ElasticAgg>,
       required: true,
     },
     /**
@@ -88,7 +88,7 @@ export default defineComponent({
      * @param index The index of the current aggregation
      * @param el The new state of the aggregation
      */
-    'update:element': (index: number, el: Record<string, any>) => index >= 0 && !!el,
+    'update:element': (index: number, el: ElasticAgg) => index >= 0 && !!el,
     /**
      * Triggered when element is updated
      *

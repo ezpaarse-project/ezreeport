@@ -9,6 +9,12 @@ export type AggDefinition = {
 };
 export const aggsDefinition = definitions as Record<string, AggDefinition>;
 
+export type ElasticAgg = {
+  name?: string,
+  aggs?: ElasticAgg[],
+  aggregations?: ElasticAgg[],
+} & { [type in AggType]?: Record<string, any> } & Record<string, any>;
+
 /**
  * Root keys handled by the simple edition
  */

@@ -117,35 +117,6 @@
               @input="onSizeUpdate"
             />
 
-            <!-- Sort -->
-            <div v-if="typeDefinition?.returnsArray && typeDefinition?.subAggregations" class="d-flex align-center">
-              <v-combobox
-                :value="order.value"
-                :items="availableSorts"
-                :label="$t('headers.sort')"
-                :return-object="false"
-                :readonly="readonly"
-                class="mr-4"
-                @input="onOrderUpdate"
-              />
-
-              <!-- Sort order -->
-              <v-tooltip top>
-                <template #activator="{ attrs, on }">
-                  <v-btn
-                    icon
-                    @click="onOrderDataUpdate(order.data === 'asc' ? 'desc' : 'asc')"
-                    v-bind="attrs"
-                    v-on="on"
-                  >
-                    <v-icon>mdi-{{ order.data === 'asc' ? 'sort-ascending' : 'sort-descending' }}</v-icon>
-                  </v-btn>
-                </template>
-
-                <span>{{ $t('headers.sortOrder', { order: $t(`sortOrder.${order.data || 'desc'}`) }) }}</span>
-              </v-tooltip>
-            </div>
-
             <!-- Sub aggregations -->
             <!-- deprecated, replaced by buckets, so only readonly for now -->
             <CustomSection
@@ -195,6 +166,7 @@ import {
   getTypeFromAgg,
   getUnknownKeysFromAgg,
   type AggDefinition,
+  type ElasticAgg,
 } from '~/lib/elastic/aggs';
 import { cloneDeep, debounce } from 'lodash';
 import type { SelectItem } from '~/types/vuetify';
@@ -210,7 +182,7 @@ export default defineComponent({
      * The current aggregation
      */
     element: {
-      type: Object as PropType<Record<string, any>>,
+      type: Object as PropType<ElasticAgg>,
       required: true,
     },
     /**
@@ -218,7 +190,7 @@ export default defineComponent({
      */
     elementIndex: {
       type: Number,
-      required: true,
+      default: -1,
     },
     /**
      * Used names by aggregations
@@ -249,7 +221,7 @@ export default defineComponent({
      * @param index The index of the current aggregation
      * @param el The new state of the aggregation
      */
-    'update:element': (index: number, el: Record<string, any>) => index >= 0 && !!el,
+    'update:element': (index: number, el: ElasticAgg) => index >= 0 && !!el,
     /**
      * Triggered when element is updated
      *
@@ -266,7 +238,7 @@ export default defineComponent({
   data: () => ({
     showAdvanced: false,
 
-    innerElement: {} as Record<string, any>,
+    innerElement: {} as ElasticAgg,
     innerJSON: '',
 
     elementHash: '',
@@ -455,10 +427,10 @@ export default defineComponent({
         );
       }
       // Other multi
-      if (multiValues.common.length > 0) {
+      if (multiValues.others.length > 0) {
         items.push(
           { header: this.$t('groups.otherMulti').toString() },
-          ...multiValues.common,
+          ...multiValues.others,
           { divider: true },
         );
       }
@@ -532,7 +504,7 @@ export default defineComponent({
      *
      * @param data The new data
      */
-    onElementUpdate(data: Record<string, any>) {
+    onElementUpdate(data: Partial<ElasticAgg>) {
       this.innerElement = { ...this.innerElement, ...data };
 
       if (this.readonly || !this.valid) {

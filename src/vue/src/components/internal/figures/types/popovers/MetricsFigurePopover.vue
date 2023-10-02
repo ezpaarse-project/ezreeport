@@ -28,7 +28,6 @@
           <ElasticAggElementForm
             v-if="linkedAgg"
             :element="linkedAgg"
-            :element-index="9999"
             :readonly="readonly"
             :agg-filter="aggFilter"
             :style="{
@@ -108,7 +107,7 @@
 import { defineComponent, type PropType } from 'vue';
 import { omit, merge, pick } from 'lodash';
 
-import type { AggDefinition } from '~/lib/elastic/aggs';
+import type { AggDefinition, ElasticAgg } from '~/lib/elastic/aggs';
 
 import type { CustomLabel } from '../forms/MetricsFigureForm.vue';
 
@@ -154,7 +153,7 @@ export default defineComponent({
       required: true,
     },
     linkedAgg: {
-      type: Object as PropType<Record<string, any> | undefined>,
+      type: Object as PropType<ElasticAgg | undefined>,
       default: undefined,
     },
     /**
@@ -168,7 +167,7 @@ export default defineComponent({
   emits: {
     input: (show: boolean) => show !== undefined,
     'update:element': (element: CustomLabel) => !!element,
-    'update:linkedAgg': (agg: Record<string, any>) => !!agg,
+    'update:linkedAgg': (agg: ElasticAgg) => !!agg,
     'update:loading': (loading: boolean) => loading !== undefined,
   },
   data: () => ({

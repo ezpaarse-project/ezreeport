@@ -96,7 +96,7 @@ import { omit } from 'lodash';
 import { defineComponent } from 'vue';
 import { v4 as uuid } from 'uuid';
 
-import { getTypeFromAgg } from '~/lib/elastic/aggs';
+import { getTypeFromAgg, ElasticAgg } from '~/lib/elastic/aggs';
 import type { AnyFetchOption } from '~/lib/templates/customTemplates';
 
 import useTemplateStore from '~/stores/template';
@@ -125,7 +125,7 @@ type MetricParams = {
 };
 
 type AggMapElement = {
-  agg: Record<string, any>,
+  agg: ElasticAgg,
   formatted: {
     name: string,
     type: string,
@@ -229,7 +229,7 @@ export default defineComponent({
         return new Map<string, AggMapElement>();
       }
 
-      let aggs: Record<string, any>[] = [];
+      let aggs: ElasticAgg[] = [];
       if ('aggs' in this.figure.fetchOptions) {
         aggs = this.figure.fetchOptions.aggs ?? [];
       }
@@ -238,7 +238,7 @@ export default defineComponent({
         aggs.map((agg, i) => {
           const type = getTypeFromAgg(agg);
           return [
-            agg.name,
+            agg.name || `agg${i}`,
             {
               agg,
               formatted: {
@@ -391,14 +391,14 @@ export default defineComponent({
      *
      * @param agg The agg to upsert
      */
-    upsertAgg(agg: Record<string, any>) {
-      let aggs: Record<string, any>[] = [];
+    upsertAgg(agg: ElasticAgg) {
+      let aggs: ElasticAgg[] = [];
       if (this.figure?.fetchOptions && 'aggs' in this.figure.fetchOptions) {
         aggs = this.figure.fetchOptions.aggs ?? [];
       }
 
       const index = aggs.findIndex((b) => b.name === agg.name);
-      if (index <= 0) {
+      if (index < 0) {
         aggs.push(agg);
       } else {
         aggs.splice(index, 1, agg);
@@ -411,7 +411,7 @@ export default defineComponent({
      * @param agg The agg to upsert
      */
     deleteAgg(name: string) {
-      let aggs: Record<string, any>[] = [];
+      let aggs: ElasticAgg[] = [];
       if (this.figure?.fetchOptions && 'aggs' in this.figure.fetchOptions) {
         aggs = this.figure.fetchOptions.aggs ?? [];
       }
@@ -601,7 +601,7 @@ en:
   total_count: 'Count of documents'
 fr:
   headers:
-    labels: 'Élements'
+    labels: 'Éléments'
   formats:
     date: 'Date'
     number: 'Nombre'

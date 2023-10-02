@@ -53,7 +53,7 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import { getTypeFromAgg } from '~/lib/elastic/aggs';
+import { getTypeFromAgg, type ElasticAgg } from '~/lib/elastic/aggs';
 
 export default defineComponent({
   props: {
@@ -61,7 +61,7 @@ export default defineComponent({
      * Aggregations
      */
     value: {
-      type: Array as PropType<Record<string, any>[]>,
+      type: Array as PropType<ElasticAgg[]>,
       required: true,
     },
     /**
@@ -78,7 +78,7 @@ export default defineComponent({
      *
      * @param val The new aggregations
      */
-    input: (val: Record<string, any>[]) => !!val,
+    input: (val: ElasticAgg[]) => !!val,
   },
   data: () => ({
     elementDialogShown: false,
@@ -90,7 +90,7 @@ export default defineComponent({
     /**
      * Currently selected agg element
      */
-    selectedAggElement(): Record<string, any> | undefined {
+    selectedAggElement(): ElasticAgg | undefined {
       return this.value[this.selectedIndex];
     },
     /**

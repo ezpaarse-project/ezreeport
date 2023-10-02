@@ -28,7 +28,7 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import { getTypeDefinitionFromAgg } from '~/lib/elastic/aggs';
+import { getTypeDefinitionFromAgg, type ElasticAgg } from '~/lib/elastic/aggs';
 
 export default defineComponent({
   props: {
@@ -37,7 +37,7 @@ export default defineComponent({
       required: true,
     },
     agg: {
-      type: Object as PropType<Record<string, any> | undefined>,
+      type: Object as PropType<ElasticAgg | undefined>,
       default: undefined,
     },
   },
