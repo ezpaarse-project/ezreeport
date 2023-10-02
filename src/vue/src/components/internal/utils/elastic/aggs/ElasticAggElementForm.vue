@@ -57,19 +57,21 @@
             />
 
             <!-- Field -->
-            <v-text-field
-              :value="type.data?.field"
-              :label="$t('headers.field')"
-              :readonly="readonly"
-              :rules="rules.field"
-              hide-details="auto"
-              @input="onTypeFieldUpdate({ field: $event })"
-            />
-            <i18n v-if="valid" path="$ezreeport.hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
-              <template #code>
-                <code>{{ $t('$ezreeport.hints.dot_notation.code') }}</code>
-              </template>
-            </i18n>
+            <template v-if="!/^__/i.test(type.value)">
+              <v-text-field
+                :value="type.data?.field"
+                :label="$t('headers.field')"
+                :readonly="readonly"
+                :rules="rules.field"
+                hide-details="auto"
+                @input="onTypeFieldUpdate({ field: $event })"
+              />
+              <i18n v-if="valid" path="$ezreeport.hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
+                <template #code>
+                  <code>{{ $t('$ezreeport.hints.dot_notation.code') }}</code>
+                </template>
+              </i18n>
+            </template>
 
             <v-divider v-if="typeDefinition?.returnsArray || typeDefinition?.subAggregations" class="my-4" />
 
@@ -291,6 +293,7 @@ export default defineComponent({
     type() {
       // Since there's should be only one unknown key, is the type of aggregation
       const value = getTypeFromAgg(this.innerElement) || '';
+
       return {
         value,
         data: this.innerElement[value],

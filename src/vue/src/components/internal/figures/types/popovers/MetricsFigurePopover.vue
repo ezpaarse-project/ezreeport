@@ -127,7 +127,6 @@ const formatTypes = [
 const supportedKeys = [
   '_',
   'text',
-  'field',
   'format',
 ];
 
@@ -276,7 +275,7 @@ export default defineComponent({
       });
     },
     aggFilter(name: string, def: AggDefinition): boolean {
-      return !def.returnsArray;
+      return !def.returnsArray && !/^__/i.test(name);
     },
     onAggLoading(value: boolean) {
       this.$emit('update:loading', value);

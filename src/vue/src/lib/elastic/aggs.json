@@ -1,4 +1,10 @@
 {
+  "__count": {
+    "common": true,
+    "returnsArray": false,
+    "subAggregations": false,
+    "type": "metric"
+  },
   "adjacency_matrix": {
     "returnsArray": true,
     "subAggregations": true,

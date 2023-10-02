@@ -122,6 +122,7 @@
 
     "agg_option": "{label}",
     "agg_types": {
+      "__count": "Count",
       "auto_date_histogram": "Auto date histogram",
       "avg": "Average",
       "boxplot": "Boxplot",

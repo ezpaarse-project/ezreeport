@@ -31,6 +31,7 @@
     <CustomSection
       v-if="'aggs' in fetchOptions && (fetchOptions.aggs?.length ?? 0) > 0"
       :label="$t('$ezreeport.fetchOptions.aggregations').toString()"
+      :default-value="true"
       collapsable
     >
       <ElasticAggsBuilder
