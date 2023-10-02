@@ -18,7 +18,7 @@
         :currentKeyFields="currentFigureKeyFields"
         @input="currentLabel = undefined"
         @update:element="onCurrentLabelUpdated"
-        @update:linkedAgg="upsertBucket"
+        @update:linkedAgg="upsertAgg"
         @update:loading="onLoading"
       />
 
@@ -300,7 +300,7 @@ export default defineComponent({
         return;
       }
 
-      this.deleteBucket(label._.dataKeyField);
+      this.deleteAgg(label._.dataKeyField);
     },
     /**
      * Update value when a label is updated
@@ -336,7 +336,7 @@ export default defineComponent({
 
       if (!label) {
         this.createLabel();
-        this.upsertBucket({
+        this.upsertAgg({
           name: this.currentLabel?._.dataKeyField ?? '',
           sum: {
             field: '',
@@ -387,39 +387,39 @@ export default defineComponent({
       this.figureParams = { ...this.figureParams, labels };
     },
     /**
-     * Upsert a bucket in fetchOptions
+     * Upsert a agg in fetchOptions
      *
-     * @param bucket The bucket to upsert
+     * @param agg The agg to upsert
      */
-    upsertBucket(bucket: Record<string, any>) {
-      let buckets: Record<string, any>[] = [];
-      if (this.figure?.fetchOptions && 'buckets' in this.figure.fetchOptions) {
-        buckets = this.figure.fetchOptions.buckets ?? [];
+    upsertAgg(agg: Record<string, any>) {
+      let aggs: Record<string, any>[] = [];
+      if (this.figure?.fetchOptions && 'aggs' in this.figure.fetchOptions) {
+        aggs = this.figure.fetchOptions.aggs ?? [];
       }
 
-      const index = buckets.findIndex((b) => b.name === bucket.name);
+      const index = aggs.findIndex((b) => b.name === agg.name);
       if (index <= 0) {
-        buckets.push(bucket);
+        aggs.push(agg);
       } else {
-        buckets.splice(index, 1, bucket);
+        aggs.splice(index, 1, agg);
       }
-      this.$emit('update:fetchOptions', { buckets });
+      this.$emit('update:fetchOptions', { aggs });
     },
     /**
-     * Delete a bucket in fetchOptions
+     * Delete a agg in fetchOptions
      *
-     * @param bucket The bucket to upsert
+     * @param agg The agg to upsert
      */
-    deleteBucket(name: string) {
-      let buckets: Record<string, any>[] = [];
-      if (this.figure?.fetchOptions && 'buckets' in this.figure.fetchOptions) {
-        buckets = this.figure.fetchOptions.buckets ?? [];
+    deleteAgg(name: string) {
+      let aggs: Record<string, any>[] = [];
+      if (this.figure?.fetchOptions && 'aggs' in this.figure.fetchOptions) {
+        aggs = this.figure.fetchOptions.aggs ?? [];
       }
 
-      const index = buckets.findIndex((b) => b.name === name);
+      const index = aggs.findIndex((b) => b.name === name);
       if (index >= 0) {
-        buckets.splice(index, 1);
-        this.$emit('update:fetchOptions', { buckets });
+        aggs.splice(index, 1);
+        this.$emit('update:fetchOptions', { aggs });
       }
     },
     /**
