@@ -83,8 +83,11 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { pick } from 'lodash';
+
 import type { AnyCustomFigure } from '~/lib/templates/customTemplates';
+
 import useTemplateStore, { supportedFetchOptions, type FetchOptions, type ValidationResult } from '~/stores/template';
+
 import figureFormMap from '../types/forms';
 
 export default defineComponent({

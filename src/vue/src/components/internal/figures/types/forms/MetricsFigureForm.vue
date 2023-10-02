@@ -94,8 +94,11 @@
 <script lang="ts">
 import { omit } from 'lodash';
 import { defineComponent } from 'vue';
+import { v4 as uuid } from 'uuid';
+
 import { getTypeFromAgg } from '~/lib/elastic/aggs';
 import type { AnyFetchOption } from '~/lib/templates/customTemplates';
+
 import useTemplateStore from '~/stores/template';
 
 const dragFormat = 'custom/figure-metric-json';
@@ -367,7 +370,7 @@ export default defineComponent({
         return;
       }
 
-      const dataKey = label?.dataKey ?? `agg${this.labels.length}`;
+      const dataKey = label?.dataKey ?? uuid().split('-')[0];
       const field = label?.field ?? 'value';
 
       const t = {
@@ -375,8 +378,8 @@ export default defineComponent({
           dragged: false,
           dataKeyField: `${dataKey}.${field}`,
         },
-        field: 'value',
-        dataKey: `agg${this.labels.length}`,
+        field,
+        dataKey,
         ...(label ?? {}),
       };
       const labels = [...this.figureParams.labels, t];

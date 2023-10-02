@@ -27,7 +27,6 @@
         <v-card-text>
           <ElasticAggElementForm
             v-if="linkedAgg"
-            v-model="aggDialogShown"
             :element="linkedAgg"
             :element-index="9999"
             :readonly="readonly"
@@ -108,7 +107,9 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
 import { omit, merge, pick } from 'lodash';
+
 import type { AggDefinition } from '~/lib/elastic/aggs';
+
 import type { CustomLabel } from '../forms/MetricsFigureForm.vue';
 
 /**
@@ -125,7 +126,6 @@ const formatTypes = [
  */
 const supportedKeys = [
   '_',
-  'dataKey',
   'text',
   'field',
   'format',
@@ -177,7 +177,6 @@ export default defineComponent({
 
     innerTitle: '',
 
-    aggDialogShown: false,
     aggLoading: false,
   }),
   computed: {

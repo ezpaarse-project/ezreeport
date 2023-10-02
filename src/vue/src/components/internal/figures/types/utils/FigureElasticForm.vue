@@ -59,7 +59,9 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+
 import useTemplateStore, { type FetchOptions } from '~/stores/template';
+
 import type ElasticFilterBuilderConstructor from '~/components/internal/utils/elastic/filters/ElasticFilterBuilder.vue';
 
 type ElasticFilterBuilder = InstanceType<typeof ElasticFilterBuilderConstructor>;
