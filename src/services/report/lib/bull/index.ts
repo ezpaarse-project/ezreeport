@@ -44,6 +44,12 @@ export type GenerationData = {
 
 export type MailQueueData = {
   namespaceId: string,
+  error?: {
+    file: string,
+    filename: string,
+    contact: string,
+    date: string,
+  }
 };
 
 //! Keep in sync with mail service
@@ -90,53 +96,61 @@ const queues = {
 
 type Queues = keyof typeof queues;
 
-export const initQueues = () => {
+export const initQueues = (skipLogs = false, skipWorker = false) => {
   try {
-    logger.verbose('[bull] Init started');
+    if (!skipLogs) { logger.verbose('[bull] Init started'); }
     const start = new Date();
 
     flowProducer = new FlowProducer({ connection: redis });
-    logger.verbose('[bull] Created flow producer');
+    if (!skipLogs) { logger.verbose('[bull] Created flow producer'); }
 
     queues.generation = new Queue<GenerationData>('ezReeport.report-generation', { connection: redis });
-    queues.generation.on('error', (err) => {
-      logger.error(`[bull-queue] [generation] failed with an unexpected error: {${err.message}}`);
-    });
-    logger.verbose(`[bull] Created queue [${queues.generation.name}]`);
+    if (!skipLogs) {
+      queues.generation.on('error', (err) => {
+        logger.error(`[bull-queue] [generation] failed with an unexpected error: {${err.message}}`);
+      });
+      logger.verbose(`[bull] Created queue [${queues.generation.name}]`);
+    }
 
     queues.mail = new Queue<MailQueueData>('ezReeport.mail-send', { connection: redis });
-    logger.verbose(`[bull] Created queue [${queues.mail.name}]`);
+    if (!skipLogs) { logger.verbose(`[bull] Created queue [${queues.mail.name}]`); }
 
-    const generationWorker = new Worker(
-      queues.generation.name,
-      join(__dirname, 'jobs/generateReport.ts'),
-      {
-        connection: redis,
-        limiter: {
-          max: concurrence,
-          duration: maxExecTime,
+    if (!skipWorker) {
+      const generationWorker = new Worker(
+        queues.generation.name,
+        join(__dirname, 'jobs/generateReport.ts'),
+        {
+          connection: redis,
+          limiter: {
+            max: concurrence,
+            duration: maxExecTime,
+          },
         },
-      },
-    );
-    generationWorker.on('completed', (job) => {
-      logger.verbose(`[bull-job] [generation] job [${job?.id}] completed`);
-    });
-    generationWorker.on('failed', (job, err) => {
-      logger.error(`[bull-job] [generation] job [${job?.id}] failed with error: {${err.message}}`);
-    });
-    generationWorker.on('error', (err) => {
-      logger.error(`[bull-job] [generation] worker failed with error: {${err.message}}`);
-    });
-    workers.push(generationWorker);
-    logger.verbose(`[bull] Created worker [${generationWorker.name}] with [${concurrence}] process and with [${maxExecTime}]ms before hanging`);
+      );
+      if (!skipLogs) {
+        generationWorker.on('completed', (job) => {
+          logger.verbose(`[bull-job] [generation] job [${job?.id}] completed`);
+        });
+        generationWorker.on('failed', (job, err) => {
+          logger.error(`[bull-job] [generation] job [${job?.id}] failed with error: {${err.message}}`);
+        });
+        generationWorker.on('error', (err) => {
+          logger.error(`[bull-job] [generation] worker failed with error: {${err.message}}`);
+        });
+      }
+      workers.push(generationWorker);
+      if (!skipLogs) { logger.verbose(`[bull] Created worker [${generationWorker.name}] with [${concurrence}] process and with [${maxExecTime}]ms before hanging`); }
+    }
 
     const dur = formatInterval({ start, end: new Date() });
-    logger.info(`[bull] Init completed in [${dur}]s`);
+    if (!skipLogs) { logger.info(`[bull] Init completed in [${dur}]s`); }
   } catch (error) {
-    if (error instanceof Error) {
-      logger.error(`[bull] Init failed with error: {${error.message}}`);
-    } else {
-      logger.error(`[bull] An unexpected error occurred at init: {${error}}`);
+    if (!skipLogs) {
+      if (error instanceof Error) {
+        logger.error(`[bull] Init failed with error: {${error.message}}`);
+      } else {
+        logger.error(`[bull] An unexpected error occurred at init: {${error}}`);
+      }
     }
   }
 };
@@ -211,6 +225,21 @@ export const addTaskToGenQueue = (data: GenerationData) => {
         queueName: getOneQueue('generation').name,
       },
     ],
+  });
+};
+
+export const addErrorToMailQueue = (data: Exclude<MailQueueData['error'], undefined>) => {
+  if (!flowProducer) {
+    throw new Error('queues are not initialized');
+  }
+
+  return flowProducer.add({
+    name: 'mail',
+    queueName: getOneQueue('mail').name,
+    data: {
+      namespaceId: process.env.NODE_ENV ?? 'dev',
+      error: data,
+    },
   });
 };
 

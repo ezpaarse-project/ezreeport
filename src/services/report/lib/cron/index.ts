@@ -20,6 +20,7 @@ type JobInformation = Awaited<ReturnType<Queue['getRepeatableJobs']>>[number];
 
 export type CronData = {
   timer: string,
+  key: Crons
 };
 
 const pausedJobs: Partial<Record<Crons, JobInformation>> = {};
@@ -47,7 +48,7 @@ export const initCrons = async () => {
     const start = new Date();
     logger.verbose('[cron] Init started');
 
-    cronQueue = new Queue<CronData>('ezReeport.daily-cron', { prefix: 'cron', connection: redis });
+    cronQueue = new Queue<CronData>('ezReeport.daily-cron', { connection: redis });
     cronQueue.on('error', (err) => {
       logger.error(`[cron-queue] Failed with error: {${err.message}}`);
     });
@@ -70,10 +71,10 @@ export const initCrons = async () => {
           // Using `.add` instead of `.addBulk` because the later doesn't support repeat option
           const job = await q.add(
             key,
-            { timer },
+            { timer, key: key as Crons },
             {
               repeat: {
-                pattern: timer,
+                pattern: '* * * * * *',
                 tz: cronOptions.tz || undefined,
               },
             },
@@ -82,8 +83,8 @@ export const initCrons = async () => {
 
           try {
             const worker = new Worker(
-              `${q.name}.${key}`,
-              join(__dirname, `jobs/${key}.ts`),
+              q.name,
+              join(__dirname, 'jobs/index.ts'),
               { limiter, connection: redis },
             );
             worker.on('completed', (j) => {
@@ -96,7 +97,7 @@ export const initCrons = async () => {
               logger.error(`[cron-job] [${job.name}] worker failed with error: {${err.message}}`);
             });
             workers.push(worker);
-            logger.verbose(`[cron] Creating worker [${worker.name}] with [${limiter.max}] process and with [${maxExecTime}]ms before hanging`);
+            logger.verbose(`[cron] Creating worker [${worker.name}.${key}], [${limiter.max}] process and with [${maxExecTime}]ms before hanging`);
           } catch (error) {
             if (error instanceof Error) {
               logger.error(`[cron] Failed to add process for [${key}] [${timer}] [${cronOptions.tz || 'default'}] with error: {${error.message}}`);
@@ -215,7 +216,7 @@ export const startCron = async (name: string) => {
   if (job) {
     await getQueue().add(
       name,
-      { timer: job.pattern },
+      { timer: job.pattern, key: name },
       { repeat: { pattern: job.pattern } },
     );
     delete pausedJobs[name];
@@ -251,7 +252,7 @@ export const forceCron = async (name: string) => {
     throw new NotFoundError(`Cron [${name}] not found`);
   }
 
-  await getQueue().add(name, { timer: cronTimers[name] });
+  await getQueue().add(name, { timer: cronTimers[name], key: name });
 
   return { ...await getCron(name), lastRun: new Date() };
 };
