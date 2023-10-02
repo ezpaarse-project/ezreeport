@@ -5,52 +5,31 @@
         :layout-id="layoutId"
         :id="id"
         :readonly="readonly"
+        hide-fetch-count
       />
-    </v-col>
 
-    <v-divider vertical class="mt-4" />
-    <v-col>
       <v-form v-if="figureParams" v-model="valid">
-        <!-- Data key -->
-        <v-combobox
-          :value="figureParams?.dataKey"
-          :label="$t('$ezreeport.fetchOptions.aggName')"
-          :items="availableAggs"
-          :readonly="readonly"
-          hide-details="auto"
-          @input="onParamUpdate({ dataKey: $event || undefined })"
-        >
-          <template #append-outer>
-            <ElasticAggTypeHelper
-              v-model="showDefinition"
-              :agg="currentAgg"
-            />
-          </template>
-        </v-combobox>
-
         <!-- Label -->
         <CustomSection
-          :label="$t('headers.label').toString()"
-          :default-value="true"
+          :label="headers.label"
           collapsable
         >
-          <div class="d-flex align-end">
-            <i class="mb-1">
-              {{ figureParams.dataKey }}[].
-            </i>
-            <v-text-field
-              :value="figureParams.label?.field"
-              :label="$t('label.headers.field')"
-              :readonly="readonly"
-              hide-details
-              @input="onSubParamUpdate('label', { field: $event })"
-            />
-          </div>
-          <i18n path="$ezreeport.hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
-            <template #code>
-              <code>{{ $t('$ezreeport.hints.dot_notation.code') }}</code>
+          <ElasticAggElementForm
+            :element="buckets.value[0] ?? {}"
+            :element-index="0"
+            :readonly="readonly"
+            :agg-filter="bucketFilter"
+            :style="{
+              marginTop: '1rem',
+              border: $vuetify.theme.dark ? 'thin solid rgba(255, 255, 255, 0.12)' : 'thin solid rgba(0, 0, 0, 0.12)',
+            }"
+            @update:element="(i, el) => onBucketUpdate(i, el)"
+            @update:loading="() => {}"
+          >
+            <template v-slot:title>
+              {{ $t('headers.agg') }}
             </template>
-          </i18n>
+          </ElasticAggElementForm>
 
           <v-text-field
             v-if="figure?.type !== 'arc'"
@@ -91,30 +70,54 @@
 
         <!-- Value -->
         <CustomSection
-          :label="$t('headers.value').toString()"
-          :default-value="true"
+          :label="headers.value"
           collapsable
         >
-          <div class="d-flex align-end">
-            <i class="mb-1">
-              {{ figureParams.dataKey }}[].
-            </i>
-            <v-text-field
-              :value="figureParams.value?.field"
-              :label="$t('value.headers.field')"
-              :readonly="readonly"
-              hide-details
-              @input="onSubParamUpdate('value', { field: $event })"
-            />
-          </div>
-          <i18n path="$ezreeport.hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
-            <template #code>
-              <code>{{ $t('$ezreeport.hints.dot_notation.code') }}</code>
+          <ElasticAggElementForm
+            :element="buckets.metric || defaultMetric"
+            :readonly="readonly"
+            :agg-filter="metricFilter"
+            @update:element="(i, el) => onMetricUpdate(el)"
+            @update:loading="() => {}"
+          >
+            <template v-slot:title>
+              {{ $t('headers.agg') }}
             </template>
-          </i18n>
+          </ElasticAggElementForm>
 
           <v-text-field
             v-if="figure?.type !== 'arc'"
+            :value="figureParams.value?.title"
+            :label="$t('value.headers.title')"
+            :readonly="readonly"
+            @input="onSubParamUpdate('value', { title: $event })"
+          />
+        </CustomSection>
+
+        <!-- Color -->
+        <CustomSection
+          v-if="figure?.type === 'bar' && buckets.value.at(0)"
+          :label="headers.color"
+          collapsable
+        >
+          <ElasticAggElementForm
+            :element="buckets.value[1] ?? {}"
+            :element-index="1"
+            :readonly="readonly"
+            :agg-filter="bucketFilter"
+            :style="{
+              marginTop: '1rem',
+              border: $vuetify.theme.dark ? 'thin solid rgba(255, 255, 255, 0.12)' : 'thin solid rgba(0, 0, 0, 0.12)',
+            }"
+            @update:element="(i, el) => onBucketUpdate(i, el)"
+            @update:loading="() => {}"
+          >
+            <template v-slot:title>
+              {{ $t('headers.agg') }}
+            </template>
+          </ElasticAggElementForm>
+
+          <v-text-field
             :value="figureParams.value?.title"
             :label="$t('value.headers.title')"
             :readonly="readonly"
@@ -225,11 +228,11 @@
                   :style="dataLabelPreviewStyle"
                 >
                   <div v-if="figureParams.dataLabel.showLabel">
-                    {{ figureParams.dataKey }}[].{{ figureParams.label?.field }}
+                    Lorem Ipsum
                   </div>
                   <div>
                     <strong>
-                      {{ figureParams.dataKey }}[].{{ figureParams.value?.field }}
+                      {{ randomValue }}
                     </strong>
                     <strong v-if="figureParams.dataLabel.format === 'percent'" class="ml-1">
                       %
@@ -240,16 +243,6 @@
             </v-row>
 
           </template>
-
-        </CustomSection>
-
-        <!-- Advanced -->
-        <CustomSection v-if="unsupportedParams.shouldShow">
-          <ToggleableObjectTree
-            :value="unsupportedParams.value"
-            :label="$t('$ezreeport.advanced_parameters').toString()"
-            v-on="unsupportedParams.listeners"
-          />
         </CustomSection>
       </v-form>
     </v-col>
@@ -260,8 +253,11 @@
 import { defineComponent } from 'vue';
 import { pick, merge, omit } from 'lodash';
 import chroma from 'chroma-js';
+import { v4 as uuid } from 'uuid';
 
-import { getTypeDefinitionFromAgg } from '~/lib/elastic/aggs';
+import { AnyFetchOption } from '~/lib/templates/customTemplates';
+import { AggDefinition, ElasticAgg } from '~/lib/elastic/aggs';
+
 import useTemplateStore from '~/stores/template';
 
 /**
@@ -284,6 +280,7 @@ type VegaParams = {
   dataKey: string,
   value: Record<string, any>,
   label: Record<string, any>,
+  color: Record<string, any>,
   dataLabel?: {
     format: string,
     showLabel?: boolean,
@@ -307,13 +304,14 @@ type DataLabelUpdate = {
  */
 const supportedParams = {
   title: '',
-  dataKey: '',
   value: {
+    title: '',
+  },
+  color: {
     field: '',
     title: '',
   },
   label: {
-    field: '',
     title: '',
     legend: {},
   },
@@ -345,6 +343,7 @@ export default defineComponent({
   },
   emits: {
     input: (val: VegaParams) => !!val,
+    'update:fetchOptions': (data: Partial<AnyFetchOption>) => !!data,
   },
   setup() {
     const templateStore = useTemplateStore();
@@ -353,11 +352,14 @@ export default defineComponent({
   },
   data: () => ({
     valid: false,
+    defaultMetric: { name: 'aggMetric', __count: undefined },
 
-    showDefinition: false,
     collapsedDl: true,
   }),
   computed: {
+    randomValue() {
+      return (Math.random() * 100).toFixed();
+    },
     layout() {
       const layout = this.templateStore.currentLayouts.find(
         ({ _: { id } }) => id === this.layoutId,
@@ -396,15 +398,24 @@ export default defineComponent({
       },
     },
     /**
-     * Current aggregation targeted
+     * Buckets used by the figure
      */
-    currentAgg() {
+    buckets(): { value: ElasticAgg[], metric?: ElasticAgg } {
       if (!this.figure?.fetchOptions) {
-        return undefined;
+        return { value: [], metric: undefined };
       }
 
-      const aggs = ('aggs' in this.figure.fetchOptions && this.figure.fetchOptions.aggs) || [];
-      return aggs.find(({ name }) => name === this.figureParams?.dataKey);
+      if (
+        ('buckets' in this.figure.fetchOptions && this.figure.fetchOptions.buckets)
+        || ('metric' in this.figure.fetchOptions && this.figure.fetchOptions.metric)
+      ) {
+        return {
+          value: this.figure.fetchOptions.buckets ?? [],
+          metric: this.figure.fetchOptions.metric,
+        };
+      }
+
+      return { value: [], metric: undefined };
     },
     /**
      * Possible formats for data labels with localisation
@@ -447,34 +458,6 @@ export default defineComponent({
       };
     },
     /**
-     * Available aggregations
-     */
-    availableAggs() {
-      if (!this.figure?.fetchOptions) {
-        return [];
-      }
-
-      // Add already defined aggregations
-      let available: any[] = [];
-      const aggs = ('aggs' in this.figure.fetchOptions && this.figure.fetchOptions.aggs) || [];
-      if (Array.isArray(aggs)) {
-        available = [...aggs];
-      }
-
-      // Remove non iterable aggregations
-      available = available.filter((agg) => {
-        const typeDef = getTypeDefinitionFromAgg(agg);
-
-        // Allow unknown types, as user may be knowing what he do...
-        if (!typeDef) {
-          return true;
-        }
-        return typeDef.returnsArray;
-      });
-
-      return available.map((agg, i) => agg.name || `agg${i}`);
-    },
-    /**
      * Label to show in legend legend
      */
     legendLabelSection() {
@@ -494,6 +477,9 @@ export default defineComponent({
 
       return key && this.$t(key).toString();
     },
+    /**
+     * CSS style for previewing data labels
+     */
     dataLabelPreviewStyle(): Record<string, any> {
       const { primary } = this.$vuetify.theme.currentTheme;
 
@@ -520,16 +506,27 @@ export default defineComponent({
         color,
       };
     },
+    /**
+     * Various headers for form parts
+     */
+    headers() {
+      return Object.fromEntries(
+        ['label', 'value', 'color'].map(
+          (type) => {
+            let label = this.$t(`headers.${type}._default`).toString();
+            if (this.$te(`headers.${type}.${this.figure?.type}`)) {
+              label = this.$t(`headers.${type}.${this.figure?.type}`).toString();
+            }
+            return [type, label];
+          },
+        ),
+      ) as Record<'label' | 'value' | 'color', string>;
+    },
   },
   mounted() {
     // Default values (very common)
-    if (this.figureParams) {
-      if (!this.figureParams.value?.field) {
-        this.onSubParamUpdate('value', { field: 'doc_count' });
-      }
-      if (!this.figureParams.label?.field) {
-        this.onSubParamUpdate('label', { field: 'key' });
-      }
+    if (!this.buckets.metric) {
+      this.onMetricUpdate(this.defaultMetric);
     }
   },
   methods: {
@@ -594,6 +591,62 @@ export default defineComponent({
       }
       this.onSubParamUpdate('dataLabel', data as Partial<VegaParams['dataLabel']>);
     },
+    metricFilter(name: string, def: AggDefinition): boolean {
+      return !def.returnsArray;
+    },
+    bucketFilter(name: string, def: AggDefinition): boolean {
+      return def.returnsArray;
+    },
+    onBucketDeletion(bucket: ElasticAgg) {
+      let buckets: ElasticAgg[] = [];
+      if (this.figure?.fetchOptions && 'aggs' in this.figure.fetchOptions) {
+        buckets = this.figure.fetchOptions.aggs ?? [];
+      }
+
+      const index = buckets.findIndex((b) => b.name === bucket.name);
+      if (index >= 0) {
+        buckets.splice(index, 1);
+        this.$emit('update:fetchOptions', { buckets });
+      }
+    },
+    onBucketUpdate(index = -1, bucket: Partial<ElasticAgg> = {}) {
+      const value: ElasticAgg = {
+        ...bucket,
+        name: uuid().split('-')[0],
+      };
+
+      const buckets = [...this.buckets.value];
+
+      if (index < 0) {
+        buckets.push(value);
+      } else {
+        buckets.splice(index, 1, value);
+      }
+
+      this.onParamUpdate({ dataKey: buckets[0]?.name || 'agg0' });
+      if (buckets[1]) {
+        this.onSubParamUpdate('color', { field: `${buckets[1].name || 'agg1'}.key` });
+      }
+      this.$emit('update:fetchOptions', { buckets });
+    },
+    onMetricUpdate(el: ElasticAgg) {
+      const buckets = this.buckets.value.slice(1);
+      let field = `${el.name ?? 'aggMetric'}.value`;
+      let key = `${el.name ?? 'aggMetric'}.key`;
+      if ('__count' in { ...el }) {
+        field = 'doc_count';
+        key = 'key';
+        this.$emit('update:fetchOptions', { metric: undefined });
+      } else {
+        this.$emit('update:fetchOptions', { metric: el });
+      }
+
+      field = [...buckets.map(({ name }, i) => name || `agg${i}`), field].join('.');
+      key = [...buckets.map(({ name }, i) => name || `agg${i}`), key].join('.');
+
+      this.onSubParamUpdate('value', { field });
+      this.onSubParamUpdate('label', { field: key });
+    },
   },
 });
 </script>
@@ -657,8 +710,16 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   headers:
-    value: 'Data parameters'
-    label: 'Series parameter'
+    agg: 'Aggregation'
+    value:
+      _default: 'Data parameters'
+      bar: 'Y-axis'
+    label:
+      _default: 'Series parameter'
+      arc: 'Slices parameters'
+      bar: 'X-axis'
+    color:
+      _default: 'Group parameter'
     dataLabel: 'Data Labels parameters'
   value:
     headers:
@@ -688,8 +749,16 @@ en:
       out: 'Out'
 fr:
   headers:
-    value: 'Paramètres des données'
-    label: 'Paramètres des séries'
+    agg: 'Aggregation'
+    value:
+      _default: 'Paramètres des données'
+      bar: 'Axe Y'
+    label:
+      _default: 'Paramètres des séries'
+      arc: 'Paramètres des parts'
+      bar: 'Axe X'
+    color:
+      _default: 'Paramètres des groupes'
     dataLabel: 'Paramètres des étiquettes de données'
   value:
     headers:
