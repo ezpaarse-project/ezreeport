@@ -96,10 +96,33 @@
 
         <!-- Color -->
         <CustomSection
-          v-if="figure?.type === 'bar' && buckets.value.at(0)"
+          v-if="figure?.type !== 'arc'"
+          :value="!buckets.value.at(0) || collapsedColor"
           :label="headers.color"
           collapsable
         >
+          <template #collapse>
+            <v-btn
+              v-if="!!buckets.value.at(1)"
+              icon
+              x-small
+              @click="collapsedColor = !collapsedColor"
+            >
+              <v-icon>mdi-chevron-{{ collapsedColor === false ? 'up' : 'down' }}</v-icon>
+            </v-btn>
+
+            <v-switch
+              :input-value="!!buckets.value.at(1)"
+              :readonly="readonly"
+              :disabled="!buckets.value.at(0)"
+              dense
+              hide-details
+              class="mt-0"
+              @change="(ev) => { collapsedColor = !ev; }"
+              @click.prevent=""
+            />
+          </template>
+
           <ElasticAggElementForm
             :element="buckets.value[1] ?? {}"
             :element-index="1"
@@ -355,6 +378,7 @@ export default defineComponent({
     defaultMetric: { name: 'aggMetric', __count: undefined },
 
     collapsedDl: true,
+    collapsedColor: true,
   }),
   computed: {
     randomValue() {
