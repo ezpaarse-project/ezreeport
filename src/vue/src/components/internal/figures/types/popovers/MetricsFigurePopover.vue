@@ -37,7 +37,11 @@
             @update:loading="onAggLoading"
           >
             <template v-slot:title>
-              {{ $t('headers.linkedAgg') }}
+              <div class="d-flex align-center">
+                {{ $t('headers.linkedAgg') }}
+
+                <v-progress-circular v-if="aggLoading" indeterminate size="16" width="2" class="ml-2" />
+              </div>
             </template>
           </ElasticAggElementForm>
 
@@ -277,6 +281,7 @@ export default defineComponent({
       return !def.returnsArray && !/^__/i.test(name);
     },
     onAggLoading(value: boolean) {
+      this.aggLoading = value;
       this.$emit('update:loading', value);
     },
   },

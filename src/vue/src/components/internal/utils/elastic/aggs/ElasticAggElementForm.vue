@@ -42,7 +42,7 @@
     </v-card-subtitle>
 
     <v-card-text>
-      <v-form v-model="valid">
+      <v-form ref="form" v-model="valid">
         <!-- Simple edition -->
         <v-row v-if="!showAdvanced">
           <v-col>
@@ -473,6 +473,11 @@ export default defineComponent({
       return getTypeDefinitionFromAggType(this.type.value);
     },
   },
+  watch: {
+    element() {
+      (this.$refs.form as any).validate();
+    },
+  },
   mounted() {
     this.init();
   },
@@ -486,6 +491,7 @@ export default defineComponent({
         name: this.element.name || `agg${this.elementIndex}`,
       };
       this.showAdvanced = this.isTooAdvanced;
+      (this.$refs.form as any).validate();
     },
     debouncedEmitUpdateElement: debounce(
       // eslint-disable-next-line func-names
@@ -525,7 +531,7 @@ export default defineComponent({
       el[type] = this.element[this.type.value] ?? {};
       this.innerElement = el;
 
-      if (this.readonly || !this.valid) {
+      if (this.readonly || (!this.valid && !/^__/i.test(type))) {
         return;
       }
 

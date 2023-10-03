@@ -24,10 +24,14 @@
               border: $vuetify.theme.dark ? 'thin solid rgba(255, 255, 255, 0.12)' : 'thin solid rgba(0, 0, 0, 0.12)',
             }"
             @update:element="(i, el) => onBucketUpdate(i, el)"
-            @update:loading="() => {}"
+            @update:loading="labelLoading = $event"
           >
             <template v-slot:title>
-              {{ $t('headers.agg') }}
+              <div class="d-flex align-center">
+                {{ $t('headers.agg') }}
+
+                <v-progress-circular v-if="labelLoading" indeterminate size="16" width="2" class="ml-2" />
+              </div>
             </template>
           </ElasticAggElementForm>
 
@@ -78,10 +82,14 @@
             :readonly="readonly"
             :agg-filter="metricFilter"
             @update:element="(i, el) => onMetricUpdate(el)"
-            @update:loading="() => {}"
+            @update:loading="metricLoading = $event"
           >
             <template v-slot:title>
-              {{ $t('headers.agg') }}
+              <div class="d-flex align-center">
+                {{ $t('headers.agg') }}
+
+                <v-progress-circular v-if="metricLoading" indeterminate size="16" width="2" class="ml-2" />
+              </div>
             </template>
           </ElasticAggElementForm>
 
@@ -118,7 +126,13 @@
               dense
               hide-details
               class="mt-0"
-              @change="(ev) => { collapsedColor = !ev; }"
+              @change="(ev) => {
+                collapsedColor = !ev;
+                const b = buckets.value.at(1);
+                if (!ev && b) {
+                  onBucketDeletion(b);
+                }
+              }"
               @click.prevent=""
             />
           </template>
@@ -133,10 +147,14 @@
               border: $vuetify.theme.dark ? 'thin solid rgba(255, 255, 255, 0.12)' : 'thin solid rgba(0, 0, 0, 0.12)',
             }"
             @update:element="(i, el) => onBucketUpdate(i, el)"
-            @update:loading="() => {}"
+            @update:loading="colorLoading = $event"
           >
             <template v-slot:title>
-              {{ $t('headers.agg') }}
+              <div class="d-flex align-center">
+                {{ $t('headers.agg') }}
+
+                <v-progress-circular v-if="colorLoading" indeterminate size="16" width="2" class="ml-2" />
+              </div>
             </template>
           </ElasticAggElementForm>
 
@@ -376,6 +394,10 @@ export default defineComponent({
   data: () => ({
     valid: false,
     defaultMetric: { name: 'aggMetric', __count: undefined },
+
+    labelLoading: true,
+    metricLoading: true,
+    colorLoading: true,
 
     collapsedDl: true,
     collapsedColor: true,
