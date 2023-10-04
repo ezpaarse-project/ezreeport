@@ -113,12 +113,12 @@
 
   "fetchOptions": {
     "title": "Options de récupération",
-    "aggName": "Nom de l'aggregation",
+    "aggName": "Nom de l'agrégation",
     "aggSummary": "{type} sur {field}",
     "index": "Index Elastic",
     "dateField": "Champ 'date' de l'index",
     "filters": "Filtres",
-    "aggregations": "Aggregations",
+    "aggregations": "Agrégations",
 
     "agg_option": "{label} ({type})",
     "agg_types": {

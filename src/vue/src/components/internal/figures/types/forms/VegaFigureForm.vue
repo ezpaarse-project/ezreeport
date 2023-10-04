@@ -845,7 +845,7 @@ en:
       out: 'Out'
 fr:
   headers:
-    agg: 'Aggregation'
+    agg: 'Agrégation'
     value:
       _default: 'Paramètres des données'
       bar: 'Axe Y'

@@ -619,7 +619,7 @@ fr:
   headers:
     simpleEdition: 'Édition simple'
     advancedEdition: 'Édition avancée'
-    type: "Type d'aggregation"
+    type: "Type d'agrégation"
     field: 'Champ concerné'
     count: 'Nombre de résultats maximum'
     sort: 'Trier sur la sous aggregation...'
@@ -633,10 +633,10 @@ fr:
   errors:
     no_duplicate: 'Ce nom est déjà utilisé'
   groups:
-    commonSingle: 'Aggregations de métriques communes' # TODO: Not really sure about that one
-    commonMulti: 'Aggregations par groupes communes'
-    otherSingle: 'Autres aggregations de métriques'
-    otherMulti: 'Autres aggregations par groupes'
+    commonSingle: 'Agrégations de métriques communes' # TODO: Not really sure about that one
+    commonMulti: 'Agrégations par groupes communes'
+    otherSingle: 'Autres agrégations de métriques'
+    otherMulti: 'Autres agrégations par groupes'
   sorts:
     _count: 'Par nombre de résultat (_count)'
     _key: 'Par clé (_key)'
