@@ -6,7 +6,7 @@
       :column="currentColumn"
       :total="totalMap[currentColumn.dataKey]"
       :colStyle="colStyles[currentColumn.dataKey]"
-      :bucket="bucketMap[columnToBucketMap[currentColumn.dataKey]]"
+      :bucket="columnBucketMap.get(currentColumn.dataKey)?.bucket"
       :readonly="readonly"
       @loading="loadingMap[currentColumn.dataKey] = $event"
       @update:column="onCurrentColumnUpdated"
@@ -74,7 +74,40 @@
     <tbody>
       <tr>
         <td v-for="{ dataKey } in columns" :key="`${dataKey}-value`">
-          <span>{{ dataKey }}</span>
+          <!-- Bucket summary -->
+          <i18n v-if="columnBucketMap.get(dataKey)" tag="span" path="$ezreeport.fetchOptions.aggSummary" class="font-weight-light text--secondary">
+            <template #type>
+              <span class="font-weight-medium">
+                {{ columnBucketMap.get(dataKey)?.formatted.type }}
+              </span>
+            </template>
+
+            <template #field>
+              <span class="font-weight-medium">
+                {{ columnBucketMap.get(dataKey)?.formatted.field }}
+              </span>
+            </template>
+          </i18n>
+
+          <!-- Metric summary -->
+          <i18n v-else-if="metricFormatted" tag="span" path="$ezreeport.fetchOptions.aggSummary" class="font-weight-light text--secondary">
+            <template #type>
+              <span class="font-weight-medium">
+                {{ metricFormatted?.formatted.type }}
+              </span>
+            </template>
+
+            <template #field>
+              <span class="font-weight-medium">
+                {{ metricFormatted?.formatted.field }}
+              </span>
+            </template>
+          </i18n>
+
+          <!-- Fallback -->
+          <span v-else class="font-weight-medium text--secondary">
+            {{ $t('$ezreeport.fetchOptions.agg_types.__count') }}
+          </span>
         </td>
       </tr>
       <tr v-if="totals.length > 0">
@@ -93,7 +126,7 @@ import { defineComponent, type PropType } from 'vue';
 import { omit } from 'lodash';
 import { v4 as uuid } from 'uuid';
 
-import type { ElasticAgg } from '~/lib/elastic/aggs';
+import { getTypeFromAgg, type ElasticAgg } from '~/lib/elastic/aggs';
 
 import type { PDFStyle, TableColumn } from './table';
 
@@ -165,15 +198,48 @@ export default defineComponent({
         this.innerColumns = val;
       },
     },
-    bucketMap(): Record<string, ElasticAgg> {
-      return Object.fromEntries(
-        this.buckets.map((b) => [b.name, b]),
+    columnBucketMap() {
+      const bucketMap = new Map<string, ElasticAgg>(this.buckets.map((b, i) => [b.name || `agg${i}`, b]));
+
+      return new Map(
+        this.columns
+          .filter((c) => c.dataKey !== this.valueColumn?.dataKey)
+          .map((c, i) => {
+            const bucketName = this.getBucketNameFromDK(c.dataKey);
+            const bucket = bucketMap.get(bucketName ?? '');
+            if (!bucket) {
+              return [c.dataKey, undefined];
+            }
+
+            const type = getTypeFromAgg(bucket);
+            return [
+              c.dataKey,
+              {
+                bucket,
+                formatted: {
+                  name: `${bucket.name}` || `agg${i}`,
+                  type: this.$t(type ? `$ezreeport.fetchOptions.agg_types.${type}` : '$ezreeport.unknown').toString(),
+                  field: bucket[type || '']?.field || 'unknown',
+                },
+              },
+            ];
+          }),
       );
     },
-    columnToBucketMap(): Record<string, string> {
-      return Object.fromEntries(
-        this.columns.map((c) => [c.dataKey, this.getBucketNameFromDK(c.dataKey) ?? '']),
-      );
+    metricFormatted() {
+      if (!this.metric) {
+        return undefined;
+      }
+
+      const type = getTypeFromAgg(this.metric);
+      return {
+        metric: this.metric,
+        formatted: {
+          name: `${this.metric.name}` || 'metricAgg',
+          type: this.$t(type ? `$ezreeport.fetchOptions.agg_types.${type}` : '$ezreeport.unknown').toString(),
+          field: this.metric[type || '']?.field || 'unknown',
+        },
+      };
     },
     totalMap(): Record<string, boolean | undefined> {
       return Object.fromEntries(
@@ -271,11 +337,11 @@ export default defineComponent({
       const columns = [...this.value];
       columns.splice(index, 1);
 
-      const bucket = this.columnToBucketMap[column.dataKey];
+      const bucket = this.columnBucketMap.get(column.dataKey)?.bucket;
       if (bucket) {
-        this.onBucketDeletion(this.bucketMap[bucket]);
+        this.onBucketDeletion(bucket);
       }
-      const bckts = this.buckets.filter(({ name }) => name !== bucket);
+      const bckts = this.buckets.filter(({ name }) => name !== bucket?.name);
       this.$emit('input', this.regenColumnsDK(bckts, columns));
     },
     /**
@@ -351,8 +417,8 @@ export default defineComponent({
     },
     generateValueDK(bckts?: ElasticAgg[]) {
       let field = 'doc_count';
-      if (this.metric) {
-        field = `${(this.metric?.name ?? 'aggMetric')}.value`;
+      if (this.metricFormatted) {
+        field = `${this.metricFormatted.formatted.name}.value`;
       }
 
       // Skipping first bucket as it's already the dataKey of the whole table
