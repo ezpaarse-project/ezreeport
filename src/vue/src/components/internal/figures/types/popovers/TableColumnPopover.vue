@@ -1,7 +1,9 @@
 <template>
-  <v-dialog
+  <v-menu
     :value="value"
-    :persistent="!valid || loading"
+    :position-x="coords.x"
+    :position-y="coords.y"
+    :close-on-content-click="false"
     absolute
     max-width="450"
     min-width="450"
@@ -9,27 +11,7 @@
   >
     <v-card>
       <v-form v-model="valid">
-        <v-card-title>
-          <v-text-field
-            :value="column.header"
-            :label="$t('headers.header')"
-            :rules="rules.header"
-            :readonly="readonly"
-            hide-details="auto"
-            @input="onColumnUpdated({ header: $event })"
-          />
-        </v-card-title>
-
         <v-card-text>
-          <v-checkbox
-            :label="$t('headers.total')"
-            :input-value="total"
-            :readonly="readonly"
-            hide-details
-            class="mt-0"
-            @change="$emit('update:total', $event)"
-          />
-
           <ElasticAggElementForm
             v-if="bucket"
             :element="bucket"
@@ -46,7 +28,7 @@
           >
             <template v-slot:title>
               <div class="d-flex align-center">
-                {{ $t('headers.linkedAgg') }}
+                {{ $t('headers.bucket') }}
 
                 <v-progress-circular v-if="loading" indeterminate size="16" width="2" class="ml-2" />
               </div>
@@ -124,9 +106,27 @@
             </v-row>
           </CustomSection>
 
+          <v-checkbox
+            v-if="!bucket"
+            :label="$t('headers.total')"
+            :input-value="total"
+            :readonly="readonly"
+            hide-details
+            class="mt-0"
+            @change="$emit('update:total', $event)"
+          />
+
+          <v-text-field
+            :value="column.header"
+            :label="$t('headers.header')"
+            :rules="rules.header"
+            :readonly="readonly"
+            hide-details="auto"
+            @input="onColumnUpdated({ header: $event })"
+          />
+
           <!-- Advanced -->
           <CustomSection v-if="unsupportedParams.shouldShow">
-
             <ToggleableObjectTree
               :value="unsupportedParams.value"
               :label="$t('$ezreeport.advanced_parameters').toString()"
@@ -136,7 +136,7 @@
         </v-card-text>
       </v-form>
     </v-card>
-  </v-dialog>
+  </v-menu>
 </template>
 
 <script lang="ts">
@@ -175,6 +175,13 @@ export default defineComponent({
      */
     value: {
       type: Boolean,
+      required: true,
+    },
+    /**
+     * Coordinates of popover
+     */
+    coords: {
+      type: Object as PropType<{ x: number, y: number }>,
       required: true,
     },
     /**
@@ -309,6 +316,7 @@ en:
     dataKey: 'Key to get data'
     header: 'Name of the column'
     total: 'Show total of column'
+    bucket: 'Aggregation'
     style:
       title: 'Styling options'
       overflow: 'Overflow'
@@ -326,6 +334,7 @@ fr:
     dataKey: 'Clé a utiliser pour récupérer les données'
     header: 'Nom de la colonne'
     total: 'Afficher le total de la colonne'
+    bucket: 'Agrégation'
     style:
       title: 'Options de style'
       overflow: 'Débordement'

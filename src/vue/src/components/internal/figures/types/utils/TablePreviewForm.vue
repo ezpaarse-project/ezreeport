@@ -1,8 +1,9 @@
 <template>
   <v-simple-table dense>
-    <TableColumnDialog
-      v-if="currentColumn && columnDialogShown"
-      v-model="columnDialogShown"
+    <TableColumnPopover
+      v-if="currentColumn && columnPopoverShown"
+      v-model="columnPopoverShown"
+      :coords="columnPopoverCoords"
       :column="currentColumn"
       :total="totalMap[currentColumn.dataKey]"
       :colStyle="colStyles[currentColumn.dataKey]"
@@ -62,7 +63,7 @@
               :loading="loadingMap[column.dataKey]"
               icon
               x-small
-              @click="openColumnDialog(column)"
+              @click="openColumnDialog($event, column)"
             >
               <v-icon>mdi-cog</v-icon>
             </v-btn>
@@ -172,7 +173,8 @@ export default defineComponent({
     'update:buckets': (buckets: ElasticAgg[]) => !!buckets,
   },
   data: () => ({
-    columnDialogShown: false,
+    columnPopoverShown: false,
+    columnPopoverCoords: { x: 0, y: 0 },
 
     innerColumns: [] as CustomTableColumn[],
     innerBuckets: [] as ElasticAgg[],
@@ -266,8 +268,8 @@ export default defineComponent({
     /**
      * Open dialog for creating a column
      */
-    onCreateColumn() {
-      this.openColumnDialog();
+    onCreateColumn(e: MouseEvent) {
+      this.openColumnDialog(e);
     },
     /**
      * Triggered when a column is updated
@@ -350,7 +352,7 @@ export default defineComponent({
      * @param e The event
      * @param column The column. If not provided it creates a new one
      */
-    async openColumnDialog(column?: TableColumn) {
+    async openColumnDialog(e: MouseEvent, column?: TableColumn) {
       if (column) {
         this.currentColumn = column;
       } else {
@@ -361,8 +363,21 @@ export default defineComponent({
         this.addColumn();
       }
 
+      if (e) {
+        const coords = { x: e.clientX, y: e.clientY };
+        const target = (e.currentTarget as HTMLElement | undefined);
+        if (target && column) {
+          const bounding = target.getBoundingClientRect();
+
+          // Adding close icon offset
+          coords.x = bounding.x + 60;
+          coords.y = bounding.y + (bounding.height / 2);
+        }
+
+        this.columnPopoverCoords = coords;
+      }
       await this.$nextTick();
-      this.columnDialogShown = true;
+      this.columnPopoverShown = true;
     },
     upsertBucket(bucket: ElasticAgg) {
       const value: ElasticAgg = {
