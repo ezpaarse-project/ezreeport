@@ -144,6 +144,7 @@ const parseAggInfo = (agg: CustomAggregationType, i: number): AggInfo => {
  * @param param1 The aggregation
  * @param calendar_interval The calendar interval guessed from task's recurrence
  * @param aggsInfo Info about agg
+ * @param dateField The current date field
  *
  * @returns The elastic aggregations
  */
@@ -152,18 +153,29 @@ const reduceAggs = (
   { name: _name, ...rawAgg }: CustomAggregationType,
   calendar_interval: string,
   aggsInfo: AggInfo,
+  dateField: string,
 ): Record<string, ElasticAggregation> => {
   const agg = rawAgg as ElasticAggregation;
   // Add calendar_interval
   if (rawAgg.date_histogram) {
     merge(agg, { date_histogram: { calendar_interval } });
   }
+  // Replace `{{ dateField }}` by actual dateField
+  if (/{{ ?dateField ?}}/.test(rawAgg[aggsInfo.type].field)) {
+    merge(agg, { [aggsInfo.type]: { field: dateField } });
+  }
 
   // Handle sub aggregations
   if (rawAgg.aggs || rawAgg.aggregations) {
     const key = rawAgg.aggs ? 'aggs' : 'aggregations';
     agg[key] = rawAgg[key]?.reduce(
-      (subPrev, subAgg, i) => reduceAggs(subPrev, subAgg, calendar_interval, aggsInfo.subAggs[i]),
+      (subPrev, subAgg, i) => reduceAggs(
+        subPrev,
+        subAgg,
+        calendar_interval,
+        aggsInfo.subAggs[i],
+        dateField,
+      ),
       {},
     );
   }
@@ -313,7 +325,7 @@ const fetchWithElastic = async (
         const calendarInterval = calcElasticInterval(options.recurrence);
         size = 1;
         aggs = aggsOptions.reduce(
-          (prev, agg, i) => reduceAggs(prev, agg, calendarInterval, info[i]),
+          (prev, agg, i) => reduceAggs(prev, agg, calendarInterval, info[i], options.dateField),
           {},
         );
       }
