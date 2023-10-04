@@ -160,9 +160,9 @@
 
           <v-text-field
             :value="figureParams.color?.title"
-            :label="$t('value.headers.title')"
+            :label="$t('label.headers.legendTitle')"
             :readonly="readonly"
-            @input="onSubParamUpdate('value', { title: $event })"
+            @input="onSubParamUpdate('color', { title: $event })"
           />
         </CustomSection>
 
