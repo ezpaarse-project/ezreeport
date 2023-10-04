@@ -1,3 +1,17 @@
+# @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.7](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.6...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.7) (2023-10-04)
+
+
+### Bug Fixes
+
+* **sdk:** added tests for new queue methods ([4f109be](https://github.com/ezpaarse-project/ezreeport/commit/4f109bef811a7c9aef95b779af92f205c303bfa3))
+* **sdk:** fixed types of fetch option ([cb8d7d3](https://github.com/ezpaarse-project/ezreeport/commit/cb8d7d32ad4b11be57ed64a2633b49230555eeb6))
+
+
+### Features
+
+* **sdk:** added new way to update queue ([46b36ec](https://github.com/ezpaarse-project/ezreeport/commit/46b36ec71fdb6ec0118a280b73e87735c733ef45))
+* **sdk:** update to change cron status ([a406dc7](https://github.com/ezpaarse-project/ezreeport/commit/a406dc7929f8b07a5ceac482921f7213947f1d56))
+
 # @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.6](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.5...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.6) (2023-08-21)
 
 
