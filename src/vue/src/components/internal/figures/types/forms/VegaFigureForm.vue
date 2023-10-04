@@ -6,6 +6,7 @@
         :id="id"
         :readonly="readonly"
         hide-fetch-count
+        @update:fetchOptions="$emit('update:fetchOptions', $event)"
       />
 
       <v-form v-if="figureParams" v-model="valid">
