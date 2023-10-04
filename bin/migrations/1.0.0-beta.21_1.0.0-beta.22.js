@@ -7,6 +7,7 @@ const { log } = require('./lib/log');
 const { createDataFolder, writeError } = require('./lib/data');
 const { prepare, $fetch } = require('./lib/fetch');
 
+const { getAllNamespaces, upsertAllNamespaces } = require('./lib/namespaces');
 const { getAllTemplates, upsertAllTemplates } = require('./lib/templates');
 const { getAllTasks, upsertAllTasks } = require('./lib/tasks');
 
@@ -71,6 +72,25 @@ const migrateTemplates = async () => {
 };
 
 /**
+ * Migrate namespaces
+ */
+const migrateNamespaces = async () => {
+  log('info', 'Getting namespaces...');
+  const namespaces = await getAllNamespaces(DATA_FOLDER);
+  log('success', `${namespaces.length} namespaces found`);
+
+  log('info', 'Upserting namespaces...');
+  await upsertAllNamespaces(namespaces.map((n) => ({
+    ...n,
+    fetchOptions: {
+      elastic: {},
+      ...n.fetchOptions,
+    },
+  })));
+  log('success', `${namespaces.length} namespaces upserted\n`);
+};
+
+/**
  * Migrate tasks
  */
 const migrateTasks = async () => {
@@ -123,6 +143,7 @@ const main = async () => {
   DATA_FOLDER = await createDataFolder('18-19');
 
   // Migrate
+  await migrateNamespaces();
   await migrateTemplates();
   await migrateTasks();
 };

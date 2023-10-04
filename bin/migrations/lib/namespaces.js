@@ -29,13 +29,15 @@ const getAllNamespaces = async (DATA_FOLDER) => {
   await writeJSONData('namespaces.json', namespaceList);
 
   const namespaces = await Promise.all(
-    namespaceList.map(
-      async (n) => {
-        const { content: namespace } = await $fetch('src', `/admin/namespaces/${n.id}`);
-        await writeJSONData(path.join('namespaces', `${n.id}.json`), namespace);
-        return namespace;
-      },
-    ),
+    namespaceList
+      .filter((n) => n.id !== '_')
+      .map(
+        async (n) => {
+          const { content: namespace } = await $fetch('src', `/admin/namespaces/${n.id}`);
+          await writeJSONData(path.join('namespaces', `${n.id}.json`), namespace);
+          return namespace;
+        },
+      ),
   );
 
   return namespaces;
