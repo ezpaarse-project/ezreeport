@@ -108,7 +108,7 @@ const router: FastifyPluginAsync = async (fastify) => {
       if (!item) {
         reply.status(StatusCodes.CREATED);
         return {
-          content: await templates.createTemplate(request.body),
+          content: await templates.createTemplate(request.body, id),
         };
       }
 
