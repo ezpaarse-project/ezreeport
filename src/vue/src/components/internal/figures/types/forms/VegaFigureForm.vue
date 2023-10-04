@@ -292,7 +292,7 @@
                   </div>
                   <div>
                     <strong>
-                      {{ randomValue }}
+                      {{ exampleValue }}
                     </strong>
                     <strong v-if="figureParams.dataLabel.format === 'percent'" class="ml-1">
                       %
@@ -423,7 +423,10 @@ export default defineComponent({
   }),
   computed: {
     randomValue() {
-      return (Math.random() * 100).toFixed();
+      return Math.random() * 100;
+    },
+    exampleValue() {
+      return Math.max(this.minValue || 0, this.randomValue).toFixed();
     },
     layout() {
       const layout = this.templateStore.currentLayouts.find(
