@@ -45,12 +45,15 @@ const router: FastifyPluginAsync = async (fastify) => {
     },
     async (request) => {
       const { cron: name } = request.params;
+
       return { content: await crons.getCron(name) };
     },
   );
 
   /**
    * Start specific cron
+   *
+   * @deprecated Use `PATCH /:cron` with body instead
    */
   fastify.put<{
     Params: SpecificCronParamsType
@@ -66,12 +69,16 @@ const router: FastifyPluginAsync = async (fastify) => {
     },
     async (request) => {
       const { cron: name } = request.params;
-      return { content: await crons.startCron(name) };
+      await crons.startCron(name);
+
+      return { content: await crons.getCron(name) };
     },
   );
 
   /**
    * Stop specific cron
+   *
+   * @deprecated Use `PATCH /:cron` with body instead
    */
   fastify.put<{
     Params: SpecificCronParamsType
@@ -87,7 +94,47 @@ const router: FastifyPluginAsync = async (fastify) => {
     },
     async (request) => {
       const { cron: name } = request.params;
-      return { content: await crons.stopCron(name) };
+      await crons.stopCron(name);
+
+      return { content: await crons.getCron(name) };
+    },
+  );
+
+  /**
+   * Update a cron
+   */
+  const UpdateCronBody = Type.Partial(
+    Type.Object({
+      running: Type.Boolean(),
+    }),
+  );
+  fastify.patch<{
+    Params: SpecificCronParamsType,
+    Body: Static<typeof UpdateCronBody>,
+  }>(
+    '/:cron',
+    {
+      schema: {
+        params: SpecificCronParams,
+        body: UpdateCronBody,
+      },
+      ezrAuth: {
+        requireAdmin: true,
+      },
+    },
+    async (request) => {
+      const { cron: name } = request.params;
+
+      // Enable cron if needed
+      if (request.body.running === true) {
+        await crons.startCron(name);
+      }
+      // Disabling cron if needed
+      if (request.body.running === false) {
+        await crons.stopCron(name);
+      }
+
+      return { content: await crons.getCron(name) };
     },
   );
 
@@ -108,6 +155,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     },
     async (request) => {
       const { cron: name } = request.params;
+
       return { content: await crons.forceCron(name) };
     },
   );

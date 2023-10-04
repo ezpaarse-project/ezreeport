@@ -21,14 +21,14 @@
         {{ $t('typeHelper') }}
       </v-card-title>
 
-      <TSPreview :value="typeDefinition.type" :is-array="typeDefinition.isArray" />
+      <TSPreview :value="typeDefinition.type" :is-array="typeDefinition.returnsArray" />
     </v-card>
   </v-menu>
 </template>
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import { getTypeDefinitionFromAgg } from '~/lib/elastic/aggs';
+import { getTypeDefinitionFromAgg, type ElasticAgg } from '~/lib/elastic/aggs';
 
 export default defineComponent({
   props: {
@@ -37,7 +37,7 @@ export default defineComponent({
       required: true,
     },
     agg: {
-      type: Object as PropType<any | undefined>,
+      type: Object as PropType<ElasticAgg | undefined>,
       default: undefined,
     },
   },

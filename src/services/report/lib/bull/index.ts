@@ -1,9 +1,18 @@
-import { join } from 'path';
-import Queue, { type Job } from 'bull';
-import type { Recurrence, Task } from '~/lib/prisma';
+import { join } from 'node:path';
+
+import { omit } from 'lodash';
+import {
+  Queue,
+  Worker,
+  FlowProducer,
+  type Job,
+} from 'bullmq';
+
+import type { Task } from '~/lib/prisma';
 import config from '~/lib/config';
+import { formatInterval } from '~/lib/utils';
 import { appLogger as logger } from '~/lib/logger';
-import { NotFoundError } from '~/types/errors';
+import { ConflictError, NotFoundError } from '~/types/errors';
 
 const {
   redis,
@@ -33,8 +42,18 @@ export type GenerationData = {
   debug?: boolean
 };
 
+export type MailQueueData = {
+  namespaceId: string,
+  error?: {
+    file: string,
+    filename: string,
+    contact: string,
+    date: string,
+  }
+};
+
 //! Keep in sync with mail service
-export type MailData = {
+export type MailResult = {
   /**
    * If task succeed or failed
    */
@@ -48,7 +67,7 @@ export type MailData = {
    */
   task: {
     id: string,
-    recurrence: Recurrence,
+    recurrence: Task['recurrence'],
     name: string,
     targets: string[],
     namespace: string,
@@ -67,42 +86,74 @@ export type MailData = {
   url: string,
 };
 
-export const baseQueueOptions: Queue.QueueOptions = {
-  redis,
-  limiter: {
-    max: concurrence,
-    duration: maxExecTime,
-  },
-};
+const workers: Worker[] = [];
 
-const generationQueue = new Queue<GenerationData>('ezReeport.report-generation', baseQueueOptions);
-const mailQueue = new Queue<MailData>('ezReeport.mail-send', baseQueueOptions);
-
-generationQueue.on('failed', (job, err) => {
-  if (job.attemptsMade === job.opts.attempts) {
-    logger.error(`[bull-job] "generation" failed with error: ${err.message}`);
-  }
-});
-generationQueue.on('error', (err) => {
-  logger.error(`[bull-queue] "generation" failed with error: ${err.message}`);
-});
-mailQueue.on('failed', (job, err) => {
-  if (job.attemptsMade === job.opts.attempts) {
-    logger.error(`[bull-job] "mail" failed with error: ${err.message}`);
-  }
-});
-mailQueue.on('error', (err) => {
-  logger.error(`[bull-queue] "mail" failed with error: ${err.message}`);
-});
-
-generationQueue.process(join(__dirname, 'jobs/generateReport.ts'));
-
+let flowProducer: FlowProducer | undefined;
 const queues = {
-  generation: generationQueue,
-  mail: mailQueue,
+  generation: undefined as Queue<GenerationData> | undefined,
+  mail: undefined as Queue<MailQueueData> | undefined,
 };
 
 type Queues = keyof typeof queues;
+
+export const initQueues = (skipLogs = false, skipWorker = false) => {
+  try {
+    if (!skipLogs) { logger.verbose('[bull] Init started'); }
+    const start = new Date();
+
+    flowProducer = new FlowProducer({ connection: redis });
+    if (!skipLogs) { logger.verbose('[bull] Created flow producer'); }
+
+    queues.generation = new Queue<GenerationData>('ezReeport.report-generation', { connection: redis });
+    if (!skipLogs) {
+      queues.generation.on('error', (err) => {
+        logger.error(`[bull-queue] [generation] failed with an unexpected error: {${err.message}}`);
+      });
+      logger.verbose(`[bull] Created queue [${queues.generation.name}]`);
+    }
+
+    queues.mail = new Queue<MailQueueData>('ezReeport.mail-send', { connection: redis });
+    if (!skipLogs) { logger.verbose(`[bull] Created queue [${queues.mail.name}]`); }
+
+    if (!skipWorker) {
+      const generationWorker = new Worker(
+        queues.generation.name,
+        join(__dirname, 'jobs/generateReport.ts'),
+        {
+          connection: redis,
+          limiter: {
+            max: concurrence,
+            duration: maxExecTime,
+          },
+        },
+      );
+      if (!skipLogs) {
+        generationWorker.on('completed', (job) => {
+          logger.verbose(`[bull-job] [generation] job [${job?.id}] completed`);
+        });
+        generationWorker.on('failed', (job, err) => {
+          logger.error(`[bull-job] [generation] job [${job?.id}] failed with error: {${err.message}}`);
+        });
+        generationWorker.on('error', (err) => {
+          logger.error(`[bull-job] [generation] worker failed with error: {${err.message}}`);
+        });
+      }
+      workers.push(generationWorker);
+      if (!skipLogs) { logger.verbose(`[bull] Created worker [${generationWorker.name}] with [${concurrence}] process and with [${maxExecTime}]ms before hanging`); }
+    }
+
+    const dur = formatInterval({ start, end: new Date() });
+    if (!skipLogs) { logger.info(`[bull] Init completed in [${dur}]s`); }
+  } catch (error) {
+    if (!skipLogs) {
+      if (error instanceof Error) {
+        logger.error(`[bull] Init failed with error: {${error.message}}`);
+      } else {
+        logger.error(`[bull] An unexpected error occurred at init: {${error}}`);
+      }
+    }
+  }
+};
 
 /**
  * Check if given name is a valid queue name
@@ -113,16 +164,42 @@ type Queues = keyof typeof queues;
  */
 const isQueue = (name: string): name is Queues => Object.keys(queues).includes(name);
 
+type GetOneQueueOverloads = {
+  (name: Queues): Exclude<(typeof queues)[Queues], undefined>
+  (name: string): Exclude<(typeof queues)[Queues], undefined>
+};
+
+/**
+ * Get one specific queue
+ *
+ * @param name The possible name of the queue
+ *
+ * @returns The wanted queue
+ */
+const getOneQueue: GetOneQueueOverloads = (name) => {
+  if (!isQueue(name)) {
+    throw new NotFoundError(`Queue "${name}" not found`);
+  }
+  const q = queues[name];
+  if (!q) {
+    throw new Error('queues are not initialized');
+  }
+  return q;
+};
+
 /**
  * Get current queues
  *
  * @returns The queues infos
  */
 export const getQueues = () => Promise.all(
-  Object.entries(queues).map(async ([name, queue]) => ({
-    name,
-    status: await queue.isPaused() ? 'paused' : 'active',
-  })),
+  Object.keys(queues)
+    .map(
+      async (name) => ({
+        name,
+        status: await getOneQueue(name).isPaused() ? 'paused' : 'active',
+      }),
+    ),
 );
 
 /**
@@ -132,16 +209,39 @@ export const getQueues = () => Promise.all(
  *
  * @returns When task is placed in queue
  */
-export const addTaskToGenQueue = (data: GenerationData) => queues.generation.add(data);
+export const addTaskToGenQueue = (data: GenerationData) => {
+  if (!flowProducer) {
+    throw new Error('queues are not initialized');
+  }
 
-/**
- * Add task to mail queue
- *
- * @param data The data
- *
- * @returns When task is placed in queue
- */
-export const addReportToMailQueue = (data: MailData) => queues.mail.add(data);
+  return flowProducer.add({
+    name: 'mail',
+    queueName: getOneQueue('mail').name,
+    data: { namespaceId: data.task.namespaceId },
+    children: [
+      {
+        name: 'generate',
+        data: omit(data, ['task.activity']),
+        queueName: getOneQueue('generation').name,
+      },
+    ],
+  });
+};
+
+export const addErrorToMailQueue = (data: Exclude<MailQueueData['error'], undefined>) => {
+  if (!flowProducer) {
+    throw new Error('queues are not initialized');
+  }
+
+  return flowProducer.add({
+    name: 'mail',
+    queueName: getOneQueue('mail').name,
+    data: {
+      namespaceId: process.env.NODE_ENV ?? 'dev',
+      error: data,
+    },
+  });
+};
 
 /**
  * Pause the whole queue
@@ -152,12 +252,7 @@ export const addReportToMailQueue = (data: MailData) => queues.mail.add(data);
  *
  * @returns When the queue is paused
  */
-export const pauseQueue = (queue: string) => {
-  if (!isQueue(queue)) {
-    throw new NotFoundError(`Queue "${queue}" not found`);
-  }
-  return queues[queue].pause();
-};
+export const pauseQueue = (queue: string) => getOneQueue(queue).pause();
 
 /**
  * Resume the whole queue
@@ -168,12 +263,7 @@ export const pauseQueue = (queue: string) => {
  *
  * @returns When the queue is resumed
  */
-export const resumeQueue = (queue: string) => {
-  if (!isQueue(queue)) {
-    throw new NotFoundError(`Queue "${queue}" not found`);
-  }
-  return queues[queue].resume();
-};
+export const resumeQueue = (queue: string) => getOneQueue(queue).resume();
 
 /**
  * Format bull job
@@ -182,11 +272,11 @@ export const resumeQueue = (queue: string) => {
  *
  * @returns formatted job
  */
-const formatJob = async (job: Job<GenerationData | MailData>) => ({
+const formatJob = async (job: Job<GenerationData | MailQueueData>) => ({
   id: job.id,
   data: job.data,
-  result: job.returnvalue,
-  progress: job.progress(),
+  result: job.returnvalue?.res,
+  progress: job.progress,
   added: new Date(job.timestamp),
   started: job.processedOn && new Date(job.processedOn),
   ended: job.finishedOn && new Date(job.finishedOn),
@@ -202,11 +292,7 @@ const formatJob = async (job: Job<GenerationData | MailData>) => ({
  * @returns The count of jobs
  */
 export const getCountJobs = async (queue: string) => {
-  if (!isQueue(queue)) {
-    throw new NotFoundError(`Queue "${queue}" not found`);
-  }
-
-  const jobs = await queues[queue].getJobs(
+  const jobs = await getOneQueue(queue).getJobs(
     ['active', 'completed', 'delayed', 'failed', 'paused', 'waiting'],
   );
 
@@ -229,11 +315,7 @@ export const getJobs = async (
     previous?: Job<GenerationData>['id'],
   },
 ) => {
-  if (!isQueue(queue)) {
-    throw new NotFoundError(`Queue "${queue}" not found`);
-  }
-
-  const rawJobs = await queues[queue].getJobs(
+  const rawJobs = await getOneQueue(queue).getJobs(
     ['active', 'completed', 'delayed', 'failed', 'paused', 'waiting'],
   );
   let jobs = rawJobs;
@@ -261,11 +343,7 @@ export const getJobs = async (
  * @returns The job info
  */
 export const getJob = async (queue: string, id: string) => {
-  if (!isQueue(queue)) {
-    throw new NotFoundError(`Queue "${queue}" not found`);
-  }
-
-  const job = await queues[queue].getJob(id);
+  const job = await getOneQueue(queue).getJob(id);
   if (!job) {
     return null;
   }
@@ -285,16 +363,19 @@ export const getJob = async (queue: string, id: string) => {
  * @returns The job info
  */
 export const retryJob = async (queue: string, id: string) => {
-  if (!isQueue(queue)) {
-    throw new NotFoundError(`Queue "${queue}" not found`);
-  }
-
-  const job = await queues[queue].getJob(id);
+  const job = await getOneQueue(queue).getJob(id);
   if (!job) {
     return null;
   }
 
-  await job.retry();
+  const state = await job.getState();
+  if (state !== 'completed' && state !== 'failed') {
+    throw new ConflictError(`Job '${id}' must completed or failed to be reprocessed`);
+  }
+  await job.retry(state);
+  logger.verbose(`[bull] job [${job.id}] restarted`);
 
-  return formatJob(job);
+  return formatJob(
+    await getOneQueue(queue).getJob(id) ?? job,
+  );
 };

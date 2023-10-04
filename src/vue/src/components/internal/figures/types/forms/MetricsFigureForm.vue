@@ -3,23 +3,23 @@
     <v-col>
       <FigureElasticForm
         :layout-id="layoutId"
+        :id="id"
         :readonly="readonly"
+        @update:fetchOptions="$emit('update:fetchOptions', $event)"
       />
-    </v-col>
 
-    <v-divider vertical class="mt-4" />
-
-    <v-col>
       <MetricsFigurePopover
         v-if="currentLabel"
         v-model="labelPopoverShown"
         :element="currentLabel"
+        :linked-agg="aggs.get(currentLabel.dataKey)?.agg"
         :coords="labelPopoverCoords"
         :readonly="readonly"
         :currentKeyFields="currentFigureKeyFields"
-        :availableAggs="availableAggs"
         @input="currentLabel = undefined"
         @update:element="onCurrentLabelUpdated"
+        @update:linkedAgg="upsertAgg"
+        @update:loading="onLoading"
       />
 
       <CustomSection :label="$t('headers.labels').toString()">
@@ -46,6 +46,7 @@
           >
             <v-list-item-action v-if="!readonly">
               <v-btn
+                :loading="loadingMap[label._.dataKeyField]"
                 icon
                 small
                 @click="onLabelDelete(label)"
@@ -56,12 +57,22 @@
 
             <v-list-item-content>
               <v-list-item-title>
-                {{ label.dataKey }}<span style="font-weight: normal;">.{{ label.field || 'value' }}</span>
+                {{ label.text || `${label.dataKey}.${label.field || 'value'}` }}
               </v-list-item-title>
 
-              <v-list-item-subtitle v-if="label.text">
-                {{ label.text }}
-              </v-list-item-subtitle>
+              <i18n v-if="aggs.get(label.dataKey)" tag="v-list-item-subtitle" path="$ezreeport.fetchOptions.aggSummary" class="font-weight-light text--secondary">
+                <template #type>
+                  <span class="font-weight-medium">
+                    {{ aggs.get(label.dataKey)?.formatted.type }}
+                  </span>
+                </template>
+
+                <template #field>
+                  <span class="font-weight-medium">
+                    {{ aggs.get(label.dataKey)?.formatted.field }}
+                  </span>
+                </template>
+              </i18n>
             </v-list-item-content>
 
             <v-list-item-action
@@ -75,22 +86,18 @@
           </v-list-item>
         </v-list>
       </CustomSection>
-
-      <!-- Advanced -->
-      <CustomSection v-if="unsupportedFigureParams.shouldShow">
-        <ToggleableObjectTree
-          :value="unsupportedFigureParams.value"
-          :label="$t('$ezreeport.advanced_parameters').toString()"
-          v-on="unsupportedFigureParams.listeners"
-        />
-      </CustomSection>
     </v-col>
   </v-row>
 </template>
 
 <script lang="ts">
-import { merge, omit } from 'lodash';
+import { omit } from 'lodash';
 import { defineComponent } from 'vue';
+import { v4 as uuid } from 'uuid';
+
+import { getTypeFromAgg, ElasticAgg } from '~/lib/elastic/aggs';
+import type { AnyFetchOption } from '~/lib/templates/customTemplates';
+
 import useTemplateStore from '~/stores/template';
 
 const dragFormat = 'custom/figure-metric-json';
@@ -105,7 +112,7 @@ export type Label = {
     params?: string[]
   }
 };
-type CustomLabel = Label & {
+export type CustomLabel = Label & {
   _: {
     dataKeyField: string,
     dragged: boolean,
@@ -116,9 +123,14 @@ type MetricParams = {
   labels: Label[]
 };
 
-const supportedKeys = [
-  'labels',
-];
+type AggMapElement = {
+  agg: ElasticAgg,
+  formatted: {
+    name: string,
+    type: string,
+    field: string,
+  }
+};
 
 export default defineComponent({
   props: {
@@ -135,6 +147,9 @@ export default defineComponent({
       default: false,
     },
   },
+  emits: {
+    'update:fetchOptions': (data: Partial<AnyFetchOption>) => !!data,
+  },
   setup() {
     const templateStore = useTemplateStore();
 
@@ -143,9 +158,10 @@ export default defineComponent({
   data: () => ({
     labelPopoverShown: false,
     labelPopoverCoords: { x: 0, y: 0 },
-    currentLabel: undefined as Label | undefined,
+    currentLabel: undefined as CustomLabel | undefined,
 
     innerLabels: [] as CustomLabel[],
+    loadingMap: {} as Record<string, boolean>,
     draggedIndex: -1,
   }),
   computed: {
@@ -207,58 +223,57 @@ export default defineComponent({
         this.innerLabels = val;
       },
     },
+    aggs() {
+      if (!this.figure?.fetchOptions) {
+        return new Map<string, AggMapElement>();
+      }
+
+      let aggs: ElasticAgg[] = [];
+      if ('aggs' in this.figure.fetchOptions) {
+        aggs = this.figure.fetchOptions.aggs ?? [];
+      }
+
+      return new Map<string, AggMapElement>(
+        aggs.map((agg, i) => {
+          const type = getTypeFromAgg(agg);
+          return [
+            agg.name || `agg${i}`,
+            {
+              agg,
+              formatted: {
+                name: `${agg.name}` || `agg${i}`,
+                type: this.$t(type ? `$ezreeport.fetchOptions.agg_types.${type}` : '$ezreeport.unknown').toString(),
+                field: agg[type || '']?.field || 'unknown',
+              },
+            },
+          ];
+        }),
+      );
+    },
     currentFigureKeyFields() {
       return this.labels.map(({ _: { dataKeyField } }) => dataKeyField);
     },
-    unsupportedFigureParams() {
-      let listeners = {};
-      if (!this.readonly) {
-        listeners = {
-          input: (val: Record<string, any>) => {
-            this.figureParams = merge({}, this.figureParams, val);
+  },
+  watch: {
+    // eslint-disable-next-line func-names
+    'figure.fetchOptions.fetchCount': function (aggName) {
+      // Create a label with fetch count
+      if (aggName) {
+        this.createLabel({
+          dataKey: 'total_count',
+          field: 'value',
+          text: this.$t('total_count').toString(),
+          format: {
+            type: 'number',
           },
-        };
+        });
+        return;
       }
-
-      const value = omit(this.figure?.params ?? {}, supportedKeys);
-      return {
-        shouldShow: !this.readonly || Object.keys(value).length > 0,
-        value,
-        listeners,
-      };
-    },
-    availableAggs() {
-      const layout = this.templateStore.currentLayouts.find(
-        ({ _: { id } }) => id === this.layoutId,
-      );
-      if (!layout || !layout.fetchOptions) {
-        return [];
+      // Delete the label if possible
+      const label = this.labels.find(({ dataKey }) => dataKey === 'total_count');
+      if (label) {
+        this.onLabelDelete(label);
       }
-
-      // Add already defined aggregations
-      let available: any[] = [];
-      const aggs = 'aggs' in layout.fetchOptions ? layout.fetchOptions.aggs : layout.fetchOptions.aggregations;
-      if (Array.isArray(aggs)) {
-        available = (aggs as { name: string }[]).map((agg, i) => ({
-          ...agg,
-          name: agg.name || `agg${i}`,
-        }));
-      }
-
-      // Add fetchCount if available
-      if (layout.fetchOptions?.fetchCount) {
-        available.push({ name: layout.fetchOptions.fetchCount.toString() });
-      }
-
-      // Disable if already used
-      const currentLabelsKeySet = new Set(this.labels.map((l) => l.dataKey));
-      const res = available.map(
-        (agg) => ({
-          ...agg,
-          disabled: currentLabelsKeySet.has(agg.name) && agg.name !== this.currentLabel?.dataKey,
-        }),
-      );
-      return res;
     },
   },
   methods: {
@@ -278,13 +293,20 @@ export default defineComponent({
       const labels = [...this.figureParams.labels];
       labels.splice(index, 1);
       this.figureParams = { ...this.figureParams, labels };
+
+      if (label.dataKey === 'total_count') {
+        this.$emit('update:fetchOptions', { fetchCount: undefined });
+        return;
+      }
+
+      this.deleteAgg(label.dataKey);
     },
     /**
      * Update value when a label is updated
      *
      * @param label The new label
      */
-    onCurrentLabelUpdated(label: Label) {
+    onCurrentLabelUpdated(label: CustomLabel) {
       if (!this.currentLabel || !this.figureParams) {
         return;
       }
@@ -311,12 +333,16 @@ export default defineComponent({
         return;
       }
 
-      if (label) {
-        this.currentLabel = label;
+      if (!label) {
+        this.createLabel();
+        this.upsertAgg({
+          name: this.currentLabel?.dataKey ?? '',
+          sum: {
+            field: '',
+          },
+        });
       } else {
-        this.currentLabel = { dataKey: this.availableAggs[0]?.name || `agg${this.labels.length}` };
-        const labels = [...this.figureParams.labels, this.currentLabel];
-        this.figureParams = { ...this.figureParams, labels };
+        this.currentLabel = label;
       }
 
       const coords = { x: e.clientX, y: e.clientY };
@@ -332,6 +358,68 @@ export default defineComponent({
       this.labelPopoverCoords = coords;
       await this.$nextTick();
       this.labelPopoverShown = true;
+    },
+    /**
+     * Create a label and set it as current
+     *
+     * @param label base label
+     */
+    createLabel(label?: Partial<Label>) {
+      if (!this.figureParams) {
+        return;
+      }
+
+      const dataKey = label?.dataKey ?? uuid().split('-')[0];
+      const field = label?.field ?? 'value';
+
+      const t = {
+        _: {
+          dragged: false,
+          dataKeyField: `${dataKey}.${field}`,
+        },
+        field,
+        dataKey,
+        ...(label ?? {}),
+      };
+      const labels = [...this.figureParams.labels, t];
+      this.currentLabel = t;
+      this.figureParams = { ...this.figureParams, labels };
+    },
+    /**
+     * Upsert a agg in fetchOptions
+     *
+     * @param agg The agg to upsert
+     */
+    upsertAgg(agg: ElasticAgg) {
+      let aggs: ElasticAgg[] = [];
+      if (this.figure?.fetchOptions && 'aggs' in this.figure.fetchOptions) {
+        aggs = this.figure.fetchOptions.aggs ?? [];
+      }
+
+      const index = aggs.findIndex((b) => b.name === agg.name);
+      if (index < 0) {
+        aggs.push(agg);
+      } else {
+        aggs.splice(index, 1, agg);
+      }
+      this.$emit('update:fetchOptions', { aggs });
+    },
+    /**
+     * Delete a agg in fetchOptions
+     *
+     * @param agg The agg to upsert
+     */
+    deleteAgg(name: string) {
+      let aggs: ElasticAgg[] = [];
+      if (this.figure?.fetchOptions && 'aggs' in this.figure.fetchOptions) {
+        aggs = this.figure.fetchOptions.aggs ?? [];
+      }
+
+      const index = aggs.findIndex((b) => b.name === name);
+      if (index >= 0) {
+        aggs.splice(index, 1);
+        this.$emit('update:fetchOptions', { aggs });
+      }
     },
     /**
      * Allow drag of item when it's handle is clicked
@@ -388,6 +476,16 @@ export default defineComponent({
       }
 
       return events;
+    },
+    onLoading(value: boolean) {
+      if (!this.currentLabel) {
+        return;
+      }
+
+      this.loadingMap = {
+        ...this.loadingMap,
+        [this.currentLabel._.dataKeyField ?? '']: value,
+      };
     },
     /**
      * Init dragged data
@@ -496,7 +594,15 @@ export default defineComponent({
 en:
   headers:
     labels: 'Elements'
+  formats:
+    date: 'Date'
+    number: 'Number'
+  total_count: 'Count of documents'
 fr:
   headers:
-    labels: 'Élements'
+    labels: 'Éléments'
+  formats:
+    date: 'Date'
+    number: 'Nombre'
+  total_count: 'Nombre de documents'
 </i18n>

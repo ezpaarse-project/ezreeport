@@ -3,37 +3,31 @@
     <v-col>
       <FigureElasticForm
         :layout-id="layoutId"
+        :id="id"
         :readonly="readonly"
+        hide-fetch-count
+        @update:fetchOptions="$emit('update:fetchOptions', $event)"
       />
-    </v-col>
 
-    <v-divider vertical class="mt-4" />
-
-    <v-col>
       <v-form ref="form" v-model="valid">
-        <v-combobox
-          :value="figureParams?.dataKey"
-          :label="$t('$ezreeport.fetchOptions.aggName')"
-          :items="availableAggs"
+        <ElasticAggElementForm
+          :element="buckets.metric ?? defaultMetric"
           :readonly="readonly"
-          hide-details="auto"
-          @input="onParamUpdate({ dataKey: $event || undefined })"
+          :agg-filter="aggFilter"
+          :style="{
+            border: $vuetify.theme.dark ? 'thin solid rgba(255, 255, 255, 0.12)' : 'thin solid rgba(0, 0, 0, 0.12)',
+          }"
+          @update:element="(i, el) => onMetricUpdate(el)"
+          @update:loading="metricLoading = $event"
         >
-          <template #append-outer>
-            <ElasticAggTypeHelper
-              v-model="showDefinition"
-              :agg="currentAgg"
-            />
-          </template>
-        </v-combobox>
+          <template v-slot:title>
+            <div class="d-flex align-center">
+              {{ $t('headers.metric') }}
 
-        <v-text-field
-          :value="figureParams?.maxLength"
-          :label="$t('headers.maxLength')"
-          :readonly="readonly"
-          type="number"
-          @input="onParamUpdate({ maxLength: (+$event) >= 1 ? +$event : undefined })"
-        />
+              <v-progress-circular v-if="metricLoading" indeterminate size="16" width="2" class="ml-2" />
+            </div>
+          </template>
+        </ElasticAggElementForm>
 
         <CustomSection :label="$t('headers.columns').toString()">
           <template #actions v-if="!readonly">
@@ -53,23 +47,24 @@
             :value="figureParams.columns"
             :totals="figureParams.totals"
             :col-styles="figureParams.columnStyles"
-            :data-key="figureParams.dataKey"
+            :buckets="buckets.value"
+            :metric="buckets.metric"
             :readonly="readonly"
             ref="columnsTable"
             @input="onParamUpdate({ columns: $event })"
             @update:totals="onParamUpdate({ totals: $event })"
             @update:col-styles="onParamUpdate({ columnStyles: $event })"
+            @update:buckets="onBucketUpdate($event)"
           />
         </CustomSection>
 
-        <!-- Advanced -->
-        <CustomSection v-if="unsupportedParams.shouldShow">
-          <ToggleableObjectTree
-            :value="unsupportedParams.value"
-            :label="$t('$ezreeport.advanced_parameters').toString()"
-            v-on="unsupportedParams.listeners"
-          />
-        </CustomSection>
+        <v-text-field
+          :value="figureParams?.maxLength"
+          :label="$t('headers.maxLength')"
+          :readonly="readonly"
+          type="number"
+          @input="onParamUpdate({ maxLength: (+$event) >= 1 ? +$event : undefined })"
+        />
       </v-form>
     </v-col>
   </v-row>
@@ -77,24 +72,16 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { omit, merge } from 'lodash';
+
+import type { AnyFetchOption } from '~/lib/templates/customTemplates';
+import type { AggDefinition, ElasticAgg } from '~/lib/elastic/aggs';
 
 import useTemplateStore from '~/stores/template';
-import { getTypeDefinitionFromAgg } from '~/lib/elastic/aggs';
 
 import type TablePreviewFormConstructor from '../utils/TablePreviewForm.vue';
 import type { PDFParams, PDFStyle, TableColumn } from '../utils/table';
 
 type TablePreviewForm = InstanceType<typeof TablePreviewFormConstructor>;
-
-const supportedKeys = [
-  'dataKey',
-  'title',
-  'maxLength',
-  'columns',
-  'totals',
-  'columnStyles',
-];
 
 export default defineComponent({
   props: {
@@ -113,6 +100,7 @@ export default defineComponent({
   },
   emits: {
     input: (val: PDFParams) => !!val,
+    'update:fetchOptions': (data: Partial<AnyFetchOption>) => !!data,
   },
   setup() {
     const templateStore = useTemplateStore();
@@ -121,8 +109,8 @@ export default defineComponent({
   },
   data: () => ({
     valid: false,
-
-    showDefinition: false,
+    defaultMetric: { name: 'aggMetric', __count: undefined },
+    metricLoading: false,
   }),
   computed: {
     figure() {
@@ -178,65 +166,22 @@ export default defineComponent({
         );
       },
     },
-    unsupportedParams() {
-      let listeners = {};
-      if (!this.readonly && this.valid) {
-        listeners = {
-          input: (val: Record<string, any>) => {
-            this.figureParams = merge({}, this.figureParams, val);
-          },
+    buckets() {
+      if (!this.figure?.fetchOptions) {
+        return { value: [], metric: undefined };
+      }
+
+      if (
+        ('buckets' in this.figure.fetchOptions && this.figure.fetchOptions.buckets)
+        || ('metric' in this.figure.fetchOptions && this.figure.fetchOptions.metric)
+      ) {
+        return {
+          value: this.figure.fetchOptions.buckets ?? [],
+          metric: this.figure.fetchOptions.metric,
         };
       }
 
-      const value = omit(this.figure?.params ?? {}, supportedKeys);
-      return {
-        shouldShow: !this.readonly || Object.keys(value).length > 0,
-        value,
-        listeners,
-      };
-    },
-    availableAggs() {
-      const layout = this.templateStore.currentLayouts.find(
-        ({ _: { id } }) => id === this.layoutId,
-      );
-      if (!layout || !layout.fetchOptions) {
-        return [];
-      }
-
-      // Add already defined aggregations
-      let available: any[] = [];
-      const aggs = 'aggs' in layout.fetchOptions ? layout.fetchOptions.aggs : layout.fetchOptions.aggregations;
-      if (Array.isArray(aggs)) {
-        available = [...aggs];
-      }
-
-      // Remove non iterable aggregations
-      available = available.filter((agg) => {
-        const typeDef = getTypeDefinitionFromAgg(agg);
-
-        // Allow unknown types, as user may be knowing what he do...
-        if (!typeDef) {
-          return true;
-        }
-        return typeDef.isArray;
-      });
-
-      return available.map((agg, i) => agg.name || `agg${i}`);
-    },
-    /**
-     * Current aggregation targeted
-     */
-    currentAgg() {
-      const layout = this.templateStore.currentLayouts.find(
-        ({ _: { id } }) => id === this.layoutId,
-      );
-
-      if (!layout?.fetchOptions || !this.figureParams) {
-        return undefined;
-      }
-
-      const aggs = 'aggs' in layout.fetchOptions ? layout.fetchOptions.aggs : layout.fetchOptions.aggregations;
-      return (aggs as any[]).find(({ name }) => name === this.figureParams?.dataKey);
+      return { value: [], metric: undefined };
     },
   },
   mounted() {
@@ -249,7 +194,21 @@ export default defineComponent({
       }
     },
     onColumnCreated() {
-      (this.$refs.columnsTable as TablePreviewForm | undefined)?.createColumn();
+      (this.$refs.columnsTable as TablePreviewForm | undefined)?.onCreateColumn();
+    },
+    onMetricUpdate(el: ElasticAgg) {
+      if ('__count' in { ...el }) {
+        this.$emit('update:fetchOptions', { metric: undefined });
+      } else {
+        this.$emit('update:fetchOptions', { metric: el });
+      }
+    },
+    onBucketUpdate(buckets: ElasticAgg[]) {
+      this.onParamUpdate({ dataKey: buckets[0]?.name });
+      this.$emit('update:fetchOptions', { buckets });
+    },
+    aggFilter(name: string, def: AggDefinition): boolean {
+      return !def.returnsArray;
     },
   },
 });
@@ -264,8 +223,10 @@ en:
   headers:
     maxLength: 'Maximum count of rows'
     columns: 'Columns'
+    metric: 'Metric'
 fr:
   headers:
     maxLength: 'Nombre maximum de lignes'
     columns: 'Colonnes'
+    metric: 'Metric'
 </i18n>

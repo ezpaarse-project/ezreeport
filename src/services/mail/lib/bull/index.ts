@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import Queue from 'bull';
+import { Queue, Worker } from 'bullmq';
 
 import config from '~/lib/config';
 import { appLogger as logger } from '~/lib/logger';
@@ -13,7 +13,7 @@ const {
 } = config;
 
 //! Should be synced with report
-export type MailData = {
+export type MailResult = {
   /**
    * If task succeed or failed
    */
@@ -46,20 +46,32 @@ export type MailData = {
   url: string,
 };
 
-const baseQueueOptions: Queue.QueueOptions = {
-  redis,
-  limiter: {
-    max: concurrence,
-    duration: maxExecTime,
+const workers: Worker[] = [];
+
+logger.verbose('[bull] Init started');
+const start = new Date();
+const mailQueue = new Queue<MailResult>('ezReeport.mail-send', { connection: redis });
+
+const worker = new Worker(
+  mailQueue.name,
+  join(__dirname, 'jobs/sendReportMail.ts'),
+  {
+    connection: redis,
+    limiter: {
+      max: concurrence,
+      duration: maxExecTime,
+    },
   },
-};
-
-const mailQueue = new Queue<MailData>('ezReeport.mail-send', baseQueueOptions);
-
-mailQueue.on('failed', (job, err) => {
-  if (job.attemptsMade === job.opts.attempts) {
-    logger.error(`[bull] ${err.message}`);
-  }
+);
+worker.on('completed', (job) => {
+  logger.verbose(`[bull] [mail] job [${job?.id}] completed`);
+});
+worker.on('failed', (job, err) => {
+  logger.error(`[bull] [mail] job [${job?.id}] failed with error: {${err.message}}`);
+});
+worker.on('error', (err) => {
+  logger.error(`[bull] [mail] worker failed with error: {${err.message}}`);
 });
 
-mailQueue.process(join(__dirname, 'jobs/sendReportMail.ts'));
+workers.push(worker);
+logger.info(`[bull] Init completed in [${new Date().getTime() - start.getTime()}]ms`);

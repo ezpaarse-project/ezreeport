@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, type PropType } from 'vue';
 
 export default defineComponent({
   name: 'ObjectTree',
@@ -22,7 +22,7 @@ export default defineComponent({
       required: true,
     },
     popoverRef: {
-      type: Object,
+      type: Object as PropType<Record<string, any> | undefined>,
       default: undefined,
     },
   },

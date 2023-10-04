@@ -5,7 +5,7 @@
     "recommendations": [
 			"dbaeumer.vscode-eslint",
 			"christian-kohler.npm-intellisense",
-			"hbenl.vscode-mocha-test-adapter",
+			"Orta.vscode-jest",
 			"streetsidesoftware.code-spell-checker",
 			"vivaxy.vscode-conventional-commits",
 			"ms-azuretools.vscode-docker",

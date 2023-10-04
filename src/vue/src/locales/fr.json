@@ -18,6 +18,8 @@
   "settings": "Paramètres",
   "preview": "Prévisualisation",
   "unknown": "Inconnu",
+  "filter": "Filtrer",
+  "reset": "Réinitialiser",
 
   "tasks": {
     "name": "Nom du rapport",
@@ -112,6 +114,7 @@
   "fetchOptions": {
     "title": "Options de récupération",
     "aggName": "Nom de l'aggregation",
+    "aggSummary": "{type} sur {field}",
     "index": "Index Elastic",
     "dateField": "Champ 'date' de l'index",
     "filters": "Filtres",
@@ -119,21 +122,33 @@
 
     "agg_option": "{label} ({type})",
     "agg_types": {
+      "__count": "Compte",
+      "adjacency_matrix": "Matrice d'adjacence",
       "auto_date_histogram": "Histogramme de date automatique",
       "avg": "Moyenne",
+      "avg_bucket": "Moyenne par groupe",
       "boxplot": "Diagramme en boîte",
       "cardinality": "Compte unique",
       "categorize_text": "Catégoriser le texte",
+      "cumulative_sum": "Somme cumulative",
       "date_histogram": "Histogramme de date",
+      "derivative": "Dérivée",
       "diversified_sampler": "Échantillonneur diversifié",
       "extended_stats": "Statistiques étendues",
+      "filters": "Filtres",
       "geo_bounds": "Limites géographiques",
       "geo_centroid": "Centroïde géographique",
+      "geo_grid": "Grille géographique",
       "histogram": "Histogramme",
       "max": "Maximum",
+      "max_bucket": "Maximum par groupe",
       "median_absolute_deviation": "Écart absolu médian",
       "min": "Minimum",
+      "min_bucket": "Minimum par groupe",
+      "moving_average": "Moyenne mobile",
+      "percentile_ranks": "Rangs de percentile",
       "percentiles": "Percentiles",
+      "range": "Intervalle",
       "rare_terms": "Termes rares",
       "rate": "Taux",
       "sampler": "Échantillonneur",
@@ -142,20 +157,16 @@
       "stats": "Statistiques",
       "string_stats": "Statistiques de chaînes de caractères",
       "sum": "Somme",
+      "sum_bucket": "Somme par groupe",
       "terms": "Termes",
+      "top_hits": "Meilleurs résultats",
       "value_count": "Nombre de valeurs",
       "variable_width_histogram": "Histogramme à largeur variable"
     }
   },
 
-  "hints": {
-    "dot_notation": {
-      "value": "Supporte la notation avec des points. Ex: {code}",
-      "code": "cle.valeur"
-    }
-  },
-
   "errors": {
+    "_detail": "{valid} ({field})",
     "empty": "Ce champ doit être rempli",
     "fetch": "Une erreur est survenue lors de la récupération des données",
     "email_format": "Une ou plusieurs addresses ne sont pas valides",

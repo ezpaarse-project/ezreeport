@@ -8,7 +8,7 @@ import { compact, merge, omit } from 'lodash';
 import fetchWithElastic, { type ElasticFetchOptionsType } from '~/generators/elastic';
 import renderPdfWithVega, { type VegaRenderOptionsType } from '~/generators/vega-pdf';
 
-import type { Recurrence, Task } from '~/lib/prisma';
+import type { Prisma, Recurrence, Task } from '~/lib/prisma';
 import config from '~/lib/config';
 import * as dfns from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
@@ -165,8 +165,7 @@ const getReportPeriod = (
     return parsedPeriod;
   }
 
-  // TODO[refactor]: Re-do types InputTask & Task to avoid getting Date instead of string in some cases. Remember that Prisma.TaskCreateInput exists. https://www.prisma.io/docs/concepts/components/prisma-client/advanced-type-safety
-  return calcPeriod(dfns.parseISO(task.nextRun.toString()), task.recurrence);
+  return calcPeriod(new Date(), task.recurrence);
 };
 
 /**
@@ -195,7 +194,7 @@ const fetchData = (
   /** index of the layout */
   index: number,
   /** data fetched */
-  data: unknown,
+  data: unknown[],
   /** resolved options of fetcher */
   options?: ElasticFetchOptionsType
 }[]> => {
@@ -208,49 +207,69 @@ const fetchData = (
   } = params;
 
   return Promise.all(
-    template.layouts.map(async (layout, i) => {
-      // If there's static data, do not request it
-      if (
-        layout.data
-        || layout.figures.every(({ data }) => !!data)
-      ) {
-        return {
-          index: i,
-          data: layout.data,
-        };
-      }
+    template.layouts
+      .map(async (layout, i) => {
+        // If there's static data, do not request it
+        if (layout.data || layout.figures.every(({ data }) => !!data)) {
+          return {
+            index: i,
+            data: layout.figures.map(({ data }) => layout.data ?? data),
+          };
+        }
 
-      const fetchOptions: ElasticFetchOptionsType = merge(
-        {},
-        template.fetchOptions ?? {},
-        layout.fetchOptions ?? {},
-        {
+        const toInsert = new Map<number, Prisma.JsonObject>();
+        const requests: ElasticFetchOptionsType['requests'] = [];
+        // eslint-disable-next-line no-restricted-syntax
+        for (let j = 0; j < layout.figures.length; j += 1) {
+          const figure = layout.figures[j];
+          if (!figure.data) {
+            requests.push(
+              merge(
+                {},
+                { filters: template.fetchOptions?.filters },
+                { filters: taskTemplate.fetchOptions.filters },
+                layout.fetchOptions,
+                figure.fetchOptions,
+              ),
+            );
+          } else {
+            toInsert.set(i, figure.data);
+          }
+        }
+
+        const fetchOptions: ElasticFetchOptionsType = {
+          auth: namespace?.fetchLogin?.elastic ?? { username: '' },
           dateField: template.fetchOptions?.dateField ?? '',
-          ...(taskTemplate.fetchOptions ?? {}),
-          recurrence,
+          index: taskTemplate.fetchOptions.index,
           period: {
             start: dfns.getTime(period.start),
             end: dfns.getTime(period.end),
           },
-          auth: namespace?.fetchLogin?.elastic ?? { username: '' },
-        },
-      );
-
-      // Fetch elastic and return resolved fetch options
-      try {
-        return {
-          index: i,
-          options: fetchOptions,
-          data: await fetchWithElastic(fetchOptions, events),
+          recurrence,
+          requests,
         };
-      } catch (error) {
-        if (!(error instanceof Error)) {
+
+        // Fetch elastic and return resolved fetch options
+        try {
+          const elasticData = await fetchWithElastic(fetchOptions, events);
+          // eslint-disable-next-line no-restricted-syntax
+          for (const [index, value] of toInsert.entries()) {
+            elasticData.splice(index, 0, value);
+          }
+
+          return {
+            index: i,
+            options: fetchOptions,
+            data: elasticData,
+          };
+        } catch (error) {
+          if (!(error instanceof Error)) {
+            throw error;
+          }
+          error.cause = { ...(error.cause ?? {}), layout: i, type: 'fetch' };
           throw error;
         }
-        error.cause = { ...(error.cause ?? {}), layout: i, type: 'fetch' };
-        throw error;
-      }
-    }),
+      }),
   );
 };
 
@@ -317,7 +336,7 @@ const renderTemplate = async (
  *
  * @param task The task to generate
  * @param origin The origin of the generation (can be username, or method (auto, etc.))
- * @param writeHistory Should write generation in task history (also disable first level of debug)
+ * @param writeActivity Should write generation in task history (also disable first level of debug)
  * @param debug Enable second level of debug
  * @param meta Additional data
  * @param events Event handler (passed to {@link renderPdfWithVega})
@@ -328,7 +347,7 @@ export const generateReport = async (
   task: Task,
   origin: string,
   customPeriod?: { start: string, end: string },
-  writeHistory = true,
+  writeActivity = true,
   debug = false,
   meta = {},
   events: EventEmitter = new EventEmitter(),
@@ -338,7 +357,7 @@ export const generateReport = async (
   const basePath = join(outDir, todayStr, '/');
 
   let filename = `ezREEPORT_${normaliseFilename(task.name)}`;
-  if (process.env.NODE_ENV === 'production' || writeHistory) {
+  if (process.env.NODE_ENV === 'production' || writeActivity) {
     filename += `_${randomUUID()}`;
   }
   const filepath = join(basePath, filename);
@@ -352,7 +371,7 @@ export const generateReport = async (
     throw new Error(`Namespace "${task.namespaceId}" not found`);
   }
 
-  logger.verbose(`[gen] [${process.pid}] Generation of report "${namepath}" started`);
+  logger.verbose(`[gen] [${process.pid}] Generation of report [${namepath}] started`);
   events.emit('creation');
 
   const result: ReportResultType = {
@@ -380,6 +399,7 @@ export const generateReport = async (
     }
 
     result.detail.auth = namespace.fetchLogin;
+    logger.verbose(`[gen] [${process.pid}] Auth found`);
     events.emit('authFound', result.detail.auth);
 
     const period = getReportPeriod(task, customPeriod);
@@ -390,7 +410,7 @@ export const generateReport = async (
     };
 
     // Re-calc ttl if not in any debug mode
-    if (writeHistory && !debug) {
+    if (writeActivity && !debug) {
       result.detail.destroyAt = dfns
         .add(today, { seconds: ttl.iterations * (distance / 1000) })
         .toISOString();
@@ -412,6 +432,7 @@ export const generateReport = async (
       }
     }
 
+    logger.verbose(`[gen] [${process.pid}] Template resolved`);
     events.emit('templateResolved', template);
 
     // Fetch data and keep resolved data and fetch options
@@ -427,14 +448,17 @@ export const generateReport = async (
     );
     // eslint-disable-next-line no-restricted-syntax
     for (const { index, data, options } of requestsResults) {
-      template.layouts[index].fetchOptions = options;
-      template.layouts[index].data = data;
+      template.layouts[index].fetchOptions = options as any;
+      template.layouts[index].figures = template.layouts[index].figures.map((f, i) => ({
+        ...f,
+        data: f.data ?? data[i],
+      }));
     }
 
     // Cleanup & notifications
     delete template.fetchOptions;
-    events.emit('templateFetched', template);
     logger.verbose(`[gen] [${process.pid}] Data fetched`);
+    events.emit('templateFetched', template);
 
     // Render report
     const renderResult = await renderTemplate(
@@ -475,7 +499,7 @@ export const generateReport = async (
     if (error instanceof Error) {
       err.message = error.message;
       err.stack = error.stack?.split('\n    ') ?? [];
-      err.cause = Value.Cast(ReportErrorCause, err.cause);
+      err.cause = Value.Cast(ReportErrorCause, error.cause);
     }
 
     // Update result
@@ -495,7 +519,7 @@ export const generateReport = async (
   }
 
   // Update task if needed
-  if (writeHistory) {
+  if (writeActivity) {
     // Default data
     let taskData: Partial<InputTaskBodyType> & { lastRun: Date } = {
       lastRun: today,
@@ -515,7 +539,7 @@ export const generateReport = async (
       // If generation is a success
       taskData = {
         ...taskData,
-        nextRun: calcNextDate(today, task.recurrence).toString(),
+        nextRun: calcNextDate(today, task.recurrence).toISOString(),
       };
 
       activityData.type = 'generation-success';
@@ -551,8 +575,8 @@ export const generateReport = async (
   // Write detail when process is ending
   try {
     await writeInfoFile(`${filepath}.det`, result);
+    result.detail.files.detail = `${namepath}.det.json`;
     logger.verbose(`[gen] [${process.pid}] Detail wrote to [${result.detail.files.detail}]`);
-    result.detail.files.detail = `${namepath}.deb.json`;
   } catch (error) {
     if (error instanceof Error) {
       logger.error(`[gen] [${process.pid}] Unable to write detail [${task.id}]: {${error.message}}`);

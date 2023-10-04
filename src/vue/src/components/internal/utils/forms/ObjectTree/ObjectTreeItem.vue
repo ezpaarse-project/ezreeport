@@ -81,7 +81,7 @@ export default defineComponent({
       required: true,
     },
     popoverRef: {
-      type: Object,
+      type: Object as PropType<Record<string, any> | undefined>,
       default: undefined,
     },
   },

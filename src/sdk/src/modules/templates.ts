@@ -1,21 +1,44 @@
 import { parseISO } from 'date-fns';
 
 import axios, { type ApiResponse } from '../lib/axios';
-import type { JsonObject } from '../lib/utils';
 
 import { parseTask, type RawTask, type Task } from './tasks.base';
+
+interface FigureFetchOptions {
+  fetchCount?: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  filters?: Record<string, any>,
+}
+
+interface FigureFetchOptionsAggs extends FigureFetchOptions {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  aggs?: Record<string, any>[],
+}
+
+interface FigureFetchOptionsBuckets extends FigureFetchOptions {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  buckets?: Record<string, any>[],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metric?: Record<string, any>,
+}
 
 export interface Figure {
   type: string,
   data?: string | unknown[],
-  params: JsonObject,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  params: Record<string, any>,
+  fetchOptions?: FigureFetchOptionsAggs | FigureFetchOptionsBuckets,
   slots?: number[]
 }
 
 export interface Layout {
   data?: unknown
   fetcher?: string,
-  fetchOptions?: JsonObject,
+  fetchOptions?: {
+    fetchCount?: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    filters?: Record<string, any>,
+  },
   figures: Figure[]
 }
 
@@ -56,8 +79,17 @@ export const parseTemplate = (template: RawTemplate): Template => ({
 export interface RawFullTemplate extends RawTemplate {
   body: {
     renderer?: string,
-    renderOptions?: JsonObject,
-    fetchOptions?: JsonObject,
+    renderOptions?: {
+      grid?: {
+        cols: number,
+        rows: number,
+      }
+    },
+    fetchOptions?: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      filters?: Record<string, any>,
+      dateField: string,
+    },
     layouts: Layout[]
   }
   tasks: RawTask[],

@@ -26,11 +26,5 @@
     ".env": "dotenv",
     ".env.defaults": "dotenv"
   },
-  "mochaExplorer.cwd": "tests",
-  "mochaExplorer.files": "./*/index.spec.ts",
-  "mochaExplorer.require": [
-    "mocha-steps",
-    "ts-node/register"
-  ],
   "typescript.tsdk": "./src/services/report/node_modules/typescript/lib"
 }

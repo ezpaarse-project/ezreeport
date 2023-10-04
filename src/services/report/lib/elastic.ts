@@ -1,5 +1,5 @@
 import { setTimeout } from 'node:timers/promises';
-import { Client, type estypes as ElasticTypes } from '@elastic/elasticsearch';
+import { Client, type estypes as ElasticTypes, type RequestParams } from '@elastic/elasticsearch';
 import config from './config';
 import { appLogger as logger } from './logger';
 
@@ -111,6 +111,34 @@ export const elasticSearch = async <ResponseType extends Record<string, unknown>
 };
 
 /**
+ * Shorthand to search multiple queries with elastic
+ *
+ * @param params The search params
+ * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
+ *
+ * @returns The results of the search
+ */
+export const elasticMSearch = async <ResponseType extends Record<string, unknown>>(
+  params: RequestParams.Msearch<ElasticTypes.MsearchRequestItem[]>,
+  runAs?: string,
+) => {
+  const elastic = await getElasticClient();
+
+  const headers: Record<string, unknown> = {};
+  if (runAs) {
+    headers['es-security-runas-user'] = runAs;
+  }
+
+  return elastic.msearch<
+  ElasticTypes.MsearchResponse<ResponseType>,
+  ElasticTypes.MsearchRequestItem[]
+  >(
+    params,
+    { headers },
+  );
+};
+
+/**
  * Shorthand to count with elastic
  *
  * @param params The count params
@@ -133,21 +161,6 @@ export const elasticCount = async (
     params as Record<string, unknown>,
     { headers },
   );
-};
-
-/**
- * Shorthand to check if a pattern, a pattern expression or an alias exist
- *
- * @param index The index
- *
- * @returns If index exist or not
- */
-export const elasticCheckIndex = async (index: string): Promise<boolean> => {
-  const elastic = await getElasticClient();
-
-  const { body } = await elastic.indices.exists({ index, allow_no_indices: false });
-
-  return body;
 };
 
 /**

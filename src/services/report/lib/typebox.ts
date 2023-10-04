@@ -65,9 +65,10 @@ export function assertIsSchema<T extends TSchema>(
 
   // If not valid, throw error
   const validationError = validate.errors?.at(0);
+
   if (validationError) {
     throw new ArgumentError(
-      `${errorPrefix} ${validationError.message}`,
+      `${errorPrefix}${validationError.instancePath} ${validationError.message}`,
     );
   }
 }

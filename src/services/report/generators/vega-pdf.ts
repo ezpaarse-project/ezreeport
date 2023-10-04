@@ -291,7 +291,7 @@ const renderPdfWithVega = async (
   events: EventEmitter = new EventEmitter(),
 ): Promise<PDFStats> => {
   // Check options even if type is explicit, because it can be a merge between multiple sources
-  assertIsSchema(VegaRenderOptions, options);
+  assertIsSchema(VegaRenderOptions, options, 'params');
 
   try {
     const doc = await initDoc({ ...options.doc, path: `${options.doc.path}.pdf` });

@@ -19,7 +19,7 @@ import {
   View,
 } from 'vega';
 import { compile, type TopLevelSpec } from 'vega-lite';
-import type { Mark, MarkDef } from 'vega-lite/build/src/mark';
+import type { Mark } from 'vega-lite/build/src/mark';
 import type { UnitSpec } from 'vega-lite/build/src/spec';
 
 import { Recurrence } from '~/lib/prisma';
@@ -293,29 +293,7 @@ export const createVegaLSpec = (
         break;
     }
 
-    const dLLayer: Layer = {
-      mark: {
-        type: 'text',
-        align: 'center',
-        baseline: 'middle',
-        dy: 5,
-        radius: type === 'arc' ? pos.radius : undefined,
-      },
-      encoding: {
-        text: {
-        },
-        // FIXME: WARN Dropping since it does not contain any data field, datum, value, or signal.
-        color: {
-          legend: null,
-          scale: {
-            // @ts-ignore
-            scheme: 'tableau10-labels',
-          },
-        },
-      },
-    };
-
-    // Format datalabels
+    // Format datalabels and prepare condition
     let condition: string | undefined;
     let format: ((v: string) => string) | undefined;
     switch (params.dataLabel.format) {
@@ -339,47 +317,77 @@ export const createVegaLSpec = (
         break;
       }
     }
-    // Adding condition to datalabels
-    if (dLLayer.encoding?.text) {
-      // @ts-ignore
-      dLLayer.encoding.text.condition = {
-        test: condition ?? 'true',
-        ...params.value,
-      };
+
+    if (format) {
+      expressionFunction('dataLabelFormat', format);
     }
+
+    const dLLayer: Layer = {
+      mark: {
+        type: 'text',
+        align: 'center',
+        baseline: 'middle',
+        dy: 7,
+        radius: type === 'arc' ? pos.radius : undefined,
+        fontWeight: params.dataLabel.showLabel ? 'bold' : undefined,
+      },
+      encoding: {
+        text: {
+          condition: {
+            test: condition ?? 'true',
+            format: format ? '' : undefined,
+            formatType: format ? 'dataLabelFormat' : undefined,
+            aggregate: type === 'bar' ? 'sum' : undefined,
+            field: params.value.field,
+          },
+        },
+        y: type === 'bar' ? {
+          aggregate: 'sum',
+          field: params.value.field,
+          bandPosition: 0.5,
+        } : undefined,
+        // FIXME: WARN Dropping since it does not contain any data field, datum, value, or signal.
+        color: {
+          legend: null,
+          scale: {
+            // @ts-ignore
+            scheme: 'tableau10-labels',
+          },
+        },
+        detail: params.color && {
+          field: params.color.field,
+        },
+      },
+    };
 
     // Showing label if needed
     if (params.dataLabel.showLabel) {
+      const field = params.color?.field || params.label.field;
       layers.push({
         mark: merge(
           cloneDeep(dLLayer.mark),
           {
             dy: -7,
+            fontWeight: 'normal',
           },
         ),
         encoding: {
+          y: dLLayer.encoding?.y,
           text: {
             condition: {
               test: condition ?? 'true',
-              field: params.label.field,
+              field,
             },
+            // bandPosition: 0.5,
           },
           color: dLLayer.encoding?.color,
         },
       });
-      (dLLayer.mark as MarkDef<'text'>).fontWeight = 'bold';
-    }
-
-    if (format) {
-      expressionFunction('dataLabelFormat', format);
-      (dLLayer.encoding?.text?.condition as any).format = '';
-      (dLLayer.encoding?.text?.condition as any).formatType = 'dataLabelFormat';
     }
 
     layers.push(dLLayer);
   }
   const spec: TopLevelSpec = {
-    $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
     width: params.width,
     height: params.height,
     background: 'transparent',
@@ -398,7 +406,8 @@ export const createVegaLSpec = (
   };
 
   // Write generated spec into debug file (without data to gain time & space)
-  if (params.debugExport === true && process.env.NODE_ENV !== 'production') {
+  if (type === 'bar' && process.env.NODE_ENV !== 'production') {
+    spec.$schema = 'https://vega.github.io/schema/vega-lite/v5.json';
     writeFile(
       join(outDir, 'debug.json'),
       JSON.stringify(omit(spec, 'datasets'), undefined, 2),

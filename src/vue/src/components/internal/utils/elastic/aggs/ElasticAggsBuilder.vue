@@ -32,7 +32,7 @@
         <v-list-item-content>
           <v-list-item-title>{{ item.name }}</v-list-item-title>
 
-          <i18n tag="v-list-item-subtitle" path="aggSummary" class="font-weight-light text--secondary">
+          <i18n tag="v-list-item-subtitle" path="$ezreeport.fetchOptions.aggSummary" class="font-weight-light text--secondary">
             <template #type>
               <span class="font-weight-medium">
                 {{ item.type }}
@@ -53,7 +53,7 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
-import { getTypeFromAgg } from '~/lib/elastic/aggs';
+import { getTypeFromAgg, type ElasticAgg } from '~/lib/elastic/aggs';
 
 export default defineComponent({
   props: {
@@ -61,7 +61,7 @@ export default defineComponent({
      * Aggregations
      */
     value: {
-      type: Array as PropType<Record<string, any>[]>,
+      type: Array as PropType<ElasticAgg[]>,
       required: true,
     },
     /**
@@ -78,7 +78,7 @@ export default defineComponent({
      *
      * @param val The new aggregations
      */
-    input: (val: Record<string, any>[]) => !!val,
+    input: (val: ElasticAgg[]) => !!val,
   },
   data: () => ({
     elementDialogShown: false,
@@ -90,7 +90,7 @@ export default defineComponent({
     /**
      * Currently selected agg element
      */
-    selectedAggElement(): Record<string, any> | undefined {
+    selectedAggElement(): ElasticAgg | undefined {
       return this.value[this.selectedIndex];
     },
     /**
@@ -177,10 +177,3 @@ export default defineComponent({
 <style scoped>
 
 </style>
-
-<i18n lang="yaml">
-en:
-  aggSummary: '{type} of {field}'
-fr:
-  aggSummary: '{type} sur {field}'
-</i18n>

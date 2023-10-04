@@ -1,6 +1,7 @@
 import { readFile, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
-import type Queue from 'bull';
+
+import type { Job } from 'bullmq';
 import { enUS } from 'date-fns/locale';
 import { glob } from 'glob';
 
@@ -19,7 +20,7 @@ const { outDir } = config.report;
 
 type FileCheckResult = { file: string, dur: Duration };
 
-export default async (job: Queue.Job<CronData>) => {
+export default async (job: Job<CronData>) => {
   const start = new Date();
   logger.verbose(`[cron] [${process.pid}] [${job.name}] Started`);
 
@@ -69,7 +70,7 @@ export default async (job: Queue.Job<CronData>) => {
           }
 
           await unlink(file);
-          await job.progress(i / filesToDelete.length);
+          await job.updateProgress(i / filesToDelete.length);
 
           logger.info(`[cron] [${process.pid}] [${job.name}] Deleted [${file}] (${dfns.formatDuration(dur, { format: ['years', 'months', 'days'], locale: enUS })} old)`);
           return file;

@@ -126,7 +126,7 @@ const prismaTaskSelect = {
 const castFullTask = <T extends Omit<PrismaTask, 'extendedId' | 'namespaceId'>>(data: T): T & Pick<FullTask, 'template' | 'lastExtended'> => ({
   ...data,
   template: Value.Cast(TaskTemplate, data.template),
-  lastExtended: Value.Cast(LastExtended, data.lastExtended),
+  lastExtended: data.lastExtended ? Value.Cast(LastExtended, data.lastExtended) : undefined,
 });
 
 /**
@@ -225,7 +225,7 @@ export const getAllTasksToGenerate = async (
   where: {
     enabled: true,
     nextRun: {
-      equals: date,
+      lte: date,
     },
   },
 });

@@ -9,6 +9,14 @@ interface CustomProperties {
   }
 }
 
+export type AnyFetchOption = Exclude<
+templates.FullTemplate['body']['fetchOptions']
+| tasks.FullTask['template']['fetchOptions']
+| templates.Layout['fetchOptions']
+| templates.Figure['fetchOptions'],
+undefined
+>;
+
 export type AnyCustomFigure = templates.Figure & CustomProperties;
 
 export type CustomLayout = Omit<templates.Layout, 'figures'> & { figures: AnyCustomFigure[] } & CustomProperties;

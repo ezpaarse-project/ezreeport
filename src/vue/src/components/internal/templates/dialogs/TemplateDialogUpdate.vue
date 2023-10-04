@@ -222,6 +222,9 @@ export default defineComponent({
       if (valid.layout !== undefined) {
         err = this.$t('$ezreeport.layouts.errors._detail', { valid: err, at: valid.layout + 1 });
       }
+      if (valid.field) {
+        err = this.$t('$ezreeport.errors._detail', { valid: err, field: valid.field });
+      }
       return err.toString();
     },
   },

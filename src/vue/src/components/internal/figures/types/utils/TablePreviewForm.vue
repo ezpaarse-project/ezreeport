@@ -6,11 +6,12 @@
       :column="currentColumn"
       :total="totalMap[currentColumn.dataKey]"
       :colStyle="colStyles[currentColumn.dataKey]"
-      :key-prefix="keyPrefix"
-      :current-data-keys="currentDataKeys"
+      :bucket="columnBucketMap.get(currentColumn.dataKey)?.bucket"
       :readonly="readonly"
+      @loading="loadingMap[currentColumn.dataKey] = $event"
       @update:column="onCurrentColumnUpdated"
       @update:total="onCurrentColumnTotalUpdated"
+      @update:bucket="upsertBucket"
       @update:colStyle="onCurrentColumnStyleUpdated"
     />
 
@@ -31,7 +32,8 @@
             @drop.stop="onDragDrop"
           >
             <v-icon
-              v-if="!readonly"
+              v-if="!readonly && valueColumn?.dataKey !== column.dataKey"
+              :disabled="loadingMap[column.dataKey]"
               x-small
               class="mr-1"
               style="cursor: grab;"
@@ -41,20 +43,23 @@
               mdi-drag-vertical-variant
             </v-icon>
 
-            {{ column.header }}
+            <span class="mr-1">
+              {{ column.header }}
+            </span>
 
             <v-btn
-              v-if="!readonly"
+              v-if="!readonly && valueColumn?.dataKey !== column.dataKey"
+              :disabled="loadingMap[column.dataKey]"
               icon
               x-small
-              class="ml-1"
               color="error"
-              @click="onColumnDeleted(column)"
+              @click="deleteColumn(column)"
             >
               <v-icon>mdi-delete</v-icon>
             </v-btn>
 
             <v-btn
+              :loading="loadingMap[column.dataKey]"
               icon
               x-small
               @click="openColumnDialog(column)"
@@ -69,8 +74,40 @@
     <tbody>
       <tr>
         <td v-for="{ dataKey } in columns" :key="`${dataKey}-value`">
-          <i v-if="keyPrefix">{{ keyPrefix }}</i>
-          <span>{{ dataKey }}</span>
+          <!-- Bucket summary -->
+          <i18n v-if="columnBucketMap.get(dataKey)" tag="span" path="$ezreeport.fetchOptions.aggSummary" class="font-weight-light text--secondary">
+            <template #type>
+              <span class="font-weight-medium">
+                {{ columnBucketMap.get(dataKey)?.formatted.type }}
+              </span>
+            </template>
+
+            <template #field>
+              <span class="font-weight-medium">
+                {{ columnBucketMap.get(dataKey)?.formatted.field }}
+              </span>
+            </template>
+          </i18n>
+
+          <!-- Metric summary -->
+          <i18n v-else-if="metricFormatted" tag="span" path="$ezreeport.fetchOptions.aggSummary" class="font-weight-light text--secondary">
+            <template #type>
+              <span class="font-weight-medium">
+                {{ metricFormatted?.formatted.type }}
+              </span>
+            </template>
+
+            <template #field>
+              <span class="font-weight-medium">
+                {{ metricFormatted?.formatted.field }}
+              </span>
+            </template>
+          </i18n>
+
+          <!-- Fallback -->
+          <span v-else class="font-weight-medium text--secondary">
+            {{ $t('$ezreeport.fetchOptions.agg_types.__count') }}
+          </span>
         </td>
       </tr>
       <tr v-if="totals.length > 0">
@@ -85,8 +122,12 @@
 </template>
 
 <script lang="ts">
-import { omit } from 'lodash';
 import { defineComponent, type PropType } from 'vue';
+import { omit } from 'lodash';
+import { v4 as uuid } from 'uuid';
+
+import { getTypeFromAgg, type ElasticAgg } from '~/lib/elastic/aggs';
+
 import type { PDFStyle, TableColumn } from './table';
 
 const dragFormat = 'custom/figure-table-json';
@@ -96,8 +137,6 @@ type CustomTableColumn = TableColumn & {
     dragged: boolean,
   },
 };
-
-const columnDefaults = ['key', 'doc_count'];
 
 export default defineComponent({
   props: {
@@ -113,9 +152,13 @@ export default defineComponent({
       type: Object as PropType<Record<string, PDFStyle>>,
       default: () => ({}),
     },
-    dataKey: {
-      type: String,
-      default: '',
+    buckets: {
+      type: Array as PropType<ElasticAgg[]>,
+      default: () => [],
+    },
+    metric: {
+      type: Object as PropType<ElasticAgg | undefined>,
+      default: undefined,
     },
     readonly: {
       type: Boolean,
@@ -126,11 +169,14 @@ export default defineComponent({
     input: (cols: TableColumn[]) => !!cols,
     'update:totals': (totals: string[]) => !!totals,
     'update:col-styles': (colStyles: Record<string, PDFStyle>) => !!colStyles,
+    'update:buckets': (buckets: ElasticAgg[]) => !!buckets,
   },
   data: () => ({
     columnDialogShown: false,
 
     innerColumns: [] as CustomTableColumn[],
+    innerBuckets: [] as ElasticAgg[],
+    loadingMap: {} as Record<string, boolean>,
     currentColumn: undefined as TableColumn | undefined,
     draggedIndex: -1,
   }),
@@ -140,6 +186,7 @@ export default defineComponent({
         if (this.innerColumns.length > 0) {
           return this.innerColumns;
         }
+
         return this.value.map((c) => ({
           ...c,
           _: {
@@ -151,27 +198,75 @@ export default defineComponent({
         this.innerColumns = val;
       },
     },
-    totalMap(): Record<string, boolean | undefined> {
-      return this.totals.reduce(
-        (prev, dK) => ({
-          ...prev,
-          [dK]: true,
-        }),
-        {},
+    columnBucketMap() {
+      const bucketMap = new Map<string, ElasticAgg>(this.buckets.map((b, i) => [b.name || `agg${i}`, b]));
+
+      return new Map(
+        this.columns
+          .filter((c) => c.dataKey !== this.valueColumn?.dataKey)
+          .map((c, i) => {
+            const bucketName = this.getBucketNameFromDK(c.dataKey);
+            const bucket = bucketMap.get(bucketName ?? '');
+            if (!bucket) {
+              return [c.dataKey, undefined];
+            }
+
+            const type = getTypeFromAgg(bucket);
+            return [
+              c.dataKey,
+              {
+                bucket,
+                formatted: {
+                  name: `${bucket.name}` || `agg${i}`,
+                  type: this.$t(type ? `$ezreeport.fetchOptions.agg_types.${type}` : '$ezreeport.unknown').toString(),
+                  field: bucket[type || '']?.field || 'unknown',
+                },
+              },
+            ];
+          }),
       );
     },
-    currentDataKeys() {
-      return this.value.map(({ dataKey }) => dataKey);
+    metricFormatted() {
+      if (!this.metric) {
+        return undefined;
+      }
+
+      const type = getTypeFromAgg(this.metric);
+      return {
+        metric: this.metric,
+        formatted: {
+          name: `${this.metric.name}` || 'metricAgg',
+          type: this.$t(type ? `$ezreeport.fetchOptions.agg_types.${type}` : '$ezreeport.unknown').toString(),
+          field: this.metric[type || '']?.field || 'unknown',
+        },
+      };
     },
-    keyPrefix() {
-      return `${this.dataKey}[].`;
+    totalMap(): Record<string, boolean | undefined> {
+      return Object.fromEntries(
+        this.totals.map((dK) => [dK, true]),
+      );
     },
+    valueColumn(): TableColumn | undefined {
+      return this.columns.find(
+        (c) => c.dataKey.split('.').at(-1) !== 'key',
+      );
+    },
+  },
+  watch: {
+    metric() {
+      this.$emit('input', this.regenColumnsDK());
+    },
+  },
+  mounted() {
+    if (this.columns.length <= 0) {
+      this.$emit('input', this.regenColumnsDK());
+    }
   },
   methods: {
     /**
      * Open dialog for creating a column
      */
-    createColumn() {
+    onCreateColumn() {
       this.openColumnDialog();
     },
     /**
@@ -229,11 +324,11 @@ export default defineComponent({
       this.$emit('update:col-styles', styles);
     },
     /**
-     * Triggered when a column is deleted
+     * Delete a column
      *
      * @param column The column
      */
-    onColumnDeleted(column: TableColumn) {
+    deleteColumn(column: CustomTableColumn) {
       const index = this.value.findIndex((c) => c.dataKey === column.dataKey);
       if (index < 0) {
         return;
@@ -241,7 +336,13 @@ export default defineComponent({
 
       const columns = [...this.value];
       columns.splice(index, 1);
-      this.$emit('input', columns);
+
+      const bucket = this.columnBucketMap.get(column.dataKey)?.bucket;
+      if (bucket) {
+        this.onBucketDeletion(bucket);
+      }
+      const bckts = this.buckets.filter(({ name }) => name !== bucket?.name);
+      this.$emit('input', this.regenColumnsDK(bckts, columns));
     },
     /**
      * Prepares and show dialog
@@ -253,15 +354,102 @@ export default defineComponent({
       if (column) {
         this.currentColumn = column;
       } else {
-        const id = this.value.length;
-        this.currentColumn = { dataKey: columnDefaults[id] || `agg${id}`, header: `Column ${id}` };
-        this.$emit('input', [...this.value, this.currentColumn]);
+        this.upsertBucket(
+          { name: uuid().split('-')[0] },
+        );
+        await this.$nextTick();
+        this.addColumn();
       }
 
       await this.$nextTick();
       this.columnDialogShown = true;
     },
+    upsertBucket(bucket: ElasticAgg) {
+      const value: ElasticAgg = {
+        name: uuid().split('-')[0],
+        ...bucket,
+      };
 
+      const buckets = [...this.buckets];
+      const index = buckets.findIndex(({ name }) => name === bucket.name);
+
+      if (index < 0) {
+        // Insert before value column
+        buckets.push(value);
+      } else {
+        buckets.splice(index, 1, value);
+      }
+      this.$emit('update:buckets', buckets);
+    },
+    onBucketDeletion(bucket: ElasticAgg) {
+      const buckets = [...this.buckets];
+      const index = buckets.findIndex((b) => b.name === bucket.name);
+      if (index >= 0) {
+        buckets.splice(index, 1);
+        this.$emit('update:buckets', buckets);
+      }
+    },
+    addColumn() {
+      const id = this.value.length;
+
+      const dataKey = this.generateColumnDK();
+      this.currentColumn = { dataKey, header: `Column ${id}` };
+      const columns = [...this.columns];
+      columns.splice(columns.length, 0, { ...this.currentColumn, _: { dragged: false } });
+      this.$emit('input', this.regenColumnsDK(undefined, columns));
+    },
+    getBucketNameFromDK(dk: string) {
+      // search for last bucket before suffix
+      const regexRes = /\.?(?<bucketName>[^.]+)\.key$/i.exec(dk);
+      if (!regexRes?.groups?.bucketName) {
+        return this.buckets[0]?.name ?? undefined;
+      }
+      return regexRes.groups.bucketName;
+    },
+    generateColumnDK(index?: number, bckts?: ElasticAgg[]) {
+      // Skipping first bucket as it's already the dataKey of the whole table
+      const buckets = (bckts ?? this.buckets).slice(1, index && index + 1);
+      const dataKey = [
+        ...buckets.map((b) => b.name),
+        'key',
+      ].join('.');
+      return dataKey;
+    },
+    generateValueDK(bckts?: ElasticAgg[]) {
+      let field = 'doc_count';
+      if (this.metricFormatted) {
+        field = `${this.metricFormatted.formatted.name}.value`;
+      }
+
+      // Skipping first bucket as it's already the dataKey of the whole table
+      const buckets = (bckts ?? this.buckets).slice(1);
+      const dataKey = [
+        ...buckets.map((b) => b.name),
+        field,
+      ].join('.');
+      return dataKey;
+    },
+    regenColumnsDK(bckts?: ElasticAgg[], cols?: TableColumn[]) {
+      const columns = [...(cols ?? this.columns)];
+      const valueColumnIndex = columns.findIndex(
+        (c) => c.dataKey === this.valueColumn?.dataKey,
+      );
+
+      let vC: TableColumn = { header: 'Value', dataKey: this.generateValueDK(bckts) };
+      if (valueColumnIndex >= 0) {
+        const [deletedColumn] = columns.splice(valueColumnIndex, 1);
+        vC = {
+          ...deletedColumn,
+          dataKey: vC.dataKey,
+        };
+      }
+
+      const res = columns.map((c, i) => ({ ...c, dataKey: this.generateColumnDK(i, bckts) }));
+      return [
+        ...res,
+        vC,
+      ];
+    },
     /**
      * Allow drag of item when it's handle is clicked
      *
@@ -274,8 +462,15 @@ export default defineComponent({
 
       if (index >= 0 && !this.readonly) {
         const columns = [...this.columns];
-        columns.splice(index, 1, { ...column, _: { ...column._, dragged: true } });
+
+        const col = columns[index];
+        col._.dragged = true;
+        columns.splice(index, 1, col);
+
         this.columns = columns;
+        if (this.innerBuckets.length <= 0) {
+          this.innerBuckets = [...this.buckets];
+        }
       }
     },
     /**
@@ -290,8 +485,15 @@ export default defineComponent({
 
       if (index >= 0 && !this.readonly) {
         const columns = [...this.columns];
-        columns.splice(index, 1, { ...column, _: { ...column._, dragged: false } });
+
+        const col = columns[index];
+        col._.dragged = false;
+        columns.splice(index, 1, col);
+
         this.columns = columns;
+        if (this.innerBuckets.length <= 0) {
+          this.innerBuckets = [...this.buckets];
+        }
       }
     },
     /**
@@ -302,7 +504,9 @@ export default defineComponent({
      * @param index The index of the dragged item
      */
     onDragStart(ev: DragEvent, column: CustomTableColumn, index: number) {
-      if (!this.readonly) {
+      const isLoading = this.loadingMap[column.dataKey];
+      const isValueColumn = this.valueColumn?.dataKey === column.dataKey;
+      if (!this.readonly && !isLoading && !isValueColumn) {
         // Init data
         this.draggedIndex = index;
         const img = new Image();
@@ -323,10 +527,14 @@ export default defineComponent({
       if (!this.readonly && this.draggedIndex >= 0) {
         this.disallowDrag(this.columns[this.draggedIndex]);
 
-        const columns = this.columns.map((c) => omit(c, '_'));
+        const columns = this.regenColumnsDK(this.innerBuckets).map(
+          (c) => omit(c, '_'),
+        );
         this.$emit('input', columns);
+        this.$emit('update:buckets', this.innerBuckets);
         await this.$nextTick();
         this.columns = [];
+        this.innerBuckets = [];
         this.draggedIndex = -1;
       }
     },
@@ -347,15 +555,22 @@ export default defineComponent({
      * @param index The new index
      */
     onDragEnter(ev: DragEvent, newIndex: number) {
-      if (
-        !this.readonly
-        && newIndex !== this.draggedIndex
-        && ev.dataTransfer?.types.includes(dragFormat)
-      ) {
+      const isFromHere = ev.dataTransfer?.types.includes(dragFormat);
+      const isNotTheSame = newIndex !== this.draggedIndex;
+      const isValueColumn = this.valueColumn?.dataKey === this.columns[newIndex]?.dataKey;
+
+      if (!this.readonly && isNotTheSame && isFromHere && !isValueColumn) {
+        // Move column
         const columns = [...this.columns];
         columns.splice(this.draggedIndex, 1);
         columns.splice(newIndex, 0, this.columns[this.draggedIndex]);
         this.columns = columns;
+
+        // Move bucket as we move column
+        const buckets = [...this.innerBuckets];
+        buckets.splice(this.draggedIndex, 1);
+        buckets.splice(newIndex, 0, this.buckets[this.draggedIndex]);
+        this.innerBuckets = buckets;
 
         this.draggedIndex = newIndex;
       }

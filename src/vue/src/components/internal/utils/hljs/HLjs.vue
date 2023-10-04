@@ -1,34 +1,46 @@
 <template>
-  <highlightjs language="json" :code="json" />
+  <div>
+    <highlightjs v-if="ready" :language="language" :code="code" />
+    <v-skeleton-loader
+      v-else
+      class="mx-auto"
+      type="image"
+    />
+  </div>
 </template>
 
 <script lang="ts">
 import hljs from 'highlight.js/lib/core';
-import hlJSON from 'highlight.js/lib/languages/json';
-import hlLight from 'highlight.js/styles/stackoverflow-light.css?inline';
-import hlDark from 'highlight.js/styles/stackoverflow-dark.css?inline';
-import highlightjs from '@highlightjs/vue-plugin';
+import hljsVue from '@highlightjs/vue-plugin';
+import hljsThemeLight from 'highlight.js/styles/stackoverflow-light.css?inline';
+import hljsThemeDark from 'highlight.js/styles/stackoverflow-dark.css?inline';
 
-import { defineComponent, type PropType } from 'vue';
+import hljsLangTS from 'highlight.js/lib/languages/typescript';
+import hljsLangJSON from 'highlight.js/lib/languages/json';
 
-hljs.registerLanguage('json', hlJSON);
+import { defineComponent } from 'vue';
+
+hljs.registerLanguage('json', hljsLangJSON);
+hljs.registerLanguage('typescript', hljsLangTS);
 
 export default defineComponent({
-  components: { highlightjs: highlightjs.component },
+  components: {
+    highlightjs: hljsVue.component,
+  },
   props: {
-    value: {
-      type: [] as PropType<any>,
+    language: {
+      type: String,
+      required: true,
+    },
+    code: {
+      type: String,
       required: true,
     },
   },
   data: () => ({
     hlStyle: null as HTMLElement | null,
+    ready: false,
   }),
-  computed: {
-    json() {
-      return JSON.stringify(this.value, undefined, 2);
-    },
-  },
   watch: {
     // eslint-disable-next-line func-names
     '$vuetify.theme.dark': function () {
@@ -36,14 +48,17 @@ export default defineComponent({
     },
   },
   mounted() {
-    // Add highlight.js style if not already present
+    // Prepare highlight.js style if not already present
     this.hlStyle = document.getElementById('hl-style');
     if (!this.hlStyle) {
       this.hlStyle = document.createElement('style');
       this.hlStyle.id = 'hl-style';
       document.head.appendChild(this.hlStyle);
     }
+    // Apply dark/light theme
     this.applyHlTheme();
+
+    this.ready = true;
   },
   /**
    * Called in Vue 2
@@ -69,13 +84,9 @@ export default defineComponent({
      */
     applyHlTheme() {
       if (this.hlStyle) {
-        this.hlStyle.textContent = this.$vuetify.theme.dark ? hlDark : hlLight;
+        this.hlStyle.textContent = this.$vuetify.theme.dark ? hljsThemeDark : hljsThemeLight;
       }
     },
   },
 });
 </script>
-
-<style scoped>
-
-</style>

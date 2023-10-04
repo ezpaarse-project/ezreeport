@@ -1,5 +1,4 @@
 import axios, { axiosWithErrorFormatter, type ApiResponse, type PaginatedApiResponse } from '../lib/axios';
-import type { JsonObject } from '../lib/utils';
 
 import { parseActivity, type Activity, type RawActivity } from './tasksActivity';
 import type { Namespace } from './namespaces';
@@ -21,7 +20,12 @@ import {
 
 interface AdditionalRawTaskData {
   template: {
-    fetchOptions?: JsonObject,
+    fetchOptions?: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      filters?: Record<string, any>,
+      dateField?: string,
+      index: string,
+    },
     inserts?: (Layout & { at: number })[],
   },
   extends: RawTemplate,

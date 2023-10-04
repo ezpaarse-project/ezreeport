@@ -14,6 +14,8 @@ export interface Cron extends Omit<RawCron, 'nextRun' | 'lastRun'> {
   lastRun?: Date,
 }
 
+export interface InputCron extends Pick<Cron, 'running'> {}
+
 /**
  * Transform raw data from JSON, to JS usable data
  *
@@ -67,11 +69,13 @@ export const getCron = async (cronOrName: Cron | Cron['name']): Promise<ApiRespo
  *
  * @param cronOrName Cron or Cron name
  *
+ * @deprecated Use `updateCron` with body `{ running: true }`
+ *
  * @returns Cron's info
  */
 export const startCron = async (cronOrName: Cron | Cron['name']) => {
   const name = typeof cronOrName === 'string' ? cronOrName : cronOrName.name;
-  const { content, ...response } = await axios.$put<RawCron>(`/crons/${name}/start`);
+  const { content, ...response } = await axios.$put<RawCron>(`/crons/${name}/start`, {});
   return {
     ...response,
     content: parseCron(content),
@@ -85,11 +89,31 @@ export const startCron = async (cronOrName: Cron | Cron['name']) => {
  *
  * @param cronOrName Cron or Cron name
  *
+ * @deprecated Use `updateCron` with body `{ running: false }`
+ *
  * @returns Cron's info
  */
 export const stopCron = async (cronOrName: Cron | Cron['name']) => {
   const name = typeof cronOrName === 'string' ? cronOrName : cronOrName.name;
-  const { content, ...response } = await axios.$put<RawCron>(`/crons/${name}/stop`);
+  const { content, ...response } = await axios.$put<RawCron>(`/crons/${name}/stop`, {});
+  return {
+    ...response,
+    content: parseCron(content),
+  };
+};
+
+/**
+ * Update cron
+ *
+ * Needs `general.crons-patch-cron` permission
+ *
+ * @param cronOrName Cron or Cron name
+ *
+ * @returns Cron's info
+ */
+export const updateCron = async (cron: Partial<InputCron> & { name: Cron['name'] }) => {
+  const { name, ...data } = cron;
+  const { content, ...response } = await axios.$patch<RawCron>(`/crons/${name}`, data);
   return {
     ...response,
     content: parseCron(content),
@@ -107,7 +131,7 @@ export const stopCron = async (cronOrName: Cron | Cron['name']) => {
  */
 export const forceCron = async (cronOrName: Cron | Cron['name']) => {
   const name = typeof cronOrName === 'string' ? cronOrName : cronOrName.name;
-  const { content, ...response } = await axios.$post<RawCron>(`/crons/${name}/force`);
+  const { content, ...response } = await axios.$post<RawCron>(`/crons/${name}/force`, {});
   return {
     ...response,
     content: parseCron(content),

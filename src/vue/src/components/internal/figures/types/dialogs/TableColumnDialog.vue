@@ -1,7 +1,7 @@
 <template>
   <v-dialog
     :value="value"
-    :persistent="!valid"
+    :persistent="!valid || loading"
     absolute
     max-width="450"
     min-width="450"
@@ -10,35 +10,17 @@
     <v-card>
       <v-form v-model="valid">
         <v-card-title>
-          <div class="d-flex align-end">
-            <i style="font-size: 0.8em;">
-              {{ keyPrefix }}
-            </i>
-            <v-text-field
-              v-model="innerDataKey"
-              :label="$t('headers.dataKey')"
-              :rules="rules.dataKey"
-              :readonly="readonly"
-              hide-details="auto"
-              @blur="onColumnUpdated({ dataKey: innerDataKey })"
-            />
-          </div>
-          <i18n v-if="valid" path="$ezreeport.hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
-            <template #code>
-              <code>{{ $t('$ezreeport.hints.dot_notation.code') }}</code>
-            </template>
-          </i18n>
-        </v-card-title>
-
-        <v-card-text>
           <v-text-field
             :value="column.header"
             :label="$t('headers.header')"
             :rules="rules.header"
             :readonly="readonly"
+            hide-details="auto"
             @input="onColumnUpdated({ header: $event })"
           />
+        </v-card-title>
 
+        <v-card-text>
           <v-checkbox
             :label="$t('headers.total')"
             :input-value="total"
@@ -47,6 +29,29 @@
             class="mt-0"
             @change="$emit('update:total', $event)"
           />
+
+          <ElasticAggElementForm
+            v-if="bucket"
+            :element="bucket"
+            :readonly="readonly"
+            :agg-filter="aggFilter"
+            :style="{
+              border: $vuetify.theme.dark ? 'thin solid rgba(255, 255, 255, 0.12)' : 'thin solid rgba(0, 0, 0, 0.12)',
+            }"
+            @update:element="(i, el) => $emit('update:bucket', el)"
+            @update:loading="(val) => {
+              loading = val;
+              $emit('loading', val);
+            }"
+          >
+            <template v-slot:title>
+              <div class="d-flex align-center">
+                {{ $t('headers.linkedAgg') }}
+
+                <v-progress-circular v-if="loading" indeterminate size="16" width="2" class="ml-2" />
+              </div>
+            </template>
+          </ElasticAggElementForm>
 
           <!-- Style -->
           <CustomSection
@@ -121,13 +126,13 @@
 
           <!-- Advanced -->
           <CustomSection v-if="unsupportedParams.shouldShow">
+
             <ToggleableObjectTree
               :value="unsupportedParams.value"
               :label="$t('$ezreeport.advanced_parameters').toString()"
               v-on="unsupportedParams.listeners"
             />
           </CustomSection>
-
         </v-card-text>
       </v-form>
     </v-card>
@@ -137,6 +142,9 @@
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue';
 import { merge, omit, pick } from 'lodash';
+
+import type { AggDefinition, ElasticAgg } from '~/lib/elastic/aggs';
+
 import type { PDFStyle, TableColumn } from '../utils/table';
 
 /**
@@ -145,7 +153,6 @@ import type { PDFStyle, TableColumn } from '../utils/table';
 const supportedKeys = [
   '_',
   'header',
-  'dataKey',
 ];
 
 /**
@@ -192,18 +199,11 @@ export default defineComponent({
       default: () => ({}),
     },
     /**
-     * Current key used by other columns
+     * Bucket of the column
      */
-    currentDataKeys: {
-      type: Array as PropType<string[]>,
-      default: () => [],
-    },
-    /**
-     * The prefix of the field
-     */
-    keyPrefix: {
-      type: String,
-      default: '',
+    bucket: {
+      type: Object as PropType<ElasticAgg | undefined>,
+      default: undefined,
     },
     /**
      * Is the dialog readonly
@@ -215,17 +215,18 @@ export default defineComponent({
   },
   emits: {
     input: (show: boolean) => show !== undefined,
+    loading: (loading: boolean) => loading !== undefined,
     'update:column': (element: TableColumn) => !!element,
     'update:total': (total: boolean) => total !== undefined,
     'update:colStyle': (style: PDFStyle) => !!style,
+    'update:bucket': (bucket: ElasticAgg) => !!bucket,
   },
   data: () => ({
     valid: false,
+    loading: false,
 
     haligns,
     valigns,
-
-    innerDataKey: '',
   }),
   computed: {
     /**
@@ -233,28 +234,10 @@ export default defineComponent({
      */
     rules() {
       return {
-        dataKey: [
-          (v: string) => v.length > 0 || this.$t('$ezreeport.errors.empty'),
-          !this.isDuplicate || this.$t('errors.no_duplicate'),
-        ],
         header: [
-          (v: string) => v.length > 0 || this.$t('$ezreeport.errors.empty'),
+          (v: string) => v.length > 0 || this.$t('$ezreeport.errors.empty', { field: 'table/header' }),
         ],
       };
-    },
-    /**
-     * Set of currents key used by other columns
-     */
-    currentDataKeySet() {
-      return new Set(this.currentDataKeys);
-    },
-    /**
-     * Is the current key is a duplicate of any other column
-     */
-    isDuplicate() {
-      if (this.column.dataKey === this.innerDataKey) { return false; }
-
-      return this.currentDataKeySet.has(this.innerDataKey);
     },
     /**
      * Data used by ObjectTree to edit unsupported options
@@ -284,16 +267,6 @@ export default defineComponent({
       })).sort((a, b) => a.text.localeCompare(b.text));
     },
   },
-  watch: {
-    value(val: boolean) {
-      if (val) {
-        this.innerDataKey = this.column.dataKey;
-      }
-    },
-  },
-  mounted() {
-    this.innerDataKey = this.column.dataKey;
-  },
   methods: {
     onColumnUpdated(data: Partial<TableColumn>) {
       if (this.valid) {
@@ -305,17 +278,14 @@ export default defineComponent({
         this.$emit('update:colStyle', { ...this.colStyle, ...data });
       }
     },
+    aggFilter(name: string, def: AggDefinition): boolean {
+      return def.returnsArray;
+    },
   },
 });
 </script>
 
 <style scoped>
-.fake-hint {
-  margin-top: 4px;
-  font-size: 12px;
-  line-height: 12px;
-}
-
 .button-group-col {
   position: relative;
 }
@@ -338,7 +308,7 @@ en:
   headers:
     dataKey: 'Key to get data'
     header: 'Name of the column'
-    total: 'Show total'
+    total: 'Show total of column'
     style:
       title: 'Styling options'
       overflow: 'Overflow'
@@ -354,8 +324,8 @@ en:
 fr:
   headers:
     dataKey: 'Clé a utiliser pour récupérer les données'
-    header: 'Name of the column'
-    total: 'Afficher le total'
+    header: 'Nom de la colonne'
+    total: 'Afficher le total de la colonne'
     style:
       title: 'Options de style'
       overflow: 'Débordement'

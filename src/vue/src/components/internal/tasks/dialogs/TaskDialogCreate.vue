@@ -207,11 +207,11 @@ export default defineComponent({
     rules() {
       return {
         name: [
-          (v: string) => !!v || this.$t('$ezreeport.errors.empty'),
+          (v: string) => !!v || this.$t('$ezreeport.errors.empty', { field: 'name' }),
         ],
         targets: [
-          (v: string[]) => v.length > 0 || this.$t('$ezreeport.errors.empty'),
-          (v: string[]) => v.every(this.validateMail) || this.$t('$ezreeport.errors.email_format'),
+          (v: string[]) => v.length > 0 || this.$t('$ezreeport.errors.empty', { field: 'targets' }),
+          (v: string[]) => v.every(this.validateMail) || this.$t('$ezreeport.errors.email_format', { field: 'targets' }),
         ],
         template: mapRulesToVuetify(this.templateStore.rules.template, (k) => this.$t(k)),
       };
@@ -271,6 +271,9 @@ export default defineComponent({
       if (valid.layout !== undefined) {
         err = this.$t('$ezreeport.layouts.errors._detail', { valid: err, at: valid.layout + 1 });
       }
+      if (valid.field) {
+        err = this.$t('$ezreeport.errors._detail', { valid: err, field: valid.field });
+      }
       return err.toString();
     },
   },
@@ -293,12 +296,13 @@ export default defineComponent({
      * @param email The string
      */
     validateMail: (email: string) => isEmail(email),
-    init() {
+    async init() {
+      await this.templateStore.refreshAvailableTemplates();
       if (!this.templateStore.defaultTemplate) {
         throw new Error(this.$t('$ezreeport.errors.no_extends').toString());
       }
 
-      this.templateStore.SET_CURRENT({ inserts: [] }, this.templateStore.extendedId);
+      this.templateStore.SET_CURRENT({ inserts: [] }, this.templateStore.defaultTemplateId);
       this.task = {
         name: '',
         template: {},
@@ -322,6 +326,7 @@ export default defineComponent({
 
         const { template, ...data } = content;
 
+        await this.templateStore.refreshAvailableTemplates();
         const extended = this.templateStore.available.find((t) => t.id === data.extends.id);
         if (!extended && !this.templateStore.defaultTemplate) {
           throw new Error(this.$t('$ezreeport.errors.no_extends').toString());

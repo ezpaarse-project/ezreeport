@@ -2,6 +2,7 @@
   <v-chip
     :color="color"
     :style="{ color: textColor }"
+    :disabled="disabled"
     class="readable-chip"
     v-bind="$attrs"
     v-on="$listeners"
@@ -18,6 +19,10 @@ export default defineComponent({
   props: {
     color: {
       type: String as PropType<string | undefined>,
+      default: undefined,
+    },
+    disabled: {
+      type: Boolean as PropType<boolean | undefined>,
       default: undefined,
     },
   },
