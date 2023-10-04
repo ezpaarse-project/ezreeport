@@ -11,19 +11,6 @@
   >
     <v-card>
       <v-form v-model="valid">
-        <v-card-title>
-          <!-- Element text -->
-          <v-text-field
-            v-model="innerTitle"
-            :label="$t('headers.text')"
-            :readonly="readonly"
-            :placeholder="element._.dataKeyField"
-            hide-details
-            persistent-placeholder
-            @blur="onLabelUpdated({ text: innerTitle || undefined })"
-          />
-        </v-card-title>
-
         <v-card-text>
           <ElasticAggElementForm
             v-if="linkedAgg"
@@ -92,6 +79,17 @@
               </span>
             </template>
           </CustomSection>
+
+          <!-- Element text -->
+          <v-text-field
+            v-model="innerTitle"
+            :label="$t('headers.text')"
+            :readonly="readonly"
+            :placeholder="element._.dataKeyField"
+            persistent-placeholder
+            class="px-1"
+            @blur="onLabelUpdated({ text: innerTitle || undefined })"
+          />
 
           <!-- Advanced -->
           <CustomSection v-if="unsupportedParams.shouldShow">
