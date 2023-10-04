@@ -112,23 +112,6 @@
               type="number"
               @input="onSizeUpdate"
             />
-
-            <!-- Sub aggregations -->
-            <!-- deprecated, replaced by buckets, so only readonly for now -->
-            <CustomSection
-              v-if="!typeDefinition || typeDefinition.subAggregations"
-              :label="$t('headers.subAggs').toString()"
-              :collapse-disabled="
-                (innerElement.aggs || innerElement.aggregations || []).length <= 0
-              "
-              collapsable
-            >
-              <ElasticAggsBuilder
-                ref="aggBuilder"
-                :value="innerElement.aggs || innerElement.aggregations || []"
-                readonly
-              />
-            </CustomSection>
           </v-col>
         </v-row>
 
@@ -166,9 +149,6 @@ import {
 } from '~/lib/elastic/aggs';
 import { cloneDeep, debounce } from 'lodash';
 import type { SelectItem } from '~/types/vuetify';
-import type ElasticAggsBuilderConstructor from './ElasticAggsBuilder.vue';
-
-type ElasticAggsBuilder = InstanceType<typeof ElasticAggsBuilderConstructor>;
 
 const aggsSet = new Set<string>(Object.keys(aggsDefinition));
 
@@ -593,13 +573,6 @@ export default defineComponent({
           [this.order.value]: data,
         },
       });
-    },
-    /**
-     * When a new sub aggregation is created
-     */
-    onAggCreated() {
-      const builder = this.$refs.aggBuilder as ElasticAggsBuilder | undefined;
-      builder?.onElementCreated();
     },
     /**
      * Update whole element using JSON
