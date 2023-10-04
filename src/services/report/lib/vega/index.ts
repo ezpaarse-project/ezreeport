@@ -350,10 +350,12 @@ export const createVegaLSpec = (
 
     // Showing label if needed
     if (params.dataLabel.showLabel) {
+      const field = params.color?.field || params.label.field;
       layers.push({
         mark: merge(
           cloneDeep(dLLayer.mark),
           {
+            field,
             dy: -7,
           },
         ),
@@ -361,7 +363,7 @@ export const createVegaLSpec = (
           text: {
             condition: {
               test: condition ?? 'true',
-              field: params.label.field,
+              field,
             },
           },
           color: dLLayer.encoding?.color,
