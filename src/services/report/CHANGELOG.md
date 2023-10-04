@@ -1,3 +1,38 @@
+# ezreeport-report [1.0.0-beta.22](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.21...ezreeport-report@1.0.0-beta.22) (2023-10-04)
+
+
+### Bug Fixes
+
+* **report:** error cause not beign used on generation ([057efbd](https://github.com/ezpaarse-project/ezreeport/commit/057efbd598a9bb5febe08688d378274541a9ef72))
+* **report:** fix weird buckets (like filters) ([8f89d61](https://github.com/ezpaarse-project/ezreeport/commit/8f89d6100ad4065614401e2c67a87fe2c82b144d))
+* **report:** fixed 404 on PATCH cron ([68d3886](https://github.com/ezpaarse-project/ezreeport/commit/68d388609fa099e36439a83c4ee1653603e16f7e))
+* **report:** fixed agg cleaning method ([db4641e](https://github.com/ezpaarse-project/ezreeport/commit/db4641efd14094aa7cadc2b193c6a930ef89ea0d))
+* **report:** fixed auth in task deletion ([7fe351b](https://github.com/ezpaarse-project/ezreeport/commit/7fe351b1667824873e0fb6f8d05ec4ff9508cc68))
+* **report:** fixed crons management ([5ba4e1d](https://github.com/ezpaarse-project/ezreeport/commit/5ba4e1d8c7f96d8479e1aaffa84f8b85416078b6))
+* **report:** fixed datalabels on stacked chart ([e301ba2](https://github.com/ezpaarse-project/ezreeport/commit/e301ba260ae74f29edbe6023bb8205cd33c3b145))
+* **report:** fixed field of vega `color` ([c7547b6](https://github.com/ezpaarse-project/ezreeport/commit/c7547b63e013e578179b28740d9d7951a0b75159))
+* **report:** fixed job retry error ([0f45ee6](https://github.com/ezpaarse-project/ezreeport/commit/0f45ee68e9338c96f3dbf6da56f7f047bf2bb300))
+* **report:** fixed namespace query param ([45bfd48](https://github.com/ezpaarse-project/ezreeport/commit/45bfd48ed4e66f65f485f4bf7faa10757e8a0e45))
+* **report:** fixed requireAdmin hook ([4312fd9](https://github.com/ezpaarse-project/ezreeport/commit/4312fd9f2fbda4e6c3a53cf1be4fab86f3e1adc1))
+* **report:** fixed service list in health ([c300a02](https://github.com/ezpaarse-project/ezreeport/commit/c300a02b781b4ea95d521ddc93b8d7382698756a))
+* **report:** fixed some falsy values not beign visible in metrics ([12c57f6](https://github.com/ezpaarse-project/ezreeport/commit/12c57f63c0e1bbf47e094c768c5a610b2a057752))
+* **report:** fixed sub bucket aggregations types ([a39a737](https://github.com/ezpaarse-project/ezreeport/commit/a39a737dbe0060f53ddb3977d57af4c0a6acce83))
+* **report:** fixed task's lastExtended beign present by accident ([1149068](https://github.com/ezpaarse-project/ezreeport/commit/1149068d0e217a36d216c37b57bf6e8d024f81f1))
+* **report:** fixed task's lastExtended beign present by accident ([a2b7ae1](https://github.com/ezpaarse-project/ezreeport/commit/a2b7ae117a3d00fa1f07eafb8a464ab1c865cffe))
+* **report:** fixed validation errors ([3a66c6c](https://github.com/ezpaarse-project/ezreeport/commit/3a66c6ceaf950769344e256cf29a508b54c614a6))
+* **report:** fixed weird aggregation results from elastic ([582afb6](https://github.com/ezpaarse-project/ezreeport/commit/582afb6366f046b66278bc3c3f80981e07a9e28b))
+
+
+### Features
+
+* **report:** added `{{dateField}}` support ([19fbef4](https://github.com/ezpaarse-project/ezreeport/commit/19fbef402db57f77d469a9ffe33253195e8e3c29))
+* **report:** added routes for better update of queue + get single queue ([8f0a0f8](https://github.com/ezpaarse-project/ezreeport/commit/8f0a0f8a6c1fb621d82eca4b37294455b1c6c37d))
+* **report:** better bucket merge in elastic ([e853b8f](https://github.com/ezpaarse-project/ezreeport/commit/e853b8fbca4292caed0aa4e80accbcf69853034a))
+* **report:** flattens the aggregations result in order to use multibuckets args in figures ([2885bab](https://github.com/ezpaarse-project/ezreeport/commit/2885bab28de392df7ae44ef52189dd6b57b05fa6))
+* **report:** moved aggs into figures and using msearch instead of search ([7e62113](https://github.com/ezpaarse-project/ezreeport/commit/7e6211381e15b8a56b21574b38fe3a33e0d32bf8))
+* **report:** patch to change cron status ([c4fd246](https://github.com/ezpaarse-project/ezreeport/commit/c4fd2469940d86114cea6c500f151ce400bc5ec7))
+* **report:** support for fetch options buckets and metrics ([c8f6da3](https://github.com/ezpaarse-project/ezreeport/commit/c8f6da38ef21115c8693eb2f5d6124b71efc46ff))
+
 # ezreeport-report [1.0.0-beta.21](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.20...ezreeport-report@1.0.0-beta.21) (2023-09-13)
 
 
