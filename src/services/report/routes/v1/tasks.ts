@@ -200,7 +200,7 @@ const router: FastifyPluginAsync = async (fastify) => {
   fastify.put<{
     Params: SpecificTaskParamsType,
   }>(
-    '/:task/enable',
+    '/:task/_enable',
     {
       schema: {
         params: SpecificTaskParams,
@@ -236,7 +236,7 @@ const router: FastifyPluginAsync = async (fastify) => {
   fastify.put<{
     Params: SpecificTaskParamsType,
   }>(
-    '/:task/disable',
+    '/:task/_disable',
     {
       schema: {
         params: SpecificTaskParams,
@@ -278,7 +278,7 @@ const router: FastifyPluginAsync = async (fastify) => {
   fastify.put<{
     Params: Static<typeof LinkTaskTemplateParams>,
   }>(
-    '/:task/link/:template',
+    '/:task/_link/:template',
     {
       schema: {
         params: LinkTaskTemplateParams,
@@ -322,7 +322,7 @@ const router: FastifyPluginAsync = async (fastify) => {
   fastify.delete<{
     Params: Static<typeof LinkTaskTemplateParams>,
   }>(
-    '/:task/link/:template',
+    '/:task/_link/:template',
     {
       schema: {
         params: LinkTaskTemplateParams,
@@ -385,7 +385,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     Params: SpecificTaskParamsType,
     Querystring: Static<typeof GenerateTaskQuery>
   }>(
-    '/:task/run',
+    '/:task/_run',
     {
       schema: {
         params: SpecificTaskParams,
@@ -460,7 +460,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     Params: SpecificTaskParamsType,
     Body: Static<typeof UnsubscribeBody>,
   }>(
-    '/:task/unsubscribe',
+    '/:task/_unsubscribe',
     {
       schema: {
         params: SpecificTaskParams,

@@ -860,7 +860,7 @@
         ]
       }
     },
-    "/tasks/{taskId}/enable": {
+    "/tasks/{taskId}/_enable": {
       "parameters": [
         {
           "schema": {
@@ -942,7 +942,7 @@
         "parameters": []
       }
     },
-    "/tasks/{taskId}/disable": {
+    "/tasks/{taskId}/_disable": {
       "put": {
         "summary": "Disable task",
         "operationId": "tasks-put-taskId]-disable",
@@ -1024,7 +1024,7 @@
         }
       ]
     },
-    "/tasks/{taskId}/link/{templateId}": {
+    "/tasks/{taskId}/_link/{templateId}": {
       "parameters": [
         {
           "schema": {
@@ -1137,7 +1137,7 @@
         ]
       }
     },
-    "/tasks/{taskId}/run": {
+    "/tasks/{taskId}/_run": {
       "parameters": [
         {
           "schema": {
@@ -1256,7 +1256,7 @@
         "description": "Trigger generation of report.\n\nNeeds `namespaces[namespaceId].tasks-post-task-run` (see `/me/permissions` for more info)."
       }
     },
-    "/tasks/{taskId}/unsubscribe": {
+    "/tasks/{taskId}/_unsubscribe": {
       "put": {
         "summary": "Unsubscribe from task",
         "operationId": "tasks-post-taskId-unsubscribe",

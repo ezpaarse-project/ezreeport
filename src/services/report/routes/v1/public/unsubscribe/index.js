@@ -39,7 +39,7 @@ export const unsubFromTask = async (taskId, form) => {
   (new FormData(form)).forEach((value, key) => { obj[key] = value; });
 
   const resp = await fetch(
-    `/v1/tasks/${taskId}/unsubscribe`,
+    `/v1/tasks/${taskId}/_unsubscribe`,
     {
       method: 'PUT',
       headers: {
