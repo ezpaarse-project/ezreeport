@@ -122,7 +122,7 @@
 
     "agg_option": "{label} ({type})",
     "agg_types": {
-      "__count": "Compte",
+      "__count": "Comptage",
       "adjacency_matrix": "Matrice d'adjacence",
       "auto_date_histogram": "Histogramme de date automatique",
       "avg": "Moyenne",
