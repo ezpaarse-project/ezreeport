@@ -165,13 +165,6 @@
     }
   },
 
-  "hints": {
-    "dot_notation": {
-      "value": "Supporte la notation avec des points. Ex: {code}",
-      "code": "cle.valeur"
-    }
-  },
-
   "errors": {
     "_detail": "{valid} ({field})",
     "empty": "Ce champ doit être rempli",

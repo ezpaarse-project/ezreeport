@@ -288,13 +288,6 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
-.fake-hint {
-  font-size: 12px;
-  line-height: 12px;
-}
-</style>
-
 <i18n lang="yaml">
 en:
   headers:

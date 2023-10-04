@@ -165,13 +165,6 @@
     }
   },
 
-  "hints": {
-    "dot_notation": {
-      "value": "Support dot notation. Eg: {code}",
-      "code": "key.value"
-    }
-  },
-
   "errors": {
     "_detail": "{valid} ({field})",
     "empty": "This field must be set",

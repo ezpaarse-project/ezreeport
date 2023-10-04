@@ -286,12 +286,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.fake-hint {
-  margin-top: 4px;
-  font-size: 12px;
-  line-height: 12px;
-}
-
 .button-group-col {
   position: relative;
 }

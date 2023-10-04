@@ -34,11 +34,6 @@
                 hide-details="auto"
                 @blur="updateKey"
               />
-              <i18n path="hints.dot_notation.value" tag="span" class="text--secondary fake-hint">
-                <template #code>
-                  <code>{{ $t('hints.dot_notation.code') }}</code>
-                </template>
-              </i18n>
             </v-col>
           </v-row>
 
@@ -261,21 +256,10 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
-.fake-hint {
-  font-size: 12px;
-  line-height: 12px;
-}
-</style>
-
 <i18n lang="yaml">
 en:
   title-edit: 'Edit query element'
   title-read: 'Query element'
-  hints:
-    dot_notation:
-      value: 'Support dot notation. Eg: {code}'
-      code: 'key.value'
   headers:
     key: 'Field'
     operator: 'Operator'
@@ -293,10 +277,6 @@ en:
 fr:
   title-edit: "Éditer l'élément de requête"
   title-read: 'Élément de requête'
-  hints:
-    dot_notation:
-      value: 'Supporte la notation avec des points. Ex: {code}'
-      code: 'cle.valeur'
   headers:
     key: 'Champ'
     operator: 'Opérateur'
