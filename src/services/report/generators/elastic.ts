@@ -41,10 +41,17 @@ const CustomAggregation = Type.Recursive(
 
 type CustomAggregationType = Static<typeof CustomAggregation>;
 
-const SimpleAggregation = Type.Omit(
-  CustomAggregation,
-  ['aggs', 'aggregations'],
-);
+// FIXME: temporary fix while recursive type are wrongly implemented in TypeBox
+const Bucket = Type.Intersect([
+  // Simplification of ElasticAggregation
+  Type.Record(Type.String(), Type.Any()),
+
+  Type.Partial(
+    Type.Object({
+      name: Type.String({ minLength: 1 }),
+    }),
+  ),
+]);
 
 const ElasticFetchOptions = Type.Object({
   // Auto fields
@@ -67,14 +74,14 @@ const ElasticFetchOptions = Type.Object({
       Type.Union([
         Type.Object({
           buckets: Type.Optional(
-            Type.Array(CustomAggregation),
+            Type.Array(Bucket),
           ),
-          metric: Type.Optional(SimpleAggregation),
+          metric: Type.Optional(Bucket),
         }),
         // OR
         Type.Object({
           aggs: Type.Optional(
-            Type.Array(CustomAggregation),
+            Type.Array(Bucket),
           ),
         }),
       ]),
@@ -249,7 +256,7 @@ const fetchWithElastic = async (
   _events: EventEmitter = new EventEmitter(),
 ) => {
   // Check options even if type is explicit, because it can be a merge between multiple sources
-  assertIsSchema(ElasticFetchOptions, options);
+  assertIsSchema(ElasticFetchOptions, options, 'fetchOptions');
 
   const index = options.index || null;
   if (!index) {

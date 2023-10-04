@@ -69,7 +69,7 @@ const router: FastifyPluginAsync = async (fastify) => {
       }
 
       const email = b64ToString(to64);
-      assertIsSchema(Type.String({ format: 'email' }), email);
+      assertIsSchema(Type.String({ format: 'email' }), email, 'email');
 
       const template = await readFile(join(PUBLIC_PATH, 'index.html'), 'utf8');
 

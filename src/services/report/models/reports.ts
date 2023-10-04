@@ -371,7 +371,7 @@ export const generateReport = async (
     throw new Error(`Namespace "${task.namespaceId}" not found`);
   }
 
-  logger.verbose(`[gen] [${process.pid}] Generation of report "${namepath}" started`);
+  logger.verbose(`[gen] [${process.pid}] Generation of report [${namepath}] started`);
   events.emit('creation');
 
   const result: ReportResultType = {
@@ -399,6 +399,7 @@ export const generateReport = async (
     }
 
     result.detail.auth = namespace.fetchLogin;
+    logger.verbose(`[gen] [${process.pid}] Auth found`);
     events.emit('authFound', result.detail.auth);
 
     const period = getReportPeriod(task, customPeriod);
@@ -431,6 +432,7 @@ export const generateReport = async (
       }
     }
 
+    logger.verbose(`[gen] [${process.pid}] Template resolved`);
     events.emit('templateResolved', template);
 
     // Fetch data and keep resolved data and fetch options
@@ -455,8 +457,8 @@ export const generateReport = async (
 
     // Cleanup & notifications
     delete template.fetchOptions;
-    events.emit('templateFetched', template);
     logger.verbose(`[gen] [${process.pid}] Data fetched`);
+    events.emit('templateFetched', template);
 
     // Render report
     const renderResult = await renderTemplate(
@@ -573,8 +575,8 @@ export const generateReport = async (
   // Write detail when process is ending
   try {
     await writeInfoFile(`${filepath}.det`, result);
+    result.detail.files.detail = `${namepath}.det.json`;
     logger.verbose(`[gen] [${process.pid}] Detail wrote to [${result.detail.files.detail}]`);
-    result.detail.files.detail = `${namepath}.deb.json`;
   } catch (error) {
     if (error instanceof Error) {
       logger.error(`[gen] [${process.pid}] Unable to write detail [${task.id}]: {${error.message}}`);
