@@ -159,7 +159,7 @@
           </ElasticAggElementForm>
 
           <v-text-field
-            :value="figureParams.value?.title"
+            :value="figureParams.color?.title"
             :label="$t('value.headers.title')"
             :readonly="readonly"
             @input="onSubParamUpdate('value', { title: $event })"
@@ -395,9 +395,9 @@ export default defineComponent({
     valid: false,
     defaultMetric: { name: 'aggMetric', __count: undefined },
 
-    labelLoading: true,
-    metricLoading: true,
-    colorLoading: true,
+    labelLoading: false,
+    metricLoading: false,
+    colorLoading: false,
 
     collapsedDl: true,
     collapsedColor: true,
@@ -678,20 +678,17 @@ export default defineComponent({
     onMetricUpdate(el: ElasticAgg) {
       const buckets = this.buckets.value.slice(1);
       let field = `${el.name ?? 'aggMetric'}.value`;
-      let key = `${el.name ?? 'aggMetric'}.key`;
       if ('__count' in { ...el }) {
         field = 'doc_count';
-        key = 'key';
         this.$emit('update:fetchOptions', { metric: undefined });
       } else {
         this.$emit('update:fetchOptions', { metric: el });
       }
 
       field = [...buckets.map(({ name }, i) => name || `agg${i}`), field].join('.');
-      key = [...buckets.map(({ name }, i) => name || `agg${i}`), key].join('.');
 
       this.onSubParamUpdate('value', { field });
-      this.onSubParamUpdate('label', { field: key });
+      this.onSubParamUpdate('label', { field: 'key' });
     },
   },
 });

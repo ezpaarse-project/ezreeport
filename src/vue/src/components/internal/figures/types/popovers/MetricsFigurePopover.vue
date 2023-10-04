@@ -45,7 +45,7 @@
             </template>
           </ElasticAggElementForm>
 
-          <CustomSection :label="$t('headers.type').toString()" :default-value="true" collapsable>
+          <CustomSection :label="$t('headers.type').toString()" collapsable>
             <!-- Format type -->
             <v-select
               :value="element.format?.type || ''"

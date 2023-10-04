@@ -87,13 +87,7 @@ export default defineComponent({
   methods: {
     MDtoHTML(data: string) {
       const html = DOMPurify.sanitize(
-        marked(
-          data,
-          {
-            mangle: false,
-            headerIds: false,
-          },
-        ),
+        marked(data),
       );
       this.renderedMD = html;
     },

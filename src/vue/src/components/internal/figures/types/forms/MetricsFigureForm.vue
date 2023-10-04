@@ -12,7 +12,7 @@
         v-if="currentLabel"
         v-model="labelPopoverShown"
         :element="currentLabel"
-        :linked-agg="aggs.get(currentLabel._.dataKeyField)?.agg"
+        :linked-agg="aggs.get(currentLabel.dataKey)?.agg"
         :coords="labelPopoverCoords"
         :readonly="readonly"
         :currentKeyFields="currentFigureKeyFields"
@@ -60,20 +60,19 @@
                 {{ label.text || `${label.dataKey}.${label.field || 'value'}` }}
               </v-list-item-title>
 
-              <i18n v-if="aggs.get(label._.dataKeyField)" tag="v-list-item-subtitle" path="$ezreeport.fetchOptions.aggSummary" class="font-weight-light text--secondary">
+              <i18n v-if="aggs.get(label.dataKey)" tag="v-list-item-subtitle" path="$ezreeport.fetchOptions.aggSummary" class="font-weight-light text--secondary">
                 <template #type>
                   <span class="font-weight-medium">
-                    {{ aggs.get(label._.dataKeyField)?.formatted.type }}
+                    {{ aggs.get(label.dataKey)?.formatted.type }}
                   </span>
                 </template>
 
                 <template #field>
                   <span class="font-weight-medium">
-                    {{ aggs.get(label._.dataKeyField)?.formatted.field }}
+                    {{ aggs.get(label.dataKey)?.formatted.field }}
                   </span>
                 </template>
               </i18n>
-
             </v-list-item-content>
 
             <v-list-item-action
@@ -300,7 +299,7 @@ export default defineComponent({
         return;
       }
 
-      this.deleteAgg(label._.dataKeyField);
+      this.deleteAgg(label.dataKey);
     },
     /**
      * Update value when a label is updated
@@ -337,7 +336,7 @@ export default defineComponent({
       if (!label) {
         this.createLabel();
         this.upsertAgg({
-          name: this.currentLabel?._.dataKeyField ?? '',
+          name: this.currentLabel?.dataKey ?? '',
           sum: {
             field: '',
           },
