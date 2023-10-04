@@ -84,10 +84,110 @@ const router: FastifyPluginAsync = async (fastify) => {
     },
   );
 
+  /**
+   * Get all targets of all tasks
+   */
+  fastify.get(
+    '/_targets',
+    {
+      ezrAuth: {
+        access: Access.READ,
+      },
+    },
+    async (request) => {
+      const list = await tasks.getAllTargets(request.namespaceIds);
+
+      return { content: list };
+    },
+  );
+
+  const SpecificEmailParams = Type.Object({
+    email: Type.String({ minLength: 1 }),
+  });
+  type SpecificEmailParamsType = Static<typeof SpecificEmailParams>;
+
+  /**
+   * Get all tasks of a target
+   */
+  fastify.get<{
+    Querystring: PaginationQueryType
+    Params: SpecificEmailParamsType,
+  }>(
+    '/_targets/:email/tasks',
+    {
+      schema: {
+        querystring: PaginationQuery,
+        params: SpecificEmailParams,
+      },
+      ezrAuth: {
+        access: Access.READ,
+      },
+    },
+    async (request) => {
+      const { previous, count = 15 } = request.query;
+
+      const list = await tasks.getTasksByTargets(
+        request.params.email,
+        { count, previous },
+        request.namespaceIds,
+      );
+
+      return {
+        content: list,
+        meta: {
+          total: await tasks.getTaskCountByTargets(request.params.email, request.namespaceIds),
+          count: list.length,
+          size: count,
+          lastId: list.at(-1)?.id,
+        },
+      };
+    },
+  );
+
   const SpecificTaskParams = Type.Object({
     task: Type.String({ minLength: 1 }),
   });
   type SpecificTaskParamsType = Static<typeof SpecificTaskParams>;
+
+  /**
+   * Unsubscribe a target from a task
+   */
+  fastify.delete<{
+    Params: SpecificEmailParamsType & SpecificTaskParamsType,
+  }>(
+    '/_targets/:email/tasks/:task',
+    {
+      schema: {
+        params: SpecificEmailParams,
+      },
+      ezrAuth: {
+        access: Access.READ_WRITE,
+      },
+    },
+    async (request) => {
+      const { email, task: id } = request.params;
+
+      const item = await tasks.getTaskById(id, request.namespaceIds);
+      if (!item) {
+        throw new NotFoundError(`Task with id '${id}' not found`);
+      }
+
+      const emailIndex = item.targets.findIndex((target: string) => email === target);
+      if (emailIndex < 0) {
+        return;
+      }
+      item.targets.splice(emailIndex, 1);
+
+      await tasks.patchTaskByIdWithHistory(
+        item.id,
+        { targets: item.targets },
+        {
+          type: 'unsubscription',
+          message: `${email} a été désinscrit de la liste de diffusion par ${request.user?.username || 'Unknown'}.`,
+        },
+      );
+    },
+  );
 
   /**
    * Get specific task

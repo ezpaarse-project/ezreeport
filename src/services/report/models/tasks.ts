@@ -231,6 +231,121 @@ export const getAllTasksToGenerate = async (
 });
 
 /**
+ * Get all targets in DB
+ *
+ * @param namespaceIds The namespaces of the task. If provided,
+ * will restrict search to the namespace provided
+ *
+ * @returns Email list
+ */
+export const getAllTargets = async (namespaceIds?: Namespace['id'][]): Promise<string[]> => {
+  const targetsByTasks = await prisma.task.findMany({
+    select: {
+      targets: true,
+    },
+    where: {
+      namespaceId: {
+        in: namespaceIds,
+      },
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
+  });
+  return [...new Set(targetsByTasks.map((t) => t.targets).flat())];
+};
+
+/**
+ * Get specific task in DB
+ *
+ * @param id The id of the task
+ * @param namespaceIds The namespaces of the task. If provided,
+ * will restrict search to the namespace provided
+ *
+ * @returns Task
+ */
+export const getTasksByTargets = async (
+  email: string,
+  opts?: {
+    count?: number,
+    previous?: PrismaTask['id'],
+  },
+  namespaceIds?: Namespace['id'][],
+): Promise<TaskList> => {
+  const tasks = await prisma.task.findMany({
+    take: opts?.count,
+    skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
+    cursor: opts?.previous ? { id: opts.previous } : undefined,
+    select: {
+      id: true,
+      name: true,
+      namespaceId: true,
+      recurrence: true,
+      nextRun: true,
+      lastRun: true,
+      enabled: true,
+      createdAt: true,
+      updatedAt: true,
+
+      extendedId: true,
+      lastExtended: true,
+    },
+    where: {
+      namespaceId: {
+        in: namespaceIds,
+      },
+      targets: {
+        has: email,
+      },
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
+  });
+
+  return Promise.all(
+    // Add tags from extended or last extended
+    tasks.map(async ({ extendedId, lastExtended, ...task }) => {
+      const lE = Value.Cast(LastExtended, lastExtended);
+      if (lE?.tags && lE.tags.length > 0) {
+        return {
+          ...task,
+          tags: lE.tags,
+        };
+      }
+
+      const extended = await getTemplateById(extendedId);
+      return {
+        ...task,
+        tags: extended?.tags ?? [],
+      };
+    }),
+  );
+};
+
+/**
+ * Get count of tasks in DB
+ *
+ * @param namespace The namespace of the task. If provided,
+ * will restrict search to the namespace provided
+ *
+ * @returns The task count
+ */
+export const getTaskCountByTargets = (
+  email: string,
+  namespaceIds?: Namespace['id'][],
+): Promise<number> => prisma.task.count({
+  where: {
+    namespaceId: {
+      in: namespaceIds,
+    },
+    targets: {
+      has: email,
+    },
+  },
+});
+
+/**
  * Get specific task in DB
  *
  * @param id The id of the task
