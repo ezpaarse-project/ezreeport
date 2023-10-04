@@ -1,3 +1,64 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.23](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.22...@ezpaarse-project/ezreeport-vue@1.0.0-beta.23) (2023-10-04)
+
+
+### Bug Fixes
+
+* **vue:** added missing translations for elastic aggs ([bd715a7](https://github.com/ezpaarse-project/ezreeport/commit/bd715a73a22b9d2cd95b66b7a11994e226e5f676))
+* **vue:** changed color of confirmation to feel the danger ([cfa3f12](https://github.com/ezpaarse-project/ezreeport/commit/cfa3f1263a66c01eca6c81f2defcf8167fbeecdc))
+* **vue:** fixed agg summary in tables ([01af671](https://github.com/ezpaarse-project/ezreeport/commit/01af6711efaccff1518404304c2a6909faf72c61))
+* **vue:** fixed design of vega figure form ([3ec3ce1](https://github.com/ezpaarse-project/ezreeport/commit/3ec3ce156ca1a53014dfc1838caf69907422263e))
+* **vue:** fixed duplicate id in some metrics ([9463635](https://github.com/ezpaarse-project/ezreeport/commit/9463635a14561b91e6c99562b64c89d556835c8d))
+* **vue:** fixed filters on vega figures ([678d9cc](https://github.com/ezpaarse-project/ezreeport/commit/678d9cc9f0e14ee2e83659fcf95a25dcdc27ed96))
+* **vue:** fixed style of ElasticElementForm ([9bc49a6](https://github.com/ezpaarse-project/ezreeport/commit/9bc49a6a80bc682d1798dc56e2379f0ac038bca9))
+* **vue:** fixed task buttons showing when updating templates ([bf7e610](https://github.com/ezpaarse-project/ezreeport/commit/bf7e6102606de70889c34da3c9e90c7c112890a4))
+* **vue:** fixed task creation ([71cce55](https://github.com/ezpaarse-project/ezreeport/commit/71cce55d7d7425c30c31314f6f29244fe9451fa5))
+* **vue:** fixed task duplication ([b9b3198](https://github.com/ezpaarse-project/ezreeport/commit/b9b319813c936c786ea60790912eab704c652a2a))
+* **vue:** fixed typo in french ([47d541c](https://github.com/ezpaarse-project/ezreeport/commit/47d541cdc670dc0f89bf19eec35b1d94587676c8))
+* **vue:** fixed warnings in i18n ([8dd5366](https://github.com/ezpaarse-project/ezreeport/commit/8dd53667a8ee4f98e06918e6767d408605efb29c))
+* **vue:** fixed wrong key for color legend in vega ([32f94de](https://github.com/ezpaarse-project/ezreeport/commit/32f94dede0ac3128ee71809d8566af32d9f8d832))
+* **vue:** pinned highlightjs in order to fix it ([2ddd086](https://github.com/ezpaarse-project/ezreeport/commit/2ddd086e75b88e3a4699bbe2e454daa248461757))
+* **vue:** removed useless figure types ([9ad8c91](https://github.com/ezpaarse-project/ezreeport/commit/9ad8c91fc5dfc61493469cd1b4e745635389cbeb))
+* **vue:** using aggs instead of buckets for metrics ([f29f58a](https://github.com/ezpaarse-project/ezreeport/commit/f29f58ad87136eae6b163f2fa3f83729cadbbf39))
+* **vue:** various fixs on figure parameters ([099e50e](https://github.com/ezpaarse-project/ezreeport/commit/099e50eb61231567e407ce0f906f1c9d8f178dc2))
+
+
+### Features
+
+* **vue:** added "show missing" in agg options ([e2b3b97](https://github.com/ezpaarse-project/ezreeport/commit/e2b3b970d834b49279cd7e56b2d47585421f1bce))
+* **vue:** added custom aggregations ([5fd73b1](https://github.com/ezpaarse-project/ezreeport/commit/5fd73b109189f90c20eef342b100384fd79af90c))
+* **vue:** added figure number in form ([9ca0b77](https://github.com/ezpaarse-project/ezreeport/commit/9ca0b77fca7c6464e630e5ca8b68a4bdf21d3a63))
+* **vue:** added fzf to find base template in task creation ([96d10da](https://github.com/ezpaarse-project/ezreeport/commit/96d10da8ce98dc5a604cd83b7c1a3a9cf5f19513))
+* **vue:** added hint on which vield is invalid in template edition ([347bfa6](https://github.com/ezpaarse-project/ezreeport/commit/347bfa68b5c892b401618cfc8da444ecd07ebdf7))
+* **vue:** better configuration of show missing in aggs ([abd56ba](https://github.com/ezpaarse-project/ezreeport/commit/abd56baae8c96d0f619300f7d46abbe5a9e5f530))
+* **vue:** better error formatting when generating task ([281bb6b](https://github.com/ezpaarse-project/ezreeport/commit/281bb6b76c5fcfae79510eb5b540025a5757c848))
+* **vue:** can filter and paginate template list ([382cfb5](https://github.com/ezpaarse-project/ezreeport/commit/382cfb546d4a3b5faf36286a9531efabdf155fed))
+* **vue:** elastic aggs have now their own type ([0aca473](https://github.com/ezpaarse-project/ezreeport/commit/0aca47384b4b1d0fbc10ba5694be91efbb331fab))
+* **vue:** fixed position of validation icon in figure ([a320c6c](https://github.com/ezpaarse-project/ezreeport/commit/a320c6cd871ace8fd402d3e27196287967270cd1))
+* **vue:** hiding default template from list ([d4067c1](https://github.com/ezpaarse-project/ezreeport/commit/d4067c178688a6fc8b970037b95366c26552c09e))
+* **vue:** making "all" namespace selection always available ([422038a](https://github.com/ezpaarse-project/ezreeport/commit/422038aa7d95be0392f50096f6d0a066305191e7))
+* **vue:** redone metric form to support buckets ([6246018](https://github.com/ezpaarse-project/ezreeport/commit/6246018213ba0e2181661c3968de3210b8c59fc6))
+* **vue:** table now uses buckets instead of aggs ([9302fe6](https://github.com/ezpaarse-project/ezreeport/commit/9302fe6399cdee72f0f2ebd1cf74c51bc71a451a))
+* **vue:** using aggs instead of buckets for metrics ([f4915f9](https://github.com/ezpaarse-project/ezreeport/commit/f4915f9976fe28190d3a17a8a45d1dee266ca900))
+* **vue:** vega figures now use buckets instead of aggs ([b7b4264](https://github.com/ezpaarse-project/ezreeport/commit/b7b4264049bb63b628ad836c73110847c0d08577))
+
+
+### Performance Improvements
+
+* **vue:** removed useless watchers ([2eb6975](https://github.com/ezpaarse-project/ezreeport/commit/2eb697536e92fe65750cf518c2cdf210c3813515))
+
+
+### Reverts
+
+* **vue:** removed dot notation hints ([40fd67a](https://github.com/ezpaarse-project/ezreeport/commit/40fd67a732950c1945ed3ac913f9ac4e8b291c8b))
+
+
+
+
+
+### Dependencies
+
+* **@ezpaarse-project/ezreeport-sdk-js:** upgraded to 1.0.0-beta.7
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.22](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.21...@ezpaarse-project/ezreeport-vue@1.0.0-beta.22) (2023-09-13)
 
 
