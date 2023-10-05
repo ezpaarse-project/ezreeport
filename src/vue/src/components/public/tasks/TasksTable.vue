@@ -97,8 +97,8 @@
             <CustomSwitch
               :value="enabled"
               :readonly="loading"
-              :disabled="!rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task-enable']
-                || !rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task-disable']
+              :disabled="!rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task-_enable']
+                || !rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task-_disable']
               "
               :label="$t(`$ezreeport.tasks.enabled.${enabled}`).toString()"
               reverse
@@ -428,8 +428,8 @@ export default defineComponent({
     async toggleTask({ id, enabled, namespace }: TaskItem) {
       if (
         this.tasks.findIndex((t) => t.id === id) < 0
-        || (enabled && !this.rawNamespacePerms?.[namespace?.id ?? '']?.['tasks-put-task-enable'])
-        || (!enabled && !this.rawNamespacePerms?.[namespace?.id ?? '']?.['tasks-put-task-disable'])
+        || (enabled && !this.rawNamespacePerms?.[namespace?.id ?? '']?.['tasks-put-task-_enable'])
+        || (!enabled && !this.rawNamespacePerms?.[namespace?.id ?? '']?.['tasks-put-task-_disable'])
       ) {
         return;
       }
