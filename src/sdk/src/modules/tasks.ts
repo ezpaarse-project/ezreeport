@@ -125,6 +125,60 @@ export const getAllTasks = async (
 };
 
 /**
+ * Get targets of available tasks
+ *
+ * Needs `namespaces[namespaceId].tasks-get-_targets` permission
+ *
+ * @param namespaces
+ *
+ * @returns Targets' email
+ */
+export const getAllTargets = (namespaces?: Namespace['id'][]) => axios.$get<string[]>(
+  '/tasks/_targets',
+  { params: { namespaces } },
+);
+
+/**
+ * Get available tasks of specific target
+ *
+ * Needs `namespaces[namespaceId].tasks-get-_targets-email-tasks` permission
+ *
+ * @param email The email of the target
+ * @param namespaces
+ *
+ * @returns Tasks where given email is a target
+ */
+export const getTasksOfTarget = async (email: string, namespaces?: Namespace['id'][]) => {
+  const { content, ...response } = await axios.$get<RawTaskList>(
+    `/tasks/_targets/${email}`,
+    { params: { namespaces } },
+  );
+
+  return {
+    ...response,
+    content: content.map(({ tags, ...task }) => ({
+      tags,
+      ...parseTask(task),
+    })),
+  };
+};
+
+/**
+ * Unsubscribe a target from a task
+ *
+ * Needs `namespaces[namespaceId].tasks-get-_targets-email-tasks` permission
+ *
+ * @param email The email of the target
+ * @param taskOrId Task or Task's id
+ * @param namespaces
+ */
+export const unsubTargetOfTask = async (email: string, taskOrId: Task | Task['id'], namespaces?: Namespace['id'][]) => {
+  const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+
+  await axios.$delete(`/tasks/_targets/${email}/tasks/${id}`, { params: { namespaces } });
+};
+
+/**
  * Create a new task
  *
  * Needs `namespaces[namespaceId].tasks-post` permission
