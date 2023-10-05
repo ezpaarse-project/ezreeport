@@ -616,26 +616,7 @@
                     }
                   }
                 },
-                "examples": {
-                  "Example 1": {
-                    "value": {
-                      "status": {
-                        "code": 200,
-                        "message": "OK"
-                      },
-                      "content": [
-                        "ezteam@couperin.org",
-                        "ezteam-dev@couperin.org"
-                      ],
-                      "meta": {
-                        "total": 2,
-                        "count": 2,
-                        "size": 15,
-                        "lastId": "ezteam-dev@couperin.org"
-                      }
-                    }
-                  }
-                }
+                "examples": {}
               }
             }
           },
@@ -773,7 +754,31 @@
                     "content": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/Task"
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/Task"
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "tags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "color": {
+                                      "type": "string",
+                                      "nullable": true
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        ]
                       }
                     },
                     "meta": {
@@ -854,8 +859,8 @@
         "summary": "Unsubscribe a target from a task",
         "operationId": "delete-tasks-_targets-email-taskId",
         "responses": {
-          "200": {
-            "description": "OK"
+          "204": {
+            "description": "No Content"
           },
           "401": {
             "$ref": "#/components/responses/401"
