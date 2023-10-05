@@ -32,7 +32,7 @@
       </template>
 
       <template #[`item.id`]="{ value: id }">
-        #{{ id }}
+        {{ id }}
       </template>
 
       <template #[`item.status`]="{ value: status }">

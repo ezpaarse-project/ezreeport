@@ -565,6 +565,332 @@
         ]
       }
     },
+    "/tasks/_targets": {
+      "get": {
+        "summary": "Get list of targets",
+        "tags": [
+          "tasks"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        "ezteam@couperin.org",
+                        "ezteam-dev@couperin.org"
+                      ],
+                      "meta": {
+                        "total": 2,
+                        "count": 2,
+                        "size": 15,
+                        "lastId": "ezteam-dev@couperin.org"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {}
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "get-tasks-_targets",
+        "security": [
+          {
+            "User Token": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/namespaces"
+          }
+        ],
+        "description": "Get list of targets of tasks of the authed user's institution.\n\nNeeds `namespaces[namespaceId].tasks-get-_targets` (see `/me/permissions` for more info)."
+      }
+    },
+    "/tasks/_targets/{email}/tasks": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "email",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "summary": "Get list of tasks of a target",
+        "tags": [
+          "tasks"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        {
+                          "id": "07be6d25-ac45-4881-b3c2-187c78ac11f9",
+                          "name": "rapport générique ezPAARSE",
+                          "namespaceId": "abba8400-1216-11eb-af77-ff33b5dd411e",
+                          "recurrence": "WEEKLY",
+                          "nextRun": "2023-10-05T11:25:43.396Z",
+                          "lastRun": null,
+                          "enabled": true,
+                          "createdAt": "2023-10-04T11:25:43.529Z",
+                          "updatedAt": "2023-10-04T11:25:43.529Z",
+                          "tags": [
+                            {
+                              "name": "ezPAARSE"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "3e45f280-6b89-4d6b-843e-78107b62d7c4",
+                          "name": "rapport générique éditeur TR TIR COUNTER 5 test",
+                          "namespaceId": "abba8400-1216-11eb-af77-ff33b5dd411e",
+                          "recurrence": "MONTHLY",
+                          "nextRun": "2023-10-05T11:25:43.396Z",
+                          "lastRun": null,
+                          "enabled": false,
+                          "createdAt": "2023-10-04T11:25:43.826Z",
+                          "updatedAt": "2023-10-04T11:25:43.826Z",
+                          "tags": [
+                            {
+                              "name": "ezCOUNTER",
+                              "color": "#15B0D6FF"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "d748dc2a-d148-4b09-8c14-8ceb709f80cd",
+                          "name": "rapport quotidien INSMI",
+                          "namespaceId": "abba8400-1216-11eb-af77-ff33b5dd411e",
+                          "recurrence": "DAILY",
+                          "nextRun": "2023-10-05T11:25:43.396Z",
+                          "lastRun": null,
+                          "enabled": true,
+                          "createdAt": "2023-10-04T11:25:44.126Z",
+                          "updatedAt": "2023-10-04T11:25:44.126Z",
+                          "tags": [
+                            {
+                              "name": "bibcnrs",
+                              "color": "#0A3D9C"
+                            },
+                            {
+                              "name": "ezPAARSE"
+                            }
+                          ]
+                        }
+                      ],
+                      "meta": {
+                        "total": 3,
+                        "count": 3,
+                        "size": 15,
+                        "lastId": "d748dc2a-d148-4b09-8c14-8ceb709f80cd"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/Task"
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "tags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "color": {
+                                      "type": "string",
+                                      "nullable": true
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        },
+                        "count": {
+                          "type": "integer"
+                        },
+                        "size": {
+                          "type": "integer"
+                        },
+                        "lastId": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/401"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "get-tasks-_targets-email",
+        "security": [
+          {
+            "User Token": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/previous"
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "$ref": "#/components/parameters/namespaces"
+          }
+        ],
+        "description": "Get tasks of the authed user's institution that have target.\n\nNeeds `namespaces[namespaceId].tasks-get-_targets-email-tasks` (see `/me/permissions` for more info)."
+      }
+    },
+    "/tasks/_targets/{email}/tasks/{taskId}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "email",
+          "in": "path",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "taskId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "delete": {
+        "summary": "Unsubscribe a target from a task",
+        "operationId": "delete-tasks-_targets-email-taskId",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "security": [
+          {
+            "User Token": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/namespaces"
+          }
+        ],
+        "tags": [
+          "tasks"
+        ],
+        "description": "Unsubscribe a target from a task of the authed user's institution.\n\nNeeds `namespaces[namespaceId].\"tasks-delete-_targets-email-tasks-task` (see `/me/permissions` for more info)."
+      }
+    },
     "/tasks/{taskId}": {
       "parameters": [
         {
@@ -860,7 +1186,7 @@
         ]
       }
     },
-    "/tasks/{taskId}/enable": {
+    "/tasks/{taskId}/_enable": {
       "parameters": [
         {
           "schema": {
@@ -938,11 +1264,11 @@
         "tags": [
           "tasks"
         ],
-        "description": "Enable task periodic generation.\n\nNeeds `namespaces[namespaceId].tasks-put-task-enable` (see `/me/permissions` for more info).",
+        "description": "Enable task periodic generation.\n\nNeeds `namespaces[namespaceId].tasks-put-task-_enable` (see `/me/permissions` for more info).",
         "parameters": []
       }
     },
-    "/tasks/{taskId}/disable": {
+    "/tasks/{taskId}/_disable": {
       "put": {
         "summary": "Disable task",
         "operationId": "tasks-put-taskId]-disable",
@@ -1009,7 +1335,7 @@
         "tags": [
           "tasks"
         ],
-        "description": "Disable task periodic generation.\n\nNeeds `namespaces[namespaceId].tasks-put-task-disable` (see `/me/permissions` for more info).",
+        "description": "Disable task periodic generation.\n\nNeeds `namespaces[namespaceId].tasks-put-task-_disable` (see `/me/permissions` for more info).",
         "parameters": []
       },
       "parameters": [
@@ -1024,7 +1350,7 @@
         }
       ]
     },
-    "/tasks/{taskId}/link/{templateId}": {
+    "/tasks/{taskId}/_link/{templateId}": {
       "parameters": [
         {
           "schema": {
@@ -1094,7 +1420,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "description": "Link a task to a template, changing it's `extends` and reseting `lastExtends`.\n\nNeeds `namespaces[namespaceId].tasks-put-task-link-template` (see `/me/permissions` for more info).",
+        "description": "Link a task to a template, changing it's `extends` and reseting `lastExtends`.\n\nNeeds `namespaces[namespaceId].tasks-put-task-_link-template` (see `/me/permissions` for more info).",
         "security": [
           {
             "User Token": []
@@ -1137,7 +1463,7 @@
         ]
       }
     },
-    "/tasks/{taskId}/run": {
+    "/tasks/{taskId}/_run": {
       "parameters": [
         {
           "schema": {
@@ -1253,10 +1579,10 @@
             "description": "Override period end. ISO format. Time is ignored."
           }
         ],
-        "description": "Trigger generation of report.\n\nNeeds `namespaces[namespaceId].tasks-post-task-run` (see `/me/permissions` for more info)."
+        "description": "Trigger generation of report.\n\nNeeds `namespaces[namespaceId].tasks-post-task-_run` (see `/me/permissions` for more info)."
       }
     },
-    "/tasks/{taskId}/unsubscribe": {
+    "/tasks/{taskId}/_unsubscribe": {
       "put": {
         "summary": "Unsubscribe from task",
         "operationId": "tasks-post-taskId-unsubscribe",
@@ -1311,7 +1637,7 @@
             "$ref": "#/components/responses/500"
           }
         },
-        "description": "Shorthand to remove given email in given task.\n\nNeeds `general.tasks-put-task-unsubscribe` (see `/me/permissions` for more info) but it should always be granted.",
+        "description": "Shorthand to remove given email in given task.\n\nNeeds `general.tasks-put-task-_unsubscribe` (see `/me/permissions` for more info) but it should always be granted.",
         "requestBody": {
           "content": {
             "application/json": {

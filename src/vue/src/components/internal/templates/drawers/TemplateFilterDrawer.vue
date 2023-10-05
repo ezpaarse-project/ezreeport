@@ -166,12 +166,12 @@ en:
   no_data:
     tags: 'No tags'
   headers:
-    name: 'Nom'
+    name: 'Name'
     tags: 'Tags'
 fr:
   no_data:
-    tags: 'Aucun tags'
+    tags: 'Aucune étiquette'
   headers:
-    name: 'Name'
-    tags: 'Tags'
+    name: 'Nom'
+    tags: 'Étiquettes'
 </i18n>

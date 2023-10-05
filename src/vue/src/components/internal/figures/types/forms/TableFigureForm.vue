@@ -193,8 +193,8 @@ export default defineComponent({
         this.figureParams = { ...this.figureParams, ...data };
       }
     },
-    onColumnCreated() {
-      (this.$refs.columnsTable as TablePreviewForm | undefined)?.onCreateColumn();
+    onColumnCreated(e: MouseEvent) {
+      (this.$refs.columnsTable as TablePreviewForm | undefined)?.onCreateColumn(e);
     },
     onMetricUpdate(el: ElasticAgg) {
       if ('__count' in { ...el }) {

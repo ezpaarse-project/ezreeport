@@ -214,7 +214,7 @@ export default defineComponent({
         }
 
         const { content } = await action(item.name);
-    
+
         this.crons.splice(index, 1, content);
       } catch (error) {
         this.error = (error as Error).message;

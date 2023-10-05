@@ -112,23 +112,6 @@
               type="number"
               @input="onSizeUpdate"
             />
-
-            <!-- Sub aggregations -->
-            <!-- deprecated, replaced by buckets, so only readonly for now -->
-            <CustomSection
-              v-if="!typeDefinition || typeDefinition.subAggregations"
-              :label="$t('headers.subAggs').toString()"
-              :collapse-disabled="
-                (innerElement.aggs || innerElement.aggregations || []).length <= 0
-              "
-              collapsable
-            >
-              <ElasticAggsBuilder
-                ref="aggBuilder"
-                :value="innerElement.aggs || innerElement.aggregations || []"
-                readonly
-              />
-            </CustomSection>
           </v-col>
         </v-row>
 
@@ -166,9 +149,6 @@ import {
 } from '~/lib/elastic/aggs';
 import { cloneDeep, debounce } from 'lodash';
 import type { SelectItem } from '~/types/vuetify';
-import type ElasticAggsBuilderConstructor from './ElasticAggsBuilder.vue';
-
-type ElasticAggsBuilder = InstanceType<typeof ElasticAggsBuilderConstructor>;
 
 const aggsSet = new Set<string>(Object.keys(aggsDefinition));
 
@@ -595,13 +575,6 @@ export default defineComponent({
       });
     },
     /**
-     * When a new sub aggregation is created
-     */
-    onAggCreated() {
-      const builder = this.$refs.aggBuilder as ElasticAggsBuilder | undefined;
-      builder?.onElementCreated();
-    },
-    /**
      * Update whole element using JSON
      */
     onJSONUpdate() {
@@ -646,7 +619,7 @@ fr:
   headers:
     simpleEdition: 'Édition simple'
     advancedEdition: 'Édition avancée'
-    type: "Type d'aggregation"
+    type: "Type d'agrégation"
     field: 'Champ concerné'
     count: 'Nombre de résultats maximum'
     sort: 'Trier sur la sous aggregation...'
@@ -660,10 +633,10 @@ fr:
   errors:
     no_duplicate: 'Ce nom est déjà utilisé'
   groups:
-    commonSingle: 'Aggregations de métriques communes' # TODO: Not really sure about that one
-    commonMulti: 'Aggregations par groupes communes'
-    otherSingle: 'Autres aggregations de métriques'
-    otherMulti: 'Autres aggregations par groupes'
+    commonSingle: 'Agrégations de métriques communes' # TODO: Not really sure about that one
+    commonMulti: 'Agrégations par groupes communes'
+    otherSingle: 'Autres agrégations de métriques'
+    otherMulti: 'Autres agrégations par groupes'
   sorts:
     _count: 'Par nombre de résultat (_count)'
     _key: 'Par clé (_key)'

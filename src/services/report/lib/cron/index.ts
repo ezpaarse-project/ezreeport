@@ -74,7 +74,7 @@ export const initCrons = async () => {
             { timer, key: key as Crons },
             {
               repeat: {
-                pattern: '* * * * * *',
+                pattern: timer,
                 tz: cronOptions.tz || undefined,
               },
             },

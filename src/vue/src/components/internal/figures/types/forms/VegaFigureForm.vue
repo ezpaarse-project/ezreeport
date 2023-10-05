@@ -10,6 +10,36 @@
       />
 
       <v-form v-if="figureParams" v-model="valid">
+        <!-- Value -->
+        <CustomSection
+          :label="headers.value"
+          collapsable
+        >
+          <ElasticAggElementForm
+            :element="buckets.metric || defaultMetric"
+            :readonly="readonly"
+            :agg-filter="metricFilter"
+            @update:element="(i, el) => onMetricUpdate(el)"
+            @update:loading="metricLoading = $event"
+          >
+            <template v-slot:title>
+              <div class="d-flex align-center">
+                {{ $t('headers.agg') }}
+
+                <v-progress-circular v-if="metricLoading" indeterminate size="16" width="2" class="ml-2" />
+              </div>
+            </template>
+          </ElasticAggElementForm>
+
+          <v-text-field
+            v-if="figure?.type !== 'arc'"
+            :value="figureParams.value?.title"
+            :label="$t('value.headers.title')"
+            :readonly="readonly"
+            @input="onSubParamUpdate('value', { title: $event })"
+          />
+        </CustomSection>
+
         <!-- Label -->
         <CustomSection
           :label="headers.label"
@@ -71,36 +101,6 @@
               />
             </template>
           </CustomSection>
-        </CustomSection>
-
-        <!-- Value -->
-        <CustomSection
-          :label="headers.value"
-          collapsable
-        >
-          <ElasticAggElementForm
-            :element="buckets.metric || defaultMetric"
-            :readonly="readonly"
-            :agg-filter="metricFilter"
-            @update:element="(i, el) => onMetricUpdate(el)"
-            @update:loading="metricLoading = $event"
-          >
-            <template v-slot:title>
-              <div class="d-flex align-center">
-                {{ $t('headers.agg') }}
-
-                <v-progress-circular v-if="metricLoading" indeterminate size="16" width="2" class="ml-2" />
-              </div>
-            </template>
-          </ElasticAggElementForm>
-
-          <v-text-field
-            v-if="figure?.type !== 'arc'"
-            :value="figureParams.value?.title"
-            :label="$t('value.headers.title')"
-            :readonly="readonly"
-            @input="onSubParamUpdate('value', { title: $event })"
-          />
         </CustomSection>
 
         <!-- Color -->
@@ -199,17 +199,6 @@
 
           <template v-if="figureParams.dataLabel">
             <v-row>
-              <v-col>
-                <v-select
-                  :value="figureParams.dataLabel.format"
-                  :items="possibleDataLabelFormats"
-                  :label="$t('dataLabel.headers.format')"
-                  :readonly="readonly"
-                  hide-details
-                  @change="onDataLabelUpdate({ format: $event })"
-                />
-              </v-col>
-
               <v-col class="button-group-col">
                 <v-label>
                   {{ $t('dataLabel.headers.position') }}
@@ -234,9 +223,7 @@
                   </v-btn>
                 </v-btn-toggle>
               </v-col>
-            </v-row>
 
-            <v-row>
               <v-col class="button-group-col">
                 <v-label>
                   {{$t('dataLabel.headers.shouldShow')}}
@@ -258,6 +245,37 @@
                   </v-btn>
                 </v-btn-toggle>
               </v-col>
+            </v-row>
+
+            <v-row>
+              <v-col>
+                <v-select
+                  :value="figureParams.dataLabel.format"
+                  :items="possibleDataLabelFormats"
+                  :label="$t('dataLabel.headers.format')"
+                  :readonly="readonly"
+                  hide-details
+                  @change="onDataLabelUpdate({ format: $event })"
+                />
+              </v-col>
+
+              <v-col>
+                <v-text-field
+                  :value="minValue"
+                  :label="$t('dataLabel.headers.minValue')"
+                  :placeholder="figureParams.dataLabel.format === 'percent' ? '3' : undefined"
+                  :persistent-placeholder="figureParams.dataLabel.format === 'percent'"
+                  :readonly="readonly"
+                  type="number"
+                  :min="0"
+                  :max="figureParams.dataLabel.format === 'percent' ? 100 : undefined"
+                  hide-details
+                  @input="minValue = +$event"
+                  @blur="onDataLabelUpdate({
+                    minValue: innerMinValue <= 0 ? undefined : innerMinValue,
+                  })"
+                />
+              </v-col>
 
               <!-- DL Preview -->
               <v-col class="button-group-col">
@@ -274,7 +292,7 @@
                   </div>
                   <div>
                     <strong>
-                      {{ randomValue }}
+                      {{ exampleValue }}
                     </strong>
                     <strong v-if="figureParams.dataLabel.format === 'percent'" class="ml-1">
                       %
@@ -283,7 +301,6 @@
                 </div>
               </v-col>
             </v-row>
-
           </template>
         </CustomSection>
       </v-form>
@@ -395,6 +412,7 @@ export default defineComponent({
   data: () => ({
     valid: false,
     defaultMetric: { name: 'aggMetric', __count: undefined },
+    innerMinValue: 0,
 
     labelLoading: false,
     metricLoading: false,
@@ -405,7 +423,10 @@ export default defineComponent({
   }),
   computed: {
     randomValue() {
-      return (Math.random() * 100).toFixed();
+      return Math.random() * 100;
+    },
+    exampleValue() {
+      return Math.max(this.minValue || 0, this.randomValue).toFixed();
     },
     layout() {
       const layout = this.templateStore.currentLayouts.find(
@@ -442,6 +463,34 @@ export default defineComponent({
             },
           },
         );
+      },
+    },
+    minValue: {
+      get(): number | undefined {
+        const minValue = this.innerMinValue || this.figureParams?.dataLabel?.minValue || 0;
+        if (minValue <= 0) {
+          return undefined;
+        }
+
+        switch (this.figureParams?.dataLabel?.format) {
+          case 'percent':
+            return minValue * 100;
+
+          default:
+            return minValue;
+        }
+      },
+      set(value: number | undefined) {
+        let minValue = value ?? 0;
+        switch (this.figureParams?.dataLabel?.format) {
+          case 'percent':
+            minValue /= 100;
+            break;
+
+          default:
+            break;
+        }
+        this.innerMinValue = minValue;
       },
     },
     /**
@@ -568,6 +617,12 @@ export default defineComponent({
           },
         ),
       ) as Record<'label' | 'value' | 'color', string>;
+    },
+  },
+  watch: {
+    // eslint-disable-next-line func-names
+    'figureParams.dataLabel.minValue': function (val: number) {
+      this.innerMinValue = val;
     },
   },
   mounted() {
@@ -759,6 +814,7 @@ en:
       bar: 'X-axis'
     color:
       _default: 'Group parameter'
+      bar: 'Stacking on Y-axis'
     dataLabel: 'Data Labels parameters'
   value:
     headers:
@@ -780,6 +836,7 @@ en:
       showValue: 'Values'
       showLabels: 'Values & Series'
       position: 'Position :'
+      minValue: 'Min. Value :'
     formats:
       numeric: 'Numeric'
       percent: 'Percent'
@@ -788,7 +845,7 @@ en:
       out: 'Out'
 fr:
   headers:
-    agg: 'Aggregation'
+    agg: 'Agrégation'
     value:
       _default: 'Paramètres des données'
       bar: 'Axe Y'
@@ -798,6 +855,7 @@ fr:
       bar: 'Axe X'
     color:
       _default: 'Paramètres des groupes'
+      bar: "Empilement sur l'axe Y"
     dataLabel: 'Paramètres des étiquettes de données'
   value:
     headers:
@@ -819,6 +877,7 @@ fr:
       showValue: 'Valeurs'
       showLabels: 'Valeurs & Séries'
       position: 'Position :'
+      minValue: 'Valeur Min. :'
     formats:
       numeric: 'Numérique'
       percent: 'Pourcentage'

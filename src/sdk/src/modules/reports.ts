@@ -101,7 +101,7 @@ type FullReportJob = FullJob<RawReportData, RawReportResult>;
 /**
  * Start generation of a report
  *
- * Needs `namespaces[namespaceId].tasks-post-task-run` permission
+ * Needs `namespaces[namespaceId].tasks-post-task-_run` permission
  *
  * @param taskOrId Task or id of the task
  * @param params Other params for overriding default
@@ -126,7 +126,7 @@ export const startGeneration = (
 ) => {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   return axios.$post<ReportJob>(
-    `/tasks/${id}/run`,
+    `/tasks/${id}/_run`,
     null,
     {
       params: {

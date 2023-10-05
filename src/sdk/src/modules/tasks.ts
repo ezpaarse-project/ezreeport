@@ -125,6 +125,60 @@ export const getAllTasks = async (
 };
 
 /**
+ * Get targets of available tasks
+ *
+ * Needs `namespaces[namespaceId].tasks-get-_targets` permission
+ *
+ * @param namespaces
+ *
+ * @returns Targets' email
+ */
+export const getAllTargets = (namespaces?: Namespace['id'][]) => axios.$get<string[]>(
+  '/tasks/_targets',
+  { params: { namespaces } },
+);
+
+/**
+ * Get available tasks of specific target
+ *
+ * Needs `namespaces[namespaceId].tasks-get-_targets-email-tasks` permission
+ *
+ * @param email The email of the target
+ * @param namespaces
+ *
+ * @returns Tasks where given email is a target
+ */
+export const getTasksOfTarget = async (email: string, namespaces?: Namespace['id'][]) => {
+  const { content, ...response } = await axios.$get<RawTaskList>(
+    `/tasks/_targets/${email}/tasks`,
+    { params: { namespaces } },
+  );
+
+  return {
+    ...response,
+    content: content.map(({ tags, ...task }) => ({
+      tags,
+      ...parseTask(task),
+    })),
+  };
+};
+
+/**
+ * Unsubscribe a target from a task
+ *
+ * Needs `namespaces[namespaceId].tasks-get-_targets-email-tasks` permission
+ *
+ * @param email The email of the target
+ * @param taskOrId Task or Task's id
+ * @param namespaces
+ */
+export const unsubTargetOfTask = async (email: string, taskOrId: Task | Task['id'], namespaces?: Namespace['id'][]) => {
+  const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+
+  await axios.$delete(`/tasks/_targets/${email}/tasks/${id}`, { params: { namespaces } });
+};
+
+/**
  * Create a new task
  *
  * Needs `namespaces[namespaceId].tasks-post` permission
@@ -234,7 +288,7 @@ export const deleteTask = async (
 /**
  * Shorthand to enable task
  *
- * Needs `namespaces[namespaceId].tasks-put-task-enable` permission
+ * Needs `namespaces[namespaceId].tasks-put-_task-enable` permission
  *
  * @param taskOrId Task or Task's id
  * @param namespaces
@@ -248,7 +302,7 @@ export const enableTask = async (
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
 
   const { content, ...response } = await axios.$put<RawFullTask>(
-    `/tasks/${id}/enable`,
+    `/tasks/${id}/_enable`,
     undefined,
     { params: { namespaces } },
   );
@@ -262,7 +316,7 @@ export const enableTask = async (
 /**
  * Shorthand to disable task
  *
- * Needs `namespaces[namespaceId].tasks-put-task-disable` permission
+ * Needs `namespaces[namespaceId].tasks-put-_task-disable` permission
  *
  * @param taskOrId Task or Task's id
  * @param namespaces
@@ -276,7 +330,7 @@ export const disableTask = async (
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
 
   const { content, ...response } = await axios.$put<RawFullTask>(
-    `/tasks/${id}/disable`,
+    `/tasks/${id}/_disable`,
     undefined,
     { params: { namespaces } },
   );
@@ -290,7 +344,7 @@ export const disableTask = async (
 /**
  * Link a task to a template
  *
- * Needs `namespaces[namespaceId].tasks-put-task-link-template` permission
+ * Needs `namespaces[namespaceId].tasks-put-task-_link-template` permission
  *
  * @param taskOrId Task or Task's id
  * @param templateOrId Template or Template's id
@@ -307,7 +361,7 @@ export const linkTaskToTemplate = async (
   const templateId = typeof templateOrId === 'string' ? templateOrId : templateOrId.id;
 
   const { content, ...response } = await axios.$put<RawFullTask>(
-    `/tasks/${taskId}/link/${templateId}`,
+    `/tasks/${taskId}/_link/${templateId}`,
     undefined,
     { params: { namespaces } },
   );
@@ -321,7 +375,7 @@ export const linkTaskToTemplate = async (
 /**
  * Unlink a task to a template
  *
- * Needs `namespaces[namespaceId].tasks-delete-task-link-template` permission
+ * Needs `namespaces[namespaceId].tasks-delete-task-_link-template` permission
  *
  * @param taskOrId Task or Task's id
  * @param templateOrId Template or Template's id
@@ -336,7 +390,7 @@ export const unlinkTaskToTemplate = async (
   const templateId = typeof templateOrId === 'string' ? templateOrId : templateOrId.id;
 
   await axios.$delete<RawFullTask>(
-    `/tasks/${taskId}/link/${templateId}`,
+    `/tasks/${taskId}/_link/${templateId}`,
     { params: { namespaces } },
   );
 };

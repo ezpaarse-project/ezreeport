@@ -26,21 +26,6 @@
       />
     </CustomSection>
 
-    <!-- Aggregations -->
-    <!-- deprecated, replaced by buckets, so only readonly for now -->
-    <CustomSection
-      v-if="'aggs' in fetchOptions && (fetchOptions.aggs?.length ?? 0) > 0"
-      :label="$t('$ezreeport.fetchOptions.aggregations').toString()"
-      :default-value="true"
-      collapsable
-    >
-      <ElasticAggsBuilder
-        ref="aggBuilder"
-        :value="fetchOptions.aggs ?? []"
-        readonly
-      />
-    </CustomSection>
-
     <!-- Fetch Count -->
     <v-checkbox
       v-if="!hideFetchCount"
