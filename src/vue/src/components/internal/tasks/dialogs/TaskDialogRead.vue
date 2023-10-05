@@ -256,10 +256,10 @@ export default defineComponent({
         readOne: has('tasks-get-task', namespaces),
         update: has('tasks-put-task', namespaces),
 
-        enable: has('tasks-put-task-enable', namespaces),
-        disable: has('tasks-put-task-disable', namespaces),
+        enable: has('tasks-put-task-_enable', namespaces),
+        disable: has('tasks-put-task-_disable', namespaces),
 
-        runTask: has('tasks-post-task-run', namespaces),
+        runTask: has('tasks-post-task-_run', namespaces),
       };
     },
     /**

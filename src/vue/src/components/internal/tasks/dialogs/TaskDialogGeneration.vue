@@ -262,7 +262,7 @@ export default defineComponent({
       const has = this.$ezReeport.hasNamespacedPermission;
       const namespaces = [this.task.namespace.id];
       return {
-        runTask: has('tasks-post-task-run', namespaces)
+        runTask: has('tasks-post-task-_run', namespaces)
           && has('queues-get-queue-jobs-jobId', namespaces),
 
         getFile: has('reports-get-year-yearMonth-filename', namespaces)
