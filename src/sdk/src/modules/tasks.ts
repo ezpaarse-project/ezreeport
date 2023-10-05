@@ -150,7 +150,7 @@ export const getAllTargets = (namespaces?: Namespace['id'][]) => axios.$get<stri
  */
 export const getTasksOfTarget = async (email: string, namespaces?: Namespace['id'][]) => {
   const { content, ...response } = await axios.$get<RawTaskList>(
-    `/tasks/_targets/${email}`,
+    `/tasks/_targets/${email}/tasks`,
     { params: { namespaces } },
   );
 
