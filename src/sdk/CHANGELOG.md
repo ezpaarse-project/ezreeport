@@ -1,3 +1,16 @@
+# @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.8](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.7...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.8) (2023-10-05)
+
+
+### Bug Fixes
+
+* **sdk:** fixed change of routes about tasks ([f31e5ab](https://github.com/ezpaarse-project/ezreeport/commit/f31e5ab59c34481c3d83196c9cd9becdb2f45a7f))
+* **sdk:** fixed targets methods ([136462f](https://github.com/ezpaarse-project/ezreeport/commit/136462fe6232eb35b07b86c476afa2e6cbf80731))
+
+
+### Features
+
+* **sdk:** added target management ([477e2e5](https://github.com/ezpaarse-project/ezreeport/commit/477e2e5f7f306428ec2a39d3727d8e69c40f55ac))
+
 # @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.7](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.6...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.7) (2023-10-04)
 
 
