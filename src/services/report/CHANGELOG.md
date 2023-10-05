@@ -1,3 +1,17 @@
+# ezreeport-report [1.0.0-beta.23](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.22...ezreeport-report@1.0.0-beta.23) (2023-10-05)
+
+
+### Bug Fixes
+
+* **report:** fixed debug value for cron ([69e17b3](https://github.com/ezpaarse-project/ezreeport/commit/69e17b34a992f359286836ba3ebb43ad5db02a33))
+* **report:** fixed id not beign used at template creation ([17da084](https://github.com/ezpaarse-project/ezreeport/commit/17da084aa0193a95332eec2355262ab5a72cc5cf))
+
+
+### Features
+
+* **report:** added targets route management ([827636e](https://github.com/ezpaarse-project/ezreeport/commit/827636e689f7e1d6667636cdf554a8caaf14124a))
+* **report:** moved all non-rest routes about task under prefix _ ([fecfcb0](https://github.com/ezpaarse-project/ezreeport/commit/fecfcb0c61f473a08246a09250eb84e766e6acdc))
+
 # ezreeport-report [1.0.0-beta.22](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.21...ezreeport-report@1.0.0-beta.22) (2023-10-04)
 
 
