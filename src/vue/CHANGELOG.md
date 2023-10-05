@@ -1,3 +1,30 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.24](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.23...@ezpaarse-project/ezreeport-vue@1.0.0-beta.24) (2023-10-05)
+
+
+### Bug Fixes
+
+* **vue:** fixed frecnh translation of "aggregation" ([5c537e5](https://github.com/ezpaarse-project/ezreeport/commit/5c537e5ff218c59805908b38eb52e9e857079b59))
+* **vue:** fixed french translation of Count ([82256b7](https://github.com/ezpaarse-project/ezreeport/commit/82256b7e03031ad4a89c147cefa75f6fe4f38ebc))
+* **vue:** fixed job id in queues ([cbd808f](https://github.com/ezpaarse-project/ezreeport/commit/cbd808ffd88304095fc7db5c917e780123e0e01c))
+* **vue:** fixed translations of template filters ([d8b477d](https://github.com/ezpaarse-project/ezreeport/commit/d8b477d21b4858dbfe1d0e966a76fec7c64d9bb6))
+* **vue:** moved metric label ([d0dd171](https://github.com/ezpaarse-project/ezreeport/commit/d0dd171d01b0282537d0e0678a99f3fb3c4ec5b5))
+
+
+### Features
+
+* **vue:** added min value for dataLabels ([39bef02](https://github.com/ezpaarse-project/ezreeport/commit/39bef022d01c05340bb2974352d3883ec3e31161))
+* **vue:** random value cannot be less than min ([e643b93](https://github.com/ezpaarse-project/ezreeport/commit/e643b93238ded058008bc6f5aea465d9b323c0ae))
+* **vue:** redone style of column popover ([f1913d5](https://github.com/ezpaarse-project/ezreeport/commit/f1913d550cba0f308e1b8993290a755f441fb395))
+* **vue:** removed aggs/subaggs ([94a0550](https://github.com/ezpaarse-project/ezreeport/commit/94a05507aeab9d8388e48926ce80347e03b4abe7))
+
+
+
+
+
+### Dependencies
+
+* **@ezpaarse-project/ezreeport-sdk-js:** upgraded to 1.0.0-beta.8
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.23](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.22...@ezpaarse-project/ezreeport-vue@1.0.0-beta.23) (2023-10-04)
 
 
