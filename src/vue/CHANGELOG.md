@@ -1,3 +1,10 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.25](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.24...@ezpaarse-project/ezreeport-vue@1.0.0-beta.25) (2023-10-05)
+
+
+### Bug Fixes
+
+* **vue:** fixed permission checks about tasks ([4f06c53](https://github.com/ezpaarse-project/ezreeport/commit/4f06c53bdc0aa9e0d816f21a0f35053ee0cdde8f))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.24](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.23...@ezpaarse-project/ezreeport-vue@1.0.0-beta.24) (2023-10-05)
 
 
