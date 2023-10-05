@@ -327,7 +327,7 @@ export const createVegaLSpec = (
         type: 'text',
         align: 'center',
         baseline: 'middle',
-        dy: 7,
+        dy: params.dataLabel.showLabel ? 7 : undefined,
         radius: type === 'arc' ? pos.radius : undefined,
         fontWeight: params.dataLabel.showLabel ? 'bold' : undefined,
       },
