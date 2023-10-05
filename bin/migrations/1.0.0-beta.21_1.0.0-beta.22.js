@@ -140,7 +140,7 @@ const main = async () => {
   await checkVersions();
 
   // Prepare data
-  DATA_FOLDER = await createDataFolder('18-19');
+  DATA_FOLDER = await createDataFolder('21-22');
 
   // Migrate
   await migrateNamespaces();
