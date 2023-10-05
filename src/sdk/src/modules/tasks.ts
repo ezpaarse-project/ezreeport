@@ -234,7 +234,7 @@ export const deleteTask = async (
 /**
  * Shorthand to enable task
  *
- * Needs `namespaces[namespaceId].tasks-put-task-enable` permission
+ * Needs `namespaces[namespaceId].tasks-put-_task-enable` permission
  *
  * @param taskOrId Task or Task's id
  * @param namespaces
@@ -248,7 +248,7 @@ export const enableTask = async (
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
 
   const { content, ...response } = await axios.$put<RawFullTask>(
-    `/tasks/${id}/enable`,
+    `/tasks/${id}/_enable`,
     undefined,
     { params: { namespaces } },
   );
@@ -262,7 +262,7 @@ export const enableTask = async (
 /**
  * Shorthand to disable task
  *
- * Needs `namespaces[namespaceId].tasks-put-task-disable` permission
+ * Needs `namespaces[namespaceId].tasks-put-_task-disable` permission
  *
  * @param taskOrId Task or Task's id
  * @param namespaces
@@ -276,7 +276,7 @@ export const disableTask = async (
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
 
   const { content, ...response } = await axios.$put<RawFullTask>(
-    `/tasks/${id}/disable`,
+    `/tasks/${id}/_disable`,
     undefined,
     { params: { namespaces } },
   );
@@ -290,7 +290,7 @@ export const disableTask = async (
 /**
  * Link a task to a template
  *
- * Needs `namespaces[namespaceId].tasks-put-task-link-template` permission
+ * Needs `namespaces[namespaceId].tasks-put-task-_link-template` permission
  *
  * @param taskOrId Task or Task's id
  * @param templateOrId Template or Template's id
@@ -307,7 +307,7 @@ export const linkTaskToTemplate = async (
   const templateId = typeof templateOrId === 'string' ? templateOrId : templateOrId.id;
 
   const { content, ...response } = await axios.$put<RawFullTask>(
-    `/tasks/${taskId}/link/${templateId}`,
+    `/tasks/${taskId}/_link/${templateId}`,
     undefined,
     { params: { namespaces } },
   );
@@ -321,7 +321,7 @@ export const linkTaskToTemplate = async (
 /**
  * Unlink a task to a template
  *
- * Needs `namespaces[namespaceId].tasks-delete-task-link-template` permission
+ * Needs `namespaces[namespaceId].tasks-delete-task-_link-template` permission
  *
  * @param taskOrId Task or Task's id
  * @param templateOrId Template or Template's id
@@ -336,7 +336,7 @@ export const unlinkTaskToTemplate = async (
   const templateId = typeof templateOrId === 'string' ? templateOrId : templateOrId.id;
 
   await axios.$delete<RawFullTask>(
-    `/tasks/${taskId}/link/${templateId}`,
+    `/tasks/${taskId}/_link/${templateId}`,
     { params: { namespaces } },
   );
 };
