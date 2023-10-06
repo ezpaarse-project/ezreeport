@@ -725,10 +725,22 @@ export default defineComponent({
         buckets.splice(index, 1, value);
       }
 
+      // Update dataKey
       this.onParamUpdate({ dataKey: buckets[0]?.name || 'agg0' });
+      // Update color if needed
       if (buckets[1]) {
         this.onSubParamUpdate('color', { field: `${buckets[1].name || 'agg1'}.key` });
       }
+
+      // Update value field
+      let field = 'doc_count';
+      if (this.buckets.metric) {
+        field = `${this.buckets.metric.name ?? 'aggMetric'}.value`;
+      }
+      field = [...buckets.slice(1).map(({ name }, i) => name || `agg${i}`), field].join('.');
+      this.onSubParamUpdate('value', { field });
+
+      // Update buckets
       this.$emit('update:fetchOptions', { buckets });
     },
     onMetricUpdate(el: ElasticAgg) {
