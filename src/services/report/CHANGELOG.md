@@ -1,3 +1,13 @@
+# ezreeport-report [1.0.0-beta.24](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.23...ezreeport-report@1.0.0-beta.24) (2023-10-06)
+
+
+### Bug Fixes
+
+* **report:** fixed buckets with no metrics ([40ca842](https://github.com/ezpaarse-project/ezreeport/commit/40ca842d604f9894921d9c56c332654e02b79b9a))
+* **report:** fixed debug vega json writed too often ([4e5cb8f](https://github.com/ezpaarse-project/ezreeport/commit/4e5cb8fd1232c1f06b8ead99e33fa91111dedab6))
+* **report:** fixed position of datalabel without metric ([9d64826](https://github.com/ezpaarse-project/ezreeport/commit/9d64826f7da45c654ffcee6b486e7b2c32be9e54))
+* **report:** fixed unsubscribe redirection ([0c80b69](https://github.com/ezpaarse-project/ezreeport/commit/0c80b691ead974e17c6407e3b162b90a689d719f))
+
 # ezreeport-report [1.0.0-beta.23](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.22...ezreeport-report@1.0.0-beta.23) (2023-10-05)
 
 
