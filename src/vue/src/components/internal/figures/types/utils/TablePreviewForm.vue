@@ -463,7 +463,7 @@ export default defineComponent({
       return [
         ...res,
         vC,
-      ];
+      ].map((c) => omit(c, '_'));
     },
     /**
      * Allow drag of item when it's handle is clicked
@@ -542,9 +542,7 @@ export default defineComponent({
       if (!this.readonly && this.draggedIndex >= 0) {
         this.disallowDrag(this.columns[this.draggedIndex]);
 
-        const columns = this.regenColumnsDK(this.innerBuckets).map(
-          (c) => omit(c, '_'),
-        );
+        const columns = this.regenColumnsDK(this.innerBuckets);
         this.$emit('input', columns);
         this.$emit('update:buckets', this.innerBuckets);
         await this.$nextTick();
