@@ -163,6 +163,8 @@
           <v-text-field
             :value="figureParams.color?.title"
             :label="$t('label.headers.legendTitle')"
+            :placeholder="figureParams.color?.field"
+            persistent-placeholder
             :readonly="readonly"
             @input="onSubParamUpdate('color', { title: $event })"
           />
@@ -171,7 +173,7 @@
         <!-- Data Labels -->
         <CustomSection
           :value="!figureParams.dataLabel || collapsedDl"
-          :label="$t(figureParams.dataLabel ? 'headers.dataLabel' : 'dataLabel.headers.show').toString()"
+          :label="$t('headers.dataLabel').toString()"
           collapsable
         >
           <template #collapse>
