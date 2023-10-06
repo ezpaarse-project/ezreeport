@@ -18,13 +18,13 @@
             border: $vuetify.theme.dark ? 'thin solid rgba(255, 255, 255, 0.12)' : 'thin solid rgba(0, 0, 0, 0.12)',
           }"
           @update:element="(i, el) => onMetricUpdate(el)"
-          @update:loading="metricLoading = $event"
+          @update:loading="colLoading = $event"
         >
           <template v-slot:title>
             <div class="d-flex align-center">
               {{ $t('headers.metric') }}
 
-              <v-progress-circular v-if="metricLoading" indeterminate size="16" width="2" class="ml-2" />
+              <v-progress-circular v-if="colLoading" indeterminate size="16" width="2" class="ml-2" />
             </div>
           </template>
         </ElasticAggElementForm>
@@ -99,8 +99,8 @@ export default defineComponent({
     },
   },
   emits: {
-    input: (val: PDFParams) => !!val,
     'update:fetchOptions': (data: Partial<AnyFetchOption>) => !!data,
+    childOpen: (isOpen: boolean) => isOpen !== undefined,
   },
   setup() {
     const templateStore = useTemplateStore();
@@ -110,7 +110,7 @@ export default defineComponent({
   data: () => ({
     valid: false,
     defaultMetric: { name: 'aggMetric', __count: undefined },
-    metricLoading: false,
+    colLoading: false,
   }),
   computed: {
     figure() {
@@ -186,6 +186,12 @@ export default defineComponent({
   },
   mounted() {
     (this.$refs.form as any)?.validate();
+
+    // Watch for child popovers
+    this.$watch(
+      () => (this.$refs.columnsTable as TablePreviewForm | undefined)?.columnPopoverShown,
+      (value) => this.$emit('childOpen', value || false),
+    );
   },
   methods: {
     onParamUpdate(data: Partial<PDFParams>) {

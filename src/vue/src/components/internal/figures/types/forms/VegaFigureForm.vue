@@ -415,7 +415,6 @@ export default defineComponent({
     },
   },
   emits: {
-    input: (val: VegaParams) => !!val,
     'update:fetchOptions': (data: Partial<AnyFetchOption>) => !!data,
   },
   setup() {
