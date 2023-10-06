@@ -306,6 +306,15 @@
             </v-row>
           </template>
         </CustomSection>
+
+        <!-- Advanced -->
+        <CustomSection v-if="!readonly">
+          <ToggleableObjectTree
+            :label="$t('$ezreeport.advanced_parameters').toString()"
+            :value="unsupportedParams.value"
+            v-on="unsupportedParams.listeners"
+          />
+        </CustomSection>
       </v-form>
     </v-col>
   </v-row>

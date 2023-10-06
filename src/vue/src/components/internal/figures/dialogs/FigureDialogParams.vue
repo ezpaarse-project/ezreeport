@@ -64,15 +64,6 @@
               :readonly="readonly"
               @update:fetchOptions="onFetchOptionUpdate"
             />
-
-            <!-- Advanced -->
-            <CustomSection v-if="!readonly || 'fetchOptions.othersCount > 0'">
-              <ToggleableObjectTree
-                :label="$t('$ezreeport.advanced_parameters').toString()"
-                :value="{}"
-                v-on="{}"
-              />
-            </CustomSection>
           </v-col>
         </v-row>
       </v-card-text>
