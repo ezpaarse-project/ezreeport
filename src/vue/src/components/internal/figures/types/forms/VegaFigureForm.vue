@@ -130,6 +130,7 @@
               @change="(ev) => {
                 collapsedColor = !ev;
                 const b = buckets.value.at(1);
+
                 if (!ev && b) {
                   onBucketDeletion(b);
                 }
@@ -706,12 +707,21 @@ export default defineComponent({
       if (this.figure?.fetchOptions && 'aggs' in this.figure.fetchOptions) {
         buckets = this.figure.fetchOptions.aggs ?? [];
       }
+      if (this.figure?.fetchOptions && 'buckets' in this.figure.fetchOptions) {
+        buckets = this.figure.fetchOptions.buckets ?? [];
+      }
 
       const index = buckets.findIndex((b) => b.name === bucket.name);
-      if (index >= 0) {
-        buckets.splice(index, 1);
-        this.$emit('update:fetchOptions', { buckets });
+      if (index < 0) {
+        return;
       }
+      buckets.splice(index, 1);
+
+      // Update value field
+      this.regenMetric(buckets);
+
+      // Update fetch options
+      this.$emit('update:fetchOptions', { buckets });
     },
     onBucketUpdate(index = -1, bucket: Partial<ElasticAgg> = {}) {
       const value: ElasticAgg = {
@@ -735,15 +745,18 @@ export default defineComponent({
       }
 
       // Update value field
+      this.regenMetric(buckets);
+
+      // Update buckets
+      this.$emit('update:fetchOptions', { buckets });
+    },
+    regenMetric(buckets: ElasticAgg[]) {
       let field = 'doc_count';
       if (this.buckets.metric) {
         field = `${this.buckets.metric.name ?? 'aggMetric'}.value`;
       }
       field = [...buckets.slice(1).map(({ name }, i) => name || `agg${i}`), field].join('.');
       this.onSubParamUpdate('value', { field });
-
-      // Update buckets
-      this.$emit('update:fetchOptions', { buckets });
     },
     onMetricUpdate(el: ElasticAgg) {
       const buckets = this.buckets.value.slice(1);
