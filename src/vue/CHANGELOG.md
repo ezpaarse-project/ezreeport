@@ -1,3 +1,26 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.26](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.25...@ezpaarse-project/ezreeport-vue@1.0.0-beta.26) (2023-10-06)
+
+
+### Bug Fixes
+
+* **vue:** fixed btn-toggle not mandatory ([a3b9fdb](https://github.com/ezpaarse-project/ezreeport/commit/a3b9fdb6449df1154ac2c404de8b063122e16686))
+* **vue:** fixed default value for color legend ([3b348dc](https://github.com/ezpaarse-project/ezreeport/commit/3b348dc41733e305fc0493b7ebd13e68093a75b3))
+* **vue:** fixed french translation of "count" ([148184f](https://github.com/ezpaarse-project/ezreeport/commit/148184febb277d085dda4f325aba62df3e62897f))
+* **vue:** fixed issue with disabling colors ([ee68491](https://github.com/ezpaarse-project/ezreeport/commit/ee684912691fa075f3ff676f6b781b2568cd9803))
+* **vue:** fixed issue with generation dialog when title is too long ([334bc99](https://github.com/ezpaarse-project/ezreeport/commit/334bc995d235aa23d18d0e1a42b75e66eac0f541))
+* **vue:** fixed labels for clarity in vega ([f671d23](https://github.com/ezpaarse-project/ezreeport/commit/f671d23bf2285e1448f711f8fc84bfaf061eefc9))
+* **vue:** fixed metric not updated when changing buckets in Vega ([046e448](https://github.com/ezpaarse-project/ezreeport/commit/046e448b0c79e10d450065e3e63b535c7af26c00))
+* **vue:** fixed permission checks about tasks ([39a5afe](https://github.com/ezpaarse-project/ezreeport/commit/39a5afecc0127d54038b37569fb9e046412a28c5))
+* **vue:** fixed readonly of figure titles ([971f7a5](https://github.com/ezpaarse-project/ezreeport/commit/971f7a585032e78a64db10670a21293e717f23b1))
+* **vue:** fixed useless data sent to server ([2ec9907](https://github.com/ezpaarse-project/ezreeport/commit/2ec99070e7f8c4241ea01d4f0c3fb9ad2080f353))
+
+
+### Features
+
+* **vue:** added advanced params on vega to debug ([273ac29](https://github.com/ezpaarse-project/ezreeport/commit/273ac2998322af2ac177eed0b388fbca320d0884))
+* **vue:** added dates of templates ([6b1cd31](https://github.com/ezpaarse-project/ezreeport/commit/6b1cd31b7c3f9e1631acd21a5d3bded2fa4f701c))
+* **vue:** dialogs are persistent if there's child popover ([3a446c0](https://github.com/ezpaarse-project/ezreeport/commit/3a446c07db85b11215769fe13c1ef32b47b4c023))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.25](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.24...@ezpaarse-project/ezreeport-vue@1.0.0-beta.25) (2023-10-05)
 
 
