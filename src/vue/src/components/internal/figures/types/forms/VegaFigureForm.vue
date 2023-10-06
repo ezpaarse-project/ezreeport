@@ -820,16 +820,16 @@ en:
   headers:
     agg: 'Aggregation'
     value:
-      _default: 'Data parameters'
+      _default: 'Data'
       bar: 'Y-axis'
     label:
-      _default: 'Series parameter'
-      arc: 'Slices parameters'
+      _default: 'Series'
+      arc: 'Slices'
       bar: 'X-axis'
     color:
-      _default: 'Group parameter'
+      _default: 'Group'
       bar: 'Stacking on Y-axis'
-    dataLabel: 'Data Labels parameters'
+    dataLabel: 'Data Labels'
   value:
     headers:
       field: 'Field'
@@ -839,11 +839,10 @@ en:
       field: 'Field'
       title: 'Title of axis'
       legendTitle: "Legend's title"
-      legendParams: 'Legend parameters'
+      legendParams: 'Legend'
       showLegend: 'Should show legend ?'
   dataLabel:
     headers:
-      show: 'Should show values on chart ?'
       format: 'Values format'
       shouldShow: 'Should be shown :'
       preview: 'Preview :'
@@ -861,16 +860,16 @@ fr:
   headers:
     agg: 'Agrégation'
     value:
-      _default: 'Paramètres des données'
+      _default: 'Données'
       bar: 'Axe Y'
     label:
-      _default: 'Paramètres des séries'
-      arc: 'Paramètres des parts'
+      _default: 'Séries'
+      arc: 'Parts'
       bar: 'Axe X'
     color:
-      _default: 'Paramètres des groupes'
+      _default: 'Groupes'
       bar: "Empilement sur l'axe Y"
-    dataLabel: 'Paramètres des étiquettes de données'
+    dataLabel: 'Étiquettes de données'
   value:
     headers:
       field: 'Champ'
@@ -880,11 +879,10 @@ fr:
       field: 'Champ'
       title: "Titre de l'axe"
       legendTitle: "Titre des légendes"
-      legendParams: 'Paramètres de la légende'
+      legendParams: 'Légende'
       showLegend: 'Afficher la légende ?'
   dataLabel:
     headers:
-      show: 'Afficher les étiquettes de données ?'
       format: 'Format des données'
       shouldShow: 'Doit être affiché :'
       preview: 'Prévisualisation :'
