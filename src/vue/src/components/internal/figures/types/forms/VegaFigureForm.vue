@@ -208,6 +208,7 @@
                   :value="figureParams.dataLabel.position || 'in'"
                   dense
                   rounded
+                  mandatory
                   color="primary"
                   @change="onDataLabelUpdate({ position: $event })"
                 >
@@ -233,6 +234,7 @@
                   :value="figureParams.dataLabel.showLabel || false"
                   dense
                   rounded
+                  mandatory
                   color="primary"
                   @change="onDataLabelUpdate({ showLabel: $event })"
                 >
@@ -563,7 +565,7 @@ export default defineComponent({
           break;
 
         case 'arc':
-          key = this.figureParams?.label?.legend !== null ? 'label.headers.legendParams' : 'label.headers.showLegend';
+          key = 'label.headers.legendParams';
           break;
 
         default:
