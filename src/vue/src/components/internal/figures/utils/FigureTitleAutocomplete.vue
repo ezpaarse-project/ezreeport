@@ -4,6 +4,7 @@
     :items="possibleVars"
     :label="$t('title')"
     :return-object="false"
+    :readonly="readonly"
     no-filter
     dense
     hide-details
@@ -43,6 +44,10 @@ export default defineComponent({
     value: {
       type: String,
       required: true,
+    },
+    readonly: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: {
