@@ -128,7 +128,7 @@
       "avg": "Moyenne",
       "avg_bucket": "Moyenne par groupe",
       "boxplot": "Diagramme en boîte",
-      "cardinality": "Compte unique",
+      "cardinality": "Comptage unique",
       "categorize_text": "Catégoriser le texte",
       "cumulative_sum": "Somme cumulative",
       "date_histogram": "Histogramme de date",
