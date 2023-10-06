@@ -327,7 +327,7 @@ export const createVegaLSpec = (
         type: 'text',
         align: 'center',
         baseline: 'middle',
-        dy: 7,
+        dy: params.dataLabel.showLabel ? 7 : undefined,
         radius: type === 'arc' ? pos.radius : undefined,
         fontWeight: params.dataLabel.showLabel ? 'bold' : undefined,
       },
@@ -406,7 +406,7 @@ export const createVegaLSpec = (
   };
 
   // Write generated spec into debug file (without data to gain time & space)
-  if (type === 'bar' && process.env.NODE_ENV !== 'production') {
+  if (params.debugExport === true && process.env.NODE_ENV !== 'production') {
     spec.$schema = 'https://vega.github.io/schema/vega-lite/v5.json';
     writeFile(
       join(outDir, 'debug.json'),

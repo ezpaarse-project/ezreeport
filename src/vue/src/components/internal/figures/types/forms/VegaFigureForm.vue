@@ -130,6 +130,7 @@
               @change="(ev) => {
                 collapsedColor = !ev;
                 const b = buckets.value.at(1);
+
                 if (!ev && b) {
                   onBucketDeletion(b);
                 }
@@ -162,6 +163,8 @@
           <v-text-field
             :value="figureParams.color?.title"
             :label="$t('label.headers.legendTitle')"
+            :placeholder="figureParams.color?.field"
+            persistent-placeholder
             :readonly="readonly"
             @input="onSubParamUpdate('color', { title: $event })"
           />
@@ -170,7 +173,7 @@
         <!-- Data Labels -->
         <CustomSection
           :value="!figureParams.dataLabel || collapsedDl"
-          :label="$t(figureParams.dataLabel ? 'headers.dataLabel' : 'dataLabel.headers.show').toString()"
+          :label="$t('headers.dataLabel').toString()"
           collapsable
         >
           <template #collapse>
@@ -208,6 +211,7 @@
                   :value="figureParams.dataLabel.position || 'in'"
                   dense
                   rounded
+                  mandatory
                   color="primary"
                   @change="onDataLabelUpdate({ position: $event })"
                 >
@@ -233,6 +237,7 @@
                   :value="figureParams.dataLabel.showLabel || false"
                   dense
                   rounded
+                  mandatory
                   color="primary"
                   @change="onDataLabelUpdate({ showLabel: $event })"
                 >
@@ -302,6 +307,15 @@
               </v-col>
             </v-row>
           </template>
+        </CustomSection>
+
+        <!-- Advanced -->
+        <CustomSection v-if="!readonly">
+          <ToggleableObjectTree
+            :label="$t('$ezreeport.advanced_parameters').toString()"
+            :value="unsupportedParams.value"
+            v-on="unsupportedParams.listeners"
+          />
         </CustomSection>
       </v-form>
     </v-col>
@@ -401,7 +415,6 @@ export default defineComponent({
     },
   },
   emits: {
-    input: (val: VegaParams) => !!val,
     'update:fetchOptions': (data: Partial<AnyFetchOption>) => !!data,
   },
   setup() {
@@ -563,7 +576,7 @@ export default defineComponent({
           break;
 
         case 'arc':
-          key = this.figureParams?.label?.legend !== null ? 'label.headers.legendParams' : 'label.headers.showLegend';
+          key = 'label.headers.legendParams';
           break;
 
         default:
@@ -704,12 +717,21 @@ export default defineComponent({
       if (this.figure?.fetchOptions && 'aggs' in this.figure.fetchOptions) {
         buckets = this.figure.fetchOptions.aggs ?? [];
       }
+      if (this.figure?.fetchOptions && 'buckets' in this.figure.fetchOptions) {
+        buckets = this.figure.fetchOptions.buckets ?? [];
+      }
 
       const index = buckets.findIndex((b) => b.name === bucket.name);
-      if (index >= 0) {
-        buckets.splice(index, 1);
-        this.$emit('update:fetchOptions', { buckets });
+      if (index < 0) {
+        return;
       }
+      buckets.splice(index, 1);
+
+      // Update value field
+      this.regenMetric(buckets);
+
+      // Update fetch options
+      this.$emit('update:fetchOptions', { buckets });
     },
     onBucketUpdate(index = -1, bucket: Partial<ElasticAgg> = {}) {
       const value: ElasticAgg = {
@@ -725,11 +747,26 @@ export default defineComponent({
         buckets.splice(index, 1, value);
       }
 
+      // Update dataKey
       this.onParamUpdate({ dataKey: buckets[0]?.name || 'agg0' });
+      // Update color if needed
       if (buckets[1]) {
         this.onSubParamUpdate('color', { field: `${buckets[1].name || 'agg1'}.key` });
       }
+
+      // Update value field
+      this.regenMetric(buckets);
+
+      // Update buckets
       this.$emit('update:fetchOptions', { buckets });
+    },
+    regenMetric(buckets: ElasticAgg[]) {
+      let field = 'doc_count';
+      if (this.buckets.metric) {
+        field = `${this.buckets.metric.name ?? 'aggMetric'}.value`;
+      }
+      field = [...buckets.slice(1).map(({ name }, i) => name || `agg${i}`), field].join('.');
+      this.onSubParamUpdate('value', { field });
     },
     onMetricUpdate(el: ElasticAgg) {
       const buckets = this.buckets.value.slice(1);
@@ -806,16 +843,16 @@ en:
   headers:
     agg: 'Aggregation'
     value:
-      _default: 'Data parameters'
+      _default: 'Data'
       bar: 'Y-axis'
     label:
-      _default: 'Series parameter'
-      arc: 'Slices parameters'
+      _default: 'Series'
+      arc: 'Slices'
       bar: 'X-axis'
     color:
-      _default: 'Group parameter'
+      _default: 'Group'
       bar: 'Stacking on Y-axis'
-    dataLabel: 'Data Labels parameters'
+    dataLabel: 'Data Labels'
   value:
     headers:
       field: 'Field'
@@ -825,11 +862,10 @@ en:
       field: 'Field'
       title: 'Title of axis'
       legendTitle: "Legend's title"
-      legendParams: 'Legend parameters'
+      legendParams: 'Legend'
       showLegend: 'Should show legend ?'
   dataLabel:
     headers:
-      show: 'Should show values on chart ?'
       format: 'Values format'
       shouldShow: 'Should be shown :'
       preview: 'Preview :'
@@ -847,16 +883,16 @@ fr:
   headers:
     agg: 'Agrégation'
     value:
-      _default: 'Paramètres des données'
+      _default: 'Données'
       bar: 'Axe Y'
     label:
-      _default: 'Paramètres des séries'
-      arc: 'Paramètres des parts'
+      _default: 'Séries'
+      arc: 'Parts'
       bar: 'Axe X'
     color:
-      _default: 'Paramètres des groupes'
+      _default: 'Groupes'
       bar: "Empilement sur l'axe Y"
-    dataLabel: 'Paramètres des étiquettes de données'
+    dataLabel: 'Étiquettes de données'
   value:
     headers:
       field: 'Champ'
@@ -866,11 +902,10 @@ fr:
       field: 'Champ'
       title: "Titre de l'axe"
       legendTitle: "Titre des légendes"
-      legendParams: 'Paramètres de la légende'
+      legendParams: 'Légende'
       showLegend: 'Afficher la légende ?'
   dataLabel:
     headers:
-      show: 'Afficher les étiquettes de données ?'
       format: 'Format des données'
       shouldShow: 'Doit être affiché :'
       preview: 'Prévisualisation :'

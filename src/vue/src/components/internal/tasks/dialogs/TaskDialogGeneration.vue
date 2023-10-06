@@ -12,7 +12,7 @@
       />
 
       <v-card-title>
-        {{ $t('title', { name: task.name }) }}
+        <div class="overflow">{{ $t('title', { name: task.name }) }}</div>
 
         <v-spacer />
 
@@ -443,7 +443,12 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-
+.overflow {
+  max-width: 90%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 </style>
 
 <i18n lang="yaml">

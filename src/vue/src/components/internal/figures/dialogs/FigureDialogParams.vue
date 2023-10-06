@@ -2,7 +2,7 @@
   <v-dialog
     v-if="figureParamsForm"
     :value="value"
-    :persistent="valid !== true"
+    :persistent="valid !== true || isChildOpen"
     width="1000"
     @input="$emit('input', $event)"
   >
@@ -62,17 +62,9 @@
               :id="id"
               :layout-id="layoutId"
               :readonly="readonly"
+              @childOpen="isChildOpen = $event"
               @update:fetchOptions="onFetchOptionUpdate"
             />
-
-            <!-- Advanced -->
-            <CustomSection v-if="!readonly || 'fetchOptions.othersCount > 0'">
-              <ToggleableObjectTree
-                :label="$t('$ezreeport.advanced_parameters').toString()"
-                :value="{}"
-                v-on="{}"
-              />
-            </CustomSection>
           </v-col>
         </v-row>
       </v-card-text>
@@ -113,6 +105,9 @@ export default defineComponent({
       default: false,
     },
   },
+  data: () => ({
+    isChildOpen: false,
+  }),
   setup() {
     const templateStore = useTemplateStore();
 
@@ -156,11 +151,11 @@ export default defineComponent({
       if (!this.figure) {
         return undefined;
       }
-
       const component = figureFormMap[this.figure.type];
       if (component !== undefined) {
         return component;
       }
+
       // eslint-disable-next-line no-underscore-dangle
       return figureFormMap._default;
     },

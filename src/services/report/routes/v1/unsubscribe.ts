@@ -42,7 +42,10 @@ const router: FastifyPluginAsync = async (fastify) => {
       },
       prefixTrailingSlash: 'no-slash',
     },
-    async (request, reply) => reply.redirect(StatusCodes.PERMANENT_REDIRECT, `/v1/unsubscribe/${request.params.unsubId}/`),
+    async (request, reply) => reply.redirect(
+      StatusCodes.PERMANENT_REDIRECT,
+      `../unsubscribe/${request.params.unsubId}/`,
+    ),
   );
 
   /**

@@ -124,8 +124,27 @@
                 </v-tooltip>
               </v-list-item-title>
 
-              <v-list-item-subtitle>
+              <v-list-item-subtitle class="d-flex">
                 <MiniTagsDetail :model-value="template.tags" />
+
+                <v-spacer />
+
+                <v-tooltip top>
+                  <template #activator="{ attrs, on }">
+                    <DateFormatDiv
+                      :value="template.updatedAt"
+                      class="text-caption text--secondary font-italic"
+                      :attrs="attrs"
+                      :on="on"
+                    />
+                  </template>
+
+                  <DateFormatDiv :value="template.createdAt">
+                    <template #default="{ date }">
+                      {{ $t('created', { date }) }}
+                    </template>
+                  </DateFormatDiv>
+                </v-tooltip>
               </v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
@@ -423,7 +442,9 @@ export default defineComponent({
 en:
   refresh-tooltip: 'Refresh template list'
   title: '{title} ({count})|{title} ({filtered}/{count})'
+  created: 'Created: {date}'
 fr:
   refresh-tooltip: 'Rafraîchir la liste des modèles'
   title: '{title} ({count})|{title} ({filtered}/{count})'
+  created: 'Créé le {date}'
 </i18n>

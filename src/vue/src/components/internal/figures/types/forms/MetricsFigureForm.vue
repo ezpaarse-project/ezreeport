@@ -149,6 +149,7 @@ export default defineComponent({
   },
   emits: {
     'update:fetchOptions': (data: Partial<AnyFetchOption>) => !!data,
+    childOpen: (isOpen: boolean) => isOpen !== undefined,
   },
   setup() {
     const templateStore = useTemplateStore();
@@ -256,7 +257,7 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    'figure.fetchOptions.fetchCount': function (aggName) {
+    'figure.fetchOptions.fetchCount': function (aggName: string | undefined) {
       // Create a label with fetch count
       if (aggName) {
         this.createLabel({
@@ -274,6 +275,9 @@ export default defineComponent({
       if (label) {
         this.onLabelDelete(label);
       }
+    },
+    labelPopoverShown(value: boolean) {
+      this.$emit('childOpen', value);
     },
   },
   methods: {

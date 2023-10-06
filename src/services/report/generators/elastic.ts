@@ -287,23 +287,25 @@ const fetchWithElastic = async (
       if ('aggs' in r && r.aggs) {
         // If aggs are already provided just take them
         aggsOptions = r.aggs;
-      } else if ('buckets' in r && r.buckets && 'metric' in r && r.metric) {
+      } else if ('buckets' in r && r.buckets) {
         // If aggs need to be merged from buckets and metric
-        const m = r.metric;
         const recursiveBucket = [...r.buckets]
           .reverse()
           .reduce(
             (prev, { aggregations, aggs, ...v }) => {
               const sub = aggregations || aggs || [];
-              if (!prev) {
-                return {
-                  ...v,
-                  aggs: [...sub, m],
-                };
+
+              if (r.metric) {
+                sub.push(r.metric);
               }
+
+              if (prev) {
+                sub.push(prev);
+              }
+
               return {
                 ...v,
-                aggs: [...sub, m, prev],
+                aggs: sub,
               };
             },
             undefined as CustomAggregationType | undefined,
@@ -311,8 +313,6 @@ const fetchWithElastic = async (
         if (recursiveBucket) {
           aggsOptions = [recursiveBucket];
         }
-      } else if ('buckets' in r && r.buckets) {
-        aggsOptions = r.buckets;
       } else if ('metric' in r && r.metric) {
         aggsOptions = [r.metric];
       }
