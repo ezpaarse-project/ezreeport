@@ -1,4 +1,5 @@
 import { setTimeout } from 'node:timers/promises';
+
 import { Client, type estypes as ElasticTypes, type RequestParams } from '@elastic/elasticsearch';
 import config from './config';
 import { appLogger as logger } from './logger';
@@ -36,8 +37,6 @@ const client = new Client({
     rejectUnauthorized: process.env.NODE_ENV === 'production' ?? false,
   },
 });
-
-export const READONLY_SUFFIX = '_read_only' as const;
 
 /**
  * Get elastic client once it's ready
@@ -83,31 +82,6 @@ export const elasticPing = async () => {
   const { body, statusCode } = await elastic.ping();
 
   return body && (statusCode || (body ? 200 : 500));
-};
-
-/**
- * Shorthand to search with elastic
- *
- * @param params The search params
- * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
- *
- * @returns The result of the search
- */
-export const elasticSearch = async <ResponseType extends Record<string, unknown>>(
-  params: ElasticTypes.SearchRequest,
-  runAs?: string,
-) => {
-  const elastic = await getElasticClient();
-
-  const headers: Record<string, unknown> = {};
-  if (runAs) {
-    headers['es-security-runas-user'] = runAs;
-  }
-
-  return elastic.search<ElasticTypes.SearchResponse<ResponseType>>(
-    params as Record<string, unknown>,
-    { headers },
-  );
 };
 
 /**
@@ -162,50 +136,3 @@ export const elasticCount = async (
     { headers },
   );
 };
-
-/**
- * Shorthand to scroll with elastic
- *
- * @param params The search params
- * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
- *
- * @returns The result of the scroll
- */
-export async function* elasticScroll<ResponseType extends Record<string, unknown>>(
-  params: ElasticTypes.SearchRequest,
-  runAs?: string,
-) {
-  const elastic = await getElasticClient();
-
-  const headers: Record<string, unknown> = {};
-  if (runAs) {
-    headers['es-security-runas-user'] = runAs;
-  }
-
-  let response = await elastic.search<ElasticTypes.SearchResponse<ResponseType>>(
-    params as Record<string, unknown>,
-    { headers },
-  );
-
-  while (true) {
-    const { body: { _scroll_id: scrollId, hits: { hits } } } = response;
-
-    // eslint-disable-next-line no-restricted-syntax
-    for (const hit of hits) {
-      yield hit;
-    }
-
-    if (hits.length === 0 || !scrollId) {
-      break;
-    }
-
-    // eslint-disable-next-line no-await-in-loop
-    response = await client.scroll(
-      {
-        scroll_id: scrollId,
-        scroll: params.scroll?.toString(),
-      },
-      { headers },
-    );
-  }
-}
