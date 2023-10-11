@@ -293,6 +293,8 @@ const renderPdfWithVega = async (
   // Check options even if type is explicit, because it can be a merge between multiple sources
   assertIsSchema(VegaRenderOptions, options, 'params');
 
+  const colorMap = new Map<string, string>();
+
   try {
     const doc = await initDoc({ ...options.doc, path: `${options.doc.path}.pdf` });
 
@@ -369,7 +371,7 @@ const renderPdfWithVega = async (
                 // eslint-disable-next-line no-await-in-loop
                 await addTableToPDF(
                   doc,
-                  figureData as any[],
+                  figureData,
                   merge({}, figure.params, { margin }),
                 );
                 break;
@@ -429,7 +431,7 @@ const renderPdfWithVega = async (
 
                   const text = parseTitle(
                     vegaTitle,
-                    figureData as any[],
+                    figureData,
                     figure.params.dataKey,
                   );
 
@@ -455,13 +457,14 @@ const renderPdfWithVega = async (
                 const view = createVegaView(
                   createVegaLSpec(
                     figure.type as Mark,
-                    figureData as any[],
+                    figureData,
                     {
-                      ...figParams,
+                      ...(figParams as { label: any, value: any }),
+                      colorMap,
                       recurrence: options.recurrence,
                       width: slot.width,
                       height: slot.height,
-                    } as any,
+                    },
                   ),
                 );
 
