@@ -58,7 +58,7 @@
       </v-card-title>
 
       <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
-        <v-tab v-for="tab in tabs" :key="tab.name">
+        <v-tab v-for="tab in tabs" :key="tab.name" v-on="tab.on">
           {{ $t(`$ezreeport.tasks.tabs.${tab.name}`) }}
           <v-icon v-if="tab.fullScreen" small class="ml-1">mdi-arrow-expand</v-icon>
 
@@ -159,6 +159,7 @@
               v-if="task"
               :last-extended="task.lastExtended"
               :is-modified="isModified"
+              :namespace="task.namespace.id"
               @update:link="onLinkUpdate"
             />
           </v-tab-item>
@@ -271,13 +272,17 @@ export default defineComponent({
     /**
      * Tabs data
      */
-    tabs(): (Tab & { valid: true | string })[] {
-      const data: (Tab & { valid?: true | string })[] = [...tabs];
+    tabs() {
+      const data: (Tab & { valid?: true | string, on?: any })[] = [...tabs];
 
       // Add validation data
       const { 0: detailTab, 2: templateTab } = data;
       data[0] = { ...detailTab, valid: this.valid || this.$t('$ezreeport.tasks.errors._default').toString() };
-      data[2] = { ...templateTab, valid: this.templateValidation };
+      data[2] = {
+        ...templateTab,
+        valid: this.templateValidation,
+        on: { click: this.onTemplateOpen },
+      };
 
       return data.map((tab) => ({ ...tab, valid: tab.valid ?? true }));
     },
@@ -479,6 +484,16 @@ export default defineComponent({
     },
     onLinkUpdate(willBeLinked: boolean) {
       (this.$refs.taskDialogLink as TaskDialogLink)?.open(willBeLinked);
+    },
+    async onTemplateOpen() {
+      if (!this.task) {
+        return;
+      }
+
+      await Promise.all([
+        this.templateStore.refreshAvailableIndices(this.task.namespace.id),
+        this.templateStore.fetchCurrentMapping(this.task.namespace.id),
+      ]);
     },
   },
 });

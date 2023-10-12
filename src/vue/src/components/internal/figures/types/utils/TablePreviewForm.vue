@@ -8,6 +8,7 @@
       :total="totalMap[currentColumn.dataKey]"
       :colStyle="colStyles[currentColumn.dataKey]"
       :bucket="columnBucketMap.get(currentColumn.dataKey)?.bucket"
+      :mapping="mapping"
       :readonly="readonly"
       @loading="loadingMap[currentColumn.dataKey] = $event"
       @update:column="onCurrentColumnUpdated"
@@ -160,6 +161,10 @@ export default defineComponent({
     metric: {
       type: Object as PropType<ElasticAgg | undefined>,
       default: undefined,
+    },
+    mapping: {
+      type: Array as PropType<{ key: string, type: string }[]>,
+      default: () => [],
     },
     readonly: {
       type: Boolean,

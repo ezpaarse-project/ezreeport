@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { omit } from 'lodash';
-import { type tasks, templates } from '@ezpaarse-project/ezreeport-sdk-js';
+import { type tasks, templates, elastic } from '@ezpaarse-project/ezreeport-sdk-js';
 import type VueI18n from 'vue-i18n';
 
 import {
@@ -102,7 +102,7 @@ export const transformFetchOptions = (fetchOptions: AnyFetchOption | undefined):
   if ('aggs' in fetchOptions && Array.isArray(fetchOptions.aggs)) {
     opts.aggs = fetchOptions.aggs;
   }
-  // if ('aggregattions' in fetchOptions && Array.isArray(fetchOptions.aggregations)) {
+  // if ('aggregations' in fetchOptions && Array.isArray(fetchOptions.aggregations)) {
   //   opts.aggs = fetchOptions.aggregations;
   // }
 
@@ -213,6 +213,25 @@ const refreshAvailableTemplates = async (): Promise<{
   }
 };
 
+/**
+ * Fetch all available indices
+ */
+const refreshAvailableIndices = async (namespace?: string): Promise<{
+  error?: { i18n?: string, message?: string }, value?: { content: string[] }
+}> => {
+  try {
+    const { content } = await elastic.getAllIndices(namespace);
+
+    if (!content) {
+      return { error: { i18n: '$ezreeport.errors.fetch' } };
+    }
+
+    return { value: { content } };
+  } catch (error) {
+    return { error: { message: (error as Error).message } };
+  }
+};
+
 // Pinia store
 const useTemplatePinia = defineStore('ezr_template', {
   state: () => ({
@@ -243,6 +262,13 @@ const useTemplatePinia = defineStore('ezr_template', {
      * Current internal error
      */
     error: {} as { i18n?: string, message?: string },
+    /**
+     * Indices data
+     */
+    indices: {
+      available: [] as string[],
+      mapping: [] as { key: string, type: string }[],
+    },
   }),
   getters: {
     /**
@@ -606,6 +632,31 @@ const useTemplatePinia = defineStore('ezr_template', {
       if (value) {
         this.available = value.content;
         this.defaultTemplateId = value.meta.default;
+      }
+    },
+
+    async refreshAvailableIndices(namespace?: string) {
+      const { error, value } = await refreshAvailableIndices(namespace);
+      if (error) {
+        this.error = error;
+      }
+
+      if (value) {
+        this.indices.available = value.content;
+      }
+    },
+
+    async fetchCurrentMapping(namespace?: string, i?:string) {
+      const index = i || this.current?.fetchOptions?.index;
+      if (!index) {
+        return;
+      }
+
+      try {
+        const { content } = await elastic.getIndexMapping(index, namespace);
+        this.indices.mapping = Object.entries(content).map(([key, type]) => ({ key, type }));
+      } catch (error) {
+        this.indices.mapping = [];
       }
     },
   },

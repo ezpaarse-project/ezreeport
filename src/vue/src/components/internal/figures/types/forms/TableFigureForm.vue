@@ -12,6 +12,7 @@
       <v-form ref="form" v-model="valid">
         <ElasticAggElementForm
           :element="buckets.metric ?? defaultMetric"
+          :mapping="templateStore.indices.mapping"
           :readonly="readonly"
           :agg-filter="aggFilter"
           :style="{
@@ -49,6 +50,7 @@
             :col-styles="figureParams.columnStyles"
             :buckets="buckets.value"
             :metric="buckets.metric"
+            :mapping="templateStore.indices.mapping"
             :readonly="readonly"
             ref="columnsTable"
             @input="onParamUpdate({ columns: $event })"

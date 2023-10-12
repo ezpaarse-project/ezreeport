@@ -21,6 +21,7 @@
       <ElasticFilterBuilder
         ref="filterBuilder"
         :value="fetchOptions.filters ?? {}"
+        :mapping="templateStore.indices.mapping"
         :readonly="readonly"
         @input="$emit('update:fetchOptions', { filters: $event })"
       />

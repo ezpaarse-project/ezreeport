@@ -15,6 +15,7 @@
           <ElasticAggElementForm
             v-if="bucket"
             :element="bucket"
+            :mapping="mapping"
             :readonly="readonly"
             :agg-filter="aggFilter"
             :style="{
@@ -211,6 +212,10 @@ export default defineComponent({
     bucket: {
       type: Object as PropType<ElasticAgg | undefined>,
       default: undefined,
+    },
+    mapping: {
+      type: Array as PropType<{ key: string, type: string }[]>,
+      default: () => [],
     },
     /**
      * Is the dialog readonly

@@ -133,8 +133,10 @@ export default defineComponent({
       }
     },
   },
-  mounted() {
+  async mounted() {
     this.init();
+    this.templateStore.indices.mapping = [];
+    await this.templateStore.refreshAvailableIndices();
   },
   methods: {
     init() {

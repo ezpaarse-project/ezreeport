@@ -6,6 +6,7 @@
       :value="templateStore.error.i18n || templateStore.error.message"
       :timeout="5000"
       color="red accent-2"
+      absolute
       @input="templateStore.error = {}"
     >
       <template v-if="templateStore.error.i18n">
