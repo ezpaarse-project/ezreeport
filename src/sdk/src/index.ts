@@ -10,6 +10,7 @@ export * as reports from './modules/reports.public';
 export * as setup from './modules/setup.public';
 export * as tasks from './modules/tasks.public';
 export * as templates from './modules/templates.public';
+export * as elastic from './modules/elastic.public';
 export { version } from '../package.json';
 
 export type EzReeportSDK = {
@@ -25,5 +26,6 @@ export type EzReeportSDK = {
   tasks: typeof import('./modules/tasks.public')
   tasksActivity: typeof import('./modules/tasksActivity.public')
   templates: typeof import('./modules/templates.public'),
+  elastic: typeof import('./modules/elastic.public'),
   version: string,
 };
