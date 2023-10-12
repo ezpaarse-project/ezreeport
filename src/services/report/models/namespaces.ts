@@ -9,7 +9,7 @@ import type {
   Membership,
   Task,
 } from '~/lib/prisma';
-import { Type, type Static } from '~/lib/typebox';
+import { Type, type Static, Value } from '~/lib/typebox';
 
 import {
   MembershipBody,
@@ -59,7 +59,7 @@ export const getCountNamespaces = async (): Promise<number> => prisma.namespace.
  * @returns Namespace entries list
  */
 // TODO[feat]: Custom sort
-export const getAllNamespaces = async (
+export const getAllNamespaces = (
   opts?: {
     count?: number,
     previous?: Namespace['id']
@@ -109,6 +109,20 @@ export const getNamespaceById = async (id: Namespace['id']) => prisma.namespace.
     tasks: true,
   },
 }) as Promise<FullNamespace | null>;
+
+/**
+ * Get reporting user from given namespace id
+ *
+ * @param namespaceId The id of the namespace
+ *
+ * @returns The Elastic username
+ */
+export const getReportingUserFromNamespace = async (namespaceId: string) => {
+  const namespace = await getNamespaceById(namespaceId);
+  const casted = Value.Cast(NamespaceBody, namespace);
+
+  return casted.fetchLogin.elastic.username;
+};
 
 /**
  * Create namespace in DB
