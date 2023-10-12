@@ -52,6 +52,23 @@ export const addTableToPDF = async (
     tableData.length = maxLength;
   }
 
+  // Sort data by last column dataKey
+  const lastCol = params.columns?.at(-1);
+  if (typeof lastCol === 'object' && lastCol?.dataKey) {
+    const dK = lastCol.dataKey;
+    tableData.sort((a, b) => {
+      const aValue = get(a, dK);
+      const bValue = get(b, dK);
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return bValue.localeCompare(aValue);
+      }
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return bValue - aValue;
+      }
+      return 0;
+    });
+  }
+
   // Calc margin
   const margin = merge(
     {
