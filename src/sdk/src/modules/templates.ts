@@ -88,6 +88,7 @@ export interface RawFullTemplate extends RawTemplate {
     fetchOptions?: {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       filters?: Record<string, any>,
+      index?: string,
       dateField: string,
     },
     layouts: Layout[]
