@@ -547,8 +547,6 @@ export default defineComponent({
      * @param data The new data
      */
     onTypeFieldUpdate(data: Record<string, any>) {
-      console.log(data, this.type.value);
-
       if (!this.type.value) {
         return;
       }
