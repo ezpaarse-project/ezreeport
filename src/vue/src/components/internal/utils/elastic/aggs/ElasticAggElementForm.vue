@@ -66,7 +66,7 @@
                 :readonly="readonly"
                 :rules="rules.field"
                 :return-object="false"
-                item-text="key²"
+                item-text="key"
                 item-value="key"
                 hide-details="auto"
                 @input="onTypeFieldUpdate({ field: $event })"
@@ -517,7 +517,7 @@ export default defineComponent({
     onElementUpdate(data: Partial<ElasticAgg>) {
       this.innerElement = { ...this.innerElement, ...data };
 
-      if (this.readonly || !this.valid) {
+      if (this.readonly) {
         return;
       }
 
@@ -547,6 +547,8 @@ export default defineComponent({
      * @param data The new data
      */
     onTypeFieldUpdate(data: Record<string, any>) {
+      console.log(data, this.type.value);
+
       if (!this.type.value) {
         return;
       }
