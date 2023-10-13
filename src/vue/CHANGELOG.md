@@ -1,3 +1,18 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.27](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.26...@ezpaarse-project/ezreeport-vue@1.0.0-beta.27) (2023-10-13)
+
+
+### Features
+
+* **vue:** added autocompletion for template edition ([fb2f3fc](https://github.com/ezpaarse-project/ezreeport/commit/fb2f3fcc286402be259aea79ebac049d6149a58f))
+
+
+
+
+
+### Dependencies
+
+* **@ezpaarse-project/ezreeport-sdk-js:** upgraded to 1.0.0-beta.9
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.26](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.25...@ezpaarse-project/ezreeport-vue@1.0.0-beta.26) (2023-10-06)
 
 
