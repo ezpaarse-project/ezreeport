@@ -1,3 +1,23 @@
+# ezreeport-report [1.0.0-beta.25](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.24...ezreeport-report@1.0.0-beta.25) (2023-10-13)
+
+
+### Bug Fixes
+
+* **report:** sorting tables by last column if possible ([582f860](https://github.com/ezpaarse-project/ezreeport/commit/582f860727b25f96985234168b65990540d5fc3f))
+
+
+### Features
+
+* **report:** added list of index and mapping ([276f903](https://github.com/ezpaarse-project/ezreeport/commit/276f903f225abaa7457de2b491f32970656a0172))
+* **report:** added possible index in template ([ca83151](https://github.com/ezpaarse-project/ezreeport/commit/ca831510aef913c6e55a5d992ea4cdf4a2d0feeb))
+* **report:** colors for each label is now kept in memory ([306c8d8](https://github.com/ezpaarse-project/ezreeport/commit/306c8d81ec35cca16e6a9ae30968464488e3de86))
+* **report:** updated page layout ([e31107d](https://github.com/ezpaarse-project/ezreeport/commit/e31107d3455d9d34e0fc4bcb9c31076a92cf3284))
+
+
+### Performance Improvements
+
+* **report:** no more double array duplication for mergin buckets ([be1c56b](https://github.com/ezpaarse-project/ezreeport/commit/be1c56b08feb52e421523204b5b76fe5f657775b))
+
 # ezreeport-report [1.0.0-beta.24](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.23...ezreeport-report@1.0.0-beta.24) (2023-10-06)
 
 
