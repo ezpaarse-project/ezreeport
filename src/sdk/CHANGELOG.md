@@ -1,3 +1,11 @@
+# @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.9](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.8...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.9) (2023-10-13)
+
+
+### Features
+
+* **sdk:** added list of index and mapping ([de0b7b8](https://github.com/ezpaarse-project/ezreeport/commit/de0b7b851b7b69e2095211c5ae8c8606b49c2bc4))
+* **sdk:** added possible index in template ([efb5b7b](https://github.com/ezpaarse-project/ezreeport/commit/efb5b7b494f233527c977ba7491909d99166f8d5))
+
 # @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.8](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.7...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.8) (2023-10-05)
 
 
