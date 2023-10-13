@@ -1,3 +1,10 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.28](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.27...@ezpaarse-project/ezreeport-vue@1.0.0-beta.28) (2023-10-13)
+
+
+### Bug Fixes
+
+* **vue:** autocompletion in aggregations ([25e9449](https://github.com/ezpaarse-project/ezreeport/commit/25e9449003ed0b8847acd7db1988952ec4ba239c))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.27](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.26...@ezpaarse-project/ezreeport-vue@1.0.0-beta.27) (2023-10-13)
 
 

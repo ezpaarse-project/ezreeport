@@ -11,7 +11,7 @@
   },
   "license": "CeCILL",
   "author": "oxypomme",
-  "version": "1.0.0-beta.27",
+  "version": "1.0.0-beta.28",
   "type": "module",
   "exports": {
     ".": {
