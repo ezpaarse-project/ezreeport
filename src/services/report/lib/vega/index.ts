@@ -35,6 +35,8 @@ const { outDir } = config.report;
 
 registerFont('lib/vega/fonts/Roboto-light.ttf', { family: 'Roboto', weight: 'normal' });
 registerFont('lib/vega/fonts/Roboto-medium.ttf', { family: 'Roboto', weight: 'bold' });
+// Default colors of vega
+const colorScheme = scheme('tableau10') as string[];
 // Default colors of labels for default colors of Vega (https://vega.github.io/vega/docs/schemes/)
 scheme('tableau10-labels', [
   'white', // white on blue
@@ -71,6 +73,7 @@ type VegaParams = {
   height: number;
   debugExport?: boolean,
   recurrence: Recurrence,
+  colorMap: Map<string, string>,
   // Figure specific
   dataKey?: string,
   dataLayer?: CustomLayer;
@@ -189,12 +192,23 @@ export const createVegaLSpec = (
   );
   layers.push(dataLayer);
 
+  // Parsing labels to get correct colors
+  const colorsEntries = data.map((d, i): [string, string] => {
+    const key = get(d, params.label.field);
+    let color = params.colorMap.get(key);
+    if (!color) {
+      color = colorScheme[i % colorScheme.length];
+      params.colorMap.set(key, color);
+    }
+    return [key, color];
+  });
+
   // Getting default encoding
   let encoding: Encoding = {
     color: {
       scale: {
-        // Default colors of Vega (https://vega.github.io/vega/docs/schemes/)
-        scheme: 'tableau10',
+        domain: colorsEntries.map(([key]) => key),
+        range: colorsEntries.map(([, color]) => color),
       },
     },
   };

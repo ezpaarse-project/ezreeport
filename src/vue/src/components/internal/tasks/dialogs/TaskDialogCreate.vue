@@ -126,6 +126,7 @@
           <v-tab-item>
             <TemplateForm
               v-if="task"
+              :namespace="task.namespace"
               no-link
             />
           </v-tab-item>
@@ -219,13 +220,17 @@ export default defineComponent({
     /**
      * Tabs data
      */
-    tabs(): (Tab & { valid: true | string })[] {
-      const data: (Tab & { valid?: true | string })[] = [...tabs];
+    tabs() {
+      const data: (Tab & { valid?: true | string, on?: any })[] = [...tabs];
 
       // Add validation data
       const { 0: detailTab, 2: templateTab } = data;
       data[0] = { ...detailTab, valid: this.valid || this.$t('$ezreeport.tasks.errors._default').toString() };
-      data[2] = { ...templateTab, valid: this.templateValidation };
+      data[2] = {
+        ...templateTab,
+        valid: this.templateValidation,
+        on: { click: this.onTemplateOpen },
+      };
 
       // Remove unnecessary tabs
       data.splice(1, 1); // activityTab
@@ -286,8 +291,10 @@ export default defineComponent({
       }
     },
   },
-  mounted() {
+  async mounted() {
     this.init();
+    this.templateStore.indices.mapping = [];
+    await this.templateStore.refreshAvailableIndices();
   },
   methods: {
     /**
@@ -393,6 +400,14 @@ export default defineComponent({
         this.error = (error as Error).message;
       }
       this.loading = false;
+    },
+
+    onTemplateOpen() {
+      if (!this.task) {
+        return;
+      }
+
+      this.templateStore.refreshAvailableIndices(this.task.namespace);
     },
   },
 });

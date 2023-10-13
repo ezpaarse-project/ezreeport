@@ -17,6 +17,7 @@
         >
           <ElasticAggElementForm
             :element="buckets.metric || defaultMetric"
+            :mapping="templateStore.indices.mapping"
             :readonly="readonly"
             :agg-filter="metricFilter"
             @update:element="(i, el) => onMetricUpdate(el)"
@@ -48,6 +49,7 @@
           <ElasticAggElementForm
             :element="buckets.value[0] ?? {}"
             :element-index="0"
+            :mapping="templateStore.indices.mapping"
             :readonly="readonly"
             :agg-filter="bucketFilter"
             :style="{
@@ -142,6 +144,7 @@
           <ElasticAggElementForm
             :element="buckets.value[1] ?? {}"
             :element-index="1"
+            :mapping="templateStore.indices.mapping"
             :readonly="readonly"
             :agg-filter="bucketFilter"
             :style="{

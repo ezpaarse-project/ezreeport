@@ -81,24 +81,31 @@
           </div>
 
           <v-row>
-            <v-col v-if="taskTemplate">
-              <v-text-field
-                :value="templateStore.currentFetchOptions?.index"
-                :label="$t('$ezreeport.fetchOptions.index').toString()"
+            <v-col>
+              <v-combobox
+                v-model="currentIndex"
+                :items="templateStore.indices.available"
+                :label="$t(
+                  taskTemplate ? '$ezreeport.fetchOptions.index' : 'indexTemplate',
+                ).toString()"
                 :rules="rules.index"
+                :filter="indexFilter"
                 dense
                 class="pt-4"
-                @input="onFetchOptionUpdate({ index: $event || undefined })"
               />
             </v-col>
 
             <v-col>
-              <v-text-field
+              <v-combobox
                 :value="templateStore.currentFetchOptions?.dateField"
+                :items="mappingDateItems"
                 :label="$t('$ezreeport.fetchOptions.dateField').toString()"
                 :rules="rules.dateField"
                 :placeholder="templateStore.extended?.fetchOptions?.dateField"
                 :persistent-placeholder="!!taskTemplate"
+                :return-object="false"
+                item-value="key"
+                item-text="key"
                 dense
                 class="pt-4"
                 @input="onFetchOptionUpdate({ dateField: $event || undefined })"
@@ -125,6 +132,7 @@
             <ElasticFilterBuilder
               ref="filterBuilder"
               :value="templateStore.currentFetchOptions?.filters ?? {}"
+              :mapping="templateStore.indices.mapping"
               @input="onFilterUpdate"
             />
           </CustomSection>
@@ -256,6 +264,10 @@ export default defineComponent({
       type: Object as PropType<tasks.FullTask['lastExtended']>,
       default: () => undefined,
     },
+    namespace: {
+      type: String as PropType<string | undefined>,
+      default: undefined,
+    },
     isModified: {
       type: Boolean,
       default: false,
@@ -280,6 +292,7 @@ export default defineComponent({
     templateEditorCollapsed: true,
 
     currentTemplateBackup: undefined as AnyCustomTemplate | undefined,
+    innerIndex: '',
 
     selectedLayoutId: '',
 
@@ -457,6 +470,19 @@ export default defineComponent({
     rawTemplate() {
       return this.templateStore.GET_CURRENT();
     },
+    currentIndex: {
+      get(): string {
+        return this.innerIndex || this.templateStore.current?.fetchOptions?.index || '';
+      },
+      async set(value: string) {
+        this.innerIndex = value;
+        this.onFetchOptionUpdate({ index: value || undefined });
+        await this.onIndexChange();
+      },
+    },
+    mappingDateItems() {
+      return this.templateStore.indices.mapping.filter(({ type }) => type === 'date');
+    },
   },
   watch: {
     // eslint-disable-next-line func-names
@@ -511,12 +537,15 @@ export default defineComponent({
 
       this.template = {
         ...this.template,
-        ...value,
+        ...value as any,
       };
       this.templateStore.validateCurrent();
     },
     onFetchOptionUpdate(value: Record<string, any>) {
-      const picked = pick(this.templateStore.current?.fetchOptions ?? {}, supportedFetchOptions);
+      const picked: Record<string, any> = pick(
+        this.templateStore.current?.fetchOptions ?? {},
+        supportedFetchOptions,
+      );
       // Remove undefined properties
       // eslint-disable-next-line no-restricted-syntax
       for (const [key, val] of Object.entries(value)) {
@@ -526,7 +555,7 @@ export default defineComponent({
       }
 
       this.onTemplateUpdate({
-        fetchOptions: merge({}, picked, value),
+        fetchOptions: merge({}, picked, value) as any,
       });
     },
     onFilterCreated() {
@@ -538,8 +567,18 @@ export default defineComponent({
         fetchOptions: {
           ...(this.template?.fetchOptions ?? {}),
           filters,
-        },
+        } as any,
       });
+    },
+    async onIndexChange() {
+      await this.templateStore.fetchCurrentMapping(this.namespace, this.innerIndex);
+    },
+    indexFilter(item: string, queryText: string) {
+      const w = queryText.replace(/[.+^${}()|[\]\\]/g, '\\$&'); // regexp escape
+      const re = new RegExp(
+        `^${w.replace(/\*/g, '.*').replace(/\?/g, '.')}`,
+      );
+      return re.test(item);
     },
   },
 });
@@ -552,6 +591,7 @@ export default defineComponent({
 en:
   deleted_base: '(deleted)'
   preview_title: 'Preview of {name}'
+  indexTemplate: 'Elastic index (used to enable autocomplete)'
   tooltips:
     preview: 'See template'
     link: 'The report is linked to the template, click to unlink'
@@ -562,6 +602,7 @@ en:
 fr:
   deleted_base: '(supprimé)'
   preview_title: 'Prévisualisation de {name}'
+  indexTemplate: "Index Elastic (utilisé pour activer l'autocomplétion)"
   tooltips:
     preview: 'Voir le modèle'
     link: 'Le rapport est lié au modèle, cliquer pour le délier'

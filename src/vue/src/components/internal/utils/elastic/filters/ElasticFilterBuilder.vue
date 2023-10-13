@@ -6,6 +6,7 @@
       :coords="elementPopoverCoords"
       :element="selectedFilterElement"
       :used-raws="usedRaws"
+      :mapping=mapping
       :readonly="readonly"
       @update:element="onElementEdited"
     />
@@ -41,7 +42,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { type PropType, defineComponent } from 'vue';
 import type { FilterElement } from './ElasticFilterElementPopover.vue';
 
 interface FilterChip {
@@ -59,6 +60,10 @@ export default defineComponent({
     value: {
       type: Object,
       required: true,
+    },
+    mapping: {
+      type: Array as PropType<{ key: string, type: string }[]>,
+      default: () => [],
     },
     readonly: {
       type: Boolean,

@@ -241,8 +241,12 @@ export default defineComponent({
       }
     },
   },
-  mounted() {
-    this.fetch();
+  async mounted() {
+    await this.fetch();
+    await Promise.all([
+      this.templateStore.refreshAvailableIndices(),
+      this.templateStore.fetchCurrentMapping(),
+    ]);
   },
   methods: {
     hashData: (data: object) => {

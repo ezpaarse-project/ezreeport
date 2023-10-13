@@ -15,6 +15,7 @@
           <ElasticAggElementForm
             v-if="linkedAgg"
             :element="linkedAgg"
+            :mapping="mapping"
             :readonly="readonly"
             :agg-filter="aggFilter"
             :style="{
@@ -157,6 +158,10 @@ export default defineComponent({
     linkedAgg: {
       type: Object as PropType<ElasticAgg | undefined>,
       default: undefined,
+    },
+    mapping: {
+      type: Array as PropType<{ key: string, type: string }[]>,
+      default: () => [],
     },
     /**
      * Is the popover readonly

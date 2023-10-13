@@ -59,14 +59,28 @@
 
             <!-- Field -->
             <template v-if="!/^__/i.test(type.value)">
-              <v-text-field
+              <v-combobox
                 :value="type.data?.field"
+                :items="filteredMapping"
                 :label="$t('headers.field')"
                 :readonly="readonly"
                 :rules="rules.field"
+                :return-object="false"
+                item-text="key²"
+                item-value="key"
                 hide-details="auto"
                 @input="onTypeFieldUpdate({ field: $event })"
-              />
+              >
+                <template #item="{ item, attrs, on }">
+                  <v-list-item v-bind="attrs" v-on="on">
+                    <v-list-item-content>
+                      <v-list-item-title>{{ item.key }}</v-list-item-title>
+
+                      <v-list-item-subtitle>{{ item.type }}</v-list-item-subtitle>
+                    </v-list-item-content>
+                  </v-list-item>
+                </template>
+              </v-combobox>
             </template>
 
             <v-divider v-if="typeDefinition?.returnsArray || typeDefinition?.subAggregations" class="my-4" />
@@ -188,6 +202,10 @@ export default defineComponent({
     aggFilter: {
       type: Function as PropType<(name: string, def: AggDefinition) => boolean>,
       default: () => true,
+    },
+    mapping: {
+      type: Array as PropType<{ key: string, type: string }[]>,
+      default: () => [],
     },
   },
   emits: {
@@ -446,6 +464,16 @@ export default defineComponent({
      */
     typeDefinition(): AggDefinition | undefined {
       return getTypeDefinitionFromAggType(this.type.value);
+    },
+    filteredMapping() {
+      switch (this.type.value) {
+        case 'auto_date_histogram':
+        case 'date_histogram':
+          return this.mapping.filter(({ type }) => type === 'date');
+
+        default:
+          return this.mapping;
+      }
     },
   },
   watch: {

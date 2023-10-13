@@ -14,6 +14,7 @@
         :element="currentLabel"
         :linked-agg="aggs.get(currentLabel.dataKey)?.agg"
         :coords="labelPopoverCoords"
+        :mapping="templateStore.indices.mapping"
         :readonly="readonly"
         :currentKeyFields="currentFigureKeyFields"
         @input="currentLabel = undefined"

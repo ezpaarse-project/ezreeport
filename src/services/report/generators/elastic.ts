@@ -352,7 +352,6 @@ const fetchWithElastic = async (
   };
 
   const results: Prisma.JsonObject[] = [];
-  // const { body } = await elasticSearch(opts, options.auth.username);
   const { body: { responses } } = await elasticMSearch(
     {
       ...opts,

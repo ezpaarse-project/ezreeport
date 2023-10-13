@@ -26,11 +26,15 @@
         <v-form v-model="valid">
           <v-row>
             <v-col>
-              <v-text-field
+              <v-combobox
                 v-model="innerKey"
                 :label="$t('headers.key')"
+                :items="mapping"
                 :readonly="readonly"
                 :rules="rules.key"
+                :return-object="false"
+                item-value="key"
+                item-text="key"
                 hide-details="auto"
                 @blur="updateKey"
               />
@@ -118,6 +122,10 @@ export default defineComponent({
     },
     usedRaws: {
       type: Array as PropType<string[]>,
+      default: () => [],
+    },
+    mapping: {
+      type: Array as PropType<{ key: string, type: string }[]>,
       default: () => [],
     },
     readonly: {

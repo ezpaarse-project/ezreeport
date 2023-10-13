@@ -19,6 +19,10 @@ export const Template = Type.Object({
       ),
 
       dateField: Type.String({ minLength: 1 }),
+
+      index: Type.Optional(
+        Type.String({ minLength: 1 }),
+      ),
     }),
   ),
 

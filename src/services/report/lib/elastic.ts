@@ -1,5 +1,8 @@
 import { setTimeout } from 'node:timers/promises';
+
 import { Client, type estypes as ElasticTypes, type RequestParams } from '@elastic/elasticsearch';
+import { intersection } from 'lodash';
+
 import config from './config';
 import { appLogger as logger } from './logger';
 
@@ -36,8 +39,6 @@ const client = new Client({
     rejectUnauthorized: process.env.NODE_ENV === 'production' ?? false,
   },
 });
-
-export const READONLY_SUFFIX = '_read_only' as const;
 
 /**
  * Get elastic client once it's ready
@@ -83,31 +84,6 @@ export const elasticPing = async () => {
   const { body, statusCode } = await elastic.ping();
 
   return body && (statusCode || (body ? 200 : 500));
-};
-
-/**
- * Shorthand to search with elastic
- *
- * @param params The search params
- * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
- *
- * @returns The result of the search
- */
-export const elasticSearch = async <ResponseType extends Record<string, unknown>>(
-  params: ElasticTypes.SearchRequest,
-  runAs?: string,
-) => {
-  const elastic = await getElasticClient();
-
-  const headers: Record<string, unknown> = {};
-  if (runAs) {
-    headers['es-security-runas-user'] = runAs;
-  }
-
-  return elastic.search<ElasticTypes.SearchResponse<ResponseType>>(
-    params as Record<string, unknown>,
-    { headers },
-  );
 };
 
 /**
@@ -164,17 +140,13 @@ export const elasticCount = async (
 };
 
 /**
- * Shorthand to scroll with elastic
+ * Shorthand to list indices with elastic
  *
- * @param params The search params
  * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
  *
- * @returns The result of the scroll
+ * @returns The indices names
  */
-export async function* elasticScroll<ResponseType extends Record<string, unknown>>(
-  params: ElasticTypes.SearchRequest,
-  runAs?: string,
-) {
+export const elasticListIndices = async (runAs?: string) => {
   const elastic = await getElasticClient();
 
   const headers: Record<string, unknown> = {};
@@ -182,30 +154,77 @@ export async function* elasticScroll<ResponseType extends Record<string, unknown
     headers['es-security-runas-user'] = runAs;
   }
 
-  let response = await elastic.search<ElasticTypes.SearchResponse<ResponseType>>(
-    params as Record<string, unknown>,
+  const { body } = await elastic.indices.resolveIndex<ElasticTypes.IndicesResolveIndexResponse>(
+    { name: '*' },
     { headers },
   );
 
-  while (true) {
-    const { body: { _scroll_id: scrollId, hits: { hits } } } = response;
+  const hiddenRegex = /^\./;
+  return [
+    ...body.indices.map((i) => i.name),
+    ...body.aliases.map((a) => a.name),
+  ].filter((n) => !hiddenRegex.test(n));
+};
 
-    // eslint-disable-next-line no-restricted-syntax
-    for (const hit of hits) {
-      yield hit;
+/**
+ * Simplify mapping by flattening oject using dot notation
+ *
+ * @param properties Elastic raw mapping
+ *
+ * @returns Map of dot notation keys and type as value
+ */
+const simplifyMapping = (properties: Record<string, ElasticTypes.MappingProperty>) => {
+  const res: Record<string, string> = {};
+  // eslint-disable-next-line no-restricted-syntax
+  for (const [field, mapping] of Object.entries(properties)) {
+    if (mapping.type) {
+      res[field] = mapping.type;
     }
 
-    if (hits.length === 0 || !scrollId) {
-      break;
+    if (mapping.properties) {
+      const sub = simplifyMapping(mapping.properties);
+      // eslint-disable-next-line no-restricted-syntax
+      for (const [subField, type] of Object.entries(sub)) {
+        res[`${field}.${subField}`] = type;
+      }
     }
-
-    // eslint-disable-next-line no-await-in-loop
-    response = await client.scroll(
-      {
-        scroll_id: scrollId,
-        scroll: params.scroll?.toString(),
-      },
-      { headers },
-    );
   }
-}
+
+  return res;
+};
+
+/**
+ * Shorthand to get index mapping with elastic
+ *
+ * @param index name of the index
+ * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
+ *
+ * @returns The js-like index mapping
+ */
+export const elasticIndexMapping = async (index: string, runAs?: string) => {
+  const elastic = await getElasticClient();
+
+  const headers: Record<string, unknown> = {};
+  if (runAs) {
+    headers['es-security-runas-user'] = runAs;
+  }
+
+  const { body } = await elastic.indices.getMapping<ElasticTypes.IndicesGetMappingResponse>(
+    { index },
+    { headers },
+  );
+
+  // Only keep the common keys of all matching indices
+  const mappings = Object.values(body).map((i) => i.mappings.properties ?? {});
+  const commonKeys = intersection(...mappings.map((m) => Object.keys(m)));
+  const mapping: Record<string, ElasticTypes.MappingProperty> = {};
+  // eslint-disable-next-line no-restricted-syntax
+  for (const key of commonKeys) {
+    const field = mappings.at(0)?.[key];
+    if (field) {
+      mapping[key] = field;
+    }
+  }
+
+  return simplifyMapping(mapping);
+};
