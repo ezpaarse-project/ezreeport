@@ -70,7 +70,7 @@ export type PDFStats = { pageCount: number, path: string, size: number };
  *
  * @returns The total height of header with MARGIN
  */
-const printHeader = (): number => {
+const printHeader = async (): Promise<number> => {
   if (!doc) throw new Error('jsDoc not initialized');
 
   let fontSize = 13;
@@ -79,7 +79,7 @@ const printHeader = (): number => {
   doc.pdf
     .setFont('Roboto', 'bold')
     .setFontSize(fontSize)
-    .text(doc.name, doc.width / 2, y, { align: 'center' });
+    .text(doc.name, doc.margin.right, y);
 
   // Move "cursor" by 1 line (fontSize) + some space
   y += fontSize + 2;
@@ -89,20 +89,43 @@ const printHeader = (): number => {
     .setTextColor('#000000')
     .setFontSize(fontSize)
     .text(
-      [
-        `Rapport couvrant la période du ${format(
-          doc.period.start,
-          'dd/MM/yyyy, HH:mm',
-        )} au ${format(doc.period.end, 'dd/MM/yyyy, HH:mm')}`,
-        `Généré le ${format(doc.today, 'EEEE dd MMMM yyyy')}`,
-      ],
-      doc.width / 2,
+      `du ${format(doc.period.start, 'dd/MM/yyyy')} au ${format(doc.period.end, 'dd/MM/yyyy')}`,
+      doc.margin.right,
       y,
-      { align: 'center' },
     );
 
   // Move "cursor" by 2 lines (2*fontSize) + some space
-  return y + 2 * fontSize + 2;
+  const cursorOffset = y + 2 * fontSize + 2;
+
+  // Print first logo
+  const logo = logos.at(0);
+  if (!logo) {
+    return cursorOffset;
+  }
+
+  const logoHeight = y - doc.margin.top; // Wanted height of logo
+  const data = await readFile(logo.path, 'base64');
+  const {
+    data: imageData,
+    height: rawHeight,
+    width: rawWidth,
+  } = await loadImageAsset(`data:image/png;base64,${data}`);
+
+  // Scaling down logo while preserving aspect ratio
+  const logoWidth = (logoHeight * rawWidth) / rawHeight;
+  const logoX = doc.width - doc.margin.right - logoWidth;
+  const logoY = doc.margin.top;
+  doc.pdf
+    .addImage({
+      imageData,
+      x: logoX,
+      y: logoY,
+      height: logoHeight,
+      width: logoWidth,
+    })
+    .link(logoX, logoY, logoWidth, logoHeight, { url: logo.link });
+
+  return cursorOffset;
 };
 
 /**
@@ -113,42 +136,56 @@ const printHeader = (): number => {
 const printFooter = async (): Promise<number> => {
   if (!doc) throw new Error('jsDoc not initialized');
 
-  const y = doc.height - doc.margin.bottom;
-  let x = doc.margin.left;
-  let minY = y;
+  const footerLogos = logos.slice(1);
+  const imagesData = [] as { data: string, width: number, url: string }[];
+  const height = 20; // Wanted height of logos
+  const margin = 10;
+  let totalWidth = 0;
 
-  const height = 30; // Wanted height of logos
+  // Load images
   // eslint-disable-next-line no-restricted-syntax
-  for (const { path, link: url } of logos) {
+  for (const logo of footerLogos) {
     // eslint-disable-next-line no-await-in-loop
-    const data = await readFile(path, 'base64');
+    const data = await readFile(logo.path, 'base64');
     const {
       data: imageData,
       height: rawHeight,
       width: rawWidth,
-      // eslint-disable-next-line no-await-in-loop
+    // eslint-disable-next-line no-await-in-loop
     } = await loadImageAsset(`data:image/png;base64,${data}`);
     // Scaling down logo while preserving aspect ratio
-    const width = (height * rawWidth) / rawHeight;
+    const width = ((height * rawWidth) / rawHeight);
+    totalWidth += width + margin;
 
-    const imgY = y - height / 1.75;
-    if (imgY < minY) minY = imgY;
+    imagesData.push({
+      data: imageData,
+      width,
+      url: logo.link,
+    });
+  }
 
+  let x = (doc.width / 2) - (totalWidth / 2);
+  const y = doc.height - doc.margin.bottom - height + 1;
+
+  // Print image
+  // eslint-disable-next-line no-restricted-syntax
+  for (const img of imagesData) {
     doc.pdf
       .addImage({
-        imageData,
+        imageData: img.data,
         x,
-        y: imgY,
+        y,
         height,
-        width,
+        width: img.width,
       })
-      .link(x, imgY, width, height, { url });
-    x += width + 5;
+      .link(x, y, img.width, height, { url: img.url });
+
+    x += img.width + margin;
   }
 
   // Page numbers are printed when rendering (because we don't know the total page count before)
 
-  return doc.height - minY + 2;
+  return doc.height - y + 2;
 };
 
 /**
@@ -184,7 +221,7 @@ export const initDoc = async (params: PDFReportOptions): Promise<PDFReport> => {
     },
   };
   doc.offset = {
-    top: 5 + printHeader(),
+    top: 5 + await printHeader(),
     right: doc.margin.right,
     bottom: 10 + await printFooter(),
     left: doc.margin.left,
@@ -202,14 +239,23 @@ export const renderDoc = async (): Promise<PDFStats> => {
   const totalPageCount = doc.pdf.internal.pages.length - 1;
   for (let currPage = 1; currPage <= totalPageCount; currPage += 1) {
     doc.pdf.setPage(currPage);
-    doc.pdf
+
+    const x = doc.width - doc.margin.right;
+    const y = doc.height - doc.margin.bottom;
+    const pageNoText = `${currPage} / ${totalPageCount}`;
+    const w = doc.pdf
       .setFont('Roboto', 'normal')
       .setTextColor('#000000')
+      .setFontSize(13)
+      .getTextWidth(pageNoText);
+
+    doc.pdf
+      .text(pageNoText, x, y - 3, { align: 'right' })
       .setFontSize(8)
       .text(
-        `${currPage} / ${totalPageCount}`,
-        doc.width - doc.margin.right,
-        doc.height - doc.margin.bottom + 1.05,
+        `Généré le ${format(doc.today, 'dd/MM/yyyy')}`,
+        x - w - 15,
+        y - 5,
         { align: 'right' },
       );
   }
@@ -241,6 +287,6 @@ export const addPage = async (): Promise<void> => {
   if (!doc) throw new Error('jsDoc not initialized');
 
   doc.pdf.addPage();
-  printHeader();
+  await printHeader();
   await printFooter();
 };
