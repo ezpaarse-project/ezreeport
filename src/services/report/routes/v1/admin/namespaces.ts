@@ -62,7 +62,7 @@ const router: FastifyPluginAsync = async (fastify) => {
         requireAPIKey: true,
       },
     },
-    async (request) => ({ content: namespaces.replaceManyNamespaces(request.body) }),
+    async (request) => ({ content: await namespaces.replaceManyNamespaces(request.body) }),
   );
 
   const SpecificNamespaceParams = Type.Object({
