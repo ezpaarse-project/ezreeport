@@ -7,7 +7,6 @@ import type {
   Namespace,
   Prisma,
   Membership,
-  Task,
 } from '~/lib/prisma';
 import { Type, type Static, Value } from '~/lib/typebox';
 
@@ -16,12 +15,13 @@ import {
   upsertBulkMembership,
   deleteBulkMembership,
 } from './memberships';
+import { TaskList } from './tasks';
 
 type InputNamespace = Pick<Prisma.NamespaceCreateInput, 'name' | 'fetchLogin' | 'fetchOptions' | 'logoId'>;
 
 type FullNamespace = Namespace & {
   memberships: Omit<Membership, 'namespaceId'>[],
-  tasks: Task[],
+  tasks: Omit<TaskList[number], 'tags' | 'namespaceId'>[],
 };
 
 export const NamespaceBody = Type.Object({
@@ -43,6 +43,32 @@ export const NamespaceBody = Type.Object({
 });
 
 export type NamespaceBodyType = Static<typeof NamespaceBody>;
+
+const prismaNamespaceInclude = {
+  memberships: {
+    select: {
+      access: true,
+      username: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  },
+  tasks: {
+    select: {
+      id: true,
+      name: true,
+      recurrence: true,
+      nextRun: true,
+      lastRun: true,
+      enabled: true,
+      createdAt: true,
+      updatedAt: true,
+
+      extendedId: true,
+      lastExtended: true,
+    },
+  },
+} satisfies Prisma.NamespaceInclude;
 
 /**
  * Get count of namespaces entries in DB
@@ -97,17 +123,7 @@ export const getNamespaceById = async (id: Namespace['id']) => prisma.namespace.
   where: {
     id,
   },
-  include: {
-    memberships: {
-      select: {
-        access: true,
-        username: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    },
-    tasks: true,
-  },
+  include: prismaNamespaceInclude,
 }) as Promise<FullNamespace | null>;
 
 /**
@@ -138,17 +154,7 @@ export const createNamespace = async (id: string, data: InputNamespace): Promise
       id,
       ...data,
     },
-    include: {
-      memberships: {
-        select: {
-          access: true,
-          username: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      },
-      tasks: true,
-    },
+    include: prismaNamespaceInclude,
   });
 
   appLogger.verbose(`[models] Namespace "${id}" created`);
@@ -173,17 +179,7 @@ export const deleteNamespaceById = async (id: Namespace['id']): Promise<FullName
     where: {
       id,
     },
-    include: {
-      memberships: {
-        select: {
-          access: true,
-          username: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      },
-      tasks: true,
-    },
+    include: prismaNamespaceInclude,
   });
 
   appLogger.verbose(`[models] Namespace "${id}" deleted`);
@@ -204,17 +200,7 @@ export const editNamespaceById = (id: Namespace['id'], data: InputNamespace): Pr
       id,
     },
     data,
-    include: {
-      memberships: {
-        select: {
-          access: true,
-          username: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      },
-      tasks: true,
-    },
+    include: prismaNamespaceInclude,
   });
 
   appLogger.verbose(`[models] Namespace "${id}" updated`);
