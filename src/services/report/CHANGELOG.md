@@ -1,3 +1,12 @@
+# ezreeport-report [1.0.0-beta.26](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.25...ezreeport-report@1.0.0-beta.26) (2023-11-27)
+
+
+### Bug Fixes
+
+* **report:** fixed bulk routes not returning anything ([085515e](https://github.com/ezpaarse-project/ezreeport/commit/085515e26054cbcf690bbab662882d1d9b2ac61e))
+* **report:** fixed task dateField not beign used ([7127cab](https://github.com/ezpaarse-project/ezreeport/commit/7127cabbef24c53d348977955371881f3713bde6))
+* **report:** reducing data size when getting namespaces ([1dc848b](https://github.com/ezpaarse-project/ezreeport/commit/1dc848bb323f84fea243bfe65bb9f722f0414970))
+
 # ezreeport-report [1.0.0-beta.25](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.24...ezreeport-report@1.0.0-beta.25) (2023-10-13)
 
 
