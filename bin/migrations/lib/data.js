@@ -51,8 +51,44 @@ const writeError = async (error) => {
   }
 };
 
+/**
+ * Shorthand to read JSON data
+ *
+ * @param {string} file The filename to read data
+ *
+ * @returns {*} The data
+ */
+const readJSONData = async (file) => {
+  log('debug', `Reading data from "${file}"...`);
+  const content = await fs.readFile(path.join(dataFolder, file), 'utf-8');
+  return JSON.parse(content);
+};
+
+/**
+ * Read all JSON data present in a directory
+ *
+ * @param {string} base The base folder
+ * @param {string} folder The folder to read data from
+ */
+const readAllData = async (base, folder) => {
+  const root = path.join(__dirname, '../data', base, folder);
+  const files = (await fs.readdir(root)).filter((s) => /\.json$/i.test(s));
+
+  return Promise.all(
+    files.map(
+      async (file) => {
+        log('debug', `Reading data from "${file}"...`);
+        const content = await fs.readFile(path.join(root, file), 'utf-8');
+        return JSON.parse(content);
+      },
+    ),
+  );
+};
+
 module.exports = {
   createDataFolder,
   writeJSONData,
+  readJSONData,
+  readAllData,
   writeError,
 };
