@@ -654,7 +654,10 @@ const useTemplatePinia = defineStore('ezr_template', {
 
       try {
         const { content } = await elastic.getIndexMapping(index, namespace);
-        this.indices.mapping = Object.entries(content).map(([key, type]) => ({ key, type }));
+        this.indices.mapping = [
+          { key: '{{ dateField }}', type: 'date' },
+          ...Object.entries(content).map(([key, type]) => ({ key, type })),
+        ];
       } catch (error) {
         this.indices.mapping = [];
       }
