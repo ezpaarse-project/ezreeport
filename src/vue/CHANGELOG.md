@@ -1,3 +1,15 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.29](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.28...@ezpaarse-project/ezreeport-vue@1.0.0-beta.29) (2023-11-27)
+
+
+### Bug Fixes
+
+* **vue:** remove dangling console.log ([7eb0197](https://github.com/ezpaarse-project/ezreeport/commit/7eb0197864a71a77deda9deb826c29c2fb6556bb))
+
+
+### Features
+
+* **vue:** added date vars in mapping ([d5258e7](https://github.com/ezpaarse-project/ezreeport/commit/d5258e79472e6601061d39cb85a28ff4f42ec6db))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.28](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.27...@ezpaarse-project/ezreeport-vue@1.0.0-beta.28) (2023-10-13)
 
 
