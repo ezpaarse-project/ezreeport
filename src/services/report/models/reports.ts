@@ -239,7 +239,7 @@ const fetchData = (
 
         const fetchOptions: ElasticFetchOptionsType = {
           auth: namespace?.fetchLogin?.elastic ?? { username: '' },
-          dateField: template.fetchOptions?.dateField ?? '',
+          dateField: taskTemplate.fetchOptions.dateField || template.fetchOptions?.dateField || '',
           index: taskTemplate.fetchOptions.index,
           period: {
             start: dfns.getTime(period.start),
