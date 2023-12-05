@@ -193,15 +193,30 @@ export const createVegaLSpec = (
   layers.push(dataLayer);
 
   // Parsing labels to get correct colors
-  const colorsEntries = data.map((d, i): [string, string] => {
-    const key = get(d, params.label.field);
-    let color = params.colorMap.get(key);
-    if (!color) {
-      color = colorScheme[i % colorScheme.length];
-      params.colorMap.set(key, color);
-    }
-    return [key, color];
-  });
+  let colorField: string | undefined;
+  switch (type) {
+    case 'bar':
+      colorField = params.color?.field;
+      break;
+
+    default:
+      colorField = params.label.field;
+      break;
+  }
+
+  let colorsEntries: [string, string][] = [];
+  if (colorField) {
+    const f = colorField;
+    colorsEntries = data.map((d, i): [string, string] => {
+      const key = get(d, f);
+      let color = params.colorMap.get(key);
+      if (!color) {
+        color = colorScheme[i % colorScheme.length];
+        params.colorMap.set(key, color);
+      }
+      return [key, color];
+    });
+  }
 
   // Getting default encoding
   let encoding: Encoding = {
