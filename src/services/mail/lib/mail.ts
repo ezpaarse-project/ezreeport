@@ -5,8 +5,10 @@ import mjml2html from 'mjml';
 import { createTransport } from 'nodemailer';
 import type Mail from 'nodemailer/lib/mailer';
 import nunjucks from 'nunjucks';
+import { differenceInMilliseconds } from 'date-fns';
 
 import config from '~/lib/config';
+import { appLogger as logger } from '~/lib/logger';
 
 const {
   smtp,
@@ -16,6 +18,10 @@ const {
 nunjucks.configure('templates');
 const images = readdirSync('templates/images');
 const transporter = createTransport(smtp);
+
+transporter.on('error', (err) => {
+  logger.error(`[nodemailer] Error on transporter: {${err.message}}`);
+});
 
 export type MailOptions = {
   to: string[] | string,
@@ -27,6 +33,27 @@ export type MailOptions = {
     text: string,
   },
   attachments?: Mail.Attachment[],
+};
+
+export const pingSMTP = async () => {
+  const start = new Date();
+  try {
+    logger.verbose('[nodemailer] Checking SMTP connection...');
+    await transporter.verify();
+
+    const end = new Date();
+    logger.info(`[nodemailer] Connected to SMTP in [${differenceInMilliseconds(end, start)}]ms`);
+  } catch (error) {
+    const end = new Date();
+
+    if (error instanceof Error) {
+      logger.error(`[nodemailer] Error when trying connection to SMTP in [${differenceInMilliseconds(end, start)}]ms: {${error.message}}`);
+    } else {
+      logger.error(`[nodemailer] Unexpected error when trying connection to SMTP in [${differenceInMilliseconds(end, start)}]ms: {${error}}`);
+    }
+    return false;
+  }
+  return true;
 };
 
 export const sendMail = async (options: MailOptions) => {

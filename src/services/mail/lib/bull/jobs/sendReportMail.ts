@@ -188,10 +188,12 @@ export default async (j: Job) => {
   try {
     if (data && !job.data.error) {
       await sendReport(data, date, dateStr);
+      return;
     }
 
     if (job.data.error) {
       await sendError(job.data, date, dateStr);
+      return;
     }
 
     throw new Error('No suitable data found');
