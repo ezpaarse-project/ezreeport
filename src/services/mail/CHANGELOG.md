@@ -1,3 +1,10 @@
+# ezreeport-mail [1.0.0-beta.9](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.0.0-beta.8...ezreeport-mail@1.0.0-beta.9) (2023-12-13)
+
+
+### Features
+
+* **mail:** added SMTP ping on startup ([23d5ffb](https://github.com/ezpaarse-project/ezreeport/commit/23d5ffbbce831c9e8ed436b79778003e821ec931))
+
 # ezreeport-mail [1.0.0-beta.8](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.0.0-beta.7...ezreeport-mail@1.0.0-beta.8) (2023-10-04)
 
 
