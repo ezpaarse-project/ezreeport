@@ -1,3 +1,10 @@
+# ezreeport-report [1.0.0-beta.27](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.26...ezreeport-report@1.0.0-beta.27) (2023-12-13)
+
+
+### Bug Fixes
+
+* **report:** fixed color map breaking bars chart ([4162277](https://github.com/ezpaarse-project/ezreeport/commit/4162277f54b74dc2d246360e903f068811365447))
+
 # ezreeport-report [1.0.0-beta.26](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.25...ezreeport-report@1.0.0-beta.26) (2023-11-27)
 
 
