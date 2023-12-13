@@ -1,0 +1,68 @@
+{
+  "logLevel": "debug",
+  "port": 8080,
+  "allowedOrigins": "*",
+  "adminKey": "00000000-0000-0000-0000-000000000000",
+  "defaultTemplate": {
+    "name": "scratch",
+    "id": ""
+  },
+  "fetcher": {
+    "bannedDomains": []
+  },
+  "elasticsearch": {
+    "url": "https://host.docker.internal:9000",
+    "username": "elastic",
+    "password": "changeme",
+    "apiKey": "",
+    "requiredStatus": "green",
+    "maxTries": 10
+  },
+  "redis": {
+    "host": "redis",
+    "port": 6379,
+    "password": ""
+  },
+  "workers": {
+    "concurrence": 5,
+    "maxExecTime": 10000
+  },
+  "crons": {
+    "options": {
+      "tz": ""
+    },
+    "timers": {
+      "generateReports": "0 0 * * *",
+      "purgeOldReports": "0 0 * * *"
+    }
+  },
+  "report": {
+    "assetsDir": "assets",
+    "outDir": "/data/ezreeport/report",
+    "ttl": {
+      "iterations": 4,
+      "days": 7
+    },
+    "team": "ezteam-dev@couperin.org"
+  },
+  "pdf": {
+    "logos": [
+      {
+        "path": "assets/logos/ezmesure.png",
+        "link": "https://ezmesure.couperin.org/"
+      },
+      {
+        "path": "assets/logos/cnrs.png",
+        "link": "http://www.cnrs.fr/"
+      },
+      {
+        "path": "assets/logos/inist.png",
+        "link": "https://www.inist.fr/"
+      },
+      {
+        "path": "assets/logos/couperin.png",
+        "link": "https://www.couperin.org/"
+      }
+    ]
+  }
+}

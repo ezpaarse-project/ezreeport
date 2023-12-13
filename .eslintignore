@@ -1,0 +1,3 @@
+# ignore file used by VSCode
+src/services/report/**/fonts/**/*.js
+data/

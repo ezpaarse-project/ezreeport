@@ -1,0 +1,157 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+generator client {
+  provider = "prisma-client-js"
+  output   = "../.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// A report task
+model Task {
+  /// Id of the report
+  id           String         @id @default(uuid())
+  /// The name of the report
+  name         String
+  /// The "owner" of the report
+  namespace    Namespace      @relation(fields: [namespaceId], references: [id], onDelete: Cascade)
+  namespaceId  String
+  /// The template used to generate the report
+  template     Json
+  // The template extended by the report
+  extends      Template       @relation(fields: [extendedId], references: [id], onDelete: NoAction)
+  extendedId   String         @map("templateId")
+  /// Last template extended by the report. If null then it's mean it's still linked. If set, extendedId must match default one
+  lastExtended Json?
+  /// Email adresses to send generated report
+  targets      String[]
+  /// Defines when the report will be generated
+  recurrence   Recurrence
+  /// Next time the report will be generated
+  nextRun      DateTime
+  /// Last time the report has been generated
+  lastRun      DateTime?
+  /// Is the generation of the report is enabled
+  enabled      Boolean        @default(true)
+  /// Activity of the task
+  activity     TaskActivity[]
+  /// When the report was created
+  createdAt    DateTime       @default(now())
+  /// When the report was updated for the last time
+  updatedAt    DateTime?      @updatedAt
+
+  @@index([namespaceId])
+}
+
+/// Possible values for defining how often a report will be generated
+enum Recurrence {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  BIENNIAL
+  YEARLY
+}
+
+/// An activity event linked to a report (generation, edition, etc.)
+model TaskActivity {
+  /// Id of the event
+  id        String   @id @default(uuid())
+  /// Task linked to the event
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId    String
+  /// Type of the event
+  type      String
+  /// Message describing what happened
+  message   String
+  /// More data about what happened
+  data      Json?
+  /// When the event occurred
+  createdAt DateTime @default(now())
+}
+
+/// A user of ezREEPORT
+model User {
+  /// The username of the user
+  username    String       @id
+  /// Token used to identify user
+  token       String       @unique
+  /// Is the user an administrator of ezREEPORT
+  isAdmin     Boolean      @default(false)
+  /// Namespaces of the user
+  memberships Membership[]
+  /// When the user was created
+  createdAt   DateTime     @default(now())
+  /// When the user was updated for the last time
+  updatedAt   DateTime?    @updatedAt
+
+  @@index([token])
+}
+
+/// Link a User and a Namespace with given Access
+model Membership {
+  /// The User linked to the Namespace
+  user        User      @relation(fields: [username], references: [username], onDelete: Cascade)
+  username    String
+  /// The Namespace linked to the User
+  namespace   Namespace @relation(fields: [namespaceId], references: [id], onDelete: Cascade)
+  namespaceId String
+  /// Access level of the user on this Namespace
+  access      Access
+  /// When the membership was created
+  createdAt   DateTime  @default(now())
+  /// When the membership was updated for the last time
+  updatedAt   DateTime? @updatedAt
+
+  @@id([username, namespaceId])
+}
+
+/// Possible access level for memberships
+enum Access {
+  READ
+  READ_WRITE
+  SUPER_USER
+}
+
+/// A namespace for grouping users and reports
+model Namespace {
+  /// The id of the namespace
+  id           String       @id
+  /// The name of the namespace
+  name         String
+  /// Specific credentials used when fetching data (when generating reports) for this namespace
+  fetchLogin   Json
+  /// Specific options used when fetching data (when generating reports) for this namespace
+  fetchOptions Json
+  /// Id of the logo of the namespace
+  logoId       String?
+  /// Members of the namespaces
+  memberships  Membership[]
+  /// Reports of the namespace
+  tasks        Task[]
+  /// When the namespace was created
+  createdAt    DateTime     @default(now())
+  /// When the namespace was updated for the last time
+  updatedAt    DateTime?    @updatedAt
+}
+
+/// Base template used by reports
+model Template {
+  /// The id of the template
+  id        String    @id @default(uuid())
+  /// The name of the template
+  name      String    @unique
+  /// Tags of the template
+  tags      Json[]    @default([])
+  /// The layouts used to generate the report
+  body      Json
+  /// When the template was created
+  createdAt DateTime  @default(now())
+  /// When the template was updated for the last time
+  updatedAt DateTime? @updatedAt
+  /// Tasks using template
+  tasks     Task[]
+}

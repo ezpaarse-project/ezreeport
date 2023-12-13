@@ -1,0 +1,45 @@
+name: Build and Deploy SDK documentation
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/sdk-doc.yml'
+      - 'src/sdk/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    concurrency: ci-${{ github.ref }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: Setup Node ⚙️
+        uses: actions/setup-node@v3
+        with:
+            node-version-file: .nvmrc
+            cache: npm
+
+      - name: Install dependencies ⚙️
+        run: npm ci --prefix src/sdk
+
+      - name: Build documentation 🔧
+        run: npm run build:docs --prefix src/sdk
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: src/sdk/docs
+          branch: sdk-docs

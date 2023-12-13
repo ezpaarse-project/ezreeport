@@ -1,0 +1,5 @@
+# ignore file used by cli
+dist
+.nuxt
+storybook-static
+!.storybook

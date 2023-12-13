@@ -1,0 +1,30 @@
+{
+  "allowedOrigins": "*",
+  "redis": {
+    "host": "redis",
+    "port": 6379,
+    "password": ""
+  },
+  "smtp": {
+    "host": "maildev",
+    "port": 1025,
+    "secure": false,
+    "tls": {
+      "ignore": true,
+      "rejectUnauthorized": false
+    }
+  },
+  "workers": {
+    "concurrence": 5,
+    "maxExecTime": 10000
+  },
+  "mail": {
+    "sender": "ezREEPORT <ezreeport@inist.fr>",
+    "team": "ezteam@couperin.org",
+    "attempts": 5,
+    "interval": 2000
+  },
+  "api": {
+    "url": "http://localhost:8080"
+  }
+}

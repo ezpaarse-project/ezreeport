@@ -1,0 +1,30 @@
+{
+  "allowedOrigins": "API_ALLOWED_ORIGINS",
+  "redis": {
+    "host": "REDIS_HOST",
+    "port": { "__name": "REDIS_PASSWORD", "__format": "number" },
+    "password": "REDIS_PASSWORD"
+  },
+  "smtp": {
+    "host": "SMTP_HOST",
+    "port": { "__name": "SMTP_PORT", "__format": "number" },
+    "secure": { "__name": "SMTP_SECURE", "__format": "boolean" },
+    "tls": {
+      "ignore": { "__name": "SMTP_IGNORE_TLS", "__format": "boolean" },
+      "rejectUnauthorized": { "__name": "SMTP_REJECT_UNAUTHORIZED", "__format": "boolean" }
+    }
+  },
+  "workers": {
+    "concurrence": { "__name": "WORKERS_CONCURRENCE", "__format": "number" },
+    "maxExecTime": { "__name": "WORKERS_MAX_EXEC_TIME", "__format": "number" }
+  },
+  "mail": {
+    "sender": "EMAIL_SENDER",
+    "team": "EMAIL_SUPPORT_TEAM",
+    "attempts": { "__name": "EMAIL_ATTEMPTS", "__format": "number" },
+    "interval": { "__name": "EMAIL_ATTEMPTS_INTERVAL", "__format": "number" }
+  },
+  "api": {
+    "url": "API_URL"
+  }
+}

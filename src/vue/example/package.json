@@ -1,0 +1,38 @@
+{
+  "name": "ezreeport-vue-example",
+  "description": "",
+  "private": true,
+  "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
+  "bugs": {
+    "url": "https://github.com/ezpaarse-project/ezreeport/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
+  },
+  "license": "CeCILL",
+  "author": "oxypomme",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "start": "nuxt start"
+  },
+  "dependencies": {
+    "@ezpaarse-project/ezreeport-vue": "file:..",
+    "nuxt": "^2.15.8",
+    "typescript": "^4.9.4",
+    "vue": "^2.7.10",
+    "vue-server-renderer": "^2.7.10",
+    "vue-template-compiler": "^2.7.10"
+  },
+  "devDependencies": {
+    "@nuxt/types": "^2.17.1",
+    "@nuxt/typescript-build": "^2.1.0",
+    "@nuxtjs/i18n": "^7.3.1",
+    "@nuxtjs/vuetify": "^1.12.3",
+    "postcss": "^8.4.29",
+    "webpack": "^4.46.0"
+  }
+}

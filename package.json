@@ -1,21 +1,56 @@
 {
-  "name": "reporting",
-  "version": "1.0.0",
+  "name": "ezreeport",
+  "version": "0.0.0",
+  "private": true,
   "description": "Reporting service for ezMESURE/ezCOUNTER",
-  "scripts": {
-    "start:prod": "docker compose up --build -d",
-    "stop:prod": "docker compose down",
-    "start:debug": "docker compose -f docker-compose.debug.yml up --build -d",
-    "stop:debug": "docker compose -f docker-compose.debug.yml down"
+  "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
+  "bugs": {
+    "url": "https://github.com/ezpaarse-project/ezreeport/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ezpaarse-project/reporting.git"
+    "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
   },
-  "author": "oxypomme",
   "license": "CeCILL",
-  "bugs": {
-    "url": "https://github.com/ezpaarse-project/reporting/issues"
+  "author": "oxypomme",
+  "scripts": {
+    "lint": "run-p -ls lint:*",
+    "lint:mail": "npm --prefix src/services/mail run lint",
+    "lint:report": "npm --prefix src/services/report run lint",
+    "lint:sdk": "npm --prefix src/services/sdk run lint",
+    "lint:vue": "npm --prefix src/vue run lint",
+    "lint:tests": "npm --prefix tests run lint",
+    "prepare": "husky install",
+    "setup": "node bin/setup.js",
+    "test": "run-p -ls test:*",
+    "test:mail": "npm --prefix tests run test:mail",
+    "test:report": "npm --prefix tests run test:report",
+    "test:sdk": "npm --prefix src/services/sdk run build && npm --prefix tests run test:sdk",
+    "publish": "HUSKY=0 node bin/release.js"
   },
-  "homepage": "https://github.com/ezpaarse-project/reporting#readme"
+  "lint-staged": {
+    "package.json": [
+      "sort-package-json"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.7.1",
+    "@commitlint/config-conventional": "^17.7.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "@typescript-eslint/parser": "^6.7.0",
+    "eslint": "^8.49.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^17.1.0",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-n": "^16.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^14.0.1",
+    "multi-semantic-release": "^3.0.2",
+    "npm-run-all": "^4.1.5",
+    "semantic-release": "^21.1.1",
+    "sort-package-json": "^2.5.1"
+  }
 }

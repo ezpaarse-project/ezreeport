@@ -1,0 +1,33 @@
+import { Meta, Story } from '@storybook/blocks';
+
+import * as ErrorOverlayStories from './ErrorOverlay.stories';
+
+<Meta of={ErrorOverlayStories} />
+
+# Error Overlay
+
+Wrapper of `v-overlay`.
+
+**Needs parent to have a `postion: relative`.**
+
+## Usage
+
+```vue
+<template>
+  <v-app>
+    <div style="position: relative">
+      <ErrorOverlay v-model="error">
+    </div>
+  </v-app>
+</template>
+
+<script>
+export default {
+  data: () => ({
+    error: 'A mock error occured'
+  })
+}
+</script>
+```
+
+<Story of={ErrorOverlayStories.Basic} />
