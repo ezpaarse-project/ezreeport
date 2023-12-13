@@ -1,0 +1,58 @@
+name: Generate database documentation of report database
+
+on:
+  push:
+    branches:
+      - master
+      - rc
+      - dev
+    paths:
+      - '.github/workflows/report-erd.yml'
+      - 'src/services/report/prisma/schema.prisma'
+  workflow_dispatch:
+
+env:
+  PRISMA_SCHEMA: src/services/report/prisma/schema.prisma
+  OUT_ERD_PATH: src/services/report/prisma/doc/ERD.svg
+  OUT_DIC_PATH: src/services/report/prisma/doc/DIC.md
+  DIC_NAME: ezREEPORT
+  COMMIT_NAME: 'docs(report): updated database documentation[skip ci]'
+  COMMIT_BODY: '${{ github.event.compare }}'
+  COMMIT_FOOTER: 'Co-authored-by: @${{ github.event.sender.login }}'
+  ERD_WS: https://p-erd.oxypomme.fr/
+  ERD_WS_KEY: ${{ secrets.PRISMA_ERD_API_KEY }}
+
+jobs:
+  generate-db-doc:
+    permissions: write-all
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+
+      - name: Generate ERD 🔧
+        run: 'curl -X POST -d "$(cat ${{ env.PRISMA_SCHEMA }})" -H "Content-Type: text/plain" -H "X-Api-Key: ${{ env.ERD_WS_KEY }}" -o "${{ env.OUT_ERD_PATH }}" ${{ env.ERD_WS }}/erd/'
+
+      - name: Generate Data dictionary 🔧
+        run: 'curl -X POST -d "$(cat ${{ env.PRISMA_SCHEMA }})" -H "Content-Type: text/plain" -H "X-Api-Key: ${{ env.ERD_WS_KEY }}" -o "${{ env.OUT_DIC_PATH }}" ${{ env.ERD_WS }}/dict/\?name\=${{ env.DIC_NAME }}'
+
+      - name: Setup Node ⚙️
+        uses: actions/setup-node@v3
+        with:
+            node-version-file: .nvmrc
+            cache: npm
+
+      - name: Install dependencies ⚙️
+        run: npm ci
+
+      - name: Commit files 🚀
+        run: |
+          HUSKY=0
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -m "${{ env.COMMIT_NAME }}" -m "${{ env.COMMIT_BODY }}" -m "${{ env.COMMIT_FOOTER }}"
+
+          remote_repo="https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git"
+          git push ${remote_repo} HEAD:${{ github.ref }} --follow-tags
