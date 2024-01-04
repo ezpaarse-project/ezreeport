@@ -1,4 +1,5 @@
 import type { TimeUnit } from 'vega-lite/build/src/timeunit';
+
 import { Recurrence } from '~/lib/prisma';
 import * as dfns from '~/lib/date-fns';
 
@@ -11,7 +12,7 @@ import * as dfns from '~/lib/date-fns';
  * @returns The new date of the task
  */
 export const calcNextDate = (initial: Date, recurrence: Recurrence): Date => {
-  const duration: Duration = {};
+  const duration: dfns.Duration = {};
 
   switch (recurrence) {
     case Recurrence.DAILY:
@@ -47,7 +48,7 @@ export const calcNextDate = (initial: Date, recurrence: Recurrence): Date => {
  *
  * @returns The period
  */
-export const calcPeriod = (today: Date, recurrence: Recurrence): Interval => {
+export const calcPeriod = (today: Date, recurrence: Recurrence): dfns.Interval => {
   switch (recurrence) {
     case Recurrence.DAILY: {
       const target = dfns.add(today, { days: -1 });
