@@ -84,7 +84,7 @@ export const initCrons = async () => {
           try {
             const worker = new Worker(
               q.name,
-              join(__dirname, 'jobs/index.ts'),
+              join(__dirname, 'jobs/index.js'),
               { limiter, connection: redis },
             );
             worker.on('completed', (j) => {

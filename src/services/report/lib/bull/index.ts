@@ -118,7 +118,7 @@ export const initQueues = (skipLogs = false, skipWorker = false) => {
     if (!skipWorker) {
       const generationWorker = new Worker(
         queues.generation.name,
-        join(__dirname, 'jobs/generateReport.ts'),
+        join(__dirname, 'jobs/generateReport.js'),
         {
           connection: redis,
           limiter: {
