@@ -11,6 +11,6 @@
     "src/**/*.vue",
     "src/**/*.ts",
     ".eslintrc.cjs",
-    "vite.config.ts"
+    "vite.config.mts"
   ]
 }
