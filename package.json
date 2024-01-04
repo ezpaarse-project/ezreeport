@@ -17,7 +17,7 @@
     "lint": "run-p -ls lint:*",
     "lint:mail": "npm --prefix src/services/mail run lint",
     "lint:report": "npm --prefix src/services/report run lint",
-    "lint:sdk": "npm --prefix src/services/sdk run lint",
+    "lint:sdk": "npm --prefix src/sdk run lint",
     "lint:vue": "npm --prefix src/vue run lint",
     "lint:tests": "npm --prefix tests run lint",
     "prepare": "husky install",
@@ -34,23 +34,23 @@
     ]
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.7.1",
-    "@commitlint/config-conventional": "^17.7.0",
+    "@commitlint/cli": "^18.4.3",
+    "@commitlint/config-conventional": "^18.4.3",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
-    "@typescript-eslint/eslint-plugin": "^6.7.0",
-    "@typescript-eslint/parser": "^6.7.0",
-    "eslint": "^8.49.0",
+    "@typescript-eslint/eslint-plugin": "^6.17.0",
+    "@typescript-eslint/parser": "^6.17.0",
+    "eslint": "^8.56.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-airbnb-typescript": "^17.1.0",
-    "eslint-plugin-import": "^2.28.1",
-    "eslint-plugin-n": "^16.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-n": "^16.6.1",
     "eslint-plugin-promise": "^6.1.1",
     "husky": "^8.0.3",
-    "lint-staged": "^14.0.1",
+    "lint-staged": "^15.2.0",
     "multi-semantic-release": "^3.0.2",
     "npm-run-all": "^4.1.5",
     "semantic-release": "^21.1.1",
-    "sort-package-json": "^2.5.1"
+    "sort-package-json": "^2.6.0"
   }
 }
