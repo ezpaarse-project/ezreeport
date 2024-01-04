@@ -8,7 +8,7 @@ module.exports = {
   extends: ['airbnb-base', 'airbnb-typescript/base'],
   overrides: [
     {
-      files: ['vite.config.ts'],
+      files: ['vite.config.mts'],
       rules: {
         'import/no-extraneous-dependencies': 'off',
       },
