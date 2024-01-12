@@ -1,3 +1,4 @@
+import { merge } from 'lodash';
 import * as dfns from '~/lib/date-fns';
 import { appLogger } from '~/lib/logger';
 import { Type, type Static, Value } from '~/lib/typebox';
@@ -17,6 +18,7 @@ import { calcNextDate } from '~/models/recurrence';
 import { ArgumentError } from '~/types/errors';
 
 import { FullTemplateBody, TaskTemplate, getTemplateById } from './templates';
+import type { FullTasksPreset } from '~/models/tasksPresets';
 
 // #region Input types
 
@@ -73,6 +75,21 @@ type FullTask = Pick<PrismaTask, 'id' | 'name' | 'targets' | 'recurrence' | 'nex
   lastExtended: Static<typeof LastExtended>,
   activity: TaskActivity[],
 };
+
+export const AdditionalDataForPreset = Type.Intersect([
+  // Keeping targets, name and namespace
+  Type.Pick(CreateTaskBody, ['targets', 'name', 'namespace']),
+  // Marking everything else as optional
+  Type.Partial(
+    Type.Omit(CreateTaskBody, ['targets', 'name', 'namespace', 'template']),
+  ),
+  // Keeping only fetchOptions from template
+  Type.Object({
+    template: Type.Pick(TaskTemplate, ['fetchOptions']),
+  }),
+]);
+
+export type AdditionalDataForPresetType = Static<typeof AdditionalDataForPreset>;
 
 // #endregion
 
@@ -394,7 +411,7 @@ export const createTask = async (
   } = input;
 
   let nR = dfns.parseISO(nextRun);
-  if (!nR) {
+  if (!dfns.isValid(nR)) {
     nR = calcNextDate(new Date(), data.recurrence);
   }
 
@@ -415,6 +432,36 @@ export const createTask = async (
   appLogger.verbose(`[models] Task "${id}" created`);
   return castFullTask(task);
 };
+
+/**
+ * Creates a task from a preset.
+ *
+ * @param preset The preset to create the task
+ * @param data The input data
+ * @param creator The user creating the task
+ *
+ * @return The created task
+ */
+export const createTaskFromPreset = async (
+  preset: FullTasksPreset,
+  data: AdditionalDataForPresetType,
+  creator: string,
+) => createTask(
+  merge(
+    {
+      extends: preset.template.id,
+      recurrence: preset.recurrence,
+      template: {
+        fetchOptions: preset.fetchOptions,
+      },
+    },
+    {
+      nextRun: '', // auto nextRun by default
+      ...data,
+    },
+  ),
+  creator,
+);
 
 /**
  * Delete specific task in DB

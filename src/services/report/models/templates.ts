@@ -3,7 +3,12 @@ import config from '~/lib/config';
 import { type Static, Type, Value } from '~/lib/typebox';
 
 import prisma from '~/lib/prisma';
-import { Prisma, type Template as PrismaTemplate, type Task } from '~/lib/prisma';
+import {
+  Prisma,
+  type TaskPreset,
+  type Template as PrismaTemplate,
+  type Task,
+} from '~/lib/prisma';
 
 import { Layout } from './layouts';
 
@@ -100,18 +105,20 @@ export interface FullTemplate extends Omit<PrismaTemplate, 'body' | 'tags'> {
   tags: TagTemplateType[],
   pageCount: number,
   tasks: Pick<Task, 'id' | 'name' | 'namespaceId' | 'recurrence' | 'nextRun' | 'lastRun' | 'enabled' | 'createdAt' | 'updatedAt'>[],
+  presets: TaskPreset[],
 }
 
-type TemplateList = Omit<FullTemplate, 'body' | 'tasks'>[];
+type TemplateList = Omit<FullTemplate, 'body' | 'tasks' | 'presets'>[];
 
 /**
  * Cast Prisma's template into a standard Template
  *
  * @param data The data from Prisma
  *
- * @returns A standard Template
+ * @re
+ * const { tasks, presets, ...t } = template;turns A standard Template
  */
-const castFullTemplate = <T extends PrismaTemplate>(data: T): T & Omit<FullTemplate, 'tasks'> => {
+const castFullTemplate = <T extends PrismaTemplate>(data: T): T & Omit<FullTemplate, 'tasks' | 'presets'> => {
   const body = Value.Cast(Template, data.body);
   return {
     ...data,
@@ -175,6 +182,7 @@ export const getTemplateById = async (id: string): Promise<FullTemplate | null> 
     },
     include: {
       tasks: tasksInclude,
+      presets: true,
     },
   });
 
@@ -182,7 +190,12 @@ export const getTemplateById = async (id: string): Promise<FullTemplate | null> 
     return null;
   }
 
-  return castFullTemplate(template);
+  const { tasks, presets, ...t } = template;
+  return {
+    ...castFullTemplate(t),
+    tasks,
+    presets,
+  };
 };
 
 /**
@@ -199,6 +212,7 @@ export const getTemplateByName = async (name: string): Promise<FullTemplate | nu
     },
     include: {
       tasks: tasksInclude,
+      presets: true,
     },
   });
 
@@ -206,7 +220,12 @@ export const getTemplateByName = async (name: string): Promise<FullTemplate | nu
     return null;
   }
 
-  return castFullTemplate(template);
+  const { tasks, presets, ...t } = template;
+  return {
+    ...castFullTemplate(t),
+    tasks,
+    presets,
+  };
 };
 
 /**
@@ -228,16 +247,32 @@ export const createTemplate = async (
     },
     include: {
       tasks: tasksInclude,
+      presets: true,
     },
   });
   appLogger.verbose(`[models] Template "${template.id}" created`);
 
-  return castFullTemplate(template);
+  const { tasks, presets, ...t } = template;
+  return {
+    ...castFullTemplate(t),
+    tasks,
+    presets,
+  };
 };
 
 // Thanks Prisma for begin so friendly with types...
 type Transaction = Parameters<Parameters<(typeof prisma)['$transaction']>[0]>[0];
 
+/**
+ * Links a task to a template.
+ *
+ * @param id The ID of the task.
+ * @param templateId The ID of the template to link to.
+ * @param origin The origin of the link.
+ * @param tx The transaction to use for the database operations.
+ *
+ * @return The updated task object.
+ */
 export const linkTaskToTemplate = async (id: Task['id'], templateId: FullTemplate['id'], origin: string, tx: Transaction = prisma) => {
   const template = await tx.template.findUniqueOrThrow({
     where: { id: templateId },
@@ -260,6 +295,15 @@ export const linkTaskToTemplate = async (id: Task['id'], templateId: FullTemplat
   return res;
 };
 
+/**
+ * Unlinks a task from a template.
+ *
+ * @param id The ID of the task to unlink.
+ * @param origin The source of the unlinking action.
+ * @param tx The transaction to use for database operations.
+ *
+ * @return A promise that resolves to the updated task.
+ */
 export const unlinkTaskFromTemplate = async (id: Task['id'], origin: string, tx: Transaction = prisma) => {
   const task = await tx.task.findUniqueOrThrow({
     where: { id },
@@ -325,15 +369,29 @@ export const deleteTemplateById = async (id: string): Promise<FullTemplate | nul
       },
       include: {
         tasks: tasksInclude,
+        presets: true,
       },
     });
   });
 
   appLogger.verbose(`[models] Template "${id}" deleted`);
 
-  return castFullTemplate(template);
+  const { tasks, presets, ...t } = template;
+  return {
+    ...castFullTemplate(t),
+    tasks,
+    presets,
+  };
 };
 
+/**
+ * Edit specific template
+ *
+ * @param id The id of the template
+ * @param data The new content of the template
+ *
+ * @returns The edited template
+ */
 export const editTemplateById = async (
   id: string,
   data: FullTemplateBodyType,
@@ -354,9 +412,15 @@ export const editTemplateById = async (
     },
     include: {
       tasks: tasksInclude,
+      presets: true,
     },
   });
   appLogger.verbose(`[models] Template "${id}" updated`);
 
-  return castFullTemplate(template);
+  const { tasks, presets, ...t } = template;
+  return {
+    ...castFullTemplate(t),
+    tasks,
+    presets,
+  };
 };
