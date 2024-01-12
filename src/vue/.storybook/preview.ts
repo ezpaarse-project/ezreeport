@@ -93,8 +93,8 @@ export const decorators: Decorator[] = [
     computed: {
       namespaceLabel() {
         return {
-          en: 'namespace | namespaces',
-          fr: 'établissement | établissements',
+          en: 'namespace|namespaces',
+          fr: 'établissement|établissements',
         };
       },
     },
