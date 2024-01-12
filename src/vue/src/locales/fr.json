@@ -10,6 +10,7 @@
   "delete": "Supprimer",
   "duplicate": "Dupliquer",
   "cancel": "Annuler",
+  "confirm": "Confirmer",
   "open": "Ouvrir",
   "generate": "Générer",
   "save": "Sauvegarder",
@@ -43,6 +44,12 @@
     "errors": {
       "_default": "Une erreur est présente dans ce formulaire"
     }
+  },
+  
+  "taskPresets": {
+    "title": "Rapport prédéfini|Rapports prédéfinis",
+    "name": "Nom du prédéfini",
+    "template": "Modèle"
   },
 
   "templates": {
