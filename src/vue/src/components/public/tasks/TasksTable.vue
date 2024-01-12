@@ -35,7 +35,6 @@
           v-model="actualCurrentNamespace"
           :allowed-namespaces="allowedNamespaces"
           show-task-count
-          hide-refresh
           @input="fetch()"
         />
       </v-col>
@@ -59,7 +58,13 @@
             <LoadingToolbar :text="$t('title').toString()">
               <v-tooltip top v-if="perms.create">
                 <template #activator="{ on, attrs }">
-                  <v-btn icon color="success" @click="showCreateDialog" v-bind="attrs" v-on="on">
+                  <v-btn
+                    icon
+                    color="success"
+                    v-bind="attrs"
+                    @click="showCreateDialog"
+                    v-on="on"
+                  >
                     <v-icon>mdi-plus</v-icon>
                   </v-btn>
                 </template>

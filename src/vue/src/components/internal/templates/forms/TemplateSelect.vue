@@ -104,10 +104,6 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    hideRefresh: {
-      type: Boolean,
-      default: false,
-    },
   },
   emits: {
     input: (value: string) => !!value,

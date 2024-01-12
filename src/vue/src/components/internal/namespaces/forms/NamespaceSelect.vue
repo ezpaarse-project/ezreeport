@@ -70,13 +70,6 @@
 
       <ErrorOverlay v-model="error" />
     </div>
-
-    <RefreshButton
-      v-if="!hideRefresh"
-      :loading="loading"
-      :tooltip="$t('refresh-tooltip', { namespace: $ezReeport.tcNamespace() }).toString()"
-      @click="fetch(true)"
-    />
   </div>
 </template>
 
@@ -110,10 +103,6 @@ export default defineComponent({
       default: () => [],
     },
     hideAll: {
-      type: Boolean,
-      default: false,
-    },
-    hideRefresh: {
       type: Boolean,
       default: false,
     },
@@ -200,15 +189,15 @@ export default defineComponent({
   },
   watch: {
     // eslint-disable-next-line func-names
-    '$ezReeport.data.auth.permissions': function () {
-      this.fetch();
+    '$ezReeport.data.auth.permissions': {
+      handler() {
+        this.fetch();
+      },
+      immediate: true,
     },
     items() {
       fzfNamespaces.setCollection(this.items);
     },
-  },
-  mounted() {
-    this.fetch();
   },
   methods: {
     /**
@@ -293,8 +282,6 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   all: 'All {namespace}'
-  refresh-tooltip: 'Refresh {namespace} list'
 fr:
   all: 'Tous les {namespace}'
-  refresh-tooltip: 'Rafraîchir la liste des {namespace}s'
 </i18n>
