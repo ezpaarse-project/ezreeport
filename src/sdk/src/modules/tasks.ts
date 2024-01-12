@@ -80,6 +80,9 @@ const parseFullTask = (task: RawFullTask): FullTask => {
   };
 };
 
+/**
+ * Input data for creating a new task
+ */
 export interface InputTask extends Pick<FullTask, 'name' | 'template' | 'targets' | 'recurrence'> {
   namespace?: Task['namespaceId'],
   nextRun?: FullTask['nextRun'],
@@ -87,7 +90,17 @@ export interface InputTask extends Pick<FullTask, 'name' | 'template' | 'targets
   extends: string,
 }
 
+/**
+ * Partial input data for creating a new task with a preset
+ */
+export interface PartialInputTask extends
+  Pick<InputTask, 'targets' | 'name' | 'namespace'>,
+  Partial<Omit<InputTask, 'targets' | 'name' | 'namespace' | 'template'>> {
+  template: Pick<InputTask['template'], 'fetchOptions'>
+}
+
 type RawTaskList = (RawTask & { tags: RawTemplate['tags'] })[];
+
 export type TaskList = (Task & { tags: Template['tags'] })[];
 
 /**
@@ -195,6 +208,34 @@ export const createTask = async (
   const { content, ...response } = await axios.$post<RawFullTask>(
     '/tasks',
     task,
+    { params: { namespaces } },
+  );
+
+  return {
+    ...response,
+    content: parseFullTask(content),
+  };
+};
+
+/**
+ * Creates a new task from a preset
+ *
+ * Needs `namespaces[namespaceId].tasks-post-_from-preset-presetId` permission
+ *
+ * @param presetId The ID of the preset.
+ * @param partialTask The partial input task.
+ * @param namespaces
+ *
+ * @returns Created task's info
+ */
+export const createTaskFromPreset = async (
+  presetId: string,
+  partialTask: PartialInputTask,
+  namespaces?: Namespace['id'][],
+): Promise<ApiResponse<FullTask>> => {
+  const { content, ...response } = await axios.$post<RawFullTask>(
+    `/tasks/_from-preset/${presetId}`,
+    partialTask,
     { params: { namespaces } },
   );
 

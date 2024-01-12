@@ -1,6 +1,7 @@
 export {
   type FullTask,
   type InputTask,
+  type PartialInputTask,
   type TaskList,
   getAllTasks,
   getAllTargets,
@@ -8,6 +9,7 @@ export {
   unsubTargetOfTask,
   getTask,
   createTask,
+  createTaskFromPreset,
   updateTask,
   upsertTask,
   deleteTask,

@@ -2,6 +2,7 @@ export * as auth from './modules/auth.public';
 export * as crons from './modules/crons.public';
 export * as health from './modules/health.public';
 export * as tasksActivity from './modules/tasksActivity.public';
+export * as tasksPresets from './modules/tasksPresets.public';
 /** @deprecated Use `tasksActivity` instead */
 export * as history from './modules/tasksActivity.public';
 export * as namespaces from './modules/namespaces.public';
@@ -25,6 +26,7 @@ export type EzReeportSDK = {
   setup: typeof import('./modules/setup.public')
   tasks: typeof import('./modules/tasks.public')
   tasksActivity: typeof import('./modules/tasksActivity.public')
+  tasksPresets: typeof import('./modules/tasksPresets.public')
   templates: typeof import('./modules/templates.public'),
   elastic: typeof import('./modules/elastic.public'),
   version: string,
