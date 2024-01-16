@@ -1,5 +1,25 @@
 import type { TaskActivity, Namespace } from '~/lib/prisma';
 import prisma from '~/lib/prisma';
+import { buildPagination } from './pagination';
+import { Type, type Static } from '~/lib/typebox';
+
+const {
+  PaginationQuery: TaskActivityPaginationQuery,
+  buildPrismaArgs,
+} = buildPagination({
+  model: {} as Record<keyof TaskActivity, unknown>,
+
+  primaryKey: 'id',
+  previousType: Type.String(),
+  sortKeys: [
+    'type',
+    'taskId',
+    'createdAt',
+  ],
+});
+
+export { TaskActivityPaginationQuery };
+export type TaskActivityPaginationQueryType = Static<typeof TaskActivityPaginationQuery>;
 
 /**
  * Get count of tasks' activity entries in DB
@@ -30,17 +50,11 @@ export const getCountTaskActivity = (
  *
  * @returns TaskActivity entry list
  */
-// TODO[feat]: Custom sort
 export const getAllTaskActivityEntries = (
-  opts?: {
-    count?: number,
-    previous?: TaskActivity['id']
-  },
+  opts?: TaskActivityPaginationQueryType,
   namespaceIds?: Namespace['id'][],
 ) => prisma.taskActivity.findMany({
-  take: opts?.count,
-  skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
-  cursor: opts?.previous ? { id: opts.previous } : undefined,
+  ...buildPrismaArgs(opts || {}),
   where: namespaceIds ? { task: { namespaceId: { in: namespaceIds } } } : undefined,
   select: {
     id: true,

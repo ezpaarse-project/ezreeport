@@ -5,7 +5,6 @@ import authPlugin from '~/plugins/auth';
 
 import * as queues from '~/lib/bull';
 import { Type, type Static } from '~/lib/typebox';
-import { PaginationQuery, type PaginationQueryType } from '../utils/pagination';
 import { Access } from '~/.prisma/client';
 import { HTTPError, NotFoundError } from '~/types/errors';
 
@@ -166,13 +165,13 @@ const router: FastifyPluginAsync = async (fastify) => {
    */
   fastify.get<{
     Params: SpecificQueueParamsType,
-    Querystring: PaginationQueryType,
+    Querystring: queues.JobPaginationQueryType,
   }>(
     '/:queue/jobs',
     {
       schema: {
         params: SpecificQueueParams,
-        querystring: PaginationQuery,
+        querystring: queues.JobPaginationQuery,
       },
       ezrAuth: {
         requireAdmin: true,
@@ -180,17 +179,21 @@ const router: FastifyPluginAsync = async (fastify) => {
     },
     async (request) => {
       const { queue: name } = request.params;
-      const { previous, count = 15 } = request.query;
+
+      const pagination = {
+        count: request.query.count ?? 15,
+        previous: request.query.previous ?? undefined,
+      };
 
       // TODO: custom sort
-      const jobs = await queues.getJobs(name, { count, previous });
+      const jobs = await queues.getJobs(name, pagination);
 
       return {
         content: jobs,
         meta: {
           total: await queues.getCountJobs(name),
           count: jobs.length,
-          size: count,
+          size: pagination.count,
           lastId: jobs.at(-1)?.id,
         },
       };

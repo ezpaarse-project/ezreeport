@@ -12,7 +12,6 @@ import * as tasks from '~/models/tasks';
 import { getTemplateById, linkTaskToTemplate, unlinkTaskFromTemplate } from '~/models/templates';
 import { ArgumentError, NotFoundError, ConflictError } from '~/types/errors';
 
-import { PaginationQuery, type PaginationQueryType } from '../utils/pagination';
 import { getTasksPresetById } from '~/models/tasksPresets';
 
 const router: FastifyPluginAsync = async (fastify) => {
@@ -22,31 +21,32 @@ const router: FastifyPluginAsync = async (fastify) => {
    * List all active tasks of authed user's namespace.
    */
   fastify.get<{
-    Querystring: PaginationQueryType
+    Querystring: tasks.TaskPaginationQueryType
   }>(
     '/',
     {
       schema: {
-        querystring: PaginationQuery,
+        querystring: tasks.TaskPaginationQuery,
       },
       ezrAuth: {
         access: Access.READ,
       },
     },
     async (request) => {
-      const { previous, count = 15 } = request.query;
+      const pagination = {
+        count: request.query.count ?? 15,
+        sort: (request.query.sort ?? 'createdAt'),
+        previous: request.query.previous ?? undefined,
+      };
 
-      const list = await tasks.getAllTasks(
-        { count, previous },
-        request.namespaceIds,
-      );
+      const list = await tasks.getAllTasks(pagination, request.namespaceIds);
 
       return {
         content: list,
         meta: {
           total: await tasks.getCountTask(request.namespaceIds),
           count: list.length,
-          size: count,
+          size: pagination.count,
           lastId: list.at(-1)?.id,
         },
       };
@@ -156,13 +156,13 @@ const router: FastifyPluginAsync = async (fastify) => {
    * Get all tasks of a target
    */
   fastify.get<{
-    Querystring: PaginationQueryType
+    Querystring: tasks.TaskPaginationQueryType
     Params: SpecificEmailParamsType,
   }>(
     '/_targets/:email/tasks',
     {
       schema: {
-        querystring: PaginationQuery,
+        querystring: tasks.TaskPaginationQuery,
         params: SpecificEmailParams,
       },
       ezrAuth: {
@@ -170,11 +170,15 @@ const router: FastifyPluginAsync = async (fastify) => {
       },
     },
     async (request) => {
-      const { previous, count = 15 } = request.query;
+      const pagination = {
+        count: request.query.count ?? 15,
+        sort: (request.query.sort ?? 'createdAt'),
+        previous: request.query.previous ?? undefined,
+      };
 
       const list = await tasks.getTasksByTargets(
         request.params.email,
-        { count, previous },
+        pagination,
         request.namespaceIds,
       );
 
@@ -183,7 +187,7 @@ const router: FastifyPluginAsync = async (fastify) => {
         meta: {
           total: await tasks.getTaskCountByTargets(request.params.email, request.namespaceIds),
           count: list.length,
-          size: count,
+          size: pagination.count,
           lastId: list.at(-1)?.id,
         },
       };

@@ -14,6 +14,7 @@ import {
 } from '~/lib/prisma';
 
 import { calcNextDate } from '~/models/recurrence';
+import { buildPagination } from '~/models/pagination';
 
 import { ArgumentError } from '~/types/errors';
 
@@ -21,6 +22,29 @@ import { FullTemplateBody, TaskTemplate, getTemplateById } from './templates';
 import type { FullTasksPreset } from '~/models/tasksPresets';
 
 // #region Input types
+
+const {
+  PaginationQuery: TaskPaginationQuery,
+  buildPrismaArgs,
+} = buildPagination({
+  model: {} as Record<keyof PrismaTask, unknown>,
+
+  primaryKey: 'id',
+  previousType: Type.String(),
+  sortKeys: [
+    'name',
+    'enabled',
+    'lastRun',
+    'nextRun',
+    'recurrence',
+    'namespaceId',
+    'createdAt',
+    'updatedAt',
+  ],
+});
+
+export { TaskPaginationQuery };
+export type TaskPaginationQueryType = Static<typeof TaskPaginationQuery>;
 
 type InputActivity = Pick<Prisma.TaskActivityCreateWithoutTaskInput, 'type' | 'message' | 'data'>;
 
@@ -35,7 +59,9 @@ export const InputTaskBody = Type.Object({
     Type.String({ format: 'email' }),
   ),
   recurrence: Type.Enum(Recurrence),
-  nextRun: Type.String({ format: 'date-time' }),
+  nextRun: Type.Optional(
+    Type.String({ format: 'date-time' }),
+  ),
   enabled: Type.Optional(
     Type.Boolean(),
   ),
@@ -173,18 +199,12 @@ export const getCountTask = (
  *
  * @returns Tasks list
  */
-// TODO[feat]: Custom sort
 export const getAllTasks = async (
-  opts?: {
-    count?: number,
-    previous?: PrismaTask['id'],
-  },
+  opts?: TaskPaginationQueryType,
   namespaceIds?: Namespace['id'][],
 ): Promise<TaskList> => {
   const tasks = await prisma.task.findMany({
-    take: opts?.count,
-    skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
-    cursor: opts?.previous ? { id: opts.previous } : undefined,
+    ...buildPrismaArgs(opts || {}),
     select: {
       id: true,
       name: true,
@@ -203,9 +223,6 @@ export const getAllTasks = async (
       namespaceId: {
         in: namespaceIds,
       },
-    },
-    orderBy: {
-      createdAt: 'asc',
     },
   });
 
@@ -283,16 +300,11 @@ export const getAllTargets = async (namespaceIds?: Namespace['id'][]): Promise<s
  */
 export const getTasksByTargets = async (
   email: string,
-  opts?: {
-    count?: number,
-    previous?: PrismaTask['id'],
-  },
+  opts?: TaskPaginationQueryType,
   namespaceIds?: Namespace['id'][],
 ): Promise<TaskList> => {
   const tasks = await prisma.task.findMany({
-    take: opts?.count,
-    skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
-    cursor: opts?.previous ? { id: opts.previous } : undefined,
+    ...buildPrismaArgs(opts || {}),
     select: {
       id: true,
       name: true,
@@ -314,9 +326,6 @@ export const getTasksByTargets = async (
       targets: {
         has: email,
       },
-    },
-    orderBy: {
-      createdAt: 'asc',
     },
   });
 
@@ -410,7 +419,7 @@ export const createTask = async (
     ...data
   } = input;
 
-  let nR = dfns.parseISO(nextRun);
+  let nR = dfns.parseISO(nextRun || '');
   if (!dfns.isValid(nR)) {
     nR = calcNextDate(new Date(), data.recurrence);
   }
@@ -455,10 +464,7 @@ export const createTaskFromPreset = async (
         fetchOptions: preset.fetchOptions,
       },
     },
-    {
-      nextRun: '', // auto nextRun by default
-      ...data,
-    },
+    data,
   ),
   creator,
 );

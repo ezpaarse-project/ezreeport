@@ -8,11 +8,14 @@ import {
   type Job,
 } from 'bullmq';
 
+import { Type, type Static } from '~/lib/typebox';
 import type { Task } from '~/lib/prisma';
 import config from '~/lib/config';
 import { formatInterval } from '~/lib/utils';
 import { appLogger as logger } from '~/lib/logger';
 import { ConflictError, NotFoundError } from '~/types/errors';
+
+import { buildPagination } from '~/models/pagination';
 
 const {
   redis,
@@ -68,9 +71,6 @@ export type MailResult = {
   task: {
     id: string,
     recurrence: Task['recurrence'],
-    name: string,
-    targets: string[],
-    namespace: string,
   }
   /**
    * The email of the user that was used for generation
@@ -85,6 +85,19 @@ export type MailResult = {
    */
   url: string,
 };
+
+const {
+  PaginationQuery: JobPaginationQuery,
+} = buildPagination({
+  model: {} as Record<keyof Job, unknown>,
+
+  primaryKey: 'id',
+  previousType: Type.String(),
+  sortKeys: [],
+});
+
+export { JobPaginationQuery };
+export type JobPaginationQueryType = Static<typeof JobPaginationQuery>;
 
 const workers: Worker[] = [];
 
@@ -310,10 +323,7 @@ export const getCountJobs = async (queue: string) => {
  */
 export const getJobs = async (
   queue: string,
-  jobOpts?: {
-    count?: number,
-    previous?: Job<GenerationData>['id'],
-  },
+  jobOpts?: JobPaginationQueryType,
 ) => {
   const rawJobs = await getOneQueue(queue).getJobs(
     ['active', 'completed', 'delayed', 'failed', 'paused', 'waiting'],
@@ -328,6 +338,7 @@ export const getJobs = async (
     }
   }
   jobs = jobs.slice(0, jobOpts?.count ?? 15);
+  // TODO: custom sort
 
   return Promise.all(jobs.map(formatJob));
 };

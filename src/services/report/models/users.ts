@@ -12,6 +12,7 @@ import { appLogger } from '~/lib/logger';
 import { Type, type Static } from '~/lib/typebox';
 
 import { upsertBulkMembership, deleteBulkMembership, MembershipBody } from '~/models/memberships';
+import { buildPagination } from './pagination';
 
 type InputUser = Pick<Prisma.UserCreateInput, 'isAdmin'>;
 
@@ -36,6 +37,25 @@ export const UserBody = Type.Object({
 });
 
 export type UserBodyType = Static<typeof UserBody>;
+
+const {
+  PaginationQuery: UserPaginationQuery,
+  buildPrismaArgs,
+} = buildPagination({
+  model: {} as Record<keyof User, unknown>,
+
+  primaryKey: 'username',
+  previousType: Type.String(),
+  sortKeys: [
+    'username',
+    'isAdmin',
+    'createdAt',
+    'updatedAt',
+  ],
+});
+
+export { UserPaginationQuery };
+export type UserPaginationQueryType = Static<typeof UserPaginationQuery>;
 
 const prismaMembershipSelect = {
   select: {
@@ -74,16 +94,10 @@ export const getCountUsers = (): Promise<number> => prisma.user.count();
  *
  * @returns User entries list
  */
-// TODO[feat]: Custom sort
 export const getAllUsers = async (
-  opts?: {
-    count?: number,
-    previous?: User['username']
-  },
+  opts?: UserPaginationQueryType,
 ) => prisma.user.findMany({
-  take: opts?.count,
-  skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
-  cursor: opts?.previous ? { username: opts.previous } : undefined,
+  ...buildPrismaArgs(opts || {}),
   include: {
     _count: {
       select: {

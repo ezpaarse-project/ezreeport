@@ -2,7 +2,6 @@ import type { FastifyPluginAsync } from 'fastify';
 import { StatusCodes } from 'http-status-codes';
 
 import authPlugin from '~/plugins/auth';
-import { PaginationQuery, type PaginationQueryType } from '~/routes/utils/pagination';
 
 import { Type, type Static } from '~/lib/typebox';
 
@@ -17,28 +16,32 @@ const router: FastifyPluginAsync = async (fastify) => {
    * List all user
    */
   fastify.get<{
-    Querystring: PaginationQueryType,
+    Querystring: users.UserPaginationQueryType,
   }>(
     '/',
     {
       schema: {
-        querystring: PaginationQuery,
+        querystring: users.UserPaginationQuery,
       },
       ezrAuth: {
         requireAPIKey: true,
       },
     },
     async (request) => {
-      const { previous, count = 15 } = request.query;
+      const pagination = {
+        count: request.query.count ?? 15,
+        sort: (request.query.sort ?? 'createdAt'),
+        previous: request.query.previous ?? undefined,
+      };
 
-      const list = await users.getAllUsers({ count, previous });
+      const list = await users.getAllUsers(pagination);
 
       return {
         content: list,
         meta: {
           total: await users.getCountUsers(),
           count: list.length,
-          size: count,
+          size: pagination.count,
           lastId: list.at(-1)?.username,
         },
       };
