@@ -5,7 +5,7 @@
     :position-y="coords.y"
     :close-on-content-click="false"
     absolute
-    offset-y
+    left
     max-width="450"
     min-width="450"
     @input="$emit('input', $event)"

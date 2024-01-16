@@ -1,23 +1,21 @@
 <template>
   <v-col v-if="perms.readAll">
     <TemplateProvider>
-      <TaskDialogCreate
-        v-if="perms.create && createTaskDialogShown"
-        ref="dialogCreate"
+      <TaskDialogCreateManager
+        v-if="perms.create"
         v-model="createTaskDialogShown"
-        :id="focusedId"
         @created="onTaskCreated"
       />
-      <TaskDialogRead
-        v-if="perms.readOne && readTaskDialogShown"
+      <TaskDialogReadManager
+        v-if="perms.readOne && focusedTask"
         v-model="readTaskDialogShown"
-        :id="focusedId"
+        :task="focusedTask"
         @updated="onTaskEdited"
       />
-      <TaskDialogUpdate
-        v-if="perms.update && updateTaskDialogShown"
+      <TaskDialogUpdateManager
+        v-if="perms.update && focusedTask"
         v-model="updateTaskDialogShown"
-        :id="focusedId"
+        :task="focusedTask"
         @updated="onTaskEdited"
       />
       <TaskPopoverDelete
@@ -106,6 +104,7 @@
                 || !rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task-_disable']
               "
               :label="$t(`$ezreeport.tasks.enabled.${enabled}`).toString()"
+              class="mt-4"
               reverse
               @click.stop="toggleTask(item)"
             />
@@ -151,7 +150,6 @@ import { defineComponent, type PropType } from 'vue';
 import type { DataOptions } from 'vuetify';
 import type { DataTableHeader } from '~/types/vuetify';
 import ezReeportMixin from '~/mixins/ezr';
-import type TaskDialogCreate from '~/components/internal/tasks/dialogs/TaskDialogCreate.vue';
 import type Tag from '~/lib/templates/tags';
 
 interface TaskItem {
@@ -191,8 +189,8 @@ export default defineComponent({
     'update:currentNamespace': (id: string | undefined) => id !== null,
   },
   data: () => ({
-    readTaskDialogShown: false,
     createTaskDialogShown: false,
+    readTaskDialogShown: false,
     updateTaskDialogShown: false,
     deleteTaskPopoverShown: false,
     deleteTaskPopoverCoords: { x: 0, y: 0 },
@@ -461,8 +459,13 @@ export default defineComponent({
     onTaskCreated(task: tasks.FullTask) {
       // TODO? go to first page ?
       this.fetch();
-      this.createTaskDialogShown = false;
-      const t = this.parseTask({ ...task, namespaceId: task.namespace.id, tags: [] });
+      // this.createTaskPopoverShown = false;
+      const t = this.parseTask({
+        ...task,
+        namespaceId: task.namespace.id,
+        tags: [],
+        _count: { targets: 0 },
+      });
       this.showTaskDialog(t);
     },
     /**
@@ -485,6 +488,7 @@ export default defineComponent({
         ...task,
         tags: task.lastExtended?.tags ?? task.extends.tags,
         namespaceId: task.namespace.id,
+        _count: { targets: task.targets.length },
       });
       this.tasks = tasks;
     },
@@ -494,16 +498,38 @@ export default defineComponent({
      * @param task The task to duplicate
      */
     async duplicateTask(task: tasks.Task) {
-      if (
-        !this.perms.readOne
-        && !this.perms.create
-      ) {
+      if (!this.perms.update && !this.perms.create) {
         return;
       }
 
-      await this.showCreateDialog();
-      (this.$refs.dialogCreate as InstanceType<typeof TaskDialogCreate>)
-        ?.openFromTask(task);
+      this.loading = true;
+      try {
+        const { content: fullTask } = await this.$ezReeport.sdk.tasks.getTask(task.id);
+        const { content: created } = await this.$ezReeport.sdk.tasks.createTask({
+          name: `${fullTask.name} ${this.$t('duplicate_suffix')}`,
+          extends: fullTask.extends?.id,
+          recurrence: fullTask.recurrence,
+          targets: fullTask.targets,
+          template: fullTask.template,
+          enabled: fullTask.enabled,
+          namespace: this.currentNamespace || fullTask.namespace.id,
+          nextRun: new Date(),
+        });
+
+        await this.fetch();
+        this.showTaskDialog({
+          id: created.id,
+          name: created.name,
+          namespace: created.namespace,
+          recurrence: created.recurrence,
+          tags: created.extends?.tags,
+          enabled: created.enabled,
+          nextRun: created.nextRun.toString(),
+        });
+      } catch (err) {
+        this.error = (err as Error).message;
+      }
+      this.loading = false;
     },
   },
 });
@@ -519,10 +545,12 @@ export default defineComponent({
 <i18n lang="yaml">
 en:
   title: 'Periodic report list'
+  duplicate_suffix: '(copied)'
   headers:
     actions: 'Actions'
 fr:
   title: 'Liste des rapports périodiques'
+  duplicate_suffix: '(copie)'
   headers:
     actions: 'Actions'
 </i18n>
