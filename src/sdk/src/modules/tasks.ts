@@ -99,9 +99,9 @@ export interface PartialInputTask extends
   template: Pick<InputTask['template'], 'fetchOptions'>
 }
 
-type RawTaskList = (RawTask & { tags: RawTemplate['tags'] })[];
+type RawTaskList = (RawTask & { tags: RawTemplate['tags'], _count: { targets: number } })[];
 
-export type TaskList = (Task & { tags: Template['tags'] })[];
+export type TaskList = (Task & { tags: Template['tags'], _count: { targets: number } })[];
 
 /**
  * Get all available tasks
@@ -116,8 +116,8 @@ export type TaskList = (Task & { tags: Template['tags'] })[];
 export const getAllTasks = async (
   paginationOpts?: { previous?: Task['id'], count?: number },
   namespaces?: Namespace['id'][],
-): Promise<PaginatedApiResponse<TaskList>> => {
-  const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawTaskList>, 'get'>(
+): Promise<PaginatedApiResponse<TaskList[number], 'id'>> => {
+  const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawTaskList[number], 'id'>, 'get'>(
     'get',
     '/tasks',
     {
@@ -130,8 +130,9 @@ export const getAllTasks = async (
 
   return {
     ...response,
-    content: content.map(({ tags, ...task }) => ({
+    content: content.map(({ tags, _count, ...task }) => ({
       tags,
+      _count,
       ...parseTask(task),
     })),
   };

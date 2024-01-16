@@ -68,8 +68,8 @@ const parseActivityWithTask = (entry: RawActivityWithTask): ActivityWithTask => 
 export const getAllEntries = async (
   paginationOpts?: { previous?: Activity['id'], count?: number },
   namespaces?: string[],
-): Promise<PaginatedApiResponse<ActivityWithTask[]>> => {
-  const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawActivityWithTask[]>, 'get'>(
+): Promise<PaginatedApiResponse<ActivityWithTask, 'id'>> => {
+  const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawActivityWithTask, 'id'>, 'get'>(
     'get',
     '/tasks-activity',
     {
