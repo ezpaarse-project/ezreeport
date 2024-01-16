@@ -90,7 +90,7 @@ const LastExtended = Type.Intersect([
 
 export type TaskList = (
   Pick<PrismaTask, 'id' | 'name' | 'namespaceId' | 'recurrence' | 'nextRun' | 'lastRun' | 'enabled' | 'createdAt' | 'updatedAt'>
-  & { tags: PrismaTemplate['tags'] }
+  & { tags: PrismaTemplate['tags'], _count: { targets: number } }
 )[];
 
 type FullTask = Pick<PrismaTask, 'id' | 'name' | 'targets' | 'recurrence' | 'nextRun' | 'lastRun' | 'enabled' | 'createdAt' | 'updatedAt'>
@@ -215,6 +215,7 @@ export const getAllTasks = async (
       enabled: true,
       createdAt: true,
       updatedAt: true,
+      targets: true,
 
       extendedId: true,
       lastExtended: true,
@@ -228,12 +229,20 @@ export const getAllTasks = async (
 
   return Promise.all(
     // Add tags from extended or last extended
-    tasks.map(async ({ extendedId, lastExtended, ...task }) => {
+    tasks.map(async ({
+      extendedId,
+      lastExtended,
+      targets,
+      ...task
+    }) => {
       const lE = Value.Cast(LastExtended, lastExtended);
       if (lE?.tags && lE.tags.length > 0) {
         return {
           ...task,
           tags: lE.tags,
+          _count: {
+            targets: targets.length,
+          },
         };
       }
 
@@ -241,6 +250,9 @@ export const getAllTasks = async (
       return {
         ...task,
         tags: extended?.tags ?? [],
+        _count: {
+          targets: targets.length,
+        },
       };
     }),
   );
@@ -315,6 +327,7 @@ export const getTasksByTargets = async (
       enabled: true,
       createdAt: true,
       updatedAt: true,
+      targets: true,
 
       extendedId: true,
       lastExtended: true,
@@ -331,12 +344,20 @@ export const getTasksByTargets = async (
 
   return Promise.all(
     // Add tags from extended or last extended
-    tasks.map(async ({ extendedId, lastExtended, ...task }) => {
+    tasks.map(async ({
+      extendedId,
+      lastExtended,
+      targets,
+      ...task
+    }) => {
       const lE = Value.Cast(LastExtended, lastExtended);
       if (lE?.tags && lE.tags.length > 0) {
         return {
           ...task,
           tags: lE.tags,
+          _count: {
+            targets: targets.length,
+          },
         };
       }
 
@@ -344,6 +365,9 @@ export const getTasksByTargets = async (
       return {
         ...task,
         tags: extended?.tags ?? [],
+        _count: {
+          targets: targets.length,
+        },
       };
     }),
   );
