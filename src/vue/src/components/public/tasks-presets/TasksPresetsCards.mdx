@@ -1,12 +1,12 @@
 import { Meta, Story, Controls } from '@storybook/blocks';
 
-import * as TasksPresetsListStories from './TasksPresetsList.stories';
+import * as TasksPresetsCardsStories from './TasksPresetsCards.stories';
 
-<Meta of={TasksPresetsListStories} />
+<Meta of={TasksPresetsCardsStories} />
 
-# TasksPresets List
+# TasksPresets Cards
 
-List all presets user have access to. You can see details by clicking on it.
+List all presets user have access to. You can see details by clicking on a little cog.
 
 > **Note**
 > This components show only if any `global.tasks-presets-get` permission is granted to the authed user.
@@ -27,4 +27,4 @@ List all presets user have access to. You can see details by clicking on it.
 </template>
 ```
 
-<Story of={TasksPresetsListStories.Basic} />
+<Story of={TasksPresetsCardsStories.Basic} />

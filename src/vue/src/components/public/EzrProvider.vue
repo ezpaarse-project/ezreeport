@@ -89,7 +89,7 @@ watch(
 watch(
   () => props.namespaceIcon,
   (value) => {
-    set(namespaces, 'icon', value);
+    set(namespaces.value, 'icon', value);
   },
   { immediate: true },
 );

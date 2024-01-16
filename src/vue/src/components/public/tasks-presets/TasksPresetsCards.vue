@@ -1,22 +1,23 @@
 <template>
-  <div>
+  <v-col v-if="perms.readAll">
     <TasksPresetsDialogCreate
+      v-if="perms.create"
       v-model="createPresetDialogShown"
       @created="onPresetCreated"
     />
     <TasksPresetsDialogUpdate
-      v-if="focusedPreset"
+      v-if="perms.update && focusedPreset"
       v-model="updatePresetDialogShown"
       :preset="focusedPreset"
       @updated="onPresetUpdated"
     />
     <TasksPresetsDialogRead
-      v-if="focusedPreset"
+      v-if="perms.readOne && focusedPreset"
       v-model="readPresetDialogShown"
       :preset="focusedPreset"
     />
     <TasksPresetsPopoverDelete
-      v-if="focusedPreset"
+      v-if="perms.delete && focusedPreset"
       v-model="deletePresetPopoverShown"
       :coords="deletePresetPopoverCoords"
       :preset="focusedPreset"
@@ -63,8 +64,12 @@
             cols="3"
           >
             <v-card class="d-flex flex-column" style="height: 100%;">
-              <v-card-title>
+              <v-card-title style="word-break: keep-all;">
                 {{ preset.name }}
+              </v-card-title>
+
+              <v-card-subtitle class="d-flex">
+                <MiniTagsDetail :model-value="preset.tags" />
 
                 <v-spacer />
 
@@ -73,10 +78,6 @@
                   size="small"
                   classes="ml-2"
                 />
-              </v-card-title>
-
-              <v-card-subtitle>
-                <MiniTagsDetail :model-value="preset.tags" />
               </v-card-subtitle>
 
               <div style="flex: 1;" />
@@ -123,7 +124,7 @@
                       </v-list-item-action>
 
                       <v-list-item-title>
-                        {{ $t('details') }}
+                        {{ $t('$ezreeport.details') }}
                       </v-list-item-title>
                     </v-list-item>
 
@@ -156,7 +157,7 @@
         </v-row>
       </template>
     </v-data-iterator>
-  </div>
+  </v-col>
 </template>
 
 <script setup lang="ts">
@@ -282,10 +283,8 @@ en:
   refresh-tooltip: 'Refresh report presets list'
   title: '{title} ({count})'
   created: 'Created: {date}'
-  details: 'Details'
 fr:
   refresh-tooltip: 'Rafraîchir la liste des prédéfinis de rapports'
   title: '{title} ({count})'
   created: 'Créé le {date}'
-  details: 'Details'
 </i18n>

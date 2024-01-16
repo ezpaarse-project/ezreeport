@@ -254,6 +254,7 @@ import useTemplateStore, {
   mapRulesToVuetify,
   supportedFetchOptions,
 } from '~/stores/template';
+import { indexFilter } from '~/lib/elastic/indicies';
 import type ElasticFilterBuilderConstructor from '../../utils/elastic/filters/ElasticFilterBuilder.vue';
 
 type ElasticFilterBuilder = InstanceType<typeof ElasticFilterBuilderConstructor>;
@@ -573,13 +574,7 @@ export default defineComponent({
     async onIndexChange() {
       await this.templateStore.fetchCurrentMapping(this.namespace, this.innerIndex);
     },
-    indexFilter(item: string, queryText: string) {
-      const w = queryText.replace(/[.+^${}()|[\]\\]/g, '\\$&'); // regexp escape
-      const re = new RegExp(
-        `^${w.replace(/\*/g, '.*').replace(/\?/g, '.')}`,
-      );
-      return re.test(item);
-    },
+    indexFilter,
   },
 });
 </script>

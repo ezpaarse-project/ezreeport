@@ -21,6 +21,7 @@
   "unknown": "Unknown",
   "filter": "Filter",
   "reset": "Reset",
+  "details": "Details",
 
   "tasks": {
     "name": "Report name",
