@@ -1,3 +1,16 @@
+# @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.10](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.9...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.10) (2024-01-17)
+
+
+### Bug Fixes
+
+* **sdk:** fixed type of pagination ([c13572c](https://github.com/ezpaarse-project/ezreeport/commit/c13572ca31b0e44c731187402fd89fb6dd68ad7f))
+
+
+### Features
+
+* **sdk:** added tasks' presets ([12bb8f0](https://github.com/ezpaarse-project/ezreeport/commit/12bb8f01c73654b5f3d121e6acc5919b40d12cbd))
+* **sdk:** following API changes ([1dbf006](https://github.com/ezpaarse-project/ezreeport/commit/1dbf006c9d7220c9e7ff303c316b1dc3dcee97c7))
+
 # @ezpaarse-project/ezreeport-sdk-js 1.0.0-rc.1 (2023-12-13)
 
 
