@@ -1,3 +1,30 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.30](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.29...@ezpaarse-project/ezreeport-vue@1.0.0-beta.30) (2024-01-17)
+
+
+### Bug Fixes
+
+* **vue:** fixed crahs in activity table ([7830d01](https://github.com/ezpaarse-project/ezreeport/commit/7830d0140b595a6ac85c89a4c59e7541c235dd8d))
+* **vue:** fixed error log at login ([6e305d3](https://github.com/ezpaarse-project/ezreeport/commit/6e305d3acd1859d0369f703edfb304c8a0897cfb))
+
+
+### Features
+
+* **vue:** added `useI18n` and `useEzR` to allow more `setup()` ([2764c1a](https://github.com/ezpaarse-project/ezreeport/commit/2764c1a093ef80931ea26fc8dd1250dc4d1d8fa9))
+* **vue:** added components for tasks presets management ([4237500](https://github.com/ezpaarse-project/ezreeport/commit/4237500826b06c2ea9af6267bb2a37999fe08d95))
+* **vue:** added customizable namespace icon ([76433b4](https://github.com/ezpaarse-project/ezreeport/commit/76433b48a2c6fafc20aca6b5735274e7a6a0229e))
+* **vue:** removed refresh from NamespaceSelect ([3f33ca7](https://github.com/ezpaarse-project/ezreeport/commit/3f33ca7a5f3ec309ae7b29668b2ba66c751da05e))
+* **vue:** reworked tasks preset list into cards ([c52af2d](https://github.com/ezpaarse-project/ezreeport/commit/c52af2d2c999a6a4f66956d18625dbe8b6659546))
+* **vue:** simplified task management ([9e75956](https://github.com/ezpaarse-project/ezreeport/commit/9e7595691bd13adf467cf9972ff5e98bfd3f4164))
+* **vue:** simplified task-table ([df654cb](https://github.com/ezpaarse-project/ezreeport/commit/df654cb6fb26585cec560825499859986d521448))
+
+
+
+
+
+### Dependencies
+
+* **@ezpaarse-project/ezreeport-sdk-js:** upgraded to 1.0.0-beta.10
+
 # @ezpaarse-project/ezreeport-vue 1.0.0-rc.1 (2023-12-13)
 
 
