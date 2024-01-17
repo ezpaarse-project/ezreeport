@@ -12,7 +12,7 @@ import * as tasks from '~/models/tasks';
 import { getTemplateById, linkTaskToTemplate, unlinkTaskFromTemplate } from '~/models/templates';
 import { ArgumentError, NotFoundError, ConflictError } from '~/types/errors';
 
-import { PaginationQuery, type PaginationQueryType } from '../utils/pagination';
+import { getTasksPresetById } from '~/models/tasksPresets';
 
 const router: FastifyPluginAsync = async (fastify) => {
   await fastify.register(authPlugin, { prefix: 'tasks' });
@@ -21,31 +21,32 @@ const router: FastifyPluginAsync = async (fastify) => {
    * List all active tasks of authed user's namespace.
    */
   fastify.get<{
-    Querystring: PaginationQueryType
+    Querystring: tasks.TaskPaginationQueryType
   }>(
     '/',
     {
       schema: {
-        querystring: PaginationQuery,
+        querystring: tasks.TaskPaginationQuery,
       },
       ezrAuth: {
         access: Access.READ,
       },
     },
     async (request) => {
-      const { previous, count = 15 } = request.query;
+      const pagination = {
+        count: request.query.count ?? 15,
+        sort: (request.query.sort ?? 'createdAt'),
+        previous: request.query.previous ?? undefined,
+      };
 
-      const list = await tasks.getAllTasks(
-        { count, previous },
-        request.namespaceIds,
-      );
+      const list = await tasks.getAllTasks(pagination, request.namespaceIds);
 
       return {
         content: list,
         meta: {
           total: await tasks.getCountTask(request.namespaceIds),
           count: list.length,
-          size: count,
+          size: pagination.count,
           lastId: list.at(-1)?.id,
         },
       };
@@ -84,6 +85,51 @@ const router: FastifyPluginAsync = async (fastify) => {
     },
   );
 
+  const SpecificPresetParams = Type.Object({
+    presetId: Type.String({ minLength: 1 }),
+  });
+  type SpecificPresetParamsType = Static<typeof SpecificPresetParams>;
+
+  /**
+   * Create a new task from a preset
+   */
+  fastify.post<{
+    Body: tasks.AdditionalDataForPresetType,
+    Params: SpecificPresetParamsType,
+  }>(
+    '/_from-preset/:presetId',
+    {
+      schema: {
+        body: tasks.AdditionalDataForPreset,
+        params: SpecificPresetParams,
+      },
+      ezrAuth: {
+        access: Access.READ_WRITE,
+      },
+      preHandler: async (request) => {
+        // Check if namespace is valid
+        if (!request.namespaceIds?.includes(request.body.namespace)) {
+          throw new ArgumentError("The provided namespace doesn't exist or you don't have access to this namespace");
+        }
+      },
+    },
+    async (request, reply) => {
+      const preset = await getTasksPresetById(request.params.presetId);
+      if (!preset) {
+        throw new NotFoundError("The provided preset doesn't exist");
+      }
+
+      reply.code(StatusCodes.CREATED);
+      return {
+        content: await tasks.createTaskFromPreset(
+          preset,
+          request.body,
+          request.user?.username ?? '',
+        ),
+      };
+    },
+  );
+
   /**
    * Get all targets of all tasks
    */
@@ -110,13 +156,13 @@ const router: FastifyPluginAsync = async (fastify) => {
    * Get all tasks of a target
    */
   fastify.get<{
-    Querystring: PaginationQueryType
+    Querystring: tasks.TaskPaginationQueryType
     Params: SpecificEmailParamsType,
   }>(
     '/_targets/:email/tasks',
     {
       schema: {
-        querystring: PaginationQuery,
+        querystring: tasks.TaskPaginationQuery,
         params: SpecificEmailParams,
       },
       ezrAuth: {
@@ -124,11 +170,15 @@ const router: FastifyPluginAsync = async (fastify) => {
       },
     },
     async (request) => {
-      const { previous, count = 15 } = request.query;
+      const pagination = {
+        count: request.query.count ?? 15,
+        sort: (request.query.sort ?? 'createdAt'),
+        previous: request.query.previous ?? undefined,
+      };
 
       const list = await tasks.getTasksByTargets(
         request.params.email,
-        { count, previous },
+        pagination,
         request.namespaceIds,
       );
 
@@ -137,7 +187,7 @@ const router: FastifyPluginAsync = async (fastify) => {
         meta: {
           total: await tasks.getTaskCountByTargets(request.params.email, request.namespaceIds),
           count: list.length,
-          size: count,
+          size: pagination.count,
           lastId: list.at(-1)?.id,
         },
       };

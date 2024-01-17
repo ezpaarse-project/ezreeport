@@ -14,7 +14,7 @@ export interface ApiResponse<T> {
   content: T
 }
 
-export interface PaginatedApiResponse<T> extends ApiResponse<T> {
+export interface PaginatedApiResponse<T, K extends keyof T> extends ApiResponse<T[]> {
   meta: {
     /**
      * Count of items in response
@@ -31,7 +31,7 @@ export interface PaginatedApiResponse<T> extends ApiResponse<T> {
     /**
      * Id of last item in response
      */
-    lastId?: unknown
+    lastId?: T[K]
   }
 }
 

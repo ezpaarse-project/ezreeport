@@ -1,35 +1,19 @@
 <template>
   <v-dialog
     :value="value"
-    :fullscreen="tabs[currentTab]?.fullScreen"
+    :fullscreen="tabs[currentTab].fullScreen"
     :persistent="!valid"
     max-width="1000"
     scrollable
     @input="$emit('input', $event)"
   >
-    <TaskDialogGeneration
-      v-if="task && perms.runTask"
-      v-model="generationDialogShown"
-      :task="task"
-      @generated="fetch()"
-    />
-    <TaskDialogLink
-      v-if="task && perms.update"
-      ref="taskDialogLink"
-      :taskId="task.id"
-      :extend-id="task.extends.id"
-      :lastExtendId="task.lastExtended?.id"
-      :defaultId="templateStore.defaultTemplateId"
-      @error="error = $event.message"
-      @success="fetch()"
-    />
-
-    <v-card :loading="loading" :tile="tabs[currentTab]?.fullScreen">
+    <v-card :loading="loading" :tile="tabs[currentTab].fullScreen">
       <v-card-title>
         <v-text-field
           v-if="task"
           v-model="task.name"
           :rules="rules.name"
+          :delimiters="[',']"
           :label="$t('$ezreeport.tasks.name')"
         />
         <RecurrenceChip
@@ -51,22 +35,19 @@
 
         <v-spacer />
 
+        <slot name="toolbar" />
+
         <v-btn icon text @click="$emit('input', false)">
           <v-icon>mdi-close</v-icon>
         </v-btn>
-
       </v-card-title>
 
       <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
-        <v-tab v-for="tab in tabs" :key="tab.name" v-on="tab.on">
+        <v-tab v-for="tab in tabs" :key="tab.name">
           {{ $t(`$ezreeport.tasks.tabs.${tab.name}`) }}
-          <v-icon v-if="tab.fullScreen" small class="ml-1">mdi-arrow-expand</v-icon>
+          <v-icon v-if="tab.fullScreen" class="ml-1">mdi-arrow-expand</v-icon>
 
-          <v-tooltip
-            top
-            v-if="tab.valid !== true"
-            color="warning"
-          >
+          <v-tooltip top v-if="tab.valid !== true" color="warning">
             <template #activator="{ attrs, on }">
               <v-icon
                 color="warning"
@@ -97,7 +78,6 @@
                     v-model="task.targets"
                     :label="$t('$ezreeport.tasks.targets')"
                     :rules="rules.targets"
-                    :delimiters="[',']"
                     multiple
                   >
                     <template #append>
@@ -123,16 +103,15 @@
 
                 <v-col>
                   <div>{{ $ezReeport.tcNamespace(true) }}:</div>
-                  <NamespaceRichListItem :namespace="task.namespace" />
+                  <NamespaceSelect
+                    v-model="task.namespace"
+                    :error-message="!task.namespace ? $t('$ezreeport.errors.empty').toString() : undefined"
+                    :needed-permissions="['tasks-post']"
+                    hide-all
+                  />
 
                   <div>{{ $t('$ezreeport.tasks.dates') }}:</div>
                   <v-container>
-                    <v-text-field
-                      :value="dates.lastRun"
-                      :label="$t('$ezreeport.tasks.lastRun').toString()"
-                      prepend-icon="mdi-calendar-arrow-left"
-                      disabled
-                    />
                     <DatePicker
                       v-model="task.nextRun"
                       :label="$t('$ezreeport.tasks.nextRun').toString()"
@@ -143,24 +122,14 @@
                 </v-col>
               </v-row>
             </v-form>
-          </v-tab-item>
 
-          <v-tab-item>
-            <InternalTasksActivityTable
-              v-if="task"
-              :activity="task.activity"
-              hide-task
-              hide-namespace
-            />
           </v-tab-item>
 
           <v-tab-item>
             <TemplateForm
               v-if="task"
-              :last-extended="task.lastExtended"
-              :is-modified="isModified"
-              :namespace="task.namespace.id"
-              @update:link="onLinkUpdate"
+              :namespace="task.namespace"
+              no-link
             />
           </v-tab-item>
         </v-tabs-items>
@@ -171,15 +140,6 @@
       <v-divider />
 
       <v-card-actions>
-        <v-btn
-          v-if="perms.runTask"
-          :disabled="isModified"
-          color="warning"
-          @click="showGenerateDialog"
-        >
-          {{ $t('$ezreeport.generate') }}
-        </v-btn>
-
         <v-spacer />
 
         <v-btn @click="$emit('input', false)">
@@ -187,8 +147,7 @@
         </v-btn>
 
         <v-btn
-          v-if="perms.update"
-          :disabled="!task || !valid || templateValidation !== true || !isModified"
+          :disabled="!task || !valid || templateValidation !== true || !perms.create"
           :loading="loading"
           color="success"
           @click="save"
@@ -201,21 +160,22 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-import type { tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import { addDays, formatISO, parseISO } from 'date-fns';
+import type { tasks } from '@ezpaarse-project/ezreeport-sdk-js';
+import { defineComponent } from 'vue';
 import isEmail from 'validator/lib/isEmail';
-import hash from 'object-hash';
-
+import type { CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
 import useTemplateStore, { isTaskTemplate, mapRulesToVuetify } from '~/stores/template';
 
-import { tabs, type Tab } from './TaskDialogRead.vue';
-import type TaskDialogLinkConstructor from './TaskDialogLink.vue';
+import { tabs, type Tab } from '../TaskDialogRead/TaskDialogAdvancedRead.vue';
 
-type TaskDialogLink = InstanceType<typeof TaskDialogLinkConstructor>;
+type CustomCreateTask = Omit<tasks.FullTask, 'createdAt' | 'id' | 'activity' | 'namespace' | 'template'> & {
+  template: CustomTaskTemplate,
+  namespace: string;
+};
 
-type TemplateLessTask = Omit<tasks.FullTask, 'template'>;
+const minDate = addDays(new Date(), 1);
 
 export default defineComponent({
   mixins: [ezReeportMixin],
@@ -224,14 +184,10 @@ export default defineComponent({
       type: Boolean,
       required: true,
     },
-    id: {
-      type: String,
-      required: true,
-    },
   },
   emits: {
     input: (show: boolean) => show !== undefined,
-    updated: (task: tasks.FullTask) => !!task,
+    created: (task: tasks.FullTask) => !!task,
   },
   setup() {
     const templateStore = useTemplateStore();
@@ -239,15 +195,10 @@ export default defineComponent({
     return { templateStore };
   },
   data: () => ({
-    generationDialogShown: false,
-
-    task: undefined as TemplateLessTask | undefined,
-    taskHash: '',
-    templateHash: '',
-
+    task: undefined as CustomCreateTask | undefined,
     currentTab: 0,
 
-    minDate: addDays(new Date(), 1),
+    minDate,
     innerValid: false,
 
     loading: false,
@@ -284,6 +235,9 @@ export default defineComponent({
         on: { click: this.onTemplateOpen },
       };
 
+      // Remove unnecessary tabs
+      data.splice(1, 1); // activityTab
+
       return data.map((tab) => ({ ...tab, valid: tab.valid ?? true }));
     },
     /**
@@ -303,20 +257,10 @@ export default defineComponent({
      */
     perms() {
       const has = this.$ezReeport.hasNamespacedPermission;
-      const namespaces = this.task ? [this.task.namespace.id] : [];
+      const namespaces = this.task?.namespace ? [this.task.namespace] : [];
       return {
         readOne: has('tasks-get-task', namespaces),
-        update: has('tasks-put-task', namespaces),
-
-        runTask: has('tasks-post-task-_run', namespaces),
-      };
-    },
-    /**
-     * Various dates to show
-     */
-    dates(): { nextRun?: string, lastRun?: string } {
-      return {
-        lastRun: this.task?.lastRun?.toLocaleString(),
+        create: has('tasks-post', namespaces),
       };
     },
     /**
@@ -340,50 +284,20 @@ export default defineComponent({
       }
       return err.toString();
     },
-    /**
-     * If template was modified since last fetch
-     */
-    isTemplateModified() {
-      if (!this.templateStore.current || !this.task) {
-        return false;
-      }
-
-      if (this.templateStore.extendedId !== this.task.extends.id) {
-        return true;
-      }
-
-      return hash(this.templateStore.current) !== this.templateHash;
-    },
-    /**
-     * If task was modified since last fetch
-     */
-    isModified() {
-      if (this.isTemplateModified) {
-        return true;
-      }
-
-      if (!this.task) {
-        return false;
-      }
-
-      return hash(this.task) !== this.taskHash;
-    },
   },
   watch: {
-    // eslint-disable-next-line func-names
-    '$ezReeport.data.auth.permissions': function () {
-      this.fetch();
-    },
     value(val: boolean) {
       if (val) {
-        this.fetch();
+        this.init();
       } else {
         this.templateStore.SET_CURRENT(undefined);
       }
     },
   },
-  mounted() {
-    this.fetch();
+  async mounted() {
+    this.init();
+    this.templateStore.indices.mapping = [];
+    await this.templateStore.refreshAvailableIndices();
   },
   methods: {
     /**
@@ -392,35 +306,23 @@ export default defineComponent({
      * @param email The string
      */
     validateMail: (email: string) => isEmail(email),
-    /**
-     * Fetch task info
-     */
-    async fetch() {
-      if (!this.id || !this.perms.readOne) {
-        this.$emit('input', false);
-        return;
+    async init() {
+      await this.templateStore.refreshAvailableTemplates();
+      if (!this.templateStore.defaultTemplate) {
+        throw new Error(this.$t('$ezreeport.errors.no_extends').toString());
       }
 
-      this.loading = true;
-      try {
-        const { content } = await this.$ezReeport.sdk.tasks.getTask(this.id);
-        if (!content) {
-          throw new Error(this.$t('$ezreeport.errors.fetch').toString());
-        }
-
-        // Add additional data
-        const { template, ...data } = content;
-        this.templateStore.SET_CURRENT(template, data.extends.id);
-        this.task = data;
-
-        this.taskHash = hash(data);
-        this.templateHash = this.templateStore.current ? hash(this.templateStore.current) : '';
-
-        this.error = '';
-      } catch (error) {
-        this.error = (error as Error).message;
-      }
-      this.loading = false;
+      this.templateStore.SET_CURRENT({ inserts: [] }, this.templateStore.defaultTemplateId);
+      this.task = {
+        name: '',
+        template: {},
+        extends: this.templateStore.defaultTemplate,
+        targets: [],
+        recurrence: 'DAILY' as tasks.Recurrence,
+        namespace: '',
+        nextRun: minDate,
+        enabled: true,
+      };
     },
     /**
      * Save and edit task
@@ -430,7 +332,7 @@ export default defineComponent({
         return;
       }
 
-      if (!this.id || !this.perms.update) {
+      if (!this.perms.create) {
         this.$emit('input', false);
         return;
       }
@@ -444,10 +346,10 @@ export default defineComponent({
       try {
         const nextRun = formatISO(this.task.nextRun, { representation: 'date' });
 
-        const { content } = await this.$ezReeport.sdk.tasks.upsertTask(
+        const { content } = await this.$ezReeport.sdk.tasks.createTask(
           {
-            id: this.task.id,
             name: this.task.name,
+            namespace: this.task.namespace,
             template,
             extends: this.templateStore.extendedId,
             targets: this.task.targets,
@@ -457,43 +359,20 @@ export default defineComponent({
           },
         );
 
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const { template: _, ...data } = content;
-
-        this.$emit('updated', content);
-        this.task = data;
-
-        this.taskHash = hash(data);
-        this.templateHash = this.templateStore.current ? hash(this.templateStore.current) : '';
-
+        this.$emit('created', content);
         this.error = '';
       } catch (error) {
         this.error = (error as Error).message;
       }
       this.loading = false;
     },
-    /**
-     * Prepare and show task generation dialog
-     */
-    showGenerateDialog() {
-      if (!this.perms.runTask) {
-        return;
-      }
 
-      this.generationDialogShown = true;
-    },
-    onLinkUpdate(willBeLinked: boolean) {
-      (this.$refs.taskDialogLink as TaskDialogLink)?.open(willBeLinked);
-    },
-    async onTemplateOpen() {
+    onTemplateOpen() {
       if (!this.task) {
         return;
       }
 
-      await Promise.all([
-        this.templateStore.refreshAvailableIndices(this.task.namespace.id),
-        this.templateStore.fetchCurrentMapping(this.task.namespace.id),
-      ]);
+      this.templateStore.refreshAvailableIndices(this.task.namespace);
     },
   },
 });

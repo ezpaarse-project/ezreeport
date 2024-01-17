@@ -71,7 +71,7 @@
               </v-btn>
             </template>
 
-            {{$t('$ezreeport.filter')}}
+            {{ $t('$ezreeport.filter') }}
           </v-tooltip>
 
           <v-tooltip top v-if="perms.create">
@@ -81,7 +81,7 @@
               </v-btn>
             </template>
 
-            {{$t('$ezreeport.create')}}
+            {{ $t('$ezreeport.create') }}
           </v-tooltip>
         </LoadingToolbar>
       </template>
@@ -132,7 +132,7 @@
                 <v-tooltip top>
                   <template #activator="{ attrs, on }">
                     <DateFormatDiv
-                      :value="template.updatedAt"
+                      :value="template.updatedAt || template.createdAt"
                       class="text-caption text--secondary font-italic"
                       :attrs="attrs"
                       :on="on"

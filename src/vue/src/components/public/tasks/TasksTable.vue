@@ -1,523 +1,501 @@
 <template>
   <v-col v-if="perms.readAll">
     <TemplateProvider>
-      <TaskDialogCreate
-        v-if="perms.create && createTaskDialogShown"
-        ref="dialogCreate"
+      <TaskDialogCreateManager
+        v-if="perms.create"
         v-model="createTaskDialogShown"
-        :id="focusedId"
+        ref="createManager"
         @created="onTaskCreated"
       />
-      <TaskDialogRead
-        v-if="perms.readOne && readTaskDialogShown"
-        v-model="readTaskDialogShown"
-        :id="focusedId"
-        @updated="onTaskEdited"
-      />
-      <TaskDialogUpdate
-        v-if="perms.update && updateTaskDialogShown"
+      <TaskDialogUpdateManager
+        v-if="perms.update && focusedTask"
         v-model="updateTaskDialogShown"
-        :id="focusedId"
-        @updated="onTaskEdited"
-      />
-      <TaskPopoverDelete
-        v-if="perms.delete && focusedTask && deleteTaskPopoverShown"
-        v-model="deleteTaskPopoverShown"
         :task="focusedTask"
-        :coords="deleteTaskPopoverCoords"
-        @deleted="onTaskDeleted"
+        @updated="onTaskUpdated"
+      />
+      <TaskDialogReadManager
+        v-if="perms.readOne && focusedTask"
+        v-model="readTaskDialogShown"
+        :task="focusedTask"
       />
     </TemplateProvider>
+    <TaskPopoverDelete
+      v-if="focusedTask"
+      v-model="deleteTaskPopoverShown"
+      :coords="deleteTaskPopoverCoords"
+      :task="focusedTask"
+      @deleted="onTaskDeleted"
+    />
 
-    <v-row>
-      <v-col>
-        <NamespaceSelect
-          v-model="actualCurrentNamespace"
-          :allowed-namespaces="allowedNamespaces"
-          show-task-count
-          hide-refresh
-          @input="fetch()"
-        />
-      </v-col>
-    </v-row>
-
-    <v-row>
-      <v-col>
-        <v-data-table
-          :headers="headers"
-          :items="items"
+    <v-data-table
+      :items="taskList"
+      :headers="headers"
+      :server-items-length="metaList?.total || 0"
+      :options.sync="iteratorOptions"
+      sort-by="createdAt"
+      item-key="id"
+      must-sort
+      @update:options="fetch()"
+    >
+      <template #top>
+        <LoadingToolbar
+          :text="toolbarTitle"
           :loading="loading"
-          :options.sync="options"
-          :server-items-length="totalItems"
-          :items-per-page-options="[5, 10, 15]"
-          class="data-table"
-          item-key="id"
-          @click:row="showTaskDialog"
-          @update:options="onPaginationChange"
         >
-          <template #top>
-            <LoadingToolbar :text="$t('title').toString()">
-              <v-tooltip top v-if="perms.create">
-                <template #activator="{ on, attrs }">
-                  <v-btn icon color="success" @click="showCreateDialog" v-bind="attrs" v-on="on">
-                    <v-icon>mdi-plus</v-icon>
-                  </v-btn>
-                </template>
+          <RefreshButton
+            :loading="loading"
+            :tooltip="$t('refresh-tooltip').toString()"
+            @click="fetch"
+          />
 
-                {{$t('$ezreeport.create')}}
-              </v-tooltip>
-            </LoadingToolbar>
-          </template>
+          <v-tooltip top v-if="perms.create">
+            <template #activator="{ on, attrs }">
+              <v-btn icon color="success" @click="showCreateDialog" v-bind="attrs" v-on="on">
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </template>
 
-          <template #[`item.name`]="{ value: name, item: task }">
-            <div>
-              {{ name }}
-            </div>
+            {{$t('$ezreeport.create')}}
+          </v-tooltip>
+        </LoadingToolbar>
+      </template>
 
-            <MiniTagsDetail :model-value="task.tags ?? []" />
-          </template>
+      <template #[`item.name`]="{ value, item }">
+        <a
+          href="#"
+          @click.prevent="showTaskDialog(item)"
+          @keyup.enter.prevent="showTaskDialog(item)"
+        >
+          {{ value }}
+        </a>
+      </template>
 
-          <template #[`item.namespace`]="{ value: namespace }">
-            <NamespaceRichListItem
-              v-if="namespace"
-              :namespace="namespace"
-            />
-            <v-progress-circular v-else indeterminate class="my-2" />
-          </template>
+      <template #[`item.namespaceId`]="{ value, item }">
+        <slot name="item.namespace" :value="namespaceMap?.[value]" :item="item">
+          {{ namespaceMap?.[value]?.name || value }}
+        </slot>
+      </template>
 
-          <template #[`item.recurrence`]="{ value: recurrence }">
-            <div class="text-center">
-              <RecurrenceChip
-                :value="recurrence"
+      <template #[`item.recurrence`]="{ value }">
+        <RecurrenceChip :value="value" size="small" />
+      </template>
+
+      <template #[`item._count.targets`]="{ value }">
+        {{ $tc('targetCount', value) }}
+      </template>
+
+      <template #[`item.enabled`]="{ item, value }">
+        <v-tooltip :disabled="!item.enabled && !item.lastRun" top>
+          <template #activator="{ on, attrs }">
+            <div v-bind="attrs" v-on="on">
+              <CustomSwitch
+                :value="value"
+                :disabled="!toggleStateMap[item.id]"
+                :readonly="loading"
+                :label="$t(`$ezreeport.tasks.enabled.${item.enabled}`).toString()"
+                hide-details
+                dense
+                reverse
+                class="mb-1"
+                style="transform: scale(0.8);"
+                @click.stop="toggleTask(item)"
               />
             </div>
           </template>
 
-          <template #[`item.enabled`]="{ value: enabled, item }">
-            <CustomSwitch
-              :value="enabled"
-              :readonly="loading"
-              :disabled="!rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task-_enable']
-                || !rawNamespacePerms?.[item.namespace?.id ?? '']?.['tasks-put-task-_disable']
-              "
-              :label="$t(`$ezreeport.tasks.enabled.${enabled}`).toString()"
-              reverse
-              @click.stop="toggleTask(item)"
-            />
-          </template>
-
-          <template #[`item.actions`]="{ item: task }">
-            <v-tooltip top v-if="perms.create && perms.readOne">
-              <template #activator="{ attrs, on }">
-                <v-btn
-                  icon
-                  @click.stop="duplicateTask(task)"
-                  v-bind="attrs"
-                  v-on="on"
-                >
-                  <v-icon>mdi-content-copy</v-icon>
-                </v-btn>
+          <div>
+            <DateFormatDiv v-if="item.enabled" :value="item.nextRun" format="dd/MM/yyyy HH:mm">
+              <template #default="{ date }">
+                {{ $t('dates.nextRun', { date }) }}
               </template>
-              <span>{{ $t('$ezreeport.duplicate') }}</span>
-            </v-tooltip>
-
-            <v-tooltip top v-if="rawNamespacePerms?.[task.namespace?.id ?? '']?.['tasks-delete-task']">
-              <template #activator="{ attrs, on }">
-                <v-btn icon color="error" @click.stop="showDeletePopover(task, $event)" v-on="on" v-bind="attrs">
-                  <v-icon>mdi-delete</v-icon>
-                </v-btn>
+            </DateFormatDiv>
+            <DateFormatDiv v-if="item.lastRun" :value="item.lastRun" format="dd/MM/yyyy HH:mm">
+              <template #default="{ date }">
+                {{ $t('dates.lastRun', { date }) }}
               </template>
-              <span>{{ $t('$ezreeport.delete') }}</span>
-            </v-tooltip>
+            </DateFormatDiv>
+          </div>
+        </v-tooltip>
+      </template>
+
+      <template #[`item.actions`]="{ item }">
+        <v-menu>
+          <template #activator="{ on, attrs }">
+            <v-btn
+              :ref="(el) => storeMenuRef(item, el)"
+              icon
+              v-bind="attrs"
+              v-on="on"
+            >
+              <v-icon>mdi-cog</v-icon>
+            </v-btn>
           </template>
 
-          <template v-if="error" #[`body.append`]>
-            <ErrorOverlay v-model="error" />
-          </template>
-        </v-data-table>
-      </v-col>
-    </v-row>
+          <v-list>
+            <v-list-item
+              v-if="perms.readOne && perms.create"
+              @click="duplicateTask(item)"
+            >
+              <v-list-item-action>
+                <v-icon>mdi-content-copy</v-icon>
+              </v-list-item-action>
+
+              <v-list-item-title>
+                {{ $t('$ezreeport.duplicate') }}
+              </v-list-item-title>
+            </v-list-item>
+
+            <v-list-item
+              v-if="perms.readOne && !perms.update"
+              @click="showReadDialog(item)"
+            >
+              <v-list-item-action>
+                <v-icon>mdi-eye</v-icon>
+              </v-list-item-action>
+
+              <v-list-item-title>
+                {{ $t('$ezreeport.details') }}
+              </v-list-item-title>
+            </v-list-item>
+
+            <v-list-item v-if="perms.update" @click="showUpdateDialog(item)">
+              <v-list-item-action>
+                <v-icon color="primary">mdi-pencil</v-icon>
+              </v-list-item-action>
+
+              <v-list-item-title>
+                {{ $t('$ezreeport.edit') }}
+              </v-list-item-title>
+            </v-list-item>
+
+            <v-list-item v-if="perms.delete" @click="showDeletePopover(item)">
+              <v-list-item-action>
+                <v-icon color="error">mdi-delete</v-icon>
+              </v-list-item-action>
+
+              <v-list-item-title>
+                {{ $t('$ezreeport.delete') }}
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </template>
+    </v-data-table>
   </v-col>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import type { namespaces, tasks } from '@ezpaarse-project/ezreeport-sdk-js';
-import { defineComponent, type PropType } from 'vue';
-import type { DataOptions } from 'vuetify';
-import type { DataTableHeader } from '~/types/vuetify';
-import ezReeportMixin from '~/mixins/ezr';
-import type TaskDialogCreate from '~/components/internal/tasks/dialogs/TaskDialogCreate.vue';
-import type Tag from '~/lib/templates/tags';
+import { computed, watch, ref } from 'vue';
+import type { DataOptions, DataTableHeader } from 'vuetify';
+import type { VMenu } from 'vuetify/lib/components';
+import { useEzR } from '~/lib/ezreeport';
+import { useI18n } from '~/lib/i18n';
 
-interface TaskItem {
-  id: string,
-  name: string,
-  namespace?: namespaces.Namespace,
-  recurrence: tasks.Recurrence,
-  enabled: boolean,
-  nextRun?: string,
-  tags: Tag[],
-}
+import type TaskDialogCreateManagerConstructor from '~/components/internal/tasks/dialogs/TaskDialogCreate/TaskDialogCreateManager.vue';
 
-export default defineComponent({
-  mixins: [ezReeportMixin],
-  props: {
-    /**
-     * Current value of namespace filter
-     */
-    currentNamespace: {
-      type: String as PropType<string | undefined>,
-      default: undefined,
-    },
-    /**
-     * Allowed namespaces in namespace filter
-     */
-    allowedNamespaces: {
-      type: Array as PropType<string[] | undefined>,
-      default: undefined,
-    },
-  },
-  emits: {
-    /**
-     * Triggered when namespace filter changed by user
-     *
-     * @param id The namespace id
-     */
-    'update:currentNamespace': (id: string | undefined) => id !== null,
-  },
-  data: () => ({
-    readTaskDialogShown: false,
-    createTaskDialogShown: false,
-    updateTaskDialogShown: false,
-    deleteTaskPopoverShown: false,
-    deleteTaskPopoverCoords: { x: 0, y: 0 },
+type TaskDialogCreateManager = InstanceType<typeof TaskDialogCreateManagerConstructor>;
+type VMenuInstance = InstanceType<typeof VMenu>;
 
-    options: {
-      sortBy: ['namespace', 'enabled', 'nextRun'],
-      sortDesc: [false, true, false],
-      multiSort: true,
-    } as DataOptions,
-    lastIds: {} as Record<number, string | undefined>,
+type TaskItem = tasks.TaskList[number];
 
-    innerCurrentNamespace: '',
-    tasks: [] as tasks.TaskList,
-    totalItems: 0,
-    focusedId: '' as string,
+const { $t, $tc } = useI18n();
+const { sdk, ...ezr } = useEzR();
 
-    loading: false,
-    error: '',
-  }),
-  computed: {
-    actualCurrentNamespace: {
-      get(): string {
-        return this.currentNamespace || this.innerCurrentNamespace;
-      },
-      set(id: string) {
-        this.innerCurrentNamespace = id;
-        this.$emit('update:currentNamespace', id || undefined);
-      },
-    },
-    headers(): DataTableHeader<TaskItem>[] {
-      return [
-        {
-          value: 'name',
-          text: this.$t('$ezreeport.tasks.name').toString(),
-        },
-        {
-          value: 'namespace',
-          text: this.$ezReeport.tcNamespace(true),
-          sort: (a?: namespaces.Namespace, b?: namespaces.Namespace) => (a?.name ?? '').localeCompare(b?.name ?? ''),
-        },
-        {
-          value: 'recurrence',
-          text: this.$t('$ezreeport.tasks.recurrence').toString(),
-        },
-        {
-          value: 'enabled',
-          text: this.$t('$ezreeport.tasks.status').toString(),
-        },
-        {
-          value: 'nextRun',
-          text: this.$t('$ezreeport.tasks.nextRun').toString(),
-        },
-        {
-          value: 'actions' as keyof TaskItem,
-          text: this.$t('headers.actions').toString(),
-          sortable: false,
-        },
-      ];
-    },
-    namespaces(): namespaces.Namespace[] {
-      return this.$ezReeport.data.namespaces.data;
-    },
-    items() {
-      return this.tasks.map(this.parseTask);
-    },
-    rawNamespacePerms() {
-      return this.$ezReeport.data.auth.permissions?.namespaces;
-    },
-    perms() {
-      const has = this.$ezReeport.hasNamespacedPermission;
+const createManager = ref<TaskDialogCreateManager | null>(null);
 
-      return {
-        readAll: has('tasks-get', []),
-        readOne: has('tasks-get-task', []),
-        update: has('tasks-put-task', []),
-        create: has('tasks-post', []),
-        delete: has('tasks-delete-task', []),
-      };
-    },
-    focusedTask() {
-      return this.tasks.find(({ id }) => id === this.focusedId);
-    },
-  },
-  watch: {
-    // eslint-disable-next-line func-names
-    '$ezReeport.data.auth.permissions': function () {
-      this.fetch();
-      this.fetchNamespaces();
-    },
-    currentNamespace(value: string | undefined) {
-      if (value !== this.innerCurrentNamespace) {
-        this.innerCurrentNamespace = value ?? '';
-        this.fetch();
-      }
-    },
-  },
-  mounted() {
-    this.innerCurrentNamespace = this.currentNamespace ?? '';
-    this.$nextTick(() => {
-      this.fetch();
-      this.fetchNamespaces();
-    });
-  },
-  methods: {
-    /**
-     * Fetch namespaces
-     */
-    async fetchNamespaces() {
-      this.loading = true;
-      try {
-        this.$ezReeport.fetchNamespaces();
-      } catch (error) {
-        this.error = (error as Error).message;
-      }
-      this.loading = false;
-    },
-    /**
-     * Called when data table options are updated
-     *
-     * @param opts DataTable options
-     */
-    onPaginationChange(opts: DataOptions) {
-      this.fetch(opts.page);
-    },
-    /**
-     * Fetch tasks and parse result
-     *
-     * @param page The page to fetch, if not present it default to current page
-     */
-    async fetch(page?:number) {
-      if (!page) {
-        // eslint-disable-next-line no-param-reassign
-        page = this.options.page;
-      }
+const readTaskDialogShown = ref(false);
+const updateTaskDialogShown = ref(false);
+const createTaskDialogShown = ref(false);
+const deleteTaskPopoverShown = ref(false);
+const deleteTaskPopoverCoords = ref({ x: 0, y: 0 });
+const loading = ref(false);
+const metaList = ref<{
+  count: number;
+  size: number;
+  total: number;
+  lastId?: unknown;
+}>();
+const iteratorOptions = ref<DataOptions | undefined>();
+const taskList = ref<tasks.TaskList>([]);
+const pageEndsIds = ref<Record<number, string | undefined>>({});
+const namespaceMap = ref<Record<string, namespaces.Namespace>>({});
+const taskMenusMap = ref<Record<string, VMenuInstance | undefined>>({});
+const focusedTask = ref<TaskItem | undefined>(undefined);
+const error = ref('');
 
-      if (this.perms.readAll) {
-        this.loading = true;
-        try {
-          // TODO: sort (not supported by API)
-          const { content, meta } = await this.$ezReeport.sdk.tasks.getAllTasks(
-            {
-              previous: this.lastIds[page - 1],
-              count: this.options.itemsPerPage,
-            },
-            this.innerCurrentNamespace ? [this.innerCurrentNamespace] : this.allowedNamespaces,
-          );
-          if (!content) {
-            throw new Error(this.$t('$ezreeport.errors.fetch').toString());
-          }
-
-          this.tasks = content;
-          this.totalItems = meta.total;
-
-          const lastIds = { ...this.lastIds };
-          lastIds[page] = meta.lastId as string | undefined;
-          this.lastIds = lastIds;
-        } catch (error) {
-          this.error = (error as Error).message;
-        }
-        this.loading = false;
-      } else {
-        this.tasks = [];
-      }
-    },
-    /**
-     *
-     * Parse task into human readable format
-     *
-     * @param task The task
-     */
-    parseTask(task: tasks.TaskList[number]): TaskItem {
-      return {
-        id: task.id,
-        name: task.name,
-        recurrence: task.recurrence,
-        enabled: task.enabled,
-        namespace: this.namespaces.find(({ id }) => task.namespaceId === id),
-        nextRun: task.nextRun && task.enabled
-          ? task.nextRun.toLocaleString(undefined, { year: 'numeric', month: 'numeric', day: 'numeric' })
-          : undefined,
-        tags: task.tags,
-      };
-    },
-    /**
-     * Prepare and show task detail dialog
-     *
-     * @param item The item
-     */
-    async showTaskDialog({ id, namespace }: TaskItem) {
-      const hasPermission = (perm: string) => this.rawNamespacePerms?.[namespace?.id ?? '']?.[perm];
-      if (
-        !hasPermission('tasks-get-task')
-        && !hasPermission('tasks-put-task')
-      ) {
-        return;
-      }
-
-      this.focusedId = id;
-      await this.$nextTick();
-      if (hasPermission('tasks-put-task')) {
-        this.updateTaskDialogShown = true;
-      } else {
-        this.readTaskDialogShown = true;
-      }
-    },
-    /**
-     * Prepare and show task creation dialog
-     */
-    async showCreateDialog() {
-      this.focusedId = '';
-      await this.$nextTick();
-      this.createTaskDialogShown = true;
-    },
-    /**
-     * Prepare and show task deletion popover
-     *
-     * @param item The item
-     * @param event The base event
-     */
-    async showDeletePopover({ id, namespace }: TaskItem, event: MouseEvent) {
-      if (!this.rawNamespacePerms?.[namespace?.id ?? '']?.['tasks-delete-task']) {
-        return;
-      }
-
-      this.focusedId = id;
-      this.deleteTaskPopoverCoords = {
-        x: event.clientX,
-        y: event.clientY,
-      };
-      await this.$nextTick();
-      this.deleteTaskPopoverShown = true;
-    },
-    /**
-     * Toggle task state
-     *
-     * @param item The item
-     */
-    async toggleTask({ id, enabled, namespace }: TaskItem) {
-      if (
-        this.tasks.findIndex((t) => t.id === id) < 0
-        || (enabled && !this.rawNamespacePerms?.[namespace?.id ?? '']?.['tasks-put-task-_enable'])
-        || (!enabled && !this.rawNamespacePerms?.[namespace?.id ?? '']?.['tasks-put-task-_disable'])
-      ) {
-        return;
-      }
-
-      this.loading = true;
-      try {
-        const action = enabled
-          ? this.$ezReeport.sdk.tasks.disableTask
-          : this.$ezReeport.sdk.tasks.enableTask;
-
-        const { content } = await action(id);
-
-        this.onTaskEdited(content);
-
-        this.error = '';
-      } catch (error) {
-        this.error = (error as Error).message;
-      }
-      this.loading = false;
-    },
-    /**
-     * Called when a task is created by a dialog
-     */
-    onTaskCreated(task: tasks.FullTask) {
-      // TODO? go to first page ?
-      this.fetch();
-      this.createTaskDialogShown = false;
-      const t = this.parseTask({ ...task, namespaceId: task.namespace.id, tags: [] });
-      this.showTaskDialog(t);
-    },
-    /**
-     * Called when a task is deleted by a dialog
-     */
-    onTaskDeleted() {
-      this.fetch();
-    },
-    /**
-     * Called when a task is edited by a dialog
-     */
-    onTaskEdited(task: tasks.FullTask) {
-      const index = this.tasks.findIndex((t) => t.id === task.id);
-      if (index < 0) {
-        return;
-      }
-
-      const tasks = [...this.tasks];
-      tasks.splice(index, 1, {
-        ...task,
-        tags: task.lastExtended?.tags ?? task.extends.tags,
-        namespaceId: task.namespace.id,
-      });
-      this.tasks = tasks;
-    },
-    /**
-     * Duplicate and open task
-     *
-     * @param task The task to duplicate
-     */
-    async duplicateTask(task: tasks.Task) {
-      if (
-        !this.perms.readOne
-        && !this.perms.create
-      ) {
-        return;
-      }
-
-      await this.showCreateDialog();
-      (this.$refs.dialogCreate as InstanceType<typeof TaskDialogCreate>)
-        ?.openFromTask(task);
-    },
-  },
+const perms = computed(() => {
+  const has = ezr.hasNamespacedPermission;
+  return {
+    readAll: has('tasks-get', []),
+    readOne: has('tasks-get-task', []),
+    update: has('tasks-put-task', []),
+    create: has('tasks-post', []),
+    delete: has('tasks-delete-task', []),
+  };
 });
+const headers = computed<DataTableHeader[]>(() => [
+  {
+    text: $t('$ezreeport.tasks.name').toString(),
+    value: 'name',
+  },
+  {
+    text: ezr.tcNamespace(true),
+    value: 'namespaceId',
+  },
+  {
+    text: $t('$ezreeport.tasks.recurrence').toString(),
+    value: 'recurrence',
+    align: 'center',
+  },
+  {
+    text: $t('$ezreeport.tasks.status').toString(),
+    value: 'enabled',
+    align: 'center',
+  },
+  {
+    text: $t('$ezreeport.tasks.targets').toString(),
+    value: '_count.targets',
+    sortable: false,
+    align: 'center',
+  },
+  {
+    text: $t('headers.actions').toString(),
+    value: 'actions',
+    sortable: false,
+    align: 'center',
+  },
+]);
+const toggleStateMap = computed(() => {
+  const map: Record<string, boolean> = {};
+  // eslint-disable-next-line no-restricted-syntax
+  for (const task of taskList.value) {
+    const permissions = ezr.auth.value.permissions?.namespaces[task.namespaceId] ?? {};
+    let allowed = permissions['tasks-put-task-_enable'];
+    if (task.enabled) {
+      allowed = permissions['tasks-put-task-_disable'];
+    }
+
+    map[task.id] = allowed;
+  }
+  return map;
+});
+const toolbarTitle = computed(
+  () => $t(
+    'title',
+    {
+      title: $tc('title', taskList.value.length),
+      count: taskList.value.length,
+    },
+  ).toString(),
+);
+
+const storeMenuRef = (task: TaskItem, el: VMenuInstance | null) => {
+  if (!el) {
+    taskMenusMap.value[task.id] = undefined;
+    return;
+  }
+  taskMenusMap.value[task.id] = el;
+};
+const fetchNamespaces = async () => {
+  loading.value = true;
+  try {
+    const namespaces = await ezr.fetchNamespaces();
+    namespaceMap.value = Object.fromEntries(
+      namespaces.map((namespace) => [namespace.id, namespace]),
+    );
+  } catch (err) {
+    error.value = (err as Error).message;
+  }
+  loading.value = false;
+};
+const fetch = async () => {
+  if (!perms.value.readAll) {
+    taskList.value = [];
+    return;
+  }
+
+  const {
+    page = 1,
+    itemsPerPage = 12,
+    sortBy = ['createdAt'],
+  } = iteratorOptions.value ?? {};
+
+  loading.value = true;
+  try {
+    const { content, meta } = await sdk.tasks.getAllTasks(
+      {
+        count: itemsPerPage !== -1 ? itemsPerPage : 0,
+        previous: pageEndsIds.value[page - 1],
+        sort: sortBy[0],
+      },
+    );
+    if (!content) {
+      throw new Error($t('$ezreeport.errors.fetch').toString());
+    }
+
+    metaList.value = meta;
+    taskList.value = content;
+    pageEndsIds.value = {
+      ...pageEndsIds.value,
+      [page]: meta.lastId,
+    };
+    error.value = '';
+  } catch (err) {
+    error.value = (err as Error).message;
+  }
+  loading.value = false;
+};
+const showCreateDialog = () => {
+  createTaskDialogShown.value = true;
+};
+const onTaskCreated = async () => {
+  createTaskDialogShown.value = false;
+  await fetch();
+};
+const showUpdateDialog = (task: TaskItem) => {
+  focusedTask.value = task;
+  updateTaskDialogShown.value = true;
+};
+const onTaskUpdated = async () => {
+  updateTaskDialogShown.value = false;
+  focusedTask.value = undefined;
+  await fetch();
+};
+const showReadDialog = (task: TaskItem) => {
+  focusedTask.value = task;
+  readTaskDialogShown.value = true;
+};
+const showDeletePopover = (task: TaskItem) => {
+  let coords = { x: 0, y: 0 };
+  const menu = taskMenusMap.value[task.id];
+  if (menu) {
+    const rect = menu.$el.getBoundingClientRect();
+    coords = {
+      x: rect.left,
+      y: rect.top,
+    };
+  }
+
+  focusedTask.value = task;
+  deleteTaskPopoverCoords.value = coords;
+  deleteTaskPopoverShown.value = true;
+};
+const showTaskDialog = (task: TaskItem) => {
+  if (perms.value.update) {
+    showUpdateDialog(task);
+    return;
+  }
+  if (perms.value.readOne) {
+    showReadDialog(task);
+  }
+};
+const onTaskDeleted = async () => {
+  deleteTaskPopoverShown.value = false;
+  focusedTask.value = undefined;
+  await fetch();
+};
+const toggleTask = async (task: TaskItem) => {
+  if (!toggleStateMap.value[task.id]) {
+    return;
+  }
+
+  loading.value = true;
+  try {
+    const action = task.enabled
+      ? sdk.tasks.disableTask
+      : sdk.tasks.enableTask;
+
+    await action(task.id);
+    await onTaskUpdated();
+
+    error.value = '';
+  } catch (err) {
+    error.value = (err as Error).message;
+  }
+  loading.value = false;
+};
+const duplicateTask = async (task: TaskItem) => {
+  if (!perms.value.update && !perms.value.create) {
+    return;
+  }
+
+  loading.value = true;
+  try {
+    const { content: fullTask } = await sdk.tasks.getTask(task.id);
+    const { content: created } = await sdk.tasks.createTask({
+      name: `${fullTask.name} ${$t('duplicate_suffix')}`,
+      extends: fullTask.extends?.id,
+      recurrence: fullTask.recurrence,
+      targets: fullTask.targets,
+      template: fullTask.template,
+      enabled: fullTask.enabled,
+      namespace: fullTask.namespace.id,
+      nextRun: new Date(),
+    });
+
+    showUpdateDialog({
+      id: created.id,
+      name: created.name,
+      namespaceId: created.namespace.id,
+      recurrence: created.recurrence,
+      tags: created.extends?.tags,
+      enabled: created.enabled,
+      nextRun: created.nextRun,
+      lastRun: created.lastRun,
+      createdAt: created.createdAt,
+      updatedAt: created.updatedAt,
+      _count: { targets: created.targets.length },
+    });
+  } catch (err) {
+    error.value = (err as Error).message;
+  }
+  loading.value = false;
+};
+
+watch(
+  () => ezr.auth.value.permissions,
+  async () => {
+    await Promise.all([
+      fetch(),
+      fetchNamespaces(),
+    ]);
+  },
+  { immediate: true },
+);
 </script>
 
-<style lang="scss" scoped>
-.data-table::v-deep .v-data-table__wrapper {
-  position: relative;
+<style>
+.task-row {
   cursor: pointer;
 }
 </style>
 
 <i18n lang="yaml">
 en:
-  title: 'Periodic report list'
+  refresh-tooltip: 'Refresh report list'
+  title: 'Periodic report table ({count})'
+  targetCount: '{n} recipients'
+  duplicate_suffix: '(copied)'
+  created: 'Created: {date}'
+  never: 'Never'
+  dates:
+    nextRun: 'Next run: {date}'
+    lastRun: 'Last ran: {date}'
   headers:
+    date: 'Last edit'
     actions: 'Actions'
 fr:
-  title: 'Liste des rapports périodiques'
+  refresh-tooltip: 'Rafraîchir la liste des rapports'
+  title: 'Table des rapports périodiques ({count})'
+  targetCount: '{n} destinataire|{n} destinataires'
+  duplicate_suffix: '(copie)'
+  created: 'Créé le {date}'
+  never: 'Jamais'
+  dates:
+    nextRun: 'Prochaine itération: {date}'
+    lastRun: 'Dernière itération: {date}'
   headers:
+    date: 'Dernière modification'
     actions: 'Actions'
 </i18n>

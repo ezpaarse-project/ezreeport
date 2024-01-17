@@ -10,6 +10,9 @@
       :readonly="readonly"
       :label="label"
       :disabled="disabled"
+      :hide-details="hideDetails"
+      :dense="dense"
+      class="mt-0"
       @change="$emit('input', $event)"
       @click="$emit('click', $event)"
     />
@@ -48,6 +51,14 @@ export default defineComponent({
     label: {
       type: String,
       default: '',
+    },
+    hideDetails: {
+      type: Boolean,
+      default: false,
+    },
+    dense: {
+      type: Boolean,
+      default: false,
     },
   },
 });

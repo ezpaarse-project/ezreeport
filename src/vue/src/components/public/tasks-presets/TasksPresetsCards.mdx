@@ -1,0 +1,30 @@
+import { Meta, Story, Controls } from '@storybook/blocks';
+
+import * as TasksPresetsCardsStories from './TasksPresetsCards.stories';
+
+<Meta of={TasksPresetsCardsStories} />
+
+# TasksPresets Cards
+
+List all presets user have access to. You can see details by clicking on a little cog.
+
+> **Note**
+> This components show only if any `global.tasks-presets-get` permission is granted to the authed user.
+
+{/* ## Props / Events / Slots
+
+<Controls /> */}
+
+## Usage
+
+### Default
+
+```html
+<template>
+  <ezr-provider ...>
+    <ezr-tasks-presets-table />
+  </ezr-provider>
+</template>
+```
+
+<Story of={TasksPresetsCardsStories.Basic} />

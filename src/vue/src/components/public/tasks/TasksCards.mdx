@@ -1,0 +1,30 @@
+import { Meta, Story, Controls } from '@storybook/blocks';
+
+import * as TasksCardsStories from './TasksCards.stories';
+
+<Meta of={TasksCardsStories} />
+
+# Task Cards
+
+List and manage of all task user have access to. You can see details about a task by clicking on a little cog.
+
+> **Note**
+> This components show only if any `namespaces.tasks-get` permission is granted to the authed user.
+
+## Props / Events / Slots
+
+<Controls />
+
+## Usage
+
+### Default
+
+```html
+<template>
+  <ezr-provider ...>
+    <ezr-task-cards />
+  </ezr-provider>
+</template>
+```
+
+<Story of={TasksCardsStories.Basic} />

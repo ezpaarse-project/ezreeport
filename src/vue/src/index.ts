@@ -40,5 +40,6 @@ export default {
 };
 
 export { default as ezReeportMixin } from './mixins/ezr';
+export { useEzR } from './lib/ezreeport';
 
 export type GlobalEzRComponents = typeof components;

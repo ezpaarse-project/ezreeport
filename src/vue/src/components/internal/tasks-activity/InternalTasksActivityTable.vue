@@ -1,9 +1,9 @@
 <template>
   <div style="position: relative">
-    <TaskDialogRead
+    <TaskDialogReadManager
       v-if="perms.readOneTask"
       v-model="readTaskDialogShown"
-      :id="focusedId"
+      :task="{ id: focusedId }"
     />
 
     <ErrorOverlay v-model="error" />

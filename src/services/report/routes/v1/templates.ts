@@ -12,7 +12,7 @@ const router: FastifyPluginAsync = async (fastify) => {
   await fastify.register(authPlugin, { prefix: 'templates' });
 
   /**
-   * List all history entries.
+   * List all templates
    */
   fastify.get(
     '/',
