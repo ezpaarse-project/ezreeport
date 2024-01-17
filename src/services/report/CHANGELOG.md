@@ -1,3 +1,12 @@
+# ezreeport-report [1.0.0-beta.28](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.27...ezreeport-report@1.0.0-beta.28) (2024-01-17)
+
+
+### Features
+
+* **report:** added target count in task list ([680a0c2](https://github.com/ezpaarse-project/ezreeport/commit/680a0c26009d81ea8eb9e771671f76d25661e590))
+* **report:** added tasks' presets ([d1a8d08](https://github.com/ezpaarse-project/ezreeport/commit/d1a8d0838005b93fe766fdb83efd307bf96dda02))
+* **report:** allow custom sort and all items in lists ([deb0f3b](https://github.com/ezpaarse-project/ezreeport/commit/deb0f3ba08a7850a2fce6ef3808ed98f6f7634f7))
+
 # ezreeport-report 1.0.0-rc.1 (2023-12-13)
 
 
