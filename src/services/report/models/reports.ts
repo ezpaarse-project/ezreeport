@@ -183,7 +183,7 @@ const fetchData = (
     /** The template of the task */
     taskTemplate: templates.TaskTemplateType,
     /** Period of the report */
-    period: Interval,
+    period: dfns.Interval,
     /** Namespace of the report */
     namespace?: NamespaceBodyType,
     /** Recurrence of task */
@@ -292,7 +292,7 @@ const renderTemplate = async (
     /** Filepath of report */
     path: string,
     /** Period of report */
-    period: Interval,
+    period: dfns.Interval,
     /** Is debug active */
     debug?: boolean,
   },

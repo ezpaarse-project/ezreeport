@@ -13,7 +13,7 @@ export enum Recurrence {
  * Transform recurrence into string using given locale
  *
  * @param recurrence The recurrence
- * @param _locale (currently unsued) The locale of string
+ * @param _locale (currently unused) The locale of string
  *
  * @return The recurrence string
  */

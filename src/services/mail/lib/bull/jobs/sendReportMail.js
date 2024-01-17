@@ -1,14 +1,14 @@
-import { Queue, Job } from 'bullmq';
-import { format, parseISO } from 'date-fns';
+// @ts-check
 
-import config from '~/lib/config';
-import { appLogger as logger } from '~/lib/logger';
-import { generateMail, sendMail, type MailOptions } from '~/lib/mail';
-import { b64ToString, isFulfilled, stringToB64 } from '~/lib/utils';
+const { Queue, Job } = require('bullmq');
+const { format, parseISO } = require('date-fns');
 
-import { recurrenceToStr } from '~/models/recurrence';
+const config = require('../../config').default;
+const { appLogger: logger } = require('../../logger');
+const { generateMail, sendMail } = require('../../mail');
+const { b64ToString, isFulfilled, stringToB64 } = require('../../utils');
 
-import type { MailResult } from '..';
+const { recurrenceToStr } = require('../../../models/recurrence');
 
 const {
   redis,
@@ -16,19 +16,27 @@ const {
   api: { url: APIurl },
 } = config;
 
-type ErrorReportPrams = {
-  data: MailResult;
-  options: Omit<MailOptions, 'to' | 'body' | 'subject'>;
-  bodyData: {
-    recurrence: string;
-    name: string;
-    date:string;
-  };
-  filename: string;
-  date: Date;
-  dateStr: string;
-};
+/**
+ * @typedef {import('../../mail').MailOptions} MailOptions
+ * @typedef {import('..').MailResult} MailResult
+ */
 
+/**
+ * @typedef {Object} ErrorReportPrams
+ * @property {MailResult} data
+ * @property {Omit<MailOptions, 'to' | 'body' | 'subject'>} options
+ * @property {Object} bodyData
+ * @property {string} bodyData.recurrence
+ * @property {string} bodyData.name
+ * @property {string} bodyData.date
+ * @property {string} filename
+ * @property {Date} date
+ * @property {string} dateStr
+ */
+
+/**
+ * @param {ErrorReportPrams} param0
+ */
 const sendErrorReport = async ({
   data,
   options,
@@ -36,11 +44,12 @@ const sendErrorReport = async ({
   filename,
   date,
   dateStr,
-}: ErrorReportPrams) => {
+}) => {
   // TODO[feat]: Ignore team if test report ?
-  const to = [data.contact ?? '', team];
+  const to = [...new Set([data.contact ?? '', team])];
 
-  let error: string;
+  /** @type {string} */
+  let error;
   try {
     const { detail } = JSON.parse(b64ToString(data.file));
     error = detail.error.message;
@@ -57,25 +66,28 @@ const sendErrorReport = async ({
   logger.info(`[mail] [${process.pid}] Error report [${filename}] sent to [${to.filter((v) => v).join(', ')}]`);
 };
 
-type SuccessReportParams = {
-  filename: string;
-  dateStr: string;
-  options: Omit<MailOptions, 'to' | 'body' | 'subject'>;
-  bodyData: {
-    recurrence: string;
-    name: string;
-    date: string;
-  };
-  task: MailResult['task'];
-};
+/**
+ * @typedef {Object} SuccessReportParams
+ * @property {string} filename
+ * @property {string} dateStr
+ * @property {Omit<MailOptions, 'to' | 'body' | 'subject'>} options
+ * @property {Object} bodyData
+ * @property {string} bodyData.recurrence
+ * @property {string} bodyData.name
+ * @property {string} bodyData.date
+ * @property {MailResult['task']} task
+ */
 
+/**
+ * @param {SuccessReportParams} param0
+ */
 const sendSuccessReport = async ({
   task,
   options,
   dateStr,
   bodyData,
   filename,
-}: SuccessReportParams) => {
+}) => {
   // Send one email per target to allow un-subscription prefill
   const targets = await Promise.allSettled(
     task.targets.map(async (to) => {
@@ -112,10 +124,17 @@ const sendSuccessReport = async ({
   }
 };
 
-const sendReport = (data: MailResult, date: Date, dateStr: string) => {
+/**
+ * @param {MailResult} data
+ * @param {Date} date
+ * @param {string} dateStr
+ * @returns {Promise<void>}
+ */
+const sendReport = (data, date, dateStr) => {
   const filename = data.url.replace(/^.*\//, '');
 
-  const options: Omit<MailOptions, 'to' | 'body' | 'subject'> = {
+  /** @type {Omit<MailOptions, 'to' | 'body' | 'subject'>} */
+  const options = {
     attachments: [{
       filename,
       content: data.file,
@@ -147,14 +166,20 @@ const sendReport = (data: MailResult, date: Date, dateStr: string) => {
   });
 };
 
-type ErrorParams = {
-  file: string,
-  filename: string,
-  contact: string,
-  date: string,
-};
+/**
+ * @typedef {Object} ErrorParams
+ * @property {string} file
+ * @property {string} filename
+ * @property {string} contact
+ * @property {string} date
+ */
 
-const sendError = async (data: ErrorParams, date: Date, dateStr: string) => {
+/**
+ * @param {ErrorParams} data
+ * @param {Date} date
+ * @param {string} dateStr
+ */
+const sendError = async (data, date, dateStr) => {
   await sendMail({
     attachments: [{
       filename: data.filename,
@@ -171,16 +196,22 @@ const sendError = async (data: ErrorParams, date: Date, dateStr: string) => {
   logger.info(`[mail] [${process.pid}] Error sent to [${team}]`);
 };
 
-export default async (j: Job) => {
+/**
+ * @param {Job} j
+ * @returns {Promise<void>}
+ */
+module.exports = async (j) => {
   // Re-getting job from it's id and queue to get child jobs
   // See https://github.com/taskforcesh/bullmq/issues/753
-  const queue = new Queue<MailResult>(j.queueName, { connection: redis });
+  /** @type {Queue<MailResult>} */
+  const queue = new Queue(j.queueName, { connection: redis });
   const job = await Job.fromId(queue, j.id ?? '');
   if (!job) {
     throw new Error(`Cannot find job [${j.id}] in queue [${queue.name}]`);
   }
 
-  const data: MailResult = Object.values(await job.getChildrenValues())[0]?.mailData;
+  /** @type {MailResult} */
+  const data = Object.values(await job.getChildrenValues())[0]?.mailData;
 
   const date = parseISO(data.date);
   const dateStr = format(date, 'dd/MM/yyyy');

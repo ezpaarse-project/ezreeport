@@ -1,21 +1,29 @@
-import EventEmitter from 'node:events';
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+// @ts-check
 
-import type { Job } from 'bullmq';
+const EventEmitter = require('node:events');
+const { readFile } = require('node:fs/promises');
+const { join } = require('node:path');
 
-import config from '~/lib/config';
-import { formatISO } from '~/lib/date-fns';
-import { appLogger as logger } from '~/lib/logger';
+const config = require('../../config').default;
+const { formatISO } = require('../../date-fns');
+const { appLogger: logger } = require('../../logger');
 
-import { generateReport } from '~/models/reports';
-import type { TemplateType } from '~/models/templates';
+const { generateReport } = require('../../../models/reports');
 
-import type { GenerationData, MailResult } from '..';
+/**
+ * @typedef {import('bullmq').Job<import('..').GenerationData>} Job
+ * @typedef {import('../../../models/templates').TemplateType} TemplateType
+ * @typedef {import('../../../models/reports').ReportResultType} ReportResultType
+ * @typedef {import('..').MailResult} MailResult
+ */
 
 const { outDir } = config.report;
 
-export default async (job: Job<GenerationData>) => {
+/**
+ * @param {Job} job
+ * @returns {Promise<{ res: ReportResultType; mailData: Partial<MailResult>; }>}
+ */
+module.exports = async (job) => {
   logger.verbose(`[bull] [${process.pid}] Received generation of "${job.data.task.name}"`);
   const {
     id: jobId,
@@ -31,20 +39,33 @@ export default async (job: Job<GenerationData>) => {
 
   let expectedPageCount = 0;
   let actualPageCount = 0;
-  let contact: string | undefined;
+  /** * @type {string | undefined} */
+  let contact;
 
-  const events = new EventEmitter();
-  events.on('templateResolved', async (template: TemplateType) => {
+  /**
+   * @param {TemplateType} template The resolved template
+   */
+  const onTemplateResolved = (template) => {
     expectedPageCount = template.layouts.length;
-  });
-  events.on('layoutRendered', async () => {
+  };
+
+  const onLayoutRendered = async () => {
     actualPageCount += 1;
 
     await job.updateProgress(actualPageCount / expectedPageCount);
-  });
-  events.on('contactFound', (c: { username: string, email: string, metadata: Record<string, unknown> }) => {
+  };
+
+  /**
+   * @param {{ username: string, email: string, metadata: Record<string, unknown> }} c Contact found
+   */
+  const onContactFound = (c) => {
     contact = c.email;
-  });
+  };
+
+  const events = new EventEmitter()
+    .on('templateResolved', onTemplateResolved)
+    .on('layoutRendered', onLayoutRendered)
+    .on('contactFound', onContactFound);
 
   const res = await generateReport(
     task,
@@ -59,7 +80,8 @@ export default async (job: Job<GenerationData>) => {
     events,
   );
 
-  let mailData: Partial<MailResult> = {
+  /** @type {Partial<MailResult>} */
+  let mailData = {
     contact,
     date: res.detail.createdAt || formatISO(new Date()),
     task: {

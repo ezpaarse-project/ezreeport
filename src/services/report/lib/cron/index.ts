@@ -59,7 +59,7 @@ export const initCrons = async () => {
     const jobs = await cronQueue.getRepeatableJobs();
     await Promise.all(
       jobs.map(async (j) => {
-        await q.removeRepeatable(j.name, j);
+        await getQueue().removeRepeatableByKey(j.key);
         logger.verbose(`[cron] Deleted old cron: [${j.name}] [${j.pattern}]`);
       }),
     );
@@ -84,7 +84,7 @@ export const initCrons = async () => {
           try {
             const worker = new Worker(
               q.name,
-              join(__dirname, 'jobs/index.ts'),
+              join(__dirname, 'jobs/index.js'),
               { limiter, connection: redis },
             );
             worker.on('completed', (j) => {
@@ -234,10 +234,12 @@ export const stopCron = async (name: string) => {
   }
 
   const job = (await getQueue().getRepeatableJobs()).find((j) => j.name === name);
-  if (job) {
-    await getQueue().removeRepeatable(job.name, job);
-    pausedJobs[name] = job;
+  if (!job) {
+    return;
   }
+
+  await getQueue().removeRepeatableByKey(job.key);
+  pausedJobs[name] = job;
 };
 
 /**

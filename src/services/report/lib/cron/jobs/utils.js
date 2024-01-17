@@ -1,21 +1,22 @@
-/* eslint-disable import/prefer-default-export */
-import { addErrorToMailQueue } from '~/lib/bull';
-import { formatISO } from '~/lib/date-fns';
-import { appLogger as logger } from '~/lib/logger';
-import config from '~/lib/config';
+// @ts-check
+
+const { addErrorToMailQueue } = require('../../bull');
+const { formatISO } = require('../../date-fns');
+const { appLogger: logger } = require('../../logger');
+const config = require('../../config').default;
 
 const { team } = config.report;
 
 /**
  * Send generic error as a generation error
  *
- * @param error The error
- * @param origin origin of the error
- * @param timer Timer of CRON
+ * @param {Error} error The error
+ * @param {string} origin origin of the error
+ * @param {string} _timer Timer of CRON
  *
- * @returns When the error is put in queue
+ * @returns {Promise<void>} When the error is put in queue
  */
-export const sendError = async (error: Error, origin: string, _timer: string) => {
+exports.sendError = async (error, origin, _timer) => {
   try {
     const date = formatISO(new Date());
     const errStr = `[ErrorName] ${error.name}\n[ErrorMessage] ${error.message}\n[ErrorDate] ${date}\n\n${error.stack}`;
