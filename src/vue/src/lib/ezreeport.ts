@@ -138,7 +138,7 @@ const login = async (token: string) => {
 
   // eslint-disable-next-line no-restricted-syntax
   for (const res of errors) {
-    console.error('[ezReeport-vue]', res.reason.message);
+    console.error('[ezReeport-vue]', res.message);
   }
 
   return errors;
