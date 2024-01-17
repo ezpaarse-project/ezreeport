@@ -1,6 +1,7 @@
 import { parseISO } from 'date-fns';
 
 import axios, { axiosWithErrorFormatter, type PaginatedApiResponse, type ApiResponse } from '../lib/axios';
+import type { PaginationOpts } from '../lib/utils';
 
 export interface Job<Data> {
   id: number | string,
@@ -140,7 +141,7 @@ export const resumeQueue = async (queueOrName: Queue | Queue['name']): Promise<A
  */
 export const getQueueJobs = async <Data, Result>(
   queueOrName: Queue | Queue['name'],
-  paginationOpts?: { previous?: Job<Data>['id'], count?: number },
+  paginationOpts?: PaginationOpts,
 ): Promise<PaginatedApiResponse<FullJob<Data, Result>, 'id'>> => {
   const queueName = typeof queueOrName === 'string' ? queueOrName : queueOrName.name;
   const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawFullJob<Data, Result>, 'id'>, 'get'>(

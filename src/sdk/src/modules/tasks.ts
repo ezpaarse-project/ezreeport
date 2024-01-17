@@ -1,4 +1,5 @@
 import axios, { axiosWithErrorFormatter, type ApiResponse, type PaginatedApiResponse } from '../lib/axios';
+import type { PaginationOpts } from '../lib/utils';
 
 import { parseActivity, type Activity, type RawActivity } from './tasksActivity';
 import type { Namespace } from './namespaces';
@@ -114,7 +115,7 @@ export type TaskList = (Task & { tags: Template['tags'], _count: { targets: numb
  * @returns All tasks' info
  */
 export const getAllTasks = async (
-  paginationOpts?: { previous?: Task['id'], count?: number },
+  paginationOpts?: PaginationOpts,
   namespaces?: Namespace['id'][],
 ): Promise<PaginatedApiResponse<TaskList[number], 'id'>> => {
   const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawTaskList[number], 'id'>, 'get'>(
