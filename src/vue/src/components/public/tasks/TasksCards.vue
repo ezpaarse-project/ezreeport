@@ -58,7 +58,6 @@
             <LoadingToolbar
               :text="toolbarTitle"
               :loading="loading"
-              style="text-transform: capitalize;"
             >
               <v-tooltip top v-if="perms.create">
                 <template #activator="{ on, attrs }">
@@ -125,7 +124,7 @@
                       <v-list-item>
                         <v-list-item-icon>
                           <v-icon>
-                            mdi-email-multiple
+                            {{ task._count.targets ? 'mdi-email-multiple' : 'mdi-email' }}
                           </v-icon>
                         </v-list-item-icon>
 
@@ -139,41 +138,41 @@
                         </v-list-item-content>
                       </v-list-item>
 
-                      <v-list-item :disabled="!task.enabled">
-                        <v-list-item-icon>
-                          <v-icon>
-                            mdi-calendar-arrow-right
-                          </v-icon>
-                        </v-list-item-icon>
-
-                        <v-list-item-content>
-                          <v-list-item-title>
-                            <DateFormatDiv :value="task.nextRun" format="dd LLL yyyy">
-                              <template #default="{ date }">
-                                {{ date }}
-                              </template>
-                            </DateFormatDiv>
-                          </v-list-item-title>
-                          <v-list-item-subtitle>
-                            {{ $t('$ezreeport.tasks.nextRun') }}
-                          </v-list-item-subtitle>
-                        </v-list-item-content>
-                      </v-list-item>
                     </v-list>
                   </v-card-text>
 
                   <v-card-actions>
-                    <CustomSwitch
-                      :value="task.enabled"
-                      :disabled="!toggleStateMap[task.id]"
-                      :readonly="loading"
-                      :label="$t(`$ezreeport.tasks.enabled.${task.enabled}`).toString()"
-                      hide-details
-                      dense
-                      reverse
-                      class="ml-2"
-                      @click.stop="toggleTask(task)"
-                    />
+
+                    <v-tooltip :disabled="!task.enabled && !task.lastRun" top>
+                      <template #activator="{ on, attrs }">
+                        <div v-bind="attrs" v-on="on">
+                          <CustomSwitch
+                            :value="task.enabled"
+                            :disabled="!toggleStateMap[task.id]"
+                            :readonly="loading"
+                            :label="$t(`$ezreeport.tasks.enabled.${task.enabled}`).toString()"
+                            hide-details
+                            dense
+                            reverse
+                            class="ml-2"
+                            @click.stop="toggleTask(task)"
+                          />
+                        </div>
+                      </template>
+
+                      <div>
+                        <DateFormatDiv v-if="task.enabled" :value="task.nextRun" format="dd/MM/yyyy HH:mm">
+                          <template #default="{ date }">
+                            {{ $t('dates.nextRun', { date }) }}
+                          </template>
+                        </DateFormatDiv>
+                        <DateFormatDiv v-if="task.lastRun" :value="task.lastRun" format="dd/MM/yyyy HH:mm">
+                          <template #default="{ date }">
+                            {{ $t('dates.lastRun', { date }) }}
+                          </template>
+                        </DateFormatDiv>
+                      </div>
+                    </v-tooltip>
 
                     <v-spacer />
 
@@ -517,12 +516,18 @@ en:
   title: 'Periodic report list'
   targetCount: '{n} recipients'
   duplicate_suffix: '(copied)'
+  dates:
+    nextRun: 'Next run: {date}'
+    lastRun: 'Last ran: {date}'
   headers:
     actions: 'Actions'
 fr:
   title: 'Liste des rapports périodiques'
   targetCount: '{n} destinataire|{n} destinataires'
   duplicate_suffix: '(copie)'
+  dates:
+    nextRun: 'Prochaine itération: {date}'
+    lastRun: 'Dernière itération: {date}'
   headers:
     actions: 'Actions'
 </i18n>
