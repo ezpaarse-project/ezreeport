@@ -1,3 +1,15 @@
+# ezreeport-report [1.0.0-beta.29](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.28...ezreeport-report@1.0.0-beta.29) (2024-01-19)
+
+
+### Bug Fixes
+
+* **report:** added migration file ([5422140](https://github.com/ezpaarse-project/ezreeport/commit/54221406f8978cf74526f77ddd8a569d6f4fa377))
+
+
+### Features
+
+* **report:** updated CNRS logo ([e7ba5d9](https://github.com/ezpaarse-project/ezreeport/commit/e7ba5d96ea355e4fea77deccffe888326bb1b4ba))
+
 # ezreeport-report [1.0.0-beta.28](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.27...ezreeport-report@1.0.0-beta.28) (2024-01-17)
 
 
