@@ -179,9 +179,10 @@ const error = ref('');
 
 const perms = computed(() => {
   const has = ezr.hasNamespacedPermission;
+  const namespaces = props.namespace ? [props.namespace] : [];
 
   return {
-    create: has('tasks-post', []),
+    create: has('tasks-post', namespaces),
   };
 });
 const mappingValidation = computed(() => {

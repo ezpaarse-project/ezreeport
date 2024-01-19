@@ -301,12 +301,14 @@ const error = ref('');
 
 const perms = computed(() => {
   const has = ezr.hasNamespacedPermission;
+  const namespaces = props.namespace ? [props.namespace] : (props.allowedNamespaces || []);
+
   return {
-    readAll: has('tasks-get', []),
-    readOne: has('tasks-get-task', []),
-    update: has('tasks-put-task', []),
-    create: has('tasks-post', []),
-    delete: has('tasks-delete-task', []),
+    readAll: has('tasks-get', namespaces),
+    readOne: has('tasks-get-task', namespaces),
+    update: has('tasks-put-task', namespaces),
+    create: has('tasks-post', namespaces),
+    delete: has('tasks-delete-task', namespaces),
   };
 });
 const toggleStateMap = computed(() => {
