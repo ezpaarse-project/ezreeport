@@ -107,6 +107,7 @@
                     v-model="task.namespace"
                     :error-message="!task.namespace ? $t('$ezreeport.errors.empty').toString() : undefined"
                     :needed-permissions="['tasks-post']"
+                    @input="onNamespaceChanged"
                     hide-all
                   />
 
@@ -297,7 +298,6 @@ export default defineComponent({
   async mounted() {
     this.init();
     this.templateStore.indices.mapping = [];
-    await this.templateStore.refreshAvailableIndices();
   },
   methods: {
     /**

@@ -299,7 +299,7 @@ const refresh = async () => {
     indexInput.value = index;
     templateStore.indices.mapping = [];
     await Promise.all([
-      templateStore.refreshAvailableIndices(),
+      templateStore.refreshAvailableIndices(content.namespace.id),
       content.extends && fetchTemplate(content.extends.id),
       fetchMapping(index),
     ]);

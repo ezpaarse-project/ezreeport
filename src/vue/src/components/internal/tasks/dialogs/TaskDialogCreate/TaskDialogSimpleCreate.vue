@@ -225,6 +225,10 @@ const rules = computed(() => ({
  * Fetches the mapping of the specified index
  */
 const fetchMapping = async (index: string) => {
+  if (!index) {
+    return;
+  }
+
   if (!miniTask.value) {
     currentMapping.value = undefined;
     return;
@@ -247,6 +251,10 @@ const fetchMapping = async (index: string) => {
  * @param id - The ID of the preset
  */
 const fetchPreset = async (id: string) => {
+  if (!id) {
+    return;
+  }
+
   try {
     const { content } = await sdk.tasksPresets.getTasksPreset(id);
 
@@ -260,6 +268,7 @@ const fetchPreset = async (id: string) => {
  * Fetch available presets and available indicies
  */
 const refresh = async () => {
+  currentPreset.value = undefined;
   miniTask.value = {
     name: '',
     targets: [],
@@ -280,8 +289,10 @@ const refresh = async () => {
 
     availablePresets.value = content;
 
-    templateStore.indices.mapping = [];
-    await templateStore.refreshAvailableIndices();
+    if (miniTask.value.namespace) {
+      templateStore.indices.mapping = [];
+      await templateStore.refreshAvailableIndices(miniTask.value.namespace);
+    }
 
     error.value = '';
   } catch (err) {
@@ -322,6 +333,8 @@ const onNamespaceChanged = async (id: string) => {
   }
 
   miniTask.value.namespace = id;
+  templateStore.indices.mapping = [];
+  await templateStore.refreshAvailableIndices(id);
   await fetchMapping(indexInput.value);
 };
 const onIndexChanged = async () => {

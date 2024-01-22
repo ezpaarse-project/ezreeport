@@ -110,7 +110,6 @@ import { ref, computed, watch } from 'vue';
 
 import { useEzR } from '~/lib/ezreeport';
 import { useI18n } from '~/lib/i18n';
-import useTemplateStore from '~/stores/template';
 
 const props = defineProps<{
   value: boolean;
@@ -124,7 +123,6 @@ defineEmits<{
 
 const { sdk, ...ezr } = useEzR();
 const { $t } = useI18n();
-const templateStore = useTemplateStore();
 
 const loading = ref(false);
 const generationDialogShown = ref(false);
@@ -176,11 +174,9 @@ const refresh = async () => {
 
     task.value = content;
 
-    templateStore.indices.mapping = [];
-    await Promise.all([
-      templateStore.refreshAvailableIndices(),
-      content.extends && fetchTemplate(content.extends.id),
-    ]);
+    if (content.extends) {
+      await fetchTemplate(content.extends.id);
+    }
 
     error.value = '';
   } catch (err) {
