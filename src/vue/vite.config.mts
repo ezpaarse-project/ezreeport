@@ -46,7 +46,7 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['vue'],
+      external: ['vue', 'vuetify', 'vue-i18n', '@mdi/font', '@ezpaarse-project/ezreeport-sdk-js'],
       output: {
         exports: 'named',
         globals: {
