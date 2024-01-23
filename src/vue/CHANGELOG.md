@@ -1,3 +1,26 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.31](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.30...@ezpaarse-project/ezreeport-vue@1.0.0-beta.31) (2024-01-23)
+
+
+### Bug Fixes
+
+* **vue:** fixed error display in taskstable, taskscards and taskspresetscards ([fd8199c](https://github.com/ezpaarse-project/ezreeport/commit/fd8199c3215b13721a35618d26f409c034a8d040))
+* **vue:** fixed namespace not begin used when refreshing indices ([712612a](https://github.com/ezpaarse-project/ezreeport/commit/712612ace93486db4b4e006774a46dd025e76699))
+* **vue:** fixed perms issues in task simple create ([7b9740f](https://github.com/ezpaarse-project/ezreeport/commit/7b9740f55d8ff9c62a584cf34df2d272eb53be76))
+
+
+### Features
+
+* **vue:** added actions to generate tasks ([33a40f8](https://github.com/ezpaarse-project/ezreeport/commit/33a40f83d4aa31197382896d7bbba2ff0387a7a6))
+* **vue:** redone style of simple dialogs ([582d4a2](https://github.com/ezpaarse-project/ezreeport/commit/582d4a20836acc19494ece8f04227c145a3ba514))
+
+
+
+
+
+### Dependencies
+
+* **@ezpaarse-project/ezreeport-sdk-js:** upgraded to 1.0.0-beta.11
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.30](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.29...@ezpaarse-project/ezreeport-vue@1.0.0-beta.30) (2024-01-17)
 
 
