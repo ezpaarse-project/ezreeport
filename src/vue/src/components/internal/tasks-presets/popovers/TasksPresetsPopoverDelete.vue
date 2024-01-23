@@ -22,9 +22,11 @@
       </v-card-title>
 
       <v-card-text style="position: relative">
-        <div>
-          {{$t('description', { name: preset.name })}}
-        </div>
+        <i18n path="description" tag="div">
+          <template #name>
+            <strong>{{ preset.name }}</strong>
+          </template>
+        </i18n>
 
         <ErrorOverlay v-model="error" />
       </v-card-text>

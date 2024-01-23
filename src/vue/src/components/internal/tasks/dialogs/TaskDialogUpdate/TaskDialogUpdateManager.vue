@@ -2,7 +2,7 @@
   <TaskDialogAdvancedUpdate
     v-if="isAdvancedShown"
     :value="value"
-    :id="task.id"
+    :id="taskId"
     @input="emit('input', $event)"
     @updated="emit('updated', $event)"
   >
@@ -31,7 +31,7 @@
   <TaskDialogSimpleUpdate
     v-else
     :value="value"
-    :id="task.id"
+    :id="taskId"
     :namespace="namespace"
     @input="emit('input', $event)"
     @updated="emit('updated', $event)"
@@ -65,7 +65,7 @@ import {
 
 const props = defineProps<{
   value: boolean;
-  task: tasks.TaskList[number];
+  taskId: string;
   namespace?: string;
 }>();
 

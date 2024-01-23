@@ -1,13 +1,22 @@
 <template>
   <v-dialog
     :value="props.value"
-    :persistent="!valid"
+    :persistent="!isValid"
     max-width="600"
     @input="$emit('input', $event)"
   >
     <v-card :loading="loading">
-      <v-card-title>
-        {{ $t('title') }}
+      <v-card-title style="flex-wrap: nowrap;">
+        <div class="pr-2" style="word-break: break-word;">
+          {{ miniTask?.name }}
+
+          <RenamePopover
+            v-if="miniTask"
+            v-model="miniTask.name"
+            :label="$t('$ezreeport.tasks.name').toString()"
+            :rules="rules.name"
+          />
+        </div>
 
         <v-spacer />
 
@@ -18,8 +27,14 @@
         </v-btn>
       </v-card-title>
 
+      <v-card-subtitle>
+        {{ $t('title') }}
+      </v-card-subtitle>
+
+      <v-divider class="mb-2" />
+
       <v-card-text style="position: relative">
-        <v-form v-if="miniTask" v-model="valid">
+        <v-form v-if="miniTask" v-model="isValid">
 
           <v-row v-if="!props.namespace">
             <v-col>
@@ -53,10 +68,45 @@
                 item-text="name"
                 item-value="id"
                 prepend-icon="mdi-file"
+                hide-details="auto"
                 @change="fetchPreset($event)"
-              />
-            </v-col>
+              >
+                <template #item="{ item, attrs, on }">
+                  <v-list-item two-line v-bind="attrs" v-on="on">
+                    <v-list-item-content>
+                      <v-list-item-title>
+                        {{ item.name }}
+                      </v-list-item-title>
 
+                      <v-list-item-subtitle class="d-flex">
+                        <MiniTagsDetail :model-value="item.tags" />
+
+                        <v-spacer />
+
+                        <RecurrenceChip
+                          :value="item.recurrence"
+                          size="x-small"
+                        />
+                      </v-list-item-subtitle>
+                    </v-list-item-content>
+                  </v-list-item>
+                </template>
+              </v-autocomplete>
+
+              <div v-if="currentPreset" class="d-flex mt-2 ml-8">
+                <MiniTagsDetail :model-value="currentPreset.template.tags" />
+
+                <v-spacer />
+
+                <RecurrenceChip
+                  :value="currentPreset.recurrence"
+                  size="x-small"
+                />
+              </div>
+            </v-col>
+          </v-row>
+
+          <v-row>
             <v-col>
               <v-combobox
                 v-if="miniTask.template.fetchOptions"
@@ -69,19 +119,6 @@
                 prepend-icon="mdi-database"
                 @blur="onIndexChanged"
               />
-            </v-col>
-          </v-row>
-
-          <v-row>
-            <v-col>
-              <v-text-field
-                v-model="miniTask.name"
-                :rules="rules.name"
-                :label="$t('$ezreeport.tasks.name')"
-                prepend-icon="mdi-rename"
-                hide-details="auto"
-              />
-              <MiniTagsDetail v-if="currentPreset" :model-value="currentPreset.template.tags" class="mt-2" />
             </v-col>
           </v-row>
 
@@ -133,7 +170,7 @@
         <v-btn
           v-if="perms.create"
           :loading="loading"
-          :disabled="!valid"
+          :disabled="!isValid || !isNameValid"
           color="success"
           @click="save"
         >
@@ -169,7 +206,7 @@ const { $t } = useI18n();
 const templateStore = useTemplateStore();
 
 const loading = ref(false);
-const valid = ref(false);
+const isValid = ref(false);
 const currentMapping = ref<Record<string, string> | null | undefined>(undefined);
 const miniTask = ref<tasks.PartialInputTask | undefined>(undefined);
 const availablePresets = ref<tasksPresets.TasksPreset[]>([]);
@@ -203,7 +240,7 @@ const mappingValidation = computed(() => {
  */
 const rules = computed(() => ({
   name: [
-    (v: string) => !!v || $t('$ezreeport.errors.empty', { field: 'name' }),
+    (v: string) => !!v || $t('$ezreeport.errors.empty', { field: 'name' }).toString(),
   ],
   targets: [
     (v: string[]) => v.length > 0 || $t('$ezreeport.errors.empty', { field: 'targets' }),
@@ -220,6 +257,7 @@ const rules = computed(() => ({
     (v: string) => !!v || $t('$ezreeport.errors.empty', { field: 'namespace' }),
   ],
 }));
+const isNameValid = computed(() => rules.value.name.every((r) => r(miniTask.value?.name || '')));
 
 /**
  * Fetches the mapping of the specified index
@@ -304,7 +342,7 @@ const refresh = async () => {
  * Transform mini task to full task and save it
  */
 const save = async () => {
-  if (!miniTask.value || !currentPreset.value || !valid.value) {
+  if (!miniTask.value || !currentPreset.value || !isValid.value || !isNameValid.value) {
     return;
   }
 

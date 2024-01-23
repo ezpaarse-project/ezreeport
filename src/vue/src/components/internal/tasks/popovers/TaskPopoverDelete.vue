@@ -12,7 +12,7 @@
   >
     <v-card :loading="loading">
       <v-card-title>
-        {{$t('title')}}
+        {{ $t('title') }}
 
         <v-spacer />
 
@@ -22,9 +22,11 @@
       </v-card-title>
 
       <v-card-text style="position: relative">
-        <div>
-          {{$t('description', { name: task.name })}}
-        </div>
+        <i18n path="description" tag="div">
+          <template #name>
+            <strong>{{ task.name }}</strong>
+          </template>
+        </i18n>
 
         <ErrorOverlay v-model="error" />
       </v-card-text>

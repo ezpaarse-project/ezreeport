@@ -4,24 +4,23 @@
       <TaskDialogCreateManager
         v-if="perms.create"
         v-model="createTaskDialogShown"
-        ref="createManager"
         @created="onTaskCreated"
       />
       <TaskDialogUpdateManager
         v-if="perms.update && focusedTask"
         v-model="updateTaskDialogShown"
-        :task="focusedTask"
+        :task-id="focusedTask.id"
         @updated="onTaskUpdated"
       />
       <TaskDialogReadManager
         v-if="perms.readOne && focusedTask"
         v-model="readTaskDialogShown"
-        :task="focusedTask"
+        :task-id="focusedTask.id"
       />
     </TemplateProvider>
     <TaskPopoverDelete
       v-if="focusedTask"
-      v-model="deleteTaskPopoverShown"
+      v-if="perms.delete && focusedTask"
       :coords="deleteTaskPopoverCoords"
       :task="focusedTask"
       @deleted="onTaskDeleted"
@@ -192,17 +191,12 @@ import type { VMenu } from 'vuetify/lib/components';
 import { useEzR } from '~/lib/ezreeport';
 import { useI18n } from '~/lib/i18n';
 
-import type TaskDialogCreateManagerConstructor from '~/components/internal/tasks/dialogs/TaskDialogCreate/TaskDialogCreateManager.vue';
-
-type TaskDialogCreateManager = InstanceType<typeof TaskDialogCreateManagerConstructor>;
 type VMenuInstance = InstanceType<typeof VMenu>;
 
 type TaskItem = tasks.TaskList[number];
 
 const { $t, $tc } = useI18n();
 const { sdk, ...ezr } = useEzR();
-
-const createManager = ref<TaskDialogCreateManager | null>(null);
 
 const readTaskDialogShown = ref(false);
 const updateTaskDialogShown = ref(false);

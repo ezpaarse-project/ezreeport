@@ -5,25 +5,24 @@
         v-if="perms.create"
         v-model="createTaskDialogShown"
         :namespace="currentNamespace"
-        ref="createManager"
         @created="onTaskCreated"
       />
       <TaskDialogUpdateManager
         v-if="perms.update && focusedTask"
         v-model="updateTaskDialogShown"
-        :task="focusedTask"
+        :task-id="focusedTask.id"
         :namespace="currentNamespace"
         @updated="onTaskUpdated"
       />
       <TaskDialogReadManager
         v-if="perms.readOne && focusedTask"
         v-model="readTaskDialogShown"
-        :task="focusedTask"
+        :task-id="focusedTask.id"
         :namespace="currentNamespace"
       />
     </TemplateProvider>
     <TaskPopoverDelete
-      v-if="focusedTask"
+      v-if="perms.delete && focusedTask"
       v-model="deleteTaskPopoverShown"
       :coords="deleteTaskPopoverCoords"
       :task="focusedTask"
@@ -257,11 +256,8 @@ import type { VMenu } from 'vuetify/lib/components';
 import { useEzR } from '~/lib/ezreeport';
 import { useI18n } from '~/lib/i18n';
 
-import type TaskDialogCreateManagerConstructor from '~/components/internal/tasks/dialogs/TaskDialogCreate/TaskDialogCreateManager.vue';
-
-type TaskDialogCreateManager = InstanceType<typeof TaskDialogCreateManagerConstructor>;
-
 type VMenuInstance = InstanceType<typeof VMenu>;
+type TaskItem = tasks.TaskList[number];
 
 const props = defineProps<{
   namespace?: string;
@@ -275,8 +271,6 @@ const emit = defineEmits<{
 
 const { $t, $tc } = useI18n();
 const { sdk, ...ezr } = useEzR();
-
-const createManager = ref<TaskDialogCreateManager | null>(null);
 
 const readTaskDialogShown = ref(false);
 const updateTaskDialogShown = ref(false);
@@ -344,7 +338,7 @@ const currentNamespace = computed({
   },
 });
 
-const storeMenuRef = (task: tasks.TaskList[number], el: VMenuInstance | null) => {
+const storeMenuRef = (task: TaskItem, el: VMenuInstance | null) => {
   if (!el) {
     taskMenusMap.value[task.id] = undefined;
     return;
@@ -403,6 +397,10 @@ const onNamespaceChanged = async (id: string) => {
   await fetch();
   currentNamespace.value = id;
 };
+const showRunDialog = (task: TaskItem) => {
+  focusedTask.value = task;
+  generationDialogShown.value = true;
+};
 const showCreateDialog = () => {
   createTaskDialogShown.value = true;
 };
@@ -410,7 +408,7 @@ const onTaskCreated = async () => {
   createTaskDialogShown.value = false;
   await fetch();
 };
-const showUpdateDialog = (task: tasks.TaskList[number]) => {
+const showUpdateDialog = (task: TaskItem) => {
   focusedTask.value = task;
   updateTaskDialogShown.value = true;
 };
@@ -419,11 +417,11 @@ const onTaskUpdated = async () => {
   focusedTask.value = undefined;
   await fetch();
 };
-const showReadDialog = (task: tasks.TaskList[number]) => {
+const showReadDialog = (task: TaskItem) => {
   focusedTask.value = task;
   readTaskDialogShown.value = true;
 };
-const showDeletePopover = (task: tasks.TaskList[number]) => {
+const showDeletePopover = (task: TaskItem) => {
   let coords = { x: 0, y: 0 };
   const menu = taskMenusMap.value[task.id];
   if (menu) {
@@ -443,7 +441,7 @@ const onTaskDeleted = async () => {
   focusedTask.value = undefined;
   await fetch();
 };
-const toggleTask = async (task: tasks.TaskList[number]) => {
+const toggleTask = async (task: TaskItem) => {
   if (!toggleStateMap.value[task.id]) {
     return;
   }
@@ -463,7 +461,7 @@ const toggleTask = async (task: tasks.TaskList[number]) => {
   }
   loading.value = false;
 };
-const duplicateTask = async (task: tasks.TaskList[number]) => {
+const duplicateTask = async (task: TaskItem) => {
   if (!perms.value.update && !perms.value.create) {
     return;
   }

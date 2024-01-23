@@ -12,8 +12,8 @@
     />
 
     <v-card :loading="loading">
-      <v-card-title>
-        <span v-if="task">{{ task.name }}</span>
+      <v-card-title style="flex-wrap: nowrap;">
+        <div class="pr-2" style="word-break: break-word;">{{ task?.name || '...' }}</div>
 
         <v-spacer />
 
@@ -26,7 +26,11 @@
 
       <v-card-subtitle>
         <MiniTagsDetail v-if="extendedTemplate" :model-value="extendedTemplate.tags" />
+
+        {{ $t('title') }}
       </v-card-subtitle>
+
+      <v-divider class="mb-2" />
 
       <v-card-text style="position: relative">
         <v-form v-if="task">

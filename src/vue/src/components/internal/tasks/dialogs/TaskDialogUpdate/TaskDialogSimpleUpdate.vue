@@ -13,8 +13,17 @@
     />
 
     <v-card :loading="loading">
-      <v-card-title>
-        {{ $t('title') }}
+      <v-card-title style="flex-wrap: nowrap;">
+        <div class="pr-2" style="word-break: break-word;">
+          {{ task?.name || '...' }}
+
+          <RenamePopover
+            v-if="task"
+            v-model="task.name"
+            :label="$t('$ezreeport.tasks.name').toString()"
+            :rules="rules.name"
+          />
+        </div>
 
         <v-spacer />
 
@@ -24,6 +33,14 @@
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
+
+      <v-card-subtitle>
+        <MiniTagsDetail v-if="extendedTemplate" :model-value="extendedTemplate.tags" />
+
+        {{ $t('title') }}
+      </v-card-subtitle>
+
+      <v-divider class="mb-2" />
 
       <v-card-text style="position: relative">
         <v-form v-if="task" v-model="valid">
@@ -60,19 +77,6 @@
                 prepend-icon="mdi-database"
                 @blur="onIndexChanged"
               />
-            </v-col>
-          </v-row>
-
-          <v-row>
-            <v-col>
-              <v-text-field
-                v-model="task.name"
-                :rules="rules.name"
-                :label="$t('$ezreeport.tasks.name')"
-                prepend-icon="mdi-rename"
-                hide-details="auto"
-              />
-              <MiniTagsDetail v-if="extendedTemplate" :model-value="extendedTemplate.tags" class="mt-2" />
             </v-col>
           </v-row>
 
@@ -133,7 +137,7 @@
         <v-btn
           v-if="perms.update"
           :loading="loading"
-          :disabled="!valid"
+          :disabled="!valid || !isNameValid || !isModified"
           color="success"
           @click="save"
         >
@@ -214,7 +218,7 @@ const mappingValidation = computed(() => {
  */
 const rules = computed(() => ({
   name: [
-    (v: string) => !!v || $t('$ezreeport.errors.empty', { field: 'name' }),
+    (v: string) => !!v || $t('$ezreeport.errors.empty', { field: 'name' }).toString(),
   ],
   targets: [
     (v: string[]) => v.length > 0 || $t('$ezreeport.errors.empty', { field: 'targets' }),
@@ -228,6 +232,7 @@ const rules = computed(() => ({
     (v: string) => !!v || $t('$ezreeport.errors.empty', { field: 'namespace' }),
   ],
 }));
+const isNameValid = computed(() => rules.value.name.every((r) => r(task.value?.name || '')));
 const currentNamespace = computed(() => {
   if (!task.value) {
     return undefined;
@@ -314,7 +319,7 @@ const refresh = async () => {
  * Save new state of task
  */
 const save = async () => {
-  if (!task.value || !valid.value) {
+  if (!task.value || !valid.value || !isNameValid.value || !isModified.value) {
     return;
   }
 

@@ -2,7 +2,7 @@
   <TaskDialogAdvancedRead
     v-if="isAdvancedShown"
     :value="value"
-    :id="task.id"
+    :id="taskId"
     @input="emit('input', $event)"
   >
     <template #toolbar>
@@ -30,7 +30,7 @@
   <TaskDialogSimpleRead
     v-else
     :value="value"
-    :id="task.id"
+    :id="taskId"
     :namespace="namespace"
     @input="emit('input', $event)"
   >
@@ -55,7 +55,6 @@
 </template>
 
 <script setup lang="ts">
-import type { tasks } from '@ezpaarse-project/ezreeport-sdk-js';
 import {
   ref,
   watch,
@@ -63,7 +62,7 @@ import {
 
 const props = defineProps<{
   value: boolean;
-  task: tasks.TaskList[number];
+  taskId: string;
   namespace?: string;
 }>();
 
