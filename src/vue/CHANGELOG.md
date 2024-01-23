@@ -1,3 +1,10 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.32](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.31...@ezpaarse-project/ezreeport-vue@1.0.0-beta.32) (2024-01-23)
+
+
+### Bug Fixes
+
+* **vue:** sdk is now back in bundle ([24e366a](https://github.com/ezpaarse-project/ezreeport/commit/24e366a1938032e09b5a34cc2b303ea7a0011833))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.31](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.30...@ezpaarse-project/ezreeport-vue@1.0.0-beta.31) (2024-01-23)
 
 
