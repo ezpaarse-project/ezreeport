@@ -43,13 +43,13 @@
     ]
   },
   "dependencies": {
-    "@ezpaarse-project/ezreeport-sdk-js": "1.0.0-beta.11",
     "@mdi/font": "^7.4.47",
     "vue": "^2.7.16",
     "vue-i18n": "^8.28.2",
     "vuetify": "^2.7.1"
   },
   "devDependencies": {
+    "@ezpaarse-project/ezreeport-sdk-js": "1.0.0-beta.11",
     "@highlightjs/vue-plugin": "^1.0.2",
     "@intlify/unplugin-vue-i18n": "^2.0.0",
     "@rushstack/eslint-patch": "^1.6.1",
