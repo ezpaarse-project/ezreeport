@@ -1,3 +1,10 @@
+# @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.11](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.10...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.11) (2024-01-23)
+
+
+### Bug Fixes
+
+* **sdk:** fixed error when user is not found at login ([f7e8a75](https://github.com/ezpaarse-project/ezreeport/commit/f7e8a75e81025df9cc1233064fbfdb413760ca4f))
+
 # @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.10](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.9...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.10) (2024-01-17)
 
 
