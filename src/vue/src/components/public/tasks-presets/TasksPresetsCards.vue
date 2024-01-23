@@ -56,6 +56,16 @@
         </LoadingToolbar>
       </template>
 
+      <template #no-data>
+        <div style="position: relative; min-height: 150px;">
+          <v-overlay v-if="!error" absolute>
+            {{ $t('$vuetify.noDataText') }}
+          </v-overlay>
+
+          <ErrorOverlay v-model="error" hide-action />
+        </div>
+      </template>
+
       <template #default="{ items }">
         <v-row>
           <v-col
@@ -153,7 +163,6 @@
             </v-card>
           </v-col>
 
-          <ErrorOverlay v-model="error" />
         </v-row>
       </template>
     </v-data-iterator>

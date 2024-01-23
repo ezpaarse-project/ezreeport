@@ -65,6 +65,14 @@
         </LoadingToolbar>
       </template>
 
+      <template #no-data>
+        <template v-if="!error">{{ $t('$vuetify.noDataText') }}</template>
+
+        <div v-else style="position: relative; height: 100%;">
+          <ErrorOverlay v-model="error" hide-action />
+        </div>
+      </template>
+
       <template #[`item.name`]="{ value, item }">
         <a
           href="#"
@@ -73,6 +81,8 @@
         >
           {{ value }}
         </a>
+
+        <MiniTagsDetail :model-value="item.tags" />
       </template>
 
       <template #[`item.namespaceId`]="{ value, item }">
