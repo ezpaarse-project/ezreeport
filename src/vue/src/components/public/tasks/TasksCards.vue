@@ -21,6 +21,12 @@
         :namespace="currentNamespace"
       />
     </TemplateProvider>
+    <TaskDialogGenerationManager
+      v-if="perms.runTask && focusedTask"
+      v-model="generationDialogShown"
+      :task-id="focusedTask.id"
+      @generated="fetch()"
+    />
     <TaskPopoverDelete
       v-if="perms.delete && focusedTask"
       v-model="deleteTaskPopoverShown"
@@ -189,6 +195,21 @@
 
                       <v-list>
                         <v-list-item
+                          v-if="perms.runTask"
+                          @click="showRunDialog(task)"
+                        >
+                          <v-list-item-action>
+                            <v-icon color="warning">mdi-file-document-refresh-outline</v-icon>
+                          </v-list-item-action>
+
+                          <v-list-item-title>
+                            {{ $t('$ezreeport.generate') }}
+                          </v-list-item-title>
+                        </v-list-item>
+
+                        <v-divider />
+
+                        <v-list-item
                           v-if="perms.readOne && perms.create"
                           @click="duplicateTask(task)"
                         >
@@ -275,6 +296,7 @@ const { sdk, ...ezr } = useEzR();
 const readTaskDialogShown = ref(false);
 const updateTaskDialogShown = ref(false);
 const createTaskDialogShown = ref(false);
+const generationDialogShown = ref(false);
 const deleteTaskPopoverShown = ref(false);
 const deleteTaskPopoverCoords = ref({ x: 0, y: 0 });
 const loading = ref(false);
@@ -303,6 +325,8 @@ const perms = computed(() => {
     update: has('tasks-put-task', namespaces),
     create: has('tasks-post', namespaces),
     delete: has('tasks-delete-task', namespaces),
+
+    runTask: has('tasks-post-task-_run', namespaces),
   };
 });
 const toggleStateMap = computed(() => {

@@ -18,9 +18,15 @@
         :task-id="focusedTask.id"
       />
     </TemplateProvider>
+    <TaskDialogGenerationManager
+      v-if="perms.runTask && focusedTask"
+      v-model="generationDialogShown"
+      :task-id="focusedTask.id"
+      @generated="fetch()"
+    />
     <TaskPopoverDelete
-      v-if="focusedTask"
       v-if="perms.delete && focusedTask"
+      v-model="deleteTaskPopoverShown"
       :coords="deleteTaskPopoverCoords"
       :task="focusedTask"
       @deleted="onTaskDeleted"
@@ -132,6 +138,21 @@
 
           <v-list>
             <v-list-item
+              v-if="perms.runTask"
+              @click="showRunDialog(item)"
+            >
+              <v-list-item-action>
+                <v-icon color="warning">mdi-file-document-refresh-outline</v-icon>
+              </v-list-item-action>
+
+              <v-list-item-title>
+                {{ $t('$ezreeport.generate') }}
+              </v-list-item-title>
+            </v-list-item>
+
+            <v-divider />
+
+            <v-list-item
               v-if="perms.readOne && perms.create"
               @click="duplicateTask(item)"
             >
@@ -201,6 +222,7 @@ const { sdk, ...ezr } = useEzR();
 const readTaskDialogShown = ref(false);
 const updateTaskDialogShown = ref(false);
 const createTaskDialogShown = ref(false);
+const generationDialogShown = ref(false);
 const deleteTaskPopoverShown = ref(false);
 const deleteTaskPopoverCoords = ref({ x: 0, y: 0 });
 const loading = ref(false);
@@ -226,6 +248,8 @@ const perms = computed(() => {
     update: has('tasks-put-task', []),
     create: has('tasks-post', []),
     delete: has('tasks-delete-task', []),
+
+    runTask: has('tasks-post-task-_run', []),
   };
 });
 const headers = computed<DataTableHeader[]>(() => [
@@ -374,6 +398,10 @@ const showDeletePopover = (task: TaskItem) => {
   focusedTask.value = task;
   deleteTaskPopoverCoords.value = coords;
   deleteTaskPopoverShown.value = true;
+};
+const showRunDialog = (task: TaskItem) => {
+  focusedTask.value = task;
+  generationDialogShown.value = true;
 };
 const showTaskDialog = (task: TaskItem) => {
   if (perms.value.update) {
