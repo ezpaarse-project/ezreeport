@@ -144,7 +144,7 @@ const router: FastifyPluginAsync = async (fastify) => {
   fastify.post<{
     Params: SpecificCronParamsType
   }>(
-    '/:cron/force',
+    '/:cron/_force',
     {
       schema: {
         params: SpecificCronParams,

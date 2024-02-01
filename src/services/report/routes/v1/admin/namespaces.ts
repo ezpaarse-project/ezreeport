@@ -196,7 +196,7 @@ const router: FastifyPluginAsync = async (fastify) => {
 
       const membershipItem = namespace.memberships.find((m) => m.username === username);
       if (!membershipItem) {
-        throw new NotFoundError(`User "${username}" is not in namespace "${namespace}"`);
+        throw new NotFoundError(`User "${username}" is not in namespace "${namespace.id}"`);
       }
 
       return membershipItem;

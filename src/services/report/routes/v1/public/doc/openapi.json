@@ -112,7 +112,7 @@
         "description": "Check services that current one can ping"
       }
     },
-    "/health/all": {
+    "/health/_all": {
       "get": {
         "summary": "Ping all services",
         "tags": [
@@ -2300,7 +2300,7 @@
         ]
       }
     },
-    "/queues/{queue}/{jobId}/retry": {
+    "/queues/{queue}/{jobId}/_retry": {
       "parameters": [
         {
           "schema": {
@@ -2885,7 +2885,7 @@
         "deprecated": true
       }
     },
-    "/crons/{cron}/force": {
+    "/crons/{cron}/_force": {
       "parameters": [
         {
           "schema": {

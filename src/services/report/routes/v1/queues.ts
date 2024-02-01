@@ -251,7 +251,7 @@ const router: FastifyPluginAsync = async (fastify) => {
   fastify.post<{
     Params: SpecificJobParamsType
   }>(
-    '/:queue/jobs/:jobId/retry',
+    '/:queue/jobs/:jobId/_retry',
     {
       schema: {
         params: SpecificJobParams,

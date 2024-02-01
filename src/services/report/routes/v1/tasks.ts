@@ -176,7 +176,7 @@ const router: FastifyPluginAsync = async (fastify) => {
         previous: request.query.previous ?? undefined,
       };
 
-      const list = await tasks.getTasksByTargets(
+      const list = await tasks.getTasksByTarget(
         request.params.email,
         pagination,
         request.namespaceIds,
@@ -185,7 +185,7 @@ const router: FastifyPluginAsync = async (fastify) => {
       return {
         content: list,
         meta: {
-          total: await tasks.getTaskCountByTargets(request.params.email, request.namespaceIds),
+          total: await tasks.getTaskCountByTarget(request.params.email, request.namespaceIds),
           count: list.length,
           size: pagination.count,
           lastId: list.at(-1)?.id,

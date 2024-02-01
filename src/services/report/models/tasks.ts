@@ -310,7 +310,7 @@ export const getAllTargets = async (namespaceIds?: Namespace['id'][]): Promise<s
  *
  * @returns Task
  */
-export const getTasksByTargets = async (
+export const getTasksByTarget = async (
   email: string,
   opts?: TaskPaginationQueryType,
   namespaceIds?: Namespace['id'][],
@@ -381,7 +381,7 @@ export const getTasksByTargets = async (
  *
  * @returns The task count
  */
-export const getTaskCountByTargets = (
+export const getTaskCountByTarget = (
   email: string,
   namespaceIds?: Namespace['id'][],
 ): Promise<number> => prisma.task.count({
