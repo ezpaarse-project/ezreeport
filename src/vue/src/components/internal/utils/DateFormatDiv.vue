@@ -17,9 +17,7 @@ const props = defineProps<{
   on?: any
 }>();
 
-const innerFormat = computed(() => props.format || 'dd/MM/yyyy');
-
-const date = computed(() => dFormat(props.value, innerFormat.value));
+const date = computed(() => dFormat(props.value, props.format || 'dd/MM/yyyy'));
 </script>
 
 <style scoped>
