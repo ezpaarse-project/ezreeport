@@ -203,7 +203,7 @@ export const retryJob = async <Data, Result>(
   const queueName = typeof queueOrName === 'string' ? queueOrName : queueOrName.name;
   const jobId = typeof jobOrId === 'string' || typeof jobOrId === 'number' ? jobOrId : jobOrId.id;
 
-  const { content, ...response } = await axios.$post<RawFullJob<Data, Result>>(`/queues/${queueName}/jobs/${jobId}/retry`, { params: { namespaces } });
+  const { content, ...response } = await axios.$post<RawFullJob<Data, Result>>(`/queues/${queueName}/jobs/${jobId}/_retry`, { params: { namespaces } });
   return {
     ...response,
     content: parseFullJob(content),

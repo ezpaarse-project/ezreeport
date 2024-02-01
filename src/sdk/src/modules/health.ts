@@ -31,7 +31,7 @@ export const getAllConnectedServices = () => axios.$get<{ current: string, curre
  *
  * @returns The connection status for all services
  */
-export const checkAllConnectedService = () => axios.$get<PingResult[]>('/health/all');
+export const checkAllConnectedService = () => axios.$get<PingResult[]>('/health/_all');
 
 /**
  * Check connection of a specific service from current
