@@ -15,3 +15,18 @@ export const getNamespacesStream = () => ezr.getDataAsStream<NamespaceListItem, 
   transform: ({ tasks, ...item }) => item,
   filter: (item) => item.id !== '_',
 });
+export const applyNamespacesStream = () => ezr.applyStreamAsData<Namespace>({
+  urls: {
+    item: (item) => `/admin/namespaces/${item.id}`,
+  },
+  labels: {
+    start: 'Applying namespaces',
+    end: (count) => `${count} namespaces applied`,
+  },
+  transform: (item) => ({
+    name: item.name,
+    fetchLogin: item.fetchLogin,
+    fetchOptions: item.fetchOptions,
+    logoId: item.logoId,
+  }),
+});

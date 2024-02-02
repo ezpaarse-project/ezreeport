@@ -15,3 +15,17 @@ export const getTemplatesStream = () => ezr.getDataAsStream<TemplateListItem, Te
   transform: ({ tasks, presets, ...item }) => item,
   filter: (item, meta) => item.id !== '_' || item.id !== meta.default,
 });
+export const applyTemplatesStream = () => ezr.applyStreamAsData<Template>({
+  urls: {
+    item: (item) => `/templates/${item.id}`,
+  },
+  labels: {
+    start: 'Applying templates',
+    end: (count) => `${count} templates applied`,
+  },
+  transform: (item) => ({
+    name: item.name,
+    tags: item.tags,
+    body: item.body,
+  }),
+});

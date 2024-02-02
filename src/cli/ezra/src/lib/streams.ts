@@ -1,5 +1,6 @@
 import { Transform } from 'node:stream';
-import { createWriteStream } from 'node:fs';
+import { createWriteStream, createReadStream } from 'node:fs';
+import readline from 'node:readline';
 
 export const createWriteJSONLStream = (filename: string) => {
   const stream = new Transform({
@@ -17,6 +18,32 @@ export const createWriteJSONLStream = (filename: string) => {
   const file = createWriteStream(filename, { encoding: 'utf-8' });
 
   stream.pipe(file);
+
+  return stream;
+};
+
+export const createReadJSONLStream = (filename: string) => {
+  const rl = readline.createInterface({
+    input: createReadStream(filename),
+    crlfDelay: Infinity,
+  });
+
+  const stream = new Transform({
+    objectMode: true,
+    transform(chunk, encoding, callback) {
+      try {
+        const data = JSON.parse(chunk);
+        callback(null, data);
+      } catch (error) {
+        callback(error as Error);
+      }
+    },
+  });
+
+  rl.on('line', (line) => {
+    stream.write(line);
+  });
+  rl.on('close', () => stream.end());
 
   return stream;
 };
