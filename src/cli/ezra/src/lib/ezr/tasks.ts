@@ -1,9 +1,9 @@
-import * as ezr from './index.js';
+import { createDataReadStream, createDataWriteStream } from './index.js';
 
 type TaskListItem = any;
 type Task = any;
 
-export const getTasksStream = () => ezr.getDataAsStream<TaskListItem, Task>({
+export const createTasksReadStream = () => createDataReadStream<TaskListItem, Task>({
   labels: {
     start: 'Getting tasks',
     end: (count) => `${count} tasks found`,
@@ -14,7 +14,8 @@ export const getTasksStream = () => ezr.getDataAsStream<TaskListItem, Task>({
   },
   transform: ({ activity, ...item }) => item,
 });
-export const applyTasksStream = () => ezr.applyStreamAsData<Task>({
+
+export const createTasksWriteStream = () => createDataWriteStream<Task>({
   urls: {
     item: (item) => `/tasks/${item.id}`,
   },

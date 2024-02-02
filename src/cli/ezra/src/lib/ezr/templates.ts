@@ -1,9 +1,9 @@
-import * as ezr from './index.js';
+import { createDataReadStream, createDataWriteStream } from './index.js';
 
 type TemplateListItem = any;
 type Template = any;
 
-export const getTemplatesStream = () => ezr.getDataAsStream<TemplateListItem, Template>({
+export const createTemplatesReadStream = () => createDataReadStream<TemplateListItem, Template>({
   urls: {
     list: '/templates',
     item: (item) => `/templates/${item.id}`,
@@ -15,7 +15,8 @@ export const getTemplatesStream = () => ezr.getDataAsStream<TemplateListItem, Te
   transform: ({ tasks, presets, ...item }) => item,
   filter: (item, meta) => item.id !== '_' || item.id !== meta.default,
 });
-export const applyTemplatesStream = () => ezr.applyStreamAsData<Template>({
+
+export const createTemplatesWriteStream = () => createDataWriteStream<Template>({
   urls: {
     item: (item) => `/templates/${item.id}`,
   },

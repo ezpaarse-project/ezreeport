@@ -1,15 +1,15 @@
 import { Args, Flags, ux } from '@oclif/core';
 
-import type { Transform } from 'node:stream';
+import type { PassThrough, Writable } from 'node:stream';
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { BaseCommand } from '../lib/BaseCommand.js';
-import { createStreamPromise, createReadJSONLStream } from '../lib/streams.js';
-import { applyNamespacesStream } from '../lib/ezr/namespaces.js';
-import { applyTemplatesStream } from '../lib/ezr/templates.js';
-import { applyTaskPresetsStream } from '../lib/ezr/tasksPresets.js';
-import { applyTasksStream } from '../lib/ezr/tasks.js';
+import { createStreamPromise, createJSONLReadStream } from '../lib/streams.js';
+import { createNamespacesWriteStream } from '../lib/ezr/namespaces.js';
+import { createTemplatesWriteStream } from '../lib/ezr/templates.js';
+import { createTaskPresetsWriteStream } from '../lib/ezr/tasksPresets.js';
+import { createTasksWriteStream } from '../lib/ezr/tasks.js';
 
 export default class Restore extends BaseCommand {
   static description = 'Restore instance data from a dedicated folder';
@@ -46,15 +46,16 @@ export default class Restore extends BaseCommand {
   };
 
   private async restoreData(opts: {
-    applyStream: () => Transform,
+    createDataWriteStream: () => [PassThrough, Writable],
     inFile: string,
   }) {
     try {
-      const stream = opts.applyStream();
+      const streams = opts.createDataWriteStream();
 
       await createStreamPromise(
-        createReadJSONLStream(opts.inFile)
-          .pipe(stream),
+        createJSONLReadStream(opts.inFile)
+          .pipe(streams[0])
+          .pipe(streams[1]),
       );
     } catch (error) {
       this.logToStderr(
@@ -83,28 +84,28 @@ export default class Restore extends BaseCommand {
 
     if (flags.namespaces) {
       await this.restoreData({
-        applyStream: applyNamespacesStream,
+        createDataWriteStream: createNamespacesWriteStream,
         inFile: join(dir, 'namespaces.jsonl'),
       });
     }
 
     if (flags.templates) {
       await this.restoreData({
-        applyStream: applyTemplatesStream,
+        createDataWriteStream: createTemplatesWriteStream,
         inFile: join(dir, 'templates.jsonl'),
       });
     }
 
     if (flags.taskPresets) {
       await this.restoreData({
-        applyStream: applyTaskPresetsStream,
+        createDataWriteStream: createTaskPresetsWriteStream,
         inFile: join(dir, 'tasks-presets.jsonl'),
       });
     }
 
     if (flags.tasks) {
       await this.restoreData({
-        applyStream: applyTasksStream,
+        createDataWriteStream: createTasksWriteStream,
         inFile: join(dir, 'tasks.jsonl'),
       });
     }

@@ -1,9 +1,12 @@
-import * as ezr from './index.js';
+import { createDataReadStream, createDataWriteStream } from './index.js';
 
 type TaskPresetListItem = any;
 type TaskPreset = any;
 
-export const getTaskPresetsStream = () => ezr.getDataAsStream<TaskPresetListItem, TaskPreset>({
+export const createTaskPresetsReadStream = () => createDataReadStream<
+TaskPresetListItem,
+TaskPreset
+>({
   labels: {
     start: 'Getting tasks presets',
     end: (count) => `${count} tasks presets found`,
@@ -13,7 +16,8 @@ export const getTaskPresetsStream = () => ezr.getDataAsStream<TaskPresetListItem
     item: (item) => `/tasks-presets/${item.id}`,
   },
 });
-export const applyTaskPresetsStream = () => ezr.applyStreamAsData<TaskPreset>({
+
+export const createTaskPresetsWriteStream = () => createDataWriteStream<TaskPreset>({
   urls: {
     item: (item) => `/tasks-presets/${item.id}`,
   },

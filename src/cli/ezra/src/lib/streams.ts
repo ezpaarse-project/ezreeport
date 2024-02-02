@@ -1,8 +1,8 @@
-import { Transform } from 'node:stream';
+import { type Stream, Transform, Readable } from 'node:stream';
 import { createWriteStream, createReadStream } from 'node:fs';
 import readline from 'node:readline';
 
-export const createWriteJSONLStream = (filename: string) => {
+export const createJSONLWriteStream = (filename: string) => {
   const stream = new Transform({
     objectMode: true,
     transform(chunk, encoding, callback) {
@@ -15,40 +15,34 @@ export const createWriteJSONLStream = (filename: string) => {
     },
   });
 
-  const file = createWriteStream(filename, { encoding: 'utf-8' });
-
-  stream.pipe(file);
+  stream
+    .pipe(createWriteStream(filename, { encoding: 'utf-8' }));
 
   return stream;
 };
 
-export const createReadJSONLStream = (filename: string) => {
+export const createJSONLReadStream = (filename: string) => {
   const rl = readline.createInterface({
     input: createReadStream(filename),
     crlfDelay: Infinity,
   });
 
-  const stream = new Transform({
+  const iterator = rl[Symbol.asyncIterator]();
+  return new Readable({
     objectMode: true,
-    transform(chunk, encoding, callback) {
-      try {
-        const data = JSON.parse(chunk);
-        callback(null, data);
-      } catch (error) {
-        callback(error as Error);
+    async read() {
+      const { done, value } = await iterator.next();
+      if (done) {
+        rl.close();
+        this.push(null);
+        return;
       }
+      this.push(JSON.parse(value));
     },
   });
-
-  rl.on('line', (line) => {
-    stream.write(line);
-  });
-  rl.on('close', () => stream.end());
-
-  return stream;
 };
 
-export const createStreamPromise = (stream: Transform) => new Promise<void>(
+export const createStreamPromise = (stream: Stream) => new Promise<void>(
   (resolve, reject) => {
     stream.on('finish', () => resolve());
     stream.on('error', (err) => reject(err));

@@ -1,9 +1,9 @@
-import * as ezr from './index.js';
+import { createDataReadStream, createDataWriteStream } from './index.js';
 
 type NamespaceListItem = any;
 type Namespace = any;
 
-export const getNamespacesStream = () => ezr.getDataAsStream<NamespaceListItem, Namespace>({
+export const createNamespacesReadStream = () => createDataReadStream<NamespaceListItem, Namespace>({
   labels: {
     start: 'Getting namespaces',
     end: (count) => `${count} namespaces found`,
@@ -15,7 +15,8 @@ export const getNamespacesStream = () => ezr.getDataAsStream<NamespaceListItem, 
   transform: ({ tasks, ...item }) => item,
   filter: (item) => item.id !== '_',
 });
-export const applyNamespacesStream = () => ezr.applyStreamAsData<Namespace>({
+
+export const createNamespacesWriteStream = () => createDataWriteStream<Namespace>({
   urls: {
     item: (item) => `/admin/namespaces/${item.id}`,
   },

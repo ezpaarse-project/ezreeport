@@ -1,7 +1,7 @@
 import { ux } from '@oclif/core';
 import axios from 'axios';
 
-import { PassThrough, Transform } from 'node:stream';
+import { PassThrough, Readable, Writable } from 'node:stream';
 
 import * as ezr from './index.js';
 
@@ -23,7 +23,7 @@ export const setup = async (opts?: { url?: string, apiKey?: string, admin?: stri
   fetch.defaults.headers.common.Authorization = `Bearer ${adminUser.token}`;
 };
 
-export const getDataAsStream = async <ListItem, Item>(opts: {
+export const createDataReadStream = async <ListItem, Item>(opts: {
   urls: {
     list: string,
     item: (item: ListItem) => string,
@@ -55,29 +55,30 @@ export const getDataAsStream = async <ListItem, Item>(opts: {
   });
   progress.start(filtered.length, 0);
 
-  const stream = new PassThrough({ objectMode: true });
-  const promises = filtered.map(
-    async (item) => {
+  let index = 0;
+  return new Readable({
+    objectMode: true,
+    async read() {
+      if (index >= filtered.length) {
+        progress.stop();
+        ux.log(ux.colorize('green', opts.labels.end(filtered.length)));
+        this.push(null);
+        return;
+      }
+
+      const item = filtered[index];
       try {
         const { data } = await ezr.fetch.get<{ content: Item }>(opts.urls.item(item));
         progress.increment();
-        stream.write(transformer(data.content));
+        this.push(transformer(data.content));
       } catch (error) {
         ux.logToStderr(ux.colorize('red', (error as Error).message));
       }
+      index += 1;
     },
-  );
-
-  Promise.all(promises)
-    .then(() => {
-      progress.stop();
-      ux.log(ux.colorize('green', opts.labels.end(filtered.length)));
-      stream.end();
-    });
-
-  return stream;
+  });
 };
-export const applyStreamAsData = <Item>(opts: {
+export const createDataWriteStream = <Item>(opts: {
   urls: {
     item: (item: Item) => string,
   }
@@ -86,7 +87,7 @@ export const applyStreamAsData = <Item>(opts: {
     end: (count: number) => string,
   },
   transform?: (item: Item) => any,
-}) => {
+}): [PassThrough, Writable] => {
   ux.log(ux.colorize('blue', opts.labels.start));
 
   const transformer = opts.transform || ((item) => item);
@@ -96,33 +97,39 @@ export const applyStreamAsData = <Item>(opts: {
     barIncompleteChar: ' ',
     format: ux.colorize('grey', '\t[{bar}] {percentage}% | ETA: {eta}s | {value}/{total}'),
   });
+  progress.start(0, 0);
 
   let count = 0;
 
-  const stream = new Transform({
+  const stream = new Writable({
     objectMode: true,
-    async transform(chunk, encoding, callback) {
-      if (count === 0) {
-        progress.start(0, 0);
-      }
-
-      progress.setTotal(progress.getTotal() + 1);
+    async write(chunk, encoding, callback) {
       try {
-        const { data } = await ezr.fetch.put(opts.urls.item(chunk), transformer(chunk));
+        await ezr.fetch.put(opts.urls.item(chunk), transformer(chunk));
         progress.increment();
         count += 1;
-        callback(null, data.content);
       } catch (error) {
         ux.logToStderr(ux.colorize('red', (error as Error).message));
-        callback(null, undefined);
       }
+      callback();
+    },
+    final(callback) {
+      progress.stop();
+      ux.log(ux.colorize('green', opts.labels.end(count)));
+      callback();
     },
   });
 
-  stream.on('finish', () => {
-    progress.stop();
-    ux.log(ux.colorize('green', opts.labels.end(count)));
+  const passThrough = new PassThrough({
+    objectMode: true,
+    transform(chunk, encoding, callback) {
+      progress.setTotal(progress.getTotal() + 1);
+      callback(null, chunk);
+    },
   });
 
-  return stream;
+  return [
+    passThrough,
+    stream,
+  ];
 };

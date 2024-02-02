@@ -1,16 +1,16 @@
 import { Flags, ux } from '@oclif/core';
 import { format } from 'date-fns';
 
-import type { PassThrough } from 'node:stream';
+import type { Readable } from 'node:stream';
 import { join } from 'node:path';
 import { mkdir } from 'node:fs/promises';
 
 import { BaseCommand } from '../lib/BaseCommand.js';
-import { createWriteJSONLStream, createStreamPromise } from '../lib/streams.js';
-import { getNamespacesStream } from '../lib/ezr/namespaces.js';
-import { getTemplatesStream } from '../lib/ezr/templates.js';
-import { getTaskPresetsStream } from '../lib/ezr/tasksPresets.js';
-import { getTasksStream } from '../lib/ezr/tasks.js';
+import { createJSONLWriteStream, createStreamPromise } from '../lib/streams.js';
+import { createNamespacesReadStream } from '../lib/ezr/namespaces.js';
+import { createTemplatesReadStream } from '../lib/ezr/templates.js';
+import { createTaskPresetsReadStream } from '../lib/ezr/tasksPresets.js';
+import { createTasksReadStream } from '../lib/ezr/tasks.js';
 
 export default class Backup extends BaseCommand {
   static description = 'Backup instance data into a dedicated folder';
@@ -48,13 +48,13 @@ export default class Backup extends BaseCommand {
   };
 
   private async backupData(opts: {
-    getStream: () => Promise<PassThrough>,
+    createDataReadStream: () => Promise<Readable>,
     outFile: string,
   }) {
     try {
       await createStreamPromise(
-        (await opts.getStream())
-          .pipe(createWriteJSONLStream(opts.outFile)),
+        (await opts.createDataReadStream())
+          .pipe(createJSONLWriteStream(opts.outFile)),
       );
     } catch (error) {
       this.logToStderr(
@@ -70,28 +70,28 @@ export default class Backup extends BaseCommand {
 
     if (flags.namespaces) {
       await this.backupData({
-        getStream: getNamespacesStream,
+        createDataReadStream: createNamespacesReadStream,
         outFile: join(flags.out, 'namespaces.jsonl'),
       });
     }
 
     if (flags.templates) {
       await this.backupData({
-        getStream: getTemplatesStream,
+        createDataReadStream: createTemplatesReadStream,
         outFile: join(flags.out, 'templates.jsonl'),
       });
     }
 
     if (flags.tasks) {
       await this.backupData({
-        getStream: getTasksStream,
+        createDataReadStream: createTasksReadStream,
         outFile: join(flags.out, 'tasks.jsonl'),
       });
     }
 
     if (flags.taskPresets) {
       await this.backupData({
-        getStream: getTaskPresetsStream,
+        createDataReadStream: createTaskPresetsReadStream,
         outFile: join(flags.out, 'tasks-presets.jsonl'),
       });
     }
