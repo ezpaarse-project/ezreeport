@@ -15,7 +15,8 @@
     "mail",
     "tests",
     "sdk",
-    "vue"
+    "vue",
+    "ezra"
   ],
   "eslint.workingDirectories": [
     {

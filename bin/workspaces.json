@@ -1,5 +1,8 @@
 [
   {
+    "path": "src/cli/ezra/package.json"
+  },
+  {
     "path": "src/sdk/package.json",
     "release": true
   },
