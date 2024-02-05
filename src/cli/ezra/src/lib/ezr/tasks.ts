@@ -1,13 +1,12 @@
-import { createDataReadStream, createDataWriteStream } from './index.js';
+import { EZR } from './index.js';
 
 type TaskListItem = any;
 type Task = any;
 
-export const createTasksReadStream = () => createDataReadStream<TaskListItem, Task>({
-  labels: {
-    start: 'Getting tasks',
-    end: (count) => `${count} tasks found`,
-  },
+export const createTasksReadStream = (
+  ezr: EZR,
+) => ezr.createDataReadStream<TaskListItem, Task>({
+  type: 'tasks',
   urls: {
     list: '/tasks',
     item: (item) => `/tasks/${item.id}`,
@@ -15,13 +14,11 @@ export const createTasksReadStream = () => createDataReadStream<TaskListItem, Ta
   transform: ({ activity, ...item }) => item,
 });
 
-export const createTasksWriteStream = () => createDataWriteStream<Task>({
+export const createTasksWriteStream = (
+  ezr: EZR,
+) => ezr.createDataWriteStream<Task>({
   urls: {
     item: (item) => `/tasks/${item.id}`,
-  },
-  labels: {
-    start: 'Applying tasks',
-    end: (count) => `${count} tasks applied`,
   },
   transform: (item) => ({
     name: item.name,

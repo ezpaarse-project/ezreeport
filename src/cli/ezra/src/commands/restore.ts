@@ -1,15 +1,18 @@
 import { Args, Flags, ux } from '@oclif/core';
+import chalk from 'chalk';
 
-import type { PassThrough, Writable } from 'node:stream';
+import type { Duplex } from 'node:stream';
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { BaseCommand } from '../lib/BaseCommand.js';
 import { createStreamPromise, createJSONLReadStream } from '../lib/streams.js';
+import type { EZR } from '../lib/ezr/index.js';
 import { createNamespacesWriteStream } from '../lib/ezr/namespaces.js';
 import { createTemplatesWriteStream } from '../lib/ezr/templates.js';
 import { createTaskPresetsWriteStream } from '../lib/ezr/tasksPresets.js';
 import { createTasksWriteStream } from '../lib/ezr/tasks.js';
+import { createProgressBarStream } from '../lib/progress.js';
 
 export default class Restore extends BaseCommand {
   static description = 'Restore instance data from a dedicated folder';
@@ -46,16 +49,23 @@ export default class Restore extends BaseCommand {
   };
 
   private async restoreData(opts: {
-    createDataWriteStream: () => [PassThrough, Writable],
+    type: string,
+    createDataWriteStream: (ezr: EZR) => { stream: Duplex },
     inFile: string,
   }) {
     try {
-      const streams = opts.createDataWriteStream();
+      this.log(ux.colorize('blue', `Restoring ${opts.type}...`));
+
+      const { stream } = opts.createDataWriteStream(this.ezr);
+      const { total, progress } = createProgressBarStream({
+        onEnd: (c) => this.log(ux.colorize('green', `${c} ${opts.type} backed up`)),
+      });
 
       await createStreamPromise(
         createJSONLReadStream(opts.inFile)
-          .pipe(streams[0])
-          .pipe(streams[1]),
+          .pipe(total)
+          .pipe(stream)
+          .pipe(progress),
       );
     } catch (error) {
       this.logToStderr(
@@ -82,8 +92,14 @@ export default class Restore extends BaseCommand {
       this.exit(1);
     }
 
+    const confirmed = await ux.confirm(`Do you wish to import data from ${chalk.underline(dir)} into ${chalk.underline(this.ezr.fetch.defaults.baseURL ?? '')} ?`);
+    if (!confirmed) {
+      this.exit(0);
+    }
+
     if (flags.namespaces) {
       await this.restoreData({
+        type: 'namespaces',
         createDataWriteStream: createNamespacesWriteStream,
         inFile: join(dir, 'namespaces.jsonl'),
       });
@@ -91,6 +107,7 @@ export default class Restore extends BaseCommand {
 
     if (flags.templates) {
       await this.restoreData({
+        type: 'templates',
         createDataWriteStream: createTemplatesWriteStream,
         inFile: join(dir, 'templates.jsonl'),
       });
@@ -98,6 +115,7 @@ export default class Restore extends BaseCommand {
 
     if (flags.taskPresets) {
       await this.restoreData({
+        type: 'tasks presets',
         createDataWriteStream: createTaskPresetsWriteStream,
         inFile: join(dir, 'tasks-presets.jsonl'),
       });
@@ -105,6 +123,7 @@ export default class Restore extends BaseCommand {
 
     if (flags.tasks) {
       await this.restoreData({
+        type: 'tasks',
         createDataWriteStream: createTasksWriteStream,
         inFile: join(dir, 'tasks.jsonl'),
       });
