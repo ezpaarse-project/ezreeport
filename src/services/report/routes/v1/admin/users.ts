@@ -61,7 +61,17 @@ const router: FastifyPluginAsync = async (fastify) => {
         body: BulkUserBody,
       },
     },
-    async (request) => ({ content: await users.replaceManyUsers(request.body) }),
+    async (request) => {
+      const content = await users.replaceManyUsers(request.body);
+
+      return {
+        content,
+        meta: {
+          users: await users.getCountUsers(),
+          memberships: await memberships.getCountMemberships(),
+        },
+      };
+    },
   );
 
   const SpecificUserParams = Type.Object({
