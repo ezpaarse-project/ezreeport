@@ -1,3 +1,10 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.34](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.33...@ezpaarse-project/ezreeport-vue@1.0.0-beta.34) (2024-02-08)
+
+
+### Bug Fixes
+
+* **vue:** fixed sdk version not beign updated ([e092846](https://github.com/ezpaarse-project/ezreeport/commit/e0928462bf14de576eb96811ffb30a62af3b655d))
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.33](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.32...@ezpaarse-project/ezreeport-vue@1.0.0-beta.33) (2024-02-08)
 
 
