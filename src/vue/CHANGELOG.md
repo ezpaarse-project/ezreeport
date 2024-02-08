@@ -1,3 +1,13 @@
+# @ezpaarse-project/ezreeport-vue [1.0.0-beta.33](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.32...@ezpaarse-project/ezreeport-vue@1.0.0-beta.33) (2024-02-08)
+
+
+
+
+
+### Dependencies
+
+* **@ezpaarse-project/ezreeport-sdk-js:** upgraded to 1.0.0-beta.12
+
 # @ezpaarse-project/ezreeport-vue [1.0.0-beta.32](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0-beta.31...@ezpaarse-project/ezreeport-vue@1.0.0-beta.32) (2024-01-23)
 
 
