@@ -1,3 +1,10 @@
+# @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.12](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.11...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.12) (2024-02-08)
+
+
+### Bug Fixes
+
+* **sdk:** non REST routes are prefixed by _ ([e48dccd](https://github.com/ezpaarse-project/ezreeport/commit/e48dccd9b6e1f2992bb6541355e524731626ee1c))
+
 # @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.11](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.10...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.11) (2024-01-23)
 
 
