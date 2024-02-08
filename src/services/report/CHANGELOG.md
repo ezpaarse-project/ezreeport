@@ -1,3 +1,10 @@
+# ezreeport-report [1.0.0-beta.30](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.29...ezreeport-report@1.0.0-beta.30) (2024-02-08)
+
+
+### Features
+
+* **report:** added final counts after imports ([2df4050](https://github.com/ezpaarse-project/ezreeport/commit/2df405074b96ef5969c25143f624d97f27b905ff))
+
 # ezreeport-report [1.0.0-beta.29](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.28...ezreeport-report@1.0.0-beta.29) (2024-01-19)
 
 
