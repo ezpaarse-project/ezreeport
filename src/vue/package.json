@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "build": "NODE_ENV=production vite build",
-    "build:doc": "storybook build",
+    "build:docs": "storybook build",
     "dev": "storybook dev -p 6006",
     "lint": "eslint --fix src vite.config.mts .storybook",
     "example": "npm --prefix example run dev",
