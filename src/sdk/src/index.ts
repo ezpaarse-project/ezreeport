@@ -1,3 +1,5 @@
+import { version as pkgVer } from '../package.json';
+
 export * as auth from './modules/auth.public';
 export * as crons from './modules/crons.public';
 export * as health from './modules/health.public';
@@ -12,7 +14,8 @@ export * as setup from './modules/setup.public';
 export * as tasks from './modules/tasks.public';
 export * as templates from './modules/templates.public';
 export * as elastic from './modules/elastic.public';
-export { version } from '../package.json';
+
+export const version = pkgVer;
 
 export type EzReeportSDK = {
   auth: typeof import('./modules/auth.public')
@@ -29,5 +32,5 @@ export type EzReeportSDK = {
   tasksPresets: typeof import('./modules/tasksPresets.public')
   templates: typeof import('./modules/templates.public'),
   elastic: typeof import('./modules/elastic.public'),
-  version: string,
+  version: typeof version,
 };

@@ -18,18 +18,20 @@
       "require": "./dist/browser/ezreeport-sdk-js.umd.js"
     },
     "node": {
-      "default": "./dist/node/src/index.js"
+      "import": "./dist/node/ezreeport-sdk-js.mjs",
+      "require": "./dist/node/ezreeport-sdk-js.js"
     }
   },
-  "types": "./dist/types/src/index.d.ts",
+  "types": "./dist/types/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "run-s build:web build:node build:docs",
-    "build:node-vite": "tsc && BUILD_TARGET=node vite build",
-    "build:node": "tsc --project tsconfig.node.json",
-    "build:web": "tsc && BUILD_TARGET=browser vite build",
+    "prebuild": "rimraf --glob 'dist/*'",
+    "build": "run-s build:web build:node build:types build:docs",
+    "build:web": "tsc --project tsconfig.json && BUILD_TARGET=browser vite build",
+    "build:node": "tsc --project tsconfig.node.json && BUILD_TARGET=node vite build",
+    "build:types": "tsc --project tsconfig.types.json",
     "build:docs": "typedoc src/index.ts",
     "docs": "vite docs --open",
     "dev": "run-p \"build:docs -- --watch\" docs",
@@ -42,12 +44,13 @@
     ]
   },
   "dependencies": {
-    "axios": "^1.6.4",
-    "date-fns": "^3.0.6",
-    "events": "^3.3.0"
+    "axios": "^1.6.4"
   },
   "devDependencies": {
     "@types/node": "^20.10.6",
+    "date-fns": "^3.0.6",
+    "events": "^3.3.0",
+    "rimraf": "^5.0.5",
     "typedoc": "^0.25.6",
     "typescript": "^5.3.3",
     "vite": "^5.0.10"
