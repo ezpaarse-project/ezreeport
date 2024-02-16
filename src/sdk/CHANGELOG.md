@@ -1,3 +1,18 @@
+# @ezpaarse-project/ezreeport-sdk-js [1.0.0-rc.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-rc.1...@ezpaarse-project/ezreeport-sdk-js@1.0.0-rc.2) (2024-02-16)
+
+
+### Bug Fixes
+
+* **sdk:** fixed error when user is not found at login ([f7e8a75](https://github.com/ezpaarse-project/ezreeport/commit/f7e8a75e81025df9cc1233064fbfdb413760ca4f))
+* **sdk:** fixed type of pagination ([c13572c](https://github.com/ezpaarse-project/ezreeport/commit/c13572ca31b0e44c731187402fd89fb6dd68ad7f))
+* **sdk:** non REST routes are prefixed by _ ([e48dccd](https://github.com/ezpaarse-project/ezreeport/commit/e48dccd9b6e1f2992bb6541355e524731626ee1c))
+
+
+### Features
+
+* **sdk:** added tasks' presets ([12bb8f0](https://github.com/ezpaarse-project/ezreeport/commit/12bb8f01c73654b5f3d121e6acc5919b40d12cbd))
+* **sdk:** following API changes ([1dbf006](https://github.com/ezpaarse-project/ezreeport/commit/1dbf006c9d7220c9e7ff303c316b1dc3dcee97c7))
+
 # @ezpaarse-project/ezreeport-sdk-js [1.0.0-beta.12](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.11...@ezpaarse-project/ezreeport-sdk-js@1.0.0-beta.12) (2024-02-08)
 
 
