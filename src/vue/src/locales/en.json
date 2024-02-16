@@ -1,0 +1,186 @@
+{
+  "template": "template|templates",
+  "layout": "page|pages",
+  "figure": "figure|figures",
+
+  "yes": "Yes",
+  "no": "No",
+  "create": "Create",
+  "edit": "Edit",
+  "delete": "Delete",
+  "duplicate": "Duplicate",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "open": "Open",
+  "generate": "Generate",
+  "save": "Save",
+  "advanced_parameters": "Advanced parameters",
+  "show_json": "Show JSON",
+  "settings": "Settings",
+  "preview": "Preview",
+  "unknown": "Unknown",
+  "filter": "Filter",
+  "reset": "Reset",
+  "details": "Details",
+
+  "tasks": {
+    "name": "Report name",
+    "targets": "Receivers",
+    "dates": "Dates",
+    "recurrence": "Recurrence",
+    "lastRun": "Last run",
+    "nextRun": "Next run",
+    "status": "Statut",
+    "enabled": {
+      "true": "Active",
+      "false": "Inactive"
+    },
+
+    "tabs": {
+      "details": "Details",
+      "activity": "Activity",
+      "template": "Template"
+    },
+
+    "errors": {
+      "_default": "An error is in this form"
+    }
+  },
+
+  "taskPresets": {
+    "title": "Preset report|Presets reports",
+    "name": "Preset name",
+    "template": "Template"
+  },
+
+  "templates": {
+    "base": "Base template",
+    "renderOptions": "Render options",
+    "editor": "Page editor ({n} page)|Page editor ({n} pages)",
+
+    "tabs": {
+      "template": "Template",
+      "tasks": "Linked tasks"
+    }
+  },
+
+  "layouts": {
+    "errors": {
+      "_detail": "Page {at}: {valid}",
+      "length": "All pages must contains at least one figure"
+    }
+  },
+
+  "figures": {
+    "type": "Type",
+    "slots": "Figure slot(s)",
+
+    "type_list": {
+      "table": "Table",
+      "md": "Markdown",
+      "metric": "Metrics",
+      "arc": "Arc",
+      "area": "Area",
+      "bar": "Bar",
+      "line": "Line",
+      "point": "Point",
+      "rect": "Rect",
+      "rule": "Rule",
+      "text": "Text",
+      "tick": "Tick",
+      "trail": "Trail",
+      "circle": "Point circles",
+      "square": "Square",
+
+      "unknown": "Unknown"
+    },
+
+    "type_groups": {
+      "common": "Common",
+      "others": "Others"
+    },
+
+    "slots_list": [
+      "Top left",
+      "Top right",
+      "Bottom left",
+      "Bottom right"
+    ],
+
+    "vars_list": {
+      "length": "Count of shown items"
+    },
+
+    "errors": {
+      "_detail": "Figure {at}: {valid}",
+      "no_slots": "At least one slot must be provided",
+      "slot_incompatibility": "This combinaison of slots is not possible",
+      "no_elements": "This figure doesn't have any elements defined"
+    }
+  },
+
+  "fetchOptions": {
+    "title": "Fetch options",
+    "aggName": "Aggregation name",
+    "aggSummary": "{type} of {field}",
+    "index": "Elastic index",
+    "dateField": "'date' field of the index",
+    "filters": "Filters",
+    "aggregations": "Aggregations",
+
+    "agg_option": "{label}",
+    "agg_types": {
+      "__count": "Count",
+      "adjacency_matrix": "Adjacency Matrix",
+      "auto_date_histogram": "Auto date histogram",
+      "avg": "Average",
+      "avg_bucket": "Average by Bucket",
+      "boxplot": "Boxplot",
+      "cardinality": "Unique count",
+      "categorize_text": "Categorize text",
+      "cumulative_sum": "Cumulative Sum",
+      "date_histogram": "Date histogram",
+      "derivative": "Derivative",
+      "diversified_sampler": "Diversified sampler",
+      "extended_stats": "Extended stats",
+      "filters": "Filters",
+      "geo_bounds": "Geo bounds",
+      "geo_centroid": "Geo centroid",
+      "geo_grid": "Geographical Grid",
+      "histogram": "Histogram",
+      "max": "Maximum",
+      "max_bucket": "Maximum by Bucket",
+      "median_absolute_deviation": "Median absolute deviation",
+      "min": "Minimum",
+      "min_bucket": "Minimum by Bucket",
+      "moving_average": "Moving Average",
+      "percentile_ranks": "Percentile Ranks",
+      "percentiles": "Percentiles",
+      "range": "Range",
+      "rare_terms": "Rare terms",
+      "rate": "Rate",
+      "sampler": "Sampler",
+      "significant_terms": "Significant terms",
+      "significant_text": "Significant text",
+      "stats": "Stats",
+      "string_stats": "String stats",
+      "sum": "Sum",
+      "sum_bucket": "Sum by Bucket",
+      "terms": "Terms",
+      "top_hits": "Top Hits",
+      "value_count": "Value count",
+      "variable_width_histogram": "Variable width histogram"
+    }
+  },
+
+  "errors": {
+    "_detail": "{valid} ({field})",
+    "empty": "This field must be set",
+    "fetch": "An error occurred when fetching data",
+    "email_format": "One or more address aren't valid",
+    "json_format": "Given JSON isn't valid",
+    "valid": "The value must be valid",
+    "negative": "The value must be positive",
+    "no_extends": "Cannot get extended template"
+  }
+}

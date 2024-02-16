@@ -1,0 +1,30 @@
+import { Meta, Story, Controls } from '@storybook/blocks';
+
+import * as TasksActivityTableStories from './TasksActivityTable.stories';
+
+<Meta of={TasksActivityTableStories} />
+
+# TasksActivity Table
+
+List activity of all task user have access to, entries are re-fetched every 5s by default. You can see details by clicking on it.
+
+> **Note**
+> This components show only if any `namespaces.task-activity-get` permission is granted to the authed user.
+
+## Props / Events / Slots
+
+<Controls />
+
+## Usage
+
+### Default
+
+```html
+<template>
+  <ezr-provider ...>
+    <ezr-tasks-activity-table :fetchInterval="5000" />
+  </ezr-provider>
+</template>
+```
+
+<Story of={TasksActivityTableStories.Basic} />

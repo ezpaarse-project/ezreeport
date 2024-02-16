@@ -1,0 +1,50 @@
+FROM node:18.17.0-alpine3.18 as sdk-builder
+
+WORKDIR /usr/build/sdk
+
+ENV NODE_ENV=production
+
+RUN apk update \
+  && apk upgrade -U -a
+
+COPY ./src/sdk/package*.json ./
+RUN npm ci --omit=dev
+COPY ./src/sdk ./
+
+RUN npm run build:web && npm run build:types
+
+# ----
+
+FROM node:18.17.0-alpine3.18 as vue-builder
+ARG AUTH_TOKEN="changeme"
+ARG REPORT_API="http://localhost:8080/"
+ARG LOGO_URL="https://ezmesure.couperin.org/"
+
+WORKDIR /usr/build/vue
+
+COPY --from=sdk-builder /usr/build/sdk ../sdk
+
+RUN apk update \
+  && apk upgrade -U -a
+
+# We need devDeps as Storybook is in it
+COPY ./src/vue/package*.json ./
+RUN npm ci
+COPY ./src/vue ./
+
+ENV VITE_AUTH_TOKEN=${AUTH_TOKEN} \
+    VITE_REPORT_API=${REPORT_API} \
+    VITE_NAMESPACES_LOGO_URL=${LOGO_URL}
+
+RUN npm run build:docs
+
+# ----
+
+FROM nginx:stable-alpine
+
+WORKDIR /usr/share/nginx/html
+
+COPY ./config/vue-ngnix.types /etc/nginx/mime.types
+COPY --from=vue-builder /usr/build/vue/storybook-static ./
+
+EXPOSE 80

@@ -1,1 +1,3 @@
 node_modules/
+data/
+src/services/metrics/

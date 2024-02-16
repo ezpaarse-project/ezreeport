@@ -1,7 +1,30 @@
 {
-  "eslint.workingDirectories": [],
-  "eslint.validate": [
-    "javascript",
-    "typescript"
-  ]
+  "cSpell.words": [
+    "ezreeport",
+    "fastify",
+    "highlightjs",
+    "prisma",
+    "stackoverflow",
+    "Toggleable",
+    "vega",
+    "vuedraggable",
+    "vuetify"
+  ],
+  "conventionalCommits.scopes": [
+    "report",
+    "mail",
+    "tests",
+    "sdk",
+    "vue"
+  ],
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+  "files.associations": {
+    ".env": "dotenv",
+    ".env.defaults": "dotenv"
+  },
+  "typescript.tsdk": "./src/services/report/node_modules/typescript/lib"
 }

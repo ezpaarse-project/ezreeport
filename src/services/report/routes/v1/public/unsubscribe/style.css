@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap');
+
+html {
+  height: 100%;
+}
+
+body {
+  box-sizing: border-box;
+  height: 100%;
+  width: 75%;
+  margin: auto;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  font-family: 'Roboto';
+}
+
+h1 {
+  margin-bottom: 0;
+  padding-bottom: 0.67em;
+  border-bottom: 1px solid grey;
+}
+
+p {
+  text-align: center;
+}
+
+.btn-cancel,
+input[type=submit] {
+  border: 0;
+  border-radius: 4px;
+  padding: 12px;
+  margin: 8px;
+  color: white;
+  text-transform: uppercase;
+  box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
+  transition: background-color 0.25s;
+}
+
+input[type=submit] {
+  background-color: #57AF5B;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+input[type=submit]:hover {
+  background-color: #6caf6f;
+}
+
+.btn-cancel {
+  background-color: #F75D5D;
+  text-decoration: none;
+}
+
+.btn-cancel:hover {
+  background-color: #f57272;
+}
+
+#alert-container {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 35%;
+}
+
+.alert {
+  color: white;
+  box-shadow: 0 3px 5px -1px rgba(0,0,0,.2),0 5px 8px 0 rgba(0,0,0,.14),0 1px 14px 0 rgba(0,0,0,.12);
+  margin: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.25s, visibility 0.25s;
+}
+
+.alert-hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.alert-error {
+  background-color: #F75D5D;
+}
+
+.alert-success {
+  background-color: #57AF5B;
+}
