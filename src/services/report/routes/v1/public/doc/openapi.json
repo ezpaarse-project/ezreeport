@@ -112,7 +112,7 @@
         "description": "Check services that current one can ping"
       }
     },
-    "/health/all": {
+    "/health/_all": {
       "get": {
         "summary": "Ping all services",
         "tags": [
@@ -391,6 +391,20 @@
                                     }
                                   }
                                 }
+                              },
+                              "_count": {
+                                "type": "object",
+                                "x-stoplight": {
+                                  "id": "i3tq2rfw4f1q8"
+                                },
+                                "properties": {
+                                  "targets": {
+                                    "type": "integer",
+                                    "x-stoplight": {
+                                      "id": "slvh58v6s07dp"
+                                    }
+                                  }
+                                }
                               }
                             }
                           }
@@ -453,8 +467,14 @@
           },
           {
             "$ref": "#/components/parameters/namespaces"
+          },
+          {
+            "$ref": "#/components/parameters/sort"
           }
-        ]
+        ],
+        "requestBody": {
+          "content": {}
+        }
       },
       "post": {
         "summary": "Add new task",
@@ -564,6 +584,152 @@
           "tasks"
         ]
       }
+    },
+    "/tasks/_from-preset/{preset}": {
+      "post": {
+        "summary": "Add new task",
+        "operationId": "tasks-post-_from-preset-preset",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "example-1": {
+                      "status": {
+                        "code": 201,
+                        "message": "Created"
+                      },
+                      "content": {
+                        "id": "4359c49b-cde2-4330-b9aa-790f8c6cc840",
+                        "institution": "institution:abba8400-1216-11eb-af77-ff33b5dd411e",
+                        "layout": {
+                          "notImplemented": true
+                        },
+                        "targets": [
+                          "user@example.com"
+                        ],
+                        "recurrence": "WEEKLY",
+                        "nextRun": "2022-10-31T10:00:00.000Z",
+                        "enabled": true,
+                        "history": [
+                          {
+                            "type": "creation",
+                            "message": "La tâche a été créée par ..."
+                          }
+                        ],
+                        "createdAt": "2022-10-25T11:55:47.375Z",
+                        "updatedAt": "2022-10-25T11:55:47.375Z"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/TaskFull"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "security": [
+          {
+            "User Token": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "targets": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "template": {
+                    "type": "object",
+                    "properties": {
+                      "fetchOptions": {
+                        "type": "object",
+                        "properties": {
+                          "index": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "namespace": {
+                    "type": "string"
+                  }
+                },
+                "x-examples": {
+                  "Example 1": {
+                    "name": "COUNTER 5 TR TIR",
+                    "targets": [
+                      "ezteam@inist.fr"
+                    ],
+                    "template": {
+                      "fetchOptions": {
+                        "index": "b-bibcnrs-publisher-*"
+                      }
+                    },
+                    "namespace": "c05da330-a386-11ec-bfe4-918eeec57908"
+                  }
+                }
+              }
+            }
+          },
+          "description": ""
+        },
+        "description": "Add new reporting task to the authed user's institution from a template.\n\nNeeds `namespaces[namespaceId].tasks-post-_from-preset-preset` (see `/me/permissions` for more info).",
+        "parameters": [],
+        "tags": [
+          "tasks"
+        ]
+      },
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "preset",
+          "in": "path",
+          "required": true
+        }
+      ]
     },
     "/tasks/_targets": {
       "get": {
@@ -831,6 +997,9 @@
           },
           {
             "$ref": "#/components/parameters/namespaces"
+          },
+          {
+            "$ref": "#/components/parameters/sort"
           }
         ],
         "description": "Get tasks of the authed user's institution that have target.\n\nNeeds `namespaces[namespaceId].tasks-get-_targets-email-tasks` (see `/me/permissions` for more info)."
@@ -2300,7 +2469,7 @@
         ]
       }
     },
-    "/queues/{queue}/{jobId}/retry": {
+    "/queues/{queue}/{jobId}/_retry": {
       "parameters": [
         {
           "schema": {
@@ -2885,7 +3054,7 @@
         "deprecated": true
       }
     },
-    "/crons/{cron}/force": {
+    "/crons/{cron}/_force": {
       "parameters": [
         {
           "schema": {
@@ -3306,13 +3475,7 @@
         "parameters": [],
         "description": "Get specific template.\n\nNeeds `general.templates-get-template` (see `/me/permissions` for more info).",
         "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TemplateFull"
-              }
-            }
-          }
+          "content": {}
         }
       },
       "put": {
@@ -3743,10 +3906,429 @@
           },
           {
             "$ref": "#/components/parameters/namespaces"
+          },
+          {
+            "$ref": "#/components/parameters/sort"
           }
         ]
       },
       "parameters": []
+    },
+    "/tasks-presets": {
+      "get": {
+        "summary": "Get tasks-presets",
+        "tags": [
+          "tasks"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": [
+                        {
+                          "name": "basic",
+                          "renderer": "vega-pdf",
+                          "pageCount": 6
+                        },
+                        {
+                          "name": "tests/slot-tests",
+                          "renderer": "vega-pdf",
+                          "pageCount": 9
+                        }
+                      ]
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/TaskPreset"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "tasks-presets-get",
+        "security": [
+          {
+            "User Token": []
+          }
+        ],
+        "description": "Get all tasks-presets usable by tasks.\n\nNeeds `general.tasks-presets-get` (see `/me/permissions` for more info)."
+      },
+      "parameters": [],
+      "post": {
+        "summary": "Create tasks-preset",
+        "operationId": "post-tasks-presets",
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "apiVersion": 1,
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "scratch",
+                        "tags": [],
+                        "body": {
+                          "layouts": []
+                        },
+                        "createdAt": "2023-04-11T09:31:24.620Z",
+                        "updatedAt": "2023-04-11T09:31:24.620Z",
+                        "renderer": "vega-pdf",
+                        "pageCount": 0
+                      }
+                    }
+                  },
+                  "properties": {
+                    "apiVersion": {
+                      "type": "integer"
+                    },
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/TaskPresetFull"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "description": "Add a tasks-preset usable by tasks.\n\nNeeds `general.tasks-presets-post` (see `/me/permissions` for more info).",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TaskPresetBody"
+                  }
+                ]
+              }
+            }
+          },
+          "description": ""
+        },
+        "security": [
+          {
+            "User Token": []
+          }
+        ],
+        "tags": [
+          "tasks"
+        ]
+      }
+    },
+    "/tasks-presets/{tasks-presetId}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "tasks-presetId",
+          "in": "path",
+          "required": true,
+          "description": "The tasks-preset id"
+        }
+      ],
+      "get": {
+        "summary": "Get specific tasks-preset",
+        "tags": [
+          "tasks"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "tests/slot-tests",
+                        "renderer": "vega-pdf",
+                        "pageCount": 9,
+                        "tasks-preset": {}
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/TaskPresetFull"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "operationId": "tasks-presets-get-name(*)",
+        "security": [
+          {
+            "User Token": []
+          }
+        ],
+        "parameters": [],
+        "description": "Get specific tasks-preset.\n\nNeeds `general.tasks-presets-get-tasks-preset` (see `/me/permissions` for more info).",
+        "requestBody": {
+          "content": {}
+        }
+      },
+      "put": {
+        "summary": "Update or create specific tasks-preset",
+        "operationId": "put-tasks-presets-layoutName",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "scratch",
+                        "tags": [],
+                        "body": {
+                          "layouts": []
+                        },
+                        "createdAt": "2023-04-11T09:31:24.620Z",
+                        "updatedAt": "2023-04-11T09:31:24.620Z",
+                        "renderer": "vega-pdf",
+                        "pageCount": 0
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/TaskPresetFull"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "name": "scratch",
+                        "tags": [],
+                        "body": {
+                          "layouts": []
+                        },
+                        "createdAt": "2023-04-11T09:31:24.620Z",
+                        "updatedAt": "2023-04-11T09:31:24.620Z",
+                        "renderer": "vega-pdf",
+                        "pageCount": 0
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "$ref": "#/components/schemas/Tasks-presetFull"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "description": "Update a tasks-preset if found, create if not.\n\nNeeds `general.tasks-presets-put-tasks-preset` (see `/me/permissions` for more info).",
+        "security": [
+          {
+            "User Token": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskPresetBody"
+              }
+            }
+          }
+        },
+        "tags": [
+          "tasks"
+        ]
+      },
+      "delete": {
+        "summary": "Delete specific tasks-preset",
+        "operationId": "delete-tasks-presets-layoutName",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "description": "Delete tasks-preset.\n\nNeeds `general.tasks-presets-delete-tasks-preset` (see `/me/permissions` for more info).",
+        "security": [
+          {
+            "User Token": []
+          }
+        ],
+        "tags": [
+          "tasks"
+        ]
+      }
     },
     "/me": {
       "get": {
@@ -4150,6 +4732,9 @@
           },
           {
             "$ref": "#/components/parameters/count"
+          },
+          {
+            "$ref": "#/components/parameters/sort"
           }
         ]
       },
@@ -4241,6 +4826,26 @@
                           }
                         }
                       }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "x-stoplight": {
+                        "id": "d2jcqrz0rwh25"
+                      },
+                      "properties": {
+                        "users": {
+                          "type": "integer",
+                          "x-stoplight": {
+                            "id": "wt3jky0owaoxe"
+                          }
+                        },
+                        "memberships": {
+                          "type": "integer",
+                          "x-stoplight": {
+                            "id": "6jvjg4v8dho3h"
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -4282,9 +4887,6 @@
                     {
                       "type": "object",
                       "properties": {
-                        "username": {
-                          "type": "string"
-                        },
                         "memberships": {
                           "type": "array",
                           "items": {
@@ -4303,10 +4905,7 @@
                             ]
                           }
                         }
-                      },
-                      "required": [
-                        "username"
-                      ]
+                      }
                     }
                   ]
                 }
@@ -4315,6 +4914,327 @@
           }
         }
       }
+    },
+    "/admin/namespaces": {
+      "get": {
+        "summary": "Get all namespaces",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "x-stoplight": {
+                          "id": "6vk883sl8hgwc"
+                        },
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/Namespace"
+                          },
+                          {
+                            "type": "object",
+                            "x-stoplight": {
+                              "id": "9a7a06ydq8klp"
+                            },
+                            "properties": {
+                              "_count": {
+                                "type": "object",
+                                "x-stoplight": {
+                                  "id": "95aic5m6bokww"
+                                },
+                                "properties": {
+                                  "tasks": {
+                                    "type": "integer",
+                                    "x-stoplight": {
+                                      "id": "os9wblx5sah1f"
+                                    }
+                                  },
+                                  "memberships": {
+                                    "type": "integer",
+                                    "x-stoplight": {
+                                      "id": "ncsnbl6g7dwh0"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "number",
+                          "description": "Count of items available"
+                        },
+                        "count": {
+                          "type": "number",
+                          "description": "Count of items in response"
+                        },
+                        "size": {
+                          "type": "number",
+                          "description": "Count of items available"
+                        },
+                        "lastId": {
+                          "type": "string",
+                          "description": "Id of last item in response",
+                          "nullable": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-admin-namespaces",
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "description": "Get all available namespaces.\n\nOnly usable with the API Key provided at server initialization.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/previous"
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "$ref": "#/components/parameters/sort"
+          }
+        ],
+        "tags": [
+          "admin - namespaces"
+        ]
+      },
+      "put": {
+        "summary": "Replace all namespaces",
+        "operationId": "put-admin-namespaces",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "namespaces": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "x-stoplight": {
+                              "id": "b6w8blmnbzmk4"
+                            },
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "created",
+                                  "updated",
+                                  "deleted"
+                                ]
+                              },
+                              "data": {
+                                "$ref": "#/components/schemas/Namespace"
+                              }
+                            }
+                          }
+                        },
+                        "members": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "x-stoplight": {
+                              "id": "9kcf1yoarj73e"
+                            },
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "created",
+                                  "updated",
+                                  "deleted"
+                                ]
+                              },
+                              "data": {
+                                "allOf": [
+                                  {
+                                    "$ref": "#/components/schemas/Membership"
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "username": {
+                                        "type": "string"
+                                      },
+                                      "namespaceId": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "x-stoplight": {
+                        "id": "h0mwylbeilzrt"
+                      },
+                      "properties": {
+                        "namespaces": {
+                          "type": "integer",
+                          "x-stoplight": {
+                            "id": "qd2mi4z2qgdvf"
+                          }
+                        },
+                        "members": {
+                          "type": "integer",
+                          "x-stoplight": {
+                            "id": "i1x0cdvo09da6"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "description": "Create, update or delete many namespaces.\n\nIf you provide no `members`, it will keep current ones. If you provide empty `members`, it will remove all current memberships.\n\nWhen creating a membership, **user and namespace must exist**, so you may want to create users first (without `memberships`)\n\nOnly usable with the API Key provided at server initialization.",
+        "tags": [
+          "admin - users"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NamespaceBody"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "x-stoplight": {
+                            "id": "lx1v4ncw3qu1m"
+                          }
+                        },
+                        "members": {
+                          "type": "array",
+                          "items": {
+                            "allOf": [
+                              {
+                                "$ref": "#/components/schemas/Membership"
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "username": {
+                                    "type": "string",
+                                    "x-stoplight": {
+                                      "id": "8sfiymd3xtr0d"
+                                    }
+                                  }
+                                }
+                              }
+                            ],
+                            "x-stoplight": {
+                              "id": "7ki6qjf25wh92"
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": []
     },
     "/admin/users/{username}": {
       "parameters": [
@@ -6126,8 +7046,7 @@
         },
         "properties": {
           "username": {
-            "type": "string",
-            "readOnly": true
+            "type": "string"
           },
           "token": {
             "type": "string",
@@ -6215,6 +7134,134 @@
                 }
               ]
             }
+          }
+        }
+      },
+      "TaskPreset": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "recurrence": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "null"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "color": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "x-examples": {
+          "Example 1": {
+            "id": "ccfe8e2d-772f-423a-b14a-5ee010e8e290",
+            "name": "COUNTER 5 TR TIR",
+            "recurrence": "YEARLY",
+            "createdAt": "2024-01-11T10:42:36.972Z",
+            "updatedAt": null,
+            "tags": [
+              {
+                "name": "ezCOUNTER",
+                "color": "#15B0D6FF"
+              }
+            ]
+          }
+        }
+      },
+      "TaskPresetFull": {
+        "type": "object",
+        "x-examples": {
+          "Example 1": {
+            "id": "ccfe8e2d-772f-423a-b14a-5ee010e8e290",
+            "name": "COUNTER 5 TR TIR",
+            "fetchOptions": {
+              "dateField": "X-Date-Month"
+            },
+            "recurrence": "YEARLY",
+            "template": {
+              "id": "bde49b1b-c3c5-4776-96d7-e854b22c3d0f",
+              "name": "2023-10-05 générique COUNTER 5 TR TIR",
+              "tags": [
+                {
+                  "name": "ezCOUNTER",
+                  "color": "#15B0D6FF"
+                }
+              ],
+              "createdAt": "2023-12-06T10:20:18.414Z",
+              "updatedAt": "2023-12-06T10:22:42.312Z"
+            }
+          }
+        },
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "fetchOptions": {
+            "type": "object",
+            "properties": {
+              "dateField": {
+                "type": "string"
+              }
+            }
+          },
+          "recurrence": {
+            "type": "string"
+          },
+          "template": {
+            "$ref": "#/components/schemas/Template"
+          }
+        }
+      },
+      "TaskPresetBody": {
+        "type": "object",
+        "properties": {
+          "fetchOptions": {
+            "type": "object",
+            "properties": {
+              "dateField": {
+                "type": "string"
+              }
+            }
+          },
+          "name": {
+            "type": "string"
+          },
+          "recurrence": {
+            "type": "string"
+          },
+          "template": {
+            "type": "string"
+          }
+        },
+        "x-examples": {
+          "Example 1": {
+            "fetchOptions": {
+              "dateField": "datetime"
+            },
+            "name": "générique ezpaarse",
+            "recurrence": "MONTHLY",
+            "template": "cf986a26-1b62-478c-9e88-a6d60254d761"
           }
         }
       }
@@ -6599,6 +7646,15 @@
           ]
         },
         "description": "Select which namespaces are concerned by the request. If none it will select all possible namespaces."
+      },
+      "sort": {
+        "name": "sort",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Key used to sort list"
       }
     }
   },

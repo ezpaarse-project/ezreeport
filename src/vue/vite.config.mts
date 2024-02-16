@@ -32,6 +32,9 @@ export default defineConfig({
     }),
     Components(comps),
   ],
+  optimizeDeps: {
+    force: true,
+  },
   resolve: {
     alias: {
       '~': fileURLToPath(new URL('./src', import.meta.url)),
@@ -39,6 +42,7 @@ export default defineConfig({
     },
   },
   build: {
+    minify: 'esbuild',
     target: 'es6',
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
@@ -46,7 +50,7 @@ export default defineConfig({
       formats: ['es'],
     },
     rollupOptions: {
-      external: ['vue'],
+      external: ['vue', 'vuetify', 'vue-i18n', '@mdi/font'],
       output: {
         exports: 'named',
         globals: {

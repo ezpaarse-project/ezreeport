@@ -1,4 +1,5 @@
 import axios, { axiosWithErrorFormatter, type ApiResponse, type PaginatedApiResponse } from '../lib/axios';
+import type { PaginationOpts } from '../lib/utils';
 
 import { parseActivity, type Activity, type RawActivity } from './tasksActivity';
 import type { Namespace } from './namespaces';
@@ -80,6 +81,9 @@ const parseFullTask = (task: RawFullTask): FullTask => {
   };
 };
 
+/**
+ * Input data for creating a new task
+ */
 export interface InputTask extends Pick<FullTask, 'name' | 'template' | 'targets' | 'recurrence'> {
   namespace?: Task['namespaceId'],
   nextRun?: FullTask['nextRun'],
@@ -87,8 +91,18 @@ export interface InputTask extends Pick<FullTask, 'name' | 'template' | 'targets
   extends: string,
 }
 
-type RawTaskList = (RawTask & { tags: RawTemplate['tags'] })[];
-export type TaskList = (Task & { tags: Template['tags'] })[];
+/**
+ * Partial input data for creating a new task with a preset
+ */
+export interface PartialInputTask extends
+  Pick<InputTask, 'targets' | 'name' | 'namespace'>,
+  Partial<Omit<InputTask, 'targets' | 'name' | 'namespace' | 'template'>> {
+  template: Pick<InputTask['template'], 'fetchOptions'>
+}
+
+type RawTaskList = (RawTask & { tags: RawTemplate['tags'], _count: { targets: number } })[];
+
+export type TaskList = (Task & { tags: Template['tags'], _count: { targets: number } })[];
 
 /**
  * Get all available tasks
@@ -101,10 +115,10 @@ export type TaskList = (Task & { tags: Template['tags'] })[];
  * @returns All tasks' info
  */
 export const getAllTasks = async (
-  paginationOpts?: { previous?: Task['id'], count?: number },
+  paginationOpts?: PaginationOpts,
   namespaces?: Namespace['id'][],
-): Promise<PaginatedApiResponse<TaskList>> => {
-  const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawTaskList>, 'get'>(
+): Promise<PaginatedApiResponse<TaskList[number], 'id'>> => {
+  const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawTaskList[number], 'id'>, 'get'>(
     'get',
     '/tasks',
     {
@@ -117,8 +131,9 @@ export const getAllTasks = async (
 
   return {
     ...response,
-    content: content.map(({ tags, ...task }) => ({
+    content: content.map(({ tags, _count, ...task }) => ({
       tags,
+      _count,
       ...parseTask(task),
     })),
   };
@@ -195,6 +210,34 @@ export const createTask = async (
   const { content, ...response } = await axios.$post<RawFullTask>(
     '/tasks',
     task,
+    { params: { namespaces } },
+  );
+
+  return {
+    ...response,
+    content: parseFullTask(content),
+  };
+};
+
+/**
+ * Creates a new task from a preset
+ *
+ * Needs `namespaces[namespaceId].tasks-post-_from-preset-presetId` permission
+ *
+ * @param presetId The ID of the preset.
+ * @param partialTask The partial input task.
+ * @param namespaces
+ *
+ * @returns Created task's info
+ */
+export const createTaskFromPreset = async (
+  presetId: string,
+  partialTask: PartialInputTask,
+  namespaces?: Namespace['id'][],
+): Promise<ApiResponse<FullTask>> => {
+  const { content, ...response } = await axios.$post<RawFullTask>(
+    `/tasks/_from-preset/${presetId}`,
+    partialTask,
     { params: { namespaces } },
   );
 

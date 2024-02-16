@@ -36,7 +36,7 @@ ENV VITE_AUTH_TOKEN=${AUTH_TOKEN} \
     VITE_REPORT_API=${REPORT_API} \
     VITE_NAMESPACES_LOGO_URL=${LOGO_URL}
 
-RUN npm run build:doc
+RUN npm run build:docs
 
 # ----
 

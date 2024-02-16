@@ -1,6 +1,7 @@
 import { parseISO } from 'date-fns';
 
 import { axiosWithErrorFormatter, type PaginatedApiResponse } from '../lib/axios';
+import type { PaginationOpts } from '../lib/utils';
 
 import { parseTaskWithNamespace, type RawTaskWithNamespace, type TaskWithNamespace } from './tasks.base';
 
@@ -66,10 +67,10 @@ const parseActivityWithTask = (entry: RawActivityWithTask): ActivityWithTask => 
  * @returns All history entries' info
  */
 export const getAllEntries = async (
-  paginationOpts?: { previous?: Activity['id'], count?: number },
+  paginationOpts?: PaginationOpts,
   namespaces?: string[],
-): Promise<PaginatedApiResponse<ActivityWithTask[]>> => {
-  const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawActivityWithTask[]>, 'get'>(
+): Promise<PaginatedApiResponse<ActivityWithTask, 'id'>> => {
+  const { data: { content, ...response } } = await axiosWithErrorFormatter<PaginatedApiResponse<RawActivityWithTask, 'id'>, 'get'>(
     'get',
     '/tasks-activity',
     {

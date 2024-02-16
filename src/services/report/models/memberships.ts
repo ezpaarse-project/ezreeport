@@ -31,6 +31,13 @@ const hasMembershipChanged = (current: Membership, input: Omit<Membership, 'name
 );
 
 /**
+ * Get count of memberships entries in DB
+ *
+ * @returns The entries count
+ */
+export const getCountMemberships = async (): Promise<number> => prisma.membership.count();
+
+/**
  * Creates a membership between a user and a namespace
  *
  * @param username The username of the user

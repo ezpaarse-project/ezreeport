@@ -38,7 +38,7 @@
 <script lang="ts">
 import type { tasksActivity } from '@ezpaarse-project/ezreeport-sdk-js';
 import { type PropType, defineComponent } from 'vue';
-import { DataOptions, DataPagination } from 'vuetify';
+import type { DataOptions, DataPagination } from 'vuetify';
 import ezReeportMixin from '~/mixins/ezr';
 
 export default defineComponent({

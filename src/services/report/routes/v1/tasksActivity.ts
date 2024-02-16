@@ -1,7 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
 
 import authPlugin from '~/plugins/auth';
-import { PaginationQuery, type PaginationQueryType } from '~/routes/utils/pagination';
 
 import { Access } from '~/models/access';
 import * as tActivity from '~/models/tasksActivity';
@@ -13,22 +12,26 @@ const router: FastifyPluginAsync = async (fastify) => {
    * List all history entries.
    */
   fastify.get<{
-    Querystring: PaginationQueryType
+    Querystring: tActivity.TaskActivityPaginationQueryType
   }>(
     '/',
     {
       schema: {
-        querystring: PaginationQuery,
+        querystring: tActivity.TaskActivityPaginationQuery,
       },
       ezrAuth: {
         access: Access.READ,
       },
     },
     async (request) => {
-      const { previous, count = 15 } = request.query;
+      const pagination = {
+        count: request.query.count ?? 15,
+        sort: (request.query.sort ?? 'createdAt'),
+        previous: request.query.previous ?? undefined,
+      };
 
       const list = await tActivity.getAllTaskActivityEntries(
-        { count, previous },
+        pagination,
         request.namespaceIds,
       );
 
@@ -37,7 +40,7 @@ const router: FastifyPluginAsync = async (fastify) => {
         meta: {
           total: await tActivity.getCountTaskActivity(request.namespaceIds),
           count: list.length,
-          size: count,
+          size: pagination.count,
           lastId: list.at(-1)?.id,
         },
       };

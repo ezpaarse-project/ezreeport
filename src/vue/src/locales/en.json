@@ -10,6 +10,7 @@
   "delete": "Delete",
   "duplicate": "Duplicate",
   "cancel": "Cancel",
+  "confirm": "Confirm",
   "open": "Open",
   "generate": "Generate",
   "save": "Save",
@@ -20,6 +21,7 @@
   "unknown": "Unknown",
   "filter": "Filter",
   "reset": "Reset",
+  "details": "Details",
 
   "tasks": {
     "name": "Report name",
@@ -43,6 +45,12 @@
     "errors": {
       "_default": "An error is in this form"
     }
+  },
+
+  "taskPresets": {
+    "title": "Preset report|Presets reports",
+    "name": "Preset name",
+    "template": "Template"
   },
 
   "templates": {

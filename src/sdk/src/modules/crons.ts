@@ -131,7 +131,7 @@ export const updateCron = async (cron: Partial<InputCron> & { name: Cron['name']
  */
 export const forceCron = async (cronOrName: Cron | Cron['name']) => {
   const name = typeof cronOrName === 'string' ? cronOrName : cronOrName.name;
-  const { content, ...response } = await axios.$post<RawCron>(`/crons/${name}/force`, {});
+  const { content, ...response } = await axios.$post<RawCron>(`/crons/${name}/_force`, {});
   return {
     ...response,
     content: parseCron(content),

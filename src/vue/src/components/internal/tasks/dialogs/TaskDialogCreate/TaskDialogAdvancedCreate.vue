@@ -35,6 +35,8 @@
 
         <v-spacer />
 
+        <slot name="toolbar" />
+
         <v-btn icon text @click="$emit('input', false)">
           <v-icon>mdi-close</v-icon>
         </v-btn>
@@ -105,6 +107,7 @@
                     v-model="task.namespace"
                     :error-message="!task.namespace ? $t('$ezreeport.errors.empty').toString() : undefined"
                     :needed-permissions="['tasks-post']"
+                    @input="onNamespaceChanged"
                     hide-all
                   />
 
@@ -165,7 +168,8 @@ import isEmail from 'validator/lib/isEmail';
 import type { CustomTaskTemplate } from '~/lib/templates/customTemplates';
 import ezReeportMixin from '~/mixins/ezr';
 import useTemplateStore, { isTaskTemplate, mapRulesToVuetify } from '~/stores/template';
-import { tabs, type Tab } from './TaskDialogRead.vue';
+
+import { tabs, type Tab } from '../TaskDialogRead/TaskDialogAdvancedRead.vue';
 
 type CustomCreateTask = Omit<tasks.FullTask, 'createdAt' | 'id' | 'activity' | 'namespace' | 'template'> & {
   template: CustomTaskTemplate,
@@ -294,7 +298,6 @@ export default defineComponent({
   async mounted() {
     this.init();
     this.templateStore.indices.mapping = [];
-    await this.templateStore.refreshAvailableIndices();
   },
   methods: {
     /**
@@ -320,44 +323,6 @@ export default defineComponent({
         nextRun: minDate,
         enabled: true,
       };
-    },
-    async openFromTask(task: tasks.Task) {
-      this.$emit('input', true);
-
-      this.loading = true;
-      try {
-        const { content } = await this.$ezReeport.sdk.tasks.getTask(task);
-        if (!content) {
-          throw new Error(this.$t('$ezreeport.errors.fetch').toString());
-        }
-
-        const { template, ...data } = content;
-
-        await this.templateStore.refreshAvailableTemplates();
-        const extended = this.templateStore.available.find((t) => t.id === data.extends.id);
-        if (!extended && !this.templateStore.defaultTemplate) {
-          throw new Error(this.$t('$ezreeport.errors.no_extends').toString());
-        }
-
-        this.templateStore.SET_CURRENT(template, data.extends.id);
-
-        this.task = {
-          name: '',
-          template: {},
-          extends: extended ?? this.templateStore.defaultTemplate ?? {} as tasks.FullTask['extends'],
-          lastExtended: data.lastExtended,
-          targets: data.targets,
-          recurrence: data.recurrence,
-          namespace: data.namespace.id,
-          nextRun: minDate,
-          enabled: data.enabled,
-        };
-
-        this.error = '';
-      } catch (error) {
-        this.error = (error as Error).message;
-      }
-      this.loading = false;
     },
     /**
      * Save and edit task

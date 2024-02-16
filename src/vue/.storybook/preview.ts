@@ -93,14 +93,14 @@ export const decorators: Decorator[] = [
     computed: {
       namespaceLabel() {
         return {
-          en: 'namespace | namespaces',
-          fr: 'établissement | établissements',
+          en: 'namespace|namespaces',
+          fr: 'établissement|établissements',
         };
       },
     },
     template: `
         <v-app>
-          <ezr-provider :token="token" :namespaceLabel="namespaceLabel">
+          <ezr-provider :token="token" :namespaceLabel="namespaceLabel" namespaceIcon="mdi-domain">
             <v-container fluid>
               <story />
             </v-container>

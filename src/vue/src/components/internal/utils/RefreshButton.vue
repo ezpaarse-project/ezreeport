@@ -3,18 +3,13 @@
     <template #activator="{ on, attrs }">
       <v-btn
         :disabled="loading || disabled"
+        :loading="loading"
         icon
         v-bind="attrs"
         @click="$emit('click')"
         v-on="on"
       >
-        <v-progress-circular
-          v-if="loading"
-          size="20"
-          width="2"
-          indeterminate
-        />
-        <v-icon v-else>
+        <v-icon>
           mdi-refresh
         </v-icon>
       </v-btn>

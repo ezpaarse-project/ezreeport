@@ -2,8 +2,8 @@
   <RichListItem
     :title="namespace.name"
     :src="src"
-    :alt="`Logo de ${namespace.name}`"
-    fallback-icon="mdi-office-building"
+    :alt="alt"
+    :fallback-icon="$ezReeport.data.namespaces.icon"
     capitalize-subtitle
   >
     <template #subtitle>
@@ -46,6 +46,9 @@ export default defineComponent({
     },
   },
   computed: {
+    alt(): string {
+      return this.$t('alt', { name: this.namespace.name }).toString();
+    },
     src(): string | undefined {
       if (!this.namespace.logoId) {
         return undefined;
@@ -67,9 +70,11 @@ export default defineComponent({
 
 <i18n lang="yaml">
 en:
+  alt: "{name}'s logo"
   taskCount: '{n} reports'
   memberCount: '{n} members'
 fr:
+  alt: 'logo de {name}'
   taskCount: '{n} rapport|{n} rapports'
   memberCount: '{n} membre|{n} membres'
 </i18n>

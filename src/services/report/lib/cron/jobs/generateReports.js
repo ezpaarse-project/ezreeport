@@ -1,16 +1,22 @@
-import type { Job } from 'bullmq';
+// @ts-check
 
-import { addTaskToGenQueue } from '~/lib/bull';
-import { endOfDay } from '~/lib/date-fns';
-import { appLogger as logger } from '~/lib/logger';
-import { formatInterval } from '~/lib/utils';
+const { addTaskToGenQueue } = require('../../bull');
+const { endOfDay } = require('../../date-fns');
+const { appLogger: logger } = require('../../logger');
+const { formatInterval } = require('../../utils');
 
-import { getAllTasksToGenerate } from '~/models/tasks';
+const { getAllTasksToGenerate } = require('../../../models/tasks');
 
-import type { CronData } from '..';
-import { sendError } from './utils';
+const { sendError } = require('./utils');
 
-export default async (job: Job<CronData>) => {
+/**
+ * @typedef {import('bullmq').Job<import('..').CronData>} Job
+ */
+
+/**
+ * @param {Job} job
+ */
+module.exports = async (job) => {
   const start = new Date();
   logger.verbose(`[cron] [${process.pid}] [${job.name}] Started`);
 

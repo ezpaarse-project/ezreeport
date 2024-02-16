@@ -36,7 +36,7 @@ const client = new Client({
   },
   auth: ES_AUTH,
   ssl: {
-    rejectUnauthorized: process.env.NODE_ENV === 'production' ?? false,
+    rejectUnauthorized: false,
   },
 });
 

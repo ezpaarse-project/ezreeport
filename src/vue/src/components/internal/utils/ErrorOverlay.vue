@@ -1,37 +1,30 @@
 <template>
   <v-fade-transition>
     <v-overlay
-      v-if="value"
-      :color="color"
+      v-if="props.value"
+      color="error"
       absolute
       class="text-center"
       opacity="0.8"
     >
       <div>{{ value }}</div>
-      <v-btn @click="$emit('input', '')">
+
+      <v-btn v-if="!hideAction" @click="emit('input', '')">
         {{ $t('close') }}
       </v-btn>
     </v-overlay>
   </v-fade-transition>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+const props = defineProps<{
+  value: string
+  hideAction?: boolean,
+}>();
 
-export default defineComponent({
-  props: {
-    value: {
-      type: String,
-      default: '',
-    },
-  },
-  emits: {
-    input: (val: string) => val.length >= 0,
-  },
-  data: (vm) => ({
-    color: vm.$vuetify.theme.currentTheme.error,
-  }),
-});
+const emit = defineEmits<{
+  (e: 'input', val: string): void
+}>();
 </script>
 
 <style scoped>

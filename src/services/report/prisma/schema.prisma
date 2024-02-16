@@ -56,6 +56,25 @@ enum Recurrence {
   YEARLY
 }
 
+/// Preset of a task used to quickly generate other tasks
+model TaskPreset {
+  /// The id of the preset
+  id         String   @id @default(uuid())
+  /// The name of the preset
+  name       String   @unique
+  /// The template linked to the preset
+  template   Template @relation(fields: [templateId], references: [id])
+  templateId String
+  /// Specific options used when fetching data (when generating reports) for this preset
+  fetchOptions Json?
+  /// Defines when the report will be generated
+  recurrence   Recurrence
+  /// When the preset was created
+  createdAt    DateTime       @default(now())
+  /// When the preset was updated for the last time
+  updatedAt    DateTime?      @updatedAt
+}
+
 /// An activity event linked to a report (generation, edition, etc.)
 model TaskActivity {
   /// Id of the event
@@ -141,17 +160,19 @@ model Namespace {
 /// Base template used by reports
 model Template {
   /// The id of the template
-  id        String    @id @default(uuid())
+  id             String           @id @default(uuid())
   /// The name of the template
-  name      String    @unique
+  name           String           @unique
   /// Tags of the template
-  tags      Json[]    @default([])
+  tags           Json[]           @default([])
   /// The layouts used to generate the report
-  body      Json
+  body           Json
   /// When the template was created
-  createdAt DateTime  @default(now())
+  createdAt      DateTime         @default(now())
   /// When the template was updated for the last time
-  updatedAt DateTime? @updatedAt
+  updatedAt      DateTime?        @updatedAt
   /// Tasks using template
-  tasks     Task[]
+  tasks          Task[]
+  /// Presets using template
+  presets        TaskPreset[]
 }

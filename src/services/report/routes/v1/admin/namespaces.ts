@@ -2,7 +2,6 @@ import type { FastifyPluginAsync } from 'fastify';
 
 import { StatusCodes } from 'http-status-codes';
 import authPlugin from '~/plugins/auth';
-import { PaginationQuery, type PaginationQueryType } from '~/routes/utils/pagination';
 
 import { Type, type Static } from '~/lib/typebox';
 
@@ -18,28 +17,32 @@ const router: FastifyPluginAsync = async (fastify) => {
    * List all namespaces
    */
   fastify.get<{
-    Querystring: PaginationQueryType,
+    Querystring: namespaces.NamespacePaginationQueryType,
   }>(
     '/',
     {
       schema: {
-        querystring: PaginationQuery,
+        querystring: namespaces.NamespacePaginationQuery,
       },
       ezrAuth: {
         requireAPIKey: true,
       },
     },
     async (request) => {
-      const { previous, count = 15 } = request.query;
+      const pagination = {
+        count: request.query.count ?? 15,
+        sort: (request.query.sort ?? 'createdAt'),
+        previous: request.query.previous ?? undefined,
+      };
 
-      const list = await namespaces.getAllNamespaces({ count, previous });
+      const list = await namespaces.getAllNamespaces(pagination);
 
       return {
         content: list,
         meta: {
           total: await namespaces.getCountNamespaces(),
           count: list.length,
-          size: count,
+          size: pagination.count,
           lastId: list.at(-1)?.id,
         },
       };
@@ -62,7 +65,17 @@ const router: FastifyPluginAsync = async (fastify) => {
         requireAPIKey: true,
       },
     },
-    async (request) => ({ content: await namespaces.replaceManyNamespaces(request.body) }),
+    async (request) => {
+      const content = await namespaces.replaceManyNamespaces(request.body);
+
+      return {
+        content,
+        meta: {
+          namespaces: await namespaces.getCountNamespaces(),
+          members: await memberships.getCountMemberships(),
+        },
+      };
+    },
   );
 
   const SpecificNamespaceParams = Type.Object({
@@ -193,7 +206,7 @@ const router: FastifyPluginAsync = async (fastify) => {
 
       const membershipItem = namespace.memberships.find((m) => m.username === username);
       if (!membershipItem) {
-        throw new NotFoundError(`User "${username}" is not in namespace "${namespace}"`);
+        throw new NotFoundError(`User "${username}" is not in namespace "${namespace.id}"`);
       }
 
       return membershipItem;

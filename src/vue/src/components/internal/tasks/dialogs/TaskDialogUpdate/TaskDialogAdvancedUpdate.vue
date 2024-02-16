@@ -210,8 +210,8 @@ import hash from 'object-hash';
 import ezReeportMixin from '~/mixins/ezr';
 import useTemplateStore, { isTaskTemplate, mapRulesToVuetify } from '~/stores/template';
 
-import { tabs, type Tab } from './TaskDialogRead.vue';
-import type TaskDialogLinkConstructor from './TaskDialogLink.vue';
+import { tabs, type Tab } from '../TaskDialogRead/TaskDialogAdvancedRead.vue';
+import type TaskDialogLinkConstructor from '../TaskDialogLink.vue';
 
 type TaskDialogLink = InstanceType<typeof TaskDialogLinkConstructor>;
 

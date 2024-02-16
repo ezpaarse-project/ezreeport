@@ -1,3 +1,4 @@
+import { merge } from 'lodash';
 import * as dfns from '~/lib/date-fns';
 import { appLogger } from '~/lib/logger';
 import { Type, type Static, Value } from '~/lib/typebox';
@@ -13,12 +14,37 @@ import {
 } from '~/lib/prisma';
 
 import { calcNextDate } from '~/models/recurrence';
+import { buildPagination } from '~/models/pagination';
 
 import { ArgumentError } from '~/types/errors';
 
 import { FullTemplateBody, TaskTemplate, getTemplateById } from './templates';
+import type { FullTasksPreset } from '~/models/tasksPresets';
 
 // #region Input types
+
+const {
+  PaginationQuery: TaskPaginationQuery,
+  buildPrismaArgs,
+} = buildPagination({
+  model: {} as Record<keyof PrismaTask, unknown>,
+
+  primaryKey: 'id',
+  previousType: Type.String(),
+  sortKeys: [
+    'name',
+    'enabled',
+    'lastRun',
+    'nextRun',
+    'recurrence',
+    'namespaceId',
+    'createdAt',
+    'updatedAt',
+  ],
+});
+
+export { TaskPaginationQuery };
+export type TaskPaginationQueryType = Static<typeof TaskPaginationQuery>;
 
 type InputActivity = Pick<Prisma.TaskActivityCreateWithoutTaskInput, 'type' | 'message' | 'data'>;
 
@@ -33,7 +59,9 @@ export const InputTaskBody = Type.Object({
     Type.String({ format: 'email' }),
   ),
   recurrence: Type.Enum(Recurrence),
-  nextRun: Type.String({ format: 'date-time' }),
+  nextRun: Type.Optional(
+    Type.String({ format: 'date-time' }),
+  ),
   enabled: Type.Optional(
     Type.Boolean(),
   ),
@@ -62,7 +90,7 @@ const LastExtended = Type.Intersect([
 
 export type TaskList = (
   Pick<PrismaTask, 'id' | 'name' | 'namespaceId' | 'recurrence' | 'nextRun' | 'lastRun' | 'enabled' | 'createdAt' | 'updatedAt'>
-  & { tags: PrismaTemplate['tags'] }
+  & { tags: PrismaTemplate['tags'], _count: { targets: number } }
 )[];
 
 type FullTask = Pick<PrismaTask, 'id' | 'name' | 'targets' | 'recurrence' | 'nextRun' | 'lastRun' | 'enabled' | 'createdAt' | 'updatedAt'>
@@ -73,6 +101,21 @@ type FullTask = Pick<PrismaTask, 'id' | 'name' | 'targets' | 'recurrence' | 'nex
   lastExtended: Static<typeof LastExtended>,
   activity: TaskActivity[],
 };
+
+export const AdditionalDataForPreset = Type.Intersect([
+  // Keeping targets, name and namespace
+  Type.Pick(CreateTaskBody, ['targets', 'name', 'namespace']),
+  // Marking everything else as optional
+  Type.Partial(
+    Type.Omit(CreateTaskBody, ['targets', 'name', 'namespace', 'template']),
+  ),
+  // Keeping only fetchOptions from template
+  Type.Object({
+    template: Type.Pick(TaskTemplate, ['fetchOptions']),
+  }),
+]);
+
+export type AdditionalDataForPresetType = Static<typeof AdditionalDataForPreset>;
 
 // #endregion
 
@@ -156,18 +199,12 @@ export const getCountTask = (
  *
  * @returns Tasks list
  */
-// TODO[feat]: Custom sort
 export const getAllTasks = async (
-  opts?: {
-    count?: number,
-    previous?: PrismaTask['id'],
-  },
+  opts?: TaskPaginationQueryType,
   namespaceIds?: Namespace['id'][],
 ): Promise<TaskList> => {
   const tasks = await prisma.task.findMany({
-    take: opts?.count,
-    skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
-    cursor: opts?.previous ? { id: opts.previous } : undefined,
+    ...buildPrismaArgs(opts || {}),
     select: {
       id: true,
       name: true,
@@ -178,6 +215,7 @@ export const getAllTasks = async (
       enabled: true,
       createdAt: true,
       updatedAt: true,
+      targets: true,
 
       extendedId: true,
       lastExtended: true,
@@ -187,19 +225,24 @@ export const getAllTasks = async (
         in: namespaceIds,
       },
     },
-    orderBy: {
-      createdAt: 'asc',
-    },
   });
 
   return Promise.all(
     // Add tags from extended or last extended
-    tasks.map(async ({ extendedId, lastExtended, ...task }) => {
+    tasks.map(async ({
+      extendedId,
+      lastExtended,
+      targets,
+      ...task
+    }) => {
       const lE = Value.Cast(LastExtended, lastExtended);
       if (lE?.tags && lE.tags.length > 0) {
         return {
           ...task,
           tags: lE.tags,
+          _count: {
+            targets: targets.length,
+          },
         };
       }
 
@@ -207,6 +250,9 @@ export const getAllTasks = async (
       return {
         ...task,
         tags: extended?.tags ?? [],
+        _count: {
+          targets: targets.length,
+        },
       };
     }),
   );
@@ -264,18 +310,13 @@ export const getAllTargets = async (namespaceIds?: Namespace['id'][]): Promise<s
  *
  * @returns Task
  */
-export const getTasksByTargets = async (
+export const getTasksByTarget = async (
   email: string,
-  opts?: {
-    count?: number,
-    previous?: PrismaTask['id'],
-  },
+  opts?: TaskPaginationQueryType,
   namespaceIds?: Namespace['id'][],
 ): Promise<TaskList> => {
   const tasks = await prisma.task.findMany({
-    take: opts?.count,
-    skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
-    cursor: opts?.previous ? { id: opts.previous } : undefined,
+    ...buildPrismaArgs(opts || {}),
     select: {
       id: true,
       name: true,
@@ -286,6 +327,7 @@ export const getTasksByTargets = async (
       enabled: true,
       createdAt: true,
       updatedAt: true,
+      targets: true,
 
       extendedId: true,
       lastExtended: true,
@@ -298,19 +340,24 @@ export const getTasksByTargets = async (
         has: email,
       },
     },
-    orderBy: {
-      createdAt: 'asc',
-    },
   });
 
   return Promise.all(
     // Add tags from extended or last extended
-    tasks.map(async ({ extendedId, lastExtended, ...task }) => {
+    tasks.map(async ({
+      extendedId,
+      lastExtended,
+      targets,
+      ...task
+    }) => {
       const lE = Value.Cast(LastExtended, lastExtended);
       if (lE?.tags && lE.tags.length > 0) {
         return {
           ...task,
           tags: lE.tags,
+          _count: {
+            targets: targets.length,
+          },
         };
       }
 
@@ -318,6 +365,9 @@ export const getTasksByTargets = async (
       return {
         ...task,
         tags: extended?.tags ?? [],
+        _count: {
+          targets: targets.length,
+        },
       };
     }),
   );
@@ -331,7 +381,7 @@ export const getTasksByTargets = async (
  *
  * @returns The task count
  */
-export const getTaskCountByTargets = (
+export const getTaskCountByTarget = (
   email: string,
   namespaceIds?: Namespace['id'][],
 ): Promise<number> => prisma.task.count({
@@ -393,8 +443,8 @@ export const createTask = async (
     ...data
   } = input;
 
-  let nR = dfns.parseISO(nextRun);
-  if (!nR) {
+  let nR = dfns.parseISO(nextRun || '');
+  if (!dfns.isValid(nR)) {
     nR = calcNextDate(new Date(), data.recurrence);
   }
 
@@ -415,6 +465,33 @@ export const createTask = async (
   appLogger.verbose(`[models] Task "${id}" created`);
   return castFullTask(task);
 };
+
+/**
+ * Creates a task from a preset.
+ *
+ * @param preset The preset to create the task
+ * @param data The input data
+ * @param creator The user creating the task
+ *
+ * @return The created task
+ */
+export const createTaskFromPreset = async (
+  preset: FullTasksPreset,
+  data: AdditionalDataForPresetType,
+  creator: string,
+) => createTask(
+  merge(
+    {
+      extends: preset.template.id,
+      recurrence: preset.recurrence,
+      template: {
+        fetchOptions: preset.fetchOptions,
+      },
+    },
+    data,
+  ),
+  creator,
+);
 
 /**
  * Delete specific task in DB

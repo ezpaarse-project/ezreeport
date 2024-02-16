@@ -51,10 +51,11 @@ const workers: Worker[] = [];
 logger.verbose('[bull] Init started');
 const start = new Date();
 const mailQueue = new Queue<MailResult>('ezReeport.mail-send', { connection: redis });
+logger.verbose(`[bull] Created queue [${mailQueue.name}]`);
 
 const worker = new Worker(
   mailQueue.name,
-  join(__dirname, 'jobs/sendReportMail.ts'),
+  join(__dirname, 'jobs/sendReportMail.js'),
   {
     connection: redis,
     limiter: {
@@ -74,4 +75,5 @@ worker.on('error', (err) => {
 });
 
 workers.push(worker);
+logger.verbose(`[bull] Created worker [${worker.name}] with [${concurrence}] process and with [${maxExecTime}]ms before hanging`);
 logger.info(`[bull] Init completed in [${new Date().getTime() - start.getTime()}]ms`);

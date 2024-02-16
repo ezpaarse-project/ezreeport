@@ -71,10 +71,10 @@ export interface User extends Omit<RawUser, 'memberships' | 'createdAt' | 'updat
  */
 const parseUser = (user: RawUser): User => ({
   ...user,
-  memberships: user.memberships.map(parseMembership) as (Membership & TaskCount)[],
+  memberships: user?.memberships.map(parseMembership) as (Membership & TaskCount)[] ?? [],
 
   createdAt: parseISO(user.createdAt),
-  updatedAt: user.updatedAt ? parseISO(user.updatedAt) : undefined,
+  updatedAt: user?.updatedAt ? parseISO(user.updatedAt) : undefined,
 });
 
 export type Permissions = {

@@ -11,8 +11,8 @@
         :indeterminate="progress === 0"
       />
 
-      <v-card-title>
-        <div class="overflow">{{ $t('title', { name: task.name }) }}</div>
+      <v-card-title style="flex-wrap: nowrap;">
+        <div class="pr-2" style="word-break: break-word;">{{ task.name }}</div>
 
         <v-spacer />
 
@@ -20,6 +20,10 @@
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
+
+      <v-card-subtitle>
+        {{ $t('title') }}
+      </v-card-subtitle>
 
       <v-divider />
 
@@ -442,18 +446,9 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss" scoped>
-.overflow {
-  max-width: 90%;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-</style>
-
 <i18n lang="yaml">
 en:
-  title: 'Generation of "{name}"'
+  title: 'Generation of report'
   headers:
     targets: 'Receivers'
     period: 'Report period'
@@ -485,7 +480,7 @@ en:
     report: 'Report'
 
 fr:
-  title: 'Génération de "{name}"'
+  title: 'Génération du rapport'
   headers:
     targets: 'Destinataires'
     period: 'Période du rapport'

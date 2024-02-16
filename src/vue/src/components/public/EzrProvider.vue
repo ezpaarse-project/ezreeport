@@ -1,246 +1,142 @@
 <template>
-  <component v-bind:is="as" v-if="ready">
+  <component v-bind:is="as">
     <slot />
   </component>
 </template>
 
-<script lang="ts">
-import { defineComponent, type PropType } from 'vue';
-import * as sdk from '@ezpaarse-project/ezreeport-sdk-js';
-import { type InjectedEzReeport, InjectionEzReeportKey } from '~/mixins/ezr';
+<script setup lang="ts">
+import {
+  watch,
+  ref,
+  onMounted,
+  set,
+  provide,
+  type PropType,
+} from 'vue';
+import { InjectionEzReeportKey } from '~/mixins/ezr';
+import { useEzR } from '~/lib/ezreeport';
+import { useI18n } from '~/lib/i18n';
 
-export default defineComponent({
-  props: {
-    /**
-     * Which element provider will render to. Can be a Vue component using default slot
-     */
-    as: {
-      type: String,
-      default: 'div',
-    },
-    /**
-     * User's token
-     */
-    token: {
-      type: String as PropType<string | undefined>,
-      default: undefined,
-    },
-    /**
-     * Base URL for ezREEPORT API
-     */
-    apiUrl: {
-      type: String,
-      default: '',
-    },
-    /**
-     * Base URL to fetch namespace's logos
-     */
-    namespaceLogoUrl: {
-      type: String,
-      default: '',
-    },
-    /**
-     * How namespaces are called. It similar to i18n's `message` property
-     */
-    namespaceLabel: {
-      type: Object as PropType<Record<string, string>>,
-      default: () => ({}),
-    },
+const props = defineProps({
+  as: {
+    type: String,
+    default: 'div',
   },
-  emits: {
-    /**
-     * Triggered on any error from a provider root methods (like `login`)
-     *
-     * @param err The error
-     */
-    error: (err: Error) => !!err,
-    /**
-     * Triggered on any error from auth
-     *
-     * @param err The error
-     */
-    'error:auth': (err: Error) => !!err,
+  token: {
+    type: String as PropType<string | undefined>,
+    default: undefined,
   },
-  data: (): InjectedEzReeport['data'] => ({
-    ready: false,
-    auth: {
-      permissions: undefined,
-      user: undefined,
-    },
-    namespaces: {
-      data: [],
-      logoUrl: '',
-    },
-  }),
-  watch: {
-    apiUrl(value: string) {
-      sdk.setup.setURL(value || import.meta.env.VITE_REPORT_API);
-    },
-    namespaceLogoUrl(value: string) {
-      this.namespaces.logoUrl = value || import.meta.env.VITE_NAMESPACES_LOGO_URL;
-    },
-    namespaceLabel() {
-      this.registerNamespaceLocalization();
-    },
-    // eslint-disable-next-line func-names
-    '$i18n.locale': function () {
-      this.registerNamespaceLocalization();
-    },
-    token(value?: string) {
-      this.logout();
-      if (value) {
-        this.login(value);
-      }
-    },
+  apiUrl: {
+    type: String as PropType<string | undefined>,
+    default: undefined,
   },
-  provide() {
-    // Non reactive properties
-    const $ezReeport = {
-      sdk,
-
-      tcNamespace: (capitalize?: boolean, choice?: number) => {
-        const res = this.$tc('namespace', choice).toString();
-
-        if (capitalize) {
-          return `${res.at(0)?.toLocaleUpperCase() ?? ''}${res.slice(1)}`;
-        }
-        return res;
-      },
-
-      fetchNamespaces: (force?: boolean) => this.fetchNamespaces(force),
-      login: (token: string) => this.login(token),
-      logout: () => this.logout(),
-      hasGeneralPermission: (permission: string) => this.hasGeneralPermission(permission),
-      hasNamespacedPermission: (
-        permission: string,
-        namespaces: string[],
-      ) => this.hasNamespacedPermission(permission, namespaces),
-    };
-
-    // Reactive properties
-    Object.defineProperties(
-      $ezReeport,
-      {
-        data: {
-          enumerable: true,
-          get: () => this.$data,
-        },
-        isLogged: {
-          enumerable: true,
-          get: () => this.auth.user !== undefined,
-        },
-      },
-    );
-
-    return {
-      [InjectionEzReeportKey]: $ezReeport,
-    };
+  namespaceLogoUrl: {
+    type: String as PropType<string | undefined>,
+    default: undefined,
   },
-  mounted() {
-    sdk.setup.setURL(this.apiUrl || import.meta.env.VITE_REPORT_API);
-    this.namespaces.logoUrl = this.namespaceLogoUrl || import.meta.env.VITE_NAMESPACES_LOGO_URL;
-    this.registerNamespaceLocalization();
-    if (this.token) {
-      this.login(this.token);
-    }
-
-    // Rendering childrens will trigger requests to API
-    // and it can be before we set the correct URL.
-    // ? maybe a v-if on each public component is better than here
-    this.ready = true;
+  namespaceLabel: {
+    type: Object as PropType<Record<string, string>>,
+    default: () => ({}),
   },
-  methods: {
-    registerNamespaceLocalization() {
-      // eslint-disable-next-line no-restricted-syntax
-      for (const [locale, label] of Object.entries(this.namespaceLabel)) {
-        this.$i18n.mergeLocaleMessage(locale, { namespace: label });
-      }
-    },
-    /**
-     * Add token into SDK, fetch permissions & current user
-     *
-     * @param token The API token for ezMESURE
-     */
-    login(token: string) {
-      sdk.auth.login(token);
-
-      Promise.allSettled([
-        sdk.auth.getCurrentPermissions()
-          .then(({ content }) => { this.auth.permissions = content; }),
-
-        sdk.auth.getCurrentUser()
-          .then(({ content }) => { this.auth.user = content; }),
-      ]).then((results) => {
-        // eslint-disable-next-line no-restricted-syntax
-        for (const res of results) {
-          if (res.status === 'rejected') {
-            this.$emit('error', res.reason);
-            this.$emit('error:auth', res.reason);
-            console.error('[ezReeport-vue]', res.reason.message);
-          }
-        }
-      });
-    },
-    /**
-     * Remove token from SDK, clear permissions & current user
-     */
-    logout() {
-      sdk.auth.logout();
-      this.auth.permissions = undefined;
-      this.auth.user = undefined;
-    },
-    /**
-     * Shorthand to fetch namespaces and make it available into whole Vue.
-     *
-     * If namespaces was already fetched before, it will not re-fetch
-     *
-     * @param force Force reload
-     */
-    async fetchNamespaces(force = false): Promise<sdk.namespaces.Namespace[]> {
-      if (force || this.namespaces.data.length <= 0) {
-        if (this.hasNamespacedPermission('auth-get-namespaces', [])) {
-          const { content } = await sdk.auth.getCurrentNamespaces();
-          if (!content) {
-            throw new Error(this.$t('$ezreeport.errors.fetch').toString());
-          }
-
-          this.namespaces.data = content;
-        } else {
-          this.namespaces.data = [];
-        }
-      }
-      return this.namespaces.data;
-    },
-    /**
-     * Check if logged user have permission to do some action
-     *
-     * @param permission The permission name
-     *
-     * @returns If the user have the permission
-     */
-    hasGeneralPermission(permission: string) {
-      return !!this.auth.permissions?.general[permission];
-    },
-    /**
-     * Check if logged user have permission in namespaces to do some action
-     *
-     * @param permission The permission name
-     * @param namespaces The concerned namespaces. If empty will attempt
-     * to find at least one in all possibles
-     *
-     * @returns If the user have the permission
-     */
-    hasNamespacedPermission(permission: string, namespaces: string[]) {
-      let entries = Object.entries(this.auth.permissions?.namespaces ?? {});
-      const namespaceSet = new Set(namespaces);
-
-      if (namespaces.length > 0) {
-        entries = entries.filter(([namespace]) => namespaceSet.has(namespace));
-      }
-      return !!entries.find(([, perms]) => perms[permission]);
-    },
+  namespaceIcon: {
+    type: String as PropType<string | undefined>,
+    default: undefined,
   },
 });
+
+const emit = defineEmits<{
+  (event: 'error', err: Error): void;
+  (event: 'error:auth', err: Error): void;
+}>();
+
+const ezr = useEzR();
+const { locale } = useI18n();
+
+const { sdk, namespaces } = ezr;
+
+const ready = ref(false);
+
+const login = async (token: string) => {
+  const errors = await ezr.login(token);
+  // eslint-disable-next-line no-restricted-syntax
+  for (const err of errors) {
+    emit('error', err);
+    emit('error:auth', err);
+  }
+};
+
+watch(
+  () => props.apiUrl,
+  (value) => {
+    sdk.setup.setURL(value || import.meta.env.VITE_REPORT_API);
+  },
+  { immediate: true },
+);
+watch(
+  () => props.namespaceLogoUrl,
+  (value) => {
+    set(namespaces.value, 'logoUrl', value || import.meta.env.VITE_NAMESPACES_LOGO_URL);
+  },
+  { immediate: true },
+);
+watch(
+  [locale, () => props.namespaceLabel],
+  () => {
+    set(namespaces.value, 'label', props.namespaceLabel);
+  },
+  { immediate: true },
+);
+watch(
+  () => props.namespaceIcon,
+  (value) => {
+    set(namespaces.value, 'icon', value);
+  },
+  { immediate: true },
+);
+watch(
+  () => props.token,
+  async (value) => {
+    ezr.logout();
+    if (value) {
+      await login(value);
+    }
+  },
+  { immediate: true },
+);
+
+onMounted(() => {
+  ready.value = true;
+});
+
+// Option API compatibility
+provide(
+  InjectionEzReeportKey,
+  (() => {
+    const {
+      auth,
+      namespaces: nms,
+      isLogged,
+      ...$ezr
+    } = ezr;
+
+    return {
+      ...$ezr,
+
+      login,
+
+      get data() {
+        return {
+          auth: auth.value,
+          namespaces: nms.value,
+        };
+      },
+
+      get isLogged() {
+        return isLogged.value;
+      },
+    };
+  })(),
+);
 </script>
 
 <style scoped>

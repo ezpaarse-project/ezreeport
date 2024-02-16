@@ -16,13 +16,32 @@ import {
   deleteBulkMembership,
 } from './memberships';
 import { TaskList } from './tasks';
+import { buildPagination } from './pagination';
 
 type InputNamespace = Pick<Prisma.NamespaceCreateInput, 'name' | 'fetchLogin' | 'fetchOptions' | 'logoId'>;
 
 type FullNamespace = Namespace & {
   memberships: Omit<Membership, 'namespaceId'>[],
-  tasks: Omit<TaskList[number], 'tags' | 'namespaceId'>[],
+  tasks: Omit<TaskList[number], 'tags' | '_count' | 'namespaceId'>[],
 };
+
+const {
+  PaginationQuery: NamespacePaginationQuery,
+  buildPrismaArgs,
+} = buildPagination({
+  model: {} as Record<keyof Namespace, unknown>,
+
+  primaryKey: 'id',
+  previousType: Type.String(),
+  sortKeys: [
+    'name',
+    'createdAt',
+    'updatedAt',
+  ],
+});
+
+export { NamespacePaginationQuery };
+export type NamespacePaginationQueryType = Static<typeof NamespacePaginationQuery>;
 
 export const NamespaceBody = Type.Object({
   name: Type.String(),
@@ -84,16 +103,10 @@ export const getCountNamespaces = async (): Promise<number> => prisma.namespace.
  *
  * @returns Namespace entries list
  */
-// TODO[feat]: Custom sort
 export const getAllNamespaces = (
-  opts?: {
-    count?: number,
-    previous?: Namespace['id']
-  },
+  opts?: NamespacePaginationQueryType,
 ) => prisma.namespace.findMany({
-  take: opts?.count,
-  skip: opts?.previous ? 1 : undefined, // skip the cursor if needed
-  cursor: opts?.previous ? { id: opts.previous } : undefined,
+  ...buildPrismaArgs(opts || {}),
   select: {
     id: true,
     name: true,

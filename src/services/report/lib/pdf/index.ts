@@ -1,13 +1,17 @@
 import { existsSync } from 'node:fs';
 import { readFile, stat, unlink } from 'node:fs/promises';
+
 import { jsPDF as PDF } from 'jspdf';
+
 import config from '~/lib/config';
-import { format } from '~/lib/date-fns';
+import { format, type Interval } from '~/lib/date-fns';
+
+import { loadImageAsset } from './utils';
+
 import './fonts/Roboto-bold.js';
 import './fonts/Roboto-bolditalic.js';
 import './fonts/Roboto-italic.js';
 import './fonts/Roboto-normal.js';
-import { loadImageAsset } from './utils';
 
 const { logos } = config.pdf;
 

@@ -76,13 +76,6 @@ export default defineComponent({
     error: undefined as string | undefined,
   }),
   computed: {
-    perms() {
-      const has = this.$ezReeport.hasNamespacedPermission;
-
-      return {
-        readOne: has('tasks-get-task', []),
-      };
-    },
     headers(): DataTableHeader<TaskItem>[] {
       return [
         {
