@@ -1,3 +1,10 @@
+# ezreeport-report [1.0.0-beta.31](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.30...ezreeport-report@1.0.0-beta.31) (2024-02-16)
+
+
+### Bug Fixes
+
+* **report:** rejectUnauthorized is now false when connecting to elastic ([bf672ca](https://github.com/ezpaarse-project/ezreeport/commit/bf672cac899c3b67488a42cc04da1c1e0982e223))
+
 # ezreeport-report [1.0.0-beta.30](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.29...ezreeport-report@1.0.0-beta.30) (2024-02-08)
 
 
