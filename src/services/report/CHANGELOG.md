@@ -1,3 +1,20 @@
+# ezreeport-report [1.0.0-rc.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-rc.1...ezreeport-report@1.0.0-rc.2) (2024-02-16)
+
+
+### Bug Fixes
+
+* **report:** added migration file ([5422140](https://github.com/ezpaarse-project/ezreeport/commit/54221406f8978cf74526f77ddd8a569d6f4fa377))
+* **report:** rejectUnauthorized is now false when connecting to elastic ([bf672ca](https://github.com/ezpaarse-project/ezreeport/commit/bf672cac899c3b67488a42cc04da1c1e0982e223))
+
+
+### Features
+
+* **report:** added final counts after imports ([2df4050](https://github.com/ezpaarse-project/ezreeport/commit/2df405074b96ef5969c25143f624d97f27b905ff))
+* **report:** added target count in task list ([680a0c2](https://github.com/ezpaarse-project/ezreeport/commit/680a0c26009d81ea8eb9e771671f76d25661e590))
+* **report:** added tasks' presets ([d1a8d08](https://github.com/ezpaarse-project/ezreeport/commit/d1a8d0838005b93fe766fdb83efd307bf96dda02))
+* **report:** allow custom sort and all items in lists ([deb0f3b](https://github.com/ezpaarse-project/ezreeport/commit/deb0f3ba08a7850a2fce6ef3808ed98f6f7634f7))
+* **report:** updated CNRS logo ([e7ba5d9](https://github.com/ezpaarse-project/ezreeport/commit/e7ba5d96ea355e4fea77deccffe888326bb1b4ba))
+
 # ezreeport-report [1.0.0-beta.31](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.30...ezreeport-report@1.0.0-beta.31) (2024-02-16)
 
 
