@@ -1,3 +1,10 @@
+# ezreeport-report [1.0.0-beta.32](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.31...ezreeport-report@1.0.0-beta.32) (2024-02-19)
+
+
+### Bug Fixes
+
+* **report:** added env vars for elasticsearch ([f6f8f96](https://github.com/ezpaarse-project/ezreeport/commit/f6f8f962ff6b77e064c728550a5baa72b8e1ca76))
+
 # ezreeport-report [1.0.0-beta.31](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0-beta.30...ezreeport-report@1.0.0-beta.31) (2024-02-16)
 
 
