@@ -11,6 +11,8 @@
   },
   "elasticsearch": {
     "url": "ELASTIC_URL",
+    "username": "ELASTIC_USERNAME",
+    "password": "ELASTIC_PASSWORD",
     "apiKey": "ELASTIC_API_KEY",
     "requiredStatus": "ELASTIC_REQUIRED_STATUS",
     "maxTries": { "__name": "ELASTIC_MAX_TRIES", "__format": "number" }
