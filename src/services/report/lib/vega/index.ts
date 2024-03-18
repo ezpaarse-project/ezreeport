@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { registerFont } from 'canvas';
 import { compile as handlebars } from 'handlebars';
 import type { ImageOptions } from 'jspdf';
+import { contrast } from 'chroma-js';
 import {
   cloneDeep,
   get,
@@ -12,10 +13,10 @@ import {
 } from 'lodash';
 
 import {
+  parse,
   expressionFunction,
   Locale as VegaLocale,
-  parse,
-  scheme,
+  scheme as vegaScheme,
   View,
 } from 'vega';
 import { compile, type TopLevelSpec } from 'vega-lite';
@@ -31,25 +32,17 @@ import { calcVegaFormat } from '~/models/recurrence';
 import localeFR from './locales/fr-FR.json';
 import VegaLogger from './logger';
 
-const { outDir } = config.report;
+const { outDir, scheme } = config.report;
 
 registerFont('lib/vega/fonts/Roboto-light.ttf', { family: 'Roboto', weight: 'normal' });
 registerFont('lib/vega/fonts/Roboto-medium.ttf', { family: 'Roboto', weight: 'bold' });
-// Default colors of vega
-const colorScheme = scheme('tableau10') as string[];
-// Default colors of labels for default colors of Vega (https://vega.github.io/vega/docs/schemes/)
-scheme('tableau10-labels', [
-  'white', // white on blue
-  'black', // black on orange
-  'black', // black on red
-  'black', // black on cyan
-  'black', // black on green
-  'black', // black on yellow
-  'black', // black on purple
-  'black', // black on pink
-  'white', // white on brown
-  'black', // black on grey
-]);
+
+// Colors of vega (https://vega.github.io/vega/docs/schemes/)
+const colorScheme = vegaScheme(scheme) as string[];
+
+// Colors of labels for colors of Vega
+const labelScheme = `${scheme}.labels`;
+vegaScheme(labelScheme, colorScheme.map((c) => (contrast(c, 'black') > 5 ? 'black' : 'white')));
 
 /**
  * Params for createVegaLSpec
@@ -380,7 +373,7 @@ export const createVegaLSpec = (
           legend: null,
           scale: {
             // @ts-ignore
-            scheme: 'tableau10-labels',
+            scheme: labelScheme,
           },
         },
         detail: params.color && {

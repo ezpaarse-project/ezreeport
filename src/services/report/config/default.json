@@ -37,6 +37,7 @@
     }
   },
   "report": {
+    "scheme": "tableau20",
     "assetsDir": "assets",
     "outDir": "/data/ezreeport/report",
     "ttl": {
