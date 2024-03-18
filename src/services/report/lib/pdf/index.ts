@@ -4,16 +4,27 @@ import { readFile, stat, unlink } from 'node:fs/promises';
 import { jsPDF as PDF } from 'jspdf';
 
 import config from '~/lib/config';
+import { appLogger as logger } from '~/lib/logger';
 import { format, type Interval } from '~/lib/date-fns';
 
-import { loadImageAsset } from './utils';
-
-import './fonts/Roboto-bold.js';
-import './fonts/Roboto-bolditalic.js';
-import './fonts/Roboto-italic.js';
-import './fonts/Roboto-normal.js';
+import { loadImageAsset, registerJSPDFFont } from './utils';
 
 const { logos } = config.pdf;
+const { fontFamily, fonts } = config.report;
+
+// Register fonts
+type JSPDFRegisterableFont = {
+  path: string;
+  family: string;
+  weight?: string;
+  style?: string
+};
+
+fonts.forEach(({ path, ...font }: JSPDFRegisterableFont) => {
+  registerJSPDFFont(path, font).then(() => {
+    logger.verbose(`[jspdf] Register font: [${path}] as [${font.family} ${font.weight || ''}${font.style || ''}]`);
+  });
+});
 
 let doc: {
   // Calc at init
@@ -39,6 +50,7 @@ let doc: {
     bottom: number;
     right: number;
   };
+  fontFamily: string;
 
   // User defined
   /**
@@ -81,7 +93,7 @@ const printHeader = async (): Promise<number> => {
   // "cursor" that will help correct positioning
   let y = doc.margin.top + fontSize;
   doc.pdf
-    .setFont('Roboto', 'bold')
+    .setFont(doc.fontFamily, 'bold')
     .setFontSize(fontSize)
     .text(doc.name, doc.margin.right, y);
 
@@ -89,7 +101,7 @@ const printHeader = async (): Promise<number> => {
   y += fontSize + 2;
   fontSize = 10;
   doc.pdf
-    .setFont('Roboto', 'normal')
+    .setFont(doc.fontFamily, 'normal')
     .setTextColor('#000000')
     .setFontSize(fontSize)
     .text(
@@ -216,6 +228,7 @@ export const initDoc = async (params: PDFReportOptions): Promise<PDFReport> => {
       bottom: 30,
       left: 30,
     },
+    fontFamily,
     // will calc later because we need doc instance
     offset: {
       top: 0,
@@ -248,7 +261,7 @@ export const renderDoc = async (): Promise<PDFStats> => {
     const y = doc.height - doc.margin.bottom;
     const pageNoText = `${currPage} / ${totalPageCount}`;
     const w = doc.pdf
-      .setFont('Roboto', 'normal')
+      .setFont(doc.fontFamily, 'normal')
       .setTextColor('#000000')
       .setFontSize(13)
       .getTextWidth(pageNoText);

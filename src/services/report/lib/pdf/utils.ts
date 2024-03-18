@@ -1,5 +1,8 @@
 import { Image } from 'canvas';
-import type jsPDF from 'jspdf';
+import jsPDF from 'jspdf';
+
+import { readFile } from 'node:fs/promises';
+import { basename } from 'node:path';
 
 type Area = { x: number, y: number, width: number, height: number };
 
@@ -77,4 +80,35 @@ export const drawAreaRef = (pdf: jsPDF, area: Area, bg = 'green', marks = 'red',
     .setTextColor(def.textColor)
     .setFont(def.font.fontName, def.font.fontStyle)
     .setFontSize(def.fontSize);
+};
+
+/**
+ * Schedule a font to be registered in JSPDF
+ *
+ * @param path Path to the `.ttf` file
+ * @param name The name of the font
+ * @param fontStyle The style of the font
+ * @param fontWeight The weight of the font
+ */
+export const registerJSPDFFont = async (
+  path: string,
+  fontFace: {
+    family: string,
+    style?: string,
+    weight?: string | number,
+  },
+) => {
+  const { family, style = '', weight = '' } = fontFace;
+
+  const font = await readFile(path, 'base64');
+  const fontStyle = `${weight}${style}` || 'normal';
+  const fileName = basename(path);
+
+  const callAddFont = function callAddFont(this: jsPDF) {
+    this
+      .addFileToVFS(fileName, font)
+      .addFont(fileName, family, fontStyle);
+  };
+
+  jsPDF.API.events.push(['addFonts', callAddFont]);
 };
