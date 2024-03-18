@@ -211,26 +211,40 @@ export const createVegaLSpec = (
       break;
   }
 
-  let colorsEntries: [string, string][] = [];
+  const colorsEntries = new Map<string, string>();
   if (colorField) {
-    const f = colorField;
-    colorsEntries = data.map((d, i): [string, string] => {
-      const key = get(d, f);
-      let color = params.colorMap.get(key);
-      if (!color) {
-        color = colorScheme[i % colorScheme.length];
-        params.colorMap.set(key, color);
+    const labelField = colorField;
+    const unusedColorsSet = new Set(colorScheme);
+
+    const labels = new Set(data.map((el): string => get(el, labelField)));
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const label of [...labels].slice(0, colorScheme.length)) {
+      const color = params.colorMap.get(label);
+      if (color) {
+        // Use known color
+        colorsEntries.set(label, color);
+        // Remove color from unused
+        unusedColorsSet.delete(color);
+        // Remove from labels since we used it
+        labels.delete(label);
       }
-      return [key, color];
-    });
+    }
+
+    // Set leftovers with unused colors
+    const unusedColors = [...unusedColorsSet];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const label of labels) {
+      colorsEntries.set(label, unusedColors.shift() || '');
+    }
   }
 
   // Getting default encoding
   let encoding: Encoding = {
     color: {
       scale: {
-        domain: colorsEntries.map(([key]) => key),
-        range: colorsEntries.map(([, color]) => color),
+        domain: [...colorsEntries.keys()],
+        range: [...colorsEntries.values()],
       },
     },
   };
