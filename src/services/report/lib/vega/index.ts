@@ -32,18 +32,12 @@ import { calcVegaFormat } from '~/models/recurrence';
 import localeFR from './locales/fr-FR.json';
 import VegaLogger from './logger';
 
-const { outDir, scheme } = config.report;
-
-registerFont('lib/vega/fonts/Roboto-light.ttf', { family: 'Roboto', weight: 'normal' });
-registerFont('lib/vega/fonts/Roboto-medium.ttf', { family: 'Roboto', weight: 'bold' });
-
-// Colors of vega (https://vega.github.io/vega/docs/schemes/)
-const colorScheme = vegaScheme(scheme) as string[];
-
-// Colors of labels for colors of Vega
-const labelScheme = `${scheme}.labels`;
-vegaScheme(labelScheme, colorScheme.map((c) => (contrast(c, 'black') > 5 ? 'black' : 'white')));
-
+type CanvasRegisterableFont = {
+  path: string;
+  family: string;
+  weight?: string;
+  style?: string
+};
 /**
  * Params for createVegaLSpec
  */
@@ -82,6 +76,26 @@ type VegaParams = {
 };
 
 export type InputVegaParams = Omit<VegaParams, 'width' | 'height'> & { title: Title };
+
+const {
+  outDir,
+  scheme,
+  fontFamily,
+  fonts,
+} = config.report;
+
+// Register fonts in Vega
+fonts.forEach(({ path, ...font }: CanvasRegisterableFont) => {
+  registerFont(path, font);
+  logger.verbose(`[vega] Register font: [${path}] as [${font.family} ${font.weight || ''} ${font.style || ''}]`);
+});
+
+// Colors of vega (https://vega.github.io/vega/docs/schemes/)
+const colorScheme = vegaScheme(scheme) as string[];
+
+// Colors of labels for colors of Vega
+const labelScheme = `${scheme}.labels`;
+vegaScheme(labelScheme, colorScheme.map((c) => (contrast(c, 'black') > 5 ? 'black' : 'white')));
 
 /**
  * Ratio between outer and inner radius.
@@ -423,7 +437,7 @@ export const createVegaLSpec = (
     config: {
       locale: localeFR as VegaLocale,
       customFormatTypes: true,
-      font: 'Roboto',
+      font: fontFamily,
     },
   };
 

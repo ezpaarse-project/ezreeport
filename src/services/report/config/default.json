@@ -37,14 +37,36 @@
     }
   },
   "report": {
-    "scheme": "tableau20",
-    "assetsDir": "assets",
-    "outDir": "/data/ezreeport/report",
     "ttl": {
       "iterations": 4,
       "days": 7
     },
-    "team": "ezteam-dev@couperin.org"
+    "team": "ezteam-dev@couperin.org",
+    "scheme": "tableau20",
+    "fontFamily": "Roboto",
+    "fonts": [
+      {
+        "family": "Roboto",
+        "path": "assets/fonts/Roboto-Light.ttf"
+      },
+      {
+        "family": "Roboto",
+        "style": "italic",
+        "path": "assets/fonts/Roboto-LightItalic.ttf"
+      },
+      {
+        "family": "Roboto",
+        "weight": "bold",
+        "path": "assets/fonts/Roboto-Medium.ttf"
+      },
+      {
+        "family": "Roboto",
+        "weight": "bold",
+        "style": "italic",
+        "path": "assets/fonts/Roboto-MediumItalic.ttf"
+      }
+    ],
+    "outDir": "/data/ezreeport/report"
   },
   "pdf": {
     "logos": [
