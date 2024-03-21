@@ -28,7 +28,7 @@ module.exports = async (job) => {
     const { length } = await Promise.all(
       tasks.map(
         async (task, i, arr) => {
-          await addTaskToGenQueue({ task, origin: 'daily-cron-job' });
+          await addTaskToGenQueue({ task, namespace: task.namespace, origin: 'daily-cron-job' });
           await job.updateProgress(i / arr.length);
         },
       ),

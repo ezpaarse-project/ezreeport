@@ -29,6 +29,7 @@ module.exports = async (job) => {
     id: jobId,
     data: {
       task,
+      namespace,
       origin,
       writeActivity,
       debug,
@@ -89,8 +90,8 @@ module.exports = async (job) => {
       recurrence: task.recurrence,
       name: task.name,
       targets: task.targets,
-      namespace: task.namespaceId,
     },
+    namespace: namespace.name,
   };
 
   if (res.success && res.detail.files.report) {
