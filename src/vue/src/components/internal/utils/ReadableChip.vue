@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts">
-import chroma from 'chroma-js';
+import { contrast } from 'chroma-js';
 import { defineComponent, type PropType } from 'vue';
 
 export default defineComponent({
@@ -32,7 +32,7 @@ export default defineComponent({
         return undefined;
       }
 
-      return chroma.contrast(this.color, 'black') > 5 ? 'black' : 'white';
+      return contrast(this.color, 'black') > 5 ? 'black' : 'white';
     },
   },
 });

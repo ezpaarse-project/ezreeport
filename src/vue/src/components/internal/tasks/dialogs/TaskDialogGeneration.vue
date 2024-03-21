@@ -1,6 +1,7 @@
 <template>
   <v-dialog
     :value="value"
+    :persistent="progress >= 0"
     max-width="600"
     @input="$emit('input', $event)"
   >
@@ -293,14 +294,12 @@ export default defineComponent({
   watch: {
     value(val: boolean) {
       if (val) {
-        this.resetPeriod();
+        this.reset();
       }
     },
   },
   mounted() {
-    this.targets = this.task.targets;
-    this.error = '';
-    this.resetPeriod();
+    this.reset();
   },
   methods: {
     /**
@@ -431,6 +430,22 @@ export default defineComponent({
         this.error = (error as Error).message;
       }
       this.progress = -1;
+    },
+    /**
+     * Reset all fields of dialog
+     */
+    reset() {
+      this.generationType = 'test';
+      this.targets = this.task?.targets ?? [];
+      this.result = undefined;
+      this.job = undefined;
+      this.reportStatus = '';
+      this.max = maxDate;
+
+      this.progress = -1;
+      this.error = '';
+
+      this.resetPeriod();
     },
     /**
      * Calc period based on recurrence
