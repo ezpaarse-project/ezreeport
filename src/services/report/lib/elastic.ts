@@ -1,7 +1,7 @@
 import { setTimeout } from 'node:timers/promises';
 
 import { Client, type estypes as ElasticTypes, type RequestParams } from '@elastic/elasticsearch';
-import { intersection } from 'lodash';
+import { merge } from 'lodash';
 
 import config from './config';
 import { appLogger as logger } from './logger';
@@ -214,17 +214,8 @@ export const elasticIndexMapping = async (index: string, runAs?: string) => {
     { headers },
   );
 
-  // Only keep the common keys of all matching indices
+  // Keep all the keys of all the indices
   const mappings = Object.values(body).map((i) => i.mappings.properties ?? {});
-  const commonKeys = intersection(...mappings.map((m) => Object.keys(m)));
-  const mapping: Record<string, ElasticTypes.MappingProperty> = {};
-  // eslint-disable-next-line no-restricted-syntax
-  for (const key of commonKeys) {
-    const field = mappings.at(0)?.[key];
-    if (field) {
-      mapping[key] = field;
-    }
-  }
-
-  return simplifyMapping(mapping);
+  const globalMapping = merge({}, ...mappings);
+  return simplifyMapping(globalMapping);
 };
