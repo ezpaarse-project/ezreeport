@@ -30,8 +30,8 @@ export type MailResult = {
     recurrence: Recurrence,
     name: string,
     targets: string[],
-    namespace: string,
   },
+  namespace: string,
   /**
    * The email of the user that was used for generation
    */
