@@ -267,12 +267,15 @@ export const getAllTasks = async (
  */
 export const getAllTasksToGenerate = async (
   date: Date | string,
-): Promise<PrismaTask[]> => prisma.task.findMany({
+): Promise<(PrismaTask & { namespace: Namespace })[]> => prisma.task.findMany({
   where: {
     enabled: true,
     nextRun: {
       lte: date,
     },
+  },
+  include: {
+    namespace: true,
   },
 });
 
