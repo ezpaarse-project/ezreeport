@@ -217,9 +217,8 @@ export const createVegaLSpec = (
     const unusedColorsSet = new Set(colorScheme);
 
     const labels = new Set(data.map((el): string => get(el, labelField)));
-
     // eslint-disable-next-line no-restricted-syntax
-    for (const label of [...labels].slice(0, colorScheme.length)) {
+    for (const label of [...labels]) {
       const color = params.colorMap.get(label);
       if (color) {
         // Use known color
@@ -243,8 +242,8 @@ export const createVegaLSpec = (
   let encoding: Encoding = {
     color: {
       scale: {
-        domain: [...colorsEntries.keys()],
-        range: [...colorsEntries.values()],
+        domain: Array.from(colorsEntries.keys()),
+        range: Array.from(colorsEntries.values()),
       },
     },
   };

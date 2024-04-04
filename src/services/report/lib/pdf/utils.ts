@@ -86,9 +86,7 @@ export const drawAreaRef = (pdf: jsPDF, area: Area, bg = 'green', marks = 'red',
  * Schedule a font to be registered in JSPDF
  *
  * @param path Path to the `.ttf` file
- * @param name The name of the font
- * @param fontStyle The style of the font
- * @param fontWeight The weight of the font
+ * @param fontFace The description of the font
  */
 export const registerJSPDFFont = async (
   path: string,
