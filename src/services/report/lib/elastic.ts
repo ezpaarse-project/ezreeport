@@ -219,3 +219,32 @@ export const elasticIndexMapping = async (index: string, runAs?: string) => {
   const globalMapping = merge({}, ...mappings);
   return simplifyMapping(globalMapping);
 };
+
+export const elasticResolveIndex = async (index: string, runAs?: string) => {
+  const elastic = await getElasticClient();
+
+  const headers: Record<string, unknown> = {};
+  if (runAs) {
+    headers['es-security-runas-user'] = runAs;
+  }
+
+  try {
+    const { body } = await elastic.indices.resolveIndex<ElasticTypes.IndicesResolveIndexResponse>(
+      { name: index },
+      { headers },
+    );
+
+    const indices = new Set([
+      ...body.indices.map((i) => i.name),
+      ...body.aliases.map((a) => a.name),
+    ].sort((a, b) => a.localeCompare(b)));
+
+    return Array.from(indices);
+  } catch (error) {
+    const elasticError = error as ({ meta?: { body?: { error?: { type?: string } } } } & Error);
+    if (elasticError.meta?.body?.error?.type === 'security_exception') {
+      return [];
+    }
+    throw error;
+  }
+};
