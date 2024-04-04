@@ -108,16 +108,16 @@
 
           <v-row>
             <v-col>
-              <v-combobox
+              <ElasticIndexSelector
                 v-if="miniTask.template.fetchOptions"
                 :value="miniTask.template.fetchOptions.index"
-                :search-input.sync="indexInput"
-                :items="templateStore.indices.available"
+                :namespace="miniTask.namespace"
                 :label="$t('$ezreeport.fetchOptions.index').toString()"
                 :rules="rules.index"
-                :filter="indexFilter"
+                :disabled="!miniTask.namespace"
+                required
                 prepend-icon="mdi-database"
-                @blur="onIndexChanged"
+                @input="onIndexChanged"
               />
             </v-col>
           </v-row>
@@ -182,14 +182,12 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, watch } from 'vue';
 import { tasks, tasksPresets } from '@ezpaarse-project/ezreeport-sdk-js';
 import isEmail from 'validator/lib/isEmail';
-import { ref, computed, watch } from 'vue';
 
 import { useEzR } from '~/lib/ezreeport';
 import { useI18n } from '~/lib/i18n';
-import useTemplateStore from '~/stores/template';
-import { indexFilter } from '~/lib/elastic/indicies';
 
 const props = defineProps<{
   value: boolean;
@@ -203,7 +201,6 @@ const emit = defineEmits<{
 
 const { sdk, ...ezr } = useEzR();
 const { $t } = useI18n();
-const templateStore = useTemplateStore();
 
 const loading = ref(false);
 const isValid = ref(false);
@@ -250,7 +247,6 @@ const rules = computed(() => ({
     (v: tasksPresets.TasksPreset) => !!v || $t('$ezreeport.errors.empty', { field: 'namespace' }),
   ],
   index: [
-    (v: string) => !!v || $t('$ezreeport.errors.empty', { field: 'index' }),
     mappingValidation.value,
   ],
   namespace: [
@@ -327,11 +323,6 @@ const refresh = async () => {
 
     availablePresets.value = content;
 
-    if (miniTask.value.namespace) {
-      templateStore.indices.mapping = [];
-      await templateStore.refreshAvailableIndices(miniTask.value.namespace);
-    }
-
     error.value = '';
   } catch (err) {
     error.value = (err as Error).message;
@@ -371,20 +362,18 @@ const onNamespaceChanged = async (id: string) => {
   }
 
   miniTask.value.namespace = id;
-  templateStore.indices.mapping = [];
-  await templateStore.refreshAvailableIndices(id);
   await fetchMapping(indexInput.value);
 };
-const onIndexChanged = async () => {
+const onIndexChanged = async (index: string) => {
   if (!miniTask.value) {
     return;
   }
 
   miniTask.value.template.fetchOptions = {
     ...(miniTask.value.template.fetchOptions ?? {}),
-    index: indexInput.value,
+    index,
   };
-  await fetchMapping(indexInput.value);
+  await fetchMapping(index);
 };
 
 watch(
