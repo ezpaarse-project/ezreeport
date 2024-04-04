@@ -38,25 +38,24 @@
 
         <v-row>
           <v-col class="pt-0">
-            <v-list dense subheader>
-              <v-virtual-scroll
-                :items="autocompleteItems"
-                max-height="200"
-                item-height="40"
-              >
-                <template v-slot:default="{ item }">
-                  <v-list-item
-                    :key="item"
-                  >
-                    <v-list-item-title>
-                      <v-icon v-if="resolvedIndices.length > 0" color="primary" small>mdi-check</v-icon>
+            <v-virtual-scroll
+              :items="autocompleteItems"
+              max-height="200"
+              item-height="40"
+              bench="5"
+            >
+              <template v-slot:default="{ item }">
+                <v-list-item :key="item" dense>
+                  <v-list-item-action>
+                    <v-icon v-if="resolvedIndices.length > 0" color="primary" small>mdi-check</v-icon>
+                  </v-list-item-action>
 
-                      {{ item }}
-                    </v-list-item-title>
-                  </v-list-item>
-                </template>
-              </v-virtual-scroll>
-            </v-list>
+                  <v-list-item-content>
+                    <v-list-item-title>{{ item }}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+              </template>
+            </v-virtual-scroll>
           </v-col>
         </v-row>
       </v-card-text>
@@ -155,7 +154,7 @@ const autocompleteItems = computed(() => {
     const indices = templateStore.indices.available ?? [];
     return indices.filter((v) => v.includes(search.value.trim()));
   }
-  return resolvedIndices.value;
+  return [...resolvedIndices.value];
 });
 
 watch(
