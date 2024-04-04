@@ -3,7 +3,7 @@ name: Generate database documentation of report database
 on:
   push:
     branches:
-      - rc
+      - rc/*
     paths:
       - 'src/services/report/prisma/schema.prisma'
   workflow_dispatch:
