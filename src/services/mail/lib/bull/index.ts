@@ -77,3 +77,8 @@ worker.on('error', (err) => {
 workers.push(worker);
 logger.verbose(`[bull] Created worker [${worker.name}] with [${concurrence}] process and with [${maxExecTime}]ms before hanging`);
 logger.info(`[bull] Init completed in [${new Date().getTime() - start.getTime()}]ms`);
+
+export const redisPing = async () => {
+  const res = await (await mailQueue.client).ping();
+  return res === 'PONG';
+};
