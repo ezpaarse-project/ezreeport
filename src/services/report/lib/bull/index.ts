@@ -397,3 +397,17 @@ export const retryJob = async (queue: string, id: string) => {
     await getOneQueue(queue).getJob(id) ?? job,
   );
 };
+
+/**
+ * Ping redis host to check if it's alive
+ *
+ * @returns If ping is successful (200) or not
+ */
+export const redisPing = async () => {
+  const queue = queues.generation || queues.mail;
+  if (!queue) {
+    throw new Error('queues are not initialized');
+  }
+  const res = await (await queue.client).ping();
+  return res === 'PONG' ? 200 : false;
+};

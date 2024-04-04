@@ -6,10 +6,12 @@ import { appLogger as logger } from '~/lib/logger';
 
 import { name as serviceName } from '~/package.json';
 import { NotFoundError } from '~/types/errors';
+import { redisPing } from '~/lib/bull';
 
 const pingers: Record<string, () => Promise<number | false>> = {
   [serviceName]: () => Promise.resolve(200),
   elastic: elasticPing,
+  redis: redisPing,
 };
 
 export const services = new Set(Object.keys(pingers));
