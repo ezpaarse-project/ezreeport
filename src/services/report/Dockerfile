@@ -50,4 +50,7 @@ COPY --from=npm-builder /usr/build/report/node_modules ./node_modules
 COPY --from=prisma /usr/build/report/.prisma ./.prisma
 COPY . ./
 
+HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
+  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/health/ezreeport-report || exit 1
+
 CMD [ "npm", "run", "start" ]
