@@ -17,12 +17,21 @@ npm run setup
 
 - `master`:
   - Should be the version used on prod (vp)
-- `rc`:
+- `rc/*`:
   - Should be the version used on integ (vi)
-  - Versions are suffixed by `-rc`
+  - Versions are suffixed by `-rc.*`
 - `dev`:
   - Should be the version used on dev (vd)
-  - Versions are suffixed by `-beta`
+  - Versions are suffixed by `-beta.*`
+
+### Workflow
+
+Workflow used here is the same as Git Flow :
+
+- To make new changes : create a `feature/*` branch
+- Once feature is completed, make a [Pull Request](https://github.com/ezpaarse-project/ezreeport/compare) from your branch to the `dev` branch
+- Once a new version is ready, create a new `rc/*` branch and make a (draft) PR to the `master` branch
+- Once the new version is deployed, merge the PR
 
 ## Services
 
