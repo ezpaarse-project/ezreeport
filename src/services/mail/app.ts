@@ -6,7 +6,7 @@ import { appLogger } from '~/lib/logger';
 
 const server = http.createServer((req, res) => {
   Promise.all(
-    [...checks.services].map((s) => checks.ping(s)),
+    Array.from(checks.services).map((s) => checks.ping(s)),
   ).then(() => {
     res.writeHead(200);
     res.end('OK');
