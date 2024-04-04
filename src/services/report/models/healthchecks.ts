@@ -1,17 +1,20 @@
 import { setTimeout } from 'node:timers/promises';
 
-import { elasticPing } from '~/lib/elastic';
 import { differenceInMilliseconds } from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
 
+import { elasticPing } from '~/lib/elastic';
+import { redisPing } from '~/lib/bull';
+import { dbPing } from '~/lib/prisma';
+
 import { name as serviceName } from '~/package.json';
 import { NotFoundError } from '~/types/errors';
-import { redisPing } from '~/lib/bull';
 
 const pingers: Record<string, () => Promise<number | false>> = {
   [serviceName]: () => Promise.resolve(200),
   elastic: elasticPing,
   redis: redisPing,
+  database: dbPing,
 };
 
 export const services = new Set(Object.keys(pingers));
