@@ -40,6 +40,7 @@
     "axios": "^1.6.4",
     "bullmq": "^5.1.1",
     "canvas": "^2.11.2",
+    "chroma-js": "^2.4.2",
     "config": "^3.3.9",
     "date-fns": "^3.0.6",
     "fastify": "^4.25.2",
@@ -59,6 +60,7 @@
     "winston": "^3.11.0"
   },
   "devDependencies": {
+    "@types/chroma-js": "^2.4.4",
     "@types/config": "^3.3.3",
     "@types/lodash": "^4.14.202",
     "@types/node": "^20.10.6",
