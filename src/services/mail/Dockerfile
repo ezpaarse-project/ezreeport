@@ -12,4 +12,6 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 COPY . ./
 
+HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
+  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
 CMD [ "npm", "run", "start" ]

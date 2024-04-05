@@ -1,8 +1,11 @@
 import { setTimeout } from 'node:timers/promises';
 
-import { elasticPing } from '~/lib/elastic';
 import { differenceInMilliseconds } from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
+
+import { elasticPing } from '~/lib/elastic';
+import { redisPing } from '~/lib/bull';
+import { dbPing } from '~/lib/prisma';
 
 import { name as serviceName } from '~/package.json';
 import { NotFoundError } from '~/types/errors';
@@ -10,11 +13,11 @@ import { NotFoundError } from '~/types/errors';
 const pingers: Record<string, () => Promise<number | false>> = {
   [serviceName]: () => Promise.resolve(200),
   elastic: elasticPing,
+  redis: redisPing,
+  database: dbPing,
 };
 
 export const services = new Set(Object.keys(pingers));
-
-type Service = keyof typeof pingers;
 
 interface Pong {
   name: string;
@@ -38,7 +41,7 @@ interface ErrorPong extends Pong {
  *
  * @returns Service is valid
  */
-export const isService = (service: string): service is Service => {
+export const isService = (service: string) => {
   if (!services.has(service)) {
     throw new NotFoundError(`Service [${service}] not found`);
   }
@@ -53,7 +56,7 @@ export const isService = (service: string): service is Service => {
  * @returns Ping result
  */
 export const ping = async (
-  service: Service,
+  service: string,
   timeout = 3000,
 ): Promise<SuccessfulPong | ErrorPong> => {
   const start = new Date();
