@@ -1,3 +1,27 @@
+# @ezpaarse-project/ezreeport-vue [1.1.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0...@ezpaarse-project/ezreeport-vue@1.1.0-beta.1) (2024-04-05)
+
+
+### Bug Fixes
+
+* **vue:** fixed empty scroller in index selector ([1eeba54](https://github.com/ezpaarse-project/ezreeport/commit/1eeba5450e927d31042852bdb3f21065aba2e29c))
+* **vue:** fixed issue when openning tasks from activity ([d0891f5](https://github.com/ezpaarse-project/ezreeport/commit/d0891f5faeabdcbbfaae8762cc47e370da4d8b0f))
+* **vue:** fixed issue where generation dialogue wasn't reset ([37bc038](https://github.com/ezpaarse-project/ezreeport/commit/37bc03810233593058c77adf901f957ac94def89))
+* **vue:** fixed weird error alert in elastic index ([a3f7d76](https://github.com/ezpaarse-project/ezreeport/commit/a3f7d766885a44346e3e7db4ec6b1960a951e699))
+
+
+### Features
+
+* **vue:** redone index selector ([9e61abd](https://github.com/ezpaarse-project/ezreeport/commit/9e61abdc5a0fb9ad4fbf0263230706935b50e983))
+* **vue:** show errors in index selector ([5740cea](https://github.com/ezpaarse-project/ezreeport/commit/5740cea0d5105d36063c5d0b718a0e46ef9d61b7))
+
+
+
+
+
+### Dependencies
+
+* **@ezpaarse-project/ezreeport-sdk-js:** upgraded to 1.1.0-beta.1
+
 # @ezpaarse-project/ezreeport-vue 1.0.0 (2024-02-16)
 
 
