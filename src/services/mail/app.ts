@@ -17,5 +17,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(8080, 'localhost', () => {
-  appLogger.info('Server running on http://localhost:3000');
+  appLogger.info('Server running on http://localhost:8080');
 });

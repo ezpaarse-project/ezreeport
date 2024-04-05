@@ -13,7 +13,7 @@ const pingers = {
 
 type Service = keyof typeof pingers;
 
-export const services = new Set(Object.keys(pingers));
+export const services = new Set(Object.keys(pingers) as Service[]);
 
 /**
  * Exec ping & calculate time taken.
