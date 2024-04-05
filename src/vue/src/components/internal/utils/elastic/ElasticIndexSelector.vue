@@ -30,6 +30,10 @@
 
     <v-card :loading="loading">
       <v-card-text>
+        <v-alert v-if="error" type="error">
+          {{ error }}
+        </v-alert>
+
         <v-row>
           <v-col>
             {{ $tc('nMatchedIndex', resolvedIndices.length) }}
@@ -91,8 +95,14 @@ const { $t, $tc } = useI18n();
 
 const focused = ref(false);
 const loading = ref(false);
+const error = ref<Error | null>(null);
 const search = ref(props.value);
 const resolvedIndices = ref<string[]>([]);
+
+const setError = (err: Error) => {
+  error.value = err;
+  setTimeout(() => { error.value = null; }, 5000);
+};
 
 const resolveSearch = async () => {
   if (!search.value) {
@@ -108,8 +118,8 @@ const resolveSearch = async () => {
     if (resolvedIndices.value.length > 0) {
       emit('input', search.value);
     }
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    setError(err as Error);
   }
   loading.value = false;
 };
@@ -121,8 +131,8 @@ const onMenuVisibilityChange = async (value: boolean) => {
     loading.value = true;
     try {
       await templateStore.refreshAvailableIndices(props.namespace);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      setError(err as Error);
     }
     loading.value = false;
 
@@ -166,8 +176,8 @@ watch(
   async (value) => {
     try {
       await templateStore.refreshAvailableIndices(value);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      setError(err as Error);
     }
   },
 );
@@ -177,8 +187,8 @@ watch(
 en:
   nMatchedIndex: 'Your selection includes 1 index|Your selection includes {n} indices'
   errors:
-    invalidChars: "The expression contains spaces or forbidden characters like :"
-    required: "Your selection must include at least one index"
+    invalidChars: 'The expression contains spaces or forbidden characters like :'
+    required: 'Your selection must include at least one index'
 fr:
   nMatchedIndex: 'Votre sélection inclue 1 index|Votre sélection inclue {n} indices'
   errors:
