@@ -1,4 +1,4 @@
-name: Generate database documentation of report database
+name: Generate migration of report database
 
 on:
   push:
