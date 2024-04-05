@@ -3,7 +3,7 @@ name: Build and Deploy SDK documentation
 on:
   push:
     branches:
-      - $default-branch
+      - master
     paths:
       - '.github/workflows/sdk-doc.yml'
       - 'src/sdk/**'

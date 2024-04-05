@@ -2,8 +2,8 @@ name: Generate migration of report database
 
 on:
   push:
-    branches:
-      - rc/*
+    tags:
+      - '*.rc*'
     paths:
       - 'src/services/report/prisma/schema.prisma'
   workflow_dispatch:
