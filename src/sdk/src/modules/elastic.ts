@@ -29,3 +29,18 @@ export const getIndexMapping = (
   index: string,
   namespace?: Namespace['id'],
 ) => axios.$get<Record<string, string>>(`/elastic/indices/${index}`, { params: { namespace } });
+
+/**
+ * Resolve index to get list of matched indices
+ *
+ * Needs `namespaces[namespaceId].elastic-get-indices-_resolve-index` permission
+ *
+ * @param index The index (can be a wildcard)
+ * @param namespace The concerned namespace. **Needed if not admin**
+ *
+ * @returns The list of available indices
+ */
+export const resolveIndex = (
+  index: string,
+  namespace?: Namespace['id'],
+) => axios.$get<string[]>(`/elastic/indices/_resolve/${index}`, { params: { namespace } });
