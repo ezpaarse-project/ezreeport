@@ -1,3 +1,10 @@
+# @ezpaarse-project/ezreeport-sdk-js [1.1.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0...@ezpaarse-project/ezreeport-sdk-js@1.1.0-beta.1) (2024-04-05)
+
+
+### Features
+
+* **sdk:** added method to resolve elastic index ([4bbd9ac](https://github.com/ezpaarse-project/ezreeport/commit/4bbd9ac77ea4622b43fc94a25b05d4bb353fde78))
+
 # @ezpaarse-project/ezreeport-sdk-js 1.0.0 (2024-02-16)
 
 
