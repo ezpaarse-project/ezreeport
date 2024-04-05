@@ -1,3 +1,17 @@
+# ezreeport-mail [1.1.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.0.0...ezreeport-mail@1.1.0-beta.1) (2024-04-05)
+
+
+### Bug Fixes
+
+* fixed types of healthchecks ([dbc3df6](https://github.com/ezpaarse-project/ezreeport/commit/dbc3df62a8cd553ae898c4f59171e7b27de3d48e))
+* **mail:** fixed port shown in logs ([126d29f](https://github.com/ezpaarse-project/ezreeport/commit/126d29fd68e7fcc2e40c534408f6f15766d1f093))
+
+
+### Features
+
+* **mail:** added healthchecks to mail service ([ca23282](https://github.com/ezpaarse-project/ezreeport/commit/ca23282dfaa90c1186173eb1f98ec04d6ba43273))
+* **mail:** added namespace in mails ([4fea5cb](https://github.com/ezpaarse-project/ezreeport/commit/4fea5cb184e16bfe7200b56830ad92c18832b25d))
+
 # ezreeport-mail 1.0.0 (2024-02-16)
 
 
