@@ -31,7 +31,7 @@
     <v-card :loading="loading">
       <v-card-text>
         <v-alert v-if="error" type="error">
-          {{ error }}
+          {{ error.message }}
         </v-alert>
 
         <v-row>
