@@ -234,12 +234,10 @@ export const elasticResolveIndex = async (index: string, runAs?: string) => {
       { headers },
     );
 
-    const indices = new Set([
+    return [
       ...body.indices.map((i) => i.name),
       ...body.aliases.map((a) => a.name),
-    ].sort((a, b) => a.localeCompare(b)));
-
-    return Array.from(indices);
+    ].sort((a, b) => a.localeCompare(b));
   } catch (error) {
     const elasticError = error as ({ meta?: { body?: { error?: { type?: string } } } } & Error);
     if (elasticError.meta?.body?.error?.type === 'security_exception') {
