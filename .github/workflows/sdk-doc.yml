@@ -3,17 +3,20 @@ name: Build and Deploy SDK documentation
 on:
   push:
     branches:
-      - master
+      - $default-branch
     paths:
       - '.github/workflows/sdk-doc.yml'
       - 'src/sdk/**'
   workflow_dispatch:
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
-  build-and-deploy:
+  build:
     permissions:
-      contents: write
-    concurrency: ci-${{ github.ref }}
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
@@ -25,14 +28,32 @@ jobs:
             node-version-file: .nvmrc
             cache: npm
 
+      - name: Setup Pages ⚙️
+        uses: actions/configure-pages@v5
+        with:
+          static_site_generator: 'static'
+
       - name: Install dependencies ⚙️
         run: npm ci --prefix src/sdk
 
       - name: Build documentation 🔧
         run: npm run build:docs --prefix src/sdk
 
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Upload artifact 🚚
+        uses: actions/upload-pages-artifact@v3
         with:
-          folder: src/sdk/docs
-          target-folder: sdk-js
+          path: src/sdk/docs
+
+  deploy:
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy 🚀
+        id: deployment
+        uses: actions/deploy-pages@v4
