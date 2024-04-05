@@ -6,14 +6,14 @@ import { redisPing } from '~/lib/bull';
 import { SMTPPing } from '~/lib/mail';
 import { appLogger as logger } from '~/lib/logger';
 
-const pingers: Record<string, () => Promise<boolean>> = {
+const pingers = {
   smtp: SMTPPing,
   redis: redisPing,
-};
-
-export const services = new Set(Object.keys(pingers));
+} satisfies Record<string, () => Promise<boolean>>;
 
 type Service = keyof typeof pingers;
+
+export const services = new Set(Object.keys(pingers));
 
 /**
  * Exec ping & calculate time taken.

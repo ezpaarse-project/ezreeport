@@ -19,8 +19,6 @@ const pingers: Record<string, () => Promise<number | false>> = {
 
 export const services = new Set(Object.keys(pingers));
 
-type Service = keyof typeof pingers;
-
 interface Pong {
   name: string;
   status: boolean;
@@ -43,7 +41,7 @@ interface ErrorPong extends Pong {
  *
  * @returns Service is valid
  */
-export const isService = (service: string): service is Service => {
+export const isService = (service: string) => {
   if (!services.has(service)) {
     throw new NotFoundError(`Service [${service}] not found`);
   }
@@ -58,7 +56,7 @@ export const isService = (service: string): service is Service => {
  * @returns Ping result
  */
 export const ping = async (
-  service: Service,
+  service: string,
   timeout = 3000,
 ): Promise<SuccessfulPong | ErrorPong> => {
   const start = new Date();
