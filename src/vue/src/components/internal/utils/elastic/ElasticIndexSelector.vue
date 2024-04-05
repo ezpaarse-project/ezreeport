@@ -150,10 +150,11 @@ const emptyRule = computed(() => {
 });
 
 const innerRules = computed(() => {
-  const invalidChars = /[\\/?"<>|\s]/i;
+  const invalidChars = ['\\', '/', '?', '"', '<', '>', '|'];
+  const invalidCharsRegex = new RegExp(`[${invalidChars.join('')}\\s]`, 'i');
 
   return [
-    (v: string) => !invalidChars.test(v) || `${$t('errors.invalidChars')} \\ / ? " > < |`,
+    (v: string) => !invalidCharsRegex.test(v) || `${$t('errors.invalidChars')} ${invalidChars.join(' ')}`,
     emptyRule.value,
     ...(props.rules ?? []),
   ];
@@ -187,11 +188,11 @@ watch(
 en:
   nMatchedIndex: 'Your selection includes 1 index|Your selection includes {n} indices'
   errors:
-    invalidChars: 'The expression contains spaces or forbidden characters like :'
+    invalidChars: 'The expression contains spaces or forbidden characters like:'
     required: 'Your selection must include at least one index'
 fr:
-  nMatchedIndex: 'Votre sélection inclue 1 index|Votre sélection inclue {n} indices'
+  nMatchedIndex: 'Votre sélection inclut 1 index|Votre sélection inclut {n} indices'
   errors:
     invalidChars: "L'expression utilise des espaces ou des caractères interdits comme :"
-    required: "Votre sélection doit inclure au moins un index"
+    required: 'Votre sélection doit inclure au moins un index'
 </i18n>
