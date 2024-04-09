@@ -16,11 +16,11 @@ RUN corepack enable
 FROM base AS pnpm
 WORKDIR /usr/build
 
-COPY . .
-
 # Install node-canvas build dependencies
 # see https://github.com/Automattic/node-canvas/issues/866
 RUN apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev giflib-dev
+
+COPY . .
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
