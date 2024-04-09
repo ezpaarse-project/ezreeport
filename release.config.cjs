@@ -7,6 +7,9 @@ module.exports = {
   ci: false,
   tagFormat: `${process.env.PNPM_PACKAGE_NAME}@\${version}`,
   plugins: [
+    '@semantic-release/commit-analyzer',
+    '@semantic-release/release-notes-generator',
+    '@semantic-release/changelog',
     ['@semantic-release/git', { assets: ['CHANGELOG.md'] }],
   ],
   branches: [
