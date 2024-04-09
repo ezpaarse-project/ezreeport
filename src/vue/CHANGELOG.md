@@ -1,3 +1,38 @@
+# [1.1.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0...@ezpaarse-project/ezreeport-vue@1.1.0-rc.1) (2024-04-09)
+
+
+### Bug Fixes
+
+* fixed types of healthchecks ([dbc3df6](https://github.com/ezpaarse-project/ezreeport/commit/dbc3df62a8cd553ae898c4f59171e7b27de3d48e))
+* **mail:** fixed port shown in logs ([126d29f](https://github.com/ezpaarse-project/ezreeport/commit/126d29fd68e7fcc2e40c534408f6f15766d1f093))
+* **report:** added env vars for elasticsearch ([f6f8f96](https://github.com/ezpaarse-project/ezreeport/commit/f6f8f962ff6b77e064c728550a5baa72b8e1ca76))
+* **report:** fixed issue where a same color could be used multiple times in a figure ([6a40012](https://github.com/ezpaarse-project/ezreeport/commit/6a40012bc3497b5a584782caaa5fbc19aa3a09d6))
+* **vue:** fixed empty scroller in index selector ([1eeba54](https://github.com/ezpaarse-project/ezreeport/commit/1eeba5450e927d31042852bdb3f21065aba2e29c))
+* **vue:** fixed issue when openning tasks from activity ([d0891f5](https://github.com/ezpaarse-project/ezreeport/commit/d0891f5faeabdcbbfaae8762cc47e370da4d8b0f))
+* **vue:** fixed issue where generation dialogue wasn't reset ([37bc038](https://github.com/ezpaarse-project/ezreeport/commit/37bc03810233593058c77adf901f957ac94def89))
+* **vue:** fixed weird error alert in elastic index ([a3f7d76](https://github.com/ezpaarse-project/ezreeport/commit/a3f7d766885a44346e3e7db4ec6b1960a951e699))
+
+
+### Features
+
+* **mail:** added healthchecks to mail service ([ca23282](https://github.com/ezpaarse-project/ezreeport/commit/ca23282dfaa90c1186173eb1f98ec04d6ba43273))
+* **mail:** added namespace in mails ([4fea5cb](https://github.com/ezpaarse-project/ezreeport/commit/4fea5cb184e16bfe7200b56830ad92c18832b25d))
+* **report:** added database to health routes ([f843546](https://github.com/ezpaarse-project/ezreeport/commit/f843546085edced0f676578e14ba4377bd243ff0))
+* **report:** added namespace of task into mail data ([3490b78](https://github.com/ezpaarse-project/ezreeport/commit/3490b7848bed7716c13018770e19944efccadc19))
+* **report:** added redis to health routes ([cf3aa27](https://github.com/ezpaarse-project/ezreeport/commit/cf3aa2744be0b74585065eb46c8fa814a6107cc5))
+* **report:** added route to resolve index expression ([e649a02](https://github.com/ezpaarse-project/ezreeport/commit/e649a02fcea94a135ed376a5bed6d636328ee106))
+* **report:** do a union of the mapping instead of an intersection ([5f64ac8](https://github.com/ezpaarse-project/ezreeport/commit/5f64ac8ac9710ac9f4d18c2a7d0c2efb084c9eec))
+* **report:** fonts are now defined in config ([8f82aad](https://github.com/ezpaarse-project/ezreeport/commit/8f82aad2151a1b580d8f5dc74b2ea721688bc648))
+* **report:** using current vega scheme to generate labels colors ([044b6be](https://github.com/ezpaarse-project/ezreeport/commit/044b6be1a3acde237a39de82dfe37365059d3773))
+* **sdk:** added method to resolve elastic index ([4bbd9ac](https://github.com/ezpaarse-project/ezreeport/commit/4bbd9ac77ea4622b43fc94a25b05d4bb353fde78))
+* **vue:** redone index selector ([9e61abd](https://github.com/ezpaarse-project/ezreeport/commit/9e61abdc5a0fb9ad4fbf0263230706935b50e983))
+* **vue:** show errors in index selector ([5740cea](https://github.com/ezpaarse-project/ezreeport/commit/5740cea0d5105d36063c5d0b718a0e46ef9d61b7))
+
+
+### Performance Improvements
+
+* **report:** removed set when resolving index ([4e3aee3](https://github.com/ezpaarse-project/ezreeport/commit/4e3aee37bd7813fb16b8ccefbbd4e4652b7bbfc1))
+
 # @ezpaarse-project/ezreeport-vue [1.1.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.0.0...@ezpaarse-project/ezreeport-vue@1.1.0-beta.1) (2024-04-05)
 
 
