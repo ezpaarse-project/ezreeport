@@ -40,7 +40,8 @@ services:
 
   report:
     build:
-      context: ./src/services/report
+      context: .
+      target: report
     volumes:
       - ./data/report:/data/ezreeport/report # Report output
       - ./logs/report:/var/log/ezreeport/report # Logs output
@@ -93,7 +94,8 @@ services:
 
   mail:
     build:
-      context: ./src/services/mail
+      context: .
+      target: mail
     volumes:
       - ./logs/mail:/var/log/ezreeport/mail # Logs output
     environment:
