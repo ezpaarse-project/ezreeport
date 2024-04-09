@@ -3,3 +3,5 @@ packages:
   - "src/services/mail"
   - "src/sdk"
   - "src/vue"
+  - "src/vue/example"
+  - "tests"
