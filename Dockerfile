@@ -58,7 +58,7 @@ COPY --from=report-prisma /usr/build/report-dev/.prisma ./.prisma
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
   CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/health/ezreeport-report || exit 1
 
-CMD [ "pnpm", "run", "start" ]
+CMD [ "npm", "run", "start" ]
 
 # ==== MAIL
 
@@ -72,7 +72,7 @@ COPY --from=pnpm /usr/build/mail .
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
   CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
 
-CMD [ "pnpm", "run", "start" ]
+CMD [ "npm", "run", "start" ]
 
 # ==== VUE DOC
 
