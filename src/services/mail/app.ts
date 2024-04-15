@@ -11,6 +11,7 @@ const server = http.createServer((req, res) => {
     res.writeHead(200);
     res.end('OK');
   }).catch((err) => {
+    appLogger.error(`Error when getting services: ${err}`);
     res.writeHead(500);
     res.end(`ERROR: ${err}`);
   });

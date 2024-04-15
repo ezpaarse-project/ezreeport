@@ -14,5 +14,6 @@
 
     // Used by TypeScript
     "resolveJsonModule": true,
+    "esModuleInterop": true
   }
 }
