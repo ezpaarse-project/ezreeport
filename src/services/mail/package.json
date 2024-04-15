@@ -1,12 +1,12 @@
 {
   "name": "ezreeport-mail",
   "private": true,
-  "version": "1.1.0-beta.1",
+  "version": "1.1.0-rc.1",
   "description": "",
   "main": "app.ts",
   "scripts": {
-    "start": "ts-node --transpile-only app.ts",
-    "dev": "nodemon app.ts",
+    "start": "tsx app.ts",
+    "dev": "tsx watch --inspect=0.0.0.0 app.ts",
     "lint": "eslint --fix .",
     "test": "npm -w ezreeport-tests run test:mail"
   },
@@ -32,8 +32,7 @@
     "mjml": "^4.14.1",
     "nodemailer": "^6.9.8",
     "nunjucks": "^3.2.4",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.7.2",
     "typescript": "^5.3.3",
     "winston": "^3.11.0"
   },
@@ -42,8 +41,7 @@
     "@types/mjml": "^4.7.4",
     "@types/node": "^20.10.6",
     "@types/nodemailer": "^6.4.14",
-    "@types/nunjucks": "^3.2.6",
-    "nodemon": "^3.0.2"
+    "@types/nunjucks": "^3.2.6"
   },
   "engines": {
     "node": "^18"

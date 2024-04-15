@@ -5,12 +5,13 @@ Reporting service for ezMESURE/ezCOUNTER
 ## Prerequisites
 * [docker](https://www.docker.com/)
 * [docker-compose](https://docs.docker.com/compose/)
+* [pnpm](https://pnpm.io/)
 
 ## Installation
 
 ```bash
 git clone https://github.com/ezpaarse-project/ezreeport.git
-npm run setup
+pnpm i
 ```
 
 ## Main branches
@@ -55,6 +56,7 @@ Workflow used here is the same as Git Flow :
 
 ```bash
 source ezreeport.env.sh
+docker compose -f docker-compose.yml pull
 docker compose -f docker-compose.migrate.yml up -d
 docker compose -f docker-compose.yml up -d
 ```
@@ -63,6 +65,7 @@ docker compose -f docker-compose.yml up -d
 
 ```bash
 source ezreeport.env.sh
+docker compose -f docker-compose.yml -f docker-compose.debug.yml pull
 docker compose -f docker-compose.migrate.yml up -d
 docker compose -f docker-compose.yml -f docker-compose.debug.yml up -d
 ```
@@ -79,7 +82,16 @@ npm test
 
 ```bash
 # Test, and build a first time to test
-# Generate changelogs, etc. as it will bump version
-npm run publish
-# Build and push to registries
+
+# Generate changelogs, etc. as it will bump version (called tag later)
+pnpm run publish
+
+# Build and push report + mail on github registry
+docker build --target $SERVICE -t ezreeport/$SERVICE:$TAG .
+docker tag ezreeport/$SERVICE:$TAG ghcr.io/ezpaarse-project/ezreeport-$SERVICE:$TAG
+docket push ghcr.io/ezpaarse-project/ezreeport-$SERVICE:$TAG
+
+# Build and push sdk -> vue on npm
+pnpm --filter $PACKAGE run build
+pnpm --filter $PACKAGE publish --access public
 ```

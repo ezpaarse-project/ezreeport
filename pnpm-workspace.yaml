@@ -1,0 +1,7 @@
+packages:
+  - "src/services/report"
+  - "src/services/mail"
+  - "src/sdk"
+  - "src/vue"
+  - "src/vue/example"
+  - "tests"

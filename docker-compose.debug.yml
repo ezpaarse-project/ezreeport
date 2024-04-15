@@ -11,18 +11,18 @@ services:
 
   report:
     image: node:18.17.0
-    working_dir: /usr/src/report
+    working_dir: /usr/dev/src/services/report
     volumes:
-      - ./src/services/report:/usr/src/report
+      - .:/usr/dev
     command: "npm run dev"
     ports:
       - 9230:9229 # Debug port
 
   mail:
     image: node:18.17.0
-    working_dir: /usr/src/mail
+    working_dir: /usr/dev/src/services/mail
     volumes:
-      - ./src/services/mail:/usr/src/mail
+      - .:/usr/dev
     command: "npm run dev"
     ports:
       - 9231:9229 # Debug port
