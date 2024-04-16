@@ -30,19 +30,16 @@ jobs:
           node-version-file: .nvmrc
           cache: 'pnpm'
 
-      - name: Install dependencies ⚙️
-        run: pnpm install --frozen-lockfile
-
       - name: Setup Pages ⚙️
         uses: actions/configure-pages@v5
         with:
           static_site_generator: 'static'
 
       - name: Install dependencies ⚙️
-        run: npm ci --prefix src/sdk
+        run: pnpm install --frozen-lockfile
 
       - name: Build documentation 🔧
-        run: npm run build:docs --prefix src/sdk
+        run: pnpm --filter @ezpaarse-project/ezreeport-sdk-js run build:docs
 
       - name: Upload artifact 🚚
         uses: actions/upload-pages-artifact@v3

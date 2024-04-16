@@ -47,9 +47,6 @@ jobs:
       - name: Install dependencies ⚙️
         run: pnpm install --frozen-lockfile
 
-      - name: Install dependencies ⚙️
-        run: npm ci
-
       - name: Commit files 🚀
         run: |
           HUSKY=0
