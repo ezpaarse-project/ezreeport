@@ -17,6 +17,7 @@
   "scripts": {
     "dev": "tsx watch --inspect=0.0.0.0 app.ts",
     "lint": "eslint --fix .",
+    "db:install": "npm i -g prisma@^5.7.1",
     "db:gui": "prisma studio",
     "db:migrate": "prisma migrate deploy",
     "start": "tsx app.ts",
