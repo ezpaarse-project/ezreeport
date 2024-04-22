@@ -1,7 +1,7 @@
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
 import { createTemplate, getTemplateByName } from '~/models/templates';
-import { createNamespace, getCountNamespaces } from './models/namespaces';
+import { createNamespace, getCountNamespaces } from '~/models/namespaces';
 
 const { name: defaultTemplateName } = config.defaultTemplate;
 

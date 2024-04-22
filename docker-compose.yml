@@ -40,7 +40,8 @@ services:
 
   report:
     build:
-      context: ./src/services/report
+      context: .
+      target: report
     volumes:
       - ./data/report:/data/ezreeport/report # Report output
       - ./logs/report:/var/log/ezreeport/report # Logs output
@@ -90,16 +91,11 @@ services:
           limits:
             memory: ${REPORT_MEM_LIMIT:-7}G
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/health/${REPORT_PACKAGE_NAME} || exit 1"]
-      interval: 60s
-      timeout: 10s
-      retries: 5
-      start_period: 20s
 
   mail:
     build:
-      context: ./src/services/mail
+      context: .
+      target: mail
     volumes:
       - ./logs/mail:/var/log/ezreeport/mail # Logs output
     environment:

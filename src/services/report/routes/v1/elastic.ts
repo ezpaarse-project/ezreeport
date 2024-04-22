@@ -3,7 +3,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import authPlugin from '~/plugins/auth';
 
 import { Type, type Static } from '~/lib/typebox';
-import { elasticIndexMapping, elasticListIndices } from '~/lib/elastic';
+import { elasticIndexMapping, elasticListIndices, elasticResolveIndex } from '~/lib/elastic';
 
 import { Access } from '~/models/access';
 import { getReportingUserFromNamespace } from '~/models/namespaces';
@@ -99,6 +99,46 @@ const router: FastifyPluginAsync = async (fastify) => {
 
       const mapping = await elasticIndexMapping(index, elasticUser);
       return { content: mapping };
+    },
+  );
+  /**
+   * Resolve index expression to list of index
+   */
+  fastify.get<{
+    Querystring: IndexQueryType,
+    Params: SpecificIndexParamsType
+  }>(
+    '/indices/_resolve/:index',
+    {
+      schema: {
+        querystring: IndexQuery,
+        params: SpecificIndexParams,
+      },
+      ezrAuth: {
+        access: Access.READ_WRITE,
+      },
+    },
+    async (request) => {
+      const { index } = request.params;
+      const { namespace = '' } = request.query;
+
+      if (!request.user?.isAdmin) {
+        if (!namespace) {
+          throw new ArgumentError('You must provide a namespace id');
+        }
+
+        if (!request.namespaceIds?.includes(namespace)) {
+          throw new ArgumentError("The provided namespace id doesn't match your namespaces");
+        }
+      }
+
+      let elasticUser: string | undefined;
+      if (namespace) {
+        elasticUser = await getReportingUserFromNamespace(namespace);
+      }
+
+      const indices = await elasticResolveIndex(index, elasticUser);
+      return { content: indices };
     },
   );
 };

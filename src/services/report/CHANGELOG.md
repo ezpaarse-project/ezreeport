@@ -1,3 +1,27 @@
+# ezreeport-report [1.1.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.1...ezreeport-report@1.1.0-beta.1) (2024-04-05)
+
+
+### Bug Fixes
+
+* fixed types of healthchecks ([dbc3df6](https://github.com/ezpaarse-project/ezreeport/commit/dbc3df62a8cd553ae898c4f59171e7b27de3d48e))
+* **report:** fixed issue where a same color could be used multiple times in a figure ([6a40012](https://github.com/ezpaarse-project/ezreeport/commit/6a40012bc3497b5a584782caaa5fbc19aa3a09d6))
+
+
+### Features
+
+* **report:** added database to health routes ([f843546](https://github.com/ezpaarse-project/ezreeport/commit/f843546085edced0f676578e14ba4377bd243ff0))
+* **report:** added namespace of task into mail data ([3490b78](https://github.com/ezpaarse-project/ezreeport/commit/3490b7848bed7716c13018770e19944efccadc19))
+* **report:** added redis to health routes ([cf3aa27](https://github.com/ezpaarse-project/ezreeport/commit/cf3aa2744be0b74585065eb46c8fa814a6107cc5))
+* **report:** added route to resolve index expression ([e649a02](https://github.com/ezpaarse-project/ezreeport/commit/e649a02fcea94a135ed376a5bed6d636328ee106))
+* **report:** do a union of the mapping instead of an intersection ([5f64ac8](https://github.com/ezpaarse-project/ezreeport/commit/5f64ac8ac9710ac9f4d18c2a7d0c2efb084c9eec))
+* **report:** fonts are now defined in config ([8f82aad](https://github.com/ezpaarse-project/ezreeport/commit/8f82aad2151a1b580d8f5dc74b2ea721688bc648))
+* **report:** using current vega scheme to generate labels colors ([044b6be](https://github.com/ezpaarse-project/ezreeport/commit/044b6be1a3acde237a39de82dfe37365059d3773))
+
+
+### Performance Improvements
+
+* **report:** removed set when resolving index ([4e3aee3](https://github.com/ezpaarse-project/ezreeport/commit/4e3aee37bd7813fb16b8ccefbbd4e4652b7bbfc1))
+
 ## ezreeport-report [1.0.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.0...ezreeport-report@1.0.1) (2024-02-19)
 
 

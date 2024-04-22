@@ -5,7 +5,6 @@ on:
     branches:
       - master
     paths:
-      - '.github/workflows/sdk-doc.yml'
       - 'src/sdk/**'
   workflow_dispatch:
 
@@ -22,11 +21,14 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
+      - name: Setup pnpm ⚙️
+        uses: pnpm/action-setup@v3
+
       - name: Setup Node ⚙️
         uses: actions/setup-node@v4
         with:
-            node-version-file: .nvmrc
-            cache: npm
+          node-version-file: .nvmrc
+          cache: 'pnpm'
 
       - name: Setup Pages ⚙️
         uses: actions/configure-pages@v5
@@ -34,10 +36,10 @@ jobs:
           static_site_generator: 'static'
 
       - name: Install dependencies ⚙️
-        run: npm ci --prefix src/sdk
+        run: pnpm install --frozen-lockfile
 
       - name: Build documentation 🔧
-        run: npm run build:docs --prefix src/sdk
+        run: pnpm --filter @ezpaarse-project/ezreeport-sdk-js run build:docs
 
       - name: Upload artifact 🚚
         uses: actions/upload-pages-artifact@v3

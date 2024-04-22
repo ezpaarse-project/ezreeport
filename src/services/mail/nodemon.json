@@ -1,9 +1,0 @@
-{
-  "ignore": [
-    "data/**"
-  ],
-  "ext": "ts,js,json,mjml",
-  "execMap": {
-    "ts": "node --inspect=0.0.0.0 -r ts-node/register"
-  }
-}

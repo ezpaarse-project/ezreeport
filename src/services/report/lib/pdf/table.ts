@@ -91,7 +91,7 @@ export const addTableToPDF = async (
     const font = doc.pdf.getFont();
 
     doc.pdf
-      .setFont('Roboto', 'bold')
+      .setFont(doc.fontFamily, 'bold')
       .setFontSize(10);
 
     const { h } = doc.pdf.getTextDimensions(

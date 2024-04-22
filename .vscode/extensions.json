@@ -12,7 +12,6 @@
 			"mikestead.dotenv",
 			"streetsidesoftware.code-spell-checker-french",
 			"prisma.prisma",
-			"vue.volar",
-			"vue.vscode-typescript-vue-plugin"
+			"vue.volar"
 		]
 }

@@ -582,6 +582,7 @@ const router: FastifyPluginAsync = async (fastify) => {
           namespaceId: item.namespace.id,
           targets: testEmails || item.targets,
         },
+        namespace: item.namespace,
         customPeriod,
         origin: request.user?.username ?? '',
         writeActivity: testEmails.length <= 0,
