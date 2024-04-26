@@ -4,7 +4,7 @@
     bottom
     offset-y
     nudge-bottom="10"
-    open-on-hover
+    open-on-focus
     @input="onMenuVisibilityChangeDebounced"
   >
     <template #activator="{ on, attrs }">
@@ -191,20 +191,20 @@ watch(
 <i18n lang="yaml">
 en:
   inputHelp: Use an asterisk (*) to match multiple indices of your repositories. Spaces and the characters {chars} are not allowed.
-  nMatchedIndex: 'Your expression includes 1 index. Please refer to your profile to view your repositories.|Your expression includes {n} indices. Please refer to your profile to view your repositories.'
+  nMatchedIndex: 'The expression includes 1 index from your repositories.|The expression includes {n} indices from your repositories.'
   index:
     matched: Included
     name: Index
   errors:
     invalidChars: 'The expression contains spaces or forbidden characters like:'
-    required: 'Your expression must include at least one of your index'
+    required: 'The expression must include at least one of your index from your repositories.'
 fr:
   inputHelp: Utilisez un astérisque (*) pour récupérer plusieurs index de vos entrepôts. Les espaces et les caractères {chars} ne sont pas autorisés.
-  nMatchedIndex: 'Votre motif inclut 1 index. Référez vous à votre profil pour visualiser vos entrepôts.|Votre motif inclut {n} index. Référez vous à votre profil pour visualiser vos entrepôts.'
+  nMatchedIndex: 'Le motif inclut 1 index parmi vos entrepôts.|Le motif inclut {n} index parmi vos entrepôts.'
   index:
     matched: Inclus
     name: Index
   errors:
     invalidChars: "L'motif utilise des espaces ou des caractères interdits comme :"
-    required: 'Votre motif doit inclure au moins un de vos index'
+    required: 'Le motif doit inclure au moins un de vos index parmi vos entrepôts.'
 </i18n>

@@ -123,7 +123,7 @@
     "title": "Options de récupération",
     "aggName": "Nom de l'agrégation",
     "aggSummary": "{type} sur {field}",
-    "index": "Index Elastic",
+    "index": "Expression Elastic",
     "dateField": "Champ 'date' de l'index",
     "filters": "Filtres",
     "aggregations": "Agrégations",
