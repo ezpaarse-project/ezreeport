@@ -4,7 +4,8 @@
     bottom
     offset-y
     nudge-bottom="10"
-    @input="onMenuVisibilityChange"
+    open-on-hover
+    @input="onMenuVisibilityChangeDebounced"
   >
     <template #activator="{ on, attrs }">
       <v-text-field
@@ -35,24 +36,28 @@
 
         <v-row>
           <v-col class="pt-0">
-            <v-virtual-scroll
-              :items="autocompleteItems"
-              max-height="200"
-              item-height="40"
-              bench="5"
-            >
-              <template v-slot:default="{ item }">
-                <v-list-item :key="item" dense>
-                  <v-list-item-action>
-                    <v-icon v-if="resolvedIndices.length > 0" color="primary" small>mdi-check</v-icon>
-                  </v-list-item-action>
+            <v-simple-table height="200" dense fixed-header>
+              <template #default>
+                <thead>
+                  <tr>
+                    <th width="20">{{ $t('index.matched') }}</th>
+                    <th>{{ $t('index.name') }}</th>
+                  </tr>
+                </thead>
 
-                  <v-list-item-content>
-                    <v-list-item-title>{{ item }}</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
+                <tbody>
+                  <tr v-for="item in autocompleteItems" :key="item">
+                    <td>
+                      <v-icon v-if="resolvedIndices.length > 0" color="primary" small>mdi-check</v-icon>
+                    </td>
+                    <td>
+                      {{ item }}
+                    </td>
+                  </tr>
+                </tbody>
               </template>
-            </v-virtual-scroll>
+            </v-simple-table>
+
           </v-col>
         </v-row>
       </v-card-text>
@@ -62,6 +67,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { debounce } from 'lodash';
 
 import { useEzR } from '~/lib/ezreeport';
 import { useI18n } from '~/lib/i18n';
@@ -89,7 +95,6 @@ const { $t, $tc } = useI18n();
 const invalidChars = ['\\', '/', '?', '"', '<', '>', '|'];
 const invalidCharsMessage = invalidChars.join(' ');
 
-const focused = ref(false);
 const loading = ref(false);
 const error = ref<Error | null>(null);
 const search = ref(props.value);
@@ -121,8 +126,6 @@ const resolveSearch = async () => {
 };
 
 const onMenuVisibilityChange = async (value: boolean) => {
-  focused.value = value;
-
   if (value) {
     loading.value = true;
     try {
@@ -137,6 +140,12 @@ const onMenuVisibilityChange = async (value: boolean) => {
     }
   }
 };
+
+const onMenuVisibilityChangeDebounced = debounce(
+  onMenuVisibilityChange,
+  1000,
+  { leading: true, trailing: false },
+);
 
 const emptyRule = computed(() => {
   if (!props.required) {
@@ -183,12 +192,18 @@ watch(
 en:
   inputHelp: Use an asterisk (*) to match multiple indices of your repositories. Spaces and the characters {chars} are not allowed.
   nMatchedIndex: 'Your expression includes 1 index. Please refer to your profile to view your repositories.|Your expression includes {n} indices. Please refer to your profile to view your repositories.'
+  index:
+    matched: Included
+    name: Index
   errors:
     invalidChars: 'The expression contains spaces or forbidden characters like:'
     required: 'Your expression must include at least one of your index'
 fr:
   inputHelp: Utilisez un astérisque (*) pour récupérer plusieurs index de vos entrepôts. Les espaces et les caractères {chars} ne sont pas autorisés.
   nMatchedIndex: 'Votre motif inclut 1 index. Référez vous à votre profil pour visualiser vos entrepôts.|Votre motif inclut {n} index. Référez vous à votre profil pour visualiser vos entrepôts.'
+  index:
+    matched: Inclus
+    name: Index
   errors:
     invalidChars: "L'motif utilise des espaces ou des caractères interdits comme :"
     required: 'Votre motif doit inclure au moins un de vos index'
