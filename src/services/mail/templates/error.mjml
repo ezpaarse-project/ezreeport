@@ -1,7 +1,7 @@
 {% extends "layout.mjml" %}
 
 {% block title %}
-<mj-title>Rapport ezMESURE du {{ date }} en erreur.</mj-title>
+<mj-title>Rapport ezREEPORT du {{ date }} en erreur.</mj-title>
 {% endblock %}
 
 {% block content %}
@@ -17,7 +17,7 @@
         pensez donc à la réactiver une fois l'erreur corrigée.
       </p>
       <p>
-        Ce message est envoyé automatiquement par l'application ezMESURE,
+        Ce message est envoyé automatiquement par l'application ezREEPORT,
         vous le recevez parce que vous êtes le correspondant de l'établissement générant
         la tâche de rapport.
       </p>
@@ -29,7 +29,7 @@
 
     <mj-text>
       <p>Cordialement,</p>
-      <p>L'équipe ezMESURE.</p>
+      <p>L'équipe ezTEAM.</p>
     </mj-text>
   </mj-column>
 </mj-section>
