@@ -148,6 +148,11 @@ export default defineComponent({
           params.columnStyles = this.figure.params.columnStyles as Record<string, PDFStyle>;
         }
 
+        if ('maxLength' in this.figure.params && typeof this.figure.params.maxLength === 'number') {
+          // TODO: Better Validation
+          params.maxLength = this.figure.params.maxLength;
+        }
+
         return params;
       },
       set(params: PDFParams) {
