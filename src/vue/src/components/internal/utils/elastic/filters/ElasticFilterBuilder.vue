@@ -19,6 +19,7 @@
         :close="!readonly"
         label
         outlined
+        class="filter-chip"
         @click="openPopover(i, $event)"
         @click:close="!readonly && onElementDeleted(item)"
       >
@@ -30,8 +31,11 @@
           </template>
 
           <template #value>
-            <span class="text--primary">
-              {{ item.data.value }}
+            <span v-for="(value, i) in item.data.value" :key="i">
+              <span class="text--primary filter-chip--value">{{ value }}</span><template v-if="i < item.data.value.length - 1">, </template>
+            </span>
+            <span v-if="item.data.count > item.data.value.length">
+              {{ $t('overflow', { n: item.data.count - item.data.value.length }) }}
             </span>
           </template>
 
@@ -45,13 +49,16 @@
 import { type PropType, defineComponent } from 'vue';
 import type { FilterElement } from './ElasticFilterElementPopover.vue';
 
+const MAX_VALUE_COUNT = 5;
+
 interface FilterChip {
   key: string;
   type: string;
   i18n: string;
   data: {
     key: string;
-    value: string;
+    value: string[];
+    count: number,
   };
 }
 
@@ -140,7 +147,8 @@ export default defineComponent({
           i18n: `operatorsFormatters.${operator}_${item.modifier}`,
           data: {
             key: item.key,
-            value: item.values.join(', '),
+            value: item.values.map((v) => v.toString()).slice(0, MAX_VALUE_COUNT),
+            count: item.values.length,
           },
         };
       });
@@ -332,12 +340,24 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+.filter-chip {
+  max-width: 100%;
 
+  &--value {
+    display: inline-block;
+    vertical-align: bottom;
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
 </style>
 
 <i18n lang="yaml">
 en:
+  overflow: and {n} more
   operatorsFormatters:
     IS_: '{key} is {value}'
     IS_NOT: '{key} is not {value}'
@@ -346,6 +366,7 @@ en:
     EXISTS_: '{key} exist'
     EXISTS_NOT: "{key} doesn't exist"
 fr:
+  overflow: et {n} autres
   operatorsFormatters:
     IS_: '{key} est {value}'
     IS_NOT: "{key} n'est pas {value}"
