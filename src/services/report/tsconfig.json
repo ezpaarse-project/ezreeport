@@ -18,5 +18,6 @@
     "lib": ["es2022"],
     "module": "commonjs",
     "resolveJsonModule": true,
+    "esModuleInterop": true,
   }
 }
