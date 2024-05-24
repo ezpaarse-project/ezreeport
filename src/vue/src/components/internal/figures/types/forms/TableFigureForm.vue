@@ -18,6 +18,7 @@
           :style="{
             border: $vuetify.theme.dark ? 'thin solid rgba(255, 255, 255, 0.12)' : 'thin solid rgba(0, 0, 0, 0.12)',
           }"
+          show-order
           @update:element="(i, el) => onMetricUpdate(el)"
           @update:loading="colLoading = $event"
         >

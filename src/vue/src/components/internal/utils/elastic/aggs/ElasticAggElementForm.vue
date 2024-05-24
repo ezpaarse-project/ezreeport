@@ -83,6 +83,30 @@
               </v-combobox>
             </template>
 
+            <div v-if="showOrder" class="mt-2">
+              <div>
+                <v-label>
+                  {{$t('headers.sortOrder')}}
+                </v-label>
+              </div>
+
+              <v-btn-toggle
+                :value="(type.data?.order === true ? 'asc' : type.data?.order)"
+                dense
+                rounded
+                color="primary"
+                @change="onTypeFieldUpdate({ order: $event })"
+              >
+                <v-btn :disabled="readonly" value="asc" small outlined>
+                  {{ $t('sortOrder.asc') }}
+                </v-btn>
+
+                <v-btn :disabled="readonly" value="desc" small outlined>
+                  {{ $t('sortOrder.desc') }}
+                </v-btn>
+              </v-btn-toggle>
+            </div>
+
             <v-divider v-if="typeDefinition?.returnsArray || typeDefinition?.subAggregations" class="my-4" />
 
             <!-- Show missing -->
@@ -115,17 +139,6 @@
                 @input="onTypeFieldUpdate({ missing: $event })"
               />
             </CustomSection>
-
-            <!-- Size -->
-            <v-text-field
-              v-if="typeDefinition?.returnsArray"
-              :value="type.data?.size"
-              :label="$t('headers.count')"
-              :min="0"
-              :readonly="readonly"
-              type="number"
-              @input="onSizeUpdate"
-            />
           </v-col>
         </v-row>
 
@@ -153,7 +166,6 @@
 import { defineComponent, type PropType } from 'vue';
 import {
   aggsDefinition,
-  sortOptions,
   sizeKeyByType,
   getTypeDefinitionFromAggType,
   getTypeFromAgg,
@@ -188,6 +200,13 @@ export default defineComponent({
     usedNames: {
       type: Array as PropType<string[]>,
       default: () => [],
+    },
+    /**
+     * Should show order field
+     */
+    showOrder: {
+      type: Boolean,
+      default: false,
     },
     /**
      * Should be readonly
@@ -434,32 +453,6 @@ export default defineComponent({
       return items;
     },
     /**
-     * Possible sorts with localization
-     */
-    availableSorts() {
-      const options = sortOptions.map((value) => ({
-        text: this.$t(`sorts.${value}`),
-        value,
-      }));
-
-      const aggs: any[] | undefined = this.innerElement.aggs || this.innerElement.aggregations;
-      if (aggs) {
-        options.push(
-          ...aggs.map((a, i) => {
-            const n = a.name || `agg${i}`;
-            return {
-              text: n,
-              value: n,
-            };
-          }),
-        );
-      }
-
-      return options.sort(
-        (a, b) => a.text.toString().localeCompare(b.text.toString()),
-      );
-    },
-    /**
      * Type definition of the aggregation
      */
     typeDefinition(): AggDefinition | undefined {
@@ -606,7 +599,7 @@ export default defineComponent({
      * Update whole element using JSON
      */
     onJSONUpdate() {
-      if (this.readonly || !this.valid) {
+      if (this.readonly || !this.valid || !this.innerJSON) {
         return;
       }
 
@@ -624,9 +617,7 @@ en:
     advancedEdition: 'Advanced edition'
     type: 'Aggregation type'
     field: 'Concerned field'
-    count: 'Max count of results'
-    sort: 'Sort on sub aggregation...'
-    sortOrder: 'Sort order: {order}'
+    sortOrder: 'Sort results:'
     subAggs: 'Sub aggregations'
     showMissing: 'Should show missing ?'
     missing: 'Default value'
@@ -640,18 +631,13 @@ en:
     commonMulti: 'Common bucket aggregations'
     otherSingle: 'Metric aggregations'
     otherMulti: 'Common aggregations'
-  sorts:
-    _count: 'By doc count (_count)'
-    _key: 'By key (_key)'
 fr:
   headers:
     simpleEdition: 'Édition simple'
     advancedEdition: 'Édition avancée'
     type: "Type d'agrégation"
     field: 'Champ concerné'
-    count: 'Nombre de résultats maximum'
-    sort: 'Trier sur la sous aggregation...'
-    sortOrder: 'Sens du tri: {order}'
+    sortOrder: 'Trier les données:'
     subAggs: 'Sous aggregations'
     showMissing: 'Afficher les manquants ?'
     missing: 'Valeur par défaut'
@@ -665,7 +651,4 @@ fr:
     commonMulti: 'Agrégations par groupes communes'
     otherSingle: 'Autres agrégations de métriques'
     otherMulti: 'Autres agrégations par groupes'
-  sorts:
-    _count: 'Par nombre de résultat (_count)'
-    _key: 'Par clé (_key)'
 </i18n>

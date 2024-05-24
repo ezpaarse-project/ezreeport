@@ -21,14 +21,6 @@ export type ElasticAgg = {
 const handledKeys = new Set(['name', 'aggs', 'aggregations']);
 
 /**
- * Additional possible sort options in a elastic request
- */
-export const sortOptions = [
-  '_count',
-  '_key',
-];
-
-/**
  * Some aggregations types have different ways to handle the size parameter
  */
 export const sizeKeyByType: Record<string, string> = {
