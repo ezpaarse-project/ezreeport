@@ -13,7 +13,7 @@ RUN corepack enable
 
 # ====
 
-FROM base AS dev
+FROM base AS pnpm
 WORKDIR /usr/build
 
 # Install node-canvas build dependencies
