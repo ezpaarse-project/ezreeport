@@ -53,6 +53,7 @@
     "@highlightjs/vue-plugin": "^1.0.2",
     "@intlify/unplugin-vue-i18n": "^2.0.0",
     "@rushstack/eslint-patch": "^1.6.1",
+    "@storybook/addon-docs": "^7.6.7",
     "@storybook/addon-essentials": "^7.6.7",
     "@storybook/addon-interactions": "^7.6.7",
     "@storybook/addon-links": "^7.6.7",
