@@ -1,4 +1,4 @@
-FROM node:18.17.0-alpine3.18 AS base
+FROM node:18.18.2-alpine3.18 AS base
 LABEL maintainer="ezTeam <ezteam@couperin.org>"
 
 ENV HUSKY=0
@@ -13,22 +13,23 @@ RUN corepack enable
 
 # ====
 
-FROM base AS pnpm
+FROM base AS dev
 WORKDIR /usr/build
 
 # Install node-canvas build dependencies
 # see https://github.com/Automattic/node-canvas/issues/866
 RUN apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev giflib-dev
 
-COPY . .
-
+COPY ./package.json ./pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+COPY . .
 
 RUN pnpm deploy --filter ezreeport-report ./report-dev
 RUN pnpm deploy --filter ezreeport-report --prod ./report
 RUN pnpm deploy --filter ezreeport-mail --prod ./mail
 RUN pnpm deploy --filter @ezpaarse-project/ezreeport-sdk-js --prod ./sdk
-RUN pnpm deploy --filter @ezpaarse-project/ezreeport-vue --prod ./vue
+RUN pnpm deploy --filter @ezpaarse-project/ezreeport-vue ./vue
 
 # ==== REPORT
 
@@ -82,18 +83,19 @@ ARG AUTH_TOKEN="changeme"
 ARG REPORT_API="http://localhost:8080/"
 ARG LOGO_URL="https://ezmesure.couperin.org/"
 
-COPY --from=pnpm /usr/build/vue .
+COPY ./src/vue .
+COPY --from=pnpm /usr/build/vue/node_modules ./node_modules
 
 ENV VITE_AUTH_TOKEN=${AUTH_TOKEN} \
     VITE_REPORT_API=${REPORT_API} \
     VITE_NAMESPACES_LOGO_URL=${LOGO_URL}
 
-RUN pnpm run build:docs
+RUN npm run build:docs
 
 FROM nginx:stable-alpine as vuedoc
 WORKDIR /usr/share/nginx/html
 
 COPY ./config/vue-ngnix.types /etc/nginx/mime.types
-COPY --from=vue-builder /usr/build/vue/storybook-static ./
+COPY --from=vuedoc-builder /usr/build/vue/storybook-static ./
 
 EXPOSE 80
