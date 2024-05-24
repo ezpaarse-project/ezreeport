@@ -176,9 +176,9 @@ export const createVegaLSpec = (
     const inner = outer * RADIUS_OUTER_INNER_RATIO;
 
     radius = {
-      outer,
-      inner,
-      center: inner + ((outer - inner) / 2),
+      outer: Math.round(outer),
+      inner: Math.round(inner),
+      center: Math.round(inner + ((outer - inner) / 2)),
     };
   }
 
@@ -379,6 +379,7 @@ export const createVegaLSpec = (
         dy: params.dataLabel.showLabel ? 7 : undefined,
         radius: type === 'arc' ? pos.radius : undefined,
         fontWeight: params.dataLabel.showLabel ? 'bold' : undefined,
+        limit: radius ? Math.max(radius.outer - radius.inner - 10, 0) : undefined,
       },
       encoding: {
         text: {
@@ -437,8 +438,8 @@ export const createVegaLSpec = (
     layers.push(dLLayer);
   }
   const spec: TopLevelSpec = {
-    width: params.width,
-    height: params.height,
+    width: Math.round(params.width),
+    height: Math.round(params.height),
     background: 'transparent',
     // Adding data
     datasets: {
