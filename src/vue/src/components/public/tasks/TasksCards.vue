@@ -79,7 +79,15 @@
           <template #no-data>
             <div style="position: relative; min-height: 300px;">
               <v-overlay v-if="!error" absolute>
-                {{ $t('$vuetify.noDataText') }}
+                <div class="text-center">
+                  {{ $t('noDataText') }}
+                </div>
+
+                <v-btn color="primary" @click="showCreateDialog">
+                  <v-icon left>mdi-plus</v-icon>
+
+                  {{ $t('createFirst') }}
+                </v-btn>
               </v-overlay>
 
               <ErrorOverlay v-model="error" hide-action />
@@ -545,6 +553,8 @@ watch(
 
 <i18n lang="yaml">
 en:
+  noDataText: 'No periodic report'
+  createFirst: 'Create your first report'
   title: 'Periodic report list'
   targetCount: '{n} recipients'
   duplicate_suffix: '(copied)'
@@ -554,6 +564,8 @@ en:
   headers:
     actions: 'Actions'
 fr:
+  noDataText: 'Aucun rapport périodique'
+  createFirst: 'Créer votre premier rapport'
   title: 'Liste des rapports périodiques'
   targetCount: '{n} destinataire|{n} destinataires'
   duplicate_suffix: '(copie)'

@@ -71,14 +71,35 @@
                 :label="$t('headers.value')"
                 :value="element.values"
                 :readonly="readonly"
-                :deletable-chips="element.values.length > 1"
                 :rules="rules.value"
                 multiple
-                small-chips
                 @input="updateValue"
               >
                 <template #append>
                   <div />
+                </template>
+
+                <template
+                  v-slot:selection="{
+                    item,
+                    index,
+                    attrs,
+                    selected,
+                    disabled,
+                    parent,
+                  }"
+                >
+                  <v-chip
+                    :key="index"
+                    :input-value="selected"
+                    :close="element.values.length > 1"
+                    :disabled="disabled"
+                    small
+                    v-bind="attrs"
+                    @click:close="parent.selectItem(item)"
+                  >
+                    <span class="value-box--item">{{ item }}</span>
+                  </v-chip>
                 </template>
               </v-combobox>
             </v-col>
@@ -263,6 +284,16 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="scss" scoped>
+.value-box--item {
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
 
 <i18n lang="yaml">
 en:

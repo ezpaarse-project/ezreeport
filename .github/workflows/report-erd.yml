@@ -2,12 +2,9 @@ name: Generate database documentation of report database
 
 on:
   push:
-    branches:
-      - master
-      - rc
-      - dev
+    tags:
+      - '*.rc*'
     paths:
-      - '.github/workflows/report-erd.yml'
       - 'src/services/report/prisma/schema.prisma'
   workflow_dispatch:
 
@@ -24,12 +21,13 @@ env:
 
 jobs:
   generate-db-doc:
-    permissions: write-all
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Generate ERD 🔧
         run: 'curl -X POST -d "$(cat ${{ env.PRISMA_SCHEMA }})" -H "Content-Type: text/plain" -H "X-Api-Key: ${{ env.ERD_WS_KEY }}" -o "${{ env.OUT_ERD_PATH }}" ${{ env.ERD_WS }}/erd/'
@@ -37,14 +35,17 @@ jobs:
       - name: Generate Data dictionary 🔧
         run: 'curl -X POST -d "$(cat ${{ env.PRISMA_SCHEMA }})" -H "Content-Type: text/plain" -H "X-Api-Key: ${{ env.ERD_WS_KEY }}" -o "${{ env.OUT_DIC_PATH }}" ${{ env.ERD_WS }}/dict/\?name\=${{ env.DIC_NAME }}'
 
+      - name: Setup pnpm ⚙️
+        uses: pnpm/action-setup@v3
+
       - name: Setup Node ⚙️
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-            node-version-file: .nvmrc
-            cache: npm
+          node-version-file: .nvmrc
+          cache: 'pnpm'
 
       - name: Install dependencies ⚙️
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Commit files 🚀
         run: |

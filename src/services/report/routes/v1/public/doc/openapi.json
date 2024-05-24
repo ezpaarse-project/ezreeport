@@ -471,7 +471,10 @@
           {
             "$ref": "#/components/parameters/sort"
           }
-        ]
+        ],
+        "requestBody": {
+          "content": {}
+        }
       },
       "post": {
         "summary": "Add new task",
@@ -3470,7 +3473,10 @@
           }
         ],
         "parameters": [],
-        "description": "Get specific template.\n\nNeeds `general.templates-get-template` (see `/me/permissions` for more info)."
+        "description": "Get specific template.\n\nNeeds `general.templates-get-template` (see `/me/permissions` for more info).",
+        "requestBody": {
+          "content": {}
+        }
       },
       "put": {
         "summary": "Update or create specific template",
@@ -4820,6 +4826,26 @@
                           }
                         }
                       }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "x-stoplight": {
+                        "id": "d2jcqrz0rwh25"
+                      },
+                      "properties": {
+                        "users": {
+                          "type": "integer",
+                          "x-stoplight": {
+                            "id": "wt3jky0owaoxe"
+                          }
+                        },
+                        "memberships": {
+                          "type": "integer",
+                          "x-stoplight": {
+                            "id": "6jvjg4v8dho3h"
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -4861,9 +4887,6 @@
                     {
                       "type": "object",
                       "properties": {
-                        "username": {
-                          "type": "string"
-                        },
                         "memberships": {
                           "type": "array",
                           "items": {
@@ -4882,10 +4905,7 @@
                             ]
                           }
                         }
-                      },
-                      "required": [
-                        "username"
-                      ]
+                      }
                     }
                   ]
                 }
@@ -4894,6 +4914,327 @@
           }
         }
       }
+    },
+    "/admin/namespaces": {
+      "get": {
+        "summary": "Get all namespaces",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "x-stoplight": {
+                          "id": "6vk883sl8hgwc"
+                        },
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/Namespace"
+                          },
+                          {
+                            "type": "object",
+                            "x-stoplight": {
+                              "id": "9a7a06ydq8klp"
+                            },
+                            "properties": {
+                              "_count": {
+                                "type": "object",
+                                "x-stoplight": {
+                                  "id": "95aic5m6bokww"
+                                },
+                                "properties": {
+                                  "tasks": {
+                                    "type": "integer",
+                                    "x-stoplight": {
+                                      "id": "os9wblx5sah1f"
+                                    }
+                                  },
+                                  "memberships": {
+                                    "type": "integer",
+                                    "x-stoplight": {
+                                      "id": "ncsnbl6g7dwh0"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "number",
+                          "description": "Count of items available"
+                        },
+                        "count": {
+                          "type": "number",
+                          "description": "Count of items in response"
+                        },
+                        "size": {
+                          "type": "number",
+                          "description": "Count of items available"
+                        },
+                        "lastId": {
+                          "type": "string",
+                          "description": "Id of last item in response",
+                          "nullable": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-admin-namespaces",
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "description": "Get all available namespaces.\n\nOnly usable with the API Key provided at server initialization.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/previous"
+          },
+          {
+            "$ref": "#/components/parameters/count"
+          },
+          {
+            "$ref": "#/components/parameters/sort"
+          }
+        ],
+        "tags": [
+          "admin - namespaces"
+        ]
+      },
+      "put": {
+        "summary": "Replace all namespaces",
+        "operationId": "put-admin-namespaces",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {}
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "namespaces": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "x-stoplight": {
+                              "id": "b6w8blmnbzmk4"
+                            },
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "created",
+                                  "updated",
+                                  "deleted"
+                                ]
+                              },
+                              "data": {
+                                "$ref": "#/components/schemas/Namespace"
+                              }
+                            }
+                          }
+                        },
+                        "members": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "x-stoplight": {
+                              "id": "9kcf1yoarj73e"
+                            },
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "created",
+                                  "updated",
+                                  "deleted"
+                                ]
+                              },
+                              "data": {
+                                "allOf": [
+                                  {
+                                    "$ref": "#/components/schemas/Membership"
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "username": {
+                                        "type": "string"
+                                      },
+                                      "namespaceId": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "x-stoplight": {
+                        "id": "h0mwylbeilzrt"
+                      },
+                      "properties": {
+                        "namespaces": {
+                          "type": "integer",
+                          "x-stoplight": {
+                            "id": "qd2mi4z2qgdvf"
+                          }
+                        },
+                        "members": {
+                          "type": "integer",
+                          "x-stoplight": {
+                            "id": "i1x0cdvo09da6"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400"
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "security": [
+          {
+            "API Key": []
+          }
+        ],
+        "description": "Create, update or delete many namespaces.\n\nIf you provide no `members`, it will keep current ones. If you provide empty `members`, it will remove all current memberships.\n\nWhen creating a membership, **user and namespace must exist**, so you may want to create users first (without `memberships`)\n\nOnly usable with the API Key provided at server initialization.",
+        "tags": [
+          "admin - users"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/NamespaceBody"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "x-stoplight": {
+                            "id": "lx1v4ncw3qu1m"
+                          }
+                        },
+                        "members": {
+                          "type": "array",
+                          "items": {
+                            "allOf": [
+                              {
+                                "$ref": "#/components/schemas/Membership"
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "username": {
+                                    "type": "string",
+                                    "x-stoplight": {
+                                      "id": "8sfiymd3xtr0d"
+                                    }
+                                  }
+                                }
+                              }
+                            ],
+                            "x-stoplight": {
+                              "id": "7ki6qjf25wh92"
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "parameters": []
     },
     "/admin/users/{username}": {
       "parameters": [
@@ -6705,8 +7046,7 @@
         },
         "properties": {
           "username": {
-            "type": "string",
-            "readOnly": true
+            "type": "string"
           },
           "token": {
             "type": "string",

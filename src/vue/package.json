@@ -11,7 +11,7 @@
   },
   "license": "CeCILL",
   "author": "oxypomme",
-  "version": "1.0.0-beta.32",
+  "version": "1.2.0-beta.1",
   "type": "module",
   "exports": {
     ".": {
@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "build": "NODE_ENV=production vite build",
-    "build:doc": "storybook build",
+    "build:docs": "storybook build",
     "dev": "storybook dev -p 6006",
     "lint": "eslint --fix src vite.config.mts .storybook",
     "example": "npm --prefix example run dev",
@@ -49,10 +49,11 @@
     "vuetify": "^2.7.1"
   },
   "devDependencies": {
-    "@ezpaarse-project/ezreeport-sdk-js": "1.0.0-beta.11",
+    "@ezpaarse-project/ezreeport-sdk-js": "workspace:../sdk",
     "@highlightjs/vue-plugin": "^1.0.2",
     "@intlify/unplugin-vue-i18n": "^2.0.0",
     "@rushstack/eslint-patch": "^1.6.1",
+    "@storybook/addon-docs": "^7.6.7",
     "@storybook/addon-essentials": "^7.6.7",
     "@storybook/addon-interactions": "^7.6.7",
     "@storybook/addon-links": "^7.6.7",
@@ -64,6 +65,7 @@
     "@types/chroma-js": "^2.4.3",
     "@types/dompurify": "^3.0.5",
     "@types/js-yaml": "^4.0.9",
+    "@types/lodash": "^4.14.202",
     "@types/object-hash": "^3.0.6",
     "@types/uuid": "^9.0.7",
     "@types/validator": "^13.11.7",

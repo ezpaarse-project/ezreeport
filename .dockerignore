@@ -1,3 +1,10 @@
-node_modules/
-data/
-src/services/metrics/
+node_modules
+data
+logs
+dist
+.prisma
+.git
+.gitignore
+*.md
+
+src/services/report/config/banned_domains.json

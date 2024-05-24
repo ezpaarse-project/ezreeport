@@ -18,6 +18,7 @@
           :style="{
             border: $vuetify.theme.dark ? 'thin solid rgba(255, 255, 255, 0.12)' : 'thin solid rgba(0, 0, 0, 0.12)',
           }"
+          show-order
           @update:element="(i, el) => onMetricUpdate(el)"
           @update:loading="colLoading = $event"
         >
@@ -146,6 +147,11 @@ export default defineComponent({
         if ('columnStyles' in this.figure.params && !Array.isArray(this.figure.params.columnStyles)) {
           // TODO: Better Validation
           params.columnStyles = this.figure.params.columnStyles as Record<string, PDFStyle>;
+        }
+
+        if ('maxLength' in this.figure.params && typeof this.figure.params.maxLength === 'number') {
+          // TODO: Better Validation
+          params.maxLength = this.figure.params.maxLength;
         }
 
         return params;

@@ -13,13 +13,13 @@
   </mj-head>
   <mj-body width="700px">
     <mj-spacer height="30px" />
-    <mj-section background-color="#9c27b0" border-radius="5px 5px 0px 0px">
+    <mj-section background-color="#539FDA" border-radius="5px 5px 0px 0px">
       <mj-column>
         <mj-image
           height="35px"
-          width="150px"
+          width="200px"
           href="https://ezmesure.couperin.org"
-          src="cid:ezmesure_logo_white.png"
+          src="cid:ezreeport_white.png"
         />
       </mj-column>
     </mj-section>
@@ -34,21 +34,27 @@
       </mj-section>
 
       <mj-section>
-        <mj-group>
-          <mj-column width="50%">
-            <mj-image
-              align="left"
-              width="150px"
-              href="https://ezmesure.couperin.org"
-              src="cid:ezmesure_logo.png"
-            />
-          </mj-column>
+        <mj-column width="150px" padding="0 10px" vertical-align="middle">
+          <mj-image
+            src="cid:ezreeport.png"
+            padding="0"
+          />
+        </mj-column>
 
-          <mj-column width="50%">
-            <mj-social align="right" padding-bottom="0px">
-              <mj-social-element name="youtube" src="cid:ezmesure_youtube.png" href="https://www.youtube.com/channel/UCcR-0UE9WjYiwS4fMG2T4tQ" />
-              <mj-social-element name="twitter-noshare" src="cid:ezmesure_twitter.png" href="https://twitter.com/ezpaarse" />
-              <mj-social-element name="github-noshare" src="cid:ezmesure_github.png" href="https://github.com/ezpaarse-project/" />
+        <mj-column width="150px" padding="0 10px" vertical-align="middle">
+          <mj-image
+            href="https://ezmesure.couperin.org"
+            src="cid:ezmesure.png"
+            padding="0"
+          />
+        </mj-column>
+
+        <mj-group width="50%" vertical-align="middle">
+          <mj-column>
+            <mj-social align="right" padding="0">
+              <mj-social-element name="web" src="cid:web.png" href="https://readmetrics.org/" />
+              <mj-social-element name="youtube" src="cid:youtube.png" href="https://www.youtube.com/channel/UCcR-0UE9WjYiwS4fMG2T4tQ" />
+              <mj-social-element name="github-noshare" src="cid:github.png" href="https://github.com/ezpaarse-project/" />
             </mj-social>
           </mj-column>
         </mj-group>

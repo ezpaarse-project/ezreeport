@@ -5,41 +5,57 @@ on:
     branches:
       - master
     paths:
-      - '.github/workflows/sdk-doc.yml'
       - 'src/sdk/**'
   workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
-    concurrency: ci-${{ github.ref }}
+  build:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm ⚙️
+        uses: pnpm/action-setup@v3
 
       - name: Setup Node ⚙️
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-            node-version-file: .nvmrc
-            cache: npm
+          node-version-file: .nvmrc
+          cache: 'pnpm'
+
+      - name: Setup Pages ⚙️
+        uses: actions/configure-pages@v5
+        with:
+          static_site_generator: 'static'
 
       - name: Install dependencies ⚙️
-        run: npm ci --prefix src/sdk
+        run: pnpm install --frozen-lockfile
 
       - name: Build documentation 🔧
-        run: npm run build:docs --prefix src/sdk
+        run: pnpm --filter @ezpaarse-project/ezreeport-sdk-js run build:docs
 
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Upload artifact 🚚
+        uses: actions/upload-pages-artifact@v3
         with:
-          folder: src/sdk/docs
-          branch: sdk-docs
+          path: src/sdk/docs
+
+  deploy:
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy 🚀
+        id: deployment
+        uses: actions/deploy-pages@v4

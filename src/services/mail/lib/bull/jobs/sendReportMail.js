@@ -27,6 +27,7 @@ const {
  * @property {Omit<MailOptions, 'to' | 'body' | 'subject'>} options
  * @property {Object} bodyData
  * @property {string} bodyData.recurrence
+ * @property {string} bodyData.namespace
  * @property {string} bodyData.name
  * @property {string} bodyData.date
  * @property {string} filename
@@ -73,6 +74,7 @@ const sendErrorReport = async ({
  * @property {Omit<MailOptions, 'to' | 'body' | 'subject'>} options
  * @property {Object} bodyData
  * @property {string} bodyData.recurrence
+ * @property {string} bodyData.namespace
  * @property {string} bodyData.name
  * @property {string} bodyData.date
  * @property {MailResult['task']} task
@@ -144,6 +146,7 @@ const sendReport = (data, date, dateStr) => {
   const bodyData = {
     recurrence: recurrenceToStr(data.task.recurrence),
     name: data.task.name,
+    namespace: data.namespace,
     date: dateStr,
   };
 

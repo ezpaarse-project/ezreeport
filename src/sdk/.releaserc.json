@@ -1,0 +1,6 @@
+{
+  "$schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/semantic-release.json",
+  "extends": [
+    "../../release.config.cjs"
+  ]
+}

@@ -1,7 +1,7 @@
 import { setTimeout } from 'node:timers/promises';
 
 import { Client, type estypes as ElasticTypes, type RequestParams } from '@elastic/elasticsearch';
-import { intersection } from 'lodash';
+import { merge } from 'lodash';
 
 import config from './config';
 import { appLogger as logger } from './logger';
@@ -36,7 +36,7 @@ const client = new Client({
   },
   auth: ES_AUTH,
   ssl: {
-    rejectUnauthorized: process.env.NODE_ENV === 'production' ?? false,
+    rejectUnauthorized: false,
   },
 });
 
@@ -214,17 +214,35 @@ export const elasticIndexMapping = async (index: string, runAs?: string) => {
     { headers },
   );
 
-  // Only keep the common keys of all matching indices
+  // Keep all the keys of all the indices
   const mappings = Object.values(body).map((i) => i.mappings.properties ?? {});
-  const commonKeys = intersection(...mappings.map((m) => Object.keys(m)));
-  const mapping: Record<string, ElasticTypes.MappingProperty> = {};
-  // eslint-disable-next-line no-restricted-syntax
-  for (const key of commonKeys) {
-    const field = mappings.at(0)?.[key];
-    if (field) {
-      mapping[key] = field;
-    }
+  const globalMapping = merge({}, ...mappings);
+  return simplifyMapping(globalMapping);
+};
+
+export const elasticResolveIndex = async (index: string, runAs?: string) => {
+  const elastic = await getElasticClient();
+
+  const headers: Record<string, unknown> = {};
+  if (runAs) {
+    headers['es-security-runas-user'] = runAs;
   }
 
-  return simplifyMapping(mapping);
+  try {
+    const { body } = await elastic.indices.resolveIndex<ElasticTypes.IndicesResolveIndexResponse>(
+      { name: index },
+      { headers },
+    );
+
+    return [
+      ...body.indices.map((i) => i.name),
+      ...body.aliases.map((a) => a.name),
+    ].sort((a, b) => a.localeCompare(b));
+  } catch (error) {
+    const elasticError = error as ({ meta?: { body?: { error?: { type?: string } } } } & Error);
+    if (elasticError.meta?.body?.error?.type === 'security_exception') {
+      return [];
+    }
+    throw error;
+  }
 };

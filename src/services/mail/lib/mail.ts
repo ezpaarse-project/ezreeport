@@ -35,26 +35,7 @@ export type MailOptions = {
   attachments?: Mail.Attachment[],
 };
 
-export const pingSMTP = async () => {
-  const start = new Date();
-  try {
-    logger.verbose('[nodemailer] Checking SMTP connection...');
-    await transporter.verify();
-
-    const end = new Date();
-    logger.info(`[nodemailer] Connected to SMTP in [${differenceInMilliseconds(end, start)}]ms`);
-  } catch (error) {
-    const end = new Date();
-
-    if (error instanceof Error) {
-      logger.error(`[nodemailer] Error when trying connection to SMTP in [${differenceInMilliseconds(end, start)}]ms: {${error.message}}`);
-    } else {
-      logger.error(`[nodemailer] Unexpected error when trying connection to SMTP in [${differenceInMilliseconds(end, start)}]ms: {${error}}`);
-    }
-    return false;
-  }
-  return true;
-};
+export const SMTPPing = async () => transporter.verify();
 
 export const sendMail = async (options: MailOptions) => {
   const attachments: Mail.Attachment[] = [
@@ -80,3 +61,22 @@ export const generateMail = async (template: string, data: object) => {
 
   return { html, text };
 };
+
+(async () => {
+  const start = new Date();
+  try {
+    logger.verbose('[nodemailer] Checking SMTP connection...');
+    await SMTPPing();
+
+    const end = new Date();
+    logger.info(`[nodemailer] Connected to SMTP in [${differenceInMilliseconds(end, start)}]ms`);
+  } catch (error) {
+    const end = new Date();
+
+    if (error instanceof Error) {
+      logger.error(`[nodemailer] Error when trying connection to SMTP in [${differenceInMilliseconds(end, start)}]ms: {${error.message}}`);
+    } else {
+      logger.error(`[nodemailer] Unexpected error when trying connection to SMTP in [${differenceInMilliseconds(end, start)}]ms: {${error}}`);
+    }
+  }
+})();

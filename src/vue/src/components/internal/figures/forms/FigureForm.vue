@@ -91,6 +91,8 @@ import { figureIcons, figureTypes } from '~/lib/templates/figures';
 import useTemplateStore, { mapRulesToVuetify } from '~/stores/template';
 import type { SelectItem } from '~/types/vuetify';
 
+type BackupFigure = Pick<AnyCustomFigure, 'data' | 'params' | 'fetchOptions'>;
+
 export default defineComponent({
   props: {
     id: {
@@ -119,7 +121,7 @@ export default defineComponent({
     return { templateStore };
   },
   data: () => ({
-    dataMap: {} as Record<string, string | unknown[] | undefined>,
+    previousDataForType: {} as Record<string, BackupFigure>,
     preventDrag: false,
     innerTitle: '',
     figureIcons,
@@ -243,11 +245,25 @@ export default defineComponent({
       }
 
       // Backup data for current type
-      this.dataMap[this.figure.type] = this.figure.data;
+      this.previousDataForType[this.figure.type] = {
+        data: this.figure.data,
+        params: this.figure.params,
+        fetchOptions: this.figure.fetchOptions,
+      };
+
+      let newFigure: BackupFigure = {
+        data: undefined,
+        params: {},
+        fetchOptions: undefined,
+      };
+      if (this.previousDataForType[type]) {
+        newFigure = { ...this.previousDataForType[type] };
+      }
+
       // Update type
       this.figure = {
         ...this.figure,
-        data: this.dataMap[type],
+        ...newFigure,
         type,
       };
     },

@@ -3,7 +3,7 @@
     <TaskDialogReadManager
       v-if="perms.readOneTask"
       v-model="readTaskDialogShown"
-      :task="{ id: focusedId }"
+      :taskId="focusedId"
     />
 
     <ErrorOverlay v-model="error" />

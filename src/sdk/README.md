@@ -36,6 +36,6 @@ sdk.auth.getCurrentUser()
 
 ## Documentation
 
-The documentation is available at ...
+The documentation is available at <https://ezpaarse-project.github.io/ezreeport/sdk-js>
 
 You can also run `npm run build:docs && npm run docs` to run it on a local server.

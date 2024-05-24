@@ -9,7 +9,7 @@ import {
 } from 'bullmq';
 
 import { Type, type Static } from '~/lib/typebox';
-import type { Task } from '~/lib/prisma';
+import type { Namespace, Task } from '~/lib/prisma';
 import config from '~/lib/config';
 import { formatInterval } from '~/lib/utils';
 import { appLogger as logger } from '~/lib/logger';
@@ -27,6 +27,10 @@ export type GenerationData = {
    * The task
    */
   task: Task,
+  /**
+   * The namespace of the task
+   */
+  namespace: Omit<Namespace, 'fetchLogin' | 'fetchOptions'>,
   /**
    * The origin of the generation (can be username, or method (auto, etc.))
    */
@@ -71,7 +75,10 @@ export type MailResult = {
   task: {
     id: string,
     recurrence: Task['recurrence'],
+    name: string,
+    targets: string[],
   }
+  namespace: string,
   /**
    * The email of the user that was used for generation
    */
@@ -389,4 +396,18 @@ export const retryJob = async (queue: string, id: string) => {
   return formatJob(
     await getOneQueue(queue).getJob(id) ?? job,
   );
+};
+
+/**
+ * Ping redis host to check if it's alive
+ *
+ * @returns If ping is successful (200) or not
+ */
+export const redisPing = async () => {
+  const queue = queues.generation || queues.mail;
+  if (!queue) {
+    throw new Error('queues are not initialized');
+  }
+  const res = await (await queue.client).ping();
+  return res === 'PONG' ? 200 : false;
 };

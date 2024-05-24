@@ -1,28 +1,38 @@
-version: "3.8"
-
 services:
   db:
+    extends:
+      file: docker-compose.yml
+      service: db
     ports:
       - 5432:5432
 
   redis:
+    extends:
+      file: docker-compose.yml
+      service: redis
     ports:
       - 6389:6379
 
   report:
-    image: node:18.17.0
-    working_dir: /usr/src/report
+    extends:
+      file: docker-compose.yml
+      service: report
+    image: node:18.18.2
+    working_dir: /usr/dev/src/services/report
     volumes:
-      - ./src/services/report:/usr/src/report
+      - .:/usr/dev
     command: "npm run dev"
     ports:
       - 9230:9229 # Debug port
 
   mail:
-    image: node:18.17.0
-    working_dir: /usr/src/mail
+    extends:
+      file: docker-compose.yml
+      service: mail
+    image: node:18.18.2
+    working_dir: /usr/dev/src/services/mail
     volumes:
-      - ./src/services/mail:/usr/src/mail
+      - .:/usr/dev
     command: "npm run dev"
     ports:
       - 9231:9229 # Debug port

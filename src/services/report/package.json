@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "ezreeport-report",
-  "version": "1.0.0-beta.29",
+  "version": "1.2.0-beta.1",
   "description": "",
   "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
   "bugs": {
@@ -15,11 +15,12 @@
   "author": "oxypomme",
   "main": "app.ts",
   "scripts": {
-    "dev": "nodemon app.ts",
+    "dev": "tsx watch --inspect=0.0.0.0 app.ts",
     "lint": "eslint --fix .",
+    "db:install": "npm i -g prisma@^5.7.1",
     "db:gui": "prisma studio",
     "db:migrate": "prisma migrate deploy",
-    "start": "ts-node --transpile-only app.ts",
+    "start": "tsx app.ts",
     "test": "npm -w ezreeport-tests run test:report"
   },
   "lint-staged": {
@@ -40,6 +41,7 @@
     "axios": "^1.6.4",
     "bullmq": "^5.1.1",
     "canvas": "^2.11.2",
+    "chroma-js": "^2.4.2",
     "config": "^3.3.9",
     "date-fns": "^3.0.6",
     "fastify": "^4.25.2",
@@ -51,19 +53,18 @@
     "jspdf-autotable": "^3.8.1",
     "lodash": "^4.17.21",
     "swagger-ui-dist": "^5.10.5",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.7.2",
     "typescript": "^5.3.3",
     "vega": "^5.27.0",
     "vega-lite": "^5.16.3",
     "winston": "^3.11.0"
   },
   "devDependencies": {
+    "@types/chroma-js": "^2.4.4",
     "@types/config": "^3.3.3",
     "@types/lodash": "^4.14.202",
     "@types/node": "^20.10.6",
     "@types/swagger-ui-dist": "^3.30.4",
-    "nodemon": "^3.0.2",
     "prisma": "^5.7.1"
   },
   "engines": {

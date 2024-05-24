@@ -18,4 +18,14 @@ client.$on('error', (e) => logger.error(`[prisma] ${e.message}`));
 
 export default client;
 
+/**
+ * Execute a dummy query to check if the database connection is working
+ *
+ * @returns If the connection is working (200)
+ */
+export const dbPing = async () => {
+  await client.$queryRaw`SELECT 1`;
+  return 200;
+};
+
 export * from '~/.prisma/client';

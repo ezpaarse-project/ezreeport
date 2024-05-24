@@ -105,7 +105,7 @@ Create a `.env.local` and overrides env vars :
 Then run
 
 ```sh
-npm run build:doc
+npm run build:docs
 # or npm run dev
 ```
 

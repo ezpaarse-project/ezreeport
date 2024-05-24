@@ -82,16 +82,15 @@
 
           <v-row>
             <v-col>
-              <v-combobox
+              <ElasticIndexSelector
                 v-model="currentIndex"
-                :items="templateStore.indices.available"
+                :namespace="namespace"
                 :label="$t(
                   taskTemplate ? '$ezreeport.fetchOptions.index' : 'indexTemplate',
                 ).toString()"
                 :rules="rules.index"
-                :filter="indexFilter"
-                dense
-                class="pt-4"
+                :required="!!taskTemplate"
+                prepend-icon="mdi-database"
               />
             </v-col>
 
@@ -127,6 +126,8 @@
               >
                 <v-icon>mdi-plus</v-icon>
               </v-btn>
+
+              <ElasticFilterImportMenu @import="onFilterUpdate($event)" />
             </template>
 
             <ElasticFilterBuilder
@@ -254,7 +255,6 @@ import useTemplateStore, {
   mapRulesToVuetify,
   supportedFetchOptions,
 } from '~/stores/template';
-import { indexFilter } from '~/lib/elastic/indicies';
 import type ElasticFilterBuilderConstructor from '../../utils/elastic/filters/ElasticFilterBuilder.vue';
 
 type ElasticFilterBuilder = InstanceType<typeof ElasticFilterBuilderConstructor>;
@@ -574,7 +574,6 @@ export default defineComponent({
     async onIndexChange() {
       await this.templateStore.fetchCurrentMapping(this.namespace, this.innerIndex);
     },
-    indexFilter,
   },
 });
 </script>

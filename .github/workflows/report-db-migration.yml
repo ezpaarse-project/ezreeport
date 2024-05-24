@@ -1,0 +1,51 @@
+name: Generate migration of report database
+
+on:
+  push:
+    tags:
+      - '*.rc*'
+    paths:
+      - 'src/services/report/prisma/schema.prisma'
+  workflow_dispatch:
+
+env:
+  REPORT_SRC: src/services/report
+  PRISMA_SCHEMA: src/services/report/prisma/schema.prisma
+  COMMIT_NAME: 'chore(report): updated database migration[skip ci]'
+  COMMIT_BODY: '${{ github.event.compare }}'
+  COMMIT_FOOTER: 'Co-authored-by: @${{ github.event.sender.login }}'
+
+jobs:
+  generate-db-migration:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+
+      - name: Setup Node ⚙️
+        uses: actions/setup-node@v4
+        with:
+            node-version-file: .nvmrc
+            cache: npm
+
+      - name: Install dependencies ⚙️
+        run: npm --prefix ${{ env.REPORT_SRC }} ci
+
+      - name: Generate migration 🔧
+        run: |
+          VERSION=$(echo "${{ env.GITHUB_REF_NAME }}" | cut -d '/' -f 2)
+          npx --prefix ${{ env.REPORT_SRC }} prisma migrate dev --schema=${{ env.PRISMA_SCHEMA }} --create-only --skip-generate --name="${VERSION}"
+
+      - name: Commit files 🚀
+        run: |
+          HUSKY=0
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -m "${{ env.COMMIT_NAME }}" -m "${{ env.COMMIT_BODY }}" -m "${{ env.COMMIT_FOOTER }}"
+
+          remote_repo="https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git"
+          git push ${remote_repo} HEAD:${{ github.ref }} --follow-tags

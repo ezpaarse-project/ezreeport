@@ -66,16 +66,15 @@
 
           <v-row>
             <v-col>
-              <v-combobox
+              <ElasticIndexSelector
                 v-if="task.template.fetchOptions"
                 :value="task.template.fetchOptions.index"
-                :search-input.sync="indexInput"
-                :items="templateStore.indices.available"
+                :namespace="task.namespace.id"
                 :label="$t('$ezreeport.fetchOptions.index').toString()"
                 :rules="rules.index"
-                :filter="indexFilter"
+                required
                 prepend-icon="mdi-database"
-                @blur="onIndexChanged"
+                @input="onIndexChanged"
               />
             </v-col>
           </v-row>
@@ -149,15 +148,13 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, watch } from 'vue';
 import type { tasks, templates } from '@ezpaarse-project/ezreeport-sdk-js';
 import isEmail from 'validator/lib/isEmail';
 import hash from 'object-hash';
-import { ref, computed, watch } from 'vue';
 
-import { indexFilter } from '~/lib/elastic/indicies';
 import { useEzR } from '~/lib/ezreeport';
 import { useI18n } from '~/lib/i18n';
-import useTemplateStore from '~/stores/template';
 
 const props = defineProps<{
   value: boolean;
@@ -172,7 +169,6 @@ const emit = defineEmits<{
 
 const { sdk, ...ezr } = useEzR();
 const { $t } = useI18n();
-const templateStore = useTemplateStore();
 
 const loading = ref(false);
 const valid = ref(false);
@@ -181,7 +177,6 @@ const currentMapping = ref<Record<string, string> | null | undefined>(undefined)
 const task = ref<tasks.FullTask | undefined>(undefined);
 const taskHash = ref('');
 const extendedTemplate = ref<templates.FullTemplate | undefined>(undefined);
-const indexInput = ref('');
 const error = ref('');
 
 const hashTask = (t: tasks.FullTask) => hash({
@@ -225,7 +220,6 @@ const rules = computed(() => ({
     (v: string[]) => v.every((e) => isEmail(e)) || $t('$ezreeport.errors.email_format', { field: 'targets' }),
   ],
   index: [
-    (v: string) => !!v || $t('$ezreeport.errors.empty', { field: 'index' }),
     mappingValidation.value,
   ],
   namespace: [
@@ -301,10 +295,7 @@ const refresh = async () => {
     taskHash.value = hashTask(content);
 
     const index = content.template.fetchOptions?.index || '';
-    indexInput.value = index;
-    templateStore.indices.mapping = [];
     await Promise.all([
-      templateStore.refreshAvailableIndices(content.namespace.id),
       content.extends && fetchTemplate(content.extends.id),
       fetchMapping(index),
     ]);
@@ -349,16 +340,16 @@ const save = async () => {
   }
   loading.value = false;
 };
-const onIndexChanged = async () => {
+const onIndexChanged = async (index: string) => {
   if (!task.value) {
     return;
   }
 
   task.value.template.fetchOptions = {
     ...(task.value.template.fetchOptions ?? {}),
-    index: indexInput.value,
+    index,
   };
-  await fetchMapping(indexInput.value);
+  await fetchMapping(index);
 };
 /**
  * Prepare and show task generation dialog
