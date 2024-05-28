@@ -1,17 +1,20 @@
-import { Flags, ux, Config } from '@oclif/core';
+import { Flags, Config } from '@oclif/core';
+import chalk from 'chalk';
 
 import type { Readable, Duplex } from 'node:stream';
 
-import { BaseCommand } from '../lib/BaseCommand.js';
+import { EzrCommand } from '../lib/oclif/EzrCommand.js';
+import { simpleConfirm } from '../lib/inquirer.js';
 import { createStreamPromise } from '../lib/streams.js';
-import { EZR } from '../lib/ezr/index.js';
+import { createProgressBarStream } from '../lib/progress.js';
+
+import type { EZR } from '../lib/ezr/index.js';
 import { createNamespacesReadStream, createNamespacesWriteStream } from '../lib/ezr/namespaces.js';
 import { createTemplatesReadStream, createTemplatesWriteStream } from '../lib/ezr/templates.js';
 import { createTaskPresetsReadStream, createTaskPresetsWriteStream } from '../lib/ezr/tasksPresets.js';
 import { createTasksReadStream, createTasksWriteStream } from '../lib/ezr/tasks.js';
-import { createProgressBarStream } from '../lib/progress.js';
 
-export default class Transfer extends BaseCommand {
+export default class Transfer extends EzrCommand<typeof Transfer> {
   static description = 'Transfer instance data to a dedicated folder';
 
   static examples = [
@@ -41,11 +44,8 @@ export default class Transfer extends BaseCommand {
     }),
   };
 
-  private dstEZR: EZR;
-
   constructor(argv: string[], config: Config) {
-    super(argv, config);
-    this.dstEZR = new EZR();
+    super(argv, config, 2);
   }
 
   private async transferData(opts: {
@@ -54,13 +54,14 @@ export default class Transfer extends BaseCommand {
     createDataWriteStream: (ezr: EZR) => { stream: Duplex },
   }) {
     try {
-      this.log(ux.colorize('blue', `Transferring ${opts.type}...`));
+      this.log(chalk.blue(`Transferring ${opts.type}...`));
 
-      const { count, stream: inStream } = await opts.createDataReadStream(this.ezr);
-      const { stream: outStream } = opts.createDataWriteStream(this.dstEZR);
+      const [src, dst] = this.instances;
+      const { count, stream: inStream } = await opts.createDataReadStream(src);
+      const { stream: outStream } = opts.createDataWriteStream(dst);
       const { progress } = createProgressBarStream({
         total: count,
-        onEnd: (c) => this.log(ux.colorize('green', `${c} ${opts.type} transferred`)),
+        onEnd: (c) => this.log(chalk.green(`${c} ${opts.type} transferred`)),
       });
 
       await createStreamPromise(
@@ -69,30 +70,18 @@ export default class Transfer extends BaseCommand {
           .pipe(progress),
       );
     } catch (error) {
-      this.logToStderr(
-        ux.colorize('red', (error as Error).message),
-      );
+      this.logToStderr(chalk.red((error as Error).message));
     }
-  }
-
-  public async init(): Promise<void> {
-    await super.init();
-
-    ux.action.start(
-      ux.colorize('grey', 'Connecting to destination'),
-    );
-    await this.dstEZR.init({
-      url: process.env.DST_API_URL,
-      apiKey: process.env.DST_API_KEY,
-      admin: process.env.DST_API_ADMIN,
-    });
-    ux.action.stop(
-      ux.colorize('grey', 'OK'),
-    );
   }
 
   public async run(): Promise<void> {
     const { flags } = await this.parse(Transfer);
+
+    const [src, dst] = this.instances;
+    const confirmed = await simpleConfirm(`Do you wish to import data from ${chalk.underline(src.fetch.defaults.baseURL)} into ${chalk.underline(dst.fetch.defaults.baseURL)} ?`);
+    if (!confirmed) {
+      this.exit(0);
+    }
 
     if (flags.namespaces) {
       await this.transferData({
