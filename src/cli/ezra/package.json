@@ -46,7 +46,7 @@
     "eslint": "^8",
     "oclif": "^4.3.6",
     "shx": "^0.3.4",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.7.2",
     "typescript": "^5"
   },
   "engines": {
