@@ -9,13 +9,13 @@ import { mkdir, writeFile } from 'node:fs/promises';
 
 import { EzrCommand } from '../lib/oclif/EzrCommand.js';
 import { createJSONLWriteStream, createStreamPromise } from '../lib/streams.js';
+import { createProgressBarStream } from '../lib/progress.js';
 
 import type { EZR } from '../lib/ezr/index.js';
 import { createNamespacesReadStream } from '../lib/ezr/namespaces.js';
 import { createTemplatesReadStream } from '../lib/ezr/templates.js';
 import { createTaskPresetsReadStream } from '../lib/ezr/tasksPresets.js';
 import { createTasksReadStream } from '../lib/ezr/tasks.js';
-import { createProgressBarStream } from '../lib/progress.js';
 
 export default class Export extends EzrCommand<typeof Export> {
   static description = 'Export instance data into a dedicated folder';
