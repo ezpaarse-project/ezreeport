@@ -1,9 +1,12 @@
-import { ux } from '@oclif/core';
+import type { Command } from '@oclif/core';
 import axios, { isAxiosError, type AxiosInstance } from 'axios';
+import inquirer from 'inquirer';
+import chalk from 'chalk';
+import ora from 'ora';
 
 import { Readable, Transform } from 'node:stream';
 
-const logError = (error: any) => {
+const logError = (error: any, logToStderr: Command['logToStderr']) => {
   let text = 'Error: ';
 
   if (error instanceof Error) {
@@ -21,7 +24,7 @@ const logError = (error: any) => {
     text += ` - ${data.content.message}`;
   }
 
-  ux.logToStderr(ux.colorize('red', text));
+  logToStderr(chalk.red(text));
   if (!isAxiosError(error)) {
     // eslint-disable-next-line no-console
     console.trace();
@@ -31,7 +34,7 @@ const logError = (error: any) => {
 export class EZR {
   public fetch: AxiosInstance;
 
-  constructor() {
+  constructor(private command: Command) {
     this.fetch = axios.create({
       headers: {
         'Content-Type': 'application/json',
@@ -44,15 +47,41 @@ export class EZR {
     apiKey?: string,
     admin?: string,
   }) {
-    const url = opts?.url || await ux.prompt('API URL', { required: true });
-    this.fetch.defaults.baseURL = url;
+    const answers = await inquirer.prompt(
+      [
+        {
+          type: 'input',
+          name: 'url',
+          message: 'API URL',
+        },
+        {
+          type: 'input',
+          name: 'apiKey',
+          message: 'API key',
+        },
+        {
+          type: 'input',
+          name: 'admin',
+          message: 'Admin username',
+        },
+      ],
+      { ...opts },
+    );
 
-    const apiKey = opts?.apiKey || await ux.prompt('API key', { required: true });
-    this.fetch.defaults.headers.common['X-API-Key'] = apiKey;
+    this.fetch.defaults.baseURL = answers.url;
+    this.fetch.defaults.headers.common['X-API-Key'] = answers.apiKey;
 
-    const admin = opts?.admin || await ux.prompt('Admin username', { required: true });
-    const { data: { content: adminUser } } = await this.fetch.get(`/admin/users/${admin}`);
-    this.fetch.defaults.headers.common.Authorization = `Bearer ${adminUser.token}`;
+    const action = ora(chalk.grey('Authenticating as admin...')).start();
+    try {
+      const { data: { content: adminUser } } = await this.fetch.get(`/admin/users/${answers.admin}`);
+      this.fetch.defaults.headers.common.Authorization = `Bearer ${adminUser.token}`;
+    } catch (error) {
+      action.fail(chalk.red((error as Error).message));
+      throw error;
+    }
+    action.succeed(chalk.grey('Logged as admin'));
+
+    return answers;
   }
 
   public async createDataReadStream<ListItem, Item>(opts: {
@@ -64,17 +93,29 @@ export class EZR {
     transform?: (item: Item) => any,
     filter?: (item: ListItem, meta: any) => boolean,
   }) {
-    const { fetch } = this;
+    const { fetch, command: { logToStderr } } = this;
 
-    ux.action.start(ux.colorize('grey', `\tGetting ${opts.type}`));
+    const action = ora({
+      indent: 6,
+      text: chalk.grey(`Getting ${chalk.bold(opts.type)}`),
+    }).start();
 
-    const { data: { content: list, meta } } = await fetch.get<{ content: ListItem[], meta: any }>(
-      opts.urls.list,
-      { params: { count: 0 } },
-    );
+    let list: ListItem[];
+    let meta: any;
+    try {
+      const { data } = await fetch.get<{ content: ListItem[], meta: any }>(
+        opts.urls.list,
+        { params: { count: 0 } },
+      );
+      list = data.content;
+      meta = data.meta;
+    } catch (error) {
+      action.fail(chalk.red((error as Error).message));
+      throw error;
+    }
+    action.stop();
 
     const filtered = opts.filter ? list.filter((item) => opts.filter?.(item, meta)) : list;
-    ux.action.stop(ux.colorize('grey', 'OK'));
 
     const transformer = opts.transform || ((item) => item);
 
@@ -95,7 +136,7 @@ export class EZR {
               const { data } = await fetch.get<{ content: Item }>(opts.urls.item(item));
               this.push(transformer(data.content));
             } catch (error) {
-              logError(error);
+              logError(error, logToStderr);
             }
           }
 
@@ -111,7 +152,7 @@ export class EZR {
     }
     transform?: (item: Item) => any
   }) {
-    const { fetch } = this;
+    const { fetch, command: { logToStderr } } = this;
 
     const transformer = opts.transform || ((item) => item);
 
@@ -126,7 +167,7 @@ export class EZR {
             );
             callback(null, content);
           } catch (error) {
-            logError(error);
+            logError(error, logToStderr);
             callback();
           }
         },
