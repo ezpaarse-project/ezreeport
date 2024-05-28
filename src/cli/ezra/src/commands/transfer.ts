@@ -15,7 +15,7 @@ import { createTaskPresetsReadStream, createTaskPresetsWriteStream } from '../li
 import { createTasksReadStream, createTasksWriteStream } from '../lib/ezr/tasks.js';
 
 export default class Transfer extends EzrCommand<typeof Transfer> {
-  static description = 'Transfer instance data to a dedicated folder';
+  static description = "Transfer first profile's to a second profile's instance";
 
   static examples = [
     '<%= config.bin %> <%= command.id %>',

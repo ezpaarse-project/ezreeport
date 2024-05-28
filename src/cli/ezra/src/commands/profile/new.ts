@@ -33,6 +33,9 @@ export default class ProfileNew extends BaseCommand<typeof ProfileNew> {
     url: Flags.string({
       description: 'ezREEPORT API URL',
     }),
+    key: Flags.string({
+      description: 'ezREEPORT API Key',
+    }),
     admin: Flags.string({
       description: 'ezREEPORT administrator username',
     }),
@@ -53,18 +56,24 @@ export default class ProfileNew extends BaseCommand<typeof ProfileNew> {
       throw new Error(`Profile "${args.name}" already exists`);
     }
 
-    let config: Record<string, any> = {};
+    let config: Record<string, any> = {
+      url: flags.url,
+      apiKey: flags.key,
+      admin: flags.admin,
+    };
+
     if (flags.file) {
       try {
-        config = await readJSON(flags.file);
+        const { key, ...file } = await readJSON(flags.file);
+        config = {
+          ...config,
+          ...file,
+          apiKey: key,
+        };
       } catch (error) {
         throw new Error(`Failed to read config from ${flags.file}`);
       }
     }
-
-    // Setup ezr vars
-    config.url = flags.url || config.url;
-    config.admin = flags.admin || config.admin;
 
     const ezr = new EZR(this);
     const inputs = await ezr.init({
