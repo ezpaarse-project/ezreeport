@@ -21,7 +21,6 @@
     "lint:vue": "npm --prefix src/vue run lint",
     "lint:tests": "npm --prefix tests run lint",
     "prepare": "husky install",
-    "setup": "node bin/setup.js",
     "test": "run-p -ls test:*",
     "test:mail": "npm --prefix tests run test:mail",
     "test:report": "npm --prefix tests run test:report",
