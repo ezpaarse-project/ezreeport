@@ -1,14 +1,16 @@
-import { ux } from '@oclif/core';
-import { PassThrough, Writable } from 'stream';
+import { SingleBar } from 'cli-progress';
+import chalk from 'chalk';
+
+import { PassThrough, Writable } from 'node:stream';
 
 export const createProgressBarStream = (opts: {
   total?: number,
   onEnd?: (count: number, total: number) => void,
 }) => {
-  const progress = ux.progress({
+  const progress = new SingleBar({
     barCompleteChar: '\u25A0',
     barIncompleteChar: ' ',
-    format: ux.colorize('grey', '\t[{bar}] {percentage}% | ETA: {eta}s | {value}/{total}'),
+    format: chalk.grey('\t[{bar}] {percentage}% | ETA: {eta}s | {value}/{total}'),
   });
 
   let hasStarted = false;
