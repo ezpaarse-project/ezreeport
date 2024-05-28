@@ -1,5 +1,5 @@
 {
-  "name": "ezreeport-admin",
+  "name": "@ezpaarse-project/ezreeport-admin",
   "version": "0.0.0",
   "description": "CLI for managing ezreeport instance",
   "homepage": "https://github.com/ezpaarse-project/ezreeport",
