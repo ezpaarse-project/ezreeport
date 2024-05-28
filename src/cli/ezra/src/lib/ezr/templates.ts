@@ -1,4 +1,4 @@
-import { EZR } from './index.js';
+import type { EZR } from './index.js';
 
 type TemplateListItem = any;
 type Template = any;

@@ -1,12 +1,15 @@
-import { Flags, ux } from '@oclif/core';
+import { Args, Flags } from '@oclif/core';
 import { format } from 'date-fns';
+import chalk from 'chalk';
+import ora from 'ora';
 
 import type { Readable } from 'node:stream';
 import { join } from 'node:path';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 
-import { BaseCommand } from '../lib/BaseCommand.js';
+import { EzrCommand } from '../lib/oclif/EzrCommand.js';
 import { createJSONLWriteStream, createStreamPromise } from '../lib/streams.js';
+
 import type { EZR } from '../lib/ezr/index.js';
 import { createNamespacesReadStream } from '../lib/ezr/namespaces.js';
 import { createTemplatesReadStream } from '../lib/ezr/templates.js';
@@ -14,53 +17,60 @@ import { createTaskPresetsReadStream } from '../lib/ezr/tasksPresets.js';
 import { createTasksReadStream } from '../lib/ezr/tasks.js';
 import { createProgressBarStream } from '../lib/progress.js';
 
-export default class Backup extends BaseCommand {
-  static description = 'Backup instance data into a dedicated folder';
+export default class Export extends EzrCommand<typeof Export> {
+  static description = 'Export instance data into a dedicated folder';
 
   static examples = [
     '<%= config.bin %> <%= command.id %>',
   ];
 
   static flags = {
-    out: Flags.string({
+    out: Flags.directory({
       char: 'o',
       description: 'Folder to output data',
-      default: `data/${format(new Date(), 'yyyy-MM-dd')}_backup`,
+      default: `data/${format(new Date(), 'yyyy-MM-dd')}_export`,
     }),
     namespaces: Flags.boolean({
-      description: 'Backup namespaces',
+      description: 'Export namespaces',
       allowNo: true,
       default: true,
     }),
     templates: Flags.boolean({
-      description: 'Backup templates',
+      description: 'Export templates',
       allowNo: true,
       default: true,
     }),
     tasks: Flags.boolean({
-      description: 'Backup tasks',
+      description: 'Export tasks',
       allowNo: true,
       default: true,
     }),
     taskPresets: Flags.boolean({
-      description: 'Backup task presets',
+      description: 'Export task presets',
       allowNo: true,
       default: true,
     }),
   };
 
-  private async backupData(opts: {
+  static args = {
+    dir: Args.directory({
+      description: 'Folder to output data',
+      default: `data/${format(new Date(), 'yyyy-MM-dd')}_export`,
+    }),
+  };
+
+  private async exportData(opts: {
     type: string,
     createDataReadStream: (ezr: EZR) => Promise<{ count: number, stream: Readable }>,
     outFile: string,
   }) {
     try {
-      this.log(ux.colorize('blue', `Backing ${opts.type}...`));
+      this.log(chalk.blue(`Backing ${chalk.bold(opts.type)}...`));
 
-      const { count, stream } = await opts.createDataReadStream(this.ezr);
+      const { count, stream } = await opts.createDataReadStream(this.instances[0]);
       const { progress } = createProgressBarStream({
         total: count,
-        onEnd: (c) => this.log(ux.colorize('green', `${c} ${opts.type} backed up`)),
+        onEnd: (c) => this.log(chalk.green(`${chalk.bold(c)} ${chalk.bold(opts.type)} backed up`)),
       });
 
       await createStreamPromise(
@@ -69,46 +79,56 @@ export default class Backup extends BaseCommand {
           .pipe(progress),
       );
     } catch (error) {
-      this.logToStderr(
-        ux.colorize('red', (error as Error).message),
-      );
+      this.logToStderr(chalk.red((error as Error).message));
     }
   }
 
   public async run(): Promise<void> {
-    const { flags } = await this.parse(Backup);
+    const { args, flags } = await this.parse(Export);
 
-    await mkdir(flags.out, { recursive: true });
+    const action = ora(chalk.gray('Getting current version...')).start();
+    let currentVersion;
+    try {
+      const { data } = await this.instances[0].fetch('/health/');
+      currentVersion = data.content.currentVersion;
+    } catch (error) {
+      action.fail(chalk.red((error as Error).message));
+      throw error;
+    }
+    action.info(chalk.gray(`Current version: ${currentVersion}`));
+
+    await mkdir(args.dir, { recursive: true });
+    await writeFile(join(args.dir, 'version'), currentVersion);
 
     if (flags.namespaces) {
-      await this.backupData({
+      await this.exportData({
         type: 'namespaces',
         createDataReadStream: createNamespacesReadStream,
-        outFile: join(flags.out, 'namespaces.jsonl'),
+        outFile: join(args.dir, 'namespaces.jsonl'),
       });
     }
 
     if (flags.templates) {
-      await this.backupData({
+      await this.exportData({
         type: 'templates',
         createDataReadStream: createTemplatesReadStream,
-        outFile: join(flags.out, 'templates.jsonl'),
+        outFile: join(args.dir, 'templates.jsonl'),
       });
     }
 
     if (flags.taskPresets) {
-      await this.backupData({
+      await this.exportData({
         type: 'tasks presets',
         createDataReadStream: createTaskPresetsReadStream,
-        outFile: join(flags.out, 'tasks-presets.jsonl'),
+        outFile: join(args.dir, 'tasks-presets.jsonl'),
       });
     }
 
     if (flags.tasks) {
-      await this.backupData({
+      await this.exportData({
         type: 'tasks',
         createDataReadStream: createTasksReadStream,
-        outFile: join(flags.out, 'tasks.jsonl'),
+        outFile: join(args.dir, 'tasks.jsonl'),
       });
     }
   }
