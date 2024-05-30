@@ -7,7 +7,7 @@ import ora from 'ora';
 import { Readable, Transform } from 'node:stream';
 
 const logError = (error: any, logToStderr: Command['logToStderr']) => {
-  let text = 'Error: ';
+  let text = '\nError: ';
 
   if (error instanceof Error) {
     text += error.message;
@@ -152,7 +152,8 @@ export class EZR {
     }
     transform?: (item: Item) => any
   }) {
-    const { fetch, command: { logToStderr } } = this;
+    const { fetch } = this;
+    const logToStderr = (text: string) => this.command.logToStderr(text);
 
     const transformer = opts.transform || ((item) => item);
 
@@ -168,7 +169,7 @@ export class EZR {
             callback(null, content);
           } catch (error) {
             logError(error, logToStderr);
-            callback();
+            process.exit(1);
           }
         },
       }),
