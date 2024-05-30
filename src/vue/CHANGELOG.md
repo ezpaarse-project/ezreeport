@@ -1,3 +1,29 @@
+# [1.2.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.1.0...@ezpaarse-project/ezreeport-vue@1.2.0-rc.1) (2024-05-30)
+
+
+### Bug Fixes
+
+* **mail:** fixed element position in layout ([3b9eefc](https://github.com/ezpaarse-project/ezreeport/commit/3b9eefc2bd4398e371b97d7e88e0d94f3494710e))
+* **mail:** upgraded timeout of pings cause of inist's smtp ([c5c0113](https://github.com/ezpaarse-project/ezreeport/commit/c5c01137317da00b9fd6eb7f75c8b5a73ed2d371))
+* **report:** fixed issuel with max length on tables ([6c5f351](https://github.com/ezpaarse-project/ezreeport/commit/6c5f3513cef8fbbeccfcf246b2766edd39a2f055))
+* **report:** fixed labels overflowing over figure's edges ([bcae347](https://github.com/ezpaarse-project/ezreeport/commit/bcae34795264b819e86e314bd4e5fd9c55619d49))
+* **vue:** fixed issue when disabling stacking ([d774d6f](https://github.com/ezpaarse-project/ezreeport/commit/d774d6f2edd35fc4e9d97301aec154bb5ff9530c))
+* **vue:** fixed issue with maxLength not beign shown for tables ([3ca5b38](https://github.com/ezpaarse-project/ezreeport/commit/3ca5b386655d72fd8e94b9b1cb3c6ae473192c08))
+* **vue:** fixed minor issues with elastic index selector ([4bfae4f](https://github.com/ezpaarse-project/ezreeport/commit/4bfae4ff94cffd303f93edad9b1d0299535084bf))
+* **vue:** reset params and buckets when changing figure type ([bf72945](https://github.com/ezpaarse-project/ezreeport/commit/bf729455b1b96b18f2af20315902bf765cb3ab5e))
+* **vue:** try to truncate filter values when too long to fit ([06c73f7](https://github.com/ezpaarse-project/ezreeport/commit/06c73f7fb7932b817c9f0994469af3cd4c3d740e))
+
+
+### Features
+
+* **mail:** updated assets and theme ([125b552](https://github.com/ezpaarse-project/ezreeport/commit/125b552995fc845d83917d599fb5cee9a5e2808f))
+* **report:** added shorthand to sort elastic's metrics ([a9fa009](https://github.com/ezpaarse-project/ezreeport/commit/a9fa009ab29c6f595c86b00eeeafdb50d9d185f7))
+* **vue:** added more precision on elastic indices ([b03678d](https://github.com/ezpaarse-project/ezreeport/commit/b03678db08f9c2d409e934be42d126d76267f764))
+* **vue:** added way to import filters from Kibana ([a4d0c07](https://github.com/ezpaarse-project/ezreeport/commit/a4d0c0715d743cdbc9239ab9ccb4570c47ab69b4))
+* **vue:** added way to sort elastic' metrics ([351579b](https://github.com/ezpaarse-project/ezreeport/commit/351579b76e1b630bc8fed73c63e9bab74f283e04))
+* **vue:** more intuitive text when no data ([4c6620b](https://github.com/ezpaarse-project/ezreeport/commit/4c6620bdb8227c81897671179c585600c87b3adc))
+* **vue:** revamped elastic index selector style ([51285d4](https://github.com/ezpaarse-project/ezreeport/commit/51285d4cda882a06a604c7a4efd36a40aaefb448))
+
 # [1.2.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.1.0...@ezpaarse-project/ezreeport-vue@1.2.0-beta.1) (2024-05-24)
 
 
