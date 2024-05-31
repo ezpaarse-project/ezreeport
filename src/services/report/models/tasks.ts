@@ -58,6 +58,7 @@ export const InputTaskBody = Type.Object({
   targets: Type.Array(
     Type.String({ format: 'email' }),
   ),
+  namespace: Type.Optional(Type.String()),
   recurrence: Type.Enum(Recurrence),
   nextRun: Type.Optional(
     Type.String({ format: 'date-time' }),
@@ -540,12 +541,18 @@ export const patchTaskByIdWithHistory = async (
   entry?: InputActivity,
   namespaceIds?: Namespace['id'][],
 ): Promise<FullTask | null> => {
-  const { nextRun, extends: extendedId, ...data } = input;
+  const {
+    nextRun, extends: extendedId, namespace, ...data
+  } = input;
 
   // Check if task exist
   const existingTask = await getTaskById(id, namespaceIds);
   if (!existingTask) {
     return null;
+  }
+
+  if (namespace !== existingTask.namespace.id) {
+    throw new ArgumentError('Body is not valid: "namespace" must not change');
   }
 
   // Check if "parent" template exist
