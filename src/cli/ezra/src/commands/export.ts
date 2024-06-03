@@ -25,11 +25,6 @@ export default class Export extends EzrCommand<typeof Export> {
   ];
 
   static flags = {
-    out: Flags.directory({
-      char: 'o',
-      description: 'Folder to output data',
-      default: `data/${format(new Date(), 'yyyy-MM-dd')}_export`,
-    }),
     namespaces: Flags.boolean({
       description: 'Export namespaces',
       allowNo: true,

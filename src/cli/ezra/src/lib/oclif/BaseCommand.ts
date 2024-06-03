@@ -10,10 +10,6 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
   protected ezraConfig: EZRAConfig = {} as EZRAConfig;
 
   static baseFlags = {
-    // interactive: Flags.boolean({
-    //   char: 'i',
-    //   description: 'Run command in interactive mode',
-    // }),
     config: Flags.string({
       char: 'c',
       description: 'Path to config file',

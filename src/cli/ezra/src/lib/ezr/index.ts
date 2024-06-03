@@ -93,7 +93,8 @@ export class EZR {
     transform?: (item: Item) => any,
     filter?: (item: ListItem, meta: any) => boolean,
   }) {
-    const { fetch, command: { logToStderr } } = this;
+    const { fetch } = this;
+    const logToStderr = (text: string) => this.command.logToStderr(text);
 
     const action = ora({
       indent: 6,
