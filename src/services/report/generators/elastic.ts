@@ -333,7 +333,7 @@ const fetchWithElastic = async (
           const { aggregations, aggs, ...v } = r.buckets[i];
           const sub = aggregations || aggs || [];
           if (r.metric) {
-            const metric = { ...r, order: r.metric.order ?? true };
+            const metric = { ...r.metric, order: r.metric.order ?? true };
             sub.push(metric);
           }
 
@@ -351,7 +351,7 @@ const fetchWithElastic = async (
           aggsOptions = [recursiveBucket];
         }
       } else if ('metric' in r && r.metric) {
-        const metric = { ...r, order: r.metric.order ?? true };
+        const metric = { ...r.metric, order: r.metric.order ?? true };
         aggsOptions = [metric];
       }
       allAggsOptions.push(aggsOptions ?? []);
@@ -416,7 +416,7 @@ const fetchWithElastic = async (
 
     // Checks any errors
     if ('error' in response) {
-      throw new Error(response.error.reason);
+      throw new Error(response.error.reason, { cause });
     }
 
     // Checks any errors
@@ -431,7 +431,7 @@ const fetchWithElastic = async (
         ? response.hits.total.value === 0
         : response.hits.hits.length === 0
     ) {
-      throw new Error(`No data found for given request: ${JSON.stringify(opts.body[i])}`, { cause });
+      throw new Error('No data found for given request. Please review filters or aggregations of figures.', { cause });
     }
 
     if (aggs.length > 0) {

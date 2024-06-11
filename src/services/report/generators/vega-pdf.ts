@@ -469,7 +469,7 @@ const renderPdfWithVega = async (
                 // eslint-disable-next-line no-await-in-loop
                 const view = syncWithCommonHandlers(
                   () => createVegaView(spec),
-                  { vegaSpec: spec },
+                  { vegaSpec: { ...spec, datasets: undefined } },
                 );
 
                 // eslint-disable-next-line no-await-in-loop

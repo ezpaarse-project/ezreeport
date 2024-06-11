@@ -1,6 +1,3 @@
-import { writeFile } from 'node:fs';
-import { join } from 'node:path';
-
 import { registerFont } from 'canvas';
 import { compile as handlebars } from 'handlebars';
 import type { ImageOptions } from 'jspdf';
@@ -9,7 +6,6 @@ import {
   cloneDeep,
   get,
   merge,
-  omit,
 } from 'lodash';
 
 import {
@@ -78,7 +74,6 @@ type VegaParams = {
 export type InputVegaParams = Omit<VegaParams, 'width' | 'height'> & { title: Title };
 
 const {
-  outDir,
   scheme,
   fontFamily,
   fonts,
@@ -454,21 +449,6 @@ export const createVegaLSpec = (
       font: fontFamily,
     },
   };
-
-  // Write generated spec into debug file (without data to gain time & space)
-  if (params.debugExport === true && process.env.NODE_ENV !== 'production') {
-    spec.$schema = 'https://vega.github.io/schema/vega-lite/v5.json';
-    writeFile(
-      join(outDir, 'debug.json'),
-      JSON.stringify(omit(spec, 'datasets'), undefined, 2),
-      'utf-8',
-      (err) => {
-        if (err != null) {
-          logger.error("[vega] Can't write debug :", err);
-        }
-      },
-    );
-  }
 
   return spec;
 };
