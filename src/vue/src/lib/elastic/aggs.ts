@@ -18,17 +18,7 @@ export type ElasticAgg = {
 /**
  * Root keys handled by the simple edition
  */
-const handledKeys = new Set(['name', 'aggs', 'aggregations']);
-
-/**
- * Some aggregations types have different ways to handle the size parameter
- */
-export const sizeKeyByType: Record<string, string> = {
-  auto_date_histogram: 'buckets',
-  variable_width_histogram: 'buckets',
-  diversified_sampler: 'shards',
-  sampler: 'shard_size',
-} satisfies Partial<Record<keyof typeof definitions, string>>;
+const handledKeys = new Set(['name', 'aggs', 'aggregations', 'order']);
 
 /**
  * Get unsupported keys of an aggregation

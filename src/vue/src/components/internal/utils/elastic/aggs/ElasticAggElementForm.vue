@@ -91,11 +91,11 @@
               </div>
 
               <v-btn-toggle
-                :value="(type.data?.order === true ? 'asc' : type.data?.order)"
+                :value="(innerElement?.order === true ? 'asc' : innerElement?.order)"
                 dense
                 rounded
                 color="primary"
-                @change="onTypeFieldUpdate({ order: $event })"
+                @change="onElementUpdate({ order: $event })"
               >
                 <v-btn :disabled="readonly" value="asc" small outlined>
                   {{ $t('sortOrder.asc') }}
@@ -166,7 +166,6 @@
 import { defineComponent, type PropType } from 'vue';
 import {
   aggsDefinition,
-  sizeKeyByType,
   getTypeDefinitionFromAggType,
   getTypeFromAgg,
   getUnknownKeysFromAgg,
@@ -282,24 +281,6 @@ export default defineComponent({
       return {
         value,
         data: this.innerElement[value],
-      };
-    },
-    /**
-     * The current size parameter of aggregation
-     */
-    size(): number | undefined {
-      const field = sizeKeyByType[this.type.value] || 'size';
-      return this.type.data?.[field];
-    },
-    /**
-     * The current order parameter of aggregation
-     */
-    order() {
-      const obj = this.type.data?.order ?? {};
-      const value = Object.keys(obj)[0] ?? '';
-      return {
-        value,
-        data: obj[value],
       };
     },
     /**
@@ -486,6 +467,7 @@ export default defineComponent({
         ...cloneDeep(this.element),
         name: this.element.name || `agg${this.elementIndex}`,
       };
+
       this.showAdvanced = this.isTooAdvanced;
       (this.$refs.form as any).validate();
     },
@@ -531,7 +513,6 @@ export default defineComponent({
         return;
       }
 
-      // TODO: handle size change
       this.updateElement();
     },
     /**
@@ -548,50 +529,6 @@ export default defineComponent({
         [this.type.value]: {
           ...this.type.data,
           ...data,
-        },
-      });
-    },
-    /**
-     * When size parameter is updated
-     *
-     * @param size The new size
-     */
-    onSizeUpdate(size: string) {
-      const field = sizeKeyByType[this.type.value] || 'size';
-
-      const data: Record<string, number | undefined> = { [field]: +size };
-      if (!size) {
-        data[field] = undefined;
-      }
-
-      this.onTypeFieldUpdate(data);
-    },
-    /**
-     * When order parameter is updated
-     *
-     * @param order The new order
-     */
-    onOrderUpdate(order: string) {
-      if (!order) {
-        this.onTypeFieldUpdate({ order: undefined });
-        return;
-      }
-
-      this.onTypeFieldUpdate({
-        order: {
-          [order]: this.order.data ?? 'desc',
-        },
-      });
-    },
-    /**
-     * When order data is updated
-     *
-     * @param data The new data
-     */
-    onOrderDataUpdate(data: any) {
-      this.onTypeFieldUpdate({
-        order: {
-          [this.order.value]: data,
         },
       });
     },
