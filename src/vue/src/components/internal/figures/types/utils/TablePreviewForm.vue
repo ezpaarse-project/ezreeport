@@ -287,10 +287,17 @@ export default defineComponent({
         return;
       }
 
+      const wasInTotal = this.totals.includes(this.currentColumn?.dataKey || '');
+      if (wasInTotal) {
+        this.onCurrentColumnTotalUpdated(false);
+      }
+
       const columns = [...this.value];
       columns.splice(index, 1, omit(column, '_'));
       this.$emit('input', columns);
       this.currentColumn = column;
+
+      this.onCurrentColumnTotalUpdated(wasInTotal);
     },
     /**
      * Triggered when a column total is updated

@@ -281,9 +281,10 @@ export default defineComponent({
   },
   methods: {
     onColumnUpdated(data: Partial<TableColumn>) {
-      if (this.valid) {
-        this.$emit('update:column', { ...this.column, ...data });
+      if (!this.valid) {
+        return;
       }
+      this.$emit('update:column', { ...this.column, ...data });
     },
     onColStyleUpdate(data: Partial<PDFStyle>) {
       if (this.valid) {
