@@ -7,7 +7,12 @@ import { Recurrence, type Prisma } from '~/lib/prisma';
 import { asyncWithCommonHandlers } from '~/lib/utils';
 import { formatISO } from '~/lib/date-fns';
 import { elasticCount, elasticMSearch } from '~/lib/elastic';
-import { Type, type Static, assertIsSchema } from '~/lib/typebox';
+import {
+  Type,
+  Value,
+  assertIsSchema,
+  type Static,
+} from '~/lib/typebox';
 
 import { calcElasticInterval } from '~/models/recurrence';
 import { ArgumentError } from '~/types/errors';
@@ -64,6 +69,12 @@ const Bucket = Type.Intersect([
   ),
 ]);
 
+const MetricOrder = Type.Union([
+  Type.Literal('asc'),
+  Type.Literal('desc'),
+  Type.Boolean(),
+]);
+
 const ElasticFetchOptions = Type.Object({
   // Auto fields
   recurrence: Type.Enum(Recurrence),
@@ -91,13 +102,7 @@ const ElasticFetchOptions = Type.Object({
             Type.Intersect([
               Bucket,
               Type.Object({
-                order: Type.Optional(
-                  Type.Union([
-                    Type.Literal('asc'),
-                    Type.Literal('desc'),
-                    Type.Boolean(),
-                  ]),
-                ),
+                order: MetricOrder,
               }),
             ]),
           ),
@@ -180,30 +185,22 @@ const reduceAggs = (
   dateField: string,
 ): Record<string, ElasticAggregation> => {
   const agg = rawAgg as ElasticAggregation;
-  // Add calendar_interval
-  if (rawAgg.date_histogram) {
-    merge(agg, { date_histogram: { calendar_interval } });
-  }
-  // Replace `{{ dateField }}` by actual dateField
-  if (/{{ ?dateField ?}}/.test(rawAgg[aggsInfo.type].field)) {
-    merge(agg, { [aggsInfo.type]: { field: dateField } });
-  }
 
   // Handle sub aggregations
   if (rawAgg.aggs || rawAgg.aggregations) {
+    const order: Record<string, 'asc' | 'desc'> = {};
+
     const key = rawAgg.aggs ? 'aggs' : 'aggregations';
     agg[key] = rawAgg[key]?.reduce(
-      (subPrev, subAgg, i) => {
+      (subPrev, _, i) => {
+        const subAgg = _;
+        const subAggInfo = aggsInfo.subAggs[i];
+
         // Handle custom order
-        if (subAgg.order === 'asc' || subAgg.order === 'desc') {
-          merge(agg, { [aggsInfo.type]: { order: { [subAgg.name || `agg${i}`]: subAgg.order } } });
-          // eslint-disable-next-line no-param-reassign
-          subAgg.order = undefined;
-        }
-        // Handle default order
-        if (subAgg.order === true || subAgg.order === false) {
-          merge(agg, { [aggsInfo.type]: { order: { [subAgg.name || `agg${i}`]: subAgg.order ? 'desc' : undefined } } });
-          // eslint-disable-next-line no-param-reassign
+        if (Value.Check(MetricOrder, subAgg.order)) {
+          if (subAgg.order) {
+            order[subAgg.name || `agg${i}`] = subAgg.order === true ? 'desc' : subAgg.order;
+          }
           subAgg.order = undefined;
         }
 
@@ -211,12 +208,25 @@ const reduceAggs = (
           subPrev,
           subAgg,
           calendar_interval,
-          aggsInfo.subAggs[i],
+          subAggInfo,
           dateField,
         );
       },
       {},
     );
+
+    // Apply custom order
+    if (Object.keys(order).length > 0) {
+      merge(agg, { [aggsInfo.type]: { order } });
+    }
+    // Add calendar_interval
+    if (rawAgg.date_histogram) {
+      merge(agg, { date_histogram: { calendar_interval } });
+    }
+    // Replace `{{ dateField }}` by actual dateField
+    if (/{{ ?dateField ?}}/.test(rawAgg[aggsInfo.type].field)) {
+      merge(agg, { [aggsInfo.type]: { field: dateField } });
+    }
   }
 
   return {
@@ -330,20 +340,20 @@ const fetchWithElastic = async (
         // If aggs need to be merged from buckets and metric
         let recursiveBucket: CustomAggregationType | undefined;
         for (let i = r.buckets.length - 1; i >= 0; i -= 1) {
-          const { aggregations, aggs, ...v } = r.buckets[i];
-          const sub = aggregations || aggs || [];
+          const { aggregations, aggs, ...bucket } = r.buckets[i];
+          const subAggregations = aggregations || aggs || [];
           if (r.metric) {
             const metric = { ...r.metric, order: r.metric.order ?? true };
-            sub.push(metric);
+            subAggregations.push(metric);
           }
 
           if (recursiveBucket) {
-            sub.push(recursiveBucket);
+            subAggregations.push(recursiveBucket);
           }
 
           recursiveBucket = {
-            ...v,
-            aggs: sub,
+            ...bucket,
+            aggs: subAggregations,
           };
         }
 
