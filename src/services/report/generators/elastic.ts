@@ -4,6 +4,7 @@ import type { estypes as ElasticTypes, RequestParams } from '@elastic/elasticsea
 import { merge } from 'lodash';
 
 import { Recurrence, type Prisma } from '~/lib/prisma';
+import { asyncWithCommonHandlers } from '~/lib/utils';
 import { formatISO } from '~/lib/date-fns';
 import { elasticCount, elasticMSearch } from '~/lib/elastic';
 import { Type, type Static, assertIsSchema } from '~/lib/typebox';
@@ -391,14 +392,19 @@ const fetchWithElastic = async (
     }),
   };
 
+  const cause = { elasticQuery: opts };
+
   const results: Prisma.JsonObject[] = [];
-  const { body: { responses } } = await elasticMSearch(
-    {
-      ...opts,
-      // add empty headers
-      body: opts.body.map((v) => [{}, v]).flat(),
-    },
-    options.auth.username,
+  const { body: { responses } } = await asyncWithCommonHandlers(
+    () => elasticMSearch(
+      {
+        ...opts,
+        // add empty headers
+        body: opts.body.map((v) => [{}, v]).flat(),
+      },
+      options.auth.username,
+    ),
+    cause,
   );
 
   for (let i = 0; i < responses.length; i += 1) {
@@ -416,7 +422,7 @@ const fetchWithElastic = async (
     // Checks any errors
     if (response._shards.failures?.length) {
       const reasons = response._shards.failures.map((err) => err.reason.reason).join(' ; ');
-      throw new Error(`An error occurred when fetching data : ${reasons}`);
+      throw new Error(`An error occurred when fetching data : ${reasons}`, { cause });
     }
 
     // Checks if there's data
@@ -425,7 +431,7 @@ const fetchWithElastic = async (
         ? response.hits.total.value === 0
         : response.hits.hits.length === 0
     ) {
-      throw new Error(`No data found for given request: ${JSON.stringify(opts.body[i])}`);
+      throw new Error(`No data found for given request: ${JSON.stringify(opts.body[i])}`, { cause });
     }
 
     if (aggs.length > 0) {

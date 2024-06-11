@@ -4,6 +4,7 @@ import { merge } from 'lodash';
 import { Mark } from 'vega-lite/build/src/mark';
 
 import { Recurrence } from '~/lib/prisma';
+import { commonHandlers, syncWithCommonHandlers } from '~/lib/utils';
 import {
   addPage,
   deleteDoc,
@@ -453,19 +454,22 @@ const renderPdfWithVega = async (
                   slot.height -= (1.25 * h);
                 }
 
-                // Creating Vega view
-                const view = createVegaView(
-                  createVegaLSpec(
-                    figure.type as Mark,
-                    figureData,
-                    {
-                      ...(figParams as { label: any, value: any }),
-                      colorMap,
-                      recurrence: options.recurrence,
-                      width: slot.width,
-                      height: slot.height,
-                    },
-                  ),
+                const spec = createVegaLSpec(
+                  figure.type as Mark,
+                  figureData,
+                  {
+                    ...(figParams as { label: any, value: any }),
+                    colorMap,
+                    recurrence: options.recurrence,
+                    width: slot.width,
+                    height: slot.height,
+                  },
+                );
+
+                // eslint-disable-next-line no-await-in-loop
+                const view = syncWithCommonHandlers(
+                  () => createVegaView(spec),
+                  { vegaSpec: spec },
                 );
 
                 // eslint-disable-next-line no-await-in-loop
@@ -473,25 +477,21 @@ const renderPdfWithVega = async (
                 break;
               }
             }
+
             events.emit('figureRendered', figure);
           } catch (error) {
-            if (!(error instanceof Error)) {
-              throw error;
-            }
             const figure = figures[figureIndex];
             const title = figure?.params?.title || figure?.type || (figureIndex + 1);
-            error.cause = { ...(error.cause ?? {}), figure: title };
-            throw error;
+            throw commonHandlers(error, { figure: title });
           }
         }
 
         events.emit('layoutRendered', figures);
       } catch (error) {
-        if (!(error instanceof Error)) {
-          throw error;
-        }
-        error.cause = { ...(error.cause ?? {}), layout: layoutIndex, type: 'render' };
-        throw error;
+        throw commonHandlers({
+          layout: layoutIndex,
+          type: 'render',
+        });
       }
     }
 
