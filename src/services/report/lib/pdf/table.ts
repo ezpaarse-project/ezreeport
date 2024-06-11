@@ -168,7 +168,7 @@ export const addTableToPDF = async (
     });
 
     // Adding totals as footer
-    if (options.totals) {
+    if ((options.totals?.length ?? 0) > 0) {
       const totalSet = new Set(options.totals);
       options.foot = [
         options.columns.map((col): CellDef => {
