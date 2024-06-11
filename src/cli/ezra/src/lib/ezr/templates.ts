@@ -12,7 +12,7 @@ export const createTemplatesReadStream = (
     item: (item) => `/templates/${item.id}`,
   },
   transform: ({ tasks, presets, ...item }) => item,
-  filter: (item, meta) => item.id !== '_' || item.id !== meta.default,
+  filter: (item, meta) => item.id !== '_' && item.id !== meta.default,
 });
 
 export const createTemplatesWriteStream = (
