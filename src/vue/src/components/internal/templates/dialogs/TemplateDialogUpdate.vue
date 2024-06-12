@@ -26,7 +26,6 @@
       <v-tabs v-model="currentTab" style="flex-grow: 0;" grow>
         <v-tab>
           {{ $t(`$ezreeport.templates.tabs.template`) }}
-          <v-icon small class="ml-1">mdi-arrow-expand</v-icon>
 
           <v-tooltip
             top
@@ -51,7 +50,6 @@
 
         <v-tab>
           {{ $t(`$ezreeport.templates.tabs.tasks`) }}
-          <v-icon small class="ml-1">mdi-arrow-expand</v-icon>
         </v-tab>
       </v-tabs>
 

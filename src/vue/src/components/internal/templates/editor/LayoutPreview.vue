@@ -1,5 +1,4 @@
 <template>
-
   <div class="preview" v-if="layouts.length > 0">
     <div
       v-for="(layout, i) in layouts"
@@ -20,6 +19,7 @@
             rounded
             outlined
             class="layout-preview mb-3 pa-2"
+            :style="{ cursor: $listeners.input ? 'pointer' : undefined }"
             @click="$emit('input', layout._.id)"
           >
             <SlotItemGrid
@@ -81,18 +81,14 @@ const layouts = computed(() => addAdditionalDataToLayouts(props.layouts));
 }
 
 .preview {
-  $cols: 4;
+  $cols: 6;
 
   display: grid;
   grid-template-columns: repeat($cols, 1fr);
   grid-auto-rows: 1fr;
 
   & > div {
-    padding: 1.5rem;
-
-    &:nth-last-of-type(n + #{$cols + 1}) {
-      border-bottom: 1px solid currentColor;
-    }
+    padding: 1rem;
   }
 }
 

@@ -13,7 +13,6 @@
         v-model="updateTemplateDialogShown"
         :id="focusedId"
         :available-tags="availableTags"
-        fullscreen
         @updated="fetch"
       />
 
@@ -22,7 +21,6 @@
         ref="dialogCreate"
         v-model="createTemplateDialogShown"
         :available-tags="availableTags"
-        fullscreen
         @created="onTemplateCreated"
       />
 
