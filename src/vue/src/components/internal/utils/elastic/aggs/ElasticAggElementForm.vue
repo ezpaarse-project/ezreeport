@@ -91,7 +91,7 @@
               </div>
 
               <v-btn-toggle
-                :value="(innerElement?.order === true ? 'asc' : innerElement?.order)"
+                :value="(innerElement?.order === true ? 'asc' : innerElement?.order) ?? 'desc'"
                 dense
                 rounded
                 color="primary"
@@ -113,9 +113,8 @@
             <CustomSection
               v-if="typeDefinition?.returnsArray"
               :label="$t('headers.showMissing').toString()"
-              collapsable
             >
-              <template #collapse>
+              <template #prepend>
                 <v-switch
                   :input-value="!!type.data?.missing"
                   :readonly="readonly"

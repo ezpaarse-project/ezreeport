@@ -77,8 +77,8 @@
             @input="onSubParamUpdate('label', { title: $event })"
           />
 
-          <CustomSection v-if="legendLabelSection" :label="legendLabelSection" collapsable>
-            <template #collapse>
+          <CustomSection v-if="legendLabelSection" :label="legendLabelSection">
+            <template #actions>
               <v-switch
                 :input-value="figureParams.label?.legend !== null"
                 :readonly="readonly"
@@ -112,16 +112,7 @@
           :label="headers.color"
           collapsable
         >
-          <template #collapse>
-            <v-btn
-              v-if="!!buckets.value.at(1)"
-              icon
-              x-small
-              @click="collapsedColor = !collapsedColor"
-            >
-              <v-icon>mdi-chevron-{{ collapsedColor === false ? 'up' : 'down' }}</v-icon>
-            </v-btn>
-
+          <template #prepend>
             <v-switch
               :input-value="!!buckets.value.at(1)"
               :readonly="readonly"
@@ -140,6 +131,17 @@
               }"
               @click.prevent=""
             />
+          </template>
+
+          <template #collapse>
+            <v-btn
+              v-if="!!buckets.value.at(1)"
+              icon
+              x-small
+              @click="collapsedColor = !collapsedColor"
+            >
+              <v-icon>mdi-chevron-{{ collapsedColor === false ? 'up' : 'down' }}</v-icon>
+            </v-btn>
           </template>
 
           <ElasticAggElementForm
@@ -180,16 +182,7 @@
           :label="$t('headers.dataLabel').toString()"
           collapsable
         >
-          <template #collapse>
-            <v-btn
-              v-if="!!figureParams.dataLabel"
-              icon
-              x-small
-              @click="collapsedDl = !collapsedDl"
-            >
-              <v-icon>mdi-chevron-{{ collapsedDl === false ? 'up' : 'down' }}</v-icon>
-            </v-btn>
-
+          <template #prepend>
             <v-switch
               :input-value="!!figureParams.dataLabel"
               :readonly="readonly"
@@ -202,6 +195,17 @@
               }"
               @click.prevent=""
             />
+          </template>
+
+          <template #collapse>
+            <v-btn
+              v-if="!!figureParams.dataLabel"
+              icon
+              x-small
+              @click="collapsedDl = !collapsedDl"
+            >
+              <v-icon>mdi-chevron-{{ collapsedDl === false ? 'up' : 'down' }}</v-icon>
+            </v-btn>
           </template>
 
           <template v-if="figureParams.dataLabel">

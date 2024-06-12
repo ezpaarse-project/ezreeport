@@ -3,6 +3,20 @@
     <ObjectTreePropertyPopover v-if="$listeners.input" ref="propertyPopoverRef" />
 
     <div v-if="label" class="text--secondary d-flex align-center">
+      {{ label }}
+
+      <v-btn
+        v-if="$listeners.input && (!collapsed || length <= 0)"
+        icon
+        x-small
+        color="success"
+        @click="addField"
+      >
+        <v-icon>mdi-plus</v-icon>
+      </v-btn>
+
+      <v-spacer />
+
       <v-btn
         :disabled="length <= 0"
         icon
@@ -10,17 +24,6 @@
         @click="collapsed = !collapsed"
       >
         <v-icon>mdi-chevron-{{ collapsed === false ? 'up' : 'down' }}</v-icon>
-      </v-btn>
-      {{ label }}
-
-      <v-btn
-        v-if="$listeners.input"
-        icon
-        x-small
-        color="success"
-        @click="addField"
-      >
-        <v-icon>mdi-plus</v-icon>
       </v-btn>
     </div>
     <ObjectTree

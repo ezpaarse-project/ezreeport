@@ -144,15 +144,7 @@
         outlined
         elevation="0"
       >
-        <v-card-subtitle class="py-2 pl-2">
-          <v-btn
-            icon
-            x-small
-            @click="templateEditorCollapsed = !templateEditorCollapsed"
-          >
-            <v-icon>mdi-chevron-{{ templateEditorCollapsed === false ? 'up' : 'down' }}</v-icon>
-          </v-btn>
-
+        <v-card-subtitle class="py-2 px-2 d-flex" style="gap: 8px;">
           {{ $tc('$ezreeport.templates.editor', templateStore.currentLayouts.length) }}
 
           <v-tooltip top v-if="areLayoutsValid !== true" color="warning">
@@ -169,6 +161,16 @@
 
             <span>{{ areLayoutsValid }}</span>
           </v-tooltip>
+
+          <v-spacer />
+
+          <v-btn
+            icon
+            x-small
+            @click="templateEditorCollapsed = !templateEditorCollapsed"
+          >
+            <v-icon>mdi-chevron-{{ templateEditorCollapsed === false ? 'up' : 'down' }}</v-icon>
+          </v-btn>
         </v-card-subtitle>
 
         <v-divider />
