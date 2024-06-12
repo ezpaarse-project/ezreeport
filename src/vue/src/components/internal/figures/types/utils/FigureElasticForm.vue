@@ -38,6 +38,7 @@
       dense
       hide-details
       class="my-3"
+      style="width: fit-content"
       @change="$emit('update:fetchOptions', {
         fetchCount: ($event ? 'total_count' : undefined),
       })"
