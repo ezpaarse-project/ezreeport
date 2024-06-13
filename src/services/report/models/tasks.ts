@@ -551,7 +551,7 @@ export const patchTaskByIdWithHistory = async (
     return null;
   }
 
-  if (namespace !== existingTask.namespace.id) {
+  if (namespace && namespace !== existingTask.namespace.id) {
     throw new ArgumentError('Body is not valid: "namespace" must not change');
   }
 
