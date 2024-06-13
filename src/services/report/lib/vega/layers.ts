@@ -67,6 +67,13 @@ vegaScheme(labelScheme, colorScheme.map((c) => (contrast(c, 'black') > 5 ? 'blac
  */
 const RADIUS_OUTER_INNER_RATIO = 0.5;
 
+/**
+ * Calculate arc radius
+ *
+ * @param params The params of the figure
+ *
+ * @returns Arc radius
+ */
 const calcRadius = (params: VegaParams): ArcRadius => {
   const outerRadius = Math.min(params.height, params.width) / 2;
   const innerRadius = outerRadius * RADIUS_OUTER_INNER_RATIO;
@@ -77,6 +84,14 @@ const calcRadius = (params: VegaParams): ArcRadius => {
   };
 };
 
+/**
+ * Calculate score of date labels
+ *
+ * @param data The data to display
+ * @param field The path to the date field
+ *
+ * @returns The score
+ */
 const calcLabelDateScore = (data: any[], field: string) => {
   const sliceLength = data.length / 2;
   const count = data
@@ -93,6 +108,16 @@ const calcLabelDateScore = (data: any[], field: string) => {
   return (count / sliceLength);
 };
 
+/**
+ * Prepare color scale
+ *
+ * @param type The type of figure
+ * @param data The data to display
+ * @param params The params of the figure
+ * @param colorFieldPath The path to the color field
+ *
+ * @returns The color scale
+ */
 const prepareColorScale = (
   type: Mark,
   data: any[],
@@ -139,6 +164,15 @@ const prepareColorScale = (
   };
 };
 
+/**
+ * Prepare data layer
+ *
+ * @param type The type of figure
+ * @param data The data to display
+ * @param params The params of the figure
+ *
+ * @returns The layer for data
+ */
 const prepareDataLayer = (
   type: Mark,
   data: any[],
@@ -153,6 +187,17 @@ const prepareDataLayer = (
   params.dataLayer ?? {},
 );
 
+/**
+ * Prepare layers for data labels
+ *
+ * @param type The type of figure
+ * @param data The data to display
+ * @param params The params of the figure
+ * @param radius The radius of an arc figure
+ * @param valueAxis The axis with the values
+ *
+ * @returns Layers for data labels
+ */
 const prepareDataLabelsLayers = (
   type: Mark,
   data: any[],
@@ -323,11 +368,28 @@ const prepareDataLabelsLayers = (
   return { dataLayerEdits, layers: [layer, labelLayer] };
 };
 
+/**
+ * Merge data layer and layers
+ *
+ * @param dataLayer The layer that contains the data
+ * @param layers The layers to merge
+ *
+ * @returns The layers ready to be used in a vega-lite spec
+ */
 const mergeLayers = (dataLayer: Layer, ...layers: (Layer | undefined)[]): Layer[] => [
   dataLayer,
   ...layers.filter((l): l is Layer => !!l),
 ];
 
+/**
+ * Create a vega-lite spec for a arc chart from ezREEPORT's params
+ *
+ * @param type The type of figure
+ * @param data The data to display
+ * @param params The params of the figure
+ *
+ * @returns Partial vega-lite spec
+ */
 export const createArcSpec = (
   type: Mark,
   data: any[],
@@ -370,6 +432,15 @@ export const createArcSpec = (
   return { layer: mergeLayers(dataLayer, ...dataLabelLayers), encoding };
 };
 
+/**
+ * Create a vega-lite spec for a bar chart from ezREEPORT's params
+ *
+ * @param type The type of figure
+ * @param data The data to display
+ * @param params The params of the figure
+ *
+ * @returns Partial vega-lite spec
+ */
 export const createBarSpec = (
   type: Mark,
   data: any[],
@@ -416,6 +487,15 @@ export const createBarSpec = (
   return { layer: mergeLayers(dataLayer, ...dataLabelLayers), encoding };
 };
 
+/**
+ * Create a vega-lite spec for generic graph from ezREEPORT's params
+ *
+ * @param type The type of figure
+ * @param data The data to display
+ * @param params The params of the figure
+ *
+ * @returns Partial vega-lite spec
+ */
 export const createOtherSpec = (
   type: Mark,
   data: any[],
