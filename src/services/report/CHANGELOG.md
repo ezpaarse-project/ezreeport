@@ -1,3 +1,20 @@
+# [ezreeport-report-v1.2.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.2.0-beta.1...ezreeport-report@1.2.0-beta.2) (2024-06-13)
+
+
+### Bug Fixes
+
+* **report:** fixed empty totals rows ([ee2d8ec](https://github.com/ezpaarse-project/ezreeport/commit/ee2d8ecc5eb8c7edde6897029c50f92ab3f76658))
+* **report:** fixed issue where not changing namespace caused an error ([817c7da](https://github.com/ezpaarse-project/ezreeport/commit/817c7dad2621a5ad0c8eb937ece9e5473822f448))
+* **report:** fixed issues with buckets ([391da05](https://github.com/ezpaarse-project/ezreeport/commit/391da054295117047ba2d970872fd034a5ac2e7b))
+* **report:** fixed order not beign properly removed ([cb422c4](https://github.com/ezpaarse-project/ezreeport/commit/cb422c4b6054567a5d66220b74f491818229046a))
+
+
+### Features
+
+* **ezra:** added restore command ([11661ba](https://github.com/ezpaarse-project/ezreeport/commit/11661ba3e6435641110393947797c42c86d5c4a8))
+* **report:** added more meta to errors ([6f924e9](https://github.com/ezpaarse-project/ezreeport/commit/6f924e9d4745041a22a84c5749e96a3d287bc7e7))
+* **report:** added support for something else than dates for bars + allow horizontal bars ([8e293e9](https://github.com/ezpaarse-project/ezreeport/commit/8e293e9f32dbae58450a19268b8a38d987521400))
+
 # [1.1.0](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.0.1...ezreeport-report@1.1.0) (2024-04-22)
 
 
