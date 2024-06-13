@@ -488,7 +488,7 @@ const renderPdfWithVega = async (
 
         events.emit('layoutRendered', figures);
       } catch (error) {
-        throw commonHandlers({
+        throw commonHandlers(error, {
           layout: layoutIndex,
           type: 'render',
         });
