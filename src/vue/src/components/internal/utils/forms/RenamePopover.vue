@@ -23,7 +23,7 @@
               :label="props.label"
               hide-details="auto"
               class="pt-0"
-              @emit="emit('input', $event)"
+              @input="emit('input', $event)"
             />
           </v-card-text>
         </v-card>

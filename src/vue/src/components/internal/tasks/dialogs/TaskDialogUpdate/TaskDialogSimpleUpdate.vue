@@ -43,8 +43,7 @@
       <v-divider class="mb-2" />
 
       <v-card-text style="position: relative">
-        <v-form v-if="task" v-model="valid">
-
+        <v-form v-if="task" v-model="valid" ref="formRef">
           <v-row v-if="!props.namespace">
             <v-col>
               <div>
@@ -150,6 +149,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import type { tasks, templates } from '@ezpaarse-project/ezreeport-sdk-js';
+import type VForm from 'vuetify/src/components/VForm';
 import isEmail from 'validator/lib/isEmail';
 import hash from 'object-hash';
 
@@ -178,6 +178,8 @@ const task = ref<tasks.FullTask | undefined>(undefined);
 const taskHash = ref('');
 const extendedTemplate = ref<templates.FullTemplate | undefined>(undefined);
 const error = ref('');
+
+const formRef = ref<InstanceType<typeof VForm> | undefined>();
 
 const hashTask = (t: tasks.FullTask) => hash({
   name: t.name,
@@ -299,6 +301,7 @@ const refresh = async () => {
       content.extends && fetchTemplate(content.extends.id),
       fetchMapping(index),
     ]);
+    formRef.value?.validate();
 
     error.value = '';
   } catch (err) {
