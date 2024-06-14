@@ -1,4 +1,4 @@
-# [1.2.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.1.0...@ezpaarse-project/ezreeport-sdk-js@1.2.0-beta.1) (2024-05-24)# [1.1.0](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0...@ezpaarse-project/ezreeport-sdk-js@1.1.0) (2024-04-22)
+# [1.2.0](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.1.0...@ezpaarse-project/ezreeport-sdk-js@1.2.0) (2024-06-14)
 
 # [1.1.0](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.0.0...@ezpaarse-project/ezreeport-sdk-js@1.1.0) (2024-04-22)
 

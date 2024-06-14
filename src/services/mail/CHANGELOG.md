@@ -1,11 +1,10 @@
-# [1.2.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.1.0...ezreeport-mail@1.2.0-beta.1) (2024-05-24)
+# [1.2.0](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.1.0...ezreeport-mail@1.2.0) (2024-06-14)
 
 
 ### Bug Fixes
 
 * **mail:** fixed element position in layout ([3b9eefc](https://github.com/ezpaarse-project/ezreeport/commit/3b9eefc2bd4398e371b97d7e88e0d94f3494710e))
 * **mail:** upgraded timeout of pings cause of inist's smtp ([c5c0113](https://github.com/ezpaarse-project/ezreeport/commit/c5c01137317da00b9fd6eb7f75c8b5a73ed2d371))
-
 
 ### Features
 
