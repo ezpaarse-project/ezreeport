@@ -3,7 +3,9 @@
     :disabled="disabled"
     bottom
     offset-y
-    @input="onMenuVisibilityChange"
+    nudge-bottom="10"
+    open-on-focus
+    @input="onMenuVisibilityChangeDebounced"
   >
     <template #activator="{ on, attrs }">
       <v-text-field
@@ -13,19 +15,11 @@
         :rules="innerRules"
         :dense="dense"
         :disabled="disabled"
+        :hint="$t('inputHelp', { chars: invalidCharsMessage })"
         v-bind="attrs"
         @input="() => resolveSearch()"
         v-on="on"
-      >
-        <template #append>
-          <v-icon
-            :color="focused ? 'primary' : ''"
-            :style="{ transform: focused ? 'rotate(180deg)' : '', transition: 'transform 0.3s' }"
-          >
-            mdi-menu-down
-          </v-icon>
-        </template>
-      </v-text-field>
+      />
     </template>
 
     <v-card :loading="loading">
@@ -42,24 +36,28 @@
 
         <v-row>
           <v-col class="pt-0">
-            <v-virtual-scroll
-              :items="autocompleteItems"
-              max-height="200"
-              item-height="40"
-              bench="5"
-            >
-              <template v-slot:default="{ item }">
-                <v-list-item :key="item" dense>
-                  <v-list-item-action>
-                    <v-icon v-if="resolvedIndices.length > 0" color="primary" small>mdi-check</v-icon>
-                  </v-list-item-action>
+            <v-simple-table height="200" dense fixed-header>
+              <template #default>
+                <thead>
+                  <tr>
+                    <th width="20">{{ $t('index.matched') }}</th>
+                    <th>{{ $t('index.name') }}</th>
+                  </tr>
+                </thead>
 
-                  <v-list-item-content>
-                    <v-list-item-title>{{ item }}</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
+                <tbody>
+                  <tr v-for="item in autocompleteItems" :key="item">
+                    <td>
+                      <v-icon v-if="resolvedIndices.length > 0" color="primary" small>mdi-check</v-icon>
+                    </td>
+                    <td>
+                      {{ item }}
+                    </td>
+                  </tr>
+                </tbody>
               </template>
-            </v-virtual-scroll>
+            </v-simple-table>
+
           </v-col>
         </v-row>
       </v-card-text>
@@ -69,6 +67,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { debounce } from 'lodash';
 
 import { useEzR } from '~/lib/ezreeport';
 import { useI18n } from '~/lib/i18n';
@@ -93,7 +92,9 @@ const { sdk } = useEzR();
 const templateStore = useTemplateStore();
 const { $t, $tc } = useI18n();
 
-const focused = ref(false);
+const invalidChars = ['\\', '/', '?', '"', '<', '>', '|'];
+const invalidCharsMessage = invalidChars.join(' ');
+
 const loading = ref(false);
 const error = ref<Error | null>(null);
 const search = ref(props.value);
@@ -125,8 +126,6 @@ const resolveSearch = async () => {
 };
 
 const onMenuVisibilityChange = async (value: boolean) => {
-  focused.value = value;
-
   if (value) {
     loading.value = true;
     try {
@@ -142,6 +141,12 @@ const onMenuVisibilityChange = async (value: boolean) => {
   }
 };
 
+const onMenuVisibilityChangeDebounced = debounce(
+  onMenuVisibilityChange,
+  1000,
+  { leading: true, trailing: false },
+);
+
 const emptyRule = computed(() => {
   if (!props.required) {
     return true;
@@ -150,11 +155,10 @@ const emptyRule = computed(() => {
 });
 
 const innerRules = computed(() => {
-  const invalidChars = ['\\', '/', '?', '"', '<', '>', '|'];
   const invalidCharsRegex = new RegExp(`[${invalidChars.join('')}\\s]`, 'i');
 
   return [
-    (v: string) => !invalidCharsRegex.test(v) || `${$t('errors.invalidChars')} ${invalidChars.join(' ')}`,
+    (v: string) => !invalidCharsRegex.test(v) || `${$t('errors.invalidChars')} ${invalidCharsMessage}`,
     emptyRule.value,
     ...(props.rules ?? []),
   ];
@@ -186,13 +190,21 @@ watch(
 
 <i18n lang="yaml">
 en:
-  nMatchedIndex: 'Your selection includes 1 index|Your selection includes {n} indices'
+  inputHelp: Use an asterisk (*) to match multiple indices of your repositories. Spaces and the characters {chars} are not allowed.
+  nMatchedIndex: 'The expression includes 1 index from your repositories.|The expression includes {n} indices from your repositories.'
+  index:
+    matched: Included
+    name: Index
   errors:
     invalidChars: 'The expression contains spaces or forbidden characters like:'
-    required: 'Your selection must include at least one index'
+    required: 'The expression must include at least one of your index from your repositories.'
 fr:
-  nMatchedIndex: 'Votre sélection inclut 1 index|Votre sélection inclut {n} indices'
+  inputHelp: Utilisez un astérisque (*) pour récupérer plusieurs index de vos entrepôts. Les espaces et les caractères {chars} ne sont pas autorisés.
+  nMatchedIndex: 'Le motif inclut 1 index parmi vos entrepôts.|Le motif inclut {n} index parmi vos entrepôts.'
+  index:
+    matched: Inclus
+    name: Index
   errors:
-    invalidChars: "L'expression utilise des espaces ou des caractères interdits comme :"
-    required: 'Votre sélection doit inclure au moins un index'
+    invalidChars: "L'motif utilise des espaces ou des caractères interdits comme :"
+    required: 'Le motif doit inclure au moins un de vos index parmi vos entrepôts.'
 </i18n>

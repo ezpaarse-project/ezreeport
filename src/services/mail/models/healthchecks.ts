@@ -22,7 +22,7 @@ export const services = new Set(Object.keys(pingers) as Service[]);
  */
 export const ping = async (
   service: Service,
-  timeout = 3000,
+  timeout = 10000,
 ) => {
   const start = new Date();
 

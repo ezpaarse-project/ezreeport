@@ -59,7 +59,15 @@
       <template #no-data>
         <div style="position: relative; min-height: 150px;">
           <v-overlay v-if="!error" absolute>
-            {{ $t('$vuetify.noDataText') }}
+            <div class="text-center">
+              {{ $t('noDataText') }}
+            </div>
+
+            <v-btn color="primary" @click="showCreateDialog">
+              <v-icon left>mdi-plus</v-icon>
+
+              {{ $t('createFirst') }}
+            </v-btn>
           </v-overlay>
 
           <ErrorOverlay v-model="error" hide-action />
@@ -289,11 +297,15 @@ watch(
 
 <i18n lang="yaml">
 en:
+  noDataText: 'No report preset'
+  createFirst: 'Create the first preset'
   refresh-tooltip: 'Refresh report presets list'
   title: '{title} ({count})'
   created: 'Created: {date}'
 fr:
-  refresh-tooltip: 'Rafraîchir la liste des prédéfinis de rapports'
+  noDataText: 'Aucun rapport prédéfini'
+  createFirst: 'Créer le premier prédéfini'
+  refresh-tooltip: 'Rafraîchir la liste des rapports de prédéfinis'
   title: '{title} ({count})'
   created: 'Créé le {date}'
 </i18n>

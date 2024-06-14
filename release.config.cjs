@@ -10,7 +10,8 @@ module.exports = {
     '@semantic-release/commit-analyzer',
     '@semantic-release/release-notes-generator',
     '@semantic-release/changelog',
-    ['@semantic-release/git', { assets: ['CHANGELOG.md'] }],
+    ['@semantic-release/npm', { npmPublish: false }],
+    ['@semantic-release/git', { assets: ['package.json', 'CHANGELOG.md'] }],
   ],
   branches: [
     'master',

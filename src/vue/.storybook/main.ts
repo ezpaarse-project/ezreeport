@@ -54,8 +54,6 @@ const config: StorybookConfig & StorybookConfigVite = {
         'vuetify',
         'vue-i18n',
         'vuetify/src/locale',
-        '@storybook/addon-essentials/docs/mdx-react-shim',
-        '@storybook/blocks',
       ],
     },
   }),

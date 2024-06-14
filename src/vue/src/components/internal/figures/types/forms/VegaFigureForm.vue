@@ -135,6 +135,7 @@
 
                 if (!ev && b) {
                   onBucketDeletion(b);
+                  onParamUpdate({ color: undefined });
                 }
               }"
               @click.prevent=""

@@ -1,7 +1,7 @@
 {% extends "layout.mjml" %}
 
 {% block title %}
-<mj-title>Rapport ezMESURE du {{ date }}.</mj-title>
+<mj-title>Rapport ezREEPORT du {{ date }}.</mj-title>
 {% endblock %}
 
 {% block content %}
@@ -16,7 +16,7 @@
         +0)</strong> pour l'établissement « <strong>{{ namespace }}</strong> ».
       </p>
       <p>
-        Ce message est envoyé automatiquement par l'application ezMESURE,
+        Ce message est envoyé automatiquement par l'application ezREEPORT,
         vous le recevez parce que vous faites partie d'une liste de diffusion de rapports.
       </p>
     </mj-text>
@@ -33,7 +33,7 @@
 
     <mj-text>
       <p>Cordialement,</p>
-      <p>L'équipe ezMESURE.</p>
+      <p>L'équipe ezTEAM.</p>
     </mj-text>
   </mj-column>
 </mj-section>

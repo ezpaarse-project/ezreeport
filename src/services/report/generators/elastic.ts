@@ -32,6 +32,16 @@ const CustomAggregation = Type.Recursive(
     Type.Partial(
       Type.Object({
         name: Type.String({ minLength: 1 }),
+        order: Type.Union([
+          Type.Record(Type.String(), Type.Any()),
+          Type.Optional(
+            Type.Union([
+              Type.Literal('asc'),
+              Type.Literal('desc'),
+              Type.Boolean(),
+            ]),
+          ),
+        ]),
         aggregations: Type.Array(This),
         aggs: Type.Array(This),
       }),
@@ -76,7 +86,20 @@ const ElasticFetchOptions = Type.Object({
           buckets: Type.Optional(
             Type.Array(Bucket),
           ),
-          metric: Type.Optional(Bucket),
+          metric: Type.Optional(
+            Type.Intersect([
+              Bucket,
+              Type.Object({
+                order: Type.Optional(
+                  Type.Union([
+                    Type.Literal('asc'),
+                    Type.Literal('desc'),
+                    Type.Boolean(),
+                  ]),
+                ),
+              }),
+            ]),
+          ),
         }),
         // OR
         Type.Object({
@@ -169,13 +192,28 @@ const reduceAggs = (
   if (rawAgg.aggs || rawAgg.aggregations) {
     const key = rawAgg.aggs ? 'aggs' : 'aggregations';
     agg[key] = rawAgg[key]?.reduce(
-      (subPrev, subAgg, i) => reduceAggs(
-        subPrev,
-        subAgg,
-        calendar_interval,
-        aggsInfo.subAggs[i],
-        dateField,
-      ),
+      (subPrev, subAgg, i) => {
+        // Handle custom order
+        if (subAgg.order === 'asc' || subAgg.order === 'desc') {
+          merge(agg, { [aggsInfo.type]: { order: { [subAgg.name || `agg${i}`]: subAgg.order } } });
+          // eslint-disable-next-line no-param-reassign
+          subAgg.order = undefined;
+        }
+        // Handle default order
+        if (subAgg.order === true || subAgg.order === false) {
+          merge(agg, { [aggsInfo.type]: { order: { [subAgg.name || `agg${i}`]: subAgg.order ? 'desc' : undefined } } });
+          // eslint-disable-next-line no-param-reassign
+          subAgg.order = undefined;
+        }
+
+        return reduceAggs(
+          subPrev,
+          subAgg,
+          calendar_interval,
+          aggsInfo.subAggs[i],
+          dateField,
+        );
+      },
       {},
     );
   }
@@ -294,7 +332,8 @@ const fetchWithElastic = async (
           const { aggregations, aggs, ...v } = r.buckets[i];
           const sub = aggregations || aggs || [];
           if (r.metric) {
-            sub.push(r.metric);
+            const metric = { ...r, order: r.metric.order ?? true };
+            sub.push(metric);
           }
 
           if (recursiveBucket) {
@@ -311,7 +350,8 @@ const fetchWithElastic = async (
           aggsOptions = [recursiveBucket];
         }
       } else if ('metric' in r && r.metric) {
-        aggsOptions = [r.metric];
+        const metric = { ...r, order: r.metric.order ?? true };
+        aggsOptions = [metric];
       }
       allAggsOptions.push(aggsOptions ?? []);
 

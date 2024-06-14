@@ -16,6 +16,8 @@
         >
           <v-icon>mdi-plus</v-icon>
         </v-btn>
+
+        <ElasticFilterImportMenu @input="onFilterImport($event)" />
       </template>
 
       <ElasticFilterBuilder
@@ -98,14 +100,16 @@ export default defineComponent({
      */
     filtersCount() {
       return Object.values(this.fetchOptions.filters ?? {})
-        .filter((v) => Array.isArray(v))
-        .length;
+        .reduce((prev, v) => (Array.isArray(v) ? prev + v.length : prev), 0);
     },
   },
   methods: {
     onFilterCreated() {
       const builder = this.$refs.filterBuilder as ElasticFilterBuilder | undefined;
       builder?.onElementCreated();
+    },
+    onFilterImport(filters: Record<string, any>) {
+      this.$emit('update:fetchOptions', { filters });
     },
   },
 });

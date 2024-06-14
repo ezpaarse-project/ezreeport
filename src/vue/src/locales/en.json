@@ -123,7 +123,7 @@
     "title": "Fetch options",
     "aggName": "Aggregation name",
     "aggSummary": "{type} of {field}",
-    "index": "Elastic index",
+    "index": "Elastic expression",
     "dateField": "'date' field of the index",
     "filters": "Filters",
     "aggregations": "Aggregations",

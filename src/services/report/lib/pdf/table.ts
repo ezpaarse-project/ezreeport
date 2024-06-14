@@ -41,16 +41,12 @@ export const addTableToPDF = async (
 
   const {
     maxLength,
-    maxHeight,
     title,
     ...params
   } = spec;
 
   // Limit data if needed
-  const tableData = [...data];
-  if (maxLength != null && maxLength > 0 && tableData.length > maxLength) {
-    tableData.length = maxLength;
-  }
+  let tableData = data.slice(0, maxLength);
 
   // Sort data by last column dataKey
   const lastCol = params.columns?.at(-1);
@@ -80,50 +76,58 @@ export const addTableToPDF = async (
     params.margin,
   );
 
-  let mH = maxHeight;
+  const fontSize = doc.pdf.getFontSize();
+  const font = doc.pdf.getFont();
+
+  let { maxHeight } = spec;
   const y = params.startY || 0;
+  const titleCoords = { x: margin.left, y };
   // Table title
   if (title) {
-    const parsed = handlebars(title)({ length: tableData.length });
     const textMaxWidth = typeof params.tableWidth === 'number' ? params.tableWidth : undefined;
-
-    const fontSize = doc.pdf.getFontSize();
-    const font = doc.pdf.getFont();
 
     doc.pdf
       .setFont(doc.fontFamily, 'bold')
       .setFontSize(10);
 
     const { h } = doc.pdf.getTextDimensions(
-      parsed,
+      title,
       { maxWidth: textMaxWidth },
     );
 
+    titleCoords.y = y + h;
+
+    params.startY = y + (1.25 * h);
+    if (maxHeight != null && maxHeight > 0) {
+      maxHeight -= (1.25 * h);
+    }
+  }
+
+  if (maxHeight != null && maxHeight > 0) {
+    // default height of a cell is 29
+    // Removing header & some space
+    const maxTableHeight = maxHeight - (2 * 29);
+    const maxRows = Math.ceil(maxTableHeight / 29);
+    const rowCount = tableData.length + (params.totals ? 1 : 0);
+    if (rowCount > maxRows) {
+      logger.warn(`[pdf] Reducing table length from ${tableData.length} to ${maxRows} because table won't fit in slot.`);
+      tableData = tableData.slice(0, maxRows - (params.totals ? 1 : 0));
+    }
+  }
+
+  if (title) {
+    const textMaxWidth = typeof params.tableWidth === 'number' ? params.tableWidth : undefined;
+
+    const parsed = handlebars(title)({ length: tableData.length });
     doc.pdf
       .text(
         parsed,
-        margin.left,
-        y + h,
+        titleCoords.x,
+        titleCoords.y,
         { maxWidth: textMaxWidth },
       )
       .setFontSize(fontSize)
       .setFont(font.fontName, font.fontStyle);
-
-    params.startY = y + (1.25 * h);
-    if (mH != null && mH > 0) {
-      mH -= (1.25 * h);
-    }
-  }
-
-  if (mH != null && mH > 0) {
-    // default height of a cell is 29
-    // Removing header & some space
-    const maxTableHeight = mH - (2 * 29);
-    const maxCells = Math.ceil(maxTableHeight / 29);
-    if (tableData.length > maxCells) {
-      logger.warn(`[pdf] Reducing table length from ${tableData.length} to ${maxCells} because table won't fit in slot.`);
-      tableData.length = maxCells;
-    }
   }
 
   const options = merge(

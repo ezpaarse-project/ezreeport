@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   db:
     image: postgres:15.1-alpine3.17
@@ -40,7 +38,6 @@ services:
 
   report:
     build:
-      context: .
       target: report
     volumes:
       - ./data/report:/data/ezreeport/report # Report output
@@ -94,7 +91,6 @@ services:
 
   mail:
     build:
-      context: .
       target: mail
     volumes:
       - ./logs/mail:/var/log/ezreeport/mail # Logs output

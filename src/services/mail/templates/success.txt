@@ -1,11 +1,11 @@
 Bonjour,
 Vous trouverez dans ce mail le rapport {{ recurrence }} « {{ name }} », généré le {{ date }} pour l'établissement « {{ namespace }} ».
 
-Ce message est envoyé automatiquement par l'application ezMESURE, vous le recevez parce que vous faites partie d'une liste de diffusion de rapports.
+Ce message est envoyé automatiquement par l'application ezREEPORT, vous le recevez parce que vous faites partie d'une liste de diffusion de rapports.
 
 Vous trouverez le rapport en pièce jointe.
 
 Si vous ne voulez plus recevoir ce rapport, aller sur {{ unsubscribeLink }} pour vour désinscrire.
 
 Cordialement,
-L'équipe ezMESURE.
+L'équipe ezTEAM.

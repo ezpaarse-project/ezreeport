@@ -126,6 +126,8 @@
               >
                 <v-icon>mdi-plus</v-icon>
               </v-btn>
+
+              <ElasticFilterImportMenu @import="onFilterUpdate($event)" />
             </template>
 
             <ElasticFilterBuilder
