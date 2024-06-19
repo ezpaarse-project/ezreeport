@@ -73,3 +73,61 @@ export const parseBulkResults = <T>(itemsSettled: PromiseSettledResult<BulkResul
   }
   return results;
 };
+
+/**
+ * Common error handler, add meta to cause of error
+ *
+ * @param error Error to handle
+ * @param meta Meta to add
+ *
+ * @returns Error with meta attached
+ */
+export const commonHandlers = (error: unknown, meta: Record<string, unknown> = {}) => {
+  if (!(error instanceof Error)) {
+    return new Error(`${error}`, { cause: meta });
+  }
+
+  // eslint-disable-next-line no-param-reassign
+  error.cause = { ...(error.cause ?? {}), ...meta };
+  return error;
+};
+
+/**
+ * Execute function with common error handling
+ *
+ * @param fnc Function to execute
+ * @param meta Meta to add in case of error
+ *
+ * @returns Result of function
+ */
+export const syncWithCommonHandlers = <F extends () => unknown = () => unknown>(
+  fnc: F,
+  meta: Record<string, unknown> = {},
+): ReturnType<F> => {
+  try {
+    return (fnc() as ReturnType<F>);
+  } catch (error) {
+    throw commonHandlers(error, meta);
+  }
+};
+
+/**
+ * Execute async function with common error handling
+ *
+ * @param fnc Async function to execute
+ * @param meta Meta to add in case of error
+ *
+ * @returns Result of async function
+ */
+export const asyncWithCommonHandlers = async <
+  F extends () => Promise<unknown> = () => Promise<unknown>,
+>(
+  fnc: F,
+  meta: Record<string, unknown> = {},
+): Promise<ReturnType<F>> => {
+  try {
+    return (await (fnc() as ReturnType<F>));
+  } catch (error) {
+    throw commonHandlers(error, meta);
+  }
+};

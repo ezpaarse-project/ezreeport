@@ -328,6 +328,10 @@ export default defineComponent({
       top: 0.25rem;
       right: 0.25rem;
     }
+
+    &:first-of-type {
+      margin-top: 0.5rem;
+    }
   }
 
   &--header {

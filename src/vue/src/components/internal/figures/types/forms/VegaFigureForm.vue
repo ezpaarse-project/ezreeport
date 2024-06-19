@@ -10,6 +10,20 @@
       />
 
       <v-form v-if="figureParams" v-model="valid">
+
+        <v-checkbox
+          v-if="figure?.type === 'bar'"
+          :input-value="figureParams.invertAxis"
+          :label="$t('headers.invertAxis').toString()"
+          :readonly="readonly"
+          dense
+          hide-details
+          class="my-3"
+          style="width: fit-content"
+          @change="onParamUpdate({ invertAxis: $event })"
+          @click.prevent=""
+        />
+
         <!-- Value -->
         <CustomSection
           :label="headers.value"
@@ -77,8 +91,8 @@
             @input="onSubParamUpdate('label', { title: $event })"
           />
 
-          <CustomSection v-if="legendLabelSection" :label="legendLabelSection" collapsable>
-            <template #collapse>
+          <CustomSection v-if="legendLabelSection" :label="legendLabelSection">
+            <template #actions>
               <v-switch
                 :input-value="figureParams.label?.legend !== null"
                 :readonly="readonly"
@@ -112,16 +126,7 @@
           :label="headers.color"
           collapsable
         >
-          <template #collapse>
-            <v-btn
-              v-if="!!buckets.value.at(1)"
-              icon
-              x-small
-              @click="collapsedColor = !collapsedColor"
-            >
-              <v-icon>mdi-chevron-{{ collapsedColor === false ? 'up' : 'down' }}</v-icon>
-            </v-btn>
-
+          <template #prepend>
             <v-switch
               :input-value="!!buckets.value.at(1)"
               :readonly="readonly"
@@ -140,6 +145,17 @@
               }"
               @click.prevent=""
             />
+          </template>
+
+          <template #collapse>
+            <v-btn
+              v-if="!!buckets.value.at(1)"
+              icon
+              x-small
+              @click="collapsedColor = !collapsedColor"
+            >
+              <v-icon>mdi-chevron-{{ collapsedColor === false ? 'up' : 'down' }}</v-icon>
+            </v-btn>
           </template>
 
           <ElasticAggElementForm
@@ -180,16 +196,7 @@
           :label="$t('headers.dataLabel').toString()"
           collapsable
         >
-          <template #collapse>
-            <v-btn
-              v-if="!!figureParams.dataLabel"
-              icon
-              x-small
-              @click="collapsedDl = !collapsedDl"
-            >
-              <v-icon>mdi-chevron-{{ collapsedDl === false ? 'up' : 'down' }}</v-icon>
-            </v-btn>
-
+          <template #prepend>
             <v-switch
               :input-value="!!figureParams.dataLabel"
               :readonly="readonly"
@@ -202,6 +209,17 @@
               }"
               @click.prevent=""
             />
+          </template>
+
+          <template #collapse>
+            <v-btn
+              v-if="!!figureParams.dataLabel"
+              icon
+              x-small
+              @click="collapsedDl = !collapsedDl"
+            >
+              <v-icon>mdi-chevron-{{ collapsedDl === false ? 'up' : 'down' }}</v-icon>
+            </v-btn>
           </template>
 
           <template v-if="figureParams.dataLabel">
@@ -355,6 +373,7 @@ const dataLabelPositions = [
 
 type VegaParams = {
   dataKey: string,
+  invertAxis?: boolean,
   value: Record<string, any>,
   label: Record<string, any>,
   color: Record<string, any>,
@@ -623,17 +642,12 @@ export default defineComponent({
      * Various headers for form parts
      */
     headers() {
-      return Object.fromEntries(
-        ['label', 'value', 'color'].map(
-          (type) => {
-            let label = this.$t(`headers.${type}._default`).toString();
-            if (this.$te(`headers.${type}.${this.figure?.type}`)) {
-              label = this.$t(`headers.${type}.${this.figure?.type}`).toString();
-            }
-            return [type, label];
-          },
-        ),
-      ) as Record<'label' | 'value' | 'color', string>;
+      const value = this.getHeaderLabel(this.figureParams?.invertAxis ? 'label' : 'value');
+      return {
+        value,
+        label: this.getHeaderLabel(this.figureParams?.invertAxis ? 'value' : 'label'),
+        color: this.getHeaderLabel('color', { value }),
+      };
     },
   },
   watch: {
@@ -686,6 +700,13 @@ export default defineComponent({
         [],
       );
       return diffs;
+    },
+    getHeaderLabel(header: string, meta: any = undefined) {
+      const key = `headers.${header}.${this.figure?.type}`;
+      if (this.$te(key)) {
+        return this.$t(key, meta).toString();
+      }
+      return this.$t(`headers.${header}._default`, meta).toString();
     },
     onParamUpdate(data: Partial<VegaParams>) {
       if (this.valid && this.figureParams) {
@@ -846,6 +867,7 @@ export default defineComponent({
 en:
   headers:
     agg: 'Aggregation'
+    invertAxis: 'Invert axis ?'
     value:
       _default: 'Data'
       bar: 'Y-axis'
@@ -855,7 +877,7 @@ en:
       bar: 'X-axis'
     color:
       _default: 'Group'
-      bar: 'Stacking on Y-axis'
+      bar: 'Stacking on {value}'
     dataLabel: 'Data Labels'
   value:
     headers:
@@ -886,6 +908,7 @@ en:
 fr:
   headers:
     agg: 'Agrégation'
+    invertAxis: 'Inverser les axes ?'
     value:
       _default: 'Données'
       bar: 'Axe Y'
@@ -895,7 +918,7 @@ fr:
       bar: 'Axe X'
     color:
       _default: 'Groupes'
-      bar: "Empilement sur l'axe Y"
+      bar: "Empilement sur l'{value}"
     dataLabel: 'Étiquettes de données'
   value:
     headers:

@@ -85,8 +85,10 @@
 </template>
 
 <script lang="ts">
-import type { health } from '@ezpaarse-project/ezreeport-sdk-js';
 import { defineComponent } from 'vue';
+import { diff as semverDiff, type ReleaseType } from 'semver';
+import type { health } from '@ezpaarse-project/ezreeport-sdk-js';
+
 import { version, name } from '~/../package.json';
 import ezReeportMixin from '~/mixins/ezr';
 
@@ -96,6 +98,17 @@ interface StatusItem {
   text: 'OK' | 'KO',
   tooltip: string,
 }
+
+const WARNING_DIFFS: Set<ReleaseType | null> = new Set([
+  'minor',
+  'preminor',
+]);
+
+const ALLOWED_DIFFS: Set<ReleaseType | null> = new Set([
+  'patch',
+  'prepatch',
+  null,
+]);
 
 export default defineComponent({
   mixins: [ezReeportMixin],
@@ -126,19 +139,21 @@ export default defineComponent({
     },
     versionCompat() {
       if (this.server.version) {
-        const [sdkMajor, sdkMinor] = this.$ezReeport.sdk.version.split('.', 3);
-        const [serverMajor, serverMinor] = this.server.version.split('.', 3);
+        const sdkVersion = this.$ezReeport.sdk.version;
+        const serverVersion = this.server.version;
 
-        if (+sdkMajor !== +serverMajor) {
-          return { color: 'error', tooltip: this.$t('version-tooltip.mismatch') };
+        const diff = semverDiff(serverVersion, sdkVersion);
+
+        if (ALLOWED_DIFFS.has(diff)) {
+          return { color: '', tooltip: this.$t('version-tooltip.server') };
         }
 
-        if (+sdkMinor !== +serverMinor) {
+        if (WARNING_DIFFS.has(diff)) {
           return { color: 'warning', tooltip: this.$t('version-tooltip.mismatch') };
         }
       }
 
-      return { color: '', tooltip: this.$t('version-tooltip.server') };
+      return { color: 'error', tooltip: this.$t('version-tooltip.mismatch') };
     },
   },
   mounted() {
@@ -197,6 +212,7 @@ en:
     client: 'Client version (SDK: v{sdk})'
     server: 'API version'
     mismatch: 'Client version is not compatible with API version. It may result in unwanted behavior.'
+    error: "Unknown version"
   errors:
     no_data: 'An error occurred when fetching data'
 fr:
@@ -206,6 +222,7 @@ fr:
     client: 'Version du Client (SDK: v{sdk})'
     server: "Version de l'API"
     mismatch: "La version du client n'est pas compatible avec la version de l'API. Cela peut résulter en un comportement anormal."
+    error: "Version inconnue"
   errors:
     no_data: 'Une erreur est survenue lors de la récupération des données'
 </i18n>

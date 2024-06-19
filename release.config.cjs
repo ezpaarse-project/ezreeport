@@ -3,7 +3,6 @@ module.exports = {
   extends: [
     'semantic-release-config',
   ],
-
   ci: false,
   tagFormat: `${process.env.PNPM_PACKAGE_NAME}@\${version}`,
   plugins: [

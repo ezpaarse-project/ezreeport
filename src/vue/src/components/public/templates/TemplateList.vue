@@ -13,7 +13,6 @@
         v-model="updateTemplateDialogShown"
         :id="focusedId"
         :available-tags="availableTags"
-        fullscreen
         @updated="fetch"
       />
 
@@ -22,7 +21,6 @@
         ref="dialogCreate"
         v-model="createTemplateDialogShown"
         :available-tags="availableTags"
-        fullscreen
         @created="onTemplateCreated"
       />
 
@@ -84,6 +82,24 @@
             {{ $t('$ezreeport.create') }}
           </v-tooltip>
         </LoadingToolbar>
+      </template>
+
+      <template #no-data>
+        <div style="position: relative; min-height: 150px;">
+          <v-overlay v-if="!error" absolute>
+            <div class="text-center">
+              {{ $t('noDataText') }}
+            </div>
+
+            <v-btn color="primary" @click="showCreateDialog">
+              <v-icon left>mdi-plus</v-icon>
+
+              {{ $t('createFirst') }}
+            </v-btn>
+          </v-overlay>
+
+          <ErrorOverlay v-model="error" hide-action />
+        </div>
       </template>
 
       <template #default="{ items }">
@@ -440,10 +456,14 @@ export default defineComponent({
 
 <i18n lang="yaml">
 en:
+  noDataText: 'No template'
+  createFirst: 'Create the first template'
   refresh-tooltip: 'Refresh template list'
   title: '{title} ({count})|{title} ({filtered}/{count})'
   created: 'Created: {date}'
 fr:
+  noDataText: 'Aucun modèle'
+  createFirst: 'Créer le premier modèle'
   refresh-tooltip: 'Rafraîchir la liste des modèles'
   title: '{title} ({count})|{title} ({filtered}/{count})'
   created: 'Créé le {date}'

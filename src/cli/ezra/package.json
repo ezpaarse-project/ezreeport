@@ -1,0 +1,76 @@
+{
+  "name": "@ezpaarse-project/ezreeport-admin",
+  "version": "1.0.0-rc.1",
+  "description": "CLI for managing ezreeport instance",
+  "homepage": "https://github.com/ezpaarse-project/ezreeport",
+  "bugs": "https://github.com/ezpaarse-project/ezreeport/issues",
+  "repository": "ezpaarse-project/ezreeport",
+  "license": "CeCILL",
+  "author": "oxypomme",
+  "type": "module",
+  "exports": "./lib/index.js",
+  "main": "",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "ezreeport-admin": "./bin/run.js",
+    "ezra": "./bin/run.js"
+  },
+  "files": [
+    "/bin",
+    "/dist",
+    "/oclif.manifest.json"
+  ],
+  "scripts": {
+    "build": "shx rm -rf dist && tsc -b",
+    "lint": "eslint . --ext .ts --fix",
+    "prepack": "npm run build && oclif manifest && oclif readme",
+    "postpack": "shx rm -f oclif.manifest.json",
+    "prepare": "npm run build",
+    "version": "oclif readme && git add README.md"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix"
+    ]
+  },
+  "dependencies": {
+    "@oclif/core": "^3",
+    "@oclif/plugin-autocomplete": "^3.0.18",
+    "@oclif/plugin-help": "^6",
+    "axios": "^1.6.7",
+    "chalk": "^5.3.0",
+    "cli-progress": "^3.12.0",
+    "date-fns": "^3.3.1",
+    "inquirer": "^9.2.22",
+    "lodash": "^4.17.21",
+    "object-treeify": "^4.0.1",
+    "ora": "^8.0.1",
+    "semver": "^7.6.2"
+  },
+  "devDependencies": {
+    "@types/chai": "^4",
+    "@types/cli-progress": "^3.11.5",
+    "@types/inquirer": "^9.0.7",
+    "@types/lodash": "^4.14.202",
+    "@types/node": "^18",
+    "@types/semver": "^7.5.8",
+    "eslint": "^8",
+    "oclif": "^4.3.6",
+    "shx": "^0.3.4",
+    "tsx": "^4.7.2",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "oclif": {
+    "bin": "ezreeport-admin",
+    "commands": "./dist/commands",
+    "dirname": "ezreeport-admin",
+    "topicSeparator": " ",
+    "plugins": [
+      "@oclif/plugin-help",
+      "@oclif/plugin-autocomplete"
+    ]
+  }
+}

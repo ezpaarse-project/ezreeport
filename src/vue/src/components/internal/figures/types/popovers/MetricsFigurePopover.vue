@@ -87,6 +87,7 @@
             :label="$t('headers.text')"
             :readonly="readonly"
             :placeholder="element._.dataKeyField"
+            hide-details="auto"
             persistent-placeholder
             class="px-1"
             @blur="onLabelUpdated({ text: innerTitle || undefined })"

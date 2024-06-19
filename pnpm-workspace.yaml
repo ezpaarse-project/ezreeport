@@ -2,6 +2,7 @@ packages:
   - "src/services/report"
   - "src/services/mail"
   - "src/sdk"
+  - "src/cli/ezra"
   - "src/vue"
   - "src/vue/example"
   - "tests"

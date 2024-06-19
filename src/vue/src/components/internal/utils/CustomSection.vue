@@ -5,6 +5,14 @@
     class="my-2 pa-2"
   >
     <div class="d-flex align-center" v-if="label || $slots.actions">
+      <slot name="prepend" class="mr-4" />
+
+      <span class="text--secondary ml-1 mr-2">{{ label }}</span>
+
+      <slot name="actions" />
+
+      <v-spacer />
+
       <slot name="collapse" v-if="collapsable">
         <v-btn
           :disabled="collapseDisabled"
@@ -15,10 +23,6 @@
           <v-icon>mdi-chevron-{{ collapsed === false ? 'up' : 'down' }}</v-icon>
         </v-btn>
       </slot>
-
-      <span class="text--secondary mx-1">{{ label }}</span>
-
-      <slot name="actions" />
     </div>
 
     <slot v-if="!collapsed" />

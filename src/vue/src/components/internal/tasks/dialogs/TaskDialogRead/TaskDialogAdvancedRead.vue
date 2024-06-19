@@ -211,7 +211,7 @@ export type Tab = { name: string, fullScreen?: boolean };
 export const tabs: Tab[] = [
   { name: 'details' },
   { name: 'activity' },
-  { name: 'template', fullScreen: true },
+  { name: 'template' },
 ];
 
 export default defineComponent({

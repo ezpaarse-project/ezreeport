@@ -9,6 +9,7 @@ import fetchWithElastic, { type ElasticFetchOptionsType } from '~/generators/ela
 import renderPdfWithVega, { type VegaRenderOptionsType } from '~/generators/vega-pdf';
 
 import type { Prisma, Recurrence, Task } from '~/lib/prisma';
+import { asyncWithCommonHandlers } from '~/lib/utils';
 import config from '~/lib/config';
 import * as dfns from '~/lib/date-fns';
 import { appLogger as logger } from '~/lib/logger';
@@ -32,6 +33,12 @@ const ReportErrorCause = Type.Object({
   layout: Type.Integer(),
   figure: Type.Optional(
     Type.Integer(),
+  ),
+  elasticQuery: Type.Optional(
+    Type.Any(),
+  ),
+  vegaSpec: Type.Optional(
+    Type.Any(),
   ),
 });
 
@@ -250,25 +257,26 @@ const fetchData = (
         };
 
         // Fetch elastic and return resolved fetch options
-        try {
-          const elasticData = await fetchWithElastic(fetchOptions, events);
-          // eslint-disable-next-line no-restricted-syntax
-          for (const [index, value] of toInsert.entries()) {
-            elasticData.splice(index, 0, value);
-          }
+        const elasticData = await asyncWithCommonHandlers(
+          async () => {
+            const data = await fetchWithElastic(fetchOptions, events);
+            // eslint-disable-next-line no-restricted-syntax
+            for (const [index, value] of toInsert.entries()) {
+              data.splice(index, 0, value);
+            }
+            return data;
+          },
+          {
+            layout: i,
+            type: 'fetch',
+          },
+        );
 
-          return {
-            index: i,
-            options: fetchOptions,
-            data: elasticData,
-          };
-        } catch (error) {
-          if (!(error instanceof Error)) {
-            throw error;
-          }
-          error.cause = { ...(error.cause ?? {}), layout: i, type: 'fetch' };
-          throw error;
-        }
+        return {
+          index: i,
+          options: fetchOptions,
+          data: elasticData,
+        };
       }),
   );
 };

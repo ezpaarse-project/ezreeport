@@ -144,15 +144,7 @@
         outlined
         elevation="0"
       >
-        <v-card-subtitle class="py-2 pl-2">
-          <v-btn
-            icon
-            x-small
-            @click="templateEditorCollapsed = !templateEditorCollapsed"
-          >
-            <v-icon>mdi-chevron-{{ templateEditorCollapsed === false ? 'up' : 'down' }}</v-icon>
-          </v-btn>
-
+        <v-card-subtitle class="py-2 px-2 d-flex align-center" style="gap: 8px;">
           {{ $tc('$ezreeport.templates.editor', templateStore.currentLayouts.length) }}
 
           <v-tooltip top v-if="areLayoutsValid !== true" color="warning">
@@ -169,34 +161,73 @@
 
             <span>{{ areLayoutsValid }}</span>
           </v-tooltip>
+
+          <v-spacer />
+
+          <v-btn
+            small
+            color="primary"
+            @click="templateEditorOpen = true"
+          >
+            {{ $t('openEditor') }}
+            <v-icon right>mdi-arrow-expand</v-icon>
+          </v-btn>
         </v-card-subtitle>
 
-        <v-divider />
-
-        <v-card-text
-          v-show="!templateEditorCollapsed"
-          :class="['pa-0', $vuetify.theme.dark ? 'grey darken-3' : 'grey lighten-4']"
-        >
-          <v-row class="ma-0" style="height: 600px;">
-            <v-col cols="2" class="pa-0" style="height: 100%;">
-              <LayoutDrawer
-                v-model="selectedLayoutId"
-                :mode="modes.drawerMode"
-              />
-            </v-col>
-
-            <v-divider vertical />
-
-            <v-col class="pa-0" style="margin-left: 1px;">
-              <LayoutViewer
-                v-if="selectedLayout"
-                :value="selectedLayoutId"
-                :mode="selectedLayout.at !== undefined ? 'allowed-edition' : modes.viewerMode"
-                style="height: 100%;"
-              />
-            </v-col>
-          </v-row>
+        <v-card-text>
+          <LayoutPreview
+            :layouts="templateStore.currentLayouts"
+            :grid="templateStore.currentGrid"
+            @input="templateEditorOpen = true"
+          />
         </v-card-text>
+
+        <v-dialog
+          v-model="templateEditorOpen"
+          transition="ezr_dialog-right-transition"
+          fullscreen
+        >
+          <v-card tile class="layouts-editor--dialog">
+            <v-card-title>
+              {{ $tc('$ezreeport.templates.editor', templateStore.currentLayouts.length) }}
+
+              <v-spacer />
+
+              <v-btn
+                icon
+                text
+                @click="templateEditorOpen = false"
+              >
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </v-card-title>
+
+            <v-divider />
+
+            <v-card-text
+              :class="['pa-0', $vuetify.theme.dark ? 'grey darken-3' : 'grey lighten-4']"
+              class="layouts-editor"
+            >
+              <div class="layouts-editor--drawer">
+                <LayoutDrawer
+                  v-model="selectedLayoutId"
+                  :mode="modes.drawerMode"
+                />
+              </div>
+
+              <v-divider vertical style="z-index: 1;" />
+
+              <div class="layouts-editor--viewer">
+                <LayoutViewer
+                  v-if="selectedLayout"
+                  :value="selectedLayoutId"
+                  :mode="selectedLayout.at !== undefined ? 'allowed-edition' : modes.viewerMode"
+                  style="height: 100%;"
+                />
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
       </v-card>
 
       <CustomSection
@@ -205,8 +236,9 @@
         collapsable
       >
         <v-switch
-          :label="$t('$ezreeport.show_json')"
           v-model="rawTemplateShown"
+          :label="$t('$ezreeport.show_json')"
+          hide-details
         />
 
         <CustomSection>
@@ -232,14 +264,14 @@
         </CustomSection>
       </CustomSection>
 
+      <v-row v-if="rawTemplateShown">
+        <v-col>
+          <JSONPreview :value="rawTemplate" />
+        </v-col>
+      </v-row>
+
       <ErrorOverlay v-model="error" />
     </v-col>
-
-    <v-slide-x-reverse-transition>
-      <v-col v-if="rawTemplateShown" cols="5">
-        <JSONPreview :value="rawTemplate" />
-      </v-col>
-    </v-slide-x-reverse-transition>
   </v-row>
 </template>
 
@@ -290,7 +322,7 @@ export default defineComponent({
   data: () => ({
     readTemplateDialogShown: false,
     rawTemplateShown: false,
-    templateEditorCollapsed: true,
+    templateEditorOpen: false,
 
     currentTemplateBackup: undefined as AnyCustomTemplate | undefined,
     innerIndex: '',
@@ -488,26 +520,14 @@ export default defineComponent({
   watch: {
     // eslint-disable-next-line func-names
     'templateStore.current': function () {
-      this.initEditorCollapsed();
+      this.templateEditorOpen = false;
     },
   },
   mounted() {
-    this.initEditorCollapsed();
+    this.templateEditorOpen = false;
     this.templateStore.refreshAvailableTemplates();
   },
   methods: {
-    /**
-     * Show editor if needed
-     */
-    initEditorCollapsed() {
-      if (this.taskTemplate) {
-        this.templateEditorCollapsed = (this.taskTemplate.inserts?.length ?? 0) === 0;
-      }
-
-      if (this.fullTemplate) {
-        this.templateEditorCollapsed = this.fullTemplate.layouts.length === 0;
-      }
-    },
     /**
      * Prepare and open dialog of base template
      */
@@ -579,6 +599,25 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+.layouts-editor {
+  display: flex;
+  height: 0;
+  flex: 1;
+
+  &--dialog {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  &--drawer {
+    flex: 0.15;
+  }
+
+  &--viewer {
+    flex: 1;
+  }
+}
 </style>
 
 <i18n lang="yaml">
@@ -586,6 +625,7 @@ en:
   deleted_base: '(deleted)'
   preview_title: 'Preview of {name}'
   indexTemplate: 'Elastic index (used to enable autocomplete)'
+  openEditor: 'Open editor'
   tooltips:
     preview: 'See template'
     link: 'The report is linked to the template, click to unlink'
@@ -597,6 +637,7 @@ fr:
   deleted_base: '(supprimé)'
   preview_title: 'Prévisualisation de {name}'
   indexTemplate: "Index Elastic (utilisé pour activer l'autocomplétion)"
+  openEditor: "Ouvrir l'éditeur"
   tooltips:
     preview: 'Voir le modèle'
     link: 'Le rapport est lié au modèle, cliquer pour le délier'
