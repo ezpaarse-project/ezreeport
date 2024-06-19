@@ -126,7 +126,7 @@ USAGE
   $ ezreeport-admin export [DIR] [-c <value>] [--namespaces] [--templates] [--tasks] [--taskPresets]
 
 ARGUMENTS
-  DIR  [default: data/2024-06-14_export] Folder to output data
+  DIR  [default: data/2024-06-19_export] Folder to output data
 
 FLAGS
   -c, --config=<value>    Path to config file
@@ -205,7 +205,7 @@ ARGUMENTS
 FLAGS
   -c, --config=<value>  Path to config file
   -f, --file=<value>    Migration file to apply
-  -o, --out=<value>     [default: data/2024-06-14_migrate] Folder to output data
+  -o, --out=<value>     [default: data/2024-06-19_migrate] Folder to output data
       --to=<value>      Targeted version to migrate to
 
 DESCRIPTION

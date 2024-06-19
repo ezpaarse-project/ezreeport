@@ -1,4 +1,4 @@
-# @ezpaarse-project/ezreeport-admin-v1.0.0-rc.1 (2024-06-14)
+# @ezpaarse-project/ezreeport-admin-v1.0.0 (2024-06-14)
 
 
 ### Bug Fixes
@@ -23,8 +23,3 @@
 * **ezra:** renamed and reworked restore into import command ([31f54a4](https://github.com/ezpaarse-project/ezreeport/commit/31f54a457188385458b1fe42a9e2e981fa77a195))
 * **ezra:** renamed ezra package ([ff5d39f](https://github.com/ezpaarse-project/ezreeport/commit/ff5d39f7259e09a65b398c54a80d8907b859a6fe))
 * **ezra:** reworked transfer command ([71f1b1a](https://github.com/ezpaarse-project/ezreeport/commit/71f1b1a678038ccda73023c534446a28e9ebba4f))
-
-
-### BREAKING CHANGES
-
-* **ezra:** changed name used to install package
