@@ -1,3 +1,22 @@
+# [@ezpaarse-project/ezreeport-vue-v1.3.0](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.2.0...@ezpaarse-project/ezreeport-vue@1.3.0) (2024-06-19)
+
+
+### Bug Fixes
+
+* **vue:** fixed hitbox of fetchcount box ([2b8a2db](https://github.com/ezpaarse-project/ezreeport/commit/2b8a2db9bc8500d09685bc1389fb34bf01a32a08))
+* **vue:** fixed issues when changing total of tables ([08b8a78](https://github.com/ezpaarse-project/ezreeport/commit/08b8a784642537d531471f354df66df61accdcc9))
+* **vue:** fixed order not beign properly handled ([f900761](https://github.com/ezpaarse-project/ezreeport/commit/f900761421516ec62b9d85339f65a292fc96b3da))
+* **vue:** fixed position of chevrons used to open secions ([913bbd8](https://github.com/ezpaarse-project/ezreeport/commit/913bbd87a112cad7a21f58875510e901651ff325))
+* **vue:** minor fixs in task management ([8bacb6f](https://github.com/ezpaarse-project/ezreeport/commit/8bacb6f24ba3388647876c27f573e176e79910e5))
+
+
+### Features
+
+* **vue:** added simple way to create first template ([f2e4c69](https://github.com/ezpaarse-project/ezreeport/commit/f2e4c69af0448d38d05a73ece0c6a2d5371a5945))
+* **vue:** added way to inver bar axis ([39b4d79](https://github.com/ezpaarse-project/ezreeport/commit/39b4d79b3d0d1f9682d9a39a6e475b70d60eae2c))
+* **vue:** layout editor is now in fullscreen ([a198e80](https://github.com/ezpaarse-project/ezreeport/commit/a198e80b537322ba6456f375aba1655483e8903c))
+* **vue:** using semver to get compatibility between sdk and api ([7f0f6cf](https://github.com/ezpaarse-project/ezreeport/commit/7f0f6cf58da6e0654c8d7216f7398a523ff23845))
+
 # [@ezpaarse-project/ezreeport-vue-v1.3.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.2.0...@ezpaarse-project/ezreeport-vue@1.3.0-rc.1) (2024-06-14)
 
 
