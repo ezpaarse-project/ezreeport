@@ -155,7 +155,9 @@ const prepareColorScale = (
   const unusedColors = [...unusedColorsSet];
   // eslint-disable-next-line no-restricted-syntax
   for (const label of labels) {
-    colorsEntries.set(label, unusedColors.shift() || '');
+    const color = unusedColors.shift() || '';
+    colorsEntries.set(label, color);
+    params.colorMap.set(label, color);
   }
 
   return {
