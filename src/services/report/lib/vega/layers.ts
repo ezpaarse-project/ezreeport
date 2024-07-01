@@ -48,13 +48,19 @@ export type VegaParams = {
   }
 };
 
-const { scheme } = config.report;
-
 type ArcRadius = {
   outer: number;
   inner: number;
   center: number;
 };
+
+type PartialFigureSpec = {
+  layer: Layer[],
+  encoding: Encoding,
+  data?: unknown[]
+};
+
+const { scheme } = config.report;
 
 // Colors of vega (https://vega.github.io/vega/docs/schemes/)
 const colorScheme = vegaScheme(scheme) as string[];
@@ -93,17 +99,16 @@ const calcRadius = (params: VegaParams): ArcRadius => {
  *
  * @returns The score
  */
-const calcLabelDateScore = (data: any[], field: string) => {
+const calcLabelDateScore = (data: unknown[], field: string) => {
   const sliceLength = data.length / 2;
   const count = data
     .slice(0, sliceLength)
     .reduce(
-      (prev, value) => {
+      (prev: number, value) => {
         const label = new Date(get(value, field));
         return prev + (dfns.isValid(label) ? 1 : 0);
       },
       0,
-
     );
 
   return (count / sliceLength);
@@ -120,7 +125,7 @@ const calcLabelDateScore = (data: any[], field: string) => {
  */
 const prepareDataWithDefaultDates = (
   type: Mark,
-  data: any[],
+  data: unknown[],
   params: VegaParams,
 ) => {
   let eachUnitOfInterval;
@@ -169,7 +174,7 @@ const prepareDataWithDefaultDates = (
  */
 const prepareColorScale = (
   type: Mark,
-  data: any[],
+  data: unknown[],
   params: VegaParams,
   colorFieldPath = 'label.field',
 ) => {
@@ -226,7 +231,7 @@ const prepareColorScale = (
  */
 const prepareDataLayer = (
   type: Mark,
-  data: any[],
+  data: unknown[],
   params: VegaParams,
 ): Layer => merge<Layer, CustomLayer | {}>(
   {
@@ -251,7 +256,7 @@ const prepareDataLayer = (
  */
 const prepareDataLabelsLayers = (
   type: Mark,
-  data: any[],
+  data: unknown[],
   params: VegaParams,
   radius?: ArcRadius,
   valueAxis = 'y',
@@ -293,7 +298,7 @@ const prepareDataLabelsLayers = (
           field: params.value.field,
         },
       },
-      // FIXME: WARN Dropping since it does not contain any data field, datum, value, or signal.
+      // FIXME: WARN Dropping since it does not contain unknown data field, datum, value, or signal.
       color: {
         legend: null,
         scale: {
@@ -350,7 +355,16 @@ const prepareDataLabelsLayers = (
   let condition: string | undefined;
   switch (params.dataLabel.format) {
     case 'percent': {
-      const totalDocs = data.reduce((prev, value) => prev + get(value, params.value.field), 0);
+      const totalDocs = data.reduce(
+        (prev: number, dataItem) => {
+          const value = +get(dataItem, params.value.field);
+          if (!Number.isNaN(value)) {
+            return prev;
+          }
+          return prev + value;
+        },
+        0,
+      );
       const minValue = params.dataLabel.minValue ?? 0.03;
       condition = `datum['${textAggregatePrefix}${params.value.field}'] / ${totalDocs} >= ${minValue}`;
 
@@ -443,9 +457,9 @@ const mergeLayers = (dataLayer: Layer, ...layers: (Layer | undefined)[]): Layer[
  */
 export const createArcSpec = (
   type: Mark,
-  data: any[],
+  data: unknown[],
   params: VegaParams,
-): { layer: Layer[], encoding: Encoding, data?: any[] } => {
+): PartialFigureSpec => {
   // Calculating arc radius if needed
   const radius = calcRadius(params);
 
@@ -494,9 +508,9 @@ export const createArcSpec = (
  */
 export const createBarSpec = (
   type: Mark,
-  data: any[],
+  data: unknown[],
   params: VegaParams,
-): { layer: Layer[], encoding: Encoding, data?: any[] } => {
+): PartialFigureSpec => {
   const [valueAxis, labelAxis] = (params.invertAxis ? ['x', 'y'] : ['y', 'x']) as ('x' | 'y')[];
 
   const dataLayer = prepareDataLayer(type, data, params);
@@ -552,9 +566,9 @@ export const createBarSpec = (
  */
 export const createOtherSpec = (
   type: Mark,
-  data: any[],
+  data: unknown[],
   params: VegaParams,
-): { layer: Layer[], encoding: Encoding, data?: any[] } => {
+): PartialFigureSpec => {
   const dataLayer = prepareDataLayer(type, data, params);
 
   // Prepare encoding

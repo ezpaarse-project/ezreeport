@@ -53,7 +53,7 @@ fonts.forEach(({ path, ...font }: CanvasRegisterableFont) => {
  */
 export const parseTitle = (
   title: Title,
-  inputData: Record<string, any[]> | any[],
+  inputData: Record<string, unknown[]> | unknown[],
   dataKey?: string,
 ): string | string[] => {
   let data = [];
@@ -92,10 +92,10 @@ export const parseTitle = (
  */
 export const createVegaLSpec = (
   type: Mark,
-  inputData: Record<string, any[]> | any[],
+  inputData: Record<string, unknown[]> | unknown[],
   params: VegaParams,
 ): TopLevelSpec => {
-  let data = inputData as any[];
+  let data = inputData as unknown[];
   if (!Array.isArray(inputData)) {
     if (!params.dataKey) {
       throw new Error('data is not iterable, and no "dataKey" is present');
