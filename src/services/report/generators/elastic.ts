@@ -426,7 +426,8 @@ const fetchWithElastic = async (
 
     // Checks any errors
     if ('error' in response) {
-      throw new Error(response.error.reason, { cause });
+      const reason = response.error.failed_shards?.[0]?.reason?.reason || response.error.reason;
+      throw new Error(reason, { cause });
     }
 
     // Checks any errors
