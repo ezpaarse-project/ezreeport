@@ -8,7 +8,7 @@
       "localRoot": "${workspaceFolder}/src/services/mail",
       "name": "mail: Debug",
       "port": 9231,
-      "remoteRoot": "/usr/dev/src/services/mail",
+      "remoteRoot": "/usr/build/src/services/mail",
       "request": "attach",
       "type": "node"
     },
@@ -16,7 +16,7 @@
       "localRoot": "${workspaceFolder}/src/services/report",
       "name": "report: Debug",
       "port": 9230,
-      "remoteRoot": "/usr/dev/src/services/report",
+      "remoteRoot": "/usr/build/src/services/report",
       "request": "attach",
       "type": "node"
     },
