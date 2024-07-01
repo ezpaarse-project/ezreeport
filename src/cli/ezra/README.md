@@ -13,58 +13,34 @@ CLI for managing ezreeport instance
 <!-- usage -->
 ```sh-session
 $ npm install -g @ezpaarse-project/ezreeport-admin
-
-$ ezreeport-admin --version
-ezreeport-admin/1.0.0 linux-x64 node-v18.19.0
-
+$ ezreeport-admin COMMAND
+running command...
+$ ezreeport-admin (--version)
+@ezpaarse-project/ezreeport-admin/1.0.0-rc.1 linux-x64 node-v18.19.1
 $ ezreeport-admin --help [COMMAND]
-CLI for managing ezreeport instance
-
-VERSION
-  ezreeport-admin/1.0.0 linux-x64 node-v18.19.0
-
 USAGE
-  $ ezreeport-admin [COMMAND]
+  $ ezreeport-admin COMMAND
 ...
 ```
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`ezreeport-admin help [COMMANDS]`](#ezreeport-admin-help-commands)
-* [`ezreeport-admin autocomplete`](#ezreeport-admin-autocomplete)
-* [`ezreeport-admin autocomplete create`](#ezreeport-admin-autocomplete-create)
-* [`ezreeport-admin autocomplete script`](#ezreeport-admin-autocomplete-script)
-* [`ezreeport-admin export FOLDER`](#ezreeport-admin-export-folder)
-* [`ezreeport-admin import FOLDER`](#ezreeport-admin-import-folder)
-* [`ezreeport-admin transfer`](#ezreeport-admin-transfer)
+* [`ezreeport-admin autocomplete [SHELL]`](#ezreeport-admin-autocomplete-shell)
+* [`ezreeport-admin config get [FIELD]`](#ezreeport-admin-config-get-field)
+* [`ezreeport-admin config set KEY [VALUE]`](#ezreeport-admin-config-set-key-value)
+* [`ezreeport-admin export [DIR]`](#ezreeport-admin-export-dir)
+* [`ezreeport-admin help [COMMAND]`](#ezreeport-admin-help-command)
+* [`ezreeport-admin import DIR`](#ezreeport-admin-import-dir)
+* [`ezreeport-admin migrate apply DIR`](#ezreeport-admin-migrate-apply-dir)
 * [`ezreeport-admin migrate list`](#ezreeport-admin-migrate-list)
-* [`ezreeport-admin migrate apply FOLDER`](#ezreeport-admin-migrate-apply-folder)
-* [`ezreeport-admin config get [PROPERTY]`](#ezreeport-admin-config-get-property)
-* [`ezreeport-admin config set PROPERTY [VALUE]`](#ezreeport-admin-config-set-property-value)
-* [`ezreeport-admin profile list`](#ezreeport-admin-profile-list)
-* [`ezreeport-admin profile new NAME`](#ezreeport-admin-profile-new-name)
-* [`ezreeport-admin profile load NAME`](#ezreeport-admin-profile-load-name)
-* [`ezreeport-admin profile unload NAME`](#ezreeport-admin-profile-unload-name)
 * [`ezreeport-admin profile delete NAME`](#ezreeport-admin-profile-delete-name)
+* [`ezreeport-admin profile list`](#ezreeport-admin-profile-list)
+* [`ezreeport-admin profile load NAME`](#ezreeport-admin-profile-load-name)
+* [`ezreeport-admin profile new NAME`](#ezreeport-admin-profile-new-name)
+* [`ezreeport-admin profile unload NAME`](#ezreeport-admin-profile-unload-name)
+* [`ezreeport-admin transfer`](#ezreeport-admin-transfer)
 
-## `ezreeport-admin help [COMMANDS]`
-
-Display help for ezreeport-admin.
-
-```
-USAGE
-  $ ezreeport-admin help [COMMANDS] [-n]
-
-ARGUMENTS
-  COMMANDS  Command to show help for.
-
-FLAGS
-  -n, --nested-commands  Include all nested commands in the output.
-```
-
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.0.12/src/commands/help.ts)_
-
-## `ezreeport-admin autocomplete`
+## `ezreeport-admin autocomplete [SHELL]`
 
 Display autocomplete installation instructions.
 
@@ -78,70 +54,119 @@ ARGUMENTS
 FLAGS
   -r, --refresh-cache  Refresh cache (ignores displaying instructions)
 
+DESCRIPTION
+  Display autocomplete installation instructions.
+
 EXAMPLES
   $ ezreeport-admin autocomplete
+
   $ ezreeport-admin autocomplete bash
+
   $ ezreeport-admin autocomplete zsh
+
   $ ezreeport-admin autocomplete powershell
+
   $ ezreeport-admin autocomplete --refresh-cache
 ```
 
-## `ezreeport-admin autocomplete create`
+_See code: [@oclif/plugin-autocomplete](https://github.com/oclif/plugin-autocomplete/blob/v3.0.18/src/commands/autocomplete/index.ts)_
 
-Create autocomplete setup scripts and completion functions.
+## `ezreeport-admin config get [FIELD]`
+
+Show configs & profiles loaded
 
 ```
 USAGE
-  $ ezreeport-admin autocomplete create
+  $ ezreeport-admin config get [FIELD] [-c <value>] [-p <value>] [--main]
+
+ARGUMENTS
+  FIELD  Field to show. Allow dot notation
+
+FLAGS
+  -c, --config=<value>   Path to config file
+  -p, --profile=<value>  Profile name
+      --[no-]main        Show main config
+
+DESCRIPTION
+  Show configs & profiles loaded
 
 EXAMPLES
-  $ ezreeport-admin autocomplete create
+  $ ezreeport-admin config get
 ```
 
-_See code: [@oclif/plugin-autocomplete](https://github.com/oclif/plugin-autocomplete/blob/3.0.18/src/commands/autocomplete/index.ts)_
+_See code: [src/commands/config/get.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0-rc.1/src/commands/config/get.ts)_
 
-## `ezreeport-admin autocomplete script`
+## `ezreeport-admin config set KEY [VALUE]`
 
-Outputs autocomplete config script for shells.
-
-```
-USAGE
-  $ ezreeport-admin autocomplete script [SHELL]
-
-ARGUMENTS
-  SHELL  (zsh|bash|powershell) Shell type
-```
-
-_See code: [@oclif/plugin-autocomplete](https://github.com/oclif/plugin-autocomplete/blob/3.0.18/src/commands/autocomplete/index.ts)_
-
-## `ezreeport-admin export FOLDER`
-
-Export instance data into a dedicated folder.
+describe the command here
 
 ```
 USAGE
-  $ ezreeport-admin export [DIR] [-c <value>] [-o <value>] [--namespaces] [--templates] [--tasks] [--taskPresets]
+  $ ezreeport-admin config set KEY [VALUE] [-c <value>] [-p <value>]
+
+FLAGS
+  -c, --config=<value>   Path to config file
+  -p, --profile=<value>  Profile to set config for
+
+DESCRIPTION
+  describe the command here
+
+EXAMPLES
+  $ ezreeport-admin config set
+```
+
+_See code: [src/commands/config/set.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0-rc.1/src/commands/config/set.ts)_
+
+## `ezreeport-admin export [DIR]`
+
+Export instance data into a dedicated folder
+
+```
+USAGE
+  $ ezreeport-admin export [DIR] [-c <value>] [--namespaces] [--templates] [--tasks] [--taskPresets]
 
 ARGUMENTS
-  DIR  [default: data/date_export] Folder to output data
+  DIR  [default: data/2024-06-19_export] Folder to output data
 
 FLAGS
   -c, --config=<value>    Path to config file
-  -o, --out=<value>       [default: data/date_export] Folder to output data
       --[no-]namespaces   Export namespaces
       --[no-]taskPresets  Export task presets
       --[no-]tasks        Export tasks
       --[no-]templates    Export templates
 
+DESCRIPTION
+  Export instance data into a dedicated folder
+
 EXAMPLES
   $ ezreeport-admin export
 ```
 
-_See code: [src/commands/export.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0/src/commands/export.ts)_
+_See code: [src/commands/export.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0-rc.1/src/commands/export.ts)_
 
-## `ezreeport-admin import FOLDER`
+## `ezreeport-admin help [COMMAND]`
 
-Import instance data from a dedicated folder.
+Display help for ezreeport-admin.
+
+```
+USAGE
+  $ ezreeport-admin help [COMMAND...] [-n]
+
+ARGUMENTS
+  COMMAND...  Command to show help for.
+
+FLAGS
+  -n, --nested-commands  Include all nested commands in the output.
+
+DESCRIPTION
+  Display help for ezreeport-admin.
+```
+
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.0.22/src/commands/help.ts)_
+
+## `ezreeport-admin import DIR`
+
+Import instance data from a dedicated folder
 
 ```
 USAGE
@@ -157,33 +182,40 @@ FLAGS
       --[no-]tasks        Import tasks
       --[no-]templates    Import templates
 
+DESCRIPTION
+  Import instance data from a dedicated folder
+
 EXAMPLES
   $ ezreeport-admin import
 ```
 
-_See code: [src/commands/import.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0/src/commands/import.ts)_
+_See code: [src/commands/import.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0-rc.1/src/commands/import.ts)_
 
+## `ezreeport-admin migrate apply DIR`
 
-## `ezreeport-admin transfer`
-
-Transfer first profile's to a second profile's instance.
+Apply migrations to the instance, defaults to all migrations
 
 ```
 USAGE
-  $ ezreeport-admin transfer [-c <value>] [--namespaces] [--templates] [--tasks] [--taskPresets]
+  $ ezreeport-admin migrate apply DIR [-c <value>] [-f <value> | --to <value>] [-o <value>]
+
+ARGUMENTS
+  DIR  Exported data to read
 
 FLAGS
-  -c, --config=<value>    Path to config file
-      --[no-]namespaces   Transfer namespaces
-      --[no-]taskPresets  Transfer task presets
-      --[no-]tasks        Transfer tasks
-      --[no-]templates    Transfer templates
+  -c, --config=<value>  Path to config file
+  -f, --file=<value>    Migration file to apply
+  -o, --out=<value>     [default: data/2024-06-19_migrate] Folder to output data
+      --to=<value>      Targeted version to migrate to
+
+DESCRIPTION
+  Apply migrations to the instance, defaults to all migrations
 
 EXAMPLES
-  $ ezreeport-admin transfer
+  $ ezreeport-admin migrate apply
 ```
 
-_See code: [src/commands/transfer.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0/src/commands/transfer.ts)_
+_See code: [src/commands/migrate/apply.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0-rc.1/src/commands/migrate/apply.ts)_
 
 ## `ezreeport-admin migrate list`
 
@@ -198,116 +230,37 @@ FLAGS
   -c, --config=<value>  Path to config file
   -d, --dir=<value>     Exported data to read
 
-EXAMPLES
-  $ ezreeport-admin migrate list
-```
-
-_See code: [src/commands/migrate/list.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0/src/commands/migrate/list.ts)_
-
-## `ezreeport-admin migrate apply FOLDER`
-
-Apply migrations to the instance, defaults to all migrations.
-
-```
-USAGE
-  $ ezreeport-admin migrate apply DIR [-c <value>] [-f <value> | --to <value>] [-o <value>]
-
-ARGUMENTS
-  DIR  Exported data to read
-
-FLAGS
-  -c, --config=<value>  Path to config file
-  -f, --file=<value>    Migration file to apply
-  -o, --out=<value>     [default: data/2024-05-28_migrate] Folder to output data
-      --to=<value>      Targeted version to migrate to
-
-EXAMPLES
-  $ ezreeport-admin migrate apply
-```
-
-_See code: [src/commands/migrate/apply.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0/src/commands/migrate/apply.ts)_
-
-## `ezreeport-admin config get PROPERTY`
-
-Show configs & profiles loaded.
-
-```
-USAGE
-  $ ezreeport-admin config get [FIELD] [-c <value>] [-p <value>] [--main]
-
-ARGUMENTS
-  FIELD  Field to show. Allow dot notation
-
-FLAGS
-  -c, --config=<value>   Path to config file
-  -p, --profile=<value>  Profile name
-      --[no-]main        Show main config
-
-EXAMPLES
-  $ ezreeport-admin config get
-```
-
-_See code: [src/commands/config/get.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0/src/commands/config/get.ts)_
-
-## `ezreeport-admin config set PROPERTY VALUE`
-
-Set property of a config.
-
-```
-USAGE
-  $ ezreeport-admin config set KEY [VALUE] [-c <value>] [-p <value>]
-
-FLAGS
-  -c, --config=<value>   Path to config file
-  -p, --profile=<value>  Profile to set config for
-
-EXAMPLES
-  $ ezreeport-admin config set
-```
-
-_See code: [src/commands/config/set.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0/src/commands/config/set.ts)_
-
-## `ezreeport-admin profile list`
-
-List migrations available for instance or a data directory
-
-```
-USAGE
-  $ ezreeport-admin migrate list [-c <value>] [-d <value>] [-a]
-
-FLAGS
-  -a, --all             List all migrations
-  -c, --config=<value>  Path to config file
-  -d, --dir=<value>     Exported data to read
+DESCRIPTION
+  List migrations available for instance or a data directory
 
 EXAMPLES
   $ ezreeport-admin migrate list
 ```
 
-_See code: [src/commands/migrate/list.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0/src/commands/migrate/list.ts)_
+_See code: [src/commands/migrate/list.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0-rc.1/src/commands/migrate/list.ts)_
 
-## `ezreeport-admin migrate apply`
+## `ezreeport-admin profile delete NAME`
 
-Apply migrations to the instance, defaults to all migrations
+Delete profile and unload it if needed
 
 ```
 USAGE
-  $ ezreeport-admin migrate apply DIR [-c <value>] [-f <value> | --to <value>] [-o <value>]
+  $ ezreeport-admin profile delete NAME [-c <value>]
 
 ARGUMENTS
-  DIR  Exported data to read
+  NAME  Profile name
 
 FLAGS
   -c, --config=<value>  Path to config file
-  -f, --file=<value>    Migration file to apply
-  -o, --out=<value>     [default: data/2024-05-28_migrate] Folder to output data
-      --to=<value>      Targeted version to migrate to
+
+DESCRIPTION
+  Delete profile and unload it if needed
 
 EXAMPLES
-  $ ezreeport-admin migrate apply
+  $ ezreeport-admin profile delete
 ```
 
-_See code: [src/commands/migrate/apply.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0/src/commands/migrate/apply.ts)_
+_See code: [src/commands/profile/delete.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0-rc.1/src/commands/profile/delete.ts)_
 
 ## `ezreeport-admin profile list`
 
@@ -320,37 +273,14 @@ USAGE
 FLAGS
   -c, --config=<value>  Path to config file
 
+DESCRIPTION
+  List available profiles
+
 EXAMPLES
   $ ezreeport-admin profile list
 ```
 
-_See code: [src/commands/profile/list.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0/src/commands/profile/list.ts)_
-
-## `ezreeport-admin profile new NAME`
-
-Create a new profile
-
-```
-USAGE
-  $ ezreeport-admin profile new NAME [-c <value>] [-f <value>] [--load] [--priority <value>] [--url <value>] [--key <value>] [--admin <value>]
-
-ARGUMENTS
-  NAME  Profile name
-
-FLAGS
-  -c, --config=<value>    Path to config file
-  -f, --file=<value>      Read config from a file
-      --admin=<value>     ezREEPORT administrator username
-      --key=<value>       ezREEPORT API Key
-      --load              Load the profile after creating it
-      --priority=<value>  Priority when loading the profile. If not set, it will be the highest priority
-      --url=<value>       ezREEPORT API URL
-
-EXAMPLES
-  $ ezreeport-admin profile new
-```
-
-_See code: [src/commands/profile/new.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0/src/commands/profile/new.ts)_
+_See code: [src/commands/profile/list.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0-rc.1/src/commands/profile/list.ts)_
 
 ## `ezreeport-admin profile load NAME`
 
@@ -367,11 +297,44 @@ FLAGS
   -c, --config=<value>    Path to config file
   -p, --priority=<value>  Priority of profile. Higher priority profiles will be loaded first. Default to highest one
 
+DESCRIPTION
+  Load profile
+
 EXAMPLES
   $ ezreeport-admin profile load
 ```
 
-_See code: [src/commands/profile/load.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0/src/commands/profile/load.ts)_
+_See code: [src/commands/profile/load.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0-rc.1/src/commands/profile/load.ts)_
+
+## `ezreeport-admin profile new NAME`
+
+Create a new profile
+
+```
+USAGE
+  $ ezreeport-admin profile new NAME [-c <value>] [-f <value>] [--load] [--priority <value>] [--url <value>]
+    [--key <value>] [--admin <value>]
+
+ARGUMENTS
+  NAME  Profile name
+
+FLAGS
+  -c, --config=<value>    Path to config file
+  -f, --file=<value>      Read config from a file
+      --admin=<value>     ezREEPORT administrator username
+      --key=<value>       ezREEPORT API Key
+      --load              Load the profile after creating it
+      --priority=<value>  Priority when loading the profile. If not set, it will be the highest priority
+      --url=<value>       ezREEPORT API URL
+
+DESCRIPTION
+  Create a new profile
+
+EXAMPLES
+  $ ezreeport-admin profile new
+```
+
+_See code: [src/commands/profile/new.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0-rc.1/src/commands/profile/new.ts)_
 
 ## `ezreeport-admin profile unload NAME`
 
@@ -387,29 +350,36 @@ ARGUMENTS
 FLAGS
   -c, --config=<value>  Path to config file
 
+DESCRIPTION
+  Unload profile
+
 EXAMPLES
   $ ezreeport-admin profile unload
 ```
 
-_See code: [src/commands/profile/unload.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0/src/commands/profile/unload.ts)_
+_See code: [src/commands/profile/unload.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0-rc.1/src/commands/profile/unload.ts)_
 
-## `ezreeport-admin profile delete NAME`
+## `ezreeport-admin transfer`
 
-Delete profile and unload it if needed
+Transfer first profile's to a second profile's instance
 
 ```
 USAGE
-  $ ezreeport-admin profile delete NAME [-c <value>]
-
-ARGUMENTS
-  NAME  Profile name
+  $ ezreeport-admin transfer [-c <value>] [--namespaces] [--templates] [--tasks] [--taskPresets]
 
 FLAGS
-  -c, --config=<value>  Path to config file
+  -c, --config=<value>    Path to config file
+      --[no-]namespaces   Transfer namespaces
+      --[no-]taskPresets  Transfer task presets
+      --[no-]tasks        Transfer tasks
+      --[no-]templates    Transfer templates
+
+DESCRIPTION
+  Transfer first profile's to a second profile's instance
 
 EXAMPLES
-  $ ezreeport-admin profile delete
+  $ ezreeport-admin transfer
 ```
 
-_See code: [src/commands/profile/delete.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0/src/commands/profile/delete.ts)_
+_See code: [src/commands/transfer.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.0.0-rc.1/src/commands/transfer.ts)_
 <!-- commandsstop -->
