@@ -508,7 +508,7 @@ export const createBarSpec = (
       params.value,
     ),
     [labelAxis]: merge<Encoding[typeof labelAxis], VegaParams['label']>(
-      { type: 'nominal', title: null },
+      { type: 'nominal', title: null, sort: `-${valueAxis}` },
       params.label,
     ),
     color: merge<Encoding['color'], VegaParams['color']>(
@@ -527,7 +527,7 @@ export const createBarSpec = (
 
     merge<Encoding[typeof labelAxis], Encoding[typeof labelAxis]>(
       encoding[labelAxis],
-      { timeUnit: timeFormat.timeUnit, axis: { format: timeFormat.format } },
+      { timeUnit: timeFormat.timeUnit, axis: { format: timeFormat.format }, sort: 'ascending' },
     );
   }
 
