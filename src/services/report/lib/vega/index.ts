@@ -121,24 +121,24 @@ export const createVegaLSpec = (
       break;
   }
 
-  const spec: TopLevelSpec = {
+  const { data: editedData, ...spec } = createSpec(type, data, params);
+
+  return {
     width: Math.round(params.width),
     height: Math.round(params.height),
     background: 'transparent',
 
-    datasets: { default: data },
+    datasets: { default: editedData || data },
     data: { name: 'default' },
 
-    ...createSpec(type, data, params),
+    ...spec,
 
     config: {
       locale: localeFR as VegaLocale,
       customFormatTypes: true,
       font: fontFamily,
     },
-  };
-
-  return spec;
+  } as TopLevelSpec;
 };
 
 /**

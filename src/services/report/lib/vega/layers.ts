@@ -1,7 +1,7 @@
 import { scheme as vegaScheme, expressionFunction } from 'vega';
 import type { Mark } from 'vega-lite/build/src/mark';
-import { get, merge } from 'lodash';
-import { isValid as isValidDate } from 'date-fns';
+import { get, set, merge } from 'lodash';
+import dfns from 'date-fns';
 import { contrast } from 'chroma-js';
 
 import { UnitSpec } from 'vega-lite/build/src/spec';
@@ -100,13 +100,61 @@ const calcLabelDateScore = (data: any[], field: string) => {
     .reduce(
       (prev, value) => {
         const label = new Date(get(value, field));
-        return prev + (isValidDate(label) ? 1 : 0);
+        return prev + (dfns.isValid(label) ? 1 : 0);
       },
       0,
 
     );
 
   return (count / sliceLength);
+};
+
+/**
+ * Prepare color scale
+ *
+ * @param type The type of figure
+ * @param data The data to display
+ * @param params The params of the figure
+ *
+ * @returns The color scale
+ */
+const prepareDataWithDefaultDates = (
+  type: Mark,
+  data: any[],
+  params: VegaParams,
+) => {
+  let eachUnitOfInterval;
+  switch (params.recurrence) {
+    case Recurrence.DAILY:
+      eachUnitOfInterval = dfns.eachHourOfInterval;
+      break;
+
+    case Recurrence.WEEKLY:
+    case Recurrence.MONTHLY:
+      eachUnitOfInterval = dfns.eachDayOfInterval;
+      break;
+
+    case Recurrence.QUARTERLY:
+    case Recurrence.BIENNIAL:
+    case Recurrence.YEARLY:
+      eachUnitOfInterval = dfns.eachMonthOfInterval;
+      break;
+
+    default:
+      throw new Error('Recurrence not found');
+  }
+
+  const defaultData = eachUnitOfInterval(params.period).map((date) => {
+    const object = {} as Record<string, unknown>;
+    set(object, params.label.field, new Date(date).getTime());
+    set(object, params.value.field, 0);
+    return object;
+  });
+
+  return [
+    ...defaultData,
+    ...data,
+  ];
 };
 
 /**
@@ -397,7 +445,7 @@ export const createArcSpec = (
   type: Mark,
   data: any[],
   params: VegaParams,
-): { layer: Layer[], encoding: Encoding } => {
+): { layer: Layer[], encoding: Encoding, data?: any[] } => {
   // Calculating arc radius if needed
   const radius = calcRadius(params);
 
@@ -448,7 +496,7 @@ export const createBarSpec = (
   type: Mark,
   data: any[],
   params: VegaParams,
-): { layer: Layer[], encoding: Encoding } => {
+): { layer: Layer[], encoding: Encoding, data?: any[] } => {
   const [valueAxis, labelAxis] = (params.invertAxis ? ['x', 'y'] : ['y', 'x']) as ('x' | 'y')[];
 
   const dataLayer = prepareDataLayer(type, data, params);
@@ -469,10 +517,13 @@ export const createBarSpec = (
     ),
   };
 
+  let editedData;
   // If more than 3/8 label's data is date, consider whole axis as a date
   // and sets format based on task recurrence
   if (calcLabelDateScore(data, params.label.field) > 0.75) {
     const timeFormat = calcVegaFormat(params.recurrence);
+
+    editedData = prepareDataWithDefaultDates(type, data, params);
 
     merge<Encoding[typeof labelAxis], Encoding[typeof labelAxis]>(
       encoding[labelAxis],
@@ -487,7 +538,7 @@ export const createBarSpec = (
   } = prepareDataLabelsLayers(type, data, params, undefined, valueAxis);
   merge(dataLayer, dataLayerEdits);
 
-  return { layer: mergeLayers(dataLayer, ...dataLabelLayers), encoding };
+  return { layer: mergeLayers(dataLayer, ...dataLabelLayers), data: editedData, encoding };
 };
 
 /**
@@ -503,7 +554,7 @@ export const createOtherSpec = (
   type: Mark,
   data: any[],
   params: VegaParams,
-): { layer: Layer[], encoding: Encoding } => {
+): { layer: Layer[], encoding: Encoding, data?: any[] } => {
   const dataLayer = prepareDataLayer(type, data, params);
 
   // Prepare encoding
