@@ -31,6 +31,7 @@ export type VegaParams = {
   height: number;
   debugExport?: boolean,
   recurrence: Recurrence,
+  period: dfns.Interval,
   colorMap: Map<string, string>,
   // Figure specific
   invertAxis?: boolean,

@@ -11,6 +11,7 @@ import {
   initDoc,
   renderDoc,
   type PDFStats,
+  type PDFReport,
 } from '~/lib/pdf';
 import { addMdToPDF } from '~/lib/pdf/markdown';
 import { addMetricToPDF } from '~/lib/pdf/metrics';
@@ -223,8 +224,14 @@ const resolveSlot = (params: {
   margin: Margin
 }) => {
   const {
-    slots, viewport, grid, figures, figureIndex, margin,
+    slots,
+    viewport,
+    grid,
+    figures,
+    figureIndex,
+    margin,
   } = params;
+
   const figure = figures[figureIndex];
   let slot: Area;
 
@@ -273,6 +280,187 @@ const resolveSlot = (params: {
     slot,
     figure,
   };
+};
+
+type RenderFigureParams = {
+  /**
+   * The report document
+   */
+  doc: PDFReport,
+  /**
+   * The color map keeping track of used colors
+   */
+  colorMap: Map<string, string>,
+  /**
+   * The figure
+   */
+  figure: FigureType,
+  /**
+   * Page's viewport
+   */
+  viewport: Area,
+  /**
+   * Current slot
+   */
+  slot: Area,
+  /**
+   * Data to render
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any,
+  /**
+   * Recurrence of the report
+   */
+  recurrence: Recurrence,
+};
+
+/**
+ * Render a table
+ *
+ * @param params
+ */
+const renderTable = async (params: RenderFigureParams) => {
+  const {
+    doc,
+    figure,
+    viewport,
+    slot,
+    data,
+  } = params;
+
+  const margin: Partial<Record<'top' | 'right' | 'bottom' | 'left', number>> = {};
+  figure.params.tableWidth = slot.width;
+
+  figure.params.startY = slot.y;
+  if (slot.x !== viewport.x) {
+    margin.left = slot.x;
+  }
+
+  figure.params.maxHeight = slot.height;
+
+  // eslint-disable-next-line no-await-in-loop
+  await addTableToPDF(doc, data, merge({}, figure.params, { margin }));
+};
+
+/**
+ * Render a markdown
+ *
+ * @param params
+ */
+const renderMarkdown = async (params: RenderFigureParams) => {
+  const {
+    doc,
+    figure,
+    slot,
+    data,
+  } = params;
+
+  if (!data.toString) {
+    throw new Error('Provided data is not string compatible');
+  }
+
+  // eslint-disable-next-line no-await-in-loop
+  await addMdToPDF(doc, data.toString(), {
+    ...figure.params,
+    start: {
+      x: slot.x,
+      y: slot.y,
+    },
+    width: slot.width,
+    height: slot.height,
+  });
+};
+
+/**
+ * Render metrics
+ *
+ * @param params
+ */
+const renderMetrics = async (params: RenderFigureParams) => {
+  const {
+    doc,
+    figure,
+    slot,
+    data,
+  } = params;
+
+  addMetricToPDF(doc, data, {
+    ...figure.params,
+    start: {
+      x: slot.x,
+      y: slot.y,
+    },
+    width: slot.width,
+    height: slot.height,
+  });
+};
+
+/**
+ * Render a table
+ *
+ * @param params
+ */
+const renderVegaChart = async (params: RenderFigureParams) => {
+  const {
+    doc,
+    colorMap,
+    figure,
+    slot,
+    data,
+    recurrence,
+  } = params;
+
+  // Figure title
+  const { title: vegaTitle, ...figParams } = figure.params;
+  if (vegaTitle) {
+    const fontSize = doc.pdf.getFontSize();
+    const font = doc.pdf.getFont();
+
+    const text = parseTitle(
+      vegaTitle,
+      data,
+      figure.params.dataKey,
+    );
+
+    doc.pdf
+      .setFont(doc.fontFamily, 'bold')
+      .setFontSize(10);
+
+    const { h } = doc.pdf.getTextDimensions(
+      Array.isArray(text) ? text.join('\n') : text,
+      { maxWidth: slot.width },
+    );
+
+    doc.pdf
+      .text(text, slot.x, slot.y + h, { maxWidth: slot.width })
+      .setFontSize(fontSize)
+      .setFont(font.fontName, font.fontStyle);
+
+    slot.y += (1.25 * h);
+    slot.height -= (1.25 * h);
+  }
+
+  const spec = createVegaLSpec(
+    figure.type as Mark,
+    data,
+    {
+      ...(figParams as { label: any, value: any }),
+      colorMap,
+      recurrence,
+      period: doc.period,
+      width: slot.width,
+      height: slot.height,
+    },
+  );
+
+  // eslint-disable-next-line no-await-in-loop
+  const view = syncWithCommonHandlers(
+    () => createVegaView(spec),
+    { vegaSpec: { ...spec, datasets: undefined } },
+  );
+
+  // eslint-disable-next-line no-await-in-loop
+  await addVegaToPDF(doc, view, slot);
 };
 
 /**
@@ -351,131 +539,38 @@ const renderPdfWithVega = async (
               drawAreaRef(doc.pdf, slot);
             }
 
+            const renderFigureParams = {
+              doc,
+              colorMap,
+              figure,
+              viewport,
+              slot,
+              data: figure.data ?? data,
+              recurrence: options.recurrence,
+            };
+
+            if (!renderFigureParams.data) {
+              throw new Error('No data found');
+            }
+
             switch (figure.type) {
-              case 'table': {
-                // Print table
-                const margin: Partial<Record<'top' | 'right' | 'bottom' | 'left', number>> = {};
-                figure.params.tableWidth = slot.width;
-
-                figure.params.startY = slot.y;
-                if (slot.x !== viewport.x) {
-                  margin.left = slot.x;
-                }
-
-                figure.params.maxHeight = slot.height;
-
-                const figureData = figure.data ?? data;
-                if (!figureData) {
-                  throw new Error('No data found');
-                }
-
+              case 'table':
                 // eslint-disable-next-line no-await-in-loop
-                await addTableToPDF(
-                  doc,
-                  figureData,
-                  merge({}, figure.params, { margin }),
-                );
+                await renderTable(renderFigureParams);
                 break;
-              }
 
-              case 'md': {
-              // Print MD
-                const figureData = figure.data ?? data;
-                if (!figureData) {
-                  throw new Error('No data found');
-                }
+              case 'md':
+                renderMarkdown(renderFigureParams);
+                break;
 
+              case 'metric':
+                renderMetrics(renderFigureParams);
+                break;
+
+              default:
                 // eslint-disable-next-line no-await-in-loop
-                await addMdToPDF(doc, figureData.toString(), {
-                  ...figure.params,
-                  start: {
-                    x: slot.x,
-                    y: slot.y,
-                  },
-                  width: slot.width,
-                  height: slot.height,
-                });
+                await renderVegaChart(renderFigureParams);
                 break;
-              }
-
-              case 'metric': {
-              // Print Metrics
-                const figureData = figure.data ?? data;
-                if (!figureData) {
-                  throw new Error('No data found');
-                }
-
-                addMetricToPDF(doc, figureData as any[], {
-                  ...figure.params,
-                  start: {
-                    x: slot.x,
-                    y: slot.y,
-                  },
-                  width: slot.width,
-                  height: slot.height,
-                });
-                break;
-              }
-
-              default: {
-                // Print Vega chart
-                const figureData = figure.data ?? data;
-                if (!figureData) {
-                  throw new Error('No data found');
-                }
-
-                // Figure title
-                const { title: vegaTitle, ...figParams } = figure.params;
-                if (vegaTitle) {
-                  const fontSize = doc.pdf.getFontSize();
-                  const font = doc.pdf.getFont();
-
-                  const text = parseTitle(
-                    vegaTitle,
-                    figureData,
-                    figure.params.dataKey,
-                  );
-
-                  doc.pdf
-                    .setFont(doc.fontFamily, 'bold')
-                    .setFontSize(10);
-
-                  const { h } = doc.pdf.getTextDimensions(
-                    Array.isArray(text) ? text.join('\n') : text,
-                    { maxWidth: slot.width },
-                  );
-
-                  doc.pdf
-                    .text(text, slot.x, slot.y + h, { maxWidth: slot.width })
-                    .setFontSize(fontSize)
-                    .setFont(font.fontName, font.fontStyle);
-
-                  slot.y += (1.25 * h);
-                  slot.height -= (1.25 * h);
-                }
-
-                const spec = createVegaLSpec(
-                  figure.type as Mark,
-                  figureData,
-                  {
-                    ...(figParams as { label: any, value: any }),
-                    colorMap,
-                    recurrence: options.recurrence,
-                    width: slot.width,
-                    height: slot.height,
-                  },
-                );
-
-                // eslint-disable-next-line no-await-in-loop
-                const view = syncWithCommonHandlers(
-                  () => createVegaView(spec),
-                  { vegaSpec: { ...spec, datasets: undefined } },
-                );
-
-                // eslint-disable-next-line no-await-in-loop
-                await addVegaToPDF(doc, view, slot);
-                break;
-              }
             }
 
             events.emit('figureRendered', figure);
