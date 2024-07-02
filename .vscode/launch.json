@@ -5,27 +5,20 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "localRoot": "${workspaceFolder}/src/services/mail",
+      "localRoot": "${workspaceFolder}/services/mail",
       "name": "mail: Debug",
       "port": 9231,
-      "remoteRoot": "/usr/build/src/services/mail",
+      "remoteRoot": "/usr/dev/services/mail",
       "request": "attach",
       "type": "node"
     },
     {
-      "localRoot": "${workspaceFolder}/src/services/report",
+      "localRoot": "${workspaceFolder}/services/report",
       "name": "report: Debug",
       "port": 9230,
-      "remoteRoot": "/usr/build/src/services/report",
+      "remoteRoot": "/usr/dev/services/report",
       "request": "attach",
       "type": "node"
-    },
-    {
-      "type": "chrome",
-      "request": "launch",
-      "name": "vue: chrome",
-      "url": "http://localhost:6006",
-      "webRoot": "${workspaceFolder}/src",
-    },
+    }
   ]
 }

@@ -18,7 +18,7 @@ services:
       file: docker-compose.yml
       service: report
     image: node:18.18.2
-    working_dir: /usr/dev/src/services/report
+    working_dir: /usr/dev/services/report
     volumes:
       - .:/usr/dev
     command: "npm run dev"
@@ -30,7 +30,7 @@ services:
       file: docker-compose.yml
       service: mail
     image: node:18.18.2
-    working_dir: /usr/dev/src/services/mail
+    working_dir: /usr/dev/services/mail
     volumes:
       - .:/usr/dev
     command: "npm run dev"

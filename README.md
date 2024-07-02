@@ -62,19 +62,19 @@ Workflow used here is the same as Git Flow :
 
 ### Services
 
-- `src/services/report`: (ezreeport-report)
+- `services/report`: (ezreeport-report)
   - Generate PDF reports with HTTP API. Also run cronjob to generate reports
-- `src/services/mail`: (ezreeport-mail)
+- `services/mail`: (ezreeport-mail)
   - Handle email management
 
 
 ### Packages
 
-- `src/cli/ezra` (@ezpaarse-project/ezreeport-admin)
+- `services/cli/ezra` (@ezpaarse-project/ezreeport-admin)
   - CLI client for managing ezREEPORT instances
-- `src/sdk` (@ezpaarse-project/sdk-js)
+- `services/sdk` (@ezpaarse-project/sdk-js)
   - SDK for ezReeport API
-- `src/vue` (ezreeport-vue)
+- `services/vue` (ezreeport-vue)
   - Vue components that use SDK for displaying info
   - It also contains an example with [Nuxt](https://nuxtjs.org/) at `src/vue/example` (it's not part of the workspace because of webpack issues)
 
