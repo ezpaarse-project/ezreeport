@@ -11,7 +11,7 @@ Reporting service for ezMESURE/ezCOUNTER
 
 ```bash
 git clone https://github.com/ezpaarse-project/ezreeport.git
-echo '#!/bin/bash\n\nexport ELASTIC_URL="$ELASTIC_SCHEME://$ELASTIC_HOST:$ELASTIC_PORT"\n\nexport DATABASE_URL="$DATABASE_PROTOCOL://$DATABASE_USER:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT/$DATABASE_DB?schema=default"' > ezreeport.local.env.sh
+echo 'ELASTIC_URL="${ELASTIC_SCHEME:-https}://${ELASTIC_HOST}:${ELASTIC_PORT:-9200}"\n\nDATABASE_URL="${DATABASE_PROTOCOL:-postgresql}://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?schema=default"' > .env.local
 pnpm i
 ```
 
