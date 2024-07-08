@@ -4,7 +4,10 @@
   "description": "CLI for managing ezreeport instance",
   "homepage": "https://github.com/ezpaarse-project/ezreeport",
   "bugs": "https://github.com/ezpaarse-project/ezreeport/issues",
-  "repository": "ezpaarse-project/ezreeport",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
+  },
   "license": "CeCILL",
   "author": "oxypomme",
   "type": "module",
