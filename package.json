@@ -25,7 +25,7 @@
     "test:mail": "npm --prefix tests run test:mail",
     "test:report": "npm --prefix tests run test:report",
     "test:sdk": "npm --prefix src/services/sdk run build && npm --prefix tests run test:sdk",
-    "publish": "HUSKY=0 pnpm -r --workspace-concurrency=1 exec -- npx --no-install semantic-release"
+    "publish": "HUSKY=0 pnpm -r --filter !ezreeport-tests --filter !ezreeport-vue-example --workspace-concurrency=1 exec -- npx --no-install semantic-release"
   },
   "lint-staged": {
     "package.json": [
