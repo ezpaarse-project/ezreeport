@@ -26,6 +26,5 @@
   "files.associations": {
     ".env": "dotenv",
     ".env.defaults": "dotenv"
-  },
-  "typescript.tsdk": "./src/services/report/node_modules/typescript/lib"
+  }
 }

@@ -1,5 +1,4 @@
 /* eslint-disable func-names */
-import { readFile } from 'node:fs/promises';
 import axios, { type AxiosRequestTransformer } from 'axios';
 
 import config from './config';
@@ -7,30 +6,18 @@ import { appLogger } from './logger';
 
 import pckg from '../../package.json';
 
-const BANNED_DOMAINS_FILEPATH = 'config/banned_domains.json';
-
 let bannedDomainsRegexp: RegExp[] = [];
 
 /**
  * Print warning in logger to remind to set banned domains
  */
-const warnNoBannedDomains = () => appLogger.warn(`[http-requests] No banned domains defined. Please set REPORT_FETCHER_BANNED_DOMAINS or "${BANNED_DOMAINS_FILEPATH}" to avoid SSRF attacks`);
+const warnNoBannedDomains = () => appLogger.warn('[http-requests] No banned domains defined. Please set REPORT_FETCHER_BANNED_DOMAINS or "fetcher.bannedDomains" in a config file to avoid SSRF attacks');
 
 /**
  * Setup banned domains via ENV, if not available tries to get them from a config file
  */
 const setupBannedDomains = async () => {
-  let { bannedDomains } = config.fetcher;
-  // If no env var provided, try to get the via the config file
-  if (bannedDomains?.length <= 0) {
-    try {
-      appLogger.verbose(`[http-requests] Reading "${BANNED_DOMAINS_FILEPATH}"...`);
-      const rawDomains = await readFile(BANNED_DOMAINS_FILEPATH, 'utf-8');
-      bannedDomains = JSON.parse(rawDomains);
-    } catch (error) {
-      appLogger.error(`[http-requests] An [error] occurred when reading banned domains: [${error}]`);
-    }
-  }
+  const { bannedDomains } = config.fetcher;
 
   // Try to parse the provided domains as RegExs
   try {
