@@ -560,11 +560,13 @@ const renderPdfWithVega = async (
                 break;
 
               case 'md':
-                renderMarkdown(renderFigureParams);
+                // eslint-disable-next-line no-await-in-loop
+                await renderMarkdown(renderFigureParams);
                 break;
 
               case 'metric':
-                renderMetrics(renderFigureParams);
+                // eslint-disable-next-line no-await-in-loop
+                await renderMetrics(renderFigureParams);
                 break;
 
               default:
