@@ -1,5 +1,10 @@
 import { differenceInMilliseconds, type Interval } from './date-fns';
 
+export type BulkResult<T> = {
+  type: 'created' | 'updated' | 'deleted'
+  data: T
+} | { type: 'none' };
+
 export enum FormatIntervalTarget {
   Milliseconds = 1,
   Seconds = 100,
@@ -7,6 +12,14 @@ export enum FormatIntervalTarget {
   Hours = 360000,
 }
 
+/**
+ * Format interval to human readable
+ *
+ * @param param0 The interval
+ * @param target The target (default: FormatIntervalTarget.Seconds)
+ *
+ * @returns The formatted interval
+ */
 export const formatInterval = (
   { start, end }: Interval,
   target = FormatIntervalTarget.Seconds,
@@ -47,10 +60,16 @@ export const b64ToString = (
   encoding: 'base64' | 'base64url' = 'base64',
 ) => Buffer.from(b64, encoding).toString();
 
-export type BulkResult<T> = {
-  type: 'created' | 'updated' | 'deleted'
-  data: T
-} | { type: 'none' };
+/**
+ * Ensure value is an array
+ *
+ * @param value Value to ensure
+ *
+ * @returns Copy of value if an array, else an array containing the value
+ */
+export const ensureArray = <T>(value: T | T[]): T[] => (
+  Array.isArray(value) ? [...value] : [value]
+);
 
 /**
  * Parse promised bulk operation results into usable arrays

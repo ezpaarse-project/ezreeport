@@ -10,6 +10,7 @@ import { StatusCodes } from 'http-status-codes';
 import { merge } from 'lodash';
 import config from '~/lib/config';
 import { Type, Value } from '~/lib/typebox';
+import { ensureArray } from '~/lib/utils';
 
 import {
   getAccessValue,
@@ -148,7 +149,7 @@ const requireAccess = (minAccess: Access): preValidationHookHandler => async (re
     && (request.query.namespaces || request.query['namespaces[]'])
   ) {
     const rawN = request.query.namespaces || request.query['namespaces[]'] || '';
-    wantedIds = Array.isArray(rawN) ? rawN : [rawN];
+    wantedIds = ensureArray(rawN);
   }
 
   let ids = new Set(possibleNamespaces.map(({ namespace: { id } }) => id) ?? []);
@@ -211,12 +212,7 @@ const authBasePlugin: FastifyPluginAsync = async (fastify, pluginOpts) => {
     const routeName = `${pluginOpts.prefix}-${method}${url}`;
 
     // Get previous hooks
-    let preValidation: preValidationHookHandler[] = [];
-    if (routeOpts.preValidation) {
-      preValidation = Array.isArray(routeOpts.preValidation)
-        ? routeOpts.preValidation
-        : [routeOpts.preValidation];
-    }
+    const preValidation = ensureArray(routeOpts.preValidation || []);
 
     // If require API key
     if (!registered && routeOpts.ezrAuth.requireAPIKey) {
