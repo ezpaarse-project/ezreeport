@@ -184,7 +184,7 @@
                       </template>
 
                       <div>
-                        <DateFormatDiv v-if="task.enabled" :value="task.nextRun" format="dd/MM/yyyy HH:mm">
+                        <DateFormatDiv v-if="task.enabled" :value="task.nextRun" format="dd/MM/yyyy">
                           <template #default="{ date }">
                             {{ $t('dates.nextRun', { date }) }}
                           </template>
