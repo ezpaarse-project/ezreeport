@@ -1,3 +1,11 @@
+# [@ezpaarse-project/ezreeport-vue-v1.3.1-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.3.0...@ezpaarse-project/ezreeport-vue@1.3.1-rc.1) (2024-07-18)
+
+
+### Bug Fixes
+
+* **vue:** fixed format of nextRun ([0563064](https://github.com/ezpaarse-project/ezreeport/commit/0563064201e500001df80fc28edeab8de1d7a514))
+* **vue:** removed order if no metrics ([e33cc45](https://github.com/ezpaarse-project/ezreeport/commit/e33cc45f379cc57290742c1d8f36f5dbeefb0c57))
+
 # [@ezpaarse-project/ezreeport-vue-v1.3.1-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.3.0...@ezpaarse-project/ezreeport-vue@1.3.1-beta.1) (2024-07-18)
 
 
