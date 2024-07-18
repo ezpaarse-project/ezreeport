@@ -57,8 +57,8 @@
               @change="onTypeUpdate"
             />
 
-            <!-- Field -->
             <template v-if="!/^__/i.test(type.value)">
+              <!-- Field -->
               <v-combobox
                 :value="type.data?.field"
                 :items="filteredMapping"
@@ -81,31 +81,32 @@
                   </v-list-item>
                 </template>
               </v-combobox>
-            </template>
 
-            <div v-if="showOrder" class="mt-2">
-              <div>
-                <v-label>
-                  {{$t('headers.sortOrder')}}
-                </v-label>
+              <!-- Order -->
+              <div v-if="showOrder" class="mt-2">
+                <div>
+                  <v-label>
+                    {{$t('headers.sortOrder')}}
+                  </v-label>
+                </div>
+
+                <v-btn-toggle
+                  :value="(innerElement?.order === true ? 'asc' : innerElement?.order) ?? 'desc'"
+                  dense
+                  rounded
+                  color="primary"
+                  @change="onElementUpdate({ order: $event })"
+                >
+                  <v-btn :disabled="readonly" value="asc" small outlined>
+                    {{ $t('sortOrder.asc') }}
+                  </v-btn>
+
+                  <v-btn :disabled="readonly" value="desc" small outlined>
+                    {{ $t('sortOrder.desc') }}
+                  </v-btn>
+                </v-btn-toggle>
               </div>
-
-              <v-btn-toggle
-                :value="(innerElement?.order === true ? 'asc' : innerElement?.order) ?? 'desc'"
-                dense
-                rounded
-                color="primary"
-                @change="onElementUpdate({ order: $event })"
-              >
-                <v-btn :disabled="readonly" value="asc" small outlined>
-                  {{ $t('sortOrder.asc') }}
-                </v-btn>
-
-                <v-btn :disabled="readonly" value="desc" small outlined>
-                  {{ $t('sortOrder.desc') }}
-                </v-btn>
-              </v-btn-toggle>
-            </div>
+            </template>
 
             <v-divider v-if="typeDefinition?.returnsArray || typeDefinition?.subAggregations" class="my-4" />
 
