@@ -1,3 +1,11 @@
+# [ezreeport-report-v1.3.1-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.3.0...ezreeport-report@1.3.1-beta.1) (2024-07-18)
+
+
+### Bug Fixes
+
+* **report:** fixed issue with sorting in tables ([bf9c1f1](https://github.com/ezpaarse-project/ezreeport/commit/bf9c1f18d90089137480ad2fdab1890e9d181acb))
+* **report:** fixed issues with not awaiting promises ([b640c15](https://github.com/ezpaarse-project/ezreeport/commit/b640c156b6c57e7c6a42d6fa59070c4b14839190))
+
 # [ezreeport-report-v1.4.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.3.0...ezreeport-report@1.4.0-beta.1) (2024-07-08)
 
 ### Bug Fixes
