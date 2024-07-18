@@ -1,3 +1,10 @@
+# [ezreeport-mail-v1.2.1-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.2.0...ezreeport-mail@1.2.1-beta.1) (2024-07-18)
+
+
+### Bug Fixes
+
+* **mail:** removed UTC mention ([d6b4c3c](https://github.com/ezpaarse-project/ezreeport/commit/d6b4c3ced73a3592752915a3f679f0ec0c991829))
+
 # [1.2.0](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.1.0...ezreeport-mail@1.2.0) (2024-06-14)
 
 
