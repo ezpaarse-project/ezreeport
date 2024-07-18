@@ -12,8 +12,7 @@
       <p>Bonjour,</p>
       <p>
         Vous trouverez dans ce mail le rapport <strong>{{ recurrence }}</strong>
-        « <strong>{{ name }}</strong> », généré le <strong>{{ date }} (UTC
-        +0)</strong> pour l'établissement « <strong>{{ namespace }}</strong> ».
+        « <strong>{{ name }}</strong> », généré le <strong>{{ date }}</strong> pour l'établissement « <strong>{{ namespace }}</strong> ».
       </p>
       <p>
         Ce message est envoyé automatiquement par l'application ezREEPORT,
