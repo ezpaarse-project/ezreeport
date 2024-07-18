@@ -45,14 +45,11 @@ export const addTableToPDF = async (
     ...params
   } = spec;
 
-  // Limit data if needed
-  let tableData = data.slice(0, maxLength);
-
   // Sort data by last column dataKey
   const lastCol = params.columns?.at(-1);
   if (typeof lastCol === 'object' && lastCol?.dataKey) {
     const dK = lastCol.dataKey;
-    tableData.sort((a, b) => {
+    data.sort((a, b) => {
       const aValue = get(a, dK);
       const bValue = get(b, dK);
       if (typeof aValue === 'string' && typeof bValue === 'string') {
@@ -64,6 +61,9 @@ export const addTableToPDF = async (
       return 0;
     });
   }
+
+  // Limit data if needed
+  let tableData = data.slice(0, maxLength);
 
   // Calc margin
   const margin = merge(
