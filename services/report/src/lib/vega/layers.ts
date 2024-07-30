@@ -529,6 +529,7 @@ export const createBarSpec = (
       { scale: prepareColorScale(type, data, params, 'color.field') },
       params.color,
     ),
+    order: { aggregate: 'count' },
   };
 
   let editedData;
