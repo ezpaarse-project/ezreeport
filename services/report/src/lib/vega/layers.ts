@@ -358,7 +358,7 @@ const prepareDataLabelsLayers = (
       const totalDocs = data.reduce(
         (prev: number, dataItem) => {
           const value = +get(dataItem, params.value.field);
-          if (!Number.isNaN(value)) {
+          if (Number.isNaN(value)) {
             return prev;
           }
           return prev + value;
@@ -529,6 +529,7 @@ export const createBarSpec = (
       { scale: prepareColorScale(type, data, params, 'color.field') },
       params.color,
     ),
+    order: { aggregate: 'count' },
   };
 
   let editedData;

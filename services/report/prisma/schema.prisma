@@ -63,7 +63,7 @@ model TaskPreset {
   /// The name of the preset
   name       String   @unique
   /// The template linked to the preset
-  template   Template @relation(fields: [templateId], references: [id])
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
   templateId String
   /// Specific options used when fetching data (when generating reports) for this preset
   fetchOptions Json?
