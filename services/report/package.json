@@ -19,6 +19,7 @@
     "lint": "eslint --fix .",
     "db:install": "npm i -g prisma@^5.7.1",
     "db:gui": "prisma studio",
+    "db:diff": "prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma",
     "db:migrate": "prisma migrate deploy",
     "start": "tsx src/app.ts",
     "test": "npm -w ezreeport-tests run test:report"
@@ -42,7 +43,7 @@
     "bullmq": "^5.1.1",
     "canvas": "^2.11.2",
     "chroma-js": "^2.4.2",
-    "config": "^3.3.9",
+    "config": "^3.3.12",
     "date-fns": "^3.0.6",
     "fastify": "^4.25.2",
     "fastify-plugin": "^4.5.1",
@@ -57,14 +58,14 @@
     "typescript": "^5.3.3",
     "vega": "^5.27.0",
     "vega-lite": "^5.16.3",
-    "winston": "^3.11.0"
+    "winston": "^3.13.1"
   },
   "devDependencies": {
     "@types/chroma-js": "^2.4.4",
     "@types/config": "^3.3.3",
-    "@types/lodash": "^4.14.202",
+    "@types/lodash": "^4.17.7",
     "@types/node": "^20.10.6",
-    "@types/swagger-ui-dist": "^3.30.4",
+    "@types/swagger-ui-dist": "^3.30.5",
     "prisma": "^5.7.1"
   },
   "engines": {
