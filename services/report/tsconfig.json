@@ -1,0 +1,23 @@
+{
+  "include": [
+    "**/*.ts",
+    "**/*.js",
+    ".eslintrc.js"
+  ],
+  "compilerOptions": {
+    // Used by ESBuild
+    "target": "es2022",
+    "strict": true,
+    "paths": {
+      "~/*": [
+        "./src/*"
+      ]
+    },
+
+    // Used by TypeScript
+    "lib": ["es2022"],
+    "module": "commonjs",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+  }
+}

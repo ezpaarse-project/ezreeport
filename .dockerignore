@@ -6,5 +6,6 @@ dist
 .git
 .gitignore
 *.md
-
-src/services/report/config/banned_domains.json
+.env.*.local
+.env.local
+local*.json

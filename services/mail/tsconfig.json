@@ -1,0 +1,19 @@
+{
+  "include": [
+    "**/*.ts",
+    "src/lib/bull/jobs/*.js",
+    ".eslintrc.js"
+  ],
+  "compilerOptions": {
+    // Used by ESBuild
+    "paths": {
+      "~/*": [
+        "./src/*"
+      ]
+    },
+
+    // Used by TypeScript
+    "resolveJsonModule": true,
+    "esModuleInterop": true
+  }
+}

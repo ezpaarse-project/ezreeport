@@ -5,13 +5,13 @@ on:
     tags:
       - '*.rc*'
     paths:
-      - 'src/services/report/prisma/schema.prisma'
+      - 'services/report/prisma/schema.prisma'
   workflow_dispatch:
 
 env:
-  PRISMA_SCHEMA: src/services/report/prisma/schema.prisma
-  OUT_ERD_PATH: src/services/report/prisma/doc/ERD.svg
-  OUT_DIC_PATH: src/services/report/prisma/doc/DIC.md
+  PRISMA_SCHEMA: services/report/prisma/schema.prisma
+  OUT_ERD_PATH: services/report/prisma/doc/ERD.svg
+  OUT_DIC_PATH: services/report/prisma/doc/DIC.md
   DIC_NAME: ezREEPORT
   COMMIT_NAME: 'docs(report): updated database documentation[skip ci]'
   COMMIT_BODY: '${{ github.event.compare }}'

@@ -5,12 +5,12 @@ on:
     tags:
       - '*.rc*'
     paths:
-      - 'src/services/report/prisma/schema.prisma'
+      - 'services/report/prisma/schema.prisma'
   workflow_dispatch:
 
 env:
-  REPORT_SRC: src/services/report
-  PRISMA_SCHEMA: src/services/report/prisma/schema.prisma
+  REPORT_SRC: services/report
+  PRISMA_SCHEMA: services/report/prisma/schema.prisma
   COMMIT_NAME: 'chore(report): updated database migration[skip ci]'
   COMMIT_BODY: '${{ github.event.compare }}'
   COMMIT_FOOTER: 'Co-authored-by: @${{ github.event.sender.login }}'

@@ -11,7 +11,7 @@ Reporting service for ezMESURE/ezCOUNTER
 
 ```bash
 git clone https://github.com/ezpaarse-project/ezreeport.git
-echo '#!/bin/bash\n\nexport ELASTIC_URL="$ELASTIC_SCHEME://$ELASTIC_HOST:$ELASTIC_PORT"\n\nexport DATABASE_URL="$DATABASE_PROTOCOL://$DATABASE_USER:$DATABASE_PASSWORD@$DATABASE_HOST:$DATABASE_PORT/$DATABASE_DB?schema=default"' > ezreeport.local.env.sh
+echo 'ELASTIC_URL="${ELASTIC_SCHEME:-https}://${ELASTIC_HOST}:${ELASTIC_PORT:-9200}"\n\nDATABASE_URL="${DATABASE_PROTOCOL:-postgresql}://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?schema=default"' > .env.local
 pnpm i
 ```
 
@@ -62,19 +62,19 @@ Workflow used here is the same as Git Flow :
 
 ### Services
 
-- `src/services/report`: (ezreeport-report)
+- `services/report`: (ezreeport-report)
   - Generate PDF reports with HTTP API. Also run cronjob to generate reports
-- `src/services/mail`: (ezreeport-mail)
+- `services/mail`: (ezreeport-mail)
   - Handle email management
 
 
 ### Packages
 
-- `src/cli/ezra` (@ezpaarse-project/ezreeport-admin)
+- `services/cli/ezra` (@ezpaarse-project/ezreeport-admin)
   - CLI client for managing ezREEPORT instances
-- `src/sdk` (@ezpaarse-project/sdk-js)
+- `services/sdk` (@ezpaarse-project/sdk-js)
   - SDK for ezReeport API
-- `src/vue` (ezreeport-vue)
+- `services/vue` (ezreeport-vue)
   - Vue components that use SDK for displaying info
   - It also contains an example with [Nuxt](https://nuxtjs.org/) at `src/vue/example` (it's not part of the workspace because of webpack issues)
 
