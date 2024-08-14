@@ -1,4 +1,15 @@
-# [ezreeport-report-v1.3.1-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.3.1-beta.1...ezreeport-report@1.3.1-beta.2) (2024-08-02)
+# [ezreeport-report-v1.3.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.3.0...ezreeport-report@1.3.1) (2024-08-09)
+
+
+### Bug Fixes
+
+* **report:** fixed deletion of templates ([794349c](https://github.com/ezpaarse-project/ezreeport/commit/794349c0a45318364defedf637a6a4daaa5fbae1))
+* **report:** fixed issue with datalabels ([bff73ab](https://github.com/ezpaarse-project/ezreeport/commit/bff73ab6c405e6bb7d1487fee59816492d8d1c3e))
+* **report:** fixed issue with sorting in tables ([bf9c1f1](https://github.com/ezpaarse-project/ezreeport/commit/bf9c1f18d90089137480ad2fdab1890e9d181acb))
+* **report:** fixed issues with not awaiting promises ([b640c15](https://github.com/ezpaarse-project/ezreeport/commit/b640c156b6c57e7c6a42d6fa59070c4b14839190))
+* **report:** fixed sort of bar graphs ([bdde3f5](https://github.com/ezpaarse-project/ezreeport/commit/bdde3f53fb6650879a9881e6f3226cf4f73f9f79))
+
+# [ezreeport-report-v1.3.1-rc.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.3.1-rc.1...ezreeport-report@1.3.1-rc.2) (2024-08-02)
 
 
 ### Bug Fixes
@@ -6,6 +17,14 @@
 * **report:** fixed deletion of templates ([794349c](https://github.com/ezpaarse-project/ezreeport/commit/794349c0a45318364defedf637a6a4daaa5fbae1))
 * **report:** fixed issue with datalabels ([bff73ab](https://github.com/ezpaarse-project/ezreeport/commit/bff73ab6c405e6bb7d1487fee59816492d8d1c3e))
 * **report:** fixed sort of bar graphs ([bdde3f5](https://github.com/ezpaarse-project/ezreeport/commit/bdde3f53fb6650879a9881e6f3226cf4f73f9f79))
+
+# [ezreeport-report-v1.3.1-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.3.0...ezreeport-report@1.3.1-rc.1) (2024-07-18)
+
+
+### Bug Fixes
+
+* **report:** fixed issue with sorting in tables ([bf9c1f1](https://github.com/ezpaarse-project/ezreeport/commit/bf9c1f18d90089137480ad2fdab1890e9d181acb))
+* **report:** fixed issues with not awaiting promises ([b640c15](https://github.com/ezpaarse-project/ezreeport/commit/b640c156b6c57e7c6a42d6fa59070c4b14839190))
 
 # [ezreeport-report-v1.3.1-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.3.0...ezreeport-report@1.3.1-beta.1) (2024-07-18)
 
