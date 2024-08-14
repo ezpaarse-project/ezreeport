@@ -13,10 +13,11 @@ import { appLogger as logger } from '~/lib/logger';
 const {
   smtp,
   mail: { sender }, // TODO[feat]: some properties are not used (attempts, interval)
+  templates: { dir: templatesPath },
 } = config;
 
-nunjucks.configure('src/templates');
-const images = readdirSync('src/templates/images');
+nunjucks.configure(templatesPath);
+const images = readdirSync(join(templatesPath, 'images'));
 const transporter = createTransport(smtp);
 
 transporter.on('error', (err) => {
@@ -39,7 +40,7 @@ export const SMTPPing = async () => transporter.verify();
 
 export const sendMail = async (options: MailOptions) => {
   const attachments: Mail.Attachment[] = [
-    ...images.map((img) => ({ path: join('templates/images', img), cid: img, filename: img })),
+    ...images.map((img) => ({ path: join(templatesPath, 'images', img), cid: img, filename: img })),
     ...(options.attachments ?? []),
   ];
 

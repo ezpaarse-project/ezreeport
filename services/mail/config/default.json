@@ -26,5 +26,8 @@
   },
   "api": {
     "url": "http://localhost:8080"
+  },
+  "templates": {
+    "dir": "src/templates"
   }
 }
