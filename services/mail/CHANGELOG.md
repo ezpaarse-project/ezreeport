@@ -1,18 +1,11 @@
+# [ezreeport-mail-v1.2.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.2.1...ezreeport-mail@1.2.2) (2024-08-14)
+
+
+### Bug Fixes
+
+* **mail:** fixed issue with paths when attaching images of template ([b432c52](https://github.com/ezpaarse-project/ezreeport/commit/b432c52b47f0f37dcd06b1a8d87c3406a074517a))
+
 # [ezreeport-mail-v1.2.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.2.0...ezreeport-mail@1.2.1) (2024-08-09)
-
-
-### Bug Fixes
-
-* **mail:** removed UTC mention ([d6b4c3c](https://github.com/ezpaarse-project/ezreeport/commit/d6b4c3ced73a3592752915a3f679f0ec0c991829))
-
-# [ezreeport-mail-v1.2.1-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.2.0...ezreeport-mail@1.2.1-rc.1) (2024-07-18)
-
-
-### Bug Fixes
-
-* **mail:** removed UTC mention ([d6b4c3c](https://github.com/ezpaarse-project/ezreeport/commit/d6b4c3ced73a3592752915a3f679f0ec0c991829))
-
-# [ezreeport-mail-v1.2.1-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.2.0...ezreeport-mail@1.2.1-beta.1) (2024-07-18)
 
 
 ### Bug Fixes
