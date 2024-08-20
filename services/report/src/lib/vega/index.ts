@@ -15,6 +15,7 @@ import VegaLogger from './logger';
 import {
   createArcSpec,
   createBarSpec,
+  createLineSpec,
   createOtherSpec,
   type VegaParams,
   type Layer,
@@ -115,6 +116,9 @@ export const createVegaLSpec = (
       break;
     case 'bar':
       createSpec = createBarSpec;
+      break;
+    case 'line':
+      createSpec = createLineSpec;
       break;
 
     default:
