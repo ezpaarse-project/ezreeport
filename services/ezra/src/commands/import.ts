@@ -63,7 +63,7 @@ export default class Import extends EzrCommand<typeof Import> {
 
       const { stream } = opts.createDataWriteStream(this.instances[0]);
       const { total, progress } = createProgressBarStream({
-        onEnd: (c) => this.log(chalk.green(`${c} ${opts.type} backed up`)),
+        onEnd: (c) => this.log(chalk.green(`${c} ${opts.type} restored`)),
       });
 
       await createStreamPromise(
