@@ -93,12 +93,14 @@ function flattenEsBuckets<Element extends Record<string, unknown>>(
 type HandleEsResultsFnc = (
   figure: FigureType,
   aggregations: EsAggregationResult,
+  count: number | undefined,
   errorCause: unknown,
 ) => FetchResultItem[];
 
 const handleMetricsEsResults: HandleEsResultsFnc = (
   { params },
   esData,
+  count,
   errorCause,
 ) => {
   const data: FetchResultItem[] = (params.labels as any[])
@@ -108,7 +110,7 @@ const handleMetricsEsResults: HandleEsResultsFnc = (
        */
       (label, i) => {
         if (!label.aggregation) {
-          return undefined;
+          return { key: `${label.text}`, value: count ?? 0 };
         }
 
         const aggregation = esData[`${i}`];
@@ -154,7 +156,7 @@ const handleOtherEsResults: HandleEsResultsFnc = ({ params }, esData) => {
 };
 
 export default function handleEsResponse(
-  response: EsResponse,
+  { response, count }: { response: EsResponse, count: number | undefined },
   figure: FigureType,
   errorCause: unknown,
 ): FetchResultItem[] {
@@ -183,6 +185,7 @@ export default function handleEsResponse(
   return handleResults(
     figure,
     response.aggregations,
+    count,
     errorCause,
   );
 }

@@ -3,7 +3,7 @@ import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { Recurrence } from '~/lib/prisma';
 import { Type, Static } from '~/lib/typebox';
 import { asyncWithCommonHandlers } from '~/lib/utils';
-import { elasticMSearch } from '~/lib/elastic';
+import { elasticCount, elasticMSearch } from '~/lib/elastic';
 
 import { Figure, type FigureType } from '~/models/figures';
 import { calcElasticInterval } from '~/models/recurrence';
@@ -59,6 +59,7 @@ export async function fetchElastic(options: ElasticFetchOptionsType) {
       query,
       aggregations,
       size: 0,
+      track_total_hits: false,
     };
   });
 
@@ -70,8 +71,15 @@ export async function fetchElastic(options: ElasticFetchOptionsType) {
         index: options.index,
         body: requests.map((body) => [{}, body]).flat(),
       },
+      options.auth.username,
     ),
     errorCause,
+  );
+
+  const countResponses = await Promise.all(
+    requests.map((body) => asyncWithCommonHandlers(
+      () => elasticCount({ body: { query: body.query } }, options.auth.username),
+    )),
   );
 
   const results = responses.map(
@@ -79,8 +87,11 @@ export async function fetchElastic(options: ElasticFetchOptionsType) {
       const figureId = figures[i]._.id;
       const figure = options.figures[figureId];
       const title = figure?.params?.title || figure?.type || (figureId + 1);
+
+      const { count } = countResponses[i]?.body ?? {};
+
       figure.data = handleEsResponse(
-        response,
+        { response, count },
         figure,
         { ...errorCause, figure: title },
       );

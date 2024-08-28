@@ -119,10 +119,10 @@ function mergeExtractedEsBuckets(
       }
 
       // Add order
-      // if (!('raw' in bucket) && bucket.order !== false) {
-      //   const order = { _count: bucket.order === 'asc' ? 'asc' : 'desc' };
-      //   merge(aggregation, { [name]: { [bucket.type]: { order } } });
-      // }
+      if (!('raw' in bucket) && bucket.order !== false) {
+        const order = { _count: bucket.order === 'asc' ? 'asc' : 'desc' };
+        merge(aggregation, { [name]: { [bucket.type]: { order } } });
+      }
 
       return aggregation;
     },
@@ -136,14 +136,17 @@ function mergeExtractedEsBuckets(
 }
 
 const extractMetricsEsAggregations: ExtractEsAggregationsFnc = ({ params }) => {
+  const labelsToFetchCount = new Set<string>();
+
   const aggregations: FigureAggType[] = (params.labels as any[])
     .map(
       (label) => {
         const hasAggregation = assertFigureAgg(label.aggregation);
         if (!hasAggregation) {
+          labelsToFetchCount.add(label.text);
           return undefined;
         }
-        return (label.aggregation);
+        return label.aggregation;
       },
     ).filter((aggregation) => !!aggregation);
 
