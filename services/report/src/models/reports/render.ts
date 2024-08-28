@@ -4,7 +4,7 @@ import { merge } from 'lodash';
 import { Mark } from 'vega-lite/build/src/mark';
 
 import { Recurrence } from '~/lib/prisma';
-import { commonHandlers, syncWithCommonHandlers } from '~/lib/utils';
+import { asyncWithCommonHandlers, commonHandlers, syncWithCommonHandlers } from '~/lib/utils';
 import {
   addPage,
   deleteDoc,
@@ -27,6 +27,7 @@ import { Type, type Static, assertIsSchema } from '~/lib/typebox';
 
 import type { FigureType } from '~/models/figures';
 import { Layout } from '~/models/layouts';
+import { FetchResultItem } from './fetch/results';
 
 interface Grid {
   rows: number,
@@ -306,8 +307,7 @@ type RenderFigureParams = {
   /**
    * Data to render
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any,
+  data: FetchResultItem[],
   /**
    * Recurrence of the report
    */
@@ -338,7 +338,6 @@ const renderTable = async (params: RenderFigureParams) => {
 
   figure.params.maxHeight = slot.height;
 
-  // eslint-disable-next-line no-await-in-loop
   await addTableToPDF(doc, data, merge({}, figure.params, { margin }));
 };
 
@@ -359,7 +358,6 @@ const renderMarkdown = async (params: RenderFigureParams) => {
     throw new Error('Provided data is not string compatible');
   }
 
-  // eslint-disable-next-line no-await-in-loop
   await addMdToPDF(doc, data.toString(), {
     ...figure.params,
     start: {
@@ -416,11 +414,7 @@ const renderVegaChart = async (params: RenderFigureParams) => {
     const fontSize = doc.pdf.getFontSize();
     const font = doc.pdf.getFont();
 
-    const text = parseTitle(
-      vegaTitle,
-      data,
-      figure.params.dataKey,
-    );
+    const text = parseTitle(vegaTitle, data);
 
     doc.pdf
       .setFont(doc.fontFamily, 'bold')
@@ -453,13 +447,11 @@ const renderVegaChart = async (params: RenderFigureParams) => {
     },
   );
 
-  // eslint-disable-next-line no-await-in-loop
   const view = syncWithCommonHandlers(
     () => createVegaView(spec),
     { vegaSpec: { ...spec, datasets: undefined } },
   );
 
-  // eslint-disable-next-line no-await-in-loop
   await addVegaToPDF(doc, view, slot);
 };
 
@@ -513,83 +505,82 @@ const renderPdfWithVega = async (
     events.emit('slotsGenerated', slots);
 
     for (let layoutIndex = 0; layoutIndex < options.layouts.length; layoutIndex += 1) {
-      try {
-        const { data, figures } = options.layouts[layoutIndex];
+      // eslint-disable-next-line no-await-in-loop
+      await asyncWithCommonHandlers(
+        async () => {
+          const { figures } = options.layouts[layoutIndex];
 
-        if (layoutIndex > 0) {
-        // eslint-disable-next-line no-await-in-loop
-          await addPage();
-        }
-
-        // Limit number of figures to the number of possible slots
-        figures.length = Math.min(figures.length, slots.length);
-
-        for (let figureIndex = 0; figureIndex < figures.length; figureIndex += 1) {
-          try {
-            const { figure, slot } = resolveSlot({
-              figureIndex,
-              figures,
-              grid,
-              margin: slotMargin,
-              slots,
-              viewport,
-            });
-
-            if (options.debug) {
-              drawAreaRef(doc.pdf, slot);
-            }
-
-            const renderFigureParams = {
-              doc,
-              colorMap,
-              figure,
-              viewport,
-              slot,
-              data: figure.data ?? data,
-              recurrence: options.recurrence,
-            };
-
-            if (!renderFigureParams.data) {
-              throw new Error('No data found');
-            }
-
-            switch (figure.type) {
-              case 'table':
-                // eslint-disable-next-line no-await-in-loop
-                await renderTable(renderFigureParams);
-                break;
-
-              case 'md':
-                // eslint-disable-next-line no-await-in-loop
-                await renderMarkdown(renderFigureParams);
-                break;
-
-              case 'metric':
-                // eslint-disable-next-line no-await-in-loop
-                await renderMetrics(renderFigureParams);
-                break;
-
-              default:
-                // eslint-disable-next-line no-await-in-loop
-                await renderVegaChart(renderFigureParams);
-                break;
-            }
-
-            events.emit('figureRendered', figure);
-          } catch (error) {
-            const figure = figures[figureIndex];
-            const title = figure?.params?.title || figure?.type || (figureIndex + 1);
-            throw commonHandlers(error, { figure: title });
+          if (layoutIndex > 0) {
+            await addPage();
           }
-        }
 
-        events.emit('layoutRendered', figures);
-      } catch (error) {
-        throw commonHandlers(error, {
+          // Limit number of figures to the number of possible slots
+          figures.length = Math.min(figures.length, slots.length);
+
+          for (let figureIndex = 0; figureIndex < figures.length; figureIndex += 1) {
+            try {
+              const { figure, slot } = resolveSlot({
+                figureIndex,
+                figures,
+                grid,
+                margin: slotMargin,
+                slots,
+                viewport,
+              });
+
+              if (options.debug) {
+                drawAreaRef(doc.pdf, slot);
+              }
+
+              const renderFigureParams = {
+                doc,
+                colorMap,
+                figure,
+                viewport,
+                slot,
+                data: figure.data,
+                recurrence: options.recurrence,
+              };
+
+              if (!renderFigureParams.data) {
+                throw new Error('No data found');
+              }
+
+              /* eslint-disable no-await-in-loop */
+              switch (figure.type) {
+                case 'table':
+                  await renderTable(renderFigureParams);
+                  break;
+
+                case 'md':
+                  await renderMarkdown(renderFigureParams);
+                  break;
+
+                case 'metric':
+                  await renderMetrics(renderFigureParams);
+                  break;
+
+                default:
+                  await renderVegaChart(renderFigureParams);
+                  break;
+              }
+              /* eslint-enable no-await-in-loop */
+
+              events.emit('figureRendered', figure);
+            } catch (error) {
+              const figure = figures[figureIndex];
+              const title = figure?.params?.title || figure?.type || (figureIndex + 1);
+              throw commonHandlers(error, { figure: title });
+            }
+          }
+
+          events.emit('layoutRendered', figures);
+        },
+        {
           layout: layoutIndex,
           type: 'render',
-        });
-      }
+        },
+      );
     }
 
     return await renderDoc();

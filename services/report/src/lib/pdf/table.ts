@@ -1,18 +1,31 @@
 import { compile as handlebars } from 'handlebars';
-import autoTable, { type CellDef, type UserOptions } from 'jspdf-autotable';
-import { get, merge } from 'lodash';
+import * as AutoTable from 'jspdf-autotable';
+import { merge } from 'lodash';
 
+import type { FetchResultItem } from '~/models/reports/fetch/results';
 import { appLogger as logger } from '~/lib/logger';
 
 import type { PDFReport } from '.';
+import { ensureInt } from '../utils';
+
+type TableColumn = {
+  header: string,
+  metric?: boolean,
+  style: Partial<AutoTable.Styles>,
+};
 
 export type TableParams = {
-  title?: string,
-  dataKey?: string,
+  tableWidth?: number,
+  startY?: number,
+  margin?: AutoTable.MarginPaddingInput,
+
   maxLength?: number,
   maxHeight?: number,
-  totals?: string[],
-} & Omit<UserOptions, 'body' | 'didParseCell' | 'willDrawCell' | 'didDrawCell' | 'didDrawPage'>;
+
+  title?: string,
+  columns?: TableColumn[],
+  total?: boolean,
+};
 
 /**
  * Add table to PDF
@@ -23,44 +36,14 @@ export type TableParams = {
  */
 export const addTableToPDF = async (
   doc: PDFReport,
-  inputData: Record<string, any[]> | any[],
+  data: FetchResultItem[],
   spec: TableParams,
 ): Promise<void> => {
-  let data = inputData as any[];
-  if (!Array.isArray(inputData)) {
-    if (!spec.dataKey) {
-      throw new Error('data is not iterable, and no "dataKey" is present');
-    }
-
-    if (!Array.isArray(inputData[spec.dataKey])) {
-      throw new Error(`data.${spec.dataKey} is not iterable`);
-    }
-
-    data = inputData[spec.dataKey];
-  }
-
   const {
     maxLength,
     title,
     ...params
   } = spec;
-
-  // Sort data by last column dataKey
-  const lastCol = params.columns?.at(-1);
-  if (typeof lastCol === 'object' && lastCol?.dataKey) {
-    const dK = lastCol.dataKey;
-    data.sort((a, b) => {
-      const aValue = get(a, dK);
-      const bValue = get(b, dK);
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return bValue.localeCompare(aValue);
-      }
-      if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return bValue - aValue;
-      }
-      return 0;
-    });
-  }
 
   // Limit data if needed
   let tableData = data.slice(0, maxLength);
@@ -108,10 +91,10 @@ export const addTableToPDF = async (
     // Removing header & some space
     const maxTableHeight = maxHeight - (2 * 29);
     const maxRows = Math.ceil(maxTableHeight / 29);
-    const rowCount = tableData.length + (params.totals ? 1 : 0);
+    const rowCount = tableData.length + (params.total ? 1 : 0);
     if (rowCount > maxRows) {
       logger.warn(`[pdf] Reducing table length from ${tableData.length} to ${maxRows} because table won't fit in slot.`);
-      tableData = tableData.slice(0, maxRows - (params.totals ? 1 : 0));
+      tableData = tableData.slice(0, maxRows - (params.total ? 1 : 0));
     }
   }
 
@@ -130,80 +113,46 @@ export const addTableToPDF = async (
       .setFont(font.fontName, font.fontStyle);
   }
 
-  const options = merge(
-    {
-      styles: {
-        overflow: 'ellipsize',
-        minCellWidth: 100,
-      },
-      rowPageBreak: 'avoid',
-    },
-    params,
-    { margin },
-  );
-
-  if (options.columns) {
-    // Adding custom style to header
-    options.columns = options.columns.map((col) => {
-      if (
-        typeof col !== 'object'
-        || !col.header
-        || Array.isArray(col.header)
-      ) {
-        return col;
-      }
-
-      let { header: colHeader } = col;
-      if (typeof colHeader !== 'object') {
-        colHeader = {
-          content: col.header.toString(),
-          styles: options.columnStyles?.[col.dataKey ?? ''],
-        };
-      }
-
-      return {
-        ...col,
-        header: colHeader,
-      };
-    });
-
-    // Adding totals as footer
-    if ((options.totals?.length ?? 0) > 0) {
-      const totalSet = new Set(options.totals);
-      options.foot = [
-        options.columns.map((col): CellDef => {
-          if (typeof col !== 'object' || !col.dataKey || !totalSet.has(col.dataKey.toString())) {
-            return { content: '' };
-          }
-
-          return {
-            content: tableData.reduce(
-              (prev, d) => prev + Number.parseInt(get(d, col.dataKey?.toString() ?? '') ?? '0', 10),
-              0,
-            ),
-            styles: options.columnStyles?.[col.dataKey],
-          };
-        }),
-      ];
-    }
-  }
+  const columns = params.columns ?? [];
 
   // Print table
-  autoTable(doc.pdf, {
-    ...options,
-    body: tableData,
-    didParseCell: (hookData) => {
-      // If dataKey is a property path
-      if (hookData.row.section === 'body') {
-        let d = get(tableData[hookData.row.index], hookData.column.dataKey.toString()) ?? '';
-        switch (typeof d) {
-          default:
-            d = d.toString();
-            break;
-        }
-        // eslint-disable-next-line no-param-reassign
-        hookData.cell.text = [d];
-      }
+  AutoTable.default(doc.pdf, {
+    styles: {
+      overflow: 'ellipsize',
+      minCellWidth: 100,
     },
+    rowPageBreak: 'avoid',
+    tableWidth: params.tableWidth,
+    startY: params.startY,
+    margin,
+
+    columns: columns.map((col) => ({
+      header: {
+        content: col.header.toString(),
+        styles: col.style,
+      },
+    })),
+
+    body: columns.map((col): AutoTable.RowInput => tableData.map(
+      (item): AutoTable.CellDef => {
+        let { value } = item;
+        if (!col.metric) {
+          value = item[col.header] ?? '';
+        }
+        return { content: `${value}` };
+      },
+    )),
+
+    foot: [
+      columns.map((col): AutoTable.CellDef => {
+        if (!col.metric) {
+          return { content: '' };
+        }
+        return {
+          content: tableData.reduce((prev, item) => prev + ensureInt(item.value), 0),
+          styles: col.style,
+        };
+      }),
+    ],
   });
 };
