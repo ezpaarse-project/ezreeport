@@ -89,12 +89,10 @@ const migrateEsAggregation = (aggregation: any) => {
   }
 
   const size = agg[type]?.size;
-  const order = agg[type]?.order;
   const missing = agg[type]?.missing;
   return {
     type,
     field,
-    order,
     size,
     missing,
   };
@@ -260,7 +258,7 @@ const migrateOtherParams = ({ params, fetchOptions }: any) => {
  */
 const migrateFigures = (figures: any[] | undefined) => (figures ?? []).map((figure: any) => {
   const filters = migrateFilters(figure.fetchOptions?.filters);
-  let params;
+  let params = {};
   switch (figure.type) {
     case 'md':
       break;
