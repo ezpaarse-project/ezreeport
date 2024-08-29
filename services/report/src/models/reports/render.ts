@@ -312,6 +312,7 @@ type RenderFigureParams = {
    * Recurrence of the report
    */
   recurrence: Recurrence,
+  order?: 'asc' | 'desc',
 };
 
 /**
@@ -554,6 +555,11 @@ const renderPdfWithVega = async (
                   break;
               }
 
+              let order;
+              if (figure.params.order !== false) {
+                order = figure.params.order === true ? 'desc' : figure.params.order;
+              }
+
               // eslint-disable-next-line no-await-in-loop
               await render({
                 doc,
@@ -561,6 +567,7 @@ const renderPdfWithVega = async (
                 figure,
                 viewport,
                 slot,
+                order,
                 data: figure.data,
                 recurrence: options.recurrence,
               });

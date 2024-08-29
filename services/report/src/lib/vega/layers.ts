@@ -38,6 +38,7 @@ export type VegaParams = {
   // Figure specific
   invertAxis?: boolean,
   dataLayer?: CustomLayer;
+  order?: 'asc' | 'desc',
   value: SubEncoding<'x' | 'y' | 'theta'>;
   label: SubEncoding<'x' | 'y' | 'color'>,
   color?: Encoding['color'],
@@ -572,7 +573,7 @@ export const createLineSpec: CreateSpecFnc = (type, data, params) => {
         field: 'label',
         type: 'nominal',
         title: null,
-        sort: '-y',
+        sort: params.order && (params.order === 'asc' ? 'y' : '-y'),
       },
       params.label,
     ),

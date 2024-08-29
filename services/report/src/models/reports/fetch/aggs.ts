@@ -10,15 +10,6 @@ const FigureAgg = Type.Union([
     type: Type.String({ minLength: 1 }),
     field: Type.String({ minLength: 1 }),
     missing: Type.Optional(Type.String({ minLength: 0 })),
-    order: Type.Optional(
-      Type.Union([
-        Type.Literal('asc'),
-        // OR
-        Type.Literal('desc'),
-        // OR
-        Type.Boolean(),
-      ]),
-    ),
   }),
   // OR
   Type.Object({
@@ -102,6 +93,7 @@ function mergeExtractedEsBuckets(
   extracted: { buckets: ExtractedFigureAggType[], metric: ExtractedFigureAggType | undefined },
   dateField: string,
   calendarInterval: string,
+  order: boolean | 'asc' | 'desc',
 ): (EsAggregation | undefined)[] {
   const metric = extracted.metric ? transformEsAgg(extracted.metric, 'metric', dateField, calendarInterval) : undefined;
 
@@ -119,9 +111,8 @@ function mergeExtractedEsBuckets(
       }
 
       // Add order
-      if (!('raw' in bucket) && bucket.order !== false) {
-        const order = { _count: bucket.order === 'asc' ? 'asc' : 'desc' };
-        merge(aggregation, { [name]: { [bucket.type]: { order } } });
+      if (!('raw' in bucket) && order !== false) {
+        merge(aggregation, { [name]: { [bucket.type]: { order: { _count: order === 'asc' ? 'asc' : 'desc' } } } });
       }
 
       return aggregation;
@@ -220,7 +211,12 @@ export default function prepareEsAggregations(
   let aggregations: (EsAggregation | undefined)[] = [];
   const extracted = extractBuckets(figure, dateField, calendarInterval);
   if ('buckets' in extracted) {
-    aggregations = mergeExtractedEsBuckets(extracted, dateField, calendarInterval);
+    aggregations = mergeExtractedEsBuckets(
+      extracted,
+      dateField,
+      calendarInterval,
+      figure.params.order,
+    );
   } else {
     aggregations = extracted.aggregations.map(
       (agg, i) => transformEsAgg(agg, `${i + 1}`, dateField, calendarInterval),

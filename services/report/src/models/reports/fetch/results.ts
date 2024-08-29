@@ -1,5 +1,5 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
-import { syncWithCommonHandlers } from '~/lib/utils';
+import { ensureInt, syncWithCommonHandlers } from '~/lib/utils';
 
 import { FigureType } from '~/models/figures';
 
@@ -89,6 +89,28 @@ function flattenEsBuckets<Element extends Record<string, unknown>>(
   }
 
   return data;
+}
+
+function sortData(data: FetchResultItem[], figure: FigureType): FetchResultItem[] {
+  let order = figure.params.order as boolean | 'asc' | 'desc';
+  if (order === false) {
+    return data;
+  }
+  if (order === true) {
+    order = 'desc';
+  }
+
+  return [...data].sort((a, b) => {
+    const aValue = ensureInt(a.value);
+    const bValue = ensureInt(b.value);
+
+    let res = aValue - bValue;
+    if (Number.isNaN(res)) {
+      res = `${a.value}`.localeCompare(`${b.value}`);
+    }
+
+    return order === 'asc' ? res : -res;
+  });
 }
 
 type HandleEsResultsFnc = (
@@ -181,10 +203,11 @@ export default function handleEsResponse(
       break;
   }
 
-  // TODO: sort, order ?
   const { aggregations } = response;
-  return syncWithCommonHandlers(
+  const data = syncWithCommonHandlers(
     () => handleResults(figure, aggregations, count),
     { ...errorCause, elasticData: aggregations, elasticCount: count },
   );
+
+  return sortData(data, figure);
 }
