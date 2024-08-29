@@ -63,6 +63,10 @@ export async function fetchElastic(options: ElasticFetchOptionsType) {
     };
   });
 
+  if (requests.length <= 0) {
+    return [];
+  }
+
   const errorCause = { elasticQuery: { index: options.index, body: requests } };
 
   const { body: { responses } } = await asyncWithCommonHandlers(

@@ -13,6 +13,12 @@ export const ReportErrorCause = Type.Object({
   elasticQuery: Type.Optional(
     Type.Any(),
   ),
+  elasticData: Type.Optional(
+    Type.Any(),
+  ),
+  elasticCount: Type.Optional(
+    Type.Number(),
+  ),
   vegaSpec: Type.Optional(
     Type.Any(),
   ),

@@ -1,4 +1,5 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
+import { syncWithCommonHandlers } from '~/lib/utils';
 
 import { FigureType } from '~/models/figures';
 
@@ -94,28 +95,28 @@ type HandleEsResultsFnc = (
   figure: FigureType,
   aggregations: EsAggregationResult,
   count: number | undefined,
-  errorCause: unknown,
 ) => FetchResultItem[];
 
 const handleMetricsEsResults: HandleEsResultsFnc = (
   { params },
   esData,
   count,
-  errorCause,
 ) => {
+  let aggregationId = 1;
   const data: FetchResultItem[] = (params.labels as any[])
     .map(
       /**
        * Each item is a different label
        */
-      (label, i) => {
+      (label) => {
         if (!label.aggregation) {
           return { key: `${label.text}`, value: count ?? 0 };
         }
 
-        const aggregation = esData[`${i}`];
+        const aggregation = esData[`${aggregationId}`];
+        aggregationId += 1;
         if (!('value' in aggregation) || typeof aggregation.value !== 'number') {
-          throw new Error('Aggregation value is missing for a metric figure', { cause: errorCause });
+          throw new Error('Aggregation value is missing for a metric figure');
         }
 
         return {
@@ -158,7 +159,7 @@ const handleOtherEsResults: HandleEsResultsFnc = ({ params }, esData) => {
 export default function handleEsResponse(
   { response, count }: { response: EsResponse, count: number | undefined },
   figure: FigureType,
-  errorCause: unknown,
+  errorCause: Record<string, unknown>,
 ): FetchResultItem[] {
   checkEsErrors(response, errorCause);
 
@@ -181,11 +182,9 @@ export default function handleEsResponse(
   }
 
   // TODO: sort, order ?
-
-  return handleResults(
-    figure,
-    response.aggregations,
-    count,
-    errorCause,
+  const { aggregations } = response;
+  return syncWithCommonHandlers(
+    () => handleResults(figure, aggregations, count),
+    { ...errorCause, elasticData: aggregations, elasticCount: count },
   );
 }
