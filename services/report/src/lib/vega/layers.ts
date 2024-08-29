@@ -150,10 +150,14 @@ function prepareDataWithDefaultDates(
       throw new Error('Recurrence not found');
   }
 
-  const defaultData = eachUnitOfInterval(params.period).map((date) => ({
-    key: new Date(date).getTime(),
-    value: 0,
-  }));
+  const defaultData = eachUnitOfInterval(params.period).map((date): FetchResultItem => {
+    const key = new Date(date).getTime();
+    return {
+      key,
+      value: 0,
+      label: key,
+    };
+  });
 
   return [
     ...defaultData,
@@ -175,19 +179,12 @@ function prepareColorScale(
   type: Mark,
   data: FetchResultItem[],
   params: VegaParams,
+  getLabel = (el: FetchResultItem): string => `${el.label}`,
 ) {
-  // Parsing labels to get correct colors
-  if (!params.color) {
-    return {
-      domain: [],
-      range: [],
-    };
-  }
-
   const colorsEntries = new Map<string, string>();
   const unusedColorsSet = new Set(colorScheme);
 
-  const labels = new Set(data.map((el): string => `${el.color}`));
+  const labels = new Set(data.map(getLabel));
   // eslint-disable-next-line no-restricted-syntax
   for (const label of [...labels]) {
     const color = params.colorMap.get(label);
@@ -396,7 +393,7 @@ function prepareDataLabelsLayers(
       text: {
         condition: {
           test: condition ?? 'true',
-          field: params.color ? 'color' : 'key',
+          field: params.color ? 'color' : 'label',
         },
       },
       color: layer.encoding?.color,
@@ -472,7 +469,7 @@ export const createArcSpec: CreateSpecFnc = (type, data, params) => {
     ),
     color: merge<Encoding['color'], VegaParams['label']>(
       {
-        field: 'key',
+        field: 'label',
         scale: prepareColorScale(type, data, params),
         // @ts-ignore
         sort: { field: 'value', order: params.value.order ?? 'descending' }, // TODO: wtf ?
@@ -514,7 +511,7 @@ export const createBarSpec: CreateSpecFnc = (type, data, params) => {
     ),
     [labelAxis]: merge<Encoding[typeof labelAxis], VegaParams['label']>(
       {
-        field: 'key',
+        field: 'label',
         type: 'nominal',
         title: null,
         sort: `-${valueAxis}`,
@@ -522,7 +519,7 @@ export const createBarSpec: CreateSpecFnc = (type, data, params) => {
       params.label,
     ),
     color: merge<Encoding['color'], VegaParams['color']>(
-      { field: 'color', scale: prepareColorScale(type, data, params) },
+      { field: 'color', scale: prepareColorScale(type, data, params, (el) => `${el.color}`) },
       params.color,
     ),
     order: { aggregate: 'count' },
@@ -572,7 +569,7 @@ export const createLineSpec: CreateSpecFnc = (type, data, params) => {
     ),
     x: merge<Encoding['x'], VegaParams['label']>(
       {
-        field: 'key',
+        field: 'label',
         type: 'nominal',
         title: null,
         sort: '-y',
@@ -621,11 +618,11 @@ export const createOtherSpec: CreateSpecFnc = (type, data, params) => {
       params.value,
     ),
     y: merge<Encoding['y'], VegaParams['label']>(
-      { field: 'key' },
+      { field: 'label' },
       params.label,
     ),
     color: merge<Encoding['color'], VegaParams['color']>(
-      { scale: prepareColorScale(type, data, params) },
+      { field: 'color', scale: prepareColorScale(type, data, params) },
       params.color,
     ),
   };

@@ -532,7 +532,30 @@ const renderPdfWithVega = async (
                 drawAreaRef(doc.pdf, slot);
               }
 
-              const renderFigureParams = {
+              if (!figure.data) {
+                throw new Error('No data found');
+              }
+
+              let render = renderVegaChart;
+              switch (figure.type) {
+                case 'table':
+                  render = renderTable;
+                  break;
+
+                case 'md':
+                  render = renderMarkdown;
+                  break;
+
+                case 'metric':
+                  render = renderMetrics;
+                  break;
+
+                default:
+                  break;
+              }
+
+              // eslint-disable-next-line no-await-in-loop
+              await render({
                 doc,
                 colorMap,
                 figure,
@@ -540,31 +563,7 @@ const renderPdfWithVega = async (
                 slot,
                 data: figure.data,
                 recurrence: options.recurrence,
-              };
-
-              if (!renderFigureParams.data) {
-                throw new Error('No data found');
-              }
-
-              /* eslint-disable no-await-in-loop */
-              switch (figure.type) {
-                case 'table':
-                  await renderTable(renderFigureParams);
-                  break;
-
-                case 'md':
-                  await renderMarkdown(renderFigureParams);
-                  break;
-
-                case 'metric':
-                  await renderMetrics(renderFigureParams);
-                  break;
-
-                default:
-                  await renderVegaChart(renderFigureParams);
-                  break;
-              }
-              /* eslint-enable no-await-in-loop */
+              });
 
               events.emit('figureRendered', figure);
             } catch (error) {

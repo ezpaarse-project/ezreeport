@@ -326,8 +326,8 @@ async function generateReport(
             auth: namespace.fetchLogin.elastic,
             recurrence: task.recurrence,
             period: {
-              start: dfns.getDate(period.start),
-              end: dfns.getDate(period.end),
+              start: dfns.getTime(period.start),
+              end: dfns.getTime(period.end),
             },
 
             filters: t.filters,
@@ -348,7 +348,7 @@ async function generateReport(
       {
         doc: {
           name: task.name,
-          path: paths.filepath,
+          path: `${paths.filepath}.rep`,
           period: {
             start: dfns.getTime(period.start),
             end: dfns.getTime(period.end),

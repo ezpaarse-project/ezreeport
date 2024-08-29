@@ -11,7 +11,7 @@ import { ensureInt } from '../utils';
 type TableColumn = {
   header: string,
   metric?: boolean,
-  style: Partial<AutoTable.Styles>,
+  styles: Partial<AutoTable.Styles>,
 };
 
 export type TableParams = {
@@ -39,14 +39,11 @@ export const addTableToPDF = async (
   data: FetchResultItem[],
   spec: TableParams,
 ): Promise<void> => {
-  const {
-    maxLength,
-    title,
-    ...params
-  } = spec;
+  const columns = spec.columns ?? [];
+  let startY = spec.startY ?? 0;
 
   // Limit data if needed
-  let tableData = data.slice(0, maxLength);
+  let tableData = data.slice(0, spec.maxLength);
 
   // Calc margin
   const margin = merge(
@@ -56,31 +53,31 @@ export const addTableToPDF = async (
       bottom: doc.offset.bottom,
       top: doc.offset.top,
     },
-    params.margin,
+    spec.margin,
   );
 
   const fontSize = doc.pdf.getFontSize();
   const font = doc.pdf.getFont();
 
   let { maxHeight } = spec;
-  const y = params.startY || 0;
+  const y = startY;
   const titleCoords = { x: margin.left, y };
   // Table title
-  if (title) {
-    const textMaxWidth = typeof params.tableWidth === 'number' ? params.tableWidth : undefined;
+  if (spec.title) {
+    const textMaxWidth = typeof spec.tableWidth === 'number' ? spec.tableWidth : undefined;
 
     doc.pdf
       .setFont(doc.fontFamily, 'bold')
       .setFontSize(10);
 
     const { h } = doc.pdf.getTextDimensions(
-      title,
+      spec.title,
       { maxWidth: textMaxWidth },
     );
 
     titleCoords.y = y + h;
 
-    params.startY = y + (1.25 * h);
+    startY = y + (1.25 * h);
     if (maxHeight != null && maxHeight > 0) {
       maxHeight -= (1.25 * h);
     }
@@ -91,17 +88,17 @@ export const addTableToPDF = async (
     // Removing header & some space
     const maxTableHeight = maxHeight - (2 * 29);
     const maxRows = Math.ceil(maxTableHeight / 29);
-    const rowCount = tableData.length + (params.total ? 1 : 0);
+    const rowCount = tableData.length + (spec.total ? 1 : 0);
     if (rowCount > maxRows) {
       logger.warn(`[pdf] Reducing table length from ${tableData.length} to ${maxRows} because table won't fit in slot.`);
-      tableData = tableData.slice(0, maxRows - (params.total ? 1 : 0));
+      tableData = tableData.slice(0, maxRows - (spec.total ? 1 : 0));
     }
   }
 
-  if (title) {
-    const textMaxWidth = typeof params.tableWidth === 'number' ? params.tableWidth : undefined;
+  if (spec.title) {
+    const textMaxWidth = typeof spec.tableWidth === 'number' ? spec.tableWidth : undefined;
 
-    const parsed = handlebars(title)({ length: tableData.length });
+    const parsed = handlebars(spec.title)({ length: tableData.length });
     doc.pdf
       .text(
         parsed,
@@ -113,7 +110,20 @@ export const addTableToPDF = async (
       .setFont(font.fontName, font.fontStyle);
   }
 
-  const columns = params.columns ?? [];
+  let foot: AutoTable.RowInput[] | undefined;
+  if (spec.total) {
+    foot = [
+      columns.map((col): AutoTable.CellDef => {
+        if (!col.metric) {
+          return { content: '' };
+        }
+        return {
+          content: tableData.reduce((prev, item) => prev + ensureInt(item.value), 0),
+          styles: col.styles,
+        };
+      }),
+    ];
+  }
 
   // Print table
   AutoTable.default(doc.pdf, {
@@ -122,37 +132,29 @@ export const addTableToPDF = async (
       minCellWidth: 100,
     },
     rowPageBreak: 'avoid',
-    tableWidth: params.tableWidth,
-    startY: params.startY,
+    tableWidth: spec.tableWidth,
+    startY,
     margin,
 
     columns: columns.map((col) => ({
       header: {
         content: col.header.toString(),
-        styles: col.style,
+        styles: col.styles,
       },
     })),
 
-    body: columns.map((col): AutoTable.RowInput => tableData.map(
-      (item): AutoTable.CellDef => {
-        let { value } = item;
-        if (!col.metric) {
-          value = item[col.header] ?? '';
-        }
-        return { content: `${value}` };
-      },
-    )),
+    body: tableData.map(
+      (item): AutoTable.RowInput => columns.map(
+        (col): AutoTable.CellDef => {
+          let { value } = item;
+          if (!col.metric) {
+            value = item[col.header] ?? '';
+          }
+          return { content: `${value}`, styles: col.styles };
+        },
+      ),
+    ),
 
-    foot: [
-      columns.map((col): AutoTable.CellDef => {
-        if (!col.metric) {
-          return { content: '' };
-        }
-        return {
-          content: tableData.reduce((prev, item) => prev + ensureInt(item.value), 0),
-          styles: col.style,
-        };
-      }),
-    ],
+    foot,
   });
 };

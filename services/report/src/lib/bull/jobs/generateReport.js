@@ -8,12 +8,12 @@ const config = require('../../config').default;
 const { formatISO } = require('../../date-fns');
 const { appLogger: logger } = require('../../logger');
 
-const { generateReport } = require('../../../models/reports');
+const { default: generateReport } = require('../../../models/reports');
 
 /**
  * @typedef {import('bullmq').Job<import('..').GenerationData>} Job
  * @typedef {import('../../../models/templates').TemplateType} TemplateType
- * @typedef {import('../../../models/reports').ReportResultType} ReportResultType
+ * @typedef {import('../../../models/reports/types').ReportResultType} ReportResultType
  * @typedef {import('..').MailResult} MailResult
  */
 
