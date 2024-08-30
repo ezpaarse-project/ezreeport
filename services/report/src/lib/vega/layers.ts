@@ -106,9 +106,9 @@ function calcLabelDateScore(data: FetchResultItem[]) {
   const count = data
     .slice(0, sliceLength)
     .reduce(
-      (prev: number, { value }) => {
-        const label = new Date(ensureInt(value));
-        return prev + (dfns.isValid(label) ? 1 : 0);
+      (prev: number, { label }) => {
+        const labelDate = new Date(ensureInt(label || 'undefined'));
+        return prev + (dfns.isValid(labelDate) ? 1 : 0);
       },
       0,
     );
