@@ -1,3 +1,15 @@
+# [ezreeport-report-v1.4.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.3.1...ezreeport-report@1.4.0-rc.1) (2024-08-30)
+
+
+### Bug Fixes
+
+* **report:** added better support for line charts ([4f34f99](https://github.com/ezpaarse-project/ezreeport/commit/4f34f99e2b03a7e78c526c8546afec59d180dd6a))
+
+
+### Features
+
+* **report:** fixed filters beign merged together ([b2e9566](https://github.com/ezpaarse-project/ezreeport/commit/b2e9566629ba9d7c395fc3aa5435cc1fb69fc5b1))
+
 # [ezreeport-report-v1.4.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.3.1...ezreeport-report@1.4.0-beta.1) (2024-08-20)
 
 
