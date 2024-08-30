@@ -3,16 +3,18 @@ import { ensureInt, syncWithCommonHandlers } from '~/lib/utils';
 
 import { FigureType } from '~/models/figures';
 
+export type FetchResultValue = string | number | boolean;
+
 type EsResponse = ElasticTypes.MsearchResponseItem<Record<string, unknown>>;
 type EsAggregationResult = Record<string, ElasticTypes.AggregationsAggregate>;
-type EsBucket = { key: string | number | bigint | boolean, [x: string]: unknown };
+type EsBucket = { key: FetchResultValue, [x: string]: unknown };
 
 export type FetchResultItem = {
-  key: string | number | bigint | boolean,
+  key: FetchResultValue,
   keyAsString?: string,
-  value: string | number | bigint | boolean,
+  value: FetchResultValue,
   valueAsString?: string,
-  [x: string]: string | number | bigint | boolean | undefined,
+  [x: string]: FetchResultValue | undefined,
 };
 
 function checkEsErrors(response: EsResponse, cause: unknown) {

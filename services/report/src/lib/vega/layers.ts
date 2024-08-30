@@ -6,7 +6,7 @@ import { contrast } from 'chroma-js';
 
 import type { UnitSpec } from 'vega-lite/build/src/spec';
 
-import type { FetchResultItem } from '~/models/reports/fetch/results';
+import type { FetchResultItem, FetchResultValue } from '~/models/reports/fetch/results';
 import { calcVegaFormat } from '~/models/recurrence';
 import config from '~/lib/config';
 import { Recurrence } from '~/lib/prisma';
@@ -180,9 +180,9 @@ function prepareColorScale(
   type: Mark,
   data: FetchResultItem[],
   params: VegaParams,
-  getLabel = (el: FetchResultItem): string => `${el.label}`,
+  getLabel = (el: FetchResultItem): FetchResultValue => el.label || '',
 ) {
-  const colorsEntries = new Map<string, string>();
+  const colorsEntries = new Map<FetchResultValue, string>();
   const unusedColorsSet = new Set(colorScheme);
 
   const labels = new Set(data.map((el) => getLabel(el)));
@@ -192,7 +192,7 @@ function prepareColorScale(
 
   // eslint-disable-next-line no-restricted-syntax
   for (const label of [...labels]) {
-    const color = params.colorMap.get(label);
+    const color = params.colorMap.get(`${label}`);
     if (color) {
       // Use known color
       colorsEntries.set(label, color);
@@ -209,7 +209,7 @@ function prepareColorScale(
   for (const label of labels) {
     const color = unusedColors.shift() || '';
     colorsEntries.set(label, color);
-    params.colorMap.set(label, color);
+    params.colorMap.set(`${label}`, color);
   }
 
   return {
@@ -477,7 +477,7 @@ export const createArcSpec: CreateSpecFnc = (type, data, params) => {
         field: 'label',
         scale: prepareColorScale(type, data, params),
         // @ts-ignore
-        sort: { field: 'value', order: params.value.order ?? 'descending' }, // TODO: wtf ?
+        sort: { field: 'value', order: params.order === 'asc' ? 'ascending' : 'descending' },
         legend: { orient: 'top-right' },
       },
       params.label,
@@ -524,7 +524,7 @@ export const createBarSpec: CreateSpecFnc = (type, data, params) => {
       params.label,
     ),
     color: params.color ? merge<Encoding['color'], VegaParams['color']>(
-      { field: 'color', scale: prepareColorScale(type, data, params, (el) => `${el.color}`) },
+      { field: 'color', scale: prepareColorScale(type, data, params, (el) => el.color || '') },
       params.color,
     ) : undefined,
     order: { aggregate: 'count' },

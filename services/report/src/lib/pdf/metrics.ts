@@ -47,10 +47,6 @@ const formatDate = (
     throw new Error('Expected number / string, got Boolean');
   }
 
-  if (typeof value === 'bigint') {
-    value = Number(value);
-  }
-
   if (typeof value === 'string') {
     const d = parseISO(value);
     if (!isValid(d)) throw new Error(`Date is not in ISO format: ${origValue}`);
@@ -79,10 +75,6 @@ const formatNumber = (
 
   if (typeof value === 'boolean') {
     value = value ? 1 : 0;
-  }
-
-  if (typeof value === 'bigint') {
-    value = Number(value);
   }
 
   if (Number.isNaN(value)) {
