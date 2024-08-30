@@ -19,7 +19,6 @@ export type TableParams = {
   startY?: number,
   margin?: AutoTable.MarginPaddingInput,
 
-  maxLength?: number,
   maxHeight?: number,
 
   title?: string,
@@ -42,8 +41,7 @@ export const addTableToPDF = async (
   const columns = spec.columns ?? [];
   let startY = spec.startY ?? 0;
 
-  // Limit data if needed
-  let tableData = data.slice(0, spec.maxLength);
+  let tableData = [...data];
 
   // Calc margin
   const margin = merge(
@@ -90,7 +88,7 @@ export const addTableToPDF = async (
     const maxRows = Math.ceil(maxTableHeight / 29);
     const rowCount = tableData.length + (spec.total ? 1 : 0);
     if (rowCount > maxRows) {
-      logger.warn(`[pdf] Reducing table length from ${tableData.length} to ${maxRows} because table won't fit in slot.`);
+      logger.warn(`[pdf] Reducing table length from ${rowCount} (${tableData.length} + ${spec.total ? 1 : 0}) to ${maxRows} because table won't fit in slot.`);
       tableData = tableData.slice(0, maxRows - (spec.total ? 1 : 0));
     }
   }

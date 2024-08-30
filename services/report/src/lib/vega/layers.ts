@@ -185,7 +185,11 @@ function prepareColorScale(
   const colorsEntries = new Map<string, string>();
   const unusedColorsSet = new Set(colorScheme);
 
-  const labels = new Set(data.map(getLabel));
+  const labels = new Set(data.map((el) => getLabel(el)));
+  if (labels.size <= 0) {
+    return undefined;
+  }
+
   // eslint-disable-next-line no-restricted-syntax
   for (const label of [...labels]) {
     const color = params.colorMap.get(label);
@@ -519,10 +523,10 @@ export const createBarSpec: CreateSpecFnc = (type, data, params) => {
       },
       params.label,
     ),
-    color: merge<Encoding['color'], VegaParams['color']>(
+    color: params.color ? merge<Encoding['color'], VegaParams['color']>(
       { field: 'color', scale: prepareColorScale(type, data, params, (el) => `${el.color}`) },
       params.color,
-    ),
+    ) : undefined,
     order: { aggregate: 'count' },
   };
 
@@ -622,10 +626,10 @@ export const createOtherSpec: CreateSpecFnc = (type, data, params) => {
       { field: 'label' },
       params.label,
     ),
-    color: merge<Encoding['color'], VegaParams['color']>(
+    color: params.color ? merge<Encoding['color'], VegaParams['color']>(
       { field: 'color', scale: prepareColorScale(type, data, params) },
       params.color,
-    ),
+    ) : undefined,
   };
 
   // Prepare data labels
