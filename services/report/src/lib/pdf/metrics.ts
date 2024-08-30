@@ -115,7 +115,7 @@ const formatNumber = (
 
 function formatValue(label: MetricLabel, data: FetchResultItem) {
   let { value } = data;
-  if (!value) {
+  if (value == null) {
     return undefined;
   }
 
@@ -202,13 +202,11 @@ export const addMetricToPDF = (
       return undefined;
     }
 
-    metric.data = formatValue(metric, item);
-    if (!metric.data) {
+    const key = `${metric.text}`;
+    const value = formatValue(metric, item);
+    if (!value) {
       return undefined;
     }
-
-    const key = `${metric.text}`;
-    const value = `${metric.data}`;
 
     const sizes = {
       key: keyStyle(doc.pdf, def).getTextDimensions(key),

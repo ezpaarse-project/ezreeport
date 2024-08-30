@@ -86,9 +86,8 @@ export const addTableToPDF = async (
     // Removing header & some space
     const maxTableHeight = maxHeight - (2 * 29);
     const maxRows = Math.ceil(maxTableHeight / 29);
-    const rowCount = tableData.length + (spec.total ? 1 : 0);
-    if (rowCount > maxRows) {
-      logger.warn(`[pdf] Reducing table length from ${rowCount} (${tableData.length} + ${spec.total ? 1 : 0}) to ${maxRows} because table won't fit in slot.`);
+    if (tableData.length > maxRows) {
+      logger.warn(`[pdf] Reducing table length from ${tableData.length} to ${maxRows} because table won't fit in slot.`);
       tableData = tableData.slice(0, maxRows - (spec.total ? 1 : 0));
     }
   }
