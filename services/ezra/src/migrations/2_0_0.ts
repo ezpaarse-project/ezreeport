@@ -165,21 +165,21 @@ const migrateMetricParams = ({ params, fetchOptions }: any) => {
  */
 const migrateTableParams = ({ params, fetchOptions }: any) => {
   const { dataKey, maxLength } = params;
-  const bucketMap = mapEsAggregations(fetchOptions.buckets);
+  const bucketMap = mapEsAggregations([...fetchOptions.buckets, fetchOptions.metric ?? {}]);
   const columnStyles = new Map(Object.entries(params.columnStyles ?? {}));
 
   const columns = (params.columns as any[]).map(({ dataKey: dK, ...column }, i) => {
     let aggregation;
-    let key;
+    let matches;
     if (
       // eslint-disable-next-line no-cond-assign
-      dK === 'key' ? (key = dataKey) : false
+      dK === 'key' ? (matches = ['', dataKey]) : false
       // eslint-disable-next-line no-cond-assign
-      || (key = /^(?:.+\.)?(.+)\.key$/.exec(dK)?.[1]) !== null
+      || (matches = /^(?:.+\.)?(.+)\.key$/.exec(dK)) !== null
       // eslint-disable-next-line no-cond-assign
-      || (key = /^(?:.+\.)?(.+)\.value$/.exec(dK)?.[1]) !== null
+      || (matches = /^(?:.+\.)?(.+)\.value$/.exec(dK)) !== null
     ) {
-      aggregation = bucketMap.get(key);
+      aggregation = bucketMap.get(matches?.[1]);
     }
 
     if (aggregation && !aggregation.size && i === 0) {
@@ -212,7 +212,7 @@ const migrateTableParams = ({ params, fetchOptions }: any) => {
  * @returns The migrated params
  */
 const migrateOtherParams = ({ params, fetchOptions }: any) => {
-  const bucketMap = mapEsAggregations(fetchOptions.buckets);
+  const bucketMap = mapEsAggregations([...fetchOptions.buckets, fetchOptions.metric ?? {}]);
   const { dataKey } = params;
 
   const labelAgg = bucketMap.get(dataKey) ?? {};
@@ -231,8 +231,8 @@ const migrateOtherParams = ({ params, fetchOptions }: any) => {
 
   let color;
   if (params.color) {
-    const colorKey = /^(?:.+\.)?(.+)\.key$/.exec(params.color.field)?.[1];
-    const colorAgg = bucketMap.get(colorKey ?? '') ?? {};
+    const matches = /^(?:.+\.)?(.+)\.key$/.exec(params.color.field);
+    const colorAgg = bucketMap.get(matches?.[1] || '') ?? {};
     color = {
       ...params.color,
       field: undefined,
