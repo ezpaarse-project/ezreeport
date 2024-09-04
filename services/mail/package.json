@@ -33,7 +33,6 @@
     "nodemailer": "^6.9.14",
     "nunjucks": "^3.2.4",
     "pino": "^9.4.0",
-    "pino-pretty": "^11.2.2",
     "tsx": "^4.7.2",
     "typescript": "^5.3.3"
   },
@@ -42,7 +41,8 @@
     "@types/mjml": "^4.7.4",
     "@types/node": "^20.10.6",
     "@types/nodemailer": "^6.4.15",
-    "@types/nunjucks": "^3.2.6"
+    "@types/nunjucks": "^3.2.6",
+    "pino-pretty": "^11.2.2"
   },
   "engines": {
     "node": "^18"
