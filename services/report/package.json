@@ -53,12 +53,13 @@
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.1",
     "lodash": "^4.17.21",
+    "pino": "^9.4.0",
+    "pino-pretty": "^11.2.2",
     "swagger-ui-dist": "^5.10.5",
     "tsx": "^4.7.2",
     "typescript": "^5.3.3",
     "vega": "^5.27.0",
-    "vega-lite": "^5.16.3",
-    "winston": "^3.13.1"
+    "vega-lite": "^5.16.3"
   },
   "devDependencies": {
     "@types/chroma-js": "^2.4.4",

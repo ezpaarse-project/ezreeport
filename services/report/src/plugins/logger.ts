@@ -24,7 +24,12 @@ const logRequest = (request: FastifyRequest, reply?: FastifyReply) => {
     log = accessLogger.info;
   }
 
-  log(`${request.method} ${request.url} - ${reply?.statusCode ?? 0} (${duration})`);
+  log({
+    method: request.method,
+    url: request.url,
+    statusCode: reply?.statusCode ?? 0,
+    duration,
+  });
 };
 
 /**

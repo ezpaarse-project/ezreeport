@@ -23,6 +23,8 @@ import type { FullTasksPreset } from '~/models/tasksPresets';
 
 // #region Input types
 
+const logger = appLogger.child({ scope: 'models', model: 'tasks' });
+
 const {
   PaginationQuery: TaskPaginationQuery,
   buildPrismaArgs,
@@ -466,7 +468,10 @@ export const createTask = async (
     select: prismaTaskSelect,
   });
 
-  appLogger.verbose(`[models] Task "${id}" created`);
+  logger.debug({
+    id,
+    msg: 'Task created',
+  });
   return castFullTask(task);
 };
 
@@ -520,7 +525,10 @@ export const deleteTaskById = async (id: PrismaTask['id'], namespaceIds?: Namesp
     select: prismaTaskSelect,
   });
 
-  appLogger.verbose(`[models] Task "${id}" deleted`);
+  logger.debug({
+    id,
+    msg: 'Task deleted',
+  });
   return castFullTask(task);
 };
 
@@ -597,7 +605,10 @@ export const patchTaskByIdWithHistory = async (
     select: prismaTaskSelect,
   });
 
-  appLogger.verbose(`[models] Task "${id}" edited`);
+  logger.debug({
+    id,
+    msg: 'Task edited',
+  });
   return castFullTask(task);
 };
 

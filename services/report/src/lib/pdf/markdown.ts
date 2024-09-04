@@ -12,13 +12,15 @@ type MdParams = {
 
 export type InputMdParams = Omit<MdParams, 'width' | 'height' | 'start'>;
 
-const logger: Console = {
+const logger = appLogger.child({ scope: 'md-to-pdf' });
+
+const mdLogger: Console = {
   ...console,
-  debug: (m, ...args) => appLogger.debug(`[md-to-pdf] ${m} ${args}`),
-  log: (m, ...args) => appLogger.verbose(`[md-to-pdf] ${m} ${args}`),
-  info: (m, ...args) => appLogger.info(`[md-to-pdf] ${m} ${args}`),
-  warn: (m, ...args) => appLogger.warn(`[md-to-pdf] ${m} ${args}`),
-  error: (m, ...args) => appLogger.error(`[md-to-pdf] ${m} ${args}`),
+  debug: (msg, ...args) => logger.trace({ msg, args }),
+  log: (msg, ...args) => logger.debug({ msg, args }),
+  info: (msg, ...args) => logger.info({ msg, args }),
+  warn: (msg, ...args) => logger.warn({ msg, args }),
+  error: (msg, ...args) => logger.error({ msg, args }),
 };
 
 /**
@@ -52,7 +54,7 @@ export const addMdToPDF = async (
   data: string,
   params: MdParams,
 ) => {
-  const mdDoc = await (new MdParser(data, logger)).parse();
+  const mdDoc = await (new MdParser(data, mdLogger)).parse();
 
   await mdDoc.loadImages(
     fetcher,
