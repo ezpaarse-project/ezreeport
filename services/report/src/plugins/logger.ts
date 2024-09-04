@@ -1,10 +1,9 @@
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { differenceInMilliseconds } from '~/lib/date-fns';
 import { accessLogger } from '~/lib/logger';
 
-const requestDates = new Map<string, Date>();
+const requestDates = new Map<string, number>();
 
 /**
  * Log request with status code and time
@@ -13,23 +12,23 @@ const requestDates = new Map<string, Date>();
  * @param reply The fastify response, if exist
  */
 const logRequest = (request: FastifyRequest, reply?: FastifyReply) => {
-  const end = new Date();
-  const start = requestDates.get(request.id) || new Date();
+  const end = process.uptime();
+  const start = requestDates.get(request.id) || end;
   requestDates.delete(request.id);
 
-  const duration = differenceInMilliseconds(end, start);
-
-  let log = accessLogger.error;
-  if (reply && reply.statusCode >= 200 && reply.statusCode < 300) {
-    log = accessLogger.info;
-  }
-
-  log({
+  const data = {
     method: request.method,
     url: request.url,
     statusCode: reply?.statusCode ?? 0,
-    duration,
-  });
+    duration: (end * 1000) - (start * 1000),
+    durationUnit: 'ms',
+  };
+
+  if (reply && reply.statusCode >= 200 && reply.statusCode < 300) {
+    accessLogger.info(data);
+    return;
+  }
+  accessLogger.error(data);
 };
 
 /**
@@ -40,7 +39,7 @@ const logRequest = (request: FastifyRequest, reply?: FastifyReply) => {
 const loggerBasePlugin: FastifyPluginAsync = async (fastify) => {
   // Register request date
   fastify.addHook('onRequest', async (request) => {
-    requestDates.set(request.id, new Date());
+    requestDates.set(request.id, process.uptime());
   });
 
   // Log request
