@@ -1,39 +1,53 @@
-import winston from 'winston';
+import pino from 'pino';
+import pretty from 'pino-pretty';
 
-const formatter = (info: winston.Logform.TransformableInfo) => `${info.timestamp}${info.label ? ` [${info.label}]` : ''} ${info.level}: ${info.message} ${(info instanceof Error ? `\n\n${info.stack}\n` : '')}`;
+import { resolve } from 'node:path';
 
-const baseLogger: winston.LoggerOptions = {
-  level: process.env.LOG_LEVEL || (process.env.NODE_ENV !== 'production' ? 'debug' : 'info'),
-  exitOnError: false,
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.printf(formatter),
-  ),
-};
+import config from '~/lib/config';
 
-winston.loggers.add('app', {
-  ...baseLogger,
-  transports: [
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.timestamp(),
-        winston.format.label({ label: 'app' }),
-        winston.format.printf(formatter),
-      ),
-    }),
-    new winston.transports.File({
-      dirname: '/var/log/ezreeport/mail',
-      filename: 'app.log',
-    }),
-  ],
-});
+type LoggerOptions = Omit<pino.LoggerOptions, 'level'> & { name: string };
 
-export const appLogger = winston.loggers.get('app');
-appLogger.on('error', (err) => appLogger.error(`[winston] ${err.toString()}`));
+const { level: l, dir, ignore } = config.log;
+const level = l as pino.Level;
 
-/**
- * @deprecated use `appLogger` instead
- */
-const logger = appLogger;
-export default logger;
+function getStdOut() {
+  if (process.env.NODE_ENV === 'production') {
+    return process.stdout;
+  }
+
+  // Setup pretty logger on dev
+  return pretty({
+    ignore: [...ignore, 'scope'].join(','),
+    colorize: true,
+    messageFormat: ({ scope, msg }) => {
+      if (scope) {
+        return `[${scope}] ${msg || ''}`;
+      }
+      return `${msg || ''}`;
+    },
+  });
+}
+
+function createLogger(options: LoggerOptions) {
+  const streams: pino.StreamEntry[] = [{ level, stream: getStdOut() }];
+
+  // If needed add logs into a file
+  if (dir) {
+    streams.push({
+      level,
+      stream: pino.destination({
+        dest: resolve(dir, `${options.name}.log`),
+        sync: false,
+        ignore: ignore.join(','),
+      }),
+    });
+  }
+
+  return pino(
+    { ...options, level },
+    pino.multistream(streams),
+  );
+}
+
+// eslint-disable-next-line import/prefer-default-export
+export const appLogger = createLogger({ name: 'app' });
