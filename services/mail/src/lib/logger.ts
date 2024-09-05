@@ -33,6 +33,7 @@ function createLogger(options: LoggerOptions) {
   if (dir) {
     targets.push({
       target: 'pino/file',
+      level,
       options: {
         destination: resolve(dir, `${options.name}.log`),
         sync: false,
