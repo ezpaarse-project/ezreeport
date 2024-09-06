@@ -230,13 +230,35 @@ const fetchData = (
         for (let j = 0; j < layout.figures.length; j += 1) {
           const figure = layout.figures[j];
           if (!figure.data) {
+            const { filters: layoutFilters, ...layoutFetchOpts } = layout.fetchOptions ?? {};
+            const { filters: figureFilters, ...figureFetchOpts } = figure.fetchOptions ?? {};
+
+            const filters = [
+              template.fetchOptions?.filters,
+              taskTemplate.fetchOptions.filters,
+              layoutFilters,
+              figureFilters,
+            ].reduce(
+              (acc: Record<'filter' | 'must_not', unknown[]>, curr) => {
+                if (!curr) {
+                  return acc;
+                }
+                if (curr.filter) {
+                  acc.filter.push(...curr.filter);
+                }
+                if (curr.must_not) {
+                  acc.must_not.push(...curr.must_not);
+                }
+                return acc;
+              },
+              { filter: [], must_not: [] },
+            );
+
             requests.push(
               merge(
-                {},
-                { filters: template.fetchOptions?.filters },
-                { filters: taskTemplate.fetchOptions.filters },
-                layout.fetchOptions,
-                figure.fetchOptions,
+                { filters },
+                layoutFetchOpts,
+                figureFetchOpts,
               ),
             );
           } else {

@@ -12,7 +12,7 @@ const client = new PrismaClient({
   errorFormat: 'pretty',
 });
 
-client.$on('query', (e) => logger.debug(`[prisma] ${e.query} - ${e.params} (${e.duration}ms)`));
+client.$on('query', (e) => logger.silly(`[prisma] ${e.query} - ${e.params} (${e.duration}ms)`));
 client.$on('info', (e) => logger.info(`[prisma] ${e.message}`));
 client.$on('warn', (e) => logger.warn(`[prisma] ${e.message}`));
 client.$on('error', (e) => logger.error(`[prisma] ${e.message}`));

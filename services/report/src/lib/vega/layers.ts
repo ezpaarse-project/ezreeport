@@ -557,6 +557,55 @@ export const createBarSpec = (
 };
 
 /**
+ * Create a vega-lite spec for line graph from ezREEPORT's params
+ *
+ * @param type The type of figure
+ * @param data The data to display
+ * @param params The params of the figure
+ *
+ * @returns Partial vega-lite spec
+ */
+export const createLineSpec = (
+  type: Mark,
+  data: unknown[],
+  params: VegaParams,
+): PartialFigureSpec => {
+  const dataLayer = prepareDataLayer(type, data, params);
+
+  // Prepare encoding
+  const encoding: Encoding = {
+    y: merge<Encoding['y'], VegaParams['value']>(
+      { stack: 'zero', type: 'quantitative' },
+      params.value,
+    ),
+    x: merge<Encoding['x'], VegaParams['label']>(
+      { type: 'nominal', title: null, sort: '-y' },
+      params.label,
+    ),
+  };
+
+  // If more than 3/8 label's data is date, consider whole axis as a date
+  // and sets format based on task recurrence
+  if (calcLabelDateScore(data, params.label.field) > 0.75) {
+    const timeFormat = calcVegaFormat(params.recurrence);
+
+    merge<Encoding['x'], Encoding['x']>(
+      encoding.x,
+      { timeUnit: timeFormat.timeUnit, axis: { format: timeFormat.format }, sort: 'ascending' },
+    );
+  }
+
+  // Prepare data labels
+  const {
+    dataLayerEdits,
+    layers: dataLabelLayers = [],
+  } = prepareDataLabelsLayers(type, data, params);
+  merge(dataLayer, dataLayerEdits);
+
+  return { layer: mergeLayers(dataLayer, ...dataLabelLayers), encoding };
+};
+
+/**
  * Create a vega-lite spec for generic graph from ezREEPORT's params
  *
  * @param type The type of figure
