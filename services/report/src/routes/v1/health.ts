@@ -12,6 +12,7 @@ const router: FastifyPluginAsync = async (fastify) => {
    */
   fastify.get(
     '/',
+    { logLevel: 'debug' },
     async () => ({
       content: {
         current: checks.serviceName,
@@ -26,6 +27,7 @@ const router: FastifyPluginAsync = async (fastify) => {
    */
   fastify.get(
     '/services/',
+    { logLevel: 'debug' },
     async () => ({
       content: await checks.pingAll(),
     }),
@@ -40,6 +42,7 @@ const router: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: Static<typeof GetServiceParams> }>(
     '/services/:service',
     {
+      logLevel: 'debug',
       schema: {
         params: GetServiceParams,
       },
@@ -63,6 +66,7 @@ const router: FastifyPluginAsync = async (fastify) => {
    */
   fastify.get(
     '/probes/liveness',
+    { logLevel: 'debug' },
     async () => ({}),
   );
 
@@ -71,6 +75,7 @@ const router: FastifyPluginAsync = async (fastify) => {
    */
   fastify.get(
     '/probes/readiness',
+    { logLevel: 'debug' },
     async () => {
       const pongs = await checks.pingAll();
       const failedPong = pongs.find((pong): pong is checks.ErrorPong => !pong.status);
