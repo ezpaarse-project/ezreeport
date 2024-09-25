@@ -10,6 +10,7 @@ const router: FastifyPluginAsync = async (fastify) => {
    */
   fastify.get(
     '/',
+    { logLevel: 'debug' },
     async () => ({
       content: {
         current: checks.serviceName,
@@ -24,6 +25,7 @@ const router: FastifyPluginAsync = async (fastify) => {
    */
   fastify.get(
     '/_all',
+    { logLevel: 'debug' },
     async () => ({
       content: await Promise.all(
         Array.from(checks.services).map((s) => checks.ping(s)),
@@ -40,6 +42,7 @@ const router: FastifyPluginAsync = async (fastify) => {
   fastify.get<{ Params: Static<typeof GetServiceParams> }>(
     '/:service',
     {
+      logLevel: 'debug',
       schema: {
         params: GetServiceParams,
       },

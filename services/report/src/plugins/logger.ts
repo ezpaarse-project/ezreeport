@@ -1,9 +1,13 @@
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { accessLogger } from '~/lib/logger';
+import { accessLogger, type Level } from '~/lib/logger';
 
 const requestDates = new Map<string, number>();
+
+function isLogLevel(level: string): level is Level {
+  return Object.keys(accessLogger.levels.values).includes(level);
+}
 
 /**
  * Log request with status code and time
@@ -11,7 +15,7 @@ const requestDates = new Map<string, number>();
  * @param request The fastify request
  * @param reply The fastify response, if exist
  */
-const logRequest = (request: FastifyRequest, reply?: FastifyReply) => {
+function logRequest(request: FastifyRequest, reply?: FastifyReply) {
   const end = process.uptime();
   const start = requestDates.get(request.id) || end;
   requestDates.delete(request.id);
@@ -25,11 +29,12 @@ const logRequest = (request: FastifyRequest, reply?: FastifyReply) => {
   };
 
   if (reply && reply.statusCode >= 200 && reply.statusCode < 300) {
-    accessLogger.info(data);
+    const level = isLogLevel(request.routeOptions?.logLevel) ? request.routeOptions.logLevel as Level : 'info';
+    accessLogger[level](data);
     return;
   }
   accessLogger.error(data);
-};
+}
 
 /**
  * Fastify plugin to format response and log requests

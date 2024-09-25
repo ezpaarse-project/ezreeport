@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 
 import config from '~/lib/config';
 
+export type Level = pino.Level;
 type LoggerOptions = Omit<pino.LoggerOptions, 'level' | 'transports'> & { name: string };
 
 const { level: l, dir, ignore } = config.log;
