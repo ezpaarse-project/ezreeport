@@ -181,7 +181,7 @@ const handleOtherEsResults: HandleEsResultsFnc = ({ params }, esData) => {
 };
 
 export default function handleEsResponse(
-  { response, count }: { response: EsResponse, count: number | undefined },
+  response: EsResponse,
   figure: FigureType,
   errorCause: Record<string, unknown>,
 ): FetchResultItem[] {
@@ -205,10 +205,15 @@ export default function handleEsResponse(
       break;
   }
 
-  const { aggregations } = response;
+  const { aggregations, hits: { total } } = response;
+  let elasticCount = total;
+  if (typeof elasticCount === 'object') {
+    elasticCount = elasticCount.value;
+  }
+
   const data = syncWithCommonHandlers(
-    () => handleResults(figure, aggregations, count),
-    { ...errorCause, elasticData: aggregations, elasticCount: count },
+    () => handleResults(figure, aggregations, elasticCount),
+    { ...errorCause, elasticData: aggregations, elasticCount },
   );
 
   return sortData(data, figure);
