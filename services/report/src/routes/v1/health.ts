@@ -59,7 +59,7 @@ const router: FastifyPluginAsync = async (fastify) => {
   );
 
   /**
-   * Liveness probe
+   * Liveness probe, check if the server is up
    */
   fastify.get(
     '/probes/liveness',
@@ -67,7 +67,7 @@ const router: FastifyPluginAsync = async (fastify) => {
   );
 
   /**
-   * Readiness probe
+   * Readiness probe, check if the server is ready
    */
   fastify.get(
     '/probes/readiness',

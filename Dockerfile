@@ -81,7 +81,7 @@ WORKDIR /usr/build/mail
 COPY --from=mail-pnpm /usr/build/mail .
 
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
-  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
+  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/liveness || exit 1
 
 CMD [ "npm", "run", "start" ]
 
