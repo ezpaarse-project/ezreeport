@@ -1,8 +1,10 @@
 import type { FastifyPluginAsync } from 'fastify';
+import { StatusCodes } from 'http-status-codes';
 
 import { Type, type Static } from '~/lib/typebox';
 
 import * as checks from '~/models/healthchecks';
+import { HTTPError } from '~/types/errors';
 
 const router: FastifyPluginAsync = async (fastify) => {
   /**
@@ -23,11 +25,9 @@ const router: FastifyPluginAsync = async (fastify) => {
    * Ping all services (himself included)
    */
   fastify.get(
-    '/_all',
+    '/services/',
     async () => ({
-      content: await Promise.all(
-        Array.from(checks.services).map((s) => checks.ping(s)),
-      ),
+      content: await checks.pingAll(),
     }),
   );
 
@@ -38,7 +38,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     service: Type.String({ minLength: 1 }),
   });
   fastify.get<{ Params: Static<typeof GetServiceParams> }>(
-    '/:service',
+    '/services/:service',
     {
       schema: {
         params: GetServiceParams,
@@ -55,6 +55,32 @@ const router: FastifyPluginAsync = async (fastify) => {
       return {
         content: await checks.ping(service),
       };
+    },
+  );
+
+  /**
+   * Liveness probe
+   */
+  fastify.get(
+    '/probes/liveness',
+    async () => ({}),
+  );
+
+  /**
+   * Readiness probe
+   */
+  fastify.get(
+    '/probes/readiness',
+    async () => {
+      const pongs = await checks.pingAll();
+      const failedPong = pongs.find((pong): pong is checks.ErrorPong => !pong.status);
+      if (failedPong) {
+        throw new HTTPError(
+          `Readiness probe failed: service "${failedPong.name}" is not available: ${failedPong.error}`,
+          StatusCodes.SERVICE_UNAVAILABLE,
+        );
+      }
+      return {};
     },
   );
 };
