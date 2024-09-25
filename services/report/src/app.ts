@@ -6,6 +6,7 @@ import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
 import { initQueues } from '~/lib/bull';
 import { initCrons } from '~/lib/cron';
+import { ajvFormatPlugin } from '~/lib/typebox';
 
 import formatPlugin from '~/plugins/format';
 import loggerPlugin from '~/plugins/logger';
@@ -18,6 +19,9 @@ const { port, allowedOrigins: rawOrigins } = config;
 const start = async () => {
   // Create Fastify instance
   const fastify = Fastify({
+    ajv: {
+      plugins: [ajvFormatPlugin],
+    },
     logger: false,
   });
 

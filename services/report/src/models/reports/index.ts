@@ -96,17 +96,25 @@ function resolveReportPeriod(
 
   // Parse custom period
   const parsedPeriod = {
-    start: dfns.startOfDay(dfns.parseISO(customPeriod.start)),
-    end: dfns.endOfDay(dfns.parseISO(customPeriod.end)),
+    start: dfns.startOfDay(customPeriod.start),
+    end: dfns.endOfDay(customPeriod.end),
   };
+
   // Check if compatible with task
-  const expectedPeriodEnd = dfns.add(
-    calcNextDate(parsedPeriod.start, task.recurrence),
-    { days: -1 },
+  const expectedPeriodEnd = dfns.endOfDay(
+    dfns.add(
+      calcNextDate(parsedPeriod.start, task.recurrence),
+      { days: -1 },
+    ),
   );
 
   if (!dfns.isSameDay(expectedPeriodEnd, parsedPeriod.end)) {
-    throw new ConflictError(`Custom period "${customPeriod.start} to ${customPeriod.end}" doesn't match task's recurrence (${task.recurrence}). Should be : "${customPeriod.start} to ${dfns.formatISO(expectedPeriodEnd)}")`);
+    const isoFormat = "yyyy-MM-dd'T'HH:mm:ssXXXXX";
+    const isoStart = dfns.format(parsedPeriod.start, isoFormat);
+    const isoParsedEnd = dfns.format(parsedPeriod.end, isoFormat);
+    const isoEnd = dfns.format(expectedPeriodEnd, isoFormat);
+
+    throw new ConflictError(`Custom period "${isoStart} to ${isoParsedEnd}" doesn't match task's recurrence (${task.recurrence}). Should be : "${isoStart} to ${isoEnd}")`);
   }
 
   return parsedPeriod;
@@ -295,8 +303,8 @@ async function generateReport(
     // Resolve period
     const period = resolveReportPeriod(task, customPeriod);
     result.detail.period = {
-      start: new Date(period.start).toISOString(),
-      end: new Date(period.end).toISOString(),
+      start: dfns.formatISO(period.start),
+      end: dfns.formatISO(period.end),
     };
 
     // Re-calc ttl if not in any debug mode

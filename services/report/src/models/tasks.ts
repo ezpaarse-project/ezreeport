@@ -61,7 +61,7 @@ export const InputTaskBody = Type.Object({
   namespace: Type.Optional(Type.String()),
   recurrence: Type.Enum(Recurrence),
   nextRun: Type.Optional(
-    Type.String({ format: 'date-time' }),
+    Type.String({ format: 'iso-date-time' }),
   ),
   enabled: Type.Optional(
     Type.Boolean(),

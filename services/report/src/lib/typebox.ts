@@ -1,7 +1,7 @@
 import type { Static, TSchema } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
 import Ajv, { type ValidateFunction } from 'ajv';
-import addFormats from 'ajv-formats';
+import addFormats, { type FormatsPlugin, type FormatsPluginOptions } from 'ajv-formats';
 
 import { ArgumentError } from '~/types/errors';
 
@@ -11,22 +11,11 @@ import { ArgumentError } from '~/types/errors';
 const validators = new Map<bigint, ValidateFunction>();
 
 // Setup ajv (already used by fastify) with formats used by TypeBox
-const ajv = addFormats(new Ajv({}), [
-  'date-time',
-  'time',
-  'date',
-  'email',
-  'hostname',
-  'ipv4',
-  'ipv6',
-  'uri',
-  'uri-reference',
-  'uuid',
-  'uri-template',
-  'json-pointer',
-  'relative-json-pointer',
-  'regex',
-]);
+export const ajvFormatPlugin: [FormatsPlugin, FormatsPluginOptions] = [
+  addFormats,
+  { formats: ['email', 'date', 'iso-date-time'] },
+];
+const ajv = ajvFormatPlugin[0](new Ajv({}), ajvFormatPlugin[1]);
 
 // This function is not an arrow function
 // because of a limitation in TS

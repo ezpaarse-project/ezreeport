@@ -28,9 +28,9 @@ export const ReportResult = Type.Object({
   success: Type.Boolean(),
 
   detail: Type.Object({
-    createdAt: Type.String({ /* format: 'date-time' */ }),
+    createdAt: Type.String({ format: 'iso-date-time' }),
 
-    destroyAt: Type.String({ /* format: 'date-time' */ }),
+    destroyAt: Type.String({ format: 'iso-date-time' }),
 
     took: Type.Integer(),
 
@@ -50,15 +50,15 @@ export const ReportResult = Type.Object({
 
     sendingTo: Type.Optional(
       Type.Array(
-        Type.String({ /* format: 'email' */ }),
+        Type.String({ format: 'email' }),
       ),
     ),
 
     period: Type.Optional(
       Type.Object({
-        start: Type.String({ /* format: 'date-time' */ }),
+        start: Type.String({ format: 'iso-date-time' }),
 
-        end: Type.String({ /* format: 'date-time' */ }),
+        end: Type.String({ format: 'iso-date-time' }),
       }),
     ),
 
