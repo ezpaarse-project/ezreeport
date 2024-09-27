@@ -1,10 +1,10 @@
 services:
   db:
     image: postgres:15.1-alpine3.17
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
     volumes:
       - ./data/db:/var/lib/postgresql/data
     deploy:
@@ -19,13 +19,15 @@ services:
       retries: 5
       start_period: 20s
 
-  report:
+  api:
     build:
-      target: report-prisma
+      target: api-prisma
     entrypoint: ""
     command: ["/bin/sh", "-c", "npm run db:install && npm run db:migrate"]
-    environment:
-      - DATABASE_URL
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
     depends_on:
       db:
         condition: service_healthy

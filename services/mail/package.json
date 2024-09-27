@@ -7,8 +7,7 @@
   "scripts": {
     "start": "tsx src/app.ts",
     "dev": "tsx watch --inspect=0.0.0.0 src/app.ts",
-    "lint": "eslint --fix .",
-    "test": "npm -w ezreeport-tests run test:mail"
+    "lint": "eslint --fix ."
   },
   "repository": {
     "type": "git",
@@ -28,22 +27,22 @@
   "dependencies": {
     "bullmq": "^5.1.1",
     "config": "^3.3.12",
-    "date-fns": "^3.0.6",
+    "date-fns": "^4.1.0",
     "mjml": "^4.14.1",
-    "nodemailer": "^6.9.14",
+    "nodemailer": "^6.9.15",
     "nunjucks": "^3.2.4",
-    "tsx": "^4.7.2",
-    "typescript": "^5.3.3",
-    "winston": "^3.13.1"
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2",
+    "winston": "^3.14.2"
   },
   "devDependencies": {
-    "@types/config": "^3.3.3",
+    "@types/config": "^3.3.5",
     "@types/mjml": "^4.7.4",
-    "@types/node": "^20.10.6",
-    "@types/nodemailer": "^6.4.15",
+    "@types/node": "^22.7.3",
+    "@types/nodemailer": "^6.4.16",
     "@types/nunjucks": "^3.2.6"
   },
   "engines": {
-    "node": "^18"
+    "node": "^20"
   }
 }

@@ -1,6 +1,6 @@
 # ==== COMMON
 
-FROM node:18.18.2-alpine3.18 AS base
+FROM node:20.11.1-alpine3.19 AS base
 LABEL maintainer="ezTeam <ezteam@couperin.org>"
 
 ENV HUSKY=0
@@ -27,12 +27,12 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 COPY . .
 
-# ==== REPORT
+# ==== API
 
-FROM pnpm AS report-prisma
+FROM pnpm AS api-prisma
 
-RUN pnpm deploy --filter ezreeport-report ./report-dev
-WORKDIR /usr/build/report-dev
+RUN pnpm deploy --filter ezreeport-report ./api-dev
+WORKDIR /usr/build/api-dev
 
 # Install prisma dependencies
 RUN apk add --no-cache --update python3 \
@@ -43,25 +43,25 @@ RUN npx prisma generate
 
 # ---
 
-FROM pnpm AS report-pnpm
+FROM pnpm AS api-pnpm
 
-RUN pnpm deploy --filter ezreeport-report --prod ./report
+RUN pnpm deploy --filter ezreeport-report --prod ./api
 
 # ---
 
-FROM base AS report
+FROM base AS api
 EXPOSE 8080
 ENV NODE_ENV=production
-WORKDIR /usr/build/report
+WORKDIR /usr/build/api
 
 # Install node-canvas dependencies
 RUN apk add --no-cache cairo jpeg pango giflib
 
-COPY --from=report-pnpm /usr/build/report .
-COPY --from=report-prisma /usr/build/report-dev/.prisma ./.prisma
+COPY --from=api-pnpm /usr/build/api .
+COPY --from=api-prisma /usr/build/api-dev/.prisma ./.prisma
 
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
-  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/health/ezreeport-report || exit 1
+  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/health/api || exit 1
 
 CMD [ "npm", "run", "start" ]
 

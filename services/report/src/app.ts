@@ -19,10 +19,9 @@ const start = async () => {
   // Create Fastify instance
   const fastify = Fastify({
     logger: false,
-  });
-
-  // Register TypeBox
-  fastify.withTypeProvider<TypeBoxTypeProvider>();
+  })
+    // Register TypeBox
+    .withTypeProvider<TypeBoxTypeProvider>();
 
   // Register cors
   const allowedOrigins = rawOrigins.split(',');

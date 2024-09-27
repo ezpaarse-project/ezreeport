@@ -1,11 +1,11 @@
 import { Args, Flags } from '@oclif/core';
 import chalk from 'chalk';
+import { confirm } from '@inquirer/prompts';
 
 import type { Duplex } from 'node:stream';
 import { join } from 'node:path';
 
 import { EzrCommand } from '../lib/oclif/EzrCommand.js';
-import { simpleConfirm } from '../lib/inquirer.js';
 import { createStreamPromise, createJSONLReadStream } from '../lib/streams.js';
 import { createProgressBarStream } from '../lib/progress.js';
 
@@ -79,7 +79,8 @@ export default class Import extends EzrCommand<typeof Import> {
 
   public async run(): Promise<void> {
     const { args, flags } = await this.parse(Import);
-    const confirmed = await simpleConfirm(`Do you wish to import data from ${chalk.underline(args.dir)} into ${chalk.underline(this.instances[0].fetch.defaults.baseURL ?? '')} ?`);
+
+    const confirmed = await confirm({ message: `Do you wish to import data from ${chalk.underline(args.dir)} into ${chalk.underline(this.instances[0].fetch.defaults.baseURL ?? '')} ?` });
     if (!confirmed) {
       this.exit(0);
     }

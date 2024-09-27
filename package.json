@@ -14,18 +14,9 @@
   "license": "CeCILL",
   "author": "oxypomme",
   "scripts": {
-    "lint": "run-p -ls lint:*",
-    "lint:mail": "npm --prefix src/services/mail run lint",
-    "lint:report": "npm --prefix src/services/report run lint",
-    "lint:sdk": "npm --prefix src/sdk run lint",
-    "lint:vue": "npm --prefix src/vue run lint",
-    "lint:tests": "npm --prefix tests run lint",
-    "prepare": "husky install",
-    "test": "run-p -ls test:*",
-    "test:mail": "npm --prefix tests run test:mail",
-    "test:report": "npm --prefix tests run test:report",
-    "test:sdk": "npm --prefix src/services/sdk run build && npm --prefix tests run test:sdk",
-    "publish": "HUSKY=0 pnpm -r --filter !ezreeport-tests --filter !ezreeport-vue-example --workspace-concurrency=1 exec -- npx --no-install semantic-release"
+    "lint": "pnpm run -r --parallel lint",
+    "prepare": "husky",
+    "publish": "bin/publish.sh"
   },
   "lint-staged": {
     "package.json": [
@@ -33,25 +24,24 @@
     ]
   },
   "devDependencies": {
-    "@commitlint/cli": "^18.4.3",
-    "@commitlint/config-conventional": "^18.4.3",
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
-    "@typescript-eslint/eslint-plugin": "^6.17.0",
-    "@typescript-eslint/parser": "^6.17.0",
-    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.1",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-config-airbnb-typescript": "^17.1.0",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-n": "^16.6.1",
-    "eslint-plugin-promise": "^6.1.1",
-    "husky": "^8.0.3",
-    "lint-staged": "^15.2.0",
+    "eslint-config-airbnb-typescript": "^18.0.0",
+    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-n": "^17.10.3",
+    "eslint-plugin-promise": "^7.1.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
     "multi-semantic-release": "^3.0.2",
-    "npm-run-all": "^4.1.5",
-    "semantic-release": "^22.0.12",
+    "semantic-release": "^24.1.1",
     "semantic-release-monorepo": "^8.0.2",
-    "sort-package-json": "^2.6.0"
+    "sort-package-json": "^2.10.1"
   },
-  "packageManager": "pnpm@8.15.7+sha1.44793e979f677db082fa49826446aad5aa4ee6b8"
+  "packageManager": "pnpm@9.11.0+sha256.1c0e33f70e5df9eede84a357bdfa0b1f9dba6e58194628d48a1055756f553754"
 }

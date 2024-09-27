@@ -37,43 +37,31 @@
     ]
   },
   "dependencies": {
-    "@oclif/core": "^3",
-    "@oclif/plugin-autocomplete": "^3.0.18",
-    "@oclif/plugin-help": "^6",
-    "axios": "^1.6.7",
+    "@inquirer/prompts": "^6.0.1",
+    "@oclif/core": "^4.0.23",
+    "@oclif/plugin-autocomplete": "^3.2.4",
+    "@oclif/plugin-help": "^6.2.12",
+    "axios": "^1.7.7",
     "chalk": "^5.3.0",
     "cli-progress": "^3.12.0",
-    "date-fns": "^3.3.1",
-    "inquirer": "^9.2.22",
+    "date-fns": "^4.1.0",
     "lodash": "^4.17.21",
     "object-treeify": "^4.0.1",
-    "ora": "^8.0.1",
+    "ora": "^8.1.0",
     "semver": "^7.6.3"
   },
   "devDependencies": {
-    "@types/chai": "^4",
+    "@types/chai": "^5.0.0",
     "@types/cli-progress": "^3.11.6",
-    "@types/inquirer": "^9.0.7",
-    "@types/lodash": "^4.17.7",
-    "@types/node": "^18",
+    "@types/lodash": "^4.17.9",
+    "@types/node": "^22.7.3",
     "@types/semver": "^7.5.8",
-    "eslint": "^8",
-    "oclif": "^4.3.6",
+    "oclif": "^4.14.35",
     "shx": "^0.3.4",
-    "tsx": "^4.7.2",
-    "typescript": "^5"
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
   },
   "engines": {
-    "node": ">=18.0.0"
-  },
-  "oclif": {
-    "bin": "ezreeport-admin",
-    "commands": "./dist/commands",
-    "dirname": "ezreeport-admin",
-    "topicSeparator": " ",
-    "plugins": [
-      "@oclif/plugin-help",
-      "@oclif/plugin-autocomplete"
-    ]
+    "node": ">=20"
   }
 }
