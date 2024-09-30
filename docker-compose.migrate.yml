@@ -1,23 +1,8 @@
 services:
   db:
-    image: postgres:15.1-alpine3.17
-    env_file:
-      - .env
-      - path: .env.local
-        required: false
-    volumes:
-      - ./data/db:/var/lib/postgresql/data
-    deploy:
-      resources:
-          limits:
-            memory: 256MB
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
-      interval: 60s
-      timeout: 10s
-      retries: 5
-      start_period: 20s
+    extends:
+      file: docker-compose.yml
+      service: db
 
   api:
     build:
