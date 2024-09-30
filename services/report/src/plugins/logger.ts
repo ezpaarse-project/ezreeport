@@ -19,12 +19,12 @@ const logRequest = (request: FastifyRequest, reply?: FastifyReply) => {
 
   const duration = differenceInMilliseconds(end, start);
 
-  let log = accessLogger.error;
+  let level = 'error';
   if (reply && reply.statusCode >= 200 && reply.statusCode < 300) {
-    log = accessLogger.info;
+    level = request.routeOptions?.logLevel || 'info';
   }
 
-  log(`${request.method} ${request.url} - ${reply?.statusCode ?? 0} (${duration})`);
+  accessLogger.log(level, `${request.method} ${request.url} - ${reply?.statusCode ?? 0} (${duration})`);
 };
 
 /**
