@@ -8,7 +8,9 @@ import nunjucks from 'nunjucks';
 import { differenceInMilliseconds } from 'date-fns';
 
 import config from '~/lib/config';
-import { appLogger as logger } from '~/lib/logger';
+import { appLogger } from '~/lib/logger';
+
+const logger = appLogger.child({ scope: 'nodemailer' });
 
 const {
   smtp,
@@ -21,7 +23,10 @@ const images = readdirSync(join(templatesPath, 'images'));
 const transporter = createTransport(smtp);
 
 transporter.on('error', (err) => {
-  logger.error(`[nodemailer] Error on transporter: {${err.message}}`);
+  logger.error({
+    err,
+    msg: 'Error on transporter',
+  });
 });
 
 export type MailOptions = {
@@ -64,20 +69,24 @@ export const generateMail = async (template: string, data: object) => {
 };
 
 (async () => {
-  const start = new Date();
+  const start = Date.now();
   try {
-    logger.verbose('[nodemailer] Checking SMTP connection...');
+    logger.debug('Checking SMTP connection...');
     await SMTPPing();
 
-    const end = new Date();
-    logger.info(`[nodemailer] Connected to SMTP in [${differenceInMilliseconds(end, start)}]ms`);
-  } catch (error) {
-    const end = new Date();
-
-    if (error instanceof Error) {
-      logger.error(`[nodemailer] Error when trying connection to SMTP in [${differenceInMilliseconds(end, start)}]ms: {${error.message}}`);
-    } else {
-      logger.error(`[nodemailer] Unexpected error when trying connection to SMTP in [${differenceInMilliseconds(end, start)}]ms: {${error}}`);
-    }
+    const end = Date.now();
+    logger.debug({
+      duration: differenceInMilliseconds(end, start),
+      durationUnit: 'ms',
+      msg: 'Connected to SMTP',
+    });
+  } catch (err) {
+    const end = Date.now();
+    logger.error({
+      duration: differenceInMilliseconds(end, start),
+      durationUnit: 'ms',
+      err,
+      msg: 'Error when trying connection to SMTP',
+    });
   }
 })();

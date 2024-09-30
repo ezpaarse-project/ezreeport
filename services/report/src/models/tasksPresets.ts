@@ -2,9 +2,14 @@ import { appLogger } from '~/lib/logger';
 import { type Static, Type, Value } from '~/lib/typebox';
 
 import prisma, {
-  Recurrence, Template as PrismaTemplate, TaskPreset as PrismaTaskPreset, Prisma,
+  Recurrence,
+  Template as PrismaTemplate,
+  TaskPreset as PrismaTaskPreset,
+  Prisma,
 } from '~/lib/prisma';
 import { TagTemplate, type FullTemplate } from '~/models/templates';
+
+const logger = appLogger.child({ scope: 'models', model: 'tasks-presets' });
 
 export const TasksPreset = Type.Object({
   name: Type.String({ minLength: 1 }),
@@ -139,8 +144,11 @@ export const createTasksPreset = async (
       template: templateInclude,
     },
   });
-  appLogger.verbose(`[models] Tasks' preset "${preset.id}" created`);
 
+  logger.debug({
+    id: preset.id,
+    msg: 'Tasks\' preset created',
+  });
   return castTasksPreset(preset);
 };
 
@@ -166,8 +174,10 @@ export const deleteTasksPresetById = async (id: string): Promise<FullTasksPreset
     },
   });
 
-  appLogger.verbose(`[models] Tasks' preset "${preset.id}" deleted`);
-
+  logger.debug({
+    id: preset.id,
+    msg: 'Tasks\' preset deleted',
+  });
   return castTasksPreset(preset);
 };
 
@@ -201,5 +211,9 @@ export const editTasksPresetById = async (
     },
   });
 
+  logger.debug({
+    id: preset.id,
+    msg: 'Tasks\' preset updated',
+  });
   return castTasksPreset(preset);
 };

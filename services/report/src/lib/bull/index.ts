@@ -12,7 +12,7 @@ import { Type, type Static } from '~/lib/typebox';
 import type { Namespace, Task } from '~/lib/prisma';
 import config from '~/lib/config';
 import { formatInterval } from '~/lib/utils';
-import { appLogger as logger } from '~/lib/logger';
+import { appLogger } from '~/lib/logger';
 import { ConflictError, NotFoundError } from '~/types/errors';
 
 import { buildPagination } from '~/models/pagination';
@@ -21,6 +21,8 @@ const {
   redis,
   workers: { concurrence, maxExecTime },
 } = config;
+
+const logger = appLogger.child({ scope: 'bull' });
 
 export type GenerationData = {
   /**
@@ -118,22 +120,35 @@ type Queues = keyof typeof queues;
 
 export const initQueues = (skipLogs = false, skipWorker = false) => {
   try {
-    if (!skipLogs) { logger.verbose('[bull] Init started'); }
+    if (!skipLogs) { logger.debug('Init started'); }
     const start = new Date();
 
     flowProducer = new FlowProducer({ connection: redis });
-    if (!skipLogs) { logger.verbose('[bull] Created flow producer'); }
+    if (!skipLogs) { logger.debug('Created flow producer'); }
 
     queues.generation = new Queue<GenerationData>('ezReeport.report-generation', { connection: redis });
     if (!skipLogs) {
       queues.generation.on('error', (err) => {
-        logger.error(`[bull-queue] [generation] failed with an unexpected error: {${err.message}}`);
+        logger.error({
+          err,
+          queue: queues.generation?.name,
+          msg: 'Failed with an unexpected error',
+        });
       });
-      logger.verbose(`[bull] Created queue [${queues.generation.name}]`);
+
+      logger.debug({
+        queue: queues.generation.name,
+        msg: 'Created queue',
+      });
     }
 
     queues.mail = new Queue<MailQueueData>('ezReeport.mail-send', { connection: redis });
-    if (!skipLogs) { logger.verbose(`[bull] Created queue [${queues.mail.name}]`); }
+    if (!skipLogs) {
+      logger.debug({
+        queue: queues.mail.name,
+        msg: 'Created queue',
+      });
+    }
 
     if (!skipWorker) {
       const generationWorker = new Worker(
@@ -147,30 +162,57 @@ export const initQueues = (skipLogs = false, skipWorker = false) => {
           },
         },
       );
+
       if (!skipLogs) {
         generationWorker.on('completed', (job) => {
-          logger.verbose(`[bull-job] [generation] job [${job?.id}] completed`);
+          logger.debug({
+            queue: queues.generation?.name,
+            job: job?.id,
+            msg: 'Job completed',
+          });
         });
         generationWorker.on('failed', (job, err) => {
-          logger.error(`[bull-job] [generation] job [${job?.id}] failed with error: {${err.message}}`);
+          logger.error({
+            queue: queues.generation?.name,
+            job: job?.id,
+            err,
+            msg: 'Job failed',
+          });
         });
         generationWorker.on('error', (err) => {
-          logger.error(`[bull-job] [generation] worker failed with error: {${err.message}}`);
+          logger.error({
+            queue: queues.generation?.name,
+            err,
+            msg: 'Worker failed',
+          });
         });
       }
+
       workers.push(generationWorker);
-      if (!skipLogs) { logger.verbose(`[bull] Created worker [${generationWorker.name}] with [${concurrence}] process and with [${maxExecTime}]ms before hanging`); }
+
+      if (!skipLogs) {
+        logger.debug({
+          queue: queues.generation.name,
+          worker: {
+            name: generationWorker.name,
+            concurrency: concurrence,
+            maxExecTime,
+          },
+          msg: 'Created worker',
+        });
+      }
     }
 
-    const dur = formatInterval({ start, end: new Date() });
-    if (!skipLogs) { logger.info(`[bull] Init completed in [${dur}]s`); }
+    if (!skipLogs) {
+      logger.info({
+        initDuration: formatInterval({ start, end: new Date() }),
+        initDurationUnit: 's',
+        msg: 'Init completed',
+      });
+    }
   } catch (error) {
     if (!skipLogs) {
-      if (error instanceof Error) {
-        logger.error(`[bull] Init failed with error: {${error.message}}`);
-      } else {
-        logger.error(`[bull] An unexpected error occurred at init: {${error}}`);
-      }
+      logger.error(error, 'Init failed');
     }
   }
 };
@@ -391,7 +433,10 @@ export const retryJob = async (queue: string, id: string) => {
     throw new ConflictError(`Job '${id}' must completed or failed to be reprocessed`);
   }
   await job.retry(state);
-  logger.verbose(`[bull] job [${job.id}] restarted`);
+  logger.debug({
+    job: id,
+    msg: 'Job restarted',
+  });
 
   return formatJob(
     await getOneQueue(queue).getJob(id) ?? job,

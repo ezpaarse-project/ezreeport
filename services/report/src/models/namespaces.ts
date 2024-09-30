@@ -25,6 +25,8 @@ type FullNamespace = Namespace & {
   tasks: Omit<TaskList[number], 'tags' | '_count' | 'namespaceId'>[],
 };
 
+const logger = appLogger.child({ scope: 'models', model: 'namespaces' });
+
 const {
   PaginationQuery: NamespacePaginationQuery,
   buildPrismaArgs,
@@ -170,7 +172,10 @@ export const createNamespace = async (id: string, data: InputNamespace): Promise
     include: prismaNamespaceInclude,
   });
 
-  appLogger.verbose(`[models] Namespace "${id}" created`);
+  logger.debug({
+    id,
+    msg: 'Namespace created',
+  });
   return namespace;
 };
 
@@ -195,7 +200,10 @@ export const deleteNamespaceById = async (id: Namespace['id']): Promise<FullName
     include: prismaNamespaceInclude,
   });
 
-  appLogger.verbose(`[models] Namespace "${id}" deleted`);
+  logger.debug({
+    id,
+    msg: 'Namespace deleted',
+  });
   return namespace;
 };
 
@@ -216,7 +224,10 @@ export const editNamespaceById = (id: Namespace['id'], data: InputNamespace): Pr
     include: prismaNamespaceInclude,
   });
 
-  appLogger.verbose(`[models] Namespace "${id}" updated`);
+  logger.debug({
+    id,
+    msg: 'Namespace updated',
+  });
   return namespace;
 };
 
@@ -272,7 +283,10 @@ const upsertBulkNamespace = async (
   if (!existingNamespace) {
     const data = await tx.namespace.create({ data: { ...inputNamespace, id } });
 
-    appLogger.verbose(`[models] Namespace "${id}" will be created via bulk operation`);
+    logger.debug({
+      id,
+      msg: 'Namespace will be created via bulk operation',
+    });
     // If namespace doesn't already exist, create it
     return {
       type: 'created',
@@ -286,7 +300,10 @@ const upsertBulkNamespace = async (
       data: inputNamespace,
     });
 
-    appLogger.verbose(`[models] Namespace "${id}" will be updated via bulk operation`);
+    logger.debug({
+      id,
+      msg: 'Namespace will be updated via bulk operation',
+    });
     // If namespace already exist and changed, update it
     return {
       type: 'updated',
@@ -311,7 +328,10 @@ const deleteBulkNamespace = async (
 ): Promise<BulkResult<Namespace>> => {
   const data = await tx.namespace.delete({ where: { id } });
 
-  appLogger.verbose(`[models] Namespace "${id}" will be deleted`);
+  logger.debug({
+    id,
+    msg: 'Namespace will be deleted via bulk operation',
+  });
   return {
     type: 'deleted',
     data,

@@ -16,10 +16,16 @@ import { initNamespaces, initTemplates } from './init';
 const { port, allowedOrigins: rawOrigins } = config;
 
 const start = async () => {
-  // Create Fastify instance
-  const fastify = Fastify({
-    logger: false,
+  appLogger.info({
+    scope: 'node',
+    env: process.env.NODE_ENV,
+    logLevel: config.log.level,
+    logDir: config.log.dir,
+    msg: 'Service running',
   });
+
+  // Create Fastify instance
+  const fastify = Fastify({ logger: false });
 
   // Register TypeBox
   fastify.withTypeProvider<TypeBoxTypeProvider>();
@@ -43,8 +49,14 @@ const start = async () => {
   // Start listening
   try {
     const address = await fastify.listen({ port, host: '::' });
-    appLogger.info(`[node] Service running in [${process.env.NODE_ENV}] mode`);
-    appLogger.info(`[http] Service listening on [${address}] in [${process.uptime().toFixed(2)}]s`);
+
+    appLogger.info({
+      scope: 'http',
+      address,
+      startupDuration: process.uptime(),
+      startupDurationUnit: 's',
+      msg: 'Service listening',
+    });
 
     await Promise.all([
       initQueues(),
@@ -52,7 +64,13 @@ const start = async () => {
       initTemplates(),
       initNamespaces(),
     ]);
-    appLogger.info(`[init] ezREEPORT ready after [${process.uptime().toFixed(2)}]s`);
+
+    appLogger.info({
+      scope: 'init',
+      readyDuration: process.uptime(),
+      readyDurationUnit: 's',
+      msg: 'Service ready',
+    });
   } catch (err) {
     appLogger.error(err);
     process.exit(1);

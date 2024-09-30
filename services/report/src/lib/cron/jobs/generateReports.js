@@ -2,8 +2,6 @@
 
 const { addTaskToGenQueue } = require('../../bull');
 const { endOfDay } = require('../../date-fns');
-const { appLogger: logger } = require('../../logger');
-const { formatInterval } = require('../../utils');
 
 const { getAllTasksToGenerate } = require('../../../models/tasks');
 
@@ -15,10 +13,11 @@ const { sendError } = require('./utils');
 
 /**
  * @param {Job} job
+ * @param {import('pino').Logger} logger
  */
-module.exports = async (job) => {
-  const start = new Date();
-  logger.verbose(`[cron] [${process.pid}] [${job.name}] Started`);
+module.exports = async (job, logger) => {
+  const start = Date.now();
+  logger.debug('Started');
 
   try {
     // Getting end of today, to ignore hour of task's nextRun
@@ -34,15 +33,21 @@ module.exports = async (job) => {
       ),
     );
 
-    const dur = formatInterval({ start, end: new Date() });
-    logger.info(`[cron] [${process.pid}] [${job.name}] Generated [${length}] report(s) in [${dur}]s`);
-  } catch (error) {
-    const dur = formatInterval({ start, end: new Date() });
-    if (error instanceof Error) {
-      logger.error(`[cron] [${process.pid}] [${job.name}] Job failed in [${dur}]s with error: {${error.message}}`);
-      await sendError(error, job.name, job.data.timer);
-    } else {
-      logger.error(`[cron] [${process.pid}] [${job.name}] Unexpected error occurred after [${dur}]s: {${error}}`);
-    }
+    const end = Date.now();
+    logger.info({
+      reportCounts: length,
+      cronDuration: end - start,
+      cronDurationUnit: 'ms',
+      msg: 'Generated report(s)',
+    });
+  } catch (err) {
+    const end = Date.now();
+    logger.error({
+      cronDuration: end - start,
+      cronDurationUnit: 'ms',
+      err,
+      msg: 'Failed to generate report(s)',
+    });
+    await sendError(err, job.name, logger);
   }
 };

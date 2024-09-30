@@ -5,42 +5,50 @@ import { createNamespace, getCountNamespaces } from '~/models/namespaces';
 
 const { name: defaultTemplateName } = config.defaultTemplate;
 
+const logger = appLogger.child({ scope: 'init' });
+
 /**
  * Add default template if not already present
  */
 export const initTemplates = async () => {
-  appLogger.verbose(`[init] Checking existence of [${defaultTemplateName}]...`);
+  logger.debug({
+    defaultTemplateName,
+    msg: 'Checking existence of default template',
+  });
   let template;
   try {
     template = await getTemplateByName(defaultTemplateName);
   } catch (error) {
-    if (error instanceof Error) {
-      appLogger.error(`[init] Couldn't get template [${defaultTemplateName}]: {${error.message}}`);
-    } else {
-      appLogger.error(`[init] An unexpected error occurred when getting template [${defaultTemplateName}]: {${error}}`);
-    }
+    logger.error(error, 'Couldn\'t get default template');
     return;
   }
 
   if (template) {
     config.defaultTemplate.id = template.id;
-    appLogger.verbose(`[init] Template [${defaultTemplateName}] found`);
+    logger.debug({
+      defaultTemplateName,
+      defaultTemplateId: template.id,
+      msg: 'Default template found',
+    });
     return;
   }
 
-  appLogger.verbose(`[init] Template [${defaultTemplateName}] not found, creating it...`);
+  logger.debug({
+    defaultTemplateName,
+    msg: 'Default template not found, creating it...',
+  });
   try {
     const { id } = await createTemplate(
       { name: defaultTemplateName, body: { layouts: [] }, tags: [] },
     );
     config.defaultTemplate.id = id;
-    appLogger.info(`[init] Template [${defaultTemplateName}] created`);
+    logger.info({
+      defaultTemplateName,
+      defaultTemplateId: id,
+      msg: 'Default template created',
+    });
   } catch (error) {
-    if (error instanceof Error) {
-      appLogger.error(`[init] Couldn't create template [${defaultTemplateName}]: {${error.message}}`);
-    } else {
-      appLogger.error(`[init] An unexpected error occurred when creating template [${defaultTemplateName}]: {${error}}`);
-    }
+    logger.error(error, 'Couldn\'t create default template');
   }
 };
 
@@ -51,35 +59,31 @@ export const initNamespaces = async () => {
   // Getting count of namespaces
   let count = 0;
   try {
-    appLogger.verbose('[init] Checking count of namespaces...');
+    logger.debug('Checking count of namespaces...');
     count = await getCountNamespaces();
-    appLogger.verbose(`[init] Found [${count}] namespaces`);
+    logger.debug({
+      namespaceCount: count,
+      msg: 'Namespaces found',
+    });
   } catch (error) {
-    if (error instanceof Error) {
-      appLogger.error(`[init] Couldn't get count of namespaces: {${error.message}}`);
-    } else {
-      appLogger.error(`[init] An unexpected error occurred when getting count of namespaces: {${error}}`);
-    }
+    logger.error(error, 'Couldn\'t get count of namespaces');
   }
 
   // Insert default template if needed
-  if (count <= 0) {
-    appLogger.verbose('[init] Creating default namespace');
-    try {
-      await createNamespace(
-        '_',
-        {
-          fetchLogin: {},
-          fetchOptions: {},
-          name: 'default',
-        },
-      );
-    } catch (error) {
-      if (error instanceof Error) {
-        appLogger.error(`[init] Couldn't create namespace [_]: {${error.message}}`);
-      } else {
-        appLogger.error(`[init] An unexpected error occurred when creating namespace [_]: {${error}}`);
-      }
-    }
+  if (count > 0) {
+    return;
+  }
+  logger.debug('Creating default namespace');
+  try {
+    await createNamespace(
+      '_',
+      {
+        fetchLogin: {},
+        fetchOptions: {},
+        name: 'default',
+      },
+    );
+  } catch (error) {
+    logger.error(error, 'Couldn\'t create default namespace');
   }
 };

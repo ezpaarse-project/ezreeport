@@ -12,6 +12,8 @@ import {
 
 import { Layout } from './layouts';
 
+const logger = appLogger.child({ scope: 'models', model: 'templates' });
+
 export const Template = Type.Object({
   layouts: Type.Array(
     Layout,
@@ -250,7 +252,11 @@ export const createTemplate = async (
       presets: true,
     },
   });
-  appLogger.verbose(`[models] Template "${template.id}" created`);
+
+  logger.debug({
+    id: template.id,
+    msg: 'Template created',
+  });
 
   const { tasks, presets, ...t } = template;
   return {
@@ -290,7 +296,12 @@ export const linkTaskToTemplate = async (id: Task['id'], templateId: FullTemplat
       id,
     },
   });
-  appLogger.verbose(`[models] Task "${id}" linked to Template "${template.id}"`);
+
+  logger.debug({
+    id: template.id,
+    taskId: id,
+    msg: 'Task linked to template',
+  });
 
   return res;
 };
@@ -337,7 +348,13 @@ export const unlinkTaskFromTemplate = async (id: Task['id'], origin: string, tx:
       id,
     },
   });
-  appLogger.verbose(`[models] Task "${id}" unlinked from Template "${task.extends.id}" (now linked to "${config.defaultTemplate.id}")`);
+
+  logger.debug({
+    id: task.extends.id,
+    taskId: id,
+    defaultTemplateId: config.defaultTemplate.id,
+    msg: 'Task unlinked from template',
+  });
 
   return res;
 };
@@ -374,7 +391,10 @@ export const deleteTemplateById = async (id: string): Promise<FullTemplate | nul
     });
   });
 
-  appLogger.verbose(`[models] Template "${id}" deleted`);
+  logger.debug({
+    id: template.id,
+    msg: 'Template deleted',
+  });
 
   const { tasks, presets, ...t } = template;
   return {
@@ -415,7 +435,11 @@ export const editTemplateById = async (
       presets: true,
     },
   });
-  appLogger.verbose(`[models] Template "${id}" updated`);
+
+  logger.debug({
+    id: template.id,
+    msg: 'Template updated',
+  });
 
   const { tasks, presets, ...t } = template;
   return {

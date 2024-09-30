@@ -2,7 +2,6 @@
 
 const { addErrorToMailQueue } = require('../../bull');
 const { formatISO } = require('../../date-fns');
-const { appLogger: logger } = require('../../logger');
 const config = require('../../config').default;
 
 const { team } = config.report;
@@ -12,11 +11,11 @@ const { team } = config.report;
  *
  * @param {Error} error The error
  * @param {string} origin origin of the error
- * @param {string} _timer Timer of CRON
+ * @param {import('pino').Logger} logger
  *
  * @returns {Promise<void>} When the error is put in queue
  */
-exports.sendError = async (error, origin, _timer) => {
+exports.sendError = async (error, origin, logger) => {
   try {
     const date = formatISO(new Date());
     const errStr = `[ErrorName] ${error.name}\n[ErrorMessage] ${error.message}\n[ErrorDate] ${date}\n\n${error.stack}`;
@@ -27,12 +26,16 @@ exports.sendError = async (error, origin, _timer) => {
       contact: team,
       date,
     });
-    logger.info(`[cron] [${process.pid}] [${origin}] Sent error to dev team by mail`);
-  } catch (e) {
-    if (e instanceof Error) {
-      logger.error(`[cron] [${process.pid}] [${origin}] Cannot send error to dev team: {${e.message}}`);
-    } else {
-      logger.error(`[cron] [${process.pid}] [${origin}] Unexpected error when sending error to dev team: {${e}}`);
-    }
+    logger.info({
+      origin,
+      team,
+      msg: 'Sent error to dev team by mail',
+    });
+  } catch (err) {
+    logger.error({
+      origin,
+      err,
+      msg: 'Cannot send error to dev team',
+    });
   }
 };
