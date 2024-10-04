@@ -25,6 +25,16 @@ import renderPdfWithVega from './render';
 
 const { ttl, outDir } = config.report;
 
+/**
+ * Prepare report by ensuring paths, namespace and prepare result
+ *
+ * @param task The task
+ * @param startTime When the generation started
+ * @param writeActivity If we should write activity
+ * @param meta Additional meta to init result
+ *
+ * @returns The namespace, the paths and the initial result
+ */
 async function prepareReport(
   task: Task,
   startTime = new Date(),
@@ -161,6 +171,14 @@ async function resolveReportTemplate(task: Task) {
   return template;
 }
 
+/**
+ * Handle errors that happen while generating, and put it in result
+ *
+ * @param error The error
+ * @param result The result
+ * @param paths The paths
+ * @param startTime When the generation started
+ */
 function handleReportError(
   error: unknown,
   result: ReportResultType,
@@ -200,6 +218,16 @@ function handleReportError(
   }
 }
 
+/**
+ * Write report activity into DB
+ *
+ * @param task The task
+ * @param origin The origin of generation
+ * @param result The result
+ * @param paths The paths
+ * @param startTime When the generation started
+ * @param meta Additional meta to activity
+ */
 async function writeReportActivity(
   task: Task,
   origin: string,
@@ -276,7 +304,20 @@ const writeInfoFile = (name: string, content: unknown) => writeFile(
   'utf-8',
 );
 
-async function generateReport(
+/**
+ * Generate report
+ *
+ * @param task The task to generate
+ * @param origin The origin of generation
+ * @param customPeriod The custom period to use (by default will use the task period)
+ * @param writeActivity If we should write activity
+ * @param debug If we should print debug info on the report
+ * @param meta Additional meta to pass to result
+ * @param events The event emitter to track generation events
+ *
+ * @returns The result
+ */
+export default async function generateReport(
   task: Task,
   origin: string,
   customPeriod?: { start: string, end: string },
@@ -340,7 +381,7 @@ async function generateReport(
 
             filters: t.filters,
             dateField: t.dateField,
-            index: t.index,
+            index: t.index || '',
 
             figures: layout.figures,
           }),
@@ -419,5 +460,3 @@ async function generateReport(
 
   return result;
 }
-
-export default generateReport;

@@ -27,7 +27,8 @@ import { Type, type Static, assertIsSchema } from '~/lib/typebox';
 
 import type { FigureType } from '~/models/figures';
 import { Layout } from '~/models/layouts';
-import { FetchResultItem } from './fetch/results';
+
+import type { FetchResultItem } from './fetch/results';
 
 interface Grid {
   rows: number,

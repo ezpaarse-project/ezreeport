@@ -1,7 +1,7 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { ensureInt, syncWithCommonHandlers } from '~/lib/utils';
 
-import { FigureType } from '~/models/figures';
+import type { FigureType } from '~/models/figures';
 
 export type FetchResultValue = string | number | boolean;
 
@@ -9,6 +9,9 @@ type EsResponse = ElasticTypes.MsearchResponseItem<Record<string, unknown>>;
 type EsAggregationResult = Record<string, ElasticTypes.AggregationsAggregate>;
 type EsBucket = { key: FetchResultValue, [x: string]: unknown };
 
+/**
+ * Item of data fetched
+ */
 export type FetchResultItem = {
   key: FetchResultValue,
   keyAsString?: string,
@@ -17,14 +20,23 @@ export type FetchResultItem = {
   [x: string]: FetchResultValue | undefined,
 };
 
-function checkEsErrors(response: EsResponse, cause: unknown) {
+/**
+ * Asserts that the ES response contains no errors, and have actual usable data
+ *
+ * @param response The raw ES repsponse
+ * @param cause The cause of the error
+ */
+function checkEsErrors(
+  response: EsResponse,
+  cause: unknown,
+): asserts response is ElasticTypes.MsearchMultiSearchItem<Record<string, unknown>> {
   // Checks any errors
   if ('error' in response) {
     const reason = response.error.failed_shards?.[0]?.reason?.reason || response.error.reason;
     throw new Error(reason, { cause });
   }
 
-  // Checks any errors
+  // Checks any shard errors
   if (response._shards.failures?.length) {
     const reasons = response._shards.failures.map((err) => err.reason.reason).join(' ; ');
     throw new Error(`An error occurred when fetching data : ${reasons}`, { cause });
@@ -39,8 +51,20 @@ function checkEsErrors(response: EsResponse, cause: unknown) {
   ) {
     throw new Error('No data found for given request. Please review filters or aggregations of figures.', { cause });
   }
+
+  // Check if there's aggregations
+  if (!('aggregations' in response) || !response.aggregations) {
+    throw new Error('No aggregations in response', { cause });
+  }
 }
 
+/**
+ * Ensure that buckets are an array
+ *
+ * @param buckets ES buckets
+ *
+ * @returns Array of ES buckets
+ */
 function ensureEsBuckets(buckets: Record<string, Omit<EsBucket, 'key'>> | EsBucket[]): EsBucket[] {
   if (Array.isArray(buckets)) {
     return buckets;
@@ -51,6 +75,16 @@ function ensureEsBuckets(buckets: Record<string, Omit<EsBucket, 'key'>> | EsBuck
   );
 }
 
+/**
+ * Flatten ES buckets into one array, usable for figures
+ *
+ * @param rawBuckets ES buckets
+ * @param elements Array of elements (extracted from figure parameters)
+ * @param getKeyName Function to get the key name
+ * @param i Current level
+ *
+ * @returns Array of FetchResultItems
+ */
 function flattenEsBuckets<Element extends Record<string, unknown>>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rawBuckets: any,
@@ -67,7 +101,7 @@ function flattenEsBuckets<Element extends Record<string, unknown>>(
   }
 
   const data: FetchResultItem[] = [];
-  const aggregation = rawBuckets[`${i}`];
+  const aggregation = rawBuckets[`${i}`]; // See how data is fetched from ES
   const buckets = 'buckets' in aggregation ? aggregation.buckets : [aggregation];
 
   // eslint-disable-next-line no-restricted-syntax
@@ -93,6 +127,14 @@ function flattenEsBuckets<Element extends Record<string, unknown>>(
   return data;
 }
 
+/**
+ * Sort data for figures
+ *
+ * @param data The fetched data
+ * @param figure The figure
+ *
+ * @returns Sorted data
+ */
 function sortData(data: FetchResultItem[], figure: FigureType): FetchResultItem[] {
   let order = figure.params.order as boolean | 'asc' | 'desc';
   if (order === false) {
@@ -115,12 +157,26 @@ function sortData(data: FetchResultItem[], figure: FigureType): FetchResultItem[
   });
 }
 
+/**
+ * Extract data for figures
+ *
+ * @param figure The figure
+ * @param aggregations The aggregation results
+ * @param count The count of document found
+ *
+ * @returns Array of ResultItems
+ */
 type HandleEsResultsFnc = (
   figure: FigureType,
   aggregations: EsAggregationResult,
   count: number | undefined,
 ) => FetchResultItem[];
 
+/**
+ * Extract data for metric figure
+ *
+ * @see {@link HandleEsResultsFnc}
+ */
 const handleMetricsEsResults: HandleEsResultsFnc = (
   { params },
   esData,
@@ -148,17 +204,27 @@ const handleMetricsEsResults: HandleEsResultsFnc = (
           value: aggregation.value ?? 0,
         };
       },
-    ).filter((result) => !!result);
+    );
 
   return data;
 };
 
+/**
+ * Extract data for table figure
+ *
+ * @see {@link HandleEsResultsFnc}
+ */
 const handleTableEsResults: HandleEsResultsFnc = ({ params }, esData) => flattenEsBuckets(
   esData,
   params.columns,
   (col: any) => col.header,
 );
 
+/**
+ * Extract data for others (mainly Vega) figures
+ *
+ * @see {@link HandleEsResultsFnc}
+ */
 const handleOtherEsResults: HandleEsResultsFnc = ({ params }, esData) => {
   // Get elements of figure
   let label = { type: 'label' };
@@ -180,6 +246,15 @@ const handleOtherEsResults: HandleEsResultsFnc = ({ params }, esData) => {
   return flattenEsBuckets(esData, elements, (col) => col.type);
 };
 
+/**
+ * Extract data from ElasticSearch response and handle errors
+ *
+ * @param response The ES response
+ * @param figure The figure
+ * @param errorCause The cause of the error
+ *
+ * @returns Sorted data
+ */
 export default function handleEsResponse(
   response: EsResponse,
   figure: FigureType,
@@ -187,11 +262,7 @@ export default function handleEsResponse(
 ): FetchResultItem[] {
   checkEsErrors(response, errorCause);
 
-  if (!('aggregations' in response) || !response.aggregations) {
-    throw new Error('No aggregations in response', { cause: errorCause });
-  }
-
-  // Handle results
+  // Guess the function we'll be using
   let handleResults = handleOtherEsResults;
   switch (figure.type) {
     case 'metric':
@@ -212,7 +283,7 @@ export default function handleEsResponse(
   }
 
   const data = syncWithCommonHandlers(
-    () => handleResults(figure, aggregations, elasticCount),
+    () => handleResults(figure, aggregations || {}, elasticCount),
     { ...errorCause, elasticData: aggregations, elasticCount },
   );
 

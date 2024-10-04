@@ -30,6 +30,13 @@ export const Filter = Type.Intersect([
 
 export type FilterType = Static<typeof Filter>;
 
+/**
+ * Transform a filter to ElasticSearch's format
+ *
+ * @param filter The filter
+ *
+ * @returns Filter in ElasticSearch format
+ */
 function prepareEsFilter(filter: FilterType): ElasticTypes.QueryDslQueryContainer {
   if ('raw' in filter) {
     return filter.raw;
@@ -53,6 +60,15 @@ function prepareEsFilter(filter: FilterType): ElasticTypes.QueryDslQueryContaine
   };
 }
 
+/**
+ * Prepare ElasticSearch query (filters)
+ *
+ * @param filters The filters to apply
+ * @param dateField The date field of the ES index
+ * @param period The period of the report
+ *
+ * @returns ElasticSearch query
+ */
 export function prepareEsQuery(
   filters: FilterType[],
   dateField: string,

@@ -3,7 +3,7 @@ import { merge } from 'lodash';
 
 import { assertIsSchema, Type, type Static } from '~/lib/typebox';
 
-import { FigureType } from '~/models/figures';
+import type { FigureType } from '~/models/figures';
 
 const FigureAgg = Type.Union([
   Type.Object({
@@ -25,6 +25,17 @@ type ExtractedFigureAggType = FigureAggType & {
 
 type EsAggregation = { [name: string]: ElasticTypes.AggregationsAggregationContainer };
 
+/**
+ * Transform aggregation to ElasticSearch's format
+ *
+ * @param agg The aggregation extracted from figure params
+ * @param name The name of the aggregation
+ * @param dateField The date field of the ES index
+ * @param calendarInterval The calendar interval to give to any `date_histogram`
+ * @param subAggs The sub aggregations
+ *
+ * @returns ElasticSearch's format
+ */
 function transformEsAgg(
   agg: ExtractedFigureAggType,
   name: string,
@@ -69,6 +80,14 @@ function transformEsAgg(
   };
 }
 
+/**
+ * Check if an aggregation exists, and if so check if it's valid
+ *
+ * @param schema The schema
+ * @param value The value
+ *
+ * @see {@link assertIsSchema}
+ */
 function assertFigureAgg(aggregation: unknown): aggregation is FigureAggType {
   if (!aggregation) {
     return false;
@@ -78,17 +97,16 @@ function assertFigureAgg(aggregation: unknown): aggregation is FigureAggType {
   return true;
 }
 
-type ExtractEsAggregationsFnc = (
-  params: FigureType,
-  dateField: string,
-  calendarInterval: string,
-) => {
-  aggregations: ExtractedFigureAggType[],
-} | {
-  buckets: ExtractedFigureAggType[],
-  metric: ExtractedFigureAggType | undefined,
-};
-
+/**
+ * Merge extracted buckets and metric into one aggregation
+ *
+ * @param extracted The extracted buckets and metric
+ * @param dateField The date field of the ES index
+ * @param calendarInterval The calendar interval to give to any `date_histogram`
+ * @param order The order of the aggregation
+ *
+ * @returns One big aggregation
+ */
 function mergeExtractedEsBuckets(
   extracted: { buckets: ExtractedFigureAggType[], metric: ExtractedFigureAggType | undefined },
   dateField: string,
@@ -99,7 +117,7 @@ function mergeExtractedEsBuckets(
 
   const aggregations: EsAggregation | undefined = extracted.buckets.reduce(
     (subAggregations, bucket, i): EsAggregation => {
-      const name = `${extracted.buckets.length - i}`;
+      const name = `${extracted.buckets.length - i}`; // Similar to how data is fetched from ES by Kibana
       let aggregation = transformEsAgg(bucket, name, dateField, calendarInterval, subAggregations);
 
       // Add metric to all bucket (if it exists)
@@ -110,7 +128,7 @@ function mergeExtractedEsBuckets(
         };
       }
 
-      // Add order
+      // Add order cause it needs to be on the same level as `field`
       if (!('raw' in bucket) && order !== false) {
         merge(aggregation, { [name]: { [bucket.type]: { order: { _count: order === 'asc' ? 'asc' : 'desc' } } } });
       }
@@ -126,6 +144,31 @@ function mergeExtractedEsBuckets(
   ];
 }
 
+/**
+ * Extract aggregations for figures
+ *
+ * @param figure The figure
+ * @param dateField The date field of the ES index
+ * @param calendarInterval The calendar interval to give to any `date_histogram`
+ *
+ * @returns Array of aggregations, or buckets and metric to merge in one aggregation
+ */
+type ExtractEsAggregationsFnc = (
+  figure: FigureType,
+  dateField: string,
+  calendarInterval: string,
+) => {
+  aggregations: ExtractedFigureAggType[],
+} | {
+  buckets: ExtractedFigureAggType[],
+  metric: ExtractedFigureAggType | undefined,
+};
+
+/**
+ * Extract aggregations for metric figure
+ *
+ * @see {@link ExtractEsAggregationsFnc}
+ */
 const extractMetricsEsAggregations: ExtractEsAggregationsFnc = ({ params }) => {
   const labelsToFetchCount = new Set<string>();
 
@@ -144,6 +187,11 @@ const extractMetricsEsAggregations: ExtractEsAggregationsFnc = ({ params }) => {
   return { aggregations };
 };
 
+/**
+ * Extract aggregations for table figure
+ *
+ * @see {@link ExtractEsAggregationsFnc}
+ */
 const extractTableEsAggregations: ExtractEsAggregationsFnc = ({ params }) => {
   const buckets: FigureAggType[] = [];
   let metric: FigureAggType | undefined;
@@ -168,6 +216,11 @@ const extractTableEsAggregations: ExtractEsAggregationsFnc = ({ params }) => {
   };
 };
 
+/**
+ * Extract aggregations for others (mainly Vega) figures
+ *
+ * @see {@link ExtractEsAggregationsFnc}
+ */
 const extractOtherEsAggregations: ExtractEsAggregationsFnc = ({ params }) => {
   const buckets: FigureAggType[] = [];
   let metric: FigureAggType | undefined;
@@ -188,12 +241,21 @@ const extractOtherEsAggregations: ExtractEsAggregationsFnc = ({ params }) => {
   };
 };
 
+/**
+ * Prepare aggregations for ElasticSearch based on figures parameters
+ *
+ * @param figure The figure
+ * @param dateField The date field of the ES index
+ * @param calendarInterval The calendar interval to give to any `date_histogram`
+ *
+ * @returns Object with `aggregations` ready to be sent to ElasticSearch
+ */
 export default function prepareEsAggregations(
   figure: FigureType,
   dateField: string,
   calendarInterval: string,
 ): EsAggregation {
-  // Extract aggregations
+  // Guess the function we'll be using
   let extractBuckets = extractOtherEsAggregations;
   switch (figure.type) {
     case 'metric':
@@ -211,6 +273,7 @@ export default function prepareEsAggregations(
   let aggregations: (EsAggregation | undefined)[] = [];
   const extracted = extractBuckets(figure, dateField, calendarInterval);
   if ('buckets' in extracted) {
+    // If we have buckets, we need to merge them in one big aggregation
     aggregations = mergeExtractedEsBuckets(
       extracted,
       dateField,
@@ -218,6 +281,7 @@ export default function prepareEsAggregations(
       figure.params.order,
     );
   } else {
+    // If we have multiple aggregations, just transform them
     aggregations = extracted.aggregations.map(
       (agg, i) => transformEsAgg(agg, `${i + 1}`, dateField, calendarInterval),
     );

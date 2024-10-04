@@ -22,7 +22,7 @@ const ElasticFetchOptions = Type.Object({
     username: Type.String({ minLength: 1 }),
   }),
   dateField: Type.String({ minLength: 1 }),
-  index: Type.Optional(Type.String({ minLength: 1 })),
+  index: Type.String({ minLength: 1 }),
   filters: Type.Optional(
     Type.Array(Filter),
   ),
@@ -33,6 +33,13 @@ export type ElasticFetchOptionsType = Static<typeof ElasticFetchOptions>;
 
 type FigureWithId = FigureType & { _: { id: number } };
 
+/**
+ * Fetch data from Elastic for the given figures
+ *
+ * @param options Options to fetch data
+ *
+ * @returns The data
+ */
 export async function fetchElastic(options: ElasticFetchOptionsType) {
   if (!options.index) {
     throw new Error('Missing index');
@@ -50,8 +57,6 @@ export async function fetchElastic(options: ElasticFetchOptionsType) {
       options.dateField,
       options.period,
     );
-
-    // TODO: add cause in error
 
     const aggregations = prepareEsAggregations(f, options.dateField, calendarInterval);
 

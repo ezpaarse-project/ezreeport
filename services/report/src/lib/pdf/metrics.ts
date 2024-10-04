@@ -129,10 +129,12 @@ function formatValue(label: MetricLabel, data: FetchResultItem) {
       }
     }
   } catch (error) {
+    const message = `An error occurred while formatting "${label.text}" ("${value}")`;
     if (!(error instanceof Error)) {
-      throw new Error(`An unexpected error occurred wile formatting "${label.text}" ("${value}"): ${error}`);
+      throw new Error(`${message}: ${error}`);
     }
-    error.message = `An error occurred wile formatting "${label.text}" ("${value}"): ${error.message}`;
+
+    error.message = `${message}: ${error.message}`;
     throw error;
   }
 
