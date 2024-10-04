@@ -31,7 +31,7 @@ export const initTemplates = async () => {
   appLogger.verbose(`[init] Template [${defaultTemplateName}] not found, creating it...`);
   try {
     const { id } = await createTemplate(
-      { name: defaultTemplateName, body: { layouts: [] }, tags: [] },
+      { name: defaultTemplateName, body: { layouts: [], dateField: '' }, tags: [] },
     );
     config.defaultTemplate.id = id;
     appLogger.info(`[init] Template [${defaultTemplateName}] created`);
