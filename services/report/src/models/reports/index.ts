@@ -245,6 +245,7 @@ async function writeReportActivity(
     message: '',
     data: {
       ...meta,
+      targets: compact(task.targets),
       destroyAt: result.detail.destroyAt,
       files: result.detail.files,
       period: undefined as { start: string, end: string } | undefined,
