@@ -16,7 +16,8 @@
   "scripts": {
     "lint": "pnpm run -r --parallel lint",
     "prepare": "husky",
-    "publish": "bin/publish.sh"
+    "publish": "bin/publish.sh",
+    "type-check": "pnpm run -r --parallel type-check"
   },
   "lint-staged": {
     "package.json": [

@@ -17,6 +17,7 @@
   "scripts": {
     "dev": "tsx watch --inspect=0.0.0.0 src/app.ts",
     "lint": "eslint --fix .",
+    "type-check": "tsc --noEmit --skipLibCheck",
     "db:install": "npm i -g prisma@^5.7.1",
     "db:gui": "prisma studio",
     "db:diff": "prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma",
