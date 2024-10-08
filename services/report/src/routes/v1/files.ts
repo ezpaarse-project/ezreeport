@@ -10,7 +10,7 @@ import { Type, type Static, Value } from '~/lib/typebox';
 import authPlugin from '~/plugins/auth';
 
 import { Access } from '~/models/access';
-import { ReportResult, type ReportResultType } from '~/models/reports';
+import { ReportResult, type ReportResultType } from '~/models/reports/types';
 import { getTaskById } from '~/models/tasks';
 import { ArgumentError, NotFoundError } from '~/types/errors';
 
