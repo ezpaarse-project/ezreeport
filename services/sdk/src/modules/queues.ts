@@ -99,38 +99,6 @@ export const updateQueue = async (queue: Partial<InputQueue> & { name: Queue['na
 };
 
 /**
- * Pause queue
- *
- * Needs `general.queues-put-queue-pause` permission
- *
- * @param queueOrName Queue or queue's name
- *
- * @deprecated Use `updateQueue` instead
- *
- * @returns queue info
- */
-export const pauseQueue = async (queueOrName: Queue | Queue['name']): Promise<ApiResponse<Queue>> => {
-  const queueName = typeof queueOrName === 'string' ? queueOrName : queueOrName.name;
-  return axios.$put<Queue>(`/queues/${queueName}/pause`);
-};
-
-/**
- * Resume queue
- *
- * Needs `general.queues-put-queue-resume` permission
- *
- * @param queueOrName Queue or queue's name
- *
- * @deprecated Use `updateQueue` instead
- *
- * @returns queue info
- */
-export const resumeQueue = async (queueOrName: Queue | Queue['name']): Promise<ApiResponse<Queue>> => {
-  const queueName = typeof queueOrName === 'string' ? queueOrName : queueOrName.name;
-  return axios.$put<Queue>(`/queues/${queueName}/resume`);
-};
-
-/**
  * Get queue info
  *
  * Needs `general.queues-get-queue-jobs` permission
