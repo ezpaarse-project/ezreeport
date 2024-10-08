@@ -25,7 +25,8 @@
   ],
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
-    "lint": "eslint . --ext .ts --fix",
+    "lint": "eslint --ext .ts .",
+    "type-check": "tsc --noEmit --skipLibCheck",
     "prepack": "npm run build && oclif manifest && oclif readme",
     "postpack": "shx rm -f oclif.manifest.json",
     "prepare": "npm run build",

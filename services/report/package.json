@@ -16,7 +16,7 @@
   "main": "src/app.ts",
   "scripts": {
     "dev": "tsx watch --inspect=0.0.0.0 src/app.ts",
-    "lint": "eslint --fix .",
+    "lint": "eslint .",
     "type-check": "tsc --noEmit --skipLibCheck",
     "db:install": "npm i -g prisma@^5.7.1",
     "db:gui": "prisma studio",

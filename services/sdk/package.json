@@ -35,7 +35,8 @@
     "build:docs": "typedoc src/index.ts",
     "docs": "vite docs --open",
     "dev": "run-p \"build:docs -- --watch\" docs",
-    "lint": "eslint --fix ."
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {
     "*.ts": [

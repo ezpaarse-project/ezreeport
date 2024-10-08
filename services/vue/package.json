@@ -33,7 +33,7 @@
     "build": "NODE_ENV=production vite build",
     "build:docs": "storybook build",
     "dev": "storybook dev -p 6006",
-    "lint": "eslint --fix src vite.config.mts .storybook",
+    "lint": "eslint src vite.config.mts .storybook",
     "example": "npm --prefix example run dev",
     "watch": "NODE_ENV=production vite build --watch"
   },
