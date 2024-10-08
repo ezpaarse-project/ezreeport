@@ -115,31 +115,6 @@ export const elasticMSearch = async <ResponseType extends Record<string, unknown
 };
 
 /**
- * Shorthand to count with elastic
- *
- * @param params The count params
- * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
- *
- * @returns The result of the count
- */
-export const elasticCount = async (
-  params: ElasticTypes.CountRequest,
-  runAs?: string,
-) => {
-  const elastic = await getElasticClient();
-
-  const headers: Record<string, unknown> = {};
-  if (runAs) {
-    headers['es-security-runas-user'] = runAs;
-  }
-
-  return elastic.count<ElasticTypes.CountResponse>(
-    params as Record<string, unknown>,
-    { headers },
-  );
-};
-
-/**
  * Shorthand to list indices with elastic
  *
  * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)

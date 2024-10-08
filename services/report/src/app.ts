@@ -6,6 +6,7 @@ import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
 import { initQueues } from '~/lib/bull';
 import { initCrons } from '~/lib/cron';
+import { ajv } from '~/lib/typebox';
 
 import formatPlugin from '~/plugins/format';
 import loggerPlugin from '~/plugins/logger';
@@ -17,12 +18,13 @@ const { port, allowedOrigins: rawOrigins } = config;
 
 const start = async () => {
   // Create Fastify instance
-  const fastify = Fastify({
-    logger: false,
-  });
+  const fastify = Fastify({ logger: false });
 
   // Register TypeBox
   fastify.withTypeProvider<TypeBoxTypeProvider>();
+
+  // Register ajv, avoiding multiple instances
+  fastify.setValidatorCompiler(({ schema }) => ajv.compile(schema));
 
   // Register cors
   const allowedOrigins = rawOrigins.split(',');

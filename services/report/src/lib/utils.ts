@@ -71,6 +71,16 @@ export const ensureArray = <T>(value: T | T[]): T[] => (
   Array.isArray(value) ? [...value] : [value]
 );
 
+export const ensureInt = (value: string | number | boolean): number => {
+  if (typeof value === 'string') {
+    return Number.parseInt(value, 10);
+  }
+  if (typeof value === 'boolean') {
+    return value ? 1 : 0;
+  }
+  return value;
+};
+
 /**
  * Parse promised bulk operation results into usable arrays
  *

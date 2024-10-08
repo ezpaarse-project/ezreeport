@@ -28,7 +28,7 @@
   },
   "crons": {
     "options": {
-      "tz": "REPORT_CRON_TZ"
+      "tz": "TZ"
     },
     "timers": {
       "generateReports": "REPORT_CRON_TIMER_GENERATE_REPORT",

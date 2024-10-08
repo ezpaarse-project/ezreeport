@@ -512,8 +512,8 @@ const router: FastifyPluginAsync = async (fastify) => {
    */
   const GenerateTaskQuery = Type.Partial(
     Type.Object({
-      period_start: Type.String({ minLength: 1 }),
-      period_end: Type.String({ minLength: 1 }),
+      period_start: Type.String({ minLength: 1, format: 'iso-date-time' }),
+      period_end: Type.String({ minLength: 1, format: 'iso-date-time' }),
       test_emails: Type.Union([
         Type.Array(
           Type.String({ format: 'email' }),
@@ -566,12 +566,12 @@ const router: FastifyPluginAsync = async (fastify) => {
       // Parse custom period
       let customPeriod: { start: string, end: string } | undefined;
       if (periodStart || periodEnd) {
-        if (!(periodStart && periodEnd)) {
+        if (!periodStart || !periodEnd) {
           throw new ArgumentError('Missing part of custom period');
         }
         customPeriod = {
-          start: periodStart.toString(),
-          end: periodEnd.toString(),
+          start: periodStart,
+          end: periodEnd,
         };
       }
 

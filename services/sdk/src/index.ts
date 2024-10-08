@@ -5,8 +5,6 @@ export * as crons from './modules/crons.public';
 export * as health from './modules/health.public';
 export * as tasksActivity from './modules/tasksActivity.public';
 export * as tasksPresets from './modules/tasksPresets.public';
-/** @deprecated Use `tasksActivity` instead */
-export * as history from './modules/tasksActivity.public';
 export * as namespaces from './modules/namespaces.public';
 export * as queues from './modules/queues.public';
 export * as reports from './modules/reports.public';
@@ -21,8 +19,6 @@ export type EzReeportSDK = {
   auth: typeof import('./modules/auth.public')
   crons: typeof import('./modules/crons.public')
   health: typeof import('./modules/health.public')
-  /** @deprecated Use `tasksActivity` instead */
-  history: typeof import('./modules/tasksActivity.public')
   namespaces: typeof import('./modules/namespaces.public')
   queues: typeof import('./modules/queues.public')
   reports: typeof import('./modules/reports.public')

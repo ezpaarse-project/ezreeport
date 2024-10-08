@@ -10,39 +10,27 @@ import {
   type Task,
 } from '~/lib/prisma';
 
+import { Filter } from './reports/fetch/filters';
 import { Layout } from './layouts';
 
 export const Template = Type.Object({
+  version: Type.Optional(Type.Integer({ minimum: 1 })),
+  index: Type.Optional(Type.String({ minLength: 1 })),
+
+  dateField: Type.String({ minLength: 1 }),
+
+  filters: Type.Optional(
+    Type.Array(Filter),
+  ),
+
   layouts: Type.Array(
     Layout,
   ),
 
-  fetchOptions: Type.Optional(
+  grid: Type.Optional(
     Type.Object({
-      filters: Type.Optional(
-        Type.Record(Type.String(), Type.Any()),
-      ),
-
-      dateField: Type.String({ minLength: 1 }),
-
-      index: Type.Optional(
-        Type.String({ minLength: 1 }),
-      ),
-    }),
-  ),
-
-  renderer: Type.Optional(
-    Type.Literal('vega-pdf'),
-  ),
-
-  renderOptions: Type.Optional(
-    Type.Object({
-      grid: Type.Optional(
-        Type.Object({
-          cols: Type.Integer({ minimum: 1 }),
-          rows: Type.Integer({ minimum: 1 }),
-        }),
-      ),
+      cols: Type.Integer({ minimum: 1 }),
+      rows: Type.Integer({ minimum: 1 }),
     }),
   ),
 });
@@ -50,17 +38,16 @@ export const Template = Type.Object({
 export type TemplateType = Static<typeof Template>;
 
 export const TaskTemplate = Type.Object({
-  fetchOptions: Type.Object({
-    filters: Type.Optional(
-      Type.Record(Type.String(), Type.Any()),
-    ),
+  version: Type.Optional(Type.Integer({ minimum: 1 })),
+  index: Type.String({ minLength: 1 }),
 
-    dateField: Type.Optional(
-      Type.String({ minLength: 1 }),
-    ),
+  dateField: Type.Optional(
+    Type.String({ minLength: 1 }),
+  ),
 
-    index: Type.String({ minLength: 1 }),
-  }),
+  filters: Type.Optional(
+    Type.Array(Filter),
+  ),
 
   inserts: Type.Optional(
     Type.Array(

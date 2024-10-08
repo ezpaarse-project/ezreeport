@@ -4,41 +4,31 @@ import axios, { type ApiResponse } from '../lib/axios';
 
 import { parseTask, type RawTask, type Task } from './tasks.base';
 
-interface FigureFetchOptions {
-  fetchCount?: string,
+interface FetchBaseFilter {
+  field: string,
+  value?: string | string[]
+}
+interface FetchRawFilter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  filters?: Record<string, any>,
+  raw: Record<string, any>
 }
 
-interface FigureFetchOptionsAggs extends FigureFetchOptions {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  aggs?: Record<string, any>[],
-}
-
-interface FigureFetchOptionsBuckets extends FigureFetchOptions {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  buckets?: Record<string, any>[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  metric?: Record<string, any>,
-}
+export type FetchFilter = (FetchBaseFilter | FetchRawFilter) & {
+  name: string,
+  isNot?: boolean
+};
 
 export interface Figure {
+  version: number,
   type: string,
   data?: string | unknown[],
+  filters?: FetchFilter[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params: Record<string, any>,
-  fetchOptions?: FigureFetchOptionsAggs | FigureFetchOptionsBuckets,
   slots?: number[]
 }
 
 export interface Layout {
-  data?: unknown
-  fetcher?: string,
-  fetchOptions?: {
-    fetchCount?: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    filters?: Record<string, any>,
-  },
   figures: Figure[]
 }
 
@@ -53,12 +43,12 @@ export interface RawTemplate {
   }[],
 
   createdAt: string, // Date
-  updatedAt?: string, // Date
+  updatedAt?: string // Date
 }
 
 export interface Template extends Omit<RawTemplate, 'createdAt' | 'updatedAt'> {
   createdAt: Date,
-  updatedAt?: Date,
+  updatedAt?: Date
 }
 
 /**
@@ -78,22 +68,16 @@ export const parseTemplate = (template: RawTemplate): Template => ({
 // Private export
 export interface RawFullTemplate extends RawTemplate {
   body: {
-    renderer?: string,
-    renderOptions?: {
-      grid?: {
-        cols: number,
-        rows: number,
-      }
-    },
-    fetchOptions?: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      filters?: Record<string, any>,
-      index?: string,
-      dateField: string,
-    },
-    layouts: Layout[]
+    filters?: FetchFilter[],
+    index?: string,
+    dateField: string,
+    layouts: Layout[],
+    grid?: {
+      cols: number,
+      rows: number
+    }
   }
-  tasks: RawTask[],
+  tasks: RawTask[]
 }
 
 export interface FullTemplate extends Omit<RawFullTemplate, 'tasks' | 'createdAt' | 'updatedAt'> {
@@ -212,21 +196,6 @@ export const upsertTemplate = async (
     content: parseFullTemplate(content),
   };
 };
-
-/**
- * Update a template
- *
- * Needs `general.templates-put-template` permission
- *
- * @param id Template's id
- * @param template New Template's data
- * @param namespaces
- *
- * @deprecated use `upsertTemplate` instead
- *
- * @returns Updated Template's info
- */
-export const updateTemplate = upsertTemplate;
 
 /**
  * Delete a template

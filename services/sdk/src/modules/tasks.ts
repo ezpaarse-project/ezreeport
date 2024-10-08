@@ -5,6 +5,7 @@ import { parseActivity, type Activity, type RawActivity } from './tasksActivity'
 import type { Namespace } from './namespaces';
 import {
   parseTemplate,
+  type FetchFilter,
   type Layout,
   type RawTemplate,
   type Template,
@@ -21,12 +22,10 @@ import {
 
 interface AdditionalRawTaskData {
   template: {
-    fetchOptions?: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      filters?: Record<string, any>,
-      dateField?: string,
-      index: string,
-    },
+    version: number,
+    filters?: FetchFilter[],
+    dateField?: string,
+    index: string,
     inserts?: (Layout & { at: number })[],
   },
   extends: RawTemplate,
@@ -97,7 +96,7 @@ export interface InputTask extends Pick<FullTask, 'name' | 'template' | 'targets
 export interface PartialInputTask extends
   Pick<InputTask, 'targets' | 'name' | 'namespace'>,
   Partial<Omit<InputTask, 'targets' | 'name' | 'namespace' | 'template'>> {
-  template: Pick<InputTask['template'], 'fetchOptions'>
+  template: Pick<InputTask['template'], 'dateField' | 'filters' | 'index'>
 }
 
 type RawTaskList = (RawTask & { tags: RawTemplate['tags'], _count: { targets: number } })[];
@@ -296,20 +295,6 @@ export const upsertTask = async (
     content: parseFullTask(content),
   };
 };
-
-/**
- * Update a task
- *
- * Needs `namespaces[namespaceId].tasks-put-task` permission
- *
- * @param task Task's data **with id**
- * @param namespaces
- *
- * @deprecated Use `upsertTask` instead
- *
- * @returns Updated Task's info
- */
-export const updateTask = upsertTask;
 
 /**
  * Delete a task

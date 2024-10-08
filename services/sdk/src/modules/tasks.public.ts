@@ -10,7 +10,6 @@ export {
   getTask,
   createTask,
   createTaskFromPreset,
-  updateTask,
   upsertTask,
   deleteTask,
   enableTask,

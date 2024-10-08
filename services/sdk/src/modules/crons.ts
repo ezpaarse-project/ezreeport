@@ -63,46 +63,6 @@ export const getCron = async (cronOrName: Cron | Cron['name']): Promise<ApiRespo
 };
 
 /**
- * Start cron
- *
- * Needs `general.crons-put-cron-start` permission
- *
- * @param cronOrName Cron or Cron name
- *
- * @deprecated Use `updateCron` with body `{ running: true }`
- *
- * @returns Cron's info
- */
-export const startCron = async (cronOrName: Cron | Cron['name']) => {
-  const name = typeof cronOrName === 'string' ? cronOrName : cronOrName.name;
-  const { content, ...response } = await axios.$put<RawCron>(`/crons/${name}/start`, {});
-  return {
-    ...response,
-    content: parseCron(content),
-  };
-};
-
-/**
- * Stop cron
- *
- * Needs `general.crons-put-cron-stop` permission
- *
- * @param cronOrName Cron or Cron name
- *
- * @deprecated Use `updateCron` with body `{ running: false }`
- *
- * @returns Cron's info
- */
-export const stopCron = async (cronOrName: Cron | Cron['name']) => {
-  const name = typeof cronOrName === 'string' ? cronOrName : cronOrName.name;
-  const { content, ...response } = await axios.$put<RawCron>(`/crons/${name}/stop`, {});
-  return {
-    ...response,
-    content: parseCron(content),
-  };
-};
-
-/**
  * Update cron
  *
  * Needs `general.crons-patch-cron` permission
