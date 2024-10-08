@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { assertIsSchema, Type, type Static } from '~/lib/typebox';
 import { addTaskToGenQueue } from '~/lib/bull';
-import { b64ToString } from '~/lib/utils';
+import { b64ToString, stringToB64 } from '~/lib/utils';
 
 import authPlugin from '~/plugins/auth';
 
@@ -165,9 +165,6 @@ const router: FastifyPluginAsync = async (fastify) => {
         querystring: tasks.TaskPaginationQuery,
         params: SpecificEmailParams,
       },
-      ezrAuth: {
-        access: Access.READ,
-      },
     },
     async (request) => {
       const pagination = {
@@ -179,13 +176,12 @@ const router: FastifyPluginAsync = async (fastify) => {
       const list = await tasks.getTasksByTarget(
         request.params.email,
         pagination,
-        request.namespaceIds,
       );
 
       return {
         content: list,
         meta: {
-          total: await tasks.getTaskCountByTarget(request.params.email, request.namespaceIds),
+          total: await tasks.getTaskCountByTarget(request.params.email),
           count: list.length,
           size: pagination.count,
           lastId: list.at(-1)?.id,
@@ -236,6 +232,43 @@ const router: FastifyPluginAsync = async (fastify) => {
           message: `${email} a été désinscrit de la liste de diffusion par ${request.user?.username || 'Unknown'}.`,
         },
       );
+    },
+  );
+
+  /**
+   * Get unsubscribe link for a target
+   */
+  fastify.get<{
+    Params: SpecificEmailParamsType & SpecificTaskParamsType,
+  }>(
+    '/_targets/:email/tasks/:task/_unsubscribe',
+    {
+      schema: {
+        params: SpecificEmailParams,
+      },
+    },
+    async (request) => {
+      const { email, task: id } = request.params;
+
+      const item = await tasks.getTaskById(id, request.namespaceIds);
+      if (!item) {
+        throw new NotFoundError(`Task with id '${id}' not found`);
+      }
+
+      const hasEmail = item.targets.some((e: string) => e === email);
+      if (!hasEmail) {
+        throw new ArgumentError(`Email "${email}" not found in targets of task "${item.id}"`);
+      }
+
+      const taskId64 = stringToB64(item.id);
+      const to64 = stringToB64(email);
+      const unsubId = encodeURIComponent(`${taskId64}:${to64}`);
+
+      return {
+        content: {
+          id: unsubId,
+        }
+      };
     },
   );
 
