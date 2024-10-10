@@ -19,7 +19,6 @@ export type FetchFilter = (FetchBaseFilter | FetchRawFilter) & {
 };
 
 export interface Figure {
-  version: number,
   type: string,
   data?: string | unknown[],
   filters?: FetchFilter[],
@@ -68,6 +67,7 @@ export const parseTemplate = (template: RawTemplate): Template => ({
 // Private export
 export interface RawFullTemplate extends RawTemplate {
   body: {
+    version: number,
     filters?: FetchFilter[],
     index?: string,
     dateField: string,
