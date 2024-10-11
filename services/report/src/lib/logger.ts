@@ -1,57 +1,54 @@
-import winston from 'winston';
+import pino from 'pino';
+
+import { resolve } from 'node:path';
+
 import config from '~/lib/config';
 
-const level = config.logLevel;
+export type Level = pino.Level;
+type LoggerOptions = Omit<pino.LoggerOptions, 'level' | 'transports'> & { name: string };
 
-const formatter = (info: winston.Logform.TransformableInfo) => `${info.timestamp}${info.label ? ` [${info.label}]` : ''} ${info.level}: ${info.message} ${(info instanceof Error ? `\n\n${info.stack}\n` : '')}`;
+const { level: l, dir, ignore } = config.log;
+const level = l as pino.Level;
 
-const baseLogger: winston.LoggerOptions = {
-  level,
-  exitOnError: false,
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.printf(formatter),
-  ),
-};
+function getStdOutTarget(): pino.TransportTargetOptions {
+  if (process.env.NODE_ENV === 'production') {
+    return { target: 'pino/file', options: { destination: 1 } };
+  }
 
-winston.loggers.add('app', {
-  ...baseLogger,
-  transports: [
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.timestamp(),
-        winston.format.label({ label: 'app' }),
-        winston.format.printf(formatter),
-      ),
-    }),
-    new winston.transports.File({
-      dirname: '/var/log/ezreeport/report',
-      filename: 'app.log',
-    }),
-  ],
-});
+  return {
+    target: 'pino-pretty',
+    options: {
+      ignore: [...ignore, 'scope'].join(','),
+      colorize: true,
+      messageFormat: '{if scope}[{scope}]{end} {msg}',
+    },
+  };
+}
 
-winston.loggers.add('access', {
-  ...baseLogger,
-  transports: [
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.timestamp(),
-        winston.format.label({ label: 'access' }),
-        winston.format.printf(formatter),
-      ),
-    }),
-    new winston.transports.File({
-      dirname: '/var/log/ezreeport/report',
-      filename: 'access.log',
-    }),
-  ],
-});
+function createLogger(options: LoggerOptions) {
+  const targets: pino.TransportTargetOptions[] = [
+    { level, ...getStdOutTarget() },
+  ];
 
-export const appLogger = winston.loggers.get('app');
-appLogger.on('error', (err) => appLogger.error(`[winston] ${err.toString()}`));
+  // If needed add logs into a file
+  if (dir) {
+    targets.push({
+      target: 'pino/file',
+      level,
+      options: {
+        destination: resolve(dir, `${options.name}.log`),
+        sync: false,
+        ignore: ignore.join(','),
+      },
+    });
+  }
 
-export const accessLogger = winston.loggers.get('access');
-accessLogger.on('error', (err) => appLogger.error(`[winston] ${err.toString()}`));
+  return pino({
+    ...options,
+    level,
+    transport: { targets },
+  });
+}
+
+export const accessLogger = createLogger({ name: 'access' });
+export const appLogger = createLogger({ name: 'app' });

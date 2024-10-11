@@ -12,7 +12,7 @@ import type { Prisma, Recurrence, Task } from '~/lib/prisma';
 import { asyncWithCommonHandlers } from '~/lib/utils';
 import config from '~/lib/config';
 import * as dfns from '~/lib/date-fns';
-import { appLogger as logger } from '~/lib/logger';
+import { appLogger } from '~/lib/logger';
 import { type Static, Type, Value } from '~/lib/typebox';
 
 import { calcNextDate, calcPeriod } from '~/models/recurrence';
@@ -382,6 +382,8 @@ export const generateReport = async (
   meta = {},
   events: EventEmitter = new EventEmitter(),
 ): Promise<ReportResultType> => {
+  const logger = appLogger.child({ scope: 'gen', task: { id: task.id, name: task.name, recurrence: task.recurrence } });
+
   const today = new Date();
   const todayStr = dfns.format(today, 'yyyy/yyyy-MM');
   const basePath = join(outDir, todayStr, '/');
@@ -401,7 +403,7 @@ export const generateReport = async (
     throw new Error(`Namespace "${task.namespaceId}" not found`);
   }
 
-  logger.verbose(`[gen] [${process.pid}] Generation of report [${namepath}] started`);
+  logger.debug('Generation of report started');
   events.emit('creation');
 
   const result: ReportResultType = {
@@ -429,7 +431,7 @@ export const generateReport = async (
     }
 
     result.detail.auth = namespace.fetchLogin;
-    logger.verbose(`[gen] [${process.pid}] Auth found`);
+    logger.debug('Auth found');
     events.emit('authFound', result.detail.auth);
 
     const period = getReportPeriod(task, customPeriod);
@@ -462,7 +464,7 @@ export const generateReport = async (
       }
     }
 
-    logger.verbose(`[gen] [${process.pid}] Template resolved`);
+    logger.debug('Template resolved');
     events.emit('templateResolved', template);
 
     // Fetch data and keep resolved data and fetch options
@@ -487,7 +489,7 @@ export const generateReport = async (
 
     // Cleanup & notifications
     delete template.fetchOptions;
-    logger.verbose(`[gen] [${process.pid}] Data fetched`);
+    logger.debug('Data fetched');
     events.emit('templateFetched', template);
 
     // Render report
@@ -504,7 +506,10 @@ export const generateReport = async (
     );
     template.renderOptions = renderResult.options;
     result.detail.files.report = `${namepath}.rep.pdf`;
-    logger.verbose(`[gen] [${process.pid}] Report wrote to "${result.detail.files.report}"`);
+    logger.debug({
+      reportPath: result.detail.files.report,
+      msg: 'Report wrote',
+    });
 
     // Update result
     result.detail = {
@@ -514,7 +519,12 @@ export const generateReport = async (
       stats: omit(renderResult.stats, 'path'),
     };
 
-    logger.info(`[gen] [${process.pid}] Report "${namepath}" successfully generated in ${(result.detail.took / 1000).toFixed(2)}s`);
+    logger.info({
+      reportPath: result.detail.files.report,
+      genDuration: result.detail.took,
+      genDurationUnit: 'ms',
+      msg: 'Report successfully generated',
+    });
   } catch (error) {
     const err: ReportResultType['detail']['error'] = {
       message: `${error}`,
@@ -540,12 +550,21 @@ export const generateReport = async (
       error: err,
     };
 
-    const dur = (result.detail.took / 1000).toFixed(2);
-    if (error instanceof Error) {
-      logger.error(`[gen] [${process.pid}] Report [${namepath}] failed to generate in [${dur}]s with error: {${error.message}}`);
-    } else {
-      logger.error(`[gen] [${process.pid}] An unexpected error occurred [${namepath}] failed to generate in [${dur}]s with error: {${error}}`);
-    }
+    logger.error({
+      reportPath: result.detail.files.report,
+      genDuration: result.detail.took,
+      genDurationUnit: 'ms',
+      err: {
+        message: err.message,
+        stack: err.stack,
+        cause: {
+          ...err.cause,
+          elasticQuery: undefined,
+          vegaSpec: undefined,
+        },
+      },
+      msg: 'Report failed to generate',
+    });
   }
 
   // Update task if needed
@@ -593,12 +612,11 @@ export const generateReport = async (
         taskData,
         activityData,
       );
-    } catch (error) {
-      if (error instanceof Error) {
-        logger.error(`[gen] [${process.pid}] Unable to update task [${task.id}]: {${error.message}}`);
-      } else {
-        logger.error(`[gen] [${process.pid}] An unexpected error occurred when updating task [${task.id}]: {${error}}`);
-      }
+    } catch (err) {
+      logger.error({
+        err,
+        msg: 'Unable to update task',
+      });
     }
   }
 
@@ -606,26 +624,30 @@ export const generateReport = async (
   try {
     await writeInfoFile(`${filepath}.det`, result);
     result.detail.files.detail = `${namepath}.det.json`;
-    logger.verbose(`[gen] [${process.pid}] Detail wrote to [${result.detail.files.detail}]`);
-  } catch (error) {
-    if (error instanceof Error) {
-      logger.error(`[gen] [${process.pid}] Unable to write detail [${task.id}]: {${error.message}}`);
-    } else {
-      logger.error(`[gen] [${process.pid}] An unexpected error occurred when writing detail [${task.id}]: {${error}}`);
-    }
+    logger.debug({
+      detailPath: result.detail.files.detail,
+      msg: 'Detail wrote',
+    });
+  } catch (err) {
+    logger.error({
+      err,
+      msg: 'Unable to write detail',
+    });
   }
 
   // Write debug when process is ending
   try {
     await writeInfoFile(`${filepath}.deb`, omit(template, 'renderOptions.layouts'));
     result.detail.files.debug = `${namepath}.deb.json`;
-    logger.verbose(`[gen] [${process.pid}] Template wrote to [${result.detail.files.debug}]`);
-  } catch (error) {
-    if (error instanceof Error) {
-      logger.error(`[gen] [${process.pid}] Unable to write debug [${task.id}]: {${error.message}}`);
-    } else {
-      logger.error(`[gen] [${process.pid}] An unexpected error occurred when writing debug [${task.id}]: {${error}}`);
-    }
+    logger.debug({
+      detailPath: result.detail.files.debug,
+      msg: 'Debug wrote',
+    });
+  } catch (err) {
+    logger.error({
+      err,
+      msg: 'Unable to write debug',
+    });
   }
 
   return result;

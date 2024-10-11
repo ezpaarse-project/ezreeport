@@ -1,6 +1,8 @@
 import { Access } from '~/lib/prisma';
 import { appLogger } from '~/lib/logger';
 
+const logger = appLogger.child({ scope: 'perms' });
+
 const accessValues: Record<Access, number> = {
   [Access.READ]: 1,
   [Access.READ_WRITE]: 2,
@@ -24,7 +26,11 @@ const adminPerRoute = new Map<string, boolean>();
  * @param access Access level
  */
 export const registerRouteWithAccess = (route: string, access: Access) => {
-  appLogger.verbose(`[perms] Route [${route}] registered with minimum access: [${access}]`);
+  logger.debug({
+    route,
+    access,
+    msg: 'Registered route with minimum access',
+  });
   accessPerRoute.set(route, accessValues[access]);
 };
 
@@ -35,7 +41,11 @@ export const registerRouteWithAccess = (route: string, access: Access) => {
  * @param isAdminRequired Is admin required
  */
 export const registerRoute = (route: string, isAdminRequired: boolean) => {
-  appLogger.verbose(`[perms] Route [${route}] registered with admin required: [${isAdminRequired}]`);
+  logger.debug({
+    route,
+    isAdminRequired,
+    msg: 'Registered route with admin required',
+  });
   adminPerRoute.set(route, isAdminRequired);
 };
 
