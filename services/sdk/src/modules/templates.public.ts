@@ -7,7 +7,6 @@ export {
   getAllTemplates,
   getTemplate,
   createTemplate,
-  updateTemplate,
   upsertTemplate,
   deleteTemplate,
 } from './templates';

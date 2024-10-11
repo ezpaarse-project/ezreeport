@@ -51,56 +51,6 @@ const router: FastifyPluginAsync = async (fastify) => {
   );
 
   /**
-   * Start specific cron
-   *
-   * @deprecated Use `PATCH /:cron` with body instead
-   */
-  fastify.put<{
-    Params: SpecificCronParamsType
-  }>(
-    '/:cron/start',
-    {
-      schema: {
-        params: SpecificCronParams,
-      },
-      ezrAuth: {
-        requireAdmin: true,
-      },
-    },
-    async (request) => {
-      const { cron: name } = request.params;
-      await crons.startCron(name);
-
-      return { content: await crons.getCron(name) };
-    },
-  );
-
-  /**
-   * Stop specific cron
-   *
-   * @deprecated Use `PATCH /:cron` with body instead
-   */
-  fastify.put<{
-    Params: SpecificCronParamsType
-  }>(
-    '/:cron/stop',
-    {
-      schema: {
-        params: SpecificCronParams,
-      },
-      ezrAuth: {
-        requireAdmin: true,
-      },
-    },
-    async (request) => {
-      const { cron: name } = request.params;
-      await crons.stopCron(name);
-
-      return { content: await crons.getCron(name) };
-    },
-  );
-
-  /**
    * Update a cron
    */
   const UpdateCronBody = Type.Partial(

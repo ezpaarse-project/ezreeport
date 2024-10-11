@@ -34,7 +34,8 @@ type TasksPresetList = (Pick<PrismaTaskPreset, 'id' | 'name' | 'recurrence'> & {
 })[];
 
 type TemplateFieldsInFull = 'id' | 'name' | 'tags' | 'createdAt' | 'updatedAt';
-export type FullTasksPreset = Omit<PrismaTaskPreset, 'templateId'> & {
+export type FullTasksPreset = Omit<PrismaTaskPreset, 'templateId' | 'fetchOptions'> & {
+  fetchOptions?: TasksPresetType['fetchOptions'];
   template: Pick<FullTemplate, TemplateFieldsInFull>;
 };
 
@@ -61,6 +62,7 @@ const castTasksPreset = (
   const { template, ...preset } = data;
   return {
     ...preset,
+    fetchOptions: Value.Cast(TasksPreset.properties.fetchOptions, preset.fetchOptions),
     template: {
       ...template,
       tags: Value.Cast(Type.Array(TagTemplate), template.tags),

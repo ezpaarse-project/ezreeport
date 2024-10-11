@@ -63,7 +63,7 @@ export const InputTaskBody = Type.Object({
   namespace: Type.Optional(Type.String()),
   recurrence: Type.Enum(Recurrence),
   nextRun: Type.Optional(
-    Type.String({ format: 'date-time' }),
+    Type.String({ format: 'iso-date-time' }),
   ),
   enabled: Type.Optional(
     Type.Boolean(),
@@ -112,9 +112,9 @@ export const AdditionalDataForPreset = Type.Intersect([
   Type.Partial(
     Type.Omit(CreateTaskBody, ['targets', 'name', 'namespace', 'template']),
   ),
-  // Keeping only fetchOptions from template
+  // Keeping only fetch options from template
   Type.Object({
-    template: Type.Pick(TaskTemplate, ['fetchOptions']),
+    template: Type.Pick(TaskTemplate, ['dateField', 'index', 'filters']),
   }),
 ]);
 
@@ -274,7 +274,7 @@ export const getAllTasksToGenerate = async (
   where: {
     enabled: true,
     nextRun: {
-      lte: date,
+      lte: dfns.endOfDay(date),
     },
   },
   include: {
@@ -494,9 +494,9 @@ export const createTaskFromPreset = async (
       extends: preset.template.id,
       recurrence: preset.recurrence,
       template: {
-        fetchOptions: preset.fetchOptions,
+        ...preset.fetchOptions,
       },
-    },
+    } satisfies DeepPartial<Static<typeof CreateTaskBody>>,
     data,
   ),
   creator,

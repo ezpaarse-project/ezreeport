@@ -107,60 +107,6 @@ const router: FastifyPluginAsync = async (fastify) => {
   );
 
   /**
-   * Pause specific queue
-   *
-   * @deprecated use `PATCH /:queue` with body
-   */
-  fastify.put<{
-    Params: SpecificQueueParamsType
-  }>(
-    '/:queue/pause',
-    {
-      schema: {
-        params: SpecificQueueParams,
-      },
-      ezrAuth: {
-        requireAdmin: true,
-      },
-    },
-    async (request) => {
-      const { queue: name } = request.params;
-      await queues.pauseQueue(name);
-
-      return {
-        content: (await queues.getQueues()).find((q) => q.name === name),
-      };
-    },
-  );
-
-  /**
-   * Resume specific queue
-   *
-   * @deprecated use `PATCH /:queue` with body
-   */
-  fastify.put<{
-    Params: SpecificQueueParamsType
-  }>(
-    '/:queue/resume',
-    {
-      schema: {
-        params: SpecificQueueParams,
-      },
-      ezrAuth: {
-        requireAdmin: true,
-      },
-    },
-    async (request) => {
-      const { queue: name } = request.params;
-      await queues.resumeQueue(name);
-
-      return {
-        content: (await queues.getQueues()).find((q) => q.name === name),
-      };
-    },
-  );
-
-  /**
    * Get jobs of a specific queue
    */
   fastify.get<{

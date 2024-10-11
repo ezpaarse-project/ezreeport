@@ -1,14 +1,16 @@
 import { scheme as vegaScheme, expressionFunction } from 'vega';
 import type { Mark } from 'vega-lite/build/src/mark';
-import { get, set, merge } from 'lodash';
+import { merge } from 'lodash';
 import dfns from 'date-fns';
 import { contrast } from 'chroma-js';
 
-import { UnitSpec } from 'vega-lite/build/src/spec';
-import config from '~/lib/config';
+import type { UnitSpec } from 'vega-lite/build/src/spec';
 
+import type { FetchResultItem, FetchResultValue } from '~/models/reports/fetch/results';
 import { calcVegaFormat } from '~/models/recurrence';
+import config from '~/lib/config';
 import { Recurrence } from '~/lib/prisma';
+import { ensureInt } from '~/lib/utils';
 
 /**
  * Params for createVegaLSpec
@@ -35,11 +37,11 @@ export type VegaParams = {
   colorMap: Map<string, string>,
   // Figure specific
   invertAxis?: boolean,
-  dataKey?: string,
   dataLayer?: CustomLayer;
-  value: SubEncoding<'x' | 'y' | 'theta'> & { field: string };
-  label: SubEncoding<'x' | 'y' | 'color'> & { field: string },
-  color?: Encoding['color'] & { field: string },
+  order?: 'asc' | 'desc',
+  value: SubEncoding<'x' | 'y' | 'theta'>;
+  label: SubEncoding<'x' | 'y' | 'color'>,
+  color?: Encoding['color'],
   dataLabel?: {
     format: 'percent' | 'numeric',
     position?: 'out' | 'in',
@@ -81,7 +83,7 @@ const RADIUS_OUTER_INNER_RATIO = 0.5;
  *
  * @returns Arc radius
  */
-const calcRadius = (params: VegaParams): ArcRadius => {
+function calcRadius(params: VegaParams): ArcRadius {
   const outerRadius = Math.min(params.height, params.width) / 2;
   const innerRadius = outerRadius * RADIUS_OUTER_INNER_RATIO;
   return {
@@ -89,7 +91,7 @@ const calcRadius = (params: VegaParams): ArcRadius => {
     inner: Math.round(innerRadius),
     center: Math.round(innerRadius + ((outerRadius - innerRadius) / 2)),
   };
-};
+}
 
 /**
  * Calculate score of date labels
@@ -99,20 +101,20 @@ const calcRadius = (params: VegaParams): ArcRadius => {
  *
  * @returns The score
  */
-const calcLabelDateScore = (data: unknown[], field: string) => {
+function calcLabelDateScore(data: FetchResultItem[]) {
   const sliceLength = data.length / 2;
   const count = data
     .slice(0, sliceLength)
     .reduce(
-      (prev: number, value) => {
-        const label = new Date(get(value, field));
-        return prev + (dfns.isValid(label) ? 1 : 0);
+      (prev: number, { label }) => {
+        const labelDate = new Date(ensureInt(label || 'undefined'));
+        return prev + (dfns.isValid(labelDate) ? 1 : 0);
       },
       0,
     );
 
   return (count / sliceLength);
-};
+}
 
 /**
  * Prepare color scale
@@ -123,11 +125,11 @@ const calcLabelDateScore = (data: unknown[], field: string) => {
  *
  * @returns The color scale
  */
-const prepareDataWithDefaultDates = (
+function prepareDataWithDefaultDates(
   type: Mark,
-  data: unknown[],
+  data: FetchResultItem[],
   params: VegaParams,
-) => {
+) {
   let eachUnitOfInterval;
   switch (params.recurrence) {
     case Recurrence.DAILY:
@@ -149,18 +151,20 @@ const prepareDataWithDefaultDates = (
       throw new Error('Recurrence not found');
   }
 
-  const defaultData = eachUnitOfInterval(params.period).map((date) => {
-    const object = {} as Record<string, unknown>;
-    set(object, params.label.field, new Date(date).getTime());
-    set(object, params.value.field, 0);
-    return object;
+  const defaultData = eachUnitOfInterval(params.period).map((date): FetchResultItem => {
+    const key = new Date(date).getTime();
+    return {
+      key,
+      value: 0,
+      label: key,
+    };
   });
 
   return [
     ...defaultData,
     ...data,
   ];
-};
+}
 
 /**
  * Prepare color scale
@@ -172,29 +176,23 @@ const prepareDataWithDefaultDates = (
  *
  * @returns The color scale
  */
-const prepareColorScale = (
+function prepareColorScale(
   type: Mark,
-  data: unknown[],
+  data: FetchResultItem[],
   params: VegaParams,
-  colorFieldPath = 'label.field',
-) => {
-  // Parsing labels to get correct colors
-  const colorField = get(params, colorFieldPath) as string;
-
-  if (!colorField) {
-    return {
-      domain: [],
-      range: [],
-    };
-  }
-
-  const colorsEntries = new Map<string, string>();
+  getLabel = (el: FetchResultItem): FetchResultValue => el.label || '',
+) {
+  const colorsEntries = new Map<FetchResultValue, string>();
   const unusedColorsSet = new Set(colorScheme);
 
-  const labels = new Set(data.map((el): string => get(el, colorField)));
+  const labels = new Set(data.map((el) => getLabel(el)));
+  if (labels.size <= 0) {
+    return undefined;
+  }
+
   // eslint-disable-next-line no-restricted-syntax
   for (const label of [...labels]) {
-    const color = params.colorMap.get(label);
+    const color = params.colorMap.get(`${label}`);
     if (color) {
       // Use known color
       colorsEntries.set(label, color);
@@ -211,37 +209,14 @@ const prepareColorScale = (
   for (const label of labels) {
     const color = unusedColors.shift() || '';
     colorsEntries.set(label, color);
-    params.colorMap.set(label, color);
+    params.colorMap.set(`${label}`, color);
   }
 
   return {
     domain: Array.from(colorsEntries.keys()),
     range: Array.from(colorsEntries.values()),
   };
-};
-
-/**
- * Prepare data layer
- *
- * @param type The type of figure
- * @param data The data to display
- * @param params The params of the figure
- *
- * @returns The layer for data
- */
-const prepareDataLayer = (
-  type: Mark,
-  data: unknown[],
-  params: VegaParams,
-): Layer => merge<Layer, CustomLayer | {}>(
-  {
-    mark: {
-      type,
-      point: true,
-    },
-  },
-  params.dataLayer ?? {},
-);
+}
 
 /**
  * Prepare layers for data labels
@@ -254,13 +229,13 @@ const prepareDataLayer = (
  *
  * @returns Layers for data labels
  */
-const prepareDataLabelsLayers = (
+function prepareDataLabelsLayers(
   type: Mark,
-  data: unknown[],
+  data: FetchResultItem[],
   params: VegaParams,
   radius?: ArcRadius,
   valueAxis = 'y',
-): { dataLayerEdits: Layer, layers?: Layer[] } => {
+): { dataLayerEdits: Layer, layers?: Layer[] } {
   const dataLayerEdits = {} as Layer;
 
   if (!params.dataLabel) {
@@ -295,7 +270,7 @@ const prepareDataLabelsLayers = (
       text: {
         condition: {
           test: 'true',
-          field: params.value.field,
+          field: 'value',
         },
       },
       // FIXME: WARN Dropping since it does not contain unknown data field, datum, value, or signal.
@@ -310,7 +285,7 @@ const prepareDataLabelsLayers = (
   };
 
   if (params.color) {
-    merge(layer, { encoding: { detail: { field: params.color.field } } });
+    merge(layer, { encoding: { detail: { field: 'color' } } });
   }
 
   if (params.dataLabel.showLabel) {
@@ -339,7 +314,7 @@ const prepareDataLabelsLayers = (
           // eslint-disable-next-line no-useless-computed-key
           [valueAxis]: {
             aggregate: textAggregate,
-            field: params.value.field,
+            field: 'value',
             bandPosition: 0.5,
           },
         },
@@ -356,8 +331,8 @@ const prepareDataLabelsLayers = (
   switch (params.dataLabel.format) {
     case 'percent': {
       const totalDocs = data.reduce(
-        (prev: number, dataItem) => {
-          const value = +get(dataItem, params.value.field);
+        (prev: number, item) => {
+          const value = ensureInt(item.value);
           if (Number.isNaN(value)) {
             return prev;
           }
@@ -366,7 +341,7 @@ const prepareDataLabelsLayers = (
         0,
       );
       const minValue = params.dataLabel.minValue ?? 0.03;
-      condition = `datum['${textAggregatePrefix}${params.value.field}'] / ${totalDocs} >= ${minValue}`;
+      condition = `datum['${textAggregatePrefix}value'] / ${totalDocs} >= ${minValue}`;
 
       expressionFunction(
         'dataLabelFormat',
@@ -394,10 +369,10 @@ const prepareDataLabelsLayers = (
       let { minValue } = params.dataLabel;
       if (minValue == null) {
         // default to 3% of maximum value
-        minValue = (Math.max(...data.map((value) => get(value, params.value.field)), 0)) * 0.03;
+        minValue = (Math.max(...data.map((item) => ensureInt(item.value)), 0)) * 0.03;
       }
 
-      condition = `(datum['${textAggregatePrefix}${params.value.field}']) >= ${minValue}`;
+      condition = `(datum['${textAggregatePrefix}value']) >= ${minValue}`;
       merge(layer, { encoding: { text: { condition: { test: condition } } } });
       break;
     }
@@ -423,7 +398,7 @@ const prepareDataLabelsLayers = (
       text: {
         condition: {
           test: condition ?? 'true',
-          field: params.color?.field || params.label.field,
+          field: params.color ? 'color' : 'label',
         },
       },
       color: layer.encoding?.color,
@@ -431,7 +406,30 @@ const prepareDataLabelsLayers = (
   });
 
   return { dataLayerEdits, layers: [layer, labelLayer] };
-};
+}
+
+/**
+ * Prepare data layer
+ *
+ * @param type The type of figure
+ * @param data The data to display
+ * @param params The params of the figure
+ *
+ * @returns The layer for data
+ */
+const prepareDataLayer = (
+  type: Mark,
+  data: FetchResultItem[],
+  params: VegaParams,
+): Layer => merge<Layer, CustomLayer | {}>(
+  {
+    mark: {
+      type,
+      point: true,
+    },
+  },
+  params.dataLayer ?? {},
+);
 
 /**
  * Merge data layer and layers
@@ -446,6 +444,8 @@ const mergeLayers = (dataLayer: Layer, ...layers: (Layer | undefined)[]): Layer[
   ...layers.filter((l): l is Layer => !!l),
 ];
 
+type CreateSpecFnc = (type: Mark, data: FetchResultItem[], params: VegaParams) => PartialFigureSpec;
+
 /**
  * Create a vega-lite spec for a arc chart from ezREEPORT's params
  *
@@ -455,11 +455,7 @@ const mergeLayers = (dataLayer: Layer, ...layers: (Layer | undefined)[]): Layer[
  *
  * @returns Partial vega-lite spec
  */
-export const createArcSpec = (
-  type: Mark,
-  data: unknown[],
-  params: VegaParams,
-): PartialFigureSpec => {
+export const createArcSpec: CreateSpecFnc = (type, data, params) => {
   // Calculating arc radius if needed
   const radius = calcRadius(params);
 
@@ -469,18 +465,19 @@ export const createArcSpec = (
   // Prepare encoding
   const encoding: Encoding = {
     theta: merge<Encoding['theta'], VegaParams['value']>(
-      { stack: true, type: 'quantitative' },
+      { field: 'value', stack: true, type: 'quantitative' },
       params.value,
     ),
     order: merge<Encoding['order'], VegaParams['value']>(
-      { sort: 'descending', type: 'quantitative' },
+      { field: 'value', sort: 'descending', type: 'quantitative' },
       params.value,
     ),
     color: merge<Encoding['color'], VegaParams['label']>(
       {
+        field: 'label',
         scale: prepareColorScale(type, data, params),
         // @ts-ignore
-        sort: { field: params.value.field, order: params.value.order ?? 'descending' },
+        sort: { field: 'value', order: params.order === 'asc' ? 'ascending' : 'descending' },
         legend: { orient: 'top-right' },
       },
       params.label,
@@ -506,11 +503,7 @@ export const createArcSpec = (
  *
  * @returns Partial vega-lite spec
  */
-export const createBarSpec = (
-  type: Mark,
-  data: unknown[],
-  params: VegaParams,
-): PartialFigureSpec => {
+export const createBarSpec: CreateSpecFnc = (type, data, params) => {
   const [valueAxis, labelAxis] = (params.invertAxis ? ['x', 'y'] : ['y', 'x']) as ('x' | 'y')[];
 
   const dataLayer = prepareDataLayer(type, data, params);
@@ -518,24 +511,29 @@ export const createBarSpec = (
   // Prepare encoding
   const encoding: Encoding = {
     [valueAxis]: merge<Encoding[typeof valueAxis], VegaParams['value']>(
-      { stack: 'zero', type: 'quantitative' },
+      { field: 'value', stack: 'zero', type: 'quantitative' },
       params.value,
     ),
     [labelAxis]: merge<Encoding[typeof labelAxis], VegaParams['label']>(
-      { type: 'nominal', title: null, sort: `-${valueAxis}` },
+      {
+        field: 'label',
+        type: 'nominal',
+        title: null,
+        sort: `-${valueAxis}`,
+      },
       params.label,
     ),
-    color: merge<Encoding['color'], VegaParams['color']>(
-      { scale: prepareColorScale(type, data, params, 'color.field') },
+    color: params.color ? merge<Encoding['color'], VegaParams['color']>(
+      { field: 'color', scale: prepareColorScale(type, data, params, (el) => el.color || '') },
       params.color,
-    ),
+    ) : undefined,
     order: { aggregate: 'count' },
   };
 
   let editedData;
   // If more than 3/8 label's data is date, consider whole axis as a date
   // and sets format based on task recurrence
-  if (calcLabelDateScore(data, params.label.field) > 0.75) {
+  if (calcLabelDateScore(data) > 0.75) {
     const timeFormat = calcVegaFormat(params.recurrence);
 
     editedData = prepareDataWithDefaultDates(type, data, params);
@@ -565,28 +563,29 @@ export const createBarSpec = (
  *
  * @returns Partial vega-lite spec
  */
-export const createLineSpec = (
-  type: Mark,
-  data: unknown[],
-  params: VegaParams,
-): PartialFigureSpec => {
+export const createLineSpec: CreateSpecFnc = (type, data, params) => {
   const dataLayer = prepareDataLayer(type, data, params);
 
   // Prepare encoding
   const encoding: Encoding = {
     y: merge<Encoding['y'], VegaParams['value']>(
-      { stack: 'zero', type: 'quantitative' },
+      { field: 'value', stack: 'zero', type: 'quantitative' },
       params.value,
     ),
     x: merge<Encoding['x'], VegaParams['label']>(
-      { type: 'nominal', title: null, sort: '-y' },
+      {
+        field: 'label',
+        type: 'nominal',
+        title: null,
+        sort: params.order && (params.order === 'asc' ? 'y' : '-y'),
+      },
       params.label,
     ),
   };
 
   // If more than 3/8 label's data is date, consider whole axis as a date
   // and sets format based on task recurrence
-  if (calcLabelDateScore(data, params.label.field) > 0.75) {
+  if (calcLabelDateScore(data) > 0.75) {
     const timeFormat = calcVegaFormat(params.recurrence);
 
     merge<Encoding['x'], Encoding['x']>(
@@ -614,21 +613,23 @@ export const createLineSpec = (
  *
  * @returns Partial vega-lite spec
  */
-export const createOtherSpec = (
-  type: Mark,
-  data: unknown[],
-  params: VegaParams,
-): PartialFigureSpec => {
+export const createOtherSpec: CreateSpecFnc = (type, data, params) => {
   const dataLayer = prepareDataLayer(type, data, params);
 
-  // Prepare encoding
+  // Prepare encoding (using merges to avoid type issues)
   const encoding: Encoding = {
-    x: params.value,
-    y: params.label,
-    color: merge<Encoding['color'], VegaParams['color']>(
-      { scale: prepareColorScale(type, data, params, 'color.field') },
-      params.color,
+    x: merge<Encoding['x'], VegaParams['value']>(
+      { field: 'value' },
+      params.value,
     ),
+    y: merge<Encoding['y'], VegaParams['label']>(
+      { field: 'label' },
+      params.label,
+    ),
+    color: params.color ? merge<Encoding['color'], VegaParams['color']>(
+      { field: 'color', scale: prepareColorScale(type, data, params) },
+      params.color,
+    ) : undefined,
   };
 
   // Prepare data labels

@@ -6,8 +6,6 @@ export {
   getAllQueues,
   getQueue,
   updateQueue,
-  pauseQueue,
-  resumeQueue,
   getQueueJobs,
   getJob,
   retryJob,

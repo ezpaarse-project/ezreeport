@@ -10,23 +10,9 @@ import { ArgumentError } from '~/types/errors';
  */
 const validators = new Map<bigint, ValidateFunction>();
 
-// Setup ajv (already used by fastify) with formats used by TypeBox
-const ajv = addFormats(new Ajv({}), [
-  'date-time',
-  'time',
-  'date',
-  'email',
-  'hostname',
-  'ipv4',
-  'ipv6',
-  'uri',
-  'uri-reference',
-  'uuid',
-  'uri-template',
-  'json-pointer',
-  'relative-json-pointer',
-  'regex',
-]);
+// Setup ajv (already used by fastify) with custom formats
+export const ajv = new Ajv({});
+addFormats(ajv, { formats: ['email', 'date', 'iso-date-time'] });
 
 // This function is not an arrow function
 // because of a limitation in TS

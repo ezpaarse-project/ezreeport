@@ -39,7 +39,7 @@ export const initTemplates = async () => {
   });
   try {
     const { id } = await createTemplate(
-      { name: defaultTemplateName, body: { layouts: [] }, tags: [] },
+      { name: defaultTemplateName, body: { layouts: [], dateField: '' }, tags: [] },
     );
     config.defaultTemplate.id = id;
     logger.info({
