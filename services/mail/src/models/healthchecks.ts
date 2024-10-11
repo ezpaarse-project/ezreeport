@@ -12,14 +12,14 @@ const pingers = {
 
 type Service = keyof typeof pingers;
 
-export const services = new Set(Object.keys(pingers) as Service[]);
+const services = new Set(Object.keys(pingers) as Service[]);
 
 /**
  * Exec ping & calculate time taken.
  *
  * @param service Service name
  */
-export const ping = async (
+const ping = async (
   service: Service,
   timeout = 10000,
 ) => {
@@ -43,3 +43,5 @@ export const ping = async (
     throw new Error(error instanceof Error ? error.message : `Unexpected error: ${error}`);
   }
 };
+
+export default () => Promise.all(Array.from(services).map((s) => ping(s)));

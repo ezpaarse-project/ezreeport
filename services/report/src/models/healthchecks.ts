@@ -26,12 +26,12 @@ interface Pong {
   status: boolean;
 }
 
-interface SuccessfulPong extends Pong {
+export interface SuccessfulPong extends Pong {
   elapsedTime: number;
   statusCode?: number;
 }
 
-interface ErrorPong extends Pong {
+export interface ErrorPong extends Pong {
   status: false;
   error: string;
 }
@@ -96,6 +96,8 @@ export const ping = async (
     };
   }
 };
+
+export const pingAll = () => Promise.all(Array.from(services).map((service) => ping(service)));
 
 export {
   name as serviceName,
