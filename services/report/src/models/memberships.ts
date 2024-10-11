@@ -12,6 +12,8 @@ import { Type, type Static } from '~/lib/typebox';
 
 type InputMembership = Pick<Prisma.MembershipCreateInput, 'access'>;
 
+const logger = appLogger.child({ scope: 'models', model: 'memberships' });
+
 export const MembershipBody = Type.Object({
   access: Type.Enum(Access),
 });
@@ -59,7 +61,11 @@ export const addUserToNamespace = async (
     },
   });
 
-  appLogger.verbose(`[models] Membership between user "${username}" and namespace "${namespaceId}" created`);
+  logger.debug({
+    username,
+    namespaceId,
+    msg: 'Membership created',
+  });
   return membership;
 };
 
@@ -91,7 +97,11 @@ export const updateUserOfNamespace = async (
     },
   });
 
-  appLogger.verbose(`[models] Membership between user "${username}" and namespace "${namespaceId}" updated`);
+  logger.debug({
+    username,
+    namespaceId,
+    msg: 'Membership updated',
+  });
   return membership;
 };
 
@@ -116,7 +126,11 @@ export const removeUserFromNamespace = async (
     },
   });
 
-  appLogger.verbose(`[models] Membership between user "${username}" and namespace "${namespaceId}" deleted`);
+  logger.debug({
+    username,
+    namespaceId,
+    msg: 'Membership deleted',
+  });
   return membership;
 };
 
@@ -145,7 +159,11 @@ export const upsertBulkMembership = async (
   if (!existingMembership) {
     const data = await tx.membership.create({ data: { ...membership, username, namespaceId } });
 
-    appLogger.verbose(`[models] Membership between user "${username}" and namespace "${namespaceId}" will be created via bulk operation`);
+    logger.debug({
+      username,
+      namespaceId,
+      msg: 'Membership will be created via bulk operation',
+    });
     // If namespace doesn't already exist, create it
     return {
       type: 'created',
@@ -159,7 +177,11 @@ export const upsertBulkMembership = async (
       data: { ...membership, username, namespaceId },
     });
 
-    appLogger.verbose(`[models] Membership between user "${username}" and namespace "${namespaceId}" will be updated via bulk operation`);
+    logger.debug({
+      username,
+      namespaceId,
+      msg: 'Membership will be updated via bulk operation',
+    });
     // If namespace already exist, update it
     return {
       type: 'updated',
@@ -188,7 +210,11 @@ export const deleteBulkMembership = async (
     where: { username_namespaceId: { username, namespaceId } },
   });
 
-  appLogger.verbose(`[models] Membership between user "${username}" and namespace "${namespaceId}" will be deleted via bulk operation`);
+  logger.debug({
+    username,
+    namespaceId,
+    msg: 'Membership will be deleted via bulk operation',
+  });
   return {
     type: 'deleted',
     data,

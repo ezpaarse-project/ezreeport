@@ -8,7 +8,7 @@ import type { Mark } from 'vega-lite/build/src/mark';
 
 import type { FetchResultItem } from '~/models/reports/fetch/results';
 import config from '~/lib/config';
-import { appLogger as logger } from '~/lib/logger';
+import { appLogger } from '~/lib/logger';
 import type { PDFReport } from '~/lib/pdf';
 
 import localeFR from './locales/fr-FR.json';
@@ -31,6 +31,8 @@ const {
   fonts,
 } = config.report;
 
+const logger = appLogger.child({ scope: 'vega' });
+
 type CanvasRegisterableFont = {
   path: string;
   family: string;
@@ -41,7 +43,11 @@ type CanvasRegisterableFont = {
 // Register fonts in Vega
 fonts.forEach(({ path, ...font }: CanvasRegisterableFont) => {
   registerFont(path, font);
-  logger.verbose(`[vega] Register font: [${path}] as [${font.family} ${font.weight || ''} ${font.style || ''}]`);
+  logger.debug({
+    path,
+    font,
+    msg: 'Registered font',
+  });
 });
 
 /**

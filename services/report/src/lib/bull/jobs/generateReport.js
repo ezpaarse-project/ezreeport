@@ -6,7 +6,7 @@ const { join } = require('node:path');
 
 const config = require('../../config').default;
 const { formatISO } = require('../../date-fns');
-const { appLogger: logger } = require('../../logger');
+const { appLogger } = require('../../logger');
 
 const { default: generateReport } = require('../../../models/reports');
 
@@ -24,7 +24,14 @@ const { outDir } = config.report;
  * @returns {Promise<{ res: ReportResultType; mailData: Partial<MailResult>; }>}
  */
 module.exports = async (job) => {
-  logger.verbose(`[bull] [${process.pid}] Received generation of "${job.data.task.name}"`);
+  const logger = appLogger.child({
+    scope: 'bull',
+    job: job.id,
+    pid: process.pid,
+    taskName: job.data.task.name,
+  });
+
+  logger.debug('Received generation');
   const {
     id: jobId,
     data: {

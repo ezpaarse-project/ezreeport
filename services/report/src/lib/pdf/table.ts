@@ -3,7 +3,7 @@ import * as AutoTable from 'jspdf-autotable';
 import { merge } from 'lodash';
 
 import type { FetchResultItem } from '~/models/reports/fetch/results';
-import { appLogger as logger } from '~/lib/logger';
+import { appLogger } from '~/lib/logger';
 
 import type { PDFReport } from '.';
 import { ensureInt } from '../utils';
@@ -25,6 +25,8 @@ export type TableParams = {
   columns?: TableColumn[],
   total?: boolean,
 };
+
+const logger = appLogger.child({ scope: 'jspdf' });
 
 /**
  * Add table to PDF
@@ -87,7 +89,11 @@ export const addTableToPDF = async (
     const maxTableHeight = maxHeight - (2 * 29);
     const maxRows = Math.ceil(maxTableHeight / 29);
     if (tableData.length > maxRows) {
-      logger.warn(`[pdf] Reducing table length from ${tableData.length} to ${maxRows} because table won't fit in slot.`);
+      logger.warn({
+        msg: 'Reducing table length because table won\'t fit in slot',
+        tableDataLength: tableData.length,
+        maxRows,
+      });
       tableData = tableData.slice(0, maxRows - (spec.total ? 1 : 0));
     }
   }

@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { Queue, Worker, type WorkerOptions } from 'bullmq';
 
 import config from '~/lib/config';
-import { appLogger as logger } from '~/lib/logger';
+import { appLogger } from '~/lib/logger';
 import { formatInterval } from '~/lib/utils';
 
 import { NotFoundError } from '~/types/errors';
@@ -13,6 +13,8 @@ const {
   crons: { options: cronOptions, timers: cronTimers },
   workers: { maxExecTime },
 } = config;
+
+const logger = appLogger.child({ scope: 'cron' });
 
 type Crons = keyof typeof cronTimers;
 
@@ -46,13 +48,21 @@ const getQueue = () => {
 export const initCrons = async () => {
   try {
     const start = new Date();
-    logger.verbose('[cron] Init started');
+    logger.debug('Init started');
 
     cronQueue = new Queue<CronData>('ezReeport.daily-cron', { connection: redis });
     cronQueue.on('error', (err) => {
-      logger.error(`[cron-queue] Failed with error: {${err.message}}`);
+      logger.error({
+        err,
+        queue: cronQueue?.name,
+        msg: 'Failed with an unexpected error',
+      });
     });
-    logger.verbose(`[cron] Created queue [${cronQueue.name}]`);
+
+    logger.debug({
+      queue: cronQueue.name,
+      msg: 'Created queue',
+    });
 
     const q = getQueue();
     // Cleaning next jobs before adding cron to avoid issues
@@ -60,7 +70,14 @@ export const initCrons = async () => {
     await Promise.all(
       jobs.map(async (j) => {
         await getQueue().removeRepeatableByKey(j.key);
-        logger.verbose(`[cron] Deleted old cron: [${j.name}] [${j.pattern}]`);
+        logger.debug({
+          queue: cronQueue?.name,
+          cron: {
+            name: j.name,
+            pattern: j.pattern,
+          },
+          msg: 'Deleted old cron',
+        });
       }),
     );
 
@@ -79,7 +96,15 @@ export const initCrons = async () => {
               },
             },
           );
-          logger.verbose(`[cron] Creating cron: [${job.name}] [${timer}] [${cronOptions.tz || 'default'}]`);
+          logger.debug({
+            queue: cronQueue?.name,
+            cron: {
+              name: key,
+              pattern: timer,
+              tz: cronOptions.tz || 'default',
+            },
+            msg: 'Created cron',
+          });
 
           try {
             const worker = new Worker(
@@ -88,22 +113,69 @@ export const initCrons = async () => {
               { limiter, connection: redis },
             );
             worker.on('completed', (j) => {
-              logger.verbose(`[cron-job] [${job.name}] job [${j?.id}] completed`);
+              logger.debug({
+                queue: cronQueue?.name,
+                cron: {
+                  name: j.data.key,
+                  pattern: j.data.timer,
+                  tz: cronOptions.tz || 'default',
+                },
+                job: j?.id,
+                msg: 'Cron completed',
+              });
             });
             worker.on('failed', (j, err) => {
-              logger.error(`[cron-job] [${job.name}] job [${j?.id}] failed with error: {${err.message}}`);
+              logger.debug({
+                queue: cronQueue?.name,
+                cron: {
+                  name: j?.data.key,
+                  pattern: j?.data.timer,
+                  tz: cronOptions.tz || 'default',
+                },
+                job: j?.id,
+                err,
+                msg: 'Cron failed',
+              });
             });
             worker.on('error', (err) => {
-              logger.error(`[cron-job] [${job.name}] worker failed with error: {${err.message}}`);
+              logger.debug({
+                queue: cronQueue?.name,
+                cron: {
+                  name: key,
+                  pattern: timer,
+                  tz: cronOptions.tz || 'default',
+                },
+                err,
+                msg: 'Cron\'s worker failed',
+              });
             });
+
             workers.push(worker);
-            logger.verbose(`[cron] Creating worker [${worker.name}.${key}], [${limiter.max}] process and with [${maxExecTime}]ms before hanging`);
-          } catch (error) {
-            if (error instanceof Error) {
-              logger.error(`[cron] Failed to add process for [${key}] [${timer}] [${cronOptions.tz || 'default'}] with error: {${error.message}}`);
-            } else {
-              logger.error(`[cron] An unexpected error occurred when adding process for  [${key}] [${timer}] [${cronOptions.tz || 'default'}]: {${error}}`);
-            }
+            logger.debug({
+              queue: cronQueue?.name,
+              cron: {
+                name: key,
+                pattern: timer,
+                tz: cronOptions.tz || 'default',
+              },
+              worker: {
+                name: worker.name,
+                max: limiter.max,
+                maxExecTime,
+              },
+              msg: 'Cron\'s worker created',
+            });
+          } catch (err) {
+            logger.error({
+              queue: cronQueue?.name,
+              cron: {
+                name: key,
+                pattern: timer,
+                tz: cronOptions.tz || 'default',
+              },
+              err,
+              msg: 'Failed to add process',
+            });
 
             if (job.opts.repeat && 'key' in job.opts.repeat) {
               await q.removeRepeatableByKey(`${job.opts.repeat?.key}`);
@@ -113,14 +185,13 @@ export const initCrons = async () => {
       ),
     );
 
-    const dur = formatInterval({ start, end: new Date() });
-    logger.info(`[cron] Init completed in [${dur}]s`);
+    logger.info({
+      initDuration: formatInterval({ start, end: new Date() }),
+      initDurationUnit: 's',
+      msg: 'Init completed',
+    });
   } catch (error) {
-    if (error instanceof Error) {
-      logger.error(`[cron] Init failed with error: {${error.message}}`);
-    } else {
-      logger.error(`[cron] An unexpected error occurred at init: {${error}}`);
-    }
+    logger.error(error, 'Init failed');
   }
 };
 

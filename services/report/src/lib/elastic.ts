@@ -1,10 +1,25 @@
 import { setTimeout } from 'node:timers/promises';
 
-import { Client, type estypes as ElasticTypes, type RequestParams } from '@elastic/elasticsearch';
+import {
+  Client,
+  type ClientOptions,
+  type RequestParams,
+  type estypes as ElasticTypes,
+} from '@elastic/elasticsearch';
 import { merge } from 'lodash';
 
 import config from './config';
-import { appLogger as logger } from './logger';
+import { appLogger } from './logger';
+
+const logger = appLogger.child(
+  { scope: 'elastic' },
+  {
+    redact: {
+      paths: ['config.*.password'],
+      censor: (value) => value && ''.padStart(`${value}`.length, '*'),
+    },
+  },
+);
 
 const {
   url,
@@ -30,7 +45,7 @@ const isElasticStatus = (
 const REQUIRED_STATUS = isElasticStatus(requiredStatus) ? requiredStatus : 'green';
 const ES_AUTH = apiKey ? { apiKey } : { username, password };
 
-const client = new Client({
+const clientConfig: ClientOptions = {
   node: {
     url: new URL(url),
   },
@@ -38,7 +53,9 @@ const client = new Client({
   ssl: {
     rejectUnauthorized: false,
   },
-});
+};
+
+const client = new Client(clientConfig);
 
 /**
  * Get elastic client once it's ready
@@ -62,14 +79,27 @@ const getElasticClient = async () => {
       ) {
         break;
       }
-    } catch (error) {
-      logger.error(`[elastic] Can't connect to Elastic : ${error}. ${maxTries - tries} tries left.`);
+    } catch (err) {
+      logger.error({
+        err,
+        config: clientConfig.node,
+        tries: {
+          count: tries,
+          max: maxTries,
+        },
+        msg: 'Can\'t connect to Elastic',
+      });
     }
 
     tries += 1;
     // eslint-disable-next-line no-await-in-loop
     await setTimeout(1000);
   }
+
+  logger.info({
+    config: clientConfig.node,
+    msg: 'Connected to elastic',
+  });
   return client;
 };
 

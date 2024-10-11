@@ -61,7 +61,7 @@ COPY --from=report-pnpm /usr/build/report .
 COPY --from=report-prisma /usr/build/report-dev/.prisma ./.prisma
 
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
-  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/health/ezreeport-report || exit 1
+  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/health/probes/liveness || exit 1
 
 CMD [ "npm", "run", "start" ]
 
@@ -81,7 +81,7 @@ WORKDIR /usr/build/mail
 COPY --from=mail-pnpm /usr/build/mail .
 
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
-  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
+  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/liveness || exit 1
 
 CMD [ "npm", "run", "start" ]
 

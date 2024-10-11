@@ -4,7 +4,6 @@ import { setTimeout } from 'node:timers/promises';
 
 import { redisPing } from '~/lib/bull';
 import { SMTPPing } from '~/lib/mail';
-import { appLogger as logger } from '~/lib/logger';
 
 const pingers = {
   smtp: SMTPPing,
@@ -13,14 +12,14 @@ const pingers = {
 
 type Service = keyof typeof pingers;
 
-export const services = new Set(Object.keys(pingers) as Service[]);
+const services = new Set(Object.keys(pingers) as Service[]);
 
 /**
  * Exec ping & calculate time taken.
  *
  * @param service Service name
  */
-export const ping = async (
+const ping = async (
   service: Service,
   timeout = 10000,
 ) => {
@@ -38,11 +37,11 @@ export const ping = async (
 
     const ms = differenceInMilliseconds(new Date(), start);
     if (!res) {
-      const msg = `Service [${service}] is not available after [${ms}]/[${timeout}]ms`;
-      logger.warn(`[ping] ${msg}`);
-      throw new Error(msg);
+      throw new Error(`Service [${service}] is not available after [${ms}]/[${timeout}]ms`);
     }
   } catch (error) {
     throw new Error(error instanceof Error ? error.message : `Unexpected error: ${error}`);
   }
 };
+
+export default () => Promise.all(Array.from(services).map((s) => ping(s)));

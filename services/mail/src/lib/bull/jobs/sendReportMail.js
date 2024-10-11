@@ -4,7 +4,7 @@ const { Queue, Job } = require('bullmq');
 const { format, parseISO } = require('date-fns');
 
 const config = require('../../config').default;
-const { appLogger: logger } = require('../../logger');
+const { appLogger } = require('../../logger');
 const { generateMail, sendMail } = require('../../mail');
 const { b64ToString, isFulfilled, stringToB64 } = require('../../utils');
 
@@ -37,6 +37,7 @@ const {
 
 /**
  * @param {ErrorReportPrams} param0
+ * @param {import('pino').Logger} logger
  */
 const sendErrorReport = async ({
   data,
@@ -45,7 +46,7 @@ const sendErrorReport = async ({
   filename,
   date,
   dateStr,
-}) => {
+}, logger) => {
   // TODO[feat]: Ignore team if test report ?
   const to = [...new Set([data.contact ?? '', team])];
 
@@ -64,7 +65,11 @@ const sendErrorReport = async ({
     subject: `Erreur de Reporting ezMESURE [${dateStr}] - ${data.task.name}`,
     body: await generateMail('error', { ...bodyData, error, date: format(date, 'dd/MM/yyyy à HH:mm:ss') }),
   });
-  logger.info(`[mail] [${process.pid}] Error report [${filename}] sent to [${to.filter((v) => v).join(', ')}]`);
+  logger.info({
+    filename,
+    to: to.filter((v) => v),
+    msg: 'Error report sent to targets',
+  });
 };
 
 /**
@@ -82,6 +87,7 @@ const sendErrorReport = async ({
 
 /**
  * @param {SuccessReportParams} param0
+ * @param {import('pino').Logger} logger
  */
 const sendSuccessReport = async ({
   task,
@@ -89,7 +95,7 @@ const sendSuccessReport = async ({
   dateStr,
   bodyData,
   filename,
-}) => {
+}, logger) => {
   // Send one email per target to allow un-subscription prefill
   const targets = await Promise.allSettled(
     task.targets.map(async (to) => {
@@ -107,22 +113,30 @@ const sendSuccessReport = async ({
         });
 
         return to;
-      } catch (error) {
-        if (error instanceof Error) {
-          logger.error(`[mail] [${process.pid}] Report [${filename}] wan't sent to [${to}] with error: {${error.message}}`);
-        } else {
-          logger.error(`[cron] [${process.pid}] Unexpected error when sending report [${filename}] wan't sent to [${to}]: {${error}}`);
-        }
-        throw error;
+      } catch (err) {
+        logger.error({
+          filename,
+          to,
+          err,
+          msg: 'Error when sending report',
+        });
+        throw err;
       }
     }),
   );
 
   const successTargets = targets.filter(isFulfilled).map(({ value }) => value);
   if (successTargets.length > 0) {
-    logger.info(`[mail] [${process.pid}] Report [${filename}] sent to [${successTargets.join(', ')}]`);
+    logger.info({
+      filename,
+      targets: successTargets,
+      msg: 'Report sent to targets',
+    });
   } else {
-    logger.error(`[mail] [${process.pid}] Report [${filename}] wasn't sent to anyone (see previous logs)`);
+    logger.warn({
+      filename,
+      msg: 'No target to send report',
+    });
   }
 };
 
@@ -130,9 +144,10 @@ const sendSuccessReport = async ({
  * @param {MailResult} data
  * @param {Date} date
  * @param {string} dateStr
+ * @param {import('pino').Logger} logger
  * @returns {Promise<void>}
  */
-const sendReport = (data, date, dateStr) => {
+const sendReport = (data, date, dateStr, logger) => {
   const filename = data.url.replace(/^.*\//, '');
 
   /** @type {Omit<MailOptions, 'to' | 'body' | 'subject'>} */
@@ -157,7 +172,7 @@ const sendReport = (data, date, dateStr) => {
       options,
       bodyData,
       task: data.task,
-    });
+    }, logger);
   }
   return sendErrorReport({
     data,
@@ -166,7 +181,7 @@ const sendReport = (data, date, dateStr) => {
     dateStr,
     filename,
     options,
-  });
+  }, logger);
 };
 
 /**
@@ -181,8 +196,9 @@ const sendReport = (data, date, dateStr) => {
  * @param {ErrorParams} data
  * @param {Date} date
  * @param {string} dateStr
+ * @param {import('pino').Logger} logger
  */
-const sendError = async (data, date, dateStr) => {
+const sendError = async (data, date, dateStr, logger) => {
   await sendMail({
     attachments: [{
       filename: data.filename,
@@ -196,7 +212,10 @@ const sendError = async (data, date, dateStr) => {
       date: format(date, 'dd/MM/yyyy à HH:mm:ss'),
     }),
   });
-  logger.info(`[mail] [${process.pid}] Error sent to [${team}]`);
+  logger.info({
+    team,
+    msg: 'Error report sent to team',
+  });
 };
 
 /**
@@ -204,6 +223,8 @@ const sendError = async (data, date, dateStr) => {
  * @returns {Promise<void>}
  */
 module.exports = async (j) => {
+  const logger = appLogger.child({ scope: 'bull', job: j.id });
+
   // Re-getting job from it's id and queue to get child jobs
   // See https://github.com/taskforcesh/bullmq/issues/753
   /** @type {Queue<MailResult>} */
@@ -221,21 +242,20 @@ module.exports = async (j) => {
 
   try {
     if (data && !job.data.error) {
-      await sendReport(data, date, dateStr);
+      await sendReport(data, date, dateStr, logger);
       return;
     }
 
     if (job.data.error) {
-      await sendError(job.data, date, dateStr);
+      await sendError(job.data, date, dateStr, logger);
       return;
     }
 
     throw new Error('No suitable data found');
-  } catch (error) {
-    if (error instanceof Error) {
-      logger.error(`[mail] [${process.pid}] Error when sending incoming report: {${error.message}}`);
-    } else {
-      logger.error(`[cron] [${process.pid}] Unexpected error when sending incoming report: {${error}}`);
-    }
+  } catch (err) {
+    logger.error({
+      err,
+      msg: 'Error when sending report',
+    });
   }
 };
