@@ -1,8 +1,12 @@
 {
-  "logLevel": "LOG_LEVEL",
   "port": { "__name": "HTTP_PORT", "__format": "number" },
   "allowedOrigins": "API_ALLOWED_ORIGINS",
   "adminKey": "REPORT_ADMIN_KEY",
+  "log": {
+    "level": "LOG_LEVEL",
+    "dir": "LOG_DIR",
+    "ignore": "LOG_IGNORE"
+  },
   "defaultTemplate": {
     "name": "REPORT_DEFAULT_TEMPLATE_NAME"
   },

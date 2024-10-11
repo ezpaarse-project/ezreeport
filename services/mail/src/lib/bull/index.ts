@@ -3,9 +3,11 @@ import { join } from 'node:path';
 import { Queue, Worker } from 'bullmq';
 
 import config from '~/lib/config';
-import { appLogger as logger } from '~/lib/logger';
+import { appLogger } from '~/lib/logger';
 
 import type { Recurrence } from '~/models/recurrence';
+
+const logger = appLogger.child({ scope: 'bull' });
 
 const {
   redis,
@@ -48,10 +50,13 @@ export type MailResult = {
 
 const workers: Worker[] = [];
 
-logger.verbose('[bull] Init started');
-const start = new Date();
+logger.debug('Init started');
+const start = Date.now();
 const mailQueue = new Queue<MailResult>('ezReeport.mail-send', { connection: redis });
-logger.verbose(`[bull] Created queue [${mailQueue.name}]`);
+logger.debug({
+  queue: mailQueue.name,
+  msg: 'Created queue',
+});
 
 const worker = new Worker(
   mailQueue.name,
@@ -65,18 +70,44 @@ const worker = new Worker(
   },
 );
 worker.on('completed', (job) => {
-  logger.verbose(`[bull] [mail] job [${job?.id}] completed`);
+  logger.debug({
+    queue: mailQueue.name,
+    job: job?.id,
+    msg: 'Job completed',
+  });
 });
 worker.on('failed', (job, err) => {
-  logger.error(`[bull] [mail] job [${job?.id}] failed with error: {${err.message}}`);
+  logger.debug({
+    queue: mailQueue.name,
+    job: job?.id,
+    err,
+    msg: 'Job failed',
+  });
 });
 worker.on('error', (err) => {
-  logger.error(`[bull] [mail] worker failed with error: {${err.message}}`);
+  logger.debug({
+    queue: mailQueue.name,
+    err,
+    msg: 'WOrker failed',
+  });
 });
 
 workers.push(worker);
-logger.verbose(`[bull] Created worker [${worker.name}] with [${concurrence}] process and with [${maxExecTime}]ms before hanging`);
-logger.info(`[bull] Init completed in [${new Date().getTime() - start.getTime()}]ms`);
+logger.debug({
+  queue: mailQueue.name,
+  worker: {
+    name: worker.name,
+    concurrency: concurrence,
+    maxExecTime,
+  },
+  msg: 'Created worker',
+});
+
+logger.info({
+  initDuration: Date.now() - start,
+  initDurationUnit: 'ms',
+  msg: 'Init completed',
+});
 
 export const redisPing = async () => {
   const res = await (await mailQueue.client).ping();

@@ -1,10 +1,13 @@
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { differenceInMilliseconds } from '~/lib/date-fns';
-import { accessLogger } from '~/lib/logger';
+import { accessLogger, type Level } from '~/lib/logger';
 
-const requestDates = new Map<string, Date>();
+const requestDates = new Map<string, number>();
+
+function isLogLevel(level: string): level is Level {
+  return Object.keys(accessLogger.levels.values).includes(level);
+}
 
 /**
  * Log request with status code and time
@@ -12,20 +15,26 @@ const requestDates = new Map<string, Date>();
  * @param request The fastify request
  * @param reply The fastify response, if exist
  */
-const logRequest = (request: FastifyRequest, reply?: FastifyReply) => {
-  const end = new Date();
-  const start = requestDates.get(request.id) || new Date();
+function logRequest(request: FastifyRequest, reply?: FastifyReply) {
+  const end = process.uptime();
+  const start = requestDates.get(request.id) || end;
   requestDates.delete(request.id);
 
-  const duration = differenceInMilliseconds(end, start);
+  const data = {
+    method: request.method,
+    url: request.url,
+    statusCode: reply?.statusCode ?? 0,
+    duration: (end * 1000) - (start * 1000),
+    durationUnit: 'ms',
+  };
 
-  let level = 'error';
   if (reply && reply.statusCode >= 200 && reply.statusCode < 300) {
-    level = request.routeOptions?.logLevel || 'info';
+    const level = isLogLevel(request.routeOptions?.logLevel) ? request.routeOptions.logLevel as Level : 'info';
+    accessLogger[level](data);
+    return;
   }
-
-  accessLogger.log(level, `${request.method} ${request.url} - ${reply?.statusCode ?? 0} (${duration})`);
-};
+  accessLogger.error(data);
+}
 
 /**
  * Fastify plugin to format response and log requests
@@ -35,7 +44,7 @@ const logRequest = (request: FastifyRequest, reply?: FastifyReply) => {
 const loggerBasePlugin: FastifyPluginAsync = async (fastify) => {
   // Register request date
   fastify.addHook('onRequest', async (request) => {
-    requestDates.set(request.id, new Date());
+    requestDates.set(request.id, process.uptime());
   });
 
   // Log request

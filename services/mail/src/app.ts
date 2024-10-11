@@ -20,7 +20,11 @@ const server = http.createServer((req, res) => {
           res.writeHead(204).end();
         })
         .catch((err) => {
-          appLogger.error(`[health] ${err}`);
+          appLogger.error({
+            scope: 'ping',
+            err,
+            msg: 'Error when getting services',
+          });
           res.writeHead(503).end(JSON.stringify(err));
         });
       break;
@@ -33,5 +37,11 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(8080, 'localhost', () => {
-  appLogger.info('Server running on http://localhost:8080');
+  appLogger.info({
+    scope: 'http',
+    address: 'http://localhost:8080',
+    startupDuration: process.uptime(),
+    startupDurationUnit: 's',
+    msg: 'Service listening',
+  });
 });

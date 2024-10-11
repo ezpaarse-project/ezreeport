@@ -1,7 +1,7 @@
 import { setTimeout } from 'node:timers/promises';
 
 import { differenceInMilliseconds } from '~/lib/date-fns';
-import { appLogger as logger } from '~/lib/logger';
+import { appLogger } from '~/lib/logger';
 
 import { elasticPing } from '~/lib/elastic';
 import { redisPing } from '~/lib/bull';
@@ -9,6 +9,8 @@ import { dbPing } from '~/lib/prisma';
 
 import { name as serviceName } from '../../package.json';
 import { NotFoundError } from '~/types/errors';
+
+const logger = appLogger.child({ scope: 'ping' });
 
 const pingers: Record<string, () => Promise<number | false>> = {
   [serviceName]: () => Promise.resolve(200),
@@ -73,7 +75,12 @@ export const ping = async (
 
     const ms = differenceInMilliseconds(new Date(), start);
     if (!res) {
-      logger.warn(`[ping] Service [${service}] is not available after [${ms}]/[${timeout}]ms`);
+      logger.warn({
+        service,
+        timeout,
+        respondedAfter: ms,
+        respondedAfterUnit: 'ms',
+      });
     }
     return {
       name: service,

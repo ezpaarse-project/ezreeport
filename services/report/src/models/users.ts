@@ -14,6 +14,8 @@ import { Type, type Static } from '~/lib/typebox';
 import { upsertBulkMembership, deleteBulkMembership, MembershipBody } from '~/models/memberships';
 import { buildPagination } from './pagination';
 
+const logger = appLogger.child({ scope: 'models', model: 'users' });
+
 type InputUser = Pick<Prisma.UserCreateInput, 'isAdmin'>;
 
 type FullUserMembershipNamespace = (
@@ -183,7 +185,11 @@ export const createUser = async (
     },
   });
 
-  appLogger.verbose(`[models] User "${username}" created`);
+  logger.debug({
+    username,
+    msg: 'User created',
+  });
+
   return user;
 };
 
@@ -212,7 +218,10 @@ export const deleteUserByUsername = async (
     },
   });
 
-  appLogger.verbose(`[models] User "${username}" updated`);
+  logger.debug({
+    username,
+    msg: 'User deleted',
+  });
   return user;
 };
 
@@ -238,7 +247,10 @@ export const editUserByUsername = async (
     },
   });
 
-  appLogger.verbose(`[models] User "${username}" deleted`);
+  logger.debug({
+    username,
+    msg: 'User updated',
+  });
   return user;
 };
 
@@ -291,15 +303,22 @@ const upsertBulkUser = async (
   const existingUser = await tx.user.findUnique({ where: { username } });
 
   if (!existingUser) {
-    // TODO: logger
     const token = await generateToken();
+
+    logger.debug({
+      username,
+      msg: 'User will be created via bulk operation',
+    });
     // If user doesn't already exist, create it
     return {
       type: 'created',
       data: await tx.user.create({ data: { ...inputUser, username, token } }),
     };
   } if (hasUserChanged(existingUser, inputUser)) {
-    // TODO: logger
+    logger.debug({
+      username,
+      msg: 'User will be updated via bulk operation',
+    });
     // If user already exist and changed, update it
     return {
       type: 'updated',
@@ -324,11 +343,17 @@ const upsertBulkUser = async (
 const deleteBulkUser = async (
   tx: Prisma.TransactionClient,
   { username }: User,
-): Promise<BulkResult<User>> => ({
-  // TODO: logger
-  type: 'deleted',
-  data: await tx.user.delete({ where: { username } }),
-});
+): Promise<BulkResult<User>> => {
+  logger.debug({
+    username,
+    msg: 'User will be deleted via bulk operation',
+  });
+
+  return {
+    type: 'deleted',
+    data: await tx.user.delete({ where: { username } }),
+  };
+};
 
 /**
  * Edit users

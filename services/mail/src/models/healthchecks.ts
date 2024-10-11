@@ -4,7 +4,6 @@ import { setTimeout } from 'node:timers/promises';
 
 import { redisPing } from '~/lib/bull';
 import { SMTPPing } from '~/lib/mail';
-import { appLogger as logger } from '~/lib/logger';
 
 const pingers = {
   smtp: SMTPPing,
@@ -38,9 +37,7 @@ const ping = async (
 
     const ms = differenceInMilliseconds(new Date(), start);
     if (!res) {
-      const msg = `Service [${service}] is not available after [${ms}]/[${timeout}]ms`;
-      logger.warn(`[ping] ${msg}`);
-      throw new Error(msg);
+      throw new Error(`Service [${service}] is not available after [${ms}]/[${timeout}]ms`);
     }
   } catch (error) {
     throw new Error(error instanceof Error ? error.message : `Unexpected error: ${error}`);

@@ -8,8 +8,7 @@ const { glob } = require('glob');
 
 const config = require('../../config').default;
 const dfns = require('../../date-fns');
-const { appLogger: logger } = require('../../logger');
-const { formatInterval, isFulfilled } = require('../../utils');
+const { isFulfilled } = require('../../utils');
 const { Value } = require('../../typebox');
 
 const { ReportResult } = require('../../../models/reports');
@@ -27,10 +26,11 @@ const { outDir } = config.report;
 
 /**
  * @param {Job} job
+ * @param {import('pino').Logger} logger
  */
-module.exports = async (job) => {
-  const start = new Date();
-  logger.verbose(`[cron] [${process.pid}] [${job.name}] Started`);
+module.exports = async (job, logger) => {
+  const start = Date.now();
+  logger.debug('Started');
 
   try {
     const today = dfns.endOfDay(start);
@@ -45,7 +45,10 @@ module.exports = async (job) => {
          */
         async (filePath) => {
           try {
-            logger.verbose(`[cron] [${process.pid}] [${job.name}] Checking [${filePath}]`);
+            logger.debug({
+              file: filePath,
+              msg: 'Checking file',
+            });
             const fileContent = Value.Cast(
               ReportResult,
               JSON.parse(await readFile(filePath, 'utf-8')),
@@ -63,13 +66,13 @@ module.exports = async (job) => {
             return Object
               .values(fileContent.detail.files)
               .map((file) => ({ file: join(outDir, file), dur }));
-          } catch (error) {
-            if (error instanceof Error) {
-              logger.warn(`[cron] [${process.pid}] [${job.name}] Error on file [${filePath}]: {${error.message}}`);
-            } else {
-              logger.warn(`[cron] [${process.pid}] [${job.name}] Unexpected error occurred on file [${filePath}]: {${error}}`);
-            }
-            throw error;
+          } catch (err) {
+            logger.warn({
+              file: filePath,
+              msg: 'Error on file',
+              err,
+            });
+            throw err;
           }
         },
       ),
@@ -86,28 +89,41 @@ module.exports = async (job) => {
           await unlink(file);
           await job.updateProgress(i / filesToDelete.length);
 
-          logger.info(`[cron] [${process.pid}] [${job.name}] Deleted [${file}] (${dfns.formatDuration(dur, { format: ['years', 'months', 'days'], locale: enUS })} old)`);
+          logger.info({
+            file,
+            age: dur,
+            ageAsString: dfns.formatDuration(dur, { format: ['years', 'months', 'days'], locale: enUS }),
+            msg: 'Deleted file',
+          });
           return file;
-        } catch (error) {
-          if (error instanceof Error) {
-            logger.warn(`[cron] [${process.pid}] [${job.name}] Error on file deletion [${file}]: {${error.message}}`);
-          } else {
-            logger.warn(`[cron] [${process.pid}] [${job.name}] Unexpected error occurred on file deletion [${file}]: {${error}}`);
-          }
-          throw error;
+        } catch (err) {
+          logger.warn({
+            file,
+            err,
+            msg: 'Error on file deletion',
+          });
+          throw err;
         }
       }),
     )).filter(isFulfilled);
 
-    const dur = formatInterval({ start, end: new Date() });
-    logger.info(`[cron] [${process.pid}] [${job.name}] In [${dur}]s : Checked [${detailFiles.length}] reports | Deleted [${deletedFiles.length}]/[${filesToDelete.length}] files`);
-  } catch (error) {
-    const dur = formatInterval({ start, end: new Date() });
-    if (error instanceof Error) {
-      logger.error(`[cron] [${process.pid}] [${job.name}] Job failed in [${dur}]s with error: {${error.message}}`);
-      await sendError(error, job.name, job.data.timer);
-    } else {
-      logger.warn(`[cron] [${process.pid}] [${job.name}] Unexpected error occurred after [${dur}]s: {${error}}`);
-    }
+    const end = Date.now();
+    logger.info({
+      cronDuration: end - start,
+      cronDurationUnit: 'ms',
+      checkedFiles: detailFiles.length,
+      deletedFiles: deletedFiles.length,
+      toDeleteFiles: filesToDelete.length,
+      msg: 'Purged old reports',
+    });
+  } catch (err) {
+    const end = Date.now();
+    logger.error({
+      cronDuration: end - start,
+      cronDurationUnit: 'ms',
+      err,
+      msg: 'Failed to purge old reports',
+    });
+    await sendError(err, job.name, logger);
   }
 };
