@@ -786,15 +786,6 @@
               }
             }
           },
-          "400": {
-            "$ref": "#/components/responses/400"
-          },
-          "401": {
-            "$ref": "#/components/responses/401"
-          },
-          "403": {
-            "$ref": "#/components/responses/403"
-          },
           "500": {
             "$ref": "#/components/responses/500"
           }
@@ -1036,6 +1027,95 @@
           },
           "403": {
             "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          }
+        },
+        "security": [
+          {
+            "User Token": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/namespaces"
+          }
+        ],
+        "tags": [
+          "tasks"
+        ],
+        "description": "Unsubscribe a target from a task of the authed user's institution.\n\nNeeds `namespaces[namespaceId].\"tasks-delete-_targets-email-tasks-task` (see `/me/permissions` for more info)."
+      }
+    },
+    "/tasks/_targets/{email}/tasks/{taskId}/_unsubscribe": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "email",
+          "in": "path",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "taskId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "summary": "Get unsubscribe link for a target",
+        "operationId": "get-tasks-_targets-email-taskId-_unsubscribe",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "x-examples": {
+                    "Example 1": {
+                      "status": {
+                        "code": 200,
+                        "message": "OK"
+                      },
+                      "content": {
+                        "id": "ZGMxNDgxYjEtZmY5MC00Mzc0LWE1YTktZTNlZjRkN2NjMGZi%3AZXp0ZWFtQGNvdXBlcmluLm9yZw%3D%3D"
+                      }
+                    }
+                  },
+                  "properties": {
+                    "status": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {}
+              }
+            }
           },
           "404": {
             "$ref": "#/components/responses/404"
