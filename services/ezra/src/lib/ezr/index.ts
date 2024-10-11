@@ -1,6 +1,6 @@
 import type { Command } from '@oclif/core';
 import axios, { isAxiosError, type AxiosInstance } from 'axios';
-import inquirer from 'inquirer';
+import { input } from '@inquirer/prompts';
 import chalk from 'chalk';
 import ora from 'ora';
 
@@ -47,26 +47,11 @@ export class EZR {
     apiKey?: string,
     admin?: string,
   }) {
-    const answers = await inquirer.prompt(
-      [
-        {
-          type: 'input',
-          name: 'url',
-          message: 'API URL',
-        },
-        {
-          type: 'input',
-          name: 'apiKey',
-          message: 'API key',
-        },
-        {
-          type: 'input',
-          name: 'admin',
-          message: 'Admin username',
-        },
-      ],
-      { ...opts },
-    );
+    const answers = {
+      url: opts?.url || await input({ message: 'API URL' }),
+      apiKey: opts?.apiKey || await input({ message: 'API key' }),
+      admin: opts?.admin || await input({ message: 'Admin username' }),
+    };
 
     this.fetch.defaults.baseURL = answers.url;
     this.fetch.defaults.headers.common['X-API-Key'] = answers.apiKey;

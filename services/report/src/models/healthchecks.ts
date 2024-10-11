@@ -7,13 +7,13 @@ import { elasticPing } from '~/lib/elastic';
 import { redisPing } from '~/lib/bull';
 import { dbPing } from '~/lib/prisma';
 
-import { name as serviceName } from '../../package.json';
 import { NotFoundError } from '~/types/errors';
 
 const logger = appLogger.child({ scope: 'ping' });
 
+export const serviceName = 'api';
+
 const pingers: Record<string, () => Promise<number | false>> = {
-  [serviceName]: () => Promise.resolve(200),
   elastic: elasticPing,
   redis: redisPing,
   database: dbPing,
@@ -100,6 +100,5 @@ export const ping = async (
 export const pingAll = () => Promise.all(Array.from(services).map((service) => ping(service)));
 
 export {
-  name as serviceName,
   version as serviceVersion,
 } from '../../package.json';

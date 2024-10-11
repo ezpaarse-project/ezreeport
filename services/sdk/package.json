@@ -28,15 +28,15 @@
   ],
   "scripts": {
     "prebuild": "rimraf --glob 'dist/*'",
-    "build": "run-s build:web build:node build:types build:docs",
+    "build": "pnpm run /^build:.*/",
     "build:web": "tsc --project tsconfig.json && BUILD_TARGET=browser vite build",
     "build:node": "tsc --project tsconfig.node.json && BUILD_TARGET=node vite build",
     "build:types": "tsc --project tsconfig.types.json",
     "build:docs": "typedoc src/index.ts",
     "docs": "vite docs --open",
     "dev": "run-p \"build:docs -- --watch\" docs",
-    "lint": "eslint --fix .",
-    "test": "npm run build && npm -w ezreeport-tests run test:sdk"
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {
     "*.ts": [
@@ -44,18 +44,18 @@
     ]
   },
   "dependencies": {
-    "axios": "^1.6.4",
-    "date-fns": "^3.0.6"
+    "axios": "^1.7.7",
+    "date-fns": "^4.1.0"
   },
   "devDependencies": {
-    "@types/node": "^20.10.6",
+    "@types/node": "^22.7.3",
     "events": "^3.3.0",
-    "rimraf": "^5.0.5",
-    "typedoc": "^0.25.6",
-    "typescript": "^5.3.3",
-    "vite": "^5.0.10"
+    "rimraf": "^6.0.1",
+    "typedoc": "^0.26.7",
+    "typescript": "^5.6.2",
+    "vite": "^5.4.8"
   },
   "engines": {
-    "node": "^16 || ^18"
+    "node": "^20"
   }
 }
