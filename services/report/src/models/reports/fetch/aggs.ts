@@ -9,6 +9,7 @@ const FigureAgg = Type.Union([
   Type.Object({
     type: Type.String({ minLength: 1 }),
     field: Type.String({ minLength: 1 }),
+    size: Type.Optional(Type.Number()),
     missing: Type.Optional(Type.String({ minLength: 0 })),
   }),
   // OR
@@ -19,9 +20,7 @@ const FigureAgg = Type.Union([
 
 export type FigureAggType = Static<typeof FigureAgg>;
 
-type ExtractedFigureAggType = FigureAggType & {
-  size?: number,
-};
+type ExtractedFigureAggType = FigureAggType;
 
 type EsAggregation = { [name: string]: ElasticTypes.AggregationsAggregationContainer };
 

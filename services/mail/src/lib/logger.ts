@@ -1,12 +1,14 @@
 import pino from 'pino';
 
 import { resolve } from 'node:path';
+import { mkdirSync } from 'node:fs';
 
 import config from '~/lib/config';
 
 type LoggerOptions = Omit<pino.LoggerOptions, 'level' | 'transports'> & { name: string };
 
-const { level: l, dir, ignore } = config.log;
+const { level: l, dir, ignore: i } = config.log;
+const ignore = Array.isArray(i) ? i : [i];
 const level = l as pino.Level;
 
 function getStdOutTarget(): pino.TransportTargetOptions {
@@ -31,6 +33,7 @@ function createLogger(options: LoggerOptions) {
 
   // If needed add logs into a file
   if (dir) {
+    mkdirSync(resolve(dir), { recursive: true });
     targets.push({
       target: 'pino/file',
       level,

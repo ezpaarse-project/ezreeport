@@ -110,7 +110,7 @@ export const AdditionalDataForPreset = Type.Intersect([
   Type.Pick(CreateTaskBody, ['targets', 'name', 'namespace']),
   // Marking everything else as optional
   Type.Partial(
-    Type.Omit(CreateTaskBody, ['targets', 'name', 'namespace', 'template']),
+    Type.Omit(CreateTaskBody, ['targets', 'name', 'namespace', 'template', 'extends', 'recurrence']),
   ),
   // Keeping only fetch options from template
   Type.Object({
