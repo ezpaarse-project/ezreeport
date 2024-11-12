@@ -186,6 +186,7 @@ const fetchPreset = async (id: string) => {
 
     innerPreset.value = {
       name: content.name,
+      hidden: content.hidden,
       recurrence: content.recurrence,
       template: content.template.id,
       fetchOptions: content.fetchOptions,

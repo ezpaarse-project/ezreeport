@@ -308,6 +308,7 @@ export default defineComponent({
         const { content } = await this.$ezReeport.sdk.templates.upsertTemplate(
           {
             id: this.data.id,
+            hidden: this.data.hidden,
             body,
             name: this.data.name,
             tags: this.data.tags ?? [],
