@@ -18,6 +18,9 @@ export const TasksPreset = Type.Object({
       dateField: Type.Optional(
         Type.String({ minLength: 1 }),
       ),
+      index: Type.Optional(
+        Type.String({ minLength: 1 }),
+      ),
     }),
   ),
 
