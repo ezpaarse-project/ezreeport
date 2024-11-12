@@ -9,6 +9,8 @@ import { TagTemplate, type FullTemplate } from '~/models/templates';
 export const TasksPreset = Type.Object({
   name: Type.String({ minLength: 1 }),
 
+  hidden: Type.Optional(Type.Boolean()),
+
   template: Type.String({ minLength: 1 }),
 
   fetchOptions: Type.Optional(
@@ -25,6 +27,7 @@ export const TasksPreset = Type.Object({
 export type TasksPresetType = Static<typeof TasksPreset>;
 
 type TasksPresetList = (Pick<PrismaTaskPreset, 'id' | 'name' | 'recurrence'> & {
+  templateHidden: boolean;
   tags: FullTemplate['tags'];
 })[];
 
@@ -66,15 +69,22 @@ const castTasksPreset = (
 /**
  * Get all tasks' presets in DB
  *
- * @param opts Requests options
+ * @param showHidden Should show hidden presets
  *
  * @returns Tasks' presets list
  */
-export const getAllTasksPresets = async (): Promise<TasksPresetList> => {
+export const getAllTasksPresets = async (showHidden = false): Promise<TasksPresetList> => {
   const presets = await prisma.taskPreset.findMany({
+    where: {
+      hidden: showHidden && undefined,
+      template: {
+        hidden: showHidden && undefined,
+      },
+    },
     select: {
       id: true,
       name: true,
+      hidden: true,
       recurrence: true,
       createdAt: true,
       updatedAt: true,
@@ -82,13 +92,18 @@ export const getAllTasksPresets = async (): Promise<TasksPresetList> => {
       template: {
         select: {
           tags: true,
+          hidden: true,
         },
       },
+    },
+    orderBy: {
+      name: 'asc',
     },
   });
 
   return presets.map(({ template, ...preset }) => ({
     ...preset,
+    templateHidden: template.hidden,
     tags: Value.Cast(Type.Array(TagTemplate), template.tags),
   }));
 };

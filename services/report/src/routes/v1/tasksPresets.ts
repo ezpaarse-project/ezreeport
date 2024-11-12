@@ -6,6 +6,7 @@ import authPlugin from '~/plugins/auth';
 import { Type, type Static } from '~/lib/typebox';
 
 import * as tasksPresets from '~/models/tasksPresets';
+import { NotFoundError } from '~/types/errors';
 
 const router: FastifyPluginAsync = async (fastify) => {
   await fastify.register(authPlugin, { prefix: 'tasks-preset' });
@@ -20,8 +21,8 @@ const router: FastifyPluginAsync = async (fastify) => {
         requireUser: true,
       },
     },
-    async () => ({
-      content: await tasksPresets.getAllTasksPresets(),
+    async (request) => ({
+      content: await tasksPresets.getAllTasksPresets(request.user?.isAdmin ?? false),
     }),
   );
 
@@ -73,7 +74,11 @@ const router: FastifyPluginAsync = async (fastify) => {
 
       const item = await tasksPresets.getTasksPresetById(id);
       if (!item) {
-        throw new Error(`No preset named "${id}" was found`);
+        throw new NotFoundError(`No preset named "${id}" was found`);
+      }
+
+      if (!request.user?.isAdmin && item.hidden) {
+        throw new NotFoundError(`No preset named "${id}" doesn't exist`);
       }
 
       return { content: item };
