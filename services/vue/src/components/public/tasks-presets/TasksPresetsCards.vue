@@ -313,16 +313,20 @@ const toggleHidePreset = async ({ id }: tasksPresets.TasksPreset) => {
   }
 
   loading.value = true;
-  const { content: preset } = await sdk.tasksPresets.getTasksPreset(id);
-  await sdk.tasksPresets.upsertTasksPreset({
-    id,
-    hidden: !preset.hidden,
-    name: preset.name,
-    recurrence: preset.recurrence,
-    template: preset.template.id,
-    fetchOptions: preset.fetchOptions,
-  });
-  fetch();
+  try {
+    const { content: preset } = await sdk.tasksPresets.getTasksPreset(id);
+    await sdk.tasksPresets.upsertTasksPreset({
+      id,
+      hidden: !preset.hidden,
+      name: preset.name,
+      recurrence: preset.recurrence,
+      template: preset.template.id,
+      fetchOptions: preset.fetchOptions,
+    });
+    fetch(); // fetch will set loading to false
+  } catch (error) {
+    loading.value = false;
+  }
 };
 
 watch(

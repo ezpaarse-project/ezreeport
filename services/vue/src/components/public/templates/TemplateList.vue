@@ -430,16 +430,20 @@ export default defineComponent({
         return;
       }
 
-      this.loading = true;
-      const { content: template } = await this.$ezReeport.sdk.templates.getTemplate(id);
-      await this.$ezReeport.sdk.templates.upsertTemplate({
-        id,
-        hidden: !template.hidden,
-        name: template.name,
-        body: template.body,
-        tags: template.tags,
-      });
-      this.fetch();
+      try {
+        this.loading = true;
+        const { content: template } = await this.$ezReeport.sdk.templates.getTemplate(id);
+        await this.$ezReeport.sdk.templates.upsertTemplate({
+          id,
+          hidden: !template.hidden,
+          name: template.name,
+          body: template.body,
+          tags: template.tags,
+        });
+        this.fetch(); // fetch will set loading to false
+      } catch (error) {
+        this.loading = false;
+      }
     },
     /**
      * Filter template using active filters
