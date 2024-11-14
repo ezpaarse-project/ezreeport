@@ -13,7 +13,7 @@ import {
   type Template as PrismaTemplate,
 } from '~/lib/prisma';
 
-import { calcNextDate } from '~/models/recurrence';
+import { calcNextDate, calcPeriod } from '~/models/recurrence';
 import { buildPagination } from '~/models/pagination';
 
 import { ArgumentError } from '~/types/errors';
@@ -483,19 +483,29 @@ export const createTaskFromPreset = async (
   preset: FullTasksPreset,
   data: AdditionalDataForPresetType,
   creator: string,
-) => createTask(
-  merge(
-    {
-      extends: preset.template.id,
-      recurrence: preset.recurrence,
-      template: {
-        fetchOptions: preset.fetchOptions,
+) => {
+  // Set next run to start of recurrence (start of week for weekly, etc.)
+  let nextRun = dfns.parseISO(data.nextRun || '');
+  if (!dfns.isValid(nextRun)) {
+    const nextDate = calcNextDate(new Date(), preset.recurrence);
+    nextRun = new Date(calcPeriod(nextDate, preset.recurrence).end);
+  }
+
+  return createTask(
+    merge(
+      {
+        nextRun: dfns.formatISO(nextRun),
+        extends: preset.template.id,
+        recurrence: preset.recurrence,
+        template: {
+          fetchOptions: preset.fetchOptions,
+        },
       },
-    },
-    data,
-  ),
-  creator,
-);
+      data,
+    ),
+    creator,
+  );
+};
 
 /**
  * Delete specific task in DB

@@ -54,6 +54,7 @@
   },
 
   "templates": {
+    "hidden": "Hidden to users|Visible to users",
     "base": "Base template",
     "renderOptions": "Render options",
     "editor": "Page editor ({n} page)|Page editor ({n} pages)",

@@ -375,6 +375,45 @@ const onIndexChanged = async (index: string) => {
   };
   await fetchMapping(index);
 };
+const applyNameFromPreset = (
+  newPreset: tasksPresets.FullTasksPreset | undefined,
+  oldPreset: tasksPresets.FullTasksPreset | undefined
+) => {
+  if (!newPreset || !miniTask.value) {
+    return;
+  }
+
+  const name = miniTask.value?.name;
+  if (name && name !== oldPreset?.name) {
+    return;
+  }
+
+  miniTask.value = { ...miniTask.value, name: newPreset.name };
+}
+const applyIndexFromPreset = (
+  newPreset: tasksPresets.FullTasksPreset | undefined,
+  oldPreset: tasksPresets.FullTasksPreset | undefined
+) => {
+  if (!newPreset || !miniTask.value) {
+    return;
+  }
+
+  const index = miniTask.value?.template.fetchOptions?.index;
+  if (index && index !== oldPreset?.fetchOptions?.index) {
+    return;
+  }
+
+  miniTask.value = {
+    ...miniTask.value,
+    template: {
+      ...miniTask.value.template,
+      fetchOptions: { 
+        ...(miniTask.value.template.fetchOptions ?? {}),
+        index: newPreset.fetchOptions?.index || '',
+      }
+    }
+  };
+}
 
 watch(
   () => props.value,
@@ -391,16 +430,8 @@ watch(
 watch(
   currentPreset,
   (newPreset, oldPreset) => {
-    if (!newPreset || !miniTask.value) {
-      return;
-    }
-
-    const name = miniTask.value?.name;
-    if (name && name !== oldPreset?.name) {
-      return;
-    }
-
-    miniTask.value = { ...miniTask.value, name: newPreset.name };
+    applyNameFromPreset(newPreset, oldPreset);
+    applyIndexFromPreset(newPreset, oldPreset);
   },
 );
 </script>

@@ -89,6 +89,8 @@ export type TagTemplateType = Static<typeof TagTemplate>;
 export const FullTemplateBody = Type.Object({
   name: Type.String({ minLength: 1 }),
 
+  hidden: Type.Optional(Type.Boolean()),
+
   body: Template,
 
   tags: Type.Optional(
@@ -131,10 +133,19 @@ const castFullTemplate = <T extends PrismaTemplate>(data: T): T & Omit<FullTempl
 /**
 * Get all template
 *
+* @param showHidden Should show hidden templates
+*
 * @returns General info of all templates
 */
-export const getAllTemplates = async (): Promise<TemplateList> => {
-  const res = await prisma.template.findMany();
+export const getAllTemplates = async (showHidden = false): Promise<TemplateList> => {
+  const res = await prisma.template.findMany({
+    where: {
+      hidden: showHidden && undefined,
+    },
+    orderBy: {
+      name: 'asc',
+    },
+  });
 
   return res
     .filter((template) => Value.Check(Template, template.body))

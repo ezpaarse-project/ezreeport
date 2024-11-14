@@ -47,6 +47,7 @@ export interface RawTemplate {
   id: string,
   name: string,
   pageCount: number,
+  hidden: boolean,
   tags: {
     name: string,
     color?: string,
@@ -121,6 +122,7 @@ const parseFullTemplate = (template: RawFullTemplate): FullTemplate => {
 
 export interface InputTemplate {
   name: FullTemplate['name']
+  hidden?: FullTemplate['hidden']
   body: FullTemplate['body']
   tags: FullTemplate['tags']
 }

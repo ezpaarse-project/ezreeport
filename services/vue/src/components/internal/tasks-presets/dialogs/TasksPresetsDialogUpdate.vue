@@ -58,6 +58,18 @@
               />
             </v-col>
           </v-row>
+
+          <v-row v-if="innerPreset.fetchOptions">
+            <v-col>
+              <ElasticIndexSelector
+                :value="innerPreset.fetchOptions.index || ''"
+                :label="$t('$ezreeport.fetchOptions.index').toString()"
+                required
+                prepend-icon="mdi-database"
+                @input="updateIndex($event)"
+              />
+            </v-col>
+          </v-row>
         </v-form>
         <LoadingOverlay v-else value />
 
@@ -186,6 +198,7 @@ const fetchPreset = async (id: string) => {
 
     innerPreset.value = {
       name: content.name,
+      hidden: content.hidden,
       recurrence: content.recurrence,
       template: content.template.id,
       fetchOptions: content.fetchOptions,
@@ -198,6 +211,24 @@ const fetchPreset = async (id: string) => {
   }
   loading.value = false;
 };
+
+const updateIndex = (index: string) => {
+  if (!innerPreset.value) {
+    return;
+  }
+
+  if (!availableFields.value) {
+    fetchMapping(index);
+  }
+
+  innerPreset.value = {
+    ...innerPreset.value,
+    fetchOptions: {
+      ...(innerPreset.value.fetchOptions ?? {}),
+      index,
+    }
+  }
+}
 
 const init = async () => {
   await fetchPreset(props.preset.id);
