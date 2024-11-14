@@ -74,11 +74,11 @@ const router: FastifyPluginAsync = async (fastify) => {
 
       const item = await tasksPresets.getTasksPresetById(id);
       if (!item) {
-        throw new NotFoundError(`No preset named "${id}" was found`);
+        throw new NotFoundError(`The preset named "${id}" was found`);
       }
 
       if (!request.user?.isAdmin && item.hidden) {
-        throw new NotFoundError(`No preset named "${id}" doesn't exist`);
+        throw new NotFoundError(`The preset named "${id}" doesn't exist`);
       }
 
       return { content: item };
