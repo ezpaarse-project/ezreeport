@@ -587,7 +587,7 @@
     },
     "/tasks/_from-preset/{preset}": {
       "post": {
-        "summary": "Add new task",
+        "summary": "Add new task from preset",
         "operationId": "tasks-post-_from-preset-preset",
         "responses": {
           "201": {
@@ -714,7 +714,7 @@
           },
           "description": ""
         },
-        "description": "Add new reporting task to the authed user's institution from a template.\n\nNeeds `namespaces[namespaceId].tasks-post-_from-preset-preset` (see `/me/permissions` for more info).",
+        "description": "Add new reporting task to the authed user's institution from a template. Also calculate the next run to match recurrence (start of week for weekly, etc.)\n\nNeeds `namespaces[namespaceId].tasks-post-_from-preset-preset` (see `/me/permissions` for more info).",
         "parameters": [],
         "tags": [
           "tasks"
@@ -3290,7 +3290,7 @@
             "User Token": []
           }
         ],
-        "description": "Get all templates usable by tasks.\n\nNeeds `general.templates-get` (see `/me/permissions` for more info)."
+        "description": "Get all templates usable by tasks. Doesn't show hidden templates unless you're admin.\n\nNeeds `general.templates-get` (see `/me/permissions` for more info)."
       },
       "parameters": [],
       "post": {
@@ -3993,7 +3993,7 @@
             "User Token": []
           }
         ],
-        "description": "Get all tasks-presets usable by tasks.\n\nNeeds `general.tasks-presets-get` (see `/me/permissions` for more info)."
+        "description": "Get all tasks-presets usable by tasks. Doesn't show hidden presets unless you're admin.\n\nNeeds `general.tasks-presets-get` (see `/me/permissions` for more info)."
       },
       "parameters": [],
       "post": {

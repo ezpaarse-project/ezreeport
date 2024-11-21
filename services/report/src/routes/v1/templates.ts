@@ -21,8 +21,8 @@ const router: FastifyPluginAsync = async (fastify) => {
         requireUser: true,
       },
     },
-    async () => ({
-      content: await templates.getAllTemplates(),
+    async (request) => ({
+      content: await templates.getAllTemplates(request.user?.isAdmin ?? false),
       meta: {
         default: config.defaultTemplate.id,
       },

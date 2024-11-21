@@ -7,6 +7,8 @@ interface RawTasksPreset {
   id: string,
   name: string,
   recurrence: Recurrence,
+  hidden: boolean,
+  templateHidden: boolean,
   tags: {
     name: string,
     color?: string,
@@ -29,6 +31,7 @@ const parsePreset = (preset: RawTasksPreset): TasksPreset => ({
 export interface RawFullTasksPreset extends Omit<RawTasksPreset, 'tags'> {
   fetchOptions?: {
     dateField?: string,
+    index?: string,
   },
   template: Pick<FullTemplate, 'id' | 'name' | 'tags' | 'createdAt' | 'updatedAt'>
 }
@@ -39,6 +42,7 @@ export interface FullTasksPreset extends Omit<RawFullTasksPreset, 'createdAt' | 
 }
 
 export interface InputTasksPreset extends Pick<FullTasksPreset, 'name' | 'fetchOptions' | 'recurrence'> {
+  hidden?: FullTasksPreset['hidden'],
   template: string,
 }
 

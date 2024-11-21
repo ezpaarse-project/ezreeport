@@ -116,6 +116,21 @@
 
                 <v-spacer />
 
+                <v-tooltip top v-if="perms.update">
+                  <template #activator="{ attrs, on }">
+                    <v-btn
+                      icon
+                      @click.stop="toggleHideTemplate(template)"
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+                      <v-icon v-if="template.hidden">mdi-eye-off</v-icon>
+                      <v-icon v-else>mdi-eye</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>{{ $tc('$ezreeport.templates.hidden', template.hidden ? 1 : 0) }}</span>
+                </v-tooltip>
+
                 <v-tooltip top v-if="perms.create && perms.readOne">
                   <template #activator="{ attrs, on }">
                     <v-btn
@@ -409,6 +424,26 @@ export default defineComponent({
       await this.showCreateDialog();
       (this.$refs.dialogCreate as InstanceType<typeof TemplateDialogCreate>)
         ?.openFromTemplate(template);
+    },
+    async toggleHideTemplate({ id }: templates.Template) {
+      if (!this.perms.update) {
+        return;
+      }
+
+      try {
+        this.loading = true;
+        const { content: template } = await this.$ezReeport.sdk.templates.getTemplate(id);
+        await this.$ezReeport.sdk.templates.upsertTemplate({
+          id,
+          hidden: !template.hidden,
+          name: template.name,
+          body: template.body,
+          tags: template.tags,
+        });
+        this.fetch(); // fetch will set loading to false
+      } catch (error) {
+        this.loading = false;
+      }
     },
     /**
      * Filter template using active filters

@@ -119,6 +119,10 @@ const router: FastifyPluginAsync = async (fastify) => {
         throw new NotFoundError("The provided preset doesn't exist");
       }
 
+      if (!request.user?.isAdmin && preset.hidden) {
+        throw new NotFoundError("The provided preset doesn't exist");
+      }
+
       reply.code(StatusCodes.CREATED);
       return {
         content: await tasks.createTaskFromPreset(

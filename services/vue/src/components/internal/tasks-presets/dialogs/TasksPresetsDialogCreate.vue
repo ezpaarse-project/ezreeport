@@ -56,6 +56,17 @@
             </v-col>
           </v-row>
 
+          <v-row v-if="preset.fetchOptions">
+            <v-col>
+              <ElasticIndexSelector
+                :value="preset.fetchOptions.index || ''"
+                :label="$t('$ezreeport.fetchOptions.index').toString()"
+                required
+                prepend-icon="mdi-database"
+                @input="updateIndex($event)"
+              />
+            </v-col>
+          </v-row>
         </v-form>
 
         <ErrorOverlay v-model="error" />
@@ -198,6 +209,24 @@ const fetchTemplate = async (id: string) => {
   }
   loading.value = false;
 };
+
+const updateIndex = (index: string) => {
+  if (!preset.value) {
+    return;
+  }
+
+  if (!availableFields.value) {
+    fetchMapping(index);
+  }
+
+  preset.value = {
+    ...preset.value,
+    fetchOptions: {
+      ...(preset.value.fetchOptions ?? {}),
+      index,
+    }
+  }
+}
 
 /**
  * Save the preset

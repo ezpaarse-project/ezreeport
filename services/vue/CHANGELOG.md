@@ -1,3 +1,16 @@
+# [@ezpaarse-project/ezreeport-vue-v1.4.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.3.1...@ezpaarse-project/ezreeport-vue@1.4.0-rc.1) (2024-11-14)
+
+
+### Bug Fixes
+
+* **vue:** fixed infite loading when an error happen while hiding templates ([a62d61f](https://github.com/ezpaarse-project/ezreeport/commit/a62d61f45bc5e0ece1fbb39c9c5768104e3cfa99))
+
+
+### Features
+
+* **vue3:** added possibility have default index when selecting preset ([868ac11](https://github.com/ezpaarse-project/ezreeport/commit/868ac11b689f296b5baacfd01410c9d4563dfaea))
+* **vue3:** added possibility to hide templates and task presets to users ([136a2a9](https://github.com/ezpaarse-project/ezreeport/commit/136a2a9cee4e6960a405c62054a2a95cb3c0a984))
+
 # [@ezpaarse-project/ezreeport-vue-v1.3.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.3.0...@ezpaarse-project/ezreeport-vue@1.3.1) (2024-08-09)
 
 
