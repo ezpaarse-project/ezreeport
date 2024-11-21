@@ -1,3 +1,10 @@
+# [@ezpaarse-project/ezreeport-sdk-js-v1.3.0](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.2.0...@ezpaarse-project/ezreeport-sdk-js@1.3.0) (2024-11-21)
+
+
+### Features
+
+* **sdk:** added possibility to hide templates and task presets to users ([dbcc361](https://github.com/ezpaarse-project/ezreeport/commit/dbcc36160a9e3c727134b687259d2a96d345c43b))
+
 # [@ezpaarse-project/ezreeport-sdk-js-v1.3.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.2.0...@ezpaarse-project/ezreeport-sdk-js@1.3.0-rc.1) (2024-11-14)
 
 
