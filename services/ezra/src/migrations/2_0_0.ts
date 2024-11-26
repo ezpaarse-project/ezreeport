@@ -49,10 +49,14 @@ const migrateEsFilter = (filter: any, i: number, isNot = false) => {
           };
         },
       ).filter((f: any) => f.field);
+
       const firstField = values[0]?.field;
       if (values.length > 0 && values.every((f: any) => f.field === firstField)) {
+        const valueParts = values.slice(0, 2).map((f: any) => f.value);
+        const valueText = [...valueParts, 'etc.'].join(', ');
+
         return {
-          name: `${values[0].name}, etc.`,
+          name: [firstField, 'is', isNot ? 'not' : '', valueText].join(' '),
           field: firstField,
           isNot,
           value: values.map((f: any) => f.value),
