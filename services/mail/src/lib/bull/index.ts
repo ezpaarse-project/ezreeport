@@ -33,7 +33,11 @@ export type MailResult = {
     name: string,
     targets: string[],
   },
-  namespace: string,
+  namespace: {
+    id: string,
+    name: string,
+    logo?: string,
+  },
   /**
    * The email of the user that was used for generation
    */

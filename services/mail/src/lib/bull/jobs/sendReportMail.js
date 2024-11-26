@@ -161,7 +161,7 @@ const sendReport = (data, date, dateStr, logger) => {
   const bodyData = {
     recurrence: recurrenceToStr(data.task.recurrence),
     name: data.task.name,
-    namespace: data.namespace,
+    namespace: data.namespace.name,
     date: dateStr,
   };
 
