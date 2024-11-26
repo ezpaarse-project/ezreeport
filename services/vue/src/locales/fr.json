@@ -54,6 +54,7 @@
   },
 
   "templates": {
+    "hidden": "Invisible pour les utilisateurs|Visible pour les utilisateurs",
     "base": "Modèle de base",
     "renderOptions": "Options de rendu",
     "editor": "Éditeur de pages ({n} page)|Éditeur de pages ({n} pages)",

@@ -16,10 +16,11 @@ import {
   InputTaskPreset,
   TaskPresetQueryFilters,
   AdditionalDataForPreset,
+  type TaskPresetType,
 } from '~/models/task-presets/types';
 import { createTask } from '~/models/tasks';
 import { Task } from '~/models/tasks/types';
-import { calcNextDateFromRecurrence } from '~/models/recurrence';
+import { calcNextDateFromRecurrence, calcPreviousPeriodFromRecurrence } from '~/models/recurrence';
 
 import { NotFoundError } from '~/types/errors';
 
@@ -53,6 +54,12 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         access: Access.READ_WRITE,
       },
     },
+    preHandler: [
+      async (request) => { // restrictHidden
+        if (request.user?.isAdmin) { return; }
+        request.query.hidden = false;
+      }
+    ],
     handler: async (request, reply) => {
       // Extract pagination and filters from query
       const {
@@ -134,12 +141,16 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         access: Access.READ_WRITE,
       },
     },
-    handler: async (request, reply) => {
-      const content = await taskPresets.getTaskPreset(request.params.id);
-
-      if (!content) {
-        throw new NotFoundError(`Task preset ${request.params.id} not found`);
+    preHandler: [
+      async (request) => { // requireNotHidden
+        if (request.user?.isAdmin) { return; }
+        const content = await taskPresets.getTaskPreset(request.params.id);
+        if (content?.hidden) { throw new NotFoundError(`Task preset ${request.params.id} not found`); }
       }
+    ],
+    handler: async (request, reply) => {
+      // We already checked the task preset exists in preHandler
+      const content = await taskPresets.getTaskPreset(request.params.id)!;
 
       return responses.buildSuccessResponse(content, reply);
     },
@@ -234,12 +245,19 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     },
     preHandler: [
       async (request) => requireAllowedNamespace(request, request.body.namespaceId),
+      async (request) => { // requireNotHidden
+        if (request.user?.isAdmin) { return; }
+        const content = await taskPresets.getTaskPreset(request.params.id);
+        if (content?.hidden) { throw new NotFoundError(`Task preset ${request.params.id} not found`); }
+      }
     ],
     handler: async (request, reply) => {
-      const taskPreset = await taskPresets.getTaskPreset(request.params.id);
-      if (!taskPreset) {
-        throw new NotFoundError(`Task preset ${request.params.id} not found`);
-      }
+      // We already checked the task preset exists in preHandler
+      const taskPreset = await taskPresets.getTaskPreset(request.params.id)!;
+
+      // Set next run to start of recurrence (start of week for weekly, etc.)
+      const nextDate = calcNextDateFromRecurrence(new Date(), taskPreset.recurrence);
+      const nextRun = calcPreviousPeriodFromRecurrence(nextDate, taskPreset.recurrence).end;
 
       const task = await createTask({
         name: request.body.name,
@@ -251,7 +269,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         },
         recurrence: taskPreset.recurrence,
         extendedId: taskPreset.templateId,
-        nextRun: calcNextDateFromRecurrence(new Date(), taskPreset.recurrence),
+        nextRun,
         enabled: true,
       });
 

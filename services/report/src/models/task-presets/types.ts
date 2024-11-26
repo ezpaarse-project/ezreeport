@@ -17,8 +17,15 @@ export const TaskPreset = z.object({
 
   fetchOptions: z.object({
     dateField: z.string().min(1).optional()
-      .describe('Elastic date field to fetch data from'),
-  }).optional(),
+      .describe('Default elastic date field to fetch data from'),
+
+    index: z.string().min(1).optional()
+      .describe('Default elastic index to fetch data from'),
+  }).optional()
+    .describe('Options used to fetch data for the report'),
+
+  hidden: z.boolean().default(false).optional()
+    .describe('If preset is hidden to normal users'),
 
   recurrence: Recurrence
     .describe('Preset recurrence'),
@@ -59,6 +66,9 @@ export const TaskPresetQueryFilters = z.object({
 
   templateId: z.string().min(1).optional()
     .describe('ID of template referenced by the preset'),
+
+  hidden: z.coerce.boolean().optional()
+    .describe('If preset or template is hidden to normal users'),
 });
 
 /**

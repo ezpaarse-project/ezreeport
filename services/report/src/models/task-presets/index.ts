@@ -19,7 +19,13 @@ function applyFilters(filters: TaskPresetQueryFiltersType) {
 
   where.templateId = filters.templateId;
 
-  if (filters?.query) {
+  if (filters.hidden != null) {
+    where.hidden = filters.hidden;
+    where.template = where.template || {};
+    where.template.hidden = filters.hidden;
+  }
+
+  if (filters.query) {
     where.name = { contains: filters.query, mode: 'insensitive' as Prisma.QueryMode };
   }
 

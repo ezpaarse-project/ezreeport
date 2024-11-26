@@ -2,11 +2,10 @@ name: Generate database documentation of report database
 
 on:
   push:
-    tags:
-      - '*.rc*'
+    branches:
+      - 'rc/*'
     paths:
       - 'services/report/prisma/schema.prisma'
-  workflow_dispatch:
 
 env:
   PRISMA_SCHEMA: services/report/prisma/schema.prisma

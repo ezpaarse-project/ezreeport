@@ -20,6 +20,10 @@ const logger = appLogger.child({ scope: 'models', model: 'templates' });
 function applyFilters(filters: TemplateQueryFiltersType) {
   const where: Prisma.TemplateWhereInput = {};
 
+  if (filters.hidden != null) {
+    where.hidden = filters.hidden;
+  }
+
   if (filters.query) {
     where.name = { contains: filters.query, mode: 'insensitive' as Prisma.QueryMode };
   }

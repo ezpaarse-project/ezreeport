@@ -151,6 +151,9 @@ export const Template = z.object({
   tags: z.array(TemplateTag).optional()
     .describe('Template tags'),
 
+  hidden: z.boolean().default(false).optional()
+    .describe('If template is hidden to normal users'),
+
   createdAt: z.date().readonly()
     .describe('Creation date'),
 
@@ -184,6 +187,9 @@ export type InputTemplateType = z.infer<typeof InputTemplate>;
 export const TemplateQueryFilters = z.object({
   query: z.string().optional()
     .describe('Query used for searching'),
+
+  hidden: z.coerce.boolean().optional()
+    .describe('If preset or template is hidden to normal users'),
 });
 
 /**

@@ -1,3 +1,55 @@
+# [ezreeport-report-v1.5.0](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.4.0...ezreeport-report@1.5.0) (2024-11-21)
+
+
+### Bug Fixes
+
+* **report:** fixed typo in error ([d1449c9](https://github.com/ezpaarse-project/ezreeport/commit/d1449c91d5fec45321201e06c593304636b4a3ab))
+
+
+### Features
+
+* **report:** added possibility have default index when selecting preset ([9780300](https://github.com/ezpaarse-project/ezreeport/commit/97803000816ee16703033fedf97237c1e08a78f4))
+* **report:** added possibility to hide templates and task presets to users ([5fdeda8](https://github.com/ezpaarse-project/ezreeport/commit/5fdeda836a40b2654581b07b05f9b53308e11da3))
+* **report:** when creating task from preset, set the next run to the start of recurrence ([2672cac](https://github.com/ezpaarse-project/ezreeport/commit/2672cac8bf596e0909162d2dd10aeed3510f4c05))
+
+# [ezreeport-report-v1.5.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.4.0...ezreeport-report@1.5.0-rc.1) (2024-11-14)
+
+
+### Bug Fixes
+
+* **report:** fixed typo in error ([d1449c9](https://github.com/ezpaarse-project/ezreeport/commit/d1449c91d5fec45321201e06c593304636b4a3ab))
+
+
+### Features
+
+* **report:** added possibility have default index when selecting preset ([9780300](https://github.com/ezpaarse-project/ezreeport/commit/97803000816ee16703033fedf97237c1e08a78f4))
+* **report:** added possibility to hide templates and task presets to users ([5fdeda8](https://github.com/ezpaarse-project/ezreeport/commit/5fdeda836a40b2654581b07b05f9b53308e11da3))
+* **report:** when creating task from preset, set the next run to the start of recurrence ([2672cac](https://github.com/ezpaarse-project/ezreeport/commit/2672cac8bf596e0909162d2dd10aeed3510f4c05))
+
+# [ezreeport-report-v1.4.0](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.3.1...ezreeport-report@1.4.0) (2024-09-06)
+
+
+### Bug Fixes
+
+* **report:** added better support for line charts ([4f34f99](https://github.com/ezpaarse-project/ezreeport/commit/4f34f99e2b03a7e78c526c8546afec59d180dd6a))
+
+
+### Features
+
+* **report:** fixed filters beign merged together ([b2e9566](https://github.com/ezpaarse-project/ezreeport/commit/b2e9566629ba9d7c395fc3aa5435cc1fb69fc5b1))
+
+# [ezreeport-report-v1.4.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.3.1...ezreeport-report@1.4.0-rc.1) (2024-08-30)
+
+
+### Bug Fixes
+
+* **report:** added better support for line charts ([4f34f99](https://github.com/ezpaarse-project/ezreeport/commit/4f34f99e2b03a7e78c526c8546afec59d180dd6a))
+
+
+### Features
+
+* **report:** fixed filters beign merged together ([b2e9566](https://github.com/ezpaarse-project/ezreeport/commit/b2e9566629ba9d7c395fc3aa5435cc1fb69fc5b1))
+
 # [ezreeport-report-v1.4.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.3.1...ezreeport-report@1.4.0-beta.1) (2024-08-20)
 
 
