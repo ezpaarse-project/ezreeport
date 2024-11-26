@@ -7,7 +7,7 @@ import { StatusCodes } from 'http-status-codes';
 import { z } from '~/lib/zod';
 import config from '~/lib/config';
 
-import { requireAllowedNamespace } from '~/plugins/authv2';
+import { requireAllowedNamespace } from '~/plugins/auth';
 import { Access } from '~/models/access';
 
 import * as responses from '~/routes/v2/responses';

@@ -1,7 +1,7 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
-import authPlugin, { restrictNamespaces } from '~/plugins/authv2';
+import authPlugin, { restrictNamespaces } from '~/plugins/auth';
 import { Access } from '~/models/access';
 
 import * as responses from '~/routes/v2/responses';

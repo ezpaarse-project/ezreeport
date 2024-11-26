@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { z } from '~/lib/zod';
 
-import authPlugin, { requireAllowedNamespace } from '~/plugins/authv2';
+import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
 import { Access } from '~/models/access';
 
 import * as responses from '~/routes/v2/responses';
@@ -16,7 +16,6 @@ import {
   InputTaskPreset,
   TaskPresetQueryFilters,
   AdditionalDataForPreset,
-  type TaskPresetType,
 } from '~/models/task-presets/types';
 import { createTask } from '~/models/tasks';
 import { Task } from '~/models/tasks/types';
@@ -58,7 +57,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       async (request) => { // restrictHidden
         if (request.user?.isAdmin) { return; }
         request.query.hidden = false;
-      }
+      },
     ],
     handler: async (request, reply) => {
       // Extract pagination and filters from query
@@ -146,11 +145,11 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         if (request.user?.isAdmin) { return; }
         const content = await taskPresets.getTaskPreset(request.params.id);
         if (content?.hidden) { throw new NotFoundError(`Task preset ${request.params.id} not found`); }
-      }
+      },
     ],
     handler: async (request, reply) => {
       // We already checked the task preset exists in preHandler
-      const content = await taskPresets.getTaskPreset(request.params.id)!;
+      const content = (await taskPresets.getTaskPreset(request.params.id))!;
 
       return responses.buildSuccessResponse(content, reply);
     },
@@ -249,11 +248,11 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         if (request.user?.isAdmin) { return; }
         const content = await taskPresets.getTaskPreset(request.params.id);
         if (content?.hidden) { throw new NotFoundError(`Task preset ${request.params.id} not found`); }
-      }
+      },
     ],
     handler: async (request, reply) => {
       // We already checked the task preset exists in preHandler
-      const taskPreset = await taskPresets.getTaskPreset(request.params.id)!;
+      const taskPreset = (await taskPresets.getTaskPreset(request.params.id))!;
 
       // Set next run to start of recurrence (start of week for weekly, etc.)
       const nextDate = calcNextDateFromRecurrence(new Date(), taskPreset.recurrence);

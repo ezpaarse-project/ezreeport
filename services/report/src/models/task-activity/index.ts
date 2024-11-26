@@ -1,4 +1,4 @@
-import prisma, { type Prisma } from '~/lib/prisma';
+import prisma, { Prisma } from '~/lib/prisma';
 import { ensureSchema } from '~/lib/zod';
 
 import type { PaginationType } from '~/models/pagination/types';
@@ -78,6 +78,8 @@ export async function createActivity(data: InputTaskActivityType): Promise<TaskA
 
       taskId: undefined,
       task: { connect: { id: data.taskId } },
+
+      data: data.data ?? Prisma.DbNull,
     },
   });
 

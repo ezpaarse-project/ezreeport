@@ -113,7 +113,7 @@ export default async function generate(job: Job<GenerationDataType>): Promise<Re
     namespace: {
       id: namespace?.id || '',
       name: namespace?.name || 'unknown',
-      logo: namespace?.logoId,
+      logo: namespace?.logoId || undefined,
     },
   };
 

@@ -7,7 +7,7 @@ import { contrast } from 'chroma-js';
 import type { UnitSpec } from 'vega-lite/build/src/spec';
 
 import type { FetchResultItem, FetchResultValue } from '~/models/reports/generation/fetch/results';
-import { calcVegaFormat } from '~/models/recurrence';
+import { calcVegaFormatFromRecurrence } from '~/models/recurrence';
 import config from '~/lib/config';
 import { Recurrence } from '~/lib/prisma';
 import { ensureInt } from '~/lib/utils';
@@ -534,7 +534,7 @@ export const createBarSpec: CreateSpecFnc = (type, data, params) => {
   // If more than 3/8 label's data is date, consider whole axis as a date
   // and sets format based on task recurrence
   if (calcLabelDateScore(data) > 0.75) {
-    const timeFormat = calcVegaFormat(params.recurrence);
+    const timeFormat = calcVegaFormatFromRecurrence(params.recurrence);
 
     editedData = prepareDataWithDefaultDates(type, data, params);
 
@@ -586,7 +586,7 @@ export const createLineSpec: CreateSpecFnc = (type, data, params) => {
   // If more than 3/8 label's data is date, consider whole axis as a date
   // and sets format based on task recurrence
   if (calcLabelDateScore(data) > 0.75) {
-    const timeFormat = calcVegaFormat(params.recurrence);
+    const timeFormat = calcVegaFormatFromRecurrence(params.recurrence);
 
     merge<Encoding['x'], Encoding['x']>(
       encoding.x,

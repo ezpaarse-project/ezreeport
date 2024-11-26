@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { z } from '~/lib/zod';
 
-import authPlugin from '~/plugins/authv2';
+import authPlugin from '~/plugins/auth';
 
 import * as responses from '~/routes/v2/responses';
 
