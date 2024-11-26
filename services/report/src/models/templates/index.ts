@@ -80,7 +80,9 @@ export async function getTemplate(id: string): Promise<TemplateType | null> {
  *
  * @returns The created template
  */
-export async function createTemplate(data: InputTemplateType): Promise<TemplateType> {
+export async function createTemplate(
+  data: InputTemplateType & { id?: string },
+): Promise<TemplateType> {
   const template = await prisma.template.create({ data });
 
   logger.debug({

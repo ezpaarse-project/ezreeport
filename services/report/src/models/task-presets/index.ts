@@ -85,7 +85,9 @@ export async function getTaskPreset(id: string): Promise<TaskPresetType | null> 
  *
  * @returns The created preset
  */
-export async function createTaskPreset(data: InputTaskPresetType): Promise<TaskPresetType> {
+export async function createTaskPreset(
+  data: InputTaskPresetType & { id?: string },
+): Promise<TaskPresetType> {
   const preset = await prisma.taskPreset.create({
     data: {
       ...data,

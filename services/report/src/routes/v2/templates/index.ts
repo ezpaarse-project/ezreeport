@@ -15,6 +15,7 @@ import * as templates from '~/models/templates';
 import { Template, InputTemplate, TemplateQueryFilters } from '~/models/templates/types';
 
 import { NotFoundError } from '~/types/errors';
+import { appLogger } from '~/lib/logger';
 
 const SpecificTemplateParams = z.object({
   id: z.string().min(1)
@@ -162,12 +163,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     },
     handler: async (request, reply) => {
       const doesExists = await templates.doesTemplateExist(request.params.id);
+      appLogger.debug(request.params.id);
 
       let template;
       if (doesExists) {
         template = await templates.editTemplate(request.params.id, request.body);
       } else {
-        template = await templates.createTemplate(request.body);
+        template = await templates.createTemplate({ ...request.body, id: request.params.id });
       }
 
       return responses.buildSuccessResponse(template, reply);

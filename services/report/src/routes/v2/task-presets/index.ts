@@ -183,7 +183,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       if (doesExists) {
         taskPreset = await taskPresets.editTaskPreset(request.params.id, request.body);
       } else {
-        taskPreset = await taskPresets.createTaskPreset(request.body);
+        taskPreset = await taskPresets.createTaskPreset({ ...request.body, id: request.params.id });
       }
 
       return responses.buildSuccessResponse(taskPreset, reply);

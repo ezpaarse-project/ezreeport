@@ -201,7 +201,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         task = await tasks.editTask(request.params.id, request.body);
         activity = { type: 'edition', message: `Tâche modifiée par ${username}` };
       } else {
-        task = await tasks.createTask(request.body);
+        task = await tasks.createTask({ ...request.body, id: request.params.id });
         activity = { type: 'creation', message: `Tâche crée par ${username}` };
       }
 

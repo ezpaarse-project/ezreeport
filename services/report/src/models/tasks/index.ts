@@ -99,7 +99,9 @@ export async function getTask(id: string): Promise<TaskType | null> {
  *
  * @returns The created task
  */
-export async function createTask(data: InputTaskType): Promise<TaskType> {
+export async function createTask(
+  data: InputTaskType & { id?: string },
+): Promise<TaskType> {
   const task = await prisma.task.create({
     data: {
       ...data,
