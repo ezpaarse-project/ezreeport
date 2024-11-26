@@ -1,6 +1,7 @@
 /* eslint-disable import/no-relative-packages */
-import { PrismaClient } from '../../.prisma/client';
 import { appLogger } from '~/lib/logger';
+
+import { PrismaClient } from '../../.prisma/client';
 
 const logger = appLogger.child({ scope: 'prisma' });
 

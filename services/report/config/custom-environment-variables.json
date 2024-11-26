@@ -8,7 +8,8 @@
     "ignore": "LOG_IGNORE"
   },
   "defaultTemplate": {
-    "name": "REPORT_DEFAULT_TEMPLATE_NAME"
+    "name": "REPORT_DEFAULT_TEMPLATE_NAME",
+    "dateField": "REPORT_DEFAULT_TEMPLATE_DATEFIELD"
   },
   "fetcher": {
     "bannedDomains": { "__name": "REPORT_FETCHER_BANNED_DOMAINS", "__format": "json" }

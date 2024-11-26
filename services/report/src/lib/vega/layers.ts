@@ -6,7 +6,7 @@ import { contrast } from 'chroma-js';
 
 import type { UnitSpec } from 'vega-lite/build/src/spec';
 
-import type { FetchResultItem, FetchResultValue } from '~/models/reports/fetch/results';
+import type { FetchResultItem, FetchResultValue } from '~/models/reports/generation/fetch/results';
 import { calcVegaFormat } from '~/models/recurrence';
 import config from '~/lib/config';
 import { Recurrence } from '~/lib/prisma';

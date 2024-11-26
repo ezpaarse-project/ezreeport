@@ -11,7 +11,7 @@ const dfns = require('../../date-fns');
 const { isFulfilled } = require('../../utils');
 const { Value } = require('../../typebox');
 
-const { ReportResult } = require('../../../models/reports');
+const { ReportResult } = require('../../../models/reports/types');
 
 const { sendError } = require('./utils');
 

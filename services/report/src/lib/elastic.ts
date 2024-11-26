@@ -42,7 +42,7 @@ const isElasticStatus = (
 ): status is KeyofElasticStatus => Object.keys(ElasticStatus).includes(status);
 
 // Parse some env var
-const REQUIRED_STATUS = isElasticStatus(requiredStatus) ? requiredStatus : 'green';
+const REQUIRED_STATUS = 'yellow';// isElasticStatus(requiredStatus) ? requiredStatus : 'green';
 const ES_AUTH = apiKey ? { apiKey } : { username, password };
 
 const clientConfig: ClientOptions = {
@@ -56,15 +56,13 @@ const clientConfig: ClientOptions = {
 };
 
 const client = new Client(clientConfig);
+let clientReadyPromise = undefined as Promise<void> | undefined;
 
-/**
- * Get elastic client once it's ready
- *
- * @returns Elastic client
- */
-const getElasticClient = async () => {
+async function checkClientReady() {
+  const requiredValue = ElasticStatus[REQUIRED_STATUS];
   let tries = 0;
-  while (tries < maxTries) {
+  let lastStatus: ElasticStatus | undefined;
+  while (tries < 2) {
     try {
       // eslint-disable-next-line no-await-in-loop
       const { body: { status } } = await client.cluster.health<ElasticTypes.ClusterHealthResponse>({
@@ -72,11 +70,11 @@ const getElasticClient = async () => {
         timeout: '5s',
       });
 
-      if (
-        ElasticStatus[
-          status.toLowerCase() as Lowercase<ElasticTypes.HealthStatus>
-        ] >= ElasticStatus[REQUIRED_STATUS]
-      ) {
+      const lowercaseStatus = status.toLowerCase() as Lowercase<ElasticTypes.HealthStatus>;
+      const value = ElasticStatus[lowercaseStatus];
+      lastStatus = value;
+      // Break if status is valid
+      if (value >= requiredValue) {
         break;
       }
     } catch (err) {
@@ -96,10 +94,26 @@ const getElasticClient = async () => {
     await setTimeout(1000);
   }
 
+  if (!lastStatus || lastStatus < requiredValue) {
+    throw new Error("Can't connect to Elastic. See previous logs for more info");
+  }
+
   logger.info({
     config: clientConfig.node,
     msg: 'Connected to elastic',
   });
+}
+
+/**
+ * Get elastic client once it's ready
+ *
+ * @returns Elastic client
+ */
+const getElasticClient = async () => {
+  if (!clientReadyPromise) {
+    clientReadyPromise = checkClientReady().finally(() => { clientReadyPromise = undefined; });
+  }
+  await clientReadyPromise;
   return client;
 };
 

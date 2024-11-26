@@ -26,15 +26,6 @@ export const formatInterval = (
 ) => (differenceInMilliseconds(end, start) / target).toFixed(2);
 
 /**
- * Type guard for Promise.allSettled
- *
- * @param data The result of Promise.allSettled
- *
- * @returns Is promise settled is fullfield
- */
-export const isFulfilled = <T>(data: PromiseSettledResult<T>): data is PromiseFulfilledResult<T> => data.status === 'fulfilled';
-
-/**
  * Convert string to Base64
  *
  * @param str Base string to convert

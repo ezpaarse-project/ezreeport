@@ -40,7 +40,6 @@ module.exports = async (job) => {
       origin,
       writeActivity,
       debug,
-      customPeriod,
     },
     timestamp,
   } = job;
@@ -78,8 +77,8 @@ module.exports = async (job) => {
   const res = await generateReport(
     task,
     origin,
-    customPeriod,
-    writeActivity,
+    period,
+    shouldWriteActivity,
     debug,
     {
       jobId,

@@ -1,99 +1,176 @@
-import { Type, Static } from '~/lib/typebox';
+import {
+  z,
+  stringToEndOfDay,
+  stringToStartOfDay,
+} from '~/lib/zod';
 
-export const ReportErrorCause = Type.Object({
-  type: Type.Union([
-    Type.Literal('fetch'),
-    Type.Literal('render'),
-    Type.Literal('unknown'),
-  ]),
-  layout: Type.Integer(),
-  figure: Type.Optional(
-    Type.Integer(),
-  ),
-  elasticQuery: Type.Optional(
-    Type.Any(),
-  ),
-  elasticData: Type.Optional(
-    Type.Any(),
-  ),
-  elasticCount: Type.Optional(
-    Type.Number(),
-  ),
-  vegaSpec: Type.Optional(
-    Type.Any(),
-  ),
+/**
+ * Validation for report period
+ */
+export const ReportPeriod = z.object({
+  start: z.coerce.date()
+    .describe('Start of the period'),
+
+  end: z.coerce.date()
+    .describe('End of the period'),
 });
 
-export const ReportResult = Type.Object({
-  success: Type.Boolean(),
+/**
+ * Type for report period
+ */
+export type ReportPeriodType = z.infer<typeof ReportPeriod>;
 
-  detail: Type.Object({
-    createdAt: Type.String({ format: 'iso-date-time' }),
+/**
+ * Validation for report types
+ */
+export const ReportType = z.enum(['rep', 'det', 'deb'] as const);
 
-    destroyAt: Type.String({ format: 'iso-date-time' }),
+/**
+ * Validation for files contained in a report
+ */
+export const ReportFiles = z.object({
+  detail: z.string()
+    .describe('File containing details about the generation of report'),
 
-    took: Type.Integer(),
+  debug: z.string().optional()
+    .describe('File containing debug information about the generation of report'),
 
-    taskId: Type.String(),
+  report: z.string().optional()
+    .describe('File containing the report'),
+});
 
-    files: Type.Object({
-      detail: Type.String(),
+/**
+ * Type for files contained in a report
+ */
+export type ReportFilesType = z.infer<typeof ReportFiles>;
 
-      report: Type.Optional(
-        Type.String(),
-      ),
+/**
+ * Validation for files of a task
+ */
+export const ReportFilesOfTask = z.record(
+  z.string().describe('Report ID'),
+  ReportFiles,
+);
 
-      debug: Type.Optional(
-        Type.String(),
-      ),
+/**
+ * Type for files of a task
+ */
+export type ReportFilesOfTaskType = z.infer<typeof ReportFilesOfTask>;
+
+/**
+ * Validation for a manual generation
+ */
+export const InputManualReport = z.object({
+  period: z.object({
+    start: stringToStartOfDay
+      .describe('Start of the period'),
+
+    end: stringToEndOfDay
+      .describe('End of the period'),
+  }).optional()
+    .describe('Period to generate report for, will enable first level of debug'),
+
+  targets: z.array(z.string().email()).min(1).optional()
+    .describe('Custom targets to send report to, will enable first level of debug'),
+
+  debug: z.boolean().default(false).optional()
+    .describe('Enable second level of debug'),
+}).strict();
+
+/**
+ * Validation for the cause of a generation error
+ */
+export const ReportErrorCause = z.object({
+  type: z.enum(['fetch', 'render', 'unknown'])
+    .describe('Type of error'),
+
+  layout: z.number().int()
+    .describe('Layout number where error occurred'),
+
+  figure: z.number().int().optional()
+    .describe('Figure number where error occurred'),
+
+  elasticQuery: z.unknown().optional()
+    .describe('Elastic query that failed'),
+
+  elasticData: z.unknown().optional()
+    .describe('Elastic data that failed'),
+
+  elasticCount: z.number().optional()
+    .describe('Number of elastic results before failure'),
+
+  vegaSpec: z.unknown().optional()
+    .describe('Vega spec that failed'),
+});
+
+/**
+ * Validation for the result of a generation
+ */
+export const ReportResult = z.object({
+  success: z.boolean()
+    .describe('Was the report successfully generated'),
+
+  detail: z.object({
+    createdAt: z.coerce.date()
+      .describe('Creation date of the report'),
+
+    destroyAt: z.coerce.date()
+      .describe('Date when the report will be destroyed'),
+
+    took: z.number()
+      .describe('Time taken to generate the report'),
+
+    taskId: z.string()
+      .describe('Task ID used to generate the report'),
+
+    files: z.object({
+      report: z.string().optional()
+        .describe('File containing the report'),
+
+      detail: z.string()
+        .describe('File containing details about the generation of report'),
+
+      debug: z.string().optional()
+        .describe('File containing debug information about the generation of report'),
     }),
 
-    sendingTo: Type.Optional(
-      Type.Array(
-        Type.String({ format: 'email' }),
-      ),
-    ),
+    sendingTo: z.array(z.string().email()).optional()
+      .describe('Email addresses the report was sent'),
 
-    period: Type.Optional(
-      Type.Object({
-        start: Type.String({ format: 'iso-date-time' }),
+    period: ReportPeriod.optional(),
 
-        end: Type.String({ format: 'iso-date-time' }),
-      }),
-    ),
+    auth: z.object({
+      elastic: z.object({
+        username: z.string().optional()
+          .describe('Username used to access the elasticsearch instance'),
+      }).optional(),
+    }).optional(),
 
-    auth: Type.Optional(
-      Type.Object({
-        elastic: Type.Optional(
-          Type.Object({
-            username: Type.String(),
-          }),
-        ),
-      }),
-    ),
+    stats: z.object({
+      pageCount: z.number().optional()
+        .describe('Number of page in the report'),
 
-    stats: Type.Optional(
-      Type.Object({
-        pageCount: Type.Integer(),
+      size: z.number().optional()
+        .describe('Size of the report'),
+    }).optional(),
 
-        size: Type.Integer(),
-      }),
-    ),
+    error: z.object({
+      message: z.string().optional()
+        .describe('Error message'),
 
-    error: Type.Optional(
-      Type.Object({
-        message: Type.String(),
+      stack: z.array(z.string()).optional()
+        .describe('Error stack'),
 
-        stack: Type.Array(
-          Type.String(),
-        ),
+      cause: ReportErrorCause.optional()
+        .describe('Cause of the error'),
+    }).optional(),
 
-        cause: ReportErrorCause,
-      }),
-    ),
-
-    meta: Type.Any(),
+    meta: z.any().optional()
+      .describe('Meta data'),
   }),
 });
 
-export type ReportResultType = Static<typeof ReportResult>;
+/**
+ * Type for the result of a generation
+ */
+export type ReportResultType = z.infer<typeof ReportResult>;

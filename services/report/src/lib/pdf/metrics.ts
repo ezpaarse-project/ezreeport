@@ -1,6 +1,6 @@
 import type { Font } from 'jspdf';
 
-import type { FetchResultItem } from '~/models/reports/fetch/results';
+import type { FetchResultItem } from '~/models/reports/generation/fetch/results';
 import { format, isValid, parseISO } from '~/lib/date-fns';
 
 import type { PDFReport } from '.';

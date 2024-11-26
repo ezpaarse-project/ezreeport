@@ -2,7 +2,7 @@ import { compile as handlebars } from 'handlebars';
 import * as AutoTable from 'jspdf-autotable';
 import { merge } from 'lodash';
 
-import type { FetchResultItem } from '~/models/reports/fetch/results';
+import type { FetchResultItem } from '~/models/reports/generation/fetch/results';
 import { appLogger } from '~/lib/logger';
 
 import type { PDFReport } from '.';
