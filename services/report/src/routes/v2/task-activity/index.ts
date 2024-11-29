@@ -9,7 +9,7 @@ import { buildPaginatedResponse } from '~/models/pagination';
 import { PaginationQuery, PaginationResponse } from '~/models/pagination/types';
 
 import * as taskActivity from '~/models/task-activity';
-import { TaskActivity, TaskActivityQueryFilters } from '~/models/task-activity/types';
+import { TaskActivity, TaskActivityQueryFilters, TaskActivityQueryInclude } from '~/models/task-activity/types';
 
 const router: FastifyPluginAsyncZod = async (fastify) => {
   await fastify.register(authPlugin);
@@ -20,7 +20,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     schema: {
       summary: 'Get all task activity',
       tags: ['task-activity'],
-      querystring: PaginationQuery.and(TaskActivityQueryFilters),
+      querystring: PaginationQuery.and(TaskActivityQueryFilters).and(TaskActivityQueryInclude),
       response: {
         [StatusCodes.OK]: PaginationResponse(TaskActivity),
         [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
@@ -48,11 +48,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         count,
         sort,
         order,
+        include,
         ...filters
       } = request.query;
 
       const content = await taskActivity.getAllActivity(
         filters,
+        include,
         {
           page,
           count,

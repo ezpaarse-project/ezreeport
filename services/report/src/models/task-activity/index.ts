@@ -9,6 +9,7 @@ import {
   type TaskActivityType,
   type TaskActivityQueryFiltersType,
   type InputTaskActivityType,
+  type TaskActivityIncludeFieldsType,
 } from './types';
 
 function applyFilters(filters: TaskActivityQueryFiltersType) {
@@ -34,16 +35,33 @@ function applyFilters(filters: TaskActivityQueryFiltersType) {
   return where;
 }
 
+function applyIncludes(fields: TaskActivityIncludeFieldsType[]) {
+  const include: Prisma.TaskActivityInclude = {};
+
+  if (fields.includes('task')) {
+    const entries = Object.keys(prisma.task.fields).map((k) => [k, true]);
+    const select = Object.fromEntries(entries) as Prisma.TaskSelect;
+
+    select.template = false;
+
+    include.task = { select };
+  }
+
+  return include;
+}
+
 /**
  * Get all task activity
  *
  * @param filters Filters options
+ * @param include Fields to include
  * @param pagination Pagination options
  *
  * @returns All activity following pagination
  */
 export async function getAllActivity(
   filters?: TaskActivityQueryFiltersType,
+  include?: TaskActivityIncludeFieldsType[],
   pagination?: PaginationType,
 ): Promise<TaskActivityType[]> {
   // Prepare Prisma query
@@ -52,6 +70,11 @@ export async function getAllActivity(
   // Apply filters
   if (filters) {
     prismaQuery.where = applyFilters(filters);
+  }
+
+  // Apply includes
+  if (include) {
+    prismaQuery.include = applyIncludes(include);
   }
 
   // Fetch data
@@ -93,7 +116,7 @@ export async function createActivity(data: InputTaskActivityType): Promise<TaskA
  *
  * @returns Count of activity
  */
-export function countActivity(filters?: TaskActivityQueryFiltersType): Promise<number> {
+export async function countActivity(filters?: TaskActivityQueryFiltersType): Promise<number> {
   const prismaQuery: Prisma.TaskActivityCountArgs = {};
 
   // Apply filters
@@ -101,5 +124,10 @@ export function countActivity(filters?: TaskActivityQueryFiltersType): Promise<n
     prismaQuery.where = applyFilters(filters);
   }
 
-  return prisma.taskActivity.count(prismaQuery);
+  const result = await prisma.taskActivity.count({
+    ...prismaQuery,
+    select: { id: true },
+  });
+
+  return result.id;
 }

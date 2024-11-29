@@ -24,7 +24,7 @@ export const Namespace = z.object({
   }).describe('Additional options for fetchers used for namespace'),
 
   logoId: z.string().nullish()
-    .describe('Namespace description'),
+    .describe('Namespace logo'),
 
   createdAt: z.date().readonly()
     .describe('Creation date'),

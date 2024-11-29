@@ -144,7 +144,7 @@ export async function deleteNamespace(id: string): Promise<NamespaceType> {
  *
  * @returns Count of namespaces
  */
-export function countNamespaces(filters?: NamespaceQueryFiltersType): Promise<number> {
+export async function countNamespaces(filters?: NamespaceQueryFiltersType): Promise<number> {
   const prismaQuery: Prisma.NamespaceCountArgs = {};
 
   // Apply filters
@@ -152,7 +152,12 @@ export function countNamespaces(filters?: NamespaceQueryFiltersType): Promise<nu
     prismaQuery.where = applyFilters(filters);
   }
 
-  return prisma.namespace.count(prismaQuery);
+  const result = await prisma.namespace.count({
+    ...prismaQuery,
+    select: { id: true },
+  });
+
+  return result.id;
 }
 
 /**
@@ -163,7 +168,9 @@ export function countNamespaces(filters?: NamespaceQueryFiltersType): Promise<nu
  * @returns True if namespace exists
  */
 export async function doesNamespaceExist(id: string): Promise<boolean> {
-  return (await prisma.namespace.count({ where: { id } })) > 0;
+  const count = await prisma.namespace.count({ where: { id }, select: { id: true } });
+
+  return count.id > 0;
 }
 
 /**

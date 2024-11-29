@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { endOfDay, startOfDay } from '~/lib/date-fns';
+import { ensureArray } from '~/lib/utils';
 
 /**
  * Format Zod Issue
@@ -36,14 +37,8 @@ export async function ensureSchema<T, D>(
   return result.data;
 }
 
-export const stringToArray = z.array(z.string().min(1)).or(
-  z.string().transform((v) => {
-    if (!v) {
-      return [];
-    }
-    return v.split(',');
-  }),
-);
+export const stringOrArray = z.string().min(1).or(z.array(z.string().min(1)))
+  .transform((v) => ensureArray(v));
 
 export const stringToStartOfDay = z.string().date().transform((v) => {
   const date = z.coerce.date().parse(v);

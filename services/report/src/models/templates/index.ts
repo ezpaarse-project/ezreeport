@@ -140,7 +140,7 @@ export async function deleteTemplate(id: string): Promise<TemplateType> {
  *
  * @returns Count of templates
  */
-export function countTemplates(filters?: TemplateQueryFiltersType): Promise<number> {
+export async function countTemplates(filters?: TemplateQueryFiltersType): Promise<number> {
   const prismaQuery: Prisma.TemplateCountArgs = {};
 
   // Apply filters
@@ -148,7 +148,12 @@ export function countTemplates(filters?: TemplateQueryFiltersType): Promise<numb
     prismaQuery.where = applyFilters(filters);
   }
 
-  return prisma.template.count(prismaQuery);
+  const result = await prisma.template.count({
+    ...prismaQuery,
+    select: { id: true },
+  });
+
+  return result.id;
 }
 
 /**
@@ -159,7 +164,9 @@ export function countTemplates(filters?: TemplateQueryFiltersType): Promise<numb
  * @returns True if template exists
  */
 export async function doesTemplateExist(id: string): Promise<boolean> {
-  return (await prisma.template.count({ where: { id } })) > 0;
+  const count = await prisma.template.count({ where: { id }, select: { id: true } });
+
+  return count.id > 0;
 }
 
 /**

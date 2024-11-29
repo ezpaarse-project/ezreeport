@@ -13,6 +13,7 @@ import {
   type TaskType,
   type InputTaskType,
   type TaskQueryFiltersType,
+  type TaskIncludeFieldsType,
 } from './types';
 
 const logger = appLogger.child({ scope: 'models', model: 'tasks' });
@@ -49,16 +50,30 @@ function applyFilters(filters: TaskQueryFiltersType) {
   return where;
 }
 
+function applyIncludes(fields: TaskIncludeFieldsType[]): Prisma.TaskInclude {
+  const extended: Prisma.TemplateSelect = {};
+
+  if (fields.includes('extends.tags')) {
+    extended.tags = true;
+  }
+
+  return {
+    extends: { select: extended },
+  };
+}
+
 /**
  * Get all tasks
  *
  * @param filters Filters options
+ * @param include Fields to include
  * @param pagination Pagination options
  *
  * @returns All tasks following pagination
  */
 export async function getAllTasks(
   filters?: TaskQueryFiltersType,
+  include?: TaskIncludeFieldsType[],
   pagination?: PaginationType,
 ): Promise<TaskType[]> {
   // Prepare Prisma query
@@ -67,6 +82,11 @@ export async function getAllTasks(
   // Apply filters
   if (filters) {
     prismaQuery.where = applyFilters(filters);
+  }
+
+  // Apply includes
+  if (include) {
+    prismaQuery.include = applyIncludes(include);
   }
 
   // Fetch data
@@ -86,8 +106,18 @@ export async function getAllTasks(
  *
  * @returns The found task, or `null` if not found
  */
-export async function getTask(id: string): Promise<TaskType | null> {
-  const task = await prisma.task.findUnique({ where: { id } });
+export async function getTask(
+  id: string,
+  include?: TaskIncludeFieldsType[],
+): Promise<TaskType | null> {
+  const prismaQuery: Prisma.TaskFindUniqueArgs = { where: { id } };
+
+  // Apply includes
+  if (include) {
+    prismaQuery.include = applyIncludes(include);
+  }
+
+  const task = await prisma.task.findUnique(prismaQuery);
 
   return task && ensureSchema(Task, task);
 }
@@ -184,7 +214,7 @@ export async function deleteTask(id: string): Promise<TaskType> {
  *
  * @returns Count of tasks
  */
-export function countTasks(filters?: TaskQueryFiltersType): Promise<number> {
+export async function countTasks(filters?: TaskQueryFiltersType): Promise<number> {
   const prismaQuery: Prisma.TaskCountArgs = {};
 
   // Apply filters
@@ -192,7 +222,12 @@ export function countTasks(filters?: TaskQueryFiltersType): Promise<number> {
     prismaQuery.where = applyFilters(filters);
   }
 
-  return prisma.task.count(prismaQuery);
+  const result = await prisma.task.count({
+    ...prismaQuery,
+    select: { id: true },
+  });
+
+  return result.id;
 }
 
 /**
@@ -203,7 +238,9 @@ export function countTasks(filters?: TaskQueryFiltersType): Promise<number> {
  * @returns True if task exists
  */
 export async function doesTaskExist(id: string): Promise<boolean> {
-  return (await prisma.task.count({ where: { id } })) > 0;
+  const count = await prisma.task.count({ where: { id }, select: { id: true } });
+
+  return count.id > 0;
 }
 
 /**
@@ -242,9 +279,12 @@ export async function editTaskAfterGeneration(
  * @return A promise that resolves to the updated task.
  */
 export async function unlinkTaskFromTemplate(id: string): Promise<TaskType> {
-  const rawTask = await prisma.task.findUniqueOrThrow({ where: { id } });
-  const rawTemplate = await prisma.template.findUniqueOrThrow({
-    where: { id: rawTask.extendedId },
+  const {
+    extends: rawTemplate,
+    ...rawTask
+  } = await prisma.task.findUniqueOrThrow({
+    where: { id },
+    include: { extends: true },
   });
 
   const task = await ensureSchema(Task, rawTask, (t) => `Failed to parse task ${t.id}`);

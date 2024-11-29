@@ -10,6 +10,7 @@ import {
   type TaskPresetType,
   type InputTaskPresetType,
   type TaskPresetQueryFiltersType,
+  type TaskPresetIncludeFieldsType,
 } from '~/models/task-presets/types';
 
 const logger = appLogger.child({ scope: 'models', model: 'task-presets' });
@@ -32,6 +33,22 @@ function applyFilters(filters: TaskPresetQueryFiltersType) {
   return where;
 }
 
+function applyIncludes(fields: TaskPresetIncludeFieldsType[]): Prisma.TaskPresetInclude {
+  const template: Prisma.TemplateSelect = {};
+
+  if (fields.includes('template.tags')) {
+    template.tags = true;
+  }
+
+  if (fields.includes('template.hidden')) {
+    template.hidden = true;
+  }
+
+  return {
+    template: { select: template },
+  };
+}
+
 /**
  * Get all task presets
  *
@@ -42,6 +59,7 @@ function applyFilters(filters: TaskPresetQueryFiltersType) {
  */
 export async function getAllTaskPresets(
   filters?: TaskPresetQueryFiltersType,
+  include?: TaskPresetIncludeFieldsType[],
   pagination?: PaginationType,
 ): Promise<TaskPresetType[]> {
   // Prepare Prisma query
@@ -52,6 +70,14 @@ export async function getAllTaskPresets(
     prismaQuery.where = {
       ...(prismaQuery.where || {}),
       ...applyFilters(filters),
+    };
+  }
+
+  // Apply includes
+  if (include) {
+    prismaQuery.include = {
+      ...(prismaQuery.include || {}),
+      ...applyIncludes(include),
     };
   }
 
@@ -72,8 +98,22 @@ export async function getAllTaskPresets(
  *
  * @returns The found preset, or `null` if not found
  */
-export async function getTaskPreset(id: string): Promise<TaskPresetType | null> {
-  const preset = await prisma.taskPreset.findUnique({ where: { id } });
+export async function getTaskPreset(
+  id: string,
+  include?: TaskPresetIncludeFieldsType[],
+): Promise<TaskPresetType | null> {
+  // Prepare Prisma query
+  const prismaQuery: Prisma.TaskPresetFindUniqueArgs = { where: { id } };
+
+  // Apply includes
+  if (include) {
+    prismaQuery.include = {
+      ...(prismaQuery.include || {}),
+      ...applyIncludes(include),
+    };
+  }
+
+  const preset = await prisma.taskPreset.findUnique(prismaQuery);
 
   return preset && ensureSchema(TaskPreset, preset);
 }
@@ -163,7 +203,7 @@ export async function deleteTaskPreset(id: string): Promise<TaskPresetType> {
  *
  * @returns Count of presets
  */
-export function countTaskPresets(filters?: TaskPresetQueryFiltersType): Promise<number> {
+export async function countTaskPresets(filters?: TaskPresetQueryFiltersType): Promise<number> {
   const prismaQuery: Prisma.TaskPresetCountArgs = {};
 
   // Apply filters
@@ -171,7 +211,12 @@ export function countTaskPresets(filters?: TaskPresetQueryFiltersType): Promise<
     prismaQuery.where = applyFilters(filters);
   }
 
-  return prisma.taskPreset.count(prismaQuery);
+  const result = await prisma.taskPreset.count({
+    ...prismaQuery,
+    select: { id: true },
+  });
+
+  return result.id;
 }
 
 /**
@@ -183,5 +228,7 @@ export function countTaskPresets(filters?: TaskPresetQueryFiltersType): Promise<
  * @returns True if task exists
  */
 export async function doesTaskPresetExist(id: string): Promise<boolean> {
-  return (await prisma.taskPreset.count({ where: { id } })) > 0;
+  const count = await prisma.task.count({ where: { id }, select: { id: true } });
+
+  return count.id > 0;
 }

@@ -1,6 +1,21 @@
 import { z } from '~/lib/zod';
+import { ensureArray } from '~/lib/utils';
 
 import { Recurrence } from '~/models/recurrence/types';
+import { TemplateTag } from '~/models/templates/types';
+
+/**
+ * Validation for preset include fields
+ */
+const TaskPresetIncludeFields = z.enum([
+  'template.tags',
+  'template.hidden',
+] as const);
+
+/**
+ * Type for preset include fields
+ */
+export type TaskPresetIncludeFieldsType = z.infer<typeof TaskPresetIncludeFields>;
 
 /**
  * Validation for task preset
@@ -35,6 +50,17 @@ export const TaskPreset = z.object({
 
   updatedAt: z.date().nullable().readonly()
     .describe('Last update date'),
+
+  // Includes fields
+
+  template: z.object({
+    tags: z.array(TemplateTag).optional().readonly()
+      .describe('[Includes] Template tags'),
+
+    hidden: z.boolean().optional().readonly()
+      .describe('[Includes] If template is hidden to normal users'),
+  }).optional().readonly()
+    .describe('[Includes] Template referenced by the preset'),
 });
 
 /**
@@ -50,6 +76,8 @@ export const InputTaskPreset = TaskPreset.omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  // Stripping Includes properties
+  template: true,
 }).strict();
 
 /**
@@ -75,6 +103,12 @@ export const TaskPresetQueryFilters = z.object({
  * Type for query filters of a task preset
  */
 export type TaskPresetQueryFiltersType = z.infer<typeof TaskPresetQueryFilters>;
+
+export const TaskPresetQueryInclude = z.object({
+  include: TaskPresetIncludeFields.or(z.array(TaskPresetIncludeFields))
+    .transform((v) => ensureArray(v)).optional()
+    .describe('Fields to include'),
+});
 
 /**
  * Validation for additional data provided when creating a task from a preset

@@ -15,6 +15,7 @@ import {
   Task,
   InputTask,
   TaskQueryFilters,
+  TaskQueryInclude,
 } from '~/models/tasks/types';
 import { createActivity } from '~/models/task-activity';
 
@@ -34,7 +35,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     schema: {
       summary: 'Get all tasks',
       tags: ['tasks'],
-      querystring: PaginationQuery.and(TaskQueryFilters),
+      querystring: PaginationQuery.and(TaskQueryFilters).and(TaskQueryInclude),
       response: {
         [StatusCodes.OK]: PaginationResponse(
           Task.omit({ template: true }),
@@ -64,11 +65,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         count,
         sort,
         order,
+        include,
         ...filters
       } = request.query;
 
       const content = await tasks.getAllTasks(
         filters,
+        include,
         {
           page,
           count,
@@ -135,6 +138,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Get specific task',
       tags: ['tasks'],
       params: SpecificTaskParams,
+      querystring: TaskQueryInclude,
       response: {
         [StatusCodes.OK]: responses.SuccessResponse(Task),
         [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
@@ -151,7 +155,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     handler: async (request, reply) => {
-      const content = await tasks.getTask(request.params.id);
+      const content = await tasks.getTask(request.params.id, request.query.include);
 
       if (!content) {
         throw new NotFoundError(`Task ${request.params.id} not found`);

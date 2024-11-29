@@ -2,11 +2,24 @@ import {
   z,
   stringToStartOfDay,
   stringToEndOfDay,
-  stringToArray,
+  stringOrArray,
 } from '~/lib/zod';
+import { ensureArray } from '~/lib/utils';
 
 import { TaskTemplateBody, TemplateTag } from '~/models/templates/types';
 import { Recurrence } from '~/models/recurrence/types';
+
+/**
+ * Validation for task include fields
+ */
+const TaskIncludeFields = z.enum([
+  'extends.tags',
+] as const);
+
+/**
+ * Type for task include fields
+ */
+export type TaskIncludeFieldsType = z.infer<typeof TaskIncludeFields>;
 
 /**
  * Validation for the last extended template
@@ -64,6 +77,14 @@ export const Task = z.object({
 
   updatedAt: z.date().nullable().readonly()
     .describe('Last update date'),
+
+  // Includes fields
+
+  extends: z.object({
+    tags: z.array(TemplateTag).optional().readonly()
+      .describe('[Includes] Template tags'),
+  }).optional().readonly()
+    .describe('[Includes] Template extended by the task'),
 });
 
 /**
@@ -81,6 +102,8 @@ export const InputTask = Task.omit({
   updatedAt: true,
   // Stripping api reserved properties
   lastRun: true,
+  // Stripping Includes properties
+  extends: true,
 }).strict();
 
 /**
@@ -98,10 +121,10 @@ export const TaskQueryFilters = z.object({
   extendedId: z.string().min(1).optional()
     .describe('ID of template extended by the task'),
 
-  namespaceId: stringToArray.optional()
+  namespaceId: stringOrArray.optional()
     .describe('Possible namespace ID of the task'),
 
-  targets: stringToArray.optional()
+  targets: stringOrArray.optional()
     .describe('Email addresses used by the task'),
 
   'nextRun.from': stringToStartOfDay.optional()
@@ -115,3 +138,12 @@ export const TaskQueryFilters = z.object({
  * Type for query filters of a task
  */
 export type TaskQueryFiltersType = z.infer<typeof TaskQueryFilters>;
+
+/**
+ * Validation for task include fields
+ */
+export const TaskQueryInclude = z.object({
+  include: TaskIncludeFields.or(z.array(TaskIncludeFields))
+    .transform((v) => ensureArray(v)).optional()
+    .describe('Fields to include'),
+});

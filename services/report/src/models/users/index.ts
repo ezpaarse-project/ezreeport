@@ -126,7 +126,7 @@ export async function deleteUser(username: string): Promise<UserType> {
  *
  * @returns Count of users
  */
-export function countUsers(filters?: UserQueryFiltersType): Promise<number> {
+export async function countUsers(filters?: UserQueryFiltersType): Promise<number> {
   const prismaQuery: Prisma.UserCountArgs = {};
 
   // Apply filters
@@ -134,7 +134,12 @@ export function countUsers(filters?: UserQueryFiltersType): Promise<number> {
     prismaQuery.where = applyFilters(filters);
   }
 
-  return prisma.user.count(prismaQuery);
+  const count = await prisma.user.count({
+    ...prismaQuery,
+    select: { username: true },
+  });
+
+  return count.username;
 }
 
 /**
@@ -145,7 +150,9 @@ export function countUsers(filters?: UserQueryFiltersType): Promise<number> {
  * @returns True if user exists
  */
 export async function doesUserExist(username: string): Promise<boolean> {
-  return (await prisma.user.count({ where: { username } })) > 0;
+  const count = await prisma.user.count({ where: { username }, select: { username: true } });
+
+  return count.username > 0;
 }
 
 /**

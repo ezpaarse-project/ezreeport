@@ -1,11 +1,24 @@
+import { ensureArray } from '~/lib/utils';
 import {
   z,
-  stringToArray,
+  stringOrArray,
   stringToStartOfDay,
   stringToEndOfDay,
 } from '~/lib/zod';
 
-import { Task } from '../tasks/types';
+import { Task } from '~/models/tasks/types';
+
+/**
+ * Validation for event include fields
+ */
+const TaskActivityIncludeFields = z.enum([
+  'task',
+] as const);
+
+/**
+ * Type for event include fields
+ */
+export type TaskActivityIncludeFieldsType = z.infer<typeof TaskActivityIncludeFields>;
 
 /**
  * Validation for event
@@ -29,8 +42,10 @@ export const TaskActivity = z.object({
   createdAt: z.date()
     .describe('Creation date'),
 
-  // Includes
-  task: Task.nullish(),
+  // Includes fields
+
+  task: Task.omit({ template: true }).optional().readonly()
+    .describe('[Includes] Task related to event'),
 });
 
 /**
@@ -61,7 +76,7 @@ export const TaskActivityQueryFilters = z.object({
   extendedId: z.string().min(1).optional()
     .describe('ID of template extended by the task'),
 
-  namespaceId: stringToArray.optional()
+  namespaceId: stringOrArray.optional()
     .describe('Possible namespace ID of the task'),
 
   'createdAt.from': stringToStartOfDay.optional()
@@ -75,3 +90,12 @@ export const TaskActivityQueryFilters = z.object({
  * Type for query filters of a event
  */
 export type TaskActivityQueryFiltersType = z.infer<typeof TaskActivityQueryFilters>;
+
+/**
+ * Validation for event include fields
+ */
+export const TaskActivityQueryInclude = z.object({
+  include: TaskActivityIncludeFields.or(z.array(TaskActivityIncludeFields))
+    .transform((v) => ensureArray(v)).optional()
+    .describe('Fields to include'),
+});

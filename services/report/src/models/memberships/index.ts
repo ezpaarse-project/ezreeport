@@ -143,10 +143,10 @@ export async function deleteMembership(
  *
  * @returns Count of memberships
  */
-export function countMemberships(): Promise<number> {
-  const prismaQuery: Prisma.MembershipCountArgs = {};
+export async function countMemberships(): Promise<number> {
+  const result = await prisma.membership.count({ select: { username: true } });
 
-  return prisma.membership.count(prismaQuery);
+  return result.username;
 }
 
 /**
@@ -156,10 +156,10 @@ export function countMemberships(): Promise<number> {
  *
  * @returns True if membership exists
  */
-export async function doesMembershipExist(
-  { username, namespaceId }: FindOneMembership,
-): Promise<boolean> {
-  return (await prisma.membership.count({ where: { username, namespaceId } })) > 0;
+export async function doesMembershipExist(where: FindOneMembership): Promise<boolean> {
+  const count = await prisma.membership.count({ where, select: { username: true } });
+
+  return count.username > 0;
 }
 
 /**

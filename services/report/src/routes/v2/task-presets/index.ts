@@ -16,6 +16,7 @@ import {
   InputTaskPreset,
   TaskPresetQueryFilters,
   AdditionalDataForPreset,
+  TaskPresetQueryInclude,
 } from '~/models/task-presets/types';
 import { createTask } from '~/models/tasks';
 import { Task } from '~/models/tasks/types';
@@ -37,8 +38,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     schema: {
       summary: 'Get all task presets',
       tags: ['task-presets'],
-      querystring: PaginationQuery
-        .and(TaskPresetQueryFilters),
+      querystring: PaginationQuery.and(TaskPresetQueryFilters).and(TaskPresetQueryInclude),
       response: {
         [StatusCodes.OK]: PaginationResponse(TaskPreset),
         [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
@@ -66,11 +66,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         count,
         sort,
         order,
+        include,
         ...filters
       } = request.query;
 
       const content = await taskPresets.getAllTaskPresets(
         filters,
+        include,
         {
           page,
           count,
@@ -125,6 +127,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Get specific task preset',
       tags: ['task-presets'],
       params: SpecificTaskPresetParams,
+      querystring: TaskPresetQueryInclude,
       response: {
         [StatusCodes.OK]: responses.SuccessResponse(TaskPreset),
         [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
@@ -149,7 +152,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     ],
     handler: async (request, reply) => {
       // We already checked the task preset exists in preHandler
-      const content = (await taskPresets.getTaskPreset(request.params.id))!;
+      const content = (await taskPresets.getTaskPreset(request.params.id, request.query.include))!;
 
       return responses.buildSuccessResponse(content, reply);
     },
