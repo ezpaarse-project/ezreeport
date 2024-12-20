@@ -27,7 +27,7 @@ export const createTasksWriteStream = (
     recurrence: item.recurrence,
     nextRun: item.nextRun,
     enabled: item.enabled,
-    extends: item.extends.id,
-    namespace: item.namespace.id,
+    extendedId: item.extendedId,
+    namespaceId: item.namespaceId,
   }),
 });

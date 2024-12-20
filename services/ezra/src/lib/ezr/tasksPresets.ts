@@ -11,8 +11,8 @@ TaskPreset
 >({
   type: 'tasks presets',
   urls: {
-    list: '/tasks-presets',
-    item: (item) => `/tasks-presets/${item.id}`,
+    list: '/task-presets',
+    item: (item) => `/task-presets/${item.id}`,
   },
 });
 
@@ -20,12 +20,13 @@ export const createTaskPresetsWriteStream = (
   ezr: EZR,
 ) => ezr.createDataWriteStream<TaskPreset>({
   urls: {
-    item: (item) => `/tasks-presets/${item.id}`,
+    item: (item) => `/task-presets/${item.id}`,
   },
   transform: (item) => ({
     name: item.name,
+    hidden: item.hidden,
     fetchOptions: item.fetchOptions,
     recurrence: item.recurrence,
-    template: item.template.id,
+    templateId: item.templateId,
   }),
 });
