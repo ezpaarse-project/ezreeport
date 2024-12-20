@@ -37,6 +37,16 @@ services:
     ports:
       - 9232:9229 # Debug port
 
+  storybook:
+    image: node:20.11.0
+    working_dir: /usr/dev/services/vue
+    volumes:
+      - .:/usr/dev
+    command: "npm run dev -- --no-open"
+    ports:
+      - 6006:6006
+    restart: unless-stopped
+
   maildev:
     image: maildev/maildev
     ports:

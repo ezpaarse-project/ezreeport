@@ -1,62 +1,31 @@
-/* eslint-disable import/no-import-module-exports */
-import { mergeConfig } from 'vite';
-import type { StorybookConfig } from '@storybook/types';
-import type { StorybookConfigVite } from '@storybook/builder-vite';
-import remarkGfm from 'remark-gfm';
+import type { StorybookConfig } from '@storybook/vue3-vite';
 
-const config: StorybookConfig & StorybookConfigVite = {
-  stories: [
-    {
-      directory: '../src/components/internal',
-      titlePrefix: 'Internal',
-      files: '**/*.@(stories.@(js|jsx|ts|tsx))',
-    },
-    {
-      directory: '../src/components/public',
-      titlePrefix: 'Public',
-      files: '**/*.@(stories.@(js|jsx|ts|tsx)|mdx)',
-    },
-    {
-      directory: '../src/components',
-      titlePrefix: 'Get Started',
-      files: 'GetStarted.mdx',
-    },
-  ],
+const config: StorybookConfig = {
+  stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   addons: [
     '@storybook/addon-links',
     '@storybook/addon-essentials',
+    '@chromatic-com/storybook',
     '@storybook/addon-interactions',
-    {
-      name: '@storybook/addon-docs',
-      options: {
-        mdxPluginOptions: {
-          mdxCompileOptions: {
-            remarkPlugins: [remarkGfm],
-          },
-        },
-      },
-    },
   ],
   framework: {
-    name: '@storybook/vue-vite',
-    options: {},
-  },
-  docs: {
-    autodocs: 'tag',
-  },
-  core: {},
-  typescript: {
-    check: false,
-  },
-  viteFinal: (cfg) => mergeConfig(cfg, {
-    optimizeDeps: {
-      include: [
-        'vuetify',
-        'vue-i18n',
-        'vuetify/src/locale',
-      ],
+    name: '@storybook/vue3-vite',
+    options: {
+      docgen: 'vue-component-meta',
     },
-  }),
-};
+  },
+  async viteFinal(viteConfig,) {
+    const { mergeConfig } = await import('vite');
+    const { default: i18n } = await import('@intlify/unplugin-vue-i18n/vite');
 
-module.exports = config;
+    return mergeConfig(viteConfig, {
+      plugins: [
+        i18n({
+          include: 'src/locales/**',
+          ssr: true,
+        }),
+      ],
+    });
+  },
+};
+export default config;
