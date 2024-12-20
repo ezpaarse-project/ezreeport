@@ -19,7 +19,7 @@ import type { TaskType } from '~/models/tasks/types';
 import { createActivity } from '~/models/task-activity';
 import type { InputTaskActivityType } from '~/models/task-activity/types';
 import { getNamespace } from '~/models/namespaces';
-import { calcNextDateFromRecurrence, calcPreviousPeriodFromRecurrence } from '~/models/recurrence';
+import { calcNextDateFromRecurrence, calcPeriodFromRecurrence } from '~/models/recurrence';
 
 import { ReportErrorCause, type ReportPeriodType, type ReportResultType } from '../types';
 import { fetchElastic } from './fetch';
@@ -100,7 +100,7 @@ function resolveReportPeriod(
   customPeriod?: ReportPeriodType,
 ): ReportPeriodType {
   if (!customPeriod) {
-    return calcPreviousPeriodFromRecurrence(new Date(), task.recurrence);
+    return calcPeriodFromRecurrence(new Date(), task.recurrence, -1);
   }
 
   // Parse custom period

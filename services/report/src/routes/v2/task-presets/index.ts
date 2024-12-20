@@ -1,6 +1,7 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
+import { startOfDay } from '~/lib/date-fns';
 import { z } from '~/lib/zod';
 
 import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
@@ -20,7 +21,7 @@ import {
 } from '~/models/task-presets/types';
 import { createTask } from '~/models/tasks';
 import { Task } from '~/models/tasks/types';
-import { calcNextDateFromRecurrence, calcPreviousPeriodFromRecurrence } from '~/models/recurrence';
+import { calcPeriodFromRecurrence } from '~/models/recurrence';
 
 import { NotFoundError } from '~/types/errors';
 
@@ -258,8 +259,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       const taskPreset = (await taskPresets.getTaskPreset(request.params.id))!;
 
       // Set next run to start of recurrence (start of week for weekly, etc.)
-      const nextDate = calcNextDateFromRecurrence(new Date(), taskPreset.recurrence);
-      const nextRun = calcPreviousPeriodFromRecurrence(nextDate, taskPreset.recurrence).end;
+      const currentPeriod = calcPeriodFromRecurrence(new Date(), taskPreset.recurrence, 1);
+      const nextRun = startOfDay(currentPeriod.start);
 
       const task = await createTask({
         name: request.body.name,
@@ -268,6 +269,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         template: {
           index: request.body.index,
           dateField: taskPreset.fetchOptions?.dateField,
+          filters: request.body.filters,
         },
         recurrence: taskPreset.recurrence,
         extendedId: taskPreset.templateId,

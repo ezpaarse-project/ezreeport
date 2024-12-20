@@ -42,52 +42,52 @@ export function calcNextDateFromRecurrence(initial: Date, recurrence: Recurrence
 }
 
 /**
- * Get previous period based on Reccurrence
+ * Get period based on Recurrence
  *
  * @param today The today's date
- * @param recurrence The reccurence
+ * @param recurrence The recurrence
+ * @param offset The offset, negative for previous, positive for next, 0 for current
  *
  * @returns The period
  */
-export function calcPreviousPeriodFromRecurrence(
+export function calcPeriodFromRecurrence(
   today: Date,
   recurrence: Recurrence,
+  offset = 0,
 ): ReportPeriodType {
   switch (recurrence) {
     case Recurrence.DAILY: {
-      const target = dfns.add(today, { days: -1 });
+      const target = dfns.add(today, { days: offset });
       return { start: dfns.startOfDay(target), end: dfns.endOfDay(target) };
     }
 
     case Recurrence.WEEKLY: {
-      const target = dfns.add(today, { weeks: -1 });
+      const target = dfns.add(today, { weeks: offset });
       return { start: dfns.startOfWeek(target), end: dfns.endOfWeek(target) };
     }
 
     case Recurrence.MONTHLY: {
-      const target = dfns.add(today, { months: -1 });
+      const target = dfns.add(today, { months: offset });
       return { start: dfns.startOfMonth(target), end: dfns.endOfMonth(target) };
     }
 
     case Recurrence.QUARTERLY: {
-      const target = dfns.add(today, { months: -3 });
+      const target = dfns.add(today, { months: 3 * offset });
       return { start: dfns.startOfQuarter(target), end: dfns.endOfQuarter(target) };
     }
 
     case Recurrence.BIENNIAL: {
-      const year = dfns.getYear(today);
+      const target = dfns.add(today, { months: 6 * offset });
+      const year = dfns.getYear(target);
       const midYear = new Date(year, 5, 30);
-      if (dfns.isAfter(today, midYear)) {
-        // Target is first half of current year
-        return { start: dfns.startOfYear(midYear), end: midYear };
+      if (dfns.isAfter(target, midYear)) {
+        return { start: midYear, end: dfns.endOfYear(midYear) };
       }
-      // Target is second half of previous year
-      const target = dfns.add(midYear, { years: -1, days: 1 });
-      return { start: target, end: dfns.endOfYear(target) };
+      return { start: dfns.startOfYear(midYear), end: midYear };
     }
 
     case Recurrence.YEARLY: {
-      const target = dfns.add(today, { years: -1 });
+      const target = dfns.add(today, { years: offset });
       return { start: dfns.startOfYear(target), end: dfns.endOfYear(target) };
     }
 
