@@ -1,187 +1,407 @@
 {
-  "template": "template|templates",
-  "layout": "page|pages",
-  "figure": "figure|figures",
-
-  "yes": "Yes",
-  "no": "No",
-  "create": "Create",
-  "edit": "Edit",
-  "delete": "Delete",
-  "duplicate": "Duplicate",
-  "cancel": "Cancel",
-  "confirm": "Confirm",
-  "open": "Open",
-  "generate": "Generate",
-  "save": "Save",
-  "advanced_parameters": "Advanced parameters",
-  "show_json": "Show JSON",
-  "settings": "Settings",
-  "preview": "Preview",
-  "unknown": "Unknown",
-  "filter": "Filter",
-  "reset": "Reset",
-  "details": "Details",
-
-  "tasks": {
-    "name": "Report name",
-    "targets": "Receivers",
-    "dates": "Dates",
-    "recurrence": "Recurrence",
-    "lastRun": "Last run",
-    "nextRun": "Next run",
-    "status": "Statut",
-    "enabled": {
-      "true": "Active",
-      "false": "Inactive"
-    },
-
-    "tabs": {
-      "details": "Details",
-      "activity": "Activity",
-      "template": "Template"
-    },
-
-    "errors": {
-      "_default": "An error is in this form"
-    }
-  },
-
-  "taskPresets": {
-    "title": "Preset report|Presets reports",
-    "name": "Preset name",
-    "template": "Template"
-  },
-
-  "templates": {
-    "hidden": "Hidden to users|Visible to users",
-    "base": "Base template",
-    "renderOptions": "Render options",
-    "editor": "Page editor ({n} page)|Page editor ({n} pages)",
-
-    "tabs": {
-      "template": "Template",
-      "tasks": "Linked tasks"
-    }
-  },
-
-  "layouts": {
-    "errors": {
-      "_detail": "Page {at}: {valid}",
-      "length": "All pages must contains at least one figure"
-    }
-  },
-
-  "figures": {
+  "$ezreeport": {
+    "new": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "import": "Import",
+    "save": "Save",
+    "refresh": "Refresh",
+    "advanced": "Advanced",
+    "show_json": "Show JSON",
+    "settings": "Settings",
+    "required": "Required",
+    "parameters": "Parameters",
+    "deselect": "Deselect",
+    "search": "Search",
+    "name": "Name",
+    "addMultiValue": "Add value",
+    "noValues": "No values",
+    "field": "Field",
     "type": "Type",
-    "slots": "Figure slot(s)",
-
-    "type_list": {
-      "table": "Table",
-      "md": "Markdown",
-      "metric": "Metrics",
-      "arc": "Arc",
-      "area": "Area",
-      "bar": "Bar",
-      "line": "Line",
-      "point": "Point",
-      "rect": "Rect",
-      "rule": "Rule",
-      "text": "Text",
-      "tick": "Tick",
-      "trail": "Trail",
-      "circle": "Point circles",
-      "square": "Square",
-
-      "unknown": "Unknown"
+    "others": "Other",
+    "format": "Format",
+    "actions": "Actions",
+    "createdAt": "Created at",
+    "updatedAt": "Updated at",
+    "namespace": "Namespace",
+    "yes": "Yes",
+    "no": "No",
+    "restart": "Restart",
+    "task": {
+      "title": "Periodic report",
+      "title:list": "Periodic reports ({n})",
+      "title:new": "Create report",
+      "title:edit": "Edit report",
+      "title:generate": "Generate test report",
+      "manage": "Manage {n} reports",
+      "id": "Report's ID",
+      "recurrence": "Recurrence",
+      "targets": "Targets",
+      "targets:count": "{n} target|{n} targets",
+      "targets:copy": "Copy mail adresses",
+      "nextRun": "Next delivery",
+      "lastRun": "Previous delivery",
+      "state": "State",
+      "state:toggle": "State",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "noList": "No periodic reports were found",
+      "noList:desc": "Create your first report by clicking on the @:$ezreeport.new button",
+      "generate": "Generate",
+      "period": "Period",
+      "recurrenceList": {
+        "DAILY": "Daily",
+        "WEEKLY": "Weekly",
+        "MONTHLY": "Monthly",
+        "QUARTERLY": "Quarterly",
+        "BIENNIAL": "Biennial",
+        "YEARLY": "Yearly"
+      },
+      "generation": {
+        "error": {
+          "title": "An error occurred during generation",
+          "layout": "Layout",
+          "figure": "Figure"
+        },
+        "success": {
+          "title": "The report was generated with success",
+          "description": "The PDF report will be available in mail box of the provided targets, you can also download it using the button at the right corner of this box."
+        },
+        "files": {
+          "report": "PDF report",
+          "detail": "Report details (JSON)",
+          "debug": "Debug report (JSON)"
+        }
+      }
     },
-
-    "type_groups": {
-      "common": "Common",
-      "others": "Others"
+    "task-preset": {
+      "title": "Report Preset",
+      "title:list": "Report presets ({n})",
+      "title:new": "Create report preset",
+      "title:edit": "Edit report preset",
+      "manage": "Manage {n} report presets",
+      "hidden:desc": "The preset is hidden for users|The preset is visible for users",
+      "template-hidden:desc": "Template used by this preset is hidden to users, so this preset is hidden too",
+      "noList": "No preset were found",
+      "noList:desc": "Help users to create periodic reports by creating the first preset, just click on the @:$ezreeport.new button"
     },
-
-    "slots_list": [
-      "Top left",
-      "Top right",
-      "Bottom left",
-      "Bottom right"
-    ],
-
-    "vars_list": {
-      "length": "Count of shown items"
+    "task-activity": {
+      "title:list": "Reports activity ({n})",
+      "task": "Periodic report",
+      "type": "Type",
+      "message": "Message",
+      "meta": "Meta",
+      "date": "Date",
+      "origin": "Origin",
+      "period": "Period"
     },
-
-    "errors": {
-      "_detail": "Figure {at}: {valid}",
-      "no_slots": "At least one slot must be provided",
-      "slot_incompatibility": "This combinaison of slots is not possible",
-      "no_elements": "This figure doesn't have any elements defined"
+    "template": {
+      "title": "Template",
+      "title:list": "Templates ({n})",
+      "title:new": "Create template",
+      "title:edit": "Edit template",
+      "editor:open": "Open editor",
+      "manage": "Manage {n} templates",
+      "hidden": "Visibility",
+      "hidden:desc": "The template is hidden for users|The template is visible for users",
+      "hidden:toggle": "Toggle visibility",
+      "id": "Template's ID",
+      "index": "Index",
+      "dateField": "Date field in index",
+      "noList": "No templates were found",
+      "noList:desc": "Allow reports by creating the first template, just click on the @:$ezreeport.new button",
+      "layouts": "Pages ({n})",
+      "noTemplate": "Template is empty",
+      "noTemplate:desc": "Create your template by opening the template editor",
+      "tags": {
+        "title": "Tags",
+        "title:new": "Create tag",
+        "title:edit": "Edit tag",
+        "color": "Color"
+      }
+    },
+    "index": {
+      "help": "Use an asterisk (*) to match multiple indices of your repositories. Spaces and the characters {chars} are not allowed.",
+      "matched": "Included",
+      "matched:count": "The expression includes 1 index from your repositories.|The expression includes {n} indices from your repositories.",
+      "name": "Index",
+      "required": "The expression must include at least one of your index from your repositories.",
+      "invalidChars": "The expression contains spaces or forbidden characters like: {message}"
+    },
+    "editor": {
+      "title": "Template editor (1 page)|Template editor ({n} pages)",
+      "title:layouts": "Pages",
+      "title:figures": "Figures",
+      "noLayouts": "No pages are defined",
+      "noSelected": "No page is selected",
+      "noSelected:desc": "Select a page on the left to start adding figures",
+      "createLayout": "Create your first page",
+      "vars": {
+        "dateField": "Date field of template",
+        "length": "Count of items displayed"
+      },
+      "filters": {
+        "title": "Filters ({n})",
+        "title:new": "Create filter",
+        "title:edit": "Edit filter",
+        "title:import": "Import filters from Kibana",
+        "description:import": "Copy filters from Kibana and past them in the following area.",
+        "raw": "DSL Query",
+        "field": "@:$ezreeport.field",
+        "value": "Value(s)",
+        "isNot": "Invert filter",
+        "foundFilters": "Found {n} filter|Found {n} filters",
+        "nameTemplate": {
+          "exists": "{field} exists",
+          "exists:not": "{field} doesn't exists",
+          "values": "{0}|{0} {1}, etc.",
+          "is": "{field} is {valueText}",
+          "is:not": "{field} is not {valueText}"
+        }
+      },
+      "aggregation": {
+        "title": "Aggregation",
+        "field": "@:$ezreeport.field",
+        "type": "@:$ezreeport.type",
+        "raw": "DSL Query",
+        "size": "Result count",
+        "aggregationTemplate": "{type} of {field}",
+        "typeGroups": {
+          "common": "Common",
+          "others": "@:$ezreeport.others"
+        },
+        "types": {
+          "_count": "Count",
+          "adjacency_matrix": "Adjacency Matrix",
+          "auto_date_histogram": "Auto date histogram",
+          "avg": "Average",
+          "avg_bucket": "Average by Bucket",
+          "boxplot": "Boxplot",
+          "cardinality": "Unique count",
+          "categorize_text": "Categorize text",
+          "cumulative_sum": "Cumulative Sum",
+          "date_histogram": "Date histogram",
+          "derivative": "Derivative",
+          "diversified_sampler": "Diversified sampler",
+          "extended_stats": "Extended stats",
+          "filters": "Filters",
+          "geo_bounds": "Geo bounds",
+          "geo_centroid": "Geo centroid",
+          "geo_grid": "Geographical Grid",
+          "histogram": "Histogram",
+          "max": "Maximum",
+          "max_bucket": "Maximum by Bucket",
+          "median_absolute_deviation": "Median absolute deviation",
+          "min": "Minimum",
+          "min_bucket": "Minimum by Bucket",
+          "moving_average": "Moving Average",
+          "percentile_ranks": "Percentile Ranks",
+          "percentiles": "Percentiles",
+          "range": "Range",
+          "rare_terms": "Rare terms",
+          "rate": "Rate",
+          "sampler": "Sampler",
+          "significant_terms": "Significant terms",
+          "significant_text": "Significant text",
+          "stats": "Stats",
+          "string_stats": "String stats",
+          "sum": "Sum",
+          "sum_bucket": "Sum by Bucket",
+          "terms": "Terms",
+          "top_hits": "Top Hits",
+          "value_count": "Value count",
+          "variable_width_histogram": "Variable width histogram"
+        }
+      },
+      "order": {
+        "asc": "Ascending",
+        "desc": "Descending"
+      },
+      "figures": {
+        "_": {
+          "title": "Figure's title",
+          "titleTemplate": "'s parameters",
+          "order": "Sorting data",
+          "type": "Type of figure",
+          "create": "Create figure",
+          "types": {
+            "table": "Table",
+            "md": "Markdown",
+            "metric": "Metrics",
+            "arc": "Arc",
+            "area": "Area",
+            "bar": "Bar",
+            "line": "Line",
+            "point": "Point",
+            "rect": "Rect",
+            "rule": "Rule",
+            "text": "Text",
+            "tick": "Tick",
+            "trail": "Trail",
+            "circle": "Point circles",
+            "square": "Square"
+          },
+          "slots": "Figure slots",
+          "slotsList": [
+            "Top left",
+            "Top right",
+            "Bottom left",
+            "Bottom right"
+          ]
+        },
+        "md": {
+          "title": "Markdown@:$ezreeport.editor.figures._titleTemplate",
+          "preview": "Preview",
+          "data": "Content"
+        },
+        "metric": {
+          "title": "Metric@:$ezreeport.editor.figures._titleTemplate",
+          "elements": {
+            "title": "Elements ({n})",
+            "title:new": "Create element",
+            "title:edit": "Edit element",
+            "format": "@:$ezreeport.format",
+            "formatOptions": {
+              "none": "Text",
+              "date": "Date",
+              "number": "Number"
+            },
+            "formatOptionsLabel": {
+              "_default": "Format parameters",
+              "date": "Format to use",
+              "date:hint": "Based on {link}",
+              "number": "Locale to use"
+            }
+          }
+        },
+        "table": {
+          "title": "Table@:$ezreeport.editor.figures._.titleTemplate",
+          "showTotal": "Show total",
+          "columns": {
+            "title": "Columns ({n})",
+            "title:new": "Create column",
+            "title:edit": "Edit column",
+            "header": "Title of the column",
+            "metric": "Is the column the metric of the table ?",
+            "styles": {
+              "fillColor": "Background color",
+              "textColor": "Text color",
+              "lineColor": "Border color",
+              "fontSize": "Text size",
+              "fontStyle": "Text style",
+              "bold": "Bold text",
+              "italic": "Italic text",
+              "valign": "Vertical alignment",
+              "vtop": "Content aligned to the top",
+              "vmiddle": "Content aligned to the center",
+              "vbottom": "Content aligned to the bottom",
+              "halign": "Horizontal alignment",
+              "hleft": "Content aligned to the left",
+              "hcenter": "Content aligned to the center",
+              "hright": "Content aligned to the right",
+              "hjustify": "Content aligned to the left and right (justified)"
+            }
+          }
+        },
+        "vega": {
+          "_": { 
+            "title": "{type}@:$ezreeport.editor.figures._.titleTemplate",
+            "value": "Data",
+            "label": "Series",
+            "color": "Group",
+            "color:enable": "Enable grouping",
+            "legend": "Legend's title",
+            "legend:enable": "Show legend",
+            "axisTitle": "Axis Title",
+            "dataLabel": "Data Labels",
+            "dataLabel:enable": "Show labels with data on top of figure",
+            "dataLabel:preview": "Preview :",
+            "dataLabel:format": "@:$ezreeport.format",
+            "dataLabel:formats": {
+              "numeric": "Numeric",
+              "percent": "Percent"
+            },
+            "dataLabel:position": "Position",
+            "dataLabel:positions": {
+              "in": "Inside",
+              "out": "Outside"
+            },
+            "dataLabel:showLabel": "Show labels",
+            "dataLabel:minValue": "Minimum value"
+          },
+          "arc": {
+            "label": "Slices"
+          },
+          "bar": {
+            "value": "Y-axis",
+            "label": "X-axis",
+            "color": "Stacking on {axis}",
+            "color:enable": "Enable stacking",
+            "invertAxis": "Invert axis"
+          }
+        }
+      },
+      "layouts": {
+        "title": "Pages",
+        "create": "Create page"
+      }
+    },
+    "crons": {
+      "title:list": "Automatic jobs (crons)"
+    },
+    "health": {
+      "title:list": "ezREEPORT's status",
+      "client": "Client status",
+      "server": "Server status"
+    },
+    "queues": {
+      "_": {
+        "title:list": "Queues",
+        "title:jobs": "Jobs ({n})",
+        "tries": "Tries",
+        "status": "Job's status",
+        "duration": "Duration",
+        "added": "Add date",
+        "started": "Start date",
+        "ended": "End date",
+        "info": "Job's information",
+        "id": "Job's ID",
+        "statusList": {
+          "completed": "Completed",
+          "failed": "Failed",
+          "delayed": "Delayed",
+          "active": "Active",
+          "waiting": "Waiting"
+        }
+      },
+      "generation": {
+        "title": "Generation queue",
+        "task": "Report's name",
+        "template": "Template's name",
+        "status": "Generation status",
+        "origin": "Origin",
+        "debug": "Test report",
+        "auth": "Elastic User",
+        "header:request": "Generation parameters",
+        "header:task": "Generated report",
+        "header:result": "Generation result",
+        "header:files": "Generated files"
+      },
+      "mail": {
+        "title": "Mailing queue",
+        "error": "Error message",
+        "errorDate": "Error date",
+        "task": "Report's name",
+        "attachement": "Attachement",
+        "generationDate": "Generation date",
+        "generationJob": "Informations about generation",
+        "header:generation": "Generation summary",
+        "header:mail": "Mail informations"
+      }
     }
-  },
-
-  "fetchOptions": {
-    "title": "Fetch options",
-    "aggName": "Aggregation name",
-    "aggSummary": "{type} of {field}",
-    "index": "Elastic expression",
-    "dateField": "'date' field of the index",
-    "filters": "Filters",
-    "aggregations": "Aggregations",
-
-    "agg_option": "{label}",
-    "agg_types": {
-      "__count": "Count",
-      "adjacency_matrix": "Adjacency Matrix",
-      "auto_date_histogram": "Auto date histogram",
-      "avg": "Average",
-      "avg_bucket": "Average by Bucket",
-      "boxplot": "Boxplot",
-      "cardinality": "Unique count",
-      "categorize_text": "Categorize text",
-      "cumulative_sum": "Cumulative Sum",
-      "date_histogram": "Date histogram",
-      "derivative": "Derivative",
-      "diversified_sampler": "Diversified sampler",
-      "extended_stats": "Extended stats",
-      "filters": "Filters",
-      "geo_bounds": "Geo bounds",
-      "geo_centroid": "Geo centroid",
-      "geo_grid": "Geographical Grid",
-      "histogram": "Histogram",
-      "max": "Maximum",
-      "max_bucket": "Maximum by Bucket",
-      "median_absolute_deviation": "Median absolute deviation",
-      "min": "Minimum",
-      "min_bucket": "Minimum by Bucket",
-      "moving_average": "Moving Average",
-      "percentile_ranks": "Percentile Ranks",
-      "percentiles": "Percentiles",
-      "range": "Range",
-      "rare_terms": "Rare terms",
-      "rate": "Rate",
-      "sampler": "Sampler",
-      "significant_terms": "Significant terms",
-      "significant_text": "Significant text",
-      "stats": "Stats",
-      "string_stats": "String stats",
-      "sum": "Sum",
-      "sum_bucket": "Sum by Bucket",
-      "terms": "Terms",
-      "top_hits": "Top Hits",
-      "value_count": "Value count",
-      "variable_width_histogram": "Variable width histogram"
-    }
-  },
-
-  "errors": {
-    "_detail": "{valid} ({field})",
-    "empty": "This field must be set",
-    "fetch": "An error occurred when fetching data",
-    "email_format": "One or more address aren't valid",
-    "json_format": "Given JSON isn't valid",
-    "valid": "The value must be valid",
-    "negative": "The value must be positive",
-    "no_extends": "Cannot get extended template"
   }
 }

@@ -1,187 +1,407 @@
 {
-  "template": "modèle|modèles",
-  "layout": "page|pages",
-  "figure": "visualisation|visualisations",
-
-  "yes": "Oui",
-  "no": "Non",
-  "create": "Créer",
-  "edit": "Éditer",
-  "delete": "Supprimer",
-  "duplicate": "Dupliquer",
-  "cancel": "Annuler",
-  "confirm": "Confirmer",
-  "open": "Ouvrir",
-  "generate": "Générer",
-  "save": "Sauvegarder",
-  "advanced_parameters": "Paramètres avancés",
-  "show_json": "Afficher en JSON",
-  "settings": "Paramètres",
-  "preview": "Prévisualisation",
-  "unknown": "Inconnu",
-  "filter": "Filtrer",
-  "reset": "Réinitialiser",
-  "details": "Détails",
-
-  "tasks": {
-    "name": "Nom du rapport",
-    "targets": "Destinataires",
-    "dates": "Dates",
-    "recurrence": "Fréquence",
-    "lastRun": "Dernière itération",
-    "nextRun": "Prochaine itération",
-    "status": "Statut",
-    "enabled": {
-      "true": "Actif",
-      "false": "Inactif"
-    },
-
-    "tabs": {
-      "details": "Détails",
-      "activity": "Activité",
-      "template": "Modèle"
-    },
-
-    "errors": {
-      "_default": "Une erreur est présente dans ce formulaire"
-    }
-  },
-  
-  "taskPresets": {
-    "title": "Rapport prédéfini|Rapports prédéfinis",
-    "name": "Nom du prédéfini",
-    "template": "Modèle"
-  },
-
-  "templates": {
-    "hidden": "Invisible pour les utilisateurs|Visible pour les utilisateurs",
-    "base": "Modèle de base",
-    "renderOptions": "Options de rendu",
-    "editor": "Éditeur de pages ({n} page)|Éditeur de pages ({n} pages)",
-
-    "tabs": {
-      "template": "Modèle",
-      "tasks": "Tâches liées"
-    }
-  },
-
-  "layouts": {
-    "errors": {
-      "_detail": "Page {at}: {valid}",
-      "length": "Chaque page doit contenir au moins une visualisation"
-    }
-  },
-
-  "figures": {
+  "$ezreeport": {
+    "new": "Créer",
+    "edit": "Éditer",
+    "delete": "Supprimer",
+    "duplicate": "Dupliquer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "close": "Fermer",
+    "import": "Importer",
+    "save": "Sauvegarder",
+    "refresh": "Rafraîchir",
+    "advanced": "Avancé",
+    "show_json": "Afficher le JSON",
+    "settings": "Paramètres",
+    "required": "Requis",
+    "parameters": "Paramètres",
+    "deselect": "Désélectionner",
+    "search": "Rechercher",
+    "name": "Nom",
+    "addMultiValue": "Ajouter des valeurs",
+    "noValues": "Aucune valeur",
+    "field": "Champ",
     "type": "Type",
-    "slots": "Emplacement(s)",
-
-    "type_list": {
-      "table": "Table",
-      "md": "Markdown",
-      "metric": "Métriques",
-      "arc": "Circulaire",
-      "area": "Aire",
-      "bar": "Bâtons",
-      "line": "Courbes",
-      "point": "Nuage de points",
-      "rect": "Rectangle",
-      "rule": "Règle",
-      "text": "Texte",
-      "tick": "Trait",
-      "trail": "Courbes à largeur variable",
-      "circle": "Nuage de cercles",
-      "square": "Carré",
-
-      "unknown": "Inconnu"
+    "others": "Autres",
+    "format": "Format",
+    "actions": "Actions",
+    "createdAt": "Créé le",
+    "updatedAt": "Mis à jour le",
+    "namespace": "Espace",
+    "yes": "Oui",
+    "no": "Non",
+    "restart": "Relancer",
+    "task": {
+      "title": "Rapport périodique",
+      "title:list": "Rapports périodiques ({n})",
+      "title:new": "Créer un rapport",
+      "title:edit": "Éditer le rapport",
+      "title:generate": "Générer un rapport de test",
+      "manage": "Gérer {n} rapports",
+      "id": "ID du rapport",
+      "recurrence": "Récurrence",
+      "targets": "Cibles",
+      "targets:count": "{n} cible|{n} cibles",
+      "targets:copy": "Copier les adresses mail",
+      "nextRun": "Prochain envoi",
+      "lastRun": "Envoi précédent",
+      "state": "État",
+      "state:toggle": "État",
+      "enabled": "Activé",
+      "disabled": "Désactivé",
+      "noList": "Aucun rapport périodique trouvé",
+      "noList:desc": "Créez votre premier rapport en cliquant sur le bouton @:$ezreeport.new",
+      "generate": "Générer",
+      "period": "Période",
+      "recurrenceList": {
+        "DAILY": "Quotidien",
+        "WEEKLY": "Hebdomadaire",
+        "MONTHLY": "Mensuel",
+        "QUARTERLY": "Trimestriel",
+        "BIENNIAL": "Semestriel",
+        "YEARLY": "Annuel"
+      },
+      "generation": {
+        "error": {
+          "title": "Une erreur est survenue lors de la génération",
+          "layout": "Disposition",
+          "figure": "Visualisation"
+        },
+        "success": {
+          "title": "Le rapport a été généré avec succès",
+          "description": "Le rapport PDF sera disponible dans la boîte mail des cibles fournies, vous pouvez également le télécharger en utilisant le bouton en haut à droite de cette boîte."
+        },
+        "files": {
+          "report": "Rapport PDF",
+          "detail": "Détails du rapport (JSON)",
+          "debug": "Rapport de debug (JSON)"
+        }
+      }
     },
-
-    "type_groups": {
-      "common": "Communs",
-      "others": "Autres"
+    "task-preset": {
+      "title": "Rapport prédéfini",
+      "title:list": "Rapports prédéfini ({n})",
+      "title:new": "Créer un rapport prédéfini",
+      "title:edit": "Éditer le rapport prédéfini",
+      "manage": "Gérer {n} rapports prédéfini",
+      "hidden:desc": "Le prédéfini est caché pour les utilisateurs|Le prédéfini est visible pour les utilisateurs",
+      "template-hidden:desc": "Le modèle utilisé par ce prédéfini est caché pour les utilisateurs, donc ce prédéfini est également caché",
+      "noList": "Aucun prédéfini trouvé",
+      "noList:desc": "Aidez les utilisateurs à créer des rapports périodiques en créant le premier prédéfini, cliquez simplement sur le bouton @:$ezreeport.new"
     },
-
-    "slots_list": [
-      "Haut à gauche",
-      "Haut à droite",
-      "Bas à gauche",
-      "Bas à droite"
-    ],
-
-    "vars_list": {
-      "length": "Nombre d'éléments affichés"
+    "task-activity": {
+      "title:list": "Activité des rapports ({n})",
+      "task": "Rapport périodique",
+      "type": "Type",
+      "message": "Message",
+      "meta": "Méta",
+      "date": "Date",
+      "origin": "Origine",
+      "period": "Période"
     },
-
-    "errors": {
-      "_detail": "Visualisation {at}: {valid}",
-      "no_slots": "Au moins un emplacement doit être utilisé",
-      "slot_incompatibility": "Cette combinaison d'emplacement n'est pas possible",
-      "no_elements": "Cette visualisation n'a pas d'éléments de défini"
+    "template": {
+      "title": "Modèle",
+      "title:list": "Modèles ({n})",
+      "title:new": "Créer un modèle",
+      "title:edit": "Éditer le modèle",
+      "editor:open": "Ouvrir l'éditeur",
+      "manage": "Gérer {n} modèles",
+      "hidden": "Visibilité",
+      "hidden:desc": "Le modèle est caché pour les utilisateurs|Le modèle est visible pour les utilisateurs",
+      "hidden:toggle": "Basculer la visibilité",
+      "id": "ID du modèle",
+      "index": "Index",
+      "dateField": "Champ date dans l'index",
+      "noList": "Aucun modèle trouvé",
+      "noList:desc": "Permettez des rapports en créant le premier modèle, cliquez simplement sur le bouton @:$ezreeport.new",
+      "layouts": "Pages ({n})",
+      "noTemplate": "Le modèle est vide",
+      "noTemplate:desc": "Créez votre modèle en ouvrant l'éditeur de modèles",
+      "tags": {
+        "title": "Étiquettes",
+        "title:new": "Créer une étiquette",
+        "title:edit": "Éditer l'étiquette",
+        "color": "Couleur"
+      }
+    },
+    "index": {
+      "help": "Utilisez un astérisque (*) pour correspondre à plusieurs indices de vos entrepôts. Les espaces et les caractères {chars} ne sont pas autorisés.",
+      "matched": "Inclus",
+      "matched:count": "L'expression inclut 1 index de vos entrepôts.|L'expression inclut {n} indices de vos entrepôts.",
+      "name": "Index",
+      "required": "L'expression doit inclure au moins un de vos index de vos entrepôts.",
+      "invalidChars": "L'expression contient des espaces ou des caractères interdits comme : {message}"
+    },
+    "editor": {
+      "title": "Éditeur de template (1 page)|Éditeur de template ({n} pages)",
+      "title:layouts": "Pages",
+      "title:figures": "Visualisations",
+      "noLayouts": "Aucune page n'est définie",
+      "noSelected": "Aucune page n'est sélectionnée",
+      "noSelected:desc": "Sélectionnez une page sur la gauche pour commencer à ajouter des visualisations",
+      "createLayout": "Créez votre première page",
+      "vars": {
+        "dateField": "Champ date du template",
+        "length": "Nombre d'éléments affichés"
+      },
+      "filters": {
+        "title": "Filtres ({n})",
+        "title:new": "Créer un filtre",
+        "title:edit": "Éditer un filtre",
+        "title:import": "Importer des filtres de Kibana",
+        "description:import": "Copiez les filtres depuis Kibana et collez-les dans la zone suivante.",
+        "raw": "Requête DSL",
+        "field": "@:$ezreeport.field",
+        "value": "Valeur(s)",
+        "isNot": "Inverser le filtre",
+        "foundFilters": "{n} filtre trouvé|{n} filtres trouvés",
+        "nameTemplate": {
+          "exists": "{field} existe",
+          "exists:not": "{field} n'existe pas",
+          "values": "{0}|{0} {1}, etc.",
+          "is": "{field} est {valueText}",
+          "is:not": "{field} n'est pas {valueText}"
+        }
+      },
+      "aggregation": {
+        "title": "Aggregation",
+        "field": "@:$ezreeport.field",
+        "type": "@:$ezreeport.type",
+        "raw": "Requête DSL",
+        "size": "Nombre de résultats",
+        "aggregationTemplate": "{type} of {field}",
+        "typeGroups": {
+          "common": "Communs",
+          "others": "@:$ezreeport.others"
+        },
+        "types": {
+          "_count": "Comptage",
+          "adjacency_matrix": "Matrice d'adjacence",
+          "auto_date_histogram": "Histogramme de date automatique",
+          "avg": "Moyenne",
+          "avg_bucket": "Moyenne par groupe",
+          "boxplot": "Diagramme en boîte",
+          "cardinality": "Comptage unique",
+          "categorize_text": "Catégoriser le texte",
+          "cumulative_sum": "Somme cumulative",
+          "date_histogram": "Histogramme de date",
+          "derivative": "Dérivée",
+          "diversified_sampler": "Échantillonneur diversifié",
+          "extended_stats": "Statistiques étendues",
+          "filters": "Filtres",
+          "geo_bounds": "Limites géographiques",
+          "geo_centroid": "Centroïde géographique",
+          "geo_grid": "Grille géographique",
+          "histogram": "Histogramme",
+          "max": "Maximum",
+          "max_bucket": "Maximum par groupe",
+          "median_absolute_deviation": "Écart absolu médian",
+          "min": "Minimum",
+          "min_bucket": "Minimum par groupe",
+          "moving_average": "Moyenne mobile",
+          "percentile_ranks": "Rangs de percentile",
+          "percentiles": "Percentiles",
+          "range": "Intervalle",
+          "rare_terms": "Termes rares",
+          "rate": "Taux",
+          "sampler": "Échantillonneur",
+          "significant_terms": "Termes significatifs",
+          "significant_text": "Texte significatif",
+          "stats": "Statistiques",
+          "string_stats": "Statistiques de chaînes de caractères",
+          "sum": "Somme",
+          "sum_bucket": "Somme par groupe",
+          "terms": "Termes",
+          "top_hits": "Meilleurs résultats",
+          "value_count": "Nombre de valeurs",
+          "variable_width_histogram": "Histogramme à largeur variable"
+        }
+      },
+      "order": {
+        "asc": "Ascendant",
+        "desc": "Descendant"
+      },
+      "figures": {
+        "_": {
+          "title": "Titre de la visualisation",
+          "titleTemplate": "Paramètres de",
+          "order": "Tri des données",
+          "type": "Type de visualisation",
+          "create": "Créer une visualisation",
+          "types": {
+            "table": "Tableau",
+            "md": "Markdown",
+            "metric": "Métriques",
+            "arc": "Arc",
+            "area": "Aire",
+            "bar": "Bâtons",
+            "line": "Courbes",
+            "point": "Nuage de points",
+            "rect": "Rectangle",
+            "rule": "Règle",
+            "text": "Texte",
+            "tick": "Graduation",
+            "trail": "Trace",
+            "circle": "Nuage de points (cercles)",
+            "square": "Carré"
+          },
+          "slots": "Emplacements de la visualisation",
+          "slotsList": [
+            "En haut à gauche",
+            "En haut à droite",
+            "En bas à gauche",
+            "En bas à droite"
+          ]
+        },
+        "md": {
+          "title": "@:$ezreeport.editor.figures._titleTemplate Markdown",
+          "preview": "Aperçu",
+          "data": "Contenu"
+        },
+        "metric": {
+          "title": "@:$ezreeport.editor.figures._titleTemplate Métriques",
+          "elements": {
+            "title": "Éléments ({n})",
+            "title:new": "Créer un élément",
+            "title:edit": "Éditer un élément",
+            "format": "@:$ezreeport.format",
+            "formatOptions": {
+              "none": "Texte",
+              "date": "Date",
+              "number": "Nombre"
+            },
+            "formatOptionsLabel": {
+              "_default": "Paramètres de format",
+              "date": "Format à utiliser",
+              "date:hint": "Basé sur {link}",
+              "number": "Langue à utiliser"
+            }
+          }
+        },
+        "table": {
+          "title": "@:$ezreeport.editor.figures._.titleTemplate Table",
+          "showTotal": "Afficher le total",
+          "columns": {
+            "title": "Colonnes ({n})",
+            "title:new": "Créer une colonne",
+            "title:edit": "Éditer une colonne",
+            "header": "Titre de la colonne",
+            "metric": "Est-ce que la colonne est la métrique de la table ?",
+            "styles": {
+              "fillColor": "Couleur de fond",
+              "textColor": "Couleur du texte",
+              "lineColor": "Couleur de la bordure",
+              "fontSize": "Taille du texte",
+              "fontStyle": "Style du texte",
+              "bold": "Texte gras",
+              "italic": "Texte italique",
+              "valign": "Alignement vertical",
+              "vtop": "Contenu aligné en haut",
+              "vmiddle": "Contenu aligné au centre",
+              "vbottom": "Contenu aligné en bas",
+              "halign": "Alignement horizontal",
+              "hleft": "Contenu aligné à gauche",
+              "hcenter": "Contenu aligné au centre",
+              "hright": "Contenu aligné à droite",
+              "hjustify": "Contenu aligné à gauche et à droite (justifié)"
+            }
+          }
+        },
+        "vega": {
+          "_": { 
+            "title": "@:$ezreeport.editor.figures._.titleTemplate {type}",
+            "value": "Données",
+            "label": "Séries",
+            "color": "Groupe",
+            "color:enable": "Activer le regroupement",
+            "legend": "Titre de la légende",
+            "legend:enable": "Afficher la légende",
+            "axisTitle": "Titre de l'axe",
+            "dataLabel": "Étiquettes de données",
+            "dataLabel:enable": "Afficher les étiquettes avec les données sur la figure",
+            "dataLabel:preview": "Aperçu :",
+            "dataLabel:format": "@:$ezreeport.format",
+            "dataLabel:formats": {
+              "numeric": "Numérique",
+              "percent": "Pourcentage"
+            },
+            "dataLabel:position": "Position",
+            "dataLabel:positions": {
+              "in": "Dans",
+              "out": "En dehors"
+            },
+            "dataLabel:showLabel": "Afficher les étiquettes",
+            "dataLabel:minValue": "Valeur minimale"
+          },
+          "arc": {
+            "label": "Tranches"
+          },
+          "bar": {
+            "value": "Axe Y",
+            "label": "Axe X",
+            "color": "Empilement sur l'{axis}",
+            "color:enable": "Activer l'empilement",
+            "invertAxis": "Inverser l'axe"
+          }
+        }
+      },
+      "layouts": {
+        "title": "Pages",
+        "create": "Créer une page"
+      }
+    },
+    "crons": {
+      "title:list": "Tâches planifiées (crons)"
+    },
+    "health": {
+      "title:list": "Statut d'ezREEPORT",
+      "client": "Statut client",
+      "server": "Statut serveur"
+    },
+    "queues": {
+      "_": {
+        "title:list": "Files d'attente",
+        "title:jobs": "Tâches ({n})",
+        "tries": "Tentatives",
+        "status": "Statut de la tâche",
+        "duration": "Durée",
+        "added": "Date d'ajout",
+        "started": "Date de démarrage",
+        "ended": "Date de fin",
+        "info": "Informations sur la tâche",
+        "id": "ID de la tâche",
+        "statusList": {
+          "completed": "Terminée",
+          "failed": "Échouée",
+          "delayed": "Retardée",
+          "active": "Active",
+          "waiting": "En attente"
+        }
+      },
+      "generation": {
+        "title": "File d'attente de génération",
+        "task": "Nom du rapport",
+        "template": "Nom du modèle",
+        "status": "Statut de la génération",
+        "origin": "Origine",
+        "debug": "Rapport de test",
+        "auth": "Utilisateur Elastic",
+        "header:request": "Paramètres de génération",
+        "header:task": "Rapport généré",
+        "header:result": "Résultat de la génération",
+        "header:files": "Fichiers générés"
+      },
+      "mail": {
+        "title": "File d'attente de mailing",
+        "error": "Message d'erreur",
+        "errorDate": "Date de l'erreur",
+        "task": "Nom du rapport",
+        "attachement": "Pièce jointe",
+        "generationDate": "Date de génération",
+        "generationJob": "Informations sur la génération",
+        "header:generation": "Résumé de la génération",
+        "header:mail": "Informations sur le mail"
+      }
     }
-  },
-
-  "fetchOptions": {
-    "title": "Options de récupération",
-    "aggName": "Nom de l'agrégation",
-    "aggSummary": "{type} sur {field}",
-    "index": "Expression Elastic",
-    "dateField": "Champ 'date' de l'index",
-    "filters": "Filtres",
-    "aggregations": "Agrégations",
-
-    "agg_option": "{label} ({type})",
-    "agg_types": {
-      "__count": "Comptage",
-      "adjacency_matrix": "Matrice d'adjacence",
-      "auto_date_histogram": "Histogramme de date automatique",
-      "avg": "Moyenne",
-      "avg_bucket": "Moyenne par groupe",
-      "boxplot": "Diagramme en boîte",
-      "cardinality": "Comptage unique",
-      "categorize_text": "Catégoriser le texte",
-      "cumulative_sum": "Somme cumulative",
-      "date_histogram": "Histogramme de date",
-      "derivative": "Dérivée",
-      "diversified_sampler": "Échantillonneur diversifié",
-      "extended_stats": "Statistiques étendues",
-      "filters": "Filtres",
-      "geo_bounds": "Limites géographiques",
-      "geo_centroid": "Centroïde géographique",
-      "geo_grid": "Grille géographique",
-      "histogram": "Histogramme",
-      "max": "Maximum",
-      "max_bucket": "Maximum par groupe",
-      "median_absolute_deviation": "Écart absolu médian",
-      "min": "Minimum",
-      "min_bucket": "Minimum par groupe",
-      "moving_average": "Moyenne mobile",
-      "percentile_ranks": "Rangs de percentile",
-      "percentiles": "Percentiles",
-      "range": "Intervalle",
-      "rare_terms": "Termes rares",
-      "rate": "Taux",
-      "sampler": "Échantillonneur",
-      "significant_terms": "Termes significatifs",
-      "significant_text": "Texte significatif",
-      "stats": "Statistiques",
-      "string_stats": "Statistiques de chaînes de caractères",
-      "sum": "Somme",
-      "sum_bucket": "Somme par groupe",
-      "terms": "Termes",
-      "top_hits": "Meilleurs résultats",
-      "value_count": "Nombre de valeurs",
-      "variable_width_histogram": "Histogramme à largeur variable"
-    }
-  },
-
-  "errors": {
-    "_detail": "{valid} ({field})",
-    "empty": "Ce champ doit être rempli",
-    "fetch": "Une erreur est survenue lors de la récupération des données",
-    "email_format": "Une ou plusieurs addresses ne sont pas valides",
-    "json_format": "Le JSON donné n'est pas valide",
-    "valid": "La valeur doit être valide",
-    "negative": "La valeur doit être positive",
-    "no_extends": "Impossible de récupérer le modèle de base"
   }
 }
