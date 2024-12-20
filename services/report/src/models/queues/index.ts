@@ -1,8 +1,8 @@
-import type { Queue, Worker, FlowProducer } from 'bullmq';
 import { join } from 'node:path';
 
+import type { Queue, Worker } from 'bullmq';
+
 import {
-  createFlowProducer,
   createQueue,
   createWorker,
   getJobs,
@@ -10,6 +10,7 @@ import {
   getCountOfJobs,
   pingQueue,
 } from '~/lib/bull';
+import { formatISO } from '~/lib/date-fns';
 import { appLogger } from '~/lib/logger';
 import { formatInterval } from '~/lib/utils';
 
@@ -20,6 +21,7 @@ import type {
   FormattedJobType,
   GenerationDataType,
   MailErrorDataType,
+  MailReportType,
   QueueDataType,
   QueueDescriptionType,
   QueueNameType,
@@ -29,10 +31,6 @@ import { ConflictError } from '~/types/errors';
 
 const logger = appLogger.child({ scope: 'models', model: 'queues' });
 
-/**
- * Main flow producer
- */
-let flowProducer: FlowProducer | undefined;
 /**
  * Workers initialized
  */
@@ -53,8 +51,6 @@ export function initQueues(skipLogs = false, skipWorker = false) {
   const start = new Date();
 
   try {
-    flowProducer = createFlowProducer(!skipLogs ? logger : undefined);
-
     queues.generation = createQueue('generation', 'ezReeport.report-generation', !skipLogs ? logger : undefined);
     queues.mail = createQueue('mail', 'ezReeport.mail-send', !skipLogs ? logger : undefined);
 
@@ -233,22 +229,11 @@ export async function restartJob(name: QueueNameType, id: string) {
  * @returns Flow that will be executed
  */
 export function queueGeneration(data: GenerationDataType) {
-  if (!flowProducer || !queues.generation || !queues.mail) {
+  if (!queues.generation) {
     throw new Error('queues are not initialized');
   }
 
-  const flow = flowProducer.add({
-    name: 'mail',
-    queueName: queues.mail.name,
-    data: { namespaceId: data.task.namespaceId },
-    children: [
-      {
-        name: 'generate',
-        data,
-        queueName: queues.generation.name,
-      },
-    ],
-  });
+  const job = queues.generation.add('generate', data);
 
   logger.debug({
     queue: 'generate',
@@ -256,28 +241,42 @@ export function queueGeneration(data: GenerationDataType) {
     msg: 'Report queued for generation',
   });
 
-  return flow;
+  return job;
+}
+
+export function queueMail(data: MailReportType) {
+  if (!queues.mail) {
+    throw new Error('queues are not initialized');
+  }
+
+  const job = queues.mail.add('mail', data);
+
+  logger.debug({
+    queue: 'generate',
+    action: 'Queued',
+    msg: 'Report queued for mail',
+  });
+
+  return job;
 }
 
 /**
  * Queue error to mail
  *
  * @param data Data needed for error
+ * @param date Date of the error
  *
  * @returns Flow that will be executed
  */
-export function queueError(data: MailErrorDataType) {
-  if (!flowProducer || !queues.mail) {
+export function queueError(data: MailErrorDataType, date = new Date()) {
+  if (!queues.mail) {
     throw new Error('queues are not initialized');
   }
 
-  const flow = flowProducer.add({
-    name: 'mail',
-    queueName: queues.mail.name,
-    data: {
-      namespaceId: process.env.NODE_ENV ?? 'dev',
-      error: data,
-    },
+  const job = queues.mail.add('mail', {
+    env: process.env.NODE_ENV ?? 'dev',
+    error: data,
+    date: formatISO(date),
   });
 
   logger.debug({
@@ -286,7 +285,7 @@ export function queueError(data: MailErrorDataType) {
     msg: 'Error queued to mail',
   });
 
-  return flow;
+  return job;
 }
 
 /**

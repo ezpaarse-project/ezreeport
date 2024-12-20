@@ -1,7 +1,6 @@
 import {
   Queue,
   Worker,
-  FlowProducer,
   type Job,
   type WorkerOptions,
 } from 'bullmq';
@@ -15,19 +14,6 @@ const {
   redis,
   workers: { concurrence, maxExecTime },
 } = config;
-
-/**
- * Create a new flow producer
- *
- * @param logger The logger to use
- *
- * @returns The flow producer
- */
-export function createFlowProducer(logger?: Logger) {
-  const flowProducer = new FlowProducer({ connection: redis });
-  if (logger) { logger.debug('Created flow producer'); }
-  return flowProducer;
-}
 
 /**
  * Create a new worker
@@ -119,12 +105,12 @@ export async function formatJob(job: Job): Promise<FormattedJobType> {
   return {
     id: job.id ?? '',
     data: job.data,
-    result: job.returnvalue?.res,
+    result: job.returnvalue,
     progress: typeof job.progress === 'number' ? job.progress : 0,
     added: new Date(job.timestamp),
     started: job.processedOn != null ? new Date(job.processedOn) : undefined,
     ended: job.finishedOn != null ? new Date(job.finishedOn) : undefined,
-    attempts: job.attemptsMade + 1,
+    attempts: job.attemptsMade,
     status: await job.getState(),
   };
 }

@@ -13,12 +13,8 @@ import type { NamespaceType } from '~/models/namespaces/types';
 import type { TemplateBodyType } from '~/models/templates/types';
 import type { ReportResultType } from '~/models/reports/types';
 
-import type { GenerationDataType, MailResultType } from '../types';
-
-type Result = {
-  res: ReportResultType;
-  mailData: Partial<MailResultType>;
-};
+import { initQueues, queueMail } from '..';
+import type { GenerationDataType, MailReportType } from '../types';
 
 type Contact = {
   username: string;
@@ -28,7 +24,7 @@ type Contact = {
 
 const { outDir } = config.report;
 
-export default async function generate(job: Job<GenerationDataType>): Promise<Result> {
+export default async function generate(job: Job<GenerationDataType>): Promise<ReportResultType> {
   const logger = appLogger.child({
     scope: 'bull',
     job: job.id,
@@ -88,7 +84,7 @@ export default async function generate(job: Job<GenerationDataType>): Promise<Re
     .on('layoutRendered', onLayoutRendered)
     .on('contactFound', onContactFound);
 
-  const res = await generateReport(
+  const result = await generateReport(
     task,
     origin,
     period,
@@ -101,9 +97,13 @@ export default async function generate(job: Job<GenerationDataType>): Promise<Re
     events,
   );
 
-  let mailData: Partial<MailResultType> = {
+  let mailData: MailReportType = {
+    success: false,
+    file: '',
+    url: '',
+
     contact,
-    date: formatISO(res.detail.createdAt),
+    date: formatISO(result.detail.createdAt),
     task: {
       id: task.id,
       recurrence: task.recurrence,
@@ -115,26 +115,30 @@ export default async function generate(job: Job<GenerationDataType>): Promise<Re
       name: namespace?.name || 'unknown',
       logo: namespace?.logoId || undefined,
     },
+    generationId: jobId || '',
   };
 
-  if (res.success && res.detail.files.report) {
-    const file = await readFile(join(outDir, res.detail.files.report), 'base64');
+  if (result.success && result.detail.files.report) {
+    const file = await readFile(join(outDir, result.detail.files.report), 'base64');
 
     mailData = {
       ...mailData,
       success: true,
       file,
-      url: `/reports/${res.detail.files.report}`,
+      url: `/reports/${result.detail.taskId}/${result.detail.files.report}`,
     };
   } else {
-    const file = await readFile(join(outDir, res.detail.files.detail), 'base64');
+    const file = await readFile(join(outDir, result.detail.files.detail), 'base64');
     mailData = {
       ...mailData,
       success: false,
       file,
-      url: `/reports/${res.detail.files.detail}`,
+      url: `/reports/${result.detail.taskId}/${result.detail.files.detail}`,
     };
   }
 
-  return { res, mailData };
+  initQueues(true, true);
+  await queueMail(mailData);
+
+  return result;
 }

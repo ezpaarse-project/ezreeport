@@ -27,8 +27,7 @@ async function sendError(error: Error, origin: string, logger: import('pino').Lo
       file: Buffer.from(errStr).toString('base64'),
       filename: `ErrCron-${origin}-${date}.txt`,
       contact: team,
-      date: now,
-    });
+    }, now);
     logger.info({
       origin,
       team,

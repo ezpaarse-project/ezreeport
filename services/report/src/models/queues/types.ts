@@ -1,7 +1,6 @@
 import { z } from '~/lib/zod';
 
 import { Task } from '~/models/tasks/types';
-// import { Namespace } from '~/models.new/namespaces/types';
 import { Recurrence } from '~/models/recurrence/types';
 import { ReportPeriod } from '~/models/reports/types';
 
@@ -10,9 +9,9 @@ import { ReportPeriod } from '~/models/reports/types';
  *
  * ! Keep in sync with mail service
  */
-export const MailResult = z.object({
+export const MailReport = z.object({
   success: z.boolean()
-    .describe('Was the mail sent successfully'),
+    .describe('Is the mail is an error mail or not'),
 
   file: z.string().base64().min(1)
     .describe('File data'),
@@ -50,12 +49,15 @@ export const MailResult = z.object({
 
   url: z.string().min(1)
     .describe('URL of the report'),
+
+  generationId: z.string().min(1)
+    .describe('ID of the job that generated the report'),
 });
 
 /**
  * Type for generation result
  */
-export type MailResultType = z.infer<typeof MailResult>;
+export type MailReportType = z.infer<typeof MailReport>;
 
 /**
  * Validation for generation data
@@ -63,9 +65,6 @@ export type MailResultType = z.infer<typeof MailResult>;
 export const GenerationData = z.object({
   task: Task.omit({ template: true })
     .describe('Task to generate report for'),
-
-  // namespace: Namespace.omit({ fetchLogin: true, fetchOptions: true })
-  //   .describe('Namespace to generate report for'),
 
   origin: z.string().min(1)
     .describe('Origin of the request'),
@@ -87,6 +86,8 @@ export type GenerationDataType = z.infer<typeof GenerationData>;
 
 /**
  * Validation for mail error data
+ *
+ * ! Keep in sync with mail service
  */
 export const MailErrorData = z.object({
   file: z.string().min(1)
@@ -97,9 +98,6 @@ export const MailErrorData = z.object({
 
   contact: z.string().min(1)
     .describe('Contact to send error log to'),
-
-  date: z.date()
-    .describe('Date of the error'),
 });
 
 /**
@@ -109,26 +107,31 @@ export type MailErrorDataType = z.infer<typeof MailErrorData>;
 
 /**
  * Validation for mail data
+ *
+ * ! Keep in sync with mail service
  */
-export const MailData = z.object({
-  namespaceId: z.string().min(1)
-    .describe('Namespace ID of the task'),
+export const MailError = z.object({
+  env: z.string().min(1)
+    .describe('Environment'),
 
-  error: MailErrorData.optional()
+  error: MailErrorData
     .describe('Error data'),
+
+  date: z.string().date()
+    .describe('Date of the error'),
 });
 
 /**
  * Type for mail data
  */
-export type MailDataType = z.infer<typeof MailData>;
+export type MailErrorType = z.infer<typeof MailError>;
 
 /**
  * Validation for queue data
  */
 export const QueueData = z.object({
   generation: GenerationData,
-  mail: MailData,
+  mail: MailReport.or(MailError),
 });
 
 /**

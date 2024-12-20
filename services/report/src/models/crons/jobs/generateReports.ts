@@ -1,7 +1,7 @@
 import type { Job } from 'bullmq';
 import type { Logger } from 'pino';
 
-import { endOfDay, startOfDay } from '~/lib/date-fns';
+import { endOfDay } from '~/lib/date-fns';
 
 import type { CronDataType } from '~/models/crons/types';
 import { getAllTasks } from '~/models/tasks';
@@ -13,8 +13,8 @@ export default async function queueReports(job: Job<CronDataType>, logger: Logge
 
   try {
     const tasks = await getAllTasks({
-      'nextRun.from': startOfDay(start),
       'nextRun.to': endOfDay(start),
+      enabled: true,
     });
 
     const { length } = await Promise.all(
