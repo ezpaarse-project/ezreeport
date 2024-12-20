@@ -185,12 +185,14 @@ export async function replaceUsers(data: BulkUserType[]) {
 
   const toEditIds = new Set(toEdit.map((u) => u.username));
   const toCreate = data.filter((u) => !toEditIds.has(u.username));
-  const createData = toCreate.map((u) => ({
+  const createData = await Promise.all(toCreate.map(async (u) => ({
     // toCreate is made of toEdit so we can assume it is safe
     ...dataPerUsername.get(u.username)!,
+    // Create token for each one
+    token: await generateToken(),
     // Don't create memberships, as we will replace them later
     memberships: undefined,
-  } satisfies Prisma.UserCreateInput));
+  } satisfies Prisma.UserCreateInput)));
 
   // Executing operations
   const [

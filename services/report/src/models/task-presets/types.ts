@@ -1,6 +1,7 @@
-import { z } from '~/lib/zod';
+import { z, stringToBool } from '~/lib/zod';
 import { ensureArray } from '~/lib/utils';
 
+import { Filter } from '~/models/reports/generation/fetch/filters';
 import { Recurrence } from '~/models/recurrence/types';
 import { TemplateTag } from '~/models/templates/types';
 
@@ -95,7 +96,7 @@ export const TaskPresetQueryFilters = z.object({
   templateId: z.string().min(1).optional()
     .describe('ID of template referenced by the preset'),
 
-  hidden: z.coerce.boolean().optional()
+  hidden: stringToBool.optional()
     .describe('If preset or template is hidden to normal users'),
 });
 
@@ -125,7 +126,10 @@ export const AdditionalDataForPreset = z.object({
 
   targets: z.array(z.string().email()).min(1)
     .describe('Email addresses to send report'),
-});
+
+  filters: z.array(Filter).optional()
+    .describe('Global filters used when fetching data'),
+}).strict();
 
 /**
  * Type for additional data provided when creating a task from a preset

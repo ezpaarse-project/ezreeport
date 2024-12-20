@@ -176,7 +176,7 @@ export async function restrictNamespaces<R extends FastifyRequest>(
   const user = request.user!;
   // Don't check namespaces if admin
   if (user.isAdmin) {
-    return undefined;
+    return namespacesIds;
   }
 
   const namespacesOfUser = await getNamespacesOfUser(user.username);

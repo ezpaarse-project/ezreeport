@@ -195,7 +195,6 @@ function handleReportError(
     message: `${error}`,
     stack: [],
     cause: {
-      layout: -1,
       type: 'unknown',
     },
   };
@@ -282,14 +281,14 @@ async function writeReportActivity(
     // If generation is a success
     taskNextRun = calcNextDateFromRecurrence(startTime, task.recurrence);
 
-    activityData.type = 'generation-success';
+    activityData.type = 'generation:success';
     activityData.message = `Rapport "${paths.namepath}" généré par ${origin}`;
     activityData.data!.period = result.detail.period;
   } else {
     // If an error was throw when generating
     isTaskEnabled = false;
 
-    activityData.type = 'generation-error';
+    activityData.type = 'generation:error';
     activityData.message = `Rapport "${paths.namepath}" non généré par ${origin} suite à une erreur.`;
   }
 

@@ -15,6 +15,11 @@ import {
 function applyFilters(filters: TaskActivityQueryFiltersType) {
   const where: Prisma.TaskActivityWhereInput = {};
 
+  if (filters.taskId) {
+    where.task = where.task || {};
+    where.task.id = filters.taskId;
+  }
+
   if (filters.extendedId) {
     where.task = where.task || {};
     where.task.extendedId = filters.extendedId;
@@ -38,13 +43,17 @@ function applyFilters(filters: TaskActivityQueryFiltersType) {
 function applyIncludes(fields: TaskActivityIncludeFieldsType[]) {
   const include: Prisma.TaskActivityInclude = {};
 
-  if (fields.includes('task')) {
-    const entries = Object.keys(prisma.task.fields).map((k) => [k, true]);
-    const select = Object.fromEntries(entries) as Prisma.TaskSelect;
+  if (fields.includes('task.namespace')) {
+    const entries = Object.keys(prisma.namespace.fields).map((k) => [k, true]);
+    const namespace = Object.fromEntries(entries) as Prisma.NamespaceSelect;
 
-    select.template = false;
+    namespace.fetchLogin = false;
+    namespace.fetchOptions = false;
+    include.task = { include: { namespace: { select: namespace } } };
+  }
 
-    include.task = { select };
+  if (fields.includes('task') && !include.task) {
+    include.task = true;
   }
 
   return include;

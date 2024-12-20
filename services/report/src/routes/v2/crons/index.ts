@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { z } from '~/lib/zod';
 
+import authPlugin from '~/plugins/auth';
 import * as responses from '~/routes/v2/responses';
 
 import * as crons from '~/models/crons';
@@ -16,6 +17,8 @@ const SpecificCronParams = z.object({
 });
 
 const router: FastifyPluginAsyncZod = async (fastify) => {
+  await fastify.register(authPlugin);
+
   fastify.route({
     method: 'GET',
     url: '/',

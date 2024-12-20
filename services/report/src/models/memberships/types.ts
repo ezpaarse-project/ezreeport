@@ -1,6 +1,5 @@
 import { z } from '~/lib/zod';
-
-import { Access } from '~/models/access';
+import { Access } from '~/lib/prisma';
 
 /**
  * Validation for membership
@@ -36,7 +35,7 @@ export const InputMembership = Membership.omit({
   namespaceId: true,
   createdAt: true,
   updatedAt: true,
-});
+}).strict();
 
 /**
  * Type for creating/updating membership
@@ -55,7 +54,7 @@ export const BulkMembership = z.object({
 
   access: z.nativeEnum(Access)
     .describe('Permissions of user on namespace'),
-});
+}).strict();
 
 /**
  * Type for setting multiple memberships

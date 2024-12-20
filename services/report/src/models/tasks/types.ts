@@ -3,9 +3,11 @@ import {
   stringToStartOfDay,
   stringToEndOfDay,
   stringOrArray,
+  stringToBool,
 } from '~/lib/zod';
 import { ensureArray } from '~/lib/utils';
 
+import { Namespace } from '~/models/namespaces/types';
 import { TaskTemplateBody, TemplateTag } from '~/models/templates/types';
 import { Recurrence } from '~/models/recurrence/types';
 
@@ -14,6 +16,7 @@ import { Recurrence } from '~/models/recurrence/types';
  */
 const TaskIncludeFields = z.enum([
   'extends.tags',
+  'namespace',
 ] as const);
 
 /**
@@ -80,6 +83,9 @@ export const Task = z.object({
 
   // Includes fields
 
+  namespace: Namespace.omit({ fetchLogin: true, fetchOptions: true }).optional().readonly()
+    .describe('[Includes] Namespace related to the task'),
+
   extends: z.object({
     tags: z.array(TemplateTag).optional().readonly()
       .describe('[Includes] Template tags'),
@@ -132,6 +138,9 @@ export const TaskQueryFilters = z.object({
 
   'nextRun.to': stringToEndOfDay.optional()
     .describe('Maximum date of next run of the task'),
+
+  enabled: stringToBool.optional()
+    .describe('If task is enabled'),
 });
 
 /**

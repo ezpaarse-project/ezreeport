@@ -42,7 +42,7 @@ const isElasticStatus = (
 ): status is KeyofElasticStatus => Object.keys(ElasticStatus).includes(status);
 
 // Parse some env var
-const REQUIRED_STATUS = 'yellow';// isElasticStatus(requiredStatus) ? requiredStatus : 'green';
+const REQUIRED_STATUS = isElasticStatus(requiredStatus) ? requiredStatus : 'green';
 const ES_AUTH = apiKey ? { apiKey } : { username, password };
 
 const clientConfig: ClientOptions = {

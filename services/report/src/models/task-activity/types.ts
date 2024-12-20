@@ -13,6 +13,7 @@ import { Task } from '~/models/tasks/types';
  */
 const TaskActivityIncludeFields = z.enum([
   'task',
+  'task.namespace',
 ] as const);
 
 /**
@@ -73,6 +74,9 @@ export type InputTaskActivityType = z.infer<typeof InputTaskActivity>;
  * Validation for query filters of a event
  */
 export const TaskActivityQueryFilters = z.object({
+  taskId: z.string().min(1).optional()
+    .describe('ID of the task'),
+
   extendedId: z.string().min(1).optional()
     .describe('ID of template extended by the task'),
 

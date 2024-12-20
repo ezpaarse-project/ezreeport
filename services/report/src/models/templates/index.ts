@@ -190,6 +190,7 @@ export async function getDefaultTemplate(): Promise<TemplateType | null> {
 export async function upsertDefaultTemplate(): Promise<TemplateType> {
   const data: InputTemplateType = {
     name: defaultTemplate.name,
+    hidden: true,
     body: {
       version: 2,
       dateField: defaultTemplate.dateField,

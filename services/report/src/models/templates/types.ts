@@ -1,4 +1,4 @@
-import { z } from '~/lib/zod';
+import { z, stringToBool } from '~/lib/zod';
 
 import { Filter } from '~/models/reports/generation/fetch/filters';
 
@@ -188,7 +188,7 @@ export const TemplateQueryFilters = z.object({
   query: z.string().optional()
     .describe('Query used for searching'),
 
-  hidden: z.coerce.boolean().optional()
+  hidden: stringToBool.optional()
     .describe('If preset or template is hidden to normal users'),
 });
 

@@ -34,13 +34,15 @@ function applyFilters(filters: TaskPresetQueryFiltersType) {
 }
 
 function applyIncludes(fields: TaskPresetIncludeFieldsType[]): Prisma.TaskPresetInclude {
-  const template: Prisma.TemplateSelect = {};
+  let template: Prisma.TemplateSelect | undefined;
 
   if (fields.includes('template.tags')) {
+    template = template || {};
     template.tags = true;
   }
 
   if (fields.includes('template.hidden')) {
+    template = template || {};
     template.hidden = true;
   }
 
@@ -228,7 +230,7 @@ export async function countTaskPresets(filters?: TaskPresetQueryFiltersType): Pr
  * @returns True if task exists
  */
 export async function doesTaskPresetExist(id: string): Promise<boolean> {
-  const count = await prisma.task.count({ where: { id }, select: { id: true } });
+  const count = await prisma.taskPreset.count({ where: { id }, select: { id: true } });
 
   return count.id > 0;
 }

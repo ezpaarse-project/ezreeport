@@ -11,7 +11,7 @@ import * as responses from '~/routes/v2/responses';
 import * as reports from '~/models/reports';
 import { ReportFilesOfTask, InputManualReport } from '~/models/reports/types';
 import { queueGeneration } from '~/models/queues';
-import { QueueName, GenerationData, GenerationDataType } from '~/models/queues/types';
+import { QueueName, GenerationData } from '~/models/queues/types';
 import { getTask } from '~/models/tasks';
 
 import { NotFoundError } from '~/types/errors';
@@ -144,19 +144,18 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       const firstLevelDebug = !!request.body.period || !!request.body.targets;
       const secondLevelDebug = process.env.NODE_ENV !== 'production' && request.body.debug;
 
-      const flow = await queueGeneration({
+      const job = await queueGeneration({
         task,
         period: request.body.period,
         origin: request.user?.username ?? 'unknown',
-        shouldWriteActivity: firstLevelDebug,
+        shouldWriteActivity: !firstLevelDebug && !secondLevelDebug,
         debug: secondLevelDebug,
       });
-      const job = flow.children?.[0].job;
 
       return responses.buildSuccessResponse({
         id: job?.id ?? '',
         queue: 'generation' as const,
-        data: job?.data as GenerationDataType,
+        data: job?.data,
       }, reply);
     },
   });

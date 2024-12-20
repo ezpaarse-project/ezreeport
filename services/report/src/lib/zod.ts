@@ -40,14 +40,26 @@ export async function ensureSchema<T, D>(
 export const stringOrArray = z.string().min(1).or(z.array(z.string().min(1)))
   .transform((v) => ensureArray(v));
 
-export const stringToStartOfDay = z.string().date().transform((v) => {
+export const stringToStartOfDay = (
+  z.string().date()
+    .or(z.string().datetime())
+).transform((v) => {
   const date = z.coerce.date().parse(v);
   return startOfDay(date);
 });
 
-export const stringToEndOfDay = z.string().date().transform((v) => {
+export const stringToEndOfDay = (
+  z.string().date()
+    .or(z.string().datetime())
+).transform((v) => {
   const date = z.coerce.date().parse(v);
   return endOfDay(date);
 });
+
+export const stringToBool = z.preprocess((v) => {
+  if (v === 'true') { return true; }
+  if (v === 'false') { return false; }
+  return Boolean(v);
+}, z.boolean());
 
 export * from 'zod';

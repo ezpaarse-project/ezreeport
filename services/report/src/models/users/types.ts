@@ -1,4 +1,4 @@
-import { z } from '~/lib/zod';
+import { z, stringToBool } from '~/lib/zod';
 
 import { BulkMembership, BulkMembershipResult } from '~/models/memberships/types';
 
@@ -50,7 +50,7 @@ export const UserQueryFilters = z.object({
   query: z.string().optional()
     .describe('Query used for searching'),
 
-  isAdmin: z.coerce.boolean().optional()
+  isAdmin: stringToBool.optional()
     .describe('If user is an admin'),
 });
 
@@ -65,9 +65,6 @@ export type UserQueryFiltersType = z.infer<typeof UserQueryFilters>;
 export const BulkUser = z.object({
   username: z.string().min(1).readonly()
     .describe('Username'),
-
-  token: z.string().min(1).readonly()
-    .describe('Token used to authenticate user, generated when user is created'),
 
   isAdmin: z.boolean().default(false).optional()
     .describe('If user is an admin'),

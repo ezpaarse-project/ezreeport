@@ -46,7 +46,7 @@ export const InputNamespace = Namespace.omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-});
+}).strict();
 
 /**
  * Type for creating/updating a namespace
@@ -94,7 +94,7 @@ export const BulkNamespace = z.object({
     BulkMembership.omit({ namespaceId: true }),
   ).optional()
     .describe('Members of the namespace'),
-});
+}).strict();
 
 /**
  * Type for setting multiple namespaces

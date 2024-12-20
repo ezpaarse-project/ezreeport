@@ -81,13 +81,13 @@ export const InputManualReport = z.object({
  * Validation for the cause of a generation error
  */
 export const ReportErrorCause = z.object({
-  type: z.enum(['fetch', 'render', 'unknown'])
-    .describe('Type of error'),
+  type: z.enum(['fetch', 'render', 'unknown']).optional()
+    .describe('Where the error occurred'),
 
-  layout: z.number().int()
+  layout: z.number().int().optional()
     .describe('Layout number where error occurred'),
 
-  figure: z.number().int().optional()
+  figure: z.number().int().or(z.string()).optional()
     .describe('Figure number where error occurred'),
 
   elasticQuery: z.unknown().optional()
@@ -123,28 +123,22 @@ export const ReportResult = z.object({
     taskId: z.string()
       .describe('Task ID used to generate the report'),
 
-    files: z.object({
-      report: z.string().optional()
-        .describe('File containing the report'),
-
-      detail: z.string()
-        .describe('File containing details about the generation of report'),
-
-      debug: z.string().optional()
-        .describe('File containing debug information about the generation of report'),
-    }),
+    files: ReportFiles
+      .describe('Files'),
 
     sendingTo: z.array(z.string().email()).optional()
       .describe('Email addresses the report was sent'),
 
-    period: ReportPeriod.optional(),
+    period: ReportPeriod.optional()
+      .describe('Period used to generate report'),
 
     auth: z.object({
       elastic: z.object({
         username: z.string().optional()
           .describe('Username used to access the elasticsearch instance'),
       }).optional(),
-    }).optional(),
+    }).optional()
+      .describe('Auth used to generate report'),
 
     stats: z.object({
       pageCount: z.number().optional()
@@ -152,7 +146,8 @@ export const ReportResult = z.object({
 
       size: z.number().optional()
         .describe('Size of the report'),
-    }).optional(),
+    }).optional()
+      .describe('Stats about the report file'),
 
     error: z.object({
       message: z.string().optional()
@@ -163,7 +158,8 @@ export const ReportResult = z.object({
 
       cause: ReportErrorCause.optional()
         .describe('Cause of the error'),
-    }).optional(),
+    }).optional()
+      .describe('Error details'),
 
     meta: z.any().optional()
       .describe('Meta data'),

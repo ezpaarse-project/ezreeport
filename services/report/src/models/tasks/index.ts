@@ -15,6 +15,7 @@ import {
   type TaskQueryFiltersType,
   type TaskIncludeFieldsType,
 } from './types';
+import { ensureArray } from '~/lib/utils';
 
 const logger = appLogger.child({ scope: 'models', model: 'tasks' });
 
@@ -26,11 +27,18 @@ function applyFilters(filters: TaskQueryFiltersType) {
   where.extendedId = filters.extendedId;
 
   if (filters.query) {
-    where.name = { contains: filters.query, mode: 'insensitive' as Prisma.QueryMode };
+    where.OR = [
+      { name: { contains: filters.query, mode: 'insensitive' } },
+      { namespace: { name: { contains: filters.query, mode: 'insensitive' } } },
+    ];
   }
 
   if (filters.namespaceId) {
     where.namespaceId = { in: filters.namespaceId };
+  }
+
+  if (filters.enabled != null) {
+    where.enabled = filters.enabled;
   }
 
   if (filters.targets) {
@@ -51,14 +59,25 @@ function applyFilters(filters: TaskQueryFiltersType) {
 }
 
 function applyIncludes(fields: TaskIncludeFieldsType[]): Prisma.TaskInclude {
-  const extended: Prisma.TemplateSelect = {};
+  let namespace: Prisma.NamespaceSelect | undefined;
+  let extended: Prisma.TemplateSelect | undefined;
 
   if (fields.includes('extends.tags')) {
+    extended = extended || {};
     extended.tags = true;
   }
 
+  if (fields.includes('namespace')) {
+    const entries = Object.keys(prisma.namespace.fields).map((k) => [k, true]);
+    namespace = Object.fromEntries(entries) as Prisma.NamespaceSelect;
+
+    namespace.fetchLogin = false;
+    namespace.fetchOptions = false;
+  }
+
   return {
-    extends: { select: extended },
+    extends: extended && { select: extended },
+    namespace: namespace && { select: namespace },
   };
 }
 
@@ -87,6 +106,13 @@ export async function getAllTasks(
   // Apply includes
   if (include) {
     prismaQuery.include = applyIncludes(include);
+  }
+
+  // Since name isn't unique, we need to have another sort
+  if (pagination?.sort === 'name') {
+    const orderBy = ensureArray(prismaQuery.orderBy || []);
+    orderBy.push({ namespace: { name: 'asc' } });
+    prismaQuery.orderBy = orderBy;
   }
 
   // Fetch data

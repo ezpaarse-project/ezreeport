@@ -5,6 +5,7 @@ import { z } from '~/lib/zod';
 import config from '~/lib/config';
 
 import authPlugin from '~/plugins/auth';
+import { Access } from '~/models/access';
 
 import * as responses from '~/routes/v2/responses';
 
@@ -46,6 +47,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     config: {
       ezrAuth: {
         requireUser: true,
+        access: Access.READ_WRITE,
       },
     },
     handler: async (request, reply) => {
@@ -127,6 +129,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     config: {
       ezrAuth: {
         requireUser: true,
+        access: Access.READ,
       },
     },
     handler: async (request, reply) => {

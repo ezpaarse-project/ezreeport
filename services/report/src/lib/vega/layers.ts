@@ -102,9 +102,8 @@ function calcRadius(params: VegaParams): ArcRadius {
  * @returns The score
  */
 function calcLabelDateScore(data: FetchResultItem[]) {
-  const sliceLength = data.length / 2;
-  const count = data
-    .slice(0, sliceLength)
+  const sample = data.slice(0, data.length / 2);
+  const count = sample
     .reduce(
       (prev: number, { label }) => {
         const labelDate = new Date(ensureInt(label || 'undefined'));
@@ -113,7 +112,7 @@ function calcLabelDateScore(data: FetchResultItem[]) {
       0,
     );
 
-  return (count / sliceLength);
+  return (count / sample.length);
 }
 
 /**
