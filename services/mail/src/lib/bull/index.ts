@@ -15,7 +15,7 @@ const {
 } = config;
 
 //! Should be synced with report
-export type MailResult = {
+export type MailReport = {
   /**
    * If task succeed or failed
    */
@@ -50,13 +50,34 @@ export type MailResult = {
    * The http url to get the file
    */
   url: string,
+  /** ID of the job that generated the report */
+  generationId: string,
+};
+
+export type MailError = {
+  /**
+   * Environment
+   */
+  env: string,
+
+  error: {
+    /** File content to store error log */
+    file: string,
+    /** File name to store error log */
+    filename: string,
+    /** Contact to send error log to */
+    contact: string,
+  },
+
+  /** Date of the error */
+  date: string,
 };
 
 const workers: Worker[] = [];
 
 logger.debug('Init started');
 const start = Date.now();
-const mailQueue = new Queue<MailResult>('ezReeport.mail-send', { connection: redis });
+const mailQueue = new Queue<MailReport | MailError>('ezReeport.mail-send', { connection: redis });
 logger.debug({
   queue: mailQueue.name,
   msg: 'Created queue',

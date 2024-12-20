@@ -1,6 +1,5 @@
 // @ts-check
 
-const { Queue, Job } = require('bullmq');
 const { format, parseISO } = require('date-fns');
 
 const config = require('../../config').default;
@@ -11,19 +10,20 @@ const { b64ToString, isFulfilled, stringToB64 } = require('../../utils');
 const { recurrenceToStr } = require('../../../models/recurrence');
 
 const {
-  redis,
   mail: { team },
   api: { url: APIurl },
 } = config;
 
 /**
  * @typedef {import('../../mail').MailOptions} MailOptions
- * @typedef {import('..').MailResult} MailResult
+ * @typedef {import('..').MailReport} MailReport
+ * @typedef {import('..').MailError} MailError
+ * @typedef {import('bullmq').Job<MailReport | MailError>} Job
  */
 
 /**
  * @typedef {Object} ErrorReportPrams
- * @property {MailResult} data
+ * @property {MailReport} data
  * @property {Omit<MailOptions, 'to' | 'body' | 'subject'>} options
  * @property {Object} bodyData
  * @property {string} bodyData.recurrence
@@ -82,7 +82,7 @@ const sendErrorReport = async ({
  * @property {string} bodyData.namespace
  * @property {string} bodyData.name
  * @property {string} bodyData.date
- * @property {MailResult['task']} task
+ * @property {MailReport['task']} task
  */
 
 /**
@@ -141,7 +141,7 @@ const sendSuccessReport = async ({
 };
 
 /**
- * @param {MailResult} data
+ * @param {MailReport} data
  * @param {Date} date
  * @param {string} dateStr
  * @param {import('pino').Logger} logger
@@ -193,16 +193,16 @@ const sendReport = (data, date, dateStr, logger) => {
  */
 
 /**
- * @param {ErrorParams} data
+ * @param {MailError} data
  * @param {Date} date
  * @param {string} dateStr
  * @param {import('pino').Logger} logger
  */
-const sendError = async (data, date, dateStr, logger) => {
+const sendError = async ({ error }, date, dateStr, logger) => {
   await sendMail({
     attachments: [{
-      filename: data.filename,
-      content: data.file,
+      filename: error.filename,
+      content: error.file,
       encoding: 'base64',
     }],
     to: [team],
@@ -219,39 +219,24 @@ const sendError = async (data, date, dateStr, logger) => {
 };
 
 /**
- * @param {Job} j
+ * @param {Job} job
  * @returns {Promise<void>}
  */
-module.exports = async (j) => {
-  const logger = appLogger.child({ scope: 'bull', job: j.id });
+module.exports = async (job) => {
+  const logger = appLogger.child({ scope: 'bull', job: job.id });
 
-  // Re-getting job from it's id and queue to get child jobs
-  // See https://github.com/taskforcesh/bullmq/issues/753
-  /** @type {Queue<MailResult>} */
-  const queue = new Queue(j.queueName, { connection: redis });
-  const job = await Job.fromId(queue, j.id ?? '');
-  if (!job) {
-    throw new Error(`Cannot find job [${j.id}] in queue [${queue.name}]`);
-  }
-
-  /** @type {MailResult} */
-  const data = Object.values(await job.getChildrenValues())[0]?.mailData;
-
-  const date = parseISO(data.date);
+  const date = parseISO(job.data.date);
   const dateStr = format(date, 'dd/MM/yyyy');
 
   try {
-    if (data && !job.data.error) {
-      await sendReport(data, date, dateStr, logger);
-      return;
-    }
-
-    if (job.data.error) {
+    if ('error' in job.data) {
       await sendError(job.data, date, dateStr, logger);
+      job.updateProgress(1);
       return;
     }
 
-    throw new Error('No suitable data found');
+    await sendReport(job.data, date, dateStr, logger);
+    job.updateProgress(1);
   } catch (err) {
     logger.error({
       err,
