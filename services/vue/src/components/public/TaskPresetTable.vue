@@ -9,10 +9,14 @@
   >
     <template #top>
       <v-toolbar
-        :title="$t('$ezreeport.task-preset.title:list', total)"
+        :title="`${titlePrefix || ''}${$t('$ezreeport.task-preset.title:list', total)}`"
         color="transparent"
-        density="compact"
+        density="comfortable"
       >
+        <template v-if="$slots.prepend" #prepend>
+          <slot name="prepend" />
+        </template>
+
         <template #append>
           <v-btn
             v-if="availableActions.create"
@@ -197,6 +201,11 @@ import {
 } from '~sdk/task-presets';
 
 type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
+
+// Components props
+defineProps<{
+  titlePrefix?: string;
+}>();
 
 // Utils composable
 const { t } = useI18n();

@@ -1,9 +1,13 @@
 <template>
   <v-toolbar
-    :title="$t('$ezreeport.health.title:list')"
+    :title="`${titlePrefix || ''}${$t('$ezreeport.health.title:list')}`"
     color="transparent"
-    density="compact"
+    density="comfortable"
   >
+    <template v-if="$slots.prepend" #prepend>
+      <slot name="prepend" />
+    </template>
+
     <template #append>
       <v-btn
         :text="$t('$ezreeport.refresh')"
@@ -54,6 +58,11 @@ import { version } from '~/../package.json';
 import { version as sdkVersion } from '~sdk';
 import {
   getStatus,
+
+// Components props
+defineProps<{
+  titlePrefix?: string;
+}>();
   pingAllServices,
   type Pong,
   type ApiStatus,

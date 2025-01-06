@@ -173,7 +173,12 @@
                 </template>
               </v-list-item>
 
-              <v-list-item :title="modelValue.result.detail.auth.elastic.username" :subtitle="$t('$ezreeport.queues.generation.auth')" prepend-icon="mdi-account-key" />
+              <v-list-item
+                v-if="modelValue.result.detail.auth?.elastic?.username"
+                :title="modelValue.result.detail.auth.elastic.username"
+                :subtitle="$t('$ezreeport.queues.generation.auth')"
+                prepend-icon="mdi-account-key"
+              />
             </v-list>
           </v-col>
 

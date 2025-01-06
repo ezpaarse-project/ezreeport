@@ -169,6 +169,6 @@ async function refresh() {
   ]);
 }
 
-watch(index, () => resolveIndex());
+watch(index, () => resolveIndex(), { immediate: true });
 watch(() => props.namespaceId, () => refresh());
 </script>

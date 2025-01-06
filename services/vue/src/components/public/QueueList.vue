@@ -1,16 +1,21 @@
 <template>
   <v-toolbar
-    :title="$t('$ezreeport.queues._.title:list')"
+    :title="`${titlePrefix || ''}${$t('$ezreeport.queues._.title:list')}`"
     color="transparent"
-    density="compact"
+    density="comfortable"
   >
+    <template v-if="$slots.prepend" #prepend>
+      <slot name="prepend" />
+    </template>
+
     <template #append>
       <v-btn
-        :text="$t('$ezreeport.refresh')"
+        v-tooltip:top="$t('$ezreeport.refresh')"
         :loading="loading"
         variant="tonal"
         color="primary"
-        prepend-icon="mdi-refresh"
+        icon="mdi-refresh"
+        density="comfortable"
         class="ml-2"
         @click="refresh"
       />
@@ -79,6 +84,11 @@
 <script setup lang="ts">
 import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
 import {
+
+// Components props
+defineProps<{
+  titlePrefix?: string;
+}>();
   getAllQueues,
   getQueueJobs,
   updateQueue,

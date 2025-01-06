@@ -8,10 +8,14 @@
   >
     <template #top>
       <v-toolbar
-        :title="$t('$ezreeport.task-activity.title:list', total)"
+        :title="`${titlePrefix || ''}${$t('$ezreeport.task-activity.title:list', total)}`"
         color="transparent"
-        density="compact"
+        density="comfortable"
       >
+        <template v-if="$slots.prepend" #prepend>
+          <slot name="prepend" />
+        </template>
+
         <template #append>
           <v-menu :close-on-content-click="false" location="bottom start">
             <template #activator="{ props: menu }">
@@ -158,6 +162,11 @@ import {
 import { getAllActivity } from '~sdk/task-activity';
 
 const maxDate = new Date();
+
+// Components props
+defineProps<{
+  titlePrefix?: string;
+}>();
 
 /** List of activity */
 const {

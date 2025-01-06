@@ -1,6 +1,5 @@
 <template>
   <v-data-iterator
-    v-model="selectedTasks"
     :items="tasks"
     show-select
     return-object
@@ -8,10 +7,14 @@
   >
     <template #header>
       <v-toolbar
-        :title="$t('$ezreeport.task.title:list', total)"
+        :title="`${titlePrefix || ''}${$t('$ezreeport.task.title:list', total)}`"
         color="transparent"
-        density="compact"
+        density="comfortable"
       >
+        <template v-if="$slots.prepend" #prepend>
+          <slot name="prepend" />
+        </template>
+
         <template #append>
           <v-btn
             v-if="availableActions.create"
@@ -48,6 +51,7 @@
     </template>
 
     <template #default="{ items }">
+      <v-container fluid>
       <v-row class="mt-1">
         <v-col
           v-for="{ raw: task } in items"
@@ -114,6 +118,7 @@
           </TaskCard>
         </v-col>
       </v-row>
+      </v-container>
     </template>
 
     <template #no-data>
@@ -134,28 +139,6 @@
       </v-empty-state>
     </template>
   </v-data-iterator>
-
-  <SelectionMenu
-    v-model="selectedTaskIds"
-    :text="$t('$ezreeport.task.manage', selectedTasks.length)"
-  >
-    <template #actions>
-      <v-list-item
-        :title="$t('$ezreeport.delete')"
-        prepend-icon="mdi-delete"
-        @click="deleteSelected()"
-      />
-
-      <v-divider />
-
-      <v-list-item
-        v-if="availableActions.state"
-        :title="$t('$ezreeport.task.state:toggle')"
-        prepend-icon="mdi-toggle-switch"
-        @click="toggleSelectedState()"
-      />
-    </template>
-  </SelectionMenu>
 
   <v-dialog
     v-model="isFormOpen"
@@ -211,10 +194,10 @@ import {
 // Components props
 const props = defineProps<{
   namespaceId: string;
+  titlePrefix?: string;
 }>();
 
 const arePermissionsReady = ref(false);
-const selectedTasks = ref<Omit<Task, 'template'>[]>([]);
 const updatedTask = ref<Task | undefined>();
 const generatedTask = ref<Omit<Task, 'template'> | undefined>();
 const isFormOpen = ref(false);
@@ -248,16 +231,6 @@ const availableActions = computed(() => {
     generate: hasPermission(generateAndListenReportOfTask),
     state: hasPermission(changeTaskEnableState),
   };
-});
-
-const selectedTaskIds = computed({
-  get: () => selectedTasks.value.map((task) => task.id),
-  set: (v) => {
-    const ids = new Set(v);
-    selectedTasks.value = selectedTasks.value.filter(
-      (task) => ids.has(task.id),
-    );
-  },
 });
 
 async function openForm(task?: Omit<Task, 'template'>) {
