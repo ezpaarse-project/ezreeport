@@ -267,6 +267,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         namespaceId: request.body.namespaceId,
         targets: request.body.targets,
         template: {
+          version: 2,
           index: request.body.index,
           dateField: taskPreset.fetchOptions?.dateField,
           filters: request.body.filters,

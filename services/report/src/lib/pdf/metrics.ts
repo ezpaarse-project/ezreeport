@@ -271,7 +271,7 @@ export const addMetricToPDF = (
 
     let y = slot.y + sizes.value.h - 5;
     valueStyle(doc.pdf, def).text(
-      value,
+      `${value}`,
       slot.x + Math.round(slot.width / 2),
       y,
       { align: 'center' },

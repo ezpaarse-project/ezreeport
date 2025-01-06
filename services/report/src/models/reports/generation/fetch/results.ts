@@ -100,8 +100,12 @@ function flattenEsBuckets<Element extends Record<string, unknown>>(
     return [{ key: '', value: current.aggregation ? rawBuckets.metric.value : rawBuckets.doc_count }];
   }
 
-  const data: FetchResultItem[] = [];
   const aggregation = rawBuckets[`${i}`]; // See how data is fetched from ES
+  if (!aggregation) {
+    return [];
+  }
+
+  const data: FetchResultItem[] = [];
   const buckets = 'buckets' in aggregation ? aggregation.buckets : [aggregation];
 
   // eslint-disable-next-line no-restricted-syntax
