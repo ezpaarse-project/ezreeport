@@ -40,8 +40,8 @@
       "manage": "Gérer {n} rapports",
       "id": "ID du rapport",
       "recurrence": "Récurrence",
-      "targets": "Cibles",
-      "targets:count": "{n} cible|{n} cibles",
+      "targets": "Destinataires",
+      "targets:count": "{n} Destinataire|{n} Destinataires",
       "targets:copy": "Copier les adresses mail",
       "nextRun": "Prochain envoi",
       "lastRun": "Envoi précédent",
@@ -69,7 +69,7 @@
         },
         "success": {
           "title": "Le rapport a été généré avec succès",
-          "description": "Le rapport PDF sera disponible dans la boîte mail des cibles fournies, vous pouvez également le télécharger en utilisant le bouton en haut à droite de cette boîte."
+          "description": "Le rapport PDF sera disponible dans la boîte mail des Destinataires fournies, vous pouvez également le télécharger en utilisant le bouton en haut à droite de cette boîte."
         },
         "files": {
           "report": "Rapport PDF",
@@ -140,7 +140,8 @@
       "noSelected": "Aucune page n'est sélectionnée",
       "noSelected:desc": "Sélectionnez une page sur la gauche pour commencer à ajouter des visualisations",
       "createLayout": "Créez votre première page",
-      "vars": {
+      "vars": "Variables disponibles",
+      "varsList": {
         "dateField": "Champ date du template",
         "length": "Nombre d'éléments affichés"
       },

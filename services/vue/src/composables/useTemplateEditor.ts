@@ -61,7 +61,7 @@ export default function useTemplateEditor(defaultOptions?: Options) {
     if (vars.dateField) {
       items.unshift({
         value: '{{ dateField }}',
-        title: t('$ezreeport.editor.vars.dateField'),
+        title: t('$ezreeport.editor.varsList.dateField'),
         props: {
           subtitle: 'date',
           appendIcon: 'mdi-variable',

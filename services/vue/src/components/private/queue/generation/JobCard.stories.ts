@@ -164,95 +164,10 @@ export const Failed: Story = {
           },
           error: {
             message: 'No data found for given request. Please review filters or aggregations of figures.',
-            stack: [
-              'Error: No data found for given request. Please review filters or aggregations of figures.',
-              'at checkEsErrors (/usr/dev/services/report/src/models/reports/generation/fetch/results.ts:52:11)',
-              'at handleEsResponse (/usr/dev/services/report/src/models/reports/generation/fetch/results.ts:263:3)',
-              'at <anonymous> (/usr/dev/services/report/src/models/reports/generation/fetch/index.ts:88:21)',
-              'at Array.map (<anonymous>)',
-              'at fetchElastic (/usr/dev/services/report/src/models/reports/generation/fetch/index.ts:82:29)',
-              'at process.processTicksAndRejections (node:internal/process/task_queues:95:5)',
-              'at asyncWithCommonHandlers (/usr/dev/services/report/src/lib/utils.ts:149:13)',
-              'at async Promise.all (index 3)',
-              'at generateReport (/usr/dev/services/report/src/models/reports/generation/index.ts:386:5)',
-              'at generate (/usr/dev/services/report/src/models/queues/jobs/generate.ts:87:18)',
-            ],
             cause: {
               layout: 3,
               figure: 'publisher : chronologie-mois-histo',
-              elasticQuery: {
-                index: '*-publisher*',
-                body: [
-                  {
-                    query: {
-                      bool: {
-                        filter: [
-                          {
-                            match_phrase: {
-                              Metric_Type: 'Searches_Platform',
-                            },
-                          },
-                          {
-                            match_phrase: {
-                              'Report_Header.Report_ID': 'PR',
-                            },
-                          },
-                          {
-                            range: {
-                              X_Date_Month: {
-                                gte: '2023-01-01T00:00:00+01:00',
-                                lte: '2023-12-31T23:59:59+01:00',
-                                format: 'strict_date_optional_time',
-                              },
-                            },
-                          },
-                        ],
-                        must_not: [],
-                      },
-                    },
-                    aggregations: {
-                      1: {
-                        date_histogram: {
-                          field: 'X_Date_Month',
-                          calendar_interval: 'month',
-                          order: {
-                            _count: 'desc',
-                          },
-                        },
-                        aggregations: {
-                          2: {
-                            terms: {
-                              field: 'X_Package',
-                              order: {
-                                _count: 'desc',
-                              },
-                            },
-                            aggregations: {
-                              metric: {
-                                sum: {
-                                  field: 'Count',
-                                },
-                              },
-                            },
-                          },
-                          metric: {
-                            sum: {
-                              field: 'Count',
-                            },
-                          },
-                        },
-                      },
-                      metric: {
-                        sum: {
-                          field: 'Count',
-                        },
-                      },
-                    },
-                    size: 0,
-                    track_total_hits: true,
-                  },
-                ],
-              },
+              type: '',
             },
           },
         },

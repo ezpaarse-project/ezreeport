@@ -93,7 +93,7 @@ const error = ref<Error | undefined>(undefined);
 const indexRef = useTemplateRef('indexRef');
 
 /** Current value of index */
-const index = computed<string>({
+const index = computed({
   get: () => props.modelValue || '',
   set: (v) => emit('update:model-value', v || ''),
 });

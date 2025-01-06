@@ -40,8 +40,8 @@
       "manage": "Manage {n} reports",
       "id": "Report's ID",
       "recurrence": "Recurrence",
-      "targets": "Targets",
-      "targets:count": "{n} target|{n} targets",
+      "targets": "Receivers",
+      "targets:count": "{n} receiver|{n} receivers",
       "targets:copy": "Copy mail adresses",
       "nextRun": "Next delivery",
       "lastRun": "Previous delivery",
@@ -69,7 +69,7 @@
         },
         "success": {
           "title": "The report was generated with success",
-          "description": "The PDF report will be available in mail box of the provided targets, you can also download it using the button at the right corner of this box."
+          "description": "The PDF report will be available in mail box of the provided receivers, you can also download it using the button at the right corner of this box."
         },
         "files": {
           "report": "PDF report",
@@ -140,7 +140,8 @@
       "noSelected": "No page is selected",
       "noSelected:desc": "Select a page on the left to start adding figures",
       "createLayout": "Create your first page",
-      "vars": {
+      "vars": "Available variables",
+      "varsList": {
         "dateField": "Date field of template",
         "length": "Count of items displayed"
       },

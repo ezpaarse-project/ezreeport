@@ -10,15 +10,7 @@
     <template #text>
       <v-row>
         <v-col>
-          <!-- TODO: Vars in title -->
-          <v-text-field
-            v-model="title"
-            :label="$t('$ezreeport.editor.figures._.title')"
-            :readonly="readonly"
-            prepend-icon="mdi-rename"
-            variant="underlined"
-            hide-details
-          />
+          <EditorFigureTitleField v-model="title" :readonly="readonly" />
         </v-col>
       </v-row>
 
