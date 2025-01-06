@@ -188,7 +188,7 @@ const { t } = useI18n();
 const isValid = ref(false);
 
 /** Column to edit */
-const { cloned: column } = useCloned<TableColumn>(props.modelValue ?? { header: '' });
+const { cloned: column } = useCloned<TableColumn>(props.modelValue ?? { header: '', metric: true });
 
 /** Validate form on mounted */
 useTemplateVForm('formRef');

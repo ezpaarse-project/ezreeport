@@ -64,7 +64,7 @@
       "generation": {
         "error": {
           "title": "Une erreur est survenue lors de la génération",
-          "layout": "Disposition",
+          "layout": "Page",
           "figure": "Visualisation",
           "type": "Type"
         },
@@ -190,7 +190,7 @@
         "type": "@:$ezreeport.type",
         "raw": "Requête DSL",
         "size": "Nombre de résultats",
-        "aggregationTemplate": "{type} of {field}",
+        "aggregationTemplate": "{type} de {field}",
         "typeGroups": {
           "common": "Communs",
           "others": "@:$ezreeport.others"

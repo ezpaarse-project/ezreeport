@@ -42,7 +42,7 @@ const emit = defineEmits<{
 const inputRef = useTemplateRef('input');
 
 function onVariableClick(variable: string) {
-  emit('update:model-value', `${props.modelValue ?? ''} ${variable}`);
+  emit('update:model-value', `${props.modelValue ?? ''}${variable}`);
   inputRef.value?.focus();
 }
 </script>

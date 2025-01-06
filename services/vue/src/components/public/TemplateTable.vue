@@ -362,13 +362,14 @@ async function toggleSelectedVisibility() {
 
 async function onSave(template: TemplateHelper) {
   try {
+    let result;
     const data = templateHelperToJSON(template);
     if (template.id) {
-      await upsertTemplate({ ...data, id: template.id });
+      result = await upsertTemplate({ ...data, id: template.id });
     } else {
-      const result = await createTemplate(data);
-      openForm(result);
+      result = await createTemplate(data);
     }
+    openForm(result);
   } catch (e) {
     const msg = template.id ? t('$ezreeport.template.errors.edit') : t('$ezreeport.template.errors.create');
     handleEzrError(msg, e);
