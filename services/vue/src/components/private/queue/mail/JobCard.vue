@@ -157,6 +157,9 @@ const props = defineProps<{
   modelValue: MailJob,
 }>();
 
+// Utils composables
+const { t } = useI18n();
+
 /** Is info opened */
 const isInfoOpen = ref(false);
 /** Linked generation job */
@@ -173,7 +176,7 @@ async function refreshGenerationJob() {
   try {
     generationJob.value = await getGenerationJob(dataJob.value.data.generationId);
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.queues._.errors.open'), e);
   }
 }
 
@@ -196,7 +199,7 @@ async function downloadAttachement() {
     const blob = b64toBlob(data.file, mime);
     downloadBlob(blob, filename);
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.errors.downloadAttachement'), e);
   }
 }
 

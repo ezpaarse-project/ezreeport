@@ -17,7 +17,7 @@
 
     <template #text>
       <v-list>
-        <v-menu v-model="isTargetsOpened" max-height="250">
+        <v-menu max-height="250">
           <template #activator="{ props: menu }">
             <v-list-item
               :title="$t('$ezreeport.task.targets:count', modelValue.targets.length)"
@@ -31,7 +31,8 @@
               <template v-if="clipboard.isSupported" #append>
                 <v-btn
                   v-tooltip:top="$t('$ezreeport.task.targets:copy')"
-                  icon="mdi-content-copy"
+                  :icon="isCopied ? 'mdi-check' : 'mdi-content-copy'"
+                  :color="isCopied ? 'success' : undefined"
                   density="comfortable"
                   size="small"
                   variant="flat"
@@ -63,17 +64,21 @@ const props = defineProps<{
   modelValue: Omit<Task, 'template'>,
 }>();
 
-const isTargetsOpened = ref(false);
-
+// Utils composables
+const { t } = useI18n();
 const clipboard = useClipboard();
+
+const isCopied = ref(false);
 
 async function copyTargets() {
   try {
     const addresses = props.modelValue.targets.join('; ');
     await clipboard.copy(addresses);
-    isTargetsOpened.value = false;
+
+    isCopied.value = true;
+    setTimeout(() => { isCopied.value = false; }, 1000);
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task.errors.copy:targets'), e);
   }
 }
 </script>

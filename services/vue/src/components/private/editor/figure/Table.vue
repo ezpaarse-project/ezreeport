@@ -160,6 +160,9 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: TableFigureHelper): void
 }>();
 
+// Utils composables
+const { t } = useI18n();
+
 /** Should show the column form */
 const isFormVisible = ref(false);
 /** The column to edit */
@@ -208,7 +211,7 @@ const title = computed<string>({
   },
 });
 /** If we should show the total of the metric columns */
-const showTotal = computed<boolean>({
+const showTotal = computed({
   get: () => props.modelValue.params.total ?? false,
   set: (value) => {
     const { params } = props.modelValue;
@@ -248,7 +251,7 @@ function removeColumn(column: TableColumn) {
     removeTableColumnOfHelper(props.modelValue, column);
     emit('update:modelValue', props.modelValue);
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.editor.figures.table.columns.errors.delete'), e);
   }
 }
 
@@ -268,7 +271,7 @@ function setColumn(column: TableColumn) {
     emit('update:modelValue', props.modelValue);
     closeColumnForm();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.editor.figures.table.columns.errors.edit'), e);
   }
 }
 </script>

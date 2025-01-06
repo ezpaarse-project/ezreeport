@@ -52,72 +52,72 @@
 
     <template #default="{ items }">
       <v-container fluid>
-      <v-row class="mt-1">
-        <v-col
-          v-for="{ raw: task } in items"
-          :key="task.id"
-          cols="12"
-          sm="6"
-          md="4"
-          lg="3"
-        >
-          <TaskCard :model-value="task">
-            <template #actions>
-              <v-switch
-                :model-value="task.enabled"
-                :label="task.enabled
-                  ? $t('$ezreeport.task.enabled')
-                  : $t('$ezreeport.task.disabled')"
-                :disabled="!availableActions.state"
-                :loading="loading"
-                density="comfortable"
-                color="primary"
-                hide-details
-                class="ml-1"
-                @update:model-value="toggleItemState(task)"
-              />
+        <v-row class="mt-1">
+          <v-col
+            v-for="{ raw: task } in items"
+            :key="task.id"
+            cols="12"
+            sm="6"
+            md="4"
+            lg="3"
+          >
+            <TaskCard :model-value="task">
+              <template #actions>
+                <v-switch
+                  :model-value="task.enabled"
+                  :label="task.enabled
+                    ? $t('$ezreeport.task.enabled')
+                    : $t('$ezreeport.task.disabled')"
+                  :disabled="!availableActions.state"
+                  :loading="loading"
+                  density="comfortable"
+                  color="primary"
+                  hide-details
+                  class="ml-1"
+                  @update:model-value="toggleItemState(task)"
+                />
 
-              <v-spacer />
+                <v-spacer />
 
-              <v-menu>
-                <template #activator="{ props: menu }">
-                  <v-btn
-                    icon="mdi-cog"
-                    variant="plain"
-                    density="comfortable"
-                    v-bind="menu"
-                  />
-                </template>
+                <v-menu>
+                  <template #activator="{ props: menu }">
+                    <v-btn
+                      icon="mdi-cog"
+                      variant="plain"
+                      density="comfortable"
+                      v-bind="menu"
+                    />
+                  </template>
 
-                <v-list>
-                  <v-list-item
-                    :title="$t('$ezreeport.task.generate')"
-                    :disabled="!availableActions.generate"
-                    prepend-icon="mdi-email-fast"
-                    @click="openGeneration(task)"
-                  />
+                  <v-list>
+                    <v-list-item
+                      :title="$t('$ezreeport.task.generate')"
+                      :disabled="!availableActions.generate"
+                      prepend-icon="mdi-email-fast"
+                      @click="openGeneration(task)"
+                    />
 
-                  <v-divider />
+                    <v-divider />
 
-                  <v-list-item
-                    :title="$t('$ezreeport.edit')"
-                    :disabled="!availableActions.update"
-                    prepend-icon="mdi-pencil"
-                    @click="openForm(task)"
-                  />
+                    <v-list-item
+                      :title="$t('$ezreeport.edit')"
+                      :disabled="!availableActions.update"
+                      prepend-icon="mdi-pencil"
+                      @click="openForm(task)"
+                    />
 
-                  <v-list-item
-                    :title="$t('$ezreeport.delete')"
-                    :disabled="!availableActions.delete"
-                    prepend-icon="mdi-delete"
-                    @click="deleteItem(task)"
-                  />
-                </v-list>
-              </v-menu>
-            </template>
-          </TaskCard>
-        </v-col>
-      </v-row>
+                    <v-list-item
+                      :title="$t('$ezreeport.delete')"
+                      :disabled="!availableActions.delete"
+                      prepend-icon="mdi-delete"
+                      @click="deleteItem(task)"
+                    />
+                  </v-list>
+                </v-menu>
+              </template>
+            </TaskCard>
+          </v-col>
+        </v-row>
       </v-container>
     </template>
 
@@ -197,6 +197,9 @@ const props = defineProps<{
   titlePrefix?: string;
 }>();
 
+// Utils composable
+const { t } = useI18n();
+
 const arePermissionsReady = ref(false);
 const updatedTask = ref<Task | undefined>();
 const generatedTask = ref<Omit<Task, 'template'> | undefined>();
@@ -240,7 +243,7 @@ async function openForm(task?: Omit<Task, 'template'>) {
 
     isFormOpen.value = true;
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task.errors.open'), e);
   }
 }
 
@@ -251,17 +254,13 @@ async function openGeneration(task: Omit<Task, 'template'>) {
 
     isFormOpen.value = true;
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task.errors.open'), e);
   }
 }
 
 function closeForm() {
-  try {
-    isFormOpen.value = false;
-    refresh();
-  } catch (e) {
-    console.error(e);
-  }
+  isFormOpen.value = false;
+  refresh();
 }
 
 async function toggleItemState(task: Omit<Task, 'template'>) {
@@ -269,20 +268,7 @@ async function toggleItemState(task: Omit<Task, 'template'>) {
     await changeTaskEnableState(task, !task.enabled);
     refresh();
   } catch (e) {
-    console.error(e);
-  }
-}
-
-async function toggleSelectedState() {
-  // TODO: show warning
-  try {
-    await Promise.all(selectedTasks.value.map(
-      (task) => changeTaskEnableState(task, !task.enabled),
-    ));
-    selectedTasks.value = [];
-    refresh();
-  } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task.errors.edit'), e);
   }
 }
 
@@ -292,21 +278,9 @@ async function deleteItem(task: Omit<Task, 'template'>) {
     await deleteTask(task);
     refresh();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task.errors.delete'), e);
   }
 }
-
-async function deleteSelected() {
-  // TODO: show warning
-  try {
-    await Promise.all(selectedTasks.value.map((task) => deleteTask(task)));
-    selectedTasks.value = [];
-    refresh();
-  } catch (e) {
-    console.error(e);
-  }
-}
-
 refreshPermissions()
   .then(() => { arePermissionsReady.value = true; });
 </script>

@@ -58,15 +58,18 @@ import { version } from '~/../package.json';
 import { version as sdkVersion } from '~sdk';
 import {
   getStatus,
+  pingAllServices,
+  type Pong,
+  type ApiStatus,
+} from '~sdk/health';
 
 // Components props
 defineProps<{
   titlePrefix?: string;
 }>();
-  pingAllServices,
-  type Pong,
-  type ApiStatus,
-} from '~sdk/health';
+
+// Utils composable
+const { t } = useI18n();
 
 /** Is loading */
 const loading = ref(false);
@@ -87,7 +90,7 @@ async function refresh() {
 
     pongs.value = await pingAllServices();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.health.errors.fetch'), e);
   }
   latency.value = ping;
   loading.value = false;

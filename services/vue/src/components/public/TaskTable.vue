@@ -371,19 +371,15 @@ async function openForm(task?: Omit<Task, 'template'>) {
 
     isFormOpen.value = true;
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task.errors.open'), e);
   }
 }
 
 async function openGeneration(task: Omit<Task, 'template'>) {
-  try {
-    generatedTask.value = task;
-    updatedTask.value = undefined;
+  generatedTask.value = task;
+  updatedTask.value = undefined;
 
-    isFormOpen.value = true;
-  } catch (e) {
-    console.error(e);
-  }
+  isFormOpen.value = true;
 }
 
 async function openDuplicateForm(task: Omit<Task, 'template'>) {
@@ -398,17 +394,13 @@ async function openDuplicateForm(task: Omit<Task, 'template'>) {
 
     isFormOpen.value = true;
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task.errors.open'), e);
   }
 }
 
 function closeForm() {
-  try {
-    isFormOpen.value = false;
-    refresh();
-  } catch (e) {
-    console.error(e);
-  }
+  isFormOpen.value = false;
+  refresh();
 }
 
 async function toggleItemState(task: Omit<Task, 'template'>) {
@@ -416,7 +408,7 @@ async function toggleItemState(task: Omit<Task, 'template'>) {
     await changeTaskEnableState(task, !task.enabled);
     refresh();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task.errors.edit'), e);
   }
 }
 
@@ -429,7 +421,7 @@ async function toggleSelectedState() {
     selectedTasks.value = [];
     refresh();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task.errors.edit'), e);
   }
 }
 
@@ -439,7 +431,7 @@ async function deleteItem(task: Omit<Task, 'template'>) {
     await deleteTask(task);
     refresh();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task.errors.delete'), e);
   }
 }
 
@@ -450,7 +442,7 @@ async function deleteSelected() {
     selectedTasks.value = [];
     refresh();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task.errors.delete'), e);
   }
 }
 

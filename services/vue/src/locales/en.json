@@ -77,6 +77,15 @@
           "detail": "Report details (JSON)",
           "debug": "Debug report (JSON)"
         }
+      },
+      "errors": {
+        "create:preset": "Cannot create report from preset",
+        "copy:targets": "Cannot copy targets into clipboard",
+        "fetch": "Cannot get periodic reports",
+        "create": "Cannot create report",
+        "edit": "Cannot update report",
+        "delete": "Cannot delete report",
+        "open": "Cannot get report informations"
       }
     },
     "task-preset": {
@@ -88,7 +97,13 @@
       "hidden:desc": "The preset is hidden for users|The preset is visible for users",
       "template-hidden:desc": "Template used by this preset is hidden to users, so this preset is hidden too",
       "noList": "No preset were found",
-      "noList:desc": "Help users to create periodic reports by creating the first preset, just click on the @:$ezreeport.new button"
+      "noList:desc": "Help users to create periodic reports by creating the first preset, just click on the @:$ezreeport.new button",
+      "errors": {
+        "fetch": "Cannot get report presets",
+        "create": "Cannot create report preset",
+        "edit": "Cannot update report preset",
+        "delete": "Cannot delete report preset"
+      }
     },
     "task-activity": {
       "title:list": "Reports activity ({n})",
@@ -123,6 +138,10 @@
         "title:new": "Create tag",
         "title:edit": "Edit tag",
         "color": "Color"
+      },
+      "errors": {
+        "fetch": "Can't get templates",
+        "open": "Can't get template informations"
       }
     },
     "index": {
@@ -277,6 +296,10 @@
               "date": "Format to use",
               "date:hint": "Based on {link}",
               "number": "Locale to use"
+            },
+            "errors": {
+              "create": "Can't create element",
+              "edit": "Can't update element"
             }
           }
         },
@@ -306,6 +329,10 @@
               "hcenter": "Content aligned to the center",
               "hright": "Content aligned to the right",
               "hjustify": "Content aligned to the left and right (justified)"
+            },
+            "errors": {
+              "create": "Can't create column",
+              "edit": "Can't update column"
             }
           }
         },
@@ -349,16 +376,29 @@
       },
       "layouts": {
         "title": "Pages",
-        "create": "Create page"
+        "create": "Create page",
+        "errors": {
+          "create": "Can't create layout",
+          "edit": "Can't update layout",
+          "delete": "Can't delete layout",
+          "clone": "Can't clone layout"
+        }
       }
     },
     "crons": {
-      "title:list": "Automatic jobs (crons)"
+      "title:list": "Automatic jobs (crons)",
+      "errors": {
+        "fetch": "Can't fetch automatic jobs",
+        "edit": "Can't update automatic job"
+      }
     },
     "health": {
       "title:list": "ezREEPORT's status",
       "client": "Client status",
-      "server": "Server status"
+      "server": "Server status",
+      "errors": {
+        "fetch": "Can't fetch ezREEPORT's status"
+      }
     },
     "queues": {
       "_": {
@@ -378,6 +418,12 @@
           "delayed": "Delayed",
           "active": "Active",
           "waiting": "Waiting"
+        },
+        "errors": {
+          "fetch": "Can't get queues",
+          "edit": "Can't update queue",
+          "retry": "Can't retry job",
+          "open": "Can't get job informations"
         }
       },
       "generation": {
@@ -405,5 +451,10 @@
         "header:mail": "Mail informations"
       }
     }
+  },
+  "errors": {
+    "download": "Can't download file \"{path}\"",
+    "downloadAttachement": "Can't download attachement",
+    "refreshNamespaces": "Can't refresh @:$ezreeport.namespace"
   }
 }

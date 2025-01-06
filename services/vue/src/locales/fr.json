@@ -77,6 +77,15 @@
           "detail": "Détails du rapport (JSON)",
           "debug": "Rapport de debug (JSON)"
         }
+      },
+      "errors": {
+        "copy:targets": "Impossible de copier les cibles dans le presse-papiers",
+        "create": "Impossible de créer un rapport",
+        "create:preset": "Impossible de créer un rapport à partir d'un préréglage",
+        "delete": "Impossible de supprimer le rapport",
+        "edit": "Impossible de mettre à jour le rapport",
+        "fetch": "Impossible d'obtenir des rapports périodiques",
+        "open": "Impossible d'obtenir les informations du rapport"
       }
     },
     "task-preset": {
@@ -88,7 +97,13 @@
       "hidden:desc": "Le prédéfini est caché pour les utilisateurs|Le prédéfini est visible pour les utilisateurs",
       "template-hidden:desc": "Le modèle utilisé par ce prédéfini est caché pour les utilisateurs, donc ce prédéfini est également caché",
       "noList": "Aucun prédéfini trouvé",
-      "noList:desc": "Aidez les utilisateurs à créer des rapports périodiques en créant le premier prédéfini, cliquez simplement sur le bouton @:$ezreeport.new"
+      "noList:desc": "Aidez les utilisateurs à créer des rapports périodiques en créant le premier prédéfini, cliquez simplement sur le bouton @:$ezreeport.new",
+      "errors": {
+        "create": "Impossible de créer un prédéfini de rapport",
+        "delete": "Impossible de supprimer le prédéfini du rapport",
+        "edit": "Impossible de mettre à jour le prédéfini du rapport",
+        "fetch": "Impossible d'obtenir les prédéfinis de rapport"
+      }
     },
     "task-activity": {
       "title:list": "Activité des rapports ({n})",
@@ -123,6 +138,10 @@
         "title:new": "Créer une étiquette",
         "title:edit": "Éditer l'étiquette",
         "color": "Couleur"
+      },
+      "errors": {
+        "fetch": "Impossible d'obtenir les modèles",
+        "open": "Impossible d'obtenir les informations sur le modèle"
       }
     },
     "index": {
@@ -277,6 +296,10 @@
               "date": "Format à utiliser",
               "date:hint": "Basé sur {link}",
               "number": "Langue à utiliser"
+            },
+            "errors": {
+              "create": "Impossible de créer un élément",
+              "edit": "Impossible de mettre à jour l'élément"
             }
           }
         },
@@ -306,6 +329,10 @@
               "hcenter": "Contenu aligné au centre",
               "hright": "Contenu aligné à droite",
               "hjustify": "Contenu aligné à gauche et à droite (justifié)"
+            },
+            "errors": {
+              "create": "Impossible de créer une colonne",
+              "edit": "Impossible de mettre à jour la colonne"
             }
           }
         },
@@ -349,16 +376,29 @@
       },
       "layouts": {
         "title": "Pages",
-        "create": "Créer une page"
+        "create": "Créer une page",
+        "errors": {
+          "clone": "Impossible de cloner la page",
+          "create": "Impossible de créer une page",
+          "delete": "Impossible de supprimer la page",
+          "edit": "Impossible de mettre à jour la page"
+        }
       }
     },
     "crons": {
-      "title:list": "Tâches planifiées (crons)"
+      "title:list": "Tâches planifiées (crons)",
+      "errors": {
+        "edit": "Impossible de mettre à jour la tâche planifiée",
+        "fetch": "Impossible de récupérer les tâches planifiées"
+      }
     },
     "health": {
       "title:list": "Statut d'ezREEPORT",
       "client": "Statut client",
-      "server": "Statut serveur"
+      "server": "Statut serveur",
+      "errors": {
+        "fetch": "Impossible de récupérer le statut d'ezREEPORT"
+      }
     },
     "queues": {
       "_": {
@@ -378,6 +418,12 @@
           "delayed": "Retardée",
           "active": "Active",
           "waiting": "En attente"
+        },
+        "errors": {
+          "edit": "Impossible de mettre à jour la file d'attente",
+          "fetch": "Impossible d'avoir des files d'attente",
+          "open": "Impossible d'obtenir des informations sur la tâche",
+          "retry": "Impossible de réessayer la tâche"
         }
       },
       "generation": {
@@ -405,5 +451,10 @@
         "header:mail": "Informations sur le mail"
       }
     }
+  },
+  "errors": {
+    "download": "Impossible de télécharger le fichier \"{path}\"",
+    "downloadAttachement": "Impossible de télécharger la pièce jointe",
+    "refreshNamespaces": "Impossible d'actualiser les @:$ezreeport.namespace"
   }
 }

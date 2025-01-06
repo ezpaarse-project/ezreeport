@@ -64,6 +64,7 @@ const emit = defineEmits<{
 
 // Utils composables
 const { grid } = useTemplateEditor();
+const { t } = useI18n();
 
 const unusedSlots = computed(() => {
   const possibleSlots = Array.from(
@@ -109,7 +110,7 @@ function editFigure(figure: AnyFigureHelper, element: Element) {
     }
     emit('update:modelValue', props.modelValue);
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.editor.layouts.errors.edit'), e);
   }
 }
 
@@ -120,7 +121,7 @@ function deleteFigure(element: Element) {
     }
     emit('update:modelValue', props.modelValue);
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.editor.layouts.errors.delete'), e);
   }
 }
 </script>

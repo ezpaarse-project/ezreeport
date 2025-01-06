@@ -168,6 +168,7 @@ const emit = defineEmits<{
 }>();
 
 // Utils composables
+const { t } = useI18n();
 const { refreshMapping } = useTemplateEditor();
 
 /** Is basic form valid */
@@ -236,7 +237,7 @@ async function fetchPresets() {
     const { items } = await getAllTaskPresets({ pagination: { count: 0, sort: 'name' }, include: ['template.tags'] });
     presets.value = items;
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task.errors.fetchPresets'), e);
   }
   loadingPresets.value = false;
 }
@@ -247,7 +248,7 @@ async function fetchNamespaces() {
     const currentNamespaces = await getCurrentNamespaces();
     namespaces.value = currentNamespaces.sort((a, b) => a.name.localeCompare(b.name));
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.errors.refreshNamespaces'), e);
   }
   loadingNamespaces.value = false;
 }
@@ -262,7 +263,7 @@ async function save() {
 
     emit('update:modelValue', result);
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task.errors.create:preset'), e);
   }
 }
 

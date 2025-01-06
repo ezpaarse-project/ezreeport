@@ -1,5 +1,5 @@
 <template>
-  <v-menu v-model="isOpened" :close-on-content-click="false">
+  <v-menu :close-on-content-click="false">
     <template #activator="{ props: menu }">
       <v-chip
         :text="showLabel ? $t('$ezreeport.task.targets:count', modelValue.length) : `${modelValue.length}`"
@@ -19,10 +19,11 @@
         <template v-if="clipboard.isSupported" #append>
           <v-btn
             v-tooltip:top="$t('$ezreeport.task.targets:copy')"
-            icon="mdi-content-copy"
+            :icon="isCopied ? 'mdi-check' : 'mdi-content-copy'"
+            :color="isCopied ? 'success' : undefined"
             density="comfortable"
-            size="small"
             variant="flat"
+            size="small"
             @click="copyTargets()"
           />
         </template>
@@ -43,17 +44,21 @@ const props = defineProps<{
   size?: string | number,
 }>();
 
-const isOpened = ref(false);
-
+// Utils composables
+const { t } = useI18n();
 const clipboard = useClipboard();
+
+const isCopied = ref(false);
 
 async function copyTargets() {
   try {
     const addresses = props.modelValue.join('; ');
     await clipboard.copy(addresses);
-    isOpened.value = false;
+
+    isCopied.value = true;
+    setTimeout(() => { isCopied.value = false; }, 1000);
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task.errors.copy:targets'), e);
   }
 }
 </script>

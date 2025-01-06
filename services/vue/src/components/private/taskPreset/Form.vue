@@ -192,7 +192,7 @@ async function fetchTemplates() {
       preset.value.templateId = meta.default;
     }
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.templates.errors.fetch'), e);
   }
   loadingTemplates.value = false;
 }
@@ -210,7 +210,7 @@ async function onTemplateChange(id: string) {
     };
     regenerateName();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.templates.errors.open'), e);
   }
 }
 
@@ -228,7 +228,8 @@ async function save() {
 
     emit('update:modelValue', result);
   } catch (e) {
-    console.error(e);
+    const msg = props.modelValue?.id ? t('$ezreeport.task-preset.errors.edit') : t('$ezreeport.task-preset.errors.create');
+    handleEzrError(msg, e);
   }
 }
 

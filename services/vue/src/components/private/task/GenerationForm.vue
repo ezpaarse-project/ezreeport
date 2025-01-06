@@ -176,6 +176,9 @@ const props = defineProps<{
   modelValue: Omit<Task, 'template'>,
 }>();
 
+// Utils composables
+const { t } = useI18n();
+
 /** Is basic form valid */
 const isValid = ref(false);
 /** Custom targets */
@@ -318,7 +321,7 @@ async function downloadGenerationFile(path: string) {
     const blob = await getFileAsBlob(result.value.detail.taskId, path);
     downloadBlob(blob, filename);
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.errors.download', { path }), e);
   }
 }
 

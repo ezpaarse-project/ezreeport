@@ -280,6 +280,9 @@ const props = defineProps<{
   modelValue: GenerationJobWithResult,
 }>();
 
+// Utils composables
+const { t } = useI18n();
+
 /** Is loading */
 const loading = ref(false);
 /** Map between namespaceId and namespace's name */
@@ -308,7 +311,7 @@ async function downloadGenerationFile(path: string) {
     const blob = await getFileAsBlob(props.modelValue.result.detail.taskId, path);
     downloadBlob(blob, filename);
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.errors.download', { path }), e);
   }
 }
 
@@ -317,16 +320,16 @@ async function refreshNamespaces() {
     const namespaces = await getCurrentNamespaces();
     namespaceMap.value = new Map(namespaces.map((n) => [n.id, n.name]));
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.errors.refreshNamespaces'), e);
   }
 }
 
 async function refreshTemplates() {
   try {
     const templates = await getAllTemplates({ pagination: { count: 0 } });
-    templateMap.value = new Map(templates.items.map((t) => [t.id, t]));
+    templateMap.value = new Map(templates.items.map((tem) => [tem.id, tem]));
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.templates.errors.fetch'), e);
   }
 }
 

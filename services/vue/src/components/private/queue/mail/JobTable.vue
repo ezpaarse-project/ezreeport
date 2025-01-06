@@ -173,7 +173,7 @@ async function restartJob(job: MailJob) {
   try {
     await retryJob('mail', job);
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.queues._.errors.retry'), e);
   }
 }
 
@@ -183,7 +183,7 @@ function openInfo(job: MailJob) {
 
     isInfoOpen.value = true;
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.queues._.errors.open'), e);
   }
 }
 </script>

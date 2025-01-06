@@ -287,35 +287,23 @@ const selectedTaskPresetIds = computed({
 });
 
 function openForm(taskPreset?: TaskPreset) {
-  try {
-    updatedTaskPreset.value = taskPreset;
+  updatedTaskPreset.value = taskPreset;
 
-    isFormOpen.value = true;
-  } catch (e) {
-    console.error(e);
-  }
+  isFormOpen.value = true;
 }
 
 function openDuplicateForm(taskPreset: TaskPreset) {
-  try {
-    updatedTaskPreset.value = {
-      ...taskPreset,
-      id: '',
-    };
+  updatedTaskPreset.value = {
+    ...taskPreset,
+    id: '',
+  };
 
-    isFormOpen.value = true;
-  } catch (e) {
-    console.error(e);
-  }
+  isFormOpen.value = true;
 }
 
 function closeForm() {
-  try {
-    isFormOpen.value = false;
-    refresh();
-  } catch (e) {
-    console.error(e);
-  }
+  isFormOpen.value = false;
+  refresh();
 }
 
 async function deleteItem(taskPreset: TaskPreset) {
@@ -324,7 +312,7 @@ async function deleteItem(taskPreset: TaskPreset) {
     await deleteTaskPreset(taskPreset);
     refresh();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task-preset.errors.delete'), e);
   }
 }
 
@@ -335,7 +323,7 @@ async function deleteSelected() {
     selectedTaskPresets.value = [];
     refresh();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task-preset.errors.delete'), e);
   }
 }
 
@@ -344,7 +332,7 @@ async function toggleItemVisibility(taskPreset: TaskPreset) {
     await changeTaskPresetVisibility(taskPreset, !taskPreset.hidden);
     refresh();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task-preset.errors.edit'), e);
   }
 }
 
@@ -357,7 +345,7 @@ async function toggleSelectedVisibility() {
     selectedTaskPresets.value = [];
     refresh();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task-preset.errors.edit'), e);
   }
 }
 

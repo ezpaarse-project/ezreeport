@@ -80,6 +80,9 @@ defineProps<{
   titlePrefix?: string;
 }>();
 
+// Utils composable
+const { t } = useI18n();
+
 /** Is loading */
 const loading = ref(false);
 /** Available crons */
@@ -101,7 +104,7 @@ async function refresh() {
   try {
     crons.value = await getAllCrons();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.crons.errors.refresh'), e);
   }
   loading.value = false;
 }
@@ -112,7 +115,7 @@ async function toggleItemState(cron: Cron) {
     await updateCron({ name: cron.name, running: !cron.running });
     refresh();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.crons.errors.edit'), e);
     loading.value = false;
   }
 }

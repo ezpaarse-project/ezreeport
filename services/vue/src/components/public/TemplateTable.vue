@@ -294,7 +294,7 @@ async function openForm(template?: Omit<Template, 'body'>) {
 
     isFormOpen.value = true;
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.template.errors.open'), e);
   }
 }
 
@@ -309,17 +309,13 @@ async function openDuplicateForm(template: Omit<Template, 'body'>) {
 
     isFormOpen.value = true;
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.template.errors.open'), e);
   }
 }
 
 function closeForm() {
-  try {
-    isFormOpen.value = false;
-    refresh();
-  } catch (e) {
-    console.error(e);
-  }
+  isFormOpen.value = false;
+  refresh();
 }
 
 async function deleteItem(template: Omit<Template, 'body'>) {
@@ -328,7 +324,7 @@ async function deleteItem(template: Omit<Template, 'body'>) {
     await deleteTemplate(template);
     refresh();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.template.errors.delete'), e);
   }
 }
 
@@ -339,7 +335,7 @@ async function deleteSelected() {
     selectedTemplates.value = [];
     refresh();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.template.errors.delete'), e);
   }
 }
 
@@ -348,7 +344,7 @@ async function toggleItemVisibility(template: Omit<Template, 'body'>) {
     await changeTemplateVisibility(template, !template.hidden);
     refresh();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.template.errors.edit'), e);
   }
 }
 
@@ -361,7 +357,7 @@ async function toggleSelectedVisibility() {
     selectedTemplates.value = [];
     refresh();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.template.errors.edit'), e);
   }
 }
 
@@ -375,7 +371,8 @@ async function onSave(template: TemplateHelper) {
       openForm(result);
     }
   } catch (e) {
-    console.error(e);
+    const msg = template.id ? t('$ezreeport.template.errors.edit') : t('$ezreeport.template.errors.create');
+    handleEzrError(msg, e);
   }
 }
 

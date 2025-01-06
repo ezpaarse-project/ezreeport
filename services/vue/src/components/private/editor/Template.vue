@@ -105,6 +105,9 @@ const emit = defineEmits<{
   (e: 'update:index', value: number): void
 }>();
 
+// Utils composables
+const { t } = useI18n();
+
 /** Current layout index, a computed around props if provided */
 let innerIndex: Ref<number> | WritableComputedRef<number> = ref(0);
 if (props.index != null) {
@@ -136,7 +139,7 @@ const currentLayout = computed({
     try {
       updateLayoutOfHelper(props.modelValue, currentLayout.value, v);
     } catch (e) {
-      console.error(e);
+      handleEzrError(t('$ezreeport.editor.layouts.errors.edit'), e);
     }
   },
 });
@@ -150,7 +153,7 @@ async function createNewLayout() {
     await nextTick();
     drawerRef.value?.scrollDown();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.editor.layouts.errors.create'), e);
   }
 }
 
@@ -165,7 +168,7 @@ async function cloneLayout(layout: LayoutHelper, index: number) {
     await nextTick();
     drawerRef.value?.scrollTo(newIndex);
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.editor.layouts.errors.clone'), e);
   }
 }
 
@@ -173,7 +176,7 @@ function deleteLayout(layout: LayoutHelper) {
   try {
     removeLayoutOfHelper(props.modelValue, layout);
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.editor.layouts.errors.delete'), e);
   }
 }
 

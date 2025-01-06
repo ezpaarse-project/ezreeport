@@ -1,6 +1,8 @@
 import type { App } from 'vue';
 import type { Composer as I18n } from 'vue-i18n';
 
+import { setErrorHandler, type ErrorHandler } from './utils/errors';
+
 import * as messages from './locale';
 import * as components from './components';
 
@@ -73,6 +75,7 @@ function registerLocales(options: LocalesOptions) {
 
 type Options = {
   locale?: LocalesOptions,
+  errorHandler?: ErrorHandler
 };
 
 /**
@@ -84,6 +87,10 @@ export default {
 
     if (options.locale) {
       registerLocales(options.locale);
+    }
+
+    if (options.errorHandler) {
+      setErrorHandler(options.errorHandler);
     }
   },
 };

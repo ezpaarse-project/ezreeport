@@ -112,6 +112,7 @@ const emit = defineEmits<{
 }>();
 
 // Utils composables
+const { t } = useI18n();
 const { refreshMapping } = useTemplateEditor();
 
 /** Is basic form valid */
@@ -169,7 +170,7 @@ async function refreshNamespace() {
     const currentNamespaces = await getCurrentNamespaces();
     namespace.value = currentNamespaces.find((n) => n.id === task.value.namespaceId);
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.errors.refreshNamespaces'), e);
   }
   loadingNamespaces.value = false;
 }
@@ -180,7 +181,7 @@ async function save() {
 
     emit('update:modelValue', result);
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.task.errors.update'), e);
   }
 }
 

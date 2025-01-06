@@ -203,7 +203,7 @@ async function refreshNamespaces() {
     const namespaces = await getCurrentNamespaces();
     namespaceMap.value = new Map(namespaces.map((n) => [n.id, n.name]));
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.errors.refreshNamespaces'), e);
   }
 }
 
@@ -212,7 +212,7 @@ async function restartJob(job: GenerationJob) {
     await retryJob('generation', job);
     refreshJobs();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.queues._.errors.retry'), e);
   }
 }
 
@@ -223,7 +223,7 @@ async function openInfo(job: GenerationJob) {
 
     isInfoOpen.value = true;
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.queues._.errors.info'), e);
   }
 }
 

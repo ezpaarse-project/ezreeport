@@ -84,16 +84,19 @@
 <script setup lang="ts">
 import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
 import {
-
-// Components props
-defineProps<{
-  titlePrefix?: string;
-}>();
   getAllQueues,
   getQueueJobs,
   updateQueue,
   type Queue,
 } from '~sdk/queues';
+
+// Components props
+defineProps<{
+  titlePrefix?: string;
+}>();
+
+// Utils composable
+const { t } = useI18n();
 
 /** Is loading */
 const loading = ref(false);
@@ -121,7 +124,7 @@ async function refresh() {
   try {
     queues.value = await getAllQueues();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.queues.errors.refresh'), e);
   }
   loading.value = false;
 }
@@ -132,7 +135,7 @@ async function toggleItemState(queue: Queue) {
     await updateQueue({ name: queue.name, status: queue.status === 'active' ? 'paused' : 'active' });
     refresh();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.queues.errors.edit'), e);
     loading.value = false;
   }
 }

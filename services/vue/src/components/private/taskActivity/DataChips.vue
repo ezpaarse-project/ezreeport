@@ -52,6 +52,9 @@ const props = defineProps<{
   modelValue: TaskActivity,
 }>();
 
+// Utils composables
+const { t } = useI18n();
+
 const isObject = (value: unknown): value is object => !!value && typeof value === 'object' && !Array.isArray(value);
 
 const data = computed(() => {
@@ -101,7 +104,7 @@ async function downloadGenerationFile(path: string) {
     const blob = await getFileAsBlob(props.modelValue.taskId, path);
     downloadBlob(blob, filename);
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.errors.download', { path }), e);
   }
 }
 </script>

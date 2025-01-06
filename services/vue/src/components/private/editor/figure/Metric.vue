@@ -116,6 +116,9 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: MetricFigureHelper): void
 }>();
 
+// Utils composables
+const { t } = useI18n();
+
 /** Should show the label form */
 const isFormVisible = ref(false);
 /** The label to edit */
@@ -175,7 +178,7 @@ function removeLabel(label: MetricLabel) {
     removeMetricLabelOfHelper(props.modelValue, label);
     emit('update:modelValue', props.modelValue);
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.editor.figures.metric.elements.errors.delete'), e);
   }
 }
 
@@ -195,7 +198,7 @@ function setLabel(label: MetricLabel) {
     emit('update:modelValue', props.modelValue);
     closeLabelForm();
   } catch (e) {
-    console.error(e);
+    handleEzrError(t('$ezreeport.editor.figures.metric.elements.errors.edit'), e);
   }
 }
 </script>
