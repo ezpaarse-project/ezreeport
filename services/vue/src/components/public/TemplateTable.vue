@@ -349,7 +349,6 @@ async function toggleItemVisibility(template: Omit<Template, 'body'>) {
 }
 
 async function toggleSelectedVisibility() {
-  // TODO: show warning
   try {
     await Promise.all(selectedTemplates.value.map(
       (template) => changeTemplateVisibility(template, !template.hidden),

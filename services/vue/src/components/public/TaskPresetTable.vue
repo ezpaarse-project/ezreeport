@@ -337,7 +337,6 @@ async function toggleItemVisibility(taskPreset: TaskPreset) {
 }
 
 async function toggleSelectedVisibility() {
-  // TODO: show warning
   try {
     await Promise.all(selectedTaskPresets.value.map(
       (taskPreset) => changeTaskPresetVisibility(taskPreset, !taskPreset.hidden),

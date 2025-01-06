@@ -413,7 +413,6 @@ async function toggleItemState(task: Omit<Task, 'template'>) {
 }
 
 async function toggleSelectedState() {
-  // TODO: show warning
   try {
     await Promise.all(selectedTasks.value.map(
       (task) => changeTaskEnableState(task, !task.enabled),
