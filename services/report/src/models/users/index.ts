@@ -1,5 +1,6 @@
 import prisma, { Prisma } from '~/lib/prisma';
 import { ensureSchema } from '~/lib/zod';
+import { appLogger } from '~/lib/logger';
 
 import type { PaginationType } from '~/models/pagination/types';
 import { buildPaginatedRequest } from '~/models/pagination';
@@ -15,6 +16,8 @@ import {
   type UserQueryFiltersType,
   type BulkUserType,
 } from './types';
+
+const logger = appLogger.child({ scope: 'models', model: 'users' });
 
 function applyFilters(filters: UserQueryFiltersType) {
   const where: Prisma.UserWhereInput = {};
@@ -84,6 +87,12 @@ export async function createUser(data: InputUserType & { username: string }): Pr
     },
   });
 
+  logger.debug({
+    id: user.username,
+    action: 'Created',
+    msg: 'Created',
+  });
+
   return ensureSchema(User, user);
 }
 
@@ -101,6 +110,12 @@ export async function editUser(username: string, data: InputUserType): Promise<U
       username,
     },
     data,
+  });
+
+  logger.debug({
+    id: user.username,
+    action: 'Updated',
+    msg: 'Updated',
   });
 
   return ensureSchema(User, user);
@@ -215,6 +230,14 @@ export async function replaceUsers(data: BulkUserType[]) {
       updateOperations,
       createOperations,
     ]);
+  });
+
+  logger.debug({
+    deleted: deleted.count,
+    updated: updated.length,
+    created: created.count,
+    action: 'Replaced',
+    msg: 'Replaced',
   });
 
   let membershipResult;
