@@ -1,4 +1,4 @@
-import { parseISO } from 'date-fns';
+import { formatISO, parseISO } from 'date-fns';
 
 import { client } from '~/lib/fetch';
 import { transformCreated } from '~/lib/transform';
@@ -172,6 +172,14 @@ export async function generateReportOfTask(
 ) {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
 
+  let periodDate;
+  if (period) {
+    periodDate = {
+      start: formatISO(period.start, { representation: 'date' }),
+      end: formatISO(period.end, { representation: 'date' }),
+    };
+  }
+
   const {
     content,
   } = await client.fetch<ApiResponse<{ queue: string, id: string }>>(
@@ -179,7 +187,7 @@ export async function generateReportOfTask(
     {
       method: 'POST',
       body: {
-        period,
+        period: periodDate,
         targets,
       },
     },
