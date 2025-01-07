@@ -1,6 +1,6 @@
 import type { Font } from 'jspdf';
 
-import type { FetchResultItem } from '~/models/reports/fetch/results';
+import type { FetchResultItem } from '~/models/reports/generation/fetch/results';
 import { format, isValid, parseISO } from '~/lib/date-fns';
 
 import type { PDFReport } from '.';
@@ -271,7 +271,7 @@ export const addMetricToPDF = (
 
     let y = slot.y + sizes.value.h - 5;
     valueStyle(doc.pdf, def).text(
-      value,
+      `${value}`,
       slot.x + Math.round(slot.width / 2),
       y,
       { align: 'center' },

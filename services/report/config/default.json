@@ -8,8 +8,9 @@
     "ignore": ["hostname"]
   },
   "defaultTemplate": {
+    "id": "",
     "name": "scratch",
-    "id": ""
+    "dateField": "datetime"
   },
   "fetcher": {
     "bannedDomains": []

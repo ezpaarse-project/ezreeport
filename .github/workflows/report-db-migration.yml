@@ -2,11 +2,10 @@ name: Generate migration of report database
 
 on:
   push:
-    tags:
-      - '*.rc*'
+    branches:
+      - 'rc/*'
     paths:
       - 'services/report/prisma/schema.prisma'
-  workflow_dispatch:
 
 env:
   REPORT_SRC: services/report

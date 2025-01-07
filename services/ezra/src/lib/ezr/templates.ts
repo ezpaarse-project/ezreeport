@@ -23,6 +23,7 @@ export const createTemplatesWriteStream = (
   },
   transform: (item) => ({
     name: item.name,
+    hidden: item.hidden,
     tags: item.tags,
     body: item.body,
   }),

@@ -23,12 +23,13 @@ function logRequest(request: FastifyRequest, reply?: FastifyReply) {
   const data = {
     method: request.method,
     url: request.url,
+    user: request.user?.username,
     statusCode: reply?.statusCode ?? 0,
     duration: (end * 1000) - (start * 1000),
     durationUnit: 'ms',
   };
 
-  if (reply && reply.statusCode >= 200 && reply.statusCode < 300) {
+  if (reply && reply.statusCode >= 200 && reply.statusCode < 400) {
     const level = isLogLevel(request.routeOptions?.logLevel) ? request.routeOptions.logLevel as Level : 'info';
     accessLogger[level](data);
     return;

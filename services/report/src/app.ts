@@ -1,18 +1,16 @@
 import Fastify from 'fastify';
 import fastifyCors from '@fastify/cors';
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
-import { initQueues } from '~/lib/bull';
-import { initCrons } from '~/lib/cron';
-import { ajv } from '~/lib/typebox';
 
-import formatPlugin from '~/plugins/format';
+import { initQueues } from '~/models/queues';
+import { initCrons } from '~/models/crons';
+
 import loggerPlugin from '~/plugins/logger';
 import routes from '~/routes';
 
-import { initNamespaces, initTemplates } from './init';
+import { initTemplates } from './init';
 
 const { port, allowedOrigins: rawOrigins } = config;
 
@@ -26,11 +24,7 @@ const start = async () => {
   });
 
   // Create Fastify instance
-  const fastify = Fastify({ logger: false })
-    // Register TypeBox
-    .withTypeProvider<TypeBoxTypeProvider>()
-    // Register ajv, avoiding multiple instances
-    .setValidatorCompiler(({ schema }) => ajv.compile(schema));
+  const fastify = Fastify({ logger: false });
 
   // Register cors
   const allowedOrigins = rawOrigins.split(',');
@@ -41,11 +35,8 @@ const start = async () => {
     },
   );
 
-  // Register logger and format
-  await fastify.register(formatPlugin);
   await fastify.register(loggerPlugin);
 
-  // Register routes
   await fastify.register(routes);
 
   // Start listening
@@ -64,7 +55,6 @@ const start = async () => {
       initQueues(),
       initCrons(),
       initTemplates(),
-      initNamespaces(),
     ]);
 
     appLogger.info({

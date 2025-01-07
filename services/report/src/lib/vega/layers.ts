@@ -6,8 +6,8 @@ import { contrast } from 'chroma-js';
 
 import type { UnitSpec } from 'vega-lite/build/src/spec';
 
-import type { FetchResultItem, FetchResultValue } from '~/models/reports/fetch/results';
-import { calcVegaFormat } from '~/models/recurrence';
+import type { FetchResultItem, FetchResultValue } from '~/models/reports/generation/fetch/results';
+import { calcVegaFormatFromRecurrence } from '~/models/recurrence';
 import config from '~/lib/config';
 import { Recurrence } from '~/lib/prisma';
 import { ensureInt } from '~/lib/utils';
@@ -102,9 +102,8 @@ function calcRadius(params: VegaParams): ArcRadius {
  * @returns The score
  */
 function calcLabelDateScore(data: FetchResultItem[]) {
-  const sliceLength = data.length / 2;
-  const count = data
-    .slice(0, sliceLength)
+  const sample = data.slice(0, data.length / 2);
+  const count = sample
     .reduce(
       (prev: number, { label }) => {
         const labelDate = new Date(ensureInt(label || 'undefined'));
@@ -113,7 +112,7 @@ function calcLabelDateScore(data: FetchResultItem[]) {
       0,
     );
 
-  return (count / sliceLength);
+  return (count / sample.length);
 }
 
 /**
@@ -534,7 +533,7 @@ export const createBarSpec: CreateSpecFnc = (type, data, params) => {
   // If more than 3/8 label's data is date, consider whole axis as a date
   // and sets format based on task recurrence
   if (calcLabelDateScore(data) > 0.75) {
-    const timeFormat = calcVegaFormat(params.recurrence);
+    const timeFormat = calcVegaFormatFromRecurrence(params.recurrence);
 
     editedData = prepareDataWithDefaultDates(type, data, params);
 
@@ -586,7 +585,7 @@ export const createLineSpec: CreateSpecFnc = (type, data, params) => {
   // If more than 3/8 label's data is date, consider whole axis as a date
   // and sets format based on task recurrence
   if (calcLabelDateScore(data) > 0.75) {
-    const timeFormat = calcVegaFormat(params.recurrence);
+    const timeFormat = calcVegaFormatFromRecurrence(params.recurrence);
 
     merge<Encoding['x'], Encoding['x']>(
       encoding.x,

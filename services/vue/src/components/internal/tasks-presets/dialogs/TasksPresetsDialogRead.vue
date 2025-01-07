@@ -49,9 +49,19 @@
 
           <v-row v-if="innerPreset.fetchOptions">
             <v-col>
-              <v-combobox
+              <v-text-field
                 :value="innerPreset.fetchOptions.dateField"
                 :label="$t('$ezreeport.fetchOptions.dateField')"
+                readonly
+              />
+            </v-col>
+          </v-row>
+
+          <v-row v-if="innerPreset.fetchOptions">
+            <v-col>
+              <v-text-field
+                :value="innerPreset.fetchOptions.index"
+                :label="$t('$ezreeport.fetchOptions.index')"
                 readonly
               />
             </v-col>

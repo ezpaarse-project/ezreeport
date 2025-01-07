@@ -120,6 +120,26 @@
 
                 <v-spacer />
 
+                <v-tooltip top v-if="perms.update">
+                  <template #activator="{ attrs, on }">
+                    <div
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+                      <v-btn
+                        :disabled="preset.templateHidden"
+                        icon
+                        @click.stop="toggleHidePreset(preset)"
+                      >
+                        <v-icon v-if="preset.templateHidden || preset.hidden">mdi-eye-off</v-icon>
+                        <v-icon v-else>mdi-eye</v-icon>
+                      </v-btn>
+                    </div>
+                  </template>
+                  <span v-if="preset.templateHidden">{{ $t('template-hidden') }}</span>
+                  <span v-else>{{ $tc('$ezreeport.templates.hidden', preset.hidden ? 1 : 0) }}</span>
+                </v-tooltip>
+
                 <v-menu>
                   <template #activator="{ on, attrs }">
                     <v-btn
@@ -287,6 +307,27 @@ const onPresetDeleted = async () => {
   focusedPreset.value = undefined;
   await fetch();
 };
+const toggleHidePreset = async ({ id }: tasksPresets.TasksPreset) => {
+  if (!perms.value.update) {
+    return;
+  }
+
+  loading.value = true;
+  try {
+    const { content: preset } = await sdk.tasksPresets.getTasksPreset(id);
+    await sdk.tasksPresets.upsertTasksPreset({
+      id,
+      hidden: !preset.hidden,
+      name: preset.name,
+      recurrence: preset.recurrence,
+      template: preset.template.id,
+      fetchOptions: preset.fetchOptions,
+    });
+    fetch(); // fetch will set loading to false
+  } catch (error) {
+    loading.value = false;
+  }
+};
 
 watch(
   () => ezr.auth.value.permissions,
@@ -300,12 +341,14 @@ en:
   noDataText: 'No report preset'
   createFirst: 'Create the first preset'
   refresh-tooltip: 'Refresh report presets list'
+  template-hidden: 'Template used by this preset is hidden to users, so this preset is hidden too'
   title: '{title} ({count})'
   created: 'Created: {date}'
 fr:
   noDataText: 'Aucun rapport prédéfini'
   createFirst: 'Créer le premier prédéfini'
   refresh-tooltip: 'Rafraîchir la liste des rapports de prédéfinis'
+  template-hidden: "Le modèle utilisé par ce prédéfini est caché pour les utilisateurs, ce prédéfini l'est donc aussi"
   title: '{title} ({count})'
   created: 'Créé le {date}'
 </i18n>

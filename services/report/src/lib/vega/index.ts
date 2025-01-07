@@ -6,7 +6,7 @@ import { parse, Locale as VegaLocale, View } from 'vega';
 import { compile, type TopLevelSpec } from 'vega-lite';
 import type { Mark } from 'vega-lite/build/src/mark';
 
-import type { FetchResultItem } from '~/models/reports/fetch/results';
+import type { FetchResultItem } from '~/models/reports/generation/fetch/results';
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
 import type { PDFReport } from '~/lib/pdf';

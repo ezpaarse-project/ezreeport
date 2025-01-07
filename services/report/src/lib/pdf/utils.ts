@@ -1,8 +1,8 @@
-import { Image } from 'canvas';
-import jsPDF from 'jspdf';
-
 import { readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
+
+import { Image } from 'canvas';
+import jsPDF from 'jspdf';
 
 type Area = { x: number, y: number, width: number, height: number };
 

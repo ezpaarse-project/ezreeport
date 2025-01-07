@@ -6,7 +6,6 @@ on:
       - master
     paths:
       - 'services/sdk/**'
-  workflow_dispatch:
 
 concurrency:
   group: "pages"

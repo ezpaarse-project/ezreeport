@@ -328,6 +328,10 @@ const migrateTemplates = (templates: any[]) => templates.map((template: any) => 
  */
 const migrateTasks = (tasks: any[]) => tasks.map((task: any) => ({
   ...task,
+  extended: undefined,
+  extendedId: task.extends.id,
+  namespace: undefined,
+  namespaceId: task.namespace.id,
   template: {
     version: 2,
     index: task.template?.fetchOptions?.index,
@@ -335,6 +339,15 @@ const migrateTasks = (tasks: any[]) => tasks.map((task: any) => ({
     filters: migrateFilters(task.template?.fetchOptions?.filters),
     inserts: migrateLayouts(task.template?.inserts),
   },
+}));
+
+/**
+ * Migrate presets to 2.0.0's format
+ */
+const migratePresets = (presets: any[]) => presets.map((preset: any) => ({
+  ...preset,
+  template: undefined,
+  templateId: preset.template.id,
 }));
 
 /**
@@ -347,6 +360,7 @@ const migrateTasks = (tasks: any[]) => tasks.map((task: any) => ({
 const migrate = async (data: MigrationData) => ({
   ...data,
   templates: migrateTemplates(data.templates),
+  taskPresets: migratePresets(data.taskPresets),
   tasks: migrateTasks(data.tasks),
 });
 

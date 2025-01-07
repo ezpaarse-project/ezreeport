@@ -68,6 +68,7 @@ let doc: {
    */
   name: string;
   period: Interval;
+  namespace: { name: string },
 
   // Constants
   /**
@@ -83,7 +84,7 @@ let doc: {
 
 export type PDFReport = Exclude<typeof doc, undefined>;
 
-export type PDFReportOptions = Pick<PDFReport, 'name' | 'period' | 'path'>;
+export type PDFReportOptions = Pick<PDFReport, 'name' | 'period' | 'path' | 'namespace'>;
 
 export type PDFStats = { pageCount: number, path: string, size: number };
 
@@ -111,7 +112,7 @@ const printHeader = async (): Promise<number> => {
     .setTextColor('#000000')
     .setFontSize(fontSize)
     .text(
-      `du ${format(doc.period.start, 'dd/MM/yyyy')} au ${format(doc.period.end, 'dd/MM/yyyy')}`,
+      `du ${format(doc.period.start, 'dd/MM/yyyy')} au ${format(doc.period.end, 'dd/MM/yyyy')}, pour ${doc.namespace.name}`,
       doc.margin.right,
       y,
     );

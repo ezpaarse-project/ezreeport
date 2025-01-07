@@ -18,10 +18,10 @@ const logError = (error: any, logToStderr: Command['logToStderr']) => {
   if (isAxiosError(error)) {
     // eslint-disable-next-line prefer-object-spread
     const data = Object.assign(
-      { content: { message: 'Unknown details' } },
+      { error: { message: 'Unknown details' } },
       error.response?.data,
     );
-    text += ` - ${data.content.message}`;
+    text += ` - ${data.error.message}`;
   }
 
   logToStderr(chalk.red(text));
