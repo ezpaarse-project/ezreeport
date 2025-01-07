@@ -13,30 +13,127 @@
   "license": "CeCILL",
   "author": "oxypomme",
   "exports": {
-    "browser": {
-      "import": "./dist/browser/ezreeport-sdk-js.mjs",
-      "require": "./dist/browser/ezreeport-sdk-js.umd.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "node": "./dist/index.js",
+      "browser": "./dist/index.mjs"
     },
-    "node": {
-      "import": "./dist/node/ezreeport-sdk-js.mjs",
-      "require": "./dist/node/ezreeport-sdk-js.js"
+    "./auth": {
+      "types": "./dist/auth.d.ts",
+      "node": "./dist/auth.js",
+      "browser": "./dist/auth.mjs"
+    },
+    "./crons": {
+      "types": "./dist/crons.d.ts",
+      "node": "./dist/crons.js",
+      "browser": "./dist/crons.mjs"
+    },
+    "./elastic": {
+      "types": "./dist/elastic.d.ts",
+      "node": "./dist/elastic.js",
+      "browser": "./dist/elastic.mjs"
+    },
+    "./health": {
+      "types": "./dist/health.d.ts",
+      "node": "./dist/health.js",
+      "browser": "./dist/health.mjs"
+    },
+    "./namespaces": {
+      "types": "./dist/namespaces.d.ts",
+      "node": "./dist/namespaces.js",
+      "browser": "./dist/namespaces.mjs"
+    },
+    "./queues": {
+      "types": "./dist/queues.d.ts",
+      "node": "./dist/queues.js",
+      "browser": "./dist/queues.mjs"
+    },
+    "./reports": {
+      "types": "./dist/reports.d.ts",
+      "node": "./dist/reports.js",
+      "browser": "./dist/reports.mjs"
+    },
+    "./tasks": {
+      "types": "./dist/tasks.d.ts",
+      "node": "./dist/tasks.js",
+      "browser": "./dist/tasks.mjs"
+    },
+    "./templates": {
+      "types": "./dist/templates.d.ts",
+      "node": "./dist/templates.js",
+      "browser": "./dist/templates.mjs"
+    },
+    "./task-activity": {
+      "types": "./dist/task-activity.d.ts",
+      "node": "./dist/task-activity.js",
+      "browser": "./dist/task-activity.mjs"
+    },
+    "./task-presets": {
+      "types": "./dist/task-presets.d.ts",
+      "node": "./dist/task-presets.js",
+      "browser": "./dist/task-presets.mjs"
+    },
+    "./helpers/aggregations": {
+      "types": "./dist/helpers/aggregations.d.ts",
+      "node": "./dist/helpers/aggregations.js",
+      "browser": "./dist/helpers/aggregations.mjs"
+    },
+    "./helpers/figures": {
+      "types": "./dist/helpers/figures.d.ts",
+      "node": "./dist/helpers/figures.js",
+      "browser": "./dist/helpers/figures.mjs"
+    },
+    "./helpers/filters": {
+      "types": "./dist/helpers/filters.d.ts",
+      "node": "./dist/helpers/filters.js",
+      "browser": "./dist/helpers/filters.mjs"
+    },
+    "./helpers/jobs": {
+      "types": "./dist/helpers/jobs.d.ts",
+      "node": "./dist/helpers/jobs.js",
+      "browser": "./dist/helpers/jobs.mjs"
+    },
+    "./helpers/layouts": {
+      "types": "./dist/helpers/layouts.d.ts",
+      "node": "./dist/helpers/layouts.js",
+      "browser": "./dist/helpers/layouts.mjs"
+    },
+    "./helpers/permissions": {
+      "types": "./dist/helpers/permissions.d.ts",
+      "node": "./dist/helpers/permissions.js",
+      "browser": "./dist/helpers/permissions.mjs"
+    },
+    "./helpers/task-presets": {
+      "types": "./dist/helpers/task-presets.d.ts",
+      "node": "./dist/helpers/task-presets.js",
+      "browser": "./dist/helpers/task-presets.mjs"
+    },
+    "./helpers/tasks": {
+      "types": "./dist/helpers/tasks.d.ts",
+      "node": "./dist/helpers/tasks.js",
+      "browser": "./dist/helpers/tasks.mjs"
+    },
+    "./helpers/templates": {
+      "types": "./dist/helpers/templates.d.ts",
+      "node": "./dist/helpers/templates.js",
+      "browser": "./dist/helpers/templates.mjs"
     }
   },
-  "types": "./dist/types/index.d.ts",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
     "prebuild": "rimraf --glob 'dist/*'",
     "build": "pnpm run /^build:.*/",
-    "build:web": "tsc --project tsconfig.json && BUILD_TARGET=browser vite build",
-    "build:node": "tsc --project tsconfig.node.json && BUILD_TARGET=node vite build",
-    "build:types": "tsc --project tsconfig.types.json",
-    "build:docs": "typedoc src/index.ts",
-    "docs": "vite docs --open",
-    "dev": "run-p \"build:docs -- --watch\" docs",
+    "build:docs": "typedoc",
+    "build:js": "vite build",
+    "build:types": "tsup",
+    "dev": "pnpm run --parallel \"/^(watch:docs)|(preview)$/\"",
     "lint": "eslint .",
-    "type-check": "tsc --noEmit --skipLibCheck"
+    "preview": "vite docs --open",
+    "type-check": "tsc --noEmit --skipLibCheck",
+    "watch:docs": "typedoc --watch"
   },
   "lint-staged": {
     "*.ts": [
@@ -44,15 +141,19 @@
     ]
   },
   "dependencies": {
-    "axios": "^1.7.7",
-    "date-fns": "^4.1.0"
+    "date-fns": "^4.1.0",
+    "nanoid": "^5.0.7",
+    "object-hash": "^3.0.0",
+    "ofetch": "^1.4.1"
   },
   "devDependencies": {
     "@types/node": "^22.7.3",
+    "@types/object-hash": "^3.0.6",
     "events": "^3.3.0",
     "rimraf": "^6.0.1",
-    "typedoc": "^0.26.7",
-    "typescript": "^5.6.2",
+    "tsup": "^8.3.5",
+    "typedoc": "^0.27.1",
+    "typescript": "^5.7.2",
     "vite": "^5.4.8"
   },
   "engines": {
