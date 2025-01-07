@@ -1,3 +1,19 @@
+# [ezreeport-mail-v1.3.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.2.2...ezreeport-mail@1.3.0-beta.1) (2025-01-07)
+
+
+### Bug Fixes
+
+* fixed logs not being present in file ([7aef235](https://github.com/ezpaarse-project/ezreeport/commit/7aef2359eee8d6a9df33cf5c99f58da93ff79261))
+* **mail:** fixed common type between mail and report ([6186c51](https://github.com/ezpaarse-project/ezreeport/commit/6186c510dafc22b5c36dde009b56ae5c833469ea))
+* **mail:** following report changes ([a0fa03c](https://github.com/ezpaarse-project/ezreeport/commit/a0fa03c522af11be62abe56b75863991a9915ad3))
+* minor fixs on loggers and task validation ([90eda76](https://github.com/ezpaarse-project/ezreeport/commit/90eda7646b16ab223b4b31519f0d3d1cb11eafb6))
+
+
+### Features
+
+* **mail:** added jsonl logs in production ([c56f607](https://github.com/ezpaarse-project/ezreeport/commit/c56f6074b375b5ef6d7f5314ef272fd11046587a))
+* **mail:** added routes for kube probes ([7b8de88](https://github.com/ezpaarse-project/ezreeport/commit/7b8de882b6a0ce44b834fd0126cf0ffc5db87d14))
+
 # [ezreeport-mail-v1.2.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.2.1...ezreeport-mail@1.2.2) (2024-08-14)
 
 
