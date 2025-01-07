@@ -1,111 +1,90 @@
-/// <reference types="../src/types/env" />
+import { setup, type Preview } from '@storybook/vue3';
 
-import Vue, { defineComponent } from 'vue';
-import Vuetify from 'vuetify';
-import type { Decorator, Parameters } from '@storybook/vue';
-import i18n from './plugins/i18n';
-import vuetify from './plugins/vuetify';
-import ezReeport from '../src';
+import { useI18n } from 'vue-i18n';
 
-// Setup Vuetify
-Vue.use(Vuetify);
+import '@mdi/font/css/materialdesignicons.css';
+import { createVuetify, useTheme } from 'vuetify';
+import { createVueI18nAdapter } from 'vuetify/locale/adapters/vue-i18n';
 
-// Setup i18n
-// eslint-disable-next-line no-underscore-dangle
-Vue.prototype._i18n = i18n;
+import { config as vuetifyConfig } from '../src/plugins/vuetify';
+import i18n from './i18n';
+import setupEzR from './ezr';
 
-// Setup ezReeport plugin
-Vue.use(ezReeport, { i18n });
-if (!import.meta.env.VITE_AUTH_TOKEN) {
-  console.warn('[ezReeport-storybook] Auth token not found');
-}
-
-export const parameters: Parameters = {
-  options: {
-    storySort: {
-      order: [
-        'Get Started',
-        'Public',
-        'Internal',
-      ],
+setup((app) => {
+  const vuetify = createVuetify({
+    ...vuetifyConfig,
+    locale: {
+      adapter: createVueI18nAdapter({ i18n, useI18n }),
     },
-  },
-};
-
-export const globalTypes = {
-  theme: {
-    name: 'Theme',
-    description: 'Global theme for components',
-    defaultValue: 'light',
-    toolbar: {
-      icon: 'paintbrush',
-      items: ['light', 'dark'],
-      dynamicTitle: true,
-    },
-  },
-  locale: {
-    name: 'Locale',
-    description: 'Internationalization locale',
-    defaultValue: 'en',
-    toolbar: {
-      icon: 'globe',
-      items: [
-        { value: 'en', title: 'English' },
-        { value: 'fr', title: 'Français' },
-      ],
-    },
-  },
-};
-
-export const decorators: Decorator[] = [
-  (story, context) => defineComponent({
-    name: 'StorybookPreview',
-    vuetify,
-    i18n,
-    components: { story: story(context) },
-    props: {
-      theme: {
-        type: String,
-        default: context.globals.theme,
-      },
-      locale: {
-        type: String,
-        default: context.globals.locale,
+    theme: {
+      themes: {
+        light: {
+          colors: {
+            primary: '#539FDA',
+          },
+        },
       },
     },
-    data: () => ({
-      token: import.meta.env.VITE_AUTH_TOKEN,
+  });
+
+  app.use(i18n);
+  app.use(vuetify);
+
+  setupEzR();
+});
+
+const preview: Preview = {
+  tags: ['autodocs'],
+  parameters: {
+    options: {
+      storySort: {
+        order: ['Intro', 'Public', '*', 'Template Editor', 'Utils'],
+      },
+    },
+  },
+  globalTypes: {
+    locale: {
+      name: 'Locale',
+      description: 'Locale',
+      defaultValue: 'en',
+      toolbar: {
+        icon: 'globe',
+        items: [
+          { value: 'en', title: 'English' },
+          { value: 'fr', title: 'Français' },
+        ],
+      },
+    },
+    theme: {
+      name: 'Theme',
+      description: 'Theme',
+      defaultValue: 'light',
+      toolbar: {
+        icon: 'contrast',
+        items: [
+          { value: 'light', title: 'Light' },
+          { value: 'dark', title: 'Dark' },
+        ],
+      },
+    },
+  },
+  initialGlobals: {
+    locale: 'en',
+    theme: 'light',
+  },
+  decorators: [
+    (story, { globals: { locale, theme } }) => ({
+      components: { story },
+      setup() {
+        const { locale: i18nLocale } = useI18n();
+        i18nLocale.value = locale;
+
+        const vuetifyTheme = useTheme();
+        vuetifyTheme.global.name.value = theme;
+      },
+      template: '<story />',
     }),
-    watch: {
-      theme: {
-        immediate: true,
-        handler(val) {
-          this.$vuetify.theme.dark = val === 'dark';
-        },
-      },
-      locale: {
-        immediate: true,
-        handler(val) {
-          this.$i18n.locale = val;
-        },
-      },
-    },
-    computed: {
-      namespaceLabel() {
-        return {
-          en: 'namespace|namespaces',
-          fr: 'établissement|établissements',
-        };
-      },
-    },
-    template: `
-        <v-app>
-          <ezr-provider :token="token" :namespaceLabel="namespaceLabel" namespaceIcon="mdi-domain">
-            <v-container fluid>
-              <story />
-            </v-container>
-          </ezr-provider>
-        </v-app>
-      `,
-  }),
-];
+  ],
+};
+
+export default preview;

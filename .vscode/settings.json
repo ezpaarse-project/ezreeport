@@ -26,5 +26,9 @@
   "files.associations": {
     ".env": "dotenv",
     ".env.defaults": "dotenv"
-  }
+  },
+  "i18n-ally.localesPaths": "services/vue/src/locales",
+  "i18n-ally.enabledFrameworks": ["vue"],
+  "i18n-ally.sourceLanguage": "en",
+  "i18n-ally.keystyle": "nested"
 }

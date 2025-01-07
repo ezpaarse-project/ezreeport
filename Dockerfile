@@ -93,15 +93,13 @@ RUN pnpm deploy --filter @ezpaarse-project/ezreeport-sdk-js --prod ./sdk
 RUN pnpm deploy --filter @ezpaarse-project/ezreeport-vue ./vue
 WORKDIR /usr/build/vue
 
-ARG AUTH_TOKEN="changeme"
-ARG REPORT_API="http://localhost:8080/"
-ARG LOGO_URL="https://ezmesure.couperin.org/"
+ARG REPORT_TOKEN="changeme" \
+   REPORT_API="http://localhost:8080/"
 
-ENV VITE_AUTH_TOKEN=${AUTH_TOKEN} \
-    VITE_REPORT_API=${REPORT_API} \
-    VITE_NAMESPACES_LOGO_URL=${LOGO_URL}
+ENV VITE_EZR_TOKEN=${REPORT_TOKEN} \
+    VITE_EZR_API=${REPORT_API}
 
-RUN npm run build:docs
+RUN npm run build:story
 
 # ---
 

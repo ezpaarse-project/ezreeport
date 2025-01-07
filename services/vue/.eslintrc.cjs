@@ -8,20 +8,9 @@ module.exports = {
     browser: true,
   },
   extends: [
-    'plugin:vue/essential',
+    'plugin:vue/vue3-essential',
     '@vue/eslint-config-airbnb-with-typescript',
     'plugin:storybook/recommended',
-  ],
-  overrides: [
-    {
-      files: [
-        'example/layouts/**/*.vue',
-        'example/pages/**/*.vue',
-      ],
-      rules: {
-        'vue/multi-word-component-names': 'off',
-      },
-    },
   ],
   parserOptions: {
     ecmaVersion: 'latest',
@@ -30,5 +19,7 @@ module.exports = {
   },
   rules: {
     'import/no-extraneous-dependencies': 'off',
+    'import/extensions': 'off',
+    'vue/multi-word-component-names': 'off',
   },
 };

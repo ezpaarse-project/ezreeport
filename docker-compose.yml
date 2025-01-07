@@ -26,8 +26,6 @@ services:
       - .env
       - path: .env.local
         required: false
-    volumes:
-      - ./data/redis:/data
     deploy:
       resources:
           limits:
@@ -45,7 +43,7 @@ services:
       target: api
     volumes:
       - ./data/api:/data/ezreeport/report # Report output
-      - ./logs/api:/var/log/ezreeport/report # Logs output
+      - ./logs/api:/var/log/ezreeport # Logs output
     ports:
       - 8080:8080
     env_file:
@@ -69,7 +67,7 @@ services:
     build:
       target: mail
     volumes:
-      - ./logs/mail:/var/log/ezreeport/mail # Logs output
+      - ./logs/mail:/var/log/ezreeport # Logs output
     env_file:
       - .env
       - path: .env.local
