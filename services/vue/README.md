@@ -62,6 +62,9 @@ app.use(ezreeportVue, {
       }
     },
   },
+  errorHandler: (msg, err) => {
+    console.error(msg, err);
+  }
 })
 ```
 
