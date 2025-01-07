@@ -94,6 +94,7 @@
       "title:new": "Create report preset",
       "title:edit": "Edit report preset",
       "manage": "Manage {n} report presets",
+      "hidden:toggle": "Toggle visibility",
       "hidden:desc": "The preset is hidden for users|The preset is visible for users",
       "template-hidden:desc": "Template used by this preset is hidden to users, so this preset is hidden too",
       "noList": "No preset were found",
@@ -387,6 +388,8 @@
     },
     "crons": {
       "title:list": "Automatic jobs (crons)",
+      "purgeOldReports": "Old report's files deletion",
+      "generateReports": "Automatic report generation",
       "errors": {
         "fetch": "Can't fetch automatic jobs",
         "edit": "Can't update automatic job"

@@ -94,6 +94,7 @@
       "title:new": "Créer un rapport prédéfini",
       "title:edit": "Éditer le rapport prédéfini",
       "manage": "Gérer {n} rapports prédéfini",
+      "hidden:toggle": "Rendre visible/caché",
       "hidden:desc": "Le prédéfini est caché pour les utilisateurs|Le prédéfini est visible pour les utilisateurs",
       "template-hidden:desc": "Le modèle utilisé par ce prédéfini est caché pour les utilisateurs, donc ce prédéfini est également caché",
       "noList": "Aucun prédéfini trouvé",
@@ -390,7 +391,9 @@
       "errors": {
         "edit": "Impossible de mettre à jour la tâche planifiée",
         "fetch": "Impossible de récupérer les tâches planifiées"
-      }
+      },
+      "generateReports": "Génération automatique des rapports",
+      "purgeOldReports": "Suppression des fichiers des anciens rapports"
     },
     "health": {
       "title:list": "Statut d'ezREEPORT",

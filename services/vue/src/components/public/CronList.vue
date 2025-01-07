@@ -28,7 +28,7 @@
     <v-list-item
       v-for="cron in crons"
       :key="cron.name"
-      :title="cron.name"
+      :title="$te(`$ezreeport.crons.${cron.name}`) ? $t(`$ezreeport.crons.${cron.name}`) : cron.name"
     >
       <template #append>
         <v-switch
