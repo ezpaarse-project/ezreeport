@@ -13,8 +13,17 @@ const { level: l, dir, ignore: i } = config.log;
 const ignore = ensureArray(i);
 const level = l as pino.Level;
 
+function isPrettierInstalled(): boolean {
+  try {
+    return !!require.resolve('pino-pretty');
+  } catch {
+    return false;
+  }
+}
+
 function getStdOutTarget(): pino.TransportTargetOptions {
-  if (process.env.NODE_ENV === 'production') {
+  // If no prettier is installed, send logs directly to stdout
+  if (!isPrettierInstalled()) {
     return { target: 'pino/file', options: { destination: 1 } };
   }
 
