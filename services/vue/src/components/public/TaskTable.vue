@@ -327,6 +327,7 @@ const headers = computed((): VDataTableHeaders => [
     value: 'enabled',
     sortable: true,
     align: 'center',
+    minWidth: '175px',
   },
   {
     title: t('$ezreeport.updatedAt'),
