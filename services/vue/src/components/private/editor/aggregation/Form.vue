@@ -94,7 +94,9 @@
 </template>
 
 <script setup lang="ts">
-import { type InnerAggregation, isRawAggregation, isBaseAggregation } from '~/lib/aggregations';
+import {
+  type InnerAggregation, isRawAggregation, isBaseAggregation, aggregationFieldType,
+} from '~/lib/aggregations';
 import { type FigureAggregation, type AggregationType, aggregationTypes } from '~sdk/helpers/aggregations';
 
 // Component props
@@ -152,8 +154,14 @@ const isMetric = computed(() => {
   }
   return aggDef.type === 'metric';
 });
+/** Type of fields needed for the current aggregation */
+const fieldType = computed(() => (
+  !isRawAggregation(aggregation.value) && aggregation.value.type
+    ? aggregationFieldType.get(aggregation.value.type)
+    : undefined
+));
 /** Options for the field, based on current mapping */
-const fieldOptions = computed(() => getOptionsFromMapping(undefined, { dateField: true }));
+const fieldOptions = computed(() => getOptionsFromMapping(fieldType.value, { dateField: true }));
 /** Options for the aggregation type */
 const typeOptions = computed(() => {
   let types = [...aggregationTypes];

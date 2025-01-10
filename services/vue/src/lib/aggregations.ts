@@ -1,4 +1,4 @@
-import type { FigureBaseAggregation, FigureRawAggregation } from '~sdk/helpers/aggregations';
+import type { AggregationName, FigureBaseAggregation, FigureRawAggregation } from '~sdk/helpers/aggregations';
 
 export interface InnerBaseAggregation extends Omit<FigureBaseAggregation, 'type'> {
   type: FigureBaseAggregation['type'] | '';
@@ -13,3 +13,21 @@ export const isRawAggregation = (
 export const isBaseAggregation = (
   agg: InnerAggregation,
 ): agg is FigureBaseAggregation => !isRawAggregation(agg) && agg.type !== '';
+
+export const aggregationFieldType = new Map<AggregationName, string>([
+  ['avg', 'number'],
+  ['max', 'number'],
+  ['min', 'number'],
+  ['percentile_ranks', 'number'],
+  ['percentiles', 'number'],
+  ['stats', 'number'],
+  ['sum', 'number'],
+
+  ['auto_date_histogram', 'date'],
+  ['date_histogram', 'date'],
+  ['geo_grid', 'geo'],
+  ['histogram', 'number'],
+  ['range', 'number'],
+  ['top_hits', 'object'],
+  ['variable_width_histogram', 'number'],
+]);
