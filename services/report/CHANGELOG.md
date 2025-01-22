@@ -1,3 +1,15 @@
+# [ezreeport-report-v2.0.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.0.0-beta.1...ezreeport-report@2.0.0-beta.2) (2025-01-22)
+
+
+### Bug Fixes
+
+* **report:** fixed issue where pino-pretty could be required but not installed ([98c349a](https://github.com/ezpaarse-project/ezreeport/commit/98c349a439dfcfae32b4b9a16255e26922281472))
+
+
+### Features
+
+* **report:** added description for tasks ([0e24b81](https://github.com/ezpaarse-project/ezreeport/commit/0e24b8156d0435176469b43a3525ab7842747103))
+
 # [ezreeport-report-v2.0.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.5.0...ezreeport-report@2.0.0-beta.1) (2025-01-07)
 
 
