@@ -1,3 +1,10 @@
+# [ezreeport-mail-v1.3.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.3.0-beta.1...ezreeport-mail@1.3.0-beta.2) (2025-01-22)
+
+
+### Bug Fixes
+
+* **mail:** fixed issue where pino-pretty could be required but not installed ([7546a5a](https://github.com/ezpaarse-project/ezreeport/commit/7546a5ad66b2d4c9eb239e9f863b179ad857ff2c))
+
 # [ezreeport-mail-v1.3.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.2.2...ezreeport-mail@1.3.0-beta.1) (2025-01-07)
 
 
