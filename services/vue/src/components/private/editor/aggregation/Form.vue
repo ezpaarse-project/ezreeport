@@ -95,7 +95,10 @@
 
 <script setup lang="ts">
 import {
-  type InnerAggregation, isRawAggregation, isBaseAggregation, aggregationFieldType,
+  type InnerAggregation,
+  isRawAggregation,
+  isBaseAggregation,
+  aggregationFieldType,
 } from '~/lib/aggregations';
 import { type FigureAggregation, type AggregationType, aggregationTypes } from '~sdk/helpers/aggregations';
 
