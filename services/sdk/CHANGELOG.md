@@ -1,3 +1,10 @@
+# [@ezpaarse-project/ezreeport-sdk-js-v2.0.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@2.0.0-beta.1...@ezpaarse-project/ezreeport-sdk-js@2.0.0-beta.2) (2025-01-22)
+
+
+### Features
+
+* **sdk:** added description for tasks ([314037b](https://github.com/ezpaarse-project/ezreeport/commit/314037b1f39d50cdd13fe09f95123d79f8edb588))
+
 # [@ezpaarse-project/ezreeport-sdk-js-v2.0.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.3.0...@ezpaarse-project/ezreeport-sdk-js@2.0.0-beta.1) (2025-01-07)
 
 
