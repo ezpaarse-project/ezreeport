@@ -264,6 +264,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
 
       const task = await createTask({
         name: request.body.name,
+        description: request.body.description,
         namespaceId: request.body.namespaceId,
         targets: request.body.targets,
         template: {
