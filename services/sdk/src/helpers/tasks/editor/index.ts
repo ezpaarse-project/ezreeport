@@ -15,6 +15,7 @@ import {
 export interface TaskHelper {
   readonly id: string;
   name: string;
+  description: string;
   namespaceId: string;
   extendedId: string;
   template: TaskBodyHelper;
@@ -43,6 +44,7 @@ function hashTask(task: TaskHelper | Task): string {
 
 export function createTaskHelper(
   name: string = '',
+  description: string = '',
   namespaceId: string = '',
   extendedId: string = '',
   template?: TaskBodyHelper,
@@ -59,6 +61,7 @@ export function createTaskHelper(
   const task = {
     id,
     name,
+    description,
     namespaceId,
     extendedId,
     template: template ?? createTaskBodyHelper(),
@@ -81,6 +84,7 @@ export function createTaskHelper(
 export function createTaskHelperFrom(task: Task): TaskHelper {
   return createTaskHelper(
     task.name,
+    task.description,
     task.namespaceId,
     task.extendedId,
     createTaskBodyHelperFrom(task.template),
@@ -100,6 +104,7 @@ export function taskHelperToJSON(task: TaskHelper): Task {
   return {
     id: task.id,
     name: task.name,
+    description: task.description,
     namespaceId: task.namespaceId,
     extendedId: task.extendedId,
     template: taskBodyHelperToJSON(task.template),

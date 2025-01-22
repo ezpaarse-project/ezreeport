@@ -22,6 +22,7 @@ export async function changeTaskEnableState(
   const task = await upsertTask({
     id: base.id,
     name: base.name,
+    description: base.description,
     extendedId: base.extendedId,
     namespaceId: base.namespaceId,
     nextRun: base.nextRun,

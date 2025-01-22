@@ -46,6 +46,8 @@ export type InputTaskPreset = Omit<TaskPreset, 'id' | 'createdAt' | 'updatedAt' 
 export interface AdditionalDataForPreset {
   /** Task name */
   name: string;
+  /** Task description */
+  description: string;
   /** Namespace ID of the task */
   namespaceId: string;
   /** Elastic index to fetch data from */

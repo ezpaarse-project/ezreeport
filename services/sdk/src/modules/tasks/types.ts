@@ -47,6 +47,8 @@ export interface Task {
   id: string;
   /** Task name */
   name: string;
+  /** Task description */
+  description: string;
   /** Namespace ID */
   namespaceId: string;
   /** Extended template ID */
