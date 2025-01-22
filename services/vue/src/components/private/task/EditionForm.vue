@@ -48,6 +48,17 @@
           </v-col>
         </v-row>
 
+        <v-row>
+          <v-col>
+            <v-textarea
+              v-model="task.description"
+              :label="$t('$ezreeport.task.description')"
+              prepend-icon="mdi-text"
+              variant="underlined"
+            />
+          </v-col>
+        </v-row>
+
         <v-expansion-panels class="mt-4">
           <v-expansion-panel eager>
             <template #title>
@@ -124,6 +135,7 @@ const namespace = ref<Omit<Namespace, 'fetchLogin' | 'fetchOptions'> | undefined
 /** Task to create */
 const task = ref<InputTask>({
   name: props.modelValue.name,
+  description: props.modelValue.description,
   namespaceId: props.modelValue.namespaceId,
   extendedId: props.modelValue.extendedId,
   template: props.modelValue.template,

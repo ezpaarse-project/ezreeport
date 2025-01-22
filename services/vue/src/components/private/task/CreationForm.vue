@@ -104,6 +104,17 @@
           </v-col>
         </v-row>
 
+        <v-row>
+          <v-col>
+            <v-textarea
+              v-model="data.description"
+              :label="$t('$ezreeport.task.description')"
+              prepend-icon="mdi-text"
+              variant="underlined"
+            />
+          </v-col>
+        </v-row>
+
         <v-expansion-panels class="mt-4">
           <v-expansion-panel eager>
             <template #title>
@@ -176,6 +187,7 @@ const isValid = ref(false);
 /** Task to create */
 const data = ref<AdditionalDataForPreset>({
   name: '',
+  description: '',
   index: '',
   namespaceId: props?.namespaceId ?? '',
   targets: [],

@@ -46,6 +46,18 @@
             </v-list>
           </v-sheet>
         </v-menu>
+
+        <v-menu v-if="modelValue.description" max-width="500">
+          <template #activator="{ props: menu }">
+            <v-list-item
+              :title="$t('$ezreeport.task.description')"
+              prepend-icon="mdi-text"
+              v-bind="menu"
+            />
+          </template>
+
+          <v-card :text="modelValue.description" />
+        </v-menu>
       </v-list>
     </template>
 

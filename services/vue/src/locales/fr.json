@@ -53,6 +53,7 @@
       "noList:desc": "Créez votre premier rapport en cliquant sur le bouton @:$ezreeport.new",
       "generate": "Générer",
       "period": "Période",
+      "description": "Description",
       "recurrenceList": {
         "DAILY": "Quotidien",
         "WEEKLY": "Hebdomadaire",

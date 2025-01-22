@@ -3,6 +3,7 @@
     v-model="selectedTasks"
     :headers="headers"
     show-select
+    show-expand
     return-object
     v-bind="vDataTableOptions"
     item-value="id"
@@ -163,6 +164,24 @@
           />
         </v-list>
       </v-menu>
+    </template>
+
+    <template #[`item.data-table-expand`]="{ internalItem, toggleExpand, isExpanded }">
+      <v-btn
+        v-if="internalItem.raw.description"
+        :icon="isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+        variant="text"
+        size="small"
+        @click="toggleExpand(internalItem)"
+      />
+    </template>
+
+    <template #expanded-row="{ columns, item }">
+      <tr>
+        <td :colspan="columns.length" class="py-2">
+          {{ item.description }}
+        </td>
+      </tr>
     </template>
 
     <template #no-data>
@@ -390,6 +409,7 @@ async function openDuplicateForm(task: Omit<Task, 'template'>) {
     generatedTask.value = undefined;
     updatedTask.value = {
       ...base,
+      name: `${base.name} (copy)`,
       id: '',
     };
 
