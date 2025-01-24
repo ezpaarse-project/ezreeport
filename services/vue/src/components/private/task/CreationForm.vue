@@ -145,7 +145,7 @@
       <slot name="actions" />
 
       <v-btn
-        :text="$t('$ezreeport.new')"
+        :text="$t('$ezreeport.confirm')"
         :disabled="!isValid"
         append-icon="mdi-plus"
         color="primary"

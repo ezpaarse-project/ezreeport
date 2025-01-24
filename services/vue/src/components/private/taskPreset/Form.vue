@@ -101,7 +101,7 @@
 
       <v-btn
         v-if="!readonly"
-        :text="modelValue?.id ? $t('$ezreeport.edit') : $t('$ezreeport.new')"
+        :text="$t('$ezreeport.confirm')"
         :append-icon="modelValue?.id ? 'mdi-pencil' : 'mdi-plus'"
         :disabled="!isValid"
         color="primary"

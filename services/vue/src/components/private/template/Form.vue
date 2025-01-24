@@ -130,7 +130,7 @@
 
       <v-btn
         v-if="!readonly"
-        :text="modelValue.id ? $t('$ezreeport.save') : $t('$ezreeport.new')"
+        :text="$t('$ezreeport.confirm')"
         :append-icon="modelValue.id ? 'mdi-content-save' : 'mdi-plus'"
         :disabled="!isValid || !hasChanged"
         color="primary"

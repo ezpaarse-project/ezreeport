@@ -68,7 +68,7 @@
             <v-btn icon="mdi-close" variant="text" density="comfortable" @click="isFormVisible = false" />
           </template>
           <template #actions>
-            <v-btn :text="$t('$ezreeport.save')" append-icon="mdi-content-save" color="primary" @click="isFormVisible = false" />
+            <v-btn :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="isFormVisible = false" />
           </template>
         </EditorFigureMd>
 
@@ -81,7 +81,7 @@
             <v-btn icon="mdi-close" variant="text" density="comfortable" @click="isFormVisible = false" />
           </template>
           <template #actions>
-            <v-btn :text="$t('$ezreeport.save')" append-icon="mdi-content-save" color="primary" @click="isFormVisible = false" />
+            <v-btn :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="isFormVisible = false" />
           </template>
         </EditorFigureMetric>
 
@@ -94,7 +94,7 @@
             <v-btn icon="mdi-close" variant="text" density="comfortable" @click="isFormVisible = false" />
           </template>
           <template #actions>
-            <v-btn :text="$t('$ezreeport.save')" append-icon="mdi-content-save" color="primary" @click="isFormVisible = false" />
+            <v-btn :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="isFormVisible = false" />
           </template>
         </EditorFigureTable>
 
@@ -107,7 +107,7 @@
             <v-btn icon="mdi-close" variant="text" density="comfortable" @click="isFormVisible = false" />
           </template>
           <template #actions>
-            <v-btn :text="$t('$ezreeport.save')" append-icon="mdi-content-save" color="primary" @click="isFormVisible = false" />
+            <v-btn :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="isFormVisible = false" />
           </template>
         </EditorFigureVega>
       </v-dialog>

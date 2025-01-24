@@ -80,7 +80,7 @@
       <slot name="actions" />
 
       <v-btn
-        :text="modelValue ? $t('$ezreeport.edit') : $t('$ezreeport.new')"
+        :text="$t('$ezreeport.confirm')"
         :append-icon="modelValue ? 'mdi-pencil' : 'mdi-plus'"
         :disabled="!isValid"
         color="primary"

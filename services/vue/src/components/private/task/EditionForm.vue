@@ -89,7 +89,7 @@
       <slot name="actions" />
 
       <v-btn
-        :text="$t('$ezreeport.edit')"
+        :text="$t('$ezreeport.confirm')"
         :disabled="!isValid"
         append-icon="mdi-pencil"
         color="primary"
