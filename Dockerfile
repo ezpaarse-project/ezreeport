@@ -24,7 +24,7 @@ WORKDIR /usr/build
 
 # Install node-canvas build dependencies
 # see https://github.com/Automattic/node-canvas/issues/866
-RUN apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev giflib-dev
+RUN apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev pixman-dev
 
 COPY ./package.json ./pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
@@ -62,7 +62,7 @@ ENV NODE_ENV=production
 WORKDIR /usr/build/api
 
 # Install node-canvas dependencies
-RUN apk add --no-cache cairo jpeg pango giflib
+RUN apk add --no-cache cairo jpeg pango pixman
 
 COPY --from=api-pnpm /usr/build/api .
 COPY --from=api-prisma /usr/build/api-dev/.prisma ./.prisma
