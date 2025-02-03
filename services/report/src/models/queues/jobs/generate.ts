@@ -126,6 +126,10 @@ export default async function generate(job: Job<GenerationDataType>): Promise<Re
       success: true,
       file,
       url: `/reports/${result.detail.taskId}/${result.detail.files.report}`,
+      period: result.detail.period && {
+        start: formatISO(result.detail.period.start),
+        end: formatISO(result.detail.period.end),
+      },
     };
   } else {
     const file = await readFile(join(outDir, result.detail.files.detail), 'base64');
@@ -134,6 +138,10 @@ export default async function generate(job: Job<GenerationDataType>): Promise<Re
       success: false,
       file,
       url: `/reports/${result.detail.taskId}/${result.detail.files.detail}`,
+      period: result.detail.period && {
+        start: formatISO(result.detail.period.start, { representation: 'date' }),
+        end: formatISO(result.detail.period.end, { representation: 'date' }),
+      },
     };
   }
 

@@ -41,6 +41,15 @@ export const MailReport = z.object({
       .describe('Namespace logo'),
   }),
 
+  period: z.object({
+    start: z.string().date()
+      .describe('Start date of the period'),
+
+    end: z.string().date()
+      .describe('End date of the period'),
+  }).optional()
+    .describe('Period of the report'),
+
   contact: z.string().email().optional()
     .describe('The email of the user that was used for generation'),
 
