@@ -33,11 +33,21 @@ export type MailReport = {
     name: string,
     targets: string[],
   },
+  /**
+   * The namespace data
+   */
   namespace: {
     id: string,
     name: string,
     logo?: string,
   },
+  /**
+   * The period of the report
+   */
+  period?: {
+    start: string,
+    end: string,
+  }
   /**
    * The email of the user that was used for generation
    */
@@ -50,7 +60,9 @@ export type MailReport = {
    * The http url to get the file
    */
   url: string,
-  /** ID of the job that generated the report */
+  /**
+   * ID of the job that generated the report
+   */
   generationId: string,
 };
 

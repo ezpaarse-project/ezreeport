@@ -150,6 +150,11 @@ const sendSuccessReport = async ({
 const sendReport = (data, date, dateStr, logger) => {
   const filename = data.url.replace(/^.*\//, '');
 
+  const period = data.period && {
+    start: format(parseISO(data.period.start), 'dd/MM/yyyy'),
+    end: format(parseISO(data.period.end), 'dd/MM/yyyy'),
+  };
+
   /** @type {Omit<MailOptions, 'to' | 'body' | 'subject'>} */
   const options = {
     attachments: [{
@@ -163,6 +168,7 @@ const sendReport = (data, date, dateStr, logger) => {
     name: data.task.name,
     namespace: data.namespace.name,
     date: dateStr,
+    period,
   };
 
   if (data.success) {
