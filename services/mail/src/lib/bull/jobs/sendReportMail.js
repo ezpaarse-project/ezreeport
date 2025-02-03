@@ -216,6 +216,7 @@ const sendError = async ({ error }, date, dateStr, logger) => {
     body: await generateMail('error', {
       error: 'Unknown error, see attachements',
       date: format(date, 'dd/MM/yyyy à HH:mm:ss'),
+      period: { start: '', end: '' },
     }),
   });
   logger.info({

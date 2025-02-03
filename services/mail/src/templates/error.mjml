@@ -11,19 +11,26 @@
     <mj-text>
       <p>Bonjour,</p>
       <p>
-        La génération du rapport <strong>{{ recurrence }}</strong> « <strong>{{ name }}</strong> »
-        pour l'établissement « <strong>{{ namespace }}</strong> » a rencontré une erreur le
-        <strong>{{ date }} (UTC+0)</strong>. Ce faisant la tâche de reporting a été désactivée,
-        pensez donc à la réactiver une fois l'erreur corrigée.
+        La génération du rapport « <strong>{{ name }}</strong> » pour l'établissement 
+        « <strong>{{ namespace }}</strong> » a rencontré une erreur. Ce faisant la tâche de
+        reporting a été désactivée, pensez donc à la réactiver une fois l'erreur corrigée.
+      </p>
+      <p>
+        Informations sur l'erreur :
+        <ul>
+          <li><strong>Rapport</strong>: {{ name }}</li>
+          <li><strong>Établissement</strong>: {{ namespace }}</li>
+          <li><strong>Date</strong>: {{ date }} (UTC+0)</li>
+          <li><strong>Recurrence</strong>: {{ recurrence }}</li>
+          <li><strong>Période</strong>: {{ period.start }} ~ {{ period.end }}</li>
+          <li><strong>Message</strong>: <em>{{ error }}</em></li>
+        </ul>
+        Vous trouverez plus d'informations en pièce jointe.
       </p>
       <p>
         Ce message est envoyé automatiquement par l'application ezREEPORT,
         vous le recevez parce que vous êtes le correspondant de l'établissement générant
         la tâche de rapport.
-      </p>
-      <p>
-        L'erreur retournée est : <em>{{ error }}</em>.
-        Vous trouverez plus d'informations en pièce jointe.
       </p>
     </mj-text>
 

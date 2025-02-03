@@ -1,9 +1,16 @@
 Bonjour,
-La génération du rapport {{ recurrence }} « {{ name }} » pour l'établissement « {{ namespace }} » a rencontré une erreur le {{ date }}. Ce faisant la tâche de reporting a été désactivée, pensez donc à la réactiver une fois l'erreur corrigée.
+La génération du rapport {{ recurrence }} « {{ name }} » pour l'établissement « {{ namespace }} » a rencontré une erreur. Ce faisant la tâche de reporting a été désactivée, pensez donc à la réactiver une fois l'erreur corrigée.
+
+Informations sur l'erreur :
+- Rapport: {{ name }}
+- Établissement: {{ namespace }}
+- Date: {{ date }} (UTC+0)
+- Recurrence: {{ recurrence }}
+- Période: {{ period.start }} ~ {{ period.end }}
+- Message: {{ error }}
+Vous trouverez plus d'informations en pièce jointe.
 
 Ce message est envoyé automatiquement par l'application ezREEPORT, vous le recevez parce que vous êtes le correspondant de l'établissement générant la tâche de rapport.
-
-L'erreur retournée est : <em>{{ error }}</em>. Vous trouverez plus d'informations en pièce jointe.
 
 Cordialement,
 L'équipe ezTEAM.
