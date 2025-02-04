@@ -33,6 +33,10 @@
       </v-slide-group>
     </template>
 
+    <template v-else #text>
+      <span class="text-disabled">{{ $t('$ezreeport.template.tags.empty') }}</span>
+    </template>
+
     <v-menu
       v-if="!readonly"
       :model-value="isFormVisible"

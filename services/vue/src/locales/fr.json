@@ -139,7 +139,8 @@
         "title": "Étiquettes",
         "title:new": "Créer une étiquette",
         "title:edit": "Éditer l'étiquette",
-        "color": "Couleur"
+        "color": "Couleur",
+        "empty": "Aucune etiquette n'est définie, cliquez sur le bouton en haut à droite pour en créer une."
       },
       "errors": {
         "fetch": "Impossible d'obtenir les modèles",
@@ -173,6 +174,7 @@
         "title:edit": "Éditer un filtre",
         "title:import": "Importer des filtres de Kibana",
         "description:import": "Copiez les filtres depuis Kibana et collez-les dans la zone suivante.",
+        "empty": "Aucun filtre n'est défini.",
         "raw": "Requête DSL",
         "field": "@:$ezreeport.field",
         "value": "Valeur(s)",
@@ -312,6 +314,7 @@
             "title": "Colonnes ({n})",
             "title:new": "Créer une colonne",
             "title:edit": "Éditer une colonne",
+            "empty": "Aucune colonne n'est définie, cliquez sur le bouton en haut à droite pour en créer une.",
             "header": "Titre de la colonne",
             "metric": "Est-ce que la colonne est la métrique de la table ?",
             "styles": {

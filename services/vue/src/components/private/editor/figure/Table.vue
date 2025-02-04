@@ -81,7 +81,10 @@
                   </EditorFigureTableColumn>
                 </v-col>
               </v-row>
+            </template>
 
+            <template v-else #text>
+              <span class="text-error">{{ $t('$ezreeport.editor.figures.table.columns.empty') }}</span>
             </template>
           </v-card>
         </v-col>

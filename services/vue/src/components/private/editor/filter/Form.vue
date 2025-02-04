@@ -7,10 +7,10 @@
       <v-btn
         v-tooltip="$t('$ezreeport.advanced')"
         :color="isAdvanced ? 'orange' : 'grey'"
-        :variant="isAdvanced ? 'flat' : 'text'"
         :disabled="isAdvanced && (!!rawParseError || rawHasChanged)"
         density="comfortable"
         icon="mdi-tools"
+        variant="text"
         @click="switchMode()"
       />
 

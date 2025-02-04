@@ -139,7 +139,8 @@
         "title": "Tags",
         "title:new": "Create tag",
         "title:edit": "Edit tag",
-        "color": "Color"
+        "color": "Color",
+        "empty": "No tags are defined, click the button at the top right to create one."
       },
       "errors": {
         "fetch": "Can't get templates",
@@ -173,6 +174,7 @@
         "title:edit": "Edit filter",
         "title:import": "Import filters from Kibana",
         "description:import": "Copy filters from Kibana and past them in the following area.",
+        "empty": "No filters are defined.",
         "raw": "DSL Query",
         "field": "@:$ezreeport.field",
         "value": "Value(s)",
@@ -313,6 +315,7 @@
             "title:new": "Create column",
             "title:edit": "Edit column",
             "header": "Title of the column",
+            "empty": "No column is defined, click on the button at the top right to create one.",
             "metric": "Is the column the metric of the table ?",
             "styles": {
               "fillColor": "Background color",
@@ -339,7 +342,7 @@
           }
         },
         "vega": {
-          "_": { 
+          "_": {
             "title": "{type}@:$ezreeport.editor.figures._.titleTemplate",
             "value": "Data",
             "label": "Series",
