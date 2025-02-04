@@ -454,11 +454,11 @@
         "header:generation": "Résumé de la génération",
         "header:mail": "Informations sur le mail"
       }
+    },
+    "errors": {
+      "download": "Impossible de télécharger le fichier \"{path}\"",
+      "downloadAttachement": "Impossible de télécharger la pièce jointe",
+      "refreshNamespaces": "Impossible d'actualiser les @:$ezreeport.namespace"
     }
-  },
-  "errors": {
-    "download": "Impossible de télécharger le fichier \"{path}\"",
-    "downloadAttachement": "Impossible de télécharger la pièce jointe",
-    "refreshNamespaces": "Impossible d'actualiser les @:$ezreeport.namespace"
   }
 }
