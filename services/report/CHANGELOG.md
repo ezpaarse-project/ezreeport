@@ -1,3 +1,59 @@
+# [ezreeport-report-v2.0.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.5.0...ezreeport-report@2.0.0-rc.1) (2025-02-07)
+
+
+### Bug Fixes
+
+* fixed logs not being present in file ([7aef235](https://github.com/ezpaarse-project/ezreeport/commit/7aef2359eee8d6a9df33cf5c99f58da93ff79261))
+* minor fixs on loggers and task validation ([90eda76](https://github.com/ezpaarse-project/ezreeport/commit/90eda7646b16ab223b4b31519f0d3d1cb11eafb6))
+* **report:** added missing logs for user model ([bb8d44e](https://github.com/ezpaarse-project/ezreeport/commit/bb8d44e08a0e920a0743e03f7dd97e6383b99952))
+* **report:** added more details when fetch error happen ([c971ec7](https://github.com/ezpaarse-project/ezreeport/commit/c971ec7585105395444d051e3dc1b3709367ff61))
+* **report:** fixed access logs ([266e0bc](https://github.com/ezpaarse-project/ezreeport/commit/266e0bcea45b5376cf99e57140553390b16dfc80))
+* **report:** fixed date detection ([44e515b](https://github.com/ezpaarse-project/ezreeport/commit/44e515b167c7002e453094c5ce9844ff91c3355f))
+* **report:** fixed imprecision of count ([f2101a4](https://github.com/ezpaarse-project/ezreeport/commit/f2101a45971c173f2bddbe75ba1cf1f0b726cafe))
+* **report:** fixed issue where pino-pretty could be required but not installed ([98c349a](https://github.com/ezpaarse-project/ezreeport/commit/98c349a439dfcfae32b4b9a16255e26922281472))
+* **report:** fixed issue with bars with no colors ([963ae3f](https://github.com/ezpaarse-project/ezreeport/commit/963ae3f50c7cafd5e7749ebed6d72eaab41a33c4))
+* **report:** fixed issue with colormap and non string values ([34d4e3e](https://github.com/ezpaarse-project/ezreeport/commit/34d4e3e02b8b6e0badf958213a4581f9a09b9e77))
+* **report:** fixed issue with new render ([1e87e2c](https://github.com/ezpaarse-project/ezreeport/commit/1e87e2cfb827813c3c514b20f8fb3077ff785061))
+* **report:** fixed issue with upserts ([d995cf5](https://github.com/ezpaarse-project/ezreeport/commit/d995cf514eab988a2a24e7ee34c274693d269d1d))
+* **report:** fixed issues when creating a task from a preset ([71d1e79](https://github.com/ezpaarse-project/ezreeport/commit/71d1e799a45c8f1bfa9397747ec302786f083065))
+* **report:** fixed issues with bull + removed old libs ([d187274](https://github.com/ezpaarse-project/ezreeport/commit/d187274d3dfd5892a954daefe484598f72b2f94c))
+* **report:** fixed metrics when values are 0 ([f6f7a03](https://github.com/ezpaarse-project/ezreeport/commit/f6f7a03f74f4caa5cf3ce61ef4c12fe14f06afb1))
+* **report:** fixed minor issues in generation ([b86fbc2](https://github.com/ezpaarse-project/ezreeport/commit/b86fbc2bb9cd24f9e8a2e62b6e2e4673abde183f))
+* **report:** fixed minor issues with typing ([c270a66](https://github.com/ezpaarse-project/ezreeport/commit/c270a6614c5ae1f849dffffd4ab4a24cc29bab70))
+* **report:** fixed various timezone issues ([1e61300](https://github.com/ezpaarse-project/ezreeport/commit/1e61300a4198e74fd43b6fdc10cd236ef5ae26b5))
+* **report:** lots of minor fixes ([f968ed8](https://github.com/ezpaarse-project/ezreeport/commit/f968ed84833caec9619cb140f438ad3b4d92d002))
+* **report:** minor fixs and doc on new fetch methods ([96479c6](https://github.com/ezpaarse-project/ezreeport/commit/96479c67e8fa499f0153a80ca436fa86b08c7acf))
+* **report:** using TZ for cron configs ([0f16e17](https://github.com/ezpaarse-project/ezreeport/commit/0f16e17cee8c3a846564fd899d9e6e7689af6d57))
+
+
+### Features
+
+* **mail:** added routes for kube probes ([7b8de88](https://github.com/ezpaarse-project/ezreeport/commit/7b8de882b6a0ce44b834fd0126cf0ffc5db87d14))
+* **report:** added back elastic indices shorthands ([ea8b98b](https://github.com/ezpaarse-project/ezreeport/commit/ea8b98b86a468354c38c54b6cb984d78af9f66ac))
+* **report:** added description for tasks ([0e24b81](https://github.com/ezpaarse-project/ezreeport/commit/0e24b8156d0435176469b43a3525ab7842747103))
+* **report:** added include fields ([031b27f](https://github.com/ezpaarse-project/ezreeport/commit/031b27f067dcef579736e19f763ad170e1cf2e86))
+* **report:** added initial support for offsets in periods ([e1d0952](https://github.com/ezpaarse-project/ezreeport/commit/e1d0952c1dd8e447bc90f993b8a17842adc73be1))
+* **report:** added jsonl logs in production ([4827446](https://github.com/ezpaarse-project/ezreeport/commit/482744608265858d1fcbe1e74f8c017ca138a71d))
+* **report:** added more details on how targets are unsubscribed ([834b35a](https://github.com/ezpaarse-project/ezreeport/commit/834b35ad86880193869a3f8a352a767c15bc0d52))
+* **report:** added routes for kube probes ([a5631bd](https://github.com/ezpaarse-project/ezreeport/commit/a5631bdf281ed452eccee2c22aa368c7180ceb63))
+* **report:** added targets in history ([7ee3eb2](https://github.com/ezpaarse-project/ezreeport/commit/7ee3eb2d651571e7d402c3a640b37a43c7affe5e))
+* **report:** allow getting unsubscription token from a public route ([2422fb4](https://github.com/ezpaarse-project/ezreeport/commit/2422fb4e79a6739ac4e76c6020e666d0689e224c))
+* **report:** allowed custom loglevel per route ([81b767b](https://github.com/ezpaarse-project/ezreeport/commit/81b767bdeabe2032e92c878f8043e7d0ab30829f))
+* **report:** allowed custom loglevel per route ([fb4d34c](https://github.com/ezpaarse-project/ezreeport/commit/fb4d34cafb0332e7cbda750e56f78a73bae2da42))
+* **report:** deleted deprecated routes ([ffc4189](https://github.com/ezpaarse-project/ezreeport/commit/ffc41890020e0e44465741a9fb0da3082e1673ad))
+* **report:** passing period to mail service ([8afb9aa](https://github.com/ezpaarse-project/ezreeport/commit/8afb9aa5cb80b59bbab8bf1f7e7baadf967aee3b))
+* **report:** re-added support for counts ([48713d1](https://github.com/ezpaarse-project/ezreeport/commit/48713d1e57a098d67c3f4f081715af7eb3f44649))
+* **report:** redone models, some libs and routes for more consistency and reliability ([5c535d6](https://github.com/ezpaarse-project/ezreeport/commit/5c535d650504696499193d4d4c2e5f8b91035e82))
+* **report:** simplified aggregation management and other figures params ([8933b46](https://github.com/ezpaarse-project/ezreeport/commit/8933b46dd8cb8272a78d941d8a1ac53edcdeec4f))
+* **report:** sort data before rendering ([765ef7c](https://github.com/ezpaarse-project/ezreeport/commit/765ef7cfa4fc81f5ace6877a992042549da57033))
+
+
+### BREAKING CHANGES
+
+* **report:** API V1 is dropped, most routes changed paths or parameters
+* **report:** start/stop crons, pause/resume crons, update task (not upsert), update template (not upsert)
+* **report:** tasks and templates are now in v2 and v1 support is dropped
+
 # [ezreeport-report-v2.0.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.0.0-beta.2...ezreeport-report@2.0.0-beta.3) (2025-02-07)
 
 
