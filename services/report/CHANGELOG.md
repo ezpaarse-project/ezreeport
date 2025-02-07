@@ -1,3 +1,10 @@
+# [ezreeport-report-v2.0.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.0.0-beta.2...ezreeport-report@2.0.0-beta.3) (2025-02-07)
+
+
+### Features
+
+* **report:** passing period to mail service ([8afb9aa](https://github.com/ezpaarse-project/ezreeport/commit/8afb9aa5cb80b59bbab8bf1f7e7baadf967aee3b))
+
 # [ezreeport-report-v2.0.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.0.0-beta.1...ezreeport-report@2.0.0-beta.2) (2025-01-22)
 
 
