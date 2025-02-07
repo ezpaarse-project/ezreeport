@@ -143,36 +143,34 @@ const isAdvanced = computed(() => isRawFilter(filter.value));
 /** Mapping options for the simple filter */
 const mapping = computed(() => getOptionsFromMapping());
 
-function generateFilterName(filterRef: MaybeRefOrGetter<TemplateFilter>): string {
-  const f = toValue(filterRef);
-
+function generateFilterName(): string {
   // Don't generate name if it's a raw filter
-  if (isRawFilter(f)) {
+  if (isRawFilter(filter.value)) {
     return '';
   }
 
   // We need a field to generate a name
-  if (!f.field) {
+  if (!filter.value.field) {
     return '';
   }
 
   // Ensure values are an array
-  let values = f.value ?? '';
+  let values = filter.value.value ?? '';
   if (!Array.isArray(values)) {
     values = [values];
   }
 
   // Generate value text
   const valueText = t('$ezreeport.editor.filters.nameTemplate.values', values);
-  const data = { field: f.field, valueText };
+  const data = { field: filter.value.field, valueText };
 
   // Generate name
-  if (!f.value) {
-    if (f.isNot) {
+  if (!filter.value.value) {
+    if (filter.value.isNot) {
       return t('$ezreeport.editor.filters.nameTemplate.exists:not', data);
     }
     return t('$ezreeport.editor.filters.nameTemplate.exists', data);
-  } if (f.isNot) {
+  } if (filter.value.isNot) {
     return t('$ezreeport.editor.filters.nameTemplate.is:not', data);
   }
   return t('$ezreeport.editor.filters.nameTemplate.is', data);
@@ -221,7 +219,7 @@ watch(filter.value, () => {
     return;
   }
 
-  const name = generateFilterName(filter.value);
+  const name = generateFilterName();
   if (name) {
     filter.value.name = name;
   }
