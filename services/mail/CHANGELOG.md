@@ -1,3 +1,22 @@
+# [ezreeport-mail-v1.3.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.2.2...ezreeport-mail@1.3.0-rc.1) (2025-02-07)
+
+
+### Bug Fixes
+
+* fixed logs not being present in file ([7aef235](https://github.com/ezpaarse-project/ezreeport/commit/7aef2359eee8d6a9df33cf5c99f58da93ff79261))
+* **mail:** fixed common type between mail and report ([6186c51](https://github.com/ezpaarse-project/ezreeport/commit/6186c510dafc22b5c36dde009b56ae5c833469ea))
+* **mail:** fixed issue where pino-pretty could be required but not installed ([7546a5a](https://github.com/ezpaarse-project/ezreeport/commit/7546a5ad66b2d4c9eb239e9f863b179ad857ff2c))
+* **mail:** following report changes ([a0fa03c](https://github.com/ezpaarse-project/ezreeport/commit/a0fa03c522af11be62abe56b75863991a9915ad3))
+* minor fixs on loggers and task validation ([90eda76](https://github.com/ezpaarse-project/ezreeport/commit/90eda7646b16ab223b4b31519f0d3d1cb11eafb6))
+
+
+### Features
+
+* **mail:** added jsonl logs in production ([c56f607](https://github.com/ezpaarse-project/ezreeport/commit/c56f6074b375b5ef6d7f5314ef272fd11046587a))
+* **mail:** added period to success reports ([133a671](https://github.com/ezpaarse-project/ezreeport/commit/133a6715f2915375c94ab0db553c969287d51333))
+* **mail:** added routes for kube probes ([7b8de88](https://github.com/ezpaarse-project/ezreeport/commit/7b8de882b6a0ce44b834fd0126cf0ffc5db87d14))
+* **mail:** updated error report with more information ([7935ef4](https://github.com/ezpaarse-project/ezreeport/commit/7935ef4c082f766a774a586c9974f20ff6211244))
+
 # [ezreeport-mail-v1.3.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.3.0-beta.2...ezreeport-mail@1.3.0-beta.3) (2025-02-07)
 
 
