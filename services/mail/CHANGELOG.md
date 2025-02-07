@@ -1,3 +1,11 @@
+# [ezreeport-mail-v1.3.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.3.0-beta.2...ezreeport-mail@1.3.0-beta.3) (2025-02-07)
+
+
+### Features
+
+* **mail:** added period to success reports ([133a671](https://github.com/ezpaarse-project/ezreeport/commit/133a6715f2915375c94ab0db553c969287d51333))
+* **mail:** updated error report with more information ([7935ef4](https://github.com/ezpaarse-project/ezreeport/commit/7935ef4c082f766a774a586c9974f20ff6211244))
+
 # [ezreeport-mail-v1.3.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.3.0-beta.1...ezreeport-mail@1.3.0-beta.2) (2025-01-22)
 
 
