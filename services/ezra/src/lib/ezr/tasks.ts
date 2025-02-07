@@ -22,6 +22,7 @@ export const createTasksWriteStream = (
   },
   transform: (item) => ({
     name: item.name,
+    description: item.description,
     template: item.template,
     targets: item.targets,
     recurrence: item.recurrence,
