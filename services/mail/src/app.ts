@@ -36,10 +36,12 @@ const server = http.createServer((req, res) => {
   }
 });
 
-server.listen(8080, 'localhost', () => {
+const PORT = 8080;
+
+server.listen(PORT, () => {
   appLogger.info({
     scope: 'http',
-    address: 'http://localhost:8080',
+    address: `http://0.0.0.0:${PORT}`,
     startupDuration: process.uptime(),
     startupDurationUnit: 's',
     msg: 'Service listening',

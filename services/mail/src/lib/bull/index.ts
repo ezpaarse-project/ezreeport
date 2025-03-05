@@ -125,7 +125,7 @@ worker.on('error', (err) => {
   logger.debug({
     queue: mailQueue.name,
     err,
-    msg: 'WOrker failed',
+    msg: 'Worker failed',
   });
 });
 
