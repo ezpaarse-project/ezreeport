@@ -110,7 +110,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     },
     handler: async (request, reply) => {
       const pongs = await health.pingAll();
-      const failedPong = pongs.find((pong) => !pong.status);
+      const failedPong = pongs.find((pong) => !pong.status && pong.mandatory);
 
       if (failedPong) {
         let message = `Readiness probe failed: service "${failedPong.name}" is not available`;

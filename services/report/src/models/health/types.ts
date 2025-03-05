@@ -7,6 +7,9 @@ export const SuccessPong = z.object({
   name: z.string().min(1)
     .describe('Service name'),
 
+  mandatory: z.boolean()
+    .describe('If service is mandatory for ezREEPORT'),
+
   status: z.boolean()
     .describe('Service status'),
 
@@ -28,6 +31,9 @@ export type SuccessPongType = z.infer<typeof SuccessPong>;
 export const ErrorPong = z.object({
   name: z.string().min(1)
     .describe('Service name'),
+
+  mandatory: z.boolean()
+    .describe('If service is mandatory for ezREEPORT'),
 
   status: z.literal(false)
     .describe('Service status'),
