@@ -10,6 +10,8 @@ export interface ApiStatus {
 export type Pong = {
   /** Service name */
   name: string;
+  /** Is service mandatory for ezREEPORT */
+  mandatory: boolean;
   /** Service status */
   status: boolean;
   /** Time taken to respond */
@@ -19,6 +21,8 @@ export type Pong = {
 } | {
   /** Service name */
   name: string;
+  /** Is service mandatory for ezREEPORT */
+  mandatory: boolean;
   /** Service status */
   status: false;
   /** Error message */
