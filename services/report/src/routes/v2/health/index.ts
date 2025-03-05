@@ -6,7 +6,9 @@ import { z } from '~/lib/zod';
 import * as responses from '~/routes/v2/responses';
 
 import * as health from '~/models/health';
-import { Pong, Services } from '~/models/health/types';
+import {
+  Pong, Services, FileSystems, FileSystemUsage,
+} from '~/models/health/types';
 
 import { HTTPError } from '~/types/errors';
 
@@ -24,6 +26,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
             current: z.string().describe('Current service'),
             version: z.string().describe('Current version'),
             services: z.array(Services).describe('Services connected to current'),
+            fs: z.array(FileSystems).describe('Filesystems'),
           }),
         ),
         [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
@@ -33,6 +36,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       current: health.serviceName,
       version: health.serviceVersion,
       services: Array.from(health.services),
+      fs: Array.from(health.filesystems),
     }, reply),
   });
 
@@ -121,6 +125,49 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       }
 
       reply.status(StatusCodes.NO_CONTENT);
+    },
+  });
+
+  fastify.route({
+    method: 'GET',
+    url: '/fs',
+    logLevel: 'debug',
+    schema: {
+      summary: 'Get usage of all file systems',
+      tags: ['health'],
+      response: {
+        [StatusCodes.OK]: responses.SuccessResponse(z.array(FileSystemUsage)),
+        [StatusCodes.SERVICE_UNAVAILABLE]: responses.schemas[StatusCodes.SERVICE_UNAVAILABLE],
+        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+      },
+    },
+    handler: async (request, reply) => {
+      const content = await health.getUsageAll();
+
+      return responses.buildSuccessResponse(content, reply);
+    },
+  });
+
+  fastify.route({
+    method: 'GET',
+    url: '/fs/:name',
+    logLevel: 'debug',
+    schema: {
+      summary: 'Get usage of a file system',
+      tags: ['health'],
+      params: z.object({
+        name: FileSystems.describe('Service name'),
+      }),
+      response: {
+        [StatusCodes.OK]: responses.SuccessResponse(FileSystemUsage),
+        [StatusCodes.SERVICE_UNAVAILABLE]: responses.schemas[StatusCodes.SERVICE_UNAVAILABLE],
+        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+      },
+    },
+    handler: async (request, reply) => {
+      const content = await health.getUsage(request.params.name);
+
+      return responses.buildSuccessResponse(content, reply);
     },
   });
 };
