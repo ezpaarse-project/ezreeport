@@ -21,10 +21,10 @@ export const serviceName = 'api';
 /**
  * Map of pingers that can be used
  */
-const pingers: Record<ServicesType, () => Promise<number | false>> = {
-  elastic: elasticPing,
-  redis: pingRedisThroughQueue,
-  database: dbPing,
+const pingers: Record<ServicesType, { ping: () => Promise<number | false>, mandatory: boolean }> = {
+  elastic: { ping: elasticPing, mandatory: false },
+  redis: { ping: pingRedisThroughQueue, mandatory: true },
+  database: { ping: dbPing, mandatory: true },
 };
 
 export const services = new Set(Object.keys(pingers) as ServicesType[]);
@@ -50,7 +50,7 @@ export async function ping(
     });
 
     const res = await Promise.race([
-      pingers[service](),
+      pingers[service].ping(),
       setTimeout(timeout, new Error('timed out')),
     ]);
 
@@ -76,6 +76,7 @@ export async function ping(
     }
     return {
       name: service,
+      mandatory: pingers[service].mandatory,
       status: !!res,
       elapsedTime: ms,
       statusCode: typeof res === 'number' ? res : undefined,
@@ -89,6 +90,7 @@ export async function ping(
 
     return {
       name: service,
+      mandatory: pingers[service].mandatory,
       status: false,
       error: error instanceof Error ? error.message : `Unexpected error: ${error}`,
     };
