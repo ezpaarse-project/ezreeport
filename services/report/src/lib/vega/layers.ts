@@ -94,14 +94,16 @@ function calcRadius(params: VegaParams): ArcRadius {
 }
 
 /**
- * Calculate score of date labels
+ * Check if the label of the data is actually a date
+ *
+ * If more than 3/4 label's data is date, consider whole axis as a date
  *
  * @param data The data to display
  * @param field The path to the date field
  *
- * @returns The score
+ * @returns Is label of data is a date
  */
-function calcLabelDateScore(data: FetchResultItem[]) {
+function isLabelDates(data: FetchResultItem[]) {
   const sample = data.slice(0, data.length / 2);
   const count = sample
     .reduce(
@@ -112,7 +114,7 @@ function calcLabelDateScore(data: FetchResultItem[]) {
       0,
     );
 
-  return (count / sample.length);
+  return (count / sample.length) > 0.75;
 }
 
 /**
@@ -530,9 +532,7 @@ export const createBarSpec: CreateSpecFnc = (type, data, params) => {
   };
 
   let editedData;
-  // If more than 3/8 label's data is date, consider whole axis as a date
-  // and sets format based on task recurrence
-  if (calcLabelDateScore(data) > 0.75) {
+  if (isLabelDates(data)) {
     const timeFormat = calcVegaFormatFromRecurrence(params.recurrence);
 
     editedData = prepareDataWithDefaultDates(type, data, params);
@@ -582,9 +582,7 @@ export const createLineSpec: CreateSpecFnc = (type, data, params) => {
     ),
   };
 
-  // If more than 3/8 label's data is date, consider whole axis as a date
-  // and sets format based on task recurrence
-  if (calcLabelDateScore(data) > 0.75) {
+  if (isLabelDates(data)) {
     const timeFormat = calcVegaFormatFromRecurrence(params.recurrence);
 
     merge<Encoding['x'], Encoding['x']>(
