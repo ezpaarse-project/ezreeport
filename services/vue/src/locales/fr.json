@@ -370,6 +370,10 @@
           "arc": {
             "label": "Tranches"
           },
+          "line": {
+            "color": "Séparation",
+            "color:enable": "Activer la séparation"
+          },
           "bar": {
             "value": "Axe Y",
             "label": "Axe X",
