@@ -1,9 +1,42 @@
-# [@ezpaarse-project/ezreeport-admin-v1.1.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-admin@1.1.0-beta.1...@ezpaarse-project/ezreeport-admin@1.1.0-beta.2) (2025-03-06)
+# [@ezpaarse-project/ezreeport-admin-v1.1.0](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-admin@1.0.0...@ezpaarse-project/ezreeport-admin@1.1.0) (2025-03-06)
+
+
+### Bug Fixes
+
+* **ezra:** fixed 2.0 migration not giving proper filter names ([596e999](https://github.com/ezpaarse-project/ezreeport/commit/596e9997b065df17abd2e42fe4a932e680d8271c))
+* **ezra:** fixed description not beign imported ([02dd201](https://github.com/ezpaarse-project/ezreeport/commit/02dd2013595e5f87e0d1d269e9c7895ca4307858))
+* **ezra:** fixed issue with logs on import ([f843e85](https://github.com/ezpaarse-project/ezreeport/commit/f843e8545f8c02575236a4bd1ea35e01ce9fd667))
+* **ezra:** fixed migration not getting metric aggregations ([2ae6cf8](https://github.com/ezpaarse-project/ezreeport/commit/2ae6cf898affc64048d224681f9fd50b2dcf8197))
+* **ezra:** fixed order beign in aggregations ([2d15938](https://github.com/ezpaarse-project/ezreeport/commit/2d15938fdd3d1c9e2ba654491daa3113f5076a8c))
+* **ezra:** following API changes ([5639602](https://github.com/ezpaarse-project/ezreeport/commit/5639602defef36305ca292d1822d9e7b4c7a3bc9))
+
+
+### Features
+
+* **ezra:** added migration script for templates v2 (2.0.0) ([64247b4](https://github.com/ezpaarse-project/ezreeport/commit/64247b46c4f11ccac9ff5b586847f2457c8c0d6f))
+
+# [@ezpaarse-project/ezreeport-admin-v1.1.0-rc.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-admin@1.1.0-rc.1...@ezpaarse-project/ezreeport-admin@1.1.0-rc.2) (2025-03-06)
 
 
 ### Bug Fixes
 
 * **ezra:** fixed description not beign imported ([02dd201](https://github.com/ezpaarse-project/ezreeport/commit/02dd2013595e5f87e0d1d269e9c7895ca4307858))
+
+# [@ezpaarse-project/ezreeport-admin-v1.1.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-admin@1.0.0...@ezpaarse-project/ezreeport-admin@1.1.0-rc.1) (2025-02-07)
+
+
+### Bug Fixes
+
+* **ezra:** fixed 2.0 migration not giving proper filter names ([596e999](https://github.com/ezpaarse-project/ezreeport/commit/596e9997b065df17abd2e42fe4a932e680d8271c))
+* **ezra:** fixed issue with logs on import ([f843e85](https://github.com/ezpaarse-project/ezreeport/commit/f843e8545f8c02575236a4bd1ea35e01ce9fd667))
+* **ezra:** fixed migration not getting metric aggregations ([2ae6cf8](https://github.com/ezpaarse-project/ezreeport/commit/2ae6cf898affc64048d224681f9fd50b2dcf8197))
+* **ezra:** fixed order beign in aggregations ([2d15938](https://github.com/ezpaarse-project/ezreeport/commit/2d15938fdd3d1c9e2ba654491daa3113f5076a8c))
+* **ezra:** following API changes ([5639602](https://github.com/ezpaarse-project/ezreeport/commit/5639602defef36305ca292d1822d9e7b4c7a3bc9))
+
+
+### Features
+
+* **ezra:** added migration script for templates v2 (2.0.0) ([64247b4](https://github.com/ezpaarse-project/ezreeport/commit/64247b46c4f11ccac9ff5b586847f2457c8c0d6f))
 
 # [@ezpaarse-project/ezreeport-admin-v1.1.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-admin@1.0.0...@ezpaarse-project/ezreeport-admin@1.1.0-beta.1) (2025-01-07)
 

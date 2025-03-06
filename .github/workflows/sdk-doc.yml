@@ -35,7 +35,7 @@ jobs:
           static_site_generator: 'static'
 
       - name: Install dependencies ⚙️
-        run: pnpm install --frozen-lockfile
+        run: pnpm fetch
 
       - name: Build documentation 🔧
         run: pnpm --filter @ezpaarse-project/ezreeport-sdk-js run build:docs
@@ -43,7 +43,7 @@ jobs:
       - name: Upload artifact 🚚
         uses: actions/upload-pages-artifact@v3
         with:
-          path: src/sdk/docs
+          path: services/sdk/docs
 
   deploy:
     permissions:
