@@ -1,3 +1,11 @@
+# [@ezpaarse-project/ezreeport-vue-v2.0.0-rc.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.0.0-rc.1...@ezpaarse-project/ezreeport-vue@2.0.0-rc.2) (2025-03-06)
+
+
+### Bug Fixes
+
+* **vue:** fixed aggregation type when grouping ([b67201d](https://github.com/ezpaarse-project/ezreeport/commit/b67201dbfc692aed231577caf2afada3dcaf554f))
+* **vue:** fixed tabs of line and area forms ([438cea8](https://github.com/ezpaarse-project/ezreeport/commit/438cea840b771ae4aee70a1e2ea302e334bc9cfa))
+
 # [@ezpaarse-project/ezreeport-vue-v2.0.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@1.4.0...@ezpaarse-project/ezreeport-vue@2.0.0-rc.1) (2025-02-07)
 
 
