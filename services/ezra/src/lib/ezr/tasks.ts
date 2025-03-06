@@ -22,12 +22,13 @@ export const createTasksWriteStream = (
   },
   transform: (item) => ({
     name: item.name,
+    description: item.description,
     template: item.template,
     targets: item.targets,
     recurrence: item.recurrence,
     nextRun: item.nextRun,
     enabled: item.enabled,
-    extends: item.extends.id,
-    namespace: item.namespace.id,
+    extendedId: item.extendedId,
+    namespaceId: item.namespaceId,
   }),
 });

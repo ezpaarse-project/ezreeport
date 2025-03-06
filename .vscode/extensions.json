@@ -3,15 +3,13 @@
     // Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
     // List of extensions which should be recommended for users of this workspace.
     "recommendations": [
-			"dbaeumer.vscode-eslint",
-			"christian-kohler.npm-intellisense",
-			"Orta.vscode-jest",
-			"streetsidesoftware.code-spell-checker",
-			"vivaxy.vscode-conventional-commits",
-			"ms-azuretools.vscode-docker",
-			"mikestead.dotenv",
-			"streetsidesoftware.code-spell-checker-french",
-			"prisma.prisma",
-			"vue.volar"
+			"dbaeumer.vscode-eslint",	// ESLint integration
+			"christian-kohler.npm-intellisense", // NPM auto-completion
+			"streetsidesoftware.code-spell-checker", // Spell checker
+			"vivaxy.vscode-conventional-commits", // Conventional commits
+			"exiasr.hadolint", // Hadolint
+			"mikestead.dotenv", // dotenv support
+			"prisma.prisma", // Prisma support
+			"vue.volar" // Volar
 		]
 }

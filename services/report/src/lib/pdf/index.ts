@@ -4,13 +4,15 @@ import { readFile, stat, unlink } from 'node:fs/promises';
 import { jsPDF as PDF } from 'jspdf';
 
 import config from '~/lib/config';
-import { appLogger as logger } from '~/lib/logger';
+import { appLogger } from '~/lib/logger';
 import { format, type Interval } from '~/lib/date-fns';
 
 import { loadImageAsset, registerJSPDFFont } from './utils';
 
 const { logos } = config.pdf;
 const { fontFamily, fonts } = config.report;
+
+const logger = appLogger.child({ scope: 'jspdf' });
 
 // Register fonts
 type JSPDFRegisterableFont = {
@@ -22,7 +24,11 @@ type JSPDFRegisterableFont = {
 
 fonts.forEach(({ path, ...font }: JSPDFRegisterableFont) => {
   registerJSPDFFont(path, font).then(() => {
-    logger.verbose(`[jspdf] Register font: [${path}] as [${font.family} ${font.weight || ''}${font.style || ''}]`);
+    logger.debug({
+      path,
+      font,
+      msg: 'Registered font',
+    });
   });
 });
 
@@ -62,6 +68,7 @@ let doc: {
    */
   name: string;
   period: Interval;
+  namespace: { name: string },
 
   // Constants
   /**
@@ -77,7 +84,7 @@ let doc: {
 
 export type PDFReport = Exclude<typeof doc, undefined>;
 
-export type PDFReportOptions = Pick<PDFReport, 'name' | 'period' | 'path'>;
+export type PDFReportOptions = Pick<PDFReport, 'name' | 'period' | 'path' | 'namespace'>;
 
 export type PDFStats = { pageCount: number, path: string, size: number };
 
@@ -105,7 +112,7 @@ const printHeader = async (): Promise<number> => {
     .setTextColor('#000000')
     .setFontSize(fontSize)
     .text(
-      `du ${format(doc.period.start, 'dd/MM/yyyy')} au ${format(doc.period.end, 'dd/MM/yyyy')}`,
+      `du ${format(doc.period.start, 'dd/MM/yyyy')} au ${format(doc.period.end, 'dd/MM/yyyy')}, pour ${doc.namespace.name}`,
       doc.margin.right,
       y,
     );

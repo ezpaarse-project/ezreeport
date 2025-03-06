@@ -11,28 +11,38 @@ Reporting service for ezMESURE/ezCOUNTER
 
 ```bash
 git clone https://github.com/ezpaarse-project/ezreeport.git
+cd ezreeport
 echo 'ELASTIC_URL="${ELASTIC_SCHEME:-https}://${ELASTIC_HOST}:${ELASTIC_PORT:-9200}"\n\nDATABASE_URL="${DATABASE_PROTOCOL:-postgresql}://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?schema=default"' > .env.local
+corepack enable
 pnpm i
 ```
 
 ## Start ezREEPORT
 
+### Migrate database
+
+```bash
+docker compose -f ezreeport/docker-compose.migrate.yml up -d
+docker compose -f ezreeport/docker-compose.migrate.yml wait api
+# If you want to see what happened, or if wait returned a non-0 exit code :
+docker compose -f ezreeport/docker-compose.migrate.yml logs api
+docker compose -f ezreeport/docker-compose.migrate.yml down
+```
+
 ### Production mode
 
 ```bash
-source ezreeport.env.sh
 docker compose -f docker-compose.yml pull
-docker compose -f docker-compose.migrate.yml up -d
+# Apply database migrations, see previous part
 docker compose -f docker-compose.yml up -d
 ```
 
 ### Development mode
 
 ```bash
-source ezreeport.env.sh
-docker compose -f docker-compose.yml -f docker-compose.debug.yml pull
-docker compose -f docker-compose.migrate.yml up -d
-docker compose -f docker-compose.yml -f docker-compose.debug.yml up -d
+docker compose -f docker-compose.debug.yml pull
+# Apply database migrations, see previous part
+docker compose -f docker-compose.debug.yml up -d
 ```
 
 ### Run tests

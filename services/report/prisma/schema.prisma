@@ -16,6 +16,8 @@ model Task {
   id           String         @id @default(uuid())
   /// The name of the report
   name         String
+  /// Description of the report
+  description  String         @default("")
   /// The "owner" of the report
   namespace    Namespace      @relation(fields: [namespaceId], references: [id], onDelete: Cascade)
   namespaceId  String

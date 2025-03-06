@@ -6,7 +6,7 @@
   ],
   "compilerOptions": {
     // Used by ESBuild
-    "target": "es2022",
+    "target": "ES2023",
     "strict": true,
     "paths": {
       "~/*": [
@@ -15,7 +15,7 @@
     },
 
     // Used by TypeScript
-    "lib": ["es2022"],
+    "lib": ["ES2023"],
     "module": "commonjs",
     "resolveJsonModule": true,
     "esModuleInterop": true,

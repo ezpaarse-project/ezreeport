@@ -6,8 +6,9 @@ import { parse, Locale as VegaLocale, View } from 'vega';
 import { compile, type TopLevelSpec } from 'vega-lite';
 import type { Mark } from 'vega-lite/build/src/mark';
 
+import type { FetchResultItem } from '~/models/reports/generation/fetch/results';
 import config from '~/lib/config';
-import { appLogger as logger } from '~/lib/logger';
+import { appLogger } from '~/lib/logger';
 import type { PDFReport } from '~/lib/pdf';
 
 import localeFR from './locales/fr-FR.json';
@@ -30,6 +31,8 @@ const {
   fonts,
 } = config.report;
 
+const logger = appLogger.child({ scope: 'vega' });
+
 type CanvasRegisterableFont = {
   path: string;
   family: string;
@@ -40,33 +43,26 @@ type CanvasRegisterableFont = {
 // Register fonts in Vega
 fonts.forEach(({ path, ...font }: CanvasRegisterableFont) => {
   registerFont(path, font);
-  logger.verbose(`[vega] Register font: [${path}] as [${font.family} ${font.weight || ''} ${font.style || ''}]`);
+  logger.debug({
+    path,
+    font,
+    msg: 'Registered font',
+  });
 });
 
 /**
  * Parse given title with handlebars vars. It's weird because Vega's title can be a lot of things
  *
  * @param title The Vega title
- * @param inputData The data given to the figure
+ * @param data The data given to the figure
  * @param dataKey The optional key to access data
  *
  * @returns The title to print
  */
 export const parseTitle = (
   title: Title,
-  inputData: Record<string, unknown[]> | unknown[],
-  dataKey?: string,
+  data: FetchResultItem[],
 ): string | string[] => {
-  let data = [];
-  if (Array.isArray(inputData)) {
-    data = inputData;
-  } else {
-    if (!dataKey) {
-      throw new Error('Unable to parse title: data is not iterable, and no "dataKey" is present');
-    }
-    data = inputData[dataKey];
-  }
-
   const handlebarsOpts = { length: data.length };
   if (typeof title === 'string') {
     return handlebars(title)(handlebarsOpts);
@@ -87,28 +83,15 @@ export const parseTitle = (
  * Helper to create Vega-lite spec
  *
  * @param type Type of graph
- * @param inputData The data
+ * @param data The data
  * @param params Graph options
  * @returns
  */
 export const createVegaLSpec = (
   type: Mark,
-  inputData: Record<string, unknown[]> | unknown[],
+  data: FetchResultItem[],
   params: VegaParams,
 ): TopLevelSpec => {
-  let data = inputData as unknown[];
-  if (!Array.isArray(inputData)) {
-    if (!params.dataKey) {
-      throw new Error('data is not iterable, and no "dataKey" is present');
-    }
-
-    if (!Array.isArray(inputData[params.dataKey])) {
-      throw new Error(`data.${params.dataKey} is not iterable`);
-    }
-
-    data = inputData[params.dataKey];
-  }
-
   let createSpec = createOtherSpec;
   switch (type) {
     case 'arc':
@@ -118,6 +101,7 @@ export const createVegaLSpec = (
       createSpec = createBarSpec;
       break;
     case 'line':
+    case 'area':
       createSpec = createLineSpec;
       break;
 
@@ -146,7 +130,7 @@ export const createVegaLSpec = (
 };
 
 /**
- * Transform a Vega-lite spec into a Vega view. Usefull when rendering.
+ * Transform a Vega-lite spec into a Vega view. Useful when rendering.
  *
  * @param spec The Vega-lite spec
  * @returns The vega View

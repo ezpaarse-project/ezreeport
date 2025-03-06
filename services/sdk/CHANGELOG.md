@@ -1,3 +1,111 @@
+# [@ezpaarse-project/ezreeport-sdk-js-v2.0.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.3.0...@ezpaarse-project/ezreeport-sdk-js@2.0.0-rc.1) (2025-02-07)
+
+
+### Bug Fixes
+
+* **sdk:** fixed issue in template types ([51c5805](https://github.com/ezpaarse-project/ezreeport/commit/51c580524f3ab46a75a9a59686846b39ef8061a7))
+* **sdk:** fixed issue with time when generating reports ([44c9c3c](https://github.com/ezpaarse-project/ezreeport/commit/44c9c3ccf479c07a43d46bdecc85fd9a4a406a6c))
+
+
+### Features
+
+* **sdk:** added description for tasks ([314037b](https://github.com/ezpaarse-project/ezreeport/commit/314037b1f39d50cdd13fe09f95123d79f8edb588))
+* **sdk:** added helpers for some modules ([6b16801](https://github.com/ezpaarse-project/ezreeport/commit/6b168010b18848ea8f0772dbc7b812b30357abf5))
+* **sdk:** added template editor helpers ([b77010a](https://github.com/ezpaarse-project/ezreeport/commit/b77010a80790c4fd308c1124820d2e7c5dfc5857))
+* **sdk:** deleted deprecated methods ([bf12aae](https://github.com/ezpaarse-project/ezreeport/commit/bf12aaebc0b4a97a225fc7ff587f585e3568eee3))
+* **sdk:** splited sdk in submodules ([471d828](https://github.com/ezpaarse-project/ezreeport/commit/471d8285852bf3f305e2a8a720ebbc9ad199d0e2))
+* **sdk:** updated auth module for API v2 ([b285b49](https://github.com/ezpaarse-project/ezreeport/commit/b285b4976086779b4d20695d4e74bf81407ccce9))
+* **sdk:** updated crons module for API v2 ([1589b5c](https://github.com/ezpaarse-project/ezreeport/commit/1589b5c3da80d2574c120c2bea0dda735cc0b153))
+* **sdk:** updated elastic module for API v2 ([c4633c3](https://github.com/ezpaarse-project/ezreeport/commit/c4633c36533d0bf66e56dbf88ff693751b3d24f0))
+* **sdk:** updated health module for API v2 ([96b668a](https://github.com/ezpaarse-project/ezreeport/commit/96b668a3909bbadb85f70d14545eb46327f8da65))
+* **sdk:** updated index for API and SDK v2 ([be5be7a](https://github.com/ezpaarse-project/ezreeport/commit/be5be7a2915ccb13e07893c8657f41478c56242f))
+* **sdk:** updated namespaces module for API v2 ([223d28c](https://github.com/ezpaarse-project/ezreeport/commit/223d28c78052ed9aadb8253a0fb51594f4c99755))
+* **sdk:** updated queues module for API v2 ([71fe1a5](https://github.com/ezpaarse-project/ezreeport/commit/71fe1a5cc29f364c465481e0ba02bb0f249cc198))
+* **sdk:** updated reports module for API v2 ([049c541](https://github.com/ezpaarse-project/ezreeport/commit/049c541a2c8f6f910f5ff2310b904227ed1a4b5e))
+* **sdk:** updated task-activity module for API v2 ([8c84dad](https://github.com/ezpaarse-project/ezreeport/commit/8c84dad7cfa9b6720872a6732b540dff140b5903))
+* **sdk:** updated task-presets module for API v2 ([ff90044](https://github.com/ezpaarse-project/ezreeport/commit/ff90044efe2ee5b1371612a88c07f224b2c599be))
+* **sdk:** updated tasks module for API v2 ([0d8092a](https://github.com/ezpaarse-project/ezreeport/commit/0d8092ad687b3570700cfa5944ef295a18f18465))
+* **sdk:** updated templates module for API v2 ([caf37bc](https://github.com/ezpaarse-project/ezreeport/commit/caf37bc39c8fb3d3641326408e1227612292c2d6))
+* **sdk:** updated templates types, following api ([e0c4278](https://github.com/ezpaarse-project/ezreeport/commit/e0c42780e92a0ba6f8a73178f36a9386d6dc6661))
+* **sdk:** updated user module for API v2 ([05a96a2](https://github.com/ezpaarse-project/ezreeport/commit/05a96a2fe4bc74d1ba2bacedd28ce1c926dd432e))
+* **sdk:** using ofetch instead of axios ([d26f37b](https://github.com/ezpaarse-project/ezreeport/commit/d26f37b9997d6e01905c5f5b8418e91628dc1d65))
+
+
+### BREAKING CHANGES
+
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** start/stop crons, pause/resume crons, update task (not upsert), update template (not upsert), history (now activity)
+* **sdk:** might need to review how you create templates
+
+# [@ezpaarse-project/ezreeport-sdk-js-v2.0.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@2.0.0-beta.1...@ezpaarse-project/ezreeport-sdk-js@2.0.0-beta.2) (2025-01-22)
+
+
+### Features
+
+* **sdk:** added description for tasks ([314037b](https://github.com/ezpaarse-project/ezreeport/commit/314037b1f39d50cdd13fe09f95123d79f8edb588))
+
+# [@ezpaarse-project/ezreeport-sdk-js-v2.0.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.3.0...@ezpaarse-project/ezreeport-sdk-js@2.0.0-beta.1) (2025-01-07)
+
+
+### Bug Fixes
+
+* **sdk:** fixed issue in template types ([51c5805](https://github.com/ezpaarse-project/ezreeport/commit/51c580524f3ab46a75a9a59686846b39ef8061a7))
+* **sdk:** fixed issue with time when generating reports ([44c9c3c](https://github.com/ezpaarse-project/ezreeport/commit/44c9c3ccf479c07a43d46bdecc85fd9a4a406a6c))
+
+
+### Features
+
+* **sdk:** added helpers for some modules ([6b16801](https://github.com/ezpaarse-project/ezreeport/commit/6b168010b18848ea8f0772dbc7b812b30357abf5))
+* **sdk:** added template editor helpers ([b77010a](https://github.com/ezpaarse-project/ezreeport/commit/b77010a80790c4fd308c1124820d2e7c5dfc5857))
+* **sdk:** deleted deprecated methods ([bf12aae](https://github.com/ezpaarse-project/ezreeport/commit/bf12aaebc0b4a97a225fc7ff587f585e3568eee3))
+* **sdk:** splited sdk in submodules ([471d828](https://github.com/ezpaarse-project/ezreeport/commit/471d8285852bf3f305e2a8a720ebbc9ad199d0e2))
+* **sdk:** updated auth module for API v2 ([b285b49](https://github.com/ezpaarse-project/ezreeport/commit/b285b4976086779b4d20695d4e74bf81407ccce9))
+* **sdk:** updated crons module for API v2 ([1589b5c](https://github.com/ezpaarse-project/ezreeport/commit/1589b5c3da80d2574c120c2bea0dda735cc0b153))
+* **sdk:** updated elastic module for API v2 ([c4633c3](https://github.com/ezpaarse-project/ezreeport/commit/c4633c36533d0bf66e56dbf88ff693751b3d24f0))
+* **sdk:** updated health module for API v2 ([96b668a](https://github.com/ezpaarse-project/ezreeport/commit/96b668a3909bbadb85f70d14545eb46327f8da65))
+* **sdk:** updated index for API and SDK v2 ([be5be7a](https://github.com/ezpaarse-project/ezreeport/commit/be5be7a2915ccb13e07893c8657f41478c56242f))
+* **sdk:** updated namespaces module for API v2 ([223d28c](https://github.com/ezpaarse-project/ezreeport/commit/223d28c78052ed9aadb8253a0fb51594f4c99755))
+* **sdk:** updated queues module for API v2 ([71fe1a5](https://github.com/ezpaarse-project/ezreeport/commit/71fe1a5cc29f364c465481e0ba02bb0f249cc198))
+* **sdk:** updated reports module for API v2 ([049c541](https://github.com/ezpaarse-project/ezreeport/commit/049c541a2c8f6f910f5ff2310b904227ed1a4b5e))
+* **sdk:** updated task-activity module for API v2 ([8c84dad](https://github.com/ezpaarse-project/ezreeport/commit/8c84dad7cfa9b6720872a6732b540dff140b5903))
+* **sdk:** updated task-presets module for API v2 ([ff90044](https://github.com/ezpaarse-project/ezreeport/commit/ff90044efe2ee5b1371612a88c07f224b2c599be))
+* **sdk:** updated tasks module for API v2 ([0d8092a](https://github.com/ezpaarse-project/ezreeport/commit/0d8092ad687b3570700cfa5944ef295a18f18465))
+* **sdk:** updated templates module for API v2 ([caf37bc](https://github.com/ezpaarse-project/ezreeport/commit/caf37bc39c8fb3d3641326408e1227612292c2d6))
+* **sdk:** updated templates types, following api ([e0c4278](https://github.com/ezpaarse-project/ezreeport/commit/e0c42780e92a0ba6f8a73178f36a9386d6dc6661))
+* **sdk:** updated user module for API v2 ([05a96a2](https://github.com/ezpaarse-project/ezreeport/commit/05a96a2fe4bc74d1ba2bacedd28ce1c926dd432e))
+* **sdk:** using ofetch instead of axios ([d26f37b](https://github.com/ezpaarse-project/ezreeport/commit/d26f37b9997d6e01905c5f5b8418e91628dc1d65))
+
+
+### BREAKING CHANGES
+
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** parameters and return types changed
+* **sdk:** start/stop crons, pause/resume crons, update task (not upsert), update template (not upsert), history (now activity)
+* **sdk:** might need to review how you create templates
+
 # [@ezpaarse-project/ezreeport-sdk-js-v1.3.0](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.2.0...@ezpaarse-project/ezreeport-sdk-js@1.3.0) (2024-11-21)
 
 

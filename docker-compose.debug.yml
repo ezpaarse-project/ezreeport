@@ -13,11 +13,11 @@ services:
     ports:
       - 6389:6379
 
-  report:
+  api:
     extends:
       file: docker-compose.yml
-      service: report
-    image: node:18.18.2
+      service: api
+    image: node:20.11.0
     working_dir: /usr/dev/services/report
     volumes:
       - .:/usr/dev
@@ -29,13 +29,23 @@ services:
     extends:
       file: docker-compose.yml
       service: mail
-    image: node:18.18.2
+    image: node:20.11.0
     working_dir: /usr/dev/services/mail
     volumes:
       - .:/usr/dev
     command: "npm run dev"
     ports:
-      - 9231:9229 # Debug port
+      - 9232:9229 # Debug port
+
+  storybook:
+    image: node:20.11.0
+    working_dir: /usr/dev/services/vue
+    volumes:
+      - .:/usr/dev
+    command: "npm run dev -- --no-open"
+    ports:
+      - 6006:6006
+    restart: unless-stopped
 
   maildev:
     image: maildev/maildev

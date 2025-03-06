@@ -1,6 +1,9 @@
 /* eslint-disable import/no-relative-packages */
+import { appLogger } from '~/lib/logger';
+
 import { PrismaClient } from '../../.prisma/client';
-import { appLogger as logger } from '~/lib/logger';
+
+const logger = appLogger.child({ scope: 'prisma' });
 
 const client = new PrismaClient({
   log: [
@@ -9,13 +12,13 @@ const client = new PrismaClient({
     { level: 'warn', emit: 'event' },
     { level: 'error', emit: 'event' },
   ],
-  errorFormat: 'pretty',
+  errorFormat: process.env.NODE_ENV === 'production' ? 'minimal' : 'pretty',
 });
 
-client.$on('query', (e) => logger.silly(`[prisma] ${e.query} - ${e.params} (${e.duration}ms)`));
-client.$on('info', (e) => logger.info(`[prisma] ${e.message}`));
-client.$on('warn', (e) => logger.warn(`[prisma] ${e.message}`));
-client.$on('error', (e) => logger.error(`[prisma] ${e.message}`));
+client.$on('query', (e) => logger.trace({ ...e, durationUnit: 'ms' }));
+client.$on('info', (e) => logger.info({ ...e, message: undefined, msg: e.message }));
+client.$on('warn', (e) => logger.warn({ ...e, message: undefined, msg: e.message }));
+client.$on('error', (e) => logger.error({ ...e, message: undefined, msg: e.message }));
 
 export default client;
 

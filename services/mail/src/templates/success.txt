@@ -1,5 +1,7 @@
 Bonjour,
-Vous trouverez dans ce mail le rapport {{ recurrence }} « {{ name }} », généré le {{ date }} pour l'établissement « {{ namespace }} ».
+Vous trouverez dans ce mail le rapport {{ recurrence }} « {{ name }} » pour l'établissement « {{ namespace }} ».
+
+Généré le {{ date }}, ce rapport couvre la période du {{ period.start }} au {{ period.end }}.
 
 Ce message est envoyé automatiquement par l'application ezREEPORT, vous le recevez parce que vous faites partie d'une liste de diffusion de rapports.
 

@@ -12,7 +12,10 @@
       <p>Bonjour,</p>
       <p>
         Vous trouverez dans ce mail le rapport <strong>{{ recurrence }}</strong>
-        « <strong>{{ name }}</strong> », généré le <strong>{{ date }}</strong> pour l'établissement « <strong>{{ namespace }}</strong> ».
+        « <strong>{{ name }}</strong> » pour l'établissement « <strong>{{ namespace }}</strong> ».
+      </p>
+      <p>
+        Généré le <strong>{{ date }}</strong>, ce rapport couvre la période du <strong>{{ period.start }}</strong> au <strong>{{ period.end }}</strong>.
       </p>
       <p>
         Ce message est envoyé automatiquement par l'application ezREEPORT,

@@ -1,5 +1,10 @@
 {
   "allowedOrigins": "API_ALLOWED_ORIGINS",
+  "log": {
+    "level": "LOG_LEVEL",
+    "dir": "LOG_DIR",
+    "ignore": "LOG_IGNORE"
+  },
   "redis": {
     "host": "REDIS_HOST",
     "port": { "__name": "REDIS_PASSWORD", "__format": "number" },

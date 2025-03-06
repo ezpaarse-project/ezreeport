@@ -4,10 +4,10 @@
 
 ## Requirements
 
-- `vue@^2.7` ([npm](https://www.npmjs.com/package/vue))
-- `vue-i18n@^8.28` ([npm](https://github.com/kazupon/vue-i18n))
-- `vuetify@^2.6` ([npm](https://github.com/vuetifyjs/vuetify/tree/v2-stable))
-- `@mdi/font@^7` ([npm](https://github.com/Templarian/MaterialDesign-Webfont))
+- `vue@^3.5` ([npm](https://www.npmjs.com/package/vue))
+- `vue-i18n@^10` ([npm](https://github.com/kazupon/vue-i18n))
+- `vuetify@^3.7` ([npm](https://github.com/vuetifyjs/vuetify/tree/v2-stable))
+- `@mdi/font@^7.4` ([npm](https://github.com/Templarian/MaterialDesign-Webfont))
 
 ## Install
 
@@ -15,79 +15,100 @@
 npm i --save @ezpaarse-project/ezreeport-vue
 ```
 
-### Webpack
-
-You may need to add this in your `webpack.config.js|ts` (see [vuetify issue](https://github.com/vuetifyjs/vuetify/discussions/4068#discussioncomment-24984) for more info) :
-
-```js
-const path = require('path');
-
-module.exports = {
-  resolve: {
-    alias: {
-      'vue$': path.resolve(__dirname, 'node_modules/vue/dist/vue.runtime.esm.js'),
-      '^vuetify': path.resolve(__dirname, 'node_modules/vuetify'),
-    }
-  }
-}
-```
-
-### Vite (untested)
-
-Similar to webpack, you may need to add this in your `vite.config.js|ts` (see [vuetify issue](https://github.com/vuetifyjs/vuetify/discussions/4068#discussioncomment-24984) for more info) :
-
-```ts
-export default defineConfig({
-  resolve: {
-    alias: {
-      vue: 'vue/dist/vue.runtime.esm.js',
-    },
-  },
-});
-```
-
-### Nuxt2
-
-You can use nuxt modules like `@nuxtjs/vuetify@^1.12.3` ([npm](https://www.npmjs.com/package/@nuxtjs/vuetify)) and `@nuxtjs/i18n@^7.3.1` ([npm](https://www.npmjs.com/package/@nuxtjs/i18n)) instead of raw dependencies.
-
-Add plugin and webpack config into `nuxt.config.js|ts` :
-
-```ts
-// nuxt.config.js|ts
-export default {
-  plugins: [
-    '~/plugins/ezreeport-vue2.ts', // TODO: change path to your plugin file
-  ],
-
-  buildModules: [
-    '@nuxtjs/vuetify',
-  ],
-
-  modules: [
-    '@nuxtjs/i18n',
-  ],
-
-  extend(config, ctx) {
-    // Since Nuxt2 is using webpack, we need to "patch" module resolution
-    // https://github.com/vuetifyjs/vuetify/discussions/4068#discussioncomment-24984
-    config.resolve.alias.vue$ = path.resolve(__dirname, 'node_modules/vue/dist/vue.runtime.esm.js');
-    config.resolve.alias['^vuetify'] = path.resolve(__dirname, 'node_modules/vuetify');
-  },
-}
-```
-
 ## First Usage
 
-You will need to wrap your app with the `<ezr-provider>` and give some parameters :
+In order to use ezreeport components, you need to register the plugin in your Vue application :
+
+```js
+import { createApp } from 'vue';
+
+import '@mdi/font/css/materialdesignicons.css'
+import 'vuetify/styles'
+import { en as vuetifyEn, fr as vuetifyFr } from 'vuetify/locale';
+import { createVuetify } from 'vuetify'
+
+import { createI18n } from 'vue-i18n';
+
+import '@ezpaarse-project/ezreeport-vue/styles';
+import { en as ezrEn, fr as ezrFr } from '@ezpaarse-project/ezreeport-vue/locale';
+import ezreeportVue from '@ezpaarse-project/ezreeport-vue';
+
+const app = createApp({ /* ... */ });
+
+const i18n = createI18n({
+  // You can manually merge messages
+  // You may want to include vuetify messages
+  messages: {
+    en: { $vuetify: vuetifyEn, $ezreeport: ezrEn },
+    fr: { $vuetify: vuetifyFr, $ezreeport: ezrFr },
+  },
+})
+app.use(i18n);
+
+const vuetify = createVuetify({ /* ... */ });
+app.use(vuetify); // You need to setup Vuetify before ezreeport
+
+app.use(ezreeportVue, {
+  locale: {
+    i18n: i18n.global, // You can pass the instance of i18n and plugin will merge messages
+    namespaces: {
+      // You can custom how "namespaces" are displayed, you can use a string
+      // that will passed to all locales of i18n
+      label: '@:institutions.title',
+      // Or pass individual definitions
+      label: {
+        en: 'Institution',
+        fr: 'Établissement'
+      }
+    },
+  },
+  errorHandler: (msg, err) => {
+    console.error(msg, err);
+  }
+})
+```
+
+Whenever you'll use a ezreeport component, you will need to setup ezreeport's SDK with the `prepareClient` function :
 
 ```html
 <template>
-  <ezr-provider
-    api-url="https://url-to-ezreeport.api/"
-  >
-    <ezr-status-list />
-  </ezr-provider>
+  <ezr-health-status />
 </template>
+
+<script setup>
+// ezreeport setup
+import { prepareClient } from '@ezpaarse-project/ezreeport-vue';
+
+prepareClient(
+  'http://localhost:8080', // ezREEPORT API url
+  { token: '<CURRENT USER TOKEN>' }
+);
+</script>
+```
+
+### Nuxt 3
+
+You can use nuxt modules like `vuetify-nuxt-module` ([npm](https://www.npmjs.com/package/vuetify-nuxt-module)) and `@nuxtjs/i18n` ([npm](https://www.npmjs.com/package/@nuxtjs/i18n)) instead of raw dependencies.
+
+Add plugin config into `plugins/ezreeport.ts` :
+
+```ts
+// plugins/ezreeport.js|ts
+import { defineNuxtPlugin } from '#imports';
+import ezreeportVue from '@ezpaarse-project/ezreeport-vue';
+
+export default defineNuxtPlugin({
+  async setup(nuxtApp) {
+    // We need to wait for vuetify
+    nuxtApp.hook('vuetify:ready', () => {
+      nuxtApp.vueApp.use(ezreeportVue, {
+        locale: {
+          i18n: nuxtApp.$i18n, // Pass current instance of i18n
+        },
+      });
+    });
+  },
+});
 ```
 
 ## Documentation / Dev
@@ -98,14 +119,13 @@ Since many components directly use ezREEPORT's API, you must run a working [ezRE
 
 Create a `.env.local` and overrides env vars :
 
-- VITE_AUTH_TOKEN: Used to login
-- VITE_REPORT_API: Used to fetch data, etc.
-- VITE_NAMESPACES_LOGO_URL: Used to show namespaces logos
+- `VITE_EZR_TOKEN`: Used to login
+- `VITE_EZR_API`: Used to fetch data, etc.
 
 Then run
 
 ```sh
-npm run build:docs
+npm run build:story
 # or npm run dev
 ```
 
@@ -113,26 +133,23 @@ Finally run an http server over newly created `storybook-static`.
 
 ### Docker
 
-A the root of this monorepo, there's a [`Dockerfile.vuedoc`](../../Dockerfile.vuedoc) that you can use to generate a static version of the documentation.
+A the root of this monorepo, there's a [`Dockerfile`](../../Dockerfile) wtih a `vuedoc` target that you can use to generate a static version of the documentation.
 
 The dockerfile accept 3 arguments :
 
-- AUTH_TOKEN: Used to login
+- REPORT_TOKEN: Used to login
 - REPORT_API: Used to fetch data, etc.
-- LOGO_URL: Used to show namespaces logos
 
 Example :
 
 ```sh
 docker build \
-  -f "Dockerfile.vuedoc" \
+  --target vuedoc \
   -t ezreeport-vuedoc:latest \
-  --build-arg AUTH_TOKEN="MySecretTokenGeneratedByEzReeport" \
+  --build-arg REPORT_TOKEN="MySecretTokenGeneratedByEzReeport" \
   --build-arg REPORT_API="https://url-to-ezreeport.dev/api/" \
-  --build-arg LOGO_URL="https://url-to-your-apps.dev/namespaces/logos" \
   .
 ```
-
 
 Once built, you can start the documentation by running (`8888` is just the port on the host machine, you can change it to whatever you want) :
 

@@ -1,0 +1,235 @@
+<template>
+  <v-card
+    :title="modelValue.id ? $t('$ezreeport.task.title:edit') : $t('$ezreeport.task.title:new')"
+    :prepend-icon="modelValue.id ? 'mdi-email' : 'mdi-email-plus'"
+  >
+    <template #append>
+      <slot name="append" />
+    </template>
+
+    <template #text>
+      <v-form ref="formRef" v-model="isFormValid">
+        <v-row>
+          <v-col>
+            <v-text-field
+              v-model="name"
+              :label="$t('$ezreeport.name')"
+              :rules="[(v) => !!v || $t('$ezreeport.required')]"
+              :readonly="readonly"
+              prepend-icon="mdi-rename"
+              variant="underlined"
+              required
+            />
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col>
+            <IndexSelector
+              v-model="index"
+              :readonly="readonly"
+              @index:valid="refreshMapping($event)"
+            />
+          </v-col>
+        </v-row>
+      </v-form>
+
+      <v-row>
+        <v-col>
+          <EditorFilterList :model-value="modelValue.template.filters" :readonly="readonly" />
+        </v-col>
+      </v-row>
+
+      <!-- TODO: template -->
+
+      <v-row>
+        <v-col>
+          <v-combobox
+            v-model="dateField"
+            :label="$t('$ezreeport.template.dateField')"
+            :items="dateMapping"
+            :rules="[(v) => !!v || $t('$ezreeport.required')]"
+            :return-object="false"
+            :readonly="readonly"
+            prepend-icon="mdi-calendar-search"
+            variant="underlined"
+            required
+          />
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-col>
+          <v-card
+            :title="$t('$ezreeport.template.layouts', modelValue.template.inserts.length)"
+            prepend-icon="mdi-grid"
+            variant="outlined"
+          >
+            <template #append>
+              <v-btn
+                v-tooltip:top="$t('$ezreeport.template.editor:open')"
+                icon="mdi-arrow-expand"
+                color="primary"
+                density="compact"
+                variant="text"
+                @click="openEditor()"
+              />
+            </template>
+
+            <template #text>
+              <v-row v-if="modelValue.template.inserts.length > 0">
+                <v-col
+                  v-for="(layout, index) in modelValue.template.inserts"
+                  :key="layout.id"
+                  cols="12"
+                  sm="4"
+                  md="2"
+                >
+                  <EditorPreviewLayout
+                    :model-value="layout"
+                    :readonly="readonly"
+                    @click="openEditor(index)"
+                  >
+                    <template #prepend>
+                      <span>{{ index + 1 }}</span>
+                    </template>
+                  </EditorPreviewLayout>
+                </v-col>
+              </v-row>
+
+              <v-row v-else>
+                <v-col>
+                  <v-empty-state
+                    :title="$t('$ezreeport.template.noTemplate')"
+                    :text="$t('$ezreeport.template.noTemplate:desc')"
+                    icon="mdi-grid-off"
+                  >
+                    <template #actions>
+                      <v-btn
+                        :text="$t('$ezreeport.template.editor:open')"
+                        color="primary"
+                        append-icon="mdi-arrow-expand"
+                        @click="openEditor()"
+                      />
+                    </template>
+                  </v-empty-state>
+                </v-col>
+              </v-row>
+            </template>
+          </v-card>
+        </v-col>
+      </v-row>
+    </template>
+
+    <template #actions>
+      <v-spacer />
+
+      <slot name="actions" />
+
+      <v-btn
+        v-if="!readonly"
+        :text="$t('$ezreeport.confirm')"
+        :append-icon="modelValue.id ? 'mdi-content-save' : 'mdi-plus'"
+        :disabled="!isValid || !hasChanged"
+        color="primary"
+        @click="emit('update:modelValue', modelValue)"
+      />
+    </template>
+
+    <v-dialog
+      v-model="isEditorVisible"
+      transition="slide-x-reverse-transition"
+      fullscreen
+      scrollable
+    >
+      <EditorTemplate
+        v-model:index="selectedIndex"
+        :model-value="modelValue.template"
+        :readonly="readonly"
+      >
+        <template #append>
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            density="comfortable"
+            @click="closeEditor()"
+          />
+        </template>
+      </EditorTemplate>
+    </v-dialog>
+  </v-card>
+</template>
+
+<script setup lang="ts">
+import { hasTaskChanged, type TaskHelper } from '~sdk/helpers/tasks';
+
+// Components props
+const props = defineProps<{
+  /** The task to edit */
+  modelValue: TaskHelper,
+  /** Should be readonly */
+  readonly?: boolean,
+}>();
+
+// Components events
+const emit = defineEmits<{
+  /** Updated task */
+  (e: 'update:modelValue', value: TaskHelper): void
+}>();
+
+// Utils composables
+const { getOptionsFromMapping, refreshMapping } = useTemplateEditor({
+  // grid: props.modelValue.template.grid,
+  index: props.modelValue.template.index,
+});
+
+/** Selected index */
+const selectedIndex = ref(0);
+/** Is basic form valid */
+const isFormValid = ref(false);
+/** Is editor visible */
+const isEditorVisible = ref(false);
+
+/** Validate on mount */
+useTemplateVForm('formRef');
+
+/** Is valid */
+const isValid = computed(() => isFormValid.value);
+/** Mapping options for dateField */
+const dateMapping = computed(() => getOptionsFromMapping('date'));
+/** Has template changed since form is opened */
+const hasChanged = computed(() => hasTaskChanged(props.modelValue));
+/** Name of the template */
+const name = computed({
+  get: () => props.modelValue.name,
+  set: (v) => {
+    const params = props.modelValue;
+    params.name = v;
+  },
+});
+/** Index of the template */
+const index = computed({
+  get: () => props.modelValue.template.index,
+  set: (v) => {
+    const { template } = props.modelValue;
+    template.index = v;
+  },
+});
+/** DateField of the template */
+const dateField = computed({
+  get: () => props.modelValue.template.dateField,
+  set: (v) => {
+    const { template } = props.modelValue;
+    template.dateField = v;
+  },
+});
+
+function openEditor(layoutIndex: number = 0) {
+  selectedIndex.value = layoutIndex;
+  isEditorVisible.value = true;
+}
+
+function closeEditor() {
+  isEditorVisible.value = false;
+}
+</script>

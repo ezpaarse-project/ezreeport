@@ -4,5 +4,3 @@ packages:
   - "services/sdk"
   - "services/ezra"
   - "services/vue"
-  - "services/vue/example"
-  - "tests"

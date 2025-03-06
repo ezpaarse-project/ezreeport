@@ -30,5 +30,3 @@ export const parsePeriod = (period: RawPeriod): Period => ({
   start: parseISO(period.start),
   end: parseISO(period.end),
 });
-
-export type PaginationOpts = { previous?: string, count?: number, sort?: string };

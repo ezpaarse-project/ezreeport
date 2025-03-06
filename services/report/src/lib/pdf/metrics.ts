@@ -1,6 +1,18 @@
 import type { Font } from 'jspdf';
+
+import type { FetchResultItem } from '~/models/reports/generation/fetch/results';
+import { format, isValid, parseISO } from '~/lib/date-fns';
+
 import type { PDFReport } from '.';
-import { format, isValid, parseISO } from '../date-fns';
+
+type MetricLabel = {
+  text: string,
+  data?: string, // Will be linked at some point
+  format?: {
+    type: 'date' | 'number',
+    params?: string[]
+  }
+};
 
 type MetricParams = {
   // Auto fields
@@ -8,27 +20,10 @@ type MetricParams = {
   width: number,
   height: number,
   // Figure specific
-  labels?: {
-    dataKey: string,
-    text?: string,
-    field?: string,
-    format?: {
-      type: 'date' | 'number',
-      params?: string[]
-    }
-  }[]
+  labels?: MetricLabel[]
 };
 
 export type InputMetricParams = Omit<MetricParams, 'width' | 'height' | 'start'>;
-
-type BasicMetricData = {
-  key: string,
-  value: number | string
-};
-
-type ComplexMetricData = Record<string, BasicMetricData['value'] | Record<string, BasicMetricData['value']>>;
-
-export type MetricData = BasicMetricData[] | ComplexMetricData;
 
 type MetricDefault = {
   font: Font,
@@ -44,12 +39,12 @@ type MetricDefault = {
  * @returns The date as a string
  */
 const formatDate = (
-  origValue: string | number | Record<string, string | number>,
+  origValue: FetchResultItem['value'],
   params: string[],
 ): string => {
   let value = origValue;
-  if (typeof value === 'object') {
-    throw new Error('Expected number / string, got Object');
+  if (typeof value === 'boolean') {
+    throw new Error('Expected number / string, got Boolean');
   }
 
   if (typeof value === 'string') {
@@ -70,16 +65,16 @@ const formatDate = (
  * @returns The number as a string
  */
 const formatNumber = (
-  origValue: string | number | Record<string, string | number>,
+  origValue: FetchResultItem['value'],
   params: string[],
 ): string => {
   let value = origValue;
-  if (typeof value === 'object') {
-    throw new Error('Expected number, got Object');
-  }
-
   if (typeof value === 'string') {
     value = Number.parseInt(value, 10);
+  }
+
+  if (typeof value === 'boolean') {
+    value = value ? 1 : 0;
   }
 
   if (Number.isNaN(value)) {
@@ -105,13 +100,46 @@ const formatNumber = (
       break;
   }
 
-  value = value.toLocaleString(
-    locale.identifier,
-    locale.params,
-  );
+  value = value.toLocaleString(locale.identifier, locale.params);
 
   return locale.cb(value);
 };
+
+function formatValue(label: MetricLabel, data: FetchResultItem) {
+  let { value } = data;
+  if (value == null) {
+    return undefined;
+  }
+
+  try {
+    if (label?.format) {
+      const formatParams = label.format.params ?? [];
+      switch (label.format.type) {
+        case 'date':
+          value = formatDate(value, formatParams);
+          break;
+
+        case 'number':
+          value = formatNumber(value, formatParams);
+          break;
+
+        default:
+          value = `${value}`;
+          break;
+      }
+    }
+  } catch (error) {
+    const message = `An error occurred while formatting "${label.text}" ("${value}")`;
+    if (!(error instanceof Error)) {
+      throw new Error(`${message}: ${error}`);
+    }
+
+    error.message = `${message}: ${error.message}`;
+    throw error;
+  }
+
+  return value as string;
+}
 
 /**
  * Apply style for printing value
@@ -144,7 +172,11 @@ const keyStyle = (pdf: PDFReport['pdf'], def: MetricDefault): PDFReport['pdf'] =
  * @param inputData The data
  * @param params Other params
  */
-export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: MetricParams) => {
+export const addMetricToPDF = (
+  doc: PDFReport,
+  data: FetchResultItem[],
+  params: MetricParams,
+) => {
   const def: MetricDefault = {
     font: doc.pdf.getFont(),
     fontSize: doc.pdf.getFontSize(),
@@ -154,80 +186,35 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
     throw new Error('Metric figure must have at least one label');
   }
 
-  let rawData = [];
-  if (Array.isArray(inputData)) {
-    rawData = inputData;
-  } else {
-    let dataKeys = Object.keys(inputData);
-    const labelPositionMap = new Map(params.labels?.map(({ dataKey }, i) => [dataKey, i]) ?? []);
-
-    // Remove unused data
-    dataKeys = dataKeys.filter((dataKey) => labelPositionMap.has(dataKey));
-    if (dataKeys.length <= 0) {
-      throw new Error('No used dataKeys found');
-    }
-
-    // Sort metrics by label position
-    dataKeys.sort((a, b) => (labelPositionMap.get(a) ?? 0) - (labelPositionMap.get(b) ?? 0));
-
-    // eslint-disable-next-line no-restricted-syntax
-    for (const key of dataKeys) {
-      const label = params.labels?.find(({ dataKey }) => dataKey === key);
-      let value = inputData[key];
-      if (typeof value === 'object') {
-        value = value[label?.field || 'value'];
-      }
-
-      try {
-        if (label?.format) {
-          const formatParams = label.format.params ?? [];
-          switch (label.format.type) {
-            case 'date':
-              value = formatDate(value, formatParams);
-              break;
-
-            case 'number':
-              value = formatNumber(value, formatParams);
-              break;
-
-            default:
-              break;
-          }
-        }
-      } catch (error) {
-        if (!(error instanceof Error)) {
-          throw new Error(`An unexpected error occurred wile formatting "${key}" ("${value}"): ${error}`);
-        }
-        error.message = `An error occurred wile formatting "${key}" ("${value}"): ${error.message}`;
-        throw error;
-      }
-
-      if (value !== undefined) {
-        rawData.push({
-          key: label?.text ?? key,
-          value,
-        });
-      }
-    }
-  }
-
   const margin = { x: doc.margin.left, y: doc.margin.top, key: 3 };
   const cell: Size = { width: 0, height: 0 };
   // Calc size of each text + size of cell
-  const data = rawData.map(({ key, value }) => {
-    const str = value.toString();
+  const metrics = (params.labels ?? []).map((m) => {
+    const metric = m;
+    const item = data.find((d) => d.key === metric.text);
+    if (!item) {
+      return undefined;
+    }
+
+    const key = `${metric.text}`;
+    const value = formatValue(metric, item);
+    if (!value) {
+      return undefined;
+    }
+
     const sizes = {
       key: keyStyle(doc.pdf, def).getTextDimensions(key),
-      value: valueStyle(doc.pdf, def).getTextDimensions(str),
+      value: valueStyle(doc.pdf, def).getTextDimensions(value),
     };
     cell.width = Math.max(cell.width, Math.max(sizes.key.w, sizes.value.w));
     cell.height = Math.max(cell.height, sizes.key.h + sizes.value.h + margin.key);
+
     return {
       key,
-      value: str,
+      value,
       sizes,
     };
-  });
+  }).filter((m) => !!m);
 
   const slots: Area[] = [];
   const cursor: Position = {
@@ -241,7 +228,7 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
     // Will be calculated later since we need cols
     rows: 0,
   };
-  counts.rows = Math.ceil(data.length / counts.cols);
+  counts.rows = Math.ceil(metrics.length / counts.cols);
 
   for (let row = 0; row < counts.rows; row += 1) {
     cursor.x = 0;
@@ -270,8 +257,8 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
   };
 
   // Print data
-  for (let i = 0; i < data.length; i += 1) {
-    const { key, value, sizes } = data[i];
+  for (let i = 0; i < metrics.length; i += 1) {
+    const { key, value, sizes } = metrics[i];
     if (!slots[i]) {
       throw new Error(`slot ${i} not found`);
     }
@@ -284,7 +271,7 @@ export const addMetricToPDF = (doc: PDFReport, inputData: MetricData, params: Me
 
     let y = slot.y + sizes.value.h - 5;
     valueStyle(doc.pdf, def).text(
-      value,
+      `${value}`,
       slot.x + Math.round(slot.width / 2),
       y,
       { align: 'center' },

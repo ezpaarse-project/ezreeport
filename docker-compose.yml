@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:15.1-alpine3.17
+    image: postgres:15.1-alpine3.16
     env_file:
       - .env
       - path: .env.local
@@ -26,8 +26,6 @@ services:
       - .env
       - path: .env.local
         required: false
-    volumes:
-      - ./data/redis:/data
     deploy:
       resources:
           limits:
@@ -40,12 +38,12 @@ services:
       retries: 5
       start_period: 20s
 
-  report:
+  api:
     build:
-      target: report
+      target: api
     volumes:
-      - ./data/report:/data/ezreeport/report # Report output
-      - ./logs/report:/var/log/ezreeport/report # Logs output
+      - ./data/api:/data/ezreeport/report # Report output
+      - ./logs/api:/var/log/ezreeport # Logs output
     ports:
       - 8080:8080
     env_file:
@@ -69,7 +67,7 @@ services:
     build:
       target: mail
     volumes:
-      - ./logs/mail:/var/log/ezreeport/mail # Logs output
+      - ./logs/mail:/var/log/ezreeport # Logs output
     env_file:
       - .env
       - path: .env.local

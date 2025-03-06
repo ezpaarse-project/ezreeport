@@ -2,24 +2,20 @@ import type {
   preValidationHookHandler,
   FastifyRequest,
   FastifyPluginAsync,
-  FastifySchema,
+  FastifyContextConfig,
 } from 'fastify';
 import fp from 'fastify-plugin';
 import { StatusCodes } from 'http-status-codes';
 
-import { merge } from 'lodash';
 import config from '~/lib/config';
-import { Type, Value } from '~/lib/typebox';
 import { ensureArray } from '~/lib/utils';
 
 import {
-  getAccessValue,
-  Access,
   registerRouteWithAccess,
   registerRoute,
+  getNamespacesOfUser,
+  getUserByToken,
 } from '~/models/access';
-import { getAllNamespaces } from '~/models/namespaces';
-import { type FullUser, getUserByToken } from '~/models/users';
 
 import { HTTPError } from '~/types/errors';
 
@@ -39,14 +35,18 @@ const requireUser: preValidationHookHandler = async (request) => {
     throw new HTTPError(`'${request.method} ${request.originalUrl}' requires user`, StatusCodes.UNAUTHORIZED);
   }
 
-  request.user = await getUserByToken(regexRes.groups.token) || undefined;
-  if (!request.user) {
+  const user = await getUserByToken(regexRes.groups.token) || undefined;
+  if (!user) {
     throw new HTTPError('User not found', StatusCodes.UNAUTHORIZED);
   }
+
+  request.user = user;
 };
 
 /**
  * Pre-validation hook that checks if a user is an admin
+ *
+ * Needs @see {requireUser}
  *
  * @param request The fastify Request
  */
@@ -76,194 +76,73 @@ const requireAPIKey: preValidationHookHandler = async (request) => {
 };
 
 /**
- * Get possible namespaces using user (provided by `requireUser`) and his memberships with the
- * minimum access level
+ * Gets pre-validation hooks to the route if needed
  *
- * @param request The fastify Request
- * @param minAccess The minimum access level needed to access this ressource
+ * @param param0 The route options
+ * @param registerName Name to register the route, if not present it won't be registered
  *
- * @returns The namespaces that the user have access using access level
+ * @returns The pre-validation hooks to add
  */
-const getPossibleNamespaces = async (
-  request: FastifyRequest,
-  minAccess: Access,
-): Promise<FullUser['memberships']> => {
-  const minAccessValue = getAccessValue(minAccess);
-
-  if (!request.user) {
+function preparePreValidation(
+  { ezrAuth }: FastifyContextConfig,
+  registerName?: string,
+): preValidationHookHandler[] {
+  if (!ezrAuth) {
     return [];
   }
 
-  if (request.user.isAdmin) {
-    const { createdAt, updatedAt } = request.user;
-    const namespaces = await getAllNamespaces();
+  // Strongest method to weakest
+  switch (true) {
+    case ezrAuth.requireAPIKey:
+      return [requireAPIKey];
 
-    return namespaces.map((namespace) => ({
-      access: Access.SUPER_USER,
-      createdAt,
-      updatedAt,
-      namespace,
-    }));
+    case ezrAuth.requireAdmin:
+      if (registerName) {
+        registerRoute(registerName, true);
+      }
+      return [requireUser, requireAdmin];
+
+    case !!ezrAuth.access:
+      if (registerName) {
+        registerRouteWithAccess(registerName, ezrAuth.access);
+      }
+      return [requireUser];
+
+    case ezrAuth.requireUser:
+      if (registerName) {
+        registerRoute(registerName, false);
+      }
+      return [requireUser];
+
+    default:
+      return [];
   }
-
-  return request.user.memberships.filter(
-    ({ access }) => getAccessValue(access) >= minAccessValue,
-  );
-};
-
-/**
- * Query params that can be provided for `requireAccess`
- */
-const NamespaceQuery = Type.Partial(
-  Type.Object({
-    namespaces: Type.Union([
-      Type.Array(
-        Type.String({ minLength: 1 }),
-      ),
-      Type.String({ minLength: 1 }),
-    ]),
-
-    'namespaces[]': Type.Union([
-      Type.Array(
-        Type.String({ minLength: 1 }),
-      ),
-      Type.String({ minLength: 1 }),
-    ]),
-  }),
-);
-
-/**
- * Prepare a pre-validation hook to lock ressource behind a specific access level
- *
- * @param minAccess  The minimum access level needed to access this ressource
- *
- * @returns A pre-validation hook that check if user have needed access level
- */
-const requireAccess = (minAccess: Access): preValidationHookHandler => async (request) => {
-  const possibleNamespaces = await getPossibleNamespaces(request, minAccess);
-
-  // Get ids wanted by user (support both `namespaces` & `namespaces[]`)
-  let wantedIds: string[] | undefined;
-  if (
-    Value.Check(NamespaceQuery, request.query)
-    && (request.query.namespaces || request.query['namespaces[]'])
-  ) {
-    const rawN = request.query.namespaces || request.query['namespaces[]'] || '';
-    wantedIds = ensureArray(rawN);
-  }
-
-  let ids = new Set(possibleNamespaces.map(({ namespace: { id } }) => id) ?? []);
-  if (ids.size <= 0) {
-    request.namespaceIds = [];
-    request.namespaces = [];
-    return;
-  }
-
-  if (wantedIds) {
-    ids = new Set(
-      wantedIds
-        .map((id) => id.toString())
-        .filter((id) => ids.has(id)),
-    );
-  }
-
-  if (ids.size <= 0) {
-    throw new HTTPError("Can't find your namespace(s)", StatusCodes.BAD_REQUEST);
-  }
-
-  request.namespaceIds = [...ids];
-  request.namespaces = possibleNamespaces.filter(({ namespace: { id } }) => ids.has(id));
-};
-
-/**
- * The config of the plugin
- */
-const pluginConfig = Type.Object({
-  prefix: Type.String(),
-});
+}
 
 /**
  * Fastify plugin to secure ressources by adding pre-validation hooks when a route is registered
  *
  * @param fastify The fastify instance
- * @param pluginOpts The plugin options
  */
-const authBasePlugin: FastifyPluginAsync = async (fastify, pluginOpts) => {
-  if (!Value.Check(pluginConfig, pluginOpts)) {
-    return;
-  }
-
+const authBasePlugin: FastifyPluginAsync = async (fastify) => {
   fastify.decorateRequest('user');
-  fastify.decorateRequest('namespaces');
-  fastify.decorateRequest('namespaceIds');
 
   fastify.addHook('onRoute', (routeOpts) => {
-    if (!routeOpts.ezrAuth) {
+    if (!routeOpts.config?.ezrAuth) {
       return;
     }
 
     // Prepare for registration
-    let registered = false;
-    const shouldRegister = routeOpts.method !== 'HEAD' && !/^\/v\d+\//i.test(routeOpts.prefix);
-    const method = routeOpts.method.toString().toLowerCase();
-    const url = routeOpts.routePath
-      .replace(/[/]/g, '-')
-      .replace(/[:]/g, '');
-    const routeName = `${pluginOpts.prefix}-${method}${url}`;
+    const shouldRegister = routeOpts.method !== 'HEAD' && !/^\/v\d+\//i.test(routeOpts.prefix); // Don't register versioned routes
+    const method = ensureArray(routeOpts.method)[0].toUpperCase();
+    const routeName = `${method} ${routeOpts.url}`;
 
     // Get previous hooks
     const preValidation = ensureArray(routeOpts.preValidation || []);
 
-    // If require API key
-    if (!registered && routeOpts.ezrAuth.requireAPIKey) {
-      preValidation.push(requireAPIKey);
-      registered = true;
-    }
-
-    // If require admin
-    if (!registered && routeOpts.ezrAuth.requireAdmin) {
-      preValidation.push(
-        requireUser,
-        requireAdmin,
-      );
-
-      if (shouldRegister) {
-        registerRoute(routeName, true);
-      }
-      registered = true;
-    }
-
-    // If require a user
-    if (!registered && routeOpts.ezrAuth.requireUser) {
-      preValidation.push(requireUser);
-
-      if (shouldRegister) {
-        registerRoute(routeName, false);
-      }
-      registered = true;
-    }
-
-    // If require access to namespaces
-    if (!registered && routeOpts.ezrAuth.access) {
-      // eslint-disable-next-line no-param-reassign
-      routeOpts.schema = merge<Object, FastifySchema, FastifySchema>(
-        {},
-        routeOpts.schema ?? {},
-        {
-          querystring: NamespaceQuery,
-        },
-      );
-
-      preValidation.push(
-        requireUser,
-        requireAccess(routeOpts.ezrAuth.access),
-      );
-
-      if (shouldRegister) {
-        registerRouteWithAccess(routeName, routeOpts.ezrAuth.access);
-      }
-      registered = true;
-    }
+    preValidation.push(
+      ...preparePreValidation(routeOpts.config, shouldRegister ? routeName : undefined),
+    );
 
     // Add new hooks
     // eslint-disable-next-line no-param-reassign
@@ -281,3 +160,56 @@ const authPlugin = fp(
 );
 
 export default authPlugin;
+
+/**
+ * Utility function to restrict namespaces of a list to the ones of the user
+ *
+ * @param request The fastify Request
+ * @param namespacesIds The provided namespace ids, if not provided default to all
+ *
+ * @returns The ids of namespaces that the user have access, if undefined user have access to all
+ */
+export async function restrictNamespaces<R extends FastifyRequest>(
+  request: R,
+  namespacesIds?: string[],
+): Promise<string[] | undefined> {
+  const user = request.user!;
+  // Don't check namespaces if admin
+  if (user.isAdmin) {
+    return namespacesIds;
+  }
+
+  const namespacesOfUser = await getNamespacesOfUser(user.username);
+  let ids = namespacesOfUser.map((n) => n.id);
+
+  if (namespacesIds) {
+    const userNamespaceIds = new Set(ids ?? []);
+    ids = namespacesIds.filter((id) => userNamespaceIds.has(id));
+  }
+
+  return ids;
+}
+
+/**
+ * Utility function to check if user have access to namespace
+ *
+ * @param request The fastify Request
+ * @param namespaceId The id of the namespace
+ */
+export async function requireAllowedNamespace<R extends FastifyRequest>(
+  request: R,
+  namespaceId: string,
+) {
+  const user = request.user!;
+  // Don't check namespaces if admin
+  if (user.isAdmin) {
+    return;
+  }
+
+  const namespacesOfUser = await getNamespacesOfUser(user.username);
+  // Check if user have access to namespace
+  const namespaceOfTask = namespacesOfUser.find((n) => namespaceId === n.id);
+  if (!namespaceOfTask) {
+    throw new HTTPError("You don't have access to the provided namespace", StatusCodes.FORBIDDEN);
+  }
+}

@@ -1,5 +1,10 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["src/index.ts"],
+  "entryPoints": [
+    "src/index.ts",
+    "src/modules/*/index.ts",
+    "src/helpers/*/index.ts",
+  ],
+  
   "out": "docs",
 }

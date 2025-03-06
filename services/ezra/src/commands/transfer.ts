@@ -1,10 +1,10 @@
 import { Flags, Config } from '@oclif/core';
 import chalk from 'chalk';
+import { confirm } from '@inquirer/prompts';
 
 import type { Readable, Duplex } from 'node:stream';
 
 import { EzrCommand } from '../lib/oclif/EzrCommand.js';
-import { simpleConfirm } from '../lib/inquirer.js';
 import { createStreamPromise } from '../lib/streams.js';
 import { createProgressBarStream } from '../lib/progress.js';
 
@@ -78,7 +78,7 @@ export default class Transfer extends EzrCommand<typeof Transfer> {
     const { flags } = await this.parse(Transfer);
 
     const [src, dst] = this.instances;
-    const confirmed = await simpleConfirm(`Do you wish to import data from ${chalk.underline(src.fetch.defaults.baseURL)} into ${chalk.underline(dst.fetch.defaults.baseURL)} ?`);
+    const confirmed = await confirm({ message: `Do you wish to transfer data from ${chalk.underline(src.fetch.defaults.baseURL)} to ${chalk.underline(dst.fetch.defaults.baseURL)} ?` });
     if (!confirmed) {
       this.exit(0);
     }

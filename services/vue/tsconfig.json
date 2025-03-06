@@ -1,36 +1,12 @@
 {
-  "compilerOptions": {
-    "rootDir": "src",
-    "target": "ES6",
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "esModuleInterop": true,
-    "allowJs": true,
-    "sourceMap": true,
-    "strict": true,
-    "noEmit": true,
-    "experimentalDecorators": true,
-    "resolveJsonModule": true,
-    "types": [
-      "vuetify",
-      "vue-i18n"
-    ],
-    "paths": {
-      "~/*": [
-        "./src/*"
-      ],
-      // Disable types error from react (used for Storybook)
-      "react": [
-        "./src/types/null.d.ts"
-      ]
-    }
-  },
-  "include": [
-    ".vite/**/*.ts",
-    "src/**/*.vue",
-    "src/**/*.ts",
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
   ],
-  "vueCompilerOptions": {
-    "target": 2.7
+  "compilerOptions": {
+    "noEmit": true,
+    "outDir": "dist",
+    "declaration": true,
   }
 }

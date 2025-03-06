@@ -1,61 +1,51 @@
-import { resolve } from 'node:path';
-import { type UserConfig, defineConfig, mergeConfig } from 'vite';
+import { join } from 'node:path';
 
-const buildTarget = (process.env.BUILD_TARGET || 'browser') as 'browser' | 'node';
-// eslint-disable-next-line no-console
-console.log('i Building for', buildTarget);
+import { defineConfig } from 'vite';
 
-type LibParams = Exclude<UserConfig['build'], undefined>['lib'];
+const src = (p = '') => join(__dirname, 'src/', p);
 
-let params: Partial<UserConfig>;
-switch (buildTarget) {
-  case 'node':
-    params = {
-      build: {
-        target: 'node14',
-        outDir: 'dist/node',
-        lib: {
-          formats: ['es', 'cjs'],
-        } as LibParams,
-      },
-    };
-    break;
+export default defineConfig({
+  resolve: {
+    alias: {
+      '~': src(),
+    },
+  },
 
-  default:
-    params = {
-      build: {
-        target: 'modules',
-        outDir: 'dist/browser',
-        lib: {
-          formats: ['es', 'umd'],
-        } as LibParams,
-      },
-    };
-    break;
-}
-
-export default defineConfig(
-  mergeConfig<UserConfig, UserConfig>(
-    {
-      build: {
-        minify: 'esbuild',
-        sourcemap: true,
-        lib: {
-          entry: resolve(__dirname, 'src/index.ts'),
-          name: 'ezReeportSDK',
-          fileName: 'ezreeport-sdk-js',
-        },
-        rollupOptions: {
-          external: ['axios'],
-          output: {
-            globals: {
-              axios: 'axios',
-            },
-          },
-        },
+  build: {
+    target: ['node14', 'es6'],
+    outDir: 'dist',
+    minify: 'esbuild',
+    sourcemap: true,
+    lib: {
+      formats: ['cjs', 'es'],
+      entry: {
+        index: src('index.ts'),
+        // Modules
+        auth: src('modules/auth/index.ts'),
+        crons: src('modules/crons/index.ts'),
+        elastic: src('modules/elastic/index.ts'),
+        health: src('modules/health/index.ts'),
+        namespaces: src('modules/namespaces/index.ts'),
+        queues: src('modules/queues/index.ts'),
+        reports: src('modules/reports/index.ts'),
+        tasks: src('modules/tasks/index.ts'),
+        templates: src('modules/templates/index.ts'),
+        'task-activity': src('modules/task-activity/index.ts'),
+        'task-presets': src('modules/task-presets/index.ts'),
+        // Helpers
+        'helpers/aggregations': src('helpers/templates/editor/aggregations/index.ts'),
+        'helpers/figures': src('helpers/templates/editor/figures/index.ts'),
+        'helpers/filters': src('helpers/templates/editor/filters/index.ts'),
+        'helpers/jobs': src('helpers/jobs/index.ts'),
+        'helpers/layouts': src('helpers/templates/editor/layouts/index.ts'),
+        'helpers/permissions': src('helpers/permissions/index.ts'),
+        'helpers/task-presets': src('helpers/task-presets/index.ts'),
+        'helpers/tasks': src('helpers/tasks/index.ts'),
+        'helpers/templates': src('helpers/templates/index.ts'),
       },
     },
-    params ?? {},
-    true,
-  ),
-);
+    rollupOptions: {
+      external: ['ofetch', 'nanoid', 'object-hash', /^date-fns(\/.*)?/],
+    },
+  },
+});

@@ -1,6 +1,7 @@
-# ==== COMMON
+# region Common
 
-FROM node:18.18.2-alpine3.18 AS base
+# Base image for node, enable usage of pnpm and allow to run apps
+FROM node:20.11.1-alpine3.19 AS base
 LABEL maintainer="ezTeam <ezteam@couperin.org>"
 
 ENV HUSKY=0
@@ -13,26 +14,32 @@ RUN apk update \
 
 RUN corepack enable
 
-# ==== PNPM
+# endregion
+# ---
+# region PNPM
 
+# Base image for pnpm, allow to properly install dependencies
 FROM base AS pnpm
 WORKDIR /usr/build
 
 # Install node-canvas build dependencies
 # see https://github.com/Automattic/node-canvas/issues/866
-RUN apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev giflib-dev
+RUN apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev pixman-dev
 
-COPY ./package.json ./pnpm-lock.yaml ./
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+COPY ./pnpm-lock.yaml ./
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm fetch
 
 COPY . .
 
-# ==== REPORT
+# endregion
+# ---
+# region API
 
-FROM pnpm AS report-prisma
+# Generate prisma client using dev dependencies
+FROM pnpm AS api-prisma
 
-RUN pnpm deploy --filter ezreeport-report ./report-dev
-WORKDIR /usr/build/report-dev
+RUN pnpm deploy --filter ezreeport-report ./api-dev
+WORKDIR /usr/build/api-dev
 
 # Install prisma dependencies
 RUN apk add --no-cache --update python3 \
@@ -42,37 +49,40 @@ RUN apk add --no-cache --update python3 \
 RUN npx prisma generate
 
 # ---
+# Prepare prod dependencies for API
+FROM pnpm AS api-pnpm
 
-FROM pnpm AS report-pnpm
-
-RUN pnpm deploy --filter ezreeport-report --prod ./report
+RUN pnpm deploy --filter ezreeport-report --prod ./api
 
 # ---
-
-FROM base AS report
+# Final image to run API service
+FROM base AS api
 EXPOSE 8080
 ENV NODE_ENV=production
-WORKDIR /usr/build/report
+WORKDIR /usr/build/api
 
 # Install node-canvas dependencies
-RUN apk add --no-cache cairo jpeg pango giflib
+RUN apk add --no-cache cairo jpeg pango pixman
 
-COPY --from=report-pnpm /usr/build/report .
-COPY --from=report-prisma /usr/build/report-dev/.prisma ./.prisma
+COPY --from=api-pnpm /usr/build/api .
+COPY --from=api-prisma /usr/build/api-dev/.prisma ./.prisma
 
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
-  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/health/ezreeport-report || exit 1
+  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/health/probes/liveness || exit 1
 
 CMD [ "npm", "run", "start" ]
 
-# ==== MAIL
+# endregion
+# ---
+# region Mail
 
+# Prepare prod dependencies for mail
 FROM pnpm AS mail-pnpm
 
 RUN pnpm deploy --filter ezreeport-mail --prod ./mail
 
 # ---
-
+# Final image to run mail service
 FROM base AS mail
 EXPOSE 8080
 ENV NODE_ENV=production
@@ -81,30 +91,52 @@ WORKDIR /usr/build/mail
 COPY --from=mail-pnpm /usr/build/mail .
 
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
-  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
+  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/liveness || exit 1
 
 CMD [ "npm", "run", "start" ]
 
-# ==== VUE DOC
+# endregion
+# ---
+# region SDK
 
+# Prepare SDK to be used in other images
+FROM pnpm AS sdk-pnpm
+
+RUN pnpm run --filter @ezpaarse-project/ezreeport-sdk-js build
+RUN pnpm deploy --filter @ezpaarse-project/ezreeport-sdk-js --prod ./sdk
+
+# endregion
+# ---
+# region Vue
+
+# Prepare Vue to be used in other images
+FROM pnpm AS vue-pnpm
+
+RUN pnpm run --filter @ezpaarse-project/ezreeport-vue build
+RUN pnpm deploy --filter @ezpaarse-project/ezreeport-vue --prod ./vue
+
+# endregion
+# ---
+# region Vue Documentation
+
+# Build vue documentation
 FROM pnpm AS vuedoc-builder
 
-RUN pnpm deploy --filter @ezpaarse-project/ezreeport-sdk-js --prod ./sdk
+COPY --from=sdk-pnpm /usr/build/sdk ./sdk
+# Not using vue-pnpm cause we need dev dependencies to build the documentation
 RUN pnpm deploy --filter @ezpaarse-project/ezreeport-vue ./vue
 WORKDIR /usr/build/vue
 
-ARG AUTH_TOKEN="changeme"
-ARG REPORT_API="http://localhost:8080/"
-ARG LOGO_URL="https://ezmesure.couperin.org/"
+ARG REPORT_TOKEN="changeme" \
+   REPORT_API="http://localhost:8080/"
 
-ENV VITE_AUTH_TOKEN=${AUTH_TOKEN} \
-    VITE_REPORT_API=${REPORT_API} \
-    VITE_NAMESPACES_LOGO_URL=${LOGO_URL}
+ENV VITE_EZR_TOKEN=${REPORT_TOKEN} \
+    VITE_EZR_API=${REPORT_API}
 
-RUN npm run build:docs
+RUN npm run build:story
 
 # ---
-
+# Final image to run vue documentation on nginx
 FROM nginx:stable-alpine AS vuedoc
 WORKDIR /usr/share/nginx/html
 
@@ -112,3 +144,5 @@ COPY ./config/vue-ngnix.types /etc/nginx/mime.types
 COPY --from=vuedoc-builder /usr/build/vue/storybook-static ./
 
 EXPOSE 80
+
+# endregion

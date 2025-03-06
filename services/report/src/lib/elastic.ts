@@ -1,10 +1,25 @@
 import { setTimeout } from 'node:timers/promises';
 
-import { Client, type estypes as ElasticTypes, type RequestParams } from '@elastic/elasticsearch';
+import {
+  Client,
+  type ClientOptions,
+  type RequestParams,
+  type estypes as ElasticTypes,
+} from '@elastic/elasticsearch';
 import { merge } from 'lodash';
 
 import config from './config';
-import { appLogger as logger } from './logger';
+import { appLogger } from './logger';
+
+const logger = appLogger.child(
+  { scope: 'elastic' },
+  {
+    redact: {
+      paths: ['config.*.password'],
+      censor: (value) => value && ''.padStart(`${value}`.length, '*'),
+    },
+  },
+);
 
 const {
   url,
@@ -30,7 +45,7 @@ const isElasticStatus = (
 const REQUIRED_STATUS = isElasticStatus(requiredStatus) ? requiredStatus : 'green';
 const ES_AUTH = apiKey ? { apiKey } : { username, password };
 
-const client = new Client({
+const clientConfig: ClientOptions = {
   node: {
     url: new URL(url),
   },
@@ -38,16 +53,16 @@ const client = new Client({
   ssl: {
     rejectUnauthorized: false,
   },
-});
+};
 
-/**
- * Get elastic client once it's ready
- *
- * @returns Elastic client
- */
-const getElasticClient = async () => {
+const client = new Client(clientConfig);
+let clientReadyPromise = undefined as Promise<void> | undefined;
+
+async function checkClientReady() {
+  const requiredValue = ElasticStatus[REQUIRED_STATUS];
   let tries = 0;
-  while (tries < maxTries) {
+  let lastStatus: ElasticStatus | undefined;
+  while (tries < 2) {
     try {
       // eslint-disable-next-line no-await-in-loop
       const { body: { status } } = await client.cluster.health<ElasticTypes.ClusterHealthResponse>({
@@ -55,21 +70,50 @@ const getElasticClient = async () => {
         timeout: '5s',
       });
 
-      if (
-        ElasticStatus[
-          status.toLowerCase() as Lowercase<ElasticTypes.HealthStatus>
-        ] >= ElasticStatus[REQUIRED_STATUS]
-      ) {
+      const lowercaseStatus = status.toLowerCase() as Lowercase<ElasticTypes.HealthStatus>;
+      const value = ElasticStatus[lowercaseStatus];
+      lastStatus = value;
+      // Break if status is valid
+      if (value >= requiredValue) {
         break;
       }
-    } catch (error) {
-      logger.error(`[elastic] Can't connect to Elastic : ${error}. ${maxTries - tries} tries left.`);
+    } catch (err) {
+      logger.error({
+        err,
+        config: clientConfig.node,
+        tries: {
+          count: tries,
+          max: maxTries,
+        },
+        msg: 'Can\'t connect to Elastic',
+      });
     }
 
     tries += 1;
     // eslint-disable-next-line no-await-in-loop
     await setTimeout(1000);
   }
+
+  if (!lastStatus || lastStatus < requiredValue) {
+    throw new Error("Can't connect to Elastic. See previous logs for more info");
+  }
+
+  logger.info({
+    config: clientConfig.node,
+    msg: 'Connected to elastic',
+  });
+}
+
+/**
+ * Get elastic client once it's ready
+ *
+ * @returns Elastic client
+ */
+const getElasticClient = async () => {
+  if (!clientReadyPromise) {
+    clientReadyPromise = checkClientReady().finally(() => { clientReadyPromise = undefined; });
+  }
+  await clientReadyPromise;
   return client;
 };
 
@@ -110,31 +154,6 @@ export const elasticMSearch = async <ResponseType extends Record<string, unknown
   ElasticTypes.MsearchRequestItem[]
   >(
     params,
-    { headers },
-  );
-};
-
-/**
- * Shorthand to count with elastic
- *
- * @param params The count params
- * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
- *
- * @returns The result of the count
- */
-export const elasticCount = async (
-  params: ElasticTypes.CountRequest,
-  runAs?: string,
-) => {
-  const elastic = await getElasticClient();
-
-  const headers: Record<string, unknown> = {};
-  if (runAs) {
-    headers['es-security-runas-user'] = runAs;
-  }
-
-  return elastic.count<ElasticTypes.CountResponse>(
-    params as Record<string, unknown>,
     { headers },
   );
 };
