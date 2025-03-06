@@ -563,7 +563,10 @@ export const createBarSpec: CreateSpecFnc = (type, data, params) => {
  * @returns Partial vega-lite spec
  */
 export const createLineSpec: CreateSpecFnc = (type, data, params) => {
+  // Line charts works essentially as the same as bar charts
+  // we just don't allow axis inversion and assume that labels
   const dataLayer = prepareDataLayer(type, data, params);
+  const timeFormat = calcVegaFormatFromRecurrence(params.recurrence);
 
   // Prepare encoding
   const encoding: Encoding = {
@@ -576,29 +579,33 @@ export const createLineSpec: CreateSpecFnc = (type, data, params) => {
         field: 'label',
         type: 'nominal',
         title: null,
-        sort: params.order && (params.order === 'asc' ? 'y' : '-y'),
+        sort: 'ascending',
+        timeUnit: timeFormat.timeUnit,
+        axis: { format: timeFormat.format },
       },
       params.label,
     ),
+    color: params.color ? merge<Encoding['color'], VegaParams['color']>(
+      { field: 'color', scale: prepareColorScale(type, data, params, (el) => el.color || '') },
+      params.color,
+    ) : undefined,
+    order: { aggregate: 'count' },
   };
 
-  if (isLabelDates(data)) {
-    const timeFormat = calcVegaFormatFromRecurrence(params.recurrence);
-
-    merge<Encoding['x'], Encoding['x']>(
-      encoding.x,
-      { timeUnit: timeFormat.timeUnit, axis: { format: timeFormat.format }, sort: 'ascending' },
-    );
-  }
-
   // Prepare data labels
-  const {
-    dataLayerEdits,
-    layers: dataLabelLayers = [],
-  } = prepareDataLabelsLayers(type, data, params);
-  merge(dataLayer, dataLayerEdits);
+  // TODO: fix line data labels
+  // const {
+  //   dataLayerEdits,
+  //   layers: dataLabelLayers = [],
+  // } = prepareDataLabelsLayers(type, data, params, undefined, 'x');
+  // merge(dataLayer, dataLayerEdits);
 
-  return { layer: mergeLayers(dataLayer, ...dataLabelLayers), encoding };
+  return {
+    // layer: mergeLayers(dataLayer, ...dataLabelLayers),
+    layer: [dataLayer],
+    data: prepareDataWithDefaultDates(type, data, params),
+    encoding,
+  };
 };
 
 /**
