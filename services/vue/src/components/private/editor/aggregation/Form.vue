@@ -70,7 +70,7 @@
             </v-col>
           </v-row>
 
-          <v-row v-if="isMetric === false">
+          <v-row v-if="isMetric === false && aggregation.type !== 'date_histogram'">
             <v-col>
               <v-text-field
                 :model-value="`${aggregation.size ?? 10}`"
