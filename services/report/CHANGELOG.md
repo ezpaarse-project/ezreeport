@@ -1,3 +1,12 @@
+# [ezreeport-report-v2.0.0-beta.4](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.0.0-beta.3...ezreeport-report@2.0.0-beta.4) (2025-03-06)
+
+
+### Bug Fixes
+
+* **report:** fixed area figures ([cf2b2c3](https://github.com/ezpaarse-project/ezreeport/commit/cf2b2c3ae1cb0fda7cf181450841e14206c63205))
+* **report:** fixed line/area grouping ([4b54e87](https://github.com/ezpaarse-project/ezreeport/commit/4b54e87c3a8b9849f8d150d49415780beb7d654f))
+* **report:** fixed validation issue with task descriptions ([1498042](https://github.com/ezpaarse-project/ezreeport/commit/149804236012bbabd217971060083b784717be98))
+
 # [ezreeport-report-v2.0.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.0.0-beta.2...ezreeport-report@2.0.0-beta.3) (2025-02-07)
 
 
