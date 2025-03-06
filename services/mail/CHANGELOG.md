@@ -1,3 +1,10 @@
+# [ezreeport-mail-v1.3.0-rc.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.3.0-rc.1...ezreeport-mail@1.3.0-rc.2) (2025-03-06)
+
+
+### Bug Fixes
+
+* **mail:** fixed mail http listenting address ([e77519d](https://github.com/ezpaarse-project/ezreeport/commit/e77519d11ced7c6657268c9e06ae6f9f8913391d))
+
 # [ezreeport-mail-v1.3.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.2.2...ezreeport-mail@1.3.0-rc.1) (2025-02-07)
 
 
