@@ -1,3 +1,10 @@
+# [@ezpaarse-project/ezreeport-admin-v1.1.0-rc.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-admin@1.1.0-rc.1...@ezpaarse-project/ezreeport-admin@1.1.0-rc.2) (2025-03-06)
+
+
+### Bug Fixes
+
+* **ezra:** fixed description not beign imported ([02dd201](https://github.com/ezpaarse-project/ezreeport/commit/02dd2013595e5f87e0d1d269e9c7895ca4307858))
+
 # [@ezpaarse-project/ezreeport-admin-v1.1.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-admin@1.0.0...@ezpaarse-project/ezreeport-admin@1.1.0-rc.1) (2025-02-07)
 
 
