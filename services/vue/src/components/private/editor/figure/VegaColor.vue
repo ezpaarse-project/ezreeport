@@ -19,7 +19,7 @@
         v-model="aggregation"
         :disabled="!isEnabled"
         :readonly="readonly"
-        type="metric"
+        type="bucket"
         variant="tonal"
       />
     </v-col>

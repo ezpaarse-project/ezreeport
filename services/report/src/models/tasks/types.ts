@@ -48,7 +48,7 @@ export const Task = z.object({
   name: z.string().min(1)
     .describe('Task name'),
 
-  description: z.string()
+  description: z.string().optional()
     .describe('Task description'),
 
   namespaceId: z.string().min(1)

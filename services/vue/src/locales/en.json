@@ -370,6 +370,10 @@
           "arc": {
             "label": "Slices"
           },
+          "line": {
+            "color": "Separation",
+            "color:enable": "Enable separation"
+          },
           "bar": {
             "value": "Y-axis",
             "label": "X-axis",

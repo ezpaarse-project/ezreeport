@@ -94,14 +94,16 @@ function calcRadius(params: VegaParams): ArcRadius {
 }
 
 /**
- * Calculate score of date labels
+ * Check if the label of the data is actually a date
+ *
+ * If more than 3/4 label's data is date, consider whole axis as a date
  *
  * @param data The data to display
  * @param field The path to the date field
  *
- * @returns The score
+ * @returns Is label of data is a date
  */
-function calcLabelDateScore(data: FetchResultItem[]) {
+function isLabelDates(data: FetchResultItem[]) {
   const sample = data.slice(0, data.length / 2);
   const count = sample
     .reduce(
@@ -112,7 +114,7 @@ function calcLabelDateScore(data: FetchResultItem[]) {
       0,
     );
 
-  return (count / sample.length);
+  return (count / sample.length) > 0.75;
 }
 
 /**
@@ -530,9 +532,7 @@ export const createBarSpec: CreateSpecFnc = (type, data, params) => {
   };
 
   let editedData;
-  // If more than 3/8 label's data is date, consider whole axis as a date
-  // and sets format based on task recurrence
-  if (calcLabelDateScore(data) > 0.75) {
+  if (isLabelDates(data)) {
     const timeFormat = calcVegaFormatFromRecurrence(params.recurrence);
 
     editedData = prepareDataWithDefaultDates(type, data, params);
@@ -563,7 +563,10 @@ export const createBarSpec: CreateSpecFnc = (type, data, params) => {
  * @returns Partial vega-lite spec
  */
 export const createLineSpec: CreateSpecFnc = (type, data, params) => {
+  // Line charts works essentially as the same as bar charts
+  // we just don't allow axis inversion and assume that labels
   const dataLayer = prepareDataLayer(type, data, params);
+  const timeFormat = calcVegaFormatFromRecurrence(params.recurrence);
 
   // Prepare encoding
   const encoding: Encoding = {
@@ -576,31 +579,33 @@ export const createLineSpec: CreateSpecFnc = (type, data, params) => {
         field: 'label',
         type: 'nominal',
         title: null,
-        sort: params.order && (params.order === 'asc' ? 'y' : '-y'),
+        sort: 'ascending',
+        timeUnit: timeFormat.timeUnit,
+        axis: { format: timeFormat.format },
       },
       params.label,
     ),
+    color: params.color ? merge<Encoding['color'], VegaParams['color']>(
+      { field: 'color', scale: prepareColorScale(type, data, params, (el) => el.color || '') },
+      params.color,
+    ) : undefined,
+    order: { aggregate: 'count' },
   };
 
-  // If more than 3/8 label's data is date, consider whole axis as a date
-  // and sets format based on task recurrence
-  if (calcLabelDateScore(data) > 0.75) {
-    const timeFormat = calcVegaFormatFromRecurrence(params.recurrence);
-
-    merge<Encoding['x'], Encoding['x']>(
-      encoding.x,
-      { timeUnit: timeFormat.timeUnit, axis: { format: timeFormat.format }, sort: 'ascending' },
-    );
-  }
-
   // Prepare data labels
-  const {
-    dataLayerEdits,
-    layers: dataLabelLayers = [],
-  } = prepareDataLabelsLayers(type, data, params);
-  merge(dataLayer, dataLayerEdits);
+  // TODO: fix line data labels
+  // const {
+  //   dataLayerEdits,
+  //   layers: dataLabelLayers = [],
+  // } = prepareDataLabelsLayers(type, data, params, undefined, 'x');
+  // merge(dataLayer, dataLayerEdits);
 
-  return { layer: mergeLayers(dataLayer, ...dataLabelLayers), encoding };
+  return {
+    // layer: mergeLayers(dataLayer, ...dataLabelLayers),
+    layer: [dataLayer],
+    data: prepareDataWithDefaultDates(type, data, params),
+    encoding,
+  };
 };
 
 /**

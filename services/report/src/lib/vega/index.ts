@@ -101,6 +101,7 @@ export const createVegaLSpec = (
       createSpec = createBarSpec;
       break;
     case 'line':
+    case 'area':
       createSpec = createLineSpec;
       break;
 

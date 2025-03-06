@@ -147,6 +147,13 @@ const tabs = computed(() => {
         dataLabelTab,
       ];
     }
+    case 'line':
+    case 'area':
+      return [
+        valueTab,
+        labelTab,
+        { ...colorTab, text: t('$ezreeport.editor.figures.vega.line.color') },
+      ];
 
     default:
       return [valueTab, labelTab, colorTab, dataLabelTab];
