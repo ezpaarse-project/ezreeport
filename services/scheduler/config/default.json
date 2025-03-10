@@ -1,0 +1,21 @@
+{
+  "port": 8080,
+  "log": {
+    "level": "debug",
+    "dir": "",
+    "ignore": ["hostname"]
+  },
+  "rabbitmq": {
+    "protocol": "amqp",
+    "host": "rabbitmq",
+    "port": 5672,
+    "vhost": "/",
+    "username": "guest",
+    "password": "guest"
+  },
+  "timers": {
+    "generateReports": "0 0 * * *",
+    "purgeOldReports": "0 1 * * *"
+  },
+  "reportDir": "/data/ezreeport/report"
+}
