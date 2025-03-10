@@ -1,0 +1,18 @@
+{
+  "include": [
+    "**/*.ts",
+    "**/*.js",
+    ".eslintrc.js"
+  ],
+  "compilerOptions": {
+    // Used by ESBuild
+    "target": "ES2023",
+    "strict": true,
+
+    // Used by TypeScript
+    "lib": ["ES2023"],
+    "module": "commonjs",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+  }
+}
