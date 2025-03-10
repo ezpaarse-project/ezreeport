@@ -13,33 +13,108 @@ services:
     ports:
       - 6389:6379
 
-  api:
+  rabbitmq:
     extends:
       file: docker-compose.yml
-      service: api
+      service: rabbitmq
+    image: rabbitmq:4.0.7-management-alpine
+    ports:
+      - 15672:15672
+
+  api:
     image: node:20.11.0
     working_dir: /usr/dev/services/report
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
     volumes:
       - .:/usr/dev
     command: "npm run dev"
     ports:
       - 9230:9229 # Debug port
+    restart: unless-stopped
+
+  worker1:
+    image: node:20.11.0
+    working_dir: /usr/dev/services/worker
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
+    extra_hosts:
+      - host.docker.internal:host-gateway # Used because elastic is on the same machine, but not the same network
+    volumes:
+      - .:/usr/dev
+      - ./data/report:/data/ezreeport/report # Report output
+    command: "npm run dev"
+    ports:
+      - 9231:9229 # Debug port
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  worker2:
+    image: node:20.11.0
+    working_dir: /usr/dev/services/worker
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
+    extra_hosts:
+      - host.docker.internal:host-gateway # Used because elastic is on the same machine, but not the same network
+    volumes:
+      - .:/usr/dev
+      - ./data/report:/data/ezreeport/report # Report output
+    command: "npm run dev"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  scheduler:
+    image: node:20.11.0
+    working_dir: /usr/dev/services/scheduler
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
+    volumes:
+      - .:/usr/dev
+      - ./data/report:/data/ezreeport/report # Report output
+    command: "npm run dev"
+    ports:
+      - 9232:9229 # Debug port
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
 
   mail:
-    extends:
-      file: docker-compose.yml
-      service: mail
     image: node:20.11.0
     working_dir: /usr/dev/services/mail
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
     volumes:
       - .:/usr/dev
     command: "npm run dev"
     ports:
-      - 9232:9229 # Debug port
+      - 9233:9229 # Debug port
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
 
   storybook:
     image: node:20.11.0
     working_dir: /usr/dev/services/vue
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
     volumes:
       - .:/usr/dev
     command: "npm run dev -- --no-open"

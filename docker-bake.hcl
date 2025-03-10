@@ -21,6 +21,26 @@ target "api" {
   ]
 }
 
+target "worker" {
+  inherits = ["_base"]
+  target = "worker"
+  output = [{ type = "registry" }]
+  tags = [
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/worker:${VERSION}",
+    "ghcr.io/ezpaarse-project/ezreeport-worker:${VERSION}"
+  ]
+}
+
+target "scheduler" {
+  inherits = ["_base"]
+  target = "scheduler"
+  output = [{ type = "registry" }]
+  tags = [
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/scheduler:${VERSION}",
+    "ghcr.io/ezpaarse-project/ezreeport-scheduler:${VERSION}"
+  ]
+}
+
 target "mail" {
   inherits = ["_base"]
   target = "mail"
@@ -28,6 +48,16 @@ target "mail" {
   tags = [
     "vxnexus-registry.intra.inist.fr:8083/ezreeport/mail:${VERSION}",
     "ghcr.io/ezpaarse-project/ezreeport-mail:${VERSION}"
+  ]
+}
+
+target "aio" {
+  inherits = ["_base"]
+  target = "aio"
+  output = [{ type = "registry" }]
+  tags = [
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/aio:${VERSION}",
+    "ghcr.io/ezpaarse-project/ezreeport:${VERSION}"
   ]
 }
 

@@ -38,12 +38,23 @@ services:
       retries: 5
       start_period: 20s
 
-  api:
+  rabbitmq:
+    image: rabbitmq:4.0.7-alpine
+    ports:
+      - 5672:5672
+    restart: unless-stopped
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+  ezreeport:
     build:
-      target: api
+      target: aio
+      context: .
     volumes:
       - ./data/api:/data/ezreeport/report # Report output
-      - ./logs/api:/var/log/ezreeport # Logs output
     ports:
       - 8080:8080
     env_file:
@@ -55,28 +66,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
       redis:
         condition: service_healthy
     deploy:
       resources:
-          limits:
-            memory: ${REPORT_MEM_LIMIT:-7}G
-    restart: unless-stopped
-
-  mail:
-    build:
-      target: mail
-    volumes:
-      - ./logs/mail:/var/log/ezreeport # Logs output
-    env_file:
-      - .env
-      - path: .env.local
-        required: false
-    depends_on:
-      redis:
-        condition: service_healthy
-    deploy:
-      resources:
-          limits:
-            memory: ${EMAIL_MEM_LIMIT:-3}G
+        limits:
+          memory: ${MEM_LIMIT:-7}G
     restart: unless-stopped

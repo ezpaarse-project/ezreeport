@@ -61,14 +61,60 @@ EXPOSE 8080
 ENV NODE_ENV=production
 WORKDIR /usr/build/api
 
-# Install node-canvas dependencies
-RUN apk add --no-cache cairo jpeg pango pixman
-
 COPY --from=api-pnpm /usr/build/api .
 COPY --from=api-prisma /usr/build/api-dev/.prisma ./.prisma
 
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
   CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/health/probes/liveness || exit 1
+
+CMD [ "npm", "run", "start" ]
+
+# endregion
+# ---
+# region Worker
+
+# Prepare prod dependencies for WORKER
+FROM pnpm AS worker-pnpm
+
+RUN pnpm deploy --filter ezreeport-worker --prod ./worker
+
+# ---
+# Final image to run API service
+FROM base AS worker
+EXPOSE 8080
+ENV NODE_ENV=production
+WORKDIR /usr/build/worker
+
+# Install node-canvas dependencies
+RUN apk add --no-cache cairo jpeg pango pixman
+
+COPY --from=worker-pnpm /usr/build/worker .
+
+HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
+  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/liveness || exit 1
+
+CMD [ "npm", "run", "start" ]
+
+# endregion
+# ---
+# region Scheduler
+
+# Prepare prod dependencies for scheduler
+FROM pnpm AS scheduler-pnpm
+
+RUN pnpm deploy --filter ezreeport-scheduler --prod ./scheduler
+
+# ---
+# Final image to run scheduler service
+FROM base AS scheduler
+EXPOSE 8080
+ENV NODE_ENV=production
+WORKDIR /usr/build/scheduler
+
+COPY --from=scheduler-pnpm /usr/build/scheduler .
+
+HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
+  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/liveness || exit 1
 
 CMD [ "npm", "run", "start" ]
 
@@ -94,6 +140,29 @@ HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
   CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/liveness || exit 1
 
 CMD [ "npm", "run", "start" ]
+
+# endregion
+# ---
+# region All In One
+
+# Prepare SDK to be used in other images
+FROM base AS aio
+EXPOSE 8080
+ENV NODE_ENV=production
+WORKDIR /usr/build
+
+COPY ./services/ecosystem.config.js .
+RUN npm install -g pm2 tsx
+
+COPY --from=api /usr/build/api ./report
+COPY --from=worker /usr/build/worker ./worker
+COPY --from=scheduler /usr/build/scheduler ./scheduler
+COPY --from=mail /usr/build/mail ./mail
+
+HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
+  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/health/probes/liveness || exit 1
+
+CMD ["pm2-runtime", "ecosystem.config.js"]
 
 # endregion
 # ---
