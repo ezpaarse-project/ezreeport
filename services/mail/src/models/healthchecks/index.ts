@@ -2,12 +2,12 @@ import { differenceInMilliseconds } from 'date-fns';
 
 import { setTimeout } from 'node:timers/promises';
 
-import { redisPing } from '~/lib/bull';
-import { SMTPPing } from '~/lib/mail';
+// import { redisPing } from '~/lib/bull';
+import { SMTPPing } from '~/lib/mailer';
 
 const pingers = {
   smtp: SMTPPing,
-  redis: redisPing,
+  // redis: redisPing,
 } satisfies Record<string, () => Promise<boolean>>;
 
 type Service = keyof typeof pingers;

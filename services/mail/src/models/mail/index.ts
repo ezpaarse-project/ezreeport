@@ -1,33 +1,23 @@
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-import mjml2html from 'mjml';
-import { createTransport } from 'nodemailer';
 import type Mail from 'nodemailer/lib/mailer';
+import mjml2html from 'mjml';
 import nunjucks from 'nunjucks';
-import { differenceInMilliseconds } from 'date-fns';
 
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
+import { getMailer } from '~/lib/mailer';
 
-const logger = appLogger.child({ scope: 'nodemailer' });
+const logger = appLogger.child({ scope: 'mails' });
 
 const {
-  smtp,
   mail: { sender }, // TODO[feat]: some properties are not used (attempts, interval)
   templates: { dir: templatesPath },
 } = config;
 
 nunjucks.configure(templatesPath);
 const images = readdirSync(join(templatesPath, 'images'));
-const transporter = createTransport(smtp);
-
-transporter.on('error', (err) => {
-  logger.error({
-    err,
-    msg: 'Error on transporter',
-  });
-});
 
 export type MailOptions = {
   to: string[] | string,
@@ -41,15 +31,13 @@ export type MailOptions = {
   attachments?: Mail.Attachment[],
 };
 
-export const SMTPPing = async () => transporter.verify();
-
 export const sendMail = async (options: MailOptions) => {
   const attachments: Mail.Attachment[] = [
     ...images.map((img) => ({ path: join(templatesPath, 'images', img), cid: img, filename: img })),
     ...(options.attachments ?? []),
   ];
 
-  return transporter.sendMail({
+  return getMailer().sendMail({
     from: sender,
     to: options.to,
     cc: options.cc,
@@ -68,25 +56,14 @@ export const generateMail = async (template: string, data: object) => {
   return { html, text };
 };
 
-(async () => {
-  const start = Date.now();
-  try {
-    logger.debug('Checking SMTP connection...');
-    await SMTPPing();
+export async function initSMTP() {
+  const start = process.uptime();
 
-    const end = Date.now();
-    logger.debug({
-      duration: differenceInMilliseconds(end, start),
-      durationUnit: 'ms',
-      msg: 'Connected to SMTP',
-    });
-  } catch (err) {
-    const end = Date.now();
-    logger.error({
-      duration: differenceInMilliseconds(end, start),
-      durationUnit: 'ms',
-      err,
-      msg: 'Error when trying connection to SMTP',
-    });
-  }
-})();
+  getMailer();
+
+  logger.info({
+    duration: process.uptime() - start,
+    durationUnit: 's',
+    msg: 'Init completed',
+  });
+}

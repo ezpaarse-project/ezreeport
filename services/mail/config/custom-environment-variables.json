@@ -1,9 +1,9 @@
 {
-  "allowedOrigins": "API_ALLOWED_ORIGINS",
+  "port": { "__name": "HTTP_PORT", "__format": "number" },
   "log": {
     "level": "LOG_LEVEL",
     "dir": "LOG_DIR",
-    "ignore": "LOG_IGNORE"
+    "ignore": { "__name": "LOG_IGNORE", "__format": "json" }
   },
   "redis": {
     "host": "REDIS_HOST",

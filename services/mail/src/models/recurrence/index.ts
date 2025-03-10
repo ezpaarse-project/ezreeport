@@ -1,12 +1,4 @@
-//! Should be synced with report
-export enum Recurrence {
-  DAILY = 'DAILY',
-  WEEKLY = 'WEEKLY',
-  MONTHLY = 'MONTHLY',
-  QUARTERLY = 'QUARTERLY',
-  BIENNIAL = 'BIENNIAL',
-  YEARLY = 'YEARLY',
-}
+import { RecurrenceType } from '~common/types/recurrence';
 
 // TODO[feat]: locales
 /**
@@ -17,19 +9,20 @@ export enum Recurrence {
  *
  * @return The recurrence string
  */
-export const recurrenceToStr = (recurrence: Recurrence, _locale = 'fr') => {
+// eslint-disable-next-line import/prefer-default-export
+export const recurrenceToStr = (recurrence: RecurrenceType, _locale = 'fr') => {
   switch (recurrence) {
-    case Recurrence.DAILY:
+    case 'DAILY':
       return 'quotidien';
-    case Recurrence.WEEKLY:
+    case 'WEEKLY':
       return 'hebdomadaire';
-    case Recurrence.MONTHLY:
+    case 'MONTHLY':
       return 'mensuel';
-    case Recurrence.QUARTERLY:
+    case 'QUARTERLY':
       return 'trimestriel';
-    case Recurrence.BIENNIAL:
+    case 'BIENNIAL':
       return 'semestriel';
-    case Recurrence.YEARLY:
+    case 'YEARLY':
       return 'annuel';
 
     default:

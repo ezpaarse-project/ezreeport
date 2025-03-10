@@ -1,9 +1,18 @@
 {
+  "port": 8080,
   "allowedOrigins": "*",
   "log": {
     "level": "debug",
     "dir": "",
     "ignore": ["hostname"]
+  },
+  "rabbitmq": {
+    "protocol": "amqp",
+    "host": "rabbitmq",
+    "port": 5672,
+    "vhost": "/",
+    "username": "guest",
+    "password": "guest"
   },
   "redis": {
     "host": "redis",
