@@ -47,7 +47,7 @@
     >
       <template #append>
         <v-chip v-if="pong.status" :text="`${pong.elapsedTime}ms`" :color="pong.elapsedTime >= 1000 ? 'orange' : 'green'" />
-        <v-chip v-else text="KO" />
+        <v-chip v-else :color="pong.mandatory ? 'red' : 'orange'" text="KO" />
       </template>
     </v-list-item>
   </v-list>
