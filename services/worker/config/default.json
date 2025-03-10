@@ -1,0 +1,79 @@
+{
+  "port": 8080,
+  "log": {
+    "level": "debug",
+    "dir": "",
+    "ignore": ["hostname"]
+  },
+  "fetcher": {
+    "bannedDomains": []
+  },
+  "elasticsearch": {
+    "url": "https://host.docker.internal:9200",
+    "username": "elastic",
+    "password": "changeme",
+    "apiKey": "",
+    "requiredStatus": "green",
+    "maxTries": 10
+  },
+  "rabbitmq": {
+    "protocol": "amqp",
+    "host": "rabbitmq",
+    "port": 5672,
+    "vhost": "/",
+    "username": "guest",
+    "password": "guest"
+  },
+  "report": {
+    "ttl": {
+      "iterations": 4,
+      "days": 7
+    },
+    "team": "ezteam-dev@couperin.org",
+    "scheme": "tableau20",
+    "fontFamily": "Roboto",
+    "fonts": [
+      {
+        "family": "Roboto",
+        "path": "assets/fonts/Roboto-Light.ttf"
+      },
+      {
+        "family": "Roboto",
+        "style": "italic",
+        "path": "assets/fonts/Roboto-LightItalic.ttf"
+      },
+      {
+        "family": "Roboto",
+        "weight": "bold",
+        "path": "assets/fonts/Roboto-Medium.ttf"
+      },
+      {
+        "family": "Roboto",
+        "weight": "bold",
+        "style": "italic",
+        "path": "assets/fonts/Roboto-MediumItalic.ttf"
+      }
+    ],
+    "outDir": "/data/ezreeport/report"
+  },
+  "pdf": {
+    "logos": [
+      {
+        "path": "assets/logos/ezmesure.png",
+        "link": "https://ezmesure.couperin.org/"
+      },
+      {
+        "path": "assets/logos/cnrs.png",
+        "link": "http://www.cnrs.fr/"
+      },
+      {
+        "path": "assets/logos/inist.png",
+        "link": "https://www.inist.fr/"
+      },
+      {
+        "path": "assets/logos/couperin.png",
+        "link": "https://www.couperin.org/"
+      }
+    ]
+  }
+}
