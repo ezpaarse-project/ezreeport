@@ -1,48 +1,39 @@
-import http from 'node:http';
-
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
 
 import initQueue from '~/models/queues';
 import { initSMTP } from '~/models/mail';
 import healthChecks from '~/models/healthchecks';
-
-const { port } = config;
+import startHTTPServer from './lib/http';
 
 const start = async () => {
+  appLogger.info({
+    scope: 'node',
+    env: process.env.NODE_ENV,
+    logLevel: config.log.level,
+    logDir: config.log.dir,
+    msg: 'Service starting',
+  });
+
   await initQueue();
   await initSMTP();
 
-  const server = http.createServer((req, res) => {
-    switch (req.url) {
-      // Liveness probe, check if the server is up
-      case '/liveness':
-      case '/liveness/':
-        res.writeHead(204).end();
-        break;
-
-      // Readiness probe, check if the server is ready
-      case '/readiness':
-      case '/readiness/':
-        healthChecks()
-          .then(() => {
-            res.writeHead(204).end();
-          })
-          .catch((err) => {
-            appLogger.error({
-              scope: 'ping',
-              err,
-              msg: 'Error when getting services',
-            });
-            res.writeHead(503).end(JSON.stringify(err));
+  await startHTTPServer({
+    '/liveness': (req, res) => { res.writeHead(204).end(); },
+    '/readiness': (req, res) => {
+      healthChecks()
+        .then(() => {
+          res.writeHead(204).end();
+        })
+        .catch((err) => {
+          appLogger.error({
+            scope: 'ping',
+            err,
+            msg: 'Error when getting services',
           });
-        break;
-
-        // Route not found
-      default:
-        res.writeHead(404).end();
-        break;
-    }
+          res.writeHead(503).end(JSON.stringify(err));
+        });
+    },
   });
 
   appLogger.info({
@@ -50,16 +41,6 @@ const start = async () => {
     readyDuration: process.uptime(),
     readyDurationUnit: 's',
     msg: 'Service ready',
-  });
-
-  server.listen(port, () => {
-    appLogger.info({
-      scope: 'http',
-      address: `http://0.0.0.0:${port}`,
-      startupDuration: process.uptime(),
-      startupDurationUnit: 's',
-      msg: 'Service listening',
-    });
   });
 };
 start();
