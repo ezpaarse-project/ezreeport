@@ -63,7 +63,7 @@ export const Task = z.object({
   lastExtended: LastExtended.nullish()
     .describe('Last extended template'),
 
-  targets: z.array(z.string().email()).min(1)
+  targets: z.array(z.string().email())
     .describe('Email addresses to send report'),
 
   recurrence: Recurrence
