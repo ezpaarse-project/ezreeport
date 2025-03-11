@@ -74,12 +74,12 @@ export async function getAllTasks(filters?: Record<string, unknown>): Promise<Ta
 }
 
 export async function getAllTemplates(): Promise<TemplateType[]> {
-  const data = await callRemoteProcedure('getAllTemplates', []);
+  const data = await callRemoteProcedure('getAllTemplates');
   return z.array(Template).parse(data);
 }
 
 export async function getAllNamespaces(): Promise<NamespaceType[]> {
-  const data = await callRemoteProcedure('getAllNamespaces', []);
+  const data = await callRemoteProcedure('getAllNamespaces');
   return z.array(Namespace).parse(data);
 }
 
