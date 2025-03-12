@@ -5,6 +5,8 @@ export interface ApiStatus {
   version: string;
   /** Services connected to current */
   services: string[];
+  /** File systems used by current */
+  fs: string[];
 }
 
 export type Pong = {
@@ -23,4 +25,15 @@ export type Pong = {
   status: false;
   /** Error message */
   error: string;
+};
+
+export type FileSystemUsage = {
+  /** Filesystem name */
+  name: string;
+  /** Total space */
+  total: number;
+  /** Used space */
+  used: number;
+  /** Available space */
+  available: number;
 };
