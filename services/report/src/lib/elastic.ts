@@ -1,11 +1,11 @@
-import { setTimeout } from 'node:timers/promises';
-
 import {
   Client,
+  estypes as ElasticTypes,
   type ClientOptions,
-  type estypes as ElasticTypes,
 } from '@elastic/elasticsearch';
 import { merge } from 'lodash';
+
+import type { HeartbeatType } from '~common/lib/heartbeats';
 
 import config from './config';
 import { appLogger } from './logger';
@@ -25,23 +25,9 @@ const {
   username,
   password,
   apiKey,
-  requiredStatus,
-  maxTries,
 } = config.elasticsearch;
 
-enum ElasticStatus {
-  red,
-  yellow,
-  green,
-}
-type KeyofElasticStatus = keyof typeof ElasticStatus;
-
-const isElasticStatus = (
-  status: string,
-): status is KeyofElasticStatus => Object.keys(ElasticStatus).includes(status);
-
 // Parse some env var
-const REQUIRED_STATUS = isElasticStatus(requiredStatus) ? requiredStatus : 'green';
 const ES_AUTH = apiKey ? { apiKey } : { username, password };
 
 const clientConfig: ClientOptions = {
@@ -54,54 +40,7 @@ const clientConfig: ClientOptions = {
   },
 };
 
-const client = new Client(clientConfig);
-let clientReadyPromise = undefined as Promise<void> | undefined;
-
-async function checkClientReady() {
-  const requiredValue = ElasticStatus[REQUIRED_STATUS];
-  let tries = 0;
-  let lastStatus: ElasticStatus | undefined;
-  while (tries < 2) {
-    try {
-      // eslint-disable-next-line no-await-in-loop
-      const { body: { status } } = await client.cluster.health<ElasticTypes.ClusterHealthResponse>({
-        wait_for_status: REQUIRED_STATUS,
-        timeout: '5s',
-      });
-
-      const lowercaseStatus = status.toLowerCase() as Lowercase<ElasticTypes.HealthStatus>;
-      const value = ElasticStatus[lowercaseStatus];
-      lastStatus = value;
-      // Break if status is valid
-      if (value >= requiredValue) {
-        break;
-      }
-    } catch (err) {
-      logger.error({
-        err,
-        config: clientConfig.node,
-        tries: {
-          count: tries,
-          max: maxTries,
-        },
-        msg: 'Can\'t connect to Elastic',
-      });
-    }
-
-    tries += 1;
-    // eslint-disable-next-line no-await-in-loop
-    await setTimeout(1000);
-  }
-
-  if (!lastStatus || lastStatus < requiredValue) {
-    throw new Error("Can't connect to Elastic. See previous logs for more info");
-  }
-
-  logger.info({
-    config: clientConfig.node,
-    msg: 'Connected to elastic',
-  });
-}
+let client: Client | undefined;
 
 /**
  * Get elastic client once it's ready
@@ -109,10 +48,14 @@ async function checkClientReady() {
  * @returns Elastic client
  */
 const getElasticClient = async () => {
-  if (!clientReadyPromise) {
-    clientReadyPromise = checkClientReady().finally(() => { clientReadyPromise = undefined; });
+  if (!client) {
+    client = new Client(clientConfig);
+
+    logger.info({
+      config: clientConfig.node,
+      msg: 'Elastic client ready',
+    });
   }
-  await clientReadyPromise;
   return client;
 };
 
@@ -121,12 +64,17 @@ const getElasticClient = async () => {
  *
  * @returns If elastic is up
  */
-export const elasticPing = async () => {
+export const elasticPing = async (): Promise<HeartbeatType> => {
   const elastic = await getElasticClient();
 
-  const { body, statusCode } = await elastic.ping();
+  const { body } = await elastic.cluster.stats<ElasticTypes.ClusterStatsResponse>();
 
-  return body && (statusCode || (body ? 200 : 500));
+  return {
+    hostname: body.cluster_name,
+    service: 'elastic',
+    version: body.nodes.versions.at(0),
+    updatedAt: new Date(),
+  };
 };
 
 /**

@@ -175,8 +175,9 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       const firstLevelDebug = !!request.body.period || !!request.body.targets;
       const secondLevelDebug = process.env.NODE_ENV !== 'production' && request.body.debug;
 
-      const data = await queueGeneration({
-        id: randomUUID(),
+      const id = randomUUID();
+      await queueGeneration({
+        id,
         task,
         namespace,
         template,
@@ -187,7 +188,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         printDebug: secondLevelDebug,
       });
 
-      return responses.buildSuccessResponse({ id: data.id }, reply);
+      return responses.buildSuccessResponse({ id }, reply);
     },
   });
 

@@ -1,5 +1,6 @@
 {
   "port": 8080,
+  "heartbeat": 10000,
   "allowedOrigins": "*",
   "adminKey": "00000000-0000-0000-0000-000000000000",
   "log": {
@@ -16,9 +17,7 @@
     "url": "https://host.docker.internal:9000",
     "username": "elastic",
     "password": "changeme",
-    "apiKey": "",
-    "requiredStatus": "green",
-    "maxTries": 10
+    "apiKey": ""
   },
   "rabbitmq": {
     "protocol": "amqp",

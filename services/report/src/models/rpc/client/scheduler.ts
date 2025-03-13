@@ -1,41 +1,51 @@
 import { z } from '~common/lib/zod';
+import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 import { setupRPCClient, type RPCClient } from '~common/lib/rpc';
 
 import { Cron, CronType } from '~common/types/crons';
 
-import getChannel from '../channel';
+let client: RPCClient | undefined;
 
-let schedulerClient: RPCClient | undefined;
-
-export async function getSchedulerClient() {
-  if (!schedulerClient) {
-    const channel = await getChannel();
-    schedulerClient = setupRPCClient(channel, 'ezreeport.rpc:scheduler', appLogger);
-  }
-  return schedulerClient;
+export async function initSchedulerClient(channel: rabbitmq.Channel) {
+  // schedulerClient will be called while begin unaware of
+  // rabbitmq connection, so we need to store the channel
+  // here
+  client = setupRPCClient(channel, 'ezreeport.rpc:scheduler', appLogger);
 }
 
 export async function getAllCrons(): Promise<CronType[]> {
-  const client = await getSchedulerClient();
+  if (!client) {
+    throw new Error('Scheduler client not initialized');
+  }
+
   const data = await client.call('getAllCrons');
   return z.array(Cron).parse(data);
 }
 
 export async function stopCron(cron: string) {
-  const client = await getSchedulerClient();
+  if (!client) {
+    throw new Error('Scheduler client not initialized');
+  }
+
   const data = await client.call('stopCron', cron);
   return Cron.parse(data);
 }
 
 export async function startCron(cron: string) {
-  const client = await getSchedulerClient();
+  if (!client) {
+    throw new Error('Scheduler client not initialized');
+  }
+
   const data = await client.call('startCron', cron);
   return Cron.parse(data);
 }
 
 export async function forceCron(cron: string) {
-  const client = await getSchedulerClient();
+  if (!client) {
+    throw new Error('Scheduler client not initialized');
+  }
+
   const data = await client.call('forceCron', cron);
   return Cron.parse(data);
 }

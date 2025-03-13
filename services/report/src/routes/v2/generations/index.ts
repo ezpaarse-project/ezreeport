@@ -150,7 +150,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       const namespace = await getNamespace(task.namespaceId);
       if (!namespace) { throw new NotFoundError(`Namespace ${task.namespaceId} not found`); }
 
-      const data = await queueGeneration({
+      await queueGeneration({
         id: generation.id,
         task,
         namespace,
@@ -162,7 +162,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         printDebug: false,
       });
 
-      return responses.buildSuccessResponse({ id: data.id }, reply);
+      return responses.buildSuccessResponse({ id: generation.id }, reply);
     },
   });
 };

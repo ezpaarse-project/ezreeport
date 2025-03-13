@@ -1,7 +1,7 @@
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 
-import { Generation } from '~common/types/generations';
+import { Generation, GenerationType } from '~common/types/generations';
 import { upsertGeneration } from '~/models/generations';
 import { createActivity } from '~/models/task-activity';
 import { editTaskAfterGeneration } from '~/models/tasks';
@@ -10,7 +10,7 @@ const eventExchangeName = 'ezreeport.report:event';
 
 const logger = appLogger.child({ scope: 'queues', exchange: eventExchangeName });
 
-let eventExchange: rabbitmq.Replies.AssertExchange | undefined;
+const generationFinished = (data: GenerationType) => data.status === 'SUCCESS' || data.status === 'ERROR';
 
 async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
   if (!msg) {
@@ -35,14 +35,15 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
   try {
     await upsertGeneration(data.id, data);
   } catch (err) {
-    logger.warn({
+    const severity = generationFinished(data) ? 'error' : 'warn';
+    logger[severity]({
       msg: "Couldn't update generation",
       id: data.id,
       err,
     });
   }
 
-  if (data.writeActivity && (data.status === 'SUCCESS' || data.status === 'ERROR')) {
+  if (data.writeActivity && generationFinished(data)) {
     // Update activity if needed
     try {
       await createActivity({
@@ -55,7 +56,7 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
         },
       });
     } catch (err) {
-      logger.warn({
+      logger.error({
         msg: "Couldn't update activity",
         id: data.id,
         taskId: data.taskId,
@@ -71,7 +72,7 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
         data.status === 'ERROR',
       );
     } catch (err) {
-      logger.warn({
+      logger.error({
         msg: "Couldn't update task",
         id: data.id,
         taskId: data.taskId,
@@ -84,22 +85,19 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
 }
 
 // eslint-disable-next-line import/prefer-default-export
-export async function getReportEventExchange(channel: rabbitmq.Channel) {
-  if (!eventExchange) {
-    eventExchange = await channel.assertExchange(eventExchangeName, 'fanout', { durable: false });
+export async function initReportEventExchange(channel: rabbitmq.Channel) {
+  const { exchange: eventExchange } = await channel.assertExchange(eventExchangeName, 'fanout', { durable: false });
 
-    // Create queue to bind
-    const { queue } = await channel.assertQueue('', { exclusive: true, durable: false });
-    channel.bindQueue(queue, eventExchange.exchange, '');
+  // Create queue to bind
+  const { queue } = await channel.assertQueue('', { exclusive: true, durable: false });
+  channel.bindQueue(queue, eventExchange, '');
 
-    // Consume event exchange
-    channel.consume(queue, (m) => onMessage(m), { noAck: true });
+  // Consume event exchange
+  channel.consume(queue, (m) => onMessage(m), { noAck: true });
 
-    logger.debug({
-      msg: 'Event exchange created',
-      ...eventExchange,
-      queue,
-    });
-  }
-  return eventExchange;
+  logger.debug({
+    msg: 'Event exchange created',
+    exchange: eventExchange,
+    queue,
+  });
 }

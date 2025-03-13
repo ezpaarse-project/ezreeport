@@ -1,11 +1,10 @@
-import { type RPCServerRouter, setupRPCServer } from '~common/lib/rpc';
+import type rabbitmq from '~/lib/rabbitmq';
+import { setupRPCServer, type RPCServerRouter } from '~common/lib/rpc';
 import { appLogger } from '~/lib/logger';
 
 import { getAllTasks } from '~/models/tasks';
 import { getAllTemplates } from '~/models/templates';
 import { getAllNamespaces } from '~/models/namespaces';
-
-import getChannel from './channel';
 
 const logger = appLogger.child({ scope: 'rpc.server' });
 
@@ -15,10 +14,8 @@ const router: RPCServerRouter = {
   getAllNamespaces,
 };
 
-export default async function initRPCServer() {
+export default async function initRPCServer(channel: rabbitmq.Channel) {
   const start = process.uptime();
-
-  const channel = await getChannel();
 
   await setupRPCServer(channel, 'ezreeport.rpc:api', router, appLogger);
 

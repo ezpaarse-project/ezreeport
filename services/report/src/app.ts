@@ -1,10 +1,11 @@
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
 import startHTTPServer from '~/lib/http';
+import { useRabbitMQ } from '~/lib/rabbitmq';
 
 import initQueues from '~/models/queues';
-import initRPCServer from '~/models/rpc/server';
-import initRPCClients from '~/models/rpc/client';
+import initRPC from '~/models/rpc';
+import { initHeartbeat } from '~/models/heartbeat';
 
 import routes from '~/routes';
 
@@ -21,11 +22,13 @@ const start = async () => {
 
   try {
     await startHTTPServer(routes);
-
     await initTemplates();
-    await initQueues();
-    await initRPCServer();
-    await initRPCClients();
+
+    await useRabbitMQ(async (connection) => {
+      await initQueues(connection);
+      await initRPC(connection);
+      await initHeartbeat(connection);
+    });
 
     appLogger.info({
       scope: 'init',

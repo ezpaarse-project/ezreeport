@@ -5,10 +5,11 @@ import { z } from '~common/lib/zod';
 
 import * as responses from '~/routes/v2/responses';
 
-import * as health from '~/models/health';
-import { Pong, Services } from '~/models/health/types';
+import * as heartbeats from '~/models/heartbeat';
+import { Heartbeat } from '~/models/heartbeat/types';
 
-import { HTTPError } from '~/types/errors';
+import { HTTPError, NotFoundError } from '~/types/errors';
+import { appLogger } from '~/lib/logger';
 
 const router: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
@@ -23,16 +24,16 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           z.object({
             current: z.string().describe('Current service'),
             version: z.string().describe('Current version'),
-            services: z.array(Services).describe('Services connected to current'),
+            services: z.array(Heartbeat).describe('Services connected to current'),
           }),
         ),
         [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
     handler: async (request, reply) => responses.buildSuccessResponse({
-      current: health.serviceName,
-      version: health.serviceVersion,
-      services: Array.from(health.services),
+      current: heartbeats.service.name,
+      version: heartbeats.service.version,
+      services: heartbeats.getAllServices(),
     }, reply),
   });
 
@@ -44,15 +45,16 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Ping all services',
       tags: ['health'],
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(z.array(Pong)),
+        [StatusCodes.OK]: responses.SuccessResponse(
+          z.array(Heartbeat).describe('Services connected to current'),
+        ),
         [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
-    handler: async (request, reply) => {
-      const content = await health.pingAll();
-
-      return responses.buildSuccessResponse(content, reply);
-    },
+    handler: async (request, reply) => responses.buildSuccessResponse(
+      heartbeats.getAllServices(),
+      reply,
+    ),
   });
 
   fastify.route({
@@ -63,16 +65,21 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Ping a service',
       tags: ['health'],
       params: z.object({
-        name: Services.describe('Service name'),
+        name: z.string().describe('Service name'),
       }),
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(Pong),
+        [StatusCodes.OK]: responses.SuccessResponse(Heartbeat),
+        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
         [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
         [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
     handler: async (request, reply) => {
-      const content = await health.ping(request.params.name);
+      const all = heartbeats.getAllServices();
+      const content = all.find((s) => s.service === request.params.name);
+      if (!content) {
+        throw new NotFoundError(`Service ${request.params.name} not found`);
+      }
 
       return responses.buildSuccessResponse(content, reply);
     },
@@ -109,18 +116,17 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     handler: async (request, reply) => {
-      const pongs = await health.pingAll();
-      const failedPong = pongs.find((pong) => !pong.status);
-
-      if (failedPong) {
-        let message = `Readiness probe failed: service "${failedPong.name}" is not available`;
-        if ('error' in failedPong) {
-          message += `: ${failedPong.error}`;
-        }
-        throw new HTTPError(message, StatusCodes.SERVICE_UNAVAILABLE);
+      const missing = heartbeats.getMissingMandatoryServices();
+      if (missing.length <= 0) {
+        reply.status(StatusCodes.NO_CONTENT);
+        return;
       }
 
-      reply.status(StatusCodes.NO_CONTENT);
+      appLogger.error({
+        message: 'Readiness probe failed: missing mandatory services',
+        missing,
+      });
+      throw new HTTPError('Readiness probe failed: missing mandatory services', StatusCodes.SERVICE_UNAVAILABLE);
     },
   });
 };

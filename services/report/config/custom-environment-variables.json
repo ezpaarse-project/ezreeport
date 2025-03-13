@@ -1,5 +1,6 @@
 {
   "port": { "__name": "HTTP_PORT", "__format": "number" },
+  "heartbeat": { "__name": "HEARTBEAT_FREQUENCY", "__format": "number" },
   "allowedOrigins": "ALLOWED_ORIGINS",
   "adminKey": "ADMIN_KEY",
   "log": {
@@ -15,9 +16,7 @@
     "url": "ELASTIC_URL",
     "username": "ELASTIC_USERNAME",
     "password": "ELASTIC_PASSWORD",
-    "apiKey": "ELASTIC_API_KEY",
-    "requiredStatus": "ELASTIC_REQUIRED_STATUS",
-    "maxTries": { "__name": "ELASTIC_MAX_TRIES", "__format": "number" }
+    "apiKey": "ELASTIC_API_KEY"
   },
   "rabbitmq": {
     "protocol": "RABBITMQ_PROTOCOL",
