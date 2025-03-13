@@ -4,12 +4,14 @@ import {
   stringToEndOfDay,
   stringOrArray,
   stringToBool,
-} from '~/lib/zod';
-import { ensureArray } from '~/lib/utils';
+} from '~common/lib/zod';
+import { ensureArray } from '~common/lib/utils';
 
+import { Task as CommonTask } from '~common/types/tasks';
 import { Namespace } from '~/models/namespaces/types';
-import { TaskTemplateBody, TemplateTag } from '~/models/templates/types';
-import { Recurrence } from '~/models/recurrence/types';
+import { TemplateTag } from '~/models/templates/types';
+
+export * from '~common/types/tasks';
 
 /**
  * Validation for task include fields
@@ -25,67 +27,10 @@ const TaskIncludeFields = z.enum([
 export type TaskIncludeFieldsType = z.infer<typeof TaskIncludeFields>;
 
 /**
- * Validation for the last extended template
- */
-const LastExtended = z.object({
-  id: z.string().min(1)
-    .describe('Template ID'),
-
-  name: z.string().min(1)
-    .describe('Template name'),
-
-  tags: z.array(TemplateTag).optional()
-    .describe('Template tags'),
-});
-
-/**
  * Validation with a task
  */
-export const Task = z.object({
-  id: z.string().min(1).readonly()
-    .describe('Task ID'),
-
-  name: z.string().min(1)
-    .describe('Task name'),
-
-  description: z.string().optional()
-    .describe('Task description'),
-
-  namespaceId: z.string().min(1)
-    .describe('Namespace ID of the task'),
-
-  extendedId: z.string().min(1)
-    .describe('Extended template ID'),
-
-  template: TaskTemplateBody
-    .describe('Options to extend template'),
-
-  lastExtended: LastExtended.nullish()
-    .describe('Last extended template'),
-
-  targets: z.array(z.string().email()).min(1)
-    .describe('Email addresses to send report'),
-
-  recurrence: Recurrence
-    .describe('Task recurrence'),
-
-  nextRun: z.coerce.date()
-    .describe('Next run date, must be in the future'),
-
-  lastRun: z.date().nullable()
-    .describe('Last run date'),
-
-  enabled: z.boolean()
-    .describe('Is task enabled, default to true'),
-
-  createdAt: z.date().readonly()
-    .describe('Creation date'),
-
-  updatedAt: z.date().nullable().readonly()
-    .describe('Last update date'),
-
+export const Task = CommonTask.extend({
   // Includes fields
-
   namespace: Namespace.omit({ fetchLogin: true, fetchOptions: true }).optional().readonly()
     .describe('[Includes] Namespace related to the task'),
 

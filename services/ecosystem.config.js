@@ -6,6 +6,15 @@ const logEnv = {
   LOG_IGNORE: env('LOG_IGNORE', '["hostname"]'),
 };
 
+const elasticEnv = {
+  ELASTIC_URL: env('ELASTIC_URL', 'http://elastic:9200'),
+  ELASTIC_USERNAME: env('ELASTIC_USERNAME', 'elastic'),
+  ELASTIC_PASSWORD: env('ELASTIC_PASSWORD', 'changeme'),
+  ELASTIC_API_KEY: env('ELASTIC_API_KEY', ''),
+  ELASTIC_REQUIRED_STATUS: env('ELASTIC_REQUIRED_STATUS', 'green'),
+  ELASTIC_MAX_TRIES: +env('ELASTIC_MAX_TRIES', 10),
+};
+
 module.exports = {
   apps: [
     {
@@ -19,6 +28,7 @@ module.exports = {
       env: {
         NODE_ENV: env('NODE_ENV'),
         ...logEnv,
+        ...elasticEnv,
 
         HTTP_PORT: +env('HTTP_PORT', 8080),
         ALLOWED_ORIGINS: env('ALLOWED_ORIGINS', '*'),
@@ -38,13 +48,7 @@ module.exports = {
       env: {
         NODE_ENV: env('NODE_ENV'),
         ...logEnv,
-
-        ELASTIC_URL: env('ELASTIC_URL', 'http://elastic:9200'),
-        ELASTIC_USERNAME: env('ELASTIC_USERNAME', 'elastic'),
-        ELASTIC_PASSWORD: env('ELASTIC_PASSWORD', 'changeme'),
-        ELASTIC_API_KEY: env('ELASTIC_API_KEY', ''),
-        ELASTIC_REQUIRED_STATUS: env('ELASTIC_REQUIRED_STATUS', 'green'),
-        ELASTIC_MAX_TRIES: +env('ELASTIC_MAX_TRIES', 10),
+        ...elasticEnv,
 
         FETCHER_BANNED_DOMAINS: env('FETCHER_BANNED_DOMAINS', '[]'),
 

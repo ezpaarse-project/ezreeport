@@ -1,11 +1,10 @@
 import { setTimeout } from 'node:timers/promises';
 
-import { differenceInMilliseconds } from '~/lib/date-fns';
+import { differenceInMilliseconds } from '~common/lib/date-fns';
 import { appLogger } from '~/lib/logger';
 
 import { elasticPing } from '~/lib/elastic';
 import { dbPing } from '~/lib/prisma';
-import { pingRedisThroughQueue } from '~/models/queues';
 
 import type {
   PongType,
@@ -23,7 +22,6 @@ export const serviceName = 'api';
  */
 const pingers: Record<ServicesType, () => Promise<number | false>> = {
   elastic: elasticPing,
-  redis: pingRedisThroughQueue,
   database: dbPing,
 };
 

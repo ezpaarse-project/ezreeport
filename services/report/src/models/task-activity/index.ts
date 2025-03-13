@@ -1,5 +1,5 @@
 import prisma, { Prisma } from '~/lib/prisma';
-import { ensureSchema } from '~/lib/zod';
+import { ensureSchema } from '~common/lib/zod';
 
 import type { PaginationType } from '~/models/pagination/types';
 import { buildPaginatedRequest } from '~/models/pagination';

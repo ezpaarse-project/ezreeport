@@ -1,7 +1,7 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
-import { z } from '~/lib/zod';
+import { z } from '~common/lib/zod';
 
 import authPlugin, { requireAllowedNamespace, restrictNamespaces } from '~/plugins/auth';
 import { Access } from '~/models/access';
@@ -83,7 +83,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       return buildPaginatedResponse(
         content,
         {
-          page: request.query.page,
+          page,
           total: await tasks.countTasks(filters),
         },
         reply,

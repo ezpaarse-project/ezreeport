@@ -7,8 +7,8 @@ import fastifyStatic from '@fastify/static';
 import { StatusCodes } from 'http-status-codes';
 import { compile as handlebars } from 'handlebars';
 
-import { z } from '~/lib/zod';
-import { b64ToString } from '~/lib/utils';
+import { z } from '~common/lib/zod';
+import { b64ToString } from '~common/lib/utils';
 
 import * as responses from '~/routes/v2/responses';
 

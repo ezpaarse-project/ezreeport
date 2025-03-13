@@ -6,13 +6,6 @@ services:
     ports:
       - 5432:5432
 
-  redis:
-    extends:
-      file: docker-compose.yml
-      service: redis
-    ports:
-      - 6389:6379
-
   rabbitmq:
     extends:
       file: docker-compose.yml
@@ -28,10 +21,14 @@ services:
       - .env
       - path: .env.local
         required: false
+    extra_hosts:
+      - host.docker.internal:host-gateway # Used because elastic is on the same machine, but not the same network
     volumes:
       - .:/usr/dev
+      - ./data/api:/data/ezreeport/report:ro # Report output
     command: "npm run dev"
     ports:
+      - 8080:8080
       - 9230:9229 # Debug port
     restart: unless-stopped
 
@@ -46,7 +43,7 @@ services:
       - host.docker.internal:host-gateway # Used because elastic is on the same machine, but not the same network
     volumes:
       - .:/usr/dev
-      - ./data/report:/data/ezreeport/report # Report output
+      - ./data/api:/data/ezreeport/report # Report output
     command: "npm run dev"
     ports:
       - 9231:9229 # Debug port
@@ -66,7 +63,7 @@ services:
       - host.docker.internal:host-gateway # Used because elastic is on the same machine, but not the same network
     volumes:
       - .:/usr/dev
-      - ./data/report:/data/ezreeport/report # Report output
+      - ./data/api:/data/ezreeport/report # Report output
     command: "npm run dev"
     depends_on:
       rabbitmq:
@@ -82,7 +79,7 @@ services:
         required: false
     volumes:
       - .:/usr/dev
-      - ./data/report:/data/ezreeport/report # Report output
+      - ./data/api:/data/ezreeport/report # Report output
     command: "npm run dev"
     ports:
       - 9232:9229 # Debug port

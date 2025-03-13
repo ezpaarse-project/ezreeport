@@ -1,7 +1,7 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
-import { z } from '~/lib/zod';
+import { z } from '~common/lib/zod';
 
 import * as responses from '~/routes/v2/responses';
 import { buildPaginatedResponse } from '~/models/pagination';
@@ -10,7 +10,7 @@ import { PaginationQuery, PaginationResponse } from '~/models/pagination/types';
 import * as tasks from '~/models/tasks';
 import { Task } from '~/models/tasks/types';
 import { NotFoundError, ArgumentError } from '~/types/errors';
-import { stringToB64 } from '~/lib/utils';
+import { stringToB64 } from '~common/lib/utils';
 
 const SpecificEmailParams = z.object({
   email: z.string().email().min(1)

@@ -1,7 +1,7 @@
 import prisma, { Prisma } from '~/lib/prisma';
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
-import { ensureSchema } from '~/lib/zod';
+import { ensureSchema } from '~common/lib/zod';
 
 import type { PaginationType } from '~/models/pagination/types';
 import { buildPaginatedRequest } from '~/models/pagination';
@@ -15,7 +15,8 @@ import {
   type TaskQueryFiltersType,
   type TaskIncludeFieldsType,
 } from './types';
-import { ensureArray } from '~/lib/utils';
+import { ensureArray } from '~common/lib/utils';
+import { calcNextDateFromRecurrence } from '../recurrence';
 
 const logger = appLogger.child({ scope: 'models', model: 'tasks' });
 
@@ -282,9 +283,14 @@ export async function doesTaskExist(id: string): Promise<boolean> {
 export async function editTaskAfterGeneration(
   id: string,
   lastRun?: Date,
-  nextRun?: Date,
   enabled?: boolean,
 ): Promise<TaskType> {
+  let nextRun: Date | undefined;
+  if (lastRun) {
+    const { recurrence } = await prisma.task.findUniqueOrThrow({ where: { id } });
+    nextRun = calcNextDateFromRecurrence(lastRun, recurrence);
+  }
+
   const task = await prisma.task.update({
     where: { id },
     data: {

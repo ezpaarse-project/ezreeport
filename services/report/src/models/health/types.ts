@@ -1,4 +1,4 @@
-import { z } from '~/lib/zod';
+import { z } from '~common/lib/zod';
 
 /**
  * Validation for success pongs
@@ -54,7 +54,7 @@ export type PongType = z.infer<typeof Pong>;
 /**
  * Validation for services
  */
-export const Services = z.enum(['elastic', 'redis', 'database'] as const);
+export const Services = z.enum(['elastic', 'database'] as const);
 
 /**
  * Type for services

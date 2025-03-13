@@ -1,7 +1,7 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
-import { z } from '~/lib/zod';
+import { z } from '~common/lib/zod';
 import config from '~/lib/config';
 
 import authPlugin from '~/plugins/auth';

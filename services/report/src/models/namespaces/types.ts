@@ -1,42 +1,9 @@
-import { z } from '~/lib/zod';
+import { z } from '~common/lib/zod';
 
+import { Namespace } from '~common/types/namespaces';
 import { BulkMembership, BulkMembershipResult } from '~/models/memberships/types';
 
-/**
- * Validation for a namespace
- */
-export const Namespace = z.object({
-  id: z.string().min(1).readonly()
-    .describe('Namespace ID'),
-
-  name: z.string().min(1)
-    .describe('Namespace name'),
-
-  fetchLogin: z.object({
-    elastic: z.object({
-      username: z.string().min(1)
-        .describe('Elastic username used to fetch data for reports in this namespace'),
-    }),
-  }).describe('Credentials for fetchers used for namespace'),
-
-  fetchOptions: z.object({
-    elastic: z.object({}),
-  }).describe('Additional options for fetchers used for namespace'),
-
-  logoId: z.string().nullish()
-    .describe('Namespace logo'),
-
-  createdAt: z.date().readonly()
-    .describe('Creation date'),
-
-  updatedAt: z.date().nullable().readonly()
-    .describe('Last update date'),
-});
-
-/**
- * Type for a namespace
- */
-export type NamespaceType = z.infer<typeof Namespace>;
+export * from '~common/types/namespaces';
 
 /**
  * Validation for creating/updating a namespace

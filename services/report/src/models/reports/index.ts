@@ -7,15 +7,15 @@ import config from '~/lib/config';
 
 import type { ReportFilesType, ReportFilesOfTaskType } from './types';
 
-const { outDir } = config.report;
+const { reportDir } = config;
 
 /**
- * Scan outDir to get the reports per tasks
+ * Scan reportDir to get the reports per tasks
  *
  * @returns The reports per tasks
  */
 export async function getReportsPerTasks() {
-  const files = await glob('**/*.{json,pdf}', { cwd: outDir });
+  const files = await glob('**/*.{json,pdf}', { cwd: reportDir });
 
   const pathsPerTask = new Map<string, string>();
   const filesPerPath = new Map<string, ReportFilesType>();
@@ -28,7 +28,7 @@ export async function getReportsPerTasks() {
       case 'det': {
         type = 'detail';
         // eslint-disable-next-line no-await-in-loop
-        const { detail } = JSON.parse(await readFile(join(outDir, file), 'utf-8'));
+        const { detail } = JSON.parse(await readFile(join(reportDir, file), 'utf-8'));
         pathsPerTask.set(name, detail.taskId);
         break;
       }

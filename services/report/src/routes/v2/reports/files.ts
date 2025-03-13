@@ -4,7 +4,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import fastifyStatic from '@fastify/static';
 import { StatusCodes } from 'http-status-codes';
 
-import { z } from '~/lib/zod';
+import { z } from '~common/lib/zod';
 import config from '~/lib/config';
 
 import { requireAllowedNamespace } from '~/plugins/auth';
@@ -18,7 +18,7 @@ import { getTask } from '~/models/tasks';
 
 import { NotFoundError } from '~/types/errors';
 
-const { outDir } = config.report;
+const { reportDir } = config;
 
 const SpecificReportParams = z.object({
   taskId: z.string().min(1)
@@ -37,7 +37,7 @@ const SpecificReportParams = z.object({
 const router: FastifyPluginAsyncZod = async (fastify) => {
   // Setup decorator
   await fastify.register(fastifyStatic, {
-    root: outDir,
+    root: reportDir,
     serve: false,
   });
 

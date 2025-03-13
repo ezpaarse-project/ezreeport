@@ -50,6 +50,7 @@ const formatBasePlugin: FastifyPluginAsync<PluginOptions> = async (fastify, opts
         { name: 'auth', description: 'Auth management' },
         { name: 'crons', description: 'Cron management' },
         { name: 'elastic', description: 'Elastic shorthands routes' },
+        { name: 'generations', description: 'Task generations routes' },
         { name: 'health', description: 'Health management' },
         { name: 'memberships', description: 'Membership management' },
         { name: 'namespaces', description: 'Namespace management' },

@@ -5,20 +5,36 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "localRoot": "${workspaceFolder}/services/mail",
-      "name": "mail: Debug",
-      "port": 9231,
-      "remoteRoot": "/usr/dev/services/mail",
-      "request": "attach",
-      "type": "node"
-    },
-    {
       "localRoot": "${workspaceFolder}/services/report",
       "name": "report: Debug",
       "port": 9230,
       "remoteRoot": "/usr/dev/services/report",
       "request": "attach",
       "type": "node"
-    }
+    },
+    {
+      "localRoot": "${workspaceFolder}/services/worker",
+      "name": "worker: Debug",
+      "port": 9231,
+      "remoteRoot": "/usr/dev/services/worker",
+      "request": "attach",
+      "type": "node"
+    },
+    {
+      "localRoot": "${workspaceFolder}/services/scheduler",
+      "name": "scheduler: Debug",
+      "port": 9232,
+      "remoteRoot": "/usr/dev/services/scheduler",
+      "request": "attach",
+      "type": "node"
+    },
+    {
+      "localRoot": "${workspaceFolder}/services/mail",
+      "name": "mail: Debug",
+      "port": 9233,
+      "remoteRoot": "/usr/dev/services/mail",
+      "request": "attach",
+      "type": "node"
+    },
   ]
 }

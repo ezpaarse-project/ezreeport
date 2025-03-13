@@ -1,7 +1,7 @@
 import type { FastifyReply } from 'fastify';
 import { getReasonPhrase } from 'http-status-codes';
 
-import { z } from '~/lib/zod';
+import { z } from '~common/lib/zod';
 
 export const BaseResponse = z.object({
   apiVersion: z.number(),

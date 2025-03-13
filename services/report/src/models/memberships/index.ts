@@ -1,6 +1,6 @@
 import prisma, { Prisma } from '~/lib/prisma';
 import { appLogger } from '~/lib/logger';
-import { ensureSchema } from '~/lib/zod';
+import { ensureSchema } from '~common/lib/zod';
 
 import { buildPaginatedRequest } from '~/models/pagination';
 import type { PaginationType } from '~/models/pagination/types';

@@ -1,7 +1,7 @@
 import prisma, { type Prisma } from '~/lib/prisma';
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
-import { ensureSchema } from '~/lib/zod';
+import { ensureSchema } from '~common/lib/zod';
 
 import type { PaginationType } from '~/models/pagination/types';
 import { buildPaginatedRequest } from '~/models/pagination';

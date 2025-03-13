@@ -1,18 +1,14 @@
-import Fastify from 'fastify';
-import fastifyCors from '@fastify/cors';
-
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
+import startHTTPServer from '~/lib/http';
 
-import { initQueues } from '~/models/queues';
-import { initCrons } from '~/models/crons';
+import initQueues from '~/models/queues';
+import initRPCServer from '~/models/rpc/server';
+import initRPCClients from '~/models/rpc/client';
 
-import loggerPlugin from '~/plugins/logger';
 import routes from '~/routes';
 
 import { initTemplates } from './init';
-
-const { port, allowedOrigins: rawOrigins } = config;
 
 const start = async () => {
   appLogger.info({
@@ -20,42 +16,16 @@ const start = async () => {
     env: process.env.NODE_ENV,
     logLevel: config.log.level,
     logDir: config.log.dir,
-    msg: 'Service running',
+    msg: 'Service starting',
   });
 
-  // Create Fastify instance
-  const fastify = Fastify({ logger: false });
-
-  // Register cors
-  const allowedOrigins = rawOrigins.split(',');
-  await fastify.register(
-    fastifyCors,
-    {
-      origin: allowedOrigins,
-    },
-  );
-
-  await fastify.register(loggerPlugin);
-
-  await fastify.register(routes);
-
-  // Start listening
   try {
-    const address = await fastify.listen({ port, host: '::' });
+    await startHTTPServer(routes);
 
-    appLogger.info({
-      scope: 'http',
-      address,
-      startupDuration: process.uptime(),
-      startupDurationUnit: 's',
-      msg: 'Service listening',
-    });
-
-    await Promise.all([
-      initQueues(),
-      initCrons(),
-      initTemplates(),
-    ]);
+    await initTemplates();
+    await initQueues();
+    await initRPCServer();
+    await initRPCClients();
 
     appLogger.info({
       scope: 'init',

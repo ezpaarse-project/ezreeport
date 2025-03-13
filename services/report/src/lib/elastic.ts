@@ -3,7 +3,6 @@ import { setTimeout } from 'node:timers/promises';
 import {
   Client,
   type ClientOptions,
-  type RequestParams,
   type estypes as ElasticTypes,
 } from '@elastic/elasticsearch';
 import { merge } from 'lodash';
@@ -128,34 +127,6 @@ export const elasticPing = async () => {
   const { body, statusCode } = await elastic.ping();
 
   return body && (statusCode || (body ? 200 : 500));
-};
-
-/**
- * Shorthand to search multiple queries with elastic
- *
- * @param params The search params
- * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
- *
- * @returns The results of the search
- */
-export const elasticMSearch = async <ResponseType extends Record<string, unknown>>(
-  params: RequestParams.Msearch<ElasticTypes.MsearchRequestItem[]>,
-  runAs?: string,
-) => {
-  const elastic = await getElasticClient();
-
-  const headers: Record<string, unknown> = {};
-  if (runAs) {
-    headers['es-security-runas-user'] = runAs;
-  }
-
-  return elastic.msearch<
-  ElasticTypes.MsearchResponse<ResponseType>,
-  ElasticTypes.MsearchRequestItem[]
-  >(
-    params,
-    { headers },
-  );
 };
 
 /**

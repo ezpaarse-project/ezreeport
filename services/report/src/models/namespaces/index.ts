@@ -1,6 +1,6 @@
 import prisma, { type Prisma } from '~/lib/prisma';
 import { appLogger } from '~/lib/logger';
-import { ensureSchema } from '~/lib/zod';
+import { ensureSchema } from '~common/lib/zod';
 
 import { buildPaginatedRequest } from '~/models/pagination';
 import { PaginationType } from '~/models/pagination/types';
@@ -36,7 +36,6 @@ function applyFilters(filters: NamespaceQueryFiltersType) {
  *
  * @returns All namespaces following pagination
  */
-// eslint-disable-next-line import/prefer-default-export
 export async function getAllNamespaces(
   filters?: NamespaceQueryFiltersType,
   pagination?: PaginationType,

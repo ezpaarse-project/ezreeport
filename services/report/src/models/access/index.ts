@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 
 import prisma, { Access, type Prisma } from '~/lib/prisma';
 import { appLogger } from '~/lib/logger';
-import { ensureSchema } from '~/lib/zod';
+import { ensureSchema } from '~common/lib/zod';
 
 import { Namespace, type NamespaceType } from '../namespaces/types';
 import { User, type UserType } from '../users/types';

@@ -1,7 +1,11 @@
+import { randomUUID } from 'node:crypto';
+
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
+import { compact } from 'lodash';
 
-import { z } from '~/lib/zod';
+import * as dfns from '~common/lib/date-fns';
+import { z } from '~common/lib/zod';
 
 import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
 import { Access } from '~/models/access';
@@ -9,12 +13,14 @@ import { Access } from '~/models/access';
 import * as responses from '~/routes/v2/responses';
 
 import * as reports from '~/models/reports';
-import { ReportFilesOfTask, InputManualReport } from '~/models/reports/types';
-import { queueGeneration } from '~/models/queues';
-import { QueueName, GenerationData } from '~/models/queues/types';
+import { ReportFilesOfTask, InputManualReport, type ReportPeriodType } from '~/models/reports/types';
+import { queueGeneration } from '~/models/queues/report/generation';
 import { getTask } from '~/models/tasks';
+import { getTemplate } from '~/models/templates';
+import { getNamespace } from '~/models/namespaces';
+import { calcNextDateFromRecurrence, calcPeriodFromRecurrence } from '~/models/recurrence';
 
-import { NotFoundError } from '~/types/errors';
+import { ArgumentError, ConflictError, NotFoundError } from '~/types/errors';
 
 import reportRoutes from './files';
 
@@ -107,10 +113,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       response: {
         [StatusCodes.OK]: responses.SuccessResponse(
           z.object({
-            queue: QueueName.describe('Queue name'),
             id: z.string().describe("Queue's ID"),
-            data: GenerationData.describe("Queue's data"),
-          }).describe("Queue's task created"),
+          }).describe('Info to get progress of generation'),
         ),
         [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
         [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
@@ -133,30 +137,57 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     ],
     handler: async (request, reply) => {
       const task = await getTask(request.params.taskId);
-      if (!task) {
-        throw new NotFoundError(`Task ${request.params.taskId} not found`);
+      if (!task) { throw new NotFoundError(`Task ${request.params.taskId} not found`); }
+      const template = await getTemplate(task.extendedId);
+      if (!template) { throw new NotFoundError(`Template ${task.extendedId} not found`); }
+      const namespace = await getNamespace(task.namespaceId);
+      if (!namespace) { throw new NotFoundError(`Namespace ${task.namespaceId} not found`); }
+
+      // Resolve period
+      let period: ReportPeriodType | undefined;
+      if (!request.body.period) {
+        period = calcPeriodFromRecurrence(new Date(), task.recurrence, -1);
+      } else {
+        period = request.body.period;
+
+        // Check if period is compatible with task
+        const expectedPeriodEnd = dfns.endOfDay(
+          dfns.add(
+            calcNextDateFromRecurrence(period.start, task.recurrence),
+            { days: -1 },
+          ),
+        );
+        if (!dfns.isSameDay(expectedPeriodEnd, period.end)) {
+          const isoStart = dfns.formatISO(period.start);
+          const isoParsedEnd = dfns.formatISO(period.end);
+          const isoEnd = dfns.formatISO(expectedPeriodEnd);
+
+          throw new ConflictError(`Custom period "${isoStart} to ${isoParsedEnd}" doesn't match task's recurrence (${task.recurrence}). Should be : "${isoStart} to ${isoEnd}")`);
+        }
       }
 
-      if (request.body.targets) {
-        task.targets = request.body.targets;
+      // Resolve targets
+      const targets = compact(request.body.targets ?? task.targets);
+      if (targets.length <= 0) {
+        throw new ArgumentError('You must specify at least one target');
       }
 
       const firstLevelDebug = !!request.body.period || !!request.body.targets;
       const secondLevelDebug = process.env.NODE_ENV !== 'production' && request.body.debug;
 
-      const job = await queueGeneration({
+      const data = await queueGeneration({
+        id: randomUUID(),
         task,
-        period: request.body.period,
+        namespace,
+        template,
+        period,
+        targets,
         origin: request.user?.username ?? 'unknown',
-        shouldWriteActivity: !firstLevelDebug && !secondLevelDebug,
-        debug: secondLevelDebug,
+        writeActivity: !firstLevelDebug && !secondLevelDebug,
+        printDebug: secondLevelDebug,
       });
 
-      return responses.buildSuccessResponse({
-        id: job?.id ?? '',
-        queue: 'generation' as const,
-        data: job?.data,
-      }, reply);
+      return responses.buildSuccessResponse({ id: data.id }, reply);
     },
   });
 

@@ -1,4 +1,4 @@
-import { ensureSchema } from '~/lib/zod';
+import { ensureSchema } from '~common/lib/zod';
 import prisma from '~/lib/prisma';
 import { elasticIndexMapping, elasticListIndices, elasticResolveIndex } from '~/lib/elastic';
 

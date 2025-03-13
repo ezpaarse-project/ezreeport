@@ -16,7 +16,7 @@
 
     // Used by TypeScript
     "lib": ["ES2023"],
-    "module": "commonjs",
+    "module": "NodeNext",
     "resolveJsonModule": true,
     "esModuleInterop": true,
   }

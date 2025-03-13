@@ -1,8 +1,8 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
-import { startOfDay } from '~/lib/date-fns';
-import { z } from '~/lib/zod';
+import { startOfDay } from '~common/lib/date-fns';
+import { z } from '~common/lib/zod';
 
 import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
 import { Access } from '~/models/access';

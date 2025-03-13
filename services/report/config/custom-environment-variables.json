@@ -5,7 +5,7 @@
   "log": {
     "level": "LOG_LEVEL",
     "dir": "LOG_DIR",
-    "ignore": "LOG_IGNORE"
+    "ignore": { "__name": "LOG_IGNORE", "__format": "json" }
   },
   "defaultTemplate": {
     "name": "REPORT_DEFAULT_TEMPLATE_NAME",

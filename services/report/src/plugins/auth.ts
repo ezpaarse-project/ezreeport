@@ -8,7 +8,7 @@ import fp from 'fastify-plugin';
 import { StatusCodes } from 'http-status-codes';
 
 import config from '~/lib/config';
-import { ensureArray } from '~/lib/utils';
+import { ensureArray } from '~common/lib/utils';
 
 import {
   registerRouteWithAccess,

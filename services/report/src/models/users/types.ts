@@ -1,4 +1,4 @@
-import { z, stringToBool } from '~/lib/zod';
+import { z, stringToBool } from '~common/lib/zod';
 
 import { BulkMembership, BulkMembershipResult } from '~/models/memberships/types';
 
