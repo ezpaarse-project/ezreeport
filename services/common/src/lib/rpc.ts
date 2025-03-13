@@ -1,22 +1,54 @@
 import { randomUUID } from 'node:crypto';
 
-import type { Channel, ConsumeMessage } from 'amqplib';
+import type rabbitmq from 'amqplib';
 import type { Logger } from 'pino';
 
-import { RPCRequest, RPCResponse, type RPCResponseType } from '../types/queues';
+import { z } from './zod';
+
+/**
+ * Validation for a RPC request
+ */
+export const RPCRequest = z.object({
+  method: z.string().min(1)
+    .describe('RPC method name'),
+
+  params: z.array(z.any())
+    .describe('RPC method parameters'),
+});
+
+/**
+ * Type for a RPC request
+ */
+export type RPCRequestType = z.infer<typeof RPCRequest>;
+
+/**
+ * Validation for a RPC response
+ */
+export const RPCResponse = z.object({
+  result: z.unknown().optional()
+    .describe('RPC method result'),
+
+  error: z.string().min(1).optional()
+    .describe('RPC method error'),
+});
+
+/**
+ * Type for a RPC response
+ */
+export type RPCResponseType = z.infer<typeof RPCResponse>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type RPCServerRouter = Record<string, (...args: any[]) => Promise<unknown> | unknown>;
 
 export async function setupRPCServer(
-  channel: Channel,
+  channel: rabbitmq.Channel,
   queueName: string,
   router: RPCServerRouter,
   appLogger: Logger,
 ) {
   const logger = appLogger.child({ scope: 'rpc.server', queue: queueName });
 
-  const onRPCMessage = async (msg: ConsumeMessage | null) => {
+  const onRPCMessage = async (msg: rabbitmq.ConsumeMessage | null) => {
     if (!msg) {
       return;
     }
@@ -109,21 +141,17 @@ export async function setupRPCServer(
   logger.debug('RPC server setup');
 }
 
-export function setupRPCClient(channel: Channel, queueName: string, appLogger: Logger) {
+export function setupRPCClient(channel: rabbitmq.Channel, queueName: string, appLogger: Logger) {
   const logger = appLogger.child({ scope: 'rpc.client', queue: queueName });
   logger.debug('RPC client setup');
 
   return {
     call: async (method: string, ...params: unknown[]): Promise<unknown> => {
-      if (!channel) {
-        throw new Error('rpc is not initialized');
-      }
-
       const { queue: responseQueue } = await channel.assertQueue('', { exclusive: true });
       const correlationId = randomUUID();
 
       const promise = new Promise<unknown>((resolve, reject) => {
-        channel!.consume(
+        channel.consume(
           responseQueue,
           (msg) => {
             if (!msg || msg.properties.correlationId !== correlationId) {
