@@ -53,7 +53,7 @@ const generateReports: Executor = async (logger) => {
     }
 
     // eslint-disable-next-line no-await-in-loop
-    await queueGeneration({
+    const data = await queueGeneration({
       task,
       namespace,
       template,
@@ -65,14 +65,16 @@ const generateReports: Executor = async (logger) => {
       },
     });
 
-    logger.debug({
-      msg: 'Report queued for generation',
-      namespace: namespace.name,
-      templateId: task.extendedId,
-      template: template.name,
-      taskId: task.id,
-      task: task.name,
-    });
+    if (data) {
+      logger.debug({
+        msg: 'Report queued for generation',
+        namespace: namespace.name,
+        templateId: task.extendedId,
+        template: template.name,
+        taskId: task.id,
+        task: task.name,
+      });
+    }
   }
 
   return {

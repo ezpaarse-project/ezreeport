@@ -1,9 +1,12 @@
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
+import startHTTPServer from '~/lib/http';
+import { useRabbitMQ } from '~/lib/rabbitmq';
 
 import { initCrons } from '~/models/crons';
-import initRPCClients from '~/models/rpc/client';
-import initRPCServer from '~/models/rpc/server';
+import initRPC from '~/models/rpc';
+import initQueues from '~/models/queues';
+import { initHeartbeat } from '~/models/heartbeat';
 
 const start = async () => {
   appLogger.info({
@@ -14,9 +17,22 @@ const start = async () => {
     msg: 'Service starting',
   });
 
+  await useRabbitMQ(async (connection) => {
+    await initRPC(connection);
+    await initQueues(connection);
+    await initHeartbeat(connection);
+  });
+
   await initCrons();
-  await initRPCClients();
-  await initRPCServer();
+
+  await startHTTPServer({
+    '/liveness': (req, res) => {
+      res.writeHead(204).end();
+    },
+    '/readiness': (req, res) => {
+      res.writeHead(204).end();
+    },
+  });
 
   appLogger.info({
     scope: 'init',

@@ -1,5 +1,6 @@
 {
   "port": 8080,
+  "heartbeat": 10000,
   "log": {
     "level": "debug",
     "dir": "",

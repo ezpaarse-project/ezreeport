@@ -1,5 +1,6 @@
 {
   "port": { "__name": "HTTP_PORT", "__format": "number" },
+  "heartbeat": { "__name": "HEARTBEAT_FREQUENCY", "__format": "number" },
   "log": {
     "level": "LOG_LEVEL",
     "dir": "LOG_DIR",
