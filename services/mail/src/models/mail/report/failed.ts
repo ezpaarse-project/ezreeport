@@ -1,8 +1,8 @@
 import type { Logger } from 'pino';
 
 import { format } from '~common/lib/date-fns';
-import { b64ToString } from '~common/lib/utils';
 import config from '~/lib/config';
+import { gunzipAsync } from '~/lib/gzip';
 
 import type { MailReportQueueDataType } from '~common/types/queues';
 import { recurrenceToStr } from '~/models/recurrence';
@@ -17,19 +17,19 @@ export default async function sendFailedReport(
   data: MailReportQueueDataType,
   logger: Logger,
 ) {
+  const file = await gunzipAsync(Buffer.from(data.file, 'base64'));
   const dateStr = format(data.date, 'dd/MM/yyyy');
-  const to = [team];
 
   let error: string;
   try {
-    const { detail } = JSON.parse(b64ToString(data.file));
+    const { detail } = JSON.parse(file.toString());
     error = detail.error.message;
   } catch (err) {
     error = 'Unknown error, see attachements';
   }
 
   await sendMail({
-    to,
+    to: [team],
     subject: `Erreur de Reporting ezMESURE [${dateStr}] - ${data.task.name}`,
     body: await generateMail('error', {
       recurrence: recurrenceToStr(data.task.recurrence),
@@ -44,13 +44,13 @@ export default async function sendFailedReport(
     }),
     attachments: [{
       filename: data.filename,
-      content: data.file,
+      content: file,
       encoding: 'base64',
     }],
   });
   logger.info({
     filename: data.filename,
-    to,
+    to: [team],
     msg: 'Failed report sent to targets',
   });
 }

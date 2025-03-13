@@ -1,7 +1,7 @@
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
 
-import initQueue from '~/models/queues';
+import initQueues from '~/models/queues';
 import { initSMTP } from '~/models/mail';
 import healthChecks from '~/models/healthchecks';
 import startHTTPServer from './lib/http';
@@ -15,7 +15,7 @@ const start = async () => {
     msg: 'Service starting',
   });
 
-  await initQueue();
+  await initQueues();
   await initSMTP();
 
   await startHTTPServer({

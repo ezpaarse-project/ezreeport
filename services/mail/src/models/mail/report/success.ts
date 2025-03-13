@@ -3,6 +3,7 @@ import type { Logger } from 'pino';
 import { format } from '~common/lib/date-fns';
 import { stringToB64 } from '~common/lib/utils';
 import config from '~/lib/config';
+import { gunzipAsync } from '~/lib/gzip';
 
 import type { MailReportQueueDataType } from '~common/types/queues';
 import { recurrenceToStr } from '~/models/recurrence';
@@ -17,11 +18,12 @@ export default async function sendSuccessReport(
   data: MailReportQueueDataType,
   logger: Logger,
 ) {
+  const file = await gunzipAsync(Buffer.from(data.file, 'base64'));
   const dateStr = format(data.date, 'dd/MM/yyyy');
 
   // Send one email per target to allow un-subscription prefill
   const targets = await Promise.allSettled(
-    data.task.targets.map(async (to) => {
+    data.targets.map(async (to) => {
       try {
         const taskId64 = stringToB64(data.task.id);
         const to64 = stringToB64(to);
@@ -44,7 +46,7 @@ export default async function sendSuccessReport(
           }),
           attachments: [{
             filename: data.filename,
-            content: data.file,
+            content: file,
             encoding: 'base64',
           }],
         });

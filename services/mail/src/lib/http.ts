@@ -26,8 +26,8 @@ export default function startHTTPServer(routes: Record<string, Route>) {
     server.listen(port, () => {
       logger.info({
         address: `http://0.0.0.0:${port}`,
-        startupDuration: process.uptime() - start,
-        startupDurationUnit: 's',
+        initDuration: process.uptime() - start,
+        initDurationUnit: 's',
         msg: 'Service listening',
       });
 
