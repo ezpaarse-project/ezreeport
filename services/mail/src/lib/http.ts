@@ -15,7 +15,7 @@ export default function startHTTPServer(routes: Record<string, Route>) {
 
   return new Promise<http.Server>((resolve) => {
     server = http.createServer((req, res) => {
-      const route = routes[req.url] ?? routes[`${req.url}/`];
+      const route = routes[req.url || ''] ?? routes[`${req.url}/`];
       if (route) {
         route(req, res);
       } else {
@@ -31,7 +31,7 @@ export default function startHTTPServer(routes: Record<string, Route>) {
         msg: 'Service listening',
       });
 
-      resolve(server);
+      resolve(server!);
     });
   });
 }

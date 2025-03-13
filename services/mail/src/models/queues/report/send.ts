@@ -12,8 +12,6 @@ const mailQueueName = 'ezreeport.report:send:mail';
 
 const logger = appLogger.child({ scope: 'queues', exchange: sendExchangeName });
 
-let sendExchange: rabbitmq.Replies.AssertExchange | undefined;
-
 async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
   if (!msg) {
     return;
@@ -55,26 +53,23 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
 }
 
 // eslint-disable-next-line import/prefer-default-export
-export async function getReportSendExchange(channel: rabbitmq.Channel) {
-  if (!sendExchange) {
-    sendExchange = await channel.assertExchange(sendExchangeName, 'direct', { durable: false });
+export async function initReportSendExchange(channel: rabbitmq.Channel) {
+  const { exchange: sendExchange } = await channel.assertExchange(sendExchangeName, 'direct', { durable: false });
 
-    // Create queue to bind
-    const { queue } = await channel.assertQueue(mailQueueName, { durable: false });
-    channel.bindQueue(queue, sendExchange.exchange, 'mail');
+  // Create queue to bind
+  const { queue } = await channel.assertQueue(mailQueueName, { durable: false });
+  channel.bindQueue(queue, sendExchange, 'mail');
 
-    // Consume mail queue
-    channel.consume(
-      queue,
-      (m) => onMessage(m).then(() => m && channel!.ack(m)),
-      { noAck: false },
-    );
+  // Consume mail queue
+  channel.consume(
+    queue,
+    (m) => onMessage(m).then(() => m && channel!.ack(m)),
+    { noAck: false },
+  );
 
-    logger.debug({
-      msg: 'Send exchange created',
-      ...sendExchange,
-      queue,
-    });
-  }
-  return sendExchange;
+  logger.debug({
+    msg: 'Send exchange created',
+    exchange: sendExchange,
+    queue,
+  });
 }

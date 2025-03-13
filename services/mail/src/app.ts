@@ -1,10 +1,11 @@
 import { appLogger } from '~/lib/logger';
+import { useRabbitMQ } from '~/lib/rabbitmq';
 import config from '~/lib/config';
+import startHTTPServer from '~/lib/http';
 
 import initQueues from '~/models/queues';
 import { initSMTP } from '~/models/mail';
-import healthChecks from '~/models/healthchecks';
-import startHTTPServer from './lib/http';
+import { initHeartbeat, getMissingMandatoryServices } from '~/models/heartbeat';
 
 const start = async () => {
   appLogger.info({
@@ -15,24 +16,24 @@ const start = async () => {
     msg: 'Service starting',
   });
 
-  await initQueues();
   await initSMTP();
 
+  await useRabbitMQ(async (connection) => {
+    await initQueues(connection);
+    await initHeartbeat(connection);
+  });
+
   await startHTTPServer({
-    '/liveness': (req, res) => { res.writeHead(204).end(); },
+    '/liveness': (req, res) => {
+      res.writeHead(204).end();
+    },
     '/readiness': (req, res) => {
-      healthChecks()
-        .then(() => {
-          res.writeHead(204).end();
-        })
-        .catch((err) => {
-          appLogger.error({
-            scope: 'ping',
-            err,
-            msg: 'Error when getting services',
-          });
-          res.writeHead(503).end(JSON.stringify(err));
-        });
+      const missing = getMissingMandatoryServices();
+      if (missing.length) {
+        res.writeHead(503).end();
+      } else {
+        res.writeHead(204).end();
+      }
     },
   });
 

@@ -1,5 +1,7 @@
 import { createTransport, type Transporter } from 'nodemailer';
 
+import type { HeartbeatType } from '~common/lib/heartbeats';
+
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
 
@@ -30,9 +32,16 @@ export function getMailer() {
   return transporter;
 }
 
-export const SMTPPing = async () => {
+export const SMTPPing = async (): Promise<HeartbeatType> => {
   const t = getMailer();
-  return t.verify();
+  await t.verify();
+
+  return {
+    hostname: smtp.host,
+    service: 'smtp',
+    version: t.transporter.version.split('[')[0],
+    updatedAt: new Date(),
+  };
 };
 
 process.on('SIGTERM', () => {
