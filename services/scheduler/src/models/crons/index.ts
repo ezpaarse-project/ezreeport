@@ -3,9 +3,9 @@ import { CronJob } from 'cron';
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
 
-import type { Timers, Executor } from './types';
-import generateReports from './generateReports';
-import purgeOldReports from './purgeOldReports';
+import type { Timers, Executor, CronType } from './types';
+import generateReports from './executors/generateReports';
+import purgeOldReports from './executors/purgeOldReports';
 
 const { timers } = config;
 
@@ -32,7 +32,6 @@ async function onTick(cron: { key: Timers; timer: string }, executor: Executor) 
       durationUnit: 's',
       err,
     });
-    // TODO: send mail
   }
 
   l.info({
@@ -84,6 +83,60 @@ export async function initCrons() {
     duration: process.uptime() - start,
     durationUnit: 's',
   });
+}
+
+const isCron = (timer: string): timer is Timers => Object.keys(timers).includes(timer);
+
+const formatCron = (name: Timers, job: CronJob): CronType => ({
+  name,
+  running: job.isActive,
+  lastRun: job.lastDate() ?? undefined,
+  nextRun: job.isActive ? job.nextDate().toJSDate() : undefined,
+});
+
+export function getAllCrons(): CronType[] {
+  return Array.from(crons.entries())
+    .map(([name, job]) => formatCron(name, job));
+}
+
+export function stopCron(cron: string) {
+  if (!isCron(cron)) {
+    throw new Error(`cron ${cron} doesn't exists`);
+  }
+
+  const job = crons.get(cron)!;
+  job.stop();
+
+  return formatCron(cron, job);
+}
+
+export function startCron(cron: string): CronType {
+  if (!isCron(cron)) {
+    throw new Error(`cron ${cron} doesn't exists`);
+  }
+
+  const job = crons.get(cron)!;
+  job.start();
+
+  return formatCron(cron, job);
+}
+
+export function forceCron(cron: string): CronType {
+  if (!isCron(cron)) {
+    throw new Error(`cron ${cron} doesn't exists`);
+  }
+
+  const job = crons.get(cron)!;
+  if (job.isCallbackRunning) {
+    throw new Error(`cron ${cron} is already running`);
+  }
+
+  const executor = executors[cron];
+  // Don't await promise to avoid waiting for cron to finish
+  onTick({ key: cron, timer: job.cronTime.toString() }, executor);
+  job.lastExecution = new Date();
+
+  return formatCron(cron, job);
 }
 
 process.on('SIGTERM', () => {

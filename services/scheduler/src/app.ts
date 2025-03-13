@@ -2,7 +2,8 @@ import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
 
 import { initCrons } from '~/models/crons';
-import { initRPCClient } from '~/models/rpc/client';
+import initRPCClients from '~/models/rpc/client';
+import initRPCServer from '~/models/rpc/server';
 
 const start = async () => {
   appLogger.info({
@@ -14,7 +15,8 @@ const start = async () => {
   });
 
   await initCrons();
-  await initRPCClient();
+  await initRPCClients();
+  await initRPCServer();
 
   appLogger.info({
     scope: 'init',

@@ -1,13 +1,11 @@
-import { randomUUID } from 'node:crypto';
-
 import { compact } from 'lodash';
 
 import { endOfDay } from '~common/lib/date-fns';
 import { calcPeriodFromRecurrence } from '~common/lib/periods';
 
 import type { Executor } from '~/models/crons/types';
-import { queueGeneration } from '~/models/queues';
-import { getAllNamespaces, getAllTasks, getAllTemplates } from '~/models/rpc/client';
+import { queueGeneration } from '~/models/queues/report/generation';
+import { getAllNamespaces, getAllTasks, getAllTemplates } from '~/models/rpc/client/api';
 
 const generateReports: Executor = async (logger) => {
   const today = endOfDay(Date.now());
@@ -54,8 +52,8 @@ const generateReports: Executor = async (logger) => {
       continue;
     }
 
-    queueGeneration({
-      jobId: randomUUID(),
+    // eslint-disable-next-line no-await-in-loop
+    await queueGeneration({
       task,
       namespace,
       template,
