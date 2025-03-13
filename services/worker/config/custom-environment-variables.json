@@ -1,15 +1,12 @@
 {
   "port": { "__name": "HTTP_PORT", "__format": "number" },
-  "allowedOrigins": "ALLOWED_ORIGINS",
-  "adminKey": "ADMIN_KEY",
   "log": {
     "level": "LOG_LEVEL",
     "dir": "LOG_DIR",
     "ignore": { "__name": "LOG_IGNORE", "__format": "json" }
   },
-  "defaultTemplate": {
-    "name": "DEFAULT_TEMPLATE_NAME",
-    "dateField": "DEFAULT_TEMPLATE_DATEFIELD"
+  "fetcher": {
+    "bannedDomains": { "__name": "REPORT_FETCHER_BANNED_DOMAINS", "__format": "json" }
   },
   "elasticsearch": {
     "url": "ELASTIC_URL",
@@ -26,5 +23,12 @@
     "vhost": "RABBITMQ_VHOST",
     "username": "RABBITMQ_USERNAME",
     "password": "RABBITMQ_PASSWORD"
+  },
+  "report": {
+    "ttl": {
+      "iterations": { "__name": "REPORT_ITERATIONS_TO_LIVE", "__format": "number" },
+      "days": { "__name": "REPORT_DAYS_TO_LIVE", "__format": "number" }
+    },
+    "team": "EMAIL_DEV_TEAM"
   }
 }

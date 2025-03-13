@@ -1,6 +1,5 @@
 {
   "port": 8080,
-  "allowedOrigins": "*",
   "log": {
     "level": "debug",
     "dir": "",
@@ -14,11 +13,6 @@
     "username": "guest",
     "password": "guest"
   },
-  "redis": {
-    "host": "redis",
-    "port": 6379,
-    "password": ""
-  },
   "smtp": {
     "host": "maildev",
     "port": 1025,
@@ -28,20 +22,14 @@
       "rejectUnauthorized": false
     }
   },
-  "workers": {
-    "concurrence": 5,
-    "maxExecTime": 10000
-  },
   "mail": {
     "sender": "ezREEPORT <ezreeport@inist.fr>",
     "team": "ezteam@couperin.org",
     "attempts": 5,
-    "interval": 2000
+    "interval": 2000,
+    "templateDir": "src/templates"
   },
   "api": {
     "url": "http://localhost:8080"
-  },
-  "templates": {
-    "dir": "src/templates"
   }
 }

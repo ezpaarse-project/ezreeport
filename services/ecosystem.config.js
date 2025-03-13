@@ -1,5 +1,9 @@
 const env = (key, defValue) => process.env[key] || defValue;
 
+const nodeEnv = {
+  NODE_ENV: env('NODE_ENV'),
+};
+
 const logEnv = {
   LOG_LEVEL: env('LOG_LEVEL', 'info'),
   LOG_DIR: env('API_LOG_DIR'),
@@ -15,6 +19,15 @@ const elasticEnv = {
   ELASTIC_MAX_TRIES: +env('ELASTIC_MAX_TRIES', 10),
 };
 
+const rabbitmqEnv = {
+  RABBITMQ_PROTOCOL: env('"RABBITMQ_PROTOCOL', 'amqp'),
+  RABBITMQ_HOST: env('"RABBITMQ_HOST', 'rabbitmq'),
+  RABBITMQ_PORT: +env('"RABBITMQ_PORT', 5672),
+  RABBITMQ_VHOST: env('"RABBITMQ_VHOST', '/'),
+  RABBITMQ_USERNAME: env('"RABBITMQ_USERNAME', 'guest'),
+  RABBITMQ_PASSWORD: env('"RABBITMQ_PASSWORD', 'guest'),
+};
+
 module.exports = {
   apps: [
     {
@@ -26,14 +39,17 @@ module.exports = {
       log_type: 'json',
       increment_var: 'HTTP_PORT',
       env: {
-        NODE_ENV: env('NODE_ENV'),
+        ...nodeEnv,
         ...logEnv,
+        ...rabbitmqEnv,
         ...elasticEnv,
 
-        HTTP_PORT: +env('HTTP_PORT', 8080),
+        HTTP_PORT: +env('API_HTTP_PORT', 8080),
         ALLOWED_ORIGINS: env('ALLOWED_ORIGINS', '*'),
         ADMIN_KEY: env('ADMIN_KEY', '00000000-0000-0000-0000-000000000000'),
         DATABASE_URL: env('DATABASE_URL', 'postgresql://postgres:changeme@localhost:5432/?schema=public'),
+        DEFAULT_TEMPLATE_NAME: env('DEFAULT_TEMPLATE_NAME', ''),
+        DEFAULT_TEMPLATE_DATEFIELD: env('DEFAULT_TEMPLATE_DATEFIELD', 'scratch'),
       },
     },
     {
@@ -46,8 +62,9 @@ module.exports = {
       instances: env('WORKERS_CONCURRENCE', 5),
       increment_var: 'HTTP_PORT',
       env: {
-        NODE_ENV: env('NODE_ENV'),
+        ...nodeEnv,
         ...logEnv,
+        ...rabbitmqEnv,
         ...elasticEnv,
 
         FETCHER_BANNED_DOMAINS: env('FETCHER_BANNED_DOMAINS', '[]'),
@@ -57,7 +74,7 @@ module.exports = {
 
         EMAIL_DEV_TEAM: env('EMAIL_DEV_TEAM', 'ezteam-dev@couperin.org'),
 
-        HTTP_PORT: +env('HTTP_PORT', 8180),
+        HTTP_PORT: +env('WORKER_HTTP_PORT', 8180),
       },
     },
     {
@@ -68,13 +85,14 @@ module.exports = {
       merge_logs: false,
       log_type: 'json',
       env: {
-        NODE_ENV: env('NODE_ENV'),
+        ...nodeEnv,
         ...logEnv,
+        ...rabbitmqEnv,
 
         TIMER_GENERATE_REPORT: env('TIMER_GENERATE_REPORT', '0 1 * * * *'),
         TIMER_PURGE_OLD_REPORT: env('TIMER_PURGE_OLD_REPORT', '0 0 * * * *'),
 
-        HTTP_PORT: +env('HTTP_PORT', 8280),
+        HTTP_PORT: +env('SCHEDULER_HTTP_PORT', 8280),
       },
     },
     {
@@ -86,8 +104,9 @@ module.exports = {
       log_type: 'json',
       increment_var: 'HTTP_PORT',
       env: {
-        NODE_ENV: env('NODE_ENV'),
+        ...nodeEnv,
         ...logEnv,
+        ...rabbitmqEnv,
 
         SMTP_HOST: env('SMTP_HOST', 'smtp'),
         SMTP_PORT: env('SMTP_PORT', '25'),
@@ -100,7 +119,7 @@ module.exports = {
         EMAIL_ATTEMPTS: env('EMAIL_ATTEMPTS', '5'),
         EMAIL_ATTEMPTS_INTERVAL: env('EMAIL_ATTEMPTS_INTERVAL', '2000'),
 
-        HTTP_PORT: +env('HTTP_PORT', 8380),
+        HTTP_PORT: +env('MAIL_HTTP_PORT', 8380),
         API_URL: env('API_URL', 'http://localhost:8080'),
       },
     },

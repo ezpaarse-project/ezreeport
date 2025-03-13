@@ -12,12 +12,11 @@ import { getMailer } from '~/lib/mailer';
 const logger = appLogger.child({ scope: 'mails' });
 
 const {
-  mail: { sender }, // TODO[feat]: some properties are not used (attempts, interval)
-  templates: { dir: templatesPath },
+  mail: { sender, templateDir }, // TODO[feat]: some properties are not used (attempts, interval)
 } = config;
 
-nunjucks.configure(templatesPath);
-const images = readdirSync(join(templatesPath, 'images'));
+nunjucks.configure(templateDir);
+const images = readdirSync(join(templateDir, 'images'));
 
 export type MailOptions = {
   to: string[] | string,
@@ -33,7 +32,7 @@ export type MailOptions = {
 
 export const sendMail = async (options: MailOptions) => {
   const attachments: Mail.Attachment[] = [
-    ...images.map((img) => ({ path: join(templatesPath, 'images', img), cid: img, filename: img })),
+    ...images.map((img) => ({ path: join(templateDir, 'images', img), cid: img, filename: img })),
     ...(options.attachments ?? []),
   ];
 

@@ -1,0 +1,20 @@
+{
+  "port": { "__name": "HTTP_PORT", "__format": "number" },
+  "log": {
+    "level": "LOG_LEVEL",
+    "dir": "LOG_DIR",
+    "ignore": { "__name": "LOG_IGNORE", "__format": "json" }
+  },
+  "rabbitmq": {
+    "protocol": "RABBITMQ_PROTOCOL",
+    "host": "RABBITMQ_HOST",
+    "port": { "__name": "RABBITMQ_PORT", "__format": "number" },
+    "vhost": "RABBITMQ_VHOST",
+    "username": "RABBITMQ_USERNAME",
+    "password": "RABBITMQ_PASSWORD"
+  },
+  "timers": {
+    "generateReports": "TIMER_GENERATE_REPORT",
+    "purgeOldReports": "TIMER_PURGE_OLD_REPORT"
+  }
+}
