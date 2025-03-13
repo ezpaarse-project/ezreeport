@@ -136,7 +136,3 @@ export const ReportResult = z.object({
  * Type for the result of a generation
  */
 export type ReportResultType = z.infer<typeof ReportResult>;
-
-export const GenerationStatus = z.enum(['pending', 'processing', 'success', 'error'] as const);
-
-export type GenerationStatusType = z.infer<typeof GenerationStatus>;

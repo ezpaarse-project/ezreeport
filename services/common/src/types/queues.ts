@@ -1,7 +1,7 @@
 import { z } from '../lib/zod';
 
 import { Namespace } from './namespaces';
-import { GenerationStatus, ReportPeriod } from './reports';
+import { ReportPeriod } from './reports';
 import { Task } from './tasks';
 import { Template } from './templates';
 
@@ -9,7 +9,7 @@ import { Template } from './templates';
  * Validation for the data used to generate a report
  */
 export const GenerationQueueData = z.object({
-  jobId: z.string().min(1)
+  id: z.string().min(1)
     .describe('Job ID'),
 
   task: Task
@@ -42,22 +42,6 @@ export const GenerationQueueData = z.object({
  */
 export type GenerationQueueDataType = z.infer<typeof GenerationQueueData>;
 
-export const GenerationEventData = z.object({
-  id: z.string().min(1)
-    .describe('Job ID concerned'),
-
-  status: GenerationStatus
-    .describe('Job status'),
-
-  progress: z.number().min(0).max(1)
-    .describe('Job progress'),
-
-  updatedAt: z.date()
-    .describe('Job updated date'),
-});
-
-export type GenerationEventDataType = z.infer<typeof GenerationEventData>;
-
 /**
  * Validation for the data used to send a report by mail
  */
@@ -66,7 +50,7 @@ export const MailReportQueueData = z.object({
     .describe('If generation success or not'),
 
   file: z.string().base64().min(1)
-    .describe('File data'),
+    .describe('File data, base64 of gzip compressed'),
 
   filename: z.string().min(1)
     .describe('File name'),
@@ -74,7 +58,7 @@ export const MailReportQueueData = z.object({
   task: Task
     .describe('Task used to generate report'),
 
-  namespace: Namespace.omit({ fetchLogin: true, fetchOptions: true })
+  namespace: Namespace
     .describe('Namespace used to generate report'),
 
   period: ReportPeriod
@@ -144,7 +128,7 @@ export const RPCRequest = z.object({
   method: z.string().min(1)
     .describe('RPC method name'),
 
-  params: z.array(z.any()).min(1)
+  params: z.array(z.any())
     .describe('RPC method parameters'),
 });
 

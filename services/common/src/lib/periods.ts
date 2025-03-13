@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import * as dfns from './date-fns';
 import type { RecurrenceType } from '../types/recurrence';
 import type { ReportPeriodType } from '../types/reports';
@@ -12,6 +11,7 @@ import type { ReportPeriodType } from '../types/reports';
  *
  * @returns The period
  */
+// eslint-disable-next-line import/prefer-default-export
 export function calcPeriodFromRecurrence(
   today: Date,
   recurrence: RecurrenceType,
