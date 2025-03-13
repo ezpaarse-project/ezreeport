@@ -50,7 +50,6 @@ const fetcher: MdImgRemoteRequestor = async (url, method) => {
  * @param data The data (the text to show)
  * @param params Other params
  */
-// eslint-disable-next-line import/prefer-default-export
 export const addMdToPDF = async (
   doc: PDFReport,
   data: string,

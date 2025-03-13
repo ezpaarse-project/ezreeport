@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 
 import { formatISO, type Interval } from '~common/lib/date-fns';
@@ -45,6 +44,7 @@ function prepareEsFilter(filter: FilterType): ElasticTypes.QueryDslQueryContaine
  *
  * @returns ElasticSearch query
  */
+// eslint-disable-next-line import/prefer-default-export
 export function prepareEsQuery(
   filters: FilterType[],
   dateField: string,

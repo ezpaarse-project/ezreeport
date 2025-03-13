@@ -32,7 +32,7 @@ async function prepareReport(data: GenerationQueueDataType, startTime = new Date
 
   let filename = `ezREEPORT_${data.task.name.toLowerCase().replace(/[/ .]/g, '-')}`;
   if (process.env.NODE_ENV === 'production' || data.writeActivity) {
-    filename += `_${data.jobId}`;
+    filename += `_${data.id}`;
   }
   const filepath = join(basePath, filename);
   const namepath = `${todayStr}/${filename}`;
@@ -43,7 +43,7 @@ async function prepareReport(data: GenerationQueueDataType, startTime = new Date
   const result: ReportResultType = {
     success: true,
     detail: {
-      jobId: data.jobId,
+      jobId: data.id,
       taskId: data.task.id,
       createdAt: startTime,
       destroyAt: dfns.add(
@@ -159,8 +159,8 @@ function handleReportError(
 
   logger.error({
     reportPath: result.detail.files.report,
-    genDuration: result.detail.took,
-    genDurationUnit: 'ms',
+    duration: result.detail.took,
+    durationUnit: 'ms',
     err: {
       message: err.message,
       stack: err.stack,
@@ -221,7 +221,7 @@ export async function generateReport(
 ) {
   const logger = appLogger.child({
     scope: 'generateReport',
-    jobId: data.jobId,
+    jobId: data.id,
   });
 
   // Prepare report

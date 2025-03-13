@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 
 import { asyncWithCommonHandlers } from '~common/lib/utils';
@@ -35,6 +34,7 @@ type FigureWithId = FigureType & { _: { id: number } };
  *
  * @returns The data
  */
+// eslint-disable-next-line import/prefer-default-export
 export async function fetchElastic(options: ElasticFetchOptionsType) {
   if (!options.index) {
     throw new Error('Missing index');

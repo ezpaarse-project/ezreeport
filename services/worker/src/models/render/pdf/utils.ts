@@ -38,7 +38,6 @@ export const loadImageAsset = async (
  * @param marks The mark color (default: red)
  * @param markWidth The mark width (default: 1)
  */
-// eslint-disable-next-line import/prefer-default-export
 export const drawAreaRef = (pdf: jsPDF, area: Area, bg = 'green', marks = 'red', markWidth = 1) => {
   const def = {
     fill: pdf.getFillColor(),

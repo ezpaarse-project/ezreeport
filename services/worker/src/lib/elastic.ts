@@ -6,7 +6,6 @@ import {
   type RequestParams,
   type estypes as ElasticTypes,
 } from '@elastic/elasticsearch';
-import { merge } from 'lodash';
 
 import config from './config';
 import { appLogger } from './logger';
@@ -152,116 +151,5 @@ export const elasticMSearch = async <ResponseType extends Record<string, unknown
   return elastic.msearch<
   ElasticTypes.MsearchResponse<ResponseType>,
   ElasticTypes.MsearchRequestItem[]
-  >(
-    params,
-    { headers },
-  );
-};
-
-/**
- * Shorthand to list indices with elastic
- *
- * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
- *
- * @returns The indices names
- */
-export const elasticListIndices = async (runAs?: string) => {
-  const elastic = await getElasticClient();
-
-  const headers: Record<string, unknown> = {};
-  if (runAs) {
-    headers['es-security-runas-user'] = runAs;
-  }
-
-  const { body } = await elastic.indices.resolveIndex<ElasticTypes.IndicesResolveIndexResponse>(
-    { name: '*' },
-    { headers },
-  );
-
-  const hiddenRegex = /^\./;
-  return [
-    ...body.indices.map((i) => i.name),
-    ...body.aliases.map((a) => a.name),
-  ].filter((n) => !hiddenRegex.test(n));
-};
-
-/**
- * Simplify mapping by flattening oject using dot notation
- *
- * @param properties Elastic raw mapping
- *
- * @returns Map of dot notation keys and type as value
- */
-const simplifyMapping = (properties: Record<string, ElasticTypes.MappingProperty>) => {
-  const res: Record<string, string> = {};
-  // eslint-disable-next-line no-restricted-syntax
-  for (const [field, mapping] of Object.entries(properties)) {
-    if (mapping.type) {
-      res[field] = mapping.type;
-    }
-
-    if (mapping.properties) {
-      const sub = simplifyMapping(mapping.properties);
-      // eslint-disable-next-line no-restricted-syntax
-      for (const [subField, type] of Object.entries(sub)) {
-        res[`${field}.${subField}`] = type;
-      }
-    }
-  }
-
-  return res;
-};
-
-/**
- * Shorthand to get index mapping with elastic
- *
- * @param index name of the index
- * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
- *
- * @returns The js-like index mapping
- */
-export const elasticIndexMapping = async (index: string, runAs?: string) => {
-  const elastic = await getElasticClient();
-
-  const headers: Record<string, unknown> = {};
-  if (runAs) {
-    headers['es-security-runas-user'] = runAs;
-  }
-
-  const { body } = await elastic.indices.getMapping<ElasticTypes.IndicesGetMappingResponse>(
-    { index },
-    { headers },
-  );
-
-  // Keep all the keys of all the indices
-  const mappings = Object.values(body).map((i) => i.mappings.properties ?? {});
-  const globalMapping = merge({}, ...mappings);
-  return simplifyMapping(globalMapping);
-};
-
-export const elasticResolveIndex = async (index: string, runAs?: string) => {
-  const elastic = await getElasticClient();
-
-  const headers: Record<string, unknown> = {};
-  if (runAs) {
-    headers['es-security-runas-user'] = runAs;
-  }
-
-  try {
-    const { body } = await elastic.indices.resolveIndex<ElasticTypes.IndicesResolveIndexResponse>(
-      { name: index },
-      { headers },
-    );
-
-    return [
-      ...body.indices.map((i) => i.name),
-      ...body.aliases.map((a) => a.name),
-    ].sort((a, b) => a.localeCompare(b));
-  } catch (error) {
-    const elasticError = error as ({ meta?: { body?: { error?: { type?: string } } } } & Error);
-    if (elasticError.meta?.body?.error?.type === 'security_exception') {
-      return [];
-    }
-    throw error;
-  }
+  >(params, { headers });
 };

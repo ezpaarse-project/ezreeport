@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { merge } from 'lodash';
 
@@ -232,6 +231,7 @@ const extractOtherEsAggregations: ExtractEsAggregationsFnc = ({ params }) => {
  *
  * @returns Object with `aggregations` ready to be sent to ElasticSearch
  */
+// eslint-disable-next-line import/prefer-default-export
 export function prepareEsAggregations(
   figure: FigureType,
   dateField: string,

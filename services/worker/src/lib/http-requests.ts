@@ -17,7 +17,7 @@ const warnNoBannedDomains = () => logger.warn('No banned domains defined. Please
 /**
  * Setup banned domains via ENV, if not available tries to get them from a config file
  */
-export function initHttp() {
+export function initHttpRequests() {
   const { bannedDomains } = config.fetcher;
 
   // Try to parse the provided domains as RegExs
@@ -35,7 +35,7 @@ export function initHttp() {
     warnNoBannedDomains();
     return;
   }
-  logger.debug({
+  logger.info({
     bannedDomains: bannedDomainsRegexp.map((r) => r.source),
     msg: 'Registered banned domains',
   });

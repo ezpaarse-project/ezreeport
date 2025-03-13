@@ -1,9 +1,10 @@
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
+import { initHttpRequests } from '~/lib/http-requests';
+import { elasticPing } from '~/lib/elastic';
 
-import initQueue from '~/models/queues';
+import initQueues from '~/models/queues';
 import { initRenderEngine } from '~/models/render';
-import { initHttp } from './lib/http-requests';
 
 const start = async () => {
   appLogger.info({
@@ -14,10 +15,11 @@ const start = async () => {
     msg: 'Service starting',
   });
 
-  await initQueue();
+  await initQueues();
 
+  await elasticPing();
+  initHttpRequests();
   await initRenderEngine();
-  initHttp();
 
   appLogger.info({
     scope: 'init',
