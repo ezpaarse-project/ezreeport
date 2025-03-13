@@ -1,5 +1,6 @@
 {
   "port": { "__name": "HTTP_PORT", "__format": "number" },
+  "heartbeat": { "__name": "HEARTBEAT_FREQUENCY", "__format": "number" },
   "log": {
     "level": "LOG_LEVEL",
     "dir": "LOG_DIR",
@@ -13,8 +14,7 @@
     "username": "ELASTIC_USERNAME",
     "password": "ELASTIC_PASSWORD",
     "apiKey": "ELASTIC_API_KEY",
-    "requiredStatus": "ELASTIC_REQUIRED_STATUS",
-    "maxTries": { "__name": "ELASTIC_MAX_TRIES", "__format": "number" }
+    "requiredStatus": "ELASTIC_REQUIRED_STATUS"
   },
   "rabbitmq": {
     "protocol": "RABBITMQ_PROTOCOL",

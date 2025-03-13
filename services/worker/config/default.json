@@ -1,5 +1,6 @@
 {
   "port": 8080,
+  "heartbeat": 10000,
   "log": {
     "level": "debug",
     "dir": "",
@@ -13,8 +14,7 @@
     "username": "elastic",
     "password": "changeme",
     "apiKey": "",
-    "requiredStatus": "green",
-    "maxTries": 10
+    "requiredStatus": "green"
   },
   "rabbitmq": {
     "protocol": "amqp",

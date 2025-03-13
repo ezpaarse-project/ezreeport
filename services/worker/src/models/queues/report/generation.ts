@@ -22,9 +22,7 @@ const generationQueueName = 'ezreeport.report:queues';
 
 const logger = appLogger.child({ scope: 'queues', queue: generationQueueName });
 
-let generationQueue: rabbitmq.Replies.AssertQueue | undefined;
-
-async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
+async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage | null) {
   if (!msg) {
     return;
   }
@@ -48,7 +46,7 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
   let startTime = 0;
   let pageTotal = 0;
   let pageRendered = 0;
-  const updateProgress = (status: GenerationStatusType) => sendEvent({
+  const updateProgress = (status: GenerationStatusType) => sendEvent(channel, {
     id: data.id,
     taskId: data.task.id,
     start: data.period.start,
@@ -68,7 +66,6 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
   });
   events.on('resolve:template', (t) => {
     pageTotal = (t as TemplateBodyType).layouts.length;
-    updateProgress('PROCESSING');
   });
   events.on('render:layout', () => {
     pageRendered += 1;
@@ -106,7 +103,7 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
     const file = await readFile(join(outDir, filename));
     const compressed = await gzipAsync(file);
 
-    sendReport('mail', {
+    sendReport(channel, 'mail', {
       generationId: data.id,
       task: data.task,
       namespace: data.namespace,
@@ -130,17 +127,14 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
 
 // eslint-disable-next-line import/prefer-default-export
 export async function getReportGenerationQueue(channel: rabbitmq.Channel) {
-  if (!generationQueue) {
-    generationQueue = await channel.assertQueue(generationQueueName, { durable: false });
+  const { queue } = await channel.assertQueue(generationQueueName, { durable: false });
 
-    // Consume generation queue
-    channel.consume(
-      generationQueue.queue,
-      (m) => onMessage(m).then(() => m && channel.ack(m)),
-      { noAck: false },
-    );
+  // Consume generation queue
+  channel.consume(
+    queue,
+    (m) => onMessage(channel, m).then(() => m && channel.ack(m)),
+    { noAck: false },
+  );
 
-    logger.debug('Generation queue created');
-  }
-  return generationQueue;
+  logger.debug('Generation queue created');
 }

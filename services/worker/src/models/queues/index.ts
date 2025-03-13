@@ -1,16 +1,21 @@
+import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 
-import getChannel from './channel';
 import { getReportEventExchange } from './report/event';
 import { getReportGenerationQueue } from './report/generation';
 import { getReportSendExchange } from './report/send';
 
 const logger = appLogger.child({ scope: 'queues' });
 
-export default async function initQueues() {
+export default async function initQueues(connection: rabbitmq.ChannelModel) {
   const start = process.uptime();
 
-  const channel = await getChannel();
+  const channel = await connection.createChannel();
+  await channel.prefetch(1);
+  logger.debug({
+    msg: 'Channel created',
+    prefetch: 1,
+  });
 
   // Create report send exchange
   await getReportSendExchange(channel);
