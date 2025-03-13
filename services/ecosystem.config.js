@@ -2,6 +2,7 @@ const env = (key, defValue) => process.env[key] || defValue;
 
 const nodeEnv = {
   NODE_ENV: env('NODE_ENV'),
+  HEARTBEAT_FREQUENCY: env('HEARTBEAT_FREQUENCY', 10000),
 };
 
 const logEnv = {
@@ -16,7 +17,6 @@ const elasticEnv = {
   ELASTIC_PASSWORD: env('ELASTIC_PASSWORD', 'changeme'),
   ELASTIC_API_KEY: env('ELASTIC_API_KEY', ''),
   ELASTIC_REQUIRED_STATUS: env('ELASTIC_REQUIRED_STATUS', 'green'),
-  ELASTIC_MAX_TRIES: +env('ELASTIC_MAX_TRIES', 10),
 };
 
 const rabbitmqEnv = {
