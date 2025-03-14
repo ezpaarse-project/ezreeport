@@ -1,3 +1,12 @@
+# [@ezpaarse-project/ezreeport-vue-v2.1.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.0.0...@ezpaarse-project/ezreeport-vue@2.1.0-rc.1) (2025-03-14)
+
+
+### Features
+
+* **vue:** added hints to filters ([9c91704](https://github.com/ezpaarse-project/ezreeport/commit/9c917045664854b199f6638b8ffeb43395019a8e))
+* **vue:** added some animations to editor ([4fb77b6](https://github.com/ezpaarse-project/ezreeport/commit/4fb77b67ffd443a9b587a3786c9980aecbfe3fc3))
+* **vue:** improved multi value fields ([d67ddad](https://github.com/ezpaarse-project/ezreeport/commit/d67ddad5ab00b7ef22a02e0b448ed3d8fc4c9334))
+
 # [@ezpaarse-project/ezreeport-vue-v2.1.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.0.0...@ezpaarse-project/ezreeport-vue@2.1.0-beta.1) (2025-03-14)
 
 
