@@ -1,5 +1,10 @@
 <template>
-  <div ref="scroller" class="template-layout-preview-drawer mr-1 pr-2">
+  <v-slide-x-transition
+    ref="scrollerRef"
+    tag="div"
+    group
+    class="template-layout-preview-drawer mr-1 pr-2"
+  >
     <EditorPreviewLayout
       v-for="(layout, index) in items"
       :key="layout.id"
@@ -44,7 +49,7 @@
       <v-icon icon="mdi-plus" size="large" color="green" />
       <div>{{ $t('$ezreeport.editor.layouts.create') }}</div>
     </v-card>
-  </div>
+  </v-slide-x-transition>
 </template>
 
 <script setup lang="ts">
@@ -77,29 +82,31 @@ const emit = defineEmits<{
 }>();
 
 /** Scroller of layout list */
-const scrollerRef = useTemplateRef('scroller');
+const scrollerRef = useTemplateRef('scrollerRef');
 
 function scrollDown() {
-  if (!scrollerRef.value) {
+  const element = scrollerRef.value?.$el as HTMLDivElement | undefined;
+  if (!element) {
     return;
   }
 
-  scrollerRef.value.scrollTop = scrollerRef.value.scrollHeight;
+  element.scrollTop = element.scrollHeight;
 }
 
 function scrollTo(index: number) {
-  if (!scrollerRef.value) {
+  const element = scrollerRef.value?.$el as HTMLDivElement | undefined;
+  if (!element) {
     return;
   }
 
-  const node = scrollerRef.value.children[index];
+  const node = element.children[index];
   node?.scrollIntoView();
 }
 
 // Make the columns draggable to sort
 if (!props.readonly) {
   dragAndDrop({
-    parent: scrollerRef as Ref<HTMLElement>,
+    parent: scrollerRef as unknown as Ref<HTMLElement | undefined>,
     dragPlaceholderClass: 'template-layout-preview-drawer--dragging',
     dropZone: false,
     dragImage: () => document.createElement('div'), // Disable drag image

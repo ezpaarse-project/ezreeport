@@ -27,7 +27,7 @@
       <v-row class="pt-2" style="height: 100%">
         <v-col cols="2" class="pb-0 px-0" style="height: 100%">
           <EditorDrawer
-            ref="drawer"
+            ref="drawerRef"
             v-model="innerIndex"
             v-model:items="innerLayouts"
             :readonly="readonly"
@@ -118,7 +118,7 @@ if (props.index != null) {
 }
 
 /** Drawer of layout list */
-const drawerRef = useTemplateRef('drawer');
+const drawerRef = useTemplateRef('drawerRef');
 /** Layouts */
 const innerLayouts = computed({
   get: () => props.modelValue.layouts,
