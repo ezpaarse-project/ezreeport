@@ -13,12 +13,12 @@
     "advanced": "Avancé",
     "show_json": "Afficher le JSON",
     "settings": "Paramètres",
-    "required": "Requis",
+    "required": "Champ requis",
     "parameters": "Paramètres",
     "deselect": "Désélectionner",
     "search": "Rechercher",
     "name": "Nom",
-    "addMultiValue": "Ajouter des valeurs",
+    "addMultiValue": "Ajouter une valeur",
     "noValues": "Aucune valeur",
     "field": "Champ",
     "type": "Type",
@@ -180,12 +180,25 @@
         "value": "Valeur(s)",
         "isNot": "Inverser le filtre",
         "foundFilters": "{n} filtre trouvé|{n} filtres trouvés",
+        "name": "Nom du filtre",
         "nameTemplate": {
           "exists": "{field} existe",
           "exists:not": "{field} n'existe pas",
-          "values": "{0}|{0} {1}, etc.",
+          "values": "{0}|{0}, {1}|{0}, {1}, etc.",
           "is": "{field} est {valueText}",
           "is:not": "{field} n'est pas {valueText}"
+        },
+        "type": "Type de filtre",
+        "types": {
+          "exists": "existe (exists)",
+          "is": "est (is)",
+          "in": "inclus dans (is one of)"
+        },
+        "hints": {
+          "type": "Le type de filtre dépend du nombre de valeurs:",
+          "type:exists": "Si aucune valeur n'est présente, le filtre vérifiera l'existence du champ",
+          "type:is": "Si une seule valeur est présente, le filtre vérifiera si le champ à exactement cette valeur",
+          "type:in": "Si plusieurs valeurs sont présentes, le filtre vérifiera si le champ contient au moins une des valeurs"
         }
       },
       "aggregation": {
@@ -463,6 +476,7 @@
       }
     },
     "errors": {
+      "invalidEmail": "Adresse email invalide ({email})",
       "download": "Impossible de télécharger le fichier \"{path}\"",
       "downloadAttachement": "Impossible de télécharger la pièce jointe",
       "refreshNamespaces": "Impossible d'actualiser les @:$ezreeport.namespace"

@@ -8,11 +8,13 @@
       rounded
       class="template-layout-preview"
     >
-      <EditorPreviewSlot
-        v-for="figure in modelValue.figures"
-        :key="figure.id"
-        :model-value="figure"
-      />
+      <v-fade-transition tag="div" group class="template-layout-preview-grid">
+        <EditorPreviewSlot
+          v-for="figure in modelValue.figures"
+          :key="figure.id"
+          :model-value="figure"
+        />
+      </v-fade-transition>
 
       <v-overlay
         activator="parent"
@@ -44,11 +46,6 @@ const { grid } = useTemplateEditor();
 
 <style lang="scss" scoped>
 .template-layout-preview {
-  display: grid;
-  grid-template-columns: repeat(v-bind('grid.cols'), 1fr);
-  grid-template-rows: repeat(v-bind('grid.rows'), 1fr);
-  gap: 0.25rem;
-
   position: relative;
   flex: 1;
   padding: 0.5rem;
@@ -60,6 +57,15 @@ const { grid } = useTemplateEditor();
     width: 100%;
     display: flex;
     gap: 0.5rem;
+  }
+
+  &-grid {
+    display: grid;
+    grid-template-columns: repeat(v-bind('grid.cols'), 1fr);
+    grid-template-rows: repeat(v-bind('grid.rows'), 1fr);
+    gap: 0.25rem;
+
+    height: 100%;
   }
 }
 </style>
