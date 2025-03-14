@@ -39,6 +39,9 @@ export const Generation = z.object({
   took: z.number().int().min(0).optional()
     .describe('Time taken to generate the report, null if not started'),
 
+  reportId: z.string().min(1)
+    .describe('Report ID'),
+
   createdAt: z.coerce.date().readonly()
     .describe('Creation date'),
 

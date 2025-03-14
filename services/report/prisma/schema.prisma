@@ -129,6 +129,8 @@ model Generation {
   progress      Int?
   /// Number of milliseconds took to generate report
   took          Int?
+  /// Id of the generated report
+  reportId      String
   /// When the generation was created/started
   createdAt     DateTime             @default(now())
   /// When the generation was updated for the last time

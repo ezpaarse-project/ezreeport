@@ -43,6 +43,7 @@ async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage
 
   // Setup events
   const events = new EventEmitter<GenerationEventMap>();
+  let reportId = '';
   let startTime = 0;
   let pageTotal = 0;
   let pageRendered = 0;
@@ -57,15 +58,18 @@ async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage
     status,
     progress: pageTotal ? Math.round((pageRendered / pageTotal) * 100) : undefined,
     took: startTime ? Date.now() - startTime : undefined,
+    reportId,
     createdAt: new Date(startTime || Date.now()),
     updatedAt: new Date(),
   });
-  events.on('start', () => {
+  events.on('start', (event) => {
+    ({ reportId } = event as { reportId: string });
     startTime = Date.now();
     updateProgress('PROCESSING');
   });
-  events.on('resolve:template', (t) => {
-    pageTotal = (t as TemplateBodyType).layouts.length;
+  events.on('resolve:template', (event) => {
+    const { layouts } = event as TemplateBodyType;
+    pageTotal = layouts.length;
   });
   events.on('render:layout', () => {
     pageRendered += 1;
@@ -75,9 +79,9 @@ async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage
     pageRendered = pageTotal;
     updateProgress('PROCESSING');
   });
-  events.on('end', (r) => {
-    const status = (r as ReportResultType).success ? 'SUCCESS' : 'ERROR';
-    updateProgress(status);
+  events.on('end', (event) => {
+    const { success } = event as ReportResultType;
+    updateProgress(success ? 'SUCCESS' : 'ERROR');
   });
 
   // Generate report

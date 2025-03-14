@@ -35,7 +35,7 @@ async function prepareReport(data: GenerationQueueDataType, startTime = new Date
     filename += `_${data.id}`;
   }
   const filepath = join(basePath, filename);
-  const namepath = `${todayStr}/${filename}`;
+  const reportId = `${todayStr}/${filename}`;
 
   const periodDifference = dfns.differenceInMilliseconds(data.period.end, data.period.start);
 
@@ -55,7 +55,7 @@ async function prepareReport(data: GenerationQueueDataType, startTime = new Date
         end: data.period.end,
       },
       took: 0,
-      files: { detail: `${namepath}.det.json` },
+      files: { detail: `${reportId}.det.json` },
       meta: typeof data.writeActivity === 'object' ? data.writeActivity : {},
     },
   };
@@ -66,7 +66,7 @@ async function prepareReport(data: GenerationQueueDataType, startTime = new Date
     result,
     paths: {
       filepath,
-      namepath,
+      reportId,
     },
   };
 }
@@ -191,7 +191,7 @@ const writeInfoFile = (name: string, content: unknown) => writeFile(
 );
 
 export interface GenerationEventMap extends RenderEventMap {
-  start: [void];
+  start: [{ reportId: string }];
   'resolve:template': [TemplateBodyType];
   'fetch:template': [TemplateBodyType];
   'render:template': [TemplateBodyType];
@@ -237,7 +237,7 @@ export async function generateReport(
     task: data.task.name,
     paths,
   });
-  events.emit('start');
+  events.emit('start', { reportId: paths.reportId });
 
   let template: TemplateBodyType | undefined;
   try {
@@ -288,7 +288,7 @@ export async function generateReport(
       },
       events,
     );
-    result.detail.files.report = `${paths.namepath}.rep.pdf`;
+    result.detail.files.report = `${paths.reportId}.rep.pdf`;
     logger.debug({
       reportPath: result.detail.files.report,
       msg: 'Report wrote',
@@ -316,7 +316,7 @@ export async function generateReport(
   // Write detail when process is ending
   try {
     await writeInfoFile(`${paths.filepath}.det`, result);
-    result.detail.files.detail = `${paths.namepath}.det.json`;
+    result.detail.files.detail = `${paths.reportId}.det.json`;
     logger.debug({
       detailPath: result.detail.files.detail,
       msg: 'Detail wrote',
@@ -331,7 +331,7 @@ export async function generateReport(
   // Write debug when process is ending
   try {
     await writeInfoFile(`${paths.filepath}.deb`, omit(template, 'renderOptions.layouts'));
-    result.detail.files.debug = `${paths.namepath}.deb.json`;
+    result.detail.files.debug = `${paths.reportId}.deb.json`;
     logger.debug({
       detailPath: result.detail.files.debug,
       msg: 'Debug wrote',
