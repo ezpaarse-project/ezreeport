@@ -27,7 +27,7 @@ WORKDIR /usr/build
 RUN apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev pixman-dev
 
 COPY ./pnpm-lock.yaml ./
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm fetch
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm i --frozen-lockfile
 
 COPY . .
 
