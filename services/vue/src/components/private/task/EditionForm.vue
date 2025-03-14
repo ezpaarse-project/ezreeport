@@ -40,6 +40,7 @@
               :model-value="task.targets"
               :label="$t('$ezreeport.task.targets')"
               :rules="[(v) => v.length > 0 || $t('$ezreeport.required')]"
+              :item-rules="[(v) => isEmail(v) || $t('$ezreeport.errors.invalidEmail', { email: v })]"
               prepend-icon="mdi-mailbox"
               variant="underlined"
               required
@@ -108,6 +109,8 @@ import {
   type InputTask,
 } from '~sdk/tasks';
 
+import { isEmail } from '~/utils/validate';
+
 // Components props
 const props = defineProps<{
   /** The task to edit */
@@ -160,7 +163,7 @@ const filters = computed({
 });
 
 function onTargetUpdated(targets: string | string[] | undefined) {
-  if (!targets) {
+  if (targets == null) {
     task.value.targets = [];
     return;
   }
@@ -171,9 +174,13 @@ function onTargetUpdated(targets: string | string[] | undefined) {
   }
 
   // Allow multiple mail addresses, separated by semicolon or comma
-  task.value.targets = allTargets
-    .join(';').replace(/[,]/g, ';')
-    .split(';').map((mail) => mail.trim());
+  task.value.targets = Array.from(
+    new Set(
+      allTargets
+        .join(';').replace(/[,]/g, ';')
+        .split(';').map((mail) => mail.trim()),
+    ),
+  );
 }
 
 async function refreshNamespace() {

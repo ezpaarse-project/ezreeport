@@ -13,12 +13,12 @@
     "advanced": "Advanced",
     "show_json": "Show JSON",
     "settings": "Settings",
-    "required": "Required",
+    "required": "Filed required",
     "parameters": "Parameters",
     "deselect": "Deselect",
     "search": "Search",
     "name": "Name",
-    "addMultiValue": "Add value",
+    "addMultiValue": "Add a value",
     "noValues": "No values",
     "field": "Field",
     "type": "Type",
@@ -476,6 +476,7 @@
       }
     },
     "errors": {
+      "invalidEmail": "Invalid mail address ({email})",
       "download": "Can't download file \"{path}\"",
       "downloadAttachement": "Can't download attachement",
       "refreshNamespaces": "Can't refresh @:$ezreeport.namespace"

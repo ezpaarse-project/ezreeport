@@ -82,6 +82,7 @@
               :model-value="targets"
               :label="$t('$ezreeport.task.targets')"
               :rules="[(v) => v.length > 0 || $t('$ezreeport.required')]"
+              :item-rules="[(v) => isEmail(v) || $t('$ezreeport.errors.invalidEmail', { email: v })]"
               prepend-icon="mdi-mailbox"
               variant="underlined"
               required
@@ -167,6 +168,7 @@ import { generateAndListenReportOfTask } from '~sdk/helpers/jobs';
 import type { Task } from '~sdk/tasks';
 
 import { downloadBlob } from '~/lib/files';
+import { isEmail } from '~/utils/validate';
 
 const maxDate = add(endOfDay(new Date()), { days: -1 });
 
@@ -200,7 +202,7 @@ const formattedPeriod = computed(() => `${format(period.value.start, 'dd/MM/yyyy
 const periodRange = computed(() => eachDayOfInterval(period.value));
 
 function onTargetUpdated(emails: string | string[] | undefined) {
-  if (!emails) {
+  if (emails == null) {
     targets.value = [];
     return;
   }
@@ -211,9 +213,13 @@ function onTargetUpdated(emails: string | string[] | undefined) {
   }
 
   // Allow multiple mail addresses, separated by semicolon or comma
-  targets.value = allTargets
-    .join(';').replace(/[,]/g, ';')
-    .split(';').map((mail) => mail.trim());
+  targets.value = Array.from(
+    new Set(
+      allTargets
+        .join(';').replace(/[,]/g, ';')
+        .split(';').map((mail) => mail.trim()),
+    ),
+  );
 }
 
 /**

@@ -1,41 +1,65 @@
 <template>
-  <div>
-    <v-label :text="label" />
+  <div class="d-flex">
+    <div v-if="prependIcon" style="width: 24px; margin-right: 1rem;">
+      <v-icon :icon="prependIcon" color="grey-darken-1" />
+    </div>
 
-    <v-text-field
-      v-if="!readonly"
-      v-model="inputValue"
-      :placeholder="$t('$ezreeport.addMultiValue')"
-      :variant="variant"
-      :error-messages="errorMessages"
-      :prepend-icon="prependIcon"
-      :density="density"
-      hide-details="auto"
-      @keyup.enter="addValue(inputValue)"
-    />
+    <div style="flex: 1;">
+      <v-label :text="`${label || ''} (${elements.length})`" class="mb-0" />
 
-    <v-slide-group class="py-2">
-      <v-slide-group-item
-        v-for="element in elements"
-        :key="element"
+      <v-slide-x-transition tag="div" group>
+        <v-chip
+          v-for="(message, i) in errorMessages"
+          :key="`err${i}`"
+          :text="message"
+          prepend-icon="mdi-alert-circle"
+          density="comfortable"
+          variant="elevated"
+          class="value-chip my-1"
+          color="error"
+        />
+      </v-slide-x-transition>
+
+      <v-slide-x-transition
+        ref="scrollerRef"
+        tag="div"
+        group
+        class="container"
       >
         <v-chip
-          density="comfortable"
+          v-for="(item, i) in elements"
+          :key="i"
           :closable="!readonly"
-          class="mr-2"
-          @click:close="remValue(element)"
+          :color="(itemErrors.get(item)?.length ?? 0) > 0 ? 'error' : undefined"
+          density="comfortable"
+          class="value-chip my-1"
+          @click:close="remValue(item)"
         >
-          <span class="value-chip">{{ element }}</span>
+          <v-text-field
+            :model-value="item"
+            density="compact"
+            variant="plain"
+            hide-details
+            class="mb-2"
+            @update:model-value="editValue(item, $event)"
+          />
         </v-chip>
-      </v-slide-group-item>
-    </v-slide-group>
+      </v-slide-x-transition>
 
-    <div
-      v-if="elements.length === 0"
-      class="text-caption font-italic text-grey"
-    >
-      {{ $t('$ezreeport.noValues') }}
+      <v-chip
+        v-if="!readonly"
+        :text="$t('$ezreeport.addMultiValue')"
+        prepend-icon="mdi-plus"
+        density="comfortable"
+        variant="elevated"
+        class="value-chip mt-1"
+        color="green"
+        @click="addValue()"
+      />
+
+      <v-combobox v-model="elements" :rules="rules" multiple class="d-none" />
     </div>
+
   </div>
 </template>
 
@@ -56,6 +80,10 @@ const props = defineProps<{
   density?: 'default' | 'comfortable' | 'compact',
   /** Rules for the field */
   rules?: ((v: string[]) => boolean | string)[],
+  /** Rules for each item */
+  itemRules?: ((v: string) => boolean | string)[],
+  /** Maximum number of items */
+  count?: number,
 }>();
 
 // Component events
@@ -64,26 +92,41 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: string | string[] | undefined): void,
 }>();
 
-/** Inner value */
-const inputValue = ref('');
+const scrollerRef = useTemplateRef('scrollerRef');
 
 /** Values as an array */
-const elements = computed(() => {
-  if (!props.modelValue) {
-    return [];
-  }
+const elements = computed({
+  get: () => {
+    if (props.modelValue == null) {
+      return [];
+    }
 
-  if (Array.isArray(props.modelValue)) {
-    return props.modelValue;
-  }
+    if (Array.isArray(props.modelValue)) {
+      return props.modelValue;
+    }
 
-  return [props.modelValue];
+    return [props.modelValue];
+  },
+  set: (v) => {
+    if (v.length === 1) {
+      emit('update:modelValue', v[0]);
+      return;
+    }
+
+    if (v.length === 0) {
+      emit('update:modelValue', undefined);
+      return;
+    }
+
+    emit('update:modelValue', Array.from(new Set(v)));
+  },
 });
 
-/** Error messages using given rules */
-const errorMessages = computed(() => {
+const containerHeight = computed(() => `${Math.min(props.count ?? 6, elements.value.length) * (36 + 2)}px`);
+
+const rulesErrors = computed((): string[] => {
   if (!props.rules) {
-    return undefined;
+    return [];
   }
 
   return props.rules
@@ -91,22 +134,45 @@ const errorMessages = computed(() => {
     .filter((v) => v !== true);
 });
 
+const itemErrors = computed((): Map<string, string[]> => {
+  if (!props.itemRules) {
+    return new Map();
+  }
+
+  const rules = props.itemRules;
+
+  return new Map(
+    elements.value.map((key) => [
+      key,
+      rules
+        .map((rule) => rule(key) || 'Error')
+        .filter((v) => v !== true),
+    ]),
+  );
+});
+
+/** Error messages using given rules */
+const errorMessages = computed(() => new Set([
+  ...rulesErrors.value,
+  ...Array.from(itemErrors.value.values()).flat(),
+]));
+
+async function scrollToBottom() {
+  await nextTick();
+  const element = scrollerRef.value?.$el as HTMLDivElement | undefined;
+  if (!element) {
+    return;
+  }
+  element.scrollTop = element.scrollHeight;
+}
+
 /**
  * Add a new value
  */
-function addValue(value: string) {
-  inputValue.value = '';
-  if (elements.value.includes(value)) {
-    return;
-  }
-
-  if (elements.value.length === 0) {
-    emit('update:modelValue', value);
-    return;
-  }
-
-  const values = [...elements.value, value];
-  emit('update:modelValue', values);
+function addValue() {
+  const values = [...elements.value, ''];
+  elements.value = values;
+  scrollToBottom();
 }
 
 /**
@@ -114,27 +180,39 @@ function addValue(value: string) {
  */
 function remValue(value: string) {
   const values = elements.value.filter((el) => el !== value);
+  elements.value = values;
+}
 
-  if (elements.value.length === 1) {
-    emit('update:modelValue', values[0]);
-    return;
-  }
-
-  if (elements.value.length === 0) {
-    emit('update:modelValue', undefined);
-  }
-
-  emit('update:modelValue', values);
+/**
+ * Edit a value
+ */
+function editValue(oldValue: string, newValue: string) {
+  const values = elements.value.map((el) => (el === oldValue ? newValue : el));
+  elements.value = values;
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+.container {
+  height: v-bind('containerHeight');
+  overflow-x: auto;
+  scroll-behavior: smooth;
+}
+
 .value-chip {
-  display: inline-block;
-  vertical-align: bottom;
-  max-width: 15rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  width: 97%;
+
+  :deep(.v-chip__content) {
+    width: 100%;
+
+    & > span {
+      display: inline-block;
+      vertical-align: bottom;
+      max-width: 15rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
 }
 </style>
