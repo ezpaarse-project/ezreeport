@@ -65,6 +65,7 @@ export async function setupRPCServer(
         data: process.env.NODE_ENV === 'production' ? undefined : raw,
         error,
       });
+      channel.nack(msg, undefined, false);
       return;
     }
 
@@ -106,6 +107,8 @@ export async function setupRPCServer(
         methodName,
         params,
       });
+      channel.nack(msg, undefined, false);
+      return;
     }
 
     const buf = Buffer.from(JSON.stringify({ result, error }));
@@ -122,6 +125,7 @@ export async function setupRPCServer(
       size: buf.byteLength,
       sizeUnit: 'B',
     });
+    channel.ack(msg);
   };
 
   // Create rpc queue
@@ -132,11 +136,7 @@ export async function setupRPCServer(
   });
 
   // Consume rpc queue
-  channel.consume(
-    rpcQueue.queue,
-    (m) => onRPCMessage(m).then(() => m && channel!.ack(m)),
-    { noAck: false },
-  );
+  channel.consume(rpcQueue.queue, (m) => onRPCMessage(m));
 
   logger.debug('RPC server setup');
 }

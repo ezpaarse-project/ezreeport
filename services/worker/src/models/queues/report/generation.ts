@@ -38,6 +38,7 @@ async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage
       data: process.env.NODE_ENV === 'production' ? undefined : raw,
       err,
     });
+    channel.nack(msg, undefined, false);
     return;
   }
 
@@ -95,6 +96,7 @@ async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage
       msg: 'Error while generating report',
       err,
     });
+    channel.ack(msg);
     return;
   }
 
@@ -127,6 +129,8 @@ async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage
       err,
     });
   }
+
+  channel.ack(msg);
 }
 
 // eslint-disable-next-line import/prefer-default-export
@@ -134,11 +138,7 @@ export async function getReportGenerationQueue(channel: rabbitmq.Channel) {
   const { queue } = await channel.assertQueue(generationQueueName, { durable: false });
 
   // Consume generation queue
-  channel.consume(
-    queue,
-    (m) => onMessage(channel, m).then(() => m && channel.ack(m)),
-    { noAck: false },
-  );
+  channel.consume(queue, (m) => onMessage(channel, m));
 
   logger.debug('Generation queue created');
 }

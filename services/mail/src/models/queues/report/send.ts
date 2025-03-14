@@ -12,7 +12,7 @@ const mailQueueName = 'ezreeport.report:send:mail';
 
 const logger = appLogger.child({ scope: 'queues', exchange: sendExchangeName });
 
-async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
+async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage | null) {
   if (!msg) {
     return;
   }
@@ -28,6 +28,7 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
       data: process.env.NODE_ENV === 'production' ? undefined : raw,
       err,
     });
+    channel.nack(msg, undefined, false);
     return;
   }
 
@@ -35,20 +36,24 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
   try {
     if (!isReportData(data)) {
       await sendError(data, logger);
+      channel.ack(msg);
       return;
     }
 
     if (!data.success) {
       await sendFailedReport(data, logger);
+      channel.ack(msg);
       return;
     }
 
     await sendSuccessReport(data, logger);
+    channel.ack(msg);
   } catch (err) {
     logger.error({
       err,
       msg: 'Error when sending report',
     });
+    channel.nack(msg);
   }
 }
 
@@ -61,11 +66,7 @@ export async function initReportSendExchange(channel: rabbitmq.Channel) {
   channel.bindQueue(queue, sendExchange, 'mail');
 
   // Consume mail queue
-  channel.consume(
-    queue,
-    (m) => onMessage(m).then(() => m && channel!.ack(m)),
-    { noAck: false },
-  );
+  channel.consume(queue, (m) => onMessage(channel, m));
 
   logger.debug({
     msg: 'Send exchange created',
