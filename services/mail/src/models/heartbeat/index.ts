@@ -26,7 +26,7 @@ export async function initHeartbeat(connection: rabbitmq.ChannelModel) {
   const channel = await connection.createChannel();
   logger.debug('Channel created');
 
-  const { send } = await setupHeartbeat(channel, service, logger, frequency);
+  const { send } = await setupHeartbeat(channel, service, logger, true, frequency);
 
   send();
 

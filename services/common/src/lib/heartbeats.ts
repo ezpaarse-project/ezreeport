@@ -22,18 +22,39 @@ export const Heartbeat = z.object({
 
 export type HeartbeatType = z.infer<typeof Heartbeat>;
 
-type Pinger = () => Promise<HeartbeatType>;
-
 export type HeartbeatService = {
   name: string,
   version: string,
   getConnectedServices?: () => Promise<HeartbeatType>[],
 };
 
+const mandatoryServices = new Map<string, boolean>();
+
+export async function mandatoryService(
+  name: string,
+  pinger: () => Promise<HeartbeatType>,
+): Promise<HeartbeatType> {
+  try {
+    const beat = await pinger();
+    mandatoryServices.set(name, true);
+    return beat;
+  } catch (error) {
+    mandatoryServices.set(name, false);
+    throw error;
+  }
+}
+
+export function getMissingMandatoryServices() {
+  return Array.from(mandatoryServices.entries())
+    .filter(([, value]) => !value)
+    .map(([key]) => key);
+}
+
 export async function setupHeartbeat(
   channel: rabbitmq.Channel,
   service: HeartbeatService,
   appLogger: Logger,
+  isMandatory = false,
   frequency = 10000,
 ) {
   const logger = appLogger.child({ scope: 'heartbeat' });
@@ -95,7 +116,16 @@ export async function setupHeartbeat(
   };
 
   const interval = setInterval(send, frequency);
-  channel.on('close', () => { clearInterval(interval); });
+  channel.on('close', () => {
+    clearInterval(interval);
+    if (isMandatory) {
+      mandatoryServices.set('rabbitmq', false);
+    }
+  });
+
+  if (isMandatory) {
+    mandatoryServices.set('rabbitmq', true);
+  }
 
   return { send };
 }
@@ -138,23 +168,4 @@ export async function listenToHeartbeats(
   const { queue } = await channel.assertQueue('', { exclusive: true });
   channel.bindQueue(queue, exchange, '');
   channel.consume(queue, (msg) => onMessage(msg), { noAck: true });
-}
-
-const mandatoryServices = new Map<string, boolean>();
-
-export async function mandatoryService(name: string, pinger: Pinger): Promise<HeartbeatType> {
-  try {
-    const beat = await pinger();
-    mandatoryServices.set(name, true);
-    return beat;
-  } catch (error) {
-    mandatoryServices.set(name, false);
-    throw error;
-  }
-}
-
-export function getMissingMandatoryServices() {
-  return Array.from(mandatoryServices.entries())
-    .filter(([, value]) => !value)
-    .map(([key]) => key);
 }

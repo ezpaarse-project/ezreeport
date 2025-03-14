@@ -21,9 +21,11 @@ const start = async () => {
   });
 
   try {
+    // Initialize core services (if fails, service is unhealthy)
     await startHTTPServer(routes);
     await initTemplates();
 
+    // Initialize other services (if fails, service is degraded)
     await useRabbitMQ(async (connection) => {
       await initQueues(connection);
       await initRPC(connection);

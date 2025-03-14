@@ -14,13 +14,15 @@ export const service: HeartbeatService = {
 
 const logger = appLogger.child({ scope: 'heartbeat' });
 
+export { getMissingMandatoryServices } from '~common/lib/heartbeats';
+
 export async function initHeartbeat(connection: rabbitmq.ChannelModel) {
   const start = process.uptime();
 
   const channel = await connection.createChannel();
   logger.debug('Channel created');
 
-  const { send } = await setupHeartbeat(channel, service, logger, frequency);
+  const { send } = await setupHeartbeat(channel, service, logger, true, frequency);
 
   send();
 
