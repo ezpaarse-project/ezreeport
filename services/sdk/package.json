@@ -43,10 +43,10 @@
       "node": "./dist/namespaces.js",
       "browser": "./dist/namespaces.mjs"
     },
-    "./queues": {
-      "types": "./dist/queues.d.ts",
-      "node": "./dist/queues.js",
-      "browser": "./dist/queues.mjs"
+    "./generations": {
+      "types": "./dist/generations.d.ts",
+      "node": "./dist/generations.js",
+      "browser": "./dist/generations.mjs"
     },
     "./reports": {
       "types": "./dist/reports.d.ts",
@@ -88,10 +88,10 @@
       "node": "./dist/helpers/filters.js",
       "browser": "./dist/helpers/filters.mjs"
     },
-    "./helpers/jobs": {
-      "types": "./dist/helpers/jobs.d.ts",
-      "node": "./dist/helpers/jobs.js",
-      "browser": "./dist/helpers/jobs.mjs"
+    "./helpers/generations": {
+      "types": "./dist/helpers/generations.d.ts",
+      "node": "./dist/helpers/generations.js",
+      "browser": "./dist/helpers/generations.mjs"
     },
     "./helpers/layouts": {
       "types": "./dist/helpers/layouts.d.ts",

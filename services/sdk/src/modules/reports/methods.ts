@@ -182,7 +182,7 @@ export async function generateReportOfTask(
 
   const {
     content,
-  } = await client.fetch<ApiResponse<{ queue: string, id: string }>>(
+  } = await client.fetch<ApiResponse<{ id: string }>>(
     `/reports/${id}`,
     {
       method: 'POST',
@@ -193,9 +193,6 @@ export async function generateReportOfTask(
     },
   );
 
-  return {
-    queue: content.queue,
-    jobId: content.id,
-  };
+  return content;
 }
 assignPermission(generateReportOfTask, 'POST /reports/:taskId', true);
