@@ -1,10 +1,27 @@
+export interface ApiService {
+  service: string;
+  hostname: string;
+  version?: string;
+  updatedAt: Date;
+  createdAt: Date;
+}
+
+export interface RawApiService extends Omit<ApiService, 'updatedAt' | 'createdAt'> {
+  updatedAt: string;
+  createdAt: string;
+}
+
 export interface ApiStatus {
   /** Current service */
   current: string;
   /** Current version */
   version: string;
   /** Services connected to current */
-  services: string[];
+  services: ApiService[];
+}
+
+export interface RawApiStatus extends Omit<ApiStatus, 'services'> {
+  services: RawApiService[];
 }
 
 export type Pong = {
