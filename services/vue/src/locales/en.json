@@ -180,12 +180,25 @@
         "value": "Value(s)",
         "isNot": "Invert filter",
         "foundFilters": "Found {n} filter|Found {n} filters",
+        "name": "Name of filter",
         "nameTemplate": {
           "exists": "{field} exists",
           "exists:not": "{field} doesn't exists",
-          "values": "{0}|{0} {1}, etc.",
+          "values": "{0}|{0}, {1}|{0}, {1}, etc.",
           "is": "{field} is {valueText}",
           "is:not": "{field} is not {valueText}"
+        },
+        "type": "Filter type",
+        "types": {
+          "exists": "exists",
+          "is": "is",
+          "in": "is one of"
+        },
+        "hints": {
+          "type": "The type of filter depends on the number of values:",
+          "type:exists": "If no value is present, the filter will check the existence of the field",
+          "type:is": "If a single value is present, the filter will check if the field has exactly this value",
+          "type:in": "If multiple values are present, the filter will check if the field contains at least one of the values"
         }
       },
       "aggregation": {
