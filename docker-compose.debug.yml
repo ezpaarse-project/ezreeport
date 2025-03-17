@@ -47,9 +47,6 @@ services:
     command: "npm run dev"
     ports:
       - 9231:9229 # Debug port
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
     restart: unless-stopped
 
   worker2:
@@ -65,9 +62,6 @@ services:
       - .:/usr/dev
       - ./data/api:/data/ezreeport/report # Report output
     command: "npm run dev"
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
     restart: unless-stopped
 
   scheduler:
@@ -83,9 +77,6 @@ services:
     command: "npm run dev"
     ports:
       - 9232:9229 # Debug port
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
     restart: unless-stopped
 
   mail:
@@ -100,9 +91,6 @@ services:
     command: "npm run dev"
     ports:
       - 9233:9229 # Debug port
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
     restart: unless-stopped
 
   storybook:
