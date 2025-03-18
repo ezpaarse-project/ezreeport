@@ -28,27 +28,30 @@
       >
         <v-chip
           v-for="(item, i) in elements"
-          :key="i"
+          :key="item.id"
           :closable="!readonly"
-          :color="(itemErrors.get(item)?.length ?? 0) > 0 ? 'error' : undefined"
+          :color="(itemErrors.get(item.id)?.length ?? 0) > 0 ? 'error' : undefined"
           density="comfortable"
           class="value-chip my-1"
-          @click:close="remValue(item)"
+          @click:close="remValue(item.id)"
         >
+          <span class="text-overline text-grey mr-2">{{ i + 1 }}.</span>
+
           <v-text-field
-            :model-value="item"
+            :model-value="item.value"
+            :placeholder="itemPlaceholder"
             density="compact"
             variant="plain"
             hide-details
             class="mb-2"
-            @update:model-value="editValue(item, $event)"
+            @update:model-value="editValue(item.id, $event)"
           />
         </v-chip>
       </v-slide-x-transition>
 
       <v-chip
         v-if="!readonly"
-        :text="$t('$ezreeport.addMultiValue')"
+        :text="addLabel || $t('$ezreeport.addMultiValue')"
         prepend-icon="mdi-plus"
         density="comfortable"
         variant="elevated"
@@ -59,11 +62,12 @@
 
       <v-combobox v-model="elements" :rules="rules" multiple class="d-none" />
     </div>
-
   </div>
 </template>
 
 <script setup lang="ts">
+import { nanoid } from 'nanoid/non-secure';
+
 // Component props
 const props = defineProps<{
   /** Values to edit */
@@ -74,6 +78,8 @@ const props = defineProps<{
   prependIcon?: string,
   /** Label for the field */
   label?: string,
+  /** Label for the add button */
+  addLabel?: string;
   /** Field variant */
   variant?: 'filled' | 'underlined' | 'outlined' | 'plain' | 'solo' | 'solo-inverted' | 'solo-filled',
   /** Field density */
@@ -81,7 +87,9 @@ const props = defineProps<{
   /** Rules for the field */
   rules?: ((v: string[]) => boolean | string)[],
   /** Rules for each item */
-  itemRules?: ((v: string) => boolean | string)[],
+  itemRules?: ((v: string, i: number) => boolean | string)[],
+  /** Placeholder for each item */
+  itemPlaceholder?: string,
   /** Maximum number of items */
   count?: number,
 }>();
@@ -92,24 +100,20 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: string | string[] | undefined): void,
 }>();
 
+type Element = { id: string, value: string };
+
+const rawElements = ref<Element[]>([]);
+
 const scrollerRef = useTemplateRef('scrollerRef');
 
 /** Values as an array */
 const elements = computed({
-  get: () => {
-    if (props.modelValue == null) {
-      return [];
-    }
-
-    if (Array.isArray(props.modelValue)) {
-      return props.modelValue;
-    }
-
-    return [props.modelValue];
-  },
+  get: () => rawElements.value,
   set: (v) => {
+    rawElements.value = v;
+
     if (v.length === 1) {
-      emit('update:modelValue', v[0]);
+      emit('update:modelValue', v[0].value);
       return;
     }
 
@@ -118,7 +122,7 @@ const elements = computed({
       return;
     }
 
-    emit('update:modelValue', Array.from(new Set(v)));
+    emit('update:modelValue', Array.from(new Set(v.map(({ value }) => value))));
   },
 });
 
@@ -129,8 +133,10 @@ const rulesErrors = computed((): string[] => {
     return [];
   }
 
+  const values = elements.value.map(({ value }) => value);
+
   return props.rules
-    .map((rule) => rule(elements.value) || 'Error')
+    .map((rule) => rule(values) || 'Error')
     .filter((v) => v !== true);
 });
 
@@ -142,10 +148,10 @@ const itemErrors = computed((): Map<string, string[]> => {
   const rules = props.itemRules;
 
   return new Map(
-    elements.value.map((key) => [
-      key,
+    elements.value.map((item, index) => [
+      item.id,
       rules
-        .map((rule) => rule(key) || 'Error')
+        .map((rule) => rule(item.value, index) || 'Error')
         .filter((v) => v !== true),
     ]),
   );
@@ -170,7 +176,10 @@ async function scrollToBottom() {
  * Add a new value
  */
 function addValue() {
-  const values = [...elements.value, ''];
+  if (elements.value.find(({ value }) => value === '')) {
+    return;
+  }
+  const values = [...elements.value, { id: nanoid(), value: '' }];
   elements.value = values;
   scrollToBottom();
 }
@@ -178,18 +187,45 @@ function addValue() {
 /**
  * Remove a value
  */
-function remValue(value: string) {
-  const values = elements.value.filter((el) => el !== value);
+function remValue(id: string) {
+  const values = elements.value.filter(({ id: el }) => el !== id);
   elements.value = values;
 }
 
 /**
  * Edit a value
  */
-function editValue(oldValue: string, newValue: string) {
-  const values = elements.value.map((el) => (el === oldValue ? newValue : el));
+function editValue(id: string, newValue: string) {
+  const values = elements.value.map((el) => {
+    if (el.id !== id) {
+      return el;
+    }
+    return { ...el, value: newValue };
+  });
+
   elements.value = values;
 }
+
+watch(
+  () => props.modelValue,
+  (v) => {
+    let values: string[] = [];
+    if (Array.isArray(v)) {
+      values = v;
+    } else if (v != null) {
+      values = [v];
+    }
+
+    rawElements.value = values.map((value) => {
+      const existingEl = rawElements.value.find(({ value: el }) => el === value);
+      if (existingEl) {
+        return existingEl;
+      }
+      return { id: nanoid(), value };
+    });
+  },
+  { immediate: true },
+);
 </script>
 
 <style lang="scss" scoped>
