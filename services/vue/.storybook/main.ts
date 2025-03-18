@@ -14,18 +14,5 @@ const config: StorybookConfig = {
       docgen: 'vue-component-meta',
     },
   },
-  async viteFinal(viteConfig,) {
-    const { mergeConfig } = await import('vite');
-    const { default: i18n } = await import('@intlify/unplugin-vue-i18n/vite');
-
-    return mergeConfig(viteConfig, {
-      plugins: [
-        i18n({
-          include: 'src/locales/**',
-          ssr: true,
-        }),
-      ],
-    });
-  },
 };
 export default config;

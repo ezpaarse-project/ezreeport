@@ -1,13 +1,13 @@
 import { createI18n } from 'vue-i18n';
-import { en, fr } from 'vuetify/locale';
+import { en as enV, fr as frV } from 'vuetify/locale';
 
-import messages from '@intlify/unplugin-vue-i18n/messages';
+import { en as enR, fr as frR } from '../src/locale';
 
 export default createI18n<any>({
   locale: 'en',
   fallbackLocale: 'en',
   messages: {
-    en: { $vuetify: en, ...messages?.en },
-    fr: { $vuetify: fr, ...messages?.fr },
+    en: { $vuetify: enV, $ezreeport: enR },
+    fr: { $vuetify: frV, $ezreeport: frR },
   },
 });

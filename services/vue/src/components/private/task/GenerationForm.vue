@@ -163,7 +163,7 @@ import {
   type ReportResult,
   type ReportErrorCause,
 } from '~sdk/reports';
-import { generateAndListenReportOfTask } from '~sdk/helpers/jobs';
+import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
 import type { Task } from '~sdk/tasks';
 
 import { downloadBlob } from '~/lib/files';

@@ -174,7 +174,7 @@
 
 <script setup lang="ts">
 import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
-import { generateAndListenReportOfTask } from '~sdk/helpers/jobs';
+import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
 import {
   changeTaskEnableState,
 //   createTask as createTaskHelper,
