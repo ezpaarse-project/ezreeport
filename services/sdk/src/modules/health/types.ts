@@ -11,11 +11,24 @@ export interface RawApiService extends Omit<ApiService, 'updatedAt' | 'createdAt
   createdAt: string;
 }
 
+export type FileSystemUsage = {
+  /** Filesystem name */
+  name: string;
+  /** Total space */
+  total: number;
+  /** Used space */
+  used: number;
+  /** Available space */
+  available: number;
+};
+
 export interface ApiStatus {
   /** Current service */
   current: string;
   /** Current version */
   version: string;
+  /** File system usage */
+  fsUsage: FileSystemUsage[];
   /** Services connected to current */
   services: ApiService[];
 }
