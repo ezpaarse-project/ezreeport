@@ -111,6 +111,7 @@
                     :model-value="periodRange"
                     :max="maxDate"
                     hide-header
+                    show-adjacent-months
                     @update:model-value="updatePeriod($event)"
                   />
                 </template>
@@ -242,7 +243,10 @@ function calcPeriodFromRecurrence(
 
     case 'WEEKLY': {
       const target = add(today, { weeks: offset });
-      value = { start: startOfWeek(target), end: endOfWeek(target) };
+      value = {
+        start: startOfWeek(target, { weekStartsOn: 1 }),
+        end: endOfWeek(target, { weekStartsOn: 1 }),
+      };
       break;
     }
 
