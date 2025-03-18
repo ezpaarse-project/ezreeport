@@ -48,6 +48,8 @@ export function generateAndListenReportOfTask(
     active: typeof polling === 'number' ? polling : polling?.active ?? 1000,
   };
 
+  let failCounter = 0;
+
   return createEventfulPromise<ReportResult, GenerationEvents>(
     async (events) => {
       const { id } = await generateReportOfTask(taskOrId, period, targets);
@@ -56,11 +58,15 @@ export function generateAndListenReportOfTask(
       let last: Generation | undefined;
 
       /* eslint-disable no-await-in-loop */
-      while (!endStatuses.has(last?.status ?? '')) {
-        const generation = await getGeneration(id);
+      while (!endStatuses.has(last?.status ?? '') && failCounter < 10) {
+        try {
+          const generation = await getGeneration(id);
 
-        last = generation;
-        events.emit('progress', generation);
+          last = generation;
+          events.emit('progress', generation);
+        } catch (err) {
+          failCounter += 1;
+        }
 
         let sleepDuration = sleepDurations.pending;
         if (last?.status === 'PROCESSING') {
