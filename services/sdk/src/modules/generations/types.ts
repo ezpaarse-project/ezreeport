@@ -1,3 +1,5 @@
+import type { RawTask, Task } from '../tasks/types';
+
 export type GenerationStatus = 'PENDING' | 'PROCESSING' | 'SUCCESS' | 'ERROR';
 
 export interface Generation {
@@ -14,11 +16,16 @@ export interface Generation {
   reportId: string;
   createdAt: string;
   updatedAt: string;
+
+  /** Task related, must be included when fetching */
+  task?: Task;
 }
 
-export interface RawGeneration extends Omit<Generation, 'start' | 'end' | 'createdAt' | 'updatedAt'> {
+export interface RawGeneration extends Omit<Generation, 'start' | 'end' | 'createdAt' | 'updatedAt' | 'task'> {
   start: string;
   end: string;
   createdAt: string;
   updatedAt: string;
+
+  task?: RawTask;
 }

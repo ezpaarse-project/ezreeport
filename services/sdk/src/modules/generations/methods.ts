@@ -1,6 +1,7 @@
 import { parseISO } from 'date-fns';
 import { assignPermission } from '~/helpers/permissions/decorator';
 import { client } from '~/lib/fetch';
+import { transformCreatedUpdated } from '~/lib/transform';
 import {
   apiRequestOptionsToQuery,
   type ApiRequestOptions,
@@ -10,12 +11,14 @@ import {
 } from '~/lib/api';
 
 import type { Generation, RawGeneration } from './types';
-import { transformCreatedUpdated } from '~/lib/transform';
+import { transformTask } from '../tasks/methods';
 
 const transformGeneration = (generation: RawGeneration): Generation => ({
   ...transformCreatedUpdated(generation),
   start: parseISO(generation.start),
   end: parseISO(generation.end),
+
+  task: generation.task ? transformTask(generation.task) : undefined,
 });
 
 type PaginatedGenerations = SdkPaginated<Generation>;

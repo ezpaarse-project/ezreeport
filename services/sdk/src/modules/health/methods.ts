@@ -25,24 +25,3 @@ export async function getStatus(): Promise<ApiStatus> {
     services: content.services.map(transformService),
   };
 }
-
-/**
- * Ping all connected services at once
- *
- * @returns Result of pings
- */
-export async function pingAllServices(): Promise<ApiService[]> {
-  const { content } = await client.fetch<ApiResponse<RawApiService[]>>('/health/services');
-  return content.map(transformService);
-}
-
-/**
- * Ping connected services
- * @param service The name of the service
- *
- * @returns Result of ping
- */
-export async function pingService(service: string): Promise<ApiService> {
-  const { content } = await client.fetch<ApiResponse<RawApiService>>(`/health/services/${service}`);
-  return transformService(content);
-}

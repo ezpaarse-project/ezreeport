@@ -7,7 +7,7 @@ import { generateReportOfTask, getFileAsJson } from '~/modules/reports/methods';
 import type { ReportResult } from '~/modules/reports/types';
 import { getTask } from '~/modules/tasks/methods';
 import type { Task } from '~/modules/tasks/types';
-import type { Generation, GenerationStatus } from '~/modules/generations/types';
+import type { Generation } from '~/modules/generations/types';
 import { getGeneration } from '~/modules/generations/methods';
 
 export type GenerationStartedEvent = { id: string };
@@ -18,6 +18,8 @@ type GenerationEvents = {
   'started': [GenerationStartedEvent],
   'progress': [GenerationProgressEvent],
 };
+
+export const isGenerationEnded = (g: Generation): boolean => g.status === 'SUCCESS' || g.status === 'ERROR';
 
 /**
  * Start generation of a report and track progress
@@ -41,8 +43,6 @@ export function generateAndListenReportOfTask(
   targets?: string[],
   polling?: { pending?: number, active?: number } | number,
 ): EventfulPromise<ReportResult, GenerationEvents> {
-  const endStatuses = new Set<GenerationStatus | ''>(['SUCCESS', 'ERROR']);
-
   const sleepDurations = {
     pending: typeof polling === 'number' ? polling : polling?.pending ?? 1000,
     active: typeof polling === 'number' ? polling : polling?.active ?? 1000,
@@ -58,7 +58,7 @@ export function generateAndListenReportOfTask(
       let last: Generation | undefined;
 
       /* eslint-disable no-await-in-loop */
-      while (!endStatuses.has(last?.status ?? '') && failCounter < 10) {
+      while ((!last || !isGenerationEnded(last)) && failCounter < 10) {
         try {
           const generation = await getGeneration(id);
 
