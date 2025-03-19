@@ -130,6 +130,7 @@ export async function getAllTasks(
  * Get one task
  *
  * @param id The task's id
+ * @param include Fields to include
  *
  * @returns The found task, or `null` if not found
  */

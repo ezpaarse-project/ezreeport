@@ -5,22 +5,53 @@ import { ensureSchema } from '~common/lib/zod';
 import type { PaginationType } from '~/models/pagination/types';
 import { buildPaginatedRequest } from '~/models/pagination';
 
-import { Generation, type GenerationType } from '~common/types/generations';
+import type { GenerationType as CommonGenerationType } from '~common/types/generations';
+import { Generation, GenerationIncludeFieldsType, type GenerationType } from './types';
 
 const logger = appLogger.child({ scope: 'models', model: 'generations' });
+
+function applyIncludes(fields: GenerationIncludeFieldsType[]): Prisma.GenerationInclude {
+  let onlyTask = false;
+  let task: Prisma.TaskInclude | undefined;
+
+  if (fields.includes('task.namespace')) {
+    task = task || {};
+    task.namespace = true;
+  }
+
+  if (fields.includes('task.extends.tags')) {
+    task = task || {};
+    task.extends = { select: { tags: true } };
+  }
+
+  if (fields.includes('task')) {
+    onlyTask = true;
+  }
+
+  return {
+    task: task ? { include: task } : onlyTask,
+  };
+}
 
 /**
  * Get all generations
  *
+ * @param include Fields to include
  * @param pagination Pagination options
  *
  * @returns All generations following pagination
  */
 export async function getAllGenerations(
+  include?: GenerationIncludeFieldsType[],
   pagination?: PaginationType,
 ): Promise<GenerationType[]> {
   // Prepare Prisma query
   const prismaQuery: Prisma.GenerationFindManyArgs = buildPaginatedRequest(pagination);
+
+  // Apply includes
+  if (include) {
+    prismaQuery.include = applyIncludes(include);
+  }
 
   // Fetch data
   const data = await prisma.generation.findMany(prismaQuery);
@@ -36,11 +67,22 @@ export async function getAllGenerations(
  * Get one generation
  *
  * @param id The generation's id
+ * @param include Fields to include
  *
  * @returns The found generation, or `null` if not found
  */
-export async function getGeneration(id: string): Promise<GenerationType | null> {
-  const generation = await prisma.generation.findUnique({ where: { id } });
+export async function getGeneration(
+  id: string,
+  include?: GenerationIncludeFieldsType[],
+): Promise<GenerationType | null> {
+  const prismaQuery: Prisma.GenerationFindUniqueArgs = { where: { id } };
+
+  // Apply includes
+  if (include) {
+    prismaQuery.include = applyIncludes(include);
+  }
+
+  const generation = await prisma.generation.findUnique(prismaQuery);
 
   return generation && ensureSchema(Generation, generation);
 }
@@ -53,7 +95,10 @@ export async function getGeneration(id: string): Promise<GenerationType | null> 
  *
  * @returns The created/updated generation
  */
-export async function upsertGeneration(id: string, data: GenerationType): Promise<GenerationType> {
+export async function upsertGeneration(
+  id: string,
+  data: CommonGenerationType,
+): Promise<GenerationType> {
   const generation = await prisma.generation.upsert({
     where: {
       id,

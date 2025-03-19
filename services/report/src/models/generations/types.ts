@@ -1,0 +1,32 @@
+import { z } from '~common/lib/zod';
+import { ensureArray } from '~common/lib/utils';
+
+import { Generation as CommonGeneration } from '~common/types/generations';
+import { Task } from '~/models/tasks/types';
+
+export const GenerationIncludeFields = z.enum([
+  'task',
+  'task.namespace',
+  'task.extends.tags',
+] as const);
+
+export type GenerationIncludeFieldsType = z.infer<typeof GenerationIncludeFields>;
+
+export const Generation = CommonGeneration.extend({
+  // Includes fields
+  task: Task.omit({ template: true }).optional().readonly()
+    .describe('[Includes] Task related to the generation'),
+});
+
+export type GenerationType = z.infer<typeof Generation>;
+
+/**
+ * Validation for task include fields
+ */
+export const GenerationQueryInclude = z.object({
+  include: GenerationIncludeFields.or(z.array(GenerationIncludeFields))
+    .transform((v) => ensureArray(v)).optional()
+    .describe('Fields to include'),
+});
+
+export * from '~common/types/generations';

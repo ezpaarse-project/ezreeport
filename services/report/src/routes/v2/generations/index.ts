@@ -11,7 +11,7 @@ import { buildPaginatedResponse } from '~/models/pagination';
 import { PaginationQuery, PaginationResponse } from '~/models/pagination/types';
 
 import * as generations from '~/models/generations';
-import { Generation } from '~common/types/generations';
+import { Generation, GenerationQueryInclude } from '~/models/generations/types';
 
 import { NotFoundError } from '~/types/errors';
 import { getTask } from '~/models/tasks';
@@ -33,7 +33,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     schema: {
       summary: 'Get all generations',
       tags: ['generations'],
-      querystring: PaginationQuery,
+      querystring: PaginationQuery.and(GenerationQueryInclude),
       response: {
         [StatusCodes.OK]: PaginationResponse(Generation),
         [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
@@ -54,14 +54,18 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         count,
         sort,
         order,
+        include,
       } = request.query;
 
-      const content = await generations.getAllGenerations({
-        page,
-        count,
-        sort,
-        order,
-      });
+      const content = await generations.getAllGenerations(
+        include,
+        {
+          page,
+          count,
+          sort,
+          order,
+        },
+      );
 
       return buildPaginatedResponse(
         content,
@@ -81,6 +85,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Get specific generation',
       tags: ['generations'],
       params: SpecificGenerationParams,
+      querystring: GenerationQueryInclude,
       response: {
         [StatusCodes.OK]: responses.SuccessResponse(Generation),
         [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
