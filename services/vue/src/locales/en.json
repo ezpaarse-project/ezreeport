@@ -406,7 +406,12 @@
     "health": {
       "title:list": "ezREEPORT's status",
       "client": "Client status",
-      "server": "Server status",
+      "services": "Services status",
+      "instances": "{n} instances are ready",
+      "ko": "Service is not ready, some features of ezREEPORT won't work",
+      "fs": "Filesystems status",
+      "fsUsage": "Total: {total} {'|'} Used: {used} {'|'} Available: {available}",
+      "fsUsage%": "Usage: {value}%",
       "errors": {
         "fetch": "Can't fetch ezREEPORT's status"
       }

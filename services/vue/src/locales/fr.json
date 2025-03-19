@@ -406,7 +406,12 @@
     "health": {
       "title:list": "Statut d'ezREEPORT",
       "client": "Statut client",
-      "server": "Statut serveur",
+      "services": "Statut des services",
+      "instances": "{n} instances sont prêtes",
+      "ko": "Ce service n'est pas prêt, certaines fonctionnalités d'ezREEPORT ne fonctionneront pas",
+      "fs": "Statut des systèmes de fichiers",
+      "fsUsage": "Total: {total} {'|'} Utilisé: {used} {'|'} Disponible: {available}",
+      "fsUsage%": "Utilisation: {value}%",
       "errors": {
         "fetch": "Impossible de récupérer le statut d'ezREEPORT"
       }

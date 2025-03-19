@@ -51,6 +51,7 @@
     "date-fns": "^4.1.0",
     "dompurify": "^3.2.3",
     "marked": "^15.0.5",
+    "pretty-bytes": "^6.1.1",
     "vue": "^3.5.10",
     "vue-i18n": "^11.0.1",
     "vuetify": "^3.7.6"
