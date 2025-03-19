@@ -80,7 +80,10 @@ assignPermission(getReportsOfTask, 'GET /reports/:taskId', true);
  *
  * @returns The blob
  */
-export async function getFileAsBlob(taskOrId: Omit<Task, 'template'> | string, path: string) {
+export async function getFileAsBlob(
+  taskOrId: Omit<Task, 'template'> | string,
+  path: string,
+): Promise<Blob> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
 
   return client.fetch(`/reports/${id}/${path}`, {
@@ -97,7 +100,10 @@ assignPermission(getFileAsBlob, 'GET /reports/:taskId/:year/:yearMonth/:reportId
  *
  * @returns The array buffer
  */
-export async function getFileAsArrayBuffer(taskOrId: Omit<Task, 'template'> | string, path: string) {
+export async function getFileAsArrayBuffer(
+  taskOrId: Omit<Task, 'template'> | string,
+  path: string,
+): Promise<ArrayBuffer> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
 
   return client.fetch(`/reports/${id}/${path}`, {
@@ -114,7 +120,10 @@ assignPermission(getFileAsArrayBuffer, 'GET /reports/:taskId/:year/:yearMonth/:r
  *
  * @returns The stream
  */
-export async function getFileAsStream(taskOrId: Omit<Task, 'template'> | string, path: string) {
+export async function getFileAsStream(
+  taskOrId: Omit<Task, 'template'> | string,
+  path: string,
+): Promise<ReadableStream<Uint8Array<ArrayBufferLike>>> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
 
   return client.fetch(`/reports/${id}/${path}`, {
@@ -131,7 +140,10 @@ assignPermission(getFileAsStream, 'GET /reports/:taskId/:year/:yearMonth/:report
  *
  * @returns The text
  */
-export async function getFileAsText(taskOrId: Omit<Task, 'template'> | string, path: string) {
+export async function getFileAsText(
+  taskOrId: Omit<Task, 'template'> | string,
+  path: string,
+): Promise<string> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
 
   return client.fetch(`/reports/${id}/${path}`, {
@@ -149,10 +161,14 @@ assignPermission(getFileAsText, 'GET /reports/:taskId/:year/:yearMonth/:reportId
  *
  * @returns The JSON object
  */
-export async function getFileAsJson(taskOrId: Omit<Task, 'template'> | string, path: `${string}.det.json`) {
+export async function getFileAsJson(
+  taskOrId: Omit<Task, 'template'> | string,
+  path: `${string}.det.json`,
+): Promise<ReportResult> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
 
-  return client.fetch<ReportResult>(`/reports/${id}/${path}`);
+  const content = await client.fetch<RawReportResult>(`/reports/${id}/${path}`);
+  return transformReportResult(content);
 }
 assignPermission(getFileAsJson, 'GET /reports/:taskId/:year/:yearMonth/:reportId.:type.:ext', true);
 
@@ -169,7 +185,7 @@ export async function generateReportOfTask(
   taskOrId: Omit<Task, 'template'> | string,
   period?: { start: Date, end: Date },
   targets?: string[],
-) {
+): Promise<{ id: string }> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
 
   let periodDate;

@@ -79,4 +79,4 @@ export async function restartGeneration(
 
   return content;
 }
-assignPermission(restartGeneration, 'PUT /generations/:id', true);
+assignPermission(restartGeneration, 'PUT /generations/:id');
