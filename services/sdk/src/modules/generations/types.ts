@@ -14,11 +14,11 @@ export interface Generation {
   progress: number;
   took: number;
   reportId: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 
   /** Task related, must be included when fetching */
-  task?: Task;
+  task?: Omit<Task, 'template'>;
 }
 
 export interface RawGeneration extends Omit<Generation, 'start' | 'end' | 'createdAt' | 'updatedAt' | 'task'> {
@@ -27,5 +27,5 @@ export interface RawGeneration extends Omit<Generation, 'start' | 'end' | 'creat
   createdAt: string;
   updatedAt: string;
 
-  task?: RawTask;
+  task?: Omit<RawTask, 'template'>;
 }

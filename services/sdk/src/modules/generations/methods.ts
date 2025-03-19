@@ -11,14 +11,14 @@ import {
 } from '~/lib/api';
 
 import type { Generation, RawGeneration } from './types';
-import { transformTask } from '../tasks/methods';
+import { transformTaskWithoutBody } from '../tasks/methods';
 
 const transformGeneration = (generation: RawGeneration): Generation => ({
   ...transformCreatedUpdated(generation),
   start: parseISO(generation.start),
   end: parseISO(generation.end),
 
-  task: generation.task ? transformTask(generation.task) : undefined,
+  task: generation.task ? transformTaskWithoutBody(generation.task) : undefined,
 });
 
 type PaginatedGenerations = SdkPaginated<Generation>;

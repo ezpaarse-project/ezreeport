@@ -18,11 +18,16 @@ import type { RawNamespace } from '~/modules/namespaces/types';
 
 import type { InputTask, RawTask, Task } from './types';
 
-export const transformTask = (t: RawTask): Task => ({
+export const transformTaskWithoutBody = (t: Omit<RawTask, 'template'>): Omit<Task, 'template'> => ({
   ...transformCreatedUpdated(t),
   nextRun: parseISO(t.nextRun),
   lastRun: t.lastRun ? parseISO(t.lastRun) : undefined,
   namespace: t.namespace && transformNamespace(t.namespace as RawNamespace),
+});
+
+export const transformTask = (t: RawTask): Task => ({
+  ...transformTaskWithoutBody(t),
+  template: t.template,
 });
 
 type PaginatedTasks = SdkPaginated<Omit<Task, 'template'>>;
@@ -40,7 +45,7 @@ export async function getAllTasks(
     meta: {
       total, count, page,
     },
-  } = await client.fetch<ApiResponsePaginated<Omit<RawTask, 'body'>>>(
+  } = await client.fetch<ApiResponsePaginated<Omit<RawTask, 'template'>>>(
     '/tasks',
     {
       query: {
@@ -51,7 +56,7 @@ export async function getAllTasks(
   );
 
   return {
-    items: content.map(transformTask),
+    items: content.map(transformTaskWithoutBody),
     total,
     count,
     page,
