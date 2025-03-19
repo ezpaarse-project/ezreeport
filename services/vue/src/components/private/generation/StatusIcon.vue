@@ -3,23 +3,21 @@
 </template>
 
 <script setup lang="ts">
-import type { JobStatus } from '~sdk/queues';
+import type { Generation } from '~sdk/generations';
 
 const props = defineProps<{
-  modelValue: JobStatus,
+  modelValue: Generation,
 }>();
 
 const iconProps = computed(() => {
-  switch (props.modelValue) {
-    case 'completed':
+  switch (props.modelValue.status) {
+    case 'SUCCESS':
       return { icon: 'mdi-check', color: 'success' };
-    case 'failed':
+    case 'ERROR':
       return { icon: 'mdi-close', color: 'error' };
-    case 'delayed':
-      return { icon: 'mdi-clock', color: 'warning' };
-    case 'active':
+    case 'PROCESSING':
       return { icon: 'mdi-play', color: 'primary' };
-    case 'waiting':
+    case 'PENDING':
       return { icon: 'mdi-clock', color: 'secondary' };
     default:
       return { icon: 'mdi-dots-horizontal', color: 'grey' };
