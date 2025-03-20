@@ -30,7 +30,7 @@
               </template>
             </v-list-item>
 
-            <v-list-item :subtitle="$t('$ezreeport.generations.ended')" prepend-icon="mdi-timer-stop">
+            <v-list-item v-if="modelValue.took > 0" :subtitle="$t('$ezreeport.generations.ended')" prepend-icon="mdi-timer-stop">
               <template #title>
                 <LocalDate :model-value="new Date(modelValue.createdAt.getTime() + modelValue.progress)" format="PPPpp" />
               </template>
@@ -46,6 +46,7 @@
 
         <v-col cols="2" class="d-flex justify-center">
           <v-progress-circular
+            v-if="modelValue.progress != null"
             :model-value="modelValue.progress"
             color="primary"
             size="128"

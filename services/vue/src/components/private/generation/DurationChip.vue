@@ -1,5 +1,6 @@
 <template>
   <v-chip
+    v-if="modelValue.took > 0"
     variant="outlined"
     size="small"
     prepend-icon="mdi-timer"
