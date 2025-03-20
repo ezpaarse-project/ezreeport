@@ -1,4 +1,4 @@
-import prisma, { Prisma } from '~/lib/prisma';
+import prisma, { Prisma, type Recurrence } from '~/lib/prisma';
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
 import { ensureSchema } from '~/lib/zod';
@@ -267,6 +267,38 @@ export async function doesTaskExist(id: string): Promise<boolean> {
   const count = await prisma.task.count({ where: { id }, select: { id: true } });
 
   return count.id > 0;
+}
+
+/**
+ * Get if a task with given data already exists
+ *
+ * @param namespaceId Namespace's id
+ * @param recurrence Task's recurrence
+ * @param templateId Template's id
+ * @param index Task's index
+ *
+ * @returns True if task exists
+ */
+export async function doesSimilarTaskExist(
+  namespaceId: string,
+  recurrence: Recurrence,
+  templateId: string,
+  index: string,
+): Promise<boolean> {
+  const data = await prisma.task.findFirst({
+    where: {
+      namespaceId,
+      recurrence,
+      extendedId: templateId,
+    },
+  });
+
+  if (!data) {
+    return false;
+  }
+
+  const task = await ensureSchema(Task, data);
+  return task.template.index === index;
 }
 
 /**
