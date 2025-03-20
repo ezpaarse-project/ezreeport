@@ -1,3 +1,5 @@
+import type { Server } from '~/lib/sockets';
+
 import type { UserType } from '~/models/users/types';
 import type { Access } from '~/models/access';
 
@@ -27,5 +29,9 @@ declare module 'fastify' {
 
   export interface FastifyReply {
     apiVersion?: number;
+  }
+
+  export interface FastifyInstance {
+    io: Server
   }
 }

@@ -35,7 +35,7 @@ const requireUser: preValidationHookHandler = async (request) => {
     throw new HTTPError(`'${request.method} ${request.originalUrl}' requires user`, StatusCodes.UNAUTHORIZED);
   }
 
-  const user = await getUserByToken(regexRes.groups.token) || undefined;
+  const user = await getUserByToken(regexRes.groups.token);
   if (!user) {
     throw new HTTPError('User not found', StatusCodes.UNAUTHORIZED);
   }

@@ -98,7 +98,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     config: {
       ezrAuth: {
         requireUser: true,
-        access: Access.READ_WRITE,
+        access: Access.READ,
       },
     },
     preHandler: [
