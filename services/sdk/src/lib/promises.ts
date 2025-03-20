@@ -9,6 +9,7 @@ interface EventfulListener<E extends Record<string, any[]>> {
 interface EventfulEmitter<E extends Record<string, any[]>> {
   emit: <P extends keyof E>(eventName: P, ...args: E[P]) => this,
 }
+
 export type EventfulPromise<T, E extends Record<string, any[]>> = Promise<T> & EventfulListener<E>;
 
 /**
@@ -20,7 +21,7 @@ export type EventfulPromise<T, E extends Record<string, any[]>> = Promise<T> & E
  * @returns The EventfulPromise
  */
 const createEventfulPromise = <T, E extends Record<string, any[]> = Record<string, any[]>>(
-  executor: (emitter: EventfulEmitter<E>) => Promise<T>,
+  executor: (emitter: EventfulEmitter<E>, resolve: (value: T) => void) => Promise<T | void>,
   emitter = new EventEmitter(),
 ): EventfulPromise<T, E> => {
   const customEmitter: EventfulEmitter<E> = {
@@ -30,7 +31,11 @@ const createEventfulPromise = <T, E extends Record<string, any[]> = Record<strin
     },
   };
 
-  const promise = executor(customEmitter);
+  const promise = new Promise<T>((resolve, reject) => {
+    executor(customEmitter, resolve)
+      .then((res) => res && resolve(res))
+      .catch(reject);
+  });
 
   const res: EventfulPromise<T, E> = Object.assign<Promise<T>, EventfulListener<E>>(
     promise,

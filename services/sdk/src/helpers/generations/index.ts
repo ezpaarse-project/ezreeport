@@ -1,18 +1,18 @@
+import { client } from '~/lib/fetch';
 import createEventfulPromise, { type EventfulPromise } from '~/lib/promises';
-import { setTimeoutAsync } from '~/lib/utils';
 
-import { assignDependencies } from '~/helpers/permissions/decorator';
+import { assignDependencies, assignPermission } from '~/helpers/permissions/decorator';
 
 import { generateReportOfTask, getFileAsJson } from '~/modules/reports/methods';
 import type { ReportResult } from '~/modules/reports/types';
 import { getTask } from '~/modules/tasks/methods';
 import type { Task } from '~/modules/tasks/types';
-import type { Generation } from '~/modules/generations/types';
-import { getGeneration } from '~/modules/generations/methods';
+import { transformGeneration } from '~/modules/generations/methods';
+import type { Generation, RawGeneration } from '~/modules/generations/types';
 
 export type GenerationStartedEvent = { id: string };
 
-export type GenerationProgressEvent = Generation;
+export type GenerationProgressEvent = Omit<Generation, 'task'>;
 
 type GenerationEvents = {
   'started': [GenerationStartedEvent],
@@ -21,12 +21,13 @@ type GenerationEvents = {
 
 export const isGenerationEnded = (g: Generation): boolean => g.status === 'SUCCESS' || g.status === 'ERROR';
 
+type ReportGenerationPromise = EventfulPromise<ReportResult, GenerationEvents>;
+
 /**
  * Start generation of a report and track progress
  *
  * @param taskOrId Task or Task's id
  * @param targets Override targets, also enable first level of debugging
- * @param period Override period, must match task's recurrence
  *
  * @fires #started When generation started. See `GenerationStartedEvent`.
  * @fires #progress When generation progress. See `GenerationProgressEvent`. Job's progress is
@@ -37,54 +38,73 @@ export const isGenerationEnded = (g: Generation): boolean => g.status === 'SUCCE
  * @returns When the report is ready, returns the report result
  */
 // eslint-disable-next-line import/prefer-default-export
-export function generateAndListenReportOfTask(
+export const generateAndListenReportOfTask = (
   taskOrId: Omit<Task, 'template'> | string,
   period?: { start: Date, end: Date },
   targets?: string[],
-  polling?: { pending?: number, active?: number } | number,
-): EventfulPromise<ReportResult, GenerationEvents> {
-  const sleepDurations = {
-    pending: typeof polling === 'number' ? polling : polling?.pending ?? 1000,
-    active: typeof polling === 'number' ? polling : polling?.active ?? 1000,
-  };
+): ReportGenerationPromise => createEventfulPromise<ReportResult, GenerationEvents>(
+  async (events, resolve) => {
+    const task = await getTask(taskOrId);
+    const websocket = client.socket('/generations', [task.namespaceId]);
+    if (!websocket) {
+      throw new Error('Unable to get socket');
+    }
 
-  let failCounter = 0;
-
-  return createEventfulPromise<ReportResult, GenerationEvents>(
-    async (events) => {
-      const { id } = await generateReportOfTask(taskOrId, period, targets);
-      events.emit('started', { id });
-
-      let last: Generation | undefined;
-
-      /* eslint-disable no-await-in-loop */
-      while ((!last || !isGenerationEnded(last)) && failCounter < 10) {
-        try {
-          const generation = await getGeneration(id);
-
-          last = generation;
-          events.emit('progress', generation);
-        } catch (err) {
-          failCounter += 1;
-        }
-
-        let sleepDuration = sleepDurations.pending;
-        if (last?.status === 'PROCESSING') {
-          sleepDuration = sleepDurations.active;
-        }
-        await setTimeoutAsync(sleepDuration);
+    websocket.on('generation:updated', function onGenerationUpdated(g: Omit<RawGeneration, 'task'>) {
+      const generation: Omit<Generation, 'task'> = transformGeneration(g);
+      // Notify progress if it's the correct task
+      if (generation.taskId !== task.id) {
+        return;
       }
-      /* eslint-enable no-await-in-loop */
+      events.emit('progress', generation);
 
-      if (!last) {
-        throw new Error('Generation not found');
+      // If generation ended, stop listening
+      if (!isGenerationEnded(generation)) {
+        return;
       }
+      websocket.off('generation:updated', onGenerationUpdated);
 
-      return getFileAsJson(taskOrId, `${last.reportId}.det.json`);
-    },
-  );
-}
+      // And resolve result
+      getFileAsJson(taskOrId, `${generation.reportId}.det.json`)
+        .then((result) => resolve(result));
+    });
+
+    // Once events are registered, start generation
+    const { id } = await generateReportOfTask(taskOrId, period, targets);
+    events.emit('started', { id });
+  },
+);
 assignDependencies(
   generateAndListenReportOfTask,
-  [getTask, generateReportOfTask, getGeneration, getFileAsJson],
+  [getTask, generateReportOfTask, getFileAsJson],
 );
+
+/**
+ * Listen to all generations
+ *
+ * @param onUpdate Function to call when a generation is updated
+ * @param namespaces Namespaces to listen to
+ *
+ * @returns Function to remove listener
+ */
+export function listenAllGenerations(
+  onUpdate: (generation: Omit<Generation, 'task'>) => void,
+  namespaces?: string[],
+) {
+  const websocket = client.socket('/generations', namespaces);
+  if (!websocket) {
+    throw new Error('Unable to get socket');
+  }
+
+  const updated = (g: Omit<RawGeneration, 'task'>) => onUpdate(transformGeneration(g));
+
+  websocket.on('generation:updated', updated);
+
+  return {
+    stop: () => {
+      websocket.off('generation:updated', updated);
+    },
+  };
+}
+// Applies same permissions as `GET /generations/:id`
+assignPermission(listenAllGenerations, 'GET /generations/:id', true);

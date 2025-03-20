@@ -13,7 +13,7 @@ import {
 import type { Generation, RawGeneration } from './types';
 import { transformTaskWithoutBody } from '../tasks/methods';
 
-const transformGeneration = (generation: RawGeneration): Generation => ({
+export const transformGeneration = (generation: RawGeneration): Generation => ({
   ...transformCreatedUpdated(generation),
   start: parseISO(generation.start),
   end: parseISO(generation.end),

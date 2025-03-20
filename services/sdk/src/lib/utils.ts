@@ -1,14 +1,5 @@
 import { parseISO } from 'date-fns';
 
-/**
- * Async version of `setTimeout`
- *
- * @param ms Time to wait
- */
-export const setTimeoutAsync = (ms: number) => new Promise(
-  (resolve) => { setTimeout(resolve, ms); },
-);
-
 export interface RawPeriod {
   start: string,
   end: string,

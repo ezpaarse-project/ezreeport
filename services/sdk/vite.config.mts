@@ -45,7 +45,13 @@ export default defineConfig({
       },
     },
     rollupOptions: {
-      external: ['ofetch', 'nanoid', 'object-hash', /^date-fns(\/.*)?/],
+      external: [
+        'ofetch',
+        'nanoid',
+        'object-hash',
+        /^date-fns(\/.*)?/,
+        'socket.io-client',
+      ],
     },
   },
 });

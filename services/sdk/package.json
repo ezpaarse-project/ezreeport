@@ -144,7 +144,8 @@
     "date-fns": "^4.1.0",
     "nanoid": "^5.0.7",
     "object-hash": "^3.0.0",
-    "ofetch": "^1.4.1"
+    "ofetch": "^1.4.1",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@types/node": "^22.7.3",

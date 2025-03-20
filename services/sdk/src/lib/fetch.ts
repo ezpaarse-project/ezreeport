@@ -1,27 +1,35 @@
 import { ofetch } from 'ofetch';
+import { io, type Socket } from 'socket.io-client';
 
 export type ApiAuthOptions = {
   token?: string;
   // apiKey?: string;
 };
 
+type SocketCreator = (namespace: string, rooms?: string[]) => Socket | undefined;
+
+const sockets = new Map<string, { con: Socket, rooms?: string[] }>();
+
 /**
  * Client for the API
  */
 export const client = {
+  token: '',
   fetch: ofetch.create({}),
+  socket: (() => {}) as SocketCreator,
 };
 
 /**
  * Prepare the client for the rest of the SDK, will update config if needed
  *
- * @param baseURL Base URL of the API
+ * @param baseURL Base HTTP URL of the API
  * @param auth Auth options to be authenticated
  */
 export function prepareClient(
   baseURL: string,
   auth?: ApiAuthOptions,
 ) {
+  // Create HTTP client
   const headers: Record<string, string> = {};
 
   if (auth?.token) {
@@ -35,4 +43,32 @@ export function prepareClient(
     baseURL,
     headers,
   });
+
+  // Set function to handle sockets
+  client.socket = (nsp, rooms) => {
+    let namespace = sockets.get(nsp);
+    const haveSameRooms = (namespace?.rooms ?? []).every((rs) => (rooms ?? []).includes(rs));
+    if (!haveSameRooms) {
+      namespace?.con.disconnect();
+      namespace = undefined;
+    }
+    if (!namespace) {
+      const url = new URL(nsp, baseURL.replace('http', 'ws'));
+      try {
+        namespace = {
+          con: io(url.href, {
+            auth: auth || undefined,
+            query: rooms ? { rooms } : undefined,
+          }),
+          rooms,
+        };
+        sockets.set(nsp, namespace);
+      } catch (error) {
+        console.error(`[ezreeport-sdk-js] Couldn't create socket for ${nsp}`, error);
+        return undefined;
+      }
+    }
+
+    return namespace.con;
+  };
 }
