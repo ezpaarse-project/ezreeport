@@ -16,4 +16,10 @@ export const config: VuetifyOptions = {
   },
 };
 
+declare module 'vuetify' {
+  namespace DateModule {
+    interface Adapter extends DateFnsAdapter {}
+  }
+}
+
 export default createVuetify(config);
