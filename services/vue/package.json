@@ -57,6 +57,7 @@
     "vuetify": "^3.7.6"
   },
   "devDependencies": {
+    "@date-io/date-fns": "^3.2.1",
     "@chromatic-com/storybook": "^3.2.3",
     "@ezpaarse-project/ezreeport-sdk-js": "workspace:*",
     "@rushstack/eslint-patch": "^1.10.4",
