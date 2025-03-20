@@ -43,9 +43,10 @@ export function calcPeriodFromRecurrence(
       const year = dfns.getYear(target);
       const midYear = new Date(year, 5, 30);
       if (dfns.isAfter(target, midYear)) {
-        return { start: midYear, end: dfns.endOfYear(midYear) };
+        const start = dfns.add(midYear, { days: 1 });
+        return { start: dfns.startOfDay(start), end: dfns.endOfYear(midYear) };
       }
-      return { start: dfns.startOfYear(midYear), end: midYear };
+      return { start: dfns.startOfYear(midYear), end: dfns.endOfDay(midYear) };
     }
 
     case 'YEARLY': {
