@@ -297,7 +297,7 @@ async function generate() {
 
   try {
     const generation = generateAndListenReportOfTask(props.modelValue, period.value, targets.value);
-    generation.on('progress', (ev) => { progress.value = ev.progress * 100; });
+    generation.on('progress', (ev) => { progress.value = ev.progress; });
 
     const res = await generation;
     if (!res.success && res.detail.error) {

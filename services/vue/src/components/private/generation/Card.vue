@@ -36,7 +36,7 @@
               </template>
             </v-list-item>
 
-            <v-list-item :subtitle="$t('$ezreeport.generations.lastUpdate')" prepend-icon="mdi-timer-...">
+            <v-list-item :subtitle="$t('$ezreeport.generations.lastUpdate')" prepend-icon="mdi-timer-edit">
               <template #title>
                 <LocalDate :model-value="modelValue.updatedAt" format="PPPpp" />
               </template>
@@ -273,6 +273,7 @@ import { getTask } from '~sdk/tasks';
 import { getTemplate } from '~sdk/templates';
 import { getFileAsBlob, getFileAsJson } from '~sdk/reports';
 import type { Generation } from '~sdk/generations';
+import { isGenerationEnded } from '~sdk/helpers/generations';
 
 import { downloadBlob } from '~/lib/files';
 
@@ -286,11 +287,13 @@ const taskLoading = ref(false);
 const templateLoading = ref(false);
 const resultLoading = ref(false);
 
+/** Task's id, used for cache purposes */
+const taskId = computed(() => props.modelValue.taskId);
 /** Task of the current generation */
 const task = computedAsync(async () => {
   taskLoading.value = true;
   try {
-    const value = await getTask(props.modelValue.taskId);
+    const value = await getTask(taskId.value);
     taskLoading.value = false;
     return value;
   } catch (e) {
@@ -300,15 +303,17 @@ const task = computedAsync(async () => {
   }
 });
 
+/** Extended template of the current generation, used for cache purposes */
+const extendedId = computed(() => task.value?.extendedId);
 /** Template of the current generation */
 const template = computedAsync(async () => {
-  if (!task.value) {
+  if (!extendedId.value) {
     return undefined;
   }
 
   templateLoading.value = true;
   try {
-    const value = await getTemplate(task.value.extendedId);
+    const value = await getTemplate(extendedId.value);
     templateLoading.value = false;
     return value;
   } catch (e) {
@@ -318,11 +323,15 @@ const template = computedAsync(async () => {
   }
 });
 
+/** Report id of the current generation, used for cache purposes */
+const reportId = computed(
+  () => (isGenerationEnded(props.modelValue) ? props.modelValue.reportId : undefined),
+);
 /** Result of the current generation */
 const result = computedAsync(async () => {
   resultLoading.value = true;
   try {
-    const value = await getFileAsJson(props.modelValue.taskId, `${props.modelValue.reportId}.det.json`);
+    const value = await getFileAsJson(taskId.value, `${reportId.value}.det.json`);
     resultLoading.value = false;
     return value;
   } catch (e) {

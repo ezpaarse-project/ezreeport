@@ -12,7 +12,11 @@ const props = defineProps<{
 
 const { locale } = useDateLocale();
 
-const formatted = computed(
-  () => formatDate(props.modelValue, props.format || 'PPPp', { locale: locale.value }),
-);
+const formatted = computed(() => {
+  try {
+    return formatDate(props.modelValue, props.format || 'PPPp', { locale: locale.value });
+  } catch (error) {
+    return `${error}`;
+  }
+});
 </script>

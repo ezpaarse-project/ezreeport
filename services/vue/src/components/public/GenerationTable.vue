@@ -111,7 +111,6 @@
             color="orange"
             @click="restartGen(selectedGeneration)"
           />
-          {{ availableActions }}
           <v-spacer />
 
           <v-btn :text="$t('$ezreeport.close')" @click="isInfoOpen = false" />
@@ -125,7 +124,7 @@
 import type { VDataTable } from 'vuetify/components';
 
 import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
-import { isGenerationEnded } from '~sdk/helpers/generations';
+import { isGenerationEnded, listenAllGenerations } from '~sdk/helpers/generations';
 import {
   getAllGenerations,
   getGeneration,
@@ -153,6 +152,7 @@ const selectedGeneration = ref<Generation | undefined>();
 
 /** List of generations */
 const {
+  items: generations,
   total,
   refresh,
   loading,
@@ -161,6 +161,21 @@ const {
   (params) => getAllGenerations(params),
   { sortBy: 'createdAt', order: 'desc', include: ['task.namespace', 'task.extends.tags'] },
 );
+
+// Listen and update generations
+const { stop: stopListening } = listenAllGenerations((generation) => {
+  const index = generations.value.findIndex(({ id }) => id === generation.id);
+  if (index < 0) {
+    refresh();
+    return;
+  }
+  const { task } = generations.value[index];
+  generations.value[index] = { ...generation, task };
+
+  if (selectedGeneration.value?.id === generation.id) {
+    selectedGeneration.value = { ...generation, task };
+  }
+});
 
 const availableActions = computed(() => {
   if (!arePermissionsReady.value) {
@@ -222,7 +237,6 @@ const headers = computed((): VDataTableHeaders => [
 async function restartGen(gen: Generation) {
   try {
     await restartGeneration(gen);
-    refresh();
   } catch (e) {
     handleEzrError(t('$ezreeport.generations.errors.retry'), e);
   }
@@ -241,4 +255,8 @@ async function openInfo(gen: Generation) {
 
 refreshPermissions()
   .then(() => { arePermissionsReady.value = true; });
+
+onUnmounted(() => {
+  stopListening();
+});
 </script>
