@@ -4,6 +4,7 @@ import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 
 import type { GenerationQueueDataType } from '~common/types/queues';
+import type { GenerationType } from '~common/types/generations';
 
 const generationQueueName = 'ezreeport.report:queues';
 
@@ -20,12 +21,13 @@ export function initGenerationQueue(c: rabbitmq.Channel) {
 
 // eslint-disable-next-line import/prefer-default-export
 export async function queueGeneration(params: Omit<GenerationQueueDataType, 'id'>) {
+  let data: GenerationQueueDataType;
   try {
     if (!channel) {
       throw new Error('Channel not initialized');
     }
 
-    const data: GenerationQueueDataType = {
+    data = {
       ...params,
       id: randomUUID(),
     };
@@ -37,8 +39,6 @@ export async function queueGeneration(params: Omit<GenerationQueueDataType, 'id'
       size: buf.byteLength,
       sizeUnit: 'B',
     });
-
-    return data;
   } catch (err) {
     logger.error({
       msg: 'Failed to queue report',
@@ -47,4 +47,26 @@ export async function queueGeneration(params: Omit<GenerationQueueDataType, 'id'
 
     return null;
   }
+
+  try {
+    const event: GenerationType = {
+      id: data.id,
+      taskId: data.task.id,
+      status: 'PENDING',
+      start: data.period.start,
+      end: data.period.end,
+      targets: data.targets,
+      origin: data.origin,
+      reportId: '',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const buf = Buffer.from(JSON.stringify(event));
+    channel.publish('ezreeport.report:event', '', buf);
+  } catch (err) {
+    logger.warn({ msg: 'Failed to send event', err });
+  }
+
+  return data;
 }

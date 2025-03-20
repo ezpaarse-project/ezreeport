@@ -2,6 +2,7 @@ import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 
 import type { GenerationQueueDataType } from '~common/types/queues';
+import type { GenerationType } from '~common/types/generations';
 
 const generationQueueName = 'ezreeport.report:queues';
 
@@ -38,5 +39,25 @@ export async function queueGeneration(data: GenerationQueueDataType) {
     });
 
     throw err;
+  }
+
+  try {
+    const event: GenerationType = {
+      id: data.id,
+      taskId: data.task.id,
+      status: 'PENDING',
+      start: data.period.start,
+      end: data.period.end,
+      targets: data.targets,
+      origin: data.origin,
+      reportId: '',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const buf = Buffer.from(JSON.stringify(event));
+    channel.publish('ezreeport.report:event', '', buf);
+  } catch (err) {
+    logger.warn({ msg: 'Failed to send event', err });
   }
 }
