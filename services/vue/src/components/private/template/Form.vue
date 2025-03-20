@@ -200,7 +200,7 @@ const isValid = computed(() => isFormValid.value);
 /** Mapping options for dateField */
 const dateMapping = computed(() => getOptionsFromMapping('date'));
 /** Has template changed since form is opened */
-const hasChanged = computed(() => hasTemplateChanged(props.modelValue));
+const hasChanged = computed(() => !props.modelValue.id || hasTemplateChanged(props.modelValue));
 /** Name of the template */
 const name = computed({
   get: () => props.modelValue.name,
