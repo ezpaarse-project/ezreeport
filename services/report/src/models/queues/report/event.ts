@@ -100,6 +100,11 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
     return;
   }
 
+  // try to fix issue where task is completed but not marked as such
+  if (data.progress === 100 && data.status === 'PROCESSING') {
+    data.status = 'SUCCESS';
+  }
+
   const promises: Promise<unknown>[] = [];
 
   promises.push(
