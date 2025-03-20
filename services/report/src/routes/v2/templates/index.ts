@@ -15,7 +15,7 @@ import { PaginationQuery, PaginationResponse } from '~/models/pagination/types';
 import * as templates from '~/models/templates';
 import { Template, InputTemplate, TemplateQueryFilters } from '~/models/templates/types';
 
-import { NotFoundError } from '~/types/errors';
+import { NotFoundError } from '~/models/errors';
 import { appLogger } from '~/lib/logger';
 
 const SpecificTemplateParams = z.object({

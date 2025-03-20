@@ -19,7 +19,7 @@ import {
   UserQueryFilters,
 } from '~/models/users/types';
 
-import { NotFoundError } from '~/types/errors';
+import { NotFoundError } from '~/models/errors';
 
 import membershipRoutes from './memberships';
 

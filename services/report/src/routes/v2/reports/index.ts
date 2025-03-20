@@ -20,7 +20,7 @@ import { getTemplate } from '~/models/templates';
 import { getNamespace } from '~/models/namespaces';
 import { calcNextDateFromRecurrence, calcPeriodFromRecurrence } from '~/models/recurrence';
 
-import { ArgumentError, ConflictError, NotFoundError } from '~/types/errors';
+import { ArgumentError, ConflictError, NotFoundError } from '~/models/errors';
 
 import reportRoutes from './files';
 

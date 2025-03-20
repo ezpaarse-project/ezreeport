@@ -15,7 +15,7 @@ import * as responses from '~/routes/v2/responses';
 import { getTask, editTask } from '~/models/tasks';
 import { createActivity } from '~/models/task-activity';
 
-import { ArgumentError, NotFoundError } from '~/types/errors';
+import { ArgumentError, NotFoundError } from '~/models/errors';
 
 const UnsubscribeParams = z.object({
   unsubscribeId: z.string().min(1),

@@ -19,7 +19,7 @@ import {
   NamespaceQueryFilters,
 } from '~/models/namespaces/types';
 
-import { NotFoundError } from '~/types/errors';
+import { NotFoundError } from '~/models/errors';
 
 import membershipRoutes from './memberships';
 

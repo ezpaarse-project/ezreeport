@@ -11,7 +11,7 @@ import { PaginationQuery, PaginationResponse } from '~/models/pagination/types';
 import * as memberships from '~/models/memberships';
 import { InputMembership, Membership } from '~/models/memberships/types';
 
-import { NotFoundError } from '~/types/errors';
+import { NotFoundError } from '~/models/errors';
 
 const SpecificMembershipParams = z.object({
   username: z.string().min(1)

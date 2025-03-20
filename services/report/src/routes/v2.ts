@@ -17,7 +17,7 @@ import { simplifyZodIssue } from '~common/lib/zod';
 
 import openapi from '~/plugins/openapi';
 
-import { NotFoundError } from '~/types/errors';
+import { NotFoundError } from '~/models/errors';
 
 import { buildErrorResponse } from './v2/responses';
 

@@ -13,7 +13,7 @@ import { PaginationQuery, PaginationResponse } from '~/models/pagination/types';
 import * as generations from '~/models/generations';
 import { Generation, GenerationQueryInclude } from '~/models/generations/types';
 
-import { NotFoundError } from '~/types/errors';
+import { NotFoundError } from '~/models/errors';
 import { getTask } from '~/models/tasks';
 import { getNamespace } from '~/models/namespaces';
 import { getTemplate } from '~/models/templates';

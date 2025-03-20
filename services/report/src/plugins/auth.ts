@@ -10,14 +10,16 @@ import { StatusCodes } from 'http-status-codes';
 import config from '~/lib/config';
 import { ensureArray } from '~common/lib/utils';
 
+import type { UserType } from '~/models/users/types';
 import {
   registerRouteWithAccess,
   registerRoute,
   getNamespacesOfUser,
   getUserByToken,
+  type Access,
 } from '~/models/access';
 
-import { HTTPError } from '~/types/errors';
+import { HTTPError } from '~/models/errors';
 
 const { adminKey } = config;
 
@@ -211,5 +213,30 @@ export async function requireAllowedNamespace<R extends FastifyRequest>(
   const namespaceOfTask = namespacesOfUser.find((n) => namespaceId === n.id);
   if (!namespaceOfTask) {
     throw new HTTPError("You don't have access to the provided namespace", StatusCodes.FORBIDDEN);
+  }
+}
+
+declare module 'fastify' {
+  export interface FastifyRequest {
+    /**
+     * User information from DB
+     */
+    user?: UserType;
+  }
+
+  export interface FastifyContextConfig {
+    /**
+     * Config of auth plugin for specific route
+     */
+    ezrAuth?: {
+      /** Should require an API key. */
+      requireAPIKey?: boolean;
+      /** Should require a user, without checking access. Adds `request.user`. */
+      requireUser?: boolean;
+      /** Should require an admin user. Implies `requireUser: true` */
+      requireAdmin?: boolean;
+      /** Minimum access level to access at this route. Implies `requireUser: true` */
+      access?: Access;
+    }
   }
 }

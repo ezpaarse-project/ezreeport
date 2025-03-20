@@ -23,7 +23,7 @@ import { createTask } from '~/models/tasks';
 import { Task } from '~/models/tasks/types';
 import { calcPeriodFromRecurrence } from '~/models/recurrence';
 
-import { NotFoundError } from '~/types/errors';
+import { NotFoundError } from '~/models/errors';
 
 const SpecificTaskPresetParams = z.object({
   id: z.string().min(1)

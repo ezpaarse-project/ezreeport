@@ -1,4 +1,4 @@
-import type { Server as SocketIoServer, Namespace as SocketIoNamespace } from 'socket.io';
+import type { Server, Namespace as SocketIoNamespace } from 'socket.io';
 
 import { appLogger } from '~/lib/logger';
 
@@ -25,7 +25,7 @@ export const getWSNamespace = (name: string): SocketIoNamespace | undefined => n
  *
  * @returns The namespace
  */
-const registerWSNamespace = (io: SocketIoServer, name: string): SocketIoNamespace => {
+const registerWSNamespace = (io: Server, name: string): SocketIoNamespace => {
   const namespace = io.of(`/${name}`);
   namespaces.set(name, namespace);
   return namespace;
@@ -36,7 +36,7 @@ const registerWSNamespace = (io: SocketIoServer, name: string): SocketIoNamespac
  *
  * @param io The socket.io server
  */
-function registerGenerationsNamespace(io: SocketIoServer) {
+function registerGenerationsNamespace(io: Server) {
   registerWSNamespace(io, 'generations')
     .use(requireUser)
     .use(restrictToOwnedNamespaces('READ_WRITE'));
@@ -52,7 +52,7 @@ function registerGenerationsNamespace(io: SocketIoServer) {
  *
  * @param io The socket.io server
  */
-export function registerWSNamespaces(io: SocketIoServer) {
+export function registerWSNamespaces(io: Server) {
   const start = process.uptime();
 
   registerGenerationsNamespace(io);
@@ -69,12 +69,16 @@ export function registerWSNamespaces(io: SocketIoServer) {
  *
  * @param io The socket.io server
  */
-export function closeWS(io: SocketIoServer | undefined) {
+export function closeWS(io: Server | undefined) {
   io?.close()
     .then(() => logger.debug('Service closed'))
     .catch((err) => logger.error({ msg: 'Failed to close service', err }));
 }
 
-export type Server = SocketIoServer;
-
 export type Namespace = SocketIoNamespace;
+
+declare module 'fastify' {
+  export interface FastifyInstance {
+    io: Server
+  }
+}

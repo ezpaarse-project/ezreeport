@@ -19,7 +19,7 @@ import {
 } from '~/models/tasks/types';
 import { createActivity } from '~/models/task-activity';
 
-import { NotFoundError } from '~/types/errors';
+import { NotFoundError } from '~/models/errors';
 
 const SpecificTaskParams = z.object({
   id: z.string().min(1)

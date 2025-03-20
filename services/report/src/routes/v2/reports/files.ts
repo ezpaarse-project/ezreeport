@@ -16,7 +16,7 @@ import * as reports from '~/models/reports';
 import { ReportFiles } from '~/models/reports/types';
 import { getTask } from '~/models/tasks';
 
-import { NotFoundError } from '~/types/errors';
+import { NotFoundError } from '~/models/errors';
 
 const { reportDir } = config;
 

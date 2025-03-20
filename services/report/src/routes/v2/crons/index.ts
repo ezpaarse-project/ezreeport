@@ -14,7 +14,7 @@ import {
   forceCron,
 } from '~/models/rpc/client/scheduler';
 
-import { NotFoundError } from '~/types/errors';
+import { NotFoundError } from '~/models/errors';
 
 const SpecificCronParams = z.object({
   name: z.string().min(1)

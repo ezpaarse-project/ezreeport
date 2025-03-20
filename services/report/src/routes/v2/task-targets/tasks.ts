@@ -9,7 +9,7 @@ import { PaginationQuery, PaginationResponse } from '~/models/pagination/types';
 
 import * as tasks from '~/models/tasks';
 import { Task } from '~/models/tasks/types';
-import { NotFoundError, ArgumentError } from '~/types/errors';
+import { NotFoundError, ArgumentError } from '~/models/errors';
 import { stringToB64 } from '~common/lib/utils';
 
 const SpecificEmailParams = z.object({

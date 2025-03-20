@@ -8,7 +8,7 @@ import * as responses from '~/routes/v2/responses';
 import * as heartbeats from '~/models/heartbeat';
 import { Heartbeat, FileSystems, FileSystemUsage } from '~/models/heartbeat/types';
 
-import { HTTPError, NotFoundError } from '~/types/errors';
+import { HTTPError, NotFoundError } from '~/models/errors';
 import { appLogger } from '~/lib/logger';
 
 const router: FastifyPluginAsyncZod = async (fastify) => {
