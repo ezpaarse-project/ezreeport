@@ -269,7 +269,7 @@ function calcPeriodFromRecurrence(
       const year = getYear(target);
       const midYear = new Date(year, 5, 30);
       if (isAfter(target, midYear)) {
-        value = { start: midYear, end: endOfYear(midYear) };
+        value = { start: add(midYear, { days: 1 }), end: endOfYear(midYear) };
         break;
       }
       value = { start: startOfYear(midYear), end: midYear };
