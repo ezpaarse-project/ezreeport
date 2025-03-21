@@ -424,12 +424,14 @@
         "SUCCESS": "Success",
         "ERROR": "Error",
         "PROCESSING": "Processing",
-        "PENDING": "Pending"
+        "PENDING": "Pending",
+        "ABORTED": "Aborted"
       },
       "period": "Period",
       "duration": "Duration",
       "started": "Start date",
       "ended": "End date",
+      "queued": "Queued date",
       "lastUpdate": "Last update date",
       "info": "Generation's informations",
       "task": "Report's name",

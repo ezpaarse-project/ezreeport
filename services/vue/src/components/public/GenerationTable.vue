@@ -48,6 +48,7 @@
 
     <template #[`item.progress`]="{ value, item }">
       <v-progress-linear
+        v-if="item.status !== 'ABORTED'"
         v-tooltip="{ text: `${value}%`, disabled: value == null }"
         :model-value="value ?? 0"
         :indeterminate="value == null"
@@ -166,7 +167,9 @@ const {
 const { stop: stopListening } = listenAllGenerations((generation) => {
   const index = generations.value.findIndex(({ id }) => id === generation.id);
   if (index < 0) {
-    refresh();
+    if (!loading.value && !generation.startedAt) {
+      refresh();
+    }
     return;
   }
   const { task } = generations.value[index];
@@ -224,7 +227,7 @@ const headers = computed((): VDataTableHeaders => [
     sortable: true,
   },
   {
-    title: t('$ezreeport.generations.started'),
+    title: t('$ezreeport.generations.queued'),
     value: 'createdAt',
     sortable: true,
   },

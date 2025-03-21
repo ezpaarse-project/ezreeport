@@ -424,12 +424,14 @@
         "SUCCESS": "Terminée",
         "ERROR": "Échouée",
         "PROCESSING": "Active",
-        "PENDING": "En attente"
+        "PENDING": "En attente",
+        "ABORTED": "Abandonnée"
       },
       "period": "Période",
       "duration": "Durée",
       "started": "Date de démarrage",
       "ended": "Date de fin",
+      "queued": "Date d'ajout",
       "lastUpdate": "Dernière mise à jour",
       "info": "Informations sur la génération",
       "task": "Nom du rapport",

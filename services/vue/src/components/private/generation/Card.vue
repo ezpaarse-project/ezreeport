@@ -1,7 +1,7 @@
 <template>
   <v-card
     :title="task?.name ?? modelValue.taskId"
-    :subtitle="task?.namespace?.name ?? modelValue.task?.namespaceId"
+    :subtitle="task?.namespace?.name"
     prepend-icon="mdi-play-speed"
   >
     <template #text>
@@ -24,19 +24,27 @@
           <v-list lines="two" density="compact">
             <v-list-subheader />
 
-            <v-list-item :subtitle="$t('$ezreeport.generations.started')" prepend-icon="mdi-timer-play">
+            <v-list-item :subtitle="$t('$ezreeport.generations.queued')" prepend-icon="mdi-clock-plus-outline">
               <template #title>
                 <LocalDate :model-value="modelValue.createdAt" format="PPPpp" />
               </template>
             </v-list-item>
 
-            <v-list-item v-if="modelValue.took > 0" :subtitle="$t('$ezreeport.generations.ended')" prepend-icon="mdi-timer-stop">
-              <template #title>
-                <LocalDate :model-value="new Date(modelValue.createdAt.getTime() + modelValue.progress)" format="PPPpp" />
-              </template>
-            </v-list-item>
+            <template v-if="modelValue.startedAt">
+              <v-list-item :subtitle="$t('$ezreeport.generations.started')" prepend-icon="mdi-timer-play">
+                <template #title>
+                  <LocalDate :model-value="modelValue.startedAt" format="PPPpp" />
+                </template>
+              </v-list-item>
 
-            <v-list-item :subtitle="$t('$ezreeport.generations.lastUpdate')" prepend-icon="mdi-timer-edit">
+              <v-list-item v-if="isEnded" :subtitle="$t('$ezreeport.generations.ended')" prepend-icon="mdi-timer-stop">
+                <template #title>
+                  <LocalDate :model-value="new Date(modelValue.startedAt.getTime() + (modelValue.took ?? 0))" format="PPPpp" />
+                </template>
+              </v-list-item>
+            </template>
+
+            <v-list-item v-if="modelValue.updatedAt" :subtitle="$t('$ezreeport.generations.lastUpdate')" prepend-icon="mdi-clock-edit-outline">
               <template #title>
                 <LocalDate :model-value="modelValue.updatedAt" format="PPPpp" />
               </template>
@@ -288,13 +296,15 @@ const taskLoading = ref(false);
 const templateLoading = ref(false);
 const resultLoading = ref(false);
 
+/** Has generation ended */
+const isEnded = computed(() => isGenerationEnded(props.modelValue));
 /** Task's id, used for cache purposes */
 const taskId = computed(() => props.modelValue.taskId);
 /** Task of the current generation */
 const task = computedAsync(async () => {
   taskLoading.value = true;
   try {
-    const value = await getTask(taskId.value);
+    const value = await getTask(taskId.value, ['namespace']);
     taskLoading.value = false;
     return value;
   } catch (e) {
@@ -325,11 +335,13 @@ const template = computedAsync(async () => {
 });
 
 /** Report id of the current generation, used for cache purposes */
-const reportId = computed(
-  () => (isGenerationEnded(props.modelValue) ? props.modelValue.reportId : undefined),
-);
+const reportId = computed(() => (isEnded.value ? props.modelValue.reportId : undefined));
 /** Result of the current generation */
 const result = computedAsync(async () => {
+  if (!reportId.value) {
+    return undefined;
+  }
+
   resultLoading.value = true;
   try {
     const value = await getFileAsJson(taskId.value, `${reportId.value}.det.json`);
