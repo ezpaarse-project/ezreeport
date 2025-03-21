@@ -165,6 +165,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         origin: request.user?.username ?? generation.origin,
         writeActivity: generation.writeActivity,
         printDebug: false,
+        createdAt: generation.createdAt,
       });
 
       return responses.buildSuccessResponse({ id: generation.id }, reply);

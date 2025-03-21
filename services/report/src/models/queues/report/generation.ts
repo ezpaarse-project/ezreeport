@@ -17,13 +17,22 @@ export function initGenerationQueue(c: rabbitmq.Channel) {
   channel = c;
 }
 
-export async function queueGeneration(data: GenerationQueueDataType) {
+type CustomGenerationQueueDataType = Omit<GenerationQueueDataType, 'createdAt'> & {
+  createdAt?: Date;
+};
+
+export async function queueGeneration(data: CustomGenerationQueueDataType) {
+  const createdAt = data.createdAt ?? new Date();
+
   try {
     if (!channel) {
       throw new Error('Channel not initialized');
     }
 
-    const buf = Buffer.from(JSON.stringify(data));
+    const buf = Buffer.from(JSON.stringify({
+      ...data,
+      createdAt,
+    } satisfies GenerationQueueDataType));
     channel.sendToQueue(generationQueueName, buf);
     logger.debug({
       queue: generationQueueName,
@@ -50,9 +59,13 @@ export async function queueGeneration(data: GenerationQueueDataType) {
       end: data.period.end,
       targets: data.targets,
       origin: data.origin,
+      writeActivity: !!data.writeActivity,
+      progress: null,
+      took: null,
       reportId: '',
-      createdAt: new Date(),
+      createdAt,
       updatedAt: new Date(),
+      startedAt: null,
     };
 
     const buf = Buffer.from(JSON.stringify(event));
