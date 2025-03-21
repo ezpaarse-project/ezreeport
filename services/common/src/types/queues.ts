@@ -35,6 +35,9 @@ export const GenerationQueueData = z.object({
 
   printDebug: z.boolean().optional()
     .describe('Should print debug information'),
+
+  createdAt: z.coerce.date()
+    .describe('Creation date'),
 });
 
 /**

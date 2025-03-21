@@ -23,19 +23,19 @@ enum Recurrence {
 /// A report task
 model Task {
   /// Id of the report
-  id           String           @id @default(uuid())
+  id           String         @id @default(uuid())
   /// The name of the report
   name         String
   /// Description of the report
-  description  String           @default("")
+  description  String         @default("")
   /// The "owner" of the report
-  namespace    Namespace        @relation(fields: [namespaceId], references: [id], onDelete: Cascade)
+  namespace    Namespace      @relation(fields: [namespaceId], references: [id], onDelete: Cascade)
   namespaceId  String
   /// The template used to generate the report
   template     Json
   // The template extended by the report
-  extends      Template         @relation(fields: [extendedId], references: [id], onDelete: NoAction)
-  extendedId   String           @map("templateId")
+  extends      Template       @relation(fields: [extendedId], references: [id], onDelete: NoAction)
+  extendedId   String         @map("templateId")
   /// Last template extended by the report. If null then it's mean it's still linked. If set, extendedId must match default one
   lastExtended Json?
   /// Email adresses to send generated report
@@ -47,15 +47,15 @@ model Task {
   /// Last time the report has been generated
   lastRun      DateTime?
   /// Is the generation of the report is enabled
-  enabled      Boolean          @default(true)
+  enabled      Boolean        @default(true)
   /// Activity of the task
   activity     TaskActivity[]
   /// Generation of the task
   generations  Generation[]
   /// When the report was created
-  createdAt    DateTime         @default(now())
+  createdAt    DateTime       @default(now())
   /// When the report was updated for the last time
-  updatedAt    DateTime?        @updatedAt
+  updatedAt    DateTime?      @updatedAt
 
   @@index([namespaceId])
 }
@@ -104,25 +104,26 @@ enum GenerationStatus {
   PROCESSING
   SUCCESS
   ERROR
+  ABORTED
 }
 
 /// A generation of a task
 model Generation {
   /// Id of the generation
-  id            String               @id
+  id            String           @id
   /// Task linked to the event
-  task          Task                 @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  task          Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
   taskId        String
   /// Period start
   start         DateTime
   /// Period end
   end           DateTime
   /// Email adresses to send generated report
-  targets      String[]
+  targets       String[]
   /// Origin of the generation
   origin        String
   /// Should write activity in DB
-  writeActivity Boolean              @default(false)
+  writeActivity Boolean          @default(false)
   /// Status of generation
   status        GenerationStatus @default(PENDING)
   /// Progress of generation
@@ -131,10 +132,12 @@ model Generation {
   took          Int?
   /// Id of the generated report
   reportId      String
-  /// When the generation was created/started
-  createdAt     DateTime             @default(now())
+  /// When the generation was created/queued
+  createdAt     DateTime         @default(now())
   /// When the generation was updated for the last time
-  updatedAt     DateTime?            @updatedAt
+  updatedAt     DateTime?        @updatedAt
+  /// When the generation was started
+  startedAt     DateTime?
 }
 
 /// A user of ezREEPORT

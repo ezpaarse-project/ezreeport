@@ -1,6 +1,6 @@
 import { z } from '../lib/zod';
 
-export const GenerationStatus = z.enum(['PENDING', 'PROCESSING', 'SUCCESS', 'ERROR'] as const);
+export const GenerationStatus = z.enum(['PENDING', 'PROCESSING', 'SUCCESS', 'ERROR', 'ABORTED'] as const);
 
 export type GenerationStatusType = z.infer<typeof GenerationStatus>;
 
@@ -26,7 +26,7 @@ export const Generation = z.object({
   origin: z.string().min(1)
     .describe('Origin of the request, can be a user or a service'),
 
-  writeActivity: z.boolean().optional()
+  writeActivity: z.boolean()
     .describe('Should write activity to database'),
 
   status: GenerationStatus
@@ -34,10 +34,9 @@ export const Generation = z.object({
 
   progress: z.number().int().min(0).max(100)
     .or(z.null())
-    .optional()
     .describe('Job progress, null if not started'),
 
-  took: z.number().int().min(0).optional()
+  took: z.number().int().min(0)
     .or(z.null())
     .describe('Time taken to generate the report, null if not started'),
 
@@ -49,6 +48,9 @@ export const Generation = z.object({
 
   updatedAt: z.coerce.date().nullable().readonly()
     .describe('Last update date'),
+
+  startedAt: z.coerce.date().readonly().nullable()
+    .describe('Creation date'),
 });
 
 /**
