@@ -73,7 +73,7 @@ import { version } from '~/../package.json';
 import { version as sdkVersion } from '~sdk';
 import { getStatus, type ApiService, type ApiStatus } from '~sdk/health';
 
-const MINIMUM_SERVICES = ['rabbitmq', 'database', 'elastic', 'worker', 'scheduler', 'mail', 'smtp'];
+const MINIMUM_SERVICES = ['rabbitmq', 'api', 'database', 'worker', 'elastic', 'scheduler', 'mail', 'smtp'];
 
 // Components props
 defineProps<{

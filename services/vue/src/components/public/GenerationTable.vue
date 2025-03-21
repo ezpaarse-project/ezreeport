@@ -27,6 +27,7 @@
 
     <template #[`item.task.name`]="{ value, item }">
       {{ value }}
+      <v-icon v-if="!item.writeActivity" v-tooltip="$t('$ezreeport.generations.debug')" icon="mdi-bug-outline" />
       <TemplateTagView v-if="item.task?.extends?.tags" :model-value="item.task.extends.tags" size="x-small" />
     </template>
 
