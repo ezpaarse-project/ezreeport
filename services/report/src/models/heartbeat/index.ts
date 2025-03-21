@@ -41,15 +41,15 @@ export async function initHeartbeat(connection: rabbitmq.ChannelModel) {
 
   const { send } = await setupHeartbeat(channel, service, logger, false, frequency);
 
-  await listenToHeartbeats(channel, logger, async (b) => {
-    let beat = b;
+  await listenToHeartbeats(channel, logger, function onHeartbeat(beat) {
     // If it's the same machine, then we can consider RabbitMQ as working
     if (beat.hostname === hostname()) {
-      beat = {
-        ...beat,
+      onHeartbeat({
         service: 'rabbitmq',
-        version: server?.version,
-      };
+        hostname: server.cluster_name || 'rabbitmq',
+        version: server.version,
+        updatedAt: new Date(),
+      });
     }
 
     const { createdAt } = services.get(beat.hostname) ?? { createdAt: new Date() };
