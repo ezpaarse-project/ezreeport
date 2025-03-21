@@ -19,6 +19,7 @@ import { sendReport } from './send';
 const { outDir, team } = config.report;
 
 const generationQueueName = 'ezreeport.report:queues';
+const deadGenerationExchangeName = 'ezreeport.report:queues:dead';
 
 const logger = appLogger.child({ scope: 'queues', queue: generationQueueName });
 
@@ -45,7 +46,7 @@ async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage
   // Setup events
   const events = new EventEmitter<GenerationEventMap>();
   let reportId = '';
-  let startTime = 0;
+  let startedAt: Date | null = null;
   let pageTotal = 0;
   let pageRendered = 0;
   const updateProgress = (status: GenerationStatusType) => sendEvent(channel, {
@@ -57,15 +58,16 @@ async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage
     targets: data.targets,
     writeActivity: !!data.writeActivity,
     status,
-    progress: pageTotal ? Math.round((pageRendered / pageTotal) * 100) : undefined,
-    took: startTime ? Date.now() - startTime : undefined,
+    progress: pageTotal ? Math.round((pageRendered / pageTotal) * 100) : null,
+    took: startedAt ? Date.now() - startedAt.getTime() : null,
     reportId,
-    createdAt: new Date(startTime || Date.now()),
+    createdAt: data.createdAt,
     updatedAt: new Date(),
+    startedAt,
   });
   events.on('start', (event) => {
     ({ reportId } = event as { reportId: string });
-    startTime = Date.now();
+    startedAt = new Date();
     updateProgress('PROCESSING');
   });
   events.on('resolve:template', (event) => {
@@ -135,7 +137,16 @@ async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage
 
 // eslint-disable-next-line import/prefer-default-export
 export async function getReportGenerationQueue(channel: rabbitmq.Channel) {
-  const { queue } = await channel.assertQueue(generationQueueName, { durable: false });
+  const { exchange: deadLetterExchange } = await channel.assertExchange(
+    deadGenerationExchangeName,
+    'fanout',
+    { durable: false },
+  );
+
+  const { queue } = await channel.assertQueue(
+    generationQueueName,
+    { durable: false, deadLetterExchange },
+  );
 
   // Consume generation queue
   channel.consume(queue, (m) => onMessage(channel, m));
