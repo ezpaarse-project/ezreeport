@@ -53,6 +53,14 @@ async function onDeadGeneration(c: rabbitmq.Channel, msg: rabbitmq.ConsumeMessag
 
     const buf = Buffer.from(JSON.stringify(event));
     c.publish('ezreeport.report:event', '', buf);
+
+    logger.warn({
+      msg: 'Generation aborted',
+      taskId: data.task.id,
+      task: data.task.name,
+      generationId: data.id,
+      generation: event,
+    });
   } catch (err) {
     logger.error({ msg: 'Failed to send event', err });
   }
