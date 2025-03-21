@@ -51,7 +51,7 @@ async function updateTaskAfterGeneration(data: GenerationType) {
     await editTaskAfterGeneration(
       data.taskId,
       data.createdAt,
-      data.status === 'ERROR',
+      data.status !== 'ERROR',
     );
   } catch (err) {
     logger.error({
