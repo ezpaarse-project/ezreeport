@@ -17,6 +17,7 @@ export const transformGeneration = (generation: RawGeneration): Generation => ({
   ...transformCreatedUpdated(generation),
   start: parseISO(generation.start),
   end: parseISO(generation.end),
+  startedAt: generation.startedAt ? parseISO(generation.startedAt) : undefined,
 
   task: generation.task ? transformTaskWithoutBody(generation.task) : undefined,
 });

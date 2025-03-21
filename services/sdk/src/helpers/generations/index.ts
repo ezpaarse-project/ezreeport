@@ -8,7 +8,7 @@ import type { ReportResult } from '~/modules/reports/types';
 import { getTask } from '~/modules/tasks/methods';
 import type { Task } from '~/modules/tasks/types';
 import { transformGeneration } from '~/modules/generations/methods';
-import type { Generation, RawGeneration } from '~/modules/generations/types';
+import type { GenerationStatus, Generation, RawGeneration } from '~/modules/generations/types';
 
 export type GenerationStartedEvent = { id: string };
 
@@ -19,7 +19,9 @@ type GenerationEvents = {
   'progress': [GenerationProgressEvent],
 };
 
-export const isGenerationEnded = (g: Generation): boolean => g.status === 'SUCCESS' || g.status === 'ERROR';
+const GEN_END_STATES = new Set<GenerationStatus>(['SUCCESS', 'ERROR', 'ABORTED']);
+
+export const isGenerationEnded = (g: Generation): boolean => GEN_END_STATES.has(g.status);
 
 type ReportGenerationPromise = EventfulPromise<ReportResult, GenerationEvents>;
 
