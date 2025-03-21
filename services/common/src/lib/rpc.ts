@@ -142,19 +142,27 @@ export async function setupRPCServer(
 }
 
 export function setupRPCClient(channel: rabbitmq.Channel, queueName: string, appLogger: Logger) {
+  const timeout = 15000;
   const logger = appLogger.child({ scope: 'rpc.client', queue: queueName });
   logger.debug('RPC client setup');
 
   return {
     call: async (method: string, ...params: unknown[]): Promise<unknown> => {
-      const { queue: responseQueue } = await channel.assertQueue('', { exclusive: true });
+      const { queue: responseQueue } = await channel.assertQueue(
+        '',
+        { exclusive: true, durable: false },
+      );
       const correlationId = randomUUID();
 
       const promise = new Promise<unknown>((resolve, reject) => {
         channel.consume(
           responseQueue,
-          (msg) => {
-            if (!msg || msg.properties.correlationId !== correlationId) {
+          async (msg) => {
+            if (!msg) {
+              return;
+            }
+            if (msg.properties.correlationId !== correlationId) {
+              channel.nack(msg);
               return;
             }
 
@@ -169,21 +177,26 @@ export function setupRPCClient(channel: rabbitmq.Channel, queueName: string, app
                 data: process.env.NODE_ENV === 'production' ? undefined : raw,
                 error,
               });
+              channel.nack(msg, undefined, false);
               return;
             }
+
+            channel.ack(msg);
 
             if (data.error) {
               reject(new Error(data.error));
               return;
             }
 
+            await channel.deleteQueue(responseQueue);
             resolve(data.result);
           },
         );
 
-        setTimeout(() => {
+        setTimeout(async () => {
+          await channel.deleteQueue(responseQueue);
           reject(new Error("Timeout, couldn't get response from RPC server"));
-        }, 15000);
+        }, timeout);
       });
 
       const buf = Buffer.from(JSON.stringify({ method, params }));
