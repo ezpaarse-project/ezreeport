@@ -1,3 +1,15 @@
+# [ezreeport-report-v2.1.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.0.1...ezreeport-report@2.1.0-rc.1) (2025-03-24)
+
+
+### Bug Fixes
+
+* **report:** fixed issue with periods of BIENNIAL reports ([5c5c664](https://github.com/ezpaarse-project/ezreeport/commit/5c5c6649b20386f6e94503ccc194cc81674d518e))
+
+
+### Features
+
+* **report:** prevent similar tasks ([51c3d0b](https://github.com/ezpaarse-project/ezreeport/commit/51c3d0b26a4550bb7e7b91d4054efb0c557d0569))
+
 # [ezreeport-report-v2.1.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.0.1...ezreeport-report@2.1.0-beta.1) (2025-03-24)
 
 
