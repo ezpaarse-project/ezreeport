@@ -1,3 +1,13 @@
+# [@ezpaarse-project/ezreeport-vue-v2.1.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.1.0-beta.1...@ezpaarse-project/ezreeport-vue@2.1.0-beta.2) (2025-03-24)
+
+
+### Bug Fixes
+
+* **vue:** fixed issue where couldn't save duplicated template ([6de5ba4](https://github.com/ezpaarse-project/ezreeport/commit/6de5ba4d262085f57834e7210ddb3059c396646d))
+* **vue:** fixed issue with custom periods of BIENNIAL reports ([fb96f16](https://github.com/ezpaarse-project/ezreeport/commit/fb96f1672b58313d953dd9c21534717eb83b3c37))
+* **vue:** fixed multiple issues with multi values ([5574f6c](https://github.com/ezpaarse-project/ezreeport/commit/5574f6c5466475641c957eb2b2b0dc8a4ea3170c))
+* **vue:** fixed weekStartsOn in generation ([a79daa6](https://github.com/ezpaarse-project/ezreeport/commit/a79daa6c8532c3c6bec52f16d1ae01d83ed626b7))
+
 # [@ezpaarse-project/ezreeport-vue-v2.1.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.0.0...@ezpaarse-project/ezreeport-vue@2.1.0-beta.1) (2025-03-14)
 
 
