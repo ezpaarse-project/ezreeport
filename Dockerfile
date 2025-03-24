@@ -26,7 +26,7 @@ WORKDIR /usr/build
 # see https://github.com/Automattic/node-canvas/issues/866
 RUN apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev pixman-dev
 
-COPY ./pnpm-lock.yaml ./
+COPY ./package.json ./pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm i --frozen-lockfile
 
 COPY . .
