@@ -300,10 +300,9 @@ async function openForm(template?: Omit<Template, 'body'>) {
 
 async function openDuplicateForm(template: Omit<Template, 'body'>) {
   try {
-    const base = await getTemplate(template);
-
     updatedTemplate.value = createTemplateHelperFrom({
-      ...base,
+      ...await getTemplate(template),
+      name: `${template.name} (copy)`,
       id: '',
     });
 

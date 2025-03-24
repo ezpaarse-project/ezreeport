@@ -41,6 +41,8 @@
       "id": "ID du rapport",
       "recurrence": "Récurrence",
       "targets": "Destinataires",
+      "targets:hint": "Entrez ici l'adresse mail du destinataire",
+      "targets:add": "Ajouter un destinataire",
       "targets:count": "{n} Destinataire|{n} Destinataires",
       "targets:copy": "Copier les adresses mail",
       "nextRun": "Prochain envoi",
@@ -178,6 +180,7 @@
         "raw": "Requête DSL",
         "field": "@:$ezreeport.field",
         "value": "Valeur(s)",
+        "value:hint": "Valeur vide",
         "isNot": "Inverser le filtre",
         "foundFilters": "{n} filtre trouvé|{n} filtres trouvés",
         "name": "Nom du filtre",
@@ -476,7 +479,7 @@
       }
     },
     "errors": {
-      "invalidEmail": "Adresse email invalide ({email})",
+      "invalidEmail": "Adresse n°{n} invalide",
       "download": "Impossible de télécharger le fichier \"{path}\"",
       "downloadAttachement": "Impossible de télécharger la pièce jointe",
       "refreshNamespaces": "Impossible d'actualiser les @:$ezreeport.namespace"

@@ -41,6 +41,8 @@
       "id": "Report's ID",
       "recurrence": "Recurrence",
       "targets": "Receivers",
+      "targets:hint": "Enter here the receiver's mail address",
+      "targets:add": "Add a receiver",
       "targets:count": "{n} receiver|{n} receivers",
       "targets:copy": "Copy mail adresses",
       "nextRun": "Next delivery",
@@ -178,6 +180,7 @@
         "raw": "DSL Query",
         "field": "@:$ezreeport.field",
         "value": "Value(s)",
+        "value:hint": "Empty value",
         "isNot": "Invert filter",
         "foundFilters": "Found {n} filter|Found {n} filters",
         "name": "Name of filter",
@@ -476,7 +479,7 @@
       }
     },
     "errors": {
-      "invalidEmail": "Invalid mail address ({email})",
+      "invalidEmail": "Mail address n°{n} is invalid ",
       "download": "Can't download file \"{path}\"",
       "downloadAttachement": "Can't download attachement",
       "refreshNamespaces": "Can't refresh @:$ezreeport.namespace"

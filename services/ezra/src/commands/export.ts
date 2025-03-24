@@ -85,7 +85,7 @@ export default class Export extends EzrCommand<typeof Export> {
     let currentVersion;
     try {
       const { data } = await this.instances[0].fetch('/health/');
-      currentVersion = data.content.currentVersion;
+      currentVersion = data.content.version;
     } catch (error) {
       action.fail(chalk.red((error as Error).message));
       throw error;

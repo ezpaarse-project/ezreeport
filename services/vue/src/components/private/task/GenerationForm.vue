@@ -81,8 +81,10 @@
             <MultiTextField
               :model-value="targets"
               :label="$t('$ezreeport.task.targets')"
+              :add-label="$t('$ezreeport.task.targets:add')"
               :rules="[(v) => v.length > 0 || $t('$ezreeport.required')]"
-              :item-rules="[(v) => isEmail(v) || $t('$ezreeport.errors.invalidEmail', { email: v })]"
+              :item-rules="[(v, i) => isEmail(v) || $t('$ezreeport.errors.invalidEmail', i + 1)]"
+              :item-placeholder="$t('$ezreeport.task.targets:hint')"
               prepend-icon="mdi-mailbox"
               variant="underlined"
               required
@@ -111,6 +113,7 @@
                     :model-value="periodRange"
                     :max="maxDate"
                     hide-header
+                    show-adjacent-months
                     @update:model-value="updatePeriod($event)"
                   />
                 </template>
@@ -242,7 +245,10 @@ function calcPeriodFromRecurrence(
 
     case 'WEEKLY': {
       const target = add(today, { weeks: offset });
-      value = { start: startOfWeek(target), end: endOfWeek(target) };
+      value = {
+        start: startOfWeek(target, { weekStartsOn: 1 }),
+        end: endOfWeek(target, { weekStartsOn: 1 }),
+      };
       break;
     }
 
@@ -263,7 +269,7 @@ function calcPeriodFromRecurrence(
       const year = getYear(target);
       const midYear = new Date(year, 5, 30);
       if (isAfter(target, midYear)) {
-        value = { start: midYear, end: endOfYear(midYear) };
+        value = { start: add(midYear, { days: 1 }), end: endOfYear(midYear) };
         break;
       }
       value = { start: startOfYear(midYear), end: midYear };

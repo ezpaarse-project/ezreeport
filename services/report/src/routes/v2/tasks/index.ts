@@ -19,7 +19,7 @@ import {
 } from '~/models/tasks/types';
 import { createActivity } from '~/models/task-activity';
 
-import { NotFoundError } from '~/types/errors';
+import { ConflictError, NotFoundError } from '~/types/errors';
 
 const SpecificTaskParams = z.object({
   id: z.string().min(1)
@@ -114,6 +114,19 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     },
     preHandler: [
       async (request) => requireAllowedNamespace(request, request.body.namespaceId),
+      // Check if similar task already exists
+      async (request) => {
+        const similarTaskExists = await tasks.doesSimilarTaskExist(
+          request.body.namespaceId,
+          request.body.recurrence,
+          request.body.extendedId,
+          request.body.template.index,
+        );
+
+        if (similarTaskExists) {
+          throw new ConflictError('Similar task already exists');
+        }
+      },
     ],
     handler: async (request, reply) => {
       const content = await tasks.createTask(request.body);

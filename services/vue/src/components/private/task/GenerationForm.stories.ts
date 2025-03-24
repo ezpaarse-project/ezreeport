@@ -92,6 +92,62 @@ export const Monthly: Story = {
   },
 };
 
+export const Quarterly: Story = {
+  render: (args) => ({
+    components: { TaskGenerationForm },
+    setup() {
+      return { args };
+    },
+    template: '<TaskGenerationForm v-bind="args" />',
+  }),
+  args: {
+    modelValue: {
+      id: '1c174863-172b-419e-accd-b3d16d1cbbb3',
+      name: 'TR Total_Item_Requests trimestriel',
+      description: '',
+      namespaceId: '5a01b060-1217-11eb-af77-ff33b5dd411e',
+      extendedId: 'bde49b1b-c3c5-4776-96d7-e854b22c3d0f',
+      lastExtended: null,
+      targets: ['helene@univ-foobar.fr'],
+      recurrence: 'QUARTERLY',
+      nextRun: new Date('2025-03-31T23:59:59.000Z'),
+      lastRun: undefined,
+      enabled: true,
+      createdAt: new Date('2025-03-10T09:25:56.703Z'),
+      updatedAt: new Date('2025-03-10T09:25:56.703Z'),
+    }
+    ,
+  },
+};
+
+export const Biennial: Story = {
+  render: (args) => ({
+    components: { TaskGenerationForm },
+    setup() {
+      return { args };
+    },
+    template: '<TaskGenerationForm v-bind="args" />',
+  }),
+  args: {
+    modelValue: {
+      id: 'fb1698d8-95f0-4c44-9cc2-d99552f7ffaf',
+      name: 'ezpaarse semestriel',
+      description: '',
+      namespaceId: '5a01b060-1217-11eb-af77-ff33b5dd411e',
+      extendedId: 'cf986a26-1b62-478c-9e88-a6d60254d761',
+      lastExtended: null,
+      targets: ['helene@univ-foobar.fr'],
+      recurrence: 'BIENNIAL',
+      nextRun: new Date('2025-06-30T00:00:00.000Z'),
+      lastRun: undefined,
+      enabled: true,
+      createdAt: new Date('2025-03-10T09:25:56.256Z'),
+      updatedAt: new Date('2025-03-10T09:25:56.256Z'),
+    },
+
+  },
+};
+
 export const Yearly: Story = {
   render: (args) => ({
     components: { TaskGenerationForm },
