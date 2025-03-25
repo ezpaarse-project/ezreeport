@@ -10,12 +10,16 @@
   >
     <template #top>
       <v-toolbar
-        :title="`${titlePrefix || ''}${$t('$ezreeport.task.title:list', total)}`"
+        :title="title"
         color="transparent"
         density="comfortable"
       >
         <template v-if="$slots.prepend" #prepend>
           <slot name="prepend" />
+        </template>
+
+        <template v-if="$slots.title" #title>
+          <slot name="title" :title="title" />
         </template>
 
         <template #append>
@@ -282,7 +286,7 @@ import {
 type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 
 // Components props
-defineProps<{
+const props = defineProps<{
   titlePrefix?: string;
 }>();
 
@@ -306,6 +310,8 @@ const {
   (params) => getAllTasks(params),
   { sortBy: 'name', include: ['extends.tags', 'namespace'] },
 );
+
+const title = computed(() => `${props.titlePrefix || ''}${t('$ezreeport.task.title:list', total.value)}`);
 
 /** Headers for table */
 const headers = computed((): VDataTableHeaders => [

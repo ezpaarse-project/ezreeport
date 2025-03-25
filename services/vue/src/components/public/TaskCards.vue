@@ -7,12 +7,16 @@
   >
     <template #header>
       <v-toolbar
-        :title="`${titlePrefix || ''}${$t('$ezreeport.task.title:list', total)}`"
+        :title="title"
         color="transparent"
         density="comfortable"
       >
         <template v-if="$slots.prepend" #prepend>
           <slot name="prepend" />
+        </template>
+
+        <template v-if="$slots.title" #title>
+          <slot name="title" :title="title" />
         </template>
 
         <template #append>
@@ -221,6 +225,8 @@ const {
     filters: { namespaceId: props.namespaceId },
   },
 );
+
+const title = computed(() => `${props.titlePrefix || ''}${t('$ezreeport.task.title:list', total.value)}`);
 
 const availableActions = computed(() => {
   if (!arePermissionsReady.value) {
