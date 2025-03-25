@@ -1,3 +1,10 @@
+# [@ezpaarse-project/ezreeport-vue-v2.1.0-rc.3](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.1.0-rc.2...@ezpaarse-project/ezreeport-vue@2.1.0-rc.3) (2025-03-25)
+
+
+### Bug Fixes
+
+* **vue:** fixed error when trying to create a similar report ([5ede2fc](https://github.com/ezpaarse-project/ezreeport/commit/5ede2fca1e632b714ca7694ff218b4d2b13c5000))
+
 # [@ezpaarse-project/ezreeport-vue-v2.1.0-rc.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.1.0-rc.1...@ezpaarse-project/ezreeport-vue@2.1.0-rc.2) (2025-03-24)
 
 
