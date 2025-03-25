@@ -284,6 +284,10 @@ async function save() {
 
     emit('update:modelValue', result);
   } catch (e) {
+    if (e && typeof e === 'object' && 'statusCode' in e && e.statusCode === 409) {
+      handleEzrError(t('$ezreeport.task.errors.create:duplicate'), e);
+      return;
+    }
     handleEzrError(t('$ezreeport.task.errors.create:preset'), e);
   }
 }

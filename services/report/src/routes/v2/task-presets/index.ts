@@ -233,11 +233,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       params: SpecificTaskPresetParams,
       body: AdditionalDataForPreset,
       response: {
+        ...responses.describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.CONFLICT,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
         [StatusCodes.CREATED]: responses.SuccessResponse(Task),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
     config: {
@@ -255,6 +258,11 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
       // Check if similar task already exists
       async (request) => {
+        // If filters are provided, trust user
+        if (request.body.filters) {
+          return;
+        }
+
         // We already checked the task preset exists in preHandler
         const taskPreset = (await taskPresets.getTaskPreset(request.params.id))!;
         const similarTaskExists = await doesSimilarTaskExist(

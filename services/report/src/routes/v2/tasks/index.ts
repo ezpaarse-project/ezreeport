@@ -99,11 +99,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['tasks'],
       body: InputTask,
       response: {
+        ...responses.describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.CONFLICT,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
         [StatusCodes.CREATED]: responses.SuccessResponse(Task),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
     config: {
@@ -116,6 +119,11 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       async (request) => requireAllowedNamespace(request, request.body.namespaceId),
       // Check if similar task already exists
       async (request) => {
+        // If filters are provided, trust user
+        if (request.body.template.filters) {
+          return;
+        }
+
         const similarTaskExists = await tasks.doesSimilarTaskExist(
           request.body.namespaceId,
           request.body.recurrence,
