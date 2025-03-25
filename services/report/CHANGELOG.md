@@ -1,3 +1,12 @@
+# [ezreeport-report-v2.1.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.1.0-beta.1...ezreeport-report@2.1.0-beta.2) (2025-03-25)
+
+
+### Bug Fixes
+
+* **report:** disabled similar task check if filters are present ([7a11e8a](https://github.com/ezpaarse-project/ezreeport/commit/7a11e8afdb9efded85696141e7e4ea8396ea7fdb))
+* **report:** fixed percentage on date_histogram ([8225a78](https://github.com/ezpaarse-project/ezreeport/commit/8225a78ed7a3d174c0ad56ba5de58b4d7fd66142))
+* **report:** fixed timezone in date_histogram aggregations ([ca0b622](https://github.com/ezpaarse-project/ezreeport/commit/ca0b62263782a83b2c138ec155cd0e8e129c8c19))
+
 # [ezreeport-report-v2.1.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.0.1...ezreeport-report@2.1.0-beta.1) (2025-03-24)
 
 
