@@ -83,6 +83,7 @@
       },
       "errors": {
         "create:preset": "Cannot create report from preset",
+        "create:duplicate": "A similar periodic report already exists",
         "copy:targets": "Cannot copy targets into clipboard",
         "fetch": "Cannot get periodic reports",
         "create": "Cannot create report",

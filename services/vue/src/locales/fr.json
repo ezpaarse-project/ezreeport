@@ -85,6 +85,7 @@
         "copy:targets": "Impossible de copier les cibles dans le presse-papiers",
         "create": "Impossible de créer un rapport",
         "create:preset": "Impossible de créer un rapport à partir d'un préréglage",
+        "create:duplicate": "Un rapport périodique similaire existe déjà",
         "delete": "Impossible de supprimer le rapport",
         "edit": "Impossible de mettre à jour le rapport",
         "fetch": "Impossible d'obtenir des rapports périodiques",
