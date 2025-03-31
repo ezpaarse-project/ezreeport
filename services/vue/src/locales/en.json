@@ -13,7 +13,7 @@
     "advanced": "Advanced",
     "show_json": "Show JSON",
     "settings": "Settings",
-    "required": "Filed required",
+    "required": "Field required",
     "parameters": "Parameters",
     "deselect": "Deselect",
     "search": "Search",
@@ -56,6 +56,7 @@
       "generate": "Generate",
       "period": "Period",
       "description": "Description",
+      "extended": "Extended template",
       "recurrenceList": {
         "DAILY": "Daily",
         "WEEKLY": "Weekly",
@@ -296,12 +297,12 @@
           ]
         },
         "md": {
-          "title": "Markdown@:$ezreeport.editor.figures._titleTemplate",
+          "title": "Markdown@:$ezreeport.editor.figures._.titleTemplate",
           "preview": "Preview",
           "data": "Content"
         },
         "metric": {
-          "title": "Metric@:$ezreeport.editor.figures._titleTemplate",
+          "title": "Metric@:$ezreeport.editor.figures._.titleTemplate",
           "elements": {
             "title": "Elements ({n})",
             "title:new": "Create element",

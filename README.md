@@ -14,7 +14,7 @@ git clone https://github.com/ezpaarse-project/ezreeport.git
 cd ezreeport
 echo 'ELASTIC_URL="${ELASTIC_SCHEME:-https}://${ELASTIC_HOST}:${ELASTIC_PORT:-9200}"\n\nDATABASE_URL="${DATABASE_PROTOCOL:-postgresql}://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?schema=default"' > .env.local
 corepack enable
-pnpm i
+pnpm i --frozen-lockfile
 ```
 
 ## Start ezREEPORT

@@ -1,6 +1,8 @@
 <template>
   <div class="template-layout-preview-container">
-    <slot name="prepend" />
+    <div v-if="$slots.prepend" class="d-flex flex-column align-center">
+      <slot name="prepend" />
+    </div>
 
     <v-sheet
       :color="current ? 'primary' : undefined"

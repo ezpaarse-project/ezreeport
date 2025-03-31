@@ -56,6 +56,9 @@
       "generate": "Générer",
       "period": "Période",
       "description": "Description",
+      "extended": "Modèle de base",
+      "superUserMode": "Mode super utilisateur",
+      "superUserMode:tooltip": "Ce mode est réservé aux \"super utilisateurs\" qui souhaitent créer des rapports très avancés.",
       "recurrenceList": {
         "DAILY": "Quotidien",
         "WEEKLY": "Hebdomadaire",
@@ -296,12 +299,12 @@
           ]
         },
         "md": {
-          "title": "@:$ezreeport.editor.figures._titleTemplate Markdown",
+          "title": "@:$ezreeport.editor.figures._.titleTemplate Markdown",
           "preview": "Aperçu",
           "data": "Contenu"
         },
         "metric": {
-          "title": "@:$ezreeport.editor.figures._titleTemplate Métriques",
+          "title": "@:$ezreeport.editor.figures._.titleTemplate Métriques",
           "elements": {
             "title": "Éléments ({n})",
             "title:new": "Créer un élément",
