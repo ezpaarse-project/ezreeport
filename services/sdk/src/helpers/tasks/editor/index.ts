@@ -4,7 +4,7 @@ import type { Task } from '~/modules/tasks';
 import type { LastExtended, TaskRecurrence } from '~/modules/tasks/types';
 
 import type { TemplateBodyHelper } from '../../templates/editor/body';
-import type { LayoutHelper } from '../../templates/editor/layouts';
+import type { AnyLayoutHelper } from '../../templates/editor/layouts';
 import {
   createTaskBodyHelper,
   createTaskBodyHelperFrom,
@@ -126,7 +126,7 @@ export function hasTaskChanged(task: TaskHelper): boolean {
 export function getLayoutsOfHelpers(
   taskBody: TaskBodyHelper,
   templateBody: TemplateBodyHelper,
-): (LayoutHelper & { readonly: boolean })[] {
+): (AnyLayoutHelper & { readonly: boolean })[] {
   const layouts = templateBody.layouts.map((l) => ({ ...l, readonly: true }));
   // eslint-disable-next-line no-restricted-syntax
   for (const { at, ...layout } of taskBody.inserts) {
