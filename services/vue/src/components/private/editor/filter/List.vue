@@ -62,6 +62,7 @@
     >
       <EditorFilterForm
         :model-value="updatedFilter"
+        width="75%"
         @update:model-value="setFilter($event)"
       >
         <template #actions>
