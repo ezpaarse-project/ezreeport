@@ -16,7 +16,7 @@
     </template>
 
     <template #text>
-      <v-list>
+      <v-list lines="two">
         <v-menu :close-on-content-click="false" max-height="250">
           <template #activator="{ props: menu }">
             <v-list-item
@@ -58,6 +58,16 @@
 
           <v-card :text="modelValue.description" />
         </v-menu>
+
+        <v-list-item
+          v-if="modelValue.enabled"
+          :subtitle="$t('$ezreeport.task.nextRun')"
+          prepend-icon="mdi-calendar-clock"
+        >
+          <template #title>
+            <LocalDate :model-value="modelValue.nextRun" format="PPP" />
+          </template>
+        </v-list-item>
       </v-list>
     </template>
 
