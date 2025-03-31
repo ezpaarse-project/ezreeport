@@ -54,6 +54,9 @@ export async function getTemplate(
   templateOrId: Omit<Template, 'body'> | string,
 ): Promise<Template> {
   const id = typeof templateOrId === 'string' ? templateOrId : templateOrId.id;
+  if (!id) {
+    throw new Error('Template id is required');
+  }
 
   const {
     content,
@@ -120,6 +123,9 @@ export async function deleteTemplate(
   templateOrId: Omit<Template, 'body'> | string,
 ): Promise<boolean> {
   const id = typeof templateOrId === 'string' ? templateOrId : templateOrId.id;
+  if (!id) {
+    return false;
+  }
 
   const {
     content,

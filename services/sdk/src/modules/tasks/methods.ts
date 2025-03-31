@@ -72,6 +72,9 @@ export async function getTask(
   include?: string[],
 ): Promise<Task> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  if (!id) {
+    throw new Error('Task id is required');
+  }
 
   const {
     content,
@@ -140,6 +143,9 @@ export async function deleteTask(
   taskOrId: Omit<Task, 'template'> | string,
 ): Promise<boolean> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  if (!id) {
+    return false;
+  }
 
   const {
     content,
@@ -163,6 +169,9 @@ export async function unlinkTaskFromTemplate(
   taskOrId: Omit<Task, 'template'> | string,
 ): Promise<Task> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  if (!id) {
+    throw new Error('Task id is required');
+  }
 
   const {
     content,
