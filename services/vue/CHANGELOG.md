@@ -1,3 +1,18 @@
+# [@ezpaarse-project/ezreeport-vue-v2.1.0-beta.4](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.1.0-beta.3...@ezpaarse-project/ezreeport-vue@2.1.0-beta.4) (2025-03-31)
+
+
+### Bug Fixes
+
+* **vue:** disabling animation when dragging ([c44a4d6](https://github.com/ezpaarse-project/ezreeport/commit/c44a4d65c2412b025408be47b7099444bb05f782))
+* **vue:** fixed with of some dialogs ([99e1b9a](https://github.com/ezpaarse-project/ezreeport/commit/99e1b9a4a5792ae4d9ee205c716a1a686648890b))
+
+
+### Features
+
+* **vue:** added back the advanced task form ([e84b311](https://github.com/ezpaarse-project/ezreeport/commit/e84b311e7b6c18d0357e9777a7e163646073695d))
+* **vue:** added next run in task cards ([c9ac8f6](https://github.com/ezpaarse-project/ezreeport/commit/c9ac8f6593596aef45d7d351fe7b59f06b3cba69))
+* **vue:** support for custom titles in public components ([f1416a8](https://github.com/ezpaarse-project/ezreeport/commit/f1416a828f295bb78621a68fdf588a3825da2fbe))
+
 # [@ezpaarse-project/ezreeport-vue-v2.1.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.1.0-beta.2...@ezpaarse-project/ezreeport-vue@2.1.0-beta.3) (2025-03-25)
 
 
