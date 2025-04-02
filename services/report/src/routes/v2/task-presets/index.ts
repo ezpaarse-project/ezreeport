@@ -19,11 +19,11 @@ import {
   AdditionalDataForPreset,
   TaskPresetQueryInclude,
 } from '~/models/task-presets/types';
-import { createTask } from '~/models/tasks';
+import { createTask, doesSimilarTaskExist } from '~/models/tasks';
 import { Task } from '~/models/tasks/types';
 import { calcPeriodFromRecurrence } from '~/models/recurrence';
 
-import { NotFoundError } from '~/models/errors';
+import { ConflictError, NotFoundError } from '~/models/errors';
 
 const SpecificTaskPresetParams = z.object({
   id: z.string().min(1)
@@ -233,11 +233,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       params: SpecificTaskPresetParams,
       body: AdditionalDataForPreset,
       response: {
+        ...responses.describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.CONFLICT,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
         [StatusCodes.CREATED]: responses.SuccessResponse(Task),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
     config: {
@@ -252,6 +255,26 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         if (request.user?.isAdmin) { return; }
         const content = await taskPresets.getTaskPreset(request.params.id);
         if (content?.hidden) { throw new NotFoundError(`Task preset ${request.params.id} not found`); }
+      },
+      // Check if similar task already exists
+      async (request) => {
+        // If filters are provided, trust user
+        if (request.body.filters) {
+          return;
+        }
+
+        // We already checked the task preset exists in preHandler
+        const taskPreset = (await taskPresets.getTaskPreset(request.params.id))!;
+        const similarTaskExists = await doesSimilarTaskExist(
+          request.body.namespaceId,
+          taskPreset.recurrence,
+          taskPreset.templateId,
+          request.body.index,
+        );
+
+        if (similarTaskExists) {
+          throw new ConflictError('Similar task already exists');
+        }
       },
     ],
     handler: async (request, reply) => {

@@ -1,10 +1,11 @@
 import objectHash from 'object-hash';
 
 import type { Task } from '~/modules/tasks';
-import type { LastExtended, TaskRecurrence } from '~/modules/tasks/types';
+import type { InputTask, LastExtended, TaskRecurrence } from '~/modules/tasks/types';
 
 import type { TemplateBodyHelper } from '../../templates/editor/body';
-import type { LayoutHelper } from '../../templates/editor/layouts';
+import type { AnyLayoutHelper } from '../../templates/editor/layouts';
+import { calcNextDateFromRecurrence } from '../recurrence';
 import {
   createTaskBodyHelper,
   createTaskBodyHelperFrom,
@@ -33,6 +34,7 @@ export interface TaskHelper {
 function hashTask(task: TaskHelper | Task): string {
   return objectHash({
     name: task.name,
+    description: task.description,
     extendedId: task.extendedId,
     template: task.template,
     targets: task.targets,
@@ -67,7 +69,7 @@ export function createTaskHelper(
     template: template ?? createTaskBodyHelper(),
     targets,
     recurrence,
-    nextRun: nextRun ?? new Date(), // TODO: recurrence
+    nextRun: nextRun ?? calcNextDateFromRecurrence(new Date(), recurrence),
     enabled,
     lastExtended,
     lastRun,
@@ -100,9 +102,8 @@ export function createTaskHelperFrom(task: Task): TaskHelper {
   );
 }
 
-export function taskHelperToJSON(task: TaskHelper): Task {
+export function taskHelperToJSON(task: TaskHelper): InputTask {
   return {
-    id: task.id,
     name: task.name,
     description: task.description,
     namespaceId: task.namespaceId,
@@ -113,9 +114,6 @@ export function taskHelperToJSON(task: TaskHelper): Task {
     nextRun: task.nextRun,
     enabled: task.enabled,
     lastExtended: task.lastExtended,
-    lastRun: task.lastRun,
-    createdAt: task.createdAt,
-    updatedAt: task.updatedAt,
   };
 }
 
@@ -126,7 +124,7 @@ export function hasTaskChanged(task: TaskHelper): boolean {
 export function getLayoutsOfHelpers(
   taskBody: TaskBodyHelper,
   templateBody: TemplateBodyHelper,
-): (LayoutHelper & { readonly: boolean })[] {
+): (AnyLayoutHelper & { readonly: boolean })[] {
   const layouts = templateBody.layouts.map((l) => ({ ...l, readonly: true }));
   // eslint-disable-next-line no-restricted-syntax
   for (const { at, ...layout } of taskBody.inserts) {
@@ -137,6 +135,8 @@ export function getLayoutsOfHelpers(
 
 export {
   type TaskBodyHelper,
+  createTaskBodyHelper,
+  createTaskBodyHelperFrom,
   addLayoutOfHelper,
   removeLayoutOfHelper,
   updateLayoutOfHelper,

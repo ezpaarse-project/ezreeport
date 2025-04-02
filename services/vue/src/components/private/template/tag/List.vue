@@ -46,6 +46,7 @@
     >
       <TemplateTagForm
         :model-value="updatedTag"
+        width="650px"
         @update:model-value="setTag($event)"
       >
         <template #actions>

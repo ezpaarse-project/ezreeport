@@ -7,12 +7,16 @@
   >
     <template #header>
       <v-toolbar
-        :title="`${titlePrefix || ''}${$t('$ezreeport.task.title:list', total)}`"
+        :title="title"
         color="transparent"
         density="comfortable"
       >
         <template v-if="$slots.prepend" #prepend>
           <slot name="prepend" />
+        </template>
+
+        <template v-if="$slots.title" #title>
+          <slot name="title" :title="title" />
         </template>
 
         <template #append>
@@ -97,6 +101,13 @@
                       @click="openGeneration(task)"
                     />
 
+                    <v-list-item
+                      :title="$t('$ezreeport.duplicate')"
+                      :disabled="!availableActions.create"
+                      prepend-icon="mdi-content-copy"
+                      @click="openDuplicateForm(task)"
+                    />
+
                     <v-divider />
 
                     <v-list-item
@@ -142,15 +153,28 @@
 
   <v-dialog
     v-model="isFormOpen"
-    width="50%"
+    :width="advancedTask ? '75%' : '50%'"
     scrollable
     @update:model-value="$event || refresh()"
   >
     <template #default>
+      <TaskForm
+        v-if="advancedTask"
+        v-model="advancedTask"
+        :namespace-id="namespaceId"
+        @update:model-value="onAdvancedSave($event)"
+      >
+        <template #actions>
+          <v-btn :text="$t('$ezreeport.cancel')" @click="closeForm()" />
+        </template>
+      </TaskForm>
+
       <TaskEditionForm
-        v-if="updatedTask"
+        v-else-if="updatedTask"
         :model-value="updatedTask"
+        show-advanced
         @update:model-value="closeForm()"
+        @open:advanced="openAdvancedForm({ update: { data: $event, raw: updatedTask } })"
       >
         <template #actions>
           <v-btn :text="$t('$ezreeport.cancel')" @click="closeForm()" />
@@ -163,7 +187,13 @@
         </template>
       </TaskGenerationForm>
 
-      <TaskCreationForm v-else :namespace-id="namespaceId" @update:model-value="closeForm()">
+      <TaskCreationForm
+        v-else
+        :namespace-id="namespaceId"
+        show-advanced
+        @update:model-value="closeForm()"
+        @open:advanced="openAdvancedForm({ create: $event })"
+      >
         <template #actions>
           <v-btn :text="$t('$ezreeport.cancel')" @click="closeForm()" />
         </template>
@@ -174,13 +204,15 @@
 
 <script setup lang="ts">
 import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
+import type { AdditionalDataForPreset, TaskPreset } from '~sdk/task-presets';
 import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
 import {
   changeTaskEnableState,
-//   createTask as createTaskHelper,
-//   createTaskFrom as createTaskHelperFrom,
-//   taskToJSON as taskHelperToJSON,
-//   type Task as TaskHelper,
+  createTaskHelper,
+  createTaskBodyHelper,
+  createTaskHelperFrom,
+  taskHelperToJSON,
+  type TaskHelper,
 } from '~sdk/helpers/tasks';
 import {
   getAllTasks,
@@ -189,6 +221,7 @@ import {
   upsertTask,
   deleteTask,
   type Task,
+  type InputTask,
 } from '~sdk/tasks';
 
 // Components props
@@ -204,6 +237,7 @@ const arePermissionsReady = ref(false);
 const updatedTask = ref<Task | undefined>();
 const generatedTask = ref<Omit<Task, 'template'> | undefined>();
 const isFormOpen = ref(false);
+const advancedTask = ref<TaskHelper | undefined>();
 
 /** List of templates */
 const {
@@ -222,6 +256,8 @@ const {
   },
 );
 
+const title = computed(() => `${props.titlePrefix || ''}${t('$ezreeport.task.title:list', total.value)}`);
+
 const availableActions = computed(() => {
   if (!arePermissionsReady.value) {
     return {};
@@ -238,6 +274,7 @@ const availableActions = computed(() => {
 
 async function openForm(task?: Omit<Task, 'template'>) {
   try {
+    advancedTask.value = undefined;
     generatedTask.value = undefined;
     updatedTask.value = task && await getTask(task);
 
@@ -247,12 +284,91 @@ async function openForm(task?: Omit<Task, 'template'>) {
   }
 }
 
+async function openDuplicateForm(task: Omit<Task, 'template'>) {
+  try {
+    const base = await getTask(task);
+
+    advancedTask.value = undefined;
+    generatedTask.value = undefined;
+    updatedTask.value = {
+      ...base,
+      name: `${base.name} (copy)`,
+      id: '',
+    };
+
+    isFormOpen.value = true;
+  } catch (e) {
+    handleEzrError(t('$ezreeport.task.errors.open'), e);
+  }
+}
+
 async function openGeneration(task: Omit<Task, 'template'>) {
   try {
+    advancedTask.value = undefined;
     generatedTask.value = task;
     updatedTask.value = undefined;
 
     isFormOpen.value = true;
+  } catch (e) {
+    handleEzrError(t('$ezreeport.task.errors.open'), e);
+  }
+}
+
+/** Type to hold data from others forms */
+type AdvancedFormCurrent = {
+  create?: {
+    data: AdditionalDataForPreset,
+    preset?: TaskPreset,
+  }
+  update?: {
+    data: InputTask,
+    raw: Task,
+  }
+};
+
+async function openAdvancedForm(current?: AdvancedFormCurrent) {
+  try {
+    let value: TaskHelper;
+
+    if (current?.update) {
+      const { data, raw } = current.update;
+
+      value = createTaskHelperFrom({
+        id: raw.id,
+        createdAt: raw.createdAt,
+        ...data,
+      });
+    } else if (current?.create) {
+      const { data, preset } = current.create;
+
+      const template = createTaskBodyHelper(
+        data.index || preset?.fetchOptions.index,
+        preset?.fetchOptions.dateField,
+        undefined,
+        data.filters,
+      );
+
+      value = createTaskHelper(
+        data.name,
+        data.description,
+        data.namespaceId,
+        preset?.templateId,
+        template,
+        data.targets,
+        preset?.recurrence,
+      );
+    } else {
+      value = createTaskHelper();
+    }
+
+    isFormOpen.value = false;
+    setTimeout(() => {
+      updatedTask.value = undefined;
+      generatedTask.value = undefined;
+      advancedTask.value = value;
+
+      isFormOpen.value = true;
+    }, 250);
   } catch (e) {
     handleEzrError(t('$ezreeport.task.errors.open'), e);
   }
@@ -281,6 +397,28 @@ async function deleteItem(task: Omit<Task, 'template'>) {
     handleEzrError(t('$ezreeport.task.errors.delete'), e);
   }
 }
+
+async function onAdvancedSave(task: TaskHelper) {
+  try {
+    let result;
+    const data = taskHelperToJSON(task);
+    if (task.id) {
+      result = await upsertTask({ ...data, id: task.id });
+    } else {
+      result = await createTask(data);
+    }
+    openAdvancedForm({
+      update: {
+        data,
+        raw: result,
+      },
+    });
+  } catch (e) {
+    const msg = task.id ? t('$ezreeport.task.errors.edit') : t('$ezreeport.task.errors.create');
+    handleEzrError(msg, e);
+  }
+}
+
 refreshPermissions()
   .then(() => { arePermissionsReady.value = true; });
 </script>

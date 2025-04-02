@@ -8,12 +8,16 @@
   >
     <template #top>
       <v-toolbar
-        :title="`${titlePrefix || ''}${$t('$ezreeport.task-activity.title:list', total)}`"
+        :title="title"
         color="transparent"
         density="comfortable"
       >
         <template v-if="$slots.prepend" #prepend>
           <slot name="prepend" />
+        </template>
+
+        <template v-if="$slots.title" #title>
+          <slot name="title" :title="title" />
         </template>
 
         <template #append>
@@ -156,7 +160,12 @@
 <script setup lang="ts">
 import type { VDataTable } from 'vuetify/components';
 import {
-  eachDayOfInterval, format, formatISO, isValid, max, min,
+  eachDayOfInterval,
+  format,
+  formatISO,
+  isValid,
+  max,
+  min,
 } from 'date-fns';
 
 import { getAllActivity } from '~sdk/task-activity';
@@ -164,7 +173,7 @@ import { getAllActivity } from '~sdk/task-activity';
 const maxDate = new Date();
 
 // Components props
-defineProps<{
+const props = defineProps<{
   titlePrefix?: string;
 }>();
 
@@ -190,6 +199,8 @@ type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 // Utils composable
 const { t } = useI18n();
 const { locale } = useDateLocale();
+
+const title = computed(() => `${props.titlePrefix || ''}${t('$ezreeport.task-activity.title:list', total.value)}`);
 
 /** Headers for table */
 const headers = computed((): VDataTableHeaders => [

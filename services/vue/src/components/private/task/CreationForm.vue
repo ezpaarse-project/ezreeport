@@ -59,7 +59,7 @@
           </v-col>
         </v-row>
 
-        <v-row v-if="!namespaceId">
+        <v-row v-if="!isNamespaced">
           <v-col>
             <v-autocomplete
               v-model="data.namespaceId"
@@ -95,7 +95,10 @@
             <MultiTextField
               :model-value="data.targets"
               :label="$t('$ezreeport.task.targets')"
+              :add-label="$t('$ezreeport.task.targets:add')"
               :rules="[(v) => v.length > 0 || $t('$ezreeport.required')]"
+              :item-rules="[(v, i) => isEmail(v) || $t('$ezreeport.errors.invalidEmail', i + 1)]"
+              :item-placeholder="$t('$ezreeport.task.targets:hint')"
               prepend-icon="mdi-mailbox"
               variant="underlined"
               required
@@ -133,6 +136,19 @@
               />
 
               <EditorFilterList v-model="filters" />
+
+              <v-btn
+                v-if="showAdvanced"
+                v-tooltip:top="$t('$ezreeport.task.superUserMode:tooltip')"
+                :text="$t('$ezreeport.task.superUserMode')"
+                prepend-icon="mdi-tools"
+                append-icon="mdi-tools"
+                color="warning"
+                variant="flat"
+                block
+                class="mt-4"
+                @click="emit('open:advanced', { data, preset: currentPreset })"
+              />
             </template>
           </v-expansion-panel>
         </v-expansion-panels>
@@ -145,7 +161,7 @@
       <slot name="actions" />
 
       <v-btn
-        :text="$t('$ezreeport.confirm')"
+        :text="$t('$ezreeport.new')"
         :disabled="!isValid"
         append-icon="mdi-plus"
         color="primary"
@@ -166,16 +182,22 @@ import {
   type AdditionalDataForPreset,
 } from '~sdk/task-presets';
 
+import { isEmail } from '~/utils/validate';
+
 // Component props
 const props = defineProps<{
   /** Namespace to create task in */
   namespaceId?: string;
+  /** Should show advanced button */
+  showAdvanced?: boolean
 }>();
 
 // Component events
 const emit = defineEmits<{
   /** Updated task */
   (e: 'update:modelValue', value: Task): void
+  /** Asked to open task in advanced form */
+  (e: 'open:advanced', value: { data: AdditionalDataForPreset, preset?: TaskPreset }): void
 }>();
 
 // Utils composables
@@ -195,17 +217,14 @@ const data = ref<AdditionalDataForPreset>({
 });
 /** Is preset list loading */
 const loadingPresets = ref(false);
-/** Presets list */
-const presets = ref<TaskPreset[]>([]);
 /** Current preset selected */
 const currentPreset = ref<TaskPreset | undefined>();
 /** Is namespace list loading */
 const loadingNamespaces = ref(false);
-/** Namespaces list */
-const namespaces = ref<Omit<Namespace, 'fetchLogin' | 'fetchOptions'>[]>([]);
 /** Has name manually changed */
 const hasNameChanged = ref(false);
 
+/** Filters of task */
 const filters = computed({
   get: () => new Map((data.value.filters ?? []).map((f) => [f.name, f])),
   set: (v) => {
@@ -217,6 +236,41 @@ const filters = computed({
     data.value.filters = undefined;
   },
 });
+/** Preset list */
+const presets = computedAsync(async () => {
+  let items: TaskPreset[] = [];
+
+  loadingPresets.value = true;
+  try {
+    ({ items } = await getAllTaskPresets({ pagination: { count: 0, sort: 'name' }, include: ['template.tags'] }));
+  } catch (e) {
+    handleEzrError(t('$ezreeport.task.errors.fetchPresets'), e);
+  }
+  loadingPresets.value = false;
+
+  return items;
+}, []);
+/** Is form namespaced */
+const isNamespaced = computed(() => !!props.namespaceId);
+/** Namespace list */
+const namespaces = computedAsync(async () => {
+  let items: Omit<Namespace, 'fetchLogin' | 'fetchOptions'>[] = [];
+
+  if (isNamespaced.value) {
+    return items;
+  }
+
+  loadingNamespaces.value = true;
+  try {
+    const currentNamespaces = await getCurrentNamespaces();
+    items = currentNamespaces.sort((a, b) => a.name.localeCompare(b.name));
+  } catch (e) {
+    handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), e);
+  }
+  loadingNamespaces.value = false;
+
+  return items;
+}, []);
 
 function onPresetChange(preset: TaskPreset | undefined) {
   data.value.index = preset?.fetchOptions.index || '';
@@ -227,7 +281,7 @@ function onPresetChange(preset: TaskPreset | undefined) {
 }
 
 function onTargetUpdated(targets: string | string[] | undefined) {
-  if (!targets) {
+  if (targets == null) {
     data.value.targets = [];
     return;
   }
@@ -238,31 +292,13 @@ function onTargetUpdated(targets: string | string[] | undefined) {
   }
 
   // Allow multiple mail addresses, separated by semicolon or comma
-  data.value.targets = allTargets
-    .join(';').replace(/[,]/g, ';')
-    .split(';').map((mail) => mail.trim());
-}
-
-async function fetchPresets() {
-  loadingPresets.value = true;
-  try {
-    const { items } = await getAllTaskPresets({ pagination: { count: 0, sort: 'name' }, include: ['template.tags'] });
-    presets.value = items;
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.fetchPresets'), e);
-  }
-  loadingPresets.value = false;
-}
-
-async function fetchNamespaces() {
-  loadingNamespaces.value = true;
-  try {
-    const currentNamespaces = await getCurrentNamespaces();
-    namespaces.value = currentNamespaces.sort((a, b) => a.name.localeCompare(b.name));
-  } catch (e) {
-    handleEzrError(t('$ezreeport.errors.refreshNamespaces'), e);
-  }
-  loadingNamespaces.value = false;
+  data.value.targets = Array.from(
+    new Set(
+      allTargets
+        .join(';').replace(/[,]/g, ';')
+        .split(';').map((mail) => mail.trim()),
+    ),
+  );
 }
 
 async function save() {
@@ -275,12 +311,11 @@ async function save() {
 
     emit('update:modelValue', result);
   } catch (e) {
+    if (e && typeof e === 'object' && 'statusCode' in e && e.statusCode === 409) {
+      handleEzrError(t('$ezreeport.task.errors.create:duplicate'), e);
+      return;
+    }
     handleEzrError(t('$ezreeport.task.errors.create:preset'), e);
   }
-}
-
-fetchPresets();
-if (!props.namespaceId) {
-  fetchNamespaces();
 }
 </script>

@@ -16,8 +16,8 @@
     </template>
 
     <template #text>
-      <v-list>
-        <v-menu max-height="250">
+      <v-list lines="two">
+        <v-menu :close-on-content-click="false" max-height="250">
           <template #activator="{ props: menu }">
             <v-list-item
               :title="$t('$ezreeport.task.targets:count', modelValue.targets.length)"
@@ -47,7 +47,7 @@
           </v-sheet>
         </v-menu>
 
-        <v-menu v-if="modelValue.description" max-width="500">
+        <v-menu v-if="modelValue.description" :close-on-content-click="false" max-width="500">
           <template #activator="{ props: menu }">
             <v-list-item
               :title="$t('$ezreeport.task.description')"
@@ -58,6 +58,16 @@
 
           <v-card :text="modelValue.description" />
         </v-menu>
+
+        <v-list-item
+          v-if="modelValue.enabled"
+          :subtitle="$t('$ezreeport.task.nextRun')"
+          prepend-icon="mdi-calendar-clock"
+        >
+          <template #title>
+            <LocalDate :model-value="modelValue.nextRun" format="PPP" />
+          </template>
+        </v-list-item>
       </v-list>
     </template>
 

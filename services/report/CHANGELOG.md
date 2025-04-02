@@ -1,3 +1,48 @@
+# [ezreeport-report-v2.1.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.1.0-beta.1...ezreeport-report@2.1.0-beta.2) (2025-03-25)
+
+
+### Bug Fixes
+
+* **report:** disabled similar task check if filters are present ([7a11e8a](https://github.com/ezpaarse-project/ezreeport/commit/7a11e8afdb9efded85696141e7e4ea8396ea7fdb))
+* **report:** fixed percentage on date_histogram ([8225a78](https://github.com/ezpaarse-project/ezreeport/commit/8225a78ed7a3d174c0ad56ba5de58b4d7fd66142))
+* **report:** fixed timezone in date_histogram aggregations ([ca0b622](https://github.com/ezpaarse-project/ezreeport/commit/ca0b62263782a83b2c138ec155cd0e8e129c8c19))
+
+# [ezreeport-report-v2.1.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.0.1...ezreeport-report@2.1.0-beta.1) (2025-03-24)
+
+
+### Bug Fixes
+
+* **report:** fixed issue with periods of BIENNIAL reports ([5c5c664](https://github.com/ezpaarse-project/ezreeport/commit/5c5c6649b20386f6e94503ccc194cc81674d518e))
+
+
+### Features
+
+* **report:** prevent similar tasks ([51c3d0b](https://github.com/ezpaarse-project/ezreeport/commit/51c3d0b26a4550bb7e7b91d4054efb0c557d0569))
+
+# [ezreeport-report-v2.0.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.0.0...ezreeport-report@2.0.1) (2025-03-11)
+
+
+### Bug Fixes
+
+* **report:** fixed trailing slash issues with unsubscribe ([64fcfc9](https://github.com/ezpaarse-project/ezreeport/commit/64fcfc95e9ac53fae81072ce94de5c8f15794d9b))
+* **report:** tasks can have 0 targets ([d272322](https://github.com/ezpaarse-project/ezreeport/commit/d27232232de6eebc6635328aa87bb76a57278752))
+
+# [ezreeport-report-v2.0.1-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.0.0...ezreeport-report@2.0.1-rc.1) (2025-03-11)
+
+
+### Bug Fixes
+
+* **report:** fixed trailing slash issues with unsubscribe ([64fcfc9](https://github.com/ezpaarse-project/ezreeport/commit/64fcfc95e9ac53fae81072ce94de5c8f15794d9b))
+* **report:** tasks can have 0 targets ([d272322](https://github.com/ezpaarse-project/ezreeport/commit/d27232232de6eebc6635328aa87bb76a57278752))
+
+# [ezreeport-report-v2.0.1-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.0.0...ezreeport-report@2.0.1-beta.1) (2025-03-11)
+
+
+### Bug Fixes
+
+* **report:** fixed trailing slash issues with unsubscribe ([64fcfc9](https://github.com/ezpaarse-project/ezreeport/commit/64fcfc95e9ac53fae81072ce94de5c8f15794d9b))
+* **report:** tasks can have 0 targets ([d272322](https://github.com/ezpaarse-project/ezreeport/commit/d27232232de6eebc6635328aa87bb76a57278752))
+
 # [ezreeport-report-v2.0.0](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@1.5.0...ezreeport-report@2.0.0) (2025-03-06)
 
 

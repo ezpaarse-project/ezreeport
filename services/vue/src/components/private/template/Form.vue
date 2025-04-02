@@ -130,7 +130,7 @@
 
       <v-btn
         v-if="!readonly"
-        :text="$t('$ezreeport.confirm')"
+        :text="modelValue.id ? $t('$ezreeport.save') : $t('$ezreeport.new')"
         :append-icon="modelValue.id ? 'mdi-content-save' : 'mdi-plus'"
         :disabled="!isValid || !hasChanged"
         color="primary"
@@ -200,7 +200,7 @@ const isValid = computed(() => isFormValid.value);
 /** Mapping options for dateField */
 const dateMapping = computed(() => getOptionsFromMapping('date'));
 /** Has template changed since form is opened */
-const hasChanged = computed(() => hasTemplateChanged(props.modelValue));
+const hasChanged = computed(() => !props.modelValue.id || hasTemplateChanged(props.modelValue));
 /** Name of the template */
 const name = computed({
   get: () => props.modelValue.name,

@@ -75,6 +75,8 @@ export function hasTemplateChanged(template: TemplateHelper): boolean {
 
 export {
   type TemplateBodyHelper,
+  createTemplateBodyHelper,
+  createTemplateBodyHelperFrom,
   addLayoutOfHelper,
   removeLayoutOfHelper,
   updateLayoutOfHelper,

@@ -16,7 +16,7 @@ $ npm install -g @ezpaarse-project/ezreeport-admin
 $ ezreeport-admin COMMAND
 running command...
 $ ezreeport-admin (--version)
-@ezpaarse-project/ezreeport-admin/1.1.0 linux-x64 node-v20.17.0
+@ezpaarse-project/ezreeport-admin/1.1.1-beta.1 linux-x64 node-v20.17.0
 $ ezreeport-admin --help [COMMAND]
 USAGE
   $ ezreeport-admin COMMAND
@@ -94,7 +94,7 @@ EXAMPLES
   $ ezreeport-admin config get
 ```
 
-_See code: [src/commands/config/get.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.0/src/commands/config/get.ts)_
+_See code: [src/commands/config/get.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.1-beta.1/src/commands/config/get.ts)_
 
 ## `ezreeport-admin config set KEY [VALUE]`
 
@@ -115,7 +115,7 @@ EXAMPLES
   $ ezreeport-admin config set
 ```
 
-_See code: [src/commands/config/set.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.0/src/commands/config/set.ts)_
+_See code: [src/commands/config/set.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.1-beta.1/src/commands/config/set.ts)_
 
 ## `ezreeport-admin export [DIR]`
 
@@ -126,7 +126,7 @@ USAGE
   $ ezreeport-admin export [DIR] [-c <value>] [--namespaces] [--templates] [--tasks] [--taskPresets]
 
 ARGUMENTS
-  DIR  [default: data/2025-03-06_export] Folder to output data
+  DIR  [default: data/2025-03-24_export] Folder to output data
 
 FLAGS
   -c, --config=<value>    Path to config file
@@ -142,7 +142,7 @@ EXAMPLES
   $ ezreeport-admin export
 ```
 
-_See code: [src/commands/export.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.0/src/commands/export.ts)_
+_See code: [src/commands/export.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.1-beta.1/src/commands/export.ts)_
 
 ## `ezreeport-admin help [COMMAND]`
 
@@ -189,7 +189,7 @@ EXAMPLES
   $ ezreeport-admin import
 ```
 
-_See code: [src/commands/import.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.0/src/commands/import.ts)_
+_See code: [src/commands/import.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.1-beta.1/src/commands/import.ts)_
 
 ## `ezreeport-admin migrate apply DIR`
 
@@ -205,7 +205,7 @@ ARGUMENTS
 FLAGS
   -c, --config=<value>  Path to config file
   -f, --file=<value>    Migration file to apply
-  -o, --out=<value>     [default: data/2025-03-06_migrate] Folder to output data
+  -o, --out=<value>     [default: data/2025-03-24_migrate] Folder to output data
       --to=<value>      Targeted version to migrate to
 
 DESCRIPTION
@@ -215,7 +215,7 @@ EXAMPLES
   $ ezreeport-admin migrate apply
 ```
 
-_See code: [src/commands/migrate/apply.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.0/src/commands/migrate/apply.ts)_
+_See code: [src/commands/migrate/apply.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.1-beta.1/src/commands/migrate/apply.ts)_
 
 ## `ezreeport-admin migrate list`
 
@@ -237,7 +237,7 @@ EXAMPLES
   $ ezreeport-admin migrate list
 ```
 
-_See code: [src/commands/migrate/list.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.0/src/commands/migrate/list.ts)_
+_See code: [src/commands/migrate/list.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.1-beta.1/src/commands/migrate/list.ts)_
 
 ## `ezreeport-admin profile delete NAME`
 
@@ -260,7 +260,7 @@ EXAMPLES
   $ ezreeport-admin profile delete
 ```
 
-_See code: [src/commands/profile/delete.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.0/src/commands/profile/delete.ts)_
+_See code: [src/commands/profile/delete.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.1-beta.1/src/commands/profile/delete.ts)_
 
 ## `ezreeport-admin profile list`
 
@@ -280,7 +280,7 @@ EXAMPLES
   $ ezreeport-admin profile list
 ```
 
-_See code: [src/commands/profile/list.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.0/src/commands/profile/list.ts)_
+_See code: [src/commands/profile/list.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.1-beta.1/src/commands/profile/list.ts)_
 
 ## `ezreeport-admin profile load NAME`
 
@@ -304,7 +304,7 @@ EXAMPLES
   $ ezreeport-admin profile load
 ```
 
-_See code: [src/commands/profile/load.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.0/src/commands/profile/load.ts)_
+_See code: [src/commands/profile/load.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.1-beta.1/src/commands/profile/load.ts)_
 
 ## `ezreeport-admin profile new NAME`
 
@@ -334,7 +334,7 @@ EXAMPLES
   $ ezreeport-admin profile new
 ```
 
-_See code: [src/commands/profile/new.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.0/src/commands/profile/new.ts)_
+_See code: [src/commands/profile/new.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.1-beta.1/src/commands/profile/new.ts)_
 
 ## `ezreeport-admin profile unload NAME`
 
@@ -357,7 +357,7 @@ EXAMPLES
   $ ezreeport-admin profile unload
 ```
 
-_See code: [src/commands/profile/unload.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.0/src/commands/profile/unload.ts)_
+_See code: [src/commands/profile/unload.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.1-beta.1/src/commands/profile/unload.ts)_
 
 ## `ezreeport-admin transfer`
 
@@ -381,5 +381,5 @@ EXAMPLES
   $ ezreeport-admin transfer
 ```
 
-_See code: [src/commands/transfer.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.0/src/commands/transfer.ts)_
+_See code: [src/commands/transfer.ts](https://github.com/ezpaarse-project/ezreeport/blob/v1.1.1-beta.1/src/commands/transfer.ts)_
 <!-- commandsstop -->

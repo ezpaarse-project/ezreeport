@@ -1,6 +1,6 @@
 <template>
   <v-card
-    :title="$t('$ezreeport.editor.title', modelValue.layouts.length)"
+    :title="$t('$ezreeport.editor.title', modelValue.inserts.length)"
     prepend-icon="mdi-grid"
   >
     <template v-if="$slots.append" #append>
@@ -58,7 +58,7 @@
           <EditorLayout
             v-else-if="currentLayout"
             v-model="currentLayout"
-            :readonly="readonly"
+            :readonly="readonly || currentLayout.readonly"
           />
 
           <v-empty-state
@@ -74,23 +74,28 @@
 </template>
 
 <script setup lang="ts">
+import type { TemplateBodyHelper } from '~sdk/helpers/templates';
 import {
-  createLayoutHelper,
-  createLayoutHelperFrom,
-  layoutHelperToJSON,
-  type LayoutHelper,
+  createTaskLayoutHelper,
+  createTaskLayoutHelperFrom,
+  TaskLayoutHelper,
+  taskLayoutHelperToJSON,
+  type AnyLayoutHelper,
 } from '~sdk/helpers/layouts';
 import {
   addLayoutOfHelper,
   updateLayoutOfHelper,
   removeLayoutOfHelper,
-  type TemplateBodyHelper,
-} from '~sdk/helpers/templates';
+  type TaskBodyHelper,
+  getLayoutsOfHelpers,
+} from '~sdk/helpers/tasks';
 
 // Components props
 const props = defineProps<{
   /** The body to edit */
-  modelValue: TemplateBodyHelper,
+  modelValue: TaskBodyHelper,
+  /** The template extended by current task */
+  extends: TemplateBodyHelper,
   /** Should be readonly */
   readonly?: boolean,
   /** Current layout index */
@@ -100,7 +105,7 @@ const props = defineProps<{
 // Components events
 const emit = defineEmits<{
   /** Updated body */
-  (e: 'update:modelValue', value: TemplateBodyHelper): void
+  (e: 'update:modelValue', value: TaskBodyHelper): void
   /** Updated index */
   (e: 'update:index', value: number): void
 }>();
@@ -121,62 +126,75 @@ if (props.index != null) {
 const drawerRef = useTemplateRef('drawerRef');
 /** Layouts */
 const innerLayouts = computed({
-  get: () => props.modelValue.layouts,
+  get: () => getLayoutsOfHelpers(props.modelValue, props.extends),
   set: (v) => {
+    const inserts: TaskLayoutHelper[] = v
+      .map((l, i) => ({ ...l, at: i }))
+      .filter((l) => !l.readonly);
+
     const params = props.modelValue;
-    params.layouts = v;
+    params.inserts = inserts;
     emit('update:modelValue', params);
   },
 });
 /** Current layout selected */
 const currentLayout = computed({
-  get: () => props.modelValue.layouts.at(innerIndex.value),
+  get: () => innerLayouts.value.at(innerIndex.value),
   set: (v) => {
-    if (!currentLayout.value || !v) {
+    if (!currentLayout.value || currentLayout.value.readonly || !v || v.readonly) {
       return;
     }
 
+    const at = innerIndex.value;
     try {
-      updateLayoutOfHelper(props.modelValue, currentLayout.value, v);
+      updateLayoutOfHelper(props.modelValue, { ...currentLayout.value, at }, { ...v, at });
     } catch (e) {
-      handleEzrError(t('$ezreeport.editor.layouts.errors.edit'), e);
+      handleEzrError(t('$ezreeport.editor.inserts.errors.edit'), e);
     }
   },
 });
 
 async function createNewLayout() {
   try {
-    const layout = createLayoutHelper([]);
+    const layout = createTaskLayoutHelper([], innerLayouts.value.length);
     addLayoutOfHelper(props.modelValue, layout);
 
-    innerIndex.value = props.modelValue.layouts.length - 1;
+    innerIndex.value = innerLayouts.value.length - 1;
     await nextTick();
     drawerRef.value?.scrollDown();
   } catch (e) {
-    handleEzrError(t('$ezreeport.editor.layouts.errors.create'), e);
+    handleEzrError(t('$ezreeport.editor.inserts.errors.create'), e);
   }
 }
 
-async function cloneLayout(layout: LayoutHelper, index: number) {
+async function cloneLayout(layout: AnyLayoutHelper & { readonly?: boolean }, index: number) {
+  if (layout.readonly) {
+    return;
+  }
+
   try {
-    const clone = createLayoutHelperFrom(layoutHelperToJSON(layout));
+    const clone = createTaskLayoutHelperFrom(taskLayoutHelperToJSON({ ...layout, at: index }));
     const newIndex = index + 1;
 
-    addLayoutOfHelper(props.modelValue, clone, newIndex);
+    addLayoutOfHelper(props.modelValue, clone);
     innerIndex.value = newIndex;
 
     await nextTick();
     drawerRef.value?.scrollTo(newIndex);
   } catch (e) {
-    handleEzrError(t('$ezreeport.editor.layouts.errors.clone'), e);
+    handleEzrError(t('$ezreeport.editor.inserts.errors.clone'), e);
   }
 }
 
-function deleteLayout(layout: LayoutHelper) {
+function deleteLayout(layout: AnyLayoutHelper & { readonly?: boolean }) {
+  if (layout.readonly) {
+    return;
+  }
+
   try {
-    removeLayoutOfHelper(props.modelValue, layout);
+    removeLayoutOfHelper(props.modelValue, { ...layout, at: 0 });
   } catch (e) {
-    handleEzrError(t('$ezreeport.editor.layouts.errors.delete'), e);
+    handleEzrError(t('$ezreeport.editor.inserts.errors.delete'), e);
   }
 }
 

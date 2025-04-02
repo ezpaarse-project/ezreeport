@@ -88,12 +88,12 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       params: UnsubscribeParams,
     },
     prefixTrailingSlash: 'no-slash',
-    handler: async (request, reply) => reply.redirect(`../unsubscribe/${request.params.unsubscribeId}`, StatusCodes.PERMANENT_REDIRECT),
+    handler: async (request, reply) => reply.redirect(`../unsubscribe/${request.params.unsubscribeId}/`, StatusCodes.PERMANENT_REDIRECT),
   });
 
   fastify.route({
     method: 'POST',
-    url: '/:unsubscribeId',
+    url: '/:unsubscribeId/',
     schema: {
       summary: 'Unsubscribe from a task',
       tags: ['unsubscribe'],

@@ -1,18 +1,33 @@
 <template>
-  <div ref="scroller" class="template-layout-preview-drawer mr-1 pr-2">
+  <v-slide-x-transition
+    ref="scrollerRef"
+    tag="div"
+    group
+    class="template-layout-preview-drawer mr-1 pr-2"
+  >
     <EditorPreviewLayout
       v-for="(layout, index) in items"
       :key="layout.id"
       :model-value="layout"
       :current="index === modelValue"
-      class="mb-4"
+      :class="{ 'mb-4': true, 'template-layout-preview--readonly': layout.readonly }"
       @click="$emit('update:modelValue', index)"
     >
       <template #prepend>
-        <span :class="{ 'text-primary': index === modelValue }">{{ index + 1 }}</span>
+        <div
+          :class="{
+            'd-flex': true,
+            'flex-column': true,
+            'align-center': true,
+            'text-primary': index === modelValue,
+          }"
+        >
+          <span>{{ index + 1 }}</span>
+          <v-icon v-if="layout.readonly" icon="mdi-lock" size="x-small" />
+        </div>
       </template>
 
-      <template v-if="!readonly" #actions>
+      <template v-if="!readonly && !layout.readonly" #actions>
         <v-btn
           v-tooltip:top="$t('$ezreeport.duplicate')"
           icon="mdi-content-duplicate"
@@ -44,7 +59,7 @@
       <v-icon icon="mdi-plus" size="large" color="green" />
       <div>{{ $t('$ezreeport.editor.layouts.create') }}</div>
     </v-card>
-  </div>
+  </v-slide-x-transition>
 </template>
 
 <script setup lang="ts">
@@ -52,12 +67,14 @@ import { dragAndDrop } from '@formkit/drag-and-drop/vue';
 
 import type { AnyLayoutHelper } from '~sdk/helpers/layouts';
 
+type DrawerLayout = (AnyLayoutHelper & { readonly?: boolean });
+
 // Components props
 const props = defineProps<{
   /** Current index */
   modelValue: number,
   /** The layouts to preview */
-  items: AnyLayoutHelper[],
+  items: DrawerLayout[],
   /** Should be readonly */
   readonly?: boolean,
 }>();
@@ -67,43 +84,49 @@ const emit = defineEmits<{
   /** Updated index */
   (e: 'update:modelValue', value: number): void
   /** Updated items */
-  (e: 'update:items', value: AnyLayoutHelper[]): void
+  (e: 'update:items', value: DrawerLayout[]): void
   /** Create new layout */
   (e: 'click:create'): void
   /** Duplicate layout */
-  (e: 'click:duplicate', value: AnyLayoutHelper, index: number): void
+  (e: 'click:duplicate', value: DrawerLayout, index: number): void
   /** Delete layout */
-  (e: 'click:delete', value: AnyLayoutHelper): void
+  (e: 'click:delete', value: DrawerLayout): void
 }>();
 
 /** Scroller of layout list */
-const scrollerRef = useTemplateRef('scroller');
+const scrollerRef = useTemplateRef('scrollerRef');
 
 function scrollDown() {
-  if (!scrollerRef.value) {
+  const element = scrollerRef.value?.$el as HTMLDivElement | undefined;
+  if (!element) {
     return;
   }
 
-  scrollerRef.value.scrollTop = scrollerRef.value.scrollHeight;
+  element.scrollTop = element.scrollHeight;
 }
 
 function scrollTo(index: number) {
-  if (!scrollerRef.value) {
+  const element = scrollerRef.value?.$el as HTMLDivElement | undefined;
+  if (!element) {
     return;
   }
 
-  const node = scrollerRef.value.children[index];
+  const node = element.children[index];
   node?.scrollIntoView();
 }
 
 // Make the columns draggable to sort
 if (!props.readonly) {
   dragAndDrop({
-    parent: scrollerRef as Ref<HTMLElement>,
+    parent: scrollerRef as unknown as Ref<HTMLElement | undefined>,
     dragPlaceholderClass: 'template-layout-preview-drawer--dragging',
     dropZone: false,
     dragImage: () => document.createElement('div'), // Disable drag image
-    draggable: (el) => !el.classList.contains('template-layout-preview--empty'), // Disable draggable for empty items
+    draggable: (el) => {
+      // Disable draggable for empty items
+      const isEmpty = el.classList.contains('template-layout-preview--empty');
+      return !isEmpty;
+    },
     values: computed({
       get: () => props.items,
       set: (value) => emit('update:items', value),
@@ -111,7 +134,7 @@ if (!props.readonly) {
     onSort: (event) => {
       emit('update:modelValue', event.position);
     },
-    onDragend() {
+    onDragend: () => {
       scrollTo(props.modelValue);
     },
   });

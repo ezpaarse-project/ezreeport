@@ -39,7 +39,10 @@
             <MultiTextField
               :model-value="task.targets"
               :label="$t('$ezreeport.task.targets')"
+              :add-label="$t('$ezreeport.task.targets:add')"
               :rules="[(v) => v.length > 0 || $t('$ezreeport.required')]"
+              :item-rules="[(v, i) => isEmail(v) || $t('$ezreeport.errors.invalidEmail', i + 1)]"
+              :item-placeholder="$t('$ezreeport.task.targets:hint')"
               prepend-icon="mdi-mailbox"
               variant="underlined"
               required
@@ -77,6 +80,19 @@
               />
 
               <EditorFilterList v-model="filters" />
+
+              <v-btn
+                v-if="showAdvanced"
+                v-tooltip:top="$t('$ezreeport.task.superUserMode:tooltip')"
+                :text="$t('$ezreeport.task.superUserMode')"
+                prepend-icon="mdi-tools"
+                append-icon="mdi-tools"
+                color="warning"
+                variant="flat"
+                block
+                class="mt-4"
+                @click="emit('open:advanced', task)"
+              />
             </template>
           </v-expansion-panel>
         </v-expansion-panels>
@@ -89,7 +105,7 @@
       <slot name="actions" />
 
       <v-btn
-        :text="$t('$ezreeport.confirm')"
+        :text="$t('$ezreeport.save')"
         :disabled="!isValid"
         append-icon="mdi-pencil"
         color="primary"
@@ -108,18 +124,24 @@ import {
   type InputTask,
 } from '~sdk/tasks';
 
+import { isEmail } from '~/utils/validate';
+
 // Components props
 const props = defineProps<{
   /** The task to edit */
   modelValue: Task,
   /** Should show namespace */
   showNamespace?: boolean,
+  /** Should show advanced button */
+  showAdvanced?: boolean
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated task */
   (e: 'update:modelValue', value: Task): void
+  /** Asked to open task in advanced form */
+  (e: 'open:advanced', value: InputTask): void
 }>();
 
 // Utils composables
@@ -130,8 +152,6 @@ const { refreshMapping } = useTemplateEditor();
 const isValid = ref(false);
 /** Are namespaces loading */
 const loadingNamespaces = ref(false);
-/** Current namespace */
-const namespace = ref<Omit<Namespace, 'fetchLogin' | 'fetchOptions'> | undefined>();
 /** Task to create */
 const task = ref<InputTask>({
   name: props.modelValue.name,
@@ -147,6 +167,7 @@ const task = ref<InputTask>({
   namespace: props.modelValue.namespace,
 });
 
+/** Filters of task */
 const filters = computed({
   get: () => new Map((task.value.template.filters ?? []).map((f) => [f.name, f])),
   set: (v) => {
@@ -158,9 +179,32 @@ const filters = computed({
     task.value.template.filters = undefined;
   },
 });
+/** Is form namespaced */
+const isNamespaced = computed(() => !props.showNamespace);
+/** Current namespace's id */
+const namespaceId = computed(() => task.value.namespaceId);
+/** Curent namespace */
+const namespace = computedAsync(async () => {
+  let value: Omit<Namespace, 'fetchLogin' | 'fetchOptions'> | undefined;
+
+  if (isNamespaced.value) {
+    return value;
+  }
+
+  loadingNamespaces.value = true;
+  try {
+    const currentNamespaces = await getCurrentNamespaces();
+    value = currentNamespaces.find((n) => n.id === namespaceId.value);
+  } catch (e) {
+    handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), e);
+  }
+  loadingNamespaces.value = false;
+
+  return value;
+});
 
 function onTargetUpdated(targets: string | string[] | undefined) {
-  if (!targets) {
+  if (targets == null) {
     task.value.targets = [];
     return;
   }
@@ -171,20 +215,13 @@ function onTargetUpdated(targets: string | string[] | undefined) {
   }
 
   // Allow multiple mail addresses, separated by semicolon or comma
-  task.value.targets = allTargets
-    .join(';').replace(/[,]/g, ';')
-    .split(';').map((mail) => mail.trim());
-}
-
-async function refreshNamespace() {
-  loadingNamespaces.value = true;
-  try {
-    const currentNamespaces = await getCurrentNamespaces();
-    namespace.value = currentNamespaces.find((n) => n.id === task.value.namespaceId);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.errors.refreshNamespaces'), e);
-  }
-  loadingNamespaces.value = false;
+  task.value.targets = Array.from(
+    new Set(
+      allTargets
+        .join(';').replace(/[,]/g, ';')
+        .split(';').map((mail) => mail.trim()),
+    ),
+  );
 }
 
 async function save() {
@@ -195,9 +232,5 @@ async function save() {
   } catch (e) {
     handleEzrError(t('$ezreeport.task.errors.update'), e);
   }
-}
-
-if (props.showNamespace) {
-  refreshNamespace();
 }
 </script>

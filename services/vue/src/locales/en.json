@@ -13,12 +13,12 @@
     "advanced": "Advanced",
     "show_json": "Show JSON",
     "settings": "Settings",
-    "required": "Required",
+    "required": "Field required",
     "parameters": "Parameters",
     "deselect": "Deselect",
     "search": "Search",
     "name": "Name",
-    "addMultiValue": "Add value",
+    "addMultiValue": "Add a value",
     "noValues": "No values",
     "field": "Field",
     "type": "Type",
@@ -41,6 +41,8 @@
       "id": "Report's ID",
       "recurrence": "Recurrence",
       "targets": "Receivers",
+      "targets:hint": "Enter here the receiver's mail address",
+      "targets:add": "Add a receiver",
       "targets:count": "{n} receiver|{n} receivers",
       "targets:copy": "Copy mail adresses",
       "nextRun": "Next delivery",
@@ -54,6 +56,7 @@
       "generate": "Generate",
       "period": "Period",
       "description": "Description",
+      "extended": "Extended template",
       "recurrenceList": {
         "DAILY": "Daily",
         "WEEKLY": "Weekly",
@@ -81,6 +84,7 @@
       },
       "errors": {
         "create:preset": "Cannot create report from preset",
+        "create:duplicate": "A similar periodic report already exists",
         "copy:targets": "Cannot copy targets into clipboard",
         "fetch": "Cannot get periodic reports",
         "create": "Cannot create report",
@@ -178,14 +182,28 @@
         "raw": "DSL Query",
         "field": "@:$ezreeport.field",
         "value": "Value(s)",
+        "value:hint": "Empty value",
         "isNot": "Invert filter",
         "foundFilters": "Found {n} filter|Found {n} filters",
+        "name": "Name of filter",
         "nameTemplate": {
           "exists": "{field} exists",
           "exists:not": "{field} doesn't exists",
-          "values": "{0}|{0} {1}, etc.",
+          "values": "{0}|{0}, {1}|{0}, {1}, etc.",
           "is": "{field} is {valueText}",
           "is:not": "{field} is not {valueText}"
+        },
+        "type": "Filter type",
+        "types": {
+          "exists": "exists",
+          "is": "is",
+          "in": "is one of"
+        },
+        "hints": {
+          "type": "The type of filter depends on the number of values:",
+          "type:exists": "If no value is present, the filter will check the existence of the field",
+          "type:is": "If a single value is present, the filter will check if the field has exactly this value",
+          "type:in": "If multiple values are present, the filter will check if the field contains at least one of the values"
         }
       },
       "aggregation": {
@@ -279,12 +297,12 @@
           ]
         },
         "md": {
-          "title": "Markdown@:$ezreeport.editor.figures._titleTemplate",
+          "title": "Markdown@:$ezreeport.editor.figures._.titleTemplate",
           "preview": "Preview",
           "data": "Content"
         },
         "metric": {
-          "title": "Metric@:$ezreeport.editor.figures._titleTemplate",
+          "title": "Metric@:$ezreeport.editor.figures._.titleTemplate",
           "elements": {
             "title": "Elements ({n})",
             "title:new": "Create element",
@@ -455,6 +473,7 @@
       }
     },
     "errors": {
+      "invalidEmail": "Mail address n°{n} is invalid ",
       "download": "Can't download file \"{path}\"",
       "downloadAttachement": "Can't download attachement",
       "refreshNamespaces": "Can't refresh @:$ezreeport.namespace"

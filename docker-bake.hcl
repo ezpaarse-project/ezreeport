@@ -1,5 +1,5 @@
 group "default" {
-  targets = ["api", "mail", "vuedoc"]
+  targets = ["api", "worker", "scheduler", "mail", "aio", "vuedoc"]
 }
 
 variable "VERSION" {
@@ -78,7 +78,7 @@ target "vuedoc" {
   target = "vuedoc"
   output = [{ type = "registry" }]
   tags = [
-    "vxnexus-registry.intra.inist.fr:8083/ezreeport/vuedoc:${VERSION}:",
-    "ghcr.io/ezpaarse-project/ezreeport-vuedoc:${VERSION}:"
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/vuedoc:${VERSION}",
+    "ghcr.io/ezpaarse-project/ezreeport-vuedoc:${VERSION}"
   ]
 }

@@ -61,6 +61,9 @@ assignPermission(getAllReports, 'GET /reports');
  */
 export async function getReportsOfTask(taskOrId: Omit<Task, 'template'> | string): Promise<ReportMap> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  if (!id) {
+    throw new Error('Task id is required');
+  }
 
   const {
     content,
@@ -85,6 +88,9 @@ export async function getFileAsBlob(
   path: string,
 ): Promise<Blob> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  if (!id) {
+    throw new Error('Task id is required');
+  }
 
   return client.fetch(`/reports/${id}/${path}`, {
     responseType: 'blob',
@@ -105,6 +111,9 @@ export async function getFileAsArrayBuffer(
   path: string,
 ): Promise<ArrayBuffer> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  if (!id) {
+    throw new Error('Task id is required');
+  }
 
   return client.fetch(`/reports/${id}/${path}`, {
     responseType: 'arrayBuffer',
@@ -125,6 +134,9 @@ export async function getFileAsStream(
   path: string,
 ): Promise<ReadableStream<Uint8Array<ArrayBufferLike>>> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  if (!id) {
+    throw new Error('Task id is required');
+  }
 
   return client.fetch(`/reports/${id}/${path}`, {
     responseType: 'stream',
@@ -145,6 +157,9 @@ export async function getFileAsText(
   path: string,
 ): Promise<string> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  if (!id) {
+    throw new Error('Task id is required');
+  }
 
   return client.fetch(`/reports/${id}/${path}`, {
     responseType: 'text',
@@ -166,6 +181,9 @@ export async function getFileAsJson(
   path: `${string}.det.json`,
 ): Promise<ReportResult> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  if (!id) {
+    throw new Error('Task id is required');
+  }
 
   const content = await client.fetch<RawReportResult>(`/reports/${id}/${path}`);
   return transformReportResult(content);
@@ -187,6 +205,9 @@ export async function generateReportOfTask(
   targets?: string[],
 ): Promise<{ id: string }> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  if (!id) {
+    throw new Error('Task id is required');
+  }
 
   let periodDate;
   if (period) {

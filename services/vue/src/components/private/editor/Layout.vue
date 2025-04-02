@@ -1,5 +1,5 @@
 <template>
-  <v-row class="template-layout-elements">
+  <v-fade-transition tag="v-row" group class="template-layout-elements">
     <EditorSlot
       v-for="(element, index) in elements"
       :key="element.id"
@@ -30,7 +30,7 @@
         </v-row>
       </template>
     </EditorSlot>
-  </v-row>
+  </v-fade-transition>
 </template>
 
 <script setup lang="ts">

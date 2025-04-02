@@ -34,6 +34,7 @@ function transformEsAgg(
   switch (agg.type) {
     case 'date_histogram':
       meta.calendar_interval = calendarInterval;
+      meta.time_zone = process.env.TZ;
       break;
 
     default:

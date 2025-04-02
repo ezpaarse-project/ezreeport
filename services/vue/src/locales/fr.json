@@ -13,12 +13,12 @@
     "advanced": "Avancé",
     "show_json": "Afficher le JSON",
     "settings": "Paramètres",
-    "required": "Requis",
+    "required": "Champ requis",
     "parameters": "Paramètres",
     "deselect": "Désélectionner",
     "search": "Rechercher",
     "name": "Nom",
-    "addMultiValue": "Ajouter des valeurs",
+    "addMultiValue": "Ajouter une valeur",
     "noValues": "Aucune valeur",
     "field": "Champ",
     "type": "Type",
@@ -41,6 +41,8 @@
       "id": "ID du rapport",
       "recurrence": "Récurrence",
       "targets": "Destinataires",
+      "targets:hint": "Entrez ici l'adresse mail du destinataire",
+      "targets:add": "Ajouter un destinataire",
       "targets:count": "{n} Destinataire|{n} Destinataires",
       "targets:copy": "Copier les adresses mail",
       "nextRun": "Prochain envoi",
@@ -54,6 +56,9 @@
       "generate": "Générer",
       "period": "Période",
       "description": "Description",
+      "extended": "Modèle de base",
+      "superUserMode": "Mode super utilisateur",
+      "superUserMode:tooltip": "Ce mode est réservé aux \"super utilisateurs\" qui souhaitent créer des rapports très avancés.",
       "recurrenceList": {
         "DAILY": "Quotidien",
         "WEEKLY": "Hebdomadaire",
@@ -83,6 +88,7 @@
         "copy:targets": "Impossible de copier les cibles dans le presse-papiers",
         "create": "Impossible de créer un rapport",
         "create:preset": "Impossible de créer un rapport à partir d'un préréglage",
+        "create:duplicate": "Un rapport périodique similaire existe déjà",
         "delete": "Impossible de supprimer le rapport",
         "edit": "Impossible de mettre à jour le rapport",
         "fetch": "Impossible d'obtenir des rapports périodiques",
@@ -178,14 +184,28 @@
         "raw": "Requête DSL",
         "field": "@:$ezreeport.field",
         "value": "Valeur(s)",
+        "value:hint": "Valeur vide",
         "isNot": "Inverser le filtre",
         "foundFilters": "{n} filtre trouvé|{n} filtres trouvés",
+        "name": "Nom du filtre",
         "nameTemplate": {
           "exists": "{field} existe",
           "exists:not": "{field} n'existe pas",
-          "values": "{0}|{0} {1}, etc.",
+          "values": "{0}|{0}, {1}|{0}, {1}, etc.",
           "is": "{field} est {valueText}",
           "is:not": "{field} n'est pas {valueText}"
+        },
+        "type": "Type de filtre",
+        "types": {
+          "exists": "existe (exists)",
+          "is": "est (is)",
+          "in": "inclus dans (is one of)"
+        },
+        "hints": {
+          "type": "Le type de filtre dépend du nombre de valeurs:",
+          "type:exists": "Si aucune valeur n'est présente, le filtre vérifiera l'existence du champ",
+          "type:is": "Si une seule valeur est présente, le filtre vérifiera si le champ à exactement cette valeur",
+          "type:in": "Si plusieurs valeurs sont présentes, le filtre vérifiera si le champ contient au moins une des valeurs"
         }
       },
       "aggregation": {
@@ -279,12 +299,12 @@
           ]
         },
         "md": {
-          "title": "@:$ezreeport.editor.figures._titleTemplate Markdown",
+          "title": "@:$ezreeport.editor.figures._.titleTemplate Markdown",
           "preview": "Aperçu",
           "data": "Contenu"
         },
         "metric": {
-          "title": "@:$ezreeport.editor.figures._titleTemplate Métriques",
+          "title": "@:$ezreeport.editor.figures._.titleTemplate Métriques",
           "elements": {
             "title": "Éléments ({n})",
             "title:new": "Créer un élément",
@@ -455,6 +475,7 @@
       }
     },
     "errors": {
+      "invalidEmail": "Adresse n°{n} invalide",
       "download": "Impossible de télécharger le fichier \"{path}\"",
       "downloadAttachement": "Impossible de télécharger la pièce jointe",
       "refreshNamespaces": "Impossible d'actualiser les @:$ezreeport.namespace"

@@ -1,6 +1,8 @@
 <template>
   <div class="template-layout-preview-container">
-    <slot name="prepend" />
+    <div v-if="$slots.prepend" class="d-flex flex-column align-center">
+      <slot name="prepend" />
+    </div>
 
     <v-sheet
       :color="current ? 'primary' : undefined"
@@ -8,11 +10,13 @@
       rounded
       class="template-layout-preview"
     >
-      <EditorPreviewSlot
-        v-for="figure in modelValue.figures"
-        :key="figure.id"
-        :model-value="figure"
-      />
+      <v-fade-transition tag="div" group class="template-layout-preview-grid" :disabled="dragging">
+        <EditorPreviewSlot
+          v-for="figure in modelValue.figures"
+          :key="figure.id"
+          :model-value="figure"
+        />
+      </v-fade-transition>
 
       <v-overlay
         activator="parent"
@@ -29,6 +33,7 @@
 </template>
 
 <script setup lang="ts">
+import { state } from '@formkit/drag-and-drop';
 import type { AnyLayoutHelper } from '~sdk/helpers/layouts';
 
 // Components props
@@ -40,15 +45,20 @@ defineProps<{
 }>();
 
 const { grid } = useTemplateEditor();
+
+const dragging = ref(false);
+
+state.on('dragStarted', () => {
+  dragging.value = true;
+});
+
+state.on('dragEnded', () => {
+  dragging.value = false;
+});
 </script>
 
 <style lang="scss" scoped>
 .template-layout-preview {
-  display: grid;
-  grid-template-columns: repeat(v-bind('grid.cols'), 1fr);
-  grid-template-rows: repeat(v-bind('grid.rows'), 1fr);
-  gap: 0.25rem;
-
   position: relative;
   flex: 1;
   padding: 0.5rem;
@@ -60,6 +70,15 @@ const { grid } = useTemplateEditor();
     width: 100%;
     display: flex;
     gap: 0.5rem;
+  }
+
+  &-grid {
+    display: grid;
+    grid-template-columns: repeat(v-bind('grid.cols'), 1fr);
+    grid-template-rows: repeat(v-bind('grid.rows'), 1fr);
+    gap: 0.25rem;
+
+    height: 100%;
   }
 }
 </style>
