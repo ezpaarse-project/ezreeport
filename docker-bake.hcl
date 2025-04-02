@@ -1,5 +1,5 @@
 group "default" {
-  targets = ["api", "worker", "scheduler", "mail", "aio", "vuedoc"]
+  targets = ["api", "worker", "scheduler", "mail", "aio"]
 }
 
 variable "VERSION" {
