@@ -90,8 +90,14 @@ export const filesystems = new Set(Object.keys(filesystemsPaths) as FileSystemsT
  *
  * @returns The usage
  */
-export async function getFileSystemUsage(fs: FileSystemsType): Promise<FileSystemUsageType> {
+export async function getFileSystemUsage(
+  fs: FileSystemsType,
+): Promise<FileSystemUsageType | undefined> {
   const path = filesystemsPaths[fs];
+  if (!path) {
+    return undefined;
+  }
+
   const stats = await statfs(path);
 
   const total = stats.bsize * stats.blocks;
@@ -110,6 +116,7 @@ export async function getFileSystemUsage(fs: FileSystemsType): Promise<FileSyste
  *
  * @returns All usages
  */
-export function getAllFileSystemUsage(): Promise<FileSystemUsageType[]> {
-  return Promise.all(Array.from(filesystems).map((fs) => getFileSystemUsage(fs)));
+export async function getAllFileSystemUsage(): Promise<FileSystemUsageType[]> {
+  const usages = await Promise.all(Array.from(filesystems).map((fs) => getFileSystemUsage(fs)));
+  return usages.filter((u) => !!u);
 }
