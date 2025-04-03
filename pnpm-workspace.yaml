@@ -10,3 +10,8 @@ packages:
 
   - "services/ezra"
   - "services/vue"
+
+onlyBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - canvas

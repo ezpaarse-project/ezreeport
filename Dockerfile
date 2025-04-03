@@ -12,22 +12,20 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN apk update \
   && apk upgrade -U -a
 
-RUN corepack enable
+RUN corepack enable \
+  && corepack prepare pnpm@10.7.1 --activate
 
 # endregion
 # ---
-# region PNPM
+# region Turbo
 
-# Base image for pnpm, allow to properly install dependencies
-FROM base AS pnpm
-WORKDIR /usr/build
+# Base image for turbo, allow to properly install split each service
+FROM base AS turbo
+WORKDIR /usr/src
 
-# Install node-canvas build dependencies
-# see https://github.com/Automattic/node-canvas/issues/866
-RUN apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev pixman-dev
+COPY ./package.json ./
 
-COPY  ./.npmrc ./package.json ./pnpm-lock.yaml ./
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm i --frozen-lockfile
+RUN pnpm run turbo:install
 
 COPY . .
 
@@ -35,25 +33,36 @@ COPY . .
 # ---
 # region API
 
-# Generate prisma client using dev dependencies
-FROM pnpm AS api-prisma
+# Extract api from repo
+FROM turbo AS api-turbo
 
-RUN pnpm deploy --filter ezreeport-report ./api-dev
-WORKDIR /usr/build/api-dev
+RUN turbo prune ezreeport-report --docker --out-dir ./api
+# ---
+# Prepare prod dependencies for API
+FROM turbo AS api-pnpm
+WORKDIR /usr/build/api
+
+COPY --from=api-turbo /usr/src/api/json .
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+COPY --from=api-turbo /usr/src/api/full .
+
+RUN pnpm deploy --legacy --filter ezreeport-report ./dev \
+  && pnpm deploy --legacy --filter ezreeport-report --prod ./prod
+# ---
+# Generate prisma client using dev dependencies
+FROM turbo AS api-prisma
+WORKDIR /usr/build/api/dev
 
 # Install prisma dependencies
 RUN apk add --no-cache --update python3 \
 	&& ln -sf python3 /usr/bin/python
 
+COPY --from=api-pnpm /usr/build/api/dev .
+
 # Generate prisma-client
-RUN npx prisma generate
-
-# ---
-# Prepare prod dependencies for API
-FROM pnpm AS api-pnpm
-
-RUN pnpm deploy --filter ezreeport-report --prod ./api
-
+RUN pnpm prisma generate
 # ---
 # Final image to run API service
 FROM base AS api
@@ -61,8 +70,8 @@ EXPOSE 8080
 ENV NODE_ENV=production
 WORKDIR /usr/build/api
 
-COPY --from=api-pnpm /usr/build/api .
-COPY --from=api-prisma /usr/build/api-dev/.prisma ./.prisma
+COPY --from=api-pnpm /usr/build/api/prod .
+COPY --from=api-prisma /usr/build/api/dev/.prisma ./.prisma
 
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
   CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/health/probes/liveness || exit 1
@@ -73,13 +82,29 @@ CMD [ "npm", "run", "start" ]
 # ---
 # region Worker
 
-# Prepare prod dependencies for WORKER
-FROM pnpm AS worker-pnpm
+# Extract worker from repo
+FROM turbo AS worker-turbo
 
-RUN pnpm deploy --filter ezreeport-worker --prod ./worker
+RUN turbo prune ezreeport-worker --docker --out-dir ./worker
+# ---
+# Prepare prod dependencies for worker
+FROM turbo AS worker-pnpm
+WORKDIR /usr/build/worker
+
+# Install node-canvas build dependencies
+# see https://github.com/Automattic/node-canvas/issues/866
+RUN apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev pixman-dev
+
+COPY --from=worker-turbo /usr/src/worker/json .
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+COPY --from=worker-turbo /usr/src/worker/full .
+
+RUN pnpm deploy --legacy --filter ezreeport-worker --prod ./prod
 
 # ---
-# Final image to run API service
+# Final image to run worker service
 FROM base AS worker
 EXPOSE 8080
 ENV NODE_ENV=production
@@ -88,7 +113,7 @@ WORKDIR /usr/build/worker
 # Install node-canvas dependencies
 RUN apk add --no-cache cairo jpeg pango pixman
 
-COPY --from=worker-pnpm /usr/build/worker .
+COPY --from=worker-pnpm /usr/build/worker/prod .
 
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
   CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/liveness || exit 1
@@ -99,10 +124,22 @@ CMD [ "npm", "run", "start" ]
 # ---
 # region Scheduler
 
-# Prepare prod dependencies for scheduler
-FROM pnpm AS scheduler-pnpm
+# Extract scheduler from repo
+FROM turbo AS scheduler-turbo
 
-RUN pnpm deploy --filter ezreeport-scheduler --prod ./scheduler
+RUN turbo prune ezreeport-scheduler --docker --out-dir ./scheduler
+# ---
+# Prepare prod dependencies for scheduler
+FROM turbo AS scheduler-pnpm
+WORKDIR /usr/build/scheduler
+
+COPY --from=scheduler-turbo /usr/src/scheduler/json .
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+COPY --from=scheduler-turbo /usr/src/scheduler/full .
+
+RUN pnpm deploy --legacy --filter ezreeport-scheduler --prod ./prod
 
 # ---
 # Final image to run scheduler service
@@ -111,7 +148,7 @@ EXPOSE 8080
 ENV NODE_ENV=production
 WORKDIR /usr/build/scheduler
 
-COPY --from=scheduler-pnpm /usr/build/scheduler .
+COPY --from=scheduler-pnpm /usr/build/scheduler/prod .
 
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
   CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/liveness || exit 1
@@ -122,10 +159,22 @@ CMD [ "npm", "run", "start" ]
 # ---
 # region Mail
 
-# Prepare prod dependencies for mail
-FROM pnpm AS mail-pnpm
+# Extract mail from repo
+FROM turbo AS mail-turbo
 
-RUN pnpm deploy --filter ezreeport-mail --prod ./mail
+RUN turbo prune ezreeport-mail --docker --out-dir ./mail
+# ---
+# Prepare prod dependencies for mail
+FROM turbo AS mail-pnpm
+WORKDIR /usr/build/mail
+
+COPY --from=mail-turbo /usr/src/mail/json .
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+COPY --from=mail-turbo /usr/src/mail/full .
+
+RUN pnpm deploy --legacy --filter ezreeport-mail --prod ./prod
 
 # ---
 # Final image to run mail service
@@ -134,7 +183,7 @@ EXPOSE 8080
 ENV NODE_ENV=production
 WORKDIR /usr/build/mail
 
-COPY --from=mail-pnpm /usr/build/mail .
+COPY --from=mail-pnpm /usr/build/mail/prod .
 
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
   CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/liveness || exit 1
@@ -152,7 +201,9 @@ ENV NODE_ENV=production
 WORKDIR /usr/build
 
 COPY ./services/ecosystem.config.js .
-RUN npm install -g pm2 tsx
+RUN npm install -g pm2@^6.0.5 tsx@^4.19.1
+
+RUN apk add --no-cache cairo jpeg pango pixman
 
 COPY --from=api /usr/build/api ./report
 COPY --from=worker /usr/build/worker ./worker
@@ -168,32 +219,50 @@ CMD ["pm2-runtime", "ecosystem.config.js"]
 # ---
 # region SDK
 
-# Prepare SDK to be used in other images
-FROM pnpm AS sdk-pnpm
+# Extract sdk from repo
+FROM turbo AS sdk-turbo
 
-RUN pnpm run --filter @ezpaarse-project/ezreeport-sdk-js build
-RUN pnpm deploy --filter @ezpaarse-project/ezreeport-sdk-js --prod ./sdk
+RUN turbo prune @ezpaarse-project/ezreeport-sdk-js --docker
+# ---
+# Prepare SDK to be used in other images
+FROM turbo AS sdk-pnpm
+WORKDIR /usr/build/sdk
+
+COPY --from=sdk-turbo /usr/src/out/json .
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+COPY --from=sdk-turbo /usr/src/out/full .
+
+RUN turbo run @ezpaarse-project/ezreeport-sdk-js#build
 
 # endregion
 # ---
 # region Vue
 
-# Prepare Vue to be used in other images
-FROM pnpm AS vue-pnpm
+# Extract vue from repo
+FROM turbo AS vue-turbo
 
-RUN pnpm run --filter @ezpaarse-project/ezreeport-vue build
-RUN pnpm deploy --filter @ezpaarse-project/ezreeport-vue --prod ./vue
+RUN turbo prune @ezpaarse-project/ezreeport-vue --docker
+# ---
+# Prepare Vue to be used in other images
+FROM turbo AS vue-pnpm
+WORKDIR /usr/build/vue
+
+COPY --from=vue-turbo /usr/src/out/json .
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+COPY --from=vue-turbo /usr/src/out/full .
+
+RUN turbo run @ezpaarse-project/ezreeport-vue#build
 
 # endregion
 # ---
 # region Vue Documentation
 
 # Build vue documentation
-FROM pnpm AS vuedoc-builder
-
-COPY --from=sdk-pnpm /usr/build/sdk ./sdk
-# Not using vue-pnpm cause we need dev dependencies to build the documentation
-RUN pnpm deploy --filter @ezpaarse-project/ezreeport-vue ./vue
+FROM vue-pnpm AS vuedoc-builder
 WORKDIR /usr/build/vue
 
 ARG REPORT_TOKEN="changeme" \
@@ -202,7 +271,7 @@ ARG REPORT_TOKEN="changeme" \
 ENV VITE_EZR_TOKEN=${REPORT_TOKEN} \
     VITE_EZR_API=${REPORT_API}
 
-RUN npm run build:story
+RUN turbo run build:docs
 
 # ---
 # Final image to run vue documentation on nginx

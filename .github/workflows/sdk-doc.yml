@@ -35,7 +35,7 @@ jobs:
           static_site_generator: 'static'
 
       - name: Install dependencies ⚙️
-        run: pnpm fetch
+        run: pnpm i --frozen-lockfile
 
       - name: Build documentation 🔧
         run: pnpm --filter @ezpaarse-project/ezreeport-sdk-js run build:docs

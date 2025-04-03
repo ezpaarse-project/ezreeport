@@ -125,14 +125,13 @@
   ],
   "scripts": {
     "prebuild": "rimraf --glob 'dist/*'",
-    "build": "pnpm run /^build:.*/",
     "build:docs": "typedoc",
     "build:js": "vite build",
     "build:types": "tsup",
     "dev": "pnpm run --parallel \"/^(watch:docs)|(preview)$/\"",
     "lint": "eslint .",
-    "preview": "vite docs --open",
     "type-check": "tsc --noEmit --skipLibCheck",
+    "preview:docs": "vite docs --open",
     "watch:docs": "typedoc --watch"
   },
   "lint-staged": {

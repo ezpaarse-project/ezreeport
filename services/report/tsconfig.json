@@ -1,6 +1,7 @@
 {
   "include": [
     "**/*.ts",
+    "**/public/**/*.js",
     ".eslintrc.js"
   ],
   "compilerOptions": {
