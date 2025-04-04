@@ -1,3 +1,10 @@
+# [@ezpaarse-project/ezreeport-admin-v1.1.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-admin@1.1.0...@ezpaarse-project/ezreeport-admin@1.1.1) (2025-04-04)
+
+
+### Bug Fixes
+
+* **ezra:** fixed version key in health ([4b8c8d8](https://github.com/ezpaarse-project/ezreeport/commit/4b8c8d87c238ad751490ea6b71e3ddb78501fa82))
+
 # [@ezpaarse-project/ezreeport-admin-v1.1.1-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-admin@1.1.0...@ezpaarse-project/ezreeport-admin@1.1.1-rc.1) (2025-03-24)
 
 
