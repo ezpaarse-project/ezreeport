@@ -53,6 +53,7 @@
             </v-col>
           </v-row>
 
+          <v-slide-y-transition>
           <v-row v-if="aggregation.type">
             <v-col>
               <v-combobox
@@ -69,9 +70,11 @@
               />
             </v-col>
           </v-row>
+          </v-slide-y-transition>
 
+          <v-slide-y-transition>
           <v-row v-if="isMetric === false && aggregation.type !== 'date_histogram'">
-            <v-col>
+              <v-col cols="12">
               <v-text-field
                 :model-value="`${aggregation.size ?? 10}`"
                 :label="$t('$ezreeport.editor.aggregation.size')"
@@ -84,7 +87,34 @@
                 @update:model-value="aggregation.size = Number.parseInt($event)"
               />
             </v-col>
+
+              <v-col cols="6">
+                <v-switch
+                  v-model="showMissing"
+                  :label="$t('$ezreeport.editor.aggregation.missing:show')"
+                  :disabled="readonly"
+                  prepend-icon="mdi-progress-question"
+                  color="primary"
+                  hide-details
+                />
+              </v-col>
+
+              <v-col cols="6">
+                <v-slide-x-transition>
+                  <v-text-field
+                    v-if="showMissing"
+                    v-model="aggregation.missing"
+                    :label="$t('$ezreeport.editor.aggregation.missing:label')"
+                    :readonly="readonly"
+                    :disabled="disabled"
+                    prepend-icon="mdi-tooltip-question-outline"
+                    variant="underlined"
+                    hide-details
+                  />
+                </v-slide-x-transition>
+              </v-col>
           </v-row>
+          </v-slide-y-transition>
         </template>
 
         <slot name="text" />
@@ -156,6 +186,21 @@ const isMetric = computed(() => {
     return undefined;
   }
   return aggDef.type === 'metric';
+});
+/** If we should show the missing values */
+const showMissing = computed({
+  get: () => {
+    if (isRawAggregation(aggregation.value)) {
+      return false;
+    }
+    return !!aggregation.value.missing;
+  },
+  set: (value) => {
+    if (isRawAggregation(aggregation.value)) {
+      return;
+    }
+    aggregation.value.missing = value ? 'Missing' : undefined;
+  },
 });
 /** Type of fields needed for the current aggregation */
 const fieldType = computed(() => (
