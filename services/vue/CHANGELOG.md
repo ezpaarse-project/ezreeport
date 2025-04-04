@@ -1,3 +1,21 @@
+# [@ezpaarse-project/ezreeport-vue-v2.1.0](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.0.0...@ezpaarse-project/ezreeport-vue@2.1.0) (2025-04-04)
+
+
+### Bug Fixes
+
+* **vue:** fixed error when trying to create a similar report ([5ede2fc](https://github.com/ezpaarse-project/ezreeport/commit/5ede2fca1e632b714ca7694ff218b4d2b13c5000))
+* **vue:** fixed issue where couldn't save duplicated template ([6de5ba4](https://github.com/ezpaarse-project/ezreeport/commit/6de5ba4d262085f57834e7210ddb3059c396646d))
+* **vue:** fixed issue with custom periods of BIENNIAL reports ([fb96f16](https://github.com/ezpaarse-project/ezreeport/commit/fb96f1672b58313d953dd9c21534717eb83b3c37))
+* **vue:** fixed multiple issues with multi values ([5574f6c](https://github.com/ezpaarse-project/ezreeport/commit/5574f6c5466475641c957eb2b2b0dc8a4ea3170c))
+* **vue:** fixed weekStartsOn in generation ([a79daa6](https://github.com/ezpaarse-project/ezreeport/commit/a79daa6c8532c3c6bec52f16d1ae01d83ed626b7))
+
+
+### Features
+
+* **vue:** added hints to filters ([9c91704](https://github.com/ezpaarse-project/ezreeport/commit/9c917045664854b199f6638b8ffeb43395019a8e))
+* **vue:** added some animations to editor ([4fb77b6](https://github.com/ezpaarse-project/ezreeport/commit/4fb77b67ffd443a9b587a3786c9980aecbfe3fc3))
+* **vue:** improved multi value fields ([d67ddad](https://github.com/ezpaarse-project/ezreeport/commit/d67ddad5ab00b7ef22a02e0b448ed3d8fc4c9334))
+
 # [@ezpaarse-project/ezreeport-vue-v2.1.0-rc.3](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.1.0-rc.2...@ezpaarse-project/ezreeport-vue@2.1.0-rc.3) (2025-03-25)
 
 
