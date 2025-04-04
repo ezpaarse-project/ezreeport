@@ -1,10 +1,10 @@
 import EventEmitter from 'node:events';
 
-import { asyncWithCommonHandlers, commonHandlers } from '~common/lib/utils';
+import { asyncWithCommonHandlers, commonHandlers } from '@ezreeport/models/lib/utils';
 
-import type { RecurrenceType } from '~common/types/recurrence';
-import type { FigureType, LayoutType, TemplateBodyGridType } from '~common/types/templates';
-import type { ReportPeriodType } from '~common/types/reports';
+import type { RecurrenceType } from '@ezreeport/models/recurrence';
+import type { FigureType, LayoutType, TemplateBodyGridType } from '@ezreeport/models/templates';
+import type { ReportPeriodType } from '@ezreeport/models/reports';
 import { appLogger } from '~/lib/logger';
 
 import type { Area, Margin } from './types';

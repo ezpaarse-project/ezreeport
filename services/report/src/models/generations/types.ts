@@ -1,7 +1,7 @@
-import { z } from '~common/lib/zod';
-import { ensureArray } from '~common/lib/utils';
+import { z } from '@ezreeport/models/lib/zod';
+import { ensureArray } from '@ezreeport/models/lib/utils';
+import { Generation as CommonGeneration } from '@ezreeport/models/generations';
 
-import { Generation as CommonGeneration } from '~common/types/generations';
 import { Task } from '~/models/tasks/types';
 
 export const GenerationIncludeFields = z.enum([
@@ -29,4 +29,4 @@ export const GenerationQueryInclude = z.object({
     .describe('Fields to include'),
 });
 
-export * from '~common/types/generations';
+export * from '@ezreeport/models/generations';

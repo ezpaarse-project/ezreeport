@@ -1,7 +1,7 @@
-import { RecurrenceType } from '~common/types/recurrence';
-import * as dfns from '~common/lib/date-fns';
+import { RecurrenceType } from '@ezreeport/models/recurrence';
+import * as dfns from '@ezreeport/dates';
 
-export * from '~common/lib/periods';
+export * from '@ezreeport/models/lib/periods';
 
 /**
  * Calculate next run date for the task

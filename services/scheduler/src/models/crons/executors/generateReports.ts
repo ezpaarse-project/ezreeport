@@ -1,7 +1,7 @@
 import { compact } from 'lodash';
 
-import { endOfDay } from '~common/lib/date-fns';
-import { calcPeriodFromRecurrence } from '~common/lib/periods';
+import { endOfDay } from '@ezreeport/dates';
+import { calcPeriodFromRecurrence } from '@ezreeport/models/lib/periods';
 
 import type { Executor } from '~/models/crons/types';
 import { queueGeneration } from '~/models/queues/report/generation';

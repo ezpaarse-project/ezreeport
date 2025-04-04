@@ -1,7 +1,7 @@
+import type { MailQueueDataType } from '@ezreeport/models/queues';
+
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
-
-import type { MailQueueDataType } from '~common/types/queues';
 
 const sendExchangeName = 'ezreeport.report:send';
 

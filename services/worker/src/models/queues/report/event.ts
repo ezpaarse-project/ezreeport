@@ -1,7 +1,7 @@
+import type { GenerationType } from '@ezreeport/models/generations';
+
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
-
-import type { GenerationType } from '~common/types/generations';
 
 const eventExchangeName = 'ezreeport.report:event';
 

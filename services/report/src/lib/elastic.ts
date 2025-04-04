@@ -5,10 +5,10 @@ import {
 } from '@elastic/elasticsearch';
 import { merge } from 'lodash';
 
-import type { HeartbeatType } from '~common/lib/heartbeats';
+import type { HeartbeatType } from '@ezreeport/heartbeats/types';
 
-import config from './config';
-import { appLogger } from './logger';
+import config from '~/lib/config';
+import { appLogger } from '~/lib/logger';
 
 const logger = appLogger.child(
   { scope: 'elastic' },

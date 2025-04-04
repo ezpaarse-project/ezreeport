@@ -58,7 +58,7 @@ Workflow used here is the same as Git Flow :
 
 ## Components
 
-### Services
+### Services - Node processes
 
 - `services/report`: (ezreeport-report)
   - Manage templates with HTTP API
@@ -69,11 +69,12 @@ Workflow used here is the same as Git Flow :
 - `services/mail`: (ezreeport-mail)
   - Handle email management
 
+### Internal components - Used by Services
 
-### Packages
+They're all under `packages/` and follow the name `@ezreeport/*`. PNPM will handle dependency tree.
 
-- `services/common` (not public)
-  - Various functions and types to use across repository
+### Packages - Published to NPM
+
 - `services/cli/ezra` (@ezpaarse-project/ezreeport-admin)
   - CLI client for managing ezREEPORT instances
 - `services/sdk` (@ezpaarse-project/ezreeport-sdk-js)
@@ -88,11 +89,10 @@ Some components are depending on each others, so you may need to build/push some
 Here's a quick view to see thoses relations :
 
 ```
-├─ @ezpaarse-project/ezreeport-common
-|  ├─ ezreeport-mail
-|  ├─ ezreeport-report
-|  ├─ ezreeport-scheduler
-|  └─ ezreeport-worker
+├─ ezreeport-mail
+├─ ezreeport-report
+├─ ezreeport-scheduler
+├─ ezreeport-worker
 ├─ @ezpaarse-project/ezreeport-admin
 └─ @ezpaarse-project/sdk-js
    └─ @ezpaarse-project/vue

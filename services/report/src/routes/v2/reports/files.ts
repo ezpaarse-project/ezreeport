@@ -4,7 +4,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import fastifyStatic from '@fastify/static';
 import { StatusCodes } from 'http-status-codes';
 
-import { z } from '~common/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
 import config from '~/lib/config';
 
 import { requireAllowedNamespace } from '~/plugins/auth';

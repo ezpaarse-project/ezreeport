@@ -1,7 +1,7 @@
 import type { FastifyReply } from 'fastify';
 import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 
-import { z } from '~common/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
 
 export const BaseResponse = z.object({
   apiVersion: z.number(),

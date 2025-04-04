@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
 
+import { GenerationQueueData, type GenerationQueueDataType } from '@ezreeport/models/queues';
+import type { GenerationType } from '@ezreeport/models/generations';
+
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
-
-import { GenerationQueueData, type GenerationQueueDataType } from '~common/types/queues';
-import type { GenerationType } from '~common/types/generations';
 
 const generationQueueName = 'ezreeport.report:queues';
 const deadGenerationExchangeName = 'ezreeport.report:queues:dead';

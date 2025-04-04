@@ -31,6 +31,45 @@ COPY . .
 
 # endregion
 # ---
+# region Database
+
+# Extract database from repo
+FROM turbo AS database-turbo
+
+RUN turbo prune @ezreeport/database --docker --out-dir ./database
+# ---
+# Prepare prod dependencies for DATABASE
+FROM turbo AS database-pnpm
+WORKDIR /usr/build/database
+
+COPY --from=database-turbo /usr/src/database/json .
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+COPY --from=database-turbo /usr/src/database/full .
+
+RUN pnpm deploy --legacy --filter @ezreeport/database ./dev
+# ---
+# Generate prisma client using dev dependencies
+FROM turbo AS database-prisma
+WORKDIR /usr/build/database/dev
+
+# Install prisma dependencies
+RUN apk add --no-cache --update python3 \
+	&& ln -sf python3 /usr/bin/python
+
+COPY --from=database-pnpm /usr/build/database/dev .
+
+# Generate prisma-client
+RUN pnpm run db:generate
+# ---
+# Final image to run migrations
+FROM database-prisma AS migrate
+
+CMD [ "npm", "run", "db:deploy" ]
+
+# endregion
+# ---
 # region API
 
 # Extract api from repo
@@ -48,21 +87,9 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 COPY --from=api-turbo /usr/src/api/full .
 
-RUN pnpm deploy --legacy --filter ezreeport-report ./dev \
-  && pnpm deploy --legacy --filter ezreeport-report --prod ./prod
-# ---
-# Generate prisma client using dev dependencies
-FROM turbo AS api-prisma
-WORKDIR /usr/build/api/dev
+RUN pnpm deploy --legacy --filter ezreeport-report --prod ./prod
+COPY --from=database-prisma /usr/build/database/dev/.prisma ./node_modules/@ezreeport/database/.prisma
 
-# Install prisma dependencies
-RUN apk add --no-cache --update python3 \
-	&& ln -sf python3 /usr/bin/python
-
-COPY --from=api-pnpm /usr/build/api/dev .
-
-# Generate prisma-client
-RUN pnpm prisma generate
 # ---
 # Final image to run API service
 FROM base AS api
@@ -71,7 +98,6 @@ ENV NODE_ENV=production
 WORKDIR /usr/build/api
 
 COPY --from=api-pnpm /usr/build/api/prod .
-COPY --from=api-prisma /usr/build/api/dev/.prisma ./.prisma
 
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
   CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/health/probes/liveness || exit 1
@@ -140,6 +166,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 COPY --from=scheduler-turbo /usr/src/scheduler/full .
 
 RUN pnpm deploy --legacy --filter ezreeport-scheduler --prod ./prod
+COPY --from=database-prisma /usr/build/database/dev/.prisma ./node_modules/@ezreeport/database/.prisma
 
 # ---
 # Final image to run scheduler service

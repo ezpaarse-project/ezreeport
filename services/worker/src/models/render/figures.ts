@@ -1,10 +1,10 @@
 import { merge } from 'lodash';
 import type { Mark } from 'vega-lite/build/src/mark';
 
-import { syncWithCommonHandlers } from '~common/lib/utils';
+import { syncWithCommonHandlers } from '@ezreeport/models/lib/utils';
 
-import type { RecurrenceType } from '~common/types/recurrence';
-import type { FigureType } from '~common/types/templates';
+import type { RecurrenceType } from '@ezreeport/models/recurrence';
+import type { FigureType } from '@ezreeport/models/templates';
 import type { FetchResultItem } from '~/models/fetch/results';
 import type { PDFReport } from '~/models/render/pdf/types';
 import type { Area } from '~/models/render/types';

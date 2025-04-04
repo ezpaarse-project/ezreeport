@@ -1,9 +1,9 @@
-import { z } from '~common/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
 
-import { Namespace } from '~common/types/namespaces';
+import { Namespace } from '@ezreeport/models/namespaces';
 import { BulkMembership, BulkMembershipResult } from '~/models/memberships/types';
 
-export * from '~common/types/namespaces';
+export * from '@ezreeport/models/namespaces';
 
 /**
  * Validation for creating/updating a namespace

@@ -5,7 +5,7 @@ import {
   type RequestParams,
 } from '@elastic/elasticsearch';
 
-import { HeartbeatType } from '~common/lib/heartbeats';
+import type { HeartbeatType } from '@ezreeport/heartbeats/types';
 
 import config from './config';
 import { appLogger } from './logger';

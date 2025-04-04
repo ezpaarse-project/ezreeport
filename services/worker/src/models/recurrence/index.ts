@@ -1,6 +1,6 @@
 import type { TimeUnit } from 'vega-lite/build/src/timeunit';
 
-import type { RecurrenceType } from '~common/types/recurrence';
+import type { RecurrenceType } from '@ezreeport/models/recurrence';
 
 /**
  * Calculate interval needed for Elastic's aggregations

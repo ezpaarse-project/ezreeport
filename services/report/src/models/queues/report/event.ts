@@ -1,8 +1,9 @@
+import { Generation, GenerationType } from '@ezreeport/models/generations';
+
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 import { getWSNamespace, type Namespace } from '~/lib/sockets';
 
-import { Generation, GenerationType } from '~common/types/generations';
 import { upsertGeneration } from '~/models/generations';
 import { createActivity } from '~/models/task-activity';
 import { editTaskAfterGeneration, getTask } from '~/models/tasks';

@@ -1,11 +1,12 @@
-import { z } from '~common/lib/zod';
-import type rabbitmq from '~/lib/rabbitmq';
-import { appLogger } from '~/lib/logger';
-import { setupRPCClient, type RPCClient } from '~common/lib/rpc';
+import { z } from '@ezreeport/models/lib/zod';
+import { setupRPCClient, type RPCClient } from '@ezreeport/rpc/client';
 
-import { Task, type TaskType } from '~common/types/tasks';
-import { Template, type TemplateType } from '~common/types/templates';
-import { Namespace, type NamespaceType } from '~common/types/namespaces';
+import { Task, type TaskType } from '@ezreeport/models/tasks';
+import { Template, type TemplateType } from '@ezreeport/models/templates';
+import { Namespace, type NamespaceType } from '@ezreeport/models/namespaces';
+
+import { appLogger } from '~/lib/logger';
+import type rabbitmq from '~/lib/rabbitmq';
 
 let client: RPCClient | undefined;
 

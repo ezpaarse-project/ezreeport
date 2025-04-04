@@ -1,21 +1,18 @@
 import { hostname } from 'node:os';
 import { statfs } from 'node:fs/promises';
 
-import {
-  setupHeartbeat,
-  listenToHeartbeats,
-  mandatoryService,
-  type HeartbeatService,
-} from '~common/lib/heartbeats';
-import { isAfter } from '~common/lib/date-fns';
-import type rabbitmq from '~/lib/rabbitmq';
+import { isAfter } from '@ezreeport/dates';
+import { setupHeartbeat, listenToHeartbeats, mandatoryService } from '@ezreeport/heartbeats';
+import type { HeartbeatService } from '@ezreeport/heartbeats/types';
+
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
+import type rabbitmq from '~/lib/rabbitmq';
+import { elasticPing } from '~/lib/elastic';
+import { dbPing } from '~/lib/prisma';
 
 import { version } from '../../../package.json';
 import type { HeartbeatType, FileSystemsType, FileSystemUsageType } from './types';
-import { elasticPing } from '~/lib/elastic';
-import { dbPing } from '~/lib/prisma';
 
 const { heartbeat: frequency } = config;
 
@@ -65,7 +62,7 @@ export async function initHeartbeat(connection: rabbitmq.ChannelModel) {
   });
 }
 
-export { getMissingMandatoryServices } from '~common/lib/heartbeats';
+export { getMissingMandatoryServices } from '@ezreeport/heartbeats';
 
 export function getAllServices() {
   return Array.from(services.values())

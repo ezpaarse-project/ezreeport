@@ -1,7 +1,7 @@
 import type { appLogger } from '~/lib/logger';
 import type config from '~/lib/config';
 
-export * from '~common/types/crons';
+export * from '@ezreeport/models/crons';
 
 export type Logger = typeof appLogger;
 

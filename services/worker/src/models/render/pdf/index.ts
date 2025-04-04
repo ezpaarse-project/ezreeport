@@ -3,7 +3,7 @@ import { readFile, stat, unlink } from 'node:fs/promises';
 
 import { jsPDF as PDF } from 'jspdf';
 
-import { format } from '~common/lib/date-fns';
+import { format } from '@ezreeport/dates';
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
 

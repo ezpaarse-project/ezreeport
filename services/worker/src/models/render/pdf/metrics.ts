@@ -1,6 +1,6 @@
 import type { Font } from 'jspdf';
 
-import { format, isValid, parseISO } from '~common/lib/date-fns';
+import { format, isValid, parseISO } from '@ezreeport/dates';
 import type { FetchResultItem } from '~/models/fetch/results';
 import type { Position, Size, Area } from '~/models/render/types';
 import type { PDFReport } from '~/models/render/pdf/types';

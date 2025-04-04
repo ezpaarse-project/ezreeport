@@ -1,5 +1,5 @@
-import { z } from '~common/lib/zod';
-import { Access } from '~/lib/prisma';
+import { Access } from '@ezreeport/database/types';
+import { z } from '@ezreeport/models/lib/zod';
 
 /**
  * Validation for membership

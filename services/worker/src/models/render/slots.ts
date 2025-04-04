@@ -1,4 +1,4 @@
-import type { TemplateBodyGridType, FigureType } from '~common/types/templates';
+import type { TemplateBodyGridType, FigureType } from '@ezreeport/models/templates';
 
 import type {
   Size,

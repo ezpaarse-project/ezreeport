@@ -1,7 +1,7 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { merge } from 'lodash';
 
-import { FigureAgg, type FigureAggType, type FigureType } from '~common/types/templates';
+import { FigureAgg, type FigureAggType, type FigureType } from '@ezreeport/models/templates';
 
 type EsAggregation = { [name: string]: ElasticTypes.AggregationsAggregationContainer };
 

@@ -1,4 +1,6 @@
-import { setupHeartbeat, mandatoryService, type HeartbeatService } from '~common/lib/heartbeats';
+import { setupHeartbeat, mandatoryService } from '@ezreeport/heartbeats';
+import type { HeartbeatService } from '@ezreeport/heartbeats/types';
+
 import type rabbitmq from '~/lib/rabbitmq';
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
@@ -18,7 +20,7 @@ const service: HeartbeatService = {
   ],
 };
 
-export { getMissingMandatoryServices } from '~common/lib/heartbeats';
+export { getMissingMandatoryServices } from '@ezreeport/heartbeats';
 
 export async function initHeartbeat(connection: rabbitmq.ChannelModel) {
   const start = process.uptime();

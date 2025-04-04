@@ -1,5 +1,6 @@
+import { setupRPCServer, type RPCServerRouter } from '@ezreeport/rpc/server';
+
 import type rabbitmq from '~/lib/rabbitmq';
-import { setupRPCServer, type RPCServerRouter } from '~common/lib/rpc';
 import { appLogger } from '~/lib/logger';
 
 import { getAllTasks } from '~/models/tasks';

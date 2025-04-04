@@ -1,15 +1,6 @@
 packages:
-  - "services/common"
-
-  - "services/report"
-  - "services/worker"
-  - "services/scheduler"
-  - "services/mail"
-
-  - "services/sdk"
-
-  - "services/ezra"
-  - "services/vue"
+  - "packages/*"
+  - "services/*"
 
 onlyBuiltDependencies:
   - '@prisma/client'

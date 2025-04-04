@@ -2,13 +2,14 @@ import { scheme as vegaScheme } from 'vega';
 import type { Mark } from 'vega-lite/build/src/mark';
 import type { UnitSpec } from 'vega-lite/build/src/spec';
 import { merge } from 'lodash';
-import dfns from 'date-fns';
 import { contrast } from 'chroma-js';
 
-import { ensureInt } from '~common/lib/utils';
+import * as dfns from '@ezreeport/dates';
+import { ensureInt } from '@ezreeport/models/lib/utils';
+import type { RecurrenceType } from '@ezreeport/models/recurrence';
+
 import config from '~/lib/config';
 
-import { RecurrenceType } from '~common/types/recurrence';
 import type { FetchResultItem, FetchResultValue } from '~/models/fetch/results';
 import { calcVegaFormatFromRecurrence } from '~/models/recurrence';
 

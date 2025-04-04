@@ -1,8 +1,8 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 
-import { ensureInt, syncWithCommonHandlers } from '~common/lib/utils';
+import { ensureInt, syncWithCommonHandlers } from '@ezreeport/models/lib/utils';
 
-import type { FigureType } from '~common/types/templates';
+import type { FigureType } from '@ezreeport/models/templates';
 
 export type FetchResultValue = string | number | boolean;
 

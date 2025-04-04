@@ -1,5 +1,5 @@
 group "default" {
-  targets = ["api", "worker", "scheduler", "mail", "aio"]
+  targets = ["migrate", "api", "worker", "scheduler", "mail", "aio"]
 }
 
 variable "VERSION" {
@@ -9,6 +9,16 @@ variable "VERSION" {
 target "_base" {
   context = "."
   dockerfile = "Dockerfile"
+}
+
+target "migrate" {
+  inherits = ["_base"]
+  target = "migrate"
+  output = [{ type = "registry" }]
+  tags = [
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/migrate:${VERSION}",
+    "ghcr.io/ezpaarse-project/ezreeport-migrate:${VERSION}"
+  ]
 }
 
 target "api" {

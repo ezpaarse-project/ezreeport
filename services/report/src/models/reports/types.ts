@@ -2,11 +2,11 @@ import {
   z,
   stringToEndOfDay,
   stringToStartOfDay,
-} from '~common/lib/zod';
+} from '@ezreeport/models/lib/zod';
 
-import { ReportFiles } from '~common/types/reports';
+import { ReportFiles } from '@ezreeport/models/reports';
 
-export * from '~common/types/reports';
+export * from '@ezreeport/models/reports';
 
 /**
  * Type for files contained in a report

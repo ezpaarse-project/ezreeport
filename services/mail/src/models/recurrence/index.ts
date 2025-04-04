@@ -1,4 +1,4 @@
-import { RecurrenceType } from '~common/types/recurrence';
+import type { RecurrenceType } from '@ezreeport/models/recurrence';
 
 // TODO[feat]: locales
 /**

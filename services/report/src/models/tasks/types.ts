@@ -4,14 +4,14 @@ import {
   stringToEndOfDay,
   stringOrArray,
   stringToBool,
-} from '~common/lib/zod';
-import { ensureArray } from '~common/lib/utils';
+} from '@ezreeport/models/lib/zod';
+import { ensureArray } from '@ezreeport/models/lib/utils';
 
-import { Task as CommonTask } from '~common/types/tasks';
+import { Task as CommonTask } from '@ezreeport/models/tasks';
 import { Namespace } from '~/models/namespaces/types';
 import { TemplateTag } from '~/models/templates/types';
 
-export * from '~common/types/tasks';
+export * from '@ezreeport/models/tasks';
 
 /**
  * Validation for task include fields

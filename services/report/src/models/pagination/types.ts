@@ -1,4 +1,4 @@
-import { z } from '~common/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
 
 import { SuccessResponseWithMeta } from '~/routes/v2/responses';
 

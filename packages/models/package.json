@@ -1,0 +1,36 @@
+{
+  "name": "@ezreeport/models",
+  "version": "0.0.0",
+  "private": true,
+  "description": "",
+  "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
+  "bugs": {
+    "url": "https://github.com/ezpaarse-project/ezreeport/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
+  },
+  "license": "CeCILL",
+  "author": "oxypomme",
+  "exports": {
+    "./lib/*": "./src/lib/*.ts",
+    "./*": "./src/types/*.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit --skipLibCheck"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --fix"
+    ]
+  },
+  "dependencies": {
+    "@ezreeport/dates": "workspace:*",
+    "zod": "^3.23.8"
+  },
+  "engines": {
+    "node": "^20"
+  }
+}

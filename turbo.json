@@ -1,11 +1,17 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
+    "db:migrate": {
+      "dependsOn": ["^db:migrate"]
+    },
+    "db:generate": {
+      "dependsOn": ["^db:generate"]
+    },
     "lint": {
       "dependsOn": ["^lint"]
     },
     "type-check": {
-      "dependsOn": ["^type-check"]
+      "dependsOn": ["db:generate", "^type-check"]
     },
     "build": {
       "dependsOn": ["^build"]

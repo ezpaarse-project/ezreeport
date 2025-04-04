@@ -1,10 +1,10 @@
-import { ensureArray } from '~common/lib/utils';
+import { ensureArray } from '@ezreeport/models/lib/utils';
 import {
   createLogger,
   isPrettierInstalled,
   type Level,
   type LoggerOptions,
-} from '~common/lib/logger';
+} from '@ezreeport/logger';
 
 import config from '~/lib/config';
 
@@ -17,5 +17,5 @@ const options: Omit<LoggerOptions, 'name'> = {
   dir,
 };
 
-// eslint-disable-next-line import/prefer-default-export
-export const appLogger = createLogger({ ...options, name: 'scheduler' });
+export const appLogger = createLogger({ ...options, name: 'mail' });
+export const accessLogger = createLogger({ ...options, name: 'access' });

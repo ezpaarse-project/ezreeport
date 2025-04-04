@@ -1,4 +1,6 @@
-import { setupHeartbeat, type HeartbeatService } from '~common/lib/heartbeats';
+import { setupHeartbeat } from '@ezreeport/heartbeats';
+import type { HeartbeatService } from '@ezreeport/heartbeats/types';
+
 import type rabbitmq from '~/lib/rabbitmq';
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
@@ -14,7 +16,7 @@ export const service: HeartbeatService = {
 
 const logger = appLogger.child({ scope: 'heartbeat' });
 
-export { getMissingMandatoryServices } from '~common/lib/heartbeats';
+export { getMissingMandatoryServices } from '@ezreeport/heartbeats';
 
 export async function initHeartbeat(connection: rabbitmq.ChannelModel) {
   const start = process.uptime();

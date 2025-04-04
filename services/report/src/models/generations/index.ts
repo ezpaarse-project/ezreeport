@@ -1,11 +1,13 @@
-import prisma, { type Prisma } from '~/lib/prisma';
+import type { Prisma } from '@ezreeport/database/types';
+import { ensureSchema } from '@ezreeport/models/lib/zod';
+import type { GenerationType as CommonGenerationType } from '@ezreeport/models/generations';
+
+import prisma from '~/lib/prisma';
 import { appLogger } from '~/lib/logger';
-import { ensureSchema } from '~common/lib/zod';
 
 import type { PaginationType } from '~/models/pagination/types';
 import { buildPaginatedRequest } from '~/models/pagination';
 
-import type { GenerationType as CommonGenerationType } from '~common/types/generations';
 import { Generation, GenerationIncludeFieldsType, type GenerationType } from './types';
 
 const logger = appLogger.child({ scope: 'models', model: 'generations' });

@@ -1,7 +1,7 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
-import { z } from '~common/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
 
 import * as responses from '~/routes/v2/responses';
 

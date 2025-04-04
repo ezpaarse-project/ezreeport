@@ -7,8 +7,9 @@ import type {
 import fp from 'fastify-plugin';
 import { StatusCodes } from 'http-status-codes';
 
+import { ensureArray } from '@ezreeport/models/lib/utils';
+
 import config from '~/lib/config';
-import { ensureArray } from '~common/lib/utils';
 
 import type { UserType } from '~/models/users/types';
 import {

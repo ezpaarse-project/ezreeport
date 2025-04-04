@@ -1,13 +1,13 @@
 import { readFile, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { enUS } from 'date-fns/locale';
 import { glob } from 'glob';
 
-import * as dfns from '~common/lib/date-fns';
+import * as dfns from '@ezreeport/dates';
+import { ReportResult } from '@ezreeport/models/reports';
+
 import config from '~/lib/config';
 
-import { ReportResult } from '~common/types/reports';
 import type { Executor, Logger } from '~/models/crons/types';
 
 const { reportDir } = config;
@@ -74,7 +74,7 @@ async function deleteFile({ file, dur }: DeletableFile, logger: Logger): Promise
       msg: 'Deleted file',
       file,
       age: dur,
-      ageAsString: dfns.formatDuration(dur, { format: ['years', 'months', 'days'], locale: enUS }),
+      ageAsString: dfns.formatDuration(dur, { format: ['years', 'months', 'days'], locale: dfns.locales.enUS }),
     });
     return file;
   } catch (err) {

@@ -1,7 +1,7 @@
+import { isReportData, MailQueueData, type MailQueueDataType } from '@ezreeport/models/queues';
+
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
-
-import { isReportData, MailQueueData, MailQueueDataType } from '~common/types/queues';
 
 import sendError from '~/models/mail/error';
 import sendFailedReport from '~/models/mail/report/failed';

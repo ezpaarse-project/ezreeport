@@ -1,8 +1,8 @@
+import type { GenerationQueueDataType } from '@ezreeport/models/queues';
+import type { GenerationType } from '@ezreeport/models/generations';
+
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
-
-import type { GenerationQueueDataType } from '~common/types/queues';
-import type { GenerationType } from '~common/types/generations';
 
 const generationQueueName = 'ezreeport.report:queues';
 

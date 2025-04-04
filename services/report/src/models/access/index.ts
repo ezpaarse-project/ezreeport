@@ -1,8 +1,10 @@
 import { randomBytes } from 'node:crypto';
 
-import prisma, { Access, type Prisma } from '~/lib/prisma';
+import { Access, type Prisma } from '@ezreeport/database/types';
+
+import { ensureSchema } from '@ezreeport/models/lib/zod';
+import prisma from '~/lib/prisma';
 import { appLogger } from '~/lib/logger';
-import { ensureSchema } from '~common/lib/zod';
 
 import { Namespace, type NamespaceType } from '../namespaces/types';
 import { User, type UserType } from '../users/types';
@@ -219,4 +221,4 @@ export async function getRoutesPerNamespaceOfAdmin() {
   return routesPerNamespace;
 }
 
-export { Access };
+export { Access } from '@ezreeport/database/types';

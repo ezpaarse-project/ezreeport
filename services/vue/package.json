@@ -36,8 +36,8 @@
     "build:docs": "storybook build",
     "dev": "storybook dev -p 6006",
     "lint": "eslint .storybook src vite.config.ts",
-    "type-check": "vue-tsc --noEmit --skipLibCheck",
-    "publish": "npm publish"
+    "publish": "npm publish",
+    "type-check": "vue-tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {
     "!(example)/*.{ts,vue}": [
@@ -59,8 +59,8 @@
     "vuetify": "^3.7.6"
   },
   "devDependencies": {
-    "@date-io/date-fns": "^3.2.1",
     "@chromatic-com/storybook": "^3.2.3",
+    "@date-io/date-fns": "^3.2.1",
     "@ezpaarse-project/ezreeport-sdk-js": "workspace:*",
     "@rushstack/eslint-patch": "^1.10.4",
     "@storybook/addon-essentials": "^8.4.7",

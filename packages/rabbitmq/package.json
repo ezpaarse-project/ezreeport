@@ -1,0 +1,37 @@
+{
+  "name": "@ezreeport/rabbitmq",
+  "version": "0.0.0",
+  "private": true,
+  "description": "",
+  "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
+  "bugs": {
+    "url": "https://github.com/ezpaarse-project/ezreeport/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
+  },
+  "license": "CeCILL",
+  "author": "oxypomme",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit --skipLibCheck"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --fix"
+    ]
+  },
+  "dependencies": {
+    "@ezreeport/logger": "workspace:*",
+    "amqplib": "^0.10.5",
+    "typescript": "^5.6.2"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.7"
+  },
+  "engines": {
+    "node": "^20"
+  }
+}

@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
 
-import type { Level } from '~common/lib/logger';
+import type { Level } from '@ezreeport/logger';
 import { accessLogger } from '~/lib/logger';
 
 const requestDates = new Map<string, number>();

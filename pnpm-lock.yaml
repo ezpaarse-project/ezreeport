@@ -66,6 +66,128 @@ importers:
         specifier: ^2.4.4
         version: 2.4.4
 
+  packages/config:
+    dependencies:
+      config:
+        specifier: ^3.3.12
+        version: 3.3.12
+      typescript:
+        specifier: ^5.6.2
+        version: 5.7.2
+    devDependencies:
+      '@types/config':
+        specifier: ^3.3.5
+        version: 3.3.5
+
+  packages/database:
+    dependencies:
+      '@ezreeport/heartbeats':
+        specifier: workspace:*
+        version: link:../heartbeats
+      '@ezreeport/logger':
+        specifier: workspace:*
+        version: link:../logger
+      '@prisma/client':
+        specifier: ^5.20.0
+        version: 5.22.0(prisma@5.22.0)
+      typescript:
+        specifier: ^5.6.2
+        version: 5.7.2
+    devDependencies:
+      prisma:
+        specifier: ^5.20.0
+        version: 5.22.0
+
+  packages/dates:
+    dependencies:
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
+      typescript:
+        specifier: ^5.6.2
+        version: 5.7.2
+
+  packages/heartbeats:
+    dependencies:
+      '@ezreeport/logger':
+        specifier: workspace:*
+        version: link:../logger
+      '@ezreeport/models':
+        specifier: workspace:*
+        version: link:../models
+      amqplib:
+        specifier: ^0.10.5
+        version: 0.10.5
+      typescript:
+        specifier: ^5.6.2
+        version: 5.7.2
+    devDependencies:
+      '@types/amqplib':
+        specifier: ^0.10.7
+        version: 0.10.7
+
+  packages/logger:
+    dependencies:
+      pino:
+        specifier: ^9.4.0
+        version: 9.5.0
+      typescript:
+        specifier: ^5.6.2
+        version: 5.7.2
+
+  packages/models:
+    dependencies:
+      '@ezreeport/dates':
+        specifier: workspace:*
+        version: link:../dates
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
+
+  packages/rabbitmq:
+    dependencies:
+      '@ezreeport/logger':
+        specifier: workspace:*
+        version: link:../logger
+      amqplib:
+        specifier: ^0.10.5
+        version: 0.10.5
+      typescript:
+        specifier: ^5.6.2
+        version: 5.7.2
+    devDependencies:
+      '@types/amqplib':
+        specifier: ^0.10.7
+        version: 0.10.7
+
+  packages/rpc:
+    dependencies:
+      '@ezreeport/logger':
+        specifier: workspace:*
+        version: link:../logger
+      '@ezreeport/models':
+        specifier: workspace:*
+        version: link:../models
+      amqplib:
+        specifier: ^0.10.5
+        version: 0.10.5
+      typescript:
+        specifier: ^5.6.2
+        version: 5.7.2
+    devDependencies:
+      '@types/amqplib':
+        specifier: ^0.10.7
+        version: 0.10.7
+
+  packages/simple-http:
+    dependencies:
+      '@ezreeport/logger':
+        specifier: workspace:*
+        version: link:../logger
+      typescript:
+        specifier: ^5.6.2
+        version: 5.7.2
+
   services/common:
     dependencies:
       date-fns:
@@ -151,15 +273,27 @@ importers:
 
   services/mail:
     dependencies:
-      amqplib:
-        specifier: ^0.10.5
-        version: 0.10.5
-      config:
-        specifier: ^3.3.12
-        version: 3.3.12
-      date-fns:
-        specifier: ^4.1.0
-        version: 4.1.0
+      '@ezreeport/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@ezreeport/dates':
+        specifier: workspace:*
+        version: link:../../packages/dates
+      '@ezreeport/heartbeats':
+        specifier: workspace:*
+        version: link:../../packages/heartbeats
+      '@ezreeport/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
+      '@ezreeport/models':
+        specifier: workspace:*
+        version: link:../../packages/models
+      '@ezreeport/rabbitmq':
+        specifier: workspace:*
+        version: link:../../packages/rabbitmq
+      '@ezreeport/simple-http':
+        specifier: workspace:*
+        version: link:../../packages/simple-http
       mjml:
         specifier: ^4.14.1
         version: 4.15.3
@@ -169,28 +303,13 @@ importers:
       nunjucks:
         specifier: ^3.2.4
         version: 3.2.4(chokidar@3.6.0)
-      pino:
-        specifier: ^9.4.0
-        version: 9.5.0
       tsx:
         specifier: ^4.19.1
         version: 4.19.2
       typescript:
         specifier: ^5.6.2
         version: 5.7.2
-      zod:
-        specifier: ^3.23.8
-        version: 3.23.8
-      ~common:
-        specifier: workspace:@ezpaarse-project/ezreeport-common@*
-        version: link:../common
     devDependencies:
-      '@types/amqplib':
-        specifier: ^0.10.7
-        version: 0.10.7
-      '@types/config':
-        specifier: ^3.3.5
-        version: 3.3.5
       '@types/mjml':
         specifier: ^4.7.4
         version: 4.7.4
@@ -212,6 +331,30 @@ importers:
       '@elastic/elasticsearch':
         specifier: ^7.17.12
         version: 7.17.13
+      '@ezreeport/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@ezreeport/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@ezreeport/dates':
+        specifier: workspace:*
+        version: link:../../packages/dates
+      '@ezreeport/heartbeats':
+        specifier: workspace:*
+        version: link:../../packages/heartbeats
+      '@ezreeport/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
+      '@ezreeport/models':
+        specifier: workspace:*
+        version: link:../../packages/models
+      '@ezreeport/rabbitmq':
+        specifier: workspace:*
+        version: link:../../packages/rabbitmq
+      '@ezreeport/rpc':
+        specifier: workspace:*
+        version: link:../../packages/rpc
       '@fastify/autoload':
         specifier: ^6.0.2
         version: 6.0.2
@@ -227,18 +370,6 @@ importers:
       '@fastify/swagger-ui':
         specifier: ^5.1.0
         version: 5.1.0
-      '@prisma/client':
-        specifier: ^5.20.0
-        version: 5.22.0(prisma@5.22.0)
-      amqplib:
-        specifier: ^0.10.5
-        version: 0.10.5
-      config:
-        specifier: ^3.3.12
-        version: 3.3.12
-      date-fns:
-        specifier: ^4.1.0
-        version: 4.1.0
       fastify:
         specifier: ^5.0.0
         version: 5.1.0
@@ -263,9 +394,6 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
-      pino:
-        specifier: ^9.4.0
-        version: 9.5.0
       socket.io:
         specifier: ^4.8.1
         version: 4.8.1
@@ -275,19 +403,7 @@ importers:
       typescript:
         specifier: ^5.6.2
         version: 5.7.2
-      zod:
-        specifier: ^3.23.8
-        version: 3.23.8
-      ~common:
-        specifier: workspace:@ezpaarse-project/ezreeport-common@*
-        version: link:../common
     devDependencies:
-      '@types/amqplib':
-        specifier: ^0.10.7
-        version: 0.10.7
-      '@types/config':
-        specifier: ^3.3.5
-        version: 3.3.5
       '@types/lodash':
         specifier: ^4.17.9
         version: 4.17.13
@@ -300,22 +416,37 @@ importers:
       pino-pretty:
         specifier: ^11.2.2
         version: 11.3.0
-      prisma:
-        specifier: ^5.20.0
-        version: 5.22.0
 
   services/scheduler:
     dependencies:
-      amqplib:
-        specifier: ^0.10.5
-        version: 0.10.5
-      config:
-        specifier: ^3.3.12
-        version: 3.3.12
+      '@ezreeport/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@ezreeport/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@ezreeport/dates':
+        specifier: workspace:*
+        version: link:../../packages/dates
+      '@ezreeport/heartbeats':
+        specifier: workspace:*
+        version: link:../../packages/heartbeats
+      '@ezreeport/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
+      '@ezreeport/models':
+        specifier: workspace:*
+        version: link:../../packages/models
+      '@ezreeport/rabbitmq':
+        specifier: workspace:*
+        version: link:../../packages/rabbitmq
+      '@ezreeport/rpc':
+        specifier: workspace:*
+        version: link:../../packages/rpc
+      '@ezreeport/simple-http':
+        specifier: workspace:*
+        version: link:../../packages/simple-http
       cron:
-        specifier: ^4.1.0
-        version: 4.1.0
-      date-fns:
         specifier: ^4.1.0
         version: 4.1.0
       glob:
@@ -324,28 +455,13 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
-      pino:
-        specifier: ^9.4.0
-        version: 9.5.0
       tsx:
         specifier: ^4.19.1
         version: 4.19.2
       typescript:
         specifier: ^5.6.2
         version: 5.7.2
-      zod:
-        specifier: ^3.23.8
-        version: 3.23.8
-      ~common:
-        specifier: workspace:@ezpaarse-project/ezreeport-common@*
-        version: link:../common
     devDependencies:
-      '@types/amqplib':
-        specifier: ^0.10.7
-        version: 0.10.7
-      '@types/config':
-        specifier: ^3.3.5
-        version: 3.3.5
       '@types/lodash':
         specifier: ^4.17.9
         version: 4.17.13
@@ -528,9 +644,27 @@ importers:
       '@ezpaarse-project/jspdf-md':
         specifier: ^1.1.0
         version: 1.1.0(jspdf@2.5.2)
-      amqplib:
-        specifier: ^0.10.5
-        version: 0.10.5
+      '@ezreeport/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@ezreeport/dates':
+        specifier: workspace:*
+        version: link:../../packages/dates
+      '@ezreeport/heartbeats':
+        specifier: workspace:*
+        version: link:../../packages/heartbeats
+      '@ezreeport/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
+      '@ezreeport/models':
+        specifier: workspace:*
+        version: link:../../packages/models
+      '@ezreeport/rabbitmq':
+        specifier: workspace:*
+        version: link:../../packages/rabbitmq
+      '@ezreeport/simple-http':
+        specifier: workspace:*
+        version: link:../../packages/simple-http
       axios:
         specifier: ^1.7.7
         version: 1.7.8
@@ -540,12 +674,6 @@ importers:
       chroma-js:
         specifier: ^3.1.1
         version: 3.1.2
-      config:
-        specifier: ^3.3.12
-        version: 3.3.12
-      date-fns:
-        specifier: ^4.1.0
-        version: 4.1.0
       handlebars:
         specifier: ^4.7.8
         version: 4.7.8
@@ -558,9 +686,6 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
-      pino:
-        specifier: ^9.4.0
-        version: 9.5.0
       tsx:
         specifier: ^4.19.1
         version: 4.19.2
@@ -573,22 +698,10 @@ importers:
       vega-lite:
         specifier: ^5.21.0
         version: 5.21.0(vega@5.30.0)
-      zod:
-        specifier: ^3.23.8
-        version: 3.23.8
-      ~common:
-        specifier: workspace:@ezpaarse-project/ezreeport-common@*
-        version: link:../common
     devDependencies:
-      '@types/amqplib':
-        specifier: ^0.10.7
-        version: 0.10.7
       '@types/chroma-js':
         specifier: ^2.4.4
         version: 2.4.5
-      '@types/config':
-        specifier: ^3.3.5
-        version: 3.3.5
       '@types/lodash':
         specifier: ^4.17.9
         version: 4.17.13

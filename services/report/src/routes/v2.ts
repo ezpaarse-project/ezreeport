@@ -13,7 +13,7 @@ import {
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod';
 
-import { simplifyZodIssue } from '~common/lib/zod';
+import { simplifyZodIssue } from '@ezreeport/models/lib/zod';
 
 import openapi from '~/plugins/openapi';
 

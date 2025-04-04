@@ -1,12 +1,12 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
-import { z } from '~common/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
 
+import { Cron } from '@ezreeport/models/crons';
 import authPlugin from '~/plugins/auth';
 import * as responses from '~/routes/v2/responses';
 
-import { Cron } from '~common/types/crons';
 import {
   getAllCrons,
   stopCron,

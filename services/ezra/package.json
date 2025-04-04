@@ -15,8 +15,8 @@
   "main": "",
   "types": "dist/index.d.ts",
   "bin": {
-    "ezreeport-admin": "./bin/run.js",
-    "ezra": "./bin/run.js"
+    "ezra": "./bin/run.js",
+    "ezreeport-admin": "./bin/run.js"
   },
   "files": [
     "/bin",
@@ -26,10 +26,10 @@
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
     "lint": "eslint --ext .ts .",
-    "type-check": "tsc --noEmit --skipLibCheck",
     "prepack": "oclif manifest && oclif readme",
     "postpack": "shx rm -f oclif.manifest.json",
     "publish": "npm publish",
+    "type-check": "tsc --noEmit --skipLibCheck",
     "version": "oclif readme && git add README.md"
   },
   "lint-staged": {

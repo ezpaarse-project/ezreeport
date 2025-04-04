@@ -1,5 +1,7 @@
-import prisma, { Prisma } from '~/lib/prisma';
-import { ensureSchema } from '~common/lib/zod';
+import { ensureSchema } from '@ezreeport/models/lib/zod';
+import { Prisma } from '@ezreeport/database/types';
+
+import prisma from '~/lib/prisma';
 
 import type { PaginationType } from '~/models/pagination/types';
 import { buildPaginatedRequest } from '~/models/pagination';

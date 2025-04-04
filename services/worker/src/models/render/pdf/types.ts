@@ -1,6 +1,6 @@
 import { jsPDF as PDF } from 'jspdf';
 
-import type { Interval } from '~common/lib/date-fns';
+import type { Interval } from '@ezreeport/dates';
 
 export type JSPDFRegisterableFont = {
   path: string;

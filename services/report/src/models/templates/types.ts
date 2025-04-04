@@ -1,8 +1,8 @@
-import { z, stringToBool } from '~common/lib/zod';
+import { z, stringToBool } from '@ezreeport/models/lib/zod';
 
-import { Template } from '~common/types/templates';
+import { Template } from '@ezreeport/models/templates';
 
-export * from '~common/types/templates';
+export * from '@ezreeport/models/templates';
 
 /**
  * Validation for creating/updating a template

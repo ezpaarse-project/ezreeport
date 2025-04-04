@@ -1,5 +1,5 @@
-import { z } from '~common/lib/zod';
-import { Heartbeat as CommonHeartbeat } from '~common/lib/heartbeats';
+import { z } from '@ezreeport/models/lib/zod';
+import { Heartbeat as CommonHeartbeat } from '@ezreeport/heartbeats/types';
 
 export const Heartbeat = CommonHeartbeat.extend({
   createdAt: z.date(),

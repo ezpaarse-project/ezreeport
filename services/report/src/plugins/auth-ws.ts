@@ -1,8 +1,8 @@
 import type { ExtendedError, Socket } from 'socket.io';
 
-import { ensureArray } from '~common/lib/utils';
+import { ensureArray } from '@ezreeport/models/lib/utils';
 
-import type { NamespaceType } from '~common/types/namespaces';
+import type { NamespaceType } from '@ezreeport/models/namespaces';
 import type { UserType } from '~/models/users/types';
 import {
   getUserByToken, getNamespacesOfUser, getNamespacesOfAdmin, type Access,

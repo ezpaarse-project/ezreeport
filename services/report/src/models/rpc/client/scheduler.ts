@@ -1,9 +1,9 @@
-import { z } from '~common/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
+import { Cron, type CronType } from '@ezreeport/models/crons';
+import { setupRPCClient, type RPCClient } from '@ezreeport/rpc/client';
+
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
-import { setupRPCClient, type RPCClient } from '~common/lib/rpc';
-
-import { Cron, CronType } from '~common/types/crons';
 
 let client: RPCClient | undefined;
 

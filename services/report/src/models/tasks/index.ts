@@ -1,7 +1,10 @@
-import prisma, { Prisma, type Recurrence } from '~/lib/prisma';
+import { ensureSchema } from '@ezreeport/models/lib/zod';
+import { ensureArray } from '@ezreeport/models/lib/utils';
+import { Prisma, type Recurrence } from '@ezreeport/database/types';
+
+import prisma from '~/lib/prisma';
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
-import { ensureSchema } from '~common/lib/zod';
 
 import type { PaginationType } from '~/models/pagination/types';
 import { buildPaginatedRequest } from '~/models/pagination';
@@ -15,7 +18,6 @@ import {
   type TaskQueryFiltersType,
   type TaskIncludeFieldsType,
 } from './types';
-import { ensureArray } from '~common/lib/utils';
 import { calcNextDateFromRecurrence } from '../recurrence';
 
 const logger = appLogger.child({ scope: 'models', model: 'tasks' });

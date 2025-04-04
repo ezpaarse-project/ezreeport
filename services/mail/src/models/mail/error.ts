@@ -1,9 +1,9 @@
-import type { Logger } from 'pino';
+import type { Logger } from '@ezreeport/logger';
+
+import { format } from '@ezreeport/dates';
+import type { MailErrorQueueDataType } from '@ezreeport/models/queues';
 
 import config from '~/lib/config';
-import { format } from '~common/lib/date-fns';
-
-import type { MailErrorQueueDataType } from '~common/types/queues';
 
 import { generateMail, sendMail } from '.';
 

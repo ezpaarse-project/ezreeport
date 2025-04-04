@@ -2,15 +2,16 @@ import EventEmitter from 'node:events';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { GenerationQueueData } from '@ezreeport/models/queues';
+import type { TemplateBodyType } from '@ezreeport/models/templates';
+import type { GenerationStatusType } from '@ezreeport/models/generations';
+import type { ReportResultType } from '@ezreeport/models/reports';
+
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
 import { gzipAsync } from '~/lib/gzip';
 
-import { GenerationQueueData } from '~common/types/queues';
-import type { TemplateBodyType } from '~common/types/templates';
-import type { GenerationStatusType } from '~common/types/generations';
-import type { ReportResultType } from '~common/types/reports';
 import { generateReport, type GenerationEventMap } from '~/models/generation';
 
 import { sendEvent } from './event';

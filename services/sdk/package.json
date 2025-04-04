@@ -124,15 +124,15 @@
     "dist"
   ],
   "scripts": {
-    "prebuild": "rimraf --glob 'dist/*'",
     "build:docs": "typedoc",
     "build:js": "vite build",
     "build:types": "tsup",
     "dev": "pnpm run --parallel \"/^(watch:docs)|(preview)$/\"",
     "lint": "eslint .",
-    "type-check": "tsc --noEmit --skipLibCheck",
-    "publish": "npm publish",
+    "prebuild": "rimraf --glob 'dist/*'",
     "preview:docs": "vite docs --open",
+    "publish": "npm publish",
+    "type-check": "tsc --noEmit --skipLibCheck",
     "watch:docs": "typedoc --watch"
   },
   "lint-staged": {
