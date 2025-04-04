@@ -54,39 +54,39 @@
           </v-row>
 
           <v-slide-y-transition>
-          <v-row v-if="aggregation.type">
-            <v-col>
-              <v-combobox
-                v-model="aggregation.field"
-                :label="$t('$ezreeport.editor.aggregation.field')"
-                :items="fieldOptions"
-                :rules="[(v) => !!v || $t('$ezreeport.required')]"
-                :readonly="readonly"
-                :disabled="disabled"
-                :return-object="false"
-                prepend-icon="mdi-form-textbox"
-                variant="underlined"
-                required
-              />
-            </v-col>
-          </v-row>
+            <v-row v-if="aggregation.type">
+              <v-col>
+                <v-combobox
+                  v-model="aggregation.field"
+                  :label="$t('$ezreeport.editor.aggregation.field')"
+                  :items="fieldOptions"
+                  :rules="[(v) => !!v || $t('$ezreeport.required')]"
+                  :readonly="readonly"
+                  :disabled="disabled"
+                  :return-object="false"
+                  prepend-icon="mdi-form-textbox"
+                  variant="underlined"
+                  required
+                />
+              </v-col>
+            </v-row>
           </v-slide-y-transition>
 
           <v-slide-y-transition>
-          <v-row v-if="isMetric === false && aggregation.type !== 'date_histogram'">
+            <v-row v-if="isMetric === false && aggregation.type !== 'date_histogram'">
               <v-col cols="12">
-              <v-text-field
-                :model-value="`${aggregation.size ?? 10}`"
-                :label="$t('$ezreeport.editor.aggregation.size')"
-                :readonly="readonly"
-                :disabled="disabled"
-                type="number"
-                prepend-icon="mdi-image-size-select-small"
-                variant="underlined"
-                hide-details
-                @update:model-value="aggregation.size = Number.parseInt($event)"
-              />
-            </v-col>
+                <v-text-field
+                  :model-value="`${aggregation.size ?? 10}`"
+                  :label="$t('$ezreeport.editor.aggregation.size')"
+                  :readonly="readonly"
+                  :disabled="disabled"
+                  type="number"
+                  prepend-icon="mdi-image-size-select-small"
+                  variant="underlined"
+                  hide-details
+                  @update:model-value="aggregation.size = Number.parseInt($event)"
+                />
+              </v-col>
 
               <v-col cols="6">
                 <v-switch
@@ -113,7 +113,7 @@
                   />
                 </v-slide-x-transition>
               </v-col>
-          </v-row>
+            </v-row>
           </v-slide-y-transition>
         </template>
 
@@ -128,7 +128,7 @@ import {
   type InnerAggregation,
   isRawAggregation,
   isBaseAggregation,
-  aggregationFieldType,
+  aggregationFieldTypes,
 } from '~/lib/aggregations';
 import { type FigureAggregation, type AggregationType, aggregationTypes } from '~sdk/helpers/aggregations';
 
@@ -203,13 +203,13 @@ const showMissing = computed({
   },
 });
 /** Type of fields needed for the current aggregation */
-const fieldType = computed(() => (
+const fieldTypes = computed(() => (
   !isRawAggregation(aggregation.value) && aggregation.value.type
-    ? aggregationFieldType.get(aggregation.value.type)
+    ? aggregationFieldTypes.get(aggregation.value.type)
     : undefined
 ));
 /** Options for the field, based on current mapping */
-const fieldOptions = computed(() => getOptionsFromMapping(fieldType.value, { dateField: true }));
+const fieldOptions = computed(() => getOptionsFromMapping(fieldTypes.value, { dateField: true }));
 /** Options for the aggregation type */
 const typeOptions = computed(() => {
   let types = [...aggregationTypes];

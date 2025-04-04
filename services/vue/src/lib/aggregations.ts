@@ -1,4 +1,5 @@
 import type { AggregationName, FigureBaseAggregation, FigureRawAggregation } from '~sdk/helpers/aggregations';
+import { elasticTypeAliases } from './elastic';
 
 export interface InnerBaseAggregation extends Omit<FigureBaseAggregation, 'type'> {
   type: FigureBaseAggregation['type'] | '';
@@ -14,20 +15,29 @@ export const isBaseAggregation = (
   agg: InnerAggregation,
 ): agg is FigureBaseAggregation => !isRawAggregation(agg) && agg.type !== '';
 
-export const aggregationFieldType = new Map<AggregationName, string>([
-  ['avg', 'number'],
-  ['max', 'number'],
-  ['min', 'number'],
-  ['percentile_ranks', 'number'],
-  ['percentiles', 'number'],
-  ['stats', 'number'],
-  ['sum', 'number'],
+const typeAliases = Array.from(elasticTypeAliases.entries());
+const findAliases = (search: string) => typeAliases
+  .filter(([, alias]) => alias === search).map(([key]) => key);
 
-  ['auto_date_histogram', 'date'],
-  ['date_histogram', 'date'],
-  ['geo_grid', 'geo'],
-  ['histogram', 'number'],
-  ['range', 'number'],
-  ['top_hits', 'object'],
-  ['variable_width_histogram', 'number'],
+const numberAliases = findAliases('number');
+const dateAliases = findAliases('date');
+const geoAliases = findAliases('geo');
+const objectAliases = findAliases('object');
+
+export const aggregationFieldTypes = new Map<AggregationName, string[]>([
+  ['avg', numberAliases],
+  ['percentile_ranks', numberAliases],
+  ['percentiles', numberAliases],
+  ['stats', numberAliases],
+  ['sum', numberAliases],
+
+  ['max', [...numberAliases, ...dateAliases]],
+  ['min', [...numberAliases, ...dateAliases]],
+  ['auto_date_histogram', dateAliases],
+  ['date_histogram', dateAliases],
+  ['geo_grid', geoAliases],
+  ['histogram', numberAliases],
+  ['range', numberAliases],
+  ['top_hits', objectAliases],
+  ['variable_width_histogram', numberAliases],
 ]);
