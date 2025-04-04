@@ -1,4 +1,4 @@
-import { scheme as vegaScheme, expressionFunction } from 'vega';
+import { scheme as vegaScheme } from 'vega';
 import type { Mark } from 'vega-lite/build/src/mark';
 import { merge } from 'lodash';
 import dfns from 'date-fns';
@@ -158,6 +158,7 @@ function prepareDataWithDefaultDates(
       key,
       value: 0,
       label: key,
+      z_ezr_dl: '',
     };
   });
 
@@ -269,10 +270,7 @@ function prepareDataLabelsLayers(
     },
     encoding: {
       text: {
-        condition: {
-          test: 'true',
-          field: 'value',
-        },
+        field: 'z_ezr_dl',
       },
       // FIXME: WARN Dropping since it does not contain unknown data field, datum, value, or signal.
       color: {
@@ -304,6 +302,8 @@ function prepareDataLabelsLayers(
       });
       break;
 
+    case 'line':
+    case 'area':
     case 'bar':
       if (params.color) {
         textAggregate = 'sum';
@@ -311,8 +311,6 @@ function prepareDataLabelsLayers(
 
       merge(layer, {
         encoding: {
-          text: { condition: { aggregate: textAggregate } },
-          // eslint-disable-next-line no-useless-computed-key
           [valueAxis]: {
             aggregate: textAggregate,
             field: 'value',
@@ -325,44 +323,72 @@ function prepareDataLabelsLayers(
     default:
       break;
   }
-  const textAggregatePrefix = textAggregate && `${textAggregate}_`;
 
-  // Format data labels and prepare condition
-  let condition: string | undefined;
+  // Format data labels
   switch (params.dataLabel.format) {
     case 'percent': {
-      const totalDocs = data.reduce(
-        (prev: number, item) => {
+      const calcSumOfData = (prev: number, item: FetchResultItem) => {
+        const value = ensureInt(item.value);
+        if (Number.isNaN(value)) {
+          return prev;
+        }
+        return prev + value;
+      };
+
+      const formatPercent = (v: number) => v.toLocaleString(
+        'fr-FR',
+        { style: 'percent', maximumFractionDigits: 2 },
+      );
+
+      const minValue = params.dataLabel.minValue ?? 0.03;
+
+      if (!params.color) {
+        // Calc sum of values
+        const sum = data.reduce(calcSumOfData, 0);
+
+        // Set percentage on each item
+        // eslint-disable-next-line no-restricted-syntax
+        for (const item of data) {
+          const value = ensureInt(item.value);
+          if (!Number.isNaN(value)) {
+            const percentage = value / sum;
+            if (percentage >= minValue) {
+              item.z_ezr_dl = formatPercent(percentage);
+            }
+          }
+
+          item.z_ezr_dl = item.z_ezr_dl ?? '';
+        }
+      } else {
+        // Calc sum of colors for each label
+        const sumPerLabel = new Map<string, number>();
+        // eslint-disable-next-line no-restricted-syntax
+        for (const item of data) {
           const value = ensureInt(item.value);
           if (Number.isNaN(value)) {
-            return prev;
+            // eslint-disable-next-line no-continue
+            continue;
           }
-          return prev + value;
-        },
-        0,
-      );
-      const minValue = params.dataLabel.minValue ?? 0.03;
-      condition = `datum['${textAggregatePrefix}value'] / ${totalDocs} >= ${minValue}`;
 
-      expressionFunction(
-        'dataLabelFormat',
-        (v: string): string => {
-          const perc = +v / totalDocs;
-          return perc.toLocaleString('fr-FR', { style: 'percent', maximumFractionDigits: 2 });
-        },
-      );
+          const sum = sumPerLabel.get(`${item.label}`) ?? 0;
+          sumPerLabel.set(`${item.label}`, sum + value);
+        }
 
-      merge(layer, {
-        encoding: {
-          text: {
-            condition: {
-              test: condition,
-              format: '',
-              formatType: 'dataLabelFormat',
-            },
-          },
-        },
-      });
+        // Set percentage on each item
+        // eslint-disable-next-line no-restricted-syntax
+        for (const item of data) {
+          const sum = sumPerLabel.get(`${item.label}`);
+          const value = ensureInt(item.value);
+          if (sum && !Number.isNaN(value)) {
+            const percentage = value / sum;
+            if (percentage >= minValue) {
+              item.z_ezr_dl = formatPercent(percentage);
+            }
+          }
+
+          item.z_ezr_dl = item.z_ezr_dl ?? '';
+        }
+      }
       break;
     }
 
@@ -373,8 +399,16 @@ function prepareDataLabelsLayers(
         minValue = (Math.max(...data.map((item) => ensureInt(item.value)), 0)) * 0.03;
       }
 
-      condition = `(datum['${textAggregatePrefix}value']) >= ${minValue}`;
-      merge(layer, { encoding: { text: { condition: { test: condition } } } });
+      // Set value on each item
+      // eslint-disable-next-line no-restricted-syntax
+      for (const item of data) {
+        const value = ensureInt(item.value);
+        if (!Number.isNaN(value) && value >= minValue) {
+          item.z_ezr_dl = `${value}`;
+        }
+
+        item.z_ezr_dl = item.z_ezr_dl ?? '';
+      }
       break;
     }
   }
@@ -383,6 +417,7 @@ function prepareDataLabelsLayers(
     return { dataLayerEdits, layers: [layer] };
   }
 
+  const textAggregatePrefix = textAggregate && `${textAggregate}_`;
   // Add label layer
   const labelLayer = ({
     mark: merge(
@@ -398,7 +433,7 @@ function prepareDataLabelsLayers(
       x: layer.encoding?.x,
       text: {
         condition: {
-          test: condition ?? 'true',
+          test: `datum['${textAggregatePrefix}z_ezr_dl'] != ''`,
           field: params.color ? 'color' : 'label',
         },
       },
@@ -568,10 +603,12 @@ export const createLineSpec: CreateSpecFnc = (type, data, params) => {
   const dataLayer = prepareDataLayer(type, data, params);
   const timeFormat = calcVegaFormatFromRecurrence(params.recurrence);
 
+  const sortedData = data.sort((a, b) => ensureInt(a.label ?? 0) - ensureInt(b.label ?? 0));
+
   // Prepare encoding
   const encoding: Encoding = {
     y: merge<Encoding['y'], VegaParams['value']>(
-      { field: 'value', stack: 'zero', type: 'quantitative' },
+      { field: 'value', type: 'quantitative' },
       params.value,
     ),
     x: merge<Encoding['x'], VegaParams['label']>(
@@ -586,7 +623,7 @@ export const createLineSpec: CreateSpecFnc = (type, data, params) => {
       params.label,
     ),
     color: params.color ? merge<Encoding['color'], VegaParams['color']>(
-      { field: 'color', scale: prepareColorScale(type, data, params, (el) => el.color || '') },
+      { field: 'color', scale: prepareColorScale(type, sortedData, params, (el) => el.color || '') },
       params.color,
     ) : undefined,
     order: { aggregate: 'count' },
@@ -603,7 +640,7 @@ export const createLineSpec: CreateSpecFnc = (type, data, params) => {
   return {
     // layer: mergeLayers(dataLayer, ...dataLabelLayers),
     layer: [dataLayer],
-    data: prepareDataWithDefaultDates(type, data, params),
+    data: prepareDataWithDefaultDates(type, sortedData, params),
     encoding,
   };
 };

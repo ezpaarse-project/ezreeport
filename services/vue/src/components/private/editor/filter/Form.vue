@@ -59,23 +59,45 @@
               />
             </v-col>
           </v-row>
+
+          <v-row>
+            <v-col cols="8">
+              <p class="text-medium-emphasis">
+                {{ $t('$ezreeport.editor.filters.hints.type') }}
+
+                <ul class="pl-3">
+                  <li>{{ $t('$ezreeport.editor.filters.hints.type:exists') }}</li>
+                  <li>{{ $t('$ezreeport.editor.filters.hints.type:is') }}</li>
+                  <li>{{ $t('$ezreeport.editor.filters.hints.type:in') }}</li>
+                </ul>
+              </p>
+            </v-col>
+
+            <v-col cols="4">
+              <v-checkbox :label="$t('$ezreeport.editor.filters.isNot')" v-model="filter.isNot" />
+
+              <v-text-field
+                :model-value="filterType"
+                :label="$t('$ezreeport.editor.filters.type')"
+                variant="plain"
+                prepend-icon="mdi-format-list-bulleted"
+                disabled
+              />
+            </v-col>
+          </v-row>
         </template>
 
         <v-row>
-          <v-col cols="8">
+          <v-col>
             <v-text-field
               v-model="filter.name"
-              :label="$t('$ezreeport.name')"
+              :label="$t('$ezreeport.editor.filters.name')"
               :rules="[(v) => !!v || $t('$ezreeport.required')]"
               prepend-icon="mdi-rename"
               variant="underlined"
               required
               @update:model-value="hasNameChanged = true"
             />
-          </v-col>
-
-          <v-col cols="4">
-            <v-checkbox :label="$t('$ezreeport.editor.filters.isNot')" v-model="filter.isNot" />
           </v-col>
         </v-row>
       </v-form>
@@ -142,6 +164,19 @@ const {
 const isAdvanced = computed(() => isRawFilter(filter.value));
 /** Mapping options for the simple filter */
 const mapping = computed(() => getOptionsFromMapping());
+/** Type of the filter */
+const filterType = computed(() => {
+  if (isRawFilter(filter.value)) {
+    return '';
+  }
+  if (Array.isArray(filter.value.value)) {
+    return t('$ezreeport.editor.filters.types.in');
+  }
+  if (filter.value.value == null) {
+    return t('$ezreeport.editor.filters.types.exists');
+  }
+  return t('$ezreeport.editor.filters.types.is');
+});
 
 function generateFilterName(): string {
   // Don't generate name if it's a raw filter
@@ -161,11 +196,11 @@ function generateFilterName(): string {
   }
 
   // Generate value text
-  const valueText = t('$ezreeport.editor.filters.nameTemplate.values', values);
+  const valueText = t('$ezreeport.editor.filters.nameTemplate.values', values, values.length - 1);
   const data = { field: filter.value.field, valueText };
 
   // Generate name
-  if (!filter.value.value) {
+  if (filter.value.value == null) {
     if (filter.value.isNot) {
       return t('$ezreeport.editor.filters.nameTemplate.exists:not', data);
     }

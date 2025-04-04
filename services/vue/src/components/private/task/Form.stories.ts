@@ -37,6 +37,7 @@ export const Existing: Story = {
     modelValue: createTaskHelperFrom({
       id: 'dc1481b1-ff90-4374-a5a9-e3ef4d7cc0fb',
       name: 'Métriques API',
+      description: '',
       template: {
         version: 2,
         index: '.ezmesure-metrics',

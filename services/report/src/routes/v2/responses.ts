@@ -1,5 +1,5 @@
 import type { FastifyReply } from 'fastify';
-import { getReasonPhrase } from 'http-status-codes';
+import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 
 import { z } from '~/lib/zod';
 
@@ -72,6 +72,18 @@ export function buildErrorResponse(
   };
 }
 
+export const EmptyResponse = z.null().describe('Success response');
+
+export const describeErrors = (errors: StatusCodes[]) => Object.fromEntries(
+  errors.map((code) => [
+    code,
+    ErrorResponse.describe(getReasonPhrase(code)),
+  ]),
+) as Record<StatusCodes, typeof ErrorResponse>;
+
+/**
+ * @deprecated Use `describeErrors` and `Empty Response`
+ */
 export const schemas = {
   204: z.null().describe('Success response'),
   400: ErrorResponse.describe('Bad Request'),

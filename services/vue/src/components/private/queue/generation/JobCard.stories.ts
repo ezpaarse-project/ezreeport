@@ -26,6 +26,7 @@ export const Default: Story = {
         task: {
           id: 'dc1481b1-ff90-4374-a5a9-e3ef4d7cc0fb',
           name: 'Métriques API',
+          description: '',
           namespaceId: 'clxvxybz801d84qdpy1ekrjwn',
           extendedId: 'a538ba09-5c2d-479a-b6f9-0dff77863002',
           template: {
@@ -111,6 +112,7 @@ export const Failed: Story = {
         task: {
           id: '9a0f8b83-ae34-4768-8d08-1646037a9e8d',
           name: 'PR Searches_Platform annuel',
+          description: '',
           namespaceId: '77244590-5e04-11ee-bef0-fbc8021705d4',
           extendedId: 'ec7c0504-4b6c-42b5-87a0-0bac9bb02cc3',
           template: {

@@ -95,7 +95,10 @@
             <MultiTextField
               :model-value="data.targets"
               :label="$t('$ezreeport.task.targets')"
+              :add-label="$t('$ezreeport.task.targets:add')"
               :rules="[(v) => v.length > 0 || $t('$ezreeport.required')]"
+              :item-rules="[(v, i) => isEmail(v) || $t('$ezreeport.errors.invalidEmail', i + 1)]"
+              :item-placeholder="$t('$ezreeport.task.targets:hint')"
               prepend-icon="mdi-mailbox"
               variant="underlined"
               required
@@ -166,6 +169,8 @@ import {
   type AdditionalDataForPreset,
 } from '~sdk/task-presets';
 
+import { isEmail } from '~/utils/validate';
+
 // Component props
 const props = defineProps<{
   /** Namespace to create task in */
@@ -227,7 +232,7 @@ function onPresetChange(preset: TaskPreset | undefined) {
 }
 
 function onTargetUpdated(targets: string | string[] | undefined) {
-  if (!targets) {
+  if (targets == null) {
     data.value.targets = [];
     return;
   }
@@ -238,9 +243,13 @@ function onTargetUpdated(targets: string | string[] | undefined) {
   }
 
   // Allow multiple mail addresses, separated by semicolon or comma
-  data.value.targets = allTargets
-    .join(';').replace(/[,]/g, ';')
-    .split(';').map((mail) => mail.trim());
+  data.value.targets = Array.from(
+    new Set(
+      allTargets
+        .join(';').replace(/[,]/g, ';')
+        .split(';').map((mail) => mail.trim()),
+    ),
+  );
 }
 
 async function fetchPresets() {
@@ -275,6 +284,10 @@ async function save() {
 
     emit('update:modelValue', result);
   } catch (e) {
+    if (e && typeof e === 'object' && 'statusCode' in e && e.statusCode === 409) {
+      handleEzrError(t('$ezreeport.task.errors.create:duplicate'), e);
+      return;
+    }
     handleEzrError(t('$ezreeport.task.errors.create:preset'), e);
   }
 }

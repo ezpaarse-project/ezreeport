@@ -81,7 +81,10 @@
             <MultiTextField
               :model-value="targets"
               :label="$t('$ezreeport.task.targets')"
+              :add-label="$t('$ezreeport.task.targets:add')"
               :rules="[(v) => v.length > 0 || $t('$ezreeport.required')]"
+              :item-rules="[(v, i) => isEmail(v) || $t('$ezreeport.errors.invalidEmail', i + 1)]"
+              :item-placeholder="$t('$ezreeport.task.targets:hint')"
               prepend-icon="mdi-mailbox"
               variant="underlined"
               required
@@ -110,6 +113,7 @@
                     :model-value="periodRange"
                     :max="maxDate"
                     hide-header
+                    show-adjacent-months
                     @update:model-value="updatePeriod($event)"
                   />
                 </template>
@@ -167,6 +171,7 @@ import { generateAndListenReportOfTask } from '~sdk/helpers/jobs';
 import type { Task } from '~sdk/tasks';
 
 import { downloadBlob } from '~/lib/files';
+import { isEmail } from '~/utils/validate';
 
 const maxDate = add(endOfDay(new Date()), { days: -1 });
 
@@ -200,7 +205,7 @@ const formattedPeriod = computed(() => `${format(period.value.start, 'dd/MM/yyyy
 const periodRange = computed(() => eachDayOfInterval(period.value));
 
 function onTargetUpdated(emails: string | string[] | undefined) {
-  if (!emails) {
+  if (emails == null) {
     targets.value = [];
     return;
   }
@@ -211,9 +216,13 @@ function onTargetUpdated(emails: string | string[] | undefined) {
   }
 
   // Allow multiple mail addresses, separated by semicolon or comma
-  targets.value = allTargets
-    .join(';').replace(/[,]/g, ';')
-    .split(';').map((mail) => mail.trim());
+  targets.value = Array.from(
+    new Set(
+      allTargets
+        .join(';').replace(/[,]/g, ';')
+        .split(';').map((mail) => mail.trim()),
+    ),
+  );
 }
 
 /**
@@ -236,7 +245,10 @@ function calcPeriodFromRecurrence(
 
     case 'WEEKLY': {
       const target = add(today, { weeks: offset });
-      value = { start: startOfWeek(target), end: endOfWeek(target) };
+      value = {
+        start: startOfWeek(target, { weekStartsOn: 1 }),
+        end: endOfWeek(target, { weekStartsOn: 1 }),
+      };
       break;
     }
 
@@ -257,7 +269,7 @@ function calcPeriodFromRecurrence(
       const year = getYear(target);
       const midYear = new Date(year, 5, 30);
       if (isAfter(target, midYear)) {
-        value = { start: midYear, end: endOfYear(midYear) };
+        value = { start: add(midYear, { days: 1 }), end: endOfYear(midYear) };
         break;
       }
       value = { start: startOfYear(midYear), end: midYear };

@@ -19,7 +19,7 @@ import {
 } from '~/models/tasks/types';
 import { createActivity } from '~/models/task-activity';
 
-import { NotFoundError } from '~/types/errors';
+import { ConflictError, NotFoundError } from '~/types/errors';
 
 const SpecificTaskParams = z.object({
   id: z.string().min(1)
@@ -99,11 +99,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['tasks'],
       body: InputTask,
       response: {
+        ...responses.describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.CONFLICT,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
         [StatusCodes.CREATED]: responses.SuccessResponse(Task),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
     config: {
@@ -114,6 +117,24 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     },
     preHandler: [
       async (request) => requireAllowedNamespace(request, request.body.namespaceId),
+      // Check if similar task already exists
+      async (request) => {
+        // If filters are provided, trust user
+        if (request.body.template.filters) {
+          return;
+        }
+
+        const similarTaskExists = await tasks.doesSimilarTaskExist(
+          request.body.namespaceId,
+          request.body.recurrence,
+          request.body.extendedId,
+          request.body.template.index,
+        );
+
+        if (similarTaskExists) {
+          throw new ConflictError('Similar task already exists');
+        }
+      },
     ],
     handler: async (request, reply) => {
       const content = await tasks.createTask(request.body);
