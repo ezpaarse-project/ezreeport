@@ -88,7 +88,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 COPY --from=api-turbo /usr/src/api/full .
 
 RUN pnpm deploy --legacy --filter ezreeport-report --prod ./prod
-COPY --from=database-prisma /usr/build/database/dev/.prisma ./node_modules/@ezreeport/database/.prisma
+COPY --from=database-prisma /usr/build/database/dev/.prisma ./prod/node_modules/@ezreeport/database/.prisma
 
 # ---
 # Final image to run API service
@@ -166,7 +166,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 COPY --from=scheduler-turbo /usr/src/scheduler/full .
 
 RUN pnpm deploy --legacy --filter ezreeport-scheduler --prod ./prod
-COPY --from=database-prisma /usr/build/database/dev/.prisma ./node_modules/@ezreeport/database/.prisma
+COPY --from=database-prisma /usr/build/database/dev/.prisma ./prod/node_modules/@ezreeport/database/.prisma
 
 # ---
 # Final image to run scheduler service

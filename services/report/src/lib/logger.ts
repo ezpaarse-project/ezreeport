@@ -17,5 +17,5 @@ const options: Omit<LoggerOptions, 'name'> = {
   dir,
 };
 
+export const appLogger = createLogger({ ...options, name: 'api' });
 export const accessLogger = createLogger({ ...options, name: 'access' });
-export const appLogger = createLogger({ ...options, name: 'app' });

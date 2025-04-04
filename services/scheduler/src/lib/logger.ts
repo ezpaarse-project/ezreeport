@@ -17,5 +17,5 @@ const options: Omit<LoggerOptions, 'name'> = {
   dir,
 };
 
-export const appLogger = createLogger({ ...options, name: 'mail' });
-export const accessLogger = createLogger({ ...options, name: 'access' });
+// eslint-disable-next-line import/prefer-default-export
+export const appLogger = createLogger({ ...options, name: 'scheduler' });

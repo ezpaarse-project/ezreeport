@@ -16,8 +16,7 @@ target "migrate" {
   target = "migrate"
   output = [{ type = "registry" }]
   tags = [
-    "vxnexus-registry.intra.inist.fr:8083/ezreeport/migrate:${VERSION}",
-    "ghcr.io/ezpaarse-project/ezreeport-migrate:${VERSION}"
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/migrate:${VERSION}"
   ]
 }
 
@@ -26,8 +25,7 @@ target "api" {
   target = "api"
   output = [{ type = "registry" }]
   tags = [
-    "vxnexus-registry.intra.inist.fr:8083/ezreeport/api:${VERSION}",
-    "ghcr.io/ezpaarse-project/ezreeport-api:${VERSION}"
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/api:${VERSION}"
   ]
 }
 
@@ -36,8 +34,7 @@ target "worker" {
   target = "worker"
   output = [{ type = "registry" }]
   tags = [
-    "vxnexus-registry.intra.inist.fr:8083/ezreeport/worker:${VERSION}",
-    "ghcr.io/ezpaarse-project/ezreeport-worker:${VERSION}"
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/worker:${VERSION}"
   ]
 }
 
@@ -46,8 +43,7 @@ target "scheduler" {
   target = "scheduler"
   output = [{ type = "registry" }]
   tags = [
-    "vxnexus-registry.intra.inist.fr:8083/ezreeport/scheduler:${VERSION}",
-    "ghcr.io/ezpaarse-project/ezreeport-scheduler:${VERSION}"
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/scheduler:${VERSION}"
   ]
 }
 
@@ -56,8 +52,7 @@ target "mail" {
   target = "mail"
   output = [{ type = "registry" }]
   tags = [
-    "vxnexus-registry.intra.inist.fr:8083/ezreeport/mail:${VERSION}",
-    "ghcr.io/ezpaarse-project/ezreeport-mail:${VERSION}"
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/mail:${VERSION}"
   ]
 }
 
@@ -66,8 +61,7 @@ target "aio" {
   target = "aio"
   output = [{ type = "registry" }]
   tags = [
-    "vxnexus-registry.intra.inist.fr:8083/ezreeport/aio:${VERSION}",
-    "ghcr.io/ezpaarse-project/ezreeport:${VERSION}"
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/aio:${VERSION}"
   ]
 }
 
@@ -88,7 +82,6 @@ target "vuedoc" {
   target = "vuedoc"
   output = [{ type = "registry" }]
   tags = [
-    "vxnexus-registry.intra.inist.fr:8083/ezreeport/vuedoc:${VERSION}",
-    "ghcr.io/ezpaarse-project/ezreeport-vuedoc:${VERSION}"
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/vuedoc:${VERSION}"
   ]
 }
