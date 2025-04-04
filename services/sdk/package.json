@@ -131,6 +131,7 @@
     "dev": "pnpm run --parallel \"/^(watch:docs)|(preview)$/\"",
     "lint": "eslint .",
     "type-check": "tsc --noEmit --skipLibCheck",
+    "publish": "npm publish",
     "preview:docs": "vite docs --open",
     "watch:docs": "typedoc --watch"
   },

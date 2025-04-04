@@ -88,7 +88,7 @@ Some components are depending on each others, so you may need to build/push some
 Here's a quick view to see thoses relations :
 
 ```
-├─ ezreeport-common
+├─ @ezpaarse-project/ezreeport-common
 |  ├─ ezreeport-mail
 |  ├─ ezreeport-report
 |  ├─ ezreeport-scheduler
@@ -121,6 +121,5 @@ pnpm run publish
 VERSION=$TAG docker buildx bake
 
 # Build and push npm packages
-pnpm turbo --filter $PACKAGE run build
-pnpm --filter $PACKAGE publish --access public
+pnpm --filter $PACKAGE  turbo publish
 ```

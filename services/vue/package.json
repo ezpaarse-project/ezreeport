@@ -36,7 +36,8 @@
     "build:docs": "storybook build",
     "dev": "storybook dev -p 6006",
     "lint": "eslint .storybook src vite.config.ts",
-    "type-check": "vue-tsc --noEmit --skipLibCheck"
+    "type-check": "vue-tsc --noEmit --skipLibCheck",
+    "publish": "npm publish"
   },
   "lint-staged": {
     "!(example)/*.{ts,vue}": [
