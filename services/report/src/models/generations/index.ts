@@ -1,16 +1,12 @@
 import type { Prisma } from '@ezreeport/database/types';
 import { ensureSchema } from '@ezreeport/models/lib/zod';
-import type { GenerationType as CommonGenerationType } from '@ezreeport/models/generations';
 
 import prisma from '~/lib/prisma';
-import { appLogger } from '~/lib/logger';
 
 import type { PaginationType } from '~/models/pagination/types';
 import { buildPaginatedRequest } from '~/models/pagination';
 
 import { Generation, GenerationIncludeFieldsType, type GenerationType } from './types';
-
-const logger = appLogger.child({ scope: 'models', model: 'generations' });
 
 function applyIncludes(fields: GenerationIncludeFieldsType[]): Prisma.GenerationInclude {
   let onlyTask = false;
@@ -87,35 +83,6 @@ export async function getGeneration(
   const generation = await prisma.generation.findUnique(prismaQuery);
 
   return generation && ensureSchema(Generation, generation);
-}
-
-/**
- * Upserts a new generation, throws if constraint is broken
- *
- * @param id The generation's id
- * @param data The generation's data
- *
- * @returns The created/updated generation
- */
-export async function upsertGeneration(
-  id: string,
-  data: CommonGenerationType,
-): Promise<GenerationType> {
-  const generation = await prisma.generation.upsert({
-    where: {
-      id,
-    },
-    create: data,
-    update: data,
-  });
-
-  logger.debug({
-    id: generation.id,
-    action: 'Updated',
-    msg: 'Updated',
-  });
-
-  return ensureSchema(Generation, generation);
 }
 
 /**

@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { startOfDay } from '@ezreeport/dates';
 import { z } from '@ezreeport/models/lib/zod';
+import { calcPeriodFromRecurrence } from '@ezreeport/models/lib/periods';
 
 import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
 import { Access } from '~/models/access';
@@ -21,7 +22,6 @@ import {
 } from '~/models/task-presets/types';
 import { createTask, doesSimilarTaskExist } from '~/models/tasks';
 import { Task } from '~/models/tasks/types';
-import { calcPeriodFromRecurrence } from '~/models/recurrence';
 
 import { ConflictError, NotFoundError } from '~/models/errors';
 

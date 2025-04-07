@@ -4,65 +4,11 @@ import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 import { getWSNamespace, type Namespace } from '~/lib/sockets';
 
-import { upsertGeneration } from '~/models/generations';
-import { createActivity } from '~/models/task-activity';
-import { editTaskAfterGeneration, getTask } from '~/models/tasks';
+import { getTask } from '~/models/tasks';
 
 const eventExchangeName = 'ezreeport.report:event';
 
 const logger = appLogger.child({ scope: 'queues', exchange: eventExchangeName });
-
-const generationFinished = (data: GenerationType) => data.status === 'SUCCESS' || data.status === 'ERROR';
-
-async function updateGeneration(data: GenerationType) {
-  try {
-    await upsertGeneration(data.id, data);
-  } catch (err) {
-    const severity = generationFinished(data) ? 'error' : 'warn';
-    logger[severity]({
-      msg: "Couldn't update generation",
-      id: data.id,
-      err,
-    });
-  }
-}
-
-async function updateTaskAfterGeneration(data: GenerationType) {
-  try {
-    await createActivity({
-      taskId: data.taskId,
-      type: data.status === 'SUCCESS' ? 'generation:success' : 'generation:error',
-      message: data.status === 'SUCCESS' ? `Rapport généré par ${data.origin}` : `Rapport non généré par ${data.origin} suite à une erreur.`,
-      data: {
-        period: { start: data.start, end: data.end },
-        targets: data.targets,
-      },
-    });
-  } catch (err) {
-    logger.error({
-      msg: "Couldn't update activity",
-      id: data.id,
-      taskId: data.taskId,
-      err,
-    });
-  }
-
-  // Update task
-  try {
-    await editTaskAfterGeneration(
-      data.taskId,
-      data.createdAt,
-      data.status !== 'ERROR',
-    );
-  } catch (err) {
-    logger.error({
-      msg: "Couldn't update task",
-      id: data.id,
-      taskId: data.taskId,
-      err,
-    });
-  }
-}
 
 async function sendWSEvents(io: Namespace, data: GenerationType) {
   const event = 'generation:updated';
@@ -107,16 +53,6 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
   }
 
   const promises: Promise<unknown>[] = [];
-
-  promises.push(
-    updateGeneration(data),
-  );
-
-  if (data.writeActivity && generationFinished(data)) {
-    promises.push(
-      updateTaskAfterGeneration(data),
-    );
-  }
 
   const io = getWSNamespace('generations');
   if (io) {

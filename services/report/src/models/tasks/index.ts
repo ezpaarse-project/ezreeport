@@ -18,7 +18,6 @@ import {
   type TaskQueryFiltersType,
   type TaskIncludeFieldsType,
 } from './types';
-import { calcNextDateFromRecurrence } from '../recurrence';
 
 const logger = appLogger.child({ scope: 'models', model: 'tasks' });
 
@@ -303,39 +302,6 @@ export async function doesSimilarTaskExist(
 
   const task = await ensureSchema(Task, data);
   return task.template.index === index;
-}
-
-/**
- * Update task data after generation
- *
- * @param id Task's id
- * @param lastRun Last run date
- * @param nextRun Next run date
- * @param enabled Is task enabled
- *
- * @returns The updated task
- */
-export async function editTaskAfterGeneration(
-  id: string,
-  lastRun?: Date,
-  enabled?: boolean,
-): Promise<TaskType> {
-  let nextRun: Date | undefined;
-  if (lastRun) {
-    const { recurrence } = await prisma.task.findUniqueOrThrow({ where: { id } });
-    nextRun = calcNextDateFromRecurrence(lastRun, recurrence);
-  }
-
-  const task = await prisma.task.update({
-    where: { id },
-    data: {
-      lastRun,
-      nextRun,
-      enabled,
-    },
-  });
-
-  return ensureSchema(Task, task);
 }
 
 /**

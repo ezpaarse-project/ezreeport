@@ -6,6 +6,7 @@ import { compact } from 'lodash';
 
 import * as dfns from '@ezreeport/dates';
 import { z } from '@ezreeport/models/lib/zod';
+import { calcNextDateFromRecurrence, calcPeriodFromRecurrence } from '@ezreeport/models/lib/periods';
 
 import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
 import { Access } from '~/models/access';
@@ -18,7 +19,6 @@ import { queueGeneration } from '~/models/queues/report/generation';
 import { getTask } from '~/models/tasks';
 import { getTemplate } from '~/models/templates';
 import { getNamespace } from '~/models/namespaces';
-import { calcNextDateFromRecurrence, calcPeriodFromRecurrence } from '~/models/recurrence';
 
 import { ArgumentError, ConflictError, NotFoundError } from '~/models/errors';
 

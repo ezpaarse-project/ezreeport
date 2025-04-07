@@ -1,4 +1,5 @@
 import { ensureArray } from '@ezreeport/models/lib/utils';
+import { TaskActivity as CommonTaskActivity } from '@ezreeport/models/task-activity';
 import {
   z,
   stringOrArray,
@@ -9,40 +10,9 @@ import {
 import { Task } from '~/models/tasks/types';
 
 /**
- * Validation for event include fields
- */
-const TaskActivityIncludeFields = z.enum([
-  'task',
-  'task.namespace',
-] as const);
-
-/**
- * Type for event include fields
- */
-export type TaskActivityIncludeFieldsType = z.infer<typeof TaskActivityIncludeFields>;
-
-/**
  * Validation for event
  */
-export const TaskActivity = z.object({
-  id: z.string().min(1)
-    .describe('Activity ID'),
-
-  taskId: z.string().min(1)
-    .describe('Task ID'),
-
-  type: z.string().min(1)
-    .describe('Activity type'),
-
-  message: z.string().min(1)
-    .describe('Activity message'),
-
-  data: z.record(z.any()).nullish()
-    .describe('Activity data'),
-
-  createdAt: z.date()
-    .describe('Creation date'),
-
+export const TaskActivity = CommonTaskActivity.extend({
   // Includes fields
 
   task: Task.omit({ template: true }).optional().readonly()
@@ -69,6 +39,19 @@ export const InputTaskActivity = TaskActivity.omit({
  * Type for creating event
  */
 export type InputTaskActivityType = z.infer<typeof InputTaskActivity>;
+
+/**
+ * Validation for event include fields
+ */
+const TaskActivityIncludeFields = z.enum([
+  'task',
+  'task.namespace',
+] as const);
+
+/**
+ * Type for event include fields
+ */
+export type TaskActivityIncludeFieldsType = z.infer<typeof TaskActivityIncludeFields>;
 
 /**
  * Validation for query filters of a event
