@@ -1,21 +1,21 @@
 import { compact } from 'lodash';
 
-import { endOfDay } from '@ezreeport/dates';
+import { Task } from '@ezreeport/models/tasks';
+import { Namespace } from '@ezreeport/models/namespaces';
+import { Template } from '@ezreeport/models/templates';
 import { calcPeriodFromRecurrence } from '@ezreeport/models/lib/periods';
 
 import type { Executor } from '~/models/crons/types';
 import { queueGeneration } from '~/models/queues/report/generation';
-import { getAllNamespaces, getAllTasks, getAllTemplates } from '~/models/rpc/client/api';
+import { getTasksToGenerate } from '~/models/tasks';
 
 const generateReports: Executor = async (logger) => {
-  const today = endOfDay(Date.now());
+  const today = new Date();
 
-  const tasks = await getAllTasks({ 'nextRun.to': today, enabled: true });
-  const templates = await getAllTemplates();
-  const namespaces = await getAllNamespaces();
+  const tasks = await getTasksToGenerate(today);
 
   // eslint-disable-next-line no-restricted-syntax
-  for (const task of tasks) {
+  for (const { namespace, extends: template, ...task } of tasks) {
     // Resolve targets
     const targets = compact(task.targets);
     if (targets.length <= 0) {
@@ -28,35 +28,11 @@ const generateReports: Executor = async (logger) => {
       continue;
     }
 
-    const namespace = namespaces.find((n) => n.id === task.namespaceId);
-    if (!namespace) {
-      logger.error({
-        msg: 'Namespace not found',
-        namespaceId: task.namespaceId,
-        taskId: task.id,
-        task: task.name,
-      });
-      // eslint-disable-next-line no-continue
-      continue;
-    }
-
-    const template = templates.find((t) => t.id === task.extendedId);
-    if (!template) {
-      logger.error({
-        msg: 'Template not found',
-        templateId: task.extendedId,
-        taskId: task.id,
-        task: task.name,
-      });
-      // eslint-disable-next-line no-continue
-      continue;
-    }
-
     // eslint-disable-next-line no-await-in-loop
     const data = await queueGeneration({
-      task,
-      namespace,
-      template,
+      task: Task.parse(task),
+      namespace: Namespace.parse(namespace),
+      template: Template.parse(template),
       period: calcPeriodFromRecurrence(today, task.recurrence, -1),
       targets,
       origin: 'scheduler',
