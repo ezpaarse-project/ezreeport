@@ -308,6 +308,13 @@ type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 // Components props
 const props = defineProps<{
   titlePrefix?: string;
+  itemsPerPageOptions?: number[] | { title: string; value: number }[];
+  itemsPerPage?: number;
+}>();
+
+// Components events
+const emit = defineEmits<{
+  (e: 'update:itemsPerPage', value: number): void
 }>();
 
 // Utils composable
@@ -320,6 +327,8 @@ const generatedTask = ref<Omit<Task, 'template'> | undefined>();
 const isFormOpen = ref(false);
 const advancedTask = ref<TaskHelper | undefined>();
 
+/** Items per page shortcut */
+const itemsPerPage = computed({ get: () => props.itemsPerPage || 10, set: (v) => emit('update:itemsPerPage', v) });
 /** List of tasks */
 const {
   total,
@@ -329,7 +338,7 @@ const {
   vDataTableOptions,
 } = useServerSidePagination(
   (params) => getAllTasks(params),
-  { sortBy: 'name', include: ['extends.tags', 'namespace'] },
+  { sortBy: 'name', itemsPerPage, include: ['extends.tags', 'namespace'] },
 );
 
 const title = computed(() => `${props.titlePrefix || ''}${t('$ezreeport.task.title:list', total.value)}`);

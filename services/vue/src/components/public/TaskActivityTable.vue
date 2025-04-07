@@ -175,8 +175,17 @@ const maxDate = new Date();
 // Components props
 const props = defineProps<{
   titlePrefix?: string;
+  itemsPerPageOptions?: number[] | { title: string; value: number }[];
+  itemsPerPage?: number;
 }>();
 
+// Components events
+const emit = defineEmits<{
+  (e: 'update:itemsPerPage', value: number): void
+}>();
+
+/** Items per page shortcut */
+const itemsPerPage = computed({ get: () => props.itemsPerPage || 25, set: (v) => emit('update:itemsPerPage', v) });
 /** List of activity */
 const {
   total,
@@ -189,7 +198,7 @@ const {
   {
     sortBy: 'createdAt',
     order: 'desc',
-    itemsPerPage: 25,
+    itemsPerPage,
     include: ['task.namespace'],
   },
 );

@@ -52,7 +52,11 @@
       </template>
 
       <template #text>
-        <QueueGenerationJobTable />
+        <QueueGenerationJobTable
+          :items-per-page="itemsPerPage"
+          :items-per-page-options="itemsPerPageOptions"
+          @update:items-per-page="$emit('update:itemsPerPage', $event)"
+        />
       </template>
     </v-expansion-panel>
 
@@ -79,7 +83,11 @@
       </template>
 
       <template #text>
-        <QueueMailJobTable />
+        <QueueMailJobTable
+          :items-per-page="itemsPerPage"
+          :items-per-page-options="itemsPerPageOptions"
+          @update:items-per-page="$emit('update:itemsPerPage', $event)"
+        />
       </template>
     </v-expansion-panel>
   </v-expansion-panels>
@@ -97,6 +105,13 @@ import {
 // Components props
 const props = defineProps<{
   titlePrefix?: string;
+  itemsPerPageOptions?: number[] | { title: string; value: number }[];
+  itemsPerPage?: number;
+}>();
+
+// Components events
+defineEmits<{
+  (e: 'update:itemsPerPage', value: number): void
 }>();
 
 // Utils composable

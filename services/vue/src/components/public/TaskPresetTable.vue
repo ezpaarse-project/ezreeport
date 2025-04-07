@@ -209,6 +209,13 @@ type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 // Components props
 const props = defineProps<{
   titlePrefix?: string;
+  itemsPerPageOptions?: number[] | { title: string; value: number }[];
+  itemsPerPage?: number;
+}>();
+
+// Components events
+const emit = defineEmits<{
+  (e: 'update:itemsPerPage', value: number): void
 }>();
 
 // Utils composable
@@ -219,6 +226,8 @@ const selectedTaskPresets = ref<TaskPreset[]>([]);
 const updatedTaskPreset = ref<TaskPreset | undefined>();
 const isFormOpen = ref(false);
 
+/** Items per page shortcut */
+const itemsPerPage = computed({ get: () => props.itemsPerPage || 10, set: (v) => emit('update:itemsPerPage', v) });
 /** List of templates */
 const {
   total,
@@ -228,7 +237,9 @@ const {
   vDataTableOptions,
 } = useServerSidePagination(
   (params) => getAllTaskPresets(params),
-  { sortBy: 'name', include: ['template.tags', 'template.hidden'] },
+  {
+    sortBy: 'name', include: ['template.tags', 'template.hidden'], itemsPerPage, itemsPerPageOptions: props.itemsPerPageOptions,
+  },
 );
 
 const title = computed(() => `${props.titlePrefix || ''}${t('$ezreeport.task-preset.title:list', total.value)}`);
