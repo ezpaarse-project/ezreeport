@@ -168,7 +168,7 @@ const {
 const { stop: stopListening } = listenAllGenerations((generation) => {
   const index = generations.value.findIndex(({ id }) => id === generation.id);
   if (index < 0) {
-    if (!loading.value && !generation.startedAt) {
+    if (!loading.value && generation.status === 'PENDING') {
       refresh();
     }
     return;
