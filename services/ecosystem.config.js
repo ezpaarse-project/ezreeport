@@ -3,10 +3,9 @@ const env = (key, defValue) => process.env[key] || defValue;
 const nodeEnv = {
   NODE_ENV: env('NODE_ENV'),
   TZ: env('TZ'),
-  HEARTBEAT_FREQUENCY: env('HEARTBEAT_FREQUENCY', 10000),
-};
 
-const logEnv = {
+  HEARTBEAT_FREQUENCY: env('HEARTBEAT_FREQUENCY', 10000),
+
   LOG_LEVEL: env('LOG_LEVEL', 'info'),
   LOG_DIR: env('API_LOG_DIR'),
   LOG_IGNORE: env('LOG_IGNORE', '["hostname"]'),
@@ -42,10 +41,10 @@ module.exports = {
       script: './src/app.ts',
       merge_logs: false,
       log_type: 'json',
+      instances: env('APIS_CONCURRENCE', 1),
       increment_var: 'HTTP_PORT',
       env: {
         ...nodeEnv,
-        ...logEnv,
         ...rabbitmqEnv,
         ...dbEnv,
         ...elasticEnv,
@@ -68,7 +67,6 @@ module.exports = {
       increment_var: 'HTTP_PORT',
       env: {
         ...nodeEnv,
-        ...logEnv,
         ...rabbitmqEnv,
         ...elasticEnv,
 
@@ -91,7 +89,6 @@ module.exports = {
       log_type: 'json',
       env: {
         ...nodeEnv,
-        ...logEnv,
         ...rabbitmqEnv,
         ...dbEnv,
 
@@ -108,10 +105,10 @@ module.exports = {
       script: './src/app.ts',
       merge_logs: false,
       log_type: 'json',
+      instances: env('MAILS_CONCURRENCE', 1),
       increment_var: 'HTTP_PORT',
       env: {
         ...nodeEnv,
-        ...logEnv,
         ...rabbitmqEnv,
 
         SMTP_HOST: env('SMTP_HOST', 'smtp'),
