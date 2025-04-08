@@ -24,12 +24,12 @@ const dbEnv = {
 };
 
 const rabbitmqEnv = {
-  RABBITMQ_PROTOCOL: env('"RABBITMQ_PROTOCOL', 'amqp'),
-  RABBITMQ_HOST: env('"RABBITMQ_HOST', 'rabbitmq'),
-  RABBITMQ_PORT: +env('"RABBITMQ_PORT', 5672),
-  RABBITMQ_VHOST: env('"RABBITMQ_VHOST', '/'),
-  RABBITMQ_USERNAME: env('"RABBITMQ_USERNAME', 'guest'),
-  RABBITMQ_PASSWORD: env('"RABBITMQ_PASSWORD', 'guest'),
+  RABBITMQ_PROTOCOL: env('RABBITMQ_PROTOCOL', 'amqp'),
+  RABBITMQ_HOST: env('RABBITMQ_HOST', 'rabbitmq'),
+  RABBITMQ_PORT: +env('RABBITMQ_PORT', 5672),
+  RABBITMQ_VHOST: env('RABBITMQ_VHOST', '/'),
+  RABBITMQ_USERNAME: env('RABBITMQ_USERNAME', 'guest'),
+  RABBITMQ_PASSWORD: env('RABBITMQ_PASSWORD', 'guest'),
 };
 
 module.exports = {
