@@ -1,3 +1,16 @@
+# [@ezpaarse-project/ezreeport-vue-v2.1.0-beta.5](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.1.0-beta.4...@ezpaarse-project/ezreeport-vue@2.1.0-beta.5) (2025-04-08)
+
+
+### Bug Fixes
+
+* **vue:** added aggregation parameter "missing" ([47d775f](https://github.com/ezpaarse-project/ezreeport/commit/47d775f7028711977c574c70c1b8262bdf2bf8dc))
+* **vue:** allow multiple types when getting options from mapping ([93b543c](https://github.com/ezpaarse-project/ezreeport/commit/93b543c16c37bef8d94d7c47e98fb527721b15d8))
+
+
+### Features
+
+* **vue:** added way to pass itemsPerPage as an application dev ([3a564dd](https://github.com/ezpaarse-project/ezreeport/commit/3a564dd755ada579d63b749a1b9a42f0a3756228))
+
 # [@ezpaarse-project/ezreeport-vue-v2.1.0-beta.4](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.1.0-beta.3...@ezpaarse-project/ezreeport-vue@2.1.0-beta.4) (2025-03-31)
 
 
