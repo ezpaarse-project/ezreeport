@@ -2,6 +2,7 @@ const env = (key, defValue) => process.env[key] || defValue;
 
 const nodeEnv = {
   NODE_ENV: env('NODE_ENV'),
+  TZ: env('TZ'),
   HEARTBEAT_FREQUENCY: env('HEARTBEAT_FREQUENCY', 10000),
 };
 
@@ -17,6 +18,10 @@ const elasticEnv = {
   ELASTIC_PASSWORD: env('ELASTIC_PASSWORD', 'changeme'),
   ELASTIC_API_KEY: env('ELASTIC_API_KEY', ''),
   ELASTIC_REQUIRED_STATUS: env('ELASTIC_REQUIRED_STATUS', 'green'),
+};
+
+const dbEnv = {
+  DATABASE_URL: env('DATABASE_URL', 'postgresql://postgres:changeme@localhost:5432/?schema=public'),
 };
 
 const rabbitmqEnv = {
@@ -42,12 +47,12 @@ module.exports = {
         ...nodeEnv,
         ...logEnv,
         ...rabbitmqEnv,
+        ...dbEnv,
         ...elasticEnv,
 
         HTTP_PORT: +env('API_HTTP_PORT', 8080),
         ALLOWED_ORIGINS: env('ALLOWED_ORIGINS', '*'),
         ADMIN_KEY: env('ADMIN_KEY', '00000000-0000-0000-0000-000000000000'),
-        DATABASE_URL: env('DATABASE_URL', 'postgresql://postgres:changeme@localhost:5432/?schema=public'),
         DEFAULT_TEMPLATE_NAME: env('DEFAULT_TEMPLATE_NAME', ''),
         DEFAULT_TEMPLATE_DATEFIELD: env('DEFAULT_TEMPLATE_DATEFIELD', 'scratch'),
       },
@@ -88,9 +93,10 @@ module.exports = {
         ...nodeEnv,
         ...logEnv,
         ...rabbitmqEnv,
+        ...dbEnv,
 
-        TIMER_GENERATE_REPORT: env('TIMER_GENERATE_REPORT', '0 1 * * * *'),
-        TIMER_PURGE_OLD_REPORT: env('TIMER_PURGE_OLD_REPORT', '0 0 * * * *'),
+        TIMER_GENERATE_REPORT: env('TIMER_GENERATE_REPORT', '0 7 * * * *'),
+        TIMER_PURGE_OLD_REPORT: env('TIMER_PURGE_OLD_REPORT', '0 1 * * * *'),
 
         HTTP_PORT: +env('SCHEDULER_HTTP_PORT', 8280),
       },
