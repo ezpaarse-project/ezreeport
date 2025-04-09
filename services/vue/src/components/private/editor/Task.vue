@@ -1,6 +1,6 @@
 <template>
   <v-card
-    :title="$t('$ezreeport.editor.title', modelValue.inserts.length)"
+    :title="$t('$ezreeport.editor.title', innerLayouts.length)"
     prepend-icon="mdi-grid"
   >
     <template v-if="$slots.append" #append>
