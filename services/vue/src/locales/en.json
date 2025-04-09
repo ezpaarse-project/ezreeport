@@ -212,6 +212,8 @@
         "type": "@:$ezreeport.type",
         "raw": "DSL Query",
         "size": "Result count",
+        "missing:show": "Show missing values",
+        "missing:label": "Label for missing values",
         "aggregationTemplate": "{type} of {field}",
         "typeGroups": {
           "common": "Common",

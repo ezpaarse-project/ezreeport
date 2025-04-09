@@ -214,6 +214,8 @@
         "type": "@:$ezreeport.type",
         "raw": "Requête DSL",
         "size": "Nombre de résultats",
+        "missing:show": "Afficher les valeurs manquantes",
+        "missing:label": "Etiquette des valeurs manquantes",
         "aggregationTemplate": "{type} de {field}",
         "typeGroups": {
           "common": "Communs",
