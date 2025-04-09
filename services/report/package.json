@@ -22,9 +22,13 @@
   "lint-staged": {
     "*.{js,ts}": [
       "eslint --fix"
+    ],
+    "package.json": [
+      "sort-package-json"
     ]
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^7.17.12",
     "@ezreeport/config": "workspace:*",
     "@ezreeport/database": "workspace:*",
     "@ezreeport/dates": "workspace:*",
@@ -33,7 +37,6 @@
     "@ezreeport/models": "workspace:*",
     "@ezreeport/rabbitmq": "workspace:*",
     "@ezreeport/rpc": "workspace:*",
-    "@elastic/elasticsearch": "^7.17.12",
     "@fastify/autoload": "^6.0.2",
     "@fastify/cors": "^10.0.1",
     "@fastify/static": "^8.0.1",

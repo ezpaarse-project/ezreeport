@@ -21,20 +21,23 @@
     "type-check": "tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {
-    "*.{js,ts}": [
+    "*.ts": [
       "eslint --fix"
+    ],
+    "package.json": [
+      "sort-package-json"
     ]
   },
   "dependencies": {
-    "@ezreeport/simple-http": "workspace:*",
+    "@elastic/elasticsearch": "^7.17.12",
+    "@ezpaarse-project/jspdf-md": "^1.1.0",
     "@ezreeport/config": "workspace:*",
     "@ezreeport/dates": "workspace:*",
     "@ezreeport/heartbeats": "workspace:*",
     "@ezreeport/logger": "workspace:*",
     "@ezreeport/models": "workspace:*",
     "@ezreeport/rabbitmq": "workspace:*",
-    "@elastic/elasticsearch": "^7.17.12",
-    "@ezpaarse-project/jspdf-md": "^1.1.0",
+    "@ezreeport/simple-http": "workspace:*",
     "axios": "^1.7.7",
     "canvas": "^2.11.2",
     "chroma-js": "^3.1.1",

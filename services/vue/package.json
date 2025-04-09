@@ -40,8 +40,11 @@
     "type-check": "vue-tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {
-    "!(example)/*.{ts,vue}": [
+    "*.{ts,vue}": [
       "eslint --fix"
+    ],
+    "package.json": [
+      "sort-package-json"
     ]
   },
   "dependencies": {

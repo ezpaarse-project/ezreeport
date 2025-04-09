@@ -19,8 +19,11 @@
     "type-check": "tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {
-    "*.{js,ts}": [
+    "*.ts": [
       "eslint --fix"
+    ],
+    "package.json": [
+      "sort-package-json"
     ]
   },
   "dependencies": {

@@ -21,12 +21,14 @@
     "type-check": "tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {
-    "*.{js,ts}": [
+    "*.ts": [
       "eslint --fix"
+    ],
+    "package.json": [
+      "sort-package-json"
     ]
   },
   "dependencies": {
-    "@ezreeport/simple-http": "workspace:*",
     "@ezreeport/config": "workspace:*",
     "@ezreeport/database": "workspace:*",
     "@ezreeport/dates": "workspace:*",
@@ -35,6 +37,7 @@
     "@ezreeport/models": "workspace:*",
     "@ezreeport/rabbitmq": "workspace:*",
     "@ezreeport/rpc": "workspace:*",
+    "@ezreeport/simple-http": "workspace:*",
     "cron": "^4.1.0",
     "glob": "^11.0.0",
     "lodash": "^4.17.21",
