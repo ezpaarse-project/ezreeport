@@ -1,3 +1,10 @@
+# [@ezpaarse-project/ezreeport-sdk-js-v2.1.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@2.1.0-beta.1...@ezpaarse-project/ezreeport-sdk-js@2.1.0-beta.2) (2025-04-11)
+
+
+### Bug Fixes
+
+* **sdk:** fixed typing issue with task body ([077fb24](https://github.com/ezpaarse-project/ezreeport/commit/077fb2499e59c92975d4c16bbe0c077b38e62e00))
+
 # [@ezpaarse-project/ezreeport-sdk-js-v2.1.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@2.0.0...@ezpaarse-project/ezreeport-sdk-js@2.1.0-beta.1) (2025-03-31)
 
 
