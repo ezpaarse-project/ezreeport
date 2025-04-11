@@ -1,10 +1,12 @@
 import type { GenerationQueueDataType } from '@ezreeport/models/queues';
 import type { GenerationType } from '@ezreeport/models/generations';
 
+import { publishJSONToExchange, sendJSONToQueue } from '@ezreeport/rabbitmq';
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 
 const generationQueueName = 'ezreeport.report:queues';
+const generationEventExchangeName = 'ezreeport.report:event';
 
 const logger = appLogger.child({ scope: 'queues', queue: generationQueueName });
 
@@ -29,15 +31,14 @@ export async function queueGeneration(data: CustomGenerationQueueDataType) {
       throw new Error('Channel not initialized');
     }
 
-    const buf = Buffer.from(JSON.stringify({
+    const { size } = sendJSONToQueue<GenerationQueueDataType>(channel, generationQueueName, {
       ...data,
       createdAt,
-    } satisfies GenerationQueueDataType));
-    channel.sendToQueue(generationQueueName, buf);
+    });
     logger.debug({
       queue: generationQueueName,
       msg: 'Report queued for generation',
-      size: buf.byteLength,
+      size,
       sizeUnit: 'B',
     });
   } catch (err) {
@@ -51,7 +52,7 @@ export async function queueGeneration(data: CustomGenerationQueueDataType) {
   }
 
   try {
-    const event: GenerationType = {
+    publishJSONToExchange<GenerationType>(channel, generationEventExchangeName, '', {
       id: data.id,
       taskId: data.task.id,
       status: 'PENDING',
@@ -66,10 +67,7 @@ export async function queueGeneration(data: CustomGenerationQueueDataType) {
       createdAt,
       updatedAt: new Date(),
       startedAt: null,
-    };
-
-    const buf = Buffer.from(JSON.stringify(event));
-    channel.publish('ezreeport.report:event', '', buf);
+    });
   } catch (err) {
     logger.warn({ msg: 'Failed to send event', err });
   }

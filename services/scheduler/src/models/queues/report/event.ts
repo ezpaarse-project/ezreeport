@@ -1,4 +1,5 @@
 import { Generation, GenerationType } from '@ezreeport/models/generations';
+import { parseJSONMessage } from '@ezreeport/rabbitmq';
 
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
@@ -69,15 +70,12 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
   }
 
   // Parse message
-  const raw = JSON.parse(msg.content.toString());
-  let data;
-  try {
-    data = await Generation.parseAsync(raw);
-  } catch (err) {
+  const { data, raw, parseError } = parseJSONMessage(msg, Generation);
+  if (!data) {
     logger.error({
       msg: 'Invalid data',
       data: process.env.NODE_ENV === 'production' ? undefined : raw,
-      err,
+      err: parseError,
     });
     return;
   }

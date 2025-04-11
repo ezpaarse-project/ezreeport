@@ -2,12 +2,14 @@ import { randomUUID } from 'node:crypto';
 
 import { GenerationQueueData, type GenerationQueueDataType } from '@ezreeport/models/queues';
 import type { GenerationType } from '@ezreeport/models/generations';
+import { parseJSONMessage, publishJSONToExchange, sendJSONToQueue } from '@ezreeport/rabbitmq';
 
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 
 const generationQueueName = 'ezreeport.report:queues';
 const deadGenerationExchangeName = 'ezreeport.report:queues:dead';
+const generationEventExchangeName = 'ezreeport.report:event';
 
 const logger = appLogger.child({ scope: 'queues', queue: generationQueueName });
 
@@ -19,15 +21,12 @@ async function onDeadGeneration(c: rabbitmq.Channel, msg: rabbitmq.ConsumeMessag
   }
 
   // Parse message
-  const raw = JSON.parse(msg.content.toString());
-  let data;
-  try {
-    data = await GenerationQueueData.parseAsync(raw);
-  } catch (err) {
+  const { data, raw, parseError } = parseJSONMessage(msg, GenerationQueueData);
+  if (!data) {
     logger.error({
       msg: 'Invalid data',
       data: process.env.NODE_ENV === 'production' ? undefined : raw,
-      err,
+      err: parseError,
     });
     c.nack(msg, undefined, false);
     return;
@@ -51,8 +50,7 @@ async function onDeadGeneration(c: rabbitmq.Channel, msg: rabbitmq.ConsumeMessag
       startedAt: null,
     };
 
-    const buf = Buffer.from(JSON.stringify(event));
-    c.publish('ezreeport.report:event', '', buf);
+    publishJSONToExchange<GenerationType>(c, generationEventExchangeName, '', event);
 
     logger.warn({
       msg: 'Generation aborted',
@@ -111,11 +109,10 @@ export async function queueGeneration(params: Omit<GenerationQueueDataType, 'id'
       createdAt,
     };
 
-    const buf = Buffer.from(JSON.stringify(data));
-    channel.sendToQueue(generationQueueName, buf);
+    const { size } = sendJSONToQueue<GenerationQueueDataType>(channel, generationQueueName, data);
     logger.debug({
       msg: 'Report queued for generation',
-      size: buf.byteLength,
+      size,
       sizeUnit: 'B',
     });
   } catch (err) {
@@ -128,7 +125,7 @@ export async function queueGeneration(params: Omit<GenerationQueueDataType, 'id'
   }
 
   try {
-    const event: GenerationType = {
+    publishJSONToExchange<GenerationType>(channel, generationEventExchangeName, '', {
       id: data.id,
       taskId: data.task.id,
       status: 'PENDING',
@@ -143,10 +140,7 @@ export async function queueGeneration(params: Omit<GenerationQueueDataType, 'id'
       createdAt,
       updatedAt: new Date(),
       startedAt: null,
-    };
-
-    const buf = Buffer.from(JSON.stringify(event));
-    channel.publish('ezreeport.report:event', '', buf);
+    });
   } catch (err) {
     logger.warn({ msg: 'Failed to send event', err });
   }

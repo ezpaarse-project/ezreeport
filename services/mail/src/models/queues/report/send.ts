@@ -1,4 +1,5 @@
-import { isReportData, MailQueueData, type MailQueueDataType } from '@ezreeport/models/queues';
+import { isReportData, MailQueueData } from '@ezreeport/models/queues';
+import { parseJSONMessage } from '@ezreeport/rabbitmq';
 
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
@@ -18,15 +19,12 @@ async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage
   }
 
   // Parse message
-  const raw = JSON.parse(msg.content.toString());
-  let data: MailQueueDataType;
-  try {
-    data = await MailQueueData.parseAsync(raw);
-  } catch (err) {
+  const { data, raw, parseError } = parseJSONMessage(msg, MailQueueData);
+  if (!data) {
     logger.error({
       msg: 'Invalid data',
       data: process.env.NODE_ENV === 'production' ? undefined : raw,
-      err,
+      err: parseError,
     });
     channel.nack(msg, undefined, false);
     return;

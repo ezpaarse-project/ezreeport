@@ -2,8 +2,7 @@ import { hostname } from 'node:os';
 import { statfs } from 'node:fs/promises';
 import { setTimeout } from 'node:timers/promises';
 
-import type rabbitmq from 'amqplib';
-
+import { type rabbitmq, parseJSONMessage, publishJSONToExchange } from '@ezreeport/rabbitmq';
 import type { Logger } from '@ezreeport/logger';
 
 import { HeartbeatType, HeartbeatService, Heartbeat } from './types';
@@ -50,12 +49,11 @@ export async function setupHeartbeat(
 
   const sendHeartbeat = (data: HeartbeatType) => {
     try {
-      const buf = Buffer.from(JSON.stringify(data));
-      channel.publish(exchange, '', buf);
+      const { size } = publishJSONToExchange(channel, exchange, '', data);
       logger.trace({
         msg: 'Heartbeat sent',
         service: data.service,
-        size: buf.byteLength,
+        size,
         sizeUnit: 'B',
       });
     } catch (err) {
@@ -151,15 +149,12 @@ export async function listenToHeartbeats(
     }
 
     // Parse message
-    const raw = JSON.parse(msg.content.toString());
-    let data;
-    try {
-      data = Heartbeat.parse(raw);
-    } catch (error) {
+    const { data, raw, parseError } = parseJSONMessage(msg, Heartbeat);
+    if (!data) {
       logger.error({
         msg: 'Invalid data',
         data: process.env.NODE_ENV === 'production' ? undefined : raw,
-        error,
+        err: parseError,
       });
       return;
     }

@@ -1,4 +1,5 @@
 import type { MailQueueDataType } from '@ezreeport/models/queues';
+import { publishJSONToExchange } from '@ezreeport/rabbitmq';
 
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
@@ -15,12 +16,11 @@ export async function getReportSendExchange(channel: rabbitmq.Channel) {
 
 export async function sendReport(channel: rabbitmq.Channel, type: 'mail', data: MailQueueDataType) {
   try {
-    const buf = Buffer.from(JSON.stringify(data));
-    channel.publish(sendExchangeName, type, buf);
+    const { size } = publishJSONToExchange(channel, sendExchangeName, type, data);
     logger.debug({
       msg: 'Report queued',
       type,
-      size: buf.byteLength,
+      size,
       sizeUnit: 'B',
     });
   } catch (err) {

@@ -1,4 +1,5 @@
 import type { GenerationType } from '@ezreeport/models/generations';
+import { publishJSONToExchange } from '@ezreeport/rabbitmq';
 
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
@@ -15,12 +16,11 @@ export async function getReportEventExchange(channel: rabbitmq.Channel) {
 
 export async function sendEvent(channel: rabbitmq.Channel, data: GenerationType) {
   try {
-    const buf = Buffer.from(JSON.stringify(data));
-    channel.publish(eventExchangeName, '', buf);
+    const { size } = publishJSONToExchange(channel, eventExchangeName, '', data);
     logger.trace({
       jobId: data.id,
       msg: 'Event sent',
-      size: buf.byteLength,
+      size,
       sizeUnit: 'B',
     });
   } catch (err) {
