@@ -15,6 +15,9 @@ const logger = appLogger.child({ scope: 'heartbeat' });
 const service: HeartbeatService = {
   name: 'mail',
   version,
+  filesystems: {
+    logs: config.log.dir,
+  },
   getConnectedServices: () => [
     mandatoryService('smtp', SMTPPing),
   ],

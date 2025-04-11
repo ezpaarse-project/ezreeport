@@ -1,16 +1,3 @@
-export interface ApiService {
-  service: string;
-  hostname: string;
-  version?: string;
-  updatedAt: Date;
-  createdAt: Date;
-}
-
-export interface RawApiService extends Omit<ApiService, 'updatedAt' | 'createdAt'> {
-  updatedAt: string;
-  createdAt: string;
-}
-
 export interface FileSystemUsage {
   /** Filesystem name */
   name: string;
@@ -22,13 +9,25 @@ export interface FileSystemUsage {
   available: number;
 }
 
+export interface ApiService {
+  service: string;
+  hostname: string;
+  version?: string;
+  filesystems?: FileSystemUsage[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface RawApiService extends Omit<ApiService, 'createdAt' | 'updatedAt'> {
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ApiStatus {
   /** Current service */
   current: string;
   /** Current version */
   version: string;
-  /** File system usage */
-  fsUsage: FileSystemUsage[];
   /** Services connected to current */
   services: ApiService[];
 }

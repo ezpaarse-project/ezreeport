@@ -1,9 +1,10 @@
-import { setupHeartbeat } from '@ezreeport/heartbeats';
+import { mandatoryService, setupHeartbeat } from '@ezreeport/heartbeats';
 import type { HeartbeatService } from '@ezreeport/heartbeats/types';
 
 import type rabbitmq from '~/lib/rabbitmq';
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
+import { dbPing } from '~/lib/prisma';
 
 import { version } from '../../../package.json';
 
@@ -12,6 +13,12 @@ const { heartbeat: frequency } = config;
 export const service: HeartbeatService = {
   name: 'scheduler',
   version,
+  filesystems: {
+    logs: config.log.dir,
+  },
+  getConnectedServices: () => [
+    mandatoryService('database', dbPing),
+  ],
 };
 
 const logger = appLogger.child({ scope: 'heartbeat' });

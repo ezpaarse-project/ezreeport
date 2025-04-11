@@ -71,6 +71,7 @@ export async function setupRabbitMQ(
 
   return init();
 }
+
 /**
  * Shorthand to send data as JSON to a queue
  *

@@ -1,4 +1,5 @@
 import { hostname } from 'node:os';
+import { statfs } from 'node:fs/promises';
 import { setTimeout } from 'node:timers/promises';
 
 import type rabbitmq from 'amqplib';
@@ -38,6 +39,9 @@ export async function setupHeartbeat(
 ) {
   const logger = appLogger.child({ scope: 'heartbeat' });
 
+  const watchingFileSystems = Object.entries(service.filesystems || {})
+    .filter(([, path]) => !!path);
+
   const { exchange } = await channel.assertExchange('ezreeport.heartbeat', 'fanout', { durable: false });
   logger.debug({
     msg: 'Heartbeat queue created',
@@ -63,12 +67,31 @@ export async function setupHeartbeat(
     }
   };
 
-  const sendMainHeartbeat = () => sendHeartbeat({
-    service: service.name,
-    hostname: hostname(),
-    version: service.version,
-    updatedAt: new Date(),
-  });
+  const sendMainHeartbeat = async () => {
+    const filesystems = await Promise.all(
+      watchingFileSystems.map(async ([name, path]) => {
+        const stats = await statfs(path);
+
+        const total = stats.bsize * stats.blocks;
+        const available = stats.bavail * stats.bsize;
+
+        return {
+          name,
+          total,
+          available,
+          used: total - available,
+        };
+      }),
+    );
+
+    return sendHeartbeat({
+      service: service.name,
+      hostname: hostname(),
+      version: service.version,
+      filesystems: filesystems.length > 0 ? filesystems : undefined,
+      updatedAt: new Date(),
+    });
+  };
 
   const sendConnectedHeartbeats = async () => {
     if (!service.getConnectedServices) {

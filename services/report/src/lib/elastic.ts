@@ -73,6 +73,14 @@ export const elasticPing = async (): Promise<HeartbeatType> => {
     hostname: body.cluster_name,
     service: 'elastic',
     version: body.nodes.versions.at(0),
+    filesystems: [
+      {
+        name: 'elastic',
+        total: body.nodes.fs.total_in_bytes,
+        used: body.nodes.fs.total_in_bytes - body.nodes.fs.available_in_bytes,
+        available: body.nodes.fs.available_in_bytes,
+      },
+    ],
     updatedAt: new Date(),
   };
 };

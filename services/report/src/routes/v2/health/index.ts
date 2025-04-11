@@ -6,7 +6,7 @@ import { z } from '@ezreeport/models/lib/zod';
 import * as responses from '~/routes/v2/responses';
 
 import * as heartbeats from '~/models/heartbeat';
-import { Heartbeat, FileSystems, FileSystemUsage } from '~/models/heartbeat/types';
+import { Heartbeat } from '~/models/heartbeat/types';
 
 import { HTTPError, NotFoundError } from '~/models/errors';
 import { appLogger } from '~/lib/logger';
@@ -24,7 +24,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           z.object({
             current: z.string().describe('Current service'),
             version: z.string().describe('Current version'),
-            fsUsage: z.array(FileSystemUsage).describe('File system usage'),
             services: z.array(Heartbeat).describe('Services connected to current'),
           }),
         ),
@@ -34,7 +33,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     handler: async (request, reply) => responses.buildSuccessResponse({
       current: heartbeats.service.name,
       version: heartbeats.service.version,
-      fsUsage: await heartbeats.getAllFileSystemUsage(),
       services: heartbeats.getAllServices(),
     }, reply),
   });
@@ -85,47 +83,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
 
       return responses.buildSuccessResponse(content, reply);
     },
-  });
-
-  fastify.route({
-    method: 'GET',
-    url: '/fsUsage',
-    logLevel: 'debug',
-    schema: {
-      summary: 'Get usage of all file systems',
-      tags: ['health'],
-      response: {
-        [StatusCodes.OK]: responses.SuccessResponse(z.array(FileSystemUsage)),
-        [StatusCodes.SERVICE_UNAVAILABLE]: responses.schemas[StatusCodes.SERVICE_UNAVAILABLE],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
-      },
-    },
-    handler: async (request, reply) => responses.buildSuccessResponse(
-      await heartbeats.getAllFileSystemUsage(),
-      reply,
-    ),
-  });
-
-  fastify.route({
-    method: 'GET',
-    url: '/fsUsage/:name',
-    logLevel: 'debug',
-    schema: {
-      summary: 'Get usage of a file system',
-      tags: ['health'],
-      params: z.object({
-        name: FileSystems.describe('Service name'),
-      }),
-      response: {
-        [StatusCodes.OK]: responses.SuccessResponse(FileSystemUsage),
-        [StatusCodes.SERVICE_UNAVAILABLE]: responses.schemas[StatusCodes.SERVICE_UNAVAILABLE],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
-      },
-    },
-    handler: async (request, reply) => responses.buildSuccessResponse(
-      await heartbeats.getFileSystemUsage(request.params.name),
-      reply,
-    ),
   });
 
   fastify.route({

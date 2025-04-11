@@ -1,5 +1,4 @@
 import { hostname } from 'node:os';
-import { statfs } from 'node:fs/promises';
 
 import { isAfter } from '@ezreeport/dates';
 import { setupHeartbeat, listenToHeartbeats, mandatoryService } from '@ezreeport/heartbeats';
@@ -12,15 +11,17 @@ import { elasticPing } from '~/lib/elastic';
 import { dbPing } from '~/lib/prisma';
 
 import { version } from '../../../package.json';
-import type { HeartbeatType, FileSystemsType, FileSystemUsageType } from './types';
+import type { HeartbeatType } from './types';
 
 const { heartbeat: frequency } = config;
-
 const logger = appLogger.child({ scope: 'heartbeat' });
 
 export const service: HeartbeatService = {
   name: 'api',
   version,
+  filesystems: {
+    logs: config.log.dir,
+  },
   getConnectedServices: () => [
     mandatoryService('database', dbPing),
     elasticPing(),
@@ -70,50 +71,10 @@ export function getAllServices() {
     .filter((s) => isAfter(s.updatedAt, new Date(Date.now() - (frequency * 2))));
 }
 
-/**
- * Map of paths that need to be watched
- */
-const filesystemsPaths: Record<FileSystemsType, string> = {
-  reports: config.reportDir,
-  logs: config.log.dir,
-};
-
-export const filesystems = new Set(Object.keys(filesystemsPaths) as FileSystemsType[]);
-
-/**
- * Get usage of a filesystem
- *
- * @param fs The filesystem
- *
- * @returns The usage
- */
-export async function getFileSystemUsage(
-  fs: FileSystemsType,
-): Promise<FileSystemUsageType | undefined> {
-  const path = filesystemsPaths[fs];
-  if (!path) {
-    return undefined;
-  }
-
-  const stats = await statfs(path);
-
-  const total = stats.bsize * stats.blocks;
-  const available = stats.bavail * stats.bsize;
-
-  return {
-    name: fs,
-    total,
-    available,
-    used: total - available,
-  };
-}
-
-/**
- * Get usage of all filesystems
- *
- * @returns All usages
- */
-export async function getAllFileSystemUsage(): Promise<FileSystemUsageType[]> {
-  const usages = await Promise.all(Array.from(filesystems).map((fs) => getFileSystemUsage(fs)));
-  return usages.filter((u) => !!u);
-}
+// /**
+//  * Map of paths that need to be watched
+//  */
+// const filesystemsPaths: Record<FileSystemsType, string> = {
+//   reports: config.reportDir,
+//   logs: config.log.dir,
+// };
