@@ -190,6 +190,7 @@
               <template #append>
                 <v-btn
                   v-tooltip:top="$t('$ezreeport.template.editor:open')"
+                  :disabled="!isValid"
                   icon="mdi-arrow-expand"
                   color="primary"
                   density="compact"
@@ -229,6 +230,7 @@
                       <template #actions>
                         <v-btn
                           :text="$t('$ezreeport.template.editor:open')"
+                          :disabled="!isValid"
                           color="primary"
                           append-icon="mdi-arrow-expand"
                           @click="openEditor()"
@@ -262,6 +264,7 @@
     <v-dialog
       v-if="extendedTemplate"
       v-model="isEditorVisible"
+      :disabled="!isValid"
       transition="slide-x-reverse-transition"
       fullscreen
       scrollable
@@ -542,6 +545,10 @@ function calcNextDate() {
 }
 
 function openEditor(layoutIndex: number = 0) {
+  if (!isValid.value) {
+    return;
+  }
+
   selectedIndex.value = layoutIndex;
   isEditorVisible.value = true;
 }

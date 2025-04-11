@@ -3,6 +3,7 @@
 # Base image for node, enable usage of pnpm and allow to run apps
 FROM node:20.11.1-alpine3.19 AS base
 LABEL maintainer="ezTeam <ezteam@couperin.org>"
+LABEL org.opencontainers.image.source="https://github.com/ezpaarse-project/ezreeport"
 
 ENV HUSKY=0
 ENV PNPM_HOME="/pnpm"

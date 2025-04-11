@@ -1,7 +1,8 @@
 import type { ApiRequestOptions, SdkPaginated } from '~sdk';
 
 type Options = {
-  itemsPerPage?: number;
+  itemsPerPage?: MaybeRef<number>;
+  itemsPerPageOptions?: number[] | { title: string; value: number }[];
   sortBy?: string | undefined;
   order?: 'asc' | 'desc';
   filters?: Required<ApiRequestOptions>['filters'];
@@ -17,7 +18,8 @@ export default function useServerSidePagination<T>(
   const total = ref(0);
 
   const page = ref(1);
-  const itemsPerPage = ref(opts.itemsPerPage || 10);
+  const itemsPerPage = isRef(opts.itemsPerPage) ? opts.itemsPerPage : ref(opts.itemsPerPage || 10);
+
   const sortBy = ref<string | undefined>(opts.sortBy);
   const order = ref<'asc' | 'desc'>(opts.order || 'asc');
 
@@ -33,7 +35,7 @@ export default function useServerSidePagination<T>(
         include: opts.include,
         filters: filters.value,
         pagination: {
-          count: itemsPerPage.value,
+          count: Math.max(itemsPerPage.value, 0),
           page: page.value,
           sort: sortBy.value,
           order: order.value,
@@ -48,20 +50,26 @@ export default function useServerSidePagination<T>(
     loading.value = false;
   }
 
-  function onPageChange(newPage: number) {
+  async function onPageChange(newPage: number) {
     page.value = newPage;
-    fetch();
+
+    await nextTick();
+    return fetch();
   }
 
-  function onSortChange(sort: { key: string, order: 'asc' | 'desc' }[] | undefined) {
+  async function onSortChange(sort: { key: string, order: 'asc' | 'desc' }[] | undefined) {
     sortBy.value = sort?.[0]?.key;
     order.value = sort?.[0]?.order ?? 'asc';
-    fetch();
+
+    await nextTick();
+    return fetch();
   }
 
-  function onItemsPerPageChange(newItemsPerPage: number) {
-    itemsPerPage.value = Math.max(newItemsPerPage, 0);
-    fetch();
+  async function onItemsPerPageChange(newItemsPerPage: number) {
+    itemsPerPage.value = newItemsPerPage;
+
+    await nextTick();
+    return fetch();
   }
 
   /**
@@ -72,7 +80,8 @@ export default function useServerSidePagination<T>(
     loading: loading.value && 'primary',
     page: page.value,
     itemsLength: total.value,
-    itemsPerPage: itemsPerPage.value === 0 ? -1 : itemsPerPage.value,
+    itemsPerPage: itemsPerPage.value,
+    itemsPerPageOptions: opts.itemsPerPageOptions,
     sortBy: sortBy.value ? [{ key: sortBy.value, order: order.value }] : undefined,
 
     'onUpdate:page': onPageChange,

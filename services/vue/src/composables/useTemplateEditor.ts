@@ -50,13 +50,14 @@ export default function useTemplateEditor(defaultOptions?: Options) {
   /**
    * Get options to use in a combobox
    *
-   * @param type Type of field required (use aliases)
+   * @param type Type or types of field required (use aliases)
    * @param vars Variables to add to selection
    *
    * @returns Options to use
    */
-  function getOptionsFromMapping(type?: string, vars: { dateField?: boolean } = {}) {
+  function getOptionsFromMapping(type?: string | string[], vars: { dateField?: boolean } = {}) {
     const items = [...mappingItems.value];
+    const types = type == null || Array.isArray(type) ? type : [type];
 
     if (vars.dateField) {
       items.unshift({
@@ -70,13 +71,25 @@ export default function useTemplateEditor(defaultOptions?: Options) {
       });
     }
 
-    if (type) {
-      return items.filter(
-        (item) => elasticTypeAliases.get(item.props.subtitle) === elasticTypeAliases.get(type),
-      ).map((item) => ({ ...item, props: {} }));
+    if (types == null) {
+      return items;
     }
 
-    return items;
+    const optionsMap = new Map(types.flatMap((currentType) => {
+      const alias = elasticTypeAliases.get(currentType);
+
+      return items
+        .filter((item) => elasticTypeAliases.get(item.props.subtitle) === alias)
+        .map((item) => [item.value, item]);
+    }));
+
+    const options = Array.from(optionsMap.values());
+
+    if (types.length > 1) {
+      return options;
+    }
+    // Strip props if only one type
+    return options.map((item) => ({ ...item, props: {} }));
   }
 
   // Init editor

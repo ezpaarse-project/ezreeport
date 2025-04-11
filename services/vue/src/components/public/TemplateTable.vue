@@ -206,6 +206,13 @@ type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 // Components props
 const props = defineProps<{
   titlePrefix?: string;
+  itemsPerPageOptions?: number[] | { title: string; value: number }[];
+  itemsPerPage?: number;
+}>();
+
+// Components events
+const emit = defineEmits<{
+  (e: 'update:itemsPerPage', value: number): void
 }>();
 
 // Utils composable
@@ -217,6 +224,8 @@ const selectedTemplates = ref<Omit<Template, 'body'>[]>([]);
 const updatedTemplate = ref<TemplateHelper>(createTemplateHelper());
 const isFormOpen = ref(false);
 
+/** Items per page shortcut */
+const itemsPerPage = computed({ get: () => props.itemsPerPage || 10, set: (v) => emit('update:itemsPerPage', v) });
 /** List of templates */
 const {
   total,
@@ -230,7 +239,7 @@ const {
     defaultTemplateId.value = res.meta.default;
     return res;
   },
-  { sortBy: 'name' },
+  { sortBy: 'name', itemsPerPage, itemsPerPageOptions: props.itemsPerPageOptions },
 );
 
 const title = computed(() => `${props.titlePrefix || ''}${t('$ezreeport.template.title:list', total.value)}`);
