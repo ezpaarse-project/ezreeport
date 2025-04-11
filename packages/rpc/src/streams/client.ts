@@ -2,7 +2,7 @@ import { PassThrough, type Readable, type Writable } from 'node:stream';
 import { randomUUID } from 'node:crypto';
 
 import type { Logger } from '@ezreeport/logger';
-import { rabbitmq, sendJSONToQueue } from '@ezreeport/rabbitmq';
+import { parseJSONMessage, rabbitmq, sendJSONToQueue } from '@ezreeport/rabbitmq';
 
 import { setIdleTimeout } from '../common';
 import { readStreamFromQueue, writeStreamIntoQueue } from './common';
@@ -34,15 +34,12 @@ async function setupResponseQueue(
     }
 
     // Parse message
-    const raw = JSON.parse(msg.content.toString());
-    let data;
-    try {
-      data = await RPCStreamResponse.parseAsync(raw);
-    } catch (error) {
+    const { data, raw, parseError } = parseJSONMessage(msg, RPCStreamResponse);
+    if (!data) {
       logger.error({
         msg: 'Invalid data',
         data: process.env.NODE_ENV === 'production' ? undefined : raw,
-        error,
+        err: parseError,
       });
       channel.nack(msg, undefined, false);
       return;
@@ -110,7 +107,7 @@ export function setupRPCStreamClient(
         channel,
         queueName,
         { method: 'createWriteStream', params, dataQueue },
-        { correlationId, replyTo },
+        { correlationId, replyTo, expiration: timeout.duration },
       );
       logger.debug({
         msg: 'Request sent',
@@ -176,7 +173,7 @@ export function setupRPCStreamClient(
         channel,
         queueName,
         { method: 'createReadStream', params },
-        { correlationId, replyTo },
+        { correlationId, replyTo, expiration: timeout.duration },
       );
       logger.debug({
         msg: 'Request sent',

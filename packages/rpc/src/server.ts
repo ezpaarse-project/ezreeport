@@ -1,5 +1,5 @@
 import type { Logger } from '@ezreeport/logger';
-import type { rabbitmq } from '@ezreeport/rabbitmq';
+import { parseJSONMessage, sendJSONToQueue, type rabbitmq } from '@ezreeport/rabbitmq';
 
 import { RPCRequest, type RPCResponseType } from './types';
 
@@ -61,20 +61,18 @@ export async function setupRPCServer(
     }
 
     // Parse message
-    const raw = JSON.parse(msg.content.toString());
-    let methodName;
-    let params;
-    try {
-      ({ method: methodName, params } = await RPCRequest.parseAsync(raw));
-    } catch (error) {
+    const { data, raw, parseError } = parseJSONMessage(msg, RPCRequest);
+    if (!data) {
       logger.error({
         msg: 'Invalid data',
         data: process.env.NODE_ENV === 'production' ? undefined : raw,
-        error,
+        err: parseError,
       });
       channel.nack(msg, undefined, false);
       return;
     }
+
+    const { method: methodName, params } = data;
 
     if (!router[methodName]) {
       logger.warn({
@@ -109,18 +107,17 @@ export async function setupRPCServer(
       return;
     }
 
-    const buf = Buffer.from(JSON.stringify(response));
-    // Send result
-    channel.sendToQueue(
+    const { size } = sendJSONToQueue(
+      channel,
       msg.properties.replyTo,
-      buf,
+      response,
       { correlationId: msg.properties.correlationId },
     );
     logger.debug({
       msg: 'Result sent',
       methodName,
       params,
-      size: buf.byteLength,
+      size,
       sizeUnit: 'B',
     });
     channel.ack(msg);

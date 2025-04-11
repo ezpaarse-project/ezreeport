@@ -1,7 +1,7 @@
 import type { Readable, Writable } from 'node:stream';
 import { createGzip, createUnzip } from 'node:zlib';
 
-import { sendJSONToQueue, type rabbitmq } from '@ezreeport/rabbitmq';
+import { parseJSONMessage, sendJSONToQueue, type rabbitmq } from '@ezreeport/rabbitmq';
 
 import type { Logger } from '@ezreeport/logger';
 
@@ -86,15 +86,12 @@ export async function readStreamFromQueue(
     }
 
     // Parse message
-    const raw = JSON.parse(msg.content.toString());
-    let data;
-    try {
-      data = RPCStreamChunk.parse(raw);
-    } catch (error) {
+    const { data, raw, parseError } = parseJSONMessage(msg, RPCStreamChunk);
+    if (!data) {
       logger.error({
         msg: 'Invalid data',
         data: process.env.NODE_ENV === 'production' ? undefined : raw,
-        error,
+        err: parseError,
       });
       channel.nack(msg, undefined, false);
       return;

@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 
 import type { Logger } from '@ezreeport/logger';
-import type { rabbitmq } from '@ezreeport/rabbitmq';
+import { parseJSONMessage, sendJSONToQueue, type rabbitmq } from '@ezreeport/rabbitmq';
 
-import { RPCResponse } from './types';
+import { RPCResponse, type RPCRequestType } from './types';
 
 export function setupRPCClient(channel: rabbitmq.Channel, queueName: string, appLogger: Logger) {
   const timeout = 15000;
@@ -31,15 +31,12 @@ export function setupRPCClient(channel: rabbitmq.Channel, queueName: string, app
             }
 
             // Parse message
-            const raw = JSON.parse(msg.content.toString());
-            let data;
-            try {
-              data = RPCResponse.parse(raw);
-            } catch (error) {
+            const { data, raw, parseError } = parseJSONMessage(msg, RPCResponse);
+            if (!data) {
               logger.error({
                 msg: 'Invalid data',
                 data: process.env.NODE_ENV === 'production' ? undefined : raw,
-                error,
+                err: parseError,
               });
               channel.nack(msg, undefined, false);
               return;
@@ -63,13 +60,17 @@ export function setupRPCClient(channel: rabbitmq.Channel, queueName: string, app
         }, timeout);
       });
 
-      const buf = Buffer.from(JSON.stringify({ method, params }));
-      channel.sendToQueue(queueName, buf, { correlationId, replyTo: responseQueue });
+      const { size } = sendJSONToQueue<RPCRequestType>(
+        channel,
+        queueName,
+        { method, params },
+        { correlationId, replyTo: responseQueue, expiration: timeout },
+      );
       logger.debug({
         msg: 'Request sent',
         method,
         params,
-        size: buf.byteLength,
+        size,
         sizeUnit: 'B',
       });
 

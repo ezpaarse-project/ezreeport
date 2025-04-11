@@ -1,7 +1,7 @@
 import type { Readable, Writable } from 'node:stream';
 
 import type { Logger } from '@ezreeport/logger';
-import type { rabbitmq } from '@ezreeport/rabbitmq';
+import { parseJSONMessage, sendJSONToQueue, type rabbitmq } from '@ezreeport/rabbitmq';
 
 import { readStreamFromQueue, writeStreamIntoQueue } from './common';
 import {
@@ -86,15 +86,12 @@ export async function setupRPCStreamServer(
     }
 
     // Parse message
-    const raw = JSON.parse(msg.content.toString());
-    let data;
-    try {
-      data = await RPCStreamRequest.parseAsync(raw);
-    } catch (error) {
+    const { data, raw, parseError } = parseJSONMessage(msg, RPCStreamRequest);
+    if (!data) {
       logger.error({
         msg: 'Invalid data',
         data: process.env.NODE_ENV === 'production' ? undefined : raw,
-        error,
+        err: parseError,
       });
       channel.nack(msg, undefined, false);
       return;
@@ -150,18 +147,17 @@ export async function setupRPCStreamServer(
       response.error = err instanceof Error ? err.message : `${err}`;
     }
 
-    const buf = Buffer.from(JSON.stringify(response));
-    // Send result
-    channel.sendToQueue(
+    const { size } = sendJSONToQueue(
+      channel,
       msg.properties.replyTo,
-      buf,
+      response,
       { correlationId: msg.properties.correlationId, replyTo },
     );
     logger.debug({
       msg: 'Result sent',
       methodName: data.method,
       params: data.params,
-      size: buf.byteLength,
+      size,
       sizeUnit: 'B',
     });
     channel.ack(msg);

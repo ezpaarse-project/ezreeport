@@ -1,8 +1,9 @@
 import { setTimeout } from 'node:timers/promises';
 
-import type { Logger } from '@ezreeport/logger';
-
+import type z from 'zod';
 import amqp from 'amqplib';
+
+import type { Logger } from '@ezreeport/logger';
 
 export async function setupRabbitMQ(
   connectOpts: amqp.Options.Connect,
@@ -86,11 +87,57 @@ export function sendJSONToQueue<T>(
   channel: amqp.Channel,
   queue: string,
   content: T,
-  options?: amqp.Options.Publish,
+  opts?: Omit<amqp.Options.Publish, 'contentType'>,
 ): { sent: boolean, size: number } {
+  const options: amqp.Options.Publish = {
+    ...opts,
+    contentType: 'application/json',
+  };
+
   const buf = Buffer.from(JSON.stringify(content));
+
   const sent = channel.sendToQueue(queue, buf, options);
   return { sent, size: buf.byteLength };
+}
+
+export function publishJSONToExchange<T>(
+  channel: amqp.Channel,
+  exchange: string,
+  routingKey: string,
+  content: T,
+  opts?: Omit<amqp.Options.Publish, 'contentType'>,
+): { sent: boolean, size: number } {
+  const options: amqp.Options.Publish = {
+    ...opts,
+    contentType: 'application/json',
+  };
+
+  const buf = Buffer.from(JSON.stringify(content));
+
+  const sent = channel.publish(exchange, routingKey, buf, options);
+  return { sent, size: buf.byteLength };
+}
+
+/**
+ * Shorthand to parse JSON data from a message
+ *
+ * @param msg The message
+ * @param schema The schema
+ *
+ * @returns The parsed data
+ */
+export function parseJSONMessage<T>(
+  msg: amqp.ConsumeMessage,
+  schema: z.ZodSchema<T>,
+): { data?: T, raw: unknown, parseError?: unknown } {
+  const raw = JSON.parse(msg.content.toString());
+  let data: T;
+  try {
+    data = schema.parse(raw);
+  } catch (parseError) {
+    return { raw, parseError };
+  }
+  return { data, raw };
 }
 
 export * as rabbitmq from 'amqplib';

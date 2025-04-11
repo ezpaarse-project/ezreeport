@@ -7,6 +7,7 @@ export function setIdleTimeout(
   let timeout: NodeJS.Timeout;
 
   const timer = {
+    duration,
     start: () => {
       timeout = setTimeout(onIdle, duration);
     },
