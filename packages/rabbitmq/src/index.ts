@@ -71,5 +71,25 @@ export async function setupRabbitMQ(
 
   return init();
 }
+/**
+ * Shorthand to send data as JSON to a queue
+ *
+ * @param channel The channel to use
+ * @param queue The queue name
+ * @param content The data
+ * @param options The options
+ *
+ * @returns Information about data
+ */
+export function sendJSONToQueue<T>(
+  channel: amqp.Channel,
+  queue: string,
+  content: T,
+  options?: amqp.Options.Publish,
+): { sent: boolean, size: number } {
+  const buf = Buffer.from(JSON.stringify(content));
+  const sent = channel.sendToQueue(queue, buf, options);
+  return { sent, size: buf.byteLength };
+}
 
 export * as rabbitmq from 'amqplib';

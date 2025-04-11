@@ -1,8 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import type { Logger } from '@ezreeport/logger';
-
-import type rabbitmq from 'amqplib';
+import type { rabbitmq } from '@ezreeport/rabbitmq';
 
 import { RPCResponse } from './types';
 

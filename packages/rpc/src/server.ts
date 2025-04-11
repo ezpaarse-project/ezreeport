@@ -1,6 +1,5 @@
 import type { Logger } from '@ezreeport/logger';
-
-import type rabbitmq from 'amqplib';
+import type { rabbitmq } from '@ezreeport/rabbitmq';
 
 import { RPCRequest, type RPCResponseType } from './types';
 
@@ -14,6 +13,47 @@ export async function setupRPCServer(
   appLogger: Logger,
 ) {
   const logger = appLogger.child({ scope: 'rpc.server', queue: queueName });
+
+  const alreadySeenMessages = new Set<string>();
+
+  await channel.prefetch(1);
+
+  const executeMethod = async (methodName: string, params: unknown[]) => {
+    const method = router[methodName];
+
+    logger.debug({
+      msg: 'Executing method',
+      methodName,
+      params,
+    });
+    const start = process.uptime();
+    try {
+      const result = await method(...params);
+      logger.trace({
+        msg: 'Method executed',
+        methodName,
+        params,
+        duration: process.uptime() - start,
+        durationUnit: 's',
+      });
+
+      return result;
+    } catch (err) {
+      logger.error({
+        msg: 'Failed to execute method',
+        methodName,
+        params,
+        duration: process.uptime() - start,
+        durationUnit: 's',
+        err,
+      });
+
+      if (err instanceof Error) {
+        throw err;
+      }
+      throw new Error(`${err}`);
+    }
+  };
 
   const onRPCMessage = async (msg: rabbitmq.ConsumeMessage | null) => {
     if (!msg) {
@@ -36,39 +76,7 @@ export async function setupRPCServer(
       return;
     }
 
-    let result: RPCResponseType['result'];
-    let error: RPCResponseType['error'];
-    const method = router[methodName];
-
-    if (method) {
-      logger.debug({
-        msg: 'Executing method',
-        methodName,
-        params,
-      });
-      const start = process.uptime();
-      try {
-        result = await method(...params);
-        logger.trace({
-          msg: 'Method executed',
-          methodName,
-          params,
-          duration: process.uptime() - start,
-          durationUnit: 's',
-        });
-      } catch (err) {
-        error = err instanceof Error ? err.message : `${err}`;
-        logger.error({
-          msg: 'Failed to execute method',
-          methodName,
-          params,
-          duration: process.uptime() - start,
-          durationUnit: 's',
-          err,
-        });
-      }
-    } else {
-      error = `Method ${methodName} not found`;
+    if (!router[methodName]) {
       logger.warn({
         msg: 'Method not found',
         methodName,
@@ -78,7 +86,30 @@ export async function setupRPCServer(
       return;
     }
 
-    const buf = Buffer.from(JSON.stringify({ result, error }));
+    const response: RPCResponseType = {};
+    try {
+      response.result = await executeMethod(methodName, params);
+    } catch (err) {
+      response.error = (err instanceof Error ? err.message : `${err}`) || 'Unknown error';
+    }
+
+    // Method is successful but no result was found, we pass it to next one in queue
+    if (response.error == null && response.result == null) {
+      const alreadySeenMessage = alreadySeenMessages.has(msg.properties.correlationId);
+
+      channel.nack(msg, undefined, !alreadySeenMessage);
+      logger.debug({
+        msg: 'Result not found, requeuing request',
+        methodName,
+        params,
+        correlationId: msg.properties.correlationId,
+      });
+
+      alreadySeenMessages.add(msg.properties.correlationId);
+      return;
+    }
+
+    const buf = Buffer.from(JSON.stringify(response));
     // Send result
     channel.sendToQueue(
       msg.properties.replyTo,
@@ -103,7 +134,7 @@ export async function setupRPCServer(
   });
 
   // Consume rpc queue
-  channel.consume(rpcQueue.queue, (m) => onRPCMessage(m));
+  await channel.consume(rpcQueue.queue, (m) => onRPCMessage(m));
 
   logger.debug('RPC server setup');
 }
