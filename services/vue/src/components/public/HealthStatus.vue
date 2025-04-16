@@ -58,9 +58,9 @@
           <v-list-subheader :title="$t('$ezreeport.health.fs')" />
 
           <HealthFileSystemItem
-            v-for="usage in status.fsUsage"
-            :key="usage.name"
-            :modelValue="usage"
+            v-for="[key, usages] in fileSystems"
+            :key="key"
+            :modelValue="usages"
           />
         </v-list>
       </v-col>
@@ -73,7 +73,7 @@ import { version } from '~/../package.json';
 import { version as sdkVersion } from '~sdk';
 import { getStatus, type ApiService, type ApiStatus } from '~sdk/health';
 
-const MINIMUM_SERVICES = ['rabbitmq', 'api', 'database', 'worker', 'elastic', 'scheduler', 'mail', 'smtp'];
+const MINIMUM_SERVICES = ['rabbitmq', 'api', 'database', 'worker', 'elastic', 'scheduler', 'mail', 'smtp', 'files'];
 
 // Components props
 defineProps<{
@@ -95,6 +95,16 @@ const services = computed(() => {
     ({ service }) => service,
   );
   return new Map([...minimum, ...fromAPI]);
+});
+
+const fileSystems = computed(() => {
+  const values = (status.value?.services ?? []).flatMap(
+    ({ hostname, service, filesystems }) => (filesystems ?? []).map((fs) => ({
+      ...fs,
+      host: { name: hostname, service },
+    })),
+  );
+  return Map.groupBy(values, ({ name }) => name);
 });
 
 async function refresh() {
