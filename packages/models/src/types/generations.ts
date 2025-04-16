@@ -1,6 +1,12 @@
 import { z } from '../lib/zod';
 
-export const GenerationStatus = z.enum(['PENDING', 'PROCESSING', 'SUCCESS', 'ERROR', 'ABORTED'] as const);
+export const GenerationStatus = z.enum([
+  'PENDING',
+  'PROCESSING',
+  'SUCCESS',
+  'ERROR',
+  'ABORTED',
+] as const);
 
 export type GenerationStatusType = z.infer<typeof GenerationStatus>;
 

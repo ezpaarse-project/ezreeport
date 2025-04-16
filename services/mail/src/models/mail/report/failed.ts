@@ -1,6 +1,7 @@
 import type { Logger } from '@ezreeport/logger';
 
 import { format } from '@ezreeport/dates';
+import { ReportResult } from '@ezreeport/models/reports';
 import type { MailReportQueueDataType } from '@ezreeport/models/queues';
 
 import config from '~/lib/config';
@@ -23,8 +24,12 @@ export default async function sendFailedReport(
 
   let error: string;
   try {
-    const { detail } = JSON.parse(file.toString());
-    error = detail.error.message;
+    const { detail } = ReportResult.parse(JSON.parse(file.toString()));
+    if (!detail.error) {
+      throw new Error('No error found');
+    }
+
+    error = `${detail.error.type}: ${detail.error.name} - ${detail.error.message}`;
   } catch (err) {
     error = 'Unknown error, see attachements';
   }

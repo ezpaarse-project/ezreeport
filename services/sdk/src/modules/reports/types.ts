@@ -24,13 +24,18 @@ export interface ReportStats {
   size: number;
 }
 
-export interface ReportErrorCause {
+export interface ReportError {
   /** Where the error occurred */
   type: string;
-  /** Layout number where error occurred */
-  layout: number;
-  /** Figure number where error occurred */
-  figure?: string | number;
+  /** Name of the error */
+  name: string;
+  /** Message of the error */
+  message: string;
+  /** Where error happened */
+  cause?: {
+    layout?: number,
+    figure?: number,
+  }
 }
 
 export interface ReportDetails {
@@ -57,12 +62,7 @@ export interface ReportDetails {
   /** Stats about the report */
   stats?: ReportStats;
   /** Error details */
-  error?: {
-    /** Error message */
-    message: string;
-    /** Error cause */
-    cause?: ReportErrorCause;
-  }
+  error?: ReportError;
   /** Meta data */
   meta?: unknown;
 }

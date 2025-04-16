@@ -40,31 +40,87 @@ export const ReportFiles = z.object({
  */
 export type ReportFilesType = z.infer<typeof ReportFiles>;
 
-/**
- * Validation for the cause of a generation error
- */
-export const ReportErrorCause = z.object({
-  type: z.enum(['fetch', 'render', 'unknown']).optional()
-    .describe('Where the error occurred'),
+export const ReportErrorTypes = z.enum([
+  'TemplateError',
+  'FetchError',
+  'RenderError',
+  'UnknownError',
+] as const);
 
-  layout: z.number().int().optional()
-    .describe('Layout number where error occurred'),
+export type ReportErrorTypesType = z.infer<typeof ReportErrorTypes>;
 
-  figure: z.number().int().or(z.string()).optional()
-    .describe('Figure number where error occurred'),
+export const ReportTemplateErrorNames = z.enum([
+  'VersionMismatchError',
+  'MissingIndexError',
+  'MultipleMetricsError',
+  'MissingParameterError',
+  'ParameterFormatError',
+  'UnknownError',
+] as const);
 
-  elasticQuery: z.unknown().optional()
-    .describe('Elastic query that failed'),
+export type ReportTemplateErrorNamesType = z.infer<typeof ReportTemplateErrorNames>;
 
-  elasticData: z.unknown().optional()
-    .describe('Elastic data that failed'),
+export const ReportFetchErrorNames = z.enum([
+  'ElasticError',
+  'ShardError',
+  'NoDataError',
+  'UnknownError',
+] as const);
 
-  elasticCount: z.number().optional()
-    .describe('Number of elastic results before failure'),
+export type ReportFetchErrorNamesType = z.infer<typeof ReportFetchErrorNames>;
 
-  vegaSpec: z.unknown().optional()
-    .describe('Vega spec that failed'),
+export const ReportFetchErrorMeta = z.object({
+  layout: z.number().int(),
+  figure: z.number().int(),
+  esIndex: z.string().min(1),
+  esQuery: z.unknown(),
+}).partial();
+
+export type ReportFetchErrorMetaType = z.infer<typeof ReportFetchErrorMeta>;
+
+export const ReportRenderErrorNames = z.enum([
+  'DataTypeError',
+  'DataFormatError',
+  'VegaError',
+  'EmptyDataError',
+  'SlotError',
+  'UnknownError',
+] as const);
+
+export type ReportRenderErrorNamesType = z.infer<typeof ReportRenderErrorNames>;
+
+export const ReportRenderErrorMeta = z.object({
+  layout: z.number().int(),
+  figure: z.number().int(),
+  vegaSpec: z.unknown(),
+}).partial();
+
+export type ReportRenderErrorMetaType = z.infer<typeof ReportRenderErrorMeta>;
+
+export const ReportErrorNames = z.union([
+  ReportTemplateErrorNames,
+  ReportFetchErrorNames,
+  ReportRenderErrorNames,
+]);
+
+export type ReportErrorNamesType = z.infer<typeof ReportErrorNames>;
+
+export const ReportErrorMeta = z.union([
+  ReportFetchErrorMeta,
+  ReportRenderErrorMeta,
+]);
+
+export type ReportErrorMetaType = z.infer<typeof ReportErrorMeta>;
+
+export const ReportError = z.object({
+  type: ReportErrorTypes,
+  name: ReportErrorNames,
+  message: z.string(),
+  stack: z.array(z.string()).optional(),
+  cause: ReportErrorMeta.optional(),
 });
+
+export type ReportErrorType = z.infer<typeof ReportError>;
 
 /**
  * Validation for the result of a generation
@@ -115,16 +171,7 @@ export const ReportResult = z.object({
     }).optional()
       .describe('Stats about the report file'),
 
-    error: z.object({
-      message: z.string().optional()
-        .describe('Error message'),
-
-      stack: z.array(z.string()).optional()
-        .describe('Error stack'),
-
-      cause: ReportErrorCause.optional()
-        .describe('Cause of the error'),
-    }).optional()
+    error: ReportError.optional()
       .describe('Error details'),
 
     meta: z.any().optional()

@@ -1,7 +1,5 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 
-import { asyncWithCommonHandlers } from '@ezreeport/models/lib/utils';
-
 import type { RecurrenceType } from '@ezreeport/models/recurrence';
 import type { FigureType, FilterType } from '@ezreeport/models/templates';
 import type { ReportPeriodType } from '@ezreeport/models/reports';
@@ -9,7 +7,10 @@ import type { ReportPeriodType } from '@ezreeport/models/reports';
 import { elasticMSearch } from '~/lib/elastic';
 
 import { calcElasticIntervalFromRecurrence } from '~/models/recurrence';
+import TemplateError from '~/models/generation/errors';
+import TypedError from '~/models/errors';
 
+import FetchError from './errors';
 import { prepareEsQuery } from './filters';
 import { prepareEsAggregations } from './aggs';
 import { handleEsResponse } from './results';
@@ -38,7 +39,7 @@ type FigureWithId = FigureType & { _: { id: number } };
 // eslint-disable-next-line import/prefer-default-export
 export async function fetchElastic(options: ElasticFetchOptionsType) {
   if (!options.index) {
-    throw new Error('Missing index');
+    throw new TemplateError('No index provided', 'MissingIndexError');
   }
 
   const calendarInterval = calcElasticIntervalFromRecurrence(options.recurrence);
@@ -68,30 +69,46 @@ export async function fetchElastic(options: ElasticFetchOptionsType) {
     return [];
   }
 
-  const errorCause = { elasticQuery: { index: options.index, body: requests } };
+  const responses = await elasticMSearch(
+    {
+      index: options.index,
+      body: requests.map((request) => [{}, request]).flat(),
+    },
+    options.auth.username,
+  )
+    .then(({ body }) => body.responses)
+    .catch((err) => new FetchError(
+      err instanceof Error ? err.message : `${err}`,
+      'UnknownError',
+      { esIndex: options.index, esQuery: requests },
+    ));
 
-  const { body: { responses } } = await asyncWithCommonHandlers(
-    () => elasticMSearch(
-      {
-        index: options.index,
-        body: requests.map((body) => [{}, body]).flat(),
-      },
-      options.auth.username,
-    ),
-    errorCause,
-  );
+  if (responses instanceof Error) {
+    throw responses;
+  }
 
   const results = responses.map(
     (response, i) => {
       const figureId = figures[i]._.id;
       const figure = options.figures[figureId];
-      const title = figure?.params?.title || figure?.type || (figureId + 1);
 
-      figure.data = handleEsResponse(
-        response,
-        figure,
-        { ...errorCause, figure: title },
-      );
+      try {
+        figure.data = handleEsResponse(response, figure);
+      } catch (error) {
+        const cause = { esIndex: options.index, prepareEsQuery: requests[i], figure: figureId };
+
+        if (error instanceof TypedError) {
+          error.cause = cause;
+          throw error;
+        }
+
+        throw new FetchError(
+          error instanceof Error ? error.message : `${error}`,
+          'ElasticError',
+          cause,
+        );
+      }
+
       return figure.data;
     },
   );

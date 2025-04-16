@@ -3,6 +3,8 @@ import { merge } from 'lodash';
 
 import { FigureAgg, type FigureAggType, type FigureType } from '@ezreeport/models/templates';
 
+import TemplateError from '~/models/generation/errors';
+
 type EsAggregation = { [name: string]: ElasticTypes.AggregationsAggregationContainer };
 
 /**
@@ -185,7 +187,7 @@ const extractTableEsAggregations: ExtractEsAggregationsFnc = ({ params }) => {
         buckets.unshift(column.aggregation);
       } else {
         if (metric) {
-          throw new Error('More than one metric in table');
+          throw new TemplateError('More than one metric in table', 'MultipleMetricsError');
         }
         metric = column.aggregation;
       }

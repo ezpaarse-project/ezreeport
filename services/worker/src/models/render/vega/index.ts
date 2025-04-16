@@ -10,6 +10,7 @@ import localeFR from '~/lib/vega/locales/fr-FR.json';
 import VegaLogger from '~/lib/vega/logger';
 
 import type { FetchResultItem } from '~/models/fetch/results';
+import TemplateError from '~/models/generation/errors';
 
 import type { CanvasRegisterableFont } from './types';
 import {
@@ -68,7 +69,7 @@ export const parseTitle = (
   if (Array.isArray(title?.text)) {
     return title.text.map((t) => handlebars(t)(handlebarsOpts));
   }
-  throw new Error('Unable to parse title: this format of params is not supported');
+  throw new TemplateError('Unable to parse title: this format of params is not supported', 'ParameterFormatError');
 };
 
 /**

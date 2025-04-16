@@ -4,16 +4,23 @@ import { mkdir, writeFile } from 'node:fs/promises';
 
 import { omit } from 'lodash';
 
-import * as dfns from '@ezreeport/dates';
-import { asyncWithCommonHandlers } from '@ezreeport/models/lib/utils';
-import { ReportErrorCause, type ReportResultType } from '@ezreeport/models/reports';
+import { format, add, differenceInMilliseconds } from '@ezreeport/dates';
 import type { GenerationQueueDataType } from '@ezreeport/models/queues';
 import type { TemplateBodyType } from '@ezreeport/models/templates';
+import type {
+  ReportErrorMetaType,
+  ReportErrorNamesType,
+  ReportErrorType,
+  ReportResultType,
+} from '@ezreeport/models/reports';
 
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
 import { fetchElastic } from '~/models/fetch';
+import TypedError from '~/models/errors';
 import { RenderEventMap, renderPdfWithVega } from '~/models/render';
+
+import TemplateError from './errors';
 
 const { ttl, outDir } = config.report;
 
@@ -27,7 +34,7 @@ const { ttl, outDir } = config.report;
  */
 async function prepareReport(data: GenerationQueueDataType, startTime = new Date()) {
   // Prepare file paths
-  const todayStr = dfns.format(startTime, 'yyyy/yyyy-MM');
+  const todayStr = format(startTime, 'yyyy/yyyy-MM');
   const basePath = join(outDir, todayStr, '/');
 
   let filename = `ezREEPORT_${data.task.name.toLowerCase().replace(/[/ .]/g, '-')}`;
@@ -37,7 +44,7 @@ async function prepareReport(data: GenerationQueueDataType, startTime = new Date
   const filepath = join(basePath, filename);
   const reportId = `${todayStr}/${filename}`;
 
-  const periodDifference = dfns.differenceInMilliseconds(data.period.end, data.period.start);
+  const periodDifference = differenceInMilliseconds(data.period.end, data.period.start);
 
   // Prepare result
   const result: ReportResultType = {
@@ -46,7 +53,7 @@ async function prepareReport(data: GenerationQueueDataType, startTime = new Date
       jobId: data.id,
       taskId: data.task.id,
       createdAt: startTime,
-      destroyAt: dfns.add(
+      destroyAt: add(
         startTime,
         { days: ttl.days, seconds: ttl.iterations * (periodDifference / 1000) },
       ),
@@ -82,7 +89,10 @@ async function resolveReportTemplate(data: GenerationQueueDataType) {
   const { template, task } = data;
   // Check version
   if (template.body.version !== task.template.version || template.body.version !== 2) {
-    throw new Error(`Resolved template's (template.v${template.body.version}: ${task.extendedId}, task.v${task.template.version}: ${task.name}) is not compatible with task`);
+    throw new TemplateError(
+      `Resolved template's (template.v${template.body.version}: ${task.extendedId}, task.v${task.template.version}: ${task.name}) is not compatible with task`,
+      'VersionMismatchError',
+    );
   }
 
   // Use task's index
@@ -113,38 +123,30 @@ async function resolveReportTemplate(data: GenerationQueueDataType) {
 /**
  * Handle errors that happen while generating, and put it in result
  *
- * @param error The error
+ * @param err The error
  * @param result The result
  * @param logger The current logger
  * @param startTime When the generation started
  */
 function handleReportError(
-  error: unknown,
+  err: unknown,
   result: ReportResultType,
   logger: typeof appLogger,
   startTime = new Date(),
 ) {
-  const err: ReportResultType['detail']['error'] = {
-    message: `${error}`,
-    stack: [],
-    cause: {
-      type: 'unknown',
-    },
+  const error: ReportErrorType = {
+    type: 'UnknownError',
+    name: 'UnknownError',
+    message: `${err}`,
   };
 
-  // Parse error
-  if (error instanceof Error) {
-    err.message = error.message;
-    err.stack = error.stack?.split('\n    ') ?? [];
-    const { data: cause, error: validationError } = ReportErrorCause.safeParse(error.cause);
-    if (cause) {
-      err.cause = cause;
-    } else {
-      logger.error({
-        msg: 'Failed to parse error cause',
-        cause: err.cause,
-        err: validationError,
-      });
+  if (err instanceof Error) {
+    error.message = err.message;
+    error.stack = err.stack?.split('\n    ') ?? [];
+    if (err instanceof TypedError) {
+      error.type = err.type;
+      error.name = err.name as ReportErrorNamesType;
+      error.cause = err.cause as ReportErrorMetaType;
     }
   }
 
@@ -153,8 +155,8 @@ function handleReportError(
   r.success = false;
   r.detail = {
     ...result.detail,
-    took: dfns.differenceInMilliseconds(new Date(), startTime),
-    error: err,
+    took: differenceInMilliseconds(new Date(), startTime),
+    error,
   };
 
   logger.error({
@@ -162,11 +164,10 @@ function handleReportError(
     duration: result.detail.took,
     durationUnit: 'ms',
     err: {
-      message: err.message,
-      stack: err.stack,
+      ...error,
       cause: {
-        ...err.cause,
-        elasticQuery: undefined,
+        ...error.cause,
+        esQuery: undefined,
         vegaSpec: undefined,
       },
     },
@@ -250,23 +251,31 @@ export async function generateReport(
     result.detail.auth = data.namespace.fetchLogin;
 
     // Fetch data
-    const t = template;
     await Promise.all(
       template.layouts.map(
-        (layout, i) => asyncWithCommonHandlers(
-          () => fetchElastic({
-            auth: data.namespace.fetchLogin.elastic,
-            recurrence: data.task.recurrence,
-            period: data.period,
+        async (layout, i) => {
+          try {
+            const res = await fetchElastic({
+              auth: data.namespace.fetchLogin.elastic,
+              recurrence: data.task.recurrence,
+              period: data.period,
 
-            filters: t.filters,
-            dateField: t.dateField,
-            index: t.index || '',
+              filters: template!.filters,
+              dateField: template!.dateField,
+              index: template!.index || '',
 
-            figures: layout.figures,
-          }),
-          { layout: i },
-        ),
+              figures: layout.figures,
+            });
+
+            return res;
+          } catch (err) {
+            if (err instanceof Error) {
+              const cause = err.cause ?? {};
+              err.cause = { ...cause, layout: i };
+            }
+            throw err;
+          }
+        },
       ),
     );
     logger.debug('Data fetched');
@@ -298,7 +307,7 @@ export async function generateReport(
     // Update result
     result.detail = {
       ...result.detail,
-      took: dfns.differenceInMilliseconds(new Date(), startTime),
+      took: differenceInMilliseconds(new Date(), startTime),
       sendingTo: data.targets,
       stats: omit(renderResult, 'path'),
     };

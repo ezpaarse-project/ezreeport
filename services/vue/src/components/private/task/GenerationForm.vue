@@ -23,22 +23,23 @@
           <v-alert
             :title="error ? $t('$ezreeport.task.generation.error.title') : $t('$ezreeport.task.generation.success.title')"
             :text="$t('$ezreeport.task.generation.success.description')"
-            :type="error ? 'error' : 'success'"
+            :type="alertColor"
           >
             <template v-if="error" #text>
               <ul>
                 <li>{{ error.message }}</li>
-                <template v-if="error.cause">
-                  <li v-if="error.cause.type">
-                    {{ $t('$ezreeport.task.generation.error.type') }}: "{{ error.cause.type }}"
-                  </li>
-                  <li v-if="error.cause.layout">
-                    {{ $t('$ezreeport.task.generation.error.layout') }}: "{{ error.cause.layout }}"
-                  </li>
-                  <li v-if="error.cause.figure">
-                    {{ $t('$ezreeport.task.generation.error.figure') }}: "{{ error.cause.figure }}"
-                  </li>
-                </template>
+                <li>
+                  {{ $t('$ezreeport.task.generation.error.type') }}: "{{ error.type }}"
+                </li>
+                <li>
+                  {{ $t('$ezreeport.task.generation.error.name') }}: "{{ error.name }}"
+                </li>
+                <li v-if="error.cause?.layout">
+                  {{ $t('$ezreeport.task.generation.error.layout') }}: "{{ error.cause.layout }}"
+                </li>
+                <li v-if="error.cause?.figure">
+                  {{ $t('$ezreeport.task.generation.error.figure') }}: "{{ error.cause.figure }}"
+                </li>
               </ul>
             </template>
 
@@ -165,7 +166,7 @@ import {
 import {
   getFileAsBlob,
   type ReportResult,
-  type ReportErrorCause,
+  type ReportError,
 } from '~sdk/reports';
 import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
 import type { Task } from '~sdk/tasks';
@@ -195,7 +196,7 @@ const loading = ref(false);
 /** Progress of the generation */
 const progress = ref(0);
 /** Error in the generation */
-const error = ref<{ message: string, cause?: ReportErrorCause } | undefined>();
+const error = ref<ReportError | undefined>();
 /** Result of the generation */
 const result = ref<ReportResult | undefined>();
 
@@ -203,6 +204,16 @@ const result = ref<ReportResult | undefined>();
 const formattedPeriod = computed(() => `${format(period.value.start, 'dd/MM/yyyy')} ~ ${format(period.value.end, 'dd/MM/yyyy')}`);
 /** Days in period */
 const periodRange = computed(() => eachDayOfInterval(period.value));
+/** Color of the alert */
+const alertColor = computed(() => {
+  if (!error.value) {
+    return 'success';
+  }
+  if (error.value.name === 'NoDataError') {
+    return 'warning';
+  }
+  return 'error';
+});
 
 function onTargetUpdated(emails: string | string[] | undefined) {
   if (emails == null) {
@@ -309,7 +320,11 @@ async function generate() {
 
   try {
     const generation = generateAndListenReportOfTask(props.modelValue, period.value, targets.value);
-    generation.on('progress', (ev) => { progress.value = ev.progress; });
+    generation.on('progress', (ev) => {
+      if (ev.progress != null) {
+        progress.value = ev.progress;
+      }
+    });
 
     const res = await generation;
     if (!res.success && res.detail.error) {
@@ -318,7 +333,7 @@ async function generate() {
 
     result.value = res;
   } catch (err) {
-    error.value = { message: err instanceof Error ? err.message : `${err}` };
+    handleEzrError(t('$ezreeport.task.errors.generate'), err);
   }
   loading.value = false;
 }

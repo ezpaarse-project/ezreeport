@@ -252,17 +252,18 @@
               <template #text>
                 <ul>
                   <li>{{ result.detail.error.message }}</li>
-                  <template v-if="result.detail.error.cause">
-                    <li v-if="result.detail.error.cause.type">
-                      {{ $t('$ezreeport.task.generation.error.type') }}: "{{ result.detail.error.cause.type }}"
-                    </li>
-                    <li v-if="result.detail.error.cause.layout">
-                      {{ $t('$ezreeport.task.generation.error.layout') }}: "{{ result.detail.error.cause.layout }}"
-                    </li>
-                    <li v-if="result.detail.error.cause.figure">
-                      {{ $t('$ezreeport.task.generation.error.figure') }}: "{{ result.detail.error.cause.figure }}"
-                    </li>
-                  </template>
+                  <li>
+                    {{ $t('$ezreeport.task.generation.error.type') }}: "{{ result.detail.error.type }}"
+                  </li>
+                  <li>
+                    {{ $t('$ezreeport.task.generation.error.name') }}: "{{ result.detail.error.name }}"
+                  </li>
+                  <li v-if="result.detail.error.cause?.layout">
+                    {{ $t('$ezreeport.task.generation.error.layout') }}: "{{ result.detail.error.cause.layout }}"
+                  </li>
+                  <li v-if="result.detail.error.cause?.figure">
+                    {{ $t('$ezreeport.task.generation.error.figure') }}: "{{ result.detail.error.cause.figure }}"
+                  </li>
                 </ul>
               </template>
             </v-alert>

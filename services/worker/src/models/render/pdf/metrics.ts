@@ -1,9 +1,11 @@
 import type { Font } from 'jspdf';
 
 import { format, isValid, parseISO } from '@ezreeport/dates';
+import TemplateError from '~/models/generation/errors';
 import type { FetchResultItem } from '~/models/fetch/results';
 import type { Position, Size, Area } from '~/models/render/types';
 import type { PDFReport } from '~/models/render/pdf/types';
+import RenderError from '~/models/render/errors';
 
 type MetricLabel = {
   text: string,
@@ -44,12 +46,12 @@ const formatDate = (
 ): string => {
   let value = origValue;
   if (typeof value === 'boolean') {
-    throw new Error('Expected number / string, got Boolean');
+    throw new RenderError('Expected number / string, got Boolean', 'DataFormatError');
   }
 
   if (typeof value === 'string') {
     const d = parseISO(value);
-    if (!isValid(d)) throw new Error(`Date is not in ISO format: ${origValue}`);
+    if (!isValid(d)) throw new RenderError(`Date is not in ISO format: ${origValue}`, 'DataFormatError');
     value = d.getTime();
   }
 
@@ -78,7 +80,7 @@ const formatNumber = (
   }
 
   if (Number.isNaN(value)) {
-    throw new Error(`Cannot parse value into a number: ${origValue}`);
+    throw new RenderError(`Cannot parse value into a number: ${origValue}`, 'DataFormatError');
   }
 
   const locale = {
@@ -131,7 +133,7 @@ function formatValue(label: MetricLabel, data: FetchResultItem) {
   } catch (error) {
     const message = `An error occurred while formatting "${label.text}" ("${value}")`;
     if (!(error instanceof Error)) {
-      throw new Error(`${message}: ${error}`);
+      throw new RenderError(`${message}: ${error}`);
     }
 
     error.message = `${message}: ${error.message}`;
@@ -183,7 +185,10 @@ export const addMetricToPDF = (
   };
 
   if ((params.labels?.length ?? 0) <= 0) {
-    throw new Error('Metric figure must have at least one label');
+    throw new TemplateError(
+      'Metric figure must have at least one label',
+      'MissingParameterError',
+    );
   }
 
   const margin = { x: doc.margin.left, y: doc.margin.top, key: 3 };
@@ -260,7 +265,7 @@ export const addMetricToPDF = (
   for (let i = 0; i < metrics.length; i += 1) {
     const { key, value, sizes } = metrics[i];
     if (!slots[i]) {
-      throw new Error(`slot ${i} not found`);
+      throw new RenderError(`slot ${i} not found`, 'SlotError');
     }
 
     const slot = {

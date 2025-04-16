@@ -1,8 +1,10 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 
-import { ensureInt, syncWithCommonHandlers } from '@ezreeport/models/lib/utils';
+import { ensureInt } from '@ezreeport/models/lib/utils';
 
 import type { FigureType } from '@ezreeport/models/templates';
+
+import FetchError from './errors';
 
 export type FetchResultValue = string | number | boolean;
 
@@ -25,22 +27,23 @@ export type FetchResultItem = {
  * Asserts that the ES response contains no errors, and have actual usable data
  *
  * @param response The raw ES repsponse
- * @param cause The cause of the error
  */
 function checkEsErrors(
   response: EsResponse,
-  cause: unknown,
 ): asserts response is ElasticTypes.MsearchMultiSearchItem<Record<string, unknown>> {
   // Checks any errors
   if ('error' in response) {
     const reason = response.error.failed_shards?.[0]?.reason?.reason || response.error.reason;
-    throw new Error(reason, { cause });
+    throw new FetchError(reason, 'ElasticError');
   }
 
   // Checks any shard errors
   if (response._shards.failures?.length) {
     const reasons = response._shards.failures.map((err) => err.reason.reason).join(' ; ');
-    throw new Error(`An error occurred when fetching data : ${reasons}`, { cause });
+    throw new FetchError(
+      `An error occurred when fetching data : ${reasons}`,
+      'ShardError',
+    );
   }
 
   // Checks if there's data
@@ -50,12 +53,12 @@ function checkEsErrors(
       ? response.hits.total.value === 0
       : response.hits.total === 0
   ) {
-    throw new Error('No data found for given request. Please review filters or aggregations of figures.', { cause });
+    throw new FetchError('No data found for given request.', 'NoDataError');
   }
 
   // Check if there's aggregations
   if (!('aggregations' in response) || !response.aggregations) {
-    throw new Error('No aggregations in response', { cause });
+    throw new FetchError('No aggregations in response', 'NoDataError');
   }
 }
 
@@ -201,7 +204,10 @@ const handleMetricsEsResults: HandleEsResultsFnc = (
         const aggregation = esData[`${aggregationId}`];
         aggregationId += 1;
         if (!('value' in aggregation) || typeof aggregation.value !== 'number') {
-          throw new Error('Aggregation value is missing for a metric figure');
+          throw new FetchError(
+            'Aggregation value is missing for a metric figure',
+            'NoDataError',
+          );
         }
 
         return {
@@ -256,16 +262,14 @@ const handleOtherEsResults: HandleEsResultsFnc = ({ params }, esData) => {
  *
  * @param response The ES response
  * @param figure The figure
- * @param errorCause The cause of the error
  *
  * @returns Sorted data
  */
 export function handleEsResponse(
   response: EsResponse,
   figure: FigureType,
-  errorCause: Record<string, unknown>,
 ): FetchResultItem[] {
-  checkEsErrors(response, errorCause);
+  checkEsErrors(response);
 
   // Guess the function we'll be using
   let handleResults = handleOtherEsResults;
@@ -287,10 +291,7 @@ export function handleEsResponse(
     elasticCount = elasticCount.value;
   }
 
-  const data = syncWithCommonHandlers(
-    () => handleResults(figure, aggregations || {}, elasticCount),
-    { ...errorCause, elasticData: aggregations, elasticCount },
-  );
+  const data = handleResults(figure, aggregations || {}, elasticCount);
 
   return sortData(data, figure);
 }

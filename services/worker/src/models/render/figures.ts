@@ -1,14 +1,13 @@
 import { merge } from 'lodash';
 import type { Mark } from 'vega-lite/build/src/mark';
 
-import { syncWithCommonHandlers } from '@ezreeport/models/lib/utils';
-
 import type { RecurrenceType } from '@ezreeport/models/recurrence';
 import type { FigureType } from '@ezreeport/models/templates';
 import type { FetchResultItem } from '~/models/fetch/results';
 import type { PDFReport } from '~/models/render/pdf/types';
 import type { Area } from '~/models/render/types';
 
+import RenderError from './errors';
 import { addMdToPDF } from './pdf/markdown';
 import { addMetricToPDF } from './pdf/metrics';
 import { addTableToPDF } from './pdf/table';
@@ -87,7 +86,10 @@ const renderMarkdown: RenderFigureFnc = async (params) => {
   } = params;
 
   if (!data.toString) {
-    throw new Error('Provided data is not string compatible');
+    throw new RenderError(
+      'Provided data is not string compatible',
+      'DataTypeError',
+    );
   }
 
   await addMdToPDF(doc, data.toString(), {
@@ -179,10 +181,16 @@ const renderVegaChart: RenderFigureFnc = async (params) => {
     },
   );
 
-  const view = syncWithCommonHandlers(
-    () => createVegaView(spec),
-    { vegaSpec: { ...spec, datasets: undefined } },
-  );
+  const view = await Promise.resolve(createVegaView(spec))
+    .catch((err) => new RenderError(
+      err.message,
+      'VegaError',
+      { vegaSpec: { ...spec, datasets: undefined } },
+    ));
+
+  if (view instanceof Error) {
+    throw view;
+  }
 
   doc.pdf.addImage({
     ...slot,

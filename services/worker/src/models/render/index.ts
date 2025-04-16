@@ -1,7 +1,5 @@
 import EventEmitter from 'node:events';
 
-import { asyncWithCommonHandlers, commonHandlers } from '@ezreeport/models/lib/utils';
-
 import type { RecurrenceType } from '@ezreeport/models/recurrence';
 import type { FigureType, LayoutType, TemplateBodyGridType } from '@ezreeport/models/templates';
 import type { ReportPeriodType } from '@ezreeport/models/reports';
@@ -14,6 +12,7 @@ import { createPDF, initPDFEngine } from './pdf';
 import { drawAreaRef } from './pdf/utils';
 import type { PDFReport, PDFStats } from './pdf/types';
 import { initVegaEngine } from './vega';
+import RenderError from './errors';
 
 export async function initRenderEngine() {
   const start = process.uptime();
@@ -27,6 +26,103 @@ export async function initRenderEngine() {
     initDurationUnit: 's',
     msg: 'Init completed',
   });
+}
+
+export interface RenderEventMap extends Record<string, unknown[]> {
+  'render:slots': [slots: Area[]];
+  'render:figure': [figure: FigureType];
+  'render:layout': [layout: LayoutType];
+}
+
+type FigureRenderOptionsType = {
+  figure: FigureType;
+  slot: Area;
+  grid: TemplateBodyGridType;
+  viewport: Area;
+  margin: Margin;
+  debug: boolean;
+  colorMap: Map<string, string>;
+  recurrence: RecurrenceType;
+};
+
+async function renderFigureWithVega(
+  doc: PDFReport,
+  options: FigureRenderOptionsType,
+) {
+  if (options.debug) {
+    drawAreaRef(doc.pdf, options.slot);
+  }
+
+  if (!options.figure.data) {
+    throw new RenderError('No data found', 'EmptyDataError');
+  }
+
+  let order;
+  if (options.figure.params.order !== false) {
+    order = options.figure.params.order === true ? 'desc' : options.figure.params.order;
+  }
+
+  // eslint-disable-next-line no-await-in-loop
+  await renderFigure({
+    doc,
+    colorMap: options.colorMap,
+    figure: options.figure,
+    viewport: options.viewport,
+    slot: options.slot,
+    order,
+    data: options.figure.data,
+    recurrence: options.recurrence,
+  });
+}
+
+type LayoutRenderOptionsType = {
+  layout: LayoutType;
+  slots: Area[];
+  grid: TemplateBodyGridType;
+  viewport: Area;
+  margin: Margin;
+  debug: boolean;
+  colorMap: Map<string, string>;
+  recurrence: RecurrenceType;
+};
+
+async function renderLayoutWithVega(
+  doc: PDFReport,
+  options: LayoutRenderOptionsType,
+  events: EventEmitter<RenderEventMap>,
+) {
+  const { figures } = options.layout;
+  // Limit number of figures to the number of possible slots
+  figures.length = Math.min(figures.length, options.slots.length);
+
+  for (let figureIndex = 0; figureIndex < figures.length; figureIndex += 1) {
+    const { figure, slot } = resolveSlot(
+      options.slots,
+      figures,
+      figureIndex,
+      options.grid,
+      options.viewport,
+      options.margin,
+    );
+
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      await renderFigureWithVega(doc, {
+        ...options,
+        figure,
+        slot,
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        const cause = err.cause ?? {};
+        err.cause = { ...cause, figure: figureIndex };
+        throw err;
+      }
+      throw new RenderError(`${err}`);
+    }
+
+    events.emit('render:figure', figure);
+  }
 }
 
 export type VegaRenderOptionsType = {
@@ -43,12 +139,6 @@ export type VegaRenderOptionsType = {
   layouts: LayoutType[];
   grid: TemplateBodyGridType;
 };
-
-export interface RenderEventMap extends Record<string, unknown[]> {
-  'render:slots': [slots: Area[]];
-  'render:figure': [figure: FigureType];
-  'render:layout': [layout: LayoutType];
-}
 
 /**
  * Generate PDF report with Vega
@@ -76,7 +166,7 @@ export async function renderPdfWithVega(
     /**
      * Usage space in page
      */
-    const viewport = {
+    const viewport: Area = {
       x: doc.margin.left,
       y: doc.offset.top,
       width: doc.width - doc.margin.left - doc.margin.right,
@@ -94,69 +184,39 @@ export async function renderPdfWithVega(
     events.emit('render:slots', slots);
 
     for (let layoutIndex = 0; layoutIndex < options.layouts.length; layoutIndex += 1) {
-      // eslint-disable-next-line no-await-in-loop
-      await asyncWithCommonHandlers(
-        async () => {
-          const { figures } = options.layouts[layoutIndex];
+      const layout = options.layouts[layoutIndex];
 
-          if (layoutIndex > 0) {
-            await doc.addPage();
-          }
+      if (layoutIndex > 0) {
+        // eslint-disable-next-line no-await-in-loop
+        await doc.addPage();
+      }
 
-          // Limit number of figures to the number of possible slots
-          figures.length = Math.min(figures.length, slots.length);
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await renderLayoutWithVega(
+          doc,
+          {
+            layout,
+            slots,
+            grid: options.grid,
+            viewport,
+            margin: slotMargin,
+            debug: options.debug,
+            colorMap,
+            recurrence: options.recurrence,
+          },
+          events,
+        );
+      } catch (err) {
+        if (err instanceof Error) {
+          const cause = err.cause ?? {};
+          err.cause = { ...cause, layout: layoutIndex };
+          throw err;
+        }
+        throw new RenderError(`${err}`);
+      }
 
-          for (let figureIndex = 0; figureIndex < figures.length; figureIndex += 1) {
-            try {
-              const { figure, slot } = resolveSlot(
-                slots,
-                figures,
-                figureIndex,
-                options.grid,
-                viewport,
-                slotMargin,
-              );
-
-              if (options.debug) {
-                drawAreaRef(doc.pdf, slot);
-              }
-
-              if (!figure.data) {
-                throw new Error('No data found');
-              }
-
-              let order;
-              if (figure.params.order !== false) {
-                order = figure.params.order === true ? 'desc' : figure.params.order;
-              }
-
-              // eslint-disable-next-line no-await-in-loop
-              await renderFigure({
-                doc,
-                colorMap,
-                figure,
-                viewport,
-                slot,
-                order,
-                data: figure.data,
-                recurrence: options.recurrence,
-              });
-
-              events.emit('render:figure', figure);
-            } catch (error) {
-              const figure = figures[figureIndex];
-              const title = figure?.params?.title || figure?.type || (figureIndex + 1);
-              throw commonHandlers(error, { figure: title });
-            }
-          }
-
-          events.emit('render:layout', options.layouts[layoutIndex]);
-        },
-        {
-          layout: layoutIndex,
-          type: 'render',
-        },
-      );
+      events.emit('render:layout', options.layouts[layoutIndex]);
     }
 
     return await doc.render();
