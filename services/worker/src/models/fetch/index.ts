@@ -95,7 +95,7 @@ export async function fetchElastic(options: ElasticFetchOptionsType) {
       try {
         figure.data = handleEsResponse(response, figure);
       } catch (error) {
-        const cause = { esIndex: options.index, prepareEsQuery: requests[i], figure: figureId };
+        const cause = { esIndex: options.index, esQuery: requests[i], figure: figureId };
 
         if (error instanceof TypedError) {
           error.cause = cause;
