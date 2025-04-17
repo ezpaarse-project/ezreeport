@@ -17,7 +17,8 @@
   "scripts": {
     "dev": "tsx watch --inspect=0.0.0.0 src/app.ts",
     "lint": "eslint .",
-    "start": "tsx src/app.ts"
+    "start": "tsx src/app.ts",
+    "type-check": "tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {
     "*.{js,ts}": [

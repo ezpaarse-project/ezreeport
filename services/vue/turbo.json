@@ -3,15 +3,9 @@
   "extends": ["//"],
   "tasks": {
     "build:docs": {
-      "dependsOn": ["^build:docs"],
       "outputs": ["storybook-static/**"]
     },
     "build": {
-      "dependsOn": [
-        "@ezpaarse-project/ezreeport-sdk-js#build:js",
-        "@ezpaarse-project/ezreeport-sdk-js#build:types",
-        "^build"
-      ],
       "outputs": ["dist/**"]
     },
     "publish": {}

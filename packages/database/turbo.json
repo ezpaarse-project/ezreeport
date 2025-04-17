@@ -8,6 +8,9 @@
     "db:migrate": {
       "cache": false,
       "interactive": true
+    },
+    "type-check": {
+      "dependsOn": ["db:generate"]
     }
   }
 }
