@@ -1,6 +1,4 @@
 import EventEmitter from 'node:events';
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 
 import { GenerationQueueData } from '@ezreeport/models/queues';
 import type { TemplateBodyType } from '@ezreeport/models/templates';
@@ -11,14 +9,13 @@ import { parseJSONMessage } from '@ezreeport/rabbitmq';
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
-import { gzipAsync } from '~/lib/gzip';
 
 import { generateReport, type GenerationEventMap } from '~/models/generation';
 
 import { sendEvent } from './event';
 import { sendReport } from './send';
 
-const { outDir, team } = config.report;
+const { team } = config.report;
 
 const generationQueueName = 'ezreeport.report:queues';
 const deadGenerationExchangeName = 'ezreeport.report:queues:dead';
@@ -102,34 +99,20 @@ async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage
   }
 
   // Send result
-  const filename = result.success && result.detail.files.report
-    ? result.detail.files.report
-    : result.detail.files.detail;
+  sendReport(channel, 'mail', {
+    generationId: data.id,
+    task: data.task,
+    namespace: data.namespace,
 
-  try {
-    const file = await readFile(join(outDir, filename));
-    const compressed = await gzipAsync(file);
+    success: result.success,
+    date: result.detail.createdAt,
+    period: result.detail.period,
+    targets: result.detail.sendingTo || [team],
 
-    sendReport(channel, 'mail', {
-      generationId: data.id,
-      task: data.task,
-      namespace: data.namespace,
-
-      success: result.success,
-      date: result.detail.createdAt,
-      period: result.detail.period,
-      targets: result.detail.sendingTo || [team],
-
-      file: compressed.toString('base64'),
-      filename,
-    });
-  } catch (err) {
-    logger.error({
-      jobId: data.id,
-      msg: 'Error while sending report',
-      err,
-    });
-  }
+    filename: result.success && result.detail.files.report
+      ? result.detail.files.report
+      : result.detail.files.detail,
+  });
 
   channel.ack(msg);
 }

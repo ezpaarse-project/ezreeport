@@ -53,8 +53,7 @@
         "style": "italic",
         "path": "assets/fonts/Roboto-MediumItalic.ttf"
       }
-    ],
-    "outDir": "/data/ezreeport/report"
+    ]
   },
   "pdf": {
     "logos": [

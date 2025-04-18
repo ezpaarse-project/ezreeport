@@ -1,4 +1,4 @@
-import { jsPDF as PDF } from 'jspdf';
+import type { jsPDF as PDF } from 'jspdf';
 
 import type { Interval } from '@ezreeport/dates';
 
@@ -24,10 +24,6 @@ export type PDFReportInit = {
   height: number;
   today: Date;
   fontFamily: string;
-  /**
-   * Output path
-   */
-  path: string;
   /**
    * Name of the report
    */
@@ -59,13 +55,10 @@ export type PDFReport = PDFReportInit & {
   /** Add a new page to the pdf */
   addPage: () => Promise<void>;
   /** Render the document, further modification of the document is not allowed */
-  render: () => Promise<PDFStats>;
-  /** Delete the document, further modification of the document is not allowed */
-  delete: () => Promise<void>;
+  render: () => Promise<PDFResult>;
 };
 
-export type PDFStats = {
-  pageCount: number,
-  path: string,
-  size: number
+export type PDFResult = {
+  pageCount: number;
+  data: Buffer;
 };

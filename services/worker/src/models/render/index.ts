@@ -10,7 +10,7 @@ import { generateSlots, resolveSlot } from './slots';
 import renderFigure from './figures';
 import { createPDF, initPDFEngine } from './pdf';
 import { drawAreaRef } from './pdf/utils';
-import type { PDFReport, PDFStats } from './pdf/types';
+import type { PDFReport, PDFResult } from './pdf/types';
 import { initVegaEngine } from './vega';
 import RenderError from './errors';
 
@@ -132,7 +132,6 @@ export type VegaRenderOptionsType = {
     namespace: {
       name: string;
     };
-    path: string;
   };
   recurrence: RecurrenceType;
   debug: boolean;
@@ -155,73 +154,66 @@ export type VegaRenderOptionsType = {
 export async function renderPdfWithVega(
   options: VegaRenderOptionsType,
   events = new EventEmitter<RenderEventMap>(),
-): Promise<PDFStats> {
+): Promise<PDFResult> {
   const colorMap = new Map<string, string>();
 
-  let d: PDFReport | undefined;
-  try {
-    const doc = await createPDF({ ...options.doc, path: `${options.doc.path}.pdf` });
-    d = doc;
+  const doc = await createPDF(options.doc);
 
-    /**
+  /**
      * Usage space in page
      */
-    const viewport: Area = {
-      x: doc.margin.left,
-      y: doc.offset.top,
-      width: doc.width - doc.margin.left - doc.margin.right,
-      height: doc.height - doc.offset.top - doc.offset.bottom,
-    };
-    const slotMargin: Margin = {
-      horizontal: doc.margin.left,
-      vertical: doc.margin.top,
-    };
+  const viewport: Area = {
+    x: doc.margin.left,
+    y: doc.offset.top,
+    width: doc.width - doc.margin.left - doc.margin.right,
+    height: doc.height - doc.offset.top - doc.offset.bottom,
+  };
+  const slotMargin: Margin = {
+    horizontal: doc.margin.left,
+    vertical: doc.margin.top,
+  };
 
-    /**
+  /**
      * Figures slots
      */
-    const slots = generateSlots(viewport, options.grid, slotMargin);
-    events.emit('render:slots', slots);
+  const slots = generateSlots(viewport, options.grid, slotMargin);
+  events.emit('render:slots', slots);
 
-    for (let layoutIndex = 0; layoutIndex < options.layouts.length; layoutIndex += 1) {
-      const layout = options.layouts[layoutIndex];
+  for (let layoutIndex = 0; layoutIndex < options.layouts.length; layoutIndex += 1) {
+    const layout = options.layouts[layoutIndex];
 
-      if (layoutIndex > 0) {
-        // eslint-disable-next-line no-await-in-loop
-        await doc.addPage();
-      }
-
-      try {
-        // eslint-disable-next-line no-await-in-loop
-        await renderLayoutWithVega(
-          doc,
-          {
-            layout,
-            slots,
-            grid: options.grid,
-            viewport,
-            margin: slotMargin,
-            debug: options.debug,
-            colorMap,
-            recurrence: options.recurrence,
-          },
-          events,
-        );
-      } catch (err) {
-        if (err instanceof Error) {
-          const cause = err.cause ?? {};
-          err.cause = { ...cause, layout: layoutIndex };
-          throw err;
-        }
-        throw new RenderError(`${err}`);
-      }
-
-      events.emit('render:layout', options.layouts[layoutIndex]);
+    if (layoutIndex > 0) {
+      // eslint-disable-next-line no-await-in-loop
+      await doc.addPage();
     }
 
-    return await doc.render();
-  } catch (error) {
-    await d?.delete();
-    throw error;
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      await renderLayoutWithVega(
+        doc,
+        {
+          layout,
+          slots,
+          grid: options.grid,
+          viewport,
+          margin: slotMargin,
+          debug: options.debug,
+          colorMap,
+          recurrence: options.recurrence,
+        },
+        events,
+      );
+    } catch (err) {
+      if (err instanceof Error) {
+        const cause = err.cause ?? {};
+        err.cause = { ...cause, layout: layoutIndex };
+        throw err;
+      }
+      throw new RenderError(`${err}`);
+    }
+
+    events.emit('render:layout', options.layouts[layoutIndex]);
   }
+
+  return doc.render();
 }

@@ -5,8 +5,9 @@ import { initHttpRequests } from '~/lib/http-requests';
 import { initElasticClient } from '~/lib/elastic';
 import { useRabbitMQ } from '~/lib/rabbitmq';
 
-import initQueues from '~/models/queues';
 import { initRenderEngine } from '~/models/render';
+import initQueues from '~/models/queues';
+import initRPC from '~/models/rpc';
 import { initHeartbeat, getMissingMandatoryServices } from '~/models/heartbeat';
 
 const start = async () => {
@@ -41,6 +42,7 @@ const start = async () => {
     // Initialize other services (if fails, service is not ready)
     await useRabbitMQ(async (connection) => {
       await initQueues(connection);
+      await initRPC(connection);
       await initHeartbeat(connection);
     });
 

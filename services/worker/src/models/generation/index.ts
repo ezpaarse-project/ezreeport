@@ -1,8 +1,4 @@
 import EventEmitter from 'node:events';
-import { join } from 'node:path';
-import { mkdir, writeFile } from 'node:fs/promises';
-
-import { omit } from 'lodash';
 
 import { format, add, differenceInMilliseconds } from '@ezreeport/dates';
 import type { GenerationQueueDataType } from '@ezreeport/models/queues';
@@ -14,6 +10,7 @@ import type {
   ReportResultType,
 } from '@ezreeport/models/reports';
 
+import { Readable } from 'node:stream';
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
 import { fetchElastic } from '~/models/fetch';
@@ -21,8 +18,9 @@ import TypedError from '~/models/errors';
 import { RenderEventMap, renderPdfWithVega } from '~/models/render';
 
 import TemplateError from './errors';
+import { createReportWriteStream } from '../rpc/client/files';
 
-const { ttl, outDir } = config.report;
+const { ttl } = config.report;
 
 /**
  * Prepare report by ensuring paths, namespace and prepare result
@@ -34,14 +32,12 @@ const { ttl, outDir } = config.report;
  */
 async function prepareReport(data: GenerationQueueDataType, startTime = new Date()) {
   // Prepare file paths
-  const todayStr = format(startTime, 'yyyy/yyyy-MM');
-  const basePath = join(outDir, todayStr, '/');
+  const todayStr = format(startTime, 'yyyy-MM');
 
   let filename = `ezREEPORT_${data.task.name.toLowerCase().replace(/[/ .]/g, '-')}`;
   if (process.env.NODE_ENV === 'production' || data.writeActivity) {
     filename += `_${data.id}`;
   }
-  const filepath = join(basePath, filename);
   const reportId = `${todayStr}/${filename}`;
 
   const periodDifference = differenceInMilliseconds(data.period.end, data.period.start);
@@ -67,14 +63,9 @@ async function prepareReport(data: GenerationQueueDataType, startTime = new Date
     },
   };
 
-  await mkdir(basePath, { recursive: true });
-
   return {
     result,
-    paths: {
-      filepath,
-      reportId,
-    },
+    reportId,
   };
 }
 
@@ -176,20 +167,38 @@ function handleReportError(
 }
 
 /**
- * Shorthand to write JSON data about generation
+ * Shorthand to stringify an object
  *
- * @param name The name of the file **without extension*
- * @param content The content to write
+ * @param obj The object
+ *
+ * @returns Stringified object
  */
-const writeInfoFile = (name: string, content: unknown) => writeFile(
-  `${name}.json`,
-  JSON.stringify(
-    content,
-    undefined,
-    process.env.NODE_ENV !== 'production' ? 2 : undefined,
-  ),
-  'utf-8',
+const stringify = (obj: unknown) => JSON.stringify(
+  obj,
+  null,
+  process.env.NODE_ENV === 'production' ? undefined : 2,
 );
+
+/**
+ * Send file to remote storage
+ *
+ * @param data The file content
+ * @param filename The file name
+ * @param destroyAt When the file should be deleted
+ *
+ * @returns Promise resolving when file is sent
+ */
+async function writeReportFile(data: Buffer, filename: string, destroyAt: Date) {
+  const remoteStream = await createReportWriteStream(filename, destroyAt);
+
+  return new Promise<void>((resolve, reject) => {
+    remoteStream
+      .on('finish', () => resolve())
+      .on('error', (err) => reject(err));
+
+    Readable.from(data).pipe(remoteStream);
+  });
+}
 
 export interface GenerationEventMap extends RenderEventMap {
   start: [{ reportId: string }];
@@ -227,7 +236,7 @@ export async function generateReport(
 
   // Prepare report
   const startTime = new Date();
-  const { result, paths } = await prepareReport(data);
+  const { result, reportId } = await prepareReport(data);
 
   logger.info({
     msg: 'Generation of report started',
@@ -236,9 +245,9 @@ export async function generateReport(
     template: data.template.name,
     taskId: data.task.id,
     task: data.task.name,
-    paths,
+    reportId,
   });
-  events.emit('start', { reportId: paths.reportId });
+  events.emit('start', { reportId });
 
   let template: TemplateBodyType | undefined;
   try {
@@ -282,11 +291,10 @@ export async function generateReport(
     events.emit('fetch:template', template);
 
     // Render report
-    const renderResult = await renderPdfWithVega(
+    const { data: pdfData, pageCount } = await renderPdfWithVega(
       {
         doc: {
           name: data.task.name,
-          path: `${paths.filepath}.rep`,
           namespace: data.namespace,
           period: data.period,
         },
@@ -297,10 +305,11 @@ export async function generateReport(
       },
       events,
     );
-    result.detail.files.report = `${paths.reportId}.rep.pdf`;
     logger.debug({
-      reportPath: result.detail.files.report,
-      msg: 'Report wrote',
+      msg: 'Report generated',
+      size: pdfData.byteLength,
+      sizeUnit: 'B',
+      pageCount,
     });
     events.emit('render:template', template);
 
@@ -309,11 +318,20 @@ export async function generateReport(
       ...result.detail,
       took: differenceInMilliseconds(new Date(), startTime),
       sendingTo: data.targets,
-      stats: omit(renderResult, 'path'),
+      stats: {
+        size: pdfData.byteLength,
+        pageCount,
+      },
     };
 
+    await writeReportFile(pdfData, `${reportId}.rep.pdf`, result.detail.destroyAt);
+    result.detail.files.report = `${reportId}.rep.pdf`;
+    logger.debug({
+      reportPath: `${reportId}.rep.pdf`,
+      msg: 'Report wrote',
+    });
+
     logger.info({
-      reportPath: result.detail.files.report,
       genDuration: result.detail.took,
       genDurationUnit: 'ms',
       msg: 'Report successfully generated',
@@ -324,10 +342,14 @@ export async function generateReport(
 
   // Write detail when process is ending
   try {
-    await writeInfoFile(`${paths.filepath}.det`, result);
-    result.detail.files.detail = `${paths.reportId}.det.json`;
+    await writeReportFile(
+      Buffer.from(stringify(result), 'utf-8'),
+      `${reportId}.det.json`,
+      result.detail.destroyAt,
+    );
+    result.detail.files.detail = `${reportId}.det.json`;
     logger.debug({
-      detailPath: result.detail.files.detail,
+      detailPath: `${reportId}.det.json`,
       msg: 'Detail wrote',
     });
   } catch (err) {
@@ -339,8 +361,12 @@ export async function generateReport(
 
   // Write debug when process is ending
   try {
-    await writeInfoFile(`${paths.filepath}.deb`, omit(template, 'renderOptions.layouts'));
-    result.detail.files.debug = `${paths.reportId}.deb.json`;
+    await writeReportFile(
+      Buffer.from(stringify(template), 'utf-8'),
+      `${reportId}.deb.json`,
+      result.detail.destroyAt,
+    );
+    result.detail.files.debug = `${reportId}.deb.json`;
     logger.debug({
       detailPath: result.detail.files.debug,
       msg: 'Debug wrote',

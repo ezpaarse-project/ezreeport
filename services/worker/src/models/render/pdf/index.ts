@@ -1,5 +1,4 @@
-import { existsSync } from 'node:fs';
-import { readFile, stat, unlink } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 
 import { jsPDF as PDF } from 'jspdf';
 
@@ -11,7 +10,7 @@ import type {
   JSPDFRegisterableFont,
   PDFReportInit,
   PDFReport,
-  PDFStats,
+  PDFResult,
 } from './types';
 
 import { loadImageAsset, registerJSPDFFont } from './utils';
@@ -35,7 +34,7 @@ export async function initPDFEngine() {
   );
 }
 
-export type PDFReportOptions = Pick<PDFReportInit, 'name' | 'period' | 'path' | 'namespace'>;
+export type PDFReportOptions = Pick<PDFReportInit, 'name' | 'period' | 'namespace'>;
 
 /**
  * Print PDF's header
@@ -159,7 +158,7 @@ async function printFooter(doc: PDFReportInit): Promise<number> {
 /**
  * Print page numbers, export PDF and reset document
  */
-async function renderDoc(doc: PDFReportInit): Promise<PDFStats> {
+async function renderDoc(doc: PDFReportInit): Promise<PDFResult> {
   // Print page numbers
   const totalPageCount = doc.pdf.internal.pages.length - 1;
   for (let currPage = 1; currPage <= totalPageCount; currPage += 1) {
@@ -186,25 +185,13 @@ async function renderDoc(doc: PDFReportInit): Promise<PDFStats> {
   }
 
   // Export document
-  await doc.pdf.save(doc.path, { returnPromise: true });
-  const { size } = await stat(doc.path);
+  const data = doc.pdf.output('arraybuffer');
 
   return {
     pageCount: totalPageCount,
-    path: doc.path,
-    size,
+    data: Buffer.from(data),
   };
 }
-
-/**
- * Delete document if already exists
- */
-async function deleteDoc(doc: PDFReportInit): Promise<void> {
-  if (existsSync(doc.path)) {
-    await unlink(doc.path);
-  }
-}
-
 /**
  * Shorthand to add a page to the PDF with header + footer
  */
@@ -254,7 +241,6 @@ export async function createPDF(params: PDFReportOptions): Promise<PDFReport> {
     },
     addPage() { return addDocPage(this); },
     render() { return renderDoc(this); },
-    delete() { return deleteDoc(this); },
   };
 
   return doc;
