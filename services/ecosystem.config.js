@@ -126,5 +126,21 @@ module.exports = {
         API_URL: env('API_URL', 'http://localhost:8080'),
       },
     },
+    {
+      name: 'files',
+      cwd: './files',
+      interpreter: 'tsx',
+      script: './src/app.ts',
+      merge_logs: false,
+      log_type: 'json',
+      env: {
+        ...nodeEnv,
+        ...rabbitmqEnv,
+
+        PATHS_REPORT: env('PATHS_REPORT', '/data/ezreeport/report'),
+
+        HTTP_PORT: +env('FILES_HTTP_PORT', 8480),
+      },
+    },
   ].filter((app) => !env(`DISABLE_${app.name.toUpperCase()}`, 0)),
 };

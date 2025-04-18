@@ -25,7 +25,6 @@ services:
       - host.docker.internal:host-gateway # Used because elastic is on the same machine, but not the same network
     volumes:
       - .:/usr/dev
-      - ./data/api:/data/ezreeport/report:ro # Report output
     command: "npm run dev"
     ports:
       - 8080:8080
@@ -43,7 +42,6 @@ services:
       - host.docker.internal:host-gateway # Used because elastic is on the same machine, but not the same network
     volumes:
       - .:/usr/dev
-      - ./data/api:/data/ezreeport/report # Report output
     command: "npm run dev"
     ports:
       - 9231:9229 # Debug port
@@ -60,7 +58,6 @@ services:
       - host.docker.internal:host-gateway # Used because elastic is on the same machine, but not the same network
     volumes:
       - .:/usr/dev
-      - ./data/api:/data/ezreeport/report # Report output
     command: "npm run dev"
     restart: unless-stopped
 
@@ -93,6 +90,21 @@ services:
       - 9233:9229 # Debug port
     restart: unless-stopped
 
+  files:
+    image: node:20.11.0
+    working_dir: /usr/dev/services/files
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
+    volumes:
+      - .:/usr/dev
+      - ./data/1:/data/ezreeport/reports # Report output
+    command: "npm run dev"
+    ports:
+      - 9234:9229 # Debug port
+    restart: unless-stopped
+
   storybook:
     image: node:20.11.0
     working_dir: /usr/dev/services/vue
@@ -117,3 +129,6 @@ services:
           limits:
             memory: 2G
     restart: unless-stopped
+
+volumes:
+  tmp-test:

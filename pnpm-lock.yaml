@@ -4,6 +4,21 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@types/node':
+      specifier: ^22.7.3
+      version: 22.10.0
+    pino-pretty:
+      specifier: ^11.2.2
+      version: 11.3.0
+    tsx:
+      specifier: ^4.19.1
+      version: 4.19.2
+    typescript:
+      specifier: ^5.6.2
+      version: 5.7.2
+
 importers:
 
   .:
@@ -71,9 +86,6 @@ importers:
       config:
         specifier: ^3.3.12
         version: 3.3.12
-      typescript:
-        specifier: ^5.6.2
-        version: 5.7.2
     devDependencies:
       '@types/config':
         specifier: ^3.3.5
@@ -90,9 +102,6 @@ importers:
       '@prisma/client':
         specifier: ^5.20.0
         version: 5.22.0(prisma@5.22.0)
-      typescript:
-        specifier: ^5.6.2
-        version: 5.7.2
     devDependencies:
       prisma:
         specifier: ^5.20.0
@@ -103,9 +112,6 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
-      typescript:
-        specifier: ^5.6.2
-        version: 5.7.2
 
   packages/heartbeats:
     dependencies:
@@ -115,25 +121,15 @@ importers:
       '@ezreeport/models':
         specifier: workspace:*
         version: link:../models
-      amqplib:
-        specifier: ^0.10.5
-        version: 0.10.5
-      typescript:
-        specifier: ^5.6.2
-        version: 5.7.2
-    devDependencies:
-      '@types/amqplib':
-        specifier: ^0.10.7
-        version: 0.10.7
+      '@ezreeport/rabbitmq':
+        specifier: workspace:*
+        version: link:../rabbitmq
 
   packages/logger:
     dependencies:
       pino:
         specifier: ^9.4.0
         version: 9.5.0
-      typescript:
-        specifier: ^5.6.2
-        version: 5.7.2
 
   packages/models:
     dependencies:
@@ -153,8 +149,11 @@ importers:
         specifier: ^0.10.5
         version: 0.10.5
       typescript:
-        specifier: ^5.6.2
+        specifier: 'catalog:'
         version: 5.7.2
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
     devDependencies:
       '@types/amqplib':
         specifier: ^0.10.7
@@ -168,11 +167,11 @@ importers:
       '@ezreeport/models':
         specifier: workspace:*
         version: link:../models
-      amqplib:
-        specifier: ^0.10.5
-        version: 0.10.5
+      '@ezreeport/rabbitmq':
+        specifier: workspace:*
+        version: link:../rabbitmq
       typescript:
-        specifier: ^5.6.2
+        specifier: 'catalog:'
         version: 5.7.2
     devDependencies:
       '@types/amqplib':
@@ -185,24 +184,8 @@ importers:
         specifier: workspace:*
         version: link:../logger
       typescript:
-        specifier: ^5.6.2
+        specifier: 'catalog:'
         version: 5.7.2
-
-  services/common:
-    dependencies:
-      date-fns:
-        specifier: ^4.1.0
-        version: 4.1.0
-      pino:
-        specifier: ^9.4.0
-        version: 9.5.0
-      zod:
-        specifier: ^3.23.8
-        version: 3.23.8
-    devDependencies:
-      '@types/amqplib':
-        specifier: ^0.10.7
-        version: 0.10.7
 
   services/ezra:
     dependencies:
@@ -253,7 +236,7 @@ importers:
         specifier: ^4.17.9
         version: 4.17.13
       '@types/node':
-        specifier: ^22.7.3
+        specifier: 'catalog:'
         version: 22.10.0
       '@types/semver':
         specifier: ^7.5.8
@@ -265,11 +248,45 @@ importers:
         specifier: ^0.3.4
         version: 0.3.4
       tsx:
-        specifier: ^4.19.1
+        specifier: 'catalog:'
         version: 4.19.2
       typescript:
-        specifier: ^5.6.2
+        specifier: 'catalog:'
         version: 5.7.2
+
+  services/files:
+    dependencies:
+      '@ezreeport/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@ezreeport/heartbeats':
+        specifier: workspace:*
+        version: link:../../packages/heartbeats
+      '@ezreeport/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
+      '@ezreeport/rabbitmq':
+        specifier: workspace:*
+        version: link:../../packages/rabbitmq
+      '@ezreeport/rpc':
+        specifier: workspace:*
+        version: link:../../packages/rpc
+      '@ezreeport/simple-http':
+        specifier: workspace:*
+        version: link:../../packages/simple-http
+      tsx:
+        specifier: 'catalog:'
+        version: 4.19.2
+      typescript:
+        specifier: 'catalog:'
+        version: 5.7.2
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.10.0
+      pino-pretty:
+        specifier: 'catalog:'
+        version: 11.3.0
 
   services/mail:
     dependencies:
@@ -291,6 +308,9 @@ importers:
       '@ezreeport/rabbitmq':
         specifier: workspace:*
         version: link:../../packages/rabbitmq
+      '@ezreeport/rpc':
+        specifier: workspace:*
+        version: link:../../packages/rpc
       '@ezreeport/simple-http':
         specifier: workspace:*
         version: link:../../packages/simple-http
@@ -304,17 +324,17 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(chokidar@3.6.0)
       tsx:
-        specifier: ^4.19.1
+        specifier: 'catalog:'
         version: 4.19.2
       typescript:
-        specifier: ^5.6.2
+        specifier: 'catalog:'
         version: 5.7.2
     devDependencies:
       '@types/mjml':
         specifier: ^4.7.4
         version: 4.7.4
       '@types/node':
-        specifier: ^22.7.3
+        specifier: 'catalog:'
         version: 22.10.0
       '@types/nodemailer':
         specifier: ^6.4.16
@@ -323,7 +343,7 @@ importers:
         specifier: ^3.2.6
         version: 3.2.6
       pino-pretty:
-        specifier: ^11.2.2
+        specifier: 'catalog:'
         version: 11.3.0
 
   services/report:
@@ -398,23 +418,23 @@ importers:
         specifier: ^4.8.1
         version: 4.8.1
       tsx:
-        specifier: ^4.19.1
+        specifier: 'catalog:'
         version: 4.19.2
       typescript:
-        specifier: ^5.6.2
+        specifier: 'catalog:'
         version: 5.7.2
     devDependencies:
       '@types/lodash':
         specifier: ^4.17.9
         version: 4.17.13
       '@types/node':
-        specifier: ^22.7.3
+        specifier: 'catalog:'
         version: 22.10.0
       '@types/swagger-ui-dist':
         specifier: ^3.30.5
         version: 3.30.5
       pino-pretty:
-        specifier: ^11.2.2
+        specifier: 'catalog:'
         version: 11.3.0
 
   services/scheduler:
@@ -456,20 +476,20 @@ importers:
         specifier: ^4.17.21
         version: 4.17.21
       tsx:
-        specifier: ^4.19.1
+        specifier: 'catalog:'
         version: 4.19.2
       typescript:
-        specifier: ^5.6.2
+        specifier: 'catalog:'
         version: 5.7.2
     devDependencies:
       '@types/lodash':
         specifier: ^4.17.9
         version: 4.17.13
       '@types/node':
-        specifier: ^22.7.3
+        specifier: 'catalog:'
         version: 22.10.0
       pino-pretty:
-        specifier: ^11.2.2
+        specifier: 'catalog:'
         version: 11.3.0
 
   services/sdk:
@@ -491,7 +511,7 @@ importers:
         version: 4.8.1
     devDependencies:
       '@types/node':
-        specifier: ^22.7.3
+        specifier: 'catalog:'
         version: 22.10.0
       '@types/object-hash':
         specifier: ^3.0.6
@@ -509,7 +529,7 @@ importers:
         specifier: ^0.27.1
         version: 0.27.1(typescript@5.7.2)
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
       vite:
         specifier: ^5.4.8
@@ -609,7 +629,7 @@ importers:
         specifier: ^8.4.7
         version: 8.4.7(prettier@2.8.8)
       typescript:
-        specifier: ^5.5.3
+        specifier: 'catalog:'
         version: 5.7.2
       unplugin-auto-import:
         specifier: ^0.19.0
@@ -662,6 +682,9 @@ importers:
       '@ezreeport/rabbitmq':
         specifier: workspace:*
         version: link:../../packages/rabbitmq
+      '@ezreeport/rpc':
+        specifier: workspace:*
+        version: link:../../packages/rpc
       '@ezreeport/simple-http':
         specifier: workspace:*
         version: link:../../packages/simple-http
@@ -687,10 +710,10 @@ importers:
         specifier: ^4.17.21
         version: 4.17.21
       tsx:
-        specifier: ^4.19.1
+        specifier: 'catalog:'
         version: 4.19.2
       typescript:
-        specifier: ^5.6.2
+        specifier: 'catalog:'
         version: 5.7.2
       vega:
         specifier: ^5.30.0
@@ -706,10 +729,10 @@ importers:
         specifier: ^4.17.9
         version: 4.17.13
       '@types/node':
-        specifier: ^22.7.3
+        specifier: 'catalog:'
         version: 22.10.0
       pino-pretty:
-        specifier: ^11.2.2
+        specifier: 'catalog:'
         version: 11.3.0
 
 packages:

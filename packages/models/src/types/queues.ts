@@ -52,11 +52,8 @@ export const MailReportQueueData = z.object({
   success: z.boolean()
     .describe('If generation success or not'),
 
-  file: z.string().base64().min(1)
-    .describe('File data, base64 of gzip compressed'),
-
   filename: z.string().min(1)
-    .describe('File name'),
+    .describe('File name, used to retrieve file'),
 
   task: Task
     .describe('Task used to generate report'),

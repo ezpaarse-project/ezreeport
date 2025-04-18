@@ -151,13 +151,13 @@
     "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
-    "@types/node": "^22.7.3",
+    "@types/node": "catalog:",
     "@types/object-hash": "^3.0.6",
     "events": "^3.3.0",
     "rimraf": "^6.0.1",
     "tsup": "^8.3.5",
     "typedoc": "^0.27.1",
-    "typescript": "^5.7.2",
+    "typescript": "catalog:",
     "vite": "^5.4.8"
   },
   "engines": {

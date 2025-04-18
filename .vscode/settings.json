@@ -18,7 +18,8 @@
     "vue",
     "ezra",
     "worker",
-    "scheduler"
+    "scheduler",
+    "files"
   ],
   "eslint.workingDirectories": [
     {

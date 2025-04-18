@@ -220,6 +220,41 @@ CMD [ "npm", "run", "start" ]
 
 # endregion
 # ---
+# region Files
+
+# Extract files from repo
+FROM turbo AS files-turbo
+
+RUN turbo prune ezreeport-files --docker --out-dir ./files
+# ---
+# Prepare prod dependencies for files
+FROM turbo AS files-pnpm
+WORKDIR /usr/build/files
+
+COPY --from=files-turbo /usr/src/files/json .
+
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+COPY --from=files-turbo /usr/src/files/full .
+
+RUN pnpm deploy --legacy --filter ezreeport-files --prod ./prod
+
+# ---
+# Final image to run files service
+FROM base AS files
+EXPOSE 8080
+ENV NODE_ENV=production
+WORKDIR /usr/build/files
+
+COPY --from=files-pnpm /usr/build/files/prod .
+
+HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
+  CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/liveness || exit 1
+
+CMD [ "npm", "run", "start" ]
+
+# endregion
+# ---
 # region All In One
 
 # Prepare SDK to be used in other images
@@ -237,6 +272,7 @@ COPY --from=api /usr/build/api ./report
 COPY --from=worker /usr/build/worker ./worker
 COPY --from=scheduler /usr/build/scheduler ./scheduler
 COPY --from=mail /usr/build/mail ./mail
+COPY --from=files /usr/build/files ./files
 
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
   CMD wget -Y off --no-verbose --tries=1 --spider http://localhost:8080/health/probes/liveness || exit 1

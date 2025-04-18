@@ -36,5 +36,13 @@
       "request": "attach",
       "type": "node"
     },
+    {
+      "localRoot": "${workspaceFolder}/services/files",
+      "name": "files: Debug",
+      "port": 9234,
+      "remoteRoot": "/usr/dev/services/files",
+      "request": "attach",
+      "type": "node"
+    },
   ]
 }

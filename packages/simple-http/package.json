@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@ezreeport/logger": "workspace:*",
-    "typescript": "^5.6.2"
+    "typescript": "catalog:"
   },
   "engines": {
     "node": "^20"

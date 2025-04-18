@@ -13,9 +13,9 @@ import {
 
 export type RPCStreamRouter = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  createWriteStream?: (...args: any[]) => Writable,
+  createWriteStream?: (...args: any[]) => Writable | Promise<Writable>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  createReadStream?: (...args: any[]) => Readable,
+  createReadStream?: (...args: any[]) => Readable | Promise<Readable>,
 };
 
 export async function setupRPCStreamServer(
@@ -36,7 +36,7 @@ export async function setupRPCStreamServer(
 
     let stream;
     try {
-      stream = router.createWriteStream(...request.params);
+      stream = await router.createWriteStream(...request.params);
     } catch (err) {
       return {
         reason: err instanceof Error ? err : new Error('Failed to create stream'),
@@ -62,7 +62,7 @@ export async function setupRPCStreamServer(
 
     let stream;
     try {
-      stream = router.createReadStream(...request.params);
+      stream = await router.createReadStream(...request.params);
     } catch (err) {
       return {
         reason: err instanceof Error ? err : new Error('Failed to create stream'),
