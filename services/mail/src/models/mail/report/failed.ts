@@ -1,3 +1,5 @@
+import { basename } from 'node:path';
+
 import type { Logger } from '@ezreeport/logger';
 
 import { format } from '@ezreeport/dates';
@@ -5,9 +7,9 @@ import { ReportResult } from '@ezreeport/models/reports';
 import type { MailReportQueueDataType } from '@ezreeport/models/queues';
 
 import config from '~/lib/config';
-import { gunzipAsync } from '~/lib/gzip';
 
 import { recurrenceToStr } from '~/models/recurrence';
+import { createReportReadStream } from '~/models/rpc/client/files';
 
 import { generateMail, sendMail } from '..';
 
@@ -19,18 +21,32 @@ export default async function sendFailedReport(
   data: MailReportQueueDataType,
   logger: Logger,
 ) {
-  const file = await gunzipAsync(Buffer.from(data.file, 'base64'));
+  const remoteStream = await createReportReadStream(data.filename);
+  const file = await new Promise<string>((resolve, reject) => {
+    let buffer = '';
+
+    remoteStream
+      .on('data', (chunk) => { buffer += chunk.toString('utf-8'); })
+      .on('end', () => resolve(buffer))
+      .on('error', (err) => reject(err));
+  });
+
+  const name = basename(data.filename);
   const dateStr = format(data.date, 'dd/MM/yyyy');
 
   let error: string;
   try {
-    const { detail } = ReportResult.parse(JSON.parse(file.toString()));
+    const { detail } = ReportResult.parse(JSON.parse(file));
     if (!detail.error) {
       throw new Error('No error found');
     }
 
     error = `${detail.error.type}: ${detail.error.name} - ${detail.error.message}`;
   } catch (err) {
+    logger.warn({
+      msg: 'Failed to parse report result',
+      err,
+    });
     error = 'Unknown error, see attachements';
   }
 
@@ -49,13 +65,13 @@ export default async function sendFailedReport(
       error,
     }),
     attachments: [{
-      filename: data.filename,
+      filename: name,
       content: file,
-      encoding: 'base64',
     }],
   });
+
   logger.info({
-    filename: data.filename,
+    filename: name,
     to: [team],
     msg: 'Failed report sent to targets',
   });

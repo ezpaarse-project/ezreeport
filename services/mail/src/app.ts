@@ -3,8 +3,9 @@ import { useRabbitMQ } from '~/lib/rabbitmq';
 import config from '~/lib/config';
 import startHTTPServer from '~/lib/http';
 
-import initQueues from '~/models/queues';
 import { initSMTP } from '~/models/mail';
+import initQueues from '~/models/queues';
+import initRPC from '~/models/rpc';
 import { initHeartbeat, getMissingMandatoryServices } from '~/models/heartbeat';
 
 const start = async () => {
@@ -37,6 +38,7 @@ const start = async () => {
     // Initialize other services (if fails, service is not ready)
     await useRabbitMQ(async (connection) => {
       await initQueues(connection);
+      await initRPC(connection);
       await initHeartbeat(connection);
     });
 

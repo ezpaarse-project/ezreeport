@@ -1,13 +1,14 @@
-import type { Logger } from '@ezreeport/logger';
+import { basename } from 'node:path';
 
+import type { Logger } from '@ezreeport/logger';
 import { format } from '@ezreeport/dates';
 import { stringToB64 } from '@ezreeport/models/lib/utils';
 import type { MailReportQueueDataType } from '@ezreeport/models/queues';
 
 import config from '~/lib/config';
-import { gunzipAsync } from '~/lib/gzip';
 
 import { recurrenceToStr } from '~/models/recurrence';
+import { createReportReadStream } from '~/models/rpc/client/files';
 
 import { generateMail, sendMail } from '..';
 
@@ -19,7 +20,8 @@ export default async function sendSuccessReport(
   data: MailReportQueueDataType,
   logger: Logger,
 ) {
-  const file = await gunzipAsync(Buffer.from(data.file, 'base64'));
+  const file = await createReportReadStream(data.filename);
+  const name = basename(data.filename);
   const dateStr = format(data.date, 'dd/MM/yyyy');
 
   // Send one email per target to allow un-subscription prefill
@@ -46,16 +48,15 @@ export default async function sendSuccessReport(
             unsubscribeLink,
           }),
           attachments: [{
-            filename: data.filename,
+            filename: name,
             content: file,
-            encoding: 'base64',
           }],
         });
 
         return to;
       } catch (err) {
         logger.error({
-          filename: data.filename,
+          filename: name,
           to,
           err,
           msg: 'Error when sending report',
@@ -68,13 +69,13 @@ export default async function sendSuccessReport(
   const successTargets = targets.filter((v) => v.status === 'fulfilled').map(({ value }) => value);
   if (successTargets.length > 0) {
     logger.info({
-      filename: data.filename,
+      filename: name,
       targets: successTargets,
       msg: 'Report sent to targets',
     });
   } else {
     logger.warn({
-      filename: data.filename,
+      filename: name,
       msg: 'No target to send report',
     });
   }
