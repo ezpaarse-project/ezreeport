@@ -3,7 +3,7 @@ import {
   createLogger,
   isPrettierInstalled,
   type Level,
-  type LoggerOptions
+  type LoggerOptions,
 } from '@ezreeport/logger';
 
 import config from '~/lib/config';

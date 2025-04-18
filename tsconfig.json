@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    // Used by ESBuild
+    "target": "ES2023",
+    "strict": true,
+
+    // Used by TypeScript
+    "lib": ["ES2023"],
+    "module": "NodeNext",
+    "resolveJsonModule": true,
+    "esModuleInterop": true
+  }
+}

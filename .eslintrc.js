@@ -1,12 +1,11 @@
 module.exports = {
   root: true,
   env: {
-    es2024: true,
+    es2023: true,
     node: true,
   },
   extends: ['airbnb-base', 'airbnb-typescript/base'],
   parserOptions: {
-    ecmaVersion: 'latest',
     sourceType: 'module',
   },
   overrides: [],

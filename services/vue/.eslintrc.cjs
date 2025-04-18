@@ -3,7 +3,7 @@ require('@rushstack/eslint-patch/modern-module-resolution');
 module.exports = {
   root: true,
   env: {
-    es2024: true,
+    es2023: true,
     browser: true,
   },
   extends: [
@@ -12,7 +12,6 @@ module.exports = {
     'plugin:storybook/recommended',
   ],
   parserOptions: {
-    ecmaVersion: 'latest',
     sourceType: 'module',
     project: 'tsconfig.eslint.json',
   },
