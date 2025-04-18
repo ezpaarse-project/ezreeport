@@ -1,11 +1,11 @@
 module.exports = {
-  root: true,
+  root: false,
+  parserOptions: {
+    project: 'tsconfig.eslint.json',
+  },
   env: {
-    es2021: true,
-    node: true,
     browser: true,
   },
-  extends: ['airbnb-base', 'airbnb-typescript/base'],
   overrides: [
     {
       files: ['vite.config.mts', 'tsup.config.ts'],
@@ -14,17 +14,4 @@ module.exports = {
       },
     },
   ],
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: 'tsconfig.eslint.json',
-  },
-  rules: {
-    'import/extensions': 'off',
-    '@typescript-eslint/no-explicit-any': 'warn',
-    '@typescript-eslint/no-unused-vars': ['error', {
-      argsIgnorePattern: '^_',
-      destructuredArrayIgnorePattern: '^_',
-    }],
-  },
 };

@@ -3,8 +3,7 @@ require('@rushstack/eslint-patch/modern-module-resolution');
 module.exports = {
   root: true,
   env: {
-    es2021: true,
-    node: true,
+    es2024: true,
     browser: true,
   },
   extends: [
@@ -18,8 +17,8 @@ module.exports = {
     project: 'tsconfig.eslint.json',
   },
   rules: {
-    'import/no-extraneous-dependencies': 'off',
     'import/extensions': 'off',
+    'import/no-extraneous-dependencies': 'off',
     'vue/multi-word-component-names': 'off',
   },
 };
