@@ -120,6 +120,7 @@ import type { Namespace } from '~sdk/namespaces';
 import { getCurrentNamespaces } from '~sdk/auth';
 import {
   upsertTask,
+  createTask,
   type Task,
   type InputTask,
 } from '~sdk/tasks';
@@ -226,7 +227,12 @@ function onTargetUpdated(targets: string | string[] | undefined) {
 
 async function save() {
   try {
-    const result = await upsertTask({ ...task.value, id: props.modelValue.id });
+    let result;
+    if (props.modelValue.id) {
+      result = await upsertTask({ ...task.value, id: props.modelValue.id });
+    } else {
+      result = await createTask({ ...task.value });
+    }
 
     emit('update:modelValue', result);
   } catch (e) {
