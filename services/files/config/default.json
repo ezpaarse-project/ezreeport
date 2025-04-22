@@ -15,6 +15,7 @@
     "password": "guest"
   },
   "paths": {
+    "db": "/data/ezreeport/db",
     "reports": "/data/ezreeport/reports/"
   }
 }

@@ -5,6 +5,7 @@ packages:
 onlyBuiltDependencies:
   - '@prisma/client'
   - '@prisma/engines'
+  - better-sqlite3
   - canvas
 
 catalog:

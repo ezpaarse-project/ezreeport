@@ -35,7 +35,8 @@ services:
     build:
       target: aio
     volumes:
-      - ./data/api:/data/ezreeport/report # Report output
+      - ./data/files-1/reports:/data/ezreeport/reports # Report output
+      - ./data/files-1/db:/data/ezreeport/db # Files DB
     ports:
       - 8080:8080
     env_file:

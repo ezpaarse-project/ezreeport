@@ -70,7 +70,6 @@ services:
         required: false
     volumes:
       - .:/usr/dev
-      - ./data/api:/data/ezreeport/report # Report output
     command: "npm run dev"
     ports:
       - 9232:9229 # Debug port
@@ -99,7 +98,8 @@ services:
         required: false
     volumes:
       - .:/usr/dev
-      - ./data/1:/data/ezreeport/reports # Report output
+      - ./data/files-1/reports:/data/ezreeport/reports # Report output
+      - ./data/files-1/db:/data/ezreeport/db # Files DB
     command: "npm run dev"
     ports:
       - 9234:9229 # Debug port

@@ -39,7 +39,7 @@ FROM turbo AS database-turbo
 
 RUN turbo prune @ezreeport/database --docker --out-dir ./database
 # ---
-# Prepare prod dependencies for DATABASE
+# Prepare dependencies for DATABASE
 FROM turbo AS database-pnpm
 WORKDIR /usr/build/database
 

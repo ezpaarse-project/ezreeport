@@ -5,6 +5,9 @@ import { unlink, mkdir } from 'node:fs/promises';
 
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
+import knex from '~/lib/knex';
+
+import type { DBReportEntry } from './types';
 
 const logger = appLogger.child({ scope: 'reports' });
 
@@ -12,12 +15,18 @@ const { paths: { reports: reportsDir } } = config;
 
 export async function createWriteReportStream(
   filename: string,
-  _destroyAt: string,
+  destroyAt: string,
 ): Promise<Writable> {
   const path = resolve(reportsDir, filename);
   await mkdir(dirname(path), { recursive: true });
 
-  // TODO: handle small database for tracking files
+  const entry = { created_at: new Date(), destroy_at: new Date(destroyAt) };
+  await knex<DBReportEntry>('reports')
+    .insert({ filename, ...entry })
+    .onConflict('filename')
+    .merge({ ...entry });
+
+  logger.info({ msg: 'File metadata added', filename, entry });
 
   return createWriteStream(path)
     .on('finish', () => { logger.info({ msg: 'File written', filename }); })
