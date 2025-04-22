@@ -122,6 +122,14 @@ export async function setupRPCStreamServer(
       if (requeueReason) {
         const alreadySeenMessage = alreadySeenMessages.has(msg.properties.correlationId);
 
+        logger.error({
+          msg: 'Error while processing streams',
+          methodName: data.method,
+          params: data.params,
+          correlationId: msg.properties.correlationId,
+          err: requeueReason,
+        });
+
         channel.nack(msg, undefined, !alreadySeenMessage);
         logger.debug({
           msg: 'Result not found, requeuing request',
