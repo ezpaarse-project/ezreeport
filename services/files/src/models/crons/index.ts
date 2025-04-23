@@ -4,7 +4,7 @@ import type { CronType } from '@ezreeport/crons/types';
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
 
-import generateReports from './executors/generateReports';
+import purgeOldReports from './executors/purgeOldReports';
 
 const { timers } = config;
 
@@ -16,9 +16,9 @@ export function initCrons() {
   const start = process.uptime();
 
   service = setupCrons({
-    generateReports: {
-      timer: timers.generateReports,
-      executor: generateReports,
+    purgeOldReports: {
+      timer: timers.purgeOldReports,
+      executor: purgeOldReports,
     },
   }, logger);
 

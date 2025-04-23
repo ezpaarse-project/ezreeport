@@ -11,7 +11,7 @@ export async function initSchedulerClient(channel: rabbitmq.Channel) {
   // schedulerClient will be called while begin unaware of
   // rabbitmq connection, so we need to store the channel
   // here
-  client = setupRPCClient(channel, 'ezreeport.rpc:scheduler', appLogger);
+  client = setupRPCClient(channel, 'ezreeport.rpc:crons', appLogger);
 }
 
 export async function getAllCrons(): Promise<CronType[]> {

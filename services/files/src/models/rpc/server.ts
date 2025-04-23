@@ -1,9 +1,16 @@
+import { setupRPCServer, type RPCServerRouter } from '@ezreeport/rpc/server';
 import { setupRPCStreamServer, type RPCStreamRouter } from '@ezreeport/rpc/streams/server';
 
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 
 import { createReadReportStream, createWriteReportStream } from '~/models/reports';
+import {
+  getAllCrons,
+  stopCron,
+  startCron,
+  forceCron,
+} from '~/models/crons';
 
 const logger = appLogger.child({ scope: 'rpc.server' });
 
@@ -14,7 +21,7 @@ const buckets: Record<string, RPCStreamRouter> = {
   },
 };
 
-const router: RPCStreamRouter = {
+const streamRouter: RPCStreamRouter = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createWriteStream: (bucketName: string, filename: string, ...params: any[]) => {
     const bucket = buckets[bucketName];
@@ -41,10 +48,18 @@ const router: RPCStreamRouter = {
   },
 };
 
+const router: RPCServerRouter = {
+  getAllCrons,
+  stopCron,
+  startCron,
+  forceCron,
+};
+
 export default async function initRPCServer(channel: rabbitmq.Channel) {
   const start = process.uptime();
 
-  await setupRPCStreamServer(channel, 'ezreeport.rpc:files:stream', router, appLogger, { compression: false });
+  await setupRPCStreamServer(channel, 'ezreeport.rpc:files:stream', streamRouter, appLogger, { compression: false });
+  await setupRPCServer(channel, 'ezreeport.rpc:crons', router, appLogger);
 
   logger.info({
     initDuration: process.uptime() - start,

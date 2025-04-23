@@ -50,3 +50,12 @@ export function createReadReportStream(filename: string): Readable {
     .on('finish', () => { logger.info({ msg: 'File read', filename }); })
     .on('error', (err) => { logger.error({ msg: 'Error on file read', filename, err }); });
 }
+
+export async function deleteReport(filename: string): Promise<void> {
+  const path = resolve(config.paths.reports, filename);
+  if (!existsSync(path)) {
+    return;
+  }
+
+  await unlink(path);
+}

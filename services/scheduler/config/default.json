@@ -15,8 +15,7 @@
     "password": "guest"
   },
   "timers": {
-    "generateReports": "0 0 * * *",
-    "purgeOldReports": "0 1 * * *"
+    "generateReports": "0 0 * * *"
   },
   "reportDir": "/data/ezreeport/report"
 }

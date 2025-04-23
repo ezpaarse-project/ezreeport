@@ -17,4 +17,4 @@ const options: Omit<LoggerOptions, 'name'> = {
 };
 
 // eslint-disable-next-line import/prefer-default-export
-export const appLogger = createLogger({ ...options, name: 'io' });
+export const appLogger = createLogger({ ...options, name: 'files' });

@@ -15,7 +15,6 @@
     "password": "RABBITMQ_PASSWORD"
   },
   "timers": {
-    "generateReports": "TIMER_GENERATE_REPORT",
-    "purgeOldReports": "TIMER_PURGE_OLD_REPORT"
+    "generateReports": "TIMER_GENERATE_REPORT"
   }
 }

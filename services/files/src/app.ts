@@ -3,6 +3,7 @@ import config from '~/lib/config';
 import startHTTPServer from '~/lib/http';
 import { useRabbitMQ } from '~/lib/rabbitmq';
 
+import { initCrons } from '~/models/crons';
 import { initHeartbeat, getMissingMandatoryServices } from '~/models/heartbeat';
 import initRPC from '~/models/rpc';
 
@@ -29,6 +30,9 @@ const start = async () => {
         }
       },
     });
+
+    // Initialize core services (if fails, service is not alive)
+    initCrons();
 
     // Initialize other services (if fails, service is not ready)
     await useRabbitMQ(async (connection) => {

@@ -14,6 +14,9 @@
     "username": "guest",
     "password": "guest"
   },
+  "timers": {
+    "purgeOldReports": "0 1 * * *"
+  },
   "paths": {
     "db": "/data/ezreeport/db",
     "reports": "/data/ezreeport/reports/"

@@ -43,6 +43,12 @@ function setupDB() {
     useNullAsDefault: true,
   });
 
+  process.on('SIGTERM', () => {
+    knex.destroy()
+      .then(() => logger.debug({ msg: 'Database closed' }))
+      .catch((err) => logger.error({ msg: 'Failed to close database', err }));
+  });
+
   logger.info({ msg: 'Database ready' });
 
   migrateDB(knex);

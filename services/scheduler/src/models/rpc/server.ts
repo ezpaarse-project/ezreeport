@@ -22,7 +22,7 @@ const router: RPCServerRouter = {
 export default async function initRPCServer(channel: rabbitmq.Channel) {
   const start = process.uptime();
 
-  await setupRPCServer(channel, 'ezreeport.rpc:scheduler', router, appLogger);
+  await setupRPCServer(channel, 'ezreeport.rpc:crons', router, appLogger);
 
   logger.info({
     initDuration: process.uptime() - start,

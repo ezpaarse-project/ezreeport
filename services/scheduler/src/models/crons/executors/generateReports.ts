@@ -1,11 +1,11 @@
 import { compact } from 'lodash';
 
+import type { Executor } from '@ezreeport/crons/types';
 import { Task } from '@ezreeport/models/tasks';
 import { Namespace } from '@ezreeport/models/namespaces';
 import { Template } from '@ezreeport/models/templates';
 import { calcPeriodFromRecurrence } from '@ezreeport/models/lib/periods';
 
-import type { Executor } from '~/models/crons/types';
 import { queueGeneration } from '~/models/queues/report/generation';
 import { getTasksToGenerate } from '~/models/tasks';
 
@@ -54,7 +54,7 @@ const generateReports: Executor = async (logger) => {
   }
 
   return {
-    msg: 'Generated report(s)',
+    msg: 'Queued report(s)',
     reportCounts: tasks.length,
   };
 };
