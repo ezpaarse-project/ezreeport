@@ -460,6 +460,7 @@
       "progress": "Progress",
       "debug": "Test report",
       "auth": "Elastic User",
+      "scheduler": "Scheduled report",
       "header:request": "Generation parameters",
       "header:fetch:template": "Fetching template...",
       "header:task": "Generated report",

@@ -31,6 +31,15 @@
       <TemplateTagView v-if="item.task?.extends?.tags" :model-value="item.task.extends.tags" size="x-small" />
     </template>
 
+    <template #[`item.origin`]="{ value }">
+      <v-icon
+        v-if="value === 'scheduler'"
+        v-tooltip="$t('$ezreeport.generations.scheduler')"
+        icon="mdi-clock-outline"
+      />
+      <span v-else>{{ value }}</span>
+    </template>
+
     <template #[`item.task.namespace`]="{ value, item }">
       <slot name="item.task.namespace" :namespace="value" :task="item">
         {{ value.name }}
@@ -203,6 +212,7 @@ const headers = computed((): VDataTableHeaders => [
     title: t('$ezreeport.generations.origin'),
     value: 'origin',
     sortable: true,
+    align: 'center',
   },
   {
     title: t('$ezreeport.generations.period'),

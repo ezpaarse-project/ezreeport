@@ -462,6 +462,7 @@
       "progress": "Progression",
       "debug": "Rapport de test",
       "auth": "Utilisateur Elastic",
+      "scheduler": "Rapport programmé",
       "header:request": "Paramètres de génération",
       "header:fetch:template": "Récupération du modèle...",
       "header:task": "Rapport généré",
