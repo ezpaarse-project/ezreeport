@@ -1,7 +1,16 @@
 <template>
   <div class="template-layout-preview-container">
-    <div v-if="$slots.prepend" class="d-flex flex-column align-center">
-      <slot name="prepend" />
+    <div
+      v-if="$slots.prepend || $slots.actions"
+      class="template-layout-preview-prepend--container"
+    >
+      <div :class="{ 'template-layout-preview-prepend': true, 'text-primary': current }">
+        <slot name="prepend" />
+      </div>
+
+      <div class="template-layout-preview-prepend--actions">
+        <slot name="actions" />
+      </div>
     </div>
 
     <v-sheet
@@ -17,17 +26,6 @@
           :model-value="figure"
         />
       </v-fade-transition>
-
-      <v-overlay
-        activator="parent"
-        :open-on-click="false"
-        open-on-hover
-        open-on-focus
-        contained
-        class="justify-end"
-      >
-        <slot name="actions" />
-      </v-overlay>
     </v-sheet>
   </div>
 </template>
@@ -66,10 +64,42 @@ state.on('dragEnded', () => {
   aspect-ratio: 297/210; // A4 format in mm
   cursor: pointer;
 
+  &::before {
+    content: '';
+    background-color: rgba(var(--v-theme-on-surface), 0.35);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    z-index: 10;
+  }
+
+  &:hover::before {
+    opacity: var(--v-theme-surface-overlay-multiplier);
+  }
+
   &-container {
     width: 100%;
     display: flex;
     gap: 0.5rem;
+  }
+
+  &-prepend {
+    &, &--container, &--actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    &--actions {
+      justify-content: end;
+      flex: 1;
+    }
   }
 
   &-grid {
