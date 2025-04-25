@@ -9,6 +9,9 @@ export const RPCRequest = z.object({
 
   params: z.array(z.any())
     .describe('RPC method parameters'),
+
+  toAll: z.boolean().default(false).optional()
+    .describe('Is RPC request sent to all services'),
 });
 
 /**

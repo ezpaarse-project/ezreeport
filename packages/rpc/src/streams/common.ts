@@ -1,5 +1,5 @@
 import type { Readable, Writable } from 'node:stream';
-import { createGzip, createUnzip } from 'node:zlib';
+import { createGzip, createGunzip } from 'node:zlib';
 
 import { parseJSONMessage, sendJSONToQueue, type rabbitmq } from '@ezreeport/rabbitmq';
 
@@ -15,7 +15,9 @@ export async function writeStreamIntoQueue(
 ) {
   let stream = inputStream;
   if (compression) {
-    stream = inputStream.pipe(createGzip());
+    const gzip = createGzip();
+    inputStream.pipe(gzip);
+    stream = gzip;
   }
 
   const { queue: dataQueue } = await channel.assertQueue('', {
@@ -77,7 +79,9 @@ export async function readStreamFromQueue(
 ) {
   let stream = outputStream;
   if (compression) {
-    stream = createUnzip().pipe(outputStream);
+    const gzip = createGunzip();
+    gzip.pipe(outputStream);
+    stream = gzip;
   }
 
   await channel.consume(dataQueue, (msg) => {

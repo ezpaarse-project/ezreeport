@@ -1,4 +1,3 @@
-// import { setupRPCClient, type RPCClient } from '@ezreeport/rpc/client';
 import { setupRPCStreamClient, type RPCStreamClient } from '@ezreeport/rpc/streams/client';
 
 import type rabbitmq from '~/lib/rabbitmq';
@@ -11,7 +10,7 @@ export async function initFilesClient(channel: rabbitmq.Channel) {
   // schedulerClient will be called while begin unaware of
   // rabbitmq connection, so we need to store the channel
   // here
-  streamClient = setupRPCStreamClient(channel, 'ezreeport.rpc:files:stream', appLogger, { compression: false });
+  streamClient = setupRPCStreamClient(channel, 'ezreeport.rpc:files:stream', appLogger);
 }
 
 export function createReportWriteStream(filename: string, taskId: string, destroyAt: Date) {

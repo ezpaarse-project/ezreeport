@@ -62,6 +62,10 @@ export async function createReadReportStream(filename: string, taskId: string): 
     .on('error', (err) => { logger.error({ msg: 'Error on file read', filename, err }); });
 }
 
+export async function getAllReports(): Promise<{ filename: string, task_id: string }[]> {
+  return knex<DBReportEntry>('reports').select('filename', 'task_id');
+}
+
 export async function deleteReport(filename: string): Promise<void> {
   const path = resolve(config.paths.reports, filename);
   if (!existsSync(path)) {

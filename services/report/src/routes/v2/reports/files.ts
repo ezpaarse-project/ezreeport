@@ -2,7 +2,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
 import { z } from '@ezreeport/models/lib/zod';
-// import { ReportResult, type ReportResultType } from '@ezreeport/models/reports';
+import { ReportFiles } from '@ezreeport/models/reports';
 
 import { appLogger } from '~/lib/logger';
 
@@ -12,8 +12,8 @@ import { Access } from '~/models/access';
 import * as responses from '~/routes/v2/responses';
 
 import { getTask } from '~/models/tasks';
-// import { ArgumentError } from '~/models/errors';
-import { createReportReadStream } from '~/models/rpc/client/files';
+import { createReportReadStream, getAllReports } from '~/models/rpc/client/files';
+import { NotFoundError } from '~/models/errors';
 
 const SpecificReportParams = z.object({
   taskId: z.string().min(1)
@@ -29,21 +29,27 @@ const SpecificReportParams = z.object({
 const router: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'GET',
-    url: '/:yearMonth/:reportName',
+    url: '/',
     schema: {
       summary: 'Get list of files for a generated report',
       tags: ['reports'],
-      params: SpecificReportParams,
-      // response: {
-      //   ...responses.describeErrors([
-      //     StatusCodes.BAD_REQUEST,
-      //     StatusCodes.UNAUTHORIZED,
-      //     StatusCodes.FORBIDDEN,
-      //     StatusCodes.NOT_FOUND,
-      //     StatusCodes.INTERNAL_SERVER_ERROR,
-      //   ]),
-      //   [StatusCodes.OK]: responses.SuccessResponse(ReportFiles),
-      // },
+      params: z.object({
+        taskId: z.string().min(1)
+          .describe('ID of the task'),
+      }),
+      response: {
+        ...responses.describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: responses.SuccessResponse(z.record(
+          z.string().describe('File name'),
+          ReportFiles,
+        )),
+      },
     },
     config: {
       ezrAuth: {
@@ -57,9 +63,61 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         return requireAllowedNamespace(request, task?.namespaceId ?? '');
       },
     ],
-    handler: async () => {
-      // TODO: get list of files across nodes
-      throw new Error('Not implemented');
+    handler: async (request, reply) => {
+      const reportsOfTasks = await getAllReports();
+      const reportOfTask = reportsOfTasks[request.params.taskId];
+      if (!reportOfTask) {
+        throw new NotFoundError(`Reports for task ${request.params.taskId} not found`);
+      }
+
+      return responses.buildSuccessResponse(reportOfTask, reply);
+    },
+  });
+
+  fastify.route({
+    method: 'GET',
+    url: '/:yearMonth/:reportName',
+    schema: {
+      summary: 'Get list of files for a generated report',
+      tags: ['reports'],
+      params: SpecificReportParams,
+      response: {
+        ...responses.describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: responses.SuccessResponse(ReportFiles),
+      },
+    },
+    config: {
+      ezrAuth: {
+        requireUser: true,
+        access: Access.READ,
+      },
+    },
+    preHandler: [
+      async (request) => {
+        const task = await getTask(request.params.taskId);
+        return requireAllowedNamespace(request, task?.namespaceId ?? '');
+      },
+    ],
+    handler: async (request, reply) => {
+      const reportsOfTasks = await getAllReports();
+      const reportsOfTask = reportsOfTasks[request.params.taskId];
+      if (!reportsOfTask) {
+        throw new NotFoundError(`Reports for task ${request.params.taskId} not found`);
+      }
+
+      const reportId = `${request.params.yearMonth}/${request.params.reportName}`;
+      const report = reportsOfTask[reportId];
+      if (!report) {
+        throw new NotFoundError(`Report for task ${request.params.taskId} not found`);
+      }
+
+      return responses.buildSuccessResponse(report, reply);
     },
   });
 

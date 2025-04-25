@@ -31,10 +31,12 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Get all crons',
       tags: ['crons'],
       response: {
+        ...responses.describeErrors([
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
         [StatusCodes.OK]: responses.SuccessResponse(z.array(Cron)),
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
     config: {
@@ -42,9 +44,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAdmin: true,
       },
     },
-    handler: async () => {
-      // TODO: get list of crons across services
-      throw new Error('Not implemented');
+    handler: async (request, reply) => {
+      const content = await getAllCrons();
+
+      return responses.buildSuccessResponse(content, reply);
     },
   });
 

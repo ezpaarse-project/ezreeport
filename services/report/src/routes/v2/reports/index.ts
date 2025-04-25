@@ -13,7 +13,7 @@ import { Access } from '~/models/access';
 
 import * as responses from '~/routes/v2/responses';
 
-import { InputManualReport, type ReportPeriodType } from '~/models/reports/types';
+import { InputManualReport, ReportFilesOfTask, type ReportPeriodType } from '~/models/reports/types';
 import { queueGeneration } from '~/models/queues/report/generation';
 import { getTask } from '~/models/tasks';
 import { getTemplate } from '~/models/templates';
@@ -22,6 +22,7 @@ import { getNamespace } from '~/models/namespaces';
 import { ArgumentError, ConflictError, NotFoundError } from '~/models/errors';
 
 import reportRoutes from './files';
+import { getAllReports } from '~/models/rpc/client/files';
 
 const SpecificTaskParams = z.object({
   taskId: z.string().min(1)
@@ -38,18 +39,18 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Get list of generated reports, grouped by task',
       tags: ['reports'],
       response: {
-        // ...responses.describeErrors([
-        //   StatusCodes.BAD_REQUEST,
-        //   StatusCodes.UNAUTHORIZED,
-        //   StatusCodes.FORBIDDEN,
-        //   StatusCodes.INTERNAL_SERVER_ERROR,
-        // ]),
-        // [StatusCodes.OK]: responses.SuccessResponse(
-        //   z.record(
-        //     z.string().describe('Task ID'),
-        //     ReportFilesOfTask,
-        //   ),
-        // ),
+        ...responses.describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: responses.SuccessResponse(
+          z.record(
+            z.string().describe('Task ID'),
+            ReportFilesOfTask,
+          ),
+        ),
       },
     },
     config: {
@@ -57,9 +58,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAdmin: true,
       },
     },
-    handler: async () => {
-      // TODO: get list of files across nodes
-      throw new Error('Not implemented');
+    handler: async (request, reply) => {
+      const reportsOfTasks = await getAllReports();
+
+      return responses.buildSuccessResponse(reportsOfTasks, reply);
     },
   });
 

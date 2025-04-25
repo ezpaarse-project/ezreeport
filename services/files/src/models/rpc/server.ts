@@ -4,7 +4,7 @@ import { setupRPCStreamServer, type RPCStreamRouter } from '@ezreeport/rpc/strea
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 
-import { createReadReportStream, createWriteReportStream } from '~/models/reports';
+import { getAllReports, createReadReportStream, createWriteReportStream } from '~/models/reports';
 import {
   getAllCrons,
   stopCron,
@@ -48,7 +48,11 @@ const streamRouter: RPCStreamRouter = {
   },
 };
 
-const router: RPCServerRouter = {
+const filesRouter: RPCServerRouter = {
+  getAllReports,
+};
+
+const cronRouter: RPCServerRouter = {
   getAllCrons,
   stopCron,
   startCron,
@@ -58,8 +62,9 @@ const router: RPCServerRouter = {
 export default async function initRPCServer(channel: rabbitmq.Channel) {
   const start = process.uptime();
 
-  await setupRPCStreamServer(channel, 'ezreeport.rpc:files:stream', streamRouter, appLogger, { compression: false });
-  await setupRPCServer(channel, 'ezreeport.rpc:crons', router, appLogger);
+  await setupRPCServer(channel, 'ezreeport.rpc:crons', cronRouter, appLogger);
+  await setupRPCServer(channel, 'ezreeport.rpc:files', filesRouter, appLogger);
+  await setupRPCStreamServer(channel, 'ezreeport.rpc:files:stream', streamRouter, appLogger);
 
   logger.info({
     initDuration: process.uptime() - start,

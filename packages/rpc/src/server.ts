@@ -93,7 +93,8 @@ export async function setupRPCServer(
 
     // Method is successful but no result was found, we pass it to next one in queue
     if (response.error == null && response.result == null) {
-      const alreadySeenMessage = alreadySeenMessages.has(msg.properties.correlationId);
+      const alreadySeenMessage = data.toAll // If message is spread, ignore
+        || alreadySeenMessages.has(msg.properties.correlationId);
 
       channel.nack(msg, undefined, !alreadySeenMessage);
       logger.debug({
@@ -123,15 +124,29 @@ export async function setupRPCServer(
     channel.ack(msg);
   };
 
-  // Create rpc queue
+  // Create global rpc queue
   const rpcQueue = await channel.assertQueue(queueName, { durable: false });
   logger.debug({
     msg: 'Queue created',
     ...rpcQueue,
   });
 
-  // Consume rpc queue
+  // Consume global rpc queue
   await channel.consume(rpcQueue.queue, (m) => onRPCMessage(m));
+
+  // Create specific rpc queue
+  const randomQueue = await channel.assertQueue('', { exclusive: true, durable: false });
+  const exchangeName = `${queueName}:all`;
+  const rpcExchange = await channel.assertExchange(exchangeName, 'fanout', { durable: false });
+  await channel.bindQueue(randomQueue.queue, exchangeName, '');
+  logger.debug({
+    msg: 'Exchange created',
+    ...rpcExchange,
+    ...randomQueue,
+  });
+
+  // Consume specific rpc queue
+  await channel.consume(randomQueue.queue, (m) => onRPCMessage(m));
 
   logger.debug('RPC server setup');
 }

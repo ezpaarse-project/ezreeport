@@ -163,6 +163,6 @@ export async function listenToHeartbeats(
   };
 
   const { queue } = await channel.assertQueue('', { exclusive: true });
-  channel.bindQueue(queue, exchange, '');
-  channel.consume(queue, (msg) => onMessage(msg), { noAck: true });
+  await channel.bindQueue(queue, exchange, '');
+  await channel.consume(queue, (msg) => onMessage(msg), { noAck: true });
 }

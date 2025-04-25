@@ -1,4 +1,3 @@
-import { z } from '@ezreeport/models/lib/zod';
 import { Cron, type CronType } from '@ezreeport/models/crons';
 import { setupRPCClient, type RPCClient } from '@ezreeport/rpc/client';
 
@@ -19,8 +18,14 @@ export async function getAllCrons(): Promise<CronType[]> {
     throw new Error('Cron client not initialized');
   }
 
-  const data = await client.call('getAllCrons');
-  return z.array(Cron).parse(data);
+  const data = await client.callAll('getAllCrons');
+  const crons = new Map<string, CronType>(
+    data.flat()
+      .filter((res): res is CronType => Cron.safeParse(res).success)
+      .map((c) => [c.name, c]),
+  );
+
+  return Array.from(crons.values()).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function stopCron(cron: string) {
@@ -28,8 +33,18 @@ export async function stopCron(cron: string) {
     throw new Error('Cron client not initialized');
   }
 
-  const data = await client.call('stopCron', cron);
-  return Cron.parse(data);
+  const data = await client.callAll('stopCron', cron);
+  const crons = new Map<string, CronType>(
+    data.flat()
+      .filter((res): res is CronType => Cron.safeParse(res).success)
+      .map((c) => [c.name, c]),
+  );
+
+  const res = crons.get(cron);
+  if (!res) {
+    throw new Error(`Cron ${cron} not found`);
+  }
+  return res;
 }
 
 export async function startCron(cron: string) {
@@ -37,8 +52,18 @@ export async function startCron(cron: string) {
     throw new Error('Cron client not initialized');
   }
 
-  const data = await client.call('startCron', cron);
-  return Cron.parse(data);
+  const data = await client.callAll('startCron', cron);
+  const crons = new Map<string, CronType>(
+    data.flat()
+      .filter((res): res is CronType => Cron.safeParse(res).success)
+      .map((c) => [c.name, c]),
+  );
+
+  const res = crons.get(cron);
+  if (!res) {
+    throw new Error(`Cron ${cron} not found`);
+  }
+  return res;
 }
 
 export async function forceCron(cron: string) {
@@ -46,6 +71,16 @@ export async function forceCron(cron: string) {
     throw new Error('Cron client not initialized');
   }
 
-  const data = await client.call('forceCron', cron);
-  return Cron.parse(data);
+  const data = await client.callAll('forceCron', cron);
+  const crons = new Map<string, CronType>(
+    data.flat()
+      .filter((res): res is CronType => Cron.safeParse(res).success)
+      .map((c) => [c.name, c]),
+  );
+
+  const res = crons.get(cron);
+  if (!res) {
+    throw new Error(`Cron ${cron} not found`);
+  }
+  return res;
 }
