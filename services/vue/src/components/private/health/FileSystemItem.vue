@@ -61,7 +61,7 @@ function prettyUsage(usage: FileSystemUsage) {
 
 const perHostname = computed(() => new Map(
   props.modelValue.map(({ host, ...usage }) => [
-    host.name,
+    `${host.name}_${host.service}`,
     { service: host.service, ...prettyUsage(usage) },
   ]),
 ));

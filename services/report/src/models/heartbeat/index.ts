@@ -51,7 +51,7 @@ export async function initHeartbeat(connection: rabbitmq.ChannelModel) {
     }
 
     const { createdAt } = services.get(beat.hostname) ?? { createdAt: new Date() };
-    services.set(beat.hostname, { ...beat, createdAt });
+    services.set(`${beat.hostname}_${beat.service}`, { ...beat, createdAt });
   });
 
   send();
@@ -70,11 +70,3 @@ export function getAllServices() {
     // Filter out services that haven't given heartbeats in 2x the frequency
     .filter((s) => isAfter(s.updatedAt, new Date(Date.now() - (frequency * 2))));
 }
-
-// /**
-//  * Map of paths that need to be watched
-//  */
-// const filesystemsPaths: Record<FileSystemsType, string> = {
-//   reports: config.reportDir,
-//   logs: config.log.dir,
-// };
