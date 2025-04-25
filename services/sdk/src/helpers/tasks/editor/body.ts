@@ -34,7 +34,7 @@ export function createTaskBodyHelperFrom(template: Task['template']): TaskBodyHe
   return createTaskBodyHelper(
     template.index,
     template.dateField,
-    template.inserts.map((l) => createTaskLayoutHelperFrom(l)),
+    template.inserts?.map((l) => createTaskLayoutHelperFrom(l)) ?? [],
     template.filters,
   );
 }

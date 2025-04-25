@@ -61,6 +61,9 @@ assignPermission(getAllReports, 'GET /reports');
  */
 export async function getReportsOfTask(taskOrId: Omit<Task, 'template'> | string): Promise<ReportMap> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  if (!id) {
+    throw new Error('Task id is required');
+  }
 
   const {
     content,
@@ -82,6 +85,9 @@ assignPermission(getReportsOfTask, 'GET /reports/:taskId', true);
  */
 export async function getFileAsBlob(taskOrId: Omit<Task, 'template'> | string, path: string) {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  if (!id) {
+    throw new Error('Task id is required');
+  }
 
   return client.fetch(`/reports/${id}/${path}`, {
     responseType: 'blob',
@@ -99,6 +105,9 @@ assignPermission(getFileAsBlob, 'GET /reports/:taskId/:year/:yearMonth/:reportId
  */
 export async function getFileAsArrayBuffer(taskOrId: Omit<Task, 'template'> | string, path: string) {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  if (!id) {
+    throw new Error('Task id is required');
+  }
 
   return client.fetch(`/reports/${id}/${path}`, {
     responseType: 'arrayBuffer',
@@ -116,6 +125,9 @@ assignPermission(getFileAsArrayBuffer, 'GET /reports/:taskId/:year/:yearMonth/:r
  */
 export async function getFileAsStream(taskOrId: Omit<Task, 'template'> | string, path: string) {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  if (!id) {
+    throw new Error('Task id is required');
+  }
 
   return client.fetch(`/reports/${id}/${path}`, {
     responseType: 'stream',
@@ -133,6 +145,9 @@ assignPermission(getFileAsStream, 'GET /reports/:taskId/:year/:yearMonth/:report
  */
 export async function getFileAsText(taskOrId: Omit<Task, 'template'> | string, path: string) {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  if (!id) {
+    throw new Error('Task id is required');
+  }
 
   return client.fetch(`/reports/${id}/${path}`, {
     responseType: 'text',
@@ -151,6 +166,9 @@ assignPermission(getFileAsText, 'GET /reports/:taskId/:year/:yearMonth/:reportId
  */
 export async function getFileAsJson(taskOrId: Omit<Task, 'template'> | string, path: `${string}.det.json`) {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  if (!id) {
+    throw new Error('Task id is required');
+  }
 
   return client.fetch<ReportResult>(`/reports/${id}/${path}`);
 }
@@ -171,6 +189,9 @@ export async function generateReportOfTask(
   targets?: string[],
 ) {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
+  if (!id) {
+    throw new Error('Task id is required');
+  }
 
   let periodDate;
   if (period) {

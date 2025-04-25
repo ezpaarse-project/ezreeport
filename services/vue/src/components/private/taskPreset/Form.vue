@@ -101,7 +101,7 @@
 
       <v-btn
         v-if="!readonly"
-        :text="$t('$ezreeport.confirm')"
+        :text="modelValue?.id ? $t('$ezreeport.save') : $t('$ezreeport.new')"
         :append-icon="modelValue?.id ? 'mdi-pencil' : 'mdi-plus'"
         :disabled="!isValid"
         color="primary"
@@ -150,14 +150,32 @@ const preset = ref<InputTaskPreset>({
 });
 /** Is template list loading */
 const loadingTemplates = ref(false);
-/** Templates list */
-const templates = ref<Omit<Template, 'body'>[]>([]);
 
 /** Validate on mount */
 useTemplateVForm('formRef');
 
 /** Mapping options for dateField */
 const dateMapping = computed(() => getOptionsFromMapping('date'));
+/** Templates list */
+const templates = computedAsync(async () => {
+  let items: Omit<Template, 'body'>[] = [];
+
+  loadingTemplates.value = true;
+  try {
+    let meta;
+    ({ items, meta } = await getAllTemplates({ pagination: { count: 0, sort: 'name' } }));
+    templates.value = items;
+
+    if (!preset.value.templateId) {
+      preset.value.templateId = meta.default;
+    }
+  } catch (e) {
+    handleEzrError(t('$ezreeport.templates.errors.fetch'), e);
+  }
+  loadingTemplates.value = false;
+
+  return items;
+}, []);
 /** Current template */
 const currentTemplate = computed(
   () => templates.value.find((template) => template.id === preset.value.templateId),
@@ -180,21 +198,6 @@ function regenerateName() {
   }
   const recurrence = t(`$ezreeport.task.recurrenceList.${preset.value.recurrence}`);
   preset.value.name = `${currentTemplate.value?.name} ${recurrence.toLocaleLowerCase()}`;
-}
-
-async function fetchTemplates() {
-  loadingTemplates.value = true;
-  try {
-    const { items, meta } = await getAllTemplates({ pagination: { count: 0, sort: 'name' } });
-    templates.value = items;
-
-    if (!preset.value.templateId) {
-      preset.value.templateId = meta.default;
-    }
-  } catch (e) {
-    handleEzrError(t('$ezreeport.templates.errors.fetch'), e);
-  }
-  loadingTemplates.value = false;
 }
 
 async function onTemplateChange(id: string) {
@@ -232,6 +235,4 @@ async function save() {
     handleEzrError(msg, e);
   }
 }
-
-fetchTemplates();
 </script>

@@ -62,52 +62,60 @@
         <EditorFigureMd
           v-if="isFigureHelperMarkdown(modelValue)"
           :model-value="modelValue"
+          :readonly="readonly"
           @update:modelValue="emit('update:modelValue', $event)"
         >
           <template #append>
             <v-btn icon="mdi-close" variant="text" density="comfortable" @click="isFormVisible = false" />
           </template>
           <template #actions>
-            <v-btn :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="isFormVisible = false" />
+            <v-btn v-if="readonly" :text="$t('$ezreeport.close')" append-icon="mdi-close" @click="isFormVisible = false" />
+            <v-btn v-else :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="isFormVisible = false" />
           </template>
         </EditorFigureMd>
 
         <EditorFigureMetric
           v-else-if="isFigureHelperMetric(modelValue)"
           :model-value="modelValue"
+          :readonly="readonly"
           @update:modelValue="emit('update:modelValue', $event)"
         >
           <template #append>
             <v-btn icon="mdi-close" variant="text" density="comfortable" @click="isFormVisible = false" />
           </template>
           <template #actions>
-            <v-btn :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="isFormVisible = false" />
+            <v-btn v-if="readonly" :text="$t('$ezreeport.close')" append-icon="mdi-close" @click="isFormVisible = false" />
+            <v-btn v-else :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="isFormVisible = false" />
           </template>
         </EditorFigureMetric>
 
         <EditorFigureTable
           v-else-if="isFigureHelperTable(modelValue)"
           :model-value="modelValue"
+          :readonly="readonly"
           @update:modelValue="emit('update:modelValue', $event)"
         >
           <template #append>
             <v-btn icon="mdi-close" variant="text" density="comfortable" @click="isFormVisible = false" />
           </template>
           <template #actions>
-            <v-btn :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="isFormVisible = false" />
+            <v-btn v-if="readonly" :text="$t('$ezreeport.close')" append-icon="mdi-close" @click="isFormVisible = false" />
+            <v-btn v-else :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="isFormVisible = false" />
           </template>
         </EditorFigureTable>
 
         <EditorFigureVega
           v-else
           :model-value="modelValue"
+          :readonly="readonly"
           @update:modelValue="emit('update:modelValue', $event)"
         >
           <template #append>
             <v-btn icon="mdi-close" variant="text" density="comfortable" @click="isFormVisible = false" />
           </template>
           <template #actions>
-            <v-btn :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="isFormVisible = false" />
+            <v-btn v-if="readonly" :text="$t('$ezreeport.close')" append-icon="mdi-close" @click="isFormVisible = false" />
+            <v-btn v-else :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="isFormVisible = false" />
           </template>
         </EditorFigureVega>
       </v-dialog>

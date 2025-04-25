@@ -1,6 +1,8 @@
 <template>
   <div class="template-layout-preview-container">
-    <slot name="prepend" />
+    <div v-if="$slots.prepend" class="d-flex flex-column align-center">
+      <slot name="prepend" />
+    </div>
 
     <v-sheet
       :color="current ? 'primary' : undefined"
@@ -8,7 +10,7 @@
       rounded
       class="template-layout-preview"
     >
-      <v-fade-transition tag="div" group class="template-layout-preview-grid">
+      <v-fade-transition tag="div" group class="template-layout-preview-grid" :disabled="dragging">
         <EditorPreviewSlot
           v-for="figure in modelValue.figures"
           :key="figure.id"
@@ -31,6 +33,7 @@
 </template>
 
 <script setup lang="ts">
+import { state } from '@formkit/drag-and-drop';
 import type { AnyLayoutHelper } from '~sdk/helpers/layouts';
 
 // Components props
@@ -42,6 +45,16 @@ defineProps<{
 }>();
 
 const { grid } = useTemplateEditor();
+
+const dragging = ref(false);
+
+state.on('dragStarted', () => {
+  dragging.value = true;
+});
+
+state.on('dragEnded', () => {
+  dragging.value = false;
+});
 </script>
 
 <style lang="scss" scoped>

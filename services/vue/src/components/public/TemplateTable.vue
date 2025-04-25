@@ -9,12 +9,16 @@
   >
     <template #top>
       <v-toolbar
-        :title="`${titlePrefix || ''}${$t('$ezreeport.template.title:list', total)}`"
+        :title="title"
         color="transparent"
         density="comfortable"
       >
         <template v-if="$slots.prepend" #prepend>
           <slot name="prepend" />
+        </template>
+
+        <template v-if="$slots.title" #title>
+          <slot name="title" :title="title" />
         </template>
 
         <template #append>
@@ -200,8 +204,15 @@ import {
 type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 
 // Components props
-defineProps<{
+const props = defineProps<{
   titlePrefix?: string;
+  itemsPerPageOptions?: number[] | { title: string; value: number }[];
+  itemsPerPage?: number;
+}>();
+
+// Components events
+const emit = defineEmits<{
+  (e: 'update:itemsPerPage', value: number): void
 }>();
 
 // Utils composable
@@ -213,6 +224,8 @@ const selectedTemplates = ref<Omit<Template, 'body'>[]>([]);
 const updatedTemplate = ref<TemplateHelper>(createTemplateHelper());
 const isFormOpen = ref(false);
 
+/** Items per page shortcut */
+const itemsPerPage = computed({ get: () => props.itemsPerPage || 10, set: (v) => emit('update:itemsPerPage', v) });
 /** List of templates */
 const {
   total,
@@ -226,8 +239,10 @@ const {
     defaultTemplateId.value = res.meta.default;
     return res;
   },
-  { sortBy: 'name' },
+  { sortBy: 'name', itemsPerPage, itemsPerPageOptions: props.itemsPerPageOptions },
 );
+
+const title = computed(() => `${props.titlePrefix || ''}${t('$ezreeport.template.title:list', total.value)}`);
 
 /** Headers for table */
 const headers = computed((): VDataTableHeaders => [

@@ -112,6 +112,17 @@ import {
 
 type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 
+// Components props
+const props = defineProps<{
+  itemsPerPageOptions?: number[] | { title: string; value: number }[];
+  itemsPerPage?: number;
+}>();
+
+// Components events
+const emit = defineEmits<{
+  (e: 'update:itemsPerPage', value: number): void
+}>();
+
 // Utils composable
 const { t } = useI18n();
 
@@ -120,6 +131,8 @@ const isInfoOpen = ref(false);
 /** Selected job */
 const selectedJob = ref<MailJob | undefined>();
 
+/** Items per page shortcut */
+const itemsPerPage = computed({ get: () => props.itemsPerPage || 10, set: (v) => emit('update:itemsPerPage', v) });
 /** List of jobs */
 const {
   total,
@@ -128,7 +141,7 @@ const {
   vDataTableOptions,
 } = useServerSidePagination(
   async (params) => getMailJobs(params),
-  { order: 'desc' },
+  { order: 'desc', itemsPerPage, itemsPerPageOptions: props.itemsPerPageOptions },
 );
 
 const availableActions = computed(() => ({

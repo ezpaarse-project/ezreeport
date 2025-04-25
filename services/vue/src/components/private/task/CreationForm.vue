@@ -59,7 +59,7 @@
           </v-col>
         </v-row>
 
-        <v-row v-if="!namespaceId">
+        <v-row v-if="!isNamespaced">
           <v-col>
             <v-autocomplete
               v-model="data.namespaceId"
@@ -136,6 +136,19 @@
               />
 
               <EditorFilterList v-model="filters" />
+
+              <v-btn
+                v-if="showAdvanced"
+                v-tooltip:top="$t('$ezreeport.task.superUserMode:tooltip')"
+                :text="$t('$ezreeport.task.superUserMode')"
+                prepend-icon="mdi-tools"
+                append-icon="mdi-tools"
+                color="warning"
+                variant="flat"
+                block
+                class="mt-4"
+                @click="emit('open:advanced', { data, preset: currentPreset })"
+              />
             </template>
           </v-expansion-panel>
         </v-expansion-panels>
@@ -148,7 +161,7 @@
       <slot name="actions" />
 
       <v-btn
-        :text="$t('$ezreeport.confirm')"
+        :text="$t('$ezreeport.new')"
         :disabled="!isValid"
         append-icon="mdi-plus"
         color="primary"
@@ -175,12 +188,16 @@ import { isEmail } from '~/utils/validate';
 const props = defineProps<{
   /** Namespace to create task in */
   namespaceId?: string;
+  /** Should show advanced button */
+  showAdvanced?: boolean
 }>();
 
 // Component events
 const emit = defineEmits<{
   /** Updated task */
   (e: 'update:modelValue', value: Task): void
+  /** Asked to open task in advanced form */
+  (e: 'open:advanced', value: { data: AdditionalDataForPreset, preset?: TaskPreset }): void
 }>();
 
 // Utils composables
@@ -200,17 +217,14 @@ const data = ref<AdditionalDataForPreset>({
 });
 /** Is preset list loading */
 const loadingPresets = ref(false);
-/** Presets list */
-const presets = ref<TaskPreset[]>([]);
 /** Current preset selected */
 const currentPreset = ref<TaskPreset | undefined>();
 /** Is namespace list loading */
 const loadingNamespaces = ref(false);
-/** Namespaces list */
-const namespaces = ref<Omit<Namespace, 'fetchLogin' | 'fetchOptions'>[]>([]);
 /** Has name manually changed */
 const hasNameChanged = ref(false);
 
+/** Filters of task */
 const filters = computed({
   get: () => new Map((data.value.filters ?? []).map((f) => [f.name, f])),
   set: (v) => {
@@ -222,6 +236,41 @@ const filters = computed({
     data.value.filters = undefined;
   },
 });
+/** Preset list */
+const presets = computedAsync(async () => {
+  let items: TaskPreset[] = [];
+
+  loadingPresets.value = true;
+  try {
+    ({ items } = await getAllTaskPresets({ pagination: { count: 0, sort: 'name' }, include: ['template.tags'] }));
+  } catch (e) {
+    handleEzrError(t('$ezreeport.task.errors.fetchPresets'), e);
+  }
+  loadingPresets.value = false;
+
+  return items;
+}, []);
+/** Is form namespaced */
+const isNamespaced = computed(() => !!props.namespaceId);
+/** Namespace list */
+const namespaces = computedAsync(async () => {
+  let items: Omit<Namespace, 'fetchLogin' | 'fetchOptions'>[] = [];
+
+  if (isNamespaced.value) {
+    return items;
+  }
+
+  loadingNamespaces.value = true;
+  try {
+    const currentNamespaces = await getCurrentNamespaces();
+    items = currentNamespaces.sort((a, b) => a.name.localeCompare(b.name));
+  } catch (e) {
+    handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), e);
+  }
+  loadingNamespaces.value = false;
+
+  return items;
+}, []);
 
 function onPresetChange(preset: TaskPreset | undefined) {
   data.value.index = preset?.fetchOptions.index || '';
@@ -252,28 +301,6 @@ function onTargetUpdated(targets: string | string[] | undefined) {
   );
 }
 
-async function fetchPresets() {
-  loadingPresets.value = true;
-  try {
-    const { items } = await getAllTaskPresets({ pagination: { count: 0, sort: 'name' }, include: ['template.tags'] });
-    presets.value = items;
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.fetchPresets'), e);
-  }
-  loadingPresets.value = false;
-}
-
-async function fetchNamespaces() {
-  loadingNamespaces.value = true;
-  try {
-    const currentNamespaces = await getCurrentNamespaces();
-    namespaces.value = currentNamespaces.sort((a, b) => a.name.localeCompare(b.name));
-  } catch (e) {
-    handleEzrError(t('$ezreeport.errors.refreshNamespaces'), e);
-  }
-  loadingNamespaces.value = false;
-}
-
 async function save() {
   if (!currentPreset.value) {
     return;
@@ -290,10 +317,5 @@ async function save() {
     }
     handleEzrError(t('$ezreeport.task.errors.create:preset'), e);
   }
-}
-
-fetchPresets();
-if (!props.namespaceId) {
-  fetchNamespaces();
 }
 </script>

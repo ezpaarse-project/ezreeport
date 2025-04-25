@@ -1,11 +1,15 @@
 <template>
   <v-toolbar
-    :title="`${titlePrefix || ''}${$t('$ezreeport.queues._.title:list')}`"
+    :title="title"
     color="transparent"
     density="comfortable"
   >
     <template v-if="$slots.prepend" #prepend>
       <slot name="prepend" />
+    </template>
+
+    <template v-if="$slots.title" #title>
+      <slot name="title" :title="title" />
     </template>
 
     <template #append>
@@ -48,7 +52,11 @@
       </template>
 
       <template #text>
-        <QueueGenerationJobTable />
+        <QueueGenerationJobTable
+          :items-per-page="itemsPerPage"
+          :items-per-page-options="itemsPerPageOptions"
+          @update:items-per-page="$emit('update:itemsPerPage', $event)"
+        />
       </template>
     </v-expansion-panel>
 
@@ -75,7 +83,11 @@
       </template>
 
       <template #text>
-        <QueueMailJobTable />
+        <QueueMailJobTable
+          :items-per-page="itemsPerPage"
+          :items-per-page-options="itemsPerPageOptions"
+          @update:items-per-page="$emit('update:itemsPerPage', $event)"
+        />
       </template>
     </v-expansion-panel>
   </v-expansion-panels>
@@ -91,8 +103,15 @@ import {
 } from '~sdk/queues';
 
 // Components props
-defineProps<{
+const props = defineProps<{
   titlePrefix?: string;
+  itemsPerPageOptions?: number[] | { title: string; value: number }[];
+  itemsPerPage?: number;
+}>();
+
+// Components events
+defineEmits<{
+  (e: 'update:itemsPerPage', value: number): void
 }>();
 
 // Utils composable
@@ -104,6 +123,8 @@ const loading = ref(false);
 const queues = ref<Queue[]>([]);
 /** Are permissions ready */
 const arePermissionsReady = ref(false);
+
+const title = computed(() => `${props.titlePrefix || ''}${t('$ezreeport.queues._.title:list')}`);
 
 const availableActions = computed(() => {
   if (!arePermissionsReady.value) {

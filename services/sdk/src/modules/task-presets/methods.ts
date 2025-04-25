@@ -64,6 +64,9 @@ export async function getTaskPreset(
   presetOrId: TaskPreset | string,
 ): Promise<TaskPreset> {
   const id = typeof presetOrId === 'string' ? presetOrId : presetOrId.id;
+  if (!id) {
+    throw new Error('Task preset id is required');
+  }
 
   const {
     content,
@@ -134,6 +137,9 @@ export async function deleteTaskPreset(
   presetOrId: TaskPreset | string,
 ): Promise<boolean> {
   const id = typeof presetOrId === 'string' ? presetOrId : presetOrId.id;
+  if (!id) {
+    return false;
+  }
 
   const { content } = await client.fetch<ApiDeletedResponse>(
     `/task-presets/${id}`,
@@ -159,6 +165,9 @@ export async function createTaskFromPreset(
   additionalData: AdditionalDataForPreset,
 ): Promise<Task> {
   const id = typeof presetOrId === 'string' ? presetOrId : presetOrId.id;
+  if (!id) {
+    throw new Error('Task preset id is required');
+  }
 
   const {
     content,

@@ -1,11 +1,15 @@
 <template>
   <v-toolbar
-    :title="`${titlePrefix || ''}${$t('$ezreeport.crons.title:list')}`"
+    :title="title"
     color="transparent"
     density="comfortable"
   >
     <template v-if="$slots.prepend" #prepend>
       <slot name="prepend" />
+    </template>
+
+    <template v-if="$slots.title" #title>
+      <slot name="title" :title="title" />
     </template>
 
     <template #append>
@@ -76,7 +80,7 @@ import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
 import { getAllCrons, updateCron, type Cron } from '~sdk/crons';
 
 // Components props
-defineProps<{
+const props = defineProps<{
   titlePrefix?: string;
 }>();
 
@@ -89,6 +93,8 @@ const loading = ref(false);
 const crons = ref<Cron[]>([]);
 /** Are permissions ready */
 const arePermissionsReady = ref(false);
+
+const title = computed(() => `${props.titlePrefix || ''}${t('$ezreeport.crons.title:list')}`);
 
 const availableActions = computed(() => {
   if (!arePermissionsReady.value) {

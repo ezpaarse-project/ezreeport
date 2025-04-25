@@ -30,7 +30,7 @@ export interface TaskBody {
   /** Global filters used when fetching data */
   filters?: TemplateFilter[];
   /** Layouts used when rendering data, added to the ones from the template. */
-  inserts: TaskBodyLayout[];
+  inserts?: TaskBodyLayout[];
 }
 
 export interface LastExtended {

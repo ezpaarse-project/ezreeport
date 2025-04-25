@@ -1,3 +1,37 @@
+# [@ezpaarse-project/ezreeport-sdk-js-v2.1.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@2.0.0...@ezpaarse-project/ezreeport-sdk-js@2.1.0-rc.1) (2025-04-11)
+
+
+### Bug Fixes
+
+* **sdk:** fixed parsing error when no id are passed to some methods ([e6c253b](https://github.com/ezpaarse-project/ezreeport/commit/e6c253bd5ec953d4654eb03dbda269569012496a))
+* **sdk:** fixed types of getLayoutsOfHelpers ([9b6b1e4](https://github.com/ezpaarse-project/ezreeport/commit/9b6b1e4b3e8de2127e208a45dc61922a34336f21))
+* **sdk:** fixed typing issue with task body ([077fb24](https://github.com/ezpaarse-project/ezreeport/commit/077fb2499e59c92975d4c16bbe0c077b38e62e00))
+
+
+### Features
+
+* **sdk:** minor improvements in task changes + recurrence ([1f33c7f](https://github.com/ezpaarse-project/ezreeport/commit/1f33c7f88bda53575cae26339b5c6c56968998a6))
+
+# [@ezpaarse-project/ezreeport-sdk-js-v2.1.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@2.1.0-beta.1...@ezpaarse-project/ezreeport-sdk-js@2.1.0-beta.2) (2025-04-11)
+
+
+### Bug Fixes
+
+* **sdk:** fixed typing issue with task body ([077fb24](https://github.com/ezpaarse-project/ezreeport/commit/077fb2499e59c92975d4c16bbe0c077b38e62e00))
+
+# [@ezpaarse-project/ezreeport-sdk-js-v2.1.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@2.0.0...@ezpaarse-project/ezreeport-sdk-js@2.1.0-beta.1) (2025-03-31)
+
+
+### Bug Fixes
+
+* **sdk:** fixed parsing error when no id are passed to some methods ([e6c253b](https://github.com/ezpaarse-project/ezreeport/commit/e6c253bd5ec953d4654eb03dbda269569012496a))
+* **sdk:** fixed types of getLayoutsOfHelpers ([9b6b1e4](https://github.com/ezpaarse-project/ezreeport/commit/9b6b1e4b3e8de2127e208a45dc61922a34336f21))
+
+
+### Features
+
+* **sdk:** minor improvements in task changes + recurrence ([1f33c7f](https://github.com/ezpaarse-project/ezreeport/commit/1f33c7f88bda53575cae26339b5c6c56968998a6))
+
 # [@ezpaarse-project/ezreeport-sdk-js-v2.0.0](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@1.3.0...@ezpaarse-project/ezreeport-sdk-js@2.0.0) (2025-03-06)
 
 

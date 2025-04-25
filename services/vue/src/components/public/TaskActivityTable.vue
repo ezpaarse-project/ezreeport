@@ -8,12 +8,16 @@
   >
     <template #top>
       <v-toolbar
-        :title="`${titlePrefix || ''}${$t('$ezreeport.task-activity.title:list', total)}`"
+        :title="title"
         color="transparent"
         density="comfortable"
       >
         <template v-if="$slots.prepend" #prepend>
           <slot name="prepend" />
+        </template>
+
+        <template v-if="$slots.title" #title>
+          <slot name="title" :title="title" />
         </template>
 
         <template #append>
@@ -156,7 +160,12 @@
 <script setup lang="ts">
 import type { VDataTable } from 'vuetify/components';
 import {
-  eachDayOfInterval, format, formatISO, isValid, max, min,
+  eachDayOfInterval,
+  format,
+  formatISO,
+  isValid,
+  max,
+  min,
 } from 'date-fns';
 
 import { getAllActivity } from '~sdk/task-activity';
@@ -164,10 +173,19 @@ import { getAllActivity } from '~sdk/task-activity';
 const maxDate = new Date();
 
 // Components props
-defineProps<{
+const props = defineProps<{
   titlePrefix?: string;
+  itemsPerPageOptions?: number[] | { title: string; value: number }[];
+  itemsPerPage?: number;
 }>();
 
+// Components events
+const emit = defineEmits<{
+  (e: 'update:itemsPerPage', value: number): void
+}>();
+
+/** Items per page shortcut */
+const itemsPerPage = computed({ get: () => props.itemsPerPage || 25, set: (v) => emit('update:itemsPerPage', v) });
 /** List of activity */
 const {
   total,
@@ -180,7 +198,7 @@ const {
   {
     sortBy: 'createdAt',
     order: 'desc',
-    itemsPerPage: 25,
+    itemsPerPage,
     include: ['task.namespace'],
   },
 );
@@ -190,6 +208,8 @@ type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 // Utils composable
 const { t } = useI18n();
 const { locale } = useDateLocale();
+
+const title = computed(() => `${props.titlePrefix || ''}${t('$ezreeport.task-activity.title:list', total.value)}`);
 
 /** Headers for table */
 const headers = computed((): VDataTableHeaders => [
