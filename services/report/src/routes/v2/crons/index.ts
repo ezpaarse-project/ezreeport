@@ -12,7 +12,7 @@ import {
   stopCron,
   startCron,
   forceCron,
-} from '~/models/rpc/client/scheduler';
+} from '~/models/rpc/client/crons';
 
 import { NotFoundError } from '~/models/errors';
 

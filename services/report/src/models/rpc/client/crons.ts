@@ -7,7 +7,7 @@ import { appLogger } from '~/lib/logger';
 
 let client: RPCClient | undefined;
 
-export async function initSchedulerClient(channel: rabbitmq.Channel) {
+export async function initCronsClient(channel: rabbitmq.Channel) {
   // schedulerClient will be called while begin unaware of
   // rabbitmq connection, so we need to store the channel
   // here
@@ -16,7 +16,7 @@ export async function initSchedulerClient(channel: rabbitmq.Channel) {
 
 export async function getAllCrons(): Promise<CronType[]> {
   if (!client) {
-    throw new Error('Scheduler client not initialized');
+    throw new Error('Cron client not initialized');
   }
 
   const data = await client.call('getAllCrons');
@@ -25,7 +25,7 @@ export async function getAllCrons(): Promise<CronType[]> {
 
 export async function stopCron(cron: string) {
   if (!client) {
-    throw new Error('Scheduler client not initialized');
+    throw new Error('Cron client not initialized');
   }
 
   const data = await client.call('stopCron', cron);
@@ -34,7 +34,7 @@ export async function stopCron(cron: string) {
 
 export async function startCron(cron: string) {
   if (!client) {
-    throw new Error('Scheduler client not initialized');
+    throw new Error('Cron client not initialized');
   }
 
   const data = await client.call('startCron', cron);
@@ -43,7 +43,7 @@ export async function startCron(cron: string) {
 
 export async function forceCron(cron: string) {
   if (!client) {
-    throw new Error('Scheduler client not initialized');
+    throw new Error('Cron client not initialized');
   }
 
   const data = await client.call('forceCron', cron);

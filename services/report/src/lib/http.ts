@@ -1,4 +1,4 @@
-import Fastify, { type FastifyPluginAsync } from 'fastify';
+import createFastify, { type FastifyPluginAsync } from 'fastify';
 import fastifyCors from '@fastify/cors';
 import fastifyIO from 'fastify-socket.io';
 
@@ -17,7 +17,7 @@ export default async function startHTTPServer(routes: FastifyPluginAsync) {
   const start = process.uptime();
 
   // Create Fastify instance
-  const fastify = Fastify({ logger: false });
+  const fastify = createFastify({ logger: false });
 
   // Register cors
   await fastify.register(fastifyCors, { origin: corsOrigin });

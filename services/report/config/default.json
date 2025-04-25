@@ -26,6 +26,5 @@
     "vhost": "/",
     "username": "guest",
     "password": "guest"
-  },
-  "reportDir": "/data/ezreeport/report"
+  }
 }
