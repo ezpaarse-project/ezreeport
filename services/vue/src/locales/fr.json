@@ -171,7 +171,7 @@
       "createLayout": "Créez votre première page",
       "vars": "Variables disponibles",
       "varsList": {
-        "dateField": "Champ date du template",
+        "dateField": "{field} (Champ date du template)",
         "length": "Nombre d'éléments affichés"
       },
       "filters": {
@@ -209,7 +209,7 @@
         }
       },
       "aggregation": {
-        "title": "Aggregation",
+        "title": "Agrégation",
         "field": "@:$ezreeport.field",
         "type": "@:$ezreeport.type",
         "raw": "Requête DSL",

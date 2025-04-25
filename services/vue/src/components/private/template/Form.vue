@@ -180,9 +180,10 @@ const emit = defineEmits<{
 }>();
 
 // Utils composables
-const { getOptionsFromMapping, refreshMapping } = useTemplateEditor({
+const { getOptionsFromMapping, refreshMapping, updateDateField } = useTemplateEditor({
   grid: props.modelValue.body.grid,
   index: props.modelValue.body.index,
+  dateField: props.modelValue.body.dateField,
 });
 
 /** Selected index */
@@ -222,6 +223,7 @@ const dateField = computed({
   get: () => props.modelValue.body.dateField,
   set: (v) => {
     const { body } = props.modelValue;
+    updateDateField(v);
     body.dateField = v;
   },
 });

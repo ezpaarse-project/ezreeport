@@ -169,7 +169,7 @@
       "createLayout": "Create your first page",
       "vars": "Available variables",
       "varsList": {
-        "dateField": "Date field of template",
+        "dateField": "{field} (Date field of template)",
         "length": "Count of items displayed"
       },
       "filters": {
