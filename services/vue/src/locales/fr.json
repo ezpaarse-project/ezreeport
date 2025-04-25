@@ -488,7 +488,8 @@
       "invalidEmail": "Adresse n°{n} invalide",
       "download": "Impossible de télécharger le fichier \"{path}\"",
       "downloadAttachement": "Impossible de télécharger la pièce jointe",
-      "refreshNamespaces": "Impossible d'actualiser les @:$ezreeport.namespace"
+      "refreshNamespaces": "Impossible d'actualiser les @:$ezreeport.namespace",
+      "futureDate": "La date doit se trouver dans le futur"
     }
   }
 }

@@ -486,7 +486,8 @@
       "invalidEmail": "Mail address n°{n} is invalid ",
       "download": "Can't download file \"{path}\"",
       "downloadAttachement": "Can't download attachement",
-      "refreshNamespaces": "Can't refresh @:$ezreeport.namespace"
+      "refreshNamespaces": "Can't refresh @:$ezreeport.namespace",
+      "futureDate": "Date must be in the future"
     }
   }
 }
