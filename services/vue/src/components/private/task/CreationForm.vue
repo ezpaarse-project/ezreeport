@@ -139,8 +139,8 @@
 
               <v-btn
                 v-if="showAdvanced"
-                v-tooltip:top="$t('$ezreeport.task.superUserMode:tooltip')"
-                :text="$t('$ezreeport.task.superUserMode')"
+                v-tooltip:top="$t('$ezreeport.superUserMode:tooltip')"
+                :text="$t('$ezreeport.superUserMode')"
                 prepend-icon="mdi-tools"
                 append-icon="mdi-tools"
                 color="warning"

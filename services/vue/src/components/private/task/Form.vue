@@ -4,6 +4,14 @@
     :prepend-icon="isEditing ? 'mdi-email' : 'mdi-email-plus'"
   >
     <template #append>
+      <v-alert
+        :title="$t('$ezreeport.superUserMode')"
+        icon="mdi-tools"
+        type="warning"
+        variant="tonal"
+        density="compact"
+      />
+
       <slot name="append" />
     </template>
 

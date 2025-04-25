@@ -11,6 +11,8 @@
     "save": "Save",
     "refresh": "Refresh",
     "advanced": "Advanced",
+    "superUserMode": "Super user mode",
+    "superUserMode:tooltip": "This mode is reserved for \"super users\" who want to create advanced reports.",
     "show_json": "Show JSON",
     "settings": "Settings",
     "required": "Field required",
@@ -31,6 +33,7 @@
     "yes": "Yes",
     "no": "No",
     "restart": "Restart",
+    "readonly": "Read-only",
     "task": {
       "title": "Periodic report",
       "title:list": "Periodic reports ({n})",

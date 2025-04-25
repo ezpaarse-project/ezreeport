@@ -11,6 +11,8 @@
     "save": "Sauvegarder",
     "refresh": "Rafraîchir",
     "advanced": "Avancé",
+    "superUserMode": "Mode super utilisateur",
+    "superUserMode:tooltip": "Ce mode est réservé aux \"super utilisateurs\" qui souhaitent créer des rapports très avancés.",
     "show_json": "Afficher le JSON",
     "settings": "Paramètres",
     "required": "Champ requis",
@@ -31,6 +33,7 @@
     "yes": "Oui",
     "no": "Non",
     "restart": "Relancer",
+    "readonly": "Lecture seule",
     "task": {
       "title": "Rapport périodique",
       "title:list": "Rapports périodiques ({n})",
@@ -57,8 +60,6 @@
       "period": "Période",
       "description": "Description",
       "extended": "Modèle de base",
-      "superUserMode": "Mode super utilisateur",
-      "superUserMode:tooltip": "Ce mode est réservé aux \"super utilisateurs\" qui souhaitent créer des rapports très avancés.",
       "recurrenceList": {
         "DAILY": "Quotidien",
         "WEEKLY": "Hebdomadaire",
