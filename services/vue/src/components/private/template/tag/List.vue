@@ -42,11 +42,12 @@
       :model-value="isFormVisible"
       :close-on-content-click="false"
       target="parent"
+      min-width="650"
+      max-width="650"
       @update:model-value="$event || closeTagForm()"
     >
       <TemplateTagForm
         :model-value="updatedTag"
-        width="650px"
         @update:model-value="setTag($event)"
       >
         <template #actions>

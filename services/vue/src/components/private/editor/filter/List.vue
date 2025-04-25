@@ -58,11 +58,12 @@
       :model-value="isFormVisible"
       :close-on-content-click="false"
       target="parent"
+      min-width="500"
+      max-width="750"
       @update:model-value="$event || closeFilterForm()"
     >
       <EditorFilterForm
         :model-value="updatedFilter"
-        width="75%"
         @update:model-value="setFilter($event)"
       >
         <template #actions>
