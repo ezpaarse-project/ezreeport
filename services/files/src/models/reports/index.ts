@@ -15,12 +15,13 @@ const { paths: { reports: reportsDir } } = config;
 
 export async function createWriteReportStream(
   filename: string,
+  taskId: string,
   destroyAt: string,
 ): Promise<Writable> {
   const path = resolve(reportsDir, filename);
   await mkdir(dirname(path), { recursive: true });
 
-  const entry = { created_at: new Date(), destroy_at: new Date(destroyAt) };
+  const entry = { created_at: new Date(), task_id: taskId, destroy_at: new Date(destroyAt) };
   await knex<DBReportEntry>('reports')
     .insert({ filename, ...entry })
     .onConflict('filename')
@@ -40,7 +41,17 @@ export async function createWriteReportStream(
     });
 }
 
-export function createReadReportStream(filename: string): Readable {
+export async function createReadReportStream(filename: string, taskId: string): Promise<Readable> {
+  const entry = await knex<DBReportEntry>('reports')
+    .select('task_id')
+    .where('filename', '=', filename)
+    .and.where('task_id', '=', taskId)
+    .first();
+
+  if (!entry) {
+    throw new Error(`File ${filename} not found for task ${taskId}`);
+  }
+
   const path = resolve(config.paths.reports, filename);
   if (!existsSync(path)) {
     throw new Error(`File ${path} not found`);

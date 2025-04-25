@@ -11,14 +11,13 @@ export async function initFilesClient(channel: rabbitmq.Channel) {
   // schedulerClient will be called while begin unaware of
   // rabbitmq connection, so we need to store the channel
   // here
-  // client = setupRPCClient(channel, 'ezreeport.rpc:files', appLogger);
   streamClient = setupRPCStreamClient(channel, 'ezreeport.rpc:files:stream', appLogger, { compression: false });
 }
 
-export function createReportWriteStream(filename: string, destroyAt: Date) {
+export function createReportWriteStream(filename: string, taskId: string, destroyAt: Date) {
   if (!streamClient) {
     throw new Error('RPC client not initialized');
   }
 
-  return streamClient.requestWriteStream('reports', filename, destroyAt.toISOString());
+  return streamClient.requestWriteStream('reports', filename, taskId, destroyAt.toISOString());
 }

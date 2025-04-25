@@ -16,6 +16,5 @@
   },
   "timers": {
     "generateReports": "0 0 * * *"
-  },
-  "reportDir": "/data/ezreeport/report"
+  }
 }

@@ -15,10 +15,10 @@ export async function initFilesClient(channel: rabbitmq.Channel) {
   streamClient = setupRPCStreamClient(channel, 'ezreeport.rpc:files:stream', appLogger, { compression: false });
 }
 
-export function createReportReadStream(filename: string) {
+export function createReportReadStream(filename: string, taskId: string) {
   if (!streamClient) {
     throw new Error('RPC client not initialized');
   }
 
-  return streamClient.requestReadStream('reports', filename);
+  return streamClient.requestReadStream('reports', filename, taskId);
 }

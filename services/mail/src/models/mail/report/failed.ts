@@ -21,7 +21,7 @@ export default async function sendFailedReport(
   data: MailReportQueueDataType,
   logger: Logger,
 ) {
-  const remoteStream = await createReportReadStream(data.filename);
+  const remoteStream = await createReportReadStream(data.filename, data.task.id);
   const file = await new Promise<string>((resolve, reject) => {
     let buffer = '';
 

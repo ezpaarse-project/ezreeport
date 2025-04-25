@@ -179,27 +179,6 @@ const stringify = (obj: unknown) => JSON.stringify(
   process.env.NODE_ENV === 'production' ? undefined : 2,
 );
 
-/**
- * Send file to remote storage
- *
- * @param data The file content
- * @param filename The file name
- * @param destroyAt When the file should be deleted
- *
- * @returns Promise resolving when file is sent
- */
-async function writeReportFile(data: Buffer, filename: string, destroyAt: Date) {
-  const remoteStream = await createReportWriteStream(filename, destroyAt);
-
-  return new Promise<void>((resolve, reject) => {
-    remoteStream
-      .on('finish', () => resolve())
-      .on('error', (err) => reject(err));
-
-    Readable.from(data).pipe(remoteStream);
-  });
-}
-
 export interface GenerationEventMap extends RenderEventMap {
   start: [{ reportId: string }];
   'resolve:template': [TemplateBodyType];
@@ -237,6 +216,32 @@ export async function generateReport(
   // Prepare report
   const startTime = new Date();
   const { result, reportId } = await prepareReport(data);
+
+  /**
+   * Send file to remote storage
+   *
+   * @param data The file content
+   * @param filename The file name
+   * @param taskId The id of the task
+   * @param destroyAt When the file should be deleted
+   *
+   * @returns Promise resolving when file is sent
+   */
+  const writeReportFile = async (content: Buffer, filename: string) => {
+    const remoteStream = await createReportWriteStream(
+      filename,
+      data.task.id,
+      result.detail.destroyAt,
+    );
+
+    return new Promise<void>((resolve, reject) => {
+      remoteStream
+        .on('finish', () => resolve())
+        .on('error', (err) => reject(err));
+
+      Readable.from(content).pipe(remoteStream);
+    });
+  };
 
   logger.info({
     msg: 'Generation of report started',
@@ -324,7 +329,7 @@ export async function generateReport(
       },
     };
 
-    await writeReportFile(pdfData, `${reportId}.rep.pdf`, result.detail.destroyAt);
+    await writeReportFile(pdfData, `${reportId}.rep.pdf`);
     result.detail.files.report = `${reportId}.rep.pdf`;
     logger.debug({
       reportPath: `${reportId}.rep.pdf`,
@@ -345,7 +350,6 @@ export async function generateReport(
     await writeReportFile(
       Buffer.from(stringify(result), 'utf-8'),
       `${reportId}.det.json`,
-      result.detail.destroyAt,
     );
     result.detail.files.detail = `${reportId}.det.json`;
     logger.debug({
@@ -364,7 +368,6 @@ export async function generateReport(
     await writeReportFile(
       Buffer.from(stringify(template), 'utf-8'),
       `${reportId}.deb.json`,
-      result.detail.destroyAt,
     );
     result.detail.files.debug = `${reportId}.deb.json`;
     logger.debug({

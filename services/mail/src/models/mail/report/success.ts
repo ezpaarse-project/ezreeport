@@ -20,7 +20,7 @@ export default async function sendSuccessReport(
   data: MailReportQueueDataType,
   logger: Logger,
 ) {
-  const file = await createReportReadStream(data.filename);
+  const file = await createReportReadStream(data.filename, data.task.id);
   const name = basename(data.filename);
   const dateStr = format(data.date, 'dd/MM/yyyy');
 
