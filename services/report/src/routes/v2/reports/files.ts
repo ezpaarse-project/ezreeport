@@ -1,61 +1,49 @@
-import { join } from 'node:path';
-
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
-import fastifyStatic from '@fastify/static';
 import { StatusCodes } from 'http-status-codes';
 
 import { z } from '@ezreeport/models/lib/zod';
-import config from '~/lib/config';
+// import { ReportResult, type ReportResultType } from '@ezreeport/models/reports';
+
+import { appLogger } from '~/lib/logger';
 
 import { requireAllowedNamespace } from '~/plugins/auth';
 import { Access } from '~/models/access';
 
 import * as responses from '~/routes/v2/responses';
 
-import * as reports from '~/models/reports';
-import { ReportFiles } from '~/models/reports/types';
 import { getTask } from '~/models/tasks';
-
-import { NotFoundError } from '~/models/errors';
-
-const { reportDir } = config;
+// import { ArgumentError } from '~/models/errors';
+import { createReportReadStream } from '~/models/rpc/client/files';
 
 const SpecificReportParams = z.object({
   taskId: z.string().min(1)
     .describe('ID of the task'),
 
-  year: z.string().min(1)
-    .describe('Year of generation of the report'),
-
   yearMonth: z.string().regex(/^[0-9]{4}-[0-9]{2}$/)
     .describe('Year and month of generation of the report'),
 
-  reportId: z.string().min(1)
+  reportName: z.string().min(1)
     .describe('ID of the report'),
 });
 
 const router: FastifyPluginAsyncZod = async (fastify) => {
-  // Setup decorator
-  await fastify.register(fastifyStatic, {
-    root: reportDir,
-    serve: false,
-  });
-
   fastify.route({
     method: 'GET',
-    url: '/:year/:yearMonth/:reportId',
+    url: '/:yearMonth/:reportName',
     schema: {
       summary: 'Get list of files for a generated report',
       tags: ['reports'],
       params: SpecificReportParams,
-      response: {
-        [StatusCodes.OK]: responses.SuccessResponse(ReportFiles),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
-      },
+      // response: {
+      //   ...responses.describeErrors([
+      //     StatusCodes.BAD_REQUEST,
+      //     StatusCodes.UNAUTHORIZED,
+      //     StatusCodes.FORBIDDEN,
+      //     StatusCodes.NOT_FOUND,
+      //     StatusCodes.INTERNAL_SERVER_ERROR,
+      //   ]),
+      //   [StatusCodes.OK]: responses.SuccessResponse(ReportFiles),
+      // },
     },
     config: {
       ezrAuth: {
@@ -69,26 +57,15 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         return requireAllowedNamespace(request, task?.namespaceId ?? '');
       },
     ],
-    handler: async (request, reply) => {
-      const { taskId } = request.params;
-      const reportsOfTask = await reports.getReportsOfTask(taskId);
-      if (!reportsOfTask) {
-        throw new NotFoundError(`Task ${request.params.taskId} doesn't have any reports`);
-      }
-
-      const name = join(request.params.year, request.params.yearMonth, request.params.reportId);
-      const filesOfReport = reportsOfTask[name];
-      if (!filesOfReport) {
-        throw new NotFoundError(`Report ${name} not found`);
-      }
-
-      return responses.buildSuccessResponse(filesOfReport, reply);
+    handler: async () => {
+      // TODO: get list of files across nodes
+      throw new Error('Not implemented');
     },
   });
 
   fastify.route({
     method: 'GET',
-    url: '/:year/:yearMonth/:reportId.:type.:ext',
+    url: '/:yearMonth/:reportName.:type.:ext',
     schema: {
       summary: 'Get file of a generated report',
       tags: ['reports'],
@@ -100,12 +77,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         download: z.coerce.boolean().default(false),
       }),
       response: {
+        ...responses.describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
         [StatusCodes.OK]: z.unknown(),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
     config: {
@@ -121,12 +100,22 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
     ],
     handler: async (request, reply) => {
-      const filename = `${request.params.reportId}.${request.params.type}.${request.params.ext}`;
-      const path = join(request.params.year, request.params.yearMonth, filename);
-      if (request.query.download) {
-        return reply.download(path, filename);
+      const reportId = `${request.params.yearMonth}/${request.params.reportName}`;
+      const filename = `${reportId}.${request.params.type}.${request.params.ext}`;
+
+      const stream = await createReportReadStream(filename, request.params.taskId)
+        .catch((err) => new Error('Failed to read file', { cause: err }));
+
+      if (stream instanceof Error) {
+        appLogger.error({
+          msg: 'Error on file read',
+          filename,
+          err: stream,
+        });
+        throw stream;
       }
-      return reply.sendFile(path);
+
+      return reply.send(stream);
     },
   });
 };

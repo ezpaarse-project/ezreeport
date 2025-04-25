@@ -13,8 +13,7 @@ import { Access } from '~/models/access';
 
 import * as responses from '~/routes/v2/responses';
 
-import * as reports from '~/models/reports';
-import { ReportFilesOfTask, InputManualReport, type ReportPeriodType } from '~/models/reports/types';
+import { InputManualReport, type ReportPeriodType } from '~/models/reports/types';
 import { queueGeneration } from '~/models/queues/report/generation';
 import { getTask } from '~/models/tasks';
 import { getTemplate } from '~/models/templates';
@@ -39,16 +38,18 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Get list of generated reports, grouped by task',
       tags: ['reports'],
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(
-          z.record(
-            z.string().describe('Task ID'),
-            ReportFilesOfTask,
-          ),
-        ),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        // ...responses.describeErrors([
+        //   StatusCodes.BAD_REQUEST,
+        //   StatusCodes.UNAUTHORIZED,
+        //   StatusCodes.FORBIDDEN,
+        //   StatusCodes.INTERNAL_SERVER_ERROR,
+        // ]),
+        // [StatusCodes.OK]: responses.SuccessResponse(
+        //   z.record(
+        //     z.string().describe('Task ID'),
+        //     ReportFilesOfTask,
+        //   ),
+        // ),
       },
     },
     config: {
@@ -56,49 +57,9 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAdmin: true,
       },
     },
-    handler: async (request, reply) => {
-      const filesPerTask = await reports.getReportsPerTasks();
-
-      return responses.buildSuccessResponse(filesPerTask, reply);
-    },
-  });
-
-  fastify.route({
-    method: 'GET',
-    url: '/:taskId',
-    schema: {
-      summary: 'Get list of generated reports for a specific task',
-      tags: ['reports', 'tasks'],
-      params: SpecificTaskParams,
-      response: {
-        [StatusCodes.OK]: responses.SuccessResponse(ReportFilesOfTask),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
-      },
-    },
-    config: {
-      ezrAuth: {
-        requireUser: true,
-        access: Access.READ,
-      },
-    },
-    preHandler: [
-      async (request) => {
-        const task = await getTask(request.params.taskId);
-        return requireAllowedNamespace(request, task?.namespaceId ?? '');
-      },
-    ],
-    handler: async (request, reply) => {
-      const { taskId } = request.params;
-      const reportsOfTask = await reports.getReportsOfTask(taskId);
-      if (!reportsOfTask) {
-        throw new NotFoundError(`Task ${request.params.taskId} doesn't have any reports`);
-      }
-
-      return responses.buildSuccessResponse(reportsOfTask, reply);
+    handler: async () => {
+      // TODO: get list of files across nodes
+      throw new Error('Not implemented');
     },
   });
 
@@ -111,16 +72,18 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       params: SpecificTaskParams,
       body: InputManualReport,
       response: {
+        ...responses.describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
         [StatusCodes.OK]: responses.SuccessResponse(
           z.object({
             id: z.string().describe("Queue's ID"),
           }).describe('Info to get progress of generation'),
         ),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
     config: {

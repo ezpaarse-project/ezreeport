@@ -42,10 +42,9 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAdmin: true,
       },
     },
-    handler: async (request, reply) => {
-      const content = await getAllCrons();
-
-      return responses.buildSuccessResponse(content, reply);
+    handler: async () => {
+      // TODO: get list of crons across services
+      throw new Error('Not implemented');
     },
   });
 
