@@ -283,6 +283,11 @@
             @click="closeEditor()"
           />
         </template>
+
+        <template #actions>
+          <v-btn v-if="readonly" :text="$t('$ezreeport.close')" append-icon="mdi-close" @click="closeEditor()" />
+          <v-btn v-else :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="closeEditor()" />
+        </template>
       </EditorTask>
     </v-dialog>
   </v-card>

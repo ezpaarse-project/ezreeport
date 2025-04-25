@@ -70,6 +70,10 @@
         </v-col>
       </v-row>
     </v-card-text>
+
+    <template v-if="$slots.actions" #actions>
+      <slot name="actions" />
+    </template>
   </v-card>
 </template>
 
