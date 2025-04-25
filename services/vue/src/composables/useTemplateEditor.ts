@@ -7,6 +7,7 @@ type Options = {
   grid?: TemplateBodyGrid;
   index?: string;
   dateField?: string;
+  namespaceId?: string;
 };
 
 // Utils functions
@@ -23,6 +24,7 @@ const mappingToOption = (field: string, type: string) => ({
 // Reactive properties
 const grid = ref<TemplateBodyGrid>({ cols: 2, rows: 2 });
 const mapping = ref<Record<string, string>>({});
+const namespaceId = ref<string | undefined>();
 const dateField = ref<string>('');
 
 // Computed properties
@@ -42,7 +44,7 @@ export default function useTemplateEditor(defaultOptions?: Options) {
    */
   async function refreshMapping(index: string) {
     try {
-      const data = await getIndexMapping(index);
+      const data = await getIndexMapping(index, namespaceId.value);
       mapping.value = data;
     } catch {
       mapping.value = {};
@@ -100,6 +102,8 @@ export default function useTemplateEditor(defaultOptions?: Options) {
 
   // Init editor
   if (defaultOptions) {
+    namespaceId.value = defaultOptions?.namespaceId;
+
     if (defaultOptions.grid) {
       grid.value = defaultOptions.grid;
     }

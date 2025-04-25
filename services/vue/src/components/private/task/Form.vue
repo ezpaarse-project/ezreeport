@@ -340,6 +340,7 @@ const { getOptionsFromMapping, refreshMapping, updateDateField } = useTemplateEd
   // grid: props.modelValue.template.grid,
   index: props.modelValue.template.index,
   dateField: props.modelValue.template.dateField,
+  namespaceId: props.namespaceId,
 });
 
 /** Selected index */
