@@ -1,7 +1,7 @@
 import { client } from '~/lib/fetch';
 import type { ApiResponse } from '~/lib/api';
 
-import type { ApiStatus, Pong } from './types';
+import type { ApiStatus, Pong, FileSystemUsage } from './types';
 
 /**
  * Get status of service
@@ -31,5 +31,25 @@ export async function pingAllServices() {
  */
 export async function pingService(service: string) {
   const { content } = await client.fetch<ApiResponse<Pong>>(`/health/services/${service}`);
+  return content;
+}
+
+/**
+ * Get all file systems usage
+ *
+ * @returns File systems usage
+ */
+export async function getFileSystemsUsage() {
+  const { content } = await client.fetch<ApiResponse<FileSystemUsage[]>>('/health/fs');
+  return content;
+}
+
+/**
+ * Get specific file system usage
+ *
+ * @returns File systems usage
+ */
+export async function getFileSystemUsage(name: string) {
+  const { content } = await client.fetch<ApiResponse<FileSystemUsage>>(`/health/fs/${name}`);
   return content;
 }

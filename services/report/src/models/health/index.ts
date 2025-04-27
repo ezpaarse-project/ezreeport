@@ -1,7 +1,9 @@
 import { setTimeout } from 'node:timers/promises';
+import { statfs } from 'node:fs/promises';
 
 import { differenceInMilliseconds } from '~/lib/date-fns';
 import { appLogger } from '~/lib/logger';
+import config from '~/lib/config';
 
 import { elasticPing } from '~/lib/elastic';
 import { dbPing } from '~/lib/prisma';
@@ -12,6 +14,8 @@ import type {
   ServicesType,
   SuccessPongType,
   ErrorPongType,
+  FileSystemsType,
+  FileSystemUsageType,
 } from './types';
 
 const logger = appLogger.child({ scope: 'models', model: 'ping' });
@@ -102,6 +106,47 @@ export async function ping(
  */
 export function pingAll(): Promise<PongType[]> {
   return Promise.all(Array.from(services).map((service) => ping(service)));
+}
+
+/**
+ * Map of paths that need to be watched
+ */
+const filesystemsPaths: Record<FileSystemsType, string> = {
+  reports: config.report.outDir,
+  logs: config.log.dir,
+};
+
+export const filesystems = new Set(Object.keys(filesystemsPaths) as FileSystemsType[]);
+
+/**
+ * Get usage of a filesystem
+ *
+ * @param fs The filesystem
+ *
+ * @returns The usage
+ */
+export async function getUsage(fs: FileSystemsType): Promise<FileSystemUsageType> {
+  const path = filesystemsPaths[fs];
+  const stats = await statfs(path);
+
+  const total = stats.bsize * stats.blocks;
+  const available = stats.bavail * stats.bsize;
+
+  return {
+    name: fs,
+    total,
+    available,
+    used: total - available,
+  };
+}
+
+/**
+ * Get usage of all filesystems
+ *
+ * @returns All usages
+ */
+export function getUsageAll(): Promise<FileSystemUsageType[]> {
+  return Promise.all(Array.from(filesystems).map((fs) => getUsage(fs)));
 }
 
 export {
