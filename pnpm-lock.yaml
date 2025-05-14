@@ -429,9 +429,6 @@ importers:
       fastify-type-provider-zod:
         specifier: ^4.0.2
         version: 4.0.2(fastify@5.1.0)(zod@3.23.8)
-      glob:
-        specifier: ^11.0.0
-        version: 11.0.0
       handlebars:
         specifier: ^4.7.8
         version: 4.7.8
@@ -496,9 +493,6 @@ importers:
       '@ezreeport/simple-http':
         specifier: workspace:*
         version: link:../../packages/simple-http
-      glob:
-        specifier: ^11.0.0
-        version: 11.0.0
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
