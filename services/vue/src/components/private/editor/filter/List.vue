@@ -35,16 +35,17 @@
     <template v-if="modelValue.size > 0" #text>
       <v-slide-group>
         <v-slide-group-item
-          v-for="[, filter] in modelValue"
-          :key="filter.name"
+          v-for="[key, filter] in modelValue"
+          :key="key"
         >
           <EditorFilterChip
             :model-value="filter"
             :closable="!readonly"
             class="mr-2"
-            @click="openFilterForm(filter)"
-            @click:close="deleteFilter(filter)"
+            @click="openFilterForm({ key, filter })"
+            @click:close="deleteFilter(key)"
           />
+
         </v-slide-group-item>
       </v-slide-group>
     </template>
@@ -63,7 +64,7 @@
       @update:model-value="$event || closeFilterForm()"
     >
       <EditorFilterForm
-        :model-value="updatedFilter"
+        :model-value="updatedFilter?.filter"
         @update:model-value="setFilter($event)"
       >
         <template #actions>
@@ -76,6 +77,8 @@
 
 <script setup lang="ts">
 import type { TemplateFilterMap, TemplateFilter } from '~sdk/helpers/filters';
+
+type FilterWithKey = { key: string, filter: TemplateFilter };
 
 // Components props
 const props = defineProps<{
@@ -96,7 +99,7 @@ const isFormVisible = ref(false);
 /** The filter to edit */
 const isImporterVisible = ref(false);
 /** The filter to edit */
-const updatedFilter = ref<TemplateFilter | undefined>();
+const updatedFilter = ref<FilterWithKey | undefined>();
 
 /**
  * Close the filter form
@@ -110,7 +113,7 @@ function closeFilterForm() {
  *
  * @param filter The filter to edit
  */
-function openFilterForm(filter?: TemplateFilter) {
+function openFilterForm(filter?: FilterWithKey) {
   updatedFilter.value = filter;
   isFormVisible.value = true;
 }
@@ -121,7 +124,7 @@ function openFilterForm(filter?: TemplateFilter) {
  * @param filter The filter to set
  */
 function setFilter(filter: TemplateFilter) {
-  props.modelValue.set(filter.name, filter);
+  props.modelValue.set(updatedFilter.value?.key ?? filter.name, filter);
   closeFilterForm();
   updatedFilter.value = undefined;
   emit('update:modelValue', props.modelValue);
@@ -145,10 +148,10 @@ function replaceFilters(filters: TemplateFilter[]) {
 /**
  * Delete a filter
  *
- * @param filter The filter
+ * @param key The filter's key
  */
-function deleteFilter(filter: TemplateFilter) {
-  props.modelValue.delete(filter.name);
+function deleteFilter(key: string) {
+  props.modelValue.delete(key);
   emit('update:modelValue', props.modelValue);
 }
 </script>
