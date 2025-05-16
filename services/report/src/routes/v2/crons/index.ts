@@ -59,12 +59,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['crons'],
       params: SpecificCronParams,
       response: {
+        ...responses.describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
         [StatusCodes.OK]: responses.SuccessResponse(Cron),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
     config: {
@@ -94,12 +96,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         running: z.boolean().optional(),
       }),
       response: {
+        ...responses.describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
         [StatusCodes.OK]: responses.SuccessResponse(Cron),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
     config: {
@@ -134,11 +138,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['crons'],
       params: SpecificCronParams,
       response: {
+        ...responses.describeErrors([
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
         [StatusCodes.OK]: responses.SuccessResponse(Cron),
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
     config: {
