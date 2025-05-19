@@ -1,3 +1,23 @@
+# [@ezpaarse-project/ezreeport-vue-v2.3.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.2.0...@ezpaarse-project/ezreeport-vue@2.3.0-beta.1) (2025-05-19)
+
+
+### Bug Fixes
+
+* **report:** fixed issue with pagination in task cards ([ed446ae](https://github.com/ezpaarse-project/ezreeport/commit/ed446ae87e84ffb599af4193f5e566dca0d46c00))
+* **vue:** fixed actions not visible in some cases in template editor ([e7db444](https://github.com/ezpaarse-project/ezreeport/commit/e7db4445179092133abf19d41df1182a5b797b65))
+* **vue:** fixed auth issue when getting mapping ([5c2dbab](https://github.com/ezpaarse-project/ezreeport/commit/5c2dbabc19170529936865400625e27fd8645b19))
+* **vue:** fixed duplication of tasks ([ee6d79e](https://github.com/ezpaarse-project/ezreeport/commit/ee6d79e6989fe322071f845c5608f1936f9126a3))
+* **vue:** fixed issue with duplicating tags/filters when editing them ([890aa03](https://github.com/ezpaarse-project/ezreeport/commit/890aa0339cddc1461dc578b7bd09853f29b9092e))
+* **vue:** fixed minor issue with menu sizes ([571403d](https://github.com/ezpaarse-project/ezreeport/commit/571403d1077ebf003b9c9a85307bd8792e8a489e))
+* **vue:** fixed missing key in locales ([4107f6b](https://github.com/ezpaarse-project/ezreeport/commit/4107f6bd38f5a9ea52e8de149c32219caee91396))
+
+
+### Features
+
+* **vue:** added button to confirm template editor ([b28f91b](https://github.com/ezpaarse-project/ezreeport/commit/b28f91b033d0d1ece2fe907ef4bb93d94f6bf552))
+* **vue:** added labels to show form state ([c320e82](https://github.com/ezpaarse-project/ezreeport/commit/c320e829d51d11202d10169487b22d84ea0ade50))
+* **vue:** datefield label now shows the field ([23855f1](https://github.com/ezpaarse-project/ezreeport/commit/23855f17e83467803bf8caa464accc4e3ee5448b))
+
 # [@ezpaarse-project/ezreeport-vue-v2.2.0](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.1.0...@ezpaarse-project/ezreeport-vue@2.2.0) (2025-04-25)
 
 
