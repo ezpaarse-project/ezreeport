@@ -1,3 +1,10 @@
+# [ezreeport-report-v2.1.1-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.1.0...ezreeport-report@2.1.1-rc.1) (2025-05-22)
+
+
+### Bug Fixes
+
+* **report:** don't check similar task if there is inserts ([5474274](https://github.com/ezpaarse-project/ezreeport/commit/54742744e49f3c2caea4cbd4e85c3b9ca78e5f2f))
+
 # [ezreeport-report-v2.1.1-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.1.0...ezreeport-report@2.1.1-beta.1) (2025-05-19)
 
 
