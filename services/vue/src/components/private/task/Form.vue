@@ -4,6 +4,14 @@
     :prepend-icon="isEditing ? 'mdi-email' : 'mdi-email-plus'"
   >
     <template #append>
+      <v-alert
+        :title="$t('$ezreeport.superUserMode')"
+        icon="mdi-tools"
+        type="warning"
+        variant="tonal"
+        density="compact"
+      />
+
       <slot name="append" />
     </template>
 
@@ -283,6 +291,11 @@
             @click="closeEditor()"
           />
         </template>
+
+        <template #actions>
+          <v-btn v-if="readonly" :text="$t('$ezreeport.close')" append-icon="mdi-close" @click="closeEditor()" />
+          <v-btn v-else :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="closeEditor()" />
+        </template>
       </EditorTask>
     </v-dialog>
   </v-card>
@@ -323,9 +336,11 @@ const emit = defineEmits<{
 
 // Utils composables
 const { t } = useI18n();
-const { getOptionsFromMapping, refreshMapping } = useTemplateEditor({
+const { getOptionsFromMapping, refreshMapping, updateDateField } = useTemplateEditor({
   // grid: props.modelValue.template.grid,
   index: props.modelValue.template.index,
+  dateField: props.modelValue.template.dateField,
+  namespaceId: props.namespaceId,
 });
 
 /** Selected index */
@@ -377,6 +392,7 @@ const dateField = computed({
   get: () => props.modelValue.template.dateField,
   set: (v) => {
     const { template } = props.modelValue;
+    updateDateField(v || '');
     template.dateField = v;
   },
 });

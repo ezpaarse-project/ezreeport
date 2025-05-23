@@ -7,7 +7,7 @@
     <template #append>
       <v-btn
         v-if="!readonly"
-        v-tooltip="$t('$ezreeport.advanced')"
+        v-tooltip="$t('$ezreeport.superUserMode')"
         :color="isAdvanced ? 'orange' : 'grey'"
         :variant="isAdvanced ? 'flat' : 'text'"
         :disabled="isAdvanced && (!!rawParseError || rawHasChanged)"
@@ -92,7 +92,7 @@
                 <v-switch
                   v-model="showMissing"
                   :label="$t('$ezreeport.editor.aggregation.missing:show')"
-                  :disabled="readonly"
+                  :readonly="readonly"
                   prepend-icon="mdi-progress-question"
                   color="primary"
                   hide-details

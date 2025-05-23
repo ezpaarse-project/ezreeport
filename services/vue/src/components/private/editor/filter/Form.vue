@@ -5,7 +5,7 @@
   >
     <template #append>
       <v-btn
-        v-tooltip="$t('$ezreeport.advanced')"
+        v-tooltip="$t('$ezreeport.superUserMode')"
         :color="isAdvanced ? 'orange' : 'grey'"
         :disabled="isAdvanced && (!!rawParseError || rawHasChanged)"
         density="comfortable"

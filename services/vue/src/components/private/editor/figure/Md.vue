@@ -4,6 +4,14 @@
     :prepend-icon="cardIcon"
   >
     <template #append>
+      <v-alert
+        v-if="readonly"
+        :title="$t('$ezreeport.readonly')"
+        icon="mdi-lock"
+        density="compact"
+        class="mr-2"
+      />
+
       <slot name="append" />
     </template>
 

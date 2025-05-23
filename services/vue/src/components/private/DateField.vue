@@ -11,8 +11,13 @@
     readonly
   />
 
-  <v-menu :activator="fieldRef?.$el" :close-on-content-click="false">
-    <v-sheet width="350" class="d-flex justify-center">
+  <v-menu
+    :activator="fieldRef?.$el"
+    :close-on-content-click="false"
+    min-width="350"
+    max-width="350"
+  >
+    <v-sheet class="d-flex justify-center">
       <v-date-picker
         v-model="date"
         :min="min"

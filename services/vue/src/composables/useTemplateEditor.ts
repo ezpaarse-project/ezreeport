@@ -6,6 +6,8 @@ import type { TemplateBodyGrid } from '~sdk/templates';
 type Options = {
   grid?: TemplateBodyGrid;
   index?: string;
+  dateField?: string;
+  namespaceId?: string;
 };
 
 // Utils functions
@@ -22,6 +24,8 @@ const mappingToOption = (field: string, type: string) => ({
 // Reactive properties
 const grid = ref<TemplateBodyGrid>({ cols: 2, rows: 2 });
 const mapping = ref<Record<string, string>>({});
+const namespaceId = ref<string | undefined>();
+const dateField = ref<string>('');
 
 // Computed properties
 const mappingItems = computed(
@@ -40,11 +44,15 @@ export default function useTemplateEditor(defaultOptions?: Options) {
    */
   async function refreshMapping(index: string) {
     try {
-      const data = await getIndexMapping(index);
+      const data = await getIndexMapping(index, namespaceId.value);
       mapping.value = data;
     } catch {
       mapping.value = {};
     }
+  }
+
+  function updateDateField(v: string) {
+    dateField.value = v;
   }
 
   /**
@@ -62,7 +70,7 @@ export default function useTemplateEditor(defaultOptions?: Options) {
     if (vars.dateField) {
       items.unshift({
         value: '{{ dateField }}',
-        title: t('$ezreeport.editor.varsList.dateField'),
+        title: t('$ezreeport.editor.varsList.dateField', { field: dateField.value }),
         props: {
           subtitle: 'date',
           appendIcon: 'mdi-variable',
@@ -94,8 +102,14 @@ export default function useTemplateEditor(defaultOptions?: Options) {
 
   // Init editor
   if (defaultOptions) {
+    namespaceId.value = defaultOptions?.namespaceId;
+
     if (defaultOptions.grid) {
       grid.value = defaultOptions.grid;
+    }
+
+    if (defaultOptions.dateField) {
+      dateField.value = defaultOptions.dateField;
     }
 
     // Fetch mapping on init
@@ -110,5 +124,6 @@ export default function useTemplateEditor(defaultOptions?: Options) {
     grid,
     refreshMapping,
     getOptionsFromMapping,
+    updateDateField,
   };
 }

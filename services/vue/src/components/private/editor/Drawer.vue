@@ -14,36 +14,26 @@
       @click="$emit('update:modelValue', index)"
     >
       <template #prepend>
-        <div
-          :class="{
-            'd-flex': true,
-            'flex-column': true,
-            'align-center': true,
-            'text-primary': index === modelValue,
-          }"
-        >
-          <span>{{ index + 1 }}</span>
-          <v-icon v-if="layout.readonly" icon="mdi-lock" size="x-small" />
-        </div>
+        <span>{{ index + 1 }}</span>
+        <v-icon v-if="layout.readonly" icon="mdi-lock" size="x-small" />
       </template>
 
       <template v-if="!readonly && !layout.readonly" #actions>
         <v-btn
-          v-tooltip:top="$t('$ezreeport.duplicate')"
+          v-tooltip:right="$t('$ezreeport.duplicate')"
           icon="mdi-content-duplicate"
           variant="text"
-          color="white"
-          density="comfortable"
-          class="ml-2"
+          density="compact"
+          size="small"
           @click.stop="$emit('click:duplicate', layout, index)"
         />
         <v-btn
-          v-tooltip:top="$t('$ezreeport.delete')"
+          v-tooltip:right="$t('$ezreeport.delete')"
           icon="mdi-delete"
           variant="text"
           color="red"
-          density="comfortable"
-          class="ml-2"
+          density="compact"
+          size="small"
           @click.stop="$emit('click:delete', layout)"
         />
       </template>

@@ -18,6 +18,16 @@
 
       <v-col v-if="currentLayout" class="d-flex align-center">
         {{ $t('$ezreeport.editor.title:figures') }}
+
+        <template v-if="readonly || currentLayout.readonly">
+          <v-spacer />
+
+          <v-alert
+            :title="$t('$ezreeport.readonly')"
+            icon="mdi-lock"
+            density="compact"
+          />
+        </template>
       </v-col>
     </v-toolbar>
 
@@ -70,6 +80,14 @@
         </v-col>
       </v-row>
     </v-card-text>
+
+    <template v-if="$slots.actions">
+      <v-divider />
+
+      <v-card-actions>
+        <slot name="actions" />
+      </v-card-actions>
+    </template>
   </v-card>
 </template>
 

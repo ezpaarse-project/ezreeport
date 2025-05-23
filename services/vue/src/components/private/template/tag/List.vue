@@ -19,15 +19,15 @@
     <template v-if="modelValue.size > 0" #text>
       <v-slide-group>
         <v-slide-group-item
-          v-for="[name, tag] in modelValue"
-          :key="name"
+          v-for="[key, tag] in modelValue"
+          :key="key"
         >
           <TemplateTagChip
             :model-value="tag"
             :closable="!readonly"
             class="mr-2"
-            @click="openTagForm(tag)"
-            @click:close="deleteTag(tag)"
+            @click="openTagForm({ key, tag })"
+            @click:close="deleteTag(key)"
           />
         </v-slide-group-item>
       </v-slide-group>
@@ -42,11 +42,12 @@
       :model-value="isFormVisible"
       :close-on-content-click="false"
       target="parent"
+      min-width="650"
+      max-width="650"
       @update:model-value="$event || closeTagForm()"
     >
       <TemplateTagForm
-        :model-value="updatedTag"
-        width="650px"
+        :model-value="updatedTag?.tag"
         @update:model-value="setTag($event)"
       >
         <template #actions>
@@ -59,6 +60,8 @@
 
 <script setup lang="ts">
 import type { TemplateTagMap, TemplateTag } from '~sdk/helpers/templates';
+
+type TagWithKey = { key: string, tag: TemplateTag };
 
 // Components props
 const props = defineProps<{
@@ -77,7 +80,7 @@ const emit = defineEmits<{
 /** Should show the tag form */
 const isFormVisible = ref(false);
 /** The tag to edit */
-const updatedTag = ref<TemplateTag | undefined>();
+const updatedTag = ref<TagWithKey | undefined>();
 
 /**
  * Close the tag form
@@ -91,7 +94,7 @@ function closeTagForm() {
  *
  * @param tag The tag to edit
  */
-function openTagForm(tag?: TemplateTag) {
+function openTagForm(tag?: TagWithKey) {
   updatedTag.value = tag;
   isFormVisible.value = true;
 }
@@ -102,7 +105,7 @@ function openTagForm(tag?: TemplateTag) {
  * @param tag The tag to set
  */
 function setTag(tag: TemplateTag) {
-  props.modelValue.set(tag.name, tag);
+  props.modelValue.set(updatedTag.value?.key ?? tag.name, tag);
   closeTagForm();
   updatedTag.value = undefined;
   emit('update:modelValue', props.modelValue);
@@ -111,10 +114,10 @@ function setTag(tag: TemplateTag) {
 /**
  * Delete a tag
  *
- * @param tag The tag
+ * @param key The tag's key
  */
-function deleteTag(tag: TemplateTag) {
-  props.modelValue.delete(tag.name);
+function deleteTag(key: string) {
+  props.modelValue.delete(key);
   emit('update:modelValue', props.modelValue);
 }
 </script>

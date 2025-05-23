@@ -1,6 +1,7 @@
 <template>
   <v-data-iterator
     :items="tasks"
+    items-per-page="0"
     show-select
     return-object
     item-value="id"
@@ -63,7 +64,6 @@
             cols="12"
             sm="6"
             md="4"
-            lg="3"
           >
             <TaskCard :model-value="task">
               <template #actions>

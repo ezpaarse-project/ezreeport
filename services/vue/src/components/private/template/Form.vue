@@ -157,6 +157,11 @@
             @click="closeEditor()"
           />
         </template>
+
+        <template #actions>
+          <v-btn v-if="readonly" :text="$t('$ezreeport.close')" append-icon="mdi-close" @click="closeEditor()" />
+          <v-btn v-else :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="closeEditor()" />
+        </template>
       </EditorTemplate>
     </v-dialog>
   </v-card>
@@ -180,9 +185,10 @@ const emit = defineEmits<{
 }>();
 
 // Utils composables
-const { getOptionsFromMapping, refreshMapping } = useTemplateEditor({
+const { getOptionsFromMapping, refreshMapping, updateDateField } = useTemplateEditor({
   grid: props.modelValue.body.grid,
   index: props.modelValue.body.index,
+  dateField: props.modelValue.body.dateField,
 });
 
 /** Selected index */
@@ -222,6 +228,7 @@ const dateField = computed({
   get: () => props.modelValue.body.dateField,
   set: (v) => {
     const { body } = props.modelValue;
+    updateDateField(v);
     body.dateField = v;
   },
 });
