@@ -430,7 +430,11 @@
       "instances": "{n} instances are ready",
       "ko": "Service is not ready, some features of ezREEPORT won't work",
       "fs": "Filesystems status",
-      "fsUsage": "Total: {total} {'|'} Used: {used} {'|'} Available: {available}",
+      "fsUsage": {
+        "total": "Total: {value}",
+        "used": "Used: {value}",
+        "available": "Available: {value}"
+      },
       "fsUsage%": "Usage: {value}",
       "errors": {
         "fetch": "Can't fetch ezREEPORT's status"

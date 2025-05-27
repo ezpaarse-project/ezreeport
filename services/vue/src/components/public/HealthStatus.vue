@@ -99,12 +99,16 @@ const services = computed(() => {
 
 const fileSystems = computed(() => {
   const values = (status.value?.services ?? []).flatMap(
-    ({ hostname, service, filesystems }) => (filesystems ?? []).map((fs) => ({
-      ...fs,
-      host: { name: hostname, service },
-    })),
+    ({ hostname, service, filesystems }) => (filesystems ?? [])
+      .map((fs) => ({
+        ...fs,
+        host: { name: hostname, service },
+      })),
   );
-  return Map.groupBy(values, ({ name }) => name);
+
+  const unsorted = Map.groupBy(values, ({ name }) => name);
+  return Array.from(unsorted)
+    .sort((a, b) => a[0].localeCompare(b[0]));
 });
 
 async function refresh() {

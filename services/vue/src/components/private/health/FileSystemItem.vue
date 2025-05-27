@@ -2,14 +2,15 @@
   <v-menu :close-on-content-click="false" location="start">
     <template #activator="{ props }">
       <v-list-item
-        :title="total.name"
-        :subtitle="$t('$ezreeport.health.fsUsage', total)"
+        :title="fsItem.title"
+        :subtitle="fsItem.subtitle"
+        :prepend-icon="fsItem.prependIcon"
         v-bind="props"
       >
-        <template #append>
+        <template v-if="fsItem.stats.percentage != null" #append>
           <v-progress-circular
-            v-tooltip:left="$t('$ezreeport.health.fsUsage%', { value: total.percentageLabel })"
-            :model-value="total.percentage"
+            v-tooltip:left="fsItem.tooltip"
+            :model-value="fsItem.stats.percentage"
             color="primary"
           />
         </template>
@@ -18,15 +19,15 @@
 
     <v-list lines="two" density="compact">
       <v-list-item
-        v-for="[hostname, usage] in perHostname"
+        v-for="[hostname, item] in perHostname"
         :key="hostname"
-        :title="usage.service"
-        :subtitle="$t('$ezreeport.health.fsUsage', usage)"
+        :title="item.title"
+        :subtitle="item.subtitle"
       >
-        <template #append>
+        <template v-if="item.stats.percentage != null" #append>
           <v-progress-circular
-            v-tooltip:left="$t('$ezreeport.health.fsUsage%', { value: usage.percentageLabel })"
-            :model-value="usage.percentage"
+            v-tooltip:left="item.tooltip"
+            :model-value="item.stats.percentage"
             color="primary"
             class="ml-4"
           />
@@ -40,33 +41,66 @@
 import prettyBytes from 'pretty-bytes';
 import type { FileSystemUsage } from '~sdk/health';
 
+const NAME_REGEX = /^(?:\[(?<type>[a-z]+)\] )?(?<name>[a-z]+)$/;
+
+const ICONS: Record<string, string> = {
+  database: 'mdi-database',
+};
+
 const props = defineProps<{
   modelValue: (FileSystemUsage & { host: { service: string, name: string } })[],
 }>();
 
-const { locale } = useI18n();
+const { locale, t } = useI18n();
 
-function prettyUsage(usage: FileSystemUsage) {
-  const percentage = usage.used / usage.total;
+function usageToItem(usage: FileSystemUsage) {
+  const percentage = usage.used >= 0 && usage.total >= 0 ? usage.used / usage.total : undefined;
+  const percentageStr = percentage?.toLocaleString(locale.value, { style: 'percent', minimumFractionDigits: 2 });
 
-  return {
-    name: usage.name,
+  // Prettify bytes
+  const stats = {
     available: prettyBytes(usage.available),
     used: prettyBytes(usage.used),
     total: prettyBytes(usage.total),
-    percentage: percentage * 100,
-    percentageLabel: percentage.toLocaleString(locale.value, { style: 'percent', minimumFractionDigits: 2 }),
+    percentage: percentage ? percentage * 100 : undefined,
+  };
+
+  // Build subtitle
+  const subtitle = [
+    usage.total >= 0 ? t('$ezreeport.health.fsUsage.total', { value: stats.total }) : 0,
+    usage.used >= 0 ? t('$ezreeport.health.fsUsage.used', { value: stats.used }) : 0,
+    usage.available >= 0 ? t('$ezreeport.health.fsUsage.available', { value: stats.available }) : 0,
+  ].filter((v) => !!v).join(' | ');
+
+  // Extract title and icon
+  let prependIcon;
+  let title = usage.name;
+  const titleMatches = NAME_REGEX.exec(usage.name)?.groups;
+  if (titleMatches) {
+    title = titleMatches.name;
+    prependIcon = ICONS[titleMatches.type];
+  }
+
+  return {
+    title,
+    subtitle,
+    prependIcon,
+    tooltip: t('$ezreeport.health.fsUsage%', { value: percentageStr }),
+    stats,
   };
 }
 
 const perHostname = computed(() => new Map(
   props.modelValue.map(({ host, ...usage }) => [
     `${host.name}_${host.service}`,
-    { service: host.service, ...prettyUsage(usage) },
+    {
+      service: host.service,
+      ...usageToItem(usage),
+    },
   ]),
 ));
 
-const total = computed(() => {
+const fsItem = computed(() => {
   const usageTotal = props.modelValue.reduce(
     (acc, usage) => ({
       name: usage.name,
@@ -82,6 +116,6 @@ const total = computed(() => {
     },
   );
 
-  return prettyUsage(usageTotal);
+  return usageToItem(usageTotal);
 });
 </script>
