@@ -29,6 +29,9 @@
   "dependencies": {
     "pino": "^9.4.0"
   },
+  "devDependencies": {
+    "typescript": "catalog:"
+  },
   "engines": {
     "node": "^20"
   }

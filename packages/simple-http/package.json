@@ -30,6 +30,9 @@
     "@ezreeport/logger": "workspace:*",
     "typescript": "catalog:"
   },
+  "devDependencies": {
+    "typescript": "catalog:"
+  },
   "engines": {
     "node": "^20"
   }

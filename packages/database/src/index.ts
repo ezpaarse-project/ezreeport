@@ -4,7 +4,8 @@ import type { HeartbeatType } from '@ezreeport/heartbeats/types';
 // eslint-disable-next-line import/no-relative-packages
 import { PrismaClient } from '../.prisma/client';
 
-const DATABASE_HOSTNAME = new URL(process.env.DATABASE_URL ?? '').hostname;
+const DATABASE_URL = new URL(process.env.DATABASE_URL ?? '');
+const DATABASE_HOST = DATABASE_URL.hostname;
 
 export function setupDB(logger: Logger) {
   const client = new PrismaClient({
@@ -35,14 +36,28 @@ export function setupDB(logger: Logger) {
 }
 
 export async function pingDB(client: PrismaClient): Promise<HeartbeatType> {
-  const response = await client.$queryRaw`SELECT version()`;
+  const response = await client.$queryRaw`
+  SELECT version(),
+    current_database() AS db,
+    pg_database_size(current_database()) AS usage
+  `;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const versionMatch = /^PostgreSQL (\S+) /.exec((response as any[])[0].version);
+  const { version, usage, db } = (response as any[])[0];
+  const versionMatch = /^PostgreSQL (\S+) /.exec(version);
 
   return {
-    hostname: DATABASE_HOSTNAME,
+    hostname: DATABASE_HOST,
     service: 'database',
     version: versionMatch?.[1],
     updatedAt: new Date(),
+    filesystems: [
+      {
+        name: `[database] ${db}`,
+        available: -1,
+        used: Number(usage),
+        total: -1,
+      },
+    ],
   };
 }

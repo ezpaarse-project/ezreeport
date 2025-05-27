@@ -40,7 +40,8 @@
     "@prisma/client": "^5.20.0"
   },
   "devDependencies": {
-    "prisma": "^5.20.0"
+    "prisma": "^5.20.0",
+    "typescript": "catalog:"
   },
   "engines": {
     "node": "^20"

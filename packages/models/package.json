@@ -33,6 +33,10 @@
     "@ezreeport/dates": "workspace:*",
     "zod": "^3.23.8"
   },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  },
   "engines": {
     "node": "^20"
   }

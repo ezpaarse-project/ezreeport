@@ -5,13 +5,13 @@ export const FileSystemUsage = z.object({
     .describe('Filesystem name'),
 
   total: z.number()
-    .describe('Total space'),
+    .describe('Total space in bytes'),
 
   used: z.number()
-    .describe('Used space'),
+    .describe('Used space in bytes'),
 
   available: z.number()
-    .describe('Available space'),
+    .describe('Available space in bytes'),
 });
 
 export type FileSystemUsageType = z.infer<typeof FileSystemUsage>;

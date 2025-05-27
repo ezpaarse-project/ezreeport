@@ -30,7 +30,8 @@
     "config": "^3.3.12"
   },
   "devDependencies": {
-    "@types/config": "^3.3.5"
+    "@types/config": "^3.3.5",
+    "typescript": "catalog:"
   },
   "engines": {
     "node": "^20"

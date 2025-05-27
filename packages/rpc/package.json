@@ -40,7 +40,8 @@
     "typescript": "catalog:"
   },
   "devDependencies": {
-    "@types/amqplib": "^0.10.7"
+    "@types/amqplib": "^0.10.7",
+    "typescript": "catalog:"
   },
   "engines": {
     "node": "^20"
