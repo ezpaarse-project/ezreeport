@@ -21,7 +21,7 @@
       <v-list-item
         v-for="[hostname, item] in perHostname"
         :key="hostname"
-        :title="item.title"
+        :title="item.service"
         :subtitle="item.subtitle"
       >
         <template v-if="item.stats.percentage != null" #append>
