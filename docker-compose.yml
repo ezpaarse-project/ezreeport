@@ -1,36 +1,7 @@
+include:
+  - docker-compose.common.yml
+
 services:
-  db:
-    image: postgres:15.1-alpine3.16
-    env_file:
-      - .env
-      - path: .env.local
-        required: false
-    volumes:
-      - ./data/db:/var/lib/postgresql/data
-    deploy:
-      resources:
-          limits:
-            memory: 256MB
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
-      interval: 60s
-      timeout: 10s
-      retries: 5
-      start_period: 20s
-
-
-  rabbitmq:
-    image: rabbitmq:4.0.7-alpine
-    ports:
-      - 5672:5672
-    restart: unless-stopped
-    healthcheck:
-      test: rabbitmq-diagnostics -q ping
-      interval: 30s
-      timeout: 30s
-      retries: 3
-
   ezreeport:
     build:
       target: aio

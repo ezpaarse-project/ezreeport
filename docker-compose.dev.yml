@@ -1,15 +1,12 @@
+include:
+  - docker-compose.common.yml
+
 services:
   db:
-    extends:
-      file: docker-compose.yml
-      service: db
     ports:
       - 5432:5432
 
   rabbitmq:
-    extends:
-      file: docker-compose.yml
-      service: rabbitmq
     image: rabbitmq:4.0.7-management-alpine
     ports:
       - 15672:15672
@@ -129,6 +126,3 @@ services:
           limits:
             memory: 2G
     restart: unless-stopped
-
-volumes:
-  tmp-test:
