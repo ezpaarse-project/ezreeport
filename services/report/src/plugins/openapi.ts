@@ -25,7 +25,7 @@ type PluginOptions = {
  *
  * @param fastify The fastify instance
  */
-const formatBasePlugin: FastifyPluginAsync<PluginOptions> = async (fastify, opts) => {
+const openapiBasePlugin: FastifyPluginAsync<PluginOptions> = async (fastify, opts) => {
   await fastify.register(fastifySwagger, {
     openapi: {
       info: {
@@ -116,9 +116,9 @@ const formatBasePlugin: FastifyPluginAsync<PluginOptions> = async (fastify, opts
 };
 
 // Register plugin
-const formatPlugin = fp(
-  formatBasePlugin,
+const openapiPlugin = fp(
+  openapiBasePlugin,
   { name: 'ezr-openapi', encapsulate: false },
 );
 
-export default formatPlugin;
+export default openapiPlugin;
