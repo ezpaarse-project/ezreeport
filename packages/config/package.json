@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "@types/config": "^3.3.5",
+    "@types/node": "catalog:",
     "typescript": "catalog:"
   },
   "engines": {

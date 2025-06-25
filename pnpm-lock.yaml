@@ -90,6 +90,9 @@ importers:
       '@types/config':
         specifier: ^3.3.5
         version: 3.3.5
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.10.0
       typescript:
         specifier: 'catalog:'
         version: 5.7.2
