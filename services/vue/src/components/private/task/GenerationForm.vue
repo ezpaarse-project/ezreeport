@@ -82,7 +82,7 @@
               :model-value="targets"
               :label="$t('$ezreeport.task.targets')"
               :add-label="$t('$ezreeport.task.targets:add')"
-              :rules="[(v) => v.length > 0 || $t('$ezreeport.required')]"
+              :rules="[(v) => v.length >= 0 || $t('$ezreeport.required')]"
               :item-rules="[(v, i) => isEmail(v) || $t('$ezreeport.errors.invalidEmail', i + 1)]"
               :item-placeholder="$t('$ezreeport.task.targets:hint')"
               prepend-icon="mdi-mailbox"
