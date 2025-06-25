@@ -68,13 +68,13 @@ export const InputManualReport = z.object({
     end: stringToEndOfDay
       .describe('End of the period'),
   }).optional()
-    .describe('Period to generate report for, will enable first level of debug'),
+    .describe('Period to generate report for, enable first level of debug if provided'),
 
-  targets: z.array(z.string().email()).min(1).optional()
-    .describe('Custom targets to send report to, will enable first level of debug'),
+  targets: z.array(z.string().email()).optional()
+    .describe('Custom targets to send report to, enable first level of debug if provided'),
 
   debug: z.boolean().default(false).optional()
-    .describe('Enable second level of debug'),
+    .describe('Enable second level of debug, not available in production environment'),
 }).strict();
 
 /**
