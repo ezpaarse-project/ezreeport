@@ -133,6 +133,8 @@ module.exports = {
       script: './src/app.ts',
       merge_logs: false,
       log_type: 'json',
+      instances: env('FILES_CONCURRENCE', 1),
+      increment_var: 'HTTP_PORT',
       env: {
         ...nodeEnv,
         ...rabbitmqEnv,
