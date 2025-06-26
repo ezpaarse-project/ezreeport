@@ -57,7 +57,7 @@ WORKDIR /usr/build/database/dev
 
 # Install prisma dependencies
 RUN apk add --no-cache --update python3 \
-	&& ln -sf python3 /usr/bin/python
+  && ln -sf python3 /usr/bin/python
 
 COPY --from=database-pnpm /usr/build/database/dev .
 
@@ -97,6 +97,9 @@ FROM base AS api
 EXPOSE 8080
 ENV NODE_ENV=production
 WORKDIR /usr/build/api
+
+# Shared TS config
+COPY ./tsconfig.json /usr/tsconfig.json
 
 COPY --from=api-pnpm /usr/build/api/prod .
 
@@ -140,6 +143,9 @@ WORKDIR /usr/build/worker
 # Install node-canvas dependencies
 RUN apk add --no-cache cairo jpeg pango pixman
 
+# Shared TS config
+COPY ./tsconfig.json /usr/tsconfig.json
+
 COPY --from=worker-pnpm /usr/build/worker/prod .
 
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
@@ -176,6 +182,9 @@ EXPOSE 8080
 ENV NODE_ENV=production
 WORKDIR /usr/build/scheduler
 
+# Shared TS config
+COPY ./tsconfig.json /usr/tsconfig.json
+
 COPY --from=scheduler-pnpm /usr/build/scheduler/prod .
 
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
@@ -210,6 +219,9 @@ FROM base AS mail
 EXPOSE 8080
 ENV NODE_ENV=production
 WORKDIR /usr/build/mail
+
+# Shared TS config
+COPY ./tsconfig.json /usr/tsconfig.json
 
 COPY --from=mail-pnpm /usr/build/mail/prod .
 
@@ -246,6 +258,9 @@ EXPOSE 8080
 ENV NODE_ENV=production
 WORKDIR /usr/build/files
 
+# Shared TS config
+COPY ./tsconfig.json /usr/tsconfig.json
+
 COPY --from=files-pnpm /usr/build/files/prod .
 
 HEALTHCHECK --interval=1m --timeout=10s --retries=5 --start-period=20s \
@@ -267,6 +282,9 @@ COPY ./services/ecosystem.config.js .
 RUN npm install -g pm2@^6.0.5 tsx@^4.19.1
 
 RUN apk add --no-cache cairo jpeg pango pixman
+
+# Shared TS config
+COPY ./tsconfig.json /usr/tsconfig.json
 
 COPY --from=api /usr/build/api ./report
 COPY --from=worker /usr/build/worker ./worker
@@ -330,10 +348,10 @@ FROM vue-pnpm AS vuedoc-builder
 WORKDIR /usr/build/vue
 
 ARG REPORT_TOKEN="changeme" \
-   REPORT_API="http://localhost:8080/"
+  REPORT_API="http://localhost:8080/"
 
 ENV VITE_EZR_TOKEN=${REPORT_TOKEN} \
-    VITE_EZR_API=${REPORT_API}
+  VITE_EZR_API=${REPORT_API}
 
 RUN turbo run build:docs
 

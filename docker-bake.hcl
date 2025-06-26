@@ -1,5 +1,5 @@
 group "default" {
-  targets = ["migrate", "api", "worker", "scheduler", "mail", "aio"]
+  targets = ["migrate", "api", "worker", "scheduler", "mail", "files", "aio"]
 }
 
 variable "VERSION" {
@@ -53,6 +53,15 @@ target "mail" {
   output = [{ type = "registry" }]
   tags = [
     "vxnexus-registry.intra.inist.fr:8083/ezreeport/mail:${VERSION}"
+  ]
+}
+
+target "files" {
+  inherits = ["_base"]
+  target = "files"
+  output = [{ type = "registry" }]
+  tags = [
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/files:${VERSION}"
   ]
 }
 
