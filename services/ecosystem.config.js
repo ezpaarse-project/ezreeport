@@ -140,6 +140,7 @@ module.exports = {
         ...rabbitmqEnv,
 
         PATHS_REPORT: env('PATHS_REPORT', '/data/ezreeport/reports'),
+        PATHS_DB: env('PATHS_DB', '/data/ezreeport/db'),
 
         HTTP_PORT: +env('FILES_HTTP_PORT', 8480),
       },
