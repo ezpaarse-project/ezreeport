@@ -14,6 +14,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     url: '/:recurrence/period',
     schema: {
       summary: 'Get period from recurrence',
+      tags: ['recurrence'],
       params: z.object({
         recurrence: Recurrence,
       }),
@@ -44,12 +45,12 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     url: '/:recurrence/nextDate',
     schema: {
       summary: 'Get next date from recurrence',
+      tags: ['recurrence'],
       params: z.object({
         recurrence: Recurrence,
       }),
       querystring: z.object({
         reference: z.coerce.date().optional(),
-        offset: z.number().optional(),
       }),
       response: {
         ...responses.describeErrors([
