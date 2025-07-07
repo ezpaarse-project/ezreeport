@@ -43,6 +43,11 @@
       "node": "./dist/namespaces.js",
       "browser": "./dist/namespaces.mjs"
     },
+    "./recurrence": {
+      "types": "./dist/recurrence.d.ts",
+      "node": "./dist/recurrence.js",
+      "browser": "./dist/recurrence.mjs"
+    },
     "./generations": {
       "types": "./dist/generations.d.ts",
       "node": "./dist/generations.js",

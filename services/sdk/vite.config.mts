@@ -26,6 +26,7 @@ export default defineConfig({
         elastic: src('modules/elastic/index.ts'),
         health: src('modules/health/index.ts'),
         namespaces: src('modules/namespaces/index.ts'),
+        recurrence: src('modules/recurrence/index.ts'),
         generations: src('modules/generations/index.ts'),
         reports: src('modules/reports/index.ts'),
         tasks: src('modules/tasks/index.ts'),
