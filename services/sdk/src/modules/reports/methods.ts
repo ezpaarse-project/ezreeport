@@ -96,7 +96,7 @@ export async function getFileAsBlob(
     responseType: 'blob',
   });
 }
-assignPermission(getFileAsBlob, 'GET /reports/:taskId/:year/:yearMonth/:reportId.:type.:ext', true);
+assignPermission(getFileAsBlob, 'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext', true);
 
 /**
  * Get a report file as an array buffer
@@ -119,7 +119,7 @@ export async function getFileAsArrayBuffer(
     responseType: 'arrayBuffer',
   });
 }
-assignPermission(getFileAsArrayBuffer, 'GET /reports/:taskId/:year/:yearMonth/:reportId.:type.:ext', true);
+assignPermission(getFileAsArrayBuffer, 'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext', true);
 
 /**
  * Get a report file as a stream
@@ -142,7 +142,7 @@ export async function getFileAsStream(
     responseType: 'stream',
   });
 }
-assignPermission(getFileAsStream, 'GET /reports/:taskId/:year/:yearMonth/:reportId.:type.:ext', true);
+assignPermission(getFileAsStream, 'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext', true);
 
 /**
  * Get a report file as a text
@@ -165,7 +165,7 @@ export async function getFileAsText(
     responseType: 'text',
   });
 }
-assignPermission(getFileAsText, 'GET /reports/:taskId/:year/:yearMonth/:reportId.:type.:ext', true);
+assignPermission(getFileAsText, 'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext', true);
 
 /**
  * Get a report file as a JSON object
@@ -188,7 +188,7 @@ export async function getFileAsJson(
   const content = await client.fetch<RawReportResult>(`/reports/${id}/${path}`);
   return transformReportResult(content);
 }
-assignPermission(getFileAsJson, 'GET /reports/:taskId/:year/:yearMonth/:reportId.:type.:ext', true);
+assignPermission(getFileAsJson, 'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext', true);
 
 /**
  * Start a report generation
