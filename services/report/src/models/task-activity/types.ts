@@ -2,9 +2,9 @@ import { ensureArray } from '@ezreeport/models/lib/utils';
 import { TaskActivity as CommonTaskActivity } from '@ezreeport/models/task-activity';
 import {
   z,
-  stringOrArray,
-  stringToStartOfDay,
-  stringToEndOfDay,
+  zStringOrArray,
+  zStringToStartOfDay,
+  zStringToEndOfDay,
 } from '@ezreeport/models/lib/zod';
 
 import { Task } from '~/models/tasks/types';
@@ -63,13 +63,13 @@ export const TaskActivityQueryFilters = z.object({
   extendedId: z.string().min(1).optional()
     .describe('ID of template extended by the task'),
 
-  namespaceId: stringOrArray.optional()
+  namespaceId: zStringOrArray.optional()
     .describe('Possible namespace ID of the task'),
 
-  'createdAt.from': stringToStartOfDay.optional()
+  'createdAt.from': zStringToStartOfDay.optional()
     .describe('Minimum date of event'),
 
-  'createdAt.to': stringToEndOfDay.optional()
+  'createdAt.to': zStringToEndOfDay.optional()
     .describe('Maximum date of event'),
 });
 

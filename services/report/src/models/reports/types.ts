@@ -1,7 +1,7 @@
 import {
   z,
-  stringToEndOfDay,
-  stringToStartOfDay,
+  zStringToEndOfDay,
+  zStringToStartOfDay,
 } from '@ezreeport/models/lib/zod';
 
 import { ReportFiles } from '@ezreeport/models/reports';
@@ -31,10 +31,10 @@ export type ReportFilesOfTaskType = z.infer<typeof ReportFilesOfTask>;
  */
 export const InputManualReport = z.object({
   period: z.object({
-    start: stringToStartOfDay
+    start: zStringToStartOfDay
       .describe('Start of the period'),
 
-    end: stringToEndOfDay
+    end: zStringToEndOfDay
       .describe('End of the period'),
   }).optional()
     .describe('Period to generate report for, will enable first level of debug'),

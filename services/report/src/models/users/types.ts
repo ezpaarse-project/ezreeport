@@ -1,4 +1,4 @@
-import { z, stringToBool } from '@ezreeport/models/lib/zod';
+import { z, zStringToBool } from '@ezreeport/models/lib/zod';
 
 import { BulkMembership, BulkMembershipResult } from '~/models/memberships/types';
 
@@ -50,7 +50,7 @@ export const UserQueryFilters = z.object({
   query: z.string().optional()
     .describe('Query used for searching'),
 
-  isAdmin: stringToBool.optional()
+  isAdmin: zStringToBool.optional()
     .describe('If user is an admin'),
 });
 

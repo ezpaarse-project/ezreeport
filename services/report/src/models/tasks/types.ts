@@ -1,9 +1,9 @@
 import {
   z,
-  stringToStartOfDay,
-  stringToEndOfDay,
-  stringOrArray,
-  stringToBool,
+  zStringToStartOfDay,
+  zStringToEndOfDay,
+  zStringOrArray,
+  zStringToBool,
 } from '@ezreeport/models/lib/zod';
 import { ensureArray } from '@ezreeport/models/lib/utils';
 
@@ -75,19 +75,19 @@ export const TaskQueryFilters = z.object({
   extendedId: z.string().min(1).optional()
     .describe('ID of template extended by the task'),
 
-  namespaceId: stringOrArray.optional()
+  namespaceId: zStringOrArray.optional()
     .describe('Possible namespace ID of the task'),
 
-  targets: stringOrArray.optional()
+  targets: zStringOrArray.optional()
     .describe('Email addresses used by the task'),
 
-  'nextRun.from': stringToStartOfDay.optional()
+  'nextRun.from': zStringToStartOfDay.optional()
     .describe('Minimum date of next run of the task'),
 
-  'nextRun.to': stringToEndOfDay.optional()
+  'nextRun.to': zStringToEndOfDay.optional()
     .describe('Maximum date of next run of the task'),
 
-  enabled: stringToBool.optional()
+  enabled: zStringToBool.optional()
     .describe('If task is enabled'),
 });
 

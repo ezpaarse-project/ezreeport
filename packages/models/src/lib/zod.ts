@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { endOfDay, startOfDay } from '@ezreeport/dates';
+import { endOfDay, parseISO, startOfDay } from '@ezreeport/dates';
 import { ensureArray } from './utils';
 
 /**
@@ -37,26 +37,23 @@ export async function ensureSchema<T, D>(
   return result.data;
 }
 
-export const stringOrArray = z.string().min(1).or(z.array(z.string().min(1)))
-  .transform((v) => ensureArray(v));
+export const zStringOrArray = (
+  z.string().min(1)
+    .or(z.array(z.string().min(1)))
+).transform((v) => ensureArray(v));
 
-export const stringToStartOfDay = (
+export const zStringToDay = (
   z.string().date()
-    .or(z.string().datetime())
-).transform((v) => {
-  const date = z.coerce.date().parse(v);
-  return startOfDay(date);
-});
+    .or(z.string().datetime({ offset: true }))
+).transform((v) => parseISO(v));
 
-export const stringToEndOfDay = (
-  z.string().date()
-    .or(z.string().datetime())
-).transform((v) => {
-  const date = z.coerce.date().parse(v);
-  return endOfDay(date);
-});
+export const zStringToStartOfDay = zStringToDay
+  .transform((v) => startOfDay(v));
 
-export const stringToBool = z.preprocess((v) => {
+export const zStringToEndOfDay = zStringToDay
+  .transform((v) => endOfDay(v));
+
+export const zStringToBool = z.preprocess((v) => {
   if (v === 'true') { return true; }
   if (v === 'false') { return false; }
   return Boolean(v);

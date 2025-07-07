@@ -1,4 +1,4 @@
-import { z, stringToBool } from '@ezreeport/models/lib/zod';
+import { z, zStringToBool } from '@ezreeport/models/lib/zod';
 import { ensureArray } from '@ezreeport/models/lib/utils';
 
 import { Filter } from '@ezreeport/models/templates';
@@ -96,7 +96,7 @@ export const TaskPresetQueryFilters = z.object({
   templateId: z.string().min(1).optional()
     .describe('ID of template referenced by the preset'),
 
-  hidden: stringToBool.optional()
+  hidden: zStringToBool.optional()
     .describe('If preset or template is hidden to normal users'),
 });
 

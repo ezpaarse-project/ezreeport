@@ -1,7 +1,7 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
-import { z } from '@ezreeport/models/lib/zod';
+import { zStringToDay, z } from '@ezreeport/models/lib/zod';
 import { Recurrence } from '@ezreeport/models/recurrence';
 import { ReportPeriod } from '@ezreeport/models/reports';
 import { calcPeriodFromRecurrence, calcNextDateFromRecurrence } from '@ezreeport/models/lib/periods';
@@ -19,8 +19,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         recurrence: Recurrence,
       }),
       querystring: z.object({
-        reference: z.coerce.date().optional(),
-        offset: z.coerce.number().optional(),
+        reference: zStringToDay.optional()
+          .describe('The date used as reference, defaults to today'),
+        offset: z.coerce.number().optional()
+          .describe('The offset, negative for previous, positive for next, 0 for current, default to 0'),
       }),
       response: {
         ...responses.describeErrors([
@@ -50,7 +52,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         recurrence: Recurrence,
       }),
       querystring: z.object({
-        reference: z.coerce.date().optional(),
+        reference: zStringToDay.optional()
+          .describe('The date used as reference, defaults to today'),
       }),
       response: {
         ...responses.describeErrors([
