@@ -101,6 +101,7 @@
                 <v-text-field
                   :model-value="formattedPeriod"
                   :label="$t('$ezreeport.task.period')"
+                  :loading="periodResolving && 'primary'"
                   prepend-icon="mdi-calendar-range"
                   variant="underlined"
                   readonly
@@ -108,14 +109,14 @@
                 />
               </template>
 
-              <v-card>
+              <v-card :loading="periodResolving && 'primary'">
                 <template #text>
                   <v-date-picker
                     :model-value="periodRange"
                     :max="maxDate"
                     hide-header
                     show-adjacent-months
-                    @update:model-value="updatePeriod($event)"
+                    @update:model-value="updatePeriodFromRange($event)"
                   />
                 </template>
               </v-card>
@@ -148,31 +149,21 @@ import {
   format,
   add,
   endOfDay,
-  endOfMonth,
-  endOfQuarter,
-  endOfWeek,
-  endOfYear,
-  getYear,
-  isAfter,
-  startOfDay,
-  startOfMonth,
-  startOfQuarter,
-  startOfWeek,
-  startOfYear,
   max,
   isValid as isValidDate,
 } from 'date-fns';
+
+import { downloadBlob } from '~/lib/files';
+import { isEmail } from '~/utils/validate';
 
 import {
   getFileAsBlob,
   type ReportResult,
   type ReportError,
 } from '~sdk/reports';
+import { getPeriodFromRecurrence } from '~sdk/recurrence';
 import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
 import type { Task } from '~sdk/tasks';
-
-import { downloadBlob } from '~/lib/files';
-import { isEmail } from '~/utils/validate';
 
 const maxDate = add(endOfDay(new Date()), { days: -1 });
 
@@ -191,6 +182,8 @@ const isValid = ref(false);
 const targets = ref(props.modelValue.targets);
 /** Custom period */
 const period = ref({ start: new Date(), end: new Date() });
+/** Is the period resolving */
+const periodResolving = ref(false);
 /** Is the report being generated */
 const loading = ref(false);
 /** Progress of the generation */
@@ -236,80 +229,27 @@ function onTargetUpdated(emails: string | string[] | undefined) {
   );
 }
 
-/**
- * Get period based on Recurrence
- *
- * @param today The today's date
- * @param offset The offset, negative for previous, positive for next, 0 for current
- */
-function calcPeriodFromRecurrence(
-  today: Date,
-  offset = 0,
-): void {
-  let value;
-  switch (props.modelValue.recurrence) {
-    case 'DAILY': {
-      const target = add(today, { days: offset });
-      value = { start: startOfDay(target), end: endOfDay(target) };
-      break;
-    }
-
-    case 'WEEKLY': {
-      const target = add(today, { weeks: offset });
-      value = {
-        start: startOfWeek(target, { weekStartsOn: 1 }),
-        end: endOfWeek(target, { weekStartsOn: 1 }),
-      };
-      break;
-    }
-
-    case 'MONTHLY': {
-      const target = add(today, { months: offset });
-      value = { start: startOfMonth(target), end: endOfMonth(target) };
-      break;
-    }
-
-    case 'QUARTERLY': {
-      const target = add(today, { months: 3 * offset });
-      value = { start: startOfQuarter(target), end: endOfQuarter(target) };
-      break;
-    }
-
-    case 'BIENNIAL': {
-      const target = add(today, { months: 6 * offset });
-      const year = getYear(target);
-      const midYear = new Date(year, 5, 30);
-      if (isAfter(target, midYear)) {
-        value = { start: add(midYear, { days: 1 }), end: endOfYear(midYear) };
-        break;
-      }
-      value = { start: startOfYear(midYear), end: midYear };
-      break;
-    }
-
-    case 'YEARLY': {
-      const target = add(today, { years: offset });
-      value = { start: startOfYear(target), end: endOfYear(target) };
-      break;
-    }
-
-    default:
-      throw new Error('Recurrence not found');
-  }
-
-  if (isAfter(value.end, maxDate)) {
+async function updatePeriodFromRecurrence(date: Date, offset = 0) {
+  if (periodResolving.value) {
     return;
   }
 
-  period.value = value;
+  periodResolving.value = true;
+  try {
+    period.value = await getPeriodFromRecurrence(props.modelValue.recurrence, date, offset);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.errors.resolvePeriod'), err);
+  }
+  periodResolving.value = false;
 }
 
-function updatePeriod(range: Date | Date[]) {
+async function updatePeriodFromRange(range: Date | Date[]) {
   const date = Array.isArray(range) ? max(range) : range;
   if (!isValidDate(date)) {
     return;
   }
-  calcPeriodFromRecurrence(date, 0);
+
+  await updatePeriodFromRecurrence(date);
 }
 
 async function generate() {
@@ -354,7 +294,7 @@ async function downloadGenerationFile(path: string) {
 
 watch(
   () => props.modelValue,
-  (v) => v && calcPeriodFromRecurrence(new Date(), -1),
+  (v) => v && updatePeriodFromRecurrence(new Date(), -1),
   { immediate: true },
 );
 </script>

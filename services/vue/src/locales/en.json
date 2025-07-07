@@ -291,12 +291,7 @@
             "square": "Square"
           },
           "slots": "Figure slots",
-          "slotsList": [
-            "Top left",
-            "Top right",
-            "Bottom left",
-            "Bottom right"
-          ]
+          "slotsList": ["Top left", "Top right", "Bottom left", "Bottom right"]
         },
         "md": {
           "title": "Markdown@:$ezreeport.editor.figures._.titleTemplate",
@@ -483,7 +478,9 @@
       "invalidEmail": "Mail address n°{n} is invalid ",
       "download": "Can't download file \"{path}\"",
       "downloadAttachement": "Can't download attachement",
-      "refreshNamespaces": "Can't refresh @:$ezreeport.namespace"
+      "refreshNamespaces": "Can't refresh @:$ezreeport.namespace",
+      "resolveNextDate": "Can't resolve next delivery",
+      "resolvePeriod": "Can't resolve the period"
     }
   }
 }

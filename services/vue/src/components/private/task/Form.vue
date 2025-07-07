@@ -129,6 +129,7 @@
             <DateField
               v-model="nextRun"
               :label="$t('$ezreeport.task.nextRun')"
+              :loading="nextDateResolving"
               :min="today"
               :rules="[
                 (v) => !!v || $t('$ezreeport.required'),
@@ -289,6 +290,7 @@
 </template>
 
 <script setup lang="ts">
+import { isEmail } from '~/utils/validate';
 import type { Namespace } from '~sdk/namespaces';
 import {
   getAllTemplates,
@@ -296,12 +298,13 @@ import {
   type Template,
 } from '~sdk/templates';
 import {
-  calcNextDateFromRecurrence, getLayoutsOfHelpers, hasTaskChanged, type TaskHelper,
+  getLayoutsOfHelpers,
+  hasTaskChanged,
+  type TaskHelper,
 } from '~sdk/helpers/tasks';
+import { getNextDateFromRecurrence } from '~sdk/recurrence';
 import { createTemplateHelperFrom } from '~sdk/helpers/templates';
 import { getCurrentNamespaces } from '~sdk/auth';
-
-import { isEmail } from '~/utils/validate';
 
 const today = new Date();
 
@@ -336,6 +339,8 @@ const isEditing = ref(!!props.modelValue.id);
 const hasNameChanged = ref(!!props.modelValue.name);
 /** Has index manually changed */
 const hasIndexChanged = ref(!!props.modelValue.template.index);
+/** Is nextDate resolving */
+const nextDateResolving = ref(false);
 /** Is basic form valid */
 const isFormValid = ref(false);
 /** Is editor visible */
@@ -540,8 +545,18 @@ function applyIndexFromTemplate() {
   index.value = extendedTemplate.value.body.index || '';
 }
 
-function calcNextDate() {
-  nextRun.value = calcNextDateFromRecurrence(new Date(), recurrence.value);
+async function updateNextDate() {
+  if (nextDateResolving.value) {
+    return;
+  }
+
+  nextDateResolving.value = true;
+  try {
+    nextRun.value = await getNextDateFromRecurrence(recurrence.value);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.errors.resolveNextDate'), err);
+  }
+  nextDateResolving.value = false;
 }
 
 function openEditor(layoutIndex: number = 0) {
@@ -559,5 +574,5 @@ function closeEditor() {
 
 watch(extendedTemplate, () => applyIndexFromTemplate);
 watch([extendedTemplate, recurrence], () => regenerateName());
-watch(recurrence, () => calcNextDate());
+watch(recurrence, () => updateNextDate());
 </script>
