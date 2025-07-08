@@ -12,11 +12,11 @@ import { watch } from 'node:fs/promises';
 async function setupConfigWatcher(path: string, signal: AbortSignal, logger: Console) {
   try {
     const watcher = watch(path, { persistent: false, signal });
-    logger.debug({ msg: 'Watching config file', path });
+    logger.debug(JSON.stringify({ msg: 'Watching config file', path }));
 
     // eslint-disable-next-line no-restricted-syntax
     for await (const event of watcher) {
-      logger.info({ msg: 'Config changed, exiting...', event, path });
+      logger.info(JSON.stringify({ msg: 'Config changed, exiting...', event, path }));
       process.exit(42); // Why 42 ? Because this is the way of life.
     }
   } catch (err) {
@@ -40,7 +40,7 @@ function watchConfigSources(logger: Console) {
     const { signal, abort } = new AbortController();
     process.on('SIGTERM', () => {
       abort();
-      logger.debug('Aborting config watcher');
+      logger.debug(JSON.stringify('Aborting config watcher'));
     });
 
     // eslint-disable-next-line no-restricted-syntax
