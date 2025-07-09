@@ -133,7 +133,6 @@ function setFilter(filter: TemplateFilter) {
  */
 function replaceFilters(filters: TemplateFilter[]) {
   props.modelValue.clear();
-  // eslint-disable-next-line no-restricted-syntax
   for (const filter of filters) {
     props.modelValue.set(filter.name, filter);
   }

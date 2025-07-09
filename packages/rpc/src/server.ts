@@ -3,7 +3,6 @@ import { parseJSONMessage, sendJSONToQueue, type rabbitmq } from '@ezreeport/rab
 
 import { RPCRequest, type RPCResponseType } from './types';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type RPCServerRouter = Record<string, (...args: any[]) => Promise<unknown> | unknown>;
 
 export async function setupRPCServer(

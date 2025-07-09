@@ -1,9 +1,6 @@
-/* eslint-env browser */
-
 export const customAlert = (message, isError = false) => {
   const container = document.querySelector('#alert-container');
   if (!container) {
-    // eslint-disable-next-line no-alert
     alert(message);
     return;
   }

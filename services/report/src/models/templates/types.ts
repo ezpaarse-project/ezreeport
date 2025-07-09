@@ -1,4 +1,4 @@
-import { z, zStringToBool } from '@ezreeport/models/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
 
 import { Template } from '@ezreeport/models/templates';
 
@@ -26,7 +26,7 @@ export const TemplateQueryFilters = z.object({
   query: z.string().optional()
     .describe('Query used for searching'),
 
-  hidden: zStringToBool.optional()
+  hidden: z.stringbool().optional()
     .describe('If preset or template is hidden to normal users'),
 });
 

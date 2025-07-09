@@ -22,11 +22,11 @@ export function buildPaginatedRequest(pagination?: PaginationType) {
 
 export function buildPaginatedResponse<
   T extends unknown[],
-  M extends Record<string, unknown>,
->(data: T, meta: { total: number, page: number } & M, reply: FastifyReply) {
+  M extends Record<string, unknown> & { page: number, total: number, count: number },
+>(data: T, meta:  M, reply: FastifyReply) {
   return buildSuccessResponseWithMeta(
     data,
-    { ...meta, count: data.length },
+    meta,
     reply,
   );
 }

@@ -15,12 +15,12 @@
   "author": "oxypomme",
   "exports": "./src/index.ts",
   "scripts": {
-    "lint": "eslint .",
+    "lint": "oxlint",
     "type-check": "tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {
     "*.ts": [
-      "eslint --fix"
+      "oxlint --fix"
     ],
     "package.json": [
       "sort-package-json"

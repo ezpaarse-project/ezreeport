@@ -148,7 +148,6 @@ const authBasePlugin: FastifyPluginAsync = async (fastify) => {
     );
 
     // Add new hooks
-    // eslint-disable-next-line no-param-reassign
     routeOpts.preValidation = preValidation;
   });
 };

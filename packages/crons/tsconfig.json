@@ -1,8 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "include": [
-    "**/*.ts",
-    ".eslintrc.js"
+    "**/*.ts"
   ],
   "compilerOptions": {
     "paths": {

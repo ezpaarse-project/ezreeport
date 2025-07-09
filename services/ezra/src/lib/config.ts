@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import type { Command } from '@oclif/core';
 
 import { existsSync, mkdirSync, readdirSync } from 'node:fs';
@@ -65,7 +64,6 @@ export class EZRAConfig {
       .map(([key, value]) => [Number.parseInt(key, 10), value] as [number, string])
       .sort(([aPriority], [bPriority]) => bPriority - aPriority);
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const [priority, file] of entries) {
       this.applyProfile(priority, file);
     }
@@ -91,10 +89,8 @@ export class EZRAConfig {
     const { env = {}, ...profile } = content;
 
     // Set env
-    // eslint-disable-next-line no-restricted-syntax
     for (const [key, value] of Object.entries(env)) {
       if (process.env[key] === `${value}`) {
-        // eslint-disable-next-line no-continue
         continue;
       }
 
@@ -136,10 +132,8 @@ export class EZRAConfig {
 
     const loaded = this.getLoadedProfiles();
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const file of readdirSync(this.profilesDir)) {
       if (!/\.json$/i.test(file)) {
-        // eslint-disable-next-line no-continue
         continue;
       }
 
@@ -147,7 +141,6 @@ export class EZRAConfig {
       try {
         const content = readJSONSync(path);
         if (!content.url) {
-          // eslint-disable-next-line no-continue
           continue;
         }
 

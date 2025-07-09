@@ -10,7 +10,6 @@ const logger = appLogger.child({ scope: 'init' });
 /**
  * Add default template if not already present
  */
-// eslint-disable-next-line import/prefer-default-export
 export async function initTemplates() {
   try {
     const { id } = await upsertDefaultTemplate();

@@ -17,7 +17,6 @@ export default class ProfileUnload extends BaseCommand<typeof ProfileUnload> {
     }),
   };
 
-  // eslint-disable-next-line class-methods-use-this
   public async run(): Promise<void> {
     const { args } = await this.parse(ProfileUnload);
 

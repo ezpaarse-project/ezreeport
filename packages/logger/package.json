@@ -15,19 +15,19 @@
   "author": "oxypomme",
   "exports": "./src/index.ts",
   "scripts": {
-    "lint": "eslint .",
+    "lint": "oxlint",
     "type-check": "tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {
     "*.ts": [
-      "eslint --fix"
+      "oxlint --fix"
     ],
     "package.json": [
       "sort-package-json"
     ]
   },
   "dependencies": {
-    "pino": "^9.4.0"
+    "pino": "^9.7.0"
   },
   "devDependencies": {
     "typescript": "catalog:"

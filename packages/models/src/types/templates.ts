@@ -17,7 +17,7 @@ const BaseFilter = z.object({
  * Validation for a raw filter
  */
 const RawFilter = z.object({
-  raw: z.record(z.record(z.string(), z.any()))
+  raw: z.record(z.string(), z.record(z.string(), z.any()))
     .describe('DSL query to run'),
 });
 
@@ -45,10 +45,10 @@ export type FilterType = z.infer<typeof Filter>;
 export const FigureAgg = z.object({
   type: z.string().min(1),
   field: z.string().min(1),
-  size: z.number().optional(),
+  size: z.int().min(0).optional(),
   missing: z.string().min(0).optional(),
 }).or(z.object({
-  raw: z.record(z.record(z.string(), z.any())),
+  raw: z.record(z.string(), z.record(z.string(), z.any())),
 }));
 
 /**
@@ -72,7 +72,7 @@ export const Figure = z.object({
   filters: z.array(Filter).optional()
     .describe('Filters used when fetching data of this figure'),
 
-  slots: z.array(z.number()).optional()
+  slots: z.array(z.int().min(0)).optional()
     .describe('Slots used by this figure'),
 });
 
@@ -99,7 +99,7 @@ export type LayoutType = z.infer<typeof Layout>;
  */
 export const TaskLayout = Layout.and(
   z.object({
-    at: z.number().min(0)
+    at: z.int().min(0)
       .describe('Position where to insert this layout'),
   }),
 );
@@ -108,10 +108,10 @@ export const TaskLayout = Layout.and(
  * Validation for the grid
  */
 const TemplateBodyGrid = z.object({
-  cols: z.number().min(1)
+  cols: z.int().min(1)
     .describe('Number of columns'),
 
-  rows: z.number().min(1)
+  rows: z.int().min(1)
     .describe('Number of rows'),
 });
 
@@ -124,7 +124,7 @@ export type TemplateBodyGridType = z.infer<typeof TemplateBodyGrid>;
  * Validation for the template body
  */
 export const TemplateBody = z.object({
-  version: z.number().min(1).optional()
+  version: z.int().min(1).optional()
     .describe('Template version'),
 
   index: z.string().min(1).optional()
@@ -152,7 +152,7 @@ export type TemplateBodyType = z.infer<typeof TemplateBody>;
  * Validation for the template body of a task
  */
 export const TaskTemplateBody = z.object({
-  version: z.number().min(1).optional()
+  version: z.int().min(1).optional()
     .describe('Template version'),
 
   index: z.string().min(1)
@@ -193,7 +193,7 @@ export type TemplateTagType = z.infer<typeof TemplateTag>;
  * Validation for a template
  */
 export const Template = z.object({
-  id: z.string().min(1).readonly()
+  id: z.string().min(1)
     .describe('Template ID'),
 
   name: z.string().min(1)
@@ -208,10 +208,10 @@ export const Template = z.object({
   hidden: z.boolean().default(false).optional()
     .describe('If template is hidden to normal users'),
 
-  createdAt: z.coerce.date().readonly()
+  createdAt: z.coerce.date()
     .describe('Creation date'),
 
-  updatedAt: z.coerce.date().nullable().readonly()
+  updatedAt: z.coerce.date().nullable()
     .describe('Last update date'),
 });
 

@@ -43,9 +43,8 @@ const router: FastifyPluginAsync = async (fastify) => {
 
     // If it's a request validation error
     if (hasZodFastifySchemaValidationErrors(err)) {
-      const cause = err.validation.map((e) => simplifyZodIssue(e.params.issue));
       status = StatusCodes.BAD_REQUEST;
-      error = new Error("Request doesn't match the schema", { cause });
+      error = new Error("Request doesn't match the schema", { cause: err.validation });
     }
 
     // If it's a response validation error

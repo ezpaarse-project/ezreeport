@@ -55,7 +55,6 @@ async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage
   }
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export async function initReportSendExchange(channel: rabbitmq.Channel) {
   const { exchange: sendExchange } = await channel.assertExchange(sendExchangeName, 'direct', { durable: false });
 

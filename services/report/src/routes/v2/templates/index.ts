@@ -76,6 +76,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           default: config.defaultTemplate.id,
           page: request.query.page,
           total: await templates.countTemplates(filters),
+          count: content.length,
         },
         reply,
       );

@@ -1,6 +1,5 @@
 import type { AggregationName } from './types';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FigureRawAggregation = { raw: Record<string, any> };
 
 export type FigureBaseAggregation = {

@@ -16,13 +16,13 @@
   "main": "src/app.ts",
   "scripts": {
     "dev": "tsx watch --inspect=0.0.0.0 src/app.ts",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "start": "tsx src/app.ts",
     "type-check": "tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {
     "*.ts": [
-      "eslint --fix"
+      "oxlint --fix"
     ],
     "package.json": [
       "sort-package-json"
@@ -39,21 +39,21 @@
     "@ezreeport/rabbitmq": "workspace:*",
     "@ezreeport/rpc": "workspace:*",
     "@ezreeport/simple-http": "workspace:*",
-    "axios": "^1.7.7",
-    "canvas": "^2.11.2",
+    "axios": "^1.10.0",
+    "canvas": "^3.1.2",
     "chroma-js": "^3.1.1",
     "handlebars": "^4.7.8",
-    "jspdf": "^2.5.2",
-    "jspdf-autotable": "^3.8.3",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
     "lodash": "^4.17.21",
     "tsx": "catalog:",
     "typescript": "catalog:",
-    "vega": "^5.30.0",
-    "vega-lite": "^5.21.0"
+    "vega": "^6.1.2",
+    "vega-lite": "^6.2.0"
   },
   "devDependencies": {
-    "@types/chroma-js": "^2.4.4",
-    "@types/lodash": "^4.17.9",
+    "@types/chroma-js": "^3.1.1",
+    "@types/lodash": "^4.17.20",
     "@types/node": "catalog:",
     "pino-pretty": "catalog:"
   },

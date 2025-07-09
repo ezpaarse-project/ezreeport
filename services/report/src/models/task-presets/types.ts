@@ -1,4 +1,4 @@
-import { z, zStringToBool } from '@ezreeport/models/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
 import { ensureArray } from '@ezreeport/models/lib/utils';
 
 import { Filter } from '@ezreeport/models/templates';
@@ -22,7 +22,7 @@ export type TaskPresetIncludeFieldsType = z.infer<typeof TaskPresetIncludeFields
  * Validation for task preset
  */
 export const TaskPreset = z.object({
-  id: z.string().min(1).readonly()
+  id: z.string().min(1)
     .describe('Preset ID'),
 
   name: z.string().min(1)
@@ -46,21 +46,21 @@ export const TaskPreset = z.object({
   recurrence: Recurrence
     .describe('Preset recurrence'),
 
-  createdAt: z.date().readonly()
+  createdAt: z.date()
     .describe('Creation date'),
 
-  updatedAt: z.date().nullable().readonly()
+  updatedAt: z.date().nullable()
     .describe('Last update date'),
 
   // Includes fields
 
   template: z.object({
-    tags: z.array(TemplateTag).optional().readonly()
+    tags: z.array(TemplateTag).optional()
       .describe('[Includes] Template tags'),
 
-    hidden: z.boolean().optional().readonly()
+    hidden: z.boolean().optional()
       .describe('[Includes] If template is hidden to normal users'),
-  }).optional().readonly()
+  }).optional()
     .describe('[Includes] Template referenced by the preset'),
 });
 
@@ -96,7 +96,7 @@ export const TaskPresetQueryFilters = z.object({
   templateId: z.string().min(1).optional()
     .describe('ID of template referenced by the preset'),
 
-  hidden: zStringToBool.optional()
+  hidden: z.stringbool().optional()
     .describe('If preset or template is hidden to normal users'),
 });
 
@@ -127,7 +127,7 @@ export const AdditionalDataForPreset = z.object({
   index: z.string().min(1)
     .describe('Elastic index to fetch data from'),
 
-  targets: z.array(z.string().email()).min(1)
+  targets: z.array(z.email()).min(1)
     .describe('Email addresses to send report'),
 
   filters: z.array(Filter).optional()

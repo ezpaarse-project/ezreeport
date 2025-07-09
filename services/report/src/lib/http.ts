@@ -20,7 +20,10 @@ export default async function startHTTPServer(routes: FastifyPluginAsync) {
   const fastify = createFastify({ logger: false });
 
   // Register cors
-  await fastify.register(fastifyCors, { origin: corsOrigin });
+  await fastify.register(fastifyCors, {
+    origin: corsOrigin,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  });
 
   // Register logger
   await fastify.register(loggerPlugin);

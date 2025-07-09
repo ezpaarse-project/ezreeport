@@ -21,7 +21,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       querystring: z.object({
         reference: zStringToDay.optional()
           .describe('The date used as reference, defaults to today'),
-        offset: z.coerce.number().optional()
+        offset: z.coerce.number().int().optional()
           .describe('The offset, negative for previous, positive for next, 0 for current, default to 0'),
       }),
       response: {

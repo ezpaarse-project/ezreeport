@@ -16,7 +16,6 @@ import {
  *
  * @returns The created activity
  */
-// eslint-disable-next-line import/prefer-default-export
 export async function createActivity(data: InputTaskActivityType): Promise<TaskActivityType> {
   const activity = await prisma.taskActivity.create({
     data: {

@@ -27,7 +27,7 @@ export const GenerationQueueData = z.object({
   origin: z.string().min(1)
     .describe('Origin of the request, can be a user or a service'),
 
-  targets: z.array(z.string().email()).min(1)
+  targets: z.array(z.email()).min(1)
     .describe('Targets of the report'),
 
   writeActivity: z.boolean().or(z.record(z.string(), z.any())).optional()
@@ -64,7 +64,7 @@ export const MailReportQueueData = z.object({
   period: ReportPeriod
     .describe('Period used to generate report'),
 
-  targets: z.array(z.string().email()).min(1)
+  targets: z.array(z.email()).min(1)
     .describe('Targets of the report'),
 
   date: z.coerce.date()
@@ -93,7 +93,7 @@ export const MailErrorQueueData = z.object({
     filename: z.string().min(1)
       .describe('File name to store error log'),
 
-    contact: z.string().email().min(1)
+    contact: z.email().min(1)
       .describe('Contact to send error log to'),
   }),
 

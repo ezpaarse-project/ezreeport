@@ -13,7 +13,6 @@ export * from './recurrence';
  *
  * @returns Updated task
  */
-// eslint-disable-next-line import/prefer-default-export
 export async function changeTaskEnableState(
   taskOrId: Omit<Task, 'template'> | string,
   enabled: boolean,

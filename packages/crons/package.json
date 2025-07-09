@@ -18,12 +18,12 @@
     "./types": "./src/types.ts"
   },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "oxlint",
     "type-check": "tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {
     "*.ts": [
-      "eslint --fix"
+      "oxlint --fix"
     ],
     "package.json": [
       "sort-package-json"
@@ -32,7 +32,7 @@
   "dependencies": {
     "@ezreeport/logger": "workspace:*",
     "@ezreeport/models": "workspace:*",
-    "cron": "^4.1.0"
+    "cron": "^4.3.1"
   },
   "devDependencies": {
     "typescript": "catalog:"

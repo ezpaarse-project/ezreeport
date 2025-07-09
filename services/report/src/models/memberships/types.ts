@@ -11,13 +11,13 @@ export const Membership = z.object({
   namespaceId: z.string().min(1)
     .describe('Namespace ID'),
 
-  access: z.nativeEnum(Access)
+  access: z.enum(Access)
     .describe('Permissions of user on namespace'),
 
-  createdAt: z.date().readonly()
+  createdAt: z.date()
     .describe('Creation date'),
 
-  updatedAt: z.date().nullable().readonly()
+  updatedAt: z.date().nullable()
     .describe('Last update date'),
 });
 
@@ -52,7 +52,7 @@ export const BulkMembership = z.object({
   namespaceId: z.string().min(1)
     .describe('Namespace ID'),
 
-  access: z.nativeEnum(Access)
+  access: z.enum(Access)
     .describe('Permissions of user on namespace'),
 }).strict();
 
@@ -66,13 +66,13 @@ export type BulkMembershipType = z.infer<typeof BulkMembership>;
  */
 export const BulkMembershipResult = z.object({
   memberships: z.object({
-    deleted: z.number().min(0)
+    deleted: z.int().min(0)
       .describe('Number of item deleted'),
 
-    updated: z.number().min(0)
+    updated: z.int().min(0)
       .describe('Number of item updated'),
 
-    created: z.number().min(0)
+    created: z.int().min(0)
       .describe('Number of item created'),
   })
     .describe('Summary of operations on memberships'),

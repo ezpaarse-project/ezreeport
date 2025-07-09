@@ -75,6 +75,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         {
           page: request.query.page,
           total: await namespaces.countNamespaces(filters),
+          count: content.length,
         },
         reply,
       );

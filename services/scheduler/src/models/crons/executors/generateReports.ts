@@ -14,7 +14,6 @@ const generateReports: Executor = async (logger) => {
 
   const tasks = await getTasksToGenerate(today);
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const { namespace, extends: template, ...task } of tasks) {
     // Resolve targets
     const targets = compact(task.targets);
@@ -24,11 +23,9 @@ const generateReports: Executor = async (logger) => {
         taskId: task.id,
         task: task.name,
       });
-      // eslint-disable-next-line no-continue
       continue;
     }
 
-    // eslint-disable-next-line no-await-in-loop
     const data = await queueGeneration({
       task: Task.parse(task),
       namespace: Namespace.parse(namespace),

@@ -180,7 +180,6 @@ const extractTableEsAggregations: ExtractEsAggregationsFnc = ({ params }) => {
   const buckets: FigureAggType[] = [];
   let metric: FigureAggType | undefined;
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const column of params.columns) {
     if (assertFigureAgg(column.aggregation)) {
       if (!column.metric) {
@@ -234,7 +233,6 @@ const extractOtherEsAggregations: ExtractEsAggregationsFnc = ({ params }) => {
  *
  * @returns Object with `aggregations` ready to be sent to ElasticSearch
  */
-// eslint-disable-next-line import/prefer-default-export
 export function prepareEsAggregations(
   figure: FigureType,
   dateField: string,

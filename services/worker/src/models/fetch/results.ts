@@ -90,7 +90,6 @@ function ensureEsBuckets(buckets: Record<string, Omit<EsBucket, 'key'>> | EsBuck
  * @returns Array of FetchResultItems
  */
 function flattenEsBuckets<Element extends Record<string, unknown>>(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rawBuckets: any,
   elements: Element[],
   getKeyName: (el: Element) => string,
@@ -112,7 +111,6 @@ function flattenEsBuckets<Element extends Record<string, unknown>>(
   const data: FetchResultItem[] = [];
   const buckets = 'buckets' in aggregation ? aggregation.buckets : [aggregation];
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const bucket of ensureEsBuckets(buckets)) {
     // Flattening next sub agg
     const subBuckets = flattenEsBuckets(

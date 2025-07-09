@@ -94,7 +94,6 @@ export async function initGenerationQueue(c: rabbitmq.Channel) {
   logger.debug('Generation queue created');
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export async function queueGeneration(params: Omit<GenerationQueueDataType, 'id' | 'createdAt'>) {
   const createdAt = new Date();
   let data: GenerationQueueDataType;

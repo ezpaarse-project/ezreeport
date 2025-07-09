@@ -121,7 +121,6 @@ export const elasticListIndices = async (runAs?: string) => {
  */
 const simplifyMapping = (properties: Record<string, ElasticTypes.MappingProperty>) => {
   const res: Record<string, string> = {};
-  // eslint-disable-next-line no-restricted-syntax
   for (const [field, mapping] of Object.entries(properties)) {
     if (mapping.type) {
       res[field] = mapping.type;
@@ -129,7 +128,6 @@ const simplifyMapping = (properties: Record<string, ElasticTypes.MappingProperty
 
     if (mapping.properties) {
       const sub = simplifyMapping(mapping.properties);
-      // eslint-disable-next-line no-restricted-syntax
       for (const [subField, type] of Object.entries(sub)) {
         res[`${field}.${subField}`] = type;
       }

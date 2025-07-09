@@ -48,9 +48,7 @@ type MessagesType = typeof messages[keyof typeof messages];
  * @param options The options for registering locales
  */
 function registerLocales(options: LocalesOptions) {
-  // eslint-disable-next-line no-restricted-syntax
   for (const entry of Object.entries(messages)) {
-    // eslint-disable-next-line prefer-const
     let [locale, msg] = entry as [keyof typeof messages, MessagesType];
 
     try {
@@ -67,7 +65,6 @@ function registerLocales(options: LocalesOptions) {
 
       options.i18n.mergeLocaleMessage(locale, { $ezreeport: msg });
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error('[ezreeport-vue]', err);
     }
   }

@@ -15,7 +15,7 @@ import { Task } from '~/models/tasks/types';
 export const TaskActivity = CommonTaskActivity.extend({
   // Includes fields
 
-  task: Task.omit({ template: true }).optional().readonly()
+  task: Task.omit({ template: true }).optional()
     .describe('[Includes] Task related to event'),
 });
 

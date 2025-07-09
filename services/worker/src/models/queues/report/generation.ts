@@ -117,7 +117,6 @@ async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage
   channel.ack(msg);
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export async function getReportGenerationQueue(channel: rabbitmq.Channel) {
   const { exchange: deadLetterExchange } = await channel.assertExchange(
     deadGenerationExchangeName,

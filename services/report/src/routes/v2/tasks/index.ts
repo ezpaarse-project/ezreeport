@@ -85,6 +85,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         {
           page,
           total: await tasks.countTasks(filters),
+          count: content.length,
         },
         reply,
       );
@@ -312,7 +313,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       }
 
       const { username = 'unknown' } = request.user ?? {};
-      const activity = { type: 'edition', message: `Tâche déliée par ${origin}` };
+      const activity = { type: 'edition', message: `Tâche déliée par ${username}` };
 
       const task = await tasks.unlinkTaskFromTemplate(request.params.id);
 

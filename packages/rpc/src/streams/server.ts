@@ -12,9 +12,7 @@ import {
 } from './types';
 
 export type RPCStreamRouter = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createWriteStream?: (...args: any[]) => Writable | Promise<Writable>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createReadStream?: (...args: any[]) => Readable | Promise<Readable>,
 };
 

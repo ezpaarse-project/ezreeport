@@ -60,7 +60,6 @@ export default class MigrateList extends EzrCommand<typeof MigrateList> {
     const versionsAvailable = Object.keys(migrations).sort(semverCompare);
 
     const tree = createTree(this);
-    // eslint-disable-next-line no-restricted-syntax
     for (const name of versionsAvailable) {
       if (semverGt(currentVersion, name) && flags.all) {
         tree.insert(chalk.grey(`${name} ${chalk.italic('(previous version)')}`));

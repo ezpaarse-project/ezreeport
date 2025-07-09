@@ -1,4 +1,4 @@
-import { z, zStringToBool } from '@ezreeport/models/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
 
 import { BulkMembership, BulkMembershipResult } from '~/models/memberships/types';
 
@@ -6,19 +6,19 @@ import { BulkMembership, BulkMembershipResult } from '~/models/memberships/types
  * Validation for a user
  */
 export const User = z.object({
-  username: z.string().min(1).readonly()
+  username: z.string().min(1)
     .describe('Username'),
 
-  token: z.string().min(1).readonly()
+  token: z.string().min(1)
     .describe('Token used to authenticate user, generated when user is created'),
 
   isAdmin: z.boolean().default(false).optional()
     .describe('If user is an admin'),
 
-  createdAt: z.date().readonly()
+  createdAt: z.date()
     .describe('Creation date'),
 
-  updatedAt: z.date().nullable().readonly()
+  updatedAt: z.date().nullable()
     .describe('Last update date'),
 });
 
@@ -50,7 +50,7 @@ export const UserQueryFilters = z.object({
   query: z.string().optional()
     .describe('Query used for searching'),
 
-  isAdmin: zStringToBool.optional()
+  isAdmin: z.stringbool().optional()
     .describe('If user is an admin'),
 });
 
@@ -63,7 +63,7 @@ export type UserQueryFiltersType = z.infer<typeof UserQueryFilters>;
  * Validation for setting multiple users
  */
 export const BulkUser = z.object({
-  username: z.string().min(1).readonly()
+  username: z.string().min(1)
     .describe('Username'),
 
   isAdmin: z.boolean().default(false).optional()
@@ -85,13 +85,13 @@ export type BulkUserType = z.infer<typeof BulkUser>;
  */
 export const BulkUserResult = z.object({
   users: z.object({
-    deleted: z.number().min(0)
+    deleted: z.int().min(0)
       .describe('Number of item deleted'),
 
-    updated: z.number().min(0)
+    updated: z.int().min(0)
       .describe('Number of item updated'),
 
-    created: z.number().min(0)
+    created: z.int().min(0)
       .describe('Number of item created'),
   })
     .describe('Summary of operations on users'),

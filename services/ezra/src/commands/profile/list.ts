@@ -16,7 +16,6 @@ export default class ProfileList extends BaseCommand<typeof ProfileList> {
     await this.parse(ProfileList);
 
     const tree = createTree(this);
-    // eslint-disable-next-line no-restricted-syntax
     for (const [name, configOrError] of this.ezraConfig.getPossibleProfiles()) {
       const profile = configOrError instanceof Error ? undefined : configOrError;
       const error = !profile ? configOrError : undefined;

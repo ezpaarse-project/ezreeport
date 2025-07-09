@@ -6,7 +6,6 @@ import type { TemplateFilter, TemplateBodyFigure } from '~/modules/templates';
 interface FigureHelper {
   readonly id: string;
   readonly type: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params: Record<string, any>,
   slots: Set<number>,
   readonly hash: string

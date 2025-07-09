@@ -26,7 +26,7 @@ export const Generation = z.object({
   end: z.coerce.date()
     .describe('End of the period'),
 
-  targets: z.array(z.string().email()).min(1)
+  targets: z.array(z.email()).min(1)
     .describe('Targets of the report'),
 
   origin: z.string().min(1)
@@ -38,24 +38,24 @@ export const Generation = z.object({
   status: GenerationStatus
     .describe('Job status'),
 
-  progress: z.number().int().min(0).max(100)
+  progress: z.int().min(0).max(100)
     .or(z.null())
     .describe('Job progress, null if not started'),
 
-  took: z.number().int().min(0)
+  took: z.int().min(0)
     .or(z.null())
     .describe('Time taken to generate the report, null if not started'),
 
   reportId: z.string()
     .describe('Report ID'),
 
-  createdAt: z.coerce.date().readonly()
+  createdAt: z.coerce.date()
     .describe('Creation date'),
 
-  updatedAt: z.coerce.date().nullable().readonly()
+  updatedAt: z.coerce.date().nullable()
     .describe('Last update date'),
 
-  startedAt: z.coerce.date().readonly().nullable()
+  startedAt: z.coerce.date().nullable()
     .describe('Creation date'),
 });
 

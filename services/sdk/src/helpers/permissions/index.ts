@@ -22,13 +22,11 @@ export async function refreshPermissions(): Promise<void> {
  */
 export function hasPermission(fnc: Function, namespaceIds?: string[]): boolean {
   if (!isSDKFunction(fnc)) {
-    // eslint-disable-next-line no-console
     console.warn(`[ezr][hasPermission] Function ${fnc.name} is not compatible with ezrPermission decorator`);
     return true;
   }
 
   if (!currentUserPermissions) {
-    // eslint-disable-next-line no-console
     console.warn('[ezr][hasPermission] No current permissions set, please call refreshPermissions() first');
     return false;
   }

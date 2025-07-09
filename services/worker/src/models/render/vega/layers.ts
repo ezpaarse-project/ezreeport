@@ -1,8 +1,9 @@
-import { scheme as vegaScheme } from 'vega';
-import type { Mark } from 'vega-lite/build/src/mark';
-import type { UnitSpec } from 'vega-lite/build/src/spec';
+import { scheme as vegaScheme, type Text, type ExprRef, type SignalRef } from 'vega';
+import type { Mark } from 'vega-lite/types_unstable/mark.js';
+import type { UnitSpec } from 'vega-lite/types_unstable/spec/unit.js';
+import { TitleParams } from 'vega-lite/types_unstable/title.js';
 import { merge } from 'lodash';
-import { contrast } from 'chroma-js';
+import chroma from 'chroma-js';
 
 import * as dfns from '@ezreeport/dates';
 import { ensureInt } from '@ezreeport/models/lib/utils';
@@ -13,6 +14,7 @@ import config from '~/lib/config';
 import type { FetchResultItem, FetchResultValue } from '~/models/fetch/results';
 import { calcVegaFormatFromRecurrence } from '~/models/recurrence';
 
+export type Title = Text | TitleParams<ExprRef | SignalRef>;
 /**
  * Params for createVegaLSpec
  */
@@ -69,7 +71,7 @@ const { scheme } = config.report;
 const colorScheme = vegaScheme(scheme) as string[];
 // Colors of labels for colors of Vega
 const labelScheme = `${scheme}.labels`;
-vegaScheme(labelScheme, colorScheme.map((c) => (contrast(c, 'black') > 5 ? 'black' : 'white')));
+vegaScheme(labelScheme, colorScheme.map((c) => (chroma.contrast(c, 'black') > 5 ? 'black' : 'white')));
 
 /**
  * Ratio between outer and inner radius.
@@ -193,7 +195,6 @@ function prepareColorScale(
     return undefined;
   }
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const label of [...labels]) {
     const color = params.colorMap.get(`${label}`);
     if (color) {
@@ -208,7 +209,6 @@ function prepareColorScale(
 
   // Set leftovers with unused colors
   const unusedColors = [...unusedColorsSet];
-  // eslint-disable-next-line no-restricted-syntax
   for (const label of labels) {
     const color = unusedColors.shift() || '';
     colorsEntries.set(label, color);
@@ -348,7 +348,6 @@ function prepareDataLabelsLayers(
         const sum = data.reduce(calcSumOfData, 0);
 
         // Set percentage on each item
-        // eslint-disable-next-line no-restricted-syntax
         for (const item of data) {
           const value = ensureInt(item.value);
           if (!Number.isNaN(value)) {
@@ -363,11 +362,9 @@ function prepareDataLabelsLayers(
       } else {
         // Calc sum of colors for each label
         const sumPerLabel = new Map<string, number>();
-        // eslint-disable-next-line no-restricted-syntax
         for (const item of data) {
           const value = ensureInt(item.value);
           if (Number.isNaN(value)) {
-            // eslint-disable-next-line no-continue
             continue;
           }
 
@@ -376,7 +373,6 @@ function prepareDataLabelsLayers(
         }
 
         // Set percentage on each item
-        // eslint-disable-next-line no-restricted-syntax
         for (const item of data) {
           const sum = sumPerLabel.get(`${item.label}`);
           const value = ensureInt(item.value);
@@ -401,7 +397,6 @@ function prepareDataLabelsLayers(
       }
 
       // Set value on each item
-      // eslint-disable-next-line no-restricted-syntax
       for (const item of data) {
         const value = ensureInt(item.value);
         if (!Number.isNaN(value) && value >= minValue) {

@@ -7,7 +7,6 @@ import vuetify from 'vite-plugin-vuetify';
 import components from 'unplugin-vue-components/vite';
 import autoImport from 'unplugin-auto-import/vite';
 
-// eslint-disable-next-line import/no-relative-packages
 import sdkViteConfig from '../sdk/vite.config.mjs';
 
 const sdkExternal = sdkViteConfig.build?.rollupOptions?.external;

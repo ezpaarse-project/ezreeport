@@ -33,13 +33,11 @@ export async function getAllReports(): Promise<Record<string, ReportFilesOfTaskT
   const data = await client.callAll('getAllReports');
   const reportsOfTasks = new Map<string, Map<string, ReportFilesType>>();
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const entry of data.filter((r) => !(r instanceof Error)).flat()) {
     const { task_id: taskId, filename } = entry as { task_id: string, filename: string };
 
     const { groups } = /(?<reportId>.+?)(\.(?<type>det|deb|rep))?\.(?<ext>json|pdf)$/i.exec(filename) ?? {};
     if (!groups) {
-      // eslint-disable-next-line no-continue
       continue;
     }
 

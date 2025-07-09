@@ -3,8 +3,8 @@
   "entryPoints": [
     "src/index.ts",
     "src/modules/*/index.ts",
-    "src/helpers/*/index.ts",
+    "src/helpers/*/index.ts"
   ],
-  
-  "out": "docs",
+
+  "out": "docs"
 }

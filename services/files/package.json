@@ -16,13 +16,13 @@
   "main": "src/app.ts",
   "scripts": {
     "dev": "tsx watch --inspect=0.0.0.0 src/app.ts",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "start": "tsx src/app.ts",
     "type-check": "tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {
     "*.ts": [
-      "eslint --fix"
+      "oxlint --fix"
     ],
     "package.json": [
       "sort-package-json"
@@ -38,7 +38,7 @@
     "@ezreeport/rabbitmq": "workspace:*",
     "@ezreeport/rpc": "workspace:*",
     "@ezreeport/simple-http": "workspace:*",
-    "better-sqlite3": "^11.9.1",
+    "better-sqlite3": "^12.2.0",
     "knex": "^3.1.0",
     "tsx": "catalog:",
     "typescript": "catalog:"

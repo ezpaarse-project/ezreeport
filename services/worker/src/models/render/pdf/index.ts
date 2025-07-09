@@ -110,15 +110,12 @@ async function printFooter(doc: PDFReportInit): Promise<number> {
   let totalWidth = 0;
 
   // Load images
-  // eslint-disable-next-line no-restricted-syntax
   for (const logo of footerLogos) {
-    // eslint-disable-next-line no-await-in-loop
     const data = await readFile(logo.path, 'base64');
     const {
       data: imageData,
       height: rawHeight,
       width: rawWidth,
-    // eslint-disable-next-line no-await-in-loop
     } = await loadImageAsset(`data:image/png;base64,${data}`);
     // Scaling down logo while preserving aspect ratio
     const width = ((height * rawWidth) / rawHeight);
@@ -135,7 +132,6 @@ async function printFooter(doc: PDFReportInit): Promise<number> {
   const y = doc.height - doc.margin.bottom - height + 1;
 
   // Print image
-  // eslint-disable-next-line no-restricted-syntax
   for (const img of imagesData) {
     doc.pdf
       .addImage({

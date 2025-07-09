@@ -16,13 +16,13 @@
   "main": "src/app.ts",
   "scripts": {
     "dev": "tsx watch --inspect=0.0.0.0 src/app.ts",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "start": "tsx src/app.ts",
     "type-check": "tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {
     "*.ts": [
-      "eslint --fix"
+      "oxlint --fix"
     ],
     "package.json": [
       "sort-package-json"
@@ -44,7 +44,7 @@
     "typescript": "catalog:"
   },
   "devDependencies": {
-    "@types/lodash": "^4.17.9",
+    "@types/lodash": "^4.17.20",
     "@types/node": "catalog:",
     "pino-pretty": "catalog:"
   },

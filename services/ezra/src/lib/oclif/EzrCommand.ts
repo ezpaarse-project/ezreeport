@@ -26,7 +26,6 @@ export abstract class EzrCommand<T extends typeof Command> extends BaseCommand<T
 
       const config = this.ezraConfig.getProfileAt(i) || {};
 
-      // eslint-disable-next-line no-await-in-loop
       const inputs = await ezr.init({
         url: config.url,
         apiKey: config.key,

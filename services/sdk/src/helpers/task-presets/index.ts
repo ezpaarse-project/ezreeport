@@ -10,7 +10,6 @@ import { assignDependencies } from '~/helpers/permissions/decorator';
  *
  * @returns Updated preset
  */
-// eslint-disable-next-line import/prefer-default-export
 export async function changeTaskPresetVisibility(
   presetOrId: TaskPreset | string,
   hidden: boolean,

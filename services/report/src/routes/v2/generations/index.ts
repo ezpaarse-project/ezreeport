@@ -72,6 +72,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         {
           page,
           total: await generations.countGenerations(),
+          count: content.length,
         },
         reply,
       );

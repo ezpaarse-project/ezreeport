@@ -39,7 +39,7 @@ export const InputManualReport = z.object({
   }).optional()
     .describe('Period to generate report for, will enable first level of debug'),
 
-  targets: z.array(z.string().email()).min(1).optional()
+  targets: z.array(z.email()).min(1).optional()
     .describe('Custom targets to send report to, will enable first level of debug'),
 
   debug: z.boolean().default(false).optional()

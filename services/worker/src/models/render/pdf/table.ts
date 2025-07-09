@@ -129,7 +129,7 @@ export const addTableToPDF = async (
   }
 
   // Print table
-  AutoTable.default(doc.pdf, {
+  AutoTable.autoTable(doc.pdf, {
     styles: {
       overflow: 'ellipsize',
       minCellWidth: 100,

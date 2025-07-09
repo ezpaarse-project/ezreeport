@@ -101,7 +101,6 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
   await Promise.allSettled(promises);
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export async function initReportEventExchange(channel: rabbitmq.Channel) {
   const { exchange: eventExchange } = await channel.assertExchange(eventExchangeName, 'fanout', { durable: false });
 

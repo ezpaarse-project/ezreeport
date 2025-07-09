@@ -14,3 +14,4 @@ local*.json
 docker*
 release.config.cjs
 .eslint*
+.oxlint*

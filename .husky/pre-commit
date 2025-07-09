@@ -1,2 +1,2 @@
-pnpm turbo type-check
-pnpm lint-staged
+pnpm exec turbo type-check
+pnpm exec lint-staged

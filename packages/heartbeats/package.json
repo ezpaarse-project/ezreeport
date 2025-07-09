@@ -18,12 +18,12 @@
     "./types": "./src/types.ts"
   },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "oxlint",
     "type-check": "tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {
     "*.ts": [
-      "eslint --fix"
+      "oxlint --fix"
     ],
     "package.json": [
       "sort-package-json"

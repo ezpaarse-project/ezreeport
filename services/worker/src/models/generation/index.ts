@@ -102,7 +102,6 @@ async function resolveReportTemplate(data: GenerationQueueDataType) {
 
   // Insert task's layouts if provided
   if (task.template.inserts) {
-    // eslint-disable-next-line no-restricted-syntax
     for (const { at, ...layout } of task.template.inserts) {
       template.body.layouts.splice(at, 0, layout);
     }

@@ -39,7 +39,6 @@ type ReportGenerationPromise = EventfulPromise<ReportResult, GenerationEvents>;
  *
  * @returns When the report is ready, returns the report result
  */
-// eslint-disable-next-line import/prefer-default-export
 export const generateAndListenReportOfTask = (
   taskOrId: Omit<Task, 'template'> | string,
   period?: { start: Date, end: Date },

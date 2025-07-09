@@ -1,4 +1,4 @@
-import type { TimeUnit } from 'vega-lite/build/src/timeunit';
+import type { TimeUnit } from 'vega-lite/types_unstable/timeunit.js';
 
 import type { RecurrenceType } from '@ezreeport/models/recurrence';
 

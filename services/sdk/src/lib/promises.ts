@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import EventEmitter from 'events';
 
 interface EventfulListener<E extends Record<string, any[]>> {

@@ -23,12 +23,12 @@
     "db:generate": "prisma generate",
     "db:gui": "prisma studio",
     "db:migrate": "prisma migrate dev --skip-generate",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "type-check": "tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {
     "*.ts": [
-      "eslint --fix"
+      "oxlint --fix"
     ],
     "package.json": [
       "sort-package-json"
@@ -37,10 +37,10 @@
   "dependencies": {
     "@ezreeport/heartbeats": "workspace:*",
     "@ezreeport/logger": "workspace:*",
-    "@prisma/client": "^5.20.0"
+    "@prisma/client": "^6.11.1"
   },
   "devDependencies": {
-    "prisma": "^5.20.0",
+    "prisma": "^6.11.1",
     "typescript": "catalog:"
   },
   "engines": {

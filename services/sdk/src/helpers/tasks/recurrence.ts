@@ -12,7 +12,6 @@ import type { TaskRecurrence } from '~/modules/tasks';
  *
  * @returns The new date of the task
  */
-// eslint-disable-next-line import/prefer-default-export
 export function calcNextDateFromRecurrence(initial: Date, recurrence: TaskRecurrence): Date {
   const duration: Duration = {};
 

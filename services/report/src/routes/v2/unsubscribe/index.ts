@@ -54,7 +54,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         throw new NotFoundError('Task not found');
       }
 
-      const emailValidation = z.string().email().safeParse(b64ToString(to64));
+      const emailValidation = z.email().safeParse(b64ToString(to64));
       if (!emailValidation.success) {
         throw new ArgumentError('Invalid email');
       }
@@ -101,7 +101,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       body: z.object({
         unsubscribeId: UnsubscribeParams.shape.unsubscribeId,
         taskId: z.string().min(1),
-        email: z.string().email().min(1),
+        email: z.email().min(1),
       }).strict(),
       response: {
         [StatusCodes.OK]: responses.SuccessResponse(z.object({ success: z.boolean() })),

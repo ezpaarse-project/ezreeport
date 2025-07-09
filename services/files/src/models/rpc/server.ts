@@ -22,7 +22,6 @@ const buckets: Record<string, RPCStreamRouter> = {
 };
 
 const streamRouter: RPCStreamRouter = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createWriteStream: (bucketName: string, filename: string, ...params: any[]) => {
     const bucket = buckets[bucketName];
     if (!bucket) {
@@ -34,7 +33,6 @@ const streamRouter: RPCStreamRouter = {
 
     return bucket.createWriteStream(filename, ...params);
   },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createReadStream: (bucketName: string, filename: string, ...params: any[]) => {
     const bucket = buckets[bucketName];
     if (!bucket) {

@@ -87,6 +87,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         {
           page: request.query.page,
           total: await taskPresets.countTaskPresets(filters),
+          count: content.length,
         },
         reply,
       );

@@ -14,7 +14,6 @@ async function setupConfigWatcher(path: string, signal: AbortSignal, logger: Con
     const watcher = watch(path, { persistent: false, signal });
     logger.debug(JSON.stringify({ msg: 'Watching config file', path }));
 
-    // eslint-disable-next-line no-restricted-syntax
     for await (const event of watcher) {
       logger.info(JSON.stringify({ msg: 'Config changed, exiting...', event, path }));
       process.exit(42); // Why 42 ? Because this is the way of life.
@@ -43,7 +42,6 @@ function watchConfigSources(logger: Console) {
       logger.debug(JSON.stringify('Aborting config watcher'));
     });
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const { name } of sources) {
       setupConfigWatcher(name, signal, logger);
     }

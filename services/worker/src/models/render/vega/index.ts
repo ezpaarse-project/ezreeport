@@ -1,6 +1,6 @@
-import { parse, Locale as VegaLocale, View } from 'vega';
+import { parse, View, type Locale as VegaLocale } from 'vega';
 import { compile, type TopLevelSpec } from 'vega-lite';
-import type { Mark } from 'vega-lite/build/src/mark';
+import type { Mark } from 'vega-lite/types_unstable/mark.js';
 import { registerFont } from 'canvas';
 import { compile as handlebars } from 'handlebars';
 
@@ -19,10 +19,8 @@ import {
   createLineSpec,
   createOtherSpec,
   type VegaParams,
-  type Layer,
+  type Title,
 } from './layers';
-
-export type Title = Exclude<Layer['title'], undefined>;
 
 export type InputVegaParams = Omit<VegaParams, 'width' | 'height'> & { title: Title };
 
@@ -32,7 +30,6 @@ export const logger = appLogger.child({ scope: 'vega' });
 
 export function initVegaEngine() {
   // Register fonts in Vega
-  // eslint-disable-next-line no-restricted-syntax
   for (const { path, ...font } of fonts as CanvasRegisterableFont[]) {
     registerFont(path, font);
     logger.debug({

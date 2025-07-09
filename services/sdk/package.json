@@ -133,7 +133,7 @@
     "build:js": "vite build",
     "build:types": "tsup",
     "dev": "pnpm run --parallel \"/^(watch:docs)|(preview)$/\"",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "prebuild": "rimraf --glob 'dist/*'",
     "preview:docs": "vite docs --open",
     "publish": "npm publish",
@@ -142,7 +142,7 @@
   },
   "lint-staged": {
     "*.ts": [
-      "eslint --fix"
+      "oxlint --fix"
     ],
     "package.json": [
       "sort-package-json"
@@ -150,7 +150,7 @@
   },
   "dependencies": {
     "date-fns": "^4.1.0",
-    "nanoid": "^5.0.7",
+    "nanoid": "^5.1.5",
     "object-hash": "^3.0.0",
     "ofetch": "^1.4.1",
     "socket.io-client": "^4.8.1"
@@ -160,10 +160,10 @@
     "@types/object-hash": "^3.0.6",
     "events": "^3.3.0",
     "rimraf": "^6.0.1",
-    "tsup": "^8.3.5",
-    "typedoc": "^0.27.1",
+    "tsup": "^8.5.0",
+    "typedoc": "^0.28.7",
     "typescript": "catalog:",
-    "vite": "^5.4.8"
+    "vite": "^7.0.3"
   },
   "engines": {
     "node": "^20"

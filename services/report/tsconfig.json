@@ -1,8 +1,7 @@
 {
   "include": [
     "**/*.ts",
-    "**/public/**/*.js",
-    ".eslintrc.js"
+    "**/public/**/*.js"
   ],
   "extends": "../../tsconfig.json",
   "compilerOptions": {

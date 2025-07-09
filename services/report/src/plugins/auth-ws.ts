@@ -23,13 +23,16 @@ export const requireUser: WSMiddleware = (socket, next) => {
   getUserByToken(token)
     .then((user) => {
       if (!user) {
+        // oxlint-disable-next-line promise/no-callback-in-promise
         next(new Error('User not found'));
         return;
       }
       Object.assign(socket.request, { user });
+      // oxlint-disable-next-line promise/no-callback-in-promise
       next();
     })
     .catch((err) => {
+      // oxlint-disable-next-line promise/no-callback-in-promise
       next(err);
     });
 };
@@ -71,6 +74,7 @@ export const restrictToOwnedNamespaces: (access: Access) => WSMiddleware = (acce
     getNamespacesOfAdmin()
       .then((namespaces) => {
         joinRoomsOfNamespaces(namespaces);
+        // oxlint-disable-next-line promise/no-callback-in-promise
         next();
       });
     return;
@@ -79,6 +83,7 @@ export const restrictToOwnedNamespaces: (access: Access) => WSMiddleware = (acce
   getNamespacesOfUser(user.username, access)
     .then((namespaces) => {
       joinRoomsOfNamespaces(namespaces);
+      // oxlint-disable-next-line promise/no-callback-in-promise
       next();
     });
 };

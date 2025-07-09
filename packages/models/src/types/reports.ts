@@ -70,8 +70,8 @@ export const ReportFetchErrorNames = z.enum([
 export type ReportFetchErrorNamesType = z.infer<typeof ReportFetchErrorNames>;
 
 export const ReportFetchErrorMeta = z.object({
-  layout: z.number().int(),
-  figure: z.number().int(),
+  layout: z.int().min(0),
+  figure: z.int().min(0),
   esIndex: z.string().min(1),
   esQuery: z.unknown(),
 }).partial();
@@ -90,8 +90,8 @@ export const ReportRenderErrorNames = z.enum([
 export type ReportRenderErrorNamesType = z.infer<typeof ReportRenderErrorNames>;
 
 export const ReportRenderErrorMeta = z.object({
-  layout: z.number().int(),
-  figure: z.number().int(),
+  layout: z.int().min(0),
+  figure: z.int().min(0),
   vegaSpec: z.unknown(),
 }).partial();
 
@@ -136,7 +136,7 @@ export const ReportResult = z.object({
     destroyAt: z.coerce.date()
       .describe('Date when the report will be destroyed'),
 
-    took: z.number()
+    took: z.int().min(0)
       .describe('Time taken to generate the report'),
 
     jobId: z.string().min(1)
@@ -148,7 +148,7 @@ export const ReportResult = z.object({
     files: ReportFiles
       .describe('Files'),
 
-    sendingTo: z.array(z.string().email()).optional()
+    sendingTo: z.array(z.email()).optional()
       .describe('Email addresses the report was sent'),
 
     period: ReportPeriod
@@ -163,10 +163,10 @@ export const ReportResult = z.object({
       .describe('Auth used to generate report'),
 
     stats: z.object({
-      pageCount: z.number().optional()
+      pageCount: z.int().min(1).optional()
         .describe('Number of page in the report'),
 
-      size: z.number().optional()
+      size: z.int().min(0).optional()
         .describe('Size of the report'),
     }).optional()
       .describe('Stats about the report file'),

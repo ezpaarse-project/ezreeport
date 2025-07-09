@@ -16,7 +16,7 @@ export const TaskActivity = z.object({
   message: z.string().min(1)
     .describe('Activity message'),
 
-  data: z.record(z.any()).nullish()
+  data: z.record(z.string(), z.any()).nullish()
     .describe('Activity data'),
 
   createdAt: z.date()

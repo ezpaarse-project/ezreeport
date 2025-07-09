@@ -4,7 +4,7 @@ import { z } from '../lib/zod';
  * Validation for a namespace
  */
 export const Namespace = z.object({
-  id: z.string().min(1).readonly()
+  id: z.string().min(1)
     .describe('Namespace ID'),
 
   name: z.string().min(1)
@@ -24,10 +24,10 @@ export const Namespace = z.object({
   logoId: z.string().nullish()
     .describe('Namespace logo'),
 
-  createdAt: z.coerce.date().readonly()
+  createdAt: z.coerce.date()
     .describe('Creation date'),
 
-  updatedAt: z.coerce.date().nullable().readonly()
+  updatedAt: z.coerce.date().nullable()
     .describe('Last update date'),
 });
 

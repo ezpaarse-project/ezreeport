@@ -1,7 +1,6 @@
 import type { Logger } from '@ezreeport/logger';
 import type { HeartbeatType } from '@ezreeport/heartbeats/types';
 
-// eslint-disable-next-line import/no-relative-packages
 import { PrismaClient } from '../.prisma/client';
 
 const DATABASE_URL = new URL(process.env.DATABASE_URL ?? '');
@@ -42,7 +41,6 @@ export async function pingDB(client: PrismaClient): Promise<HeartbeatType> {
     pg_database_size(current_database()) AS usage
   `;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { version, usage, db } = (response as any[])[0];
   const versionMatch = /^PostgreSQL (\S+) /.exec(version);
 

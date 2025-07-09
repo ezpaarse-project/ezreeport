@@ -13,7 +13,6 @@ const logger = appLogger.child({ scope: 'models', model: 'generations' });
  *
  * @returns The created/updated generation
  */
-// eslint-disable-next-line import/prefer-default-export
 export async function upsertGeneration(
   id: string,
   data: GenerationType,

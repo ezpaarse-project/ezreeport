@@ -49,7 +49,6 @@ export default class ConfigGet extends BaseCommand<typeof ConfigGet> {
     const {
       path,
       priority,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       name: _,
       ...profile
     } = this.ezraConfig.getProfile(name);
@@ -75,7 +74,6 @@ export default class ConfigGet extends BaseCommand<typeof ConfigGet> {
 
     const profiles = flags.profile ? [[flags.profile]] : this.ezraConfig.getLoadedProfiles();
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const [name] of profiles) {
       this.showProfile(name, args.field);
     }

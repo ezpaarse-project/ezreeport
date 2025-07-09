@@ -16,7 +16,7 @@
   "main": "src/app.ts",
   "scripts": {
     "dev": "tsx watch --inspect=0.0.0.0 src/app.ts",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "start": "tsx src/app.ts",
     "type-check": "tsc --noEmit --skipLibCheck"
   },
@@ -30,7 +30,7 @@
     "@ezreeport/rpc": "workspace:*",
     "@ezreeport/simple-http": "workspace:*",
     "mjml": "^4.14.1",
-    "nodemailer": "^6.9.15",
+    "nodemailer": "^7.0.5",
     "nunjucks": "^3.2.4",
     "tsx": "catalog:",
     "typescript": "catalog:"

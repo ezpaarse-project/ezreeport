@@ -9,7 +9,6 @@ import type { RecurrenceType } from '@ezreeport/models/recurrence';
  *
  * @return The recurrence string
  */
-// eslint-disable-next-line import/prefer-default-export
 export const recurrenceToStr = (recurrence: RecurrenceType, _locale = 'fr') => {
   switch (recurrence) {
     case 'DAILY':

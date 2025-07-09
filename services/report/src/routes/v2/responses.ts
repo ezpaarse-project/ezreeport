@@ -4,13 +4,13 @@ import { getReasonPhrase, StatusCodes } from 'http-status-codes';
 import { z } from '@ezreeport/models/lib/zod';
 
 export const BaseResponse = z.object({
-  apiVersion: z.number(),
+  apiVersion: z.int().min(1),
 
-  status: z.object({ code: z.number(), message: z.string() })
+  status: z.object({ code: z.int(), message: z.string() })
     .describe('HTTP Status'),
 });
 
-function buildResponse(reply: FastifyReply): z.infer<typeof BaseResponse> {
+function buildResponse(reply: FastifyReply):  z.infer<typeof BaseResponse> {
   return {
     apiVersion: 2,
     status: {

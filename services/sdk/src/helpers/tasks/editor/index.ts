@@ -126,7 +126,6 @@ export function getLayoutsOfHelpers(
   templateBody: TemplateBodyHelper,
 ): (AnyLayoutHelper & { readonly: boolean })[] {
   const layouts = templateBody.layouts.map((l) => ({ ...l, readonly: true }));
-  // eslint-disable-next-line no-restricted-syntax
   for (const { at, ...layout } of taskBody.inserts) {
     layouts.splice(at, 0, { ...layout, readonly: false });
   }

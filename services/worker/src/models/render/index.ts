@@ -62,7 +62,6 @@ async function renderFigureWithVega(
     order = options.figure.params.order === true ? 'desc' : options.figure.params.order;
   }
 
-  // eslint-disable-next-line no-await-in-loop
   await renderFigure({
     doc,
     colorMap: options.colorMap,
@@ -106,7 +105,6 @@ async function renderLayoutWithVega(
     );
 
     try {
-      // eslint-disable-next-line no-await-in-loop
       await renderFigureWithVega(doc, {
         ...options,
         figure,
@@ -183,12 +181,10 @@ export async function renderPdfWithVega(
     const layout = options.layouts[layoutIndex];
 
     if (layoutIndex > 0) {
-      // eslint-disable-next-line no-await-in-loop
       await doc.addPage();
     }
 
     try {
-      // eslint-disable-next-line no-await-in-loop
       await renderLayoutWithVega(
         doc,
         {

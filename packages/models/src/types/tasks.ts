@@ -21,7 +21,7 @@ const LastExtended = z.object({
  * Validation with a task
  */
 export const Task = z.object({
-  id: z.string().min(1).readonly()
+  id: z.string().min(1)
     .describe('Task ID'),
 
   name: z.string().min(1)
@@ -42,7 +42,7 @@ export const Task = z.object({
   lastExtended: LastExtended.nullish()
     .describe('Last extended template'),
 
-  targets: z.array(z.string().email())
+  targets: z.array(z.email())
     .describe('Email addresses to send report'),
 
   recurrence: Recurrence
@@ -57,10 +57,10 @@ export const Task = z.object({
   enabled: z.boolean()
     .describe('Is task enabled, default to true'),
 
-  createdAt: z.coerce.date().readonly()
+  createdAt: z.coerce.date()
     .describe('Creation date'),
 
-  updatedAt: z.coerce.date().nullable().readonly()
+  updatedAt: z.coerce.date().nullable()
     .describe('Last update date'),
 });
 

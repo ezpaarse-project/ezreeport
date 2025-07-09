@@ -37,7 +37,6 @@ function prepareEsFilter(filter: FilterType): ElasticTypes.QueryDslQueryContaine
  *
  * @returns ElasticSearch query
  */
-// eslint-disable-next-line import/prefer-default-export
 export function prepareEsQuery(
   filters: FilterType[],
   dateField: string,
@@ -46,7 +45,6 @@ export function prepareEsQuery(
   const must: ElasticTypes.QueryDslQueryContainer[] = [];
   const mustNot: ElasticTypes.QueryDslQueryContainer[] = [];
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const filter of filters) {
     const item = prepareEsFilter(filter);
     if (filter.isNot) {

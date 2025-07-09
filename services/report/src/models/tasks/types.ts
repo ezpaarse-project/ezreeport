@@ -3,7 +3,6 @@ import {
   zStringToStartOfDay,
   zStringToEndOfDay,
   zStringOrArray,
-  zStringToBool,
 } from '@ezreeport/models/lib/zod';
 import { ensureArray } from '@ezreeport/models/lib/utils';
 
@@ -31,13 +30,13 @@ export type TaskIncludeFieldsType = z.infer<typeof TaskIncludeFields>;
  */
 export const Task = CommonTask.extend({
   // Includes fields
-  namespace: Namespace.omit({ fetchLogin: true, fetchOptions: true }).optional().readonly()
+  namespace: Namespace.omit({ fetchLogin: true, fetchOptions: true }).optional()
     .describe('[Includes] Namespace related to the task'),
 
   extends: z.object({
-    tags: z.array(TemplateTag).optional().readonly()
+    tags: z.array(TemplateTag).optional()
       .describe('[Includes] Template tags'),
-  }).optional().readonly()
+  }).optional()
     .describe('[Includes] Template extended by the task'),
 });
 
@@ -87,7 +86,7 @@ export const TaskQueryFilters = z.object({
   'nextRun.to': zStringToEndOfDay.optional()
     .describe('Maximum date of next run of the task'),
 
-  enabled: zStringToBool.optional()
+  enabled: z.stringbool().optional()
     .describe('If task is enabled'),
 });
 

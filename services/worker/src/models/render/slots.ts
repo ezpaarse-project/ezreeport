@@ -51,7 +51,6 @@ export function generateSlots(viewport: Area, grid: TemplateBodyGridType, margin
     }
 
     // Reassign param to access to previous
-    // eslint-disable-next-line no-param-reassign
     arr[i] = slot;
     return slot;
   });

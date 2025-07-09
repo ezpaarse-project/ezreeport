@@ -18,12 +18,12 @@
     "./*": "./src/types/*.ts"
   },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "oxlint",
     "type-check": "tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {
     "*.ts": [
-      "eslint --fix"
+      "oxlint --fix"
     ],
     "package.json": [
       "sort-package-json"
@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@ezreeport/dates": "workspace:*",
-    "zod": "^3.23.8"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "catalog:",

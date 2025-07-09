@@ -14,7 +14,7 @@ export type GenerationIncludeFieldsType = z.infer<typeof GenerationIncludeFields
 
 export const Generation = CommonGeneration.extend({
   // Includes fields
-  task: Task.omit({ template: true }).optional().readonly()
+  task: Task.omit({ template: true }).optional()
     .describe('[Includes] Task related to the generation'),
 });
 

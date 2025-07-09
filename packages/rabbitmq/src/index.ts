@@ -1,6 +1,6 @@
 import { setTimeout } from 'node:timers/promises';
 
-import type z from 'zod';
+import type z from 'zod/v4';
 import amqp from 'amqplib';
 
 import type { Logger } from '@ezreeport/logger';

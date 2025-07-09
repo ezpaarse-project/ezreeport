@@ -81,7 +81,6 @@ export const ensureInt = (value: string | number | boolean): number => {
  */
 export const parseBulkResults = <T>(itemsSettled: PromiseSettledResult<BulkResult<T>>[]) => {
   const results: { type: Exclude<BulkResult<T>['type'], 'none'>, data: T }[] = [];
-  // eslint-disable-next-line no-restricted-syntax
   for (const settled of itemsSettled) {
     if (settled.status === 'rejected') {
       throw new Error(settled.reason);

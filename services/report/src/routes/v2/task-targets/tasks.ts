@@ -13,7 +13,7 @@ import { Task } from '~/models/tasks/types';
 import { NotFoundError, ArgumentError } from '~/models/errors';
 
 const SpecificEmailParams = z.object({
-  email: z.string().email().min(1)
+  email: z.email().min(1)
     .describe('Email of the target'),
 });
 
@@ -41,6 +41,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         {
           page: request.query.page,
           total: await tasks.countTasks(filter),
+          count: content.length,
         },
         reply,
       );

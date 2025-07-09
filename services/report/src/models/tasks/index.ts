@@ -323,7 +323,6 @@ export async function unlinkTaskFromTemplate(id: string): Promise<TaskType> {
   const task = await ensureSchema(Task, rawTask, (t) => `Failed to parse task ${t.id}`);
   const template = await ensureSchema(Template, rawTemplate, (t) => `Failed to parse template ${t.id}`);
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const { at, ...layout } of (task.template.inserts ?? [])) {
     template.body.layouts.splice(at, 0, layout);
   }

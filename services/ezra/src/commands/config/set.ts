@@ -27,7 +27,6 @@ export default class ConfigSet extends BaseCommand<typeof ConfigSet> {
     }),
   };
 
-  // eslint-disable-next-line class-methods-use-this
   public async run(): Promise<void> {
     const { args, flags } = await this.parse(ConfigSet);
 

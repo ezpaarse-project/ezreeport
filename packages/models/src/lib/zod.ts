@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 import { endOfDay, parseISO, startOfDay } from '@ezreeport/dates';
 import { ensureArray } from './utils';
@@ -43,8 +43,8 @@ export const zStringOrArray = (
 ).transform((v) => ensureArray(v));
 
 export const zStringToDay = (
-  z.string().date()
-    .or(z.string().datetime({ offset: true }))
+  z.iso.date()
+    .or(z.iso.datetime({ offset: true }))
 ).transform((v) => parseISO(v));
 
 export const zStringToStartOfDay = zStringToDay
@@ -53,10 +53,4 @@ export const zStringToStartOfDay = zStringToDay
 export const zStringToEndOfDay = zStringToDay
   .transform((v) => endOfDay(v));
 
-export const zStringToBool = z.preprocess((v) => {
-  if (v === 'true') { return true; }
-  if (v === 'false') { return false; }
-  return Boolean(v);
-}, z.boolean());
-
-export * from 'zod';
+export * from 'zod/v4';

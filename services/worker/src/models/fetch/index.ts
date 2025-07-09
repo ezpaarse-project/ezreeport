@@ -36,7 +36,6 @@ type FigureWithId = FigureType & { _: { id: number } };
  *
  * @returns The data
  */
-// eslint-disable-next-line import/prefer-default-export
 export async function fetchElastic(options: ElasticFetchOptionsType) {
   if (!options.index) {
     throw new TemplateError('No index provided', 'MissingIndexError');

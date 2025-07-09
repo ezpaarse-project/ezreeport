@@ -1,5 +1,5 @@
 import { merge } from 'lodash';
-import type { Mark } from 'vega-lite/build/src/mark';
+import type { Mark } from 'vega-lite/types_unstable/mark.js';
 
 import type { RecurrenceType } from '@ezreeport/models/recurrence';
 import type { FigureType } from '@ezreeport/models/templates';

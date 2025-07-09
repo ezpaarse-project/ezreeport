@@ -37,7 +37,7 @@ export type NamespaceQueryFiltersType = z.infer<typeof NamespaceQueryFilters>;
  * Validation for setting multiple namespaces
  */
 export const BulkNamespace = z.object({
-  id: z.string().min(1).readonly()
+  id: z.string().min(1)
     .describe('Namespace ID'),
 
   name: z.string().min(1)
@@ -73,13 +73,13 @@ export type BulkNamespaceType = z.infer<typeof BulkNamespace>;
  */
 export const BulkNamespaceResult = z.object({
   namespaces: z.object({
-    deleted: z.number().min(0)
+    deleted: z.int().min(0)
       .describe('Number of item deleted'),
 
-    updated: z.number().min(0)
+    updated: z.int().min(0)
       .describe('Number of item updated'),
 
-    created: z.number().min(0)
+    created: z.int().min(0)
       .describe('Number of item created'),
   })
     .describe('Summary of operations on namespace'),

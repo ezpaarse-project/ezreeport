@@ -4,13 +4,13 @@ export const FileSystemUsage = z.object({
   name: z.string().min(1)
     .describe('Filesystem name'),
 
-  total: z.number()
+  total: z.int().min(0)
     .describe('Total space in bytes'),
 
-  used: z.number()
+  used: z.int().min(0)
     .describe('Used space in bytes'),
 
-  available: z.number()
+  available: z.int().min(0)
     .describe('Available space in bytes'),
 });
 
