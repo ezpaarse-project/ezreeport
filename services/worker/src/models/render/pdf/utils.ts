@@ -2,9 +2,10 @@ import { readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
 
 import { Image } from 'canvas';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 
-type Area = { x: number, y: number, width: number, height: number };
+// oxlint-disable-next-line id-length
+type Area = { x: number; y: number; width: number; height: number };
 
 /**
  * Loads an image with some info
@@ -13,14 +14,15 @@ type Area = { x: number, y: number, width: number, height: number };
  * @return base64 & other useful information
  */
 export const loadImageAsset = async (
-  data: string,
+  data: string
 ): Promise<{ data: string; width: number; height: number }> => {
   // Waiting Image to "render" to get width & height
+  // oxlint-disable-next-line promise/avoid-new
   const img = await new Promise<Image>((resolve, reject) => {
-    const i = new Image();
-    i.onload = () => resolve(i);
-    i.onerror = reject;
-    i.src = data;
+    const img = new Image();
+    img.onload = (): void => resolve(img);
+    img.onerror = reject;
+    img.src = data;
   });
   return {
     data: img.src.toString(),
@@ -38,7 +40,13 @@ export const loadImageAsset = async (
  * @param marks The mark color (default: red)
  * @param markWidth The mark width (default: 1)
  */
-export const drawAreaRef = (pdf: jsPDF, area: Area, bg = 'green', marks = 'red', markWidth = 1) => {
+export const drawAreaRef = (
+  pdf: jsPDF,
+  area: Area,
+  bg = 'green',
+  marks = 'red',
+  markWidth = 1
+): void => {
   const def = {
     fill: pdf.getFillColor(),
     font: pdf.getFont(),
@@ -56,24 +64,20 @@ export const drawAreaRef = (pdf: jsPDF, area: Area, bg = 'green', marks = 'red',
       area.y + Math.round(area.height / 2),
       area.width,
       markWidth,
-      'F',
+      'F'
     )
     .rect(
       area.x + Math.round(area.width / 2),
       area.y,
       markWidth,
       area.height,
-      'F',
+      'F'
     )
     // JSON
     .setFontSize(7)
     .setFont(def.font.fontName, 'bold')
     .setTextColor(marks)
-    .text(
-      JSON.stringify(area),
-      area.x,
-      area.y + area.height + 12,
-    )
+    .text(JSON.stringify(area), area.x, area.y + area.height + 12)
     // Reset
     .setFillColor(def.fill)
     .setTextColor(def.textColor)
@@ -90,22 +94,20 @@ export const drawAreaRef = (pdf: jsPDF, area: Area, bg = 'green', marks = 'red',
 export async function registerJSPDFFont(
   path: string,
   fontFace: {
-    family: string,
-    style?: string,
-    weight?: string | number,
-  },
-) {
+    family: string;
+    style?: string;
+    weight?: string | number;
+  }
+): Promise<void> {
   const { family, style = '', weight = '' } = fontFace;
 
   const font = await readFile(path, 'base64');
   const fontStyle = `${weight}${style}` || 'normal';
   const fileName = basename(path);
 
-  const callAddFont = function callAddFont(this: jsPDF) {
-    this
-      .addFileToVFS(fileName, font)
-      .addFont(fileName, family, fontStyle);
-  };
+  function callAddFont(this: jsPDF): void {
+    this.addFileToVFS(fileName, font).addFont(fileName, family, fontStyle);
+  }
 
   jsPDF.API.events.push(['addFonts', callAddFont]);
 }

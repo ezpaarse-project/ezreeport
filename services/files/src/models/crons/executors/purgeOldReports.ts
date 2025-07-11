@@ -9,7 +9,8 @@ import type { DBReportEntry } from '~/models/reports/types';
 const purgeOldReports: Executor = async (logger) => {
   const today = endOfDay(Date.now());
 
-  const filesToDelete = await knex.table<DBReportEntry>('reports')
+  const filesToDelete = await knex
+    .table<DBReportEntry>('reports')
     .select('filename')
     .where('destroy_at', '<=', today);
 
@@ -22,13 +23,13 @@ const purgeOldReports: Executor = async (logger) => {
         logger.error({ msg: 'Error on file deletion', filename, err });
         return false;
       }
-    }),
+    })
   );
 
   return {
     msg: 'Purged old reports',
     toDeleteFiles: filesToDelete.length,
-    deletedFiles: deletedFiles.filter((deleted) => deleted).length,
+    deletedFiles: deletedFiles.filter((deleted) => !!deleted).length,
   };
 };
 

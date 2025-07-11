@@ -1,3 +1,31 @@
 {
-  "language_servers": ["!eslint", "..."]
+  "language_servers": ["!eslint", "..."],
+
+  "languages": {
+    "Vue.js": {
+      "formatter": {
+        "code_actions": {
+          "source.fixAll.eslint": true
+        }
+      }
+    },
+    "TypeScript": {
+      "format_on_save": "on",
+      "formatter": {
+        "external": {
+          "command": "pnpm",
+          "arguments": ["exec", "prettier", "--stdin-filepath", "{buffer_path}"]
+        }
+      }
+    },
+    "JSONC": {
+      "format_on_save": "on"
+    },
+    "JSON": {
+      "format_on_save": "on"
+    },
+    "YAML": {
+      "format_on_save": "off"
+    }
+  }
 }

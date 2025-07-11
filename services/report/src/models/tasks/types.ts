@@ -15,10 +15,7 @@ export * from '@ezreeport/models/tasks';
 /**
  * Validation for task include fields
  */
-const TaskIncludeFields = z.enum([
-  'extends.tags',
-  'namespace',
-] as const);
+const TaskIncludeFields = z.enum(['extends.tags', 'namespace'] as const);
 
 /**
  * Type for task include fields
@@ -30,13 +27,18 @@ export type TaskIncludeFieldsType = z.infer<typeof TaskIncludeFields>;
  */
 export const Task = CommonTask.extend({
   // Includes fields
-  namespace: Namespace.omit({ fetchLogin: true, fetchOptions: true }).optional()
+  namespace: Namespace.omit({ fetchLogin: true, fetchOptions: true })
+    .optional()
     .describe('[Includes] Namespace related to the task'),
 
-  extends: z.object({
-    tags: z.array(TemplateTag).optional()
-      .describe('[Includes] Template tags'),
-  }).optional()
+  extends: z
+    .object({
+      tags: z
+        .array(TemplateTag)
+        .optional()
+        .describe('[Includes] Template tags'),
+    })
+    .optional()
     .describe('[Includes] Template extended by the task'),
 });
 
@@ -68,26 +70,31 @@ export type InputTaskType = z.infer<typeof InputTask>;
  * Validation for query filters of a task
  */
 export const TaskQueryFilters = z.object({
-  query: z.string().optional()
-    .describe('Query used for searching'),
+  query: z.string().optional().describe('Query used for searching'),
 
-  extendedId: z.string().min(1).optional()
+  extendedId: z
+    .string()
+    .min(1)
+    .optional()
     .describe('ID of template extended by the task'),
 
-  namespaceId: zStringOrArray.optional()
+  namespaceId: zStringOrArray
+    .optional()
     .describe('Possible namespace ID of the task'),
 
-  targets: zStringOrArray.optional()
+  targets: zStringOrArray
+    .optional()
     .describe('Email addresses used by the task'),
 
-  'nextRun.from': zStringToStartOfDay.optional()
+  'nextRun.from': zStringToStartOfDay
+    .optional()
     .describe('Minimum date of next run of the task'),
 
-  'nextRun.to': zStringToEndOfDay.optional()
+  'nextRun.to': zStringToEndOfDay
+    .optional()
     .describe('Maximum date of next run of the task'),
 
-  enabled: z.stringbool().optional()
-    .describe('If task is enabled'),
+  enabled: z.stringbool().optional().describe('If task is enabled'),
 });
 
 /**
@@ -100,6 +107,7 @@ export type TaskQueryFiltersType = z.infer<typeof TaskQueryFilters>;
  */
 export const TaskQueryInclude = z.object({
   include: TaskIncludeFields.or(z.array(TaskIncludeFields))
-    .transform((v) => ensureArray(v)).optional()
+    .transform((value) => ensureArray(value))
+    .optional()
     .describe('Fields to include'),
 });

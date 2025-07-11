@@ -1,13 +1,13 @@
 import { parseISO } from 'date-fns';
 
 export interface RawPeriod {
-  start: string,
-  end: string,
+  start: string;
+  end: string;
 }
 
 export interface Period extends Omit<RawPeriod, 'start' | 'end'> {
-  start: Date,
-  end: Date,
+  start: Date;
+  end: Date;
 }
 
 /**

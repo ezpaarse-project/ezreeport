@@ -12,10 +12,11 @@ let server: http.Server | undefined;
 export function setupHTTPServer(
   port: number,
   logger: Logger,
-  routes: Record<string, Route>,
-) {
+  routes: Record<string, Route>
+): Promise<http.Server> {
   const start = process.uptime();
 
+  // oxlint-disable-next-line promise/avoid-new
   return new Promise<http.Server>((resolve) => {
     server = http.createServer((req, res) => {
       const route = routes[req.url || ''] ?? routes[`${req.url}/`];
@@ -39,6 +40,7 @@ export function setupHTTPServer(
           return;
         }
 
+        // oxlint-disable-next-line promise/prefer-await-to-callbacks
         server.close((err) => {
           if (err) {
             logger.error({ msg: 'Failed to close service', err });

@@ -16,10 +16,8 @@
     "noImplicitReturns": true,
     "skipLibCheck": true,
     "paths": {
-      "~/*": [
-        "./src/*"
-      ]
-    },
+      "~/*": ["./src/*"]
+    }
   },
   "include": ["src"]
 }

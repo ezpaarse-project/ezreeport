@@ -1,6 +1,7 @@
 import {
   Client,
-  estypes as ElasticTypes,
+  type estypes as ElasticTypes,
+  type ApiResponse,
   type ClientOptions,
   type RequestParams,
 } from '@elastic/elasticsearch';
@@ -17,30 +18,26 @@ const logger = appLogger.child(
       paths: ['config.*.password'],
       censor: (value) => value && ''.padStart(`${value}`.length, '*'),
     },
-  },
+  }
 );
 
-const {
-  url,
-  username,
-  password,
-  apiKey,
-  requiredStatus,
-} = config.elasticsearch;
+const { url, username, password, apiKey, requiredStatus } =
+  config.elasticsearch;
 
 enum ElasticStatus {
-  red,
-  yellow,
-  green,
+  red = 0,
+  yellow = 1,
+  green = 2,
 }
 type KeyofElasticStatus = keyof typeof ElasticStatus;
 
-const isElasticStatus = (
-  status: string,
-): status is KeyofElasticStatus => Object.keys(ElasticStatus).includes(status);
+const isElasticStatus = (status: string): status is KeyofElasticStatus =>
+  Object.keys(ElasticStatus).includes(status);
 
 // Parse some env var
-const REQUIRED_STATUS = isElasticStatus(requiredStatus) ? requiredStatus : 'green';
+const REQUIRED_STATUS = isElasticStatus(requiredStatus)
+  ? requiredStatus
+  : 'green';
 const ES_AUTH = apiKey ? { apiKey } : { username, password };
 
 const clientConfig: ClientOptions = {
@@ -60,7 +57,7 @@ let client: Client | undefined;
  *
  * @returns Elastic client
  */
-export function initElasticClient() {
+export function initElasticClient(): Client {
   if (!client) {
     client = new Client(clientConfig);
 
@@ -78,15 +75,15 @@ export function initElasticClient() {
  *
  * @returns Elastic client
  */
-async function elasticReady() {
-  const c = initElasticClient();
+async function elasticReady(): Promise<Client> {
+  const client = initElasticClient();
 
-  await c.cluster.health<ElasticTypes.ClusterHealthResponse>({
+  await client.cluster.health<ElasticTypes.ClusterHealthResponse>({
     wait_for_status: REQUIRED_STATUS,
     timeout: '5s',
   });
 
-  return c;
+  return client;
 }
 
 /**
@@ -97,7 +94,8 @@ async function elasticReady() {
 export const elasticPing = async (): Promise<HeartbeatType> => {
   const elastic = await elasticReady();
 
-  const { body } = await elastic.cluster.stats<ElasticTypes.ClusterStatsResponse>();
+  const { body } =
+    await elastic.cluster.stats<ElasticTypes.ClusterStatsResponse>();
 
   return {
     hostname: body.cluster_name,
@@ -123,10 +121,12 @@ export const elasticPing = async (): Promise<HeartbeatType> => {
  *
  * @returns The results of the search
  */
-export const elasticMSearch = async <ResponseType extends Record<string, unknown>>(
+export const elasticMSearch = async <
+  ResponseType extends Record<string, unknown>,
+>(
   params: RequestParams.Msearch<ElasticTypes.MsearchRequestItem[]>,
-  runAs?: string,
-) => {
+  runAs?: string
+): Promise<ApiResponse<ElasticTypes.MsearchResponse<ResponseType>>> => {
   const elastic = await elasticReady();
 
   const headers: Record<string, unknown> = {};
@@ -135,7 +135,7 @@ export const elasticMSearch = async <ResponseType extends Record<string, unknown
   }
 
   return elastic.msearch<
-  ElasticTypes.MsearchResponse<ResponseType>,
-  ElasticTypes.MsearchRequestItem[]
+    ElasticTypes.MsearchResponse<ResponseType>,
+    ElasticTypes.MsearchRequestItem[]
   >(params, { headers });
 };

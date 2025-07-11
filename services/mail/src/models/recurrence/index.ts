@@ -9,7 +9,10 @@ import type { RecurrenceType } from '@ezreeport/models/recurrence';
  *
  * @return The recurrence string
  */
-export const recurrenceToStr = (recurrence: RecurrenceType, _locale = 'fr') => {
+export const recurrenceToStr = (
+  recurrence: RecurrenceType,
+  _locale = 'fr'
+): string => {
   switch (recurrence) {
     case 'DAILY':
       return 'quotidien';

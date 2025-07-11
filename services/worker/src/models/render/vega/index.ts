@@ -22,13 +22,15 @@ import {
   type Title,
 } from './layers';
 
-export type InputVegaParams = Omit<VegaParams, 'width' | 'height'> & { title: Title };
+export type InputVegaParams = Omit<VegaParams, 'width' | 'height'> & {
+  title: Title;
+};
 
 const { fontFamily, fonts } = config.report;
 
 export const logger = appLogger.child({ scope: 'vega' });
 
-export function initVegaEngine() {
+export function initVegaEngine(): void {
   // Register fonts in Vega
   for (const { path, ...font } of fonts as CanvasRegisterableFont[]) {
     registerFont(path, font);
@@ -51,22 +53,25 @@ export function initVegaEngine() {
  */
 export const parseTitle = (
   title: Title,
-  data: FetchResultItem[],
+  data: FetchResultItem[]
 ): string | string[] => {
   const handlebarsOpts = { length: data.length };
   if (typeof title === 'string') {
     return handlebars(title)(handlebarsOpts);
   }
   if (Array.isArray(title)) {
-    return title.map((t) => handlebars(t)(handlebarsOpts));
+    return title.map((el) => handlebars(el)(handlebarsOpts));
   }
   if (typeof title?.text === 'string') {
     return handlebars(title.text)(handlebarsOpts);
   }
   if (Array.isArray(title?.text)) {
-    return title.text.map((t) => handlebars(t)(handlebarsOpts));
+    return title.text.map((el) => handlebars(el)(handlebarsOpts));
   }
-  throw new TemplateError('Unable to parse title: this format of params is not supported', 'ParameterFormatError');
+  throw new TemplateError(
+    'Unable to parse title: this format of params is not supported',
+    'ParameterFormatError'
+  );
 };
 
 /**
@@ -80,7 +85,7 @@ export const parseTitle = (
 export const createVegaLSpec = (
   type: Mark,
   data: FetchResultItem[],
-  params: VegaParams,
+  params: VegaParams
 ): TopLevelSpec => {
   let createSpec = createOtherSpec;
   switch (type) {
@@ -125,4 +130,7 @@ export const createVegaLSpec = (
  * @param spec The Vega-lite spec
  * @returns The vega View
  */
-export const createVegaView = (spec: TopLevelSpec): View => new View(parse(compile(spec).spec), { renderer: 'none' }).logger(new VegaLogger());
+export const createVegaView = (spec: TopLevelSpec): View =>
+  new View(parse(compile(spec).spec), { renderer: 'none' }).logger(
+    new VegaLogger()
+  );

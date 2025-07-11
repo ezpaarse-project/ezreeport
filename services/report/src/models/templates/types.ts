@@ -23,10 +23,11 @@ export type InputTemplateType = z.infer<typeof InputTemplate>;
  * Validation for query filters of a template
  */
 export const TemplateQueryFilters = z.object({
-  query: z.string().optional()
-    .describe('Query used for searching'),
+  query: z.string().optional().describe('Query used for searching'),
 
-  hidden: z.stringbool().optional()
+  hidden: z
+    .stringbool()
+    .optional()
     .describe('If preset or template is hidden to normal users'),
 });
 

@@ -9,23 +9,31 @@ import { appLogger } from '~/lib/logger';
 import { requireAllowedNamespace } from '~/plugins/auth';
 import { Access } from '~/models/access';
 
-import * as responses from '~/routes/v2/responses';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+} from '~/routes/v2/responses';
 
 import { getTask } from '~/models/tasks';
-import { createReportReadStream, getAllReports } from '~/models/rpc/client/files';
+import {
+  createReportReadStream,
+  getAllReports,
+} from '~/models/rpc/client/files';
 import { NotFoundError } from '~/models/errors';
 
 const SpecificReportParams = z.object({
-  taskId: z.string().min(1)
-    .describe('ID of the task'),
+  taskId: z.string().min(1).describe('ID of the task'),
 
-  yearMonth: z.string().regex(/^[0-9]{4}-[0-9]{2}$/)
+  yearMonth: z
+    .string()
+    .regex(/^[0-9]{4}-[0-9]{2}$/)
     .describe('Year and month of generation of the report'),
 
-  reportName: z.string().min(1)
-    .describe('ID of the report'),
+  reportName: z.string().min(1).describe('ID of the report'),
 });
 
+// oxlint-disable-next-line max-lines-per-function, require-await
 const router: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'GET',
@@ -34,21 +42,19 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Get list of files for a generated report',
       tags: ['reports'],
       params: z.object({
-        taskId: z.string().min(1)
-          .describe('ID of the task'),
+        taskId: z.string().min(1).describe('ID of the task'),
       }),
       response: {
-        ...responses.describeErrors([
+        ...describeErrors([
           StatusCodes.BAD_REQUEST,
           StatusCodes.UNAUTHORIZED,
           StatusCodes.FORBIDDEN,
           StatusCodes.NOT_FOUND,
           StatusCodes.INTERNAL_SERVER_ERROR,
         ]),
-        [StatusCodes.OK]: responses.SuccessResponse(z.record(
-          z.string().describe('File name'),
-          ReportFiles,
-        )),
+        [StatusCodes.OK]: zSuccessResponse(
+          z.record(z.string().describe('File name'), ReportFiles)
+        ),
       },
     },
     config: {
@@ -58,19 +64,22 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     preHandler: [
-      async (request) => {
+      async (request): Promise<void> => {
         const task = await getTask(request.params.taskId);
         return requireAllowedNamespace(request, task?.namespaceId ?? '');
       },
     ],
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const reportsOfTasks = await getAllReports();
       const reportOfTask = reportsOfTasks[request.params.taskId];
       if (!reportOfTask) {
-        throw new NotFoundError(`Reports for task ${request.params.taskId} not found`);
+        throw new NotFoundError(
+          `Reports for task ${request.params.taskId} not found`
+        );
       }
 
-      return responses.buildSuccessResponse(reportOfTask, reply);
+      return buildSuccessResponse(reportOfTask, reply);
     },
   });
 
@@ -82,14 +91,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['reports'],
       params: SpecificReportParams,
       response: {
-        ...responses.describeErrors([
+        ...describeErrors([
           StatusCodes.BAD_REQUEST,
           StatusCodes.UNAUTHORIZED,
           StatusCodes.FORBIDDEN,
           StatusCodes.NOT_FOUND,
           StatusCodes.INTERNAL_SERVER_ERROR,
         ]),
-        [StatusCodes.OK]: responses.SuccessResponse(ReportFiles),
+        [StatusCodes.OK]: zSuccessResponse(ReportFiles),
       },
     },
     config: {
@@ -99,25 +108,31 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     preHandler: [
+      // oxlint-disable-next-line require-await
       async (request) => {
         const task = await getTask(request.params.taskId);
         return requireAllowedNamespace(request, task?.namespaceId ?? '');
       },
     ],
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const reportsOfTasks = await getAllReports();
       const reportsOfTask = reportsOfTasks[request.params.taskId];
       if (!reportsOfTask) {
-        throw new NotFoundError(`Reports for task ${request.params.taskId} not found`);
+        throw new NotFoundError(
+          `Reports for task ${request.params.taskId} not found`
+        );
       }
 
       const reportId = `${request.params.yearMonth}/${request.params.reportName}`;
       const report = reportsOfTask[reportId];
       if (!report) {
-        throw new NotFoundError(`Report for task ${request.params.taskId} not found`);
+        throw new NotFoundError(
+          `Report for task ${request.params.taskId} not found`
+        );
       }
 
-      return responses.buildSuccessResponse(report, reply);
+      return buildSuccessResponse(report, reply);
     },
   });
 
@@ -127,15 +142,17 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     schema: {
       summary: 'Get file of a generated report',
       tags: ['reports'],
-      params: SpecificReportParams.and(z.object({
-        type: z.string().min(1),
-        ext: z.string().min(1),
-      })),
+      params: SpecificReportParams.and(
+        z.object({
+          type: z.string().min(1),
+          ext: z.string().min(1),
+        })
+      ),
       querystring: z.object({
         download: z.coerce.boolean().default(false),
       }),
       response: {
-        ...responses.describeErrors([
+        ...describeErrors([
           StatusCodes.BAD_REQUEST,
           StatusCodes.UNAUTHORIZED,
           StatusCodes.FORBIDDEN,
@@ -152,17 +169,21 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     preHandler: [
-      async (request) => {
+      // oxlint-disable-next-line require-await
+      async (request): Promise<void> => {
         const task = await getTask(request.params.taskId);
         return requireAllowedNamespace(request, task?.namespaceId ?? '');
       },
     ],
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const reportId = `${request.params.yearMonth}/${request.params.reportName}`;
       const filename = `${reportId}.${request.params.type}.${request.params.ext}`;
 
-      const stream = await createReportReadStream(filename, request.params.taskId)
-        .catch((err) => new Error('Failed to read file', { cause: err }));
+      const stream = await createReportReadStream(
+        filename,
+        request.params.taskId
+      ).catch((err) => new Error('Failed to read file', { cause: err }));
 
       if (stream instanceof Error) {
         appLogger.error({
@@ -178,4 +199,5 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
   });
 };
 
+// oxlint-disable-next-line no-default-exports
 export default router;

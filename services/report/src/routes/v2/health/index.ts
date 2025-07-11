@@ -3,7 +3,12 @@ import { StatusCodes } from 'http-status-codes';
 
 import { z } from '@ezreeport/models/lib/zod';
 
-import * as responses from '~/routes/v2/responses';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+  EmptyResponse,
+} from '~/routes/v2/responses';
 
 import * as heartbeats from '~/models/heartbeat';
 import { Heartbeat } from '~/models/heartbeat/types';
@@ -11,6 +16,7 @@ import { Heartbeat } from '~/models/heartbeat/types';
 import { HTTPError, NotFoundError } from '~/models/errors';
 import { appLogger } from '~/lib/logger';
 
+// oxlint-disable-next-line max-lines-per-function, require-await
 const router: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'GET',
@@ -20,21 +26,28 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Get status of stack',
       tags: ['health'],
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(
+        ...describeErrors([StatusCodes.INTERNAL_SERVER_ERROR]),
+        [StatusCodes.OK]: zSuccessResponse(
           z.object({
             current: z.string().describe('Current service'),
             version: z.string().describe('Current version'),
-            services: z.array(Heartbeat).describe('Services connected to current'),
-          }),
+            services: z
+              .array(Heartbeat)
+              .describe('Services connected to current'),
+          })
         ),
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
-    handler: async (request, reply) => responses.buildSuccessResponse({
-      current: heartbeats.service.name,
-      version: heartbeats.service.version,
-      services: heartbeats.getAllServices(),
-    }, reply),
+    // oxlint-disable-next-line require-await
+    handler: async (request, reply) =>
+      buildSuccessResponse(
+        {
+          current: heartbeats.service.name,
+          version: heartbeats.service.version,
+          services: heartbeats.getAllServices(),
+        },
+        reply
+      ),
   });
 
   fastify.route({
@@ -45,16 +58,15 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Ping all services',
       tags: ['health'],
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(
-          z.array(Heartbeat).describe('Services connected to current'),
+        ...describeErrors([StatusCodes.INTERNAL_SERVER_ERROR]),
+        [StatusCodes.OK]: zSuccessResponse(
+          z.array(Heartbeat).describe('Services connected to current')
         ),
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
-    handler: async (request, reply) => responses.buildSuccessResponse(
-      heartbeats.getAllServices(),
-      reply,
-    ),
+    // oxlint-disable-next-line require-await
+    handler: async (request, reply) =>
+      buildSuccessResponse(heartbeats.getAllServices(), reply),
   });
 
   fastify.route({
@@ -68,20 +80,23 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         name: z.string().describe('Service name'),
       }),
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(Heartbeat),
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(Heartbeat),
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const all = heartbeats.getAllServices();
-      const content = all.find((s) => s.service === request.params.name);
+      const content = all.find((srv) => srv.service === request.params.name);
       if (!content) {
         throw new NotFoundError(`Service ${request.params.name} not found`);
       }
 
-      return responses.buildSuccessResponse(content, reply);
+      return buildSuccessResponse(content, reply);
     },
   });
 
@@ -93,10 +108,11 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Shorthand for liveness probe',
       tags: ['health'],
       response: {
-        [StatusCodes.NO_CONTENT]: responses.schemas[StatusCodes.NO_CONTENT],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([StatusCodes.INTERNAL_SERVER_ERROR]),
+        [StatusCodes.NO_CONTENT]: EmptyResponse,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       reply.status(StatusCodes.NO_CONTENT);
     },
@@ -110,11 +126,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Shorthand for readiness probe',
       tags: ['health'],
       response: {
-        [StatusCodes.NO_CONTENT]: responses.schemas[StatusCodes.NO_CONTENT],
-        [StatusCodes.SERVICE_UNAVAILABLE]: responses.schemas[StatusCodes.SERVICE_UNAVAILABLE],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.SERVICE_UNAVAILABLE,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.NO_CONTENT]: EmptyResponse,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const missing = heartbeats.getMissingMandatoryServices();
       if (missing.length <= 0) {
@@ -126,9 +145,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         message: 'Readiness probe failed: missing mandatory services',
         missing,
       });
-      throw new HTTPError('Readiness probe failed: missing mandatory services', StatusCodes.SERVICE_UNAVAILABLE);
+      throw new HTTPError(
+        'Readiness probe failed: missing mandatory services',
+        StatusCodes.SERVICE_UNAVAILABLE
+      );
     },
   });
 };
 
+// oxlint-disable-next-line no-default-exports
 export default router;

@@ -1,7 +1,7 @@
 import {
   Client,
-  estypes as ElasticTypes,
   type ClientOptions,
+  type estypes as ElasticTypes,
 } from '@elastic/elasticsearch';
 import { merge } from 'lodash';
 
@@ -17,15 +17,10 @@ const logger = appLogger.child(
       paths: ['config.*.password'],
       censor: (value) => value && ''.padStart(`${value}`.length, '*'),
     },
-  },
+  }
 );
 
-const {
-  url,
-  username,
-  password,
-  apiKey,
-} = config.elasticsearch;
+const { url, username, password, apiKey } = config.elasticsearch;
 
 // Parse some env var
 const ES_AUTH = apiKey ? { apiKey } : { username, password };
@@ -47,7 +42,7 @@ let client: Client | undefined;
  *
  * @returns Elastic client
  */
-const getElasticClient = async () => {
+function getElasticClient(): Client {
   if (!client) {
     client = new Client(clientConfig);
 
@@ -57,17 +52,18 @@ const getElasticClient = async () => {
     });
   }
   return client;
-};
+}
 
 /**
  * Ping elastic to check connection
  *
  * @returns If elastic is up
  */
-export const elasticPing = async (): Promise<HeartbeatType> => {
-  const elastic = await getElasticClient();
+export async function elasticPing(): Promise<HeartbeatType> {
+  const elastic = getElasticClient();
 
-  const { body } = await elastic.cluster.stats<ElasticTypes.ClusterStatsResponse>();
+  const { body } =
+    await elastic.cluster.stats<ElasticTypes.ClusterStatsResponse>();
 
   return {
     hostname: body.cluster_name,
@@ -83,7 +79,7 @@ export const elasticPing = async (): Promise<HeartbeatType> => {
     ],
     updatedAt: new Date(),
   };
-};
+}
 
 /**
  * Shorthand to list indices with elastic
@@ -92,34 +88,37 @@ export const elasticPing = async (): Promise<HeartbeatType> => {
  *
  * @returns The indices names
  */
-export const elasticListIndices = async (runAs?: string) => {
-  const elastic = await getElasticClient();
+export async function elasticListIndices(runAs?: string): Promise<string[]> {
+  const elastic = getElasticClient();
 
   const headers: Record<string, unknown> = {};
   if (runAs) {
     headers['es-security-runas-user'] = runAs;
   }
 
-  const { body } = await elastic.indices.resolveIndex<ElasticTypes.IndicesResolveIndexResponse>(
-    { name: '*' },
-    { headers },
-  );
+  const { body } =
+    await elastic.indices.resolveIndex<ElasticTypes.IndicesResolveIndexResponse>(
+      { name: '*' },
+      { headers }
+    );
 
   const hiddenRegex = /^\./;
   return [
-    ...body.indices.map((i) => i.name),
-    ...body.aliases.map((a) => a.name),
-  ].filter((n) => !hiddenRegex.test(n));
-};
+    ...body.indices.map((index) => index.name),
+    ...body.aliases.map((alias) => alias.name),
+  ].filter((name) => !hiddenRegex.test(name));
+}
 
 /**
- * Simplify mapping by flattening oject using dot notation
+ * Simplify mapping by flattening object using dot notation
  *
  * @param properties Elastic raw mapping
  *
  * @returns Map of dot notation keys and type as value
  */
-const simplifyMapping = (properties: Record<string, ElasticTypes.MappingProperty>) => {
+function simplifyMapping(
+  properties: Record<string, ElasticTypes.MappingProperty>
+): Record<string, string> {
   const res: Record<string, string> = {};
   for (const [field, mapping] of Object.entries(properties)) {
     if (mapping.type) {
@@ -135,7 +134,7 @@ const simplifyMapping = (properties: Record<string, ElasticTypes.MappingProperty
   }
 
   return res;
-};
+}
 
 /**
  * Shorthand to get index mapping with elastic
@@ -145,27 +144,36 @@ const simplifyMapping = (properties: Record<string, ElasticTypes.MappingProperty
  *
  * @returns The js-like index mapping
  */
-export const elasticIndexMapping = async (index: string, runAs?: string) => {
-  const elastic = await getElasticClient();
+export async function elasticIndexMapping(
+  index: string,
+  runAs?: string
+): Promise<Record<string, string>> {
+  const elastic = getElasticClient();
 
   const headers: Record<string, unknown> = {};
   if (runAs) {
     headers['es-security-runas-user'] = runAs;
   }
 
-  const { body } = await elastic.indices.getMapping<ElasticTypes.IndicesGetMappingResponse>(
-    { index },
-    { headers },
-  );
+  const { body } =
+    await elastic.indices.getMapping<ElasticTypes.IndicesGetMappingResponse>(
+      { index },
+      { headers }
+    );
 
   // Keep all the keys of all the indices
-  const mappings = Object.values(body).map((i) => i.mappings.properties ?? {});
+  const mappings = Object.values(body).map(
+    (index) => index.mappings.properties ?? {}
+  );
   const globalMapping = merge({}, ...mappings);
   return simplifyMapping(globalMapping);
-};
+}
 
-export const elasticResolveIndex = async (index: string, runAs?: string) => {
-  const elastic = await getElasticClient();
+export async function elasticResolveIndex(
+  index: string,
+  runAs?: string
+): Promise<string[]> {
+  const elastic = getElasticClient();
 
   const headers: Record<string, unknown> = {};
   if (runAs) {
@@ -173,20 +181,23 @@ export const elasticResolveIndex = async (index: string, runAs?: string) => {
   }
 
   try {
-    const { body } = await elastic.indices.resolveIndex<ElasticTypes.IndicesResolveIndexResponse>(
-      { name: index },
-      { headers },
-    );
+    const { body } =
+      await elastic.indices.resolveIndex<ElasticTypes.IndicesResolveIndexResponse>(
+        { name: index },
+        { headers }
+      );
 
     return [
-      ...body.indices.map((i) => i.name),
-      ...body.aliases.map((a) => a.name),
-    ].sort((a, b) => a.localeCompare(b));
+      ...body.indices.map((index) => index.name),
+      ...body.aliases.map((alias) => alias.name),
+    ].sort((nameA, nameB) => nameA.localeCompare(nameB));
   } catch (error) {
-    const elasticError = error as ({ meta?: { body?: { error?: { type?: string } } } } & Error);
+    const elasticError = error as {
+      meta?: { body?: { error?: { type?: string } } };
+    } & Error;
     if (elasticError.meta?.body?.error?.type === 'security_exception') {
       return [];
     }
     throw error;
   }
-};
+}

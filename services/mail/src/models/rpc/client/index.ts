@@ -5,11 +5,11 @@ import { initFilesClient } from './files';
 
 const logger = appLogger.child({ scope: 'rpc.client' });
 
-export default async function initRPCClients(channel: rabbitmq.Channel) {
+export default function initRPCClients(channel: rabbitmq.Channel) {
   const start = process.uptime();
 
   // Setup files client
-  await initFilesClient(channel);
+  initFilesClient(channel);
 
   logger.info({
     initDuration: process.uptime() - start,

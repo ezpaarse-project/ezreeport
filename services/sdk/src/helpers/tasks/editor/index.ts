@@ -1,7 +1,11 @@
 import objectHash from 'object-hash';
 
 import type { Task } from '~/modules/tasks';
-import type { InputTask, LastExtended, TaskRecurrence } from '~/modules/tasks/types';
+import type {
+  InputTask,
+  LastExtended,
+  TaskRecurrence,
+} from '~/modules/tasks/types';
 
 import type { TemplateBodyHelper } from '../../templates/editor/body';
 import type { AnyLayoutHelper } from '../../templates/editor/layouts';
@@ -58,7 +62,7 @@ export function createTaskHelper(
   lastRun?: Date,
   id: string = '',
   createdAt: Date = new Date(),
-  updatedAt?: Date,
+  updatedAt?: Date
 ): TaskHelper {
   const task = {
     id,
@@ -98,7 +102,7 @@ export function createTaskHelperFrom(task: Task): TaskHelper {
     task.lastRun,
     task.id,
     task.createdAt,
-    task.updatedAt,
+    task.updatedAt
   );
 }
 
@@ -123,9 +127,12 @@ export function hasTaskChanged(task: TaskHelper): boolean {
 
 export function getLayoutsOfHelpers(
   taskBody: TaskBodyHelper,
-  templateBody: TemplateBodyHelper,
+  templateBody: TemplateBodyHelper
 ): (AnyLayoutHelper & { readonly: boolean })[] {
-  const layouts = templateBody.layouts.map((l) => ({ ...l, readonly: true }));
+  const layouts = templateBody.layouts.map((lay) => ({
+    ...lay,
+    readonly: true,
+  }));
   for (const { at, ...layout } of taskBody.inserts) {
     layouts.splice(at, 0, { ...layout, readonly: false });
   }

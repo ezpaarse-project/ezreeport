@@ -11,7 +11,8 @@ import loggerPlugin from '~/plugins/logger';
 const { port, allowedOrigins } = config;
 const logger = appLogger.child({ scope: 'http' });
 
-const corsOrigin: '*' | string[] = allowedOrigins === '*' ? '*' : allowedOrigins.split(',');
+const corsOrigin: '*' | string[] =
+  allowedOrigins === '*' ? '*' : allowedOrigins.split(',');
 
 export default async function startHTTPServer(routes: FastifyPluginAsync) {
   const start = process.uptime();
@@ -42,12 +43,15 @@ export default async function startHTTPServer(routes: FastifyPluginAsync) {
   registerWSNamespaces(fastify.io);
 
   // Register graceful shutdown
-  process.on('SIGTERM', () => {
+  process.on('SIGTERM', async () => {
     closeWS(fastify.io);
 
-    fastify.close()
-      .then(() => logger.debug('Service HTTP closed'))
-      .catch((err) => logger.error({ msg: 'Failed to close HTTP service', err }));
+    try {
+      await fastify.close();
+      logger.debug('Service HTTP closed');
+    } catch (err) {
+      logger.error({ msg: 'Failed to close HTTP service', err });
+    }
   });
 
   logger.info({

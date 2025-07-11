@@ -1,7 +1,11 @@
 import type { Readable, Writable } from 'node:stream';
 import { createGzip, createGunzip } from 'node:zlib';
 
-import { parseJSONMessage, sendJSONToQueue, type rabbitmq } from '@ezreeport/rabbitmq';
+import {
+  parseJSONMessage,
+  sendJSONMessage,
+  type rabbitmq,
+} from '@ezreeport/rabbitmq';
 
 import type { Logger } from '@ezreeport/logger';
 
@@ -11,7 +15,7 @@ export async function writeStreamIntoQueue(
   channel: rabbitmq.Channel,
   inputStream: Readable,
   logger: Logger,
-  compression = false,
+  compression = false
 ) {
   let stream = inputStream;
   if (compression) {
@@ -27,10 +31,11 @@ export async function writeStreamIntoQueue(
   stream.on('data', (chunk) => {
     const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
 
-    const { size } = sendJSONToQueue<RPCStreamChunkType>(channel, dataQueue, {
-      chunk: { type: 'Buffer', data: Array.from(buf) }, // JSON represents Buffer
-      ended: false,
-    });
+    const { size } = sendJSONMessage<RPCStreamChunkType>(
+      { channel, queue: { name: dataQueue } },
+      // JSON represents Buffer
+      { chunk: { type: 'Buffer', data: Array.from(buf) }, ended: false }
+    );
 
     logger.trace({
       msg: 'Sending chunk',
@@ -40,10 +45,10 @@ export async function writeStreamIntoQueue(
   });
 
   stream.on('error', (err) => {
-    const { size } = sendJSONToQueue<RPCStreamChunkType>(channel, dataQueue, {
-      error: err instanceof Error ? err.message : `${err}`,
-      ended: true,
-    });
+    const { size } = sendJSONMessage<RPCStreamChunkType>(
+      { channel, queue: { name: dataQueue } },
+      { error: err instanceof Error ? err.message : `${err}`, ended: true }
+    );
 
     logger.error({
       msg: 'Error while sending chunk',
@@ -54,9 +59,10 @@ export async function writeStreamIntoQueue(
   });
 
   stream.on('end', () => {
-    const { size } = sendJSONToQueue<RPCStreamChunkType>(channel, dataQueue, {
-      ended: true,
-    });
+    const { size } = sendJSONMessage<RPCStreamChunkType>(
+      { channel, queue: { name: dataQueue } },
+      { ended: true }
+    );
 
     logger.trace({
       msg: 'Sending end chunk',
@@ -75,7 +81,7 @@ export async function readStreamFromQueue(
   dataQueue: string,
   outputStream: Writable,
   logger: Logger,
-  compression = false,
+  compression = false
 ) {
   let stream = outputStream;
   if (compression) {

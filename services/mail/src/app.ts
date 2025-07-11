@@ -8,7 +8,7 @@ import initQueues from '~/models/queues';
 import initRPC from '~/models/rpc';
 import { initHeartbeat, getMissingMandatoryServices } from '~/models/heartbeat';
 
-const start = async () => {
+async function start(): Promise<void> {
   appLogger.info({
     scope: 'node',
     env: process.env.NODE_ENV,
@@ -24,7 +24,7 @@ const start = async () => {
       },
       '/readiness': (req, res) => {
         const missing = getMissingMandatoryServices();
-        if (missing.length) {
+        if (missing.length > 0) {
           res.writeHead(503).end();
         } else {
           res.writeHead(204).end();
@@ -33,7 +33,7 @@ const start = async () => {
     });
 
     // Initialize core services (if fails, service is not alive)
-    await initSMTP();
+    initSMTP();
 
     // Initialize other services (if fails, service is not ready)
     await useRabbitMQ(async (connection) => {
@@ -50,7 +50,7 @@ const start = async () => {
     });
   } catch (err) {
     appLogger.error(err);
-    process.exit(1);
+    throw err instanceof Error ? err : new Error(`${err}`);
   }
-};
+}
 start();

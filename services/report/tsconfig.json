@@ -1,14 +1,9 @@
 {
-  "include": [
-    "**/*.ts",
-    "**/public/**/*.js"
-  ],
+  "include": ["**/*.ts", "**/public/**/*.js"],
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "paths": {
-      "~/*": [
-        "./src/*"
-      ]
+      "~/*": ["./src/*"]
     }
   }
 }

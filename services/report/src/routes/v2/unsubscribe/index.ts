@@ -10,7 +10,11 @@ import { compile as handlebars } from 'handlebars';
 import { z } from '@ezreeport/models/lib/zod';
 import { b64ToString } from '@ezreeport/models/lib/utils';
 
-import * as responses from '~/routes/v2/responses';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+} from '~/routes/v2/responses';
 
 import { getTask, editTask } from '~/models/tasks';
 import { createActivity } from '~/models/task-activity';
@@ -21,6 +25,7 @@ const UnsubscribeParams = z.object({
   unsubscribeId: z.string().min(1),
 });
 
+// oxlint-disable-next-line max-lines-per-function, require-await
 const router: FastifyPluginAsyncZod = async (fastify) => {
   // Register assets
   await fastify.register(fastifyStatic, {
@@ -39,12 +44,16 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['unsubscribe'],
       params: UnsubscribeParams,
       response: {
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
         [StatusCodes.OK]: z.unknown(),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
       },
     },
     prefixTrailingSlash: 'slash',
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const { unsubscribeId } = request.params;
       const [taskId64, to64] = decodeURIComponent(unsubscribeId).split(':');
@@ -59,7 +68,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         throw new ArgumentError('Invalid email');
       }
 
-      const htmlTemplate = await readFile(join(__dirname, 'public/index.html'), 'utf-8');
+      const htmlTemplate = await readFile(
+        join(__dirname, 'public/index.html'),
+        'utf-8'
+      );
       const html = handlebars(htmlTemplate)({
         unsubscribeId,
         task,
@@ -88,7 +100,12 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       params: UnsubscribeParams,
     },
     prefixTrailingSlash: 'no-slash',
-    handler: async (request, reply) => reply.redirect(`../unsubscribe/${request.params.unsubscribeId}/`, StatusCodes.PERMANENT_REDIRECT),
+    // oxlint-disable-next-line require-await
+    handler: async (request, reply) =>
+      reply.redirect(
+        `../unsubscribe/${request.params.unsubscribeId}/`,
+        StatusCodes.PERMANENT_REDIRECT
+      ),
   });
 
   fastify.route({
@@ -98,25 +115,33 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Unsubscribe from a task',
       tags: ['unsubscribe'],
       params: UnsubscribeParams,
-      body: z.object({
-        unsubscribeId: UnsubscribeParams.shape.unsubscribeId,
-        taskId: z.string().min(1),
-        email: z.email().min(1),
-      }).strict(),
+      body: z
+        .object({
+          unsubscribeId: UnsubscribeParams.shape.unsubscribeId,
+          taskId: z.string().min(1),
+          email: z.email().min(1),
+        })
+        .strict(),
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(z.object({ success: z.boolean() })),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(z.object({ success: z.boolean() })),
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const { unsubscribeId, taskId, email } = request.body;
 
-      const [taskId64, to64] = decodeURIComponent(request.params.unsubscribeId).split(':');
+      const [taskId64, to64] = decodeURIComponent(
+        request.params.unsubscribeId
+      ).split(':');
       if (
-        unsubscribeId !== request.params.unsubscribeId
-        || taskId !== b64ToString(taskId64)
-        || email !== b64ToString(to64)
+        unsubscribeId !== request.params.unsubscribeId ||
+        taskId !== b64ToString(taskId64) ||
+        email !== b64ToString(to64)
       ) {
         throw new ArgumentError('Integrity check failed');
       }
@@ -126,7 +151,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         throw new NotFoundError('Task not found');
       }
 
-      const emailIndex = task.targets.findIndex((t) => t === email);
+      const emailIndex = task.targets.findIndex((value) => value === email);
       if (emailIndex < 0) {
         throw new ArgumentError('Email not found in targets of task');
       }
@@ -139,9 +164,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         message: `${email} s'est désinscrit de la tâche.`,
       });
 
-      return responses.buildSuccessResponse({ success: true }, reply);
+      return buildSuccessResponse({ success: true }, reply);
     },
   });
 };
 
+// oxlint-disable-next-line no-default-exports
 export default router;

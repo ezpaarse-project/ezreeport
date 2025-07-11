@@ -1,4 +1,5 @@
 import { setupDB, pingDB } from '@ezreeport/database';
+import type { HeartbeatType } from '@ezreeport/heartbeats/types';
 
 import { appLogger } from '~/lib/logger';
 
@@ -13,4 +14,4 @@ export default client;
  *
  * @returns If the connection is working
  */
-export const dbPing = () => pingDB(client);
+export const dbPing = (): Promise<HeartbeatType> => pingDB(client);

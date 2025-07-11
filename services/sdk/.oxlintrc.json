@@ -1,4 +1,12 @@
 {
   "$schema": "../../node_modules/oxlint/configuration_schema.json",
-  "extends": ["../../.oxlintrc.json"]
+  "extends": ["../../.oxlintrc.json"],
+  "rules": {
+    "typescript/consistent-type-definitions": ["error", "interface"],
+    // Enforce browser rules
+    "no-alert": "error",
+    "no-script-url": "error",
+    "import/no-namespace": "error",
+    "unicorn/prefer-event-target": "error"
+  }
 }

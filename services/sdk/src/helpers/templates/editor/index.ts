@@ -33,7 +33,7 @@ export function createTemplateHelper(
   tags: TemplateTagMap = new Map(),
   id: string = '',
   createdAt: Date = new Date(),
-  updatedAt?: Date,
+  updatedAt?: Date
 ): TemplateHelper {
   const template = {
     id,
@@ -54,10 +54,10 @@ export function createTemplateHelperFrom(template: Template): TemplateHelper {
   return createTemplateHelper(
     template.name,
     createTemplateBodyHelperFrom(template.body),
-    new Map(template.tags?.map((t) => [t.name, t]) ?? []),
+    new Map(template.tags?.map((tag) => [tag.name, tag]) ?? []),
     template.id,
     template.createdAt,
-    template.updatedAt,
+    template.updatedAt
   );
 }
 

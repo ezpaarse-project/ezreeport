@@ -1,4 +1,4 @@
-import { z } from '@ezreeport/models/lib/zod';
+import type { z } from '@ezreeport/models/lib/zod';
 import { TaskActivity } from '@ezreeport/models/task-activity';
 
 export * from '@ezreeport/models/task-activity';

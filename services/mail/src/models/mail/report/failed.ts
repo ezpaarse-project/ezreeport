@@ -19,14 +19,20 @@ const {
 
 export default async function sendFailedReport(
   data: MailReportQueueDataType,
-  logger: Logger,
-) {
-  const remoteStream = await createReportReadStream(data.filename, data.task.id);
+  logger: Logger
+): Promise<void> {
+  const remoteStream = await createReportReadStream(
+    data.filename,
+    data.task.id
+  );
+  // oxlint-disable-next-line promise/avoid-new
   const file = await new Promise<string>((resolve, reject) => {
     let buffer = '';
 
     remoteStream
-      .on('data', (chunk) => { buffer += chunk.toString('utf-8'); })
+      .on('data', (chunk) => {
+        buffer += chunk.toString('utf-8');
+      })
       .on('end', () => resolve(buffer))
       .on('error', (err) => reject(err));
   });
@@ -64,10 +70,12 @@ export default async function sendFailedReport(
       },
       error,
     }),
-    attachments: [{
-      filename: name,
-      content: file,
-    }],
+    attachments: [
+      {
+        filename: name,
+        content: file,
+      },
+    ],
   });
 
   logger.info({

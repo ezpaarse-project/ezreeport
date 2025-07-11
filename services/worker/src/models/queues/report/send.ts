@@ -1,5 +1,5 @@
 import type { MailQueueDataType } from '@ezreeport/models/queues';
-import { publishJSONToExchange } from '@ezreeport/rabbitmq';
+import { sendJSONMessage } from '@ezreeport/rabbitmq';
 
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
@@ -8,15 +8,24 @@ const sendExchangeName = 'ezreeport.report:send';
 
 const logger = appLogger.child({ scope: 'queues', exchange: sendExchangeName });
 
-export async function getReportSendExchange(channel: rabbitmq.Channel) {
+export async function getReportSendExchange(
+  channel: rabbitmq.Channel
+): Promise<void> {
   await channel.assertExchange(sendExchangeName, 'direct', { durable: false });
 
   logger.debug('Send exchange created');
 }
 
-export async function sendReport(channel: rabbitmq.Channel, type: 'mail', data: MailQueueDataType) {
+export function sendReport(
+  channel: rabbitmq.Channel,
+  type: 'mail',
+  data: MailQueueDataType
+): void {
   try {
-    const { size } = publishJSONToExchange(channel, sendExchangeName, type, data);
+    const { size } = sendJSONMessage(
+      { channel, exchange: { name: sendExchangeName, routingKey: type } },
+      data
+    );
     logger.debug({
       msg: 'Report queued',
       type,

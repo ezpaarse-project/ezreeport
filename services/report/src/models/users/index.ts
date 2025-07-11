@@ -20,11 +20,14 @@ import {
 
 const logger = appLogger.child({ scope: 'models', model: 'users' });
 
-function applyFilters(filters: UserQueryFiltersType) {
+function applyFilters(filters: UserQueryFiltersType): Prisma.UserWhereInput {
   const where: Prisma.UserWhereInput = {};
 
   if (filters?.query) {
-    where.username = { contains: filters.query, mode: 'insensitive' as Prisma.QueryMode };
+    where.username = {
+      contains: filters.query,
+      mode: 'insensitive' as Prisma.QueryMode,
+    };
   }
 
   return where;
@@ -40,10 +43,11 @@ function applyFilters(filters: UserQueryFiltersType) {
  */
 export async function getAllUsers(
   filters?: UserQueryFiltersType,
-  pagination?: PaginationType,
+  pagination?: PaginationType
 ): Promise<UserType[]> {
   // Prepare Prisma query
-  const prismaQuery: Prisma.UserFindManyArgs = buildPaginatedRequest(pagination);
+  const prismaQuery: Prisma.UserFindManyArgs =
+    buildPaginatedRequest(pagination);
 
   // Apply filters
   if (filters) {
@@ -55,7 +59,13 @@ export async function getAllUsers(
 
   // Ensure data
   const users = await Promise.all(
-    data.map((user) => ensureSchema(User, user, (u) => `Failed to parse user ${u.username}`)),
+    data.map((user) =>
+      ensureSchema(
+        User,
+        user,
+        (user) => `Failed to parse user ${user.username}`
+      )
+    )
   );
   return users;
 }
@@ -80,7 +90,9 @@ export async function getUser(username: string): Promise<UserType | null> {
  *
  * @returns The created user
  */
-export async function createUser(data: InputUserType & { username: string }): Promise<UserType> {
+export async function createUser(
+  data: InputUserType & { username: string }
+): Promise<UserType> {
   const user = await prisma.user.create({
     data: {
       ...data,
@@ -105,7 +117,10 @@ export async function createUser(data: InputUserType & { username: string }): Pr
  *
  * @returns The edited user
  */
-export async function editUser(username: string, data: InputUserType): Promise<UserType> {
+export async function editUser(
+  username: string,
+  data: InputUserType
+): Promise<UserType> {
   const user = await prisma.user.update({
     where: {
       username,
@@ -142,7 +157,9 @@ export async function deleteUser(username: string): Promise<UserType> {
  *
  * @returns Count of users
  */
-export async function countUsers(filters?: UserQueryFiltersType): Promise<number> {
+export async function countUsers(
+  filters?: UserQueryFiltersType
+): Promise<number> {
   const prismaQuery: Prisma.UserCountArgs = {};
 
   // Apply filters
@@ -166,7 +183,10 @@ export async function countUsers(filters?: UserQueryFiltersType): Promise<number
  * @returns True if user exists
  */
 export async function doesUserExist(username: string): Promise<boolean> {
-  const count = await prisma.user.count({ where: { username }, select: { username: true } });
+  const count = await prisma.user.count({
+    where: { username },
+    select: { username: true },
+  });
 
   return count.username > 0;
 }
@@ -179,58 +199,65 @@ export async function doesUserExist(username: string): Promise<boolean> {
  * @returns Summary of operations
  */
 export async function replaceUsers(data: BulkUserType[]) {
-  const memberships: BulkMembershipType[] = data.flatMap(
-    (u) => (u.memberships ?? []).map((m) => ({ ...m, username: u.username })),
+  const memberships: BulkMembershipType[] = data.flatMap((user) =>
+    (user.memberships ?? []).map((membership) => ({
+      ...membership,
+      username: user.username,
+    }))
   );
   const willReplaceMemberships = memberships.length > 0;
 
-  const dataPerUsername = new Map(data.map((u) => [u.username, u]));
+  const dataPerUsername = new Map(data.map((user) => [user.username, user]));
 
   // Prepare operations
   const current = await prisma.user.findMany();
 
-  const toDelete = current.filter((u) => !dataPerUsername.has(u.username));
+  const toDelete = current.filter(
+    (user) => !dataPerUsername.has(user.username)
+  );
 
-  const toEdit = current.filter((u) => dataPerUsername.has(u.username));
-  const editData = toEdit.map((u) => ({
-    // toEdit is made of dataPerUsername so we can assume it is safe
-    ...dataPerUsername.get(u.username)!,
-    // Disconnect memberships, as we will replace them later
-    memberships: willReplaceMemberships ? { deleteMany: {} } : undefined,
-  } satisfies Prisma.UserUpdateInput));
+  const toEdit = current.filter((user) => dataPerUsername.has(user.username));
+  const editData = toEdit.map(
+    (user) =>
+      ({
+        // toEdit is made of dataPerUsername so we can assume it is safe
+        ...dataPerUsername.get(user.username)!,
+        // Disconnect memberships, as we will replace them later
+        memberships: willReplaceMemberships ? { deleteMany: {} } : undefined,
+      }) satisfies Prisma.UserUpdateInput
+  );
 
-  const toEditIds = new Set(toEdit.map((u) => u.username));
-  const toCreate = data.filter((u) => !toEditIds.has(u.username));
-  const createData = await Promise.all(toCreate.map(async (u) => ({
-    // toCreate is made of toEdit so we can assume it is safe
-    ...dataPerUsername.get(u.username)!,
-    // Create token for each one
-    token: await generateToken(),
-    // Don't create memberships, as we will replace them later
-    memberships: undefined,
-  } satisfies Prisma.UserCreateInput)));
+  const toEditIds = new Set(toEdit.map((user) => user.username));
+  const toCreate = data.filter((user) => !toEditIds.has(user.username));
+  const createData = await Promise.all(
+    toCreate.map(
+      async (user) =>
+        ({
+          // toCreate is made of toEdit so we can assume it is safe
+          ...dataPerUsername.get(user.username)!,
+          // Create token for each one
+          token: await generateToken(),
+          // Don't create memberships, as we will replace them later
+          memberships: undefined,
+        }) satisfies Prisma.UserCreateInput
+    )
+  );
 
   // Executing operations
-  const [
-    deleted,
-    updated,
-    created,
-  ] = await prisma.$transaction(async (tx) => {
+  const [deleted, updated, created] = await prisma.$transaction((tx) => {
     const deleteOperations = prisma.user.deleteMany({
-      where: { username: { in: toDelete.map((u) => u.username) } },
+      where: { username: { in: toDelete.map((user) => user.username) } },
     });
 
-    const updateOperations = Promise.all(editData.map(
-      (newData) => tx.user.update({ where: { username: newData.username }, data: newData }),
-    ));
+    const updateOperations = Promise.all(
+      editData.map((newData) =>
+        tx.user.update({ where: { username: newData.username }, data: newData })
+      )
+    );
 
     const createOperations = prisma.user.createMany({ data: createData });
 
-    return Promise.all([
-      deleteOperations,
-      updateOperations,
-      createOperations,
-    ]);
+    return Promise.all([deleteOperations, updateOperations, createOperations]);
   });
 
   logger.debug({

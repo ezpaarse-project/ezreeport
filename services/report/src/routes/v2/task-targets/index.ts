@@ -5,8 +5,12 @@ import { z } from '@ezreeport/models/lib/zod';
 
 import authPlugin, { restrictNamespaces } from '~/plugins/auth';
 
-import * as responses from '~/routes/v2/responses';
 import { PaginationQuery } from '~/models/pagination/types';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+} from '~/routes/v2/responses';
 
 import { Access } from '~/models/access';
 import { getAllTasks } from '~/models/tasks';
@@ -14,6 +18,7 @@ import { TaskQueryFilters } from '~/models/tasks/types';
 
 import targetRoutes from './tasks';
 
+// oxlint-disable-next-line max-lines-per-function, require-await
 const router: FastifyPluginAsyncZod = async (fastify) => {
   await fastify.register(authPlugin);
 
@@ -23,13 +28,17 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     schema: {
       summary: 'Get all targets of all tasks',
       tags: ['task-targets'],
-      querystring: PaginationQuery.and(TaskQueryFilters.pick({ namespaceId: true })),
+      querystring: PaginationQuery.and(
+        TaskQueryFilters.pick({ namespaceId: true })
+      ),
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(z.array(z.string())),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(z.array(z.string())),
       },
     },
     config: {
@@ -39,22 +48,27 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     preHandler: [
-      async (request) => {
-        const restrictedIds = await restrictNamespaces(request, request.query.namespaceId);
+      async (request): Promise<void> => {
+        const restrictedIds = await restrictNamespaces(
+          request,
+          request.query.namespaceId
+        );
         request.query.namespaceId = restrictedIds;
       },
     ],
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const { namespaceId } = request.query;
       const tasks = await getAllTasks({ namespaceId });
 
       const content = new Set(tasks.flatMap(({ targets }) => targets));
 
-      return responses.buildSuccessResponse(Array.from(content), reply);
+      return buildSuccessResponse(Array.from(content), reply);
     },
   });
 
   fastify.register(targetRoutes, { prefix: '/:email/tasks' });
 };
 
+// oxlint-disable-next-line no-default-exports
 export default router;

@@ -15,7 +15,8 @@ import { Task } from '~/models/tasks/types';
 export const TaskActivity = CommonTaskActivity.extend({
   // Includes fields
 
-  task: Task.omit({ template: true }).optional()
+  task: Task.omit({ template: true })
+    .optional()
     .describe('[Includes] Task related to event'),
 });
 
@@ -43,46 +44,53 @@ export type InputTaskActivityType = z.infer<typeof InputTaskActivity>;
 /**
  * Validation for event include fields
  */
-const TaskActivityIncludeFields = z.enum([
-  'task',
-  'task.namespace',
-] as const);
+const TaskActivityIncludeFields = z.enum(['task', 'task.namespace'] as const);
 
 /**
  * Type for event include fields
  */
-export type TaskActivityIncludeFieldsType = z.infer<typeof TaskActivityIncludeFields>;
+export type TaskActivityIncludeFieldsType = z.infer<
+  typeof TaskActivityIncludeFields
+>;
 
 /**
  * Validation for query filters of a event
  */
 export const TaskActivityQueryFilters = z.object({
-  taskId: z.string().min(1).optional()
-    .describe('ID of the task'),
+  taskId: z.string().min(1).optional().describe('ID of the task'),
 
-  extendedId: z.string().min(1).optional()
+  extendedId: z
+    .string()
+    .min(1)
+    .optional()
     .describe('ID of template extended by the task'),
 
-  namespaceId: zStringOrArray.optional()
+  namespaceId: zStringOrArray
+    .optional()
     .describe('Possible namespace ID of the task'),
 
-  'createdAt.from': zStringToStartOfDay.optional()
+  'createdAt.from': zStringToStartOfDay
+    .optional()
     .describe('Minimum date of event'),
 
-  'createdAt.to': zStringToEndOfDay.optional()
+  'createdAt.to': zStringToEndOfDay
+    .optional()
     .describe('Maximum date of event'),
 });
 
 /**
  * Type for query filters of a event
  */
-export type TaskActivityQueryFiltersType = z.infer<typeof TaskActivityQueryFilters>;
+export type TaskActivityQueryFiltersType = z.infer<
+  typeof TaskActivityQueryFilters
+>;
 
 /**
  * Validation for event include fields
  */
 export const TaskActivityQueryInclude = z.object({
   include: TaskActivityIncludeFields.or(z.array(TaskActivityIncludeFields))
-    .transform((v) => ensureArray(v)).optional()
+    .transform((value) => ensureArray(value))
+    .optional()
     .describe('Fields to include'),
 });

@@ -18,20 +18,20 @@ const service: HeartbeatService = {
   filesystems: {
     logs: config.log.dir,
   },
-  getConnectedServices: () => [
-    mandatoryService('smtp', SMTPPing),
-  ],
+  getConnectedServices: () => [mandatoryService('smtp', SMTPPing)],
 };
 
 export { getMissingMandatoryServices } from '@ezreeport/heartbeats';
 
-export async function initHeartbeat(connection: rabbitmq.ChannelModel) {
+export async function initHeartbeat(
+  connection: rabbitmq.ChannelModel
+): Promise<void> {
   const start = process.uptime();
 
   const channel = await connection.createChannel();
   logger.debug('Channel created');
 
-  const { send } = await setupHeartbeat(channel, service, logger, true, frequency);
+  const { send } = setupHeartbeat(channel, service, logger, true, frequency);
 
   send();
 

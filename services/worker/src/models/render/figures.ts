@@ -17,32 +17,32 @@ type RenderFigureFnc = (params: {
   /**
    * The report document
    */
-  doc: PDFReport,
+  doc: PDFReport;
   /**
    * The color map keeping track of used colors
    */
-  colorMap: Map<string, string>,
+  colorMap: Map<string, string>;
   /**
    * The figure
    */
-  figure: FigureType,
+  figure: FigureType;
   /**
    * Page's viewport
    */
-  viewport: Area,
+  viewport: Area;
   /**
    * Current slot
    */
-  slot: Area,
+  slot: Area;
   /**
    * Data to render
    */
-  data: FetchResultItem[],
+  data: FetchResultItem[];
   /**
    * Recurrence of the report
    */
-  recurrence: RecurrenceType,
-  order?: 'asc' | 'desc',
+  recurrence: RecurrenceType;
+  order?: 'asc' | 'desc';
 }) => Promise<void>;
 
 /**
@@ -51,15 +51,10 @@ type RenderFigureFnc = (params: {
  * @param params
  */
 const renderTable: RenderFigureFnc = async (params) => {
-  const {
-    doc,
-    figure,
-    viewport,
-    slot,
-    data,
-  } = params;
+  const { doc, figure, viewport, slot, data } = params;
 
-  const margin: Partial<Record<'top' | 'right' | 'bottom' | 'left', number>> = {};
+  const margin: Partial<Record<'top' | 'right' | 'bottom' | 'left', number>> =
+    {};
   figure.params.tableWidth = slot.width;
 
   figure.params.startY = slot.y;
@@ -78,24 +73,21 @@ const renderTable: RenderFigureFnc = async (params) => {
  * @param params
  */
 const renderMarkdown: RenderFigureFnc = async (params) => {
-  const {
-    doc,
-    figure,
-    slot,
-    data,
-  } = params;
+  const { doc, figure, slot, data } = params;
 
   if (!data.toString) {
     throw new RenderError(
       'Provided data is not string compatible',
-      'DataTypeError',
+      'DataTypeError'
     );
   }
 
   await addMdToPDF(doc, data.toString(), {
     ...figure.params,
     start: {
+      // oxlint-disable-next-line id-length
       x: slot.x,
+      // oxlint-disable-next-line id-length
       y: slot.y,
     },
     width: slot.width,
@@ -109,17 +101,14 @@ const renderMarkdown: RenderFigureFnc = async (params) => {
  * @param params
  */
 const renderMetrics: RenderFigureFnc = async (params) => {
-  const {
-    doc,
-    figure,
-    slot,
-    data,
-  } = params;
+  const { doc, figure, slot, data } = params;
 
   addMetricToPDF(doc, data, {
     ...figure.params,
     start: {
+      // oxlint-disable-next-line id-length
       x: slot.x,
+      // oxlint-disable-next-line id-length
       y: slot.y,
     },
     width: slot.width,
@@ -133,14 +122,7 @@ const renderMetrics: RenderFigureFnc = async (params) => {
  * @param params
  */
 const renderVegaChart: RenderFigureFnc = async (params) => {
-  const {
-    doc,
-    colorMap,
-    figure,
-    slot,
-    data,
-    recurrence,
-  } = params;
+  const { doc, colorMap, figure, slot, data, recurrence } = params;
 
   // Figure title
   const { title: vegaTitle, ...figParams } = figure.params;
@@ -150,43 +132,39 @@ const renderVegaChart: RenderFigureFnc = async (params) => {
 
     const text = parseTitle(vegaTitle, data);
 
-    doc.pdf
-      .setFont(doc.fontFamily, 'bold')
-      .setFontSize(10);
+    doc.pdf.setFont(doc.fontFamily, 'bold').setFontSize(10);
 
-    const { h } = doc.pdf.getTextDimensions(
+    const { h: height } = doc.pdf.getTextDimensions(
       Array.isArray(text) ? text.join('\n') : text,
-      { maxWidth: slot.width },
+      { maxWidth: slot.width }
     );
 
     doc.pdf
-      .text(text, slot.x, slot.y + h, { maxWidth: slot.width })
+      .text(text, slot.x, slot.y + height, { maxWidth: slot.width })
       .setFontSize(fontSize)
       .setFont(font.fontName, font.fontStyle);
 
-    slot.y += (1.25 * h);
-    slot.height -= (1.25 * h);
+    // oxlint-disable-next-line id-length
+    slot.y += 1.25 * height;
+    slot.height -= 1.25 * height;
   }
 
-  const spec = createVegaLSpec(
-    figure.type as Mark,
-    data,
-    {
-      ...(figParams as { label: any, value: any }),
-      colorMap,
-      recurrence,
-      period: doc.period,
-      width: slot.width,
-      height: slot.height,
-    },
-  );
+  const spec = createVegaLSpec(figure.type as Mark, data, {
+    // oxlint-disable-next-line no-explicit-any
+    ...(figParams as { label: any; value: any }),
+    colorMap,
+    recurrence,
+    period: doc.period,
+    width: slot.width,
+    height: slot.height,
+  });
 
-  const view = await Promise.resolve(createVegaView(spec))
-    .catch((err) => new RenderError(
-      err.message,
-      'VegaError',
-      { vegaSpec: { ...spec, datasets: undefined } },
-    ));
+  const view = await Promise.resolve(createVegaView(spec)).catch(
+    (err) =>
+      new RenderError(err.message, 'VegaError', {
+        vegaSpec: { ...spec, datasets: undefined },
+      })
+  );
 
   if (view instanceof Error) {
     throw view;

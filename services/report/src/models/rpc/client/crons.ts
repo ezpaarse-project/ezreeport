@@ -1,16 +1,16 @@
 import { Cron, type CronType } from '@ezreeport/models/crons';
-import { setupRPCClient, type RPCClient } from '@ezreeport/rpc/client';
+import { RPCClient } from '@ezreeport/rpc/client';
 
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 
 let client: RPCClient | undefined;
 
-export async function initCronsClient(channel: rabbitmq.Channel) {
+export function initCronsClient(channel: rabbitmq.Channel): void {
   // schedulerClient will be called while begin unaware of
   // rabbitmq connection, so we need to store the channel
   // here
-  client = setupRPCClient(channel, 'ezreeport.rpc:crons', appLogger);
+  client = new RPCClient(channel, 'ezreeport.rpc:crons', appLogger);
 }
 
 export async function getAllCrons(): Promise<CronType[]> {
@@ -20,24 +20,28 @@ export async function getAllCrons(): Promise<CronType[]> {
 
   const data = await client.callAll('getAllCrons');
   const crons = new Map<string, CronType>(
-    data.flat()
+    data
+      .flat()
       .filter((res): res is CronType => Cron.safeParse(res).success)
-      .map((c) => [c.name, c]),
+      .map((cron) => [cron.name, cron])
   );
 
-  return Array.from(crons.values()).sort((a, b) => a.name.localeCompare(b.name));
+  return Array.from(crons.values()).sort((cronA, cronB) =>
+    cronA.name.localeCompare(cronB.name)
+  );
 }
 
-export async function stopCron(cron: string) {
+export async function stopCron(cron: string): Promise<CronType> {
   if (!client) {
     throw new Error('Cron client not initialized');
   }
 
   const data = await client.callAll('stopCron', cron);
   const crons = new Map<string, CronType>(
-    data.flat()
+    data
+      .flat()
       .filter((res): res is CronType => Cron.safeParse(res).success)
-      .map((c) => [c.name, c]),
+      .map((cron) => [cron.name, cron])
   );
 
   const res = crons.get(cron);
@@ -47,16 +51,17 @@ export async function stopCron(cron: string) {
   return res;
 }
 
-export async function startCron(cron: string) {
+export async function startCron(cron: string): Promise<CronType> {
   if (!client) {
     throw new Error('Cron client not initialized');
   }
 
   const data = await client.callAll('startCron', cron);
   const crons = new Map<string, CronType>(
-    data.flat()
+    data
+      .flat()
       .filter((res): res is CronType => Cron.safeParse(res).success)
-      .map((c) => [c.name, c]),
+      .map((cron) => [cron.name, cron])
   );
 
   const res = crons.get(cron);
@@ -66,16 +71,17 @@ export async function startCron(cron: string) {
   return res;
 }
 
-export async function forceCron(cron: string) {
+export async function forceCron(cron: string): Promise<CronType> {
   if (!client) {
     throw new Error('Cron client not initialized');
   }
 
   const data = await client.callAll('forceCron', cron);
   const crons = new Map<string, CronType>(
-    data.flat()
+    data
+      .flat()
       .filter((res): res is CronType => Cron.safeParse(res).success)
-      .map((c) => [c.name, c]),
+      .map((cron) => [cron.name, cron])
   );
 
   const res = crons.get(cron);

@@ -4,19 +4,11 @@ import { type FigureHelperWithData, createFigureHelperWithData } from './base';
 export interface MdFigure extends FigureHelperWithData {
   readonly type: 'md';
   data: string;
-  readonly params: {};
+  readonly params: Record<string, never>;
 }
 
-export function createMdFigureHelper(
-  data = '',
-  slots?: number[],
-): MdFigure {
-  return createFigureHelperWithData(
-    'md',
-    data,
-    {},
-    slots,
-  );
+export function createMdFigureHelper(data = '', slots?: number[]): MdFigure {
+  return createFigureHelperWithData('md', data, {}, slots);
 }
 
 export function createMdFigureHelperFrom(figure: TemplateBodyFigure): MdFigure {
@@ -24,6 +16,8 @@ export function createMdFigureHelperFrom(figure: TemplateBodyFigure): MdFigure {
   return createMdFigureHelper(data, figure.slots);
 }
 
-export function mdHelperParamsToJSON(params: MdFigure['params']): TemplateBodyFigure['params'] {
+export function mdHelperParamsToJSON(
+  params: MdFigure['params']
+): TemplateBodyFigure['params'] {
   return params;
 }

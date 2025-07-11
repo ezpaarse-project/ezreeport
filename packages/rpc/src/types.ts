@@ -4,13 +4,14 @@ import { z } from '@ezreeport/models/lib/zod';
  * Validation for a RPC request
  */
 export const RPCRequest = z.object({
-  method: z.string().min(1)
-    .describe('RPC method name'),
+  method: z.string().min(1).describe('RPC method name'),
 
-  params: z.array(z.any())
-    .describe('RPC method parameters'),
+  params: z.array(z.any()).describe('RPC method parameters'),
 
-  toAll: z.boolean().default(false).optional()
+  toAll: z
+    .boolean()
+    .default(false)
+    .optional()
     .describe('Is RPC request sent to all services'),
 });
 
@@ -23,11 +24,9 @@ export type RPCRequestType = z.infer<typeof RPCRequest>;
  * Validation for a RPC response
  */
 export const RPCResponse = z.object({
-  result: z.unknown().optional()
-    .describe('RPC method result'),
+  result: z.unknown().optional().describe('RPC method result'),
 
-  error: z.string().min(1).optional()
-    .describe('RPC method error'),
+  error: z.string().min(1).optional().describe('RPC method error'),
 });
 
 /**

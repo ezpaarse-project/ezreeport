@@ -1,7 +1,12 @@
-import { scheme as vegaScheme, type Text, type ExprRef, type SignalRef } from 'vega';
+import {
+  scheme as vegaScheme,
+  type Text,
+  type ExprRef,
+  type SignalRef,
+} from 'vega';
 import type { Mark } from 'vega-lite/types_unstable/mark.js';
 import type { UnitSpec } from 'vega-lite/types_unstable/spec/unit.js';
-import { TitleParams } from 'vega-lite/types_unstable/title.js';
+import type { TitleParams } from 'vega-lite/types_unstable/title.js';
 import { merge } from 'lodash';
 import chroma from 'chroma-js';
 
@@ -20,9 +25,14 @@ export type Title = Text | TitleParams<ExprRef | SignalRef>;
  */
 export type Layer = UnitSpec<string>;
 export type Encoding = Exclude<Layer['encoding'], undefined>;
-export type SubEncoding<T extends keyof Encoding> = Exclude<Encoding[T], undefined | null>;
+export type SubEncoding<En extends keyof Encoding> = Exclude<
+  Encoding[En],
+  undefined | null
+>;
 // Hide 'mark.type' property for overriding it
-export type CustomLayer = Omit<Layer, 'mark'> & { mark: Omit<Layer['mark'], 'type'> };
+export type CustomLayer = Omit<Layer, 'mark'> & {
+  mark: Omit<Layer['mark'], 'type'>;
+};
 
 export type VegaParams = {
   // Auto fields
@@ -34,23 +44,23 @@ export type VegaParams = {
    * Width of the graph, should match PDF viewport
    */
   height: number;
-  debugExport?: boolean,
-  recurrence: RecurrenceType,
-  period: dfns.Interval,
-  colorMap: Map<string, string>,
+  debugExport?: boolean;
+  recurrence: RecurrenceType;
+  period: dfns.Interval;
+  colorMap: Map<string, string>;
   // Figure specific
-  invertAxis?: boolean,
+  invertAxis?: boolean;
   dataLayer?: CustomLayer;
-  order?: 'asc' | 'desc',
+  order?: 'asc' | 'desc';
   value: SubEncoding<'x' | 'y' | 'theta'>;
-  label: SubEncoding<'x' | 'y' | 'color'>,
-  color?: Encoding['color'],
+  label: SubEncoding<'x' | 'y' | 'color'>;
+  color?: Encoding['color'];
   dataLabel?: {
-    format: 'percent' | 'numeric',
-    position?: 'out' | 'in',
-    showLabel?: boolean
-    minValue?: number,
-  }
+    format: 'percent' | 'numeric';
+    position?: 'out' | 'in';
+    showLabel?: boolean;
+    minValue?: number;
+  };
 };
 
 type ArcRadius = {
@@ -60,9 +70,9 @@ type ArcRadius = {
 };
 
 type PartialFigureSpec = {
-  layer: Layer[],
-  encoding: Encoding,
-  data?: unknown[]
+  layer: Layer[];
+  encoding: Encoding;
+  data?: unknown[];
 };
 
 const { scheme } = config.report;
@@ -71,7 +81,13 @@ const { scheme } = config.report;
 const colorScheme = vegaScheme(scheme) as string[];
 // Colors of labels for colors of Vega
 const labelScheme = `${scheme}.labels`;
-vegaScheme(labelScheme, colorScheme.map((c) => (chroma.contrast(c, 'black') > 5 ? 'black' : 'white')));
+vegaScheme(
+  labelScheme,
+  colorScheme.map((color) =>
+    // oxlint-disable-next-line import/no-named-as-default-member
+    chroma.contrast(color, 'black') > 5 ? 'black' : 'white'
+  )
+);
 
 /**
  * Ratio between outer and inner radius.
@@ -92,7 +108,7 @@ function calcRadius(params: VegaParams): ArcRadius {
   return {
     outer: Math.round(outerRadius),
     inner: Math.round(innerRadius),
-    center: Math.round(innerRadius + ((outerRadius - innerRadius) / 2)),
+    center: Math.round(innerRadius + (outerRadius - innerRadius) / 2),
   };
 }
 
@@ -106,18 +122,14 @@ function calcRadius(params: VegaParams): ArcRadius {
  *
  * @returns Is label of data is a date
  */
-function isLabelDates(data: FetchResultItem[]) {
+function isLabelDates(data: FetchResultItem[]): boolean {
   const sample = data.slice(0, data.length / 2);
-  const count = sample
-    .reduce(
-      (prev: number, { label }) => {
-        const labelDate = new Date(ensureInt(label || 'undefined'));
-        return prev + (dfns.isValid(labelDate) ? 1 : 0);
-      },
-      0,
-    );
+  const count = sample.reduce((prev: number, { label }) => {
+    const labelDate = new Date(ensureInt(label || 'undefined'));
+    return prev + (dfns.isValid(labelDate) ? 1 : 0);
+  }, 0);
 
-  return (count / sample.length) > 0.75;
+  return count / sample.length > 0.75;
 }
 
 /**
@@ -132,8 +144,8 @@ function isLabelDates(data: FetchResultItem[]) {
 function prepareDataWithDefaultDates(
   type: Mark,
   data: FetchResultItem[],
-  params: VegaParams,
-) {
+  params: VegaParams
+): FetchResultItem[] {
   let eachUnitOfInterval;
   switch (params.recurrence) {
     case 'DAILY':
@@ -155,20 +167,19 @@ function prepareDataWithDefaultDates(
       throw new Error('Recurrence not found');
   }
 
-  const defaultData = eachUnitOfInterval(params.period).map((date): FetchResultItem => {
-    const key = new Date(date).getTime();
-    return {
-      key,
-      value: 0,
-      label: key,
-      z_ezr_dl: '',
-    };
-  });
+  const defaultData = eachUnitOfInterval(params.period).map(
+    (date): FetchResultItem => {
+      const key = new Date(date).getTime();
+      return {
+        key,
+        value: 0,
+        label: key,
+        z_ezr_dl: '',
+      };
+    }
+  );
 
-  return [
-    ...defaultData,
-    ...data,
-  ];
+  return [...defaultData, ...data];
 }
 
 /**
@@ -185,8 +196,8 @@ function prepareColorScale(
   type: Mark,
   data: FetchResultItem[],
   params: VegaParams,
-  getLabel = (el: FetchResultItem): FetchResultValue => el.label || '',
-) {
+  getLabel = (el: FetchResultItem): FetchResultValue => el.label || ''
+): { domain: FetchResultValue[]; range: string[] } | undefined {
   const colorsEntries = new Map<FetchResultValue, string>();
   const unusedColorsSet = new Set(colorScheme);
 
@@ -195,7 +206,8 @@ function prepareColorScale(
     return undefined;
   }
 
-  for (const label of [...labels]) {
+  const labelIterator = [...labels];
+  for (const label of labelIterator) {
     const color = params.colorMap.get(`${label}`);
     if (color) {
       // Use known color
@@ -221,6 +233,12 @@ function prepareColorScale(
   };
 }
 
+const formatPercent = (value: number) =>
+  value.toLocaleString('fr-FR', {
+    style: 'percent',
+    maximumFractionDigits: 2,
+  });
+
 /**
  * Prepare layers for data labels
  *
@@ -237,8 +255,8 @@ function prepareDataLabelsLayers(
   data: FetchResultItem[],
   params: VegaParams,
   radius?: ArcRadius,
-  valueAxis = 'y',
-): { dataLayerEdits: Layer, layers?: Layer[] } {
+  valueAxis = 'y'
+): { dataLayerEdits: Layer; layers?: Layer[] } {
   const dataLayerEdits = {} as Layer;
 
   if (!params.dataLabel) {
@@ -250,9 +268,11 @@ function prepareDataLabelsLayers(
     switch (params.dataLabel.position) {
       case 'out': {
         pos.radius = radius.outer - (params.dataLabel.showLabel ? 22 : 11);
-        const r = 0.8 * pos.radius;
+        const rad = 0.8 * pos.radius;
 
-        merge(dataLayerEdits, { mark: { radius: r, radius2: r * RADIUS_OUTER_INNER_RATIO } });
+        merge(dataLayerEdits, {
+          mark: { radius: rad, radius2: rad * RADIUS_OUTER_INNER_RATIO },
+        });
         break;
       }
 
@@ -277,7 +297,7 @@ function prepareDataLabelsLayers(
       color: {
         legend: null,
         scale: {
-          // @ts-ignore
+          // @ts-expect-error
           scheme: labelScheme,
         },
       },
@@ -336,11 +356,6 @@ function prepareDataLabelsLayers(
         return prev + value;
       };
 
-      const formatPercent = (v: number) => v.toLocaleString(
-        'fr-FR',
-        { style: 'percent', maximumFractionDigits: 2 },
-      );
-
       const minValue = params.dataLabel.minValue ?? 0.03;
 
       if (!params.color) {
@@ -393,7 +408,8 @@ function prepareDataLabelsLayers(
       let { minValue } = params.dataLabel;
       if (minValue == null) {
         // default to 3% of maximum value
-        minValue = (Math.max(...data.map((item) => ensureInt(item.value)), 0)) * 0.03;
+        minValue =
+          Math.max(...data.map((item) => ensureInt(item.value)), 0) * 0.03;
       }
 
       // Set value on each item
@@ -415,17 +431,15 @@ function prepareDataLabelsLayers(
 
   const textAggregatePrefix = textAggregate && `${textAggregate}_`;
   // Add label layer
-  const labelLayer = ({
-    mark: merge(
-      {},
-      layer.mark,
-      {
-        dy: -7,
-        fontWeight: 'normal',
-      },
-    ),
+  const labelLayer = {
+    mark: merge({}, layer.mark, {
+      dy: -7,
+      fontWeight: 'normal',
+    }),
     encoding: {
+      // oxlint-disable-next-line id-length
       y: layer.encoding?.y,
+      // oxlint-disable-next-line id-length
       x: layer.encoding?.x,
       text: {
         condition: {
@@ -435,7 +449,7 @@ function prepareDataLabelsLayers(
       },
       color: layer.encoding?.color,
     },
-  });
+  };
 
   return { dataLayerEdits, layers: [layer, labelLayer] };
 }
@@ -452,16 +466,17 @@ function prepareDataLabelsLayers(
 const prepareDataLayer = (
   type: Mark,
   data: FetchResultItem[],
-  params: VegaParams,
-): Layer => merge<Layer, CustomLayer | {}>(
-  {
-    mark: {
-      type,
-      point: true,
+  params: VegaParams
+): Layer =>
+  merge<Layer, CustomLayer | Record<string, never>>(
+    {
+      mark: {
+        type,
+        point: true,
+      },
     },
-  },
-  params.dataLayer ?? {},
-);
+    params.dataLayer ?? {}
+  );
 
 /**
  * Merge data layer and layers
@@ -471,12 +486,16 @@ const prepareDataLayer = (
  *
  * @returns The layers ready to be used in a vega-lite spec
  */
-const mergeLayers = (dataLayer: Layer, ...layers: (Layer | undefined)[]): Layer[] => [
-  dataLayer,
-  ...layers.filter((l): l is Layer => !!l),
-];
+const mergeLayers = (
+  dataLayer: Layer,
+  ...layers: (Layer | undefined)[]
+): Layer[] => [dataLayer, ...layers.filter((lay): lay is Layer => !!lay)];
 
-type CreateSpecFnc = (type: Mark, data: FetchResultItem[], params: VegaParams) => PartialFigureSpec;
+type CreateSpecFnc = (
+  type: Mark,
+  data: FetchResultItem[],
+  params: VegaParams
+) => PartialFigureSpec;
 
 /**
  * Create a vega-lite spec for a arc chart from ezREEPORT's params
@@ -498,29 +517,30 @@ export const createArcSpec: CreateSpecFnc = (type, data, params) => {
   const encoding: Encoding = {
     theta: merge<Encoding['theta'], VegaParams['value']>(
       { field: 'value', stack: true, type: 'quantitative' },
-      params.value,
+      params.value
     ),
     order: merge<Encoding['order'], VegaParams['value']>(
       { field: 'value', sort: 'descending', type: 'quantitative' },
-      params.value,
+      params.value
     ),
     color: merge<Encoding['color'], VegaParams['label']>(
       {
         field: 'label',
         scale: prepareColorScale(type, data, params),
-        // @ts-ignore
-        sort: { field: 'value', order: params.order === 'asc' ? 'ascending' : 'descending' },
+        // @ts-expect-error
+        sort: {
+          field: 'value',
+          order: params.order === 'asc' ? 'ascending' : 'descending',
+        },
         legend: { orient: 'top-right' },
       },
-      params.label,
+      params.label
     ),
   };
 
   // Prepare data labels
-  const {
-    dataLayerEdits,
-    layers: dataLabelLayers = [],
-  } = prepareDataLabelsLayers(type, data, params, radius);
+  const { dataLayerEdits, layers: dataLabelLayers = [] } =
+    prepareDataLabelsLayers(type, data, params, radius);
   merge(dataLayer, dataLayerEdits);
 
   return { layer: mergeLayers(dataLayer, ...dataLabelLayers), encoding };
@@ -536,7 +556,9 @@ export const createArcSpec: CreateSpecFnc = (type, data, params) => {
  * @returns Partial vega-lite spec
  */
 export const createBarSpec: CreateSpecFnc = (type, data, params) => {
-  const [valueAxis, labelAxis] = (params.invertAxis ? ['x', 'y'] : ['y', 'x']) as ('x' | 'y')[];
+  const [valueAxis, labelAxis] = (
+    params.invertAxis ? ['x', 'y'] : ['y', 'x']
+  ) as ('x' | 'y')[];
 
   const dataLayer = prepareDataLayer(type, data, params);
 
@@ -544,7 +566,7 @@ export const createBarSpec: CreateSpecFnc = (type, data, params) => {
   const encoding: Encoding = {
     [valueAxis]: merge<Encoding[typeof valueAxis], VegaParams['value']>(
       { field: 'value', stack: 'zero', type: 'quantitative' },
-      params.value,
+      params.value
     ),
     [labelAxis]: merge<Encoding[typeof labelAxis], VegaParams['label']>(
       {
@@ -553,12 +575,22 @@ export const createBarSpec: CreateSpecFnc = (type, data, params) => {
         title: null,
         sort: `-${valueAxis}`,
       },
-      params.label,
+      params.label
     ),
-    color: params.color ? merge<Encoding['color'], VegaParams['color']>(
-      { field: 'color', scale: prepareColorScale(type, data, params, (el) => el.color || '') },
-      params.color,
-    ) : undefined,
+    color: params.color
+      ? merge<Encoding['color'], VegaParams['color']>(
+          {
+            field: 'color',
+            scale: prepareColorScale(
+              type,
+              data,
+              params,
+              (el) => el.color || ''
+            ),
+          },
+          params.color
+        )
+      : undefined,
     order: { aggregate: 'count' },
   };
 
@@ -570,18 +602,24 @@ export const createBarSpec: CreateSpecFnc = (type, data, params) => {
 
     merge<Encoding[typeof labelAxis], Encoding[typeof labelAxis]>(
       encoding[labelAxis],
-      { timeUnit: timeFormat.timeUnit, axis: { format: timeFormat.format }, sort: 'ascending' },
+      {
+        timeUnit: timeFormat.timeUnit,
+        axis: { format: timeFormat.format },
+        sort: 'ascending',
+      }
     );
   }
 
   // Prepare data labels
-  const {
-    dataLayerEdits,
-    layers: dataLabelLayers = [],
-  } = prepareDataLabelsLayers(type, data, params, undefined, valueAxis);
+  const { dataLayerEdits, layers: dataLabelLayers = [] } =
+    prepareDataLabelsLayers(type, data, params, undefined, valueAxis);
   merge(dataLayer, dataLayerEdits);
 
-  return { layer: mergeLayers(dataLayer, ...dataLabelLayers), data: editedData, encoding };
+  return {
+    layer: mergeLayers(dataLayer, ...dataLabelLayers),
+    data: editedData,
+    encoding,
+  };
 };
 
 /**
@@ -599,14 +637,18 @@ export const createLineSpec: CreateSpecFnc = (type, data, params) => {
   const dataLayer = prepareDataLayer(type, data, params);
   const timeFormat = calcVegaFormatFromRecurrence(params.recurrence);
 
-  const sortedData = data.sort((a, b) => ensureInt(a.label ?? 0) - ensureInt(b.label ?? 0));
+  const sortedData = data.sort(
+    (dataA, dataB) => ensureInt(dataA.label ?? 0) - ensureInt(dataB.label ?? 0)
+  );
 
   // Prepare encoding
   const encoding: Encoding = {
+    // oxlint-disable-next-line id-length
     y: merge<Encoding['y'], VegaParams['value']>(
       { field: 'value', type: 'quantitative' },
-      params.value,
+      params.value
     ),
+    // oxlint-disable-next-line id-length
     x: merge<Encoding['x'], VegaParams['label']>(
       {
         field: 'label',
@@ -616,12 +658,22 @@ export const createLineSpec: CreateSpecFnc = (type, data, params) => {
         timeUnit: timeFormat.timeUnit,
         axis: { format: timeFormat.format },
       },
-      params.label,
+      params.label
     ),
-    color: params.color ? merge<Encoding['color'], VegaParams['color']>(
-      { field: 'color', scale: prepareColorScale(type, sortedData, params, (el) => el.color || '') },
-      params.color,
-    ) : undefined,
+    color: params.color
+      ? merge<Encoding['color'], VegaParams['color']>(
+          {
+            field: 'color',
+            scale: prepareColorScale(
+              type,
+              sortedData,
+              params,
+              (el) => el.color || ''
+            ),
+          },
+          params.color
+        )
+      : undefined,
     order: { aggregate: 'count' },
   };
 
@@ -655,25 +707,27 @@ export const createOtherSpec: CreateSpecFnc = (type, data, params) => {
 
   // Prepare encoding (using merges to avoid type issues)
   const encoding: Encoding = {
+    // oxlint-disable-next-line id-length
     x: merge<Encoding['x'], VegaParams['value']>(
       { field: 'value' },
-      params.value,
+      params.value
     ),
+    // oxlint-disable-next-line id-length
     y: merge<Encoding['y'], VegaParams['label']>(
       { field: 'label' },
-      params.label,
+      params.label
     ),
-    color: params.color ? merge<Encoding['color'], VegaParams['color']>(
-      { field: 'color', scale: prepareColorScale(type, data, params) },
-      params.color,
-    ) : undefined,
+    color: params.color
+      ? merge<Encoding['color'], VegaParams['color']>(
+          { field: 'color', scale: prepareColorScale(type, data, params) },
+          params.color
+        )
+      : undefined,
   };
 
   // Prepare data labels
-  const {
-    dataLayerEdits,
-    layers: dataLabelLayers = [],
-  } = prepareDataLabelsLayers(type, data, params);
+  const { dataLayerEdits, layers: dataLabelLayers = [] } =
+    prepareDataLabelsLayers(type, data, params);
   merge(dataLayer, dataLayerEdits);
 
   return { layer: mergeLayers(dataLayer, ...dataLabelLayers), encoding };

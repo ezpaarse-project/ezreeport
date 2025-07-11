@@ -19,20 +19,24 @@ nunjucks.configure(templateDir);
 const images = readdirSync(join(templateDir, 'images'));
 
 export type MailOptions = {
-  to: string[] | string,
-  cc?: string[] | string,
-  bcc?: string[] | string,
-  subject: string,
+  to: string[] | string;
+  cc?: string[] | string;
+  bcc?: string[] | string;
+  subject: string;
   body: {
-    html: string,
-    text: string,
-  },
-  attachments?: Mail.Attachment[],
+    html: string;
+    text: string;
+  };
+  attachments?: Mail.Attachment[];
 };
 
-export const sendMail = async (options: MailOptions) => {
+export function sendMail(options: MailOptions): Promise<void> {
   const attachments: Mail.Attachment[] = [
-    ...images.map((img) => ({ path: join(templateDir, 'images', img), cid: img, filename: img })),
+    ...images.map((img) => ({
+      path: join(templateDir, 'images', img),
+      cid: img,
+      filename: img,
+    })),
     ...(options.attachments ?? []),
   ];
 
@@ -45,17 +49,20 @@ export const sendMail = async (options: MailOptions) => {
     ...options.body,
     attachments,
   });
-};
+}
 
-export const generateMail = async (template: string, data: object) => {
+export function generateMail(
+  template: string,
+  data: object
+): { html: string; text: string } {
   const text = nunjucks.render(`${template}.txt`, data);
   const mjml = nunjucks.render(`${template}.mjml`, data);
   const { html } = mjml2html(mjml);
 
   return { html, text };
-};
+}
 
-export async function initSMTP() {
+export function initSMTP(): void {
   const start = process.uptime();
 
   getMailer();

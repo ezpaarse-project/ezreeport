@@ -1,10 +1,13 @@
-type SDKFunctionAddition = {
-  ezrPermissions: { permission: string, isNamespaced: boolean }[];
-};
+// oxlint-disable-next-line no-explicit-any
+export type LambdaFunction = (...args: any[]) => any;
 
-export type SDKFunction = Function & SDKFunctionAddition;
+interface SDKFunctionAddition {
+  ezrPermissions: { permission: string; isNamespaced: boolean }[];
+}
 
-export function isSDKFunction(fnc: Function): fnc is SDKFunction {
+export type SDKFunction = LambdaFunction & SDKFunctionAddition;
+
+export function isSDKFunction(fnc: LambdaFunction): fnc is SDKFunction {
   return 'ezrPermissions' in fnc;
 }
 
@@ -16,14 +19,12 @@ export function isSDKFunction(fnc: Function): fnc is SDKFunction {
  * @param isNamespaced If the permission is namespaced (cf. /auth/me/permissions)
  */
 export function assignPermission(
-  fnc: Function,
+  fnc: LambdaFunction,
   permission: string,
-  isNamespaced = false,
+  isNamespaced = false
 ): void {
   Object.defineProperty(fnc, 'ezrPermissions', {
-    value: [
-      { permission, isNamespaced },
-    ],
+    value: [{ permission, isNamespaced }],
     writable: false,
     enumerable: false,
   });
@@ -39,10 +40,10 @@ export function assignPermission(
  * @param isNamespaced If the additional permission is namespaced (cf. /auth/me/permissions)
  */
 export function assignDependencies(
-  fnc: Function,
-  deps: Function[],
+  fnc: LambdaFunction,
+  deps: LambdaFunction[],
   permission?: string,
-  isNamespaced = false,
+  isNamespaced = false
 ): void {
   const dependencies = deps.filter((dep) => isSDKFunction(dep));
   const permissions = dependencies.flatMap((dep) => dep.ezrPermissions);

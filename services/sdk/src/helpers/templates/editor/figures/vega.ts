@@ -1,7 +1,10 @@
 import type { TemplateFilter, TemplateBodyFigure } from '~/modules/templates';
 import type { FigureAggregation } from '../aggregations';
 import type { FigureOrder } from './utils';
-import { type FigureHelperWithFilters, createFigureHelperWithFilters } from './base';
+import {
+  type FigureHelperWithFilters,
+  createFigureHelperWithFilters,
+} from './base';
 
 /**
  * Type for layers used in vega
@@ -35,34 +38,34 @@ export interface VegaDataLabelOptions {
 export interface VegaFigureHelper extends FigureHelperWithFilters {
   params: {
     /**
-    * The title of the figure
-    */
+     * The title of the figure
+     */
     title: string;
     /**
-    * Whether the axis should be inverted
-    */
+     * Whether the axis should be inverted
+     */
     invertAxis?: boolean;
     /**
-    * The label layer of the figure, often used for the x axis
-    */
+     * The label layer of the figure, often used for the x axis
+     */
     label: VegaLayer;
     /**
-    * The value layer of the figure, often used for the y axis
-    */
+     * The value layer of the figure, often used for the y axis
+     */
     value: VegaLayer;
     /**
-    * The color layer of the figure, often used for splitting the value
-    */
+     * The color layer of the figure, often used for splitting the value
+     */
     color?: VegaLayer;
     /**
-    * The data label options
-    *
-    * Data labels are displayed on top of the value layer, and show details about values
-    */
+     * The data label options
+     *
+     * Data labels are displayed on top of the value layer, and show details about values
+     */
     dataLabel?: VegaDataLabelOptions;
     /**
-    * The order of the data in the chart
-    */
+     * The order of the data in the chart
+     */
     order?: FigureOrder;
   };
 }
@@ -77,7 +80,7 @@ export function createVegaFigureHelper(
   invertAxis: boolean = false,
   filters: TemplateFilter[] = [],
   order: FigureOrder = true,
-  slots?: number[],
+  slots?: number[]
 ): VegaFigureHelper {
   return createFigureHelperWithFilters(
     type,
@@ -91,11 +94,13 @@ export function createVegaFigureHelper(
       dataLabel,
       order,
     },
-    slots,
+    slots
   );
 }
 
-export function createVegaFigureHelperFrom(figure: TemplateBodyFigure): VegaFigureHelper {
+export function createVegaFigureHelperFrom(
+  figure: TemplateBodyFigure
+): VegaFigureHelper {
   return createVegaFigureHelper(
     figure.type,
     figure.params?.title ?? '',
@@ -106,11 +111,13 @@ export function createVegaFigureHelperFrom(figure: TemplateBodyFigure): VegaFigu
     figure.params?.invertAxis ?? false,
     figure.filters ?? [],
     figure.params?.order ?? true,
-    figure.slots,
+    figure.slots
   );
 }
 
-export function vegaHelperParamsToJSON(params: VegaFigureHelper['params']): TemplateBodyFigure['params'] {
+export function vegaHelperParamsToJSON(
+  params: VegaFigureHelper['params']
+): TemplateBodyFigure['params'] {
   return {
     title: params.title,
     invertAxis: params.invertAxis,

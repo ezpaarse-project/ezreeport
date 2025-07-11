@@ -14,49 +14,45 @@ export type GenerationStatusType = z.infer<typeof GenerationStatus>;
  * Validation for a generation
  */
 export const Generation = z.object({
-  id: z.string().min(1)
-    .describe('Job ID'),
+  id: z.string().min(1).describe('Job ID'),
 
-  taskId: z.string().min(1)
-    .describe('Task ID'),
+  taskId: z.string().min(1).describe('Task ID'),
 
-  start: z.coerce.date()
-    .describe('Start of the period'),
+  start: z.coerce.date().describe('Start of the period'),
 
-  end: z.coerce.date()
-    .describe('End of the period'),
+  end: z.coerce.date().describe('End of the period'),
 
-  targets: z.array(z.email()).min(1)
-    .describe('Targets of the report'),
+  targets: z.array(z.email()).min(1).describe('Targets of the report'),
 
-  origin: z.string().min(1)
+  origin: z
+    .string()
+    .min(1)
     .describe('Origin of the request, can be a user or a service'),
 
-  writeActivity: z.boolean()
-    .describe('Should write activity to database'),
+  writeActivity: z.boolean().describe('Should write activity to database'),
 
-  status: GenerationStatus
-    .describe('Job status'),
+  status: GenerationStatus.describe('Job status'),
 
-  progress: z.int().min(0).max(100)
+  progress: z
+    .int()
+    .min(0)
+    .max(100)
     .or(z.null())
     .describe('Job progress, null if not started'),
 
-  took: z.int().min(0)
+  took: z
+    .int()
+    .min(0)
     .or(z.null())
     .describe('Time taken to generate the report, null if not started'),
 
-  reportId: z.string()
-    .describe('Report ID'),
+  reportId: z.string().describe('Report ID'),
 
-  createdAt: z.coerce.date()
-    .describe('Creation date'),
+  createdAt: z.coerce.date().describe('Creation date'),
 
-  updatedAt: z.coerce.date().nullable()
-    .describe('Last update date'),
+  updatedAt: z.coerce.date().nullable().describe('Last update date'),
 
-  startedAt: z.coerce.date().nullable()
-    .describe('Creation date'),
+  startedAt: z.coerce.date().nullable().describe('Creation date'),
 });
 
 /**

@@ -27,6 +27,7 @@ type ElasticFetchOptionsType = {
   figures: FigureType[];
 };
 
+// oxlint-disable-next-line id-length
 type FigureWithId = FigureType & { _: { id: number } };
 
 /**
@@ -41,20 +42,27 @@ export async function fetchElastic(options: ElasticFetchOptionsType) {
     throw new TemplateError('No index provided', 'MissingIndexError');
   }
 
-  const calendarInterval = calcElasticIntervalFromRecurrence(options.recurrence);
+  const calendarInterval = calcElasticIntervalFromRecurrence(
+    options.recurrence
+  );
 
   const figures = options.figures
-    .map((f, i): FigureWithId => ({ ...f, _: { id: i } }))
-    .filter((f) => f.type !== 'md');
+    // oxlint-disable-next-line id-length
+    .map((fig, index): FigureWithId => ({ ...fig, _: { id: index } }))
+    .filter((fig) => fig.type !== 'md');
 
-  const requests: ElasticTypes.MsearchMultisearchBody[] = figures.map((f) => {
+  const requests: ElasticTypes.MsearchMultisearchBody[] = figures.map((fig) => {
     const query = prepareEsQuery(
-      [options.filters, f.filters].filter((x) => !!x).flat(), // Merge filters
+      [options.filters, fig.filters].filter((filter) => !!filter).flat(), // Merge filters
       options.dateField,
-      options.period,
+      options.period
     );
 
-    const aggregations = prepareEsAggregations(f, options.dateField, calendarInterval);
+    const aggregations = prepareEsAggregations(
+      fig,
+      options.dateField,
+      calendarInterval
+    );
 
     return {
       query,
@@ -71,46 +79,51 @@ export async function fetchElastic(options: ElasticFetchOptionsType) {
   const responses = await elasticMSearch(
     {
       index: options.index,
-      body: requests.map((request) => [{}, request]).flat(),
+      body: requests.flatMap((request) => [{}, request]),
     },
-    options.auth.username,
+    options.auth.username
   )
     .then(({ body }) => body.responses)
-    .catch((err) => new FetchError(
-      err instanceof Error ? err.message : `${err}`,
-      'UnknownError',
-      { esIndex: options.index, esQuery: requests },
-    ));
+    .catch(
+      (err) =>
+        new FetchError(
+          err instanceof Error ? err.message : `${err}`,
+          'UnknownError',
+          { esIndex: options.index, esQuery: requests }
+        )
+    );
 
   if (responses instanceof Error) {
     throw responses;
   }
 
-  const results = responses.map(
-    (response, i) => {
-      const figureId = figures[i]._.id;
-      const figure = options.figures[figureId];
+  const results = responses.map((response, index) => {
+    const figureId = figures[index]._.id;
+    const figure = options.figures[figureId];
 
-      try {
-        figure.data = handleEsResponse(response, figure);
-      } catch (error) {
-        const cause = { esIndex: options.index, esQuery: requests[i], figure: figureId };
+    try {
+      figure.data = handleEsResponse(response, figure);
+    } catch (error) {
+      const cause = {
+        esIndex: options.index,
+        esQuery: requests[index],
+        figure: figureId,
+      };
 
-        if (error instanceof TypedError) {
-          error.cause = cause;
-          throw error;
-        }
-
-        throw new FetchError(
-          error instanceof Error ? error.message : `${error}`,
-          'ElasticError',
-          cause,
-        );
+      if (error instanceof TypedError) {
+        error.cause = cause;
+        throw error;
       }
 
-      return figure.data;
-    },
-  );
+      throw new FetchError(
+        error instanceof Error ? error.message : `${error}`,
+        'ElasticError',
+        cause
+      );
+    }
+
+    return figure.data;
+  });
 
   return results;
 }

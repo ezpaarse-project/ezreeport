@@ -11,17 +11,23 @@ import type { DBReportEntry } from './types';
 
 const logger = appLogger.child({ scope: 'reports' });
 
-const { paths: { reports: reportsDir } } = config;
+const {
+  paths: { reports: reportsDir },
+} = config;
 
 export async function createWriteReportStream(
   filename: string,
   taskId: string,
-  destroyAt: string,
+  destroyAt: string
 ): Promise<Writable> {
   const path = resolve(reportsDir, filename);
   await mkdir(dirname(path), { recursive: true });
 
-  const entry = { created_at: new Date(), task_id: taskId, destroy_at: new Date(destroyAt) };
+  const entry = {
+    created_at: new Date(),
+    task_id: taskId,
+    destroy_at: new Date(destroyAt),
+  };
   await knex<DBReportEntry>('reports')
     .insert({ filename, ...entry })
     .onConflict('filename')
@@ -30,7 +36,9 @@ export async function createWriteReportStream(
   logger.info({ msg: 'File metadata added', filename, entry });
 
   return createWriteStream(path)
-    .on('finish', () => { logger.info({ msg: 'File written', filename }); })
+    .on('finish', () => {
+      logger.info({ msg: 'File written', filename });
+    })
     .on('error', async (writeError) => {
       logger.error({ msg: 'Error on file write', filename, err: writeError });
       try {
@@ -41,7 +49,10 @@ export async function createWriteReportStream(
     });
 }
 
-export async function createReadReportStream(filename: string, taskId: string): Promise<Readable> {
+export async function createReadReportStream(
+  filename: string,
+  taskId: string
+): Promise<Readable> {
   const entry = await knex<DBReportEntry>('reports')
     .select('task_id')
     .where('filename', '=', filename)
@@ -58,11 +69,17 @@ export async function createReadReportStream(filename: string, taskId: string): 
   }
 
   return createReadStream(path)
-    .on('finish', () => { logger.info({ msg: 'File read', filename }); })
-    .on('error', (err) => { logger.error({ msg: 'Error on file read', filename, err }); });
+    .on('finish', () => {
+      logger.info({ msg: 'File read', filename });
+    })
+    .on('error', (err) => {
+      logger.error({ msg: 'Error on file read', filename, err });
+    });
 }
 
-export async function getAllReports(): Promise<{ filename: string, task_id: string }[]> {
+export function getAllReports(): Promise<
+  { filename: string; task_id: string }[]
+> {
   return knex<DBReportEntry>('reports').select('filename', 'task_id');
 }
 

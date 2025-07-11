@@ -35,7 +35,10 @@ const requireUser: preValidationHookHandler = async (request) => {
   const regexRes = /Bearer (?<token>.*)/i.exec(header);
   // If no username given/found
   if (!regexRes?.groups?.token) {
-    throw new HTTPError(`'${request.method} ${request.originalUrl}' requires user`, StatusCodes.UNAUTHORIZED);
+    throw new HTTPError(
+      `'${request.method} ${request.originalUrl}' requires user`,
+      StatusCodes.UNAUTHORIZED
+    );
   }
 
   const user = await getUserByToken(regexRes.groups.token);
@@ -70,7 +73,10 @@ const requireAPIKey: preValidationHookHandler = async (request) => {
 
   // If no username given/found
   if (!token) {
-    throw new HTTPError(`'${request.method} ${request.originalUrl}' requires API Key`, StatusCodes.UNAUTHORIZED);
+    throw new HTTPError(
+      `'${request.method} ${request.originalUrl}' requires API Key`,
+      StatusCodes.UNAUTHORIZED
+    );
   }
 
   if (adminKey !== token) {
@@ -88,7 +94,7 @@ const requireAPIKey: preValidationHookHandler = async (request) => {
  */
 function preparePreValidation(
   { ezrAuth }: FastifyContextConfig,
-  registerName?: string,
+  registerName?: string
 ): preValidationHookHandler[] {
   if (!ezrAuth) {
     return [];
@@ -136,7 +142,8 @@ const authBasePlugin: FastifyPluginAsync = async (fastify) => {
     }
 
     // Prepare for registration
-    const shouldRegister = routeOpts.method !== 'HEAD' && !/^\/v\d+\//i.test(routeOpts.prefix); // Don't register versioned routes
+    const shouldRegister =
+      routeOpts.method !== 'HEAD' && !/^\/v\d+\//i.test(routeOpts.prefix); // Don't register versioned routes
     const method = ensureArray(routeOpts.method)[0].toUpperCase();
     const routeName = `${method} ${routeOpts.url}`;
 
@@ -144,7 +151,10 @@ const authBasePlugin: FastifyPluginAsync = async (fastify) => {
     const preValidation = ensureArray(routeOpts.preValidation || []);
 
     preValidation.push(
-      ...preparePreValidation(routeOpts.config, shouldRegister ? routeName : undefined),
+      ...preparePreValidation(
+        routeOpts.config,
+        shouldRegister ? routeName : undefined
+      )
     );
 
     // Add new hooks
@@ -153,13 +163,10 @@ const authBasePlugin: FastifyPluginAsync = async (fastify) => {
 };
 
 // Register plugin
-const authPlugin = fp(
-  authBasePlugin,
-  {
-    name: 'ezr-auth',
-    encapsulate: false,
-  },
-);
+const authPlugin = fp(authBasePlugin, {
+  name: 'ezr-auth',
+  encapsulate: false,
+});
 
 export default authPlugin;
 
@@ -171,9 +178,9 @@ export default authPlugin;
  *
  * @returns The ids of namespaces that the user have access, if undefined user have access to all
  */
-export async function restrictNamespaces<R extends FastifyRequest>(
-  request: R,
-  namespacesIds?: string[],
+export async function restrictNamespaces<Request extends FastifyRequest>(
+  request: Request,
+  namespacesIds?: string[]
 ): Promise<string[] | undefined> {
   const user = request.user!;
   // Don't check namespaces if admin
@@ -182,7 +189,7 @@ export async function restrictNamespaces<R extends FastifyRequest>(
   }
 
   const namespacesOfUser = await getNamespacesOfUser(user.username);
-  let ids = namespacesOfUser.map((n) => n.id);
+  let ids = namespacesOfUser.map((namespace) => namespace.id);
 
   if (namespacesIds) {
     const userNamespaceIds = new Set(ids ?? []);
@@ -198,10 +205,10 @@ export async function restrictNamespaces<R extends FastifyRequest>(
  * @param request The fastify Request
  * @param namespaceId The id of the namespace
  */
-export async function requireAllowedNamespace<R extends FastifyRequest>(
-  request: R,
-  namespaceId: string,
-) {
+export async function requireAllowedNamespace<Request extends FastifyRequest>(
+  request: Request,
+  namespaceId: string
+): Promise<void> {
   const user = request.user!;
   // Don't check namespaces if admin
   if (user.isAdmin) {
@@ -210,13 +217,19 @@ export async function requireAllowedNamespace<R extends FastifyRequest>(
 
   const namespacesOfUser = await getNamespacesOfUser(user.username);
   // Check if user have access to namespace
-  const namespaceOfTask = namespacesOfUser.find((n) => namespaceId === n.id);
+  const namespaceOfTask = namespacesOfUser.find(
+    (namespace) => namespaceId === namespace.id
+  );
   if (!namespaceOfTask) {
-    throw new HTTPError("You don't have access to the provided namespace", StatusCodes.FORBIDDEN);
+    throw new HTTPError(
+      "You don't have access to the provided namespace",
+      StatusCodes.FORBIDDEN
+    );
   }
 }
 
 declare module 'fastify' {
+  // oxlint-disable-next-line typescript/consistent-type-definitions
   export interface FastifyRequest {
     /**
      * User information from DB
@@ -224,6 +237,7 @@ declare module 'fastify' {
     user?: UserType;
   }
 
+  // oxlint-disable-next-line typescript/consistent-type-definitions
   export interface FastifyContextConfig {
     /**
      * Config of auth plugin for specific route
@@ -237,6 +251,6 @@ declare module 'fastify' {
       requireAdmin?: boolean;
       /** Minimum access level to access at this route. Implies `requireUser: true` */
       access?: Access;
-    }
+    };
   }
 }

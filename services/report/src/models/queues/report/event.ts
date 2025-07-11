@@ -1,4 +1,5 @@
-import { Generation, GenerationType } from '@ezreeport/models/generations';
+import type { GenerationType } from '@ezreeport/models/generations';
+import { Generation } from '@ezreeport/models/generations';
 import { parseJSONMessage } from '@ezreeport/rabbitmq';
 
 import type rabbitmq from '~/lib/rabbitmq';
@@ -9,9 +10,15 @@ import { getTask } from '~/models/tasks';
 
 const eventExchangeName = 'ezreeport.report:event';
 
-const logger = appLogger.child({ scope: 'queues', exchange: eventExchangeName });
+const logger = appLogger.child({
+  scope: 'queues',
+  exchange: eventExchangeName,
+});
 
-async function sendWSEvents(io: Namespace, data: GenerationType) {
+async function sendWSEvents(
+  io: Namespace,
+  data: GenerationType
+): Promise<void> {
   const event = 'generation:updated';
 
   let namespace;
@@ -29,7 +36,7 @@ async function sendWSEvents(io: Namespace, data: GenerationType) {
   io.to(namespace).emit(event, data);
 }
 
-async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
+async function onMessage(msg: rabbitmq.ConsumeMessage | null): Promise<void> {
   if (!msg) {
     return;
   }
@@ -54,24 +61,31 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
 
   const io = getWSNamespace('generations');
   if (io) {
-    promises.push(
-      sendWSEvents(io, data),
-    );
+    promises.push(sendWSEvents(io, data));
   }
 
   // Resolve all promises in parallel
   await Promise.allSettled(promises);
 }
 
-export async function initReportEventExchange(channel: rabbitmq.Channel) {
-  const { exchange: eventExchange } = await channel.assertExchange(eventExchangeName, 'fanout', { durable: false });
+export async function initReportEventExchange(
+  channel: rabbitmq.Channel
+): Promise<void> {
+  const { exchange: eventExchange } = await channel.assertExchange(
+    eventExchangeName,
+    'fanout',
+    { durable: false }
+  );
 
   // Create queue to bind
-  const { queue } = await channel.assertQueue('', { exclusive: true, durable: false });
+  const { queue } = await channel.assertQueue('', {
+    exclusive: true,
+    durable: false,
+  });
   channel.bindQueue(queue, eventExchange, '');
 
   // Consume event exchange
-  channel.consume(queue, (m) => onMessage(m), { noAck: true });
+  channel.consume(queue, (msg) => onMessage(msg), { noAck: true });
 
   logger.debug({
     msg: 'Event exchange created',

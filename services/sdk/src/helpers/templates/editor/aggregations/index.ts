@@ -1,20 +1,25 @@
 import type { AggregationName } from './types';
 
-export type FigureRawAggregation = { raw: Record<string, any> };
+export interface FigureRawAggregation {
+  // oxlint-disable-next-line no-explicit-any
+  raw: Record<string, any>;
+}
 
-export type FigureBaseAggregation = {
+export interface FigureBaseAggregation {
   type: AggregationName;
   field: string;
   size?: number;
-  missing?: string
-};
+  missing?: string;
+}
 
 /**
  * Type for aggregations used in figures, when fetching data
  */
 export type FigureAggregation = FigureBaseAggregation | FigureRawAggregation;
 
-export function isRawAggregation(agg: FigureAggregation): agg is FigureRawAggregation {
+export function isRawAggregation(
+  agg: FigureAggregation
+): agg is FigureRawAggregation {
   return 'raw' in agg;
 }
 

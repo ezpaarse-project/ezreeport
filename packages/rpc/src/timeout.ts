@@ -1,19 +1,26 @@
+export type Timeout = {
+  duration: number;
+  start: () => void;
+  stop: () => void;
+  reset: () => void;
+};
+
 export function setIdleTimeout(
   onIdle: () => void,
   autoStart = true,
-  duration = 15000,
-) {
+  duration = 15000
+): Timeout {
   let timeout: NodeJS.Timeout;
 
   const timer = {
     duration,
-    start: () => {
+    start: (): void => {
       timeout = setTimeout(onIdle, duration);
     },
-    stop: () => {
+    stop: (): void => {
       clearTimeout(timeout);
     },
-    reset: () => {
+    reset: (): void => {
       timer.stop();
       timer.start();
     },

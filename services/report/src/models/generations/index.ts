@@ -6,9 +6,15 @@ import prisma from '~/lib/prisma';
 import type { PaginationType } from '~/models/pagination/types';
 import { buildPaginatedRequest } from '~/models/pagination';
 
-import { Generation, GenerationIncludeFieldsType, type GenerationType } from './types';
+import {
+  Generation,
+  type GenerationType,
+  type GenerationIncludeFieldsType,
+} from './types';
 
-function applyIncludes(fields: GenerationIncludeFieldsType[]): Prisma.GenerationInclude {
+function applyIncludes(
+  fields: GenerationIncludeFieldsType[]
+): Prisma.GenerationInclude {
   let onlyTask = false;
   let task: Prisma.TaskInclude | undefined;
 
@@ -41,10 +47,11 @@ function applyIncludes(fields: GenerationIncludeFieldsType[]): Prisma.Generation
  */
 export async function getAllGenerations(
   include?: GenerationIncludeFieldsType[],
-  pagination?: PaginationType,
+  pagination?: PaginationType
 ): Promise<GenerationType[]> {
   // Prepare Prisma query
-  const prismaQuery: Prisma.GenerationFindManyArgs = buildPaginatedRequest(pagination);
+  const prismaQuery: Prisma.GenerationFindManyArgs =
+    buildPaginatedRequest(pagination);
 
   // Apply includes
   if (include) {
@@ -56,7 +63,13 @@ export async function getAllGenerations(
 
   // Ensure data
   const generations = await Promise.all(
-    data.map((generation) => ensureSchema(Generation, generation, (n) => `Failed to parse generation ${n.id}`)),
+    data.map((generation) =>
+      ensureSchema(
+        Generation,
+        generation,
+        (gen) => `Failed to parse generation ${gen.id}`
+      )
+    )
   );
   return generations;
 }
@@ -71,7 +84,7 @@ export async function getAllGenerations(
  */
 export async function getGeneration(
   id: string,
-  include?: GenerationIncludeFieldsType[],
+  include?: GenerationIncludeFieldsType[]
 ): Promise<GenerationType | null> {
   const prismaQuery: Prisma.GenerationFindUniqueArgs = { where: { id } };
 
@@ -111,7 +124,10 @@ export async function countGenerations(): Promise<number> {
  * @returns True if generation exists
  */
 export async function doesGenerationExist(id: string): Promise<boolean> {
-  const count = await prisma.generation.count({ where: { id }, select: { id: true } });
+  const count = await prisma.generation.count({
+    where: { id },
+    select: { id: true },
+  });
 
   return count.id > 0;
 }

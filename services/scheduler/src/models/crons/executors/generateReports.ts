@@ -19,13 +19,14 @@ const generateReports: Executor = async (logger) => {
     const targets = compact(task.targets);
     if (targets.length <= 0) {
       logger.error({
-        msg: 'Targets can\'t be null',
+        msg: "Targets can't be null",
         taskId: task.id,
         task: task.name,
       });
       continue;
     }
 
+    // oxlint-disable-next-line no-await-in-loop
     const data = await queueGeneration({
       task: Task.parse(task),
       namespace: Namespace.parse(namespace),

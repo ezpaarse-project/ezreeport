@@ -1,11 +1,11 @@
 import { parseISO } from 'date-fns';
 
-type RawCreatedObject = {
-  createdAt: string
-};
+interface RawCreatedObject {
+  createdAt: string;
+}
 
 type CreatedObject<Raw> = Omit<Raw, 'createdAt'> & {
-  createdAt: Date
+  createdAt: Date;
 };
 
 /**
@@ -15,19 +15,21 @@ type CreatedObject<Raw> = Omit<Raw, 'createdAt'> & {
  *
  * @returns Copy of object
  */
-export const transformCreated = <Raw extends RawCreatedObject = RawCreatedObject>(
-  raw: Raw,
+export const transformCreated = <
+  Raw extends RawCreatedObject = RawCreatedObject,
+>(
+  raw: Raw
 ): CreatedObject<Raw> => ({
-    ...raw,
-    createdAt: parseISO(raw.createdAt),
-  });
+  ...raw,
+  createdAt: parseISO(raw.createdAt),
+});
 
-type RawUpdatedObject = {
-  updatedAt?: string | null
-};
+interface RawUpdatedObject {
+  updatedAt?: string | null;
+}
 
 type UpdatedObject<Raw> = Omit<Raw, 'updatedAt'> & {
-  updatedAt?: Date
+  updatedAt?: Date;
 };
 
 /**
@@ -37,12 +39,14 @@ type UpdatedObject<Raw> = Omit<Raw, 'updatedAt'> & {
  *
  * @returns Copy of object
  */
-export const transformUpdated = <Raw extends RawUpdatedObject = RawUpdatedObject>(
-  raw: Raw,
+export const transformUpdated = <
+  Raw extends RawUpdatedObject = RawUpdatedObject,
+>(
+  raw: Raw
 ): UpdatedObject<Raw> => ({
-    ...raw,
-    updatedAt: raw.updatedAt ? parseISO(raw.updatedAt) : undefined,
-  });
+  ...raw,
+  updatedAt: raw.updatedAt ? parseISO(raw.updatedAt) : undefined,
+});
 
 type RawCreatedUpdatedObject = RawCreatedObject & RawUpdatedObject;
 
@@ -56,9 +60,9 @@ type CreatedUpdatedObject<Raw> = CreatedObject<Raw> & UpdatedObject<Raw>;
  *
  * @returns Copy of object
  */
-export const transformCreatedUpdated = <
-  Raw extends RawCreatedUpdatedObject,
->(raw: Raw): CreatedUpdatedObject<Raw> => {
+export const transformCreatedUpdated = <Raw extends RawCreatedUpdatedObject>(
+  raw: Raw
+): CreatedUpdatedObject<Raw> => {
   const created = transformCreated(raw);
   const updated = transformUpdated(raw);
   return { ...raw, createdAt: created.createdAt, updatedAt: updated.updatedAt };

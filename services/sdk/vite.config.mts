@@ -2,8 +2,9 @@ import { join } from 'node:path';
 
 import { defineConfig } from 'vite';
 
-const src = (p = '') => join(__dirname, 'src/', p);
+const src = (path = ''): string => join(__dirname, 'src/', path);
 
+// oxlint-disable-next-line no-default-exports
 export default defineConfig({
   resolve: {
     alias: {
@@ -34,7 +35,9 @@ export default defineConfig({
         'task-activity': src('modules/task-activity/index.ts'),
         'task-presets': src('modules/task-presets/index.ts'),
         // Helpers
-        'helpers/aggregations': src('helpers/templates/editor/aggregations/index.ts'),
+        'helpers/aggregations': src(
+          'helpers/templates/editor/aggregations/index.ts'
+        ),
         'helpers/figures': src('helpers/templates/editor/figures/index.ts'),
         'helpers/filters': src('helpers/templates/editor/filters/index.ts'),
         'helpers/generations': src('helpers/generations/index.ts'),

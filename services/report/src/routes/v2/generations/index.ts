@@ -6,9 +6,16 @@ import { z } from '@ezreeport/models/lib/zod';
 import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
 import { Access } from '~/models/access';
 
-import * as responses from '~/routes/v2/responses';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+} from '~/routes/v2/responses';
 import { buildPaginatedResponse } from '~/models/pagination';
-import { PaginationQuery, PaginationResponse } from '~/models/pagination/types';
+import {
+  PaginationQuery,
+  zPaginationResponse,
+} from '~/models/pagination/types';
 
 import * as generations from '~/models/generations';
 import { Generation, GenerationQueryInclude } from '~/models/generations/types';
@@ -20,10 +27,10 @@ import { getTemplate } from '~/models/templates';
 import { queueGeneration } from '~/models/queues/report/generation';
 
 const SpecificGenerationParams = z.object({
-  id: z.string().min(1)
-    .describe('ID of the generation'),
+  id: z.string().min(1).describe('ID of the generation'),
 });
 
+// oxlint-disable-next-line max-lines-per-function, require-await
 const router: FastifyPluginAsyncZod = async (fastify) => {
   await fastify.register(authPlugin);
 
@@ -35,11 +42,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['generations'],
       querystring: PaginationQuery.and(GenerationQueryInclude),
       response: {
-        [StatusCodes.OK]: PaginationResponse(Generation),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zPaginationResponse(Generation),
       },
     },
     config: {
@@ -47,25 +56,17 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAdmin: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       // Extract pagination
-      const {
+      const { page, count, sort, order, include } = request.query;
+
+      const content = await generations.getAllGenerations(include, {
         page,
         count,
         sort,
         order,
-        include,
-      } = request.query;
-
-      const content = await generations.getAllGenerations(
-        include,
-        {
-          page,
-          count,
-          sort,
-          order,
-        },
-      );
+      });
 
       return buildPaginatedResponse(
         content,
@@ -74,7 +75,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           total: await generations.countGenerations(),
           count: content.length,
         },
-        reply,
+        reply
       );
     },
   });
@@ -88,12 +89,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       params: SpecificGenerationParams,
       querystring: GenerationQueryInclude,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(Generation),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(Generation),
       },
     },
     config: {
@@ -103,18 +106,19 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     preHandler: [
-      async (request) => {
+      async (request): Promise<void> => {
         const task = await getTask(request.params.id);
         return requireAllowedNamespace(request, task?.namespaceId ?? '');
       },
     ],
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const content = await generations.getGeneration(request.params.id);
       if (!content) {
         throw new NotFoundError(`Generation ${request.params.id} not found`);
       }
 
-      return responses.buildSuccessResponse(content, reply);
+      return buildSuccessResponse(content, reply);
     },
   });
 
@@ -126,16 +130,20 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['generations'],
       params: SpecificGenerationParams,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(
-          z.object({
-            id: z.string().describe("Queue's ID"),
-          }).describe('Info to get progress of generation'),
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(
+          z
+            .object({
+              id: z.string().describe("Queue's ID"),
+            })
+            .describe('Info to get progress of generation')
         ),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
     config: {
@@ -143,6 +151,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAdmin: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const generation = await generations.getGeneration(request.params.id);
       if (!generation) {
@@ -150,11 +159,17 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       }
 
       const task = await getTask(generation.taskId);
-      if (!task) { throw new NotFoundError(`Task ${generation.taskId} not found`); }
+      if (!task) {
+        throw new NotFoundError(`Task ${generation.taskId} not found`);
+      }
       const template = await getTemplate(task.extendedId);
-      if (!template) { throw new NotFoundError(`Template ${task.extendedId} not found`); }
+      if (!template) {
+        throw new NotFoundError(`Template ${task.extendedId} not found`);
+      }
       const namespace = await getNamespace(task.namespaceId);
-      if (!namespace) { throw new NotFoundError(`Namespace ${task.namespaceId} not found`); }
+      if (!namespace) {
+        throw new NotFoundError(`Namespace ${task.namespaceId} not found`);
+      }
 
       await queueGeneration({
         id: generation.id,
@@ -169,9 +184,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         createdAt: generation.createdAt,
       });
 
-      return responses.buildSuccessResponse({ id: generation.id }, reply);
+      return buildSuccessResponse({ id: generation.id }, reply);
     },
   });
 };
 
+// oxlint-disable-next-line no-default-exports
 export default router;

@@ -1,8 +1,11 @@
 import { randomUUID } from 'node:crypto';
 
-import { GenerationQueueData, type GenerationQueueDataType } from '@ezreeport/models/queues';
+import {
+  GenerationQueueData,
+  type GenerationQueueDataType,
+} from '@ezreeport/models/queues';
 import type { GenerationType } from '@ezreeport/models/generations';
-import { parseJSONMessage, publishJSONToExchange, sendJSONToQueue } from '@ezreeport/rabbitmq';
+import { parseJSONMessage, sendJSONMessage } from '@ezreeport/rabbitmq';
 
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
@@ -15,7 +18,10 @@ const logger = appLogger.child({ scope: 'queues', queue: generationQueueName });
 
 let channel: rabbitmq.Channel | undefined;
 
-async function onDeadGeneration(c: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage | null) {
+async function onDeadGeneration(
+  chan: rabbitmq.Channel,
+  msg: rabbitmq.ConsumeMessage | null
+): Promise<void> {
   if (!msg) {
     return;
   }
@@ -28,7 +34,7 @@ async function onDeadGeneration(c: rabbitmq.Channel, msg: rabbitmq.ConsumeMessag
       data: process.env.NODE_ENV === 'production' ? undefined : raw,
       err: parseError,
     });
-    c.nack(msg, undefined, false);
+    chan.nack(msg, undefined, false);
     return;
   }
 
@@ -50,7 +56,13 @@ async function onDeadGeneration(c: rabbitmq.Channel, msg: rabbitmq.ConsumeMessag
       startedAt: null,
     };
 
-    publishJSONToExchange<GenerationType>(c, generationEventExchangeName, '', event);
+    sendJSONMessage<GenerationType>(
+      {
+        channel: chan,
+        exchange: { name: generationEventExchangeName, routingKey: '' },
+      },
+      event
+    );
 
     logger.warn({
       msg: 'Generation aborted',
@@ -62,39 +74,44 @@ async function onDeadGeneration(c: rabbitmq.Channel, msg: rabbitmq.ConsumeMessag
   } catch (err) {
     logger.error({ msg: 'Failed to send event', err });
   }
-  c.ack(msg);
+  chan.ack(msg);
 }
 
-export async function initGenerationQueue(c: rabbitmq.Channel) {
+export async function initGenerationQueue(
+  chan: rabbitmq.Channel
+): Promise<void> {
   // queueGeneration will be called while begin unaware of
   // rabbitmq connection, so we need to store the channel
   // here
-  channel = c;
+  channel = chan;
 
-  const { exchange: deadLetterExchange } = await c.assertExchange(
+  const { exchange: deadLetterExchange } = await chan.assertExchange(
     deadGenerationExchangeName,
     'fanout',
-    { durable: false },
+    { durable: false }
   );
 
-  const { queue: deadLetterQueue } = await c.assertQueue(
-    '',
-    { exclusive: true, durable: false, deadLetterExchange },
-  );
-  channel.consume(deadLetterQueue, (m) => onDeadGeneration(c, m));
+  const { queue: deadLetterQueue } = await chan.assertQueue('', {
+    exclusive: true,
+    durable: false,
+    deadLetterExchange,
+  });
+  channel.consume(deadLetterQueue, (msg) => onDeadGeneration(chan, msg));
 
-  await c.bindQueue(deadLetterQueue, deadLetterExchange, '');
+  await chan.bindQueue(deadLetterQueue, deadLetterExchange, '');
 
   // Ensure generation queue exists with correct dead letter exchange
-  await c.assertQueue(
-    generationQueueName,
-    { durable: false, deadLetterExchange },
-  );
+  await chan.assertQueue(generationQueueName, {
+    durable: false,
+    deadLetterExchange,
+  });
 
   logger.debug('Generation queue created');
 }
 
-export async function queueGeneration(params: Omit<GenerationQueueDataType, 'id' | 'createdAt'>) {
+export async function queueGeneration(
+  params: Omit<GenerationQueueDataType, 'id' | 'createdAt'>
+): Promise<GenerationQueueDataType | null> {
   const createdAt = new Date();
   let data: GenerationQueueDataType;
   try {
@@ -108,7 +125,10 @@ export async function queueGeneration(params: Omit<GenerationQueueDataType, 'id'
       createdAt,
     };
 
-    const { size } = sendJSONToQueue<GenerationQueueDataType>(channel, generationQueueName, data);
+    const { size } = sendJSONMessage<GenerationQueueDataType>(
+      { channel, queue: { name: generationQueueName } },
+      data
+    );
     logger.debug({
       msg: 'Report queued for generation',
       size,
@@ -124,22 +144,28 @@ export async function queueGeneration(params: Omit<GenerationQueueDataType, 'id'
   }
 
   try {
-    publishJSONToExchange<GenerationType>(channel, generationEventExchangeName, '', {
-      id: data.id,
-      taskId: data.task.id,
-      status: 'PENDING',
-      start: data.period.start,
-      end: data.period.end,
-      targets: data.targets,
-      origin: data.origin,
-      writeActivity: !!data.writeActivity,
-      progress: null,
-      took: null,
-      reportId: '',
-      createdAt,
-      updatedAt: new Date(),
-      startedAt: null,
-    });
+    sendJSONMessage<GenerationType>(
+      {
+        channel,
+        exchange: { name: generationEventExchangeName, routingKey: '' },
+      },
+      {
+        id: data.id,
+        taskId: data.task.id,
+        status: 'PENDING',
+        start: data.period.start,
+        end: data.period.end,
+        targets: data.targets,
+        origin: data.origin,
+        writeActivity: !!data.writeActivity,
+        progress: null,
+        took: null,
+        reportId: '',
+        createdAt,
+        updatedAt: new Date(),
+        startedAt: null,
+      }
+    );
   } catch (err) {
     logger.warn({ msg: 'Failed to send event', err });
   }

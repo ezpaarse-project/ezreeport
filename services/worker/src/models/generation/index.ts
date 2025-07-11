@@ -1,4 +1,5 @@
 import EventEmitter from 'node:events';
+import { Readable } from 'node:stream';
 
 import { format, add, differenceInMilliseconds } from '@ezreeport/dates';
 import type { GenerationQueueDataType } from '@ezreeport/models/queues';
@@ -10,15 +11,14 @@ import type {
   ReportResultType,
 } from '@ezreeport/models/reports';
 
-import { Readable } from 'node:stream';
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
 import { fetchElastic } from '~/models/fetch';
 import TypedError from '~/models/errors';
-import { RenderEventMap, renderPdfWithVega } from '~/models/render';
+import { type RenderEventMap, renderPdfWithVega } from '~/models/render';
 
-import TemplateError from './errors';
 import { createReportWriteStream } from '../rpc/client/files';
+import TemplateError from './errors';
 
 const { ttl } = config.report;
 
@@ -30,17 +30,23 @@ const { ttl } = config.report;
  *
  * @returns The paths and the initial result
  */
-async function prepareReport(data: GenerationQueueDataType, startTime = new Date()) {
+function prepareReport(
+  data: GenerationQueueDataType,
+  startTime = new Date()
+): { result: ReportResultType; reportId: string } {
   // Prepare file paths
   const todayStr = format(startTime, 'yyyy-MM');
 
-  let filename = `ezREEPORT_${data.task.name.toLowerCase().replace(/[/ .]/g, '-')}`;
+  let filename = `ezREEPORT_${data.task.name.toLowerCase().replaceAll(/[/ .]/g, '-')}`;
   if (process.env.NODE_ENV === 'production' || data.writeActivity) {
     filename += `_${data.id}`;
   }
   const reportId = `${todayStr}/${filename}`;
 
-  const periodDifference = differenceInMilliseconds(data.period.end, data.period.start);
+  const periodDifference = differenceInMilliseconds(
+    data.period.end,
+    data.period.start
+  );
 
   // Prepare result
   const result: ReportResultType = {
@@ -49,10 +55,10 @@ async function prepareReport(data: GenerationQueueDataType, startTime = new Date
       jobId: data.id,
       taskId: data.task.id,
       createdAt: startTime,
-      destroyAt: add(
-        startTime,
-        { days: ttl.days, seconds: ttl.iterations * (periodDifference / 1000) },
-      ),
+      destroyAt: add(startTime, {
+        days: ttl.days,
+        seconds: ttl.iterations * (periodDifference / 1000),
+      }),
       period: {
         start: data.period.start,
         end: data.period.end,
@@ -76,13 +82,18 @@ async function prepareReport(data: GenerationQueueDataType, startTime = new Date
  *
  * @returns Resolved template
  */
-async function resolveReportTemplate(data: GenerationQueueDataType) {
+function resolveReportTemplate(
+  data: GenerationQueueDataType
+): TemplateBodyType {
   const { template, task } = data;
   // Check version
-  if (template.body.version !== task.template.version || template.body.version !== 2) {
+  if (
+    template.body.version !== task.template.version ||
+    template.body.version !== 2
+  ) {
     throw new TemplateError(
       `Resolved template's (template.v${template.body.version}: ${task.extendedId}, task.v${task.template.version}: ${task.name}) is not compatible with task`,
-      'VersionMismatchError',
+      'VersionMismatchError'
     );
   }
 
@@ -122,8 +133,8 @@ function handleReportError(
   err: unknown,
   result: ReportResultType,
   logger: typeof appLogger,
-  startTime = new Date(),
-) {
+  startTime = new Date()
+): void {
   const error: ReportErrorType = {
     type: 'UnknownError',
     name: 'UnknownError',
@@ -141,9 +152,9 @@ function handleReportError(
   }
 
   // Update result
-  const r = result;
-  r.success = false;
-  r.detail = {
+  const res = result;
+  res.success = false;
+  res.detail = {
     ...result.detail,
     took: differenceInMilliseconds(new Date(), startTime),
     error,
@@ -172,19 +183,20 @@ function handleReportError(
  *
  * @returns Stringified object
  */
-const stringify = (obj: unknown) => JSON.stringify(
-  obj,
-  null,
-  process.env.NODE_ENV === 'production' ? undefined : 2,
-);
+const stringify = (obj: unknown) =>
+  JSON.stringify(
+    obj,
+    null,
+    process.env.NODE_ENV === 'production' ? undefined : 2
+  );
 
-export interface GenerationEventMap extends RenderEventMap {
+export type GenerationEventMap = RenderEventMap & {
   start: [{ reportId: string }];
   'resolve:template': [TemplateBodyType];
   'fetch:template': [TemplateBodyType];
   'render:template': [TemplateBodyType];
-  end: [ReportResultType]
-}
+  end: [ReportResultType];
+};
 
 /**
  * Generate report
@@ -205,8 +217,8 @@ export interface GenerationEventMap extends RenderEventMap {
  */
 export async function generateReport(
   data: GenerationQueueDataType,
-  events = new EventEmitter<GenerationEventMap>(),
-) {
+  events = new EventEmitter<GenerationEventMap>()
+): Promise<ReportResultType> {
   const logger = appLogger.child({
     scope: 'generateReport',
     jobId: data.id,
@@ -214,7 +226,7 @@ export async function generateReport(
 
   // Prepare report
   const startTime = new Date();
-  const { result, reportId } = await prepareReport(data);
+  const { result, reportId } = prepareReport(data);
 
   /**
    * Send file to remote storage
@@ -226,13 +238,17 @@ export async function generateReport(
    *
    * @returns Promise resolving when file is sent
    */
-  const writeReportFile = async (content: Buffer, filename: string) => {
+  const writeReportFile = async (
+    content: Buffer,
+    filename: string
+  ): Promise<void> => {
     const remoteStream = await createReportWriteStream(
       filename,
       data.task.id,
-      result.detail.destroyAt,
+      result.detail.destroyAt
     );
 
+    // oxlint-disable-next-line promise/avoid-new
     return new Promise<void>((resolve, reject) => {
       remoteStream
         .on('finish', () => resolve())
@@ -256,7 +272,7 @@ export async function generateReport(
   let template: TemplateBodyType | undefined;
   try {
     // Resolve template
-    template = await resolveReportTemplate(data);
+    template = resolveReportTemplate(data);
     logger.debug('Template resolved');
     events.emit('resolve:template', template);
 
@@ -265,31 +281,29 @@ export async function generateReport(
 
     // Fetch data
     await Promise.all(
-      template.layouts.map(
-        async (layout, i) => {
-          try {
-            const res = await fetchElastic({
-              auth: data.namespace.fetchLogin.elastic,
-              recurrence: data.task.recurrence,
-              period: data.period,
+      template.layouts.map(async (layout, index) => {
+        try {
+          const res = await fetchElastic({
+            auth: data.namespace.fetchLogin.elastic,
+            recurrence: data.task.recurrence,
+            period: data.period,
 
-              filters: template!.filters,
-              dateField: template!.dateField,
-              index: template!.index || '',
+            filters: template!.filters,
+            dateField: template!.dateField,
+            index: template!.index || '',
 
-              figures: layout.figures,
-            });
+            figures: layout.figures,
+          });
 
-            return res;
-          } catch (err) {
-            if (err instanceof Error) {
-              const cause = err.cause ?? {};
-              err.cause = { ...cause, layout: i };
-            }
-            throw err;
+          return res;
+        } catch (err) {
+          if (err instanceof Error) {
+            const cause = err.cause ?? {};
+            err.cause = { ...cause, layout: index };
           }
-        },
-      ),
+          throw err;
+        }
+      })
     );
     logger.debug('Data fetched');
     events.emit('fetch:template', template);
@@ -307,7 +321,7 @@ export async function generateReport(
         grid: template.grid || { cols: 2, rows: 2 },
         debug: data.printDebug ?? false,
       },
-      events,
+      events
     );
     logger.debug({
       msg: 'Report generated',
@@ -348,7 +362,7 @@ export async function generateReport(
   try {
     await writeReportFile(
       Buffer.from(stringify(result), 'utf-8'),
-      `${reportId}.det.json`,
+      `${reportId}.det.json`
     );
     result.detail.files.detail = `${reportId}.det.json`;
     logger.debug({
@@ -366,7 +380,7 @@ export async function generateReport(
   try {
     await writeReportFile(
       Buffer.from(stringify(template), 'utf-8'),
-      `${reportId}.deb.json`,
+      `${reportId}.deb.json`
     );
     result.detail.files.debug = `${reportId}.deb.json`;
     logger.debug({

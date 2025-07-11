@@ -15,7 +15,8 @@ const namespaces = new Map<string, SocketIoNamespace>();
  *
  * @returns The namespace if found
  */
-export const getWSNamespace = (name: string): SocketIoNamespace | undefined => namespaces.get(name);
+export const getWSNamespace = (name: string): SocketIoNamespace | undefined =>
+  namespaces.get(name);
 
 /**
  * Register a new namespace
@@ -36,7 +37,7 @@ const registerWSNamespace = (io: Server, name: string): SocketIoNamespace => {
  *
  * @param io The socket.io server
  */
-function registerGenerationsNamespace(io: Server) {
+function registerGenerationsNamespace(io: Server): void {
   registerWSNamespace(io, 'generations')
     .use(requireUser)
     .use(restrictToOwnedNamespaces('READ_WRITE'));
@@ -52,7 +53,7 @@ function registerGenerationsNamespace(io: Server) {
  *
  * @param io The socket.io server
  */
-export function registerWSNamespaces(io: Server) {
+export function registerWSNamespaces(io: Server): void {
   const start = process.uptime();
 
   registerGenerationsNamespace(io);
@@ -69,16 +70,20 @@ export function registerWSNamespaces(io: Server) {
  *
  * @param io The socket.io server
  */
-export function closeWS(io: Server | undefined) {
-  io?.close()
-    .then(() => logger.debug('Service closed'))
-    .catch((err) => logger.error({ msg: 'Failed to close service', err }));
+export async function closeWS(io: Server | undefined): Promise<void> {
+  try {
+    await io?.close();
+    logger.debug('Service closed');
+  } catch (err) {
+    logger.error({ msg: 'Failed to close service', err });
+  }
 }
 
 export type Namespace = SocketIoNamespace;
 
 declare module 'fastify' {
-  export interface FastifyInstance {
-    io: Server
+  // oxlint-disable-next-line typescript/consistent-type-definitions
+  interface FastifyInstance {
+    io: Server<{ hello: string }>;
   }
 }

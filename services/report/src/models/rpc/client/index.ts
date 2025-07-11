@@ -6,13 +6,13 @@ import { initFilesClient } from './files';
 
 const logger = appLogger.child({ scope: 'rpc.client' });
 
-export default async function initRPCClients(channel: rabbitmq.Channel) {
+export default function initRPCClients(channel: rabbitmq.Channel): void {
   const start = process.uptime();
 
   // Setup API Client
-  await initCronsClient(channel);
+  initCronsClient(channel);
   // Setup files client
-  await initFilesClient(channel);
+  initFilesClient(channel);
 
   logger.info({
     initDuration: process.uptime() - start,

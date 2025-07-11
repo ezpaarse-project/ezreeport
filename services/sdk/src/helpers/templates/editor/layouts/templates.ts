@@ -2,7 +2,11 @@ import { nanoid } from 'nanoid/non-secure';
 import objectHash from 'object-hash';
 
 import type { TemplateBodyLayout } from '~/modules/templates';
-import { createFigureHelperFrom, figureHelperToJSON, type AnyFigureHelper } from '../figures';
+import {
+  createFigureHelperFrom,
+  figureHelperToJSON,
+  type AnyFigureHelper,
+} from '../figures';
 
 export interface LayoutHelper {
   readonly id: string;
@@ -14,9 +18,7 @@ export function hashLayout(layout: LayoutHelper | TemplateBodyLayout): string {
   return objectHash({ figures: layout.figures });
 }
 
-export function createLayoutHelper(
-  figures: AnyFigureHelper[],
-): LayoutHelper {
+export function createLayoutHelper(figures: AnyFigureHelper[]): LayoutHelper {
   const layout = {
     id: nanoid(),
     figures,
@@ -28,14 +30,16 @@ export function createLayoutHelper(
   return layout;
 }
 
-export function createLayoutHelperFrom(layout: TemplateBodyLayout): LayoutHelper {
+export function createLayoutHelperFrom(
+  layout: TemplateBodyLayout
+): LayoutHelper {
   return createLayoutHelper(
-    layout.figures.map((f) => createFigureHelperFrom(f)),
+    layout.figures.map((fig) => createFigureHelperFrom(fig))
   );
 }
 
 export function layoutHelperToJSON(layout: LayoutHelper): TemplateBodyLayout {
   return {
-    figures: layout.figures.map((f) => figureHelperToJSON(f)),
+    figures: layout.figures.map((fig) => figureHelperToJSON(fig)),
   };
 }

@@ -1,7 +1,11 @@
 import EventEmitter from 'node:events';
 
 import type { RecurrenceType } from '@ezreeport/models/recurrence';
-import type { FigureType, LayoutType, TemplateBodyGridType } from '@ezreeport/models/templates';
+import type {
+  FigureType,
+  LayoutType,
+  TemplateBodyGridType,
+} from '@ezreeport/models/templates';
 import type { ReportPeriodType } from '@ezreeport/models/reports';
 import { appLogger } from '~/lib/logger';
 
@@ -14,7 +18,7 @@ import type { PDFReport, PDFResult } from './pdf/types';
 import { initVegaEngine } from './vega';
 import RenderError from './errors';
 
-export async function initRenderEngine() {
+export async function initRenderEngine(): Promise<void> {
   const start = process.uptime();
 
   await initPDFEngine();
@@ -28,11 +32,11 @@ export async function initRenderEngine() {
   });
 }
 
-export interface RenderEventMap extends Record<string, unknown[]> {
+export type RenderEventMap = Record<string, unknown[]> & {
   'render:slots': [slots: Area[]];
   'render:figure': [figure: FigureType];
   'render:layout': [layout: LayoutType];
-}
+};
 
 type FigureRenderOptionsType = {
   figure: FigureType;
@@ -47,8 +51,8 @@ type FigureRenderOptionsType = {
 
 async function renderFigureWithVega(
   doc: PDFReport,
-  options: FigureRenderOptionsType,
-) {
+  options: FigureRenderOptionsType
+): Promise<void> {
   if (options.debug) {
     drawAreaRef(doc.pdf, options.slot);
   }
@@ -59,7 +63,10 @@ async function renderFigureWithVega(
 
   let order;
   if (options.figure.params.order !== false) {
-    order = options.figure.params.order === true ? 'desc' : options.figure.params.order;
+    order =
+      options.figure.params.order === true
+        ? 'desc'
+        : options.figure.params.order;
   }
 
   await renderFigure({
@@ -88,7 +95,7 @@ type LayoutRenderOptionsType = {
 async function renderLayoutWithVega(
   doc: PDFReport,
   options: LayoutRenderOptionsType,
-  events: EventEmitter<RenderEventMap>,
+  events: EventEmitter<RenderEventMap>
 ) {
   const { figures } = options.layout;
   // Limit number of figures to the number of possible slots
@@ -101,10 +108,11 @@ async function renderLayoutWithVega(
       figureIndex,
       options.grid,
       options.viewport,
-      options.margin,
+      options.margin
     );
 
     try {
+      // oxlint-disable-next-line no-await-in-loop
       await renderFigureWithVega(doc, {
         ...options,
         figure,
@@ -151,17 +159,19 @@ export type VegaRenderOptionsType = {
  */
 export async function renderPdfWithVega(
   options: VegaRenderOptionsType,
-  events = new EventEmitter<RenderEventMap>(),
+  events = new EventEmitter<RenderEventMap>()
 ): Promise<PDFResult> {
   const colorMap = new Map<string, string>();
 
   const doc = await createPDF(options.doc);
 
   /**
-     * Usage space in page
-     */
+   * Usage space in page
+   */
   const viewport: Area = {
+    // oxlint-disable-next-line id-length
     x: doc.margin.left,
+    // oxlint-disable-next-line id-length
     y: doc.offset.top,
     width: doc.width - doc.margin.left - doc.margin.right,
     height: doc.height - doc.offset.top - doc.offset.bottom,
@@ -172,19 +182,25 @@ export async function renderPdfWithVega(
   };
 
   /**
-     * Figures slots
-     */
+   * Figures slots
+   */
   const slots = generateSlots(viewport, options.grid, slotMargin);
   events.emit('render:slots', slots);
 
-  for (let layoutIndex = 0; layoutIndex < options.layouts.length; layoutIndex += 1) {
+  for (
+    let layoutIndex = 0;
+    layoutIndex < options.layouts.length;
+    layoutIndex += 1
+  ) {
     const layout = options.layouts[layoutIndex];
 
     if (layoutIndex > 0) {
+      // oxlint-disable-next-line no-await-in-loop
       await doc.addPage();
     }
 
     try {
+      // oxlint-disable-next-line no-await-in-loop
       await renderLayoutWithVega(
         doc,
         {
@@ -197,7 +213,7 @@ export async function renderPdfWithVega(
           colorMap,
           recurrence: options.recurrence,
         },
-        events,
+        events
       );
     } catch (err) {
       if (err instanceof Error) {

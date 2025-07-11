@@ -7,22 +7,33 @@ import config from '~/lib/config';
 import authPlugin from '~/plugins/auth';
 import { Access } from '~/models/access';
 
-import * as responses from '~/routes/v2/responses';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+} from '~/routes/v2/responses';
 
 import { buildPaginatedResponse } from '~/models/pagination';
-import { PaginationQuery, PaginationResponse } from '~/models/pagination/types';
+import {
+  PaginationQuery,
+  zPaginationResponse,
+} from '~/models/pagination/types';
 
 import * as templates from '~/models/templates';
-import { Template, InputTemplate, TemplateQueryFilters } from '~/models/templates/types';
+import {
+  Template,
+  InputTemplate,
+  TemplateQueryFilters,
+} from '~/models/templates/types';
 
 import { NotFoundError } from '~/models/errors';
 import { appLogger } from '~/lib/logger';
 
 const SpecificTemplateParams = z.object({
-  id: z.string().min(1)
-    .describe('ID of the template'),
+  id: z.string().min(1).describe('ID of the template'),
 });
 
+// oxlint-disable-next-line max-lines-per-function, require-await
 const router: FastifyPluginAsyncZod = async (fastify) => {
   await fastify.register(authPlugin);
 
@@ -34,14 +45,16 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['templates'],
       querystring: PaginationQuery.and(TemplateQueryFilters),
       response: {
-        [StatusCodes.OK]: PaginationResponse(
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zPaginationResponse(
           Template.omit({ body: true }),
-          z.object({ default: z.string() }),
+          z.object({ default: z.string() })
         ),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
     config: {
@@ -50,25 +63,17 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         access: Access.READ_WRITE,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       // Extract pagination and filters from query
-      const {
+      const { page, count, sort, order, ...filters } = request.query;
+
+      const content = await templates.getAllTemplates(filters, {
         page,
         count,
         sort,
         order,
-        ...filters
-      } = request.query;
-
-      const content = await templates.getAllTemplates(
-        filters,
-        {
-          page,
-          count,
-          sort,
-          order,
-        },
-      );
+      });
 
       return buildPaginatedResponse(
         content,
@@ -78,7 +83,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           total: await templates.countTemplates(filters),
           count: content.length,
         },
-        reply,
+        reply
       );
     },
   });
@@ -91,11 +96,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['templates'],
       body: InputTemplate,
       response: {
-        [StatusCodes.CREATED]: responses.SuccessResponse(Template),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.CREATED]: zSuccessResponse(Template),
       },
     },
     config: {
@@ -103,11 +110,12 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAdmin: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const content = await templates.createTemplate(request.body);
 
       reply.status(StatusCodes.CREATED);
-      return responses.buildSuccessResponse(content, reply);
+      return buildSuccessResponse(content, reply);
     },
   });
 
@@ -119,12 +127,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['templates'],
       params: SpecificTemplateParams,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(Template),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(Template),
       },
     },
     config: {
@@ -133,6 +143,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         access: Access.READ,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const content = await templates.getTemplate(request.params.id);
 
@@ -140,7 +151,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         throw new NotFoundError(`Template ${request.params.id} not found`);
       }
 
-      return responses.buildSuccessResponse(content, reply);
+      return buildSuccessResponse(content, reply);
     },
   });
 
@@ -153,11 +164,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       params: SpecificTemplateParams,
       body: InputTemplate,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(Template),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(Template),
       },
     },
     config: {
@@ -165,18 +179,25 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAdmin: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const doesExists = await templates.doesTemplateExist(request.params.id);
       appLogger.debug(request.params.id);
 
       let template;
       if (doesExists) {
-        template = await templates.editTemplate(request.params.id, request.body);
+        template = await templates.editTemplate(
+          request.params.id,
+          request.body
+        );
       } else {
-        template = await templates.createTemplate({ ...request.body, id: request.params.id });
+        template = await templates.createTemplate({
+          ...request.body,
+          id: request.params.id,
+        });
       }
 
-      return responses.buildSuccessResponse(template, reply);
+      return buildSuccessResponse(template, reply);
     },
   });
 
@@ -188,11 +209,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['templates'],
       params: SpecificTemplateParams,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(z.object({ deleted: z.boolean() })),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(z.object({ deleted: z.boolean() })),
       },
     },
     config: {
@@ -200,15 +223,17 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAdmin: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const doesExists = await templates.doesTemplateExist(request.params.id);
       if (doesExists) {
         await templates.deleteTemplate(request.params.id);
       }
 
-      return responses.buildSuccessResponse({ deleted: doesExists }, reply);
+      return buildSuccessResponse({ deleted: doesExists }, reply);
     },
   });
 };
 
+// oxlint-disable-next-line no-default-export
 export default router;

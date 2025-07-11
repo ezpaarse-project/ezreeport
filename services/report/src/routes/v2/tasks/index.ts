@@ -3,12 +3,23 @@ import { StatusCodes } from 'http-status-codes';
 
 import { z } from '@ezreeport/models/lib/zod';
 
-import authPlugin, { requireAllowedNamespace, restrictNamespaces } from '~/plugins/auth';
+import authPlugin, {
+  requireAllowedNamespace,
+  restrictNamespaces,
+} from '~/plugins/auth';
 import { Access } from '~/models/access';
 
-import * as responses from '~/routes/v2/responses';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+} from '~/routes/v2/responses';
+
 import { buildPaginatedResponse } from '~/models/pagination';
-import { PaginationQuery, PaginationResponse } from '~/models/pagination/types';
+import {
+  PaginationQuery,
+  zPaginationResponse,
+} from '~/models/pagination/types';
 
 import * as tasks from '~/models/tasks';
 import {
@@ -22,10 +33,10 @@ import { createActivity } from '~/models/task-activity';
 import { ConflictError, NotFoundError } from '~/models/errors';
 
 const SpecificTaskParams = z.object({
-  id: z.string().min(1)
-    .describe('ID of the task'),
+  id: z.string().min(1).describe('ID of the task'),
 });
 
+// oxlint-disable-next-line max-lines-per-function, require-await
 const router: FastifyPluginAsyncZod = async (fastify) => {
   await fastify.register(authPlugin);
 
@@ -37,13 +48,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['tasks'],
       querystring: PaginationQuery.and(TaskQueryFilters).and(TaskQueryInclude),
       response: {
-        [StatusCodes.OK]: PaginationResponse(
-          Task.omit({ template: true }),
-        ),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zPaginationResponse(Task.omit({ template: true })),
       },
     },
     config: {
@@ -53,32 +64,25 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     preHandler: [
-      async (request) => {
-        const restrictedIds = await restrictNamespaces(request, request.query.namespaceId);
+      async (request): Promise<void> => {
+        const restrictedIds = await restrictNamespaces(
+          request,
+          request.query.namespaceId
+        );
         request.query.namespaceId = restrictedIds;
       },
     ],
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       // Extract pagination and filters from query
-      const {
+      const { page, count, sort, order, include, ...filters } = request.query;
+
+      const content = await tasks.getAllTasks(filters, include, {
         page,
         count,
         sort,
         order,
-        include,
-        ...filters
-      } = request.query;
-
-      const content = await tasks.getAllTasks(
-        filters,
-        include,
-        {
-          page,
-          count,
-          sort,
-          order,
-        },
-      );
+      });
 
       return buildPaginatedResponse(
         content,
@@ -87,7 +91,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           total: await tasks.countTasks(filters),
           count: content.length,
         },
-        reply,
+        reply
       );
     },
   });
@@ -100,14 +104,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['tasks'],
       body: InputTask,
       response: {
-        ...responses.describeErrors([
+        ...describeErrors([
           StatusCodes.BAD_REQUEST,
           StatusCodes.UNAUTHORIZED,
           StatusCodes.FORBIDDEN,
           StatusCodes.CONFLICT,
           StatusCodes.INTERNAL_SERVER_ERROR,
         ]),
-        [StatusCodes.CREATED]: responses.SuccessResponse(Task),
+        [StatusCodes.CREATED]: zSuccessResponse(Task),
       },
     },
     config: {
@@ -117,9 +121,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     preHandler: [
-      async (request) => requireAllowedNamespace(request, request.body.namespaceId),
+      (request): Promise<void> =>
+        requireAllowedNamespace(request, request.body.namespaceId),
       // Check if similar task already exists
-      async (request) => {
+      async (request): Promise<void> => {
         // If filters are provided, trust user
         if (request.body.template.filters) {
           return;
@@ -129,7 +134,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           request.body.namespaceId,
           request.body.recurrence,
           request.body.extendedId,
-          request.body.template.index,
+          request.body.template.index
         );
 
         if (similarTaskExists) {
@@ -137,6 +142,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         }
       },
     ],
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const content = await tasks.createTask(request.body);
 
@@ -149,7 +155,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       });
 
       reply.status(StatusCodes.CREATED);
-      return responses.buildSuccessResponse(content, reply);
+      return buildSuccessResponse(content, reply);
     },
   });
 
@@ -162,12 +168,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       params: SpecificTaskParams,
       querystring: TaskQueryInclude,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(Task),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(Task),
       },
     },
     config: {
@@ -176,14 +184,18 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         access: Access.READ,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
-      const content = await tasks.getTask(request.params.id, request.query.include);
+      const content = await tasks.getTask(
+        request.params.id,
+        request.query.include
+      );
 
       if (!content) {
         throw new NotFoundError(`Task ${request.params.id} not found`);
       }
 
-      return responses.buildSuccessResponse(content, reply);
+      return buildSuccessResponse(content, reply);
     },
   });
 
@@ -196,11 +208,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       params: SpecificTaskParams,
       body: InputTask,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(Task),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(Task),
       },
     },
     config: {
@@ -210,12 +225,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     preHandler: [
-      async (request) => requireAllowedNamespace(request, request.body.namespaceId),
+      (request): Promise<void> =>
+        requireAllowedNamespace(request, request.body.namespaceId),
       async (request) => {
         const task = await tasks.getTask(request.params.id);
         return requireAllowedNamespace(request, task?.namespaceId ?? '');
       },
     ],
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const doesTaskExists = await tasks.doesTaskExist(request.params.id);
 
@@ -225,9 +242,15 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       let activity;
       if (doesTaskExists) {
         task = await tasks.editTask(request.params.id, request.body);
-        activity = { type: 'edition', message: `Tâche modifiée par ${username}` };
+        activity = {
+          type: 'edition',
+          message: `Tâche modifiée par ${username}`,
+        };
       } else {
-        task = await tasks.createTask({ ...request.body, id: request.params.id });
+        task = await tasks.createTask({
+          ...request.body,
+          id: request.params.id,
+        });
         activity = { type: 'creation', message: `Tâche crée par ${username}` };
       }
 
@@ -237,7 +260,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         data: { user: username },
       });
 
-      return responses.buildSuccessResponse(task, reply);
+      return buildSuccessResponse(task, reply);
     },
   });
 
@@ -249,11 +272,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['tasks'],
       params: SpecificTaskParams,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(z.object({ deleted: z.boolean() })),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(z.object({ deleted: z.boolean() })),
       },
     },
     config: {
@@ -263,18 +288,19 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     preHandler: [
-      async (request) => {
+      async (request): Promise<void> => {
         const task = await tasks.getTask(request.params.id);
         return requireAllowedNamespace(request, task?.namespaceId ?? '');
       },
     ],
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const doesTaskExists = await tasks.doesTaskExist(request.params.id);
       if (doesTaskExists) {
         await tasks.deleteTask(request.params.id);
       }
 
-      return responses.buildSuccessResponse({ deleted: !!doesTaskExists }, reply);
+      return buildSuccessResponse({ deleted: !!doesTaskExists }, reply);
     },
   });
 
@@ -286,12 +312,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['tasks'],
       params: SpecificTaskParams,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(Task),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.CONFLICT]: responses.schemas[StatusCodes.CONFLICT],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(Task),
       },
     },
     config: {
@@ -301,11 +329,12 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     preHandler: [
-      async (request) => {
+      async (request): Promise<void> => {
         const task = await tasks.getTask(request.params.id);
         return requireAllowedNamespace(request, task?.namespaceId ?? '');
       },
     ],
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const doesTaskExists = await tasks.doesTaskExist(request.params.id);
       if (!doesTaskExists) {
@@ -313,7 +342,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       }
 
       const { username = 'unknown' } = request.user ?? {};
-      const activity = { type: 'edition', message: `Tâche déliée par ${username}` };
+      const activity = {
+        type: 'edition',
+        message: `Tâche déliée par ${username}`,
+      };
 
       const task = await tasks.unlinkTaskFromTemplate(request.params.id);
 
@@ -323,9 +355,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         data: { user: username },
       });
 
-      return responses.buildSuccessResponse(task, reply);
+      return buildSuccessResponse(task, reply);
     },
   });
 };
 
+// oxlint-disable-next-line no-default-exports
 export default router;

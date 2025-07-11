@@ -6,15 +6,15 @@ import { mkdirSync } from 'node:fs';
 export type Logger = pino.Logger;
 export type Level = pino.Level;
 export type LoggerOptions = Omit<pino.LoggerOptions, 'transports'> & {
-  name: string,
-  ignore: string[],
-  dir?: string,
-  pretty?: boolean,
+  name: string;
+  ignore: string[];
+  dir?: string;
+  pretty?: boolean;
 };
 
-export function isPrettierInstalled(r: NodeRequire): boolean {
+export function isPrettierInstalled(req: NodeJS.Require): boolean {
   try {
-    return !!r.resolve('pino-pretty');
+    return !!req.resolve('pino-pretty');
   } catch {
     return false;
   }
@@ -37,10 +37,8 @@ function getStdOutTarget(options: LoggerOptions): pino.TransportTargetOptions {
   };
 }
 
-export function createLogger(options: LoggerOptions) {
-  const targets: pino.TransportTargetOptions[] = [
-    getStdOutTarget(options),
-  ];
+export function createLogger(options: LoggerOptions): Logger {
+  const targets: pino.TransportTargetOptions[] = [getStdOutTarget(options)];
 
   // If needed add logs into a file
   if (options.dir) {

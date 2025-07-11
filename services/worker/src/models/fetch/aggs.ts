@@ -1,11 +1,18 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { merge } from 'lodash';
 
-import { FigureAgg, type FigureAggType, type FigureType } from '@ezreeport/models/templates';
+import {
+  FigureAgg,
+  type FigureAggType,
+  type FigureType,
+} from '@ezreeport/models/templates';
 
 import TemplateError from '~/models/generation/errors';
 
-type EsAggregation = { [name: string]: ElasticTypes.AggregationsAggregationContainer };
+type EsAggregation = Record<
+  string,
+  ElasticTypes.AggregationsAggregationContainer
+>;
 
 /**
  * Transform aggregation to ElasticSearch's format
@@ -23,7 +30,7 @@ function transformEsAgg(
   name: string,
   dateField: string,
   calendarInterval: string,
-  subAggs?: EsAggregation,
+  subAggs?: EsAggregation
 ): EsAggregation {
   if ('raw' in agg) {
     return {
@@ -92,17 +99,25 @@ function assertFigureAgg(aggregation: unknown): aggregation is FigureAggType {
  * @returns One big aggregation
  */
 function mergeExtractedEsBuckets(
-  extracted: { buckets: FigureAggType[], metric: FigureAggType | undefined },
+  extracted: { buckets: FigureAggType[]; metric: FigureAggType | undefined },
   dateField: string,
   calendarInterval: string,
-  order: boolean | 'asc' | 'desc',
+  order: boolean | 'asc' | 'desc'
 ): (EsAggregation | undefined)[] {
-  const metric = extracted.metric ? transformEsAgg(extracted.metric, 'metric', dateField, calendarInterval) : undefined;
+  const metric = extracted.metric
+    ? transformEsAgg(extracted.metric, 'metric', dateField, calendarInterval)
+    : undefined;
 
   const aggregations: EsAggregation | undefined = extracted.buckets.reduce(
-    (subAggregations, bucket, i): EsAggregation => {
-      const name = `${extracted.buckets.length - i}`; // Similar to how data is fetched from ES by Kibana
-      let aggregation = transformEsAgg(bucket, name, dateField, calendarInterval, subAggregations);
+    (subAggregations, bucket, index): EsAggregation => {
+      const name = `${extracted.buckets.length - index}`; // Similar to how data is fetched from ES by Kibana
+      let aggregation = transformEsAgg(
+        bucket,
+        name,
+        dateField,
+        calendarInterval,
+        subAggregations
+      );
 
       // Add metric to all bucket (if it exists)
       if (metric) {
@@ -114,18 +129,21 @@ function mergeExtractedEsBuckets(
 
       // Add order cause it needs to be on the same level as `field`
       if (!('raw' in bucket) && order !== false) {
-        merge(aggregation, { [name]: { [bucket.type]: { order: { _count: order === 'asc' ? 'asc' : 'desc' } } } });
+        merge(aggregation, {
+          [name]: {
+            [bucket.type]: {
+              order: { _count: order === 'asc' ? 'asc' : 'desc' },
+            },
+          },
+        });
       }
 
       return aggregation;
     },
-    metric,
+    metric
   );
 
-  return [
-    metric,
-    aggregations,
-  ];
+  return [metric, aggregations];
 }
 
 /**
@@ -140,13 +158,15 @@ function mergeExtractedEsBuckets(
 type ExtractEsAggregationsFnc = (
   figure: FigureType,
   dateField: string,
-  calendarInterval: string,
-) => {
-  aggregations: FigureAggType[],
-} | {
-  buckets: FigureAggType[],
-  metric: FigureAggType | undefined,
-};
+  calendarInterval: string
+) =>
+  | {
+      aggregations: FigureAggType[];
+    }
+  | {
+      buckets: FigureAggType[];
+      metric: FigureAggType | undefined;
+    };
 
 /**
  * Extract aggregations for metric figure
@@ -156,17 +176,17 @@ type ExtractEsAggregationsFnc = (
 const extractMetricsEsAggregations: ExtractEsAggregationsFnc = ({ params }) => {
   const labelsToFetchCount = new Set<string>();
 
+  // oxlint-disable-next-line no-explicit-any
   const aggregations: FigureAggType[] = (params.labels as any[])
-    .map(
-      (label) => {
-        const hasAggregation = assertFigureAgg(label.aggregation);
-        if (!hasAggregation) {
-          labelsToFetchCount.add(label.text);
-          return undefined;
-        }
-        return label.aggregation;
-      },
-    ).filter((aggregation) => !!aggregation);
+    .map((label) => {
+      const hasAggregation = assertFigureAgg(label.aggregation);
+      if (!hasAggregation) {
+        labelsToFetchCount.add(label.text);
+        return null;
+      }
+      return label.aggregation;
+    })
+    .filter((aggregation) => !!aggregation);
 
   return { aggregations };
 };
@@ -182,13 +202,16 @@ const extractTableEsAggregations: ExtractEsAggregationsFnc = ({ params }) => {
 
   for (const column of params.columns) {
     if (assertFigureAgg(column.aggregation)) {
-      if (!column.metric) {
-        buckets.unshift(column.aggregation);
-      } else {
+      if (column.metric) {
         if (metric) {
-          throw new TemplateError('More than one metric in table', 'MultipleMetricsError');
+          throw new TemplateError(
+            'More than one metric in table',
+            'MultipleMetricsError'
+          );
         }
         metric = column.aggregation;
+      } else {
+        buckets.unshift(column.aggregation);
       }
     }
   }
@@ -236,7 +259,7 @@ const extractOtherEsAggregations: ExtractEsAggregationsFnc = ({ params }) => {
 export function prepareEsAggregations(
   figure: FigureType,
   dateField: string,
-  calendarInterval: string,
+  calendarInterval: string
 ): EsAggregation {
   // Guess the function we'll be using
   let extractBuckets = extractOtherEsAggregations;
@@ -261,12 +284,12 @@ export function prepareEsAggregations(
       extracted,
       dateField,
       calendarInterval,
-      figure.params.order,
+      figure.params.order
     );
   } else {
     // If we have multiple aggregations, just transform them
-    aggregations = extracted.aggregations.map(
-      (agg, i) => transformEsAgg(agg, `${i + 1}`, dateField, calendarInterval),
+    aggregations = extracted.aggregations.map((agg, index) =>
+      transformEsAgg(agg, `${index + 1}`, dateField, calendarInterval)
     );
   }
 

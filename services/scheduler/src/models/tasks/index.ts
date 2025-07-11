@@ -42,11 +42,13 @@ export async function getTasksToGenerate(day: Date) {
 export async function editTaskAfterGeneration(
   id: string,
   lastRun?: Date,
-  enabled?: boolean,
+  enabled?: boolean
 ): Promise<TaskType> {
   let nextRun: Date | undefined;
   if (lastRun) {
-    const { recurrence } = await prisma.task.findUniqueOrThrow({ where: { id } });
+    const { recurrence } = await prisma.task.findUniqueOrThrow({
+      where: { id },
+    });
     nextRun = calcNextDateFromRecurrence(lastRun, recurrence);
   }
 

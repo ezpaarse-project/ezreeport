@@ -20,16 +20,16 @@ const accessValues: Record<Access, number> = {
 /**
  * Compare two access levels
  *
- * @param a First access level
- * @param b Second access level
+ * @param accessA First access level
+ * @param accessB Second access level
  *
  * @return `-1` if a < b, `0` if a === b, `1` if a > b
  */
-function compareAccess(a: Access, b: Access) {
-  if (accessValues[a] === accessValues[b]) {
+function compareAccess(accessA: Access, accessB: Access): -1 | 0 | 1 {
+  if (accessValues[accessA] === accessValues[accessB]) {
     return 0;
   }
-  return accessValues[a] < accessValues[b] ? -1 : 1;
+  return accessValues[accessA] < accessValues[accessB] ? -1 : 1;
 }
 
 /**
@@ -48,7 +48,7 @@ const adminPerRoute = new Map<string, boolean>();
  * @param route Route name
  * @param access Access level
  */
-export function registerRouteWithAccess(route: string, access: Access) {
+export function registerRouteWithAccess(route: string, access: Access): void {
   logger.debug({
     route,
     access,
@@ -63,7 +63,7 @@ export function registerRouteWithAccess(route: string, access: Access) {
  * @param route Route name
  * @param isAdminRequired Is admin required
  */
-export function registerRoute(route: string, isAdminRequired: boolean) {
+export function registerRoute(route: string, isAdminRequired: boolean): void {
   logger.debug({
     route,
     isAdminRequired,
@@ -77,10 +77,14 @@ export function registerRoute(route: string, isAdminRequired: boolean) {
  *
  * @returns Auth token
  */
-export async function generateToken() {
+export function generateToken(): Promise<string> {
+  // oxlint-disable-next-line promise/avoid-new
   return new Promise<string>((resolve, reject) => {
+    // oxlint-disable-next-line promise/prefer-await-to-callbacks
     randomBytes(124, (err, buf) => {
-      if (err) reject(err);
+      if (err) {
+        reject(err);
+      }
       resolve(buf.toString('base64'));
     });
   });
@@ -108,7 +112,7 @@ export async function getUserByToken(token: string): Promise<UserType | null> {
  */
 export async function getNamespacesOfUser(
   username: string,
-  access?: Access,
+  access?: Access
 ): Promise<NamespaceType[]> {
   const where: Prisma.MembershipWhereInput = {
     username,
@@ -133,11 +137,19 @@ export async function getNamespacesOfUser(
     },
   });
 
-  const namespacesMap = new Map(memberships.map(({ namespace }) => [namespace.id, namespace]));
+  const namespacesMap = new Map(
+    memberships.map(({ namespace }) => [namespace.id, namespace])
+  );
 
+  // oxlint-disable-next-line promise/prefer-await-to-then
   return Promise.all(
-    Array.from(namespacesMap.values())
-      .map((n) => ensureSchema(Namespace, n, () => `Failed to parse namespace ${n.id}`)),
+    Array.from(namespacesMap.values()).map((namespace) =>
+      ensureSchema(
+        Namespace,
+        namespace,
+        () => `Failed to parse namespace ${namespace.id}`
+      )
+    )
   );
 }
 
@@ -149,8 +161,15 @@ export async function getNamespacesOfUser(
 export async function getNamespacesOfAdmin(): Promise<NamespaceType[]> {
   const namespaces = await prisma.namespace.findMany();
 
+  // oxlint-disable-next-line promise/prefer-await-to-then
   return Promise.all(
-    namespaces.map((n) => ensureSchema(Namespace, n, () => `Failed to parse namespace ${n.id}`)),
+    namespaces.map((namespace) =>
+      ensureSchema(
+        Namespace,
+        namespace,
+        () => `Failed to parse namespace ${namespace.id}`
+      )
+    )
   );
 }
 
@@ -161,14 +180,16 @@ export async function getNamespacesOfAdmin(): Promise<NamespaceType[]> {
  *
  * @returns Routes & if user is allowed
  */
-export async function getRoutesOfUser(username: string) {
+export async function getRoutesOfUser(
+  username: string
+): Promise<Map<string, boolean>> {
   const user = await prisma.user.findUniqueOrThrow({ where: { username } });
 
   const routes = new Map<string, boolean>(
     Array.from(adminPerRoute).map(([route, adminRequired]) => [
       route,
       user.isAdmin >= adminRequired,
-    ]),
+    ])
   );
 
   return routes;
@@ -181,41 +202,40 @@ export async function getRoutesOfUser(username: string) {
  *
  * @returns Routes & if user is allowed
  */
-export async function getRoutesPerNamespaceOfUser(username: string) {
+export async function getRoutesPerNamespaceOfUser(
+  username: string
+): Promise<Map<string, Map<string, boolean>>> {
   const memberships = await prisma.membership.findMany({
     where: {
       username,
     },
   });
 
-  const routesPerNamespace = new Map(
+  const routesPerNamespace = new Map<string, Map<string, boolean>>(
     memberships.map(({ namespaceId, access }) => [
       namespaceId,
-      new Map<string, boolean>(
+      new Map(
         Array.from(accessPerRoute).map(([route, minAccess]) => [
           route,
           compareAccess(access, minAccess) >= 0,
-        ]),
+        ])
       ),
-    ]),
+    ])
   );
 
   return routesPerNamespace;
 }
 
-export async function getRoutesPerNamespaceOfAdmin() {
+export async function getRoutesPerNamespaceOfAdmin(): Promise<
+  Map<string, Map<string, boolean>>
+> {
   const namespaces = await prisma.namespace.findMany();
 
-  const routesPerNamespace = new Map(
+  const routesPerNamespace = new Map<string, Map<string, boolean>>(
     namespaces.map(({ id }) => [
       id,
-      new Map<string, boolean>(
-        Array.from(accessPerRoute).map(([route]) => [
-          route,
-          true,
-        ]),
-      ),
-    ]),
+      new Map(Array.from(accessPerRoute).map(([route]) => [route, true])),
+    ])
   );
 
   return routesPerNamespace;

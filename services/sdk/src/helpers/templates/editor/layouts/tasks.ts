@@ -9,12 +9,12 @@ import {
 } from './templates';
 
 export interface TaskLayoutHelper extends LayoutHelper {
-  at: number
+  at: number;
 }
 
 export function createTaskLayoutHelper(
   figures: AnyFigureHelper[],
-  at: number,
+  at: number
 ): TaskLayoutHelper {
   const layout = createLayoutHelper(figures);
   return {
@@ -23,12 +23,16 @@ export function createTaskLayoutHelper(
   };
 }
 
-export function createTaskLayoutHelperFrom(layout: TaskBodyLayout): TaskLayoutHelper {
+export function createTaskLayoutHelperFrom(
+  layout: TaskBodyLayout
+): TaskLayoutHelper {
   const base = createLayoutHelperFrom(layout);
   return createTaskLayoutHelper(base.figures, layout.at);
 }
 
-export function taskLayoutHelperToJSON(layout: TaskLayoutHelper): TaskBodyLayout {
+export function taskLayoutHelperToJSON(
+  layout: TaskLayoutHelper
+): TaskBodyLayout {
   return {
     ...layoutHelperToJSON(layout),
     at: layout.at,

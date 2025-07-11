@@ -12,7 +12,9 @@ import type { FilterType } from '@ezreeport/models/templates';
  *
  * @returns Filter in ElasticSearch format
  */
-function prepareEsFilter(filter: FilterType): ElasticTypes.QueryDslQueryContainer {
+function prepareEsFilter(
+  filter: FilterType
+): ElasticTypes.QueryDslQueryContainer {
   if ('raw' in filter) {
     return filter.raw;
   }
@@ -40,7 +42,7 @@ function prepareEsFilter(filter: FilterType): ElasticTypes.QueryDslQueryContaine
 export function prepareEsQuery(
   filters: FilterType[],
   dateField: string,
-  period: Interval,
+  period: Interval
 ): ElasticTypes.QueryDslQueryContainer {
   const must: ElasticTypes.QueryDslQueryContainer[] = [];
   const mustNot: ElasticTypes.QueryDslQueryContainer[] = [];

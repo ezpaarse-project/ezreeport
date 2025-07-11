@@ -8,28 +8,31 @@ import type { PDFReport } from '~/models/render/pdf/types';
 import RenderError from '~/models/render/errors';
 
 type MetricLabel = {
-  text: string,
-  data?: string, // Will be linked at some point
+  text: string;
+  data?: string; // Will be linked at some point
   format?: {
-    type: 'date' | 'number',
-    params?: string[]
-  }
+    type: 'date' | 'number';
+    params?: string[];
+  };
 };
 
 type MetricParams = {
   // Auto fields
-  start: Position,
-  width: number,
-  height: number,
+  start: Position;
+  width: number;
+  height: number;
   // Figure specific
-  labels?: MetricLabel[]
+  labels?: MetricLabel[];
 };
 
-export type InputMetricParams = Omit<MetricParams, 'width' | 'height' | 'start'>;
+export type InputMetricParams = Omit<
+  MetricParams,
+  'width' | 'height' | 'start'
+>;
 
 type MetricDefault = {
-  font: Font,
-  fontSize: number
+  font: Font;
+  fontSize: number;
 };
 
 /**
@@ -42,17 +45,25 @@ type MetricDefault = {
  */
 const formatDate = (
   origValue: FetchResultItem['value'],
-  params: string[],
+  params: string[]
 ): string => {
   let value = origValue;
   if (typeof value === 'boolean') {
-    throw new RenderError('Expected number / string, got Boolean', 'DataFormatError');
+    throw new RenderError(
+      'Expected number / string, got Boolean',
+      'DataFormatError'
+    );
   }
 
   if (typeof value === 'string') {
-    const d = parseISO(value);
-    if (!isValid(d)) throw new RenderError(`Date is not in ISO format: ${origValue}`, 'DataFormatError');
-    value = d.getTime();
+    const date = parseISO(value);
+    if (!isValid(date)) {
+      throw new RenderError(
+        `Date is not in ISO format: ${origValue}`,
+        'DataFormatError'
+      );
+    }
+    value = date.getTime();
   }
 
   return format(value, params[0] || 'dd/MM/yyyy');
@@ -68,7 +79,7 @@ const formatDate = (
  */
 const formatNumber = (
   origValue: FetchResultItem['value'],
-  params: string[],
+  params: string[]
 ): string => {
   let value = origValue;
   if (typeof value === 'string') {
@@ -80,7 +91,10 @@ const formatNumber = (
   }
 
   if (Number.isNaN(value)) {
-    throw new RenderError(`Cannot parse value into a number: ${origValue}`, 'DataFormatError');
+    throw new RenderError(
+      `Cannot parse value into a number: ${origValue}`,
+      'DataFormatError'
+    );
   }
 
   const locale = {
@@ -93,9 +107,7 @@ const formatNumber = (
     case 'fr-FR':
       locale.identifier = 'en-US';
       locale.params.useGrouping = true;
-      locale.cb = (val) => val
-        .replace(/,/g, ' ')
-        .replace(/\./g, ',');
+      locale.cb = (val) => val.replaceAll(/,/g, ' ').replaceAll(/\./g, ',');
       break;
 
     default:
@@ -110,7 +122,7 @@ const formatNumber = (
 function formatValue(label: MetricLabel, data: FetchResultItem) {
   let { value } = data;
   if (value == null) {
-    return undefined;
+    return;
   }
 
   try {
@@ -151,9 +163,10 @@ function formatValue(label: MetricLabel, data: FetchResultItem) {
  *
  * @returns The pdf
  */
-const valueStyle = (pdf: PDFReport['pdf'], def: MetricDefault): PDFReport['pdf'] => pdf
-  .setFontSize(21)
-  .setFont(def.font.fontName, 'bold');
+const valueStyle = (
+  pdf: PDFReport['pdf'],
+  def: MetricDefault
+): PDFReport['pdf'] => pdf.setFontSize(21).setFont(def.font.fontName, 'bold');
 
 /**
  * Apply style for printing key
@@ -163,9 +176,11 @@ const valueStyle = (pdf: PDFReport['pdf'], def: MetricDefault): PDFReport['pdf']
  *
  * @returns The pdf
  */
-const keyStyle = (pdf: PDFReport['pdf'], def: MetricDefault): PDFReport['pdf'] => pdf
-  .setFontSize(14)
-  .setFont(def.font.fontName, def.font.fontStyle);
+const keyStyle = (
+  pdf: PDFReport['pdf'],
+  def: MetricDefault
+): PDFReport['pdf'] =>
+  pdf.setFontSize(14).setFont(def.font.fontName, def.font.fontStyle);
 
 /**
  * Add metric figure to PDF
@@ -177,7 +192,7 @@ const keyStyle = (pdf: PDFReport['pdf'], def: MetricDefault): PDFReport['pdf'] =
 export const addMetricToPDF = (
   doc: PDFReport,
   data: FetchResultItem[],
-  params: MetricParams,
+  params: MetricParams
 ) => {
   const def: MetricDefault = {
     font: doc.pdf.getFont(),
@@ -187,43 +202,51 @@ export const addMetricToPDF = (
   if ((params.labels?.length ?? 0) <= 0) {
     throw new TemplateError(
       'Metric figure must have at least one label',
-      'MissingParameterError',
+      'MissingParameterError'
     );
   }
 
+  // oxlint-disable-next-line id-length
   const margin = { x: doc.margin.left, y: doc.margin.top, key: 3 };
   const cell: Size = { width: 0, height: 0 };
   // Calc size of each text + size of cell
-  const metrics = (params.labels ?? []).map((m) => {
-    const metric = m;
-    const item = data.find((d) => d.key === metric.text);
-    if (!item) {
-      return undefined;
-    }
+  const metrics = (params.labels ?? [])
+    .map((met) => {
+      const metric = met;
+      const item = data.find((item) => item.key === metric.text);
+      if (!item) {
+        return null;
+      }
 
-    const key = `${metric.text}`;
-    const value = formatValue(metric, item);
-    if (!value) {
-      return undefined;
-    }
+      const key = `${metric.text}`;
+      const value = formatValue(metric, item);
+      if (!value) {
+        return null;
+      }
 
-    const sizes = {
-      key: keyStyle(doc.pdf, def).getTextDimensions(key),
-      value: valueStyle(doc.pdf, def).getTextDimensions(value),
-    };
-    cell.width = Math.max(cell.width, Math.max(sizes.key.w, sizes.value.w));
-    cell.height = Math.max(cell.height, sizes.key.h + sizes.value.h + margin.key);
+      const sizes = {
+        key: keyStyle(doc.pdf, def).getTextDimensions(key),
+        value: valueStyle(doc.pdf, def).getTextDimensions(value),
+      };
+      cell.width = Math.max(cell.width, Math.max(sizes.key.w, sizes.value.w));
+      cell.height = Math.max(
+        cell.height,
+        sizes.key.h + sizes.value.h + margin.key
+      );
 
-    return {
-      key,
-      value,
-      sizes,
-    };
-  }).filter((m) => !!m);
+      return {
+        key,
+        value,
+        sizes,
+      };
+    })
+    .filter((item) => !!item);
 
   const slots: Area[] = [];
   const cursor: Position = {
+    // oxlint-disable-next-line id-length
     x: 0,
+    // oxlint-disable-next-line id-length
     y: 0,
   };
 
@@ -236,57 +259,68 @@ export const addMetricToPDF = (
   counts.rows = Math.ceil(metrics.length / counts.cols);
 
   for (let row = 0; row < counts.rows; row += 1) {
+    // oxlint-disable-next-line id-length
     cursor.x = 0;
 
     for (let col = 0; col < counts.cols; col += 1) {
       slots.push({
         ...cell,
+        // oxlint-disable-next-line id-length
         x: cursor.x,
+        // oxlint-disable-next-line id-length
         y: cursor.y,
       });
 
+      // oxlint-disable-next-line id-length
       cursor.x += cell.width + margin.x;
     }
 
+    // oxlint-disable-next-line id-length
     cursor.y += cell.height + margin.y;
   }
 
   const totalSize: Size = {
-    width: (counts.cols * cell.width) + ((counts.cols - 1) * margin.x),
-    height: (counts.rows * cell.height) + ((counts.rows - 1) * margin.y),
+    width: counts.cols * cell.width + (counts.cols - 1) * margin.x,
+    height: counts.rows * cell.height + (counts.rows - 1) * margin.y,
   };
 
   const offset: Position = {
-    x: params.start.x + (params.width / 2) - (totalSize.width / 2),
-    y: params.start.y + (params.height / 2) - (totalSize.height / 2),
+    // oxlint-disable-next-line id-length
+    x: params.start.x + params.width / 2 - totalSize.width / 2,
+    // oxlint-disable-next-line id-length
+    y: params.start.y + params.height / 2 - totalSize.height / 2,
   };
 
   // Print data
-  for (let i = 0; i < metrics.length; i += 1) {
-    const { key, value, sizes } = metrics[i];
-    if (!slots[i]) {
-      throw new RenderError(`slot ${i} not found`, 'SlotError');
+  for (let index = 0; index < metrics.length; index += 1) {
+    const { key, value, sizes } = metrics[index];
+    if (!slots[index]) {
+      throw new RenderError(`slot ${index} not found`, 'SlotError');
     }
 
     const slot = {
-      ...slots[i],
-      x: offset.x + slots[i].x,
-      y: offset.y + slots[i].y,
+      ...slots[index],
+      // oxlint-disable-next-line id-length
+      x: offset.x + slots[index].x,
+      // oxlint-disable-next-line id-length
+      y: offset.y + slots[index].y,
     };
 
-    let y = slot.y + sizes.value.h - 5;
+    let yPos = slot.y + sizes.value.h - 5;
     valueStyle(doc.pdf, def).text(
       `${value}`,
       slot.x + Math.round(slot.width / 2),
-      y,
-      { align: 'center' },
+      yPos,
+      { align: 'center' }
     );
-    y += sizes.key.h + margin.key;
+    yPos += sizes.key.h + margin.key;
     keyStyle(doc.pdf, def).text(
       key,
       slot.x + Math.round(slot.width / 2),
-      y,
-      { align: 'center' },
+      yPos,
+      {
+        align: 'center',
+      }
     );
   }
 

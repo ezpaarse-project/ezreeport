@@ -10,7 +10,7 @@ const logger = appLogger.child(
       paths: ['config.password'],
       censor: (value) => value && ''.padStart(`${value}`.length, '*'),
     },
-  },
+  }
 );
 
 const { rabbitmq: rmqConfig } = config;
@@ -27,15 +27,15 @@ const connectOpts: rabbitmq.Options.Connect = {
 /**
  * Setup a connection to RabbitMQ and run a callback
  *
- * Handles automatic reconnection and graceful shutdown
+ * Handles automatic re-connection and graceful shutdown
  *
- * @param callback Init function where rabbitmq connection is passed,
- * will be called on each reconnection
+ * @param setup Init function where rabbitmq connection is passed,
+ * will be called on each re-connection
  *
  * @returns When first callback resolves
  */
 export const useRabbitMQ = (
-  callback: (connection: rabbitmq.ChannelModel) => Promise<void>,
-) => setupRabbitMQ(connectOpts, callback, logger);
+  setup: (connection: rabbitmq.ChannelModel) => Promise<void>
+): Promise<void> => setupRabbitMQ(connectOpts, setup, logger);
 
 export default rabbitmq;

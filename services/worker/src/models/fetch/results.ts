@@ -10,17 +10,17 @@ export type FetchResultValue = string | number | boolean;
 
 type EsResponse = ElasticTypes.MsearchResponseItem<Record<string, unknown>>;
 type EsAggregationResult = Record<string, ElasticTypes.AggregationsAggregate>;
-type EsBucket = { key: FetchResultValue, [x: string]: unknown };
+type EsBucket = { key: FetchResultValue; [x: string]: unknown };
 
 /**
  * Item of data fetched
  */
 export type FetchResultItem = {
-  key: FetchResultValue,
-  keyAsString?: string,
-  value: FetchResultValue,
-  valueAsString?: string,
-  [x: string]: FetchResultValue | undefined,
+  key: FetchResultValue;
+  keyAsString?: string;
+  value: FetchResultValue;
+  valueAsString?: string;
+  [x: string]: FetchResultValue | undefined;
 };
 
 /**
@@ -29,27 +29,32 @@ export type FetchResultItem = {
  * @param response The raw ES repsponse
  */
 function checkEsErrors(
-  response: EsResponse,
-): asserts response is ElasticTypes.MsearchMultiSearchItem<Record<string, unknown>> {
+  response: EsResponse
+): asserts response is ElasticTypes.MsearchMultiSearchItem<
+  Record<string, unknown>
+> {
   // Checks any errors
   if ('error' in response) {
-    const reason = response.error.failed_shards?.[0]?.reason?.reason || response.error.reason;
+    const reason =
+      response.error.failed_shards?.[0]?.reason?.reason ||
+      response.error.reason;
     throw new FetchError(reason, 'ElasticError');
   }
 
   // Checks any shard errors
   if (response._shards.failures?.length) {
-    const reasons = response._shards.failures.map((err) => err.reason.reason).join(' ; ');
+    const reasons = response._shards.failures
+      .map((err) => err.reason.reason)
+      .join(' ; ');
     throw new FetchError(
       `An error occurred when fetching data : ${reasons}`,
-      'ShardError',
+      'ShardError'
     );
   }
 
   // Checks if there's data
   if (
-    response.hits.total
-    && typeof response.hits.total === 'object'
+    response.hits.total && typeof response.hits.total === 'object'
       ? response.hits.total.value === 0
       : response.hits.total === 0
   ) {
@@ -69,14 +74,14 @@ function checkEsErrors(
  *
  * @returns Array of ES buckets
  */
-function ensureEsBuckets(buckets: Record<string, Omit<EsBucket, 'key'>> | EsBucket[]): EsBucket[] {
+function ensureEsBuckets(
+  buckets: Record<string, Omit<EsBucket, 'key'>> | EsBucket[]
+): EsBucket[] {
   if (Array.isArray(buckets)) {
     return buckets;
   }
 
-  return Object.entries(buckets).map(
-    ([key, value]) => ({ key, ...value }),
-  );
+  return Object.entries(buckets).map(([key, value]) => ({ key, ...value }));
 }
 
 /**
@@ -85,31 +90,40 @@ function ensureEsBuckets(buckets: Record<string, Omit<EsBucket, 'key'>> | EsBuck
  * @param rawBuckets ES buckets
  * @param elements Array of elements (extracted from figure parameters)
  * @param getKeyName Function to get the key name
- * @param i Current level
+ * @param index Current level
  *
  * @returns Array of FetchResultItems
  */
 function flattenEsBuckets<Element extends Record<string, unknown>>(
+  // oxlint-disable-next-line no-explicit-any
   rawBuckets: any,
   elements: Element[],
   getKeyName: (el: Element) => string,
-  i = 1,
+  index = 1
 ): FetchResultItem[] {
   const current = elements[0];
   if (!current) {
     return [{ key: '', value: 0 }];
   }
   if (current.metric) {
-    return [{ key: '', value: current.aggregation ? rawBuckets.metric.value : rawBuckets.doc_count }];
+    return [
+      {
+        key: '',
+        value: current.aggregation
+          ? rawBuckets.metric.value
+          : rawBuckets.doc_count,
+      },
+    ];
   }
 
-  const aggregation = rawBuckets[`${i}`]; // See how data is fetched from ES
+  const aggregation = rawBuckets[`${index}`]; // See how data is fetched from ES
   if (!aggregation) {
     return [];
   }
 
   const data: FetchResultItem[] = [];
-  const buckets = 'buckets' in aggregation ? aggregation.buckets : [aggregation];
+  const buckets =
+    'buckets' in aggregation ? aggregation.buckets : [aggregation];
 
   for (const bucket of ensureEsBuckets(buckets)) {
     // Flattening next sub agg
@@ -117,12 +131,12 @@ function flattenEsBuckets<Element extends Record<string, unknown>>(
       bucket,
       elements.slice(1),
       getKeyName,
-      i + 1,
+      index + 1
     );
 
     // Merging current bucket value with cleaned + combinations
-    const bucketCombinations = subBuckets.flatMap((b) => ({
-      ...b,
+    const bucketCombinations = subBuckets.flatMap((buck) => ({
+      ...buck,
       key: bucket.key,
       [getKeyName(current)]: bucket.key,
     }));
@@ -141,7 +155,10 @@ function flattenEsBuckets<Element extends Record<string, unknown>>(
  *
  * @returns Sorted data
  */
-function sortData(data: FetchResultItem[], figure: FigureType): FetchResultItem[] {
+function sortData(
+  data: FetchResultItem[],
+  figure: FigureType
+): FetchResultItem[] {
   let order = figure.params.order as boolean | 'asc' | 'desc';
   if (order === false) {
     return data;
@@ -150,13 +167,13 @@ function sortData(data: FetchResultItem[], figure: FigureType): FetchResultItem[
     order = 'desc';
   }
 
-  return [...data].sort((a, b) => {
-    const aValue = ensureInt(a.value);
-    const bValue = ensureInt(b.value);
+  return [...data].sort((dataA, dataB) => {
+    const aValue = ensureInt(dataA.value);
+    const bValue = ensureInt(dataB.value);
 
     let res = aValue - bValue;
     if (Number.isNaN(res)) {
-      res = `${a.value}`.localeCompare(`${b.value}`);
+      res = `${dataA.value}`.localeCompare(`${dataB.value}`);
     }
 
     return order === 'asc' ? res : -res;
@@ -175,7 +192,7 @@ function sortData(data: FetchResultItem[], figure: FigureType): FetchResultItem[
 type HandleEsResultsFnc = (
   figure: FigureType,
   aggregations: EsAggregationResult,
-  count: number | undefined,
+  count: number | undefined
 ) => FetchResultItem[];
 
 /**
@@ -186,34 +203,34 @@ type HandleEsResultsFnc = (
 const handleMetricsEsResults: HandleEsResultsFnc = (
   { params },
   esData,
-  count,
+  count
 ) => {
   let aggregationId = 1;
-  const data: FetchResultItem[] = (params.labels as any[])
-    .map(
-      /**
-       * Each item is a different label
-       */
-      (label) => {
-        if (!label.aggregation) {
-          return { key: `${label.text}`, value: count ?? 0 };
-        }
+  // oxlint-disable-next-line no-explicit-any
+  const data: FetchResultItem[] = (params.labels as any[]).map(
+    /**
+     * Each item is a different label
+     */
+    (label) => {
+      if (!label.aggregation) {
+        return { key: `${label.text}`, value: count ?? 0 };
+      }
 
-        const aggregation = esData[`${aggregationId}`];
-        aggregationId += 1;
-        if (!('value' in aggregation) || typeof aggregation.value !== 'number') {
-          throw new FetchError(
-            'Aggregation value is missing for a metric figure',
-            'NoDataError',
-          );
-        }
+      const aggregation = esData[`${aggregationId}`];
+      aggregationId += 1;
+      if (!('value' in aggregation) || typeof aggregation.value !== 'number') {
+        throw new FetchError(
+          'Aggregation value is missing for a metric figure',
+          'NoDataError'
+        );
+      }
 
-        return {
-          key: `${label.text}`,
-          value: aggregation.value ?? 0,
-        };
-      },
-    );
+      return {
+        key: `${label.text}`,
+        value: aggregation.value ?? 0,
+      };
+    }
+  );
 
   return data;
 };
@@ -223,11 +240,9 @@ const handleMetricsEsResults: HandleEsResultsFnc = (
  *
  * @see {@link HandleEsResultsFnc}
  */
-const handleTableEsResults: HandleEsResultsFnc = ({ params }, esData) => flattenEsBuckets(
-  esData,
-  params.columns,
-  (col: any) => col.header,
-);
+const handleTableEsResults: HandleEsResultsFnc = ({ params }, esData) =>
+  // oxlint-disable-next-line no-explicit-any
+  flattenEsBuckets(esData, params.columns, (col: any) => col.header);
 
 /**
  * Extract data for others (mainly Vega) figures
@@ -237,19 +252,21 @@ const handleTableEsResults: HandleEsResultsFnc = ({ params }, esData) => flatten
 const handleOtherEsResults: HandleEsResultsFnc = ({ params }, esData) => {
   // Get elements of figure
   let label = { type: 'label' };
-  if (params.label) { label = { ...params.label, ...label }; }
+  if (params.label) {
+    label = { ...params.label, ...label };
+  }
 
   let color;
-  if (params.color) { color = { ...params.color, type: 'color' }; }
+  if (params.color) {
+    color = { ...params.color, type: 'color' };
+  }
 
   let value = { type: 'metric', metric: true };
-  if (params.value) { value = { ...params.value, ...value }; }
+  if (params.value) {
+    value = { ...params.value, ...value };
+  }
 
-  const elements = [
-    label,
-    color,
-    value,
-  ].filter((p) => !!p);
+  const elements = [label, color, value].filter((param) => !!param);
 
   // Flatten data
   return flattenEsBuckets(esData, elements, (col) => col.type);
@@ -265,7 +282,7 @@ const handleOtherEsResults: HandleEsResultsFnc = ({ params }, esData) => {
  */
 export function handleEsResponse(
   response: EsResponse,
-  figure: FigureType,
+  figure: FigureType
 ): FetchResultItem[] {
   checkEsErrors(response);
 
@@ -283,7 +300,10 @@ export function handleEsResponse(
       break;
   }
 
-  const { aggregations, hits: { total } } = response;
+  const {
+    aggregations,
+    hits: { total },
+  } = response;
   let elasticCount = total;
   if (typeof elasticCount === 'object') {
     elasticCount = elasticCount.value;

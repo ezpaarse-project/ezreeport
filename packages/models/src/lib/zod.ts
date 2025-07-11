@@ -10,7 +10,9 @@ import { ensureArray } from './utils';
  *
  * @returns Simplified Zod Issue
  */
-export function simplifyZodIssue(issue: z.ZodIssue) {
+export function simplifyZodIssue(
+  issue: z.ZodIssue
+): Omit<z.ZodIssue, 'path'> & { path: string } {
   return { ...issue, path: issue.path.join('/') };
 }
 
@@ -23,34 +25,37 @@ export function simplifyZodIssue(issue: z.ZodIssue) {
  *
  * @returns The data passed through schema
  */
-export async function ensureSchema<T, D>(
-  schema: z.ZodSchema<T>,
-  data: D,
-  errorMessage: (d: D) => string = () => 'Failed to parse',
-): Promise<T> {
+export async function ensureSchema<Type, Data>(
+  schema: z.ZodSchema<Type>,
+  data: Data,
+  errorMessage: (data: Data) => string = () => 'Failed to parse'
+): Promise<Type> {
   const result = await schema.safeParseAsync(data);
   if (!result.success) {
     throw new Error(errorMessage(data), {
-      cause: result.error.issues.map((i) => simplifyZodIssue(i)),
+      cause: result.error.issues.map((issue) => simplifyZodIssue(issue)),
     });
   }
   return result.data;
 }
 
-export const zStringOrArray = (
-  z.string().min(1)
-    .or(z.array(z.string().min(1)))
-).transform((v) => ensureArray(v));
+export const zStringOrArray = z
+  .string()
+  .min(1)
+  .or(z.array(z.string().min(1)))
+  .transform((value) => ensureArray(value));
 
-export const zStringToDay = (
-  z.iso.date()
-    .or(z.iso.datetime({ offset: true }))
-).transform((v) => parseISO(v));
+export const zStringToDay = z.iso
+  .date()
+  .or(z.iso.datetime({ offset: true }))
+  .transform((value) => parseISO(value));
 
-export const zStringToStartOfDay = zStringToDay
-  .transform((v) => startOfDay(v));
+export const zStringToStartOfDay = zStringToDay.transform((value) =>
+  startOfDay(value)
+);
 
-export const zStringToEndOfDay = zStringToDay
-  .transform((v) => endOfDay(v));
+export const zStringToEndOfDay = zStringToDay.transform((value) =>
+  endOfDay(value)
+);
 
 export * from 'zod/v4';

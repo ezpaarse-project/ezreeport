@@ -8,9 +8,17 @@ import { calcPeriodFromRecurrence } from '@ezreeport/models/lib/periods';
 import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
 import { Access } from '~/models/access';
 
-import * as responses from '~/routes/v2/responses';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+} from '~/routes/v2/responses';
+
 import { buildPaginatedResponse } from '~/models/pagination';
-import { PaginationQuery, PaginationResponse } from '~/models/pagination/types';
+import {
+  PaginationQuery,
+  zPaginationResponse,
+} from '~/models/pagination/types';
 
 import * as taskPresets from '~/models/task-presets';
 import {
@@ -26,10 +34,10 @@ import { Task } from '~/models/tasks/types';
 import { ConflictError, NotFoundError } from '~/models/errors';
 
 const SpecificTaskPresetParams = z.object({
-  id: z.string().min(1)
-    .describe('ID of the task preset'),
+  id: z.string().min(1).describe('ID of the task preset'),
 });
 
+// oxlint-disable-next-line max-lines-per-function, require-await
 const router: FastifyPluginAsyncZod = async (fastify) => {
   await fastify.register(authPlugin);
 
@@ -39,13 +47,17 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     schema: {
       summary: 'Get all task presets',
       tags: ['task-presets'],
-      querystring: PaginationQuery.and(TaskPresetQueryFilters).and(TaskPresetQueryInclude),
+      querystring: PaginationQuery.and(TaskPresetQueryFilters).and(
+        TaskPresetQueryInclude
+      ),
       response: {
-        [StatusCodes.OK]: PaginationResponse(TaskPreset),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zPaginationResponse(TaskPreset),
       },
     },
     config: {
@@ -55,32 +67,26 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     preHandler: [
-      async (request) => { // restrictHidden
-        if (request.user?.isAdmin) { return; }
+      // Hide hidden preset for non admins
+      // oxlint-disable-next-line require-await
+      async (request): Promise<void> => {
+        if (request.user?.isAdmin) {
+          return;
+        }
         request.query.hidden = false;
       },
     ],
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       // Extract pagination and filters from query
-      const {
+      const { page, count, sort, order, include, ...filters } = request.query;
+
+      const content = await taskPresets.getAllTaskPresets(filters, include, {
         page,
         count,
         sort,
         order,
-        include,
-        ...filters
-      } = request.query;
-
-      const content = await taskPresets.getAllTaskPresets(
-        filters,
-        include,
-        {
-          page,
-          count,
-          sort,
-          order,
-        },
-      );
+      });
 
       return buildPaginatedResponse(
         content,
@@ -89,7 +95,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           total: await taskPresets.countTaskPresets(filters),
           count: content.length,
         },
-        reply,
+        reply
       );
     },
   });
@@ -102,11 +108,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['task-presets'],
       body: InputTaskPreset,
       response: {
-        [StatusCodes.CREATED]: responses.SuccessResponse(TaskPreset),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.CREATED]: zSuccessResponse(TaskPreset),
       },
     },
     config: {
@@ -114,11 +122,12 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAdmin: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const content = await taskPresets.createTaskPreset(request.body);
 
       reply.status(StatusCodes.CREATED);
-      return responses.buildSuccessResponse(content, reply);
+      return buildSuccessResponse(content, reply);
     },
   });
 
@@ -131,12 +140,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       params: SpecificTaskPresetParams,
       querystring: TaskPresetQueryInclude,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(TaskPreset),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(TaskPreset),
       },
     },
     config: {
@@ -146,17 +157,26 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     preHandler: [
-      async (request) => { // requireNotHidden
-        if (request.user?.isAdmin) { return; }
+      // Preset can't be hidden if user is not admin
+      async (request): Promise<void> => {
+        if (request.user?.isAdmin) {
+          return;
+        }
         const content = await taskPresets.getTaskPreset(request.params.id);
-        if (content?.hidden) { throw new NotFoundError(`Task preset ${request.params.id} not found`); }
+        if (content?.hidden) {
+          throw new NotFoundError(`Task preset ${request.params.id} not found`);
+        }
       },
     ],
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       // We already checked the task preset exists in preHandler
-      const content = (await taskPresets.getTaskPreset(request.params.id, request.query.include))!;
+      const content = (await taskPresets.getTaskPreset(
+        request.params.id,
+        request.query.include
+      ))!;
 
-      return responses.buildSuccessResponse(content, reply);
+      return buildSuccessResponse(content, reply);
     },
   });
 
@@ -169,11 +189,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       params: SpecificTaskPresetParams,
       body: InputTaskPreset,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(TaskPreset),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(TaskPreset),
       },
     },
     config: {
@@ -181,17 +204,26 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAdmin: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
-      const doesExists = await taskPresets.doesTaskPresetExist(request.params.id);
+      const doesExists = await taskPresets.doesTaskPresetExist(
+        request.params.id
+      );
 
       let taskPreset;
       if (doesExists) {
-        taskPreset = await taskPresets.editTaskPreset(request.params.id, request.body);
+        taskPreset = await taskPresets.editTaskPreset(
+          request.params.id,
+          request.body
+        );
       } else {
-        taskPreset = await taskPresets.createTaskPreset({ ...request.body, id: request.params.id });
+        taskPreset = await taskPresets.createTaskPreset({
+          ...request.body,
+          id: request.params.id,
+        });
       }
 
-      return responses.buildSuccessResponse(taskPreset, reply);
+      return buildSuccessResponse(taskPreset, reply);
     },
   });
 
@@ -203,11 +235,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['task-presets'],
       params: SpecificTaskPresetParams,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(z.object({ deleted: z.boolean() })),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(z.object({ deleted: z.boolean() })),
       },
     },
     config: {
@@ -215,13 +250,16 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAdmin: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
-      const doesExists = await taskPresets.doesTaskPresetExist(request.params.id);
+      const doesExists = await taskPresets.doesTaskPresetExist(
+        request.params.id
+      );
       if (doesExists) {
         await taskPresets.deleteTaskPreset(request.params.id);
       }
 
-      return responses.buildSuccessResponse({ deleted: doesExists }, reply);
+      return buildSuccessResponse({ deleted: doesExists }, reply);
     },
   });
 
@@ -234,14 +272,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       params: SpecificTaskPresetParams,
       body: AdditionalDataForPreset,
       response: {
-        ...responses.describeErrors([
+        ...describeErrors([
           StatusCodes.BAD_REQUEST,
           StatusCodes.UNAUTHORIZED,
           StatusCodes.FORBIDDEN,
           StatusCodes.CONFLICT,
           StatusCodes.INTERNAL_SERVER_ERROR,
         ]),
-        [StatusCodes.CREATED]: responses.SuccessResponse(Task),
+        [StatusCodes.CREATED]: zSuccessResponse(Task),
       },
     },
     config: {
@@ -251,26 +289,34 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     preHandler: [
-      async (request) => requireAllowedNamespace(request, request.body.namespaceId),
-      async (request) => { // requireNotHidden
-        if (request.user?.isAdmin) { return; }
+      (request): Promise<void> =>
+        requireAllowedNamespace(request, request.body.namespaceId),
+      // Preset can't be hidden if user is not admin
+      async (request): Promise<void> => {
+        if (request.user?.isAdmin) {
+          return;
+        }
         const content = await taskPresets.getTaskPreset(request.params.id);
-        if (content?.hidden) { throw new NotFoundError(`Task preset ${request.params.id} not found`); }
+        if (content?.hidden) {
+          throw new NotFoundError(`Task preset ${request.params.id} not found`);
+        }
       },
       // Check if similar task already exists
-      async (request) => {
+      async (request): Promise<void> => {
         // If filters are provided, trust user
         if (request.body.filters) {
           return;
         }
 
         // We already checked the task preset exists in preHandler
-        const taskPreset = (await taskPresets.getTaskPreset(request.params.id))!;
+        const taskPreset = (await taskPresets.getTaskPreset(
+          request.params.id
+        ))!;
         const similarTaskExists = await doesSimilarTaskExist(
           request.body.namespaceId,
           taskPreset.recurrence,
           taskPreset.templateId,
-          request.body.index,
+          request.body.index
         );
 
         if (similarTaskExists) {
@@ -278,12 +324,17 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         }
       },
     ],
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       // We already checked the task preset exists in preHandler
       const taskPreset = (await taskPresets.getTaskPreset(request.params.id))!;
 
       // Set next run to start of recurrence (start of week for weekly, etc.)
-      const currentPeriod = calcPeriodFromRecurrence(new Date(), taskPreset.recurrence, 1);
+      const currentPeriod = calcPeriodFromRecurrence(
+        new Date(),
+        taskPreset.recurrence,
+        1
+      );
       const nextRun = startOfDay(currentPeriod.start);
 
       const task = await createTask({
@@ -303,9 +354,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         enabled: true,
       });
 
-      return responses.buildSuccessResponse(task, reply);
+      return buildSuccessResponse(task, reply);
     },
   });
 };
 
+// oxlint-disable-next-line no-default-exports
 export default router;

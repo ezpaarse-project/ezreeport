@@ -32,10 +32,11 @@ const logger = appLogger.child({ scope: 'models', model: 'memberships' });
  */
 export async function getAllMemberships(
   filters?: Partial<FindOneMembership>,
-  pagination?: PaginationType,
+  pagination?: PaginationType
 ): Promise<MembershipType[]> {
   // Prepare Prisma query
-  const prismaQuery: Prisma.MembershipFindManyArgs = buildPaginatedRequest(pagination);
+  const prismaQuery: Prisma.MembershipFindManyArgs =
+    buildPaginatedRequest(pagination);
   prismaQuery.where = filters;
 
   // Fetch data
@@ -43,7 +44,14 @@ export async function getAllMemberships(
 
   // Ensure data
   const memberships = await Promise.all(
-    data.map((membership) => ensureSchema(Membership, membership, (n) => `Failed to parse membership between ${n.username} and ${n.namespaceId}`)),
+    data.map((membership) =>
+      ensureSchema(
+        Membership,
+        membership,
+        (ship) =>
+          `Failed to parse membership between ${ship.username} and ${ship.namespaceId}`
+      )
+    )
   );
   return memberships;
 }
@@ -55,9 +63,10 @@ export async function getAllMemberships(
  *
  * @returns The found membership, or `null` if not found
  */
-export async function getMembership(
-  { username, namespaceId }: FindOneMembership,
-): Promise<MembershipType | null> {
+export async function getMembership({
+  username,
+  namespaceId,
+}: FindOneMembership): Promise<MembershipType | null> {
   const data = await prisma.membership.findUnique({
     where: { username_namespaceId: { username, namespaceId } },
   });
@@ -73,7 +82,7 @@ export async function getMembership(
  * @returns The created membership
  */
 export async function createMembership(
-  data: InputMembershipType & FindOneMembership,
+  data: InputMembershipType & FindOneMembership
 ): Promise<MembershipType> {
   const membership = await prisma.membership.create({ data });
 
@@ -97,7 +106,7 @@ export async function createMembership(
  */
 export async function editMembership(
   { username, namespaceId }: FindOneMembership,
-  data: InputMembershipType,
+  data: InputMembershipType
 ): Promise<MembershipType> {
   const membership = await prisma.membership.update({
     where: { username_namespaceId: { username, namespaceId } },
@@ -121,9 +130,10 @@ export async function editMembership(
  *
  * @returns The deleted membership
  */
-export async function deleteMembership(
-  { username, namespaceId }: FindOneMembership,
-): Promise<MembershipType> {
+export async function deleteMembership({
+  username,
+  namespaceId,
+}: FindOneMembership): Promise<MembershipType> {
   const membership = await prisma.membership.delete({
     where: { username_namespaceId: { username, namespaceId } },
   });
@@ -158,8 +168,13 @@ export async function countMemberships(): Promise<number> {
  *
  * @returns True if membership exists
  */
-export async function doesMembershipExist(where: FindOneMembership): Promise<boolean> {
-  const count = await prisma.membership.count({ where, select: { username: true } });
+export async function doesMembershipExist(
+  where: FindOneMembership
+): Promise<boolean> {
+  const count = await prisma.membership.count({
+    where,
+    select: { username: true },
+  });
 
   return count.username > 0;
 }
@@ -171,7 +186,8 @@ export async function doesMembershipExist(where: FindOneMembership): Promise<boo
  *
  * @returns The composite id
  */
-const getMembershipId = ({ username, namespaceId }: FindOneMembership) => `${namespaceId}:${username}`;
+const getMembershipId = ({ username, namespaceId }: FindOneMembership) =>
+  `${namespaceId}:${username}`;
 
 /**
  * Replace many memberships
@@ -181,52 +197,70 @@ const getMembershipId = ({ username, namespaceId }: FindOneMembership) => `${nam
  * @returns Summary of operations
  */
 export async function replaceMemberships(
-  data: BulkMembershipType[],
+  data: BulkMembershipType[]
 ): Promise<BulkMembershipResultType> {
-  const dataPerId = new Map(data.map((m) => [getMembershipId(m), m]));
+  const dataPerId = new Map(
+    data.map((membership) => [getMembershipId(membership), membership])
+  );
 
   // Prepare operations
   const current = await prisma.membership.findMany();
 
-  const toDelete = current.filter((m) => !dataPerId.has(getMembershipId(m)));
+  const toDelete = current.filter(
+    (membership) => !dataPerId.has(getMembershipId(membership))
+  );
 
-  const toEdit = current.filter((m) => dataPerId.has(getMembershipId(m)));
+  const toEdit = current.filter((membership) =>
+    dataPerId.has(getMembershipId(membership))
+  );
   // toEdit is made of dataPerId so we can assume it is safe
-  const editData = toEdit.map((m) => dataPerId.get(getMembershipId(m))!);
+  const editData = toEdit.map(
+    (membership) => dataPerId.get(getMembershipId(membership))!
+  );
 
-  const toEditIds = new Set(toEdit.map((m) => getMembershipId(m)));
-  const toCreate = data.filter((m) => !toEditIds.has(getMembershipId(m)));
+  const toEditIds = new Set(
+    toEdit.map((membership) => getMembershipId(membership))
+  );
+  const toCreate = data.filter(
+    (membership) => !toEditIds.has(getMembershipId(membership))
+  );
   // toCreate is made of toEdit so we can assume it is safe
-  const createData = toCreate.map((m) => dataPerId.get(getMembershipId(m))!);
+  const createData = toCreate.map(
+    (membership) => dataPerId.get(getMembershipId(membership))!
+  );
 
   // Executing operations
-  const [
-    deleted,
-    updated,
-    created,
-  ] = await prisma.$transaction(async (tx) => {
-    const deleteOperations = Promise.all(toDelete.map(
-      (m) => tx.membership.delete({
-        where: { username_namespaceId: { username: m.username, namespaceId: m.namespaceId } },
-      }),
-    ));
+  const [deleted, updated, created] = await prisma.$transaction((tx) => {
+    const deleteOperations = Promise.all(
+      toDelete.map((membership) =>
+        tx.membership.delete({
+          where: {
+            username_namespaceId: {
+              username: membership.username,
+              namespaceId: membership.namespaceId,
+            },
+          },
+        })
+      )
+    );
 
-    const updateOperations = Promise.all(editData.map(
-      (newData) => tx.membership.update({
-        where: {
-          username_namespaceId: { username: newData.username, namespaceId: newData.namespaceId },
-        },
-        data: newData,
-      }),
-    ));
+    const updateOperations = Promise.all(
+      editData.map((newData) =>
+        tx.membership.update({
+          where: {
+            username_namespaceId: {
+              username: newData.username,
+              namespaceId: newData.namespaceId,
+            },
+          },
+          data: newData,
+        })
+      )
+    );
 
     const createOperations = prisma.membership.createMany({ data: createData });
 
-    return Promise.all([
-      deleteOperations,
-      updateOperations,
-      createOperations,
-    ]);
+    return Promise.all([deleteOperations, updateOperations, createOperations]);
   });
 
   logger.debug({

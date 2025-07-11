@@ -1,5 +1,5 @@
 import { setupHeartbeat, mandatoryService } from '@ezreeport/heartbeats';
-import { HeartbeatService } from '@ezreeport/heartbeats/types';
+import type { HeartbeatService } from '@ezreeport/heartbeats/types';
 
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
@@ -19,20 +19,20 @@ const service: HeartbeatService = {
   filesystems: {
     logs: config.log.dir,
   },
-  getConnectedServices: () => [
-    mandatoryService('elastic', elasticPing),
-  ],
+  getConnectedServices: () => [mandatoryService('elastic', elasticPing)],
 };
 
 export { getMissingMandatoryServices } from '@ezreeport/heartbeats';
 
-export async function initHeartbeat(connection: rabbitmq.ChannelModel) {
+export async function initHeartbeat(
+  connection: rabbitmq.ChannelModel
+): Promise<void> {
   const start = process.uptime();
 
   const channel = await connection.createChannel();
   logger.debug('Channel created');
 
-  const { send } = await setupHeartbeat(channel, service, logger, true, frequency);
+  const { send } = setupHeartbeat(channel, service, logger, true, frequency);
 
   send();
 

@@ -1,22 +1,23 @@
 import { z } from '@ezreeport/models/lib/zod';
 
-import { SuccessResponseWithMeta } from '~/routes/v2/responses';
+import { zSuccessResponseWithMeta } from '~/routes/v2/responses';
 
 /**
  * Validation for pagination
  */
 export const PaginationQuery = z.object({
-  count: z.coerce.number().int().min(0).default(15)
+  count: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .default(15)
     .describe('Count of items wanted'),
 
-  page: z.coerce.number().int().min(1).default(1)
-    .describe('Page number'),
+  page: z.coerce.number().int().min(1).default(1).describe('Page number'),
 
-  sort: z.string().optional()
-    .describe('Sort field'),
+  sort: z.string().optional().describe('Sort field'),
 
-  order: z.enum(['asc', 'desc']).default('asc')
-    .describe('Sort order'),
+  order: z.enum(['asc', 'desc']).default('asc').describe('Sort order'),
 });
 
 /**
@@ -24,20 +25,29 @@ export const PaginationQuery = z.object({
  */
 export type PaginationType = z.infer<typeof PaginationQuery>;
 
-export const PaginationResponse = <
-  T extends z.ZodSchema,
-  M extends z.ZodSchema,
->(content: T, customMeta?: M) => SuccessResponseWithMeta(
+export type PaginationMeta = {
+  page: number;
+  total: number;
+  count: number;
+};
+
+export const zPaginationResponse = <
+  Content extends z.ZodSchema,
+  Meta extends z.ZodSchema,
+>(
+  content: Content,
+  customMeta?: Meta
+) =>
+  zSuccessResponseWithMeta(
     z.array(content).min(0),
 
-    z.object({
-      total: z.int().min(0)
-        .describe('Total number of items'),
+    z
+      .object({
+        total: z.int().min(0).describe('Total number of items'),
 
-      page: z.int().min(1)
-        .describe('Page number'),
+        page: z.int().min(1).describe('Page number'),
 
-      count: z.int().min(0)
-        .describe('Count of items returned'),
-    }).and(customMeta || z.object({})),
+        count: z.int().min(0).describe('Count of items returned'),
+      })
+      .and(customMeta || z.object({}))
   );

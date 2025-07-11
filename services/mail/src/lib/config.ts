@@ -1,4 +1,4 @@
-import setupConfig from '@ezreeport/config';
+import { setupConfig } from '@ezreeport/config';
 
 import type defaultConfig from '../../config/default.json';
 

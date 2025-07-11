@@ -13,7 +13,7 @@ export const customAlert = (message, isError = false) => {
   );
   alertBox.innerText = message;
 
-  container.appendChild(alertBox);
+  container.append(alertBox);
 
   // show
   setTimeout(() => {
@@ -27,7 +27,7 @@ export const customAlert = (message, isError = false) => {
 
   // remove
   setTimeout(() => {
-    container.removeChild(alertBox);
+    alertBox.remove();
   }, 10000);
 };
 
@@ -35,6 +35,8 @@ export const unsubscribeFromTask = async (taskId, form) => {
   const obj = {
     taskId,
   };
+
+  // oxlint-disable-next-line no-array-for-each
   (new FormData(form)).forEach((value, key) => { obj[key] = value; });
 
   try {

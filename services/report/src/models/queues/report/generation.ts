@@ -1,7 +1,7 @@
 import type { GenerationQueueDataType } from '@ezreeport/models/queues';
 import type { GenerationType } from '@ezreeport/models/generations';
 
-import { publishJSONToExchange, sendJSONToQueue } from '@ezreeport/rabbitmq';
+import { sendJSONMessage } from '@ezreeport/rabbitmq';
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 
@@ -12,18 +12,23 @@ const logger = appLogger.child({ scope: 'queues', queue: generationQueueName });
 
 let channel: rabbitmq.Channel | undefined;
 
-export function initGenerationQueue(c: rabbitmq.Channel) {
+export function initGenerationQueue(chan: rabbitmq.Channel): void {
   // queueGeneration will be called while begin unaware of
   // rabbitmq connection, so we need to store the channel
   // here
-  channel = c;
+  channel = chan;
 }
 
-type CustomGenerationQueueDataType = Omit<GenerationQueueDataType, 'createdAt'> & {
+type CustomGenerationQueueDataType = Omit<
+  GenerationQueueDataType,
+  'createdAt'
+> & {
   createdAt?: Date;
 };
 
-export async function queueGeneration(data: CustomGenerationQueueDataType) {
+export async function queueGeneration(
+  data: CustomGenerationQueueDataType
+): Promise<void> {
   const createdAt = data.createdAt ?? new Date();
 
   try {
@@ -31,10 +36,10 @@ export async function queueGeneration(data: CustomGenerationQueueDataType) {
       throw new Error('Channel not initialized');
     }
 
-    const { size } = sendJSONToQueue<GenerationQueueDataType>(channel, generationQueueName, {
-      ...data,
-      createdAt,
-    });
+    const { size } = sendJSONMessage<GenerationQueueDataType>(
+      { channel, queue: { name: generationQueueName } },
+      { ...data, createdAt }
+    );
     logger.debug({
       queue: generationQueueName,
       msg: 'Report queued for generation',
@@ -52,22 +57,28 @@ export async function queueGeneration(data: CustomGenerationQueueDataType) {
   }
 
   try {
-    publishJSONToExchange<GenerationType>(channel, generationEventExchangeName, '', {
-      id: data.id,
-      taskId: data.task.id,
-      status: 'PENDING',
-      start: data.period.start,
-      end: data.period.end,
-      targets: data.targets,
-      origin: data.origin,
-      writeActivity: !!data.writeActivity,
-      progress: null,
-      took: null,
-      reportId: '',
-      createdAt,
-      updatedAt: new Date(),
-      startedAt: null,
-    });
+    sendJSONMessage<GenerationType>(
+      {
+        channel,
+        exchange: { name: generationEventExchangeName, routingKey: '' },
+      },
+      {
+        id: data.id,
+        taskId: data.task.id,
+        status: 'PENDING',
+        start: data.period.start,
+        end: data.period.end,
+        targets: data.targets,
+        origin: data.origin,
+        writeActivity: !!data.writeActivity,
+        progress: null,
+        took: null,
+        reportId: '',
+        createdAt,
+        updatedAt: new Date(),
+        startedAt: null,
+      }
+    );
   } catch (err) {
     logger.warn({ msg: 'Failed to send event', err });
   }

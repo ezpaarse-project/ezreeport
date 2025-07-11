@@ -30,6 +30,7 @@
     "pino": "^9.7.0"
   },
   "devDependencies": {
+    "@types/node": "catalog:",
     "typescript": "catalog:"
   },
   "engines": {

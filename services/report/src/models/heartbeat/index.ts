@@ -1,8 +1,12 @@
 import { hostname } from 'node:os';
 
 import { isAfter } from '@ezreeport/dates';
-import { setupHeartbeat, listenToHeartbeats, mandatoryService } from '@ezreeport/heartbeats';
 import type { HeartbeatService } from '@ezreeport/heartbeats/types';
+import {
+  setupHeartbeat,
+  listenToHeartbeats,
+  mandatoryService,
+} from '@ezreeport/heartbeats';
 
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
@@ -30,16 +34,18 @@ export const service: HeartbeatService = {
 
 const services = new Map<string, HeartbeatType>();
 
-export async function initHeartbeat(connection: rabbitmq.ChannelModel) {
+export async function initHeartbeat(
+  connection: rabbitmq.ChannelModel
+): Promise<void> {
   const start = process.uptime();
   const server = connection.connection.serverProperties;
 
   const channel = await connection.createChannel();
   logger.debug('Channel created');
 
-  const { send } = await setupHeartbeat(channel, service, logger, false, frequency);
+  const { send } = setupHeartbeat(channel, service, logger, false, frequency);
 
-  await listenToHeartbeats(channel, logger, function onHeartbeat(beat) {
+  listenToHeartbeats(channel, logger, function onHeartbeat(beat) {
     // If it's the same machine, then we can consider RabbitMQ as working
     if (beat.hostname === hostname()) {
       onHeartbeat({
@@ -50,7 +56,9 @@ export async function initHeartbeat(connection: rabbitmq.ChannelModel) {
       });
     }
 
-    const { createdAt } = services.get(beat.hostname) ?? { createdAt: new Date() };
+    const { createdAt } = services.get(beat.hostname) ?? {
+      createdAt: new Date(),
+    };
     services.set(`${beat.hostname}_${beat.service}`, { ...beat, createdAt });
   });
 
@@ -65,8 +73,12 @@ export async function initHeartbeat(connection: rabbitmq.ChannelModel) {
 
 export { getMissingMandatoryServices } from '@ezreeport/heartbeats';
 
-export function getAllServices() {
-  return Array.from(services.values())
-    // Filter out services that haven't given heartbeats in 2x the frequency
-    .filter((s) => isAfter(s.updatedAt, new Date(Date.now() - (frequency * 2))));
+export function getAllServices(): HeartbeatType[] {
+  return (
+    Array.from(services.values())
+      // Filter out services that haven't given heartbeats in 2x the frequency
+      .filter((service) =>
+        isAfter(service.updatedAt, new Date(Date.now() - frequency * 2))
+      )
+  );
 }

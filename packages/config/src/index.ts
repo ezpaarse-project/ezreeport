@@ -2,6 +2,8 @@ import config from 'config';
 
 import { watch } from 'node:fs/promises';
 
+// const CONFIG_RELOAD_EXIT_CODE = 42; // Why 42 ? Because this is the way of life.
+
 /**
  * Setup watcher for a config file
  *
@@ -9,20 +11,28 @@ import { watch } from 'node:fs/promises';
  * @param signal Signal to abort
  * @param logger Logger
  */
-async function setupConfigWatcher(path: string, signal: AbortSignal, logger: Console) {
+async function setupConfigWatcher(
+  path: string,
+  signal: AbortSignal,
+  logger: Console
+): Promise<void> {
   try {
     const watcher = watch(path, { persistent: false, signal });
     logger.debug(JSON.stringify({ msg: 'Watching config file', path }));
 
     for await (const event of watcher) {
-      logger.info(JSON.stringify({ msg: 'Config changed, exiting...', event, path }));
-      process.exit(42); // Why 42 ? Because this is the way of life.
+      logger.info(
+        JSON.stringify({ event, msg: 'Config changed, exiting...', path })
+      );
+      // // oxlint-disable-next-line unicorn/no-process-exit
+      // process.exit(CONFIG_RELOAD_EXIT_CODE);
+      throw new Error('Config changed, exiting');
     }
   } catch (err) {
     logger.warn({
+      err,
       msg: 'Failed to watch config file',
       path,
-      err,
     });
   }
 }
@@ -32,7 +42,7 @@ async function setupConfigWatcher(path: string, signal: AbortSignal, logger: Con
  *
  * @param logger Logger
  */
-function watchConfigSources(logger: Console) {
+function watchConfigSources(logger: Console): void {
   const sources = config.util.getConfigSources();
   if (sources.length > 0) {
     // Prepare watcher
@@ -49,11 +59,11 @@ function watchConfigSources(logger: Console) {
 }
 
 type WatcherOptions = {
-  logger: Console,
+  logger: Console;
 };
 
 type Options = {
-  watch?: WatcherOptions,
+  watch?: WatcherOptions;
 };
 
 /**
@@ -63,10 +73,10 @@ type Options = {
  *
  * @returns The parsed and typed config
  */
-export default function setupConfig<T>(opts: Options = {}) {
+export function setupConfig<ConfigType>(opts: Options = {}): ConfigType {
   if (opts.watch) {
     watchConfigSources(opts.watch.logger);
   }
 
-  return config as unknown as T;
+  return config as unknown as ConfigType;
 }

@@ -10,11 +10,14 @@ export const GenerationIncludeFields = z.enum([
   'task.extends.tags',
 ] as const);
 
-export type GenerationIncludeFieldsType = z.infer<typeof GenerationIncludeFields>;
+export type GenerationIncludeFieldsType = z.infer<
+  typeof GenerationIncludeFields
+>;
 
 export const Generation = CommonGeneration.extend({
   // Includes fields
-  task: Task.omit({ template: true }).optional()
+  task: Task.omit({ template: true })
+    .optional()
     .describe('[Includes] Task related to the generation'),
 });
 
@@ -25,7 +28,8 @@ export type GenerationType = z.infer<typeof Generation>;
  */
 export const GenerationQueryInclude = z.object({
   include: GenerationIncludeFields.or(z.array(GenerationIncludeFields))
-    .transform((v) => ensureArray(v)).optional()
+    .transform((value) => ensureArray(value))
+    .optional()
     .describe('Fields to include'),
 });
 

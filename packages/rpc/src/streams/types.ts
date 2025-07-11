@@ -4,17 +4,17 @@ import { z } from '@ezreeport/models/lib/zod';
  * Validation for a stream chuck
  */
 export const RPCStreamChunk = z.object({
-  chunk: z.object({
-    type: z.literal('Buffer'),
-    data: z.array(z.number()),
-  }).optional()
+  chunk: z
+    .object({
+      type: z.literal('Buffer'),
+      data: z.array(z.number()),
+    })
+    .optional()
     .describe('Stream chunk'),
 
-  ended: z.boolean()
-    .describe('End of stream'),
+  ended: z.boolean().describe('End of stream'),
 
-  error: z.string().min(1).optional()
-    .describe('RPC method error'),
+  error: z.string().min(1).optional().describe('RPC method error'),
 });
 
 /**
@@ -28,11 +28,9 @@ export type RPCStreamChunkType = z.infer<typeof RPCStreamChunk>;
 export const RPCWriteStreamRequest = z.object({
   method: z.literal('createWriteStream'),
 
-  params: z.array(z.any())
-    .describe('Stream request parameters'),
+  params: z.array(z.any()).describe('Stream request parameters'),
 
-  dataQueue: z.string().min(1)
-    .describe('Data queue name'),
+  dataQueue: z.string().min(1).describe('Data queue name'),
 });
 
 /**
@@ -46,8 +44,7 @@ export type RPCWriteStreamRequestType = z.infer<typeof RPCWriteStreamRequest>;
 export const RPCReadStreamRequest = z.object({
   method: z.literal('createReadStream'),
 
-  params: z.array(z.any())
-    .describe('Stream request parameters'),
+  params: z.array(z.any()).describe('Stream request parameters'),
 });
 
 /**
@@ -59,11 +56,9 @@ export type RPCReadStreamRequestType = z.infer<typeof RPCReadStreamRequest>;
  * Validation for a RPC response
  */
 export const RPCStreamResponse = z.object({
-  result: z.boolean()
-    .describe('Is the stream successful'),
+  result: z.boolean().describe('Is the stream successful'),
 
-  error: z.string().min(1).optional()
-    .describe('RPC method error'),
+  error: z.string().min(1).optional().describe('RPC method error'),
 });
 
 /**

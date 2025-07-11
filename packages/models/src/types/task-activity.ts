@@ -4,23 +4,17 @@ import { z } from '@ezreeport/models/lib/zod';
  * Validation for event
  */
 export const TaskActivity = z.object({
-  id: z.string().min(1)
-    .describe('Activity ID'),
+  id: z.string().min(1).describe('Activity ID'),
 
-  taskId: z.string().min(1)
-    .describe('Task ID'),
+  taskId: z.string().min(1).describe('Task ID'),
 
-  type: z.string().min(1)
-    .describe('Activity type'),
+  type: z.string().min(1).describe('Activity type'),
 
-  message: z.string().min(1)
-    .describe('Activity message'),
+  message: z.string().min(1).describe('Activity message'),
 
-  data: z.record(z.string(), z.any()).nullish()
-    .describe('Activity data'),
+  data: z.record(z.string(), z.any()).nullish().describe('Activity data'),
 
-  createdAt: z.date()
-    .describe('Creation date'),
+  createdAt: z.date().describe('Creation date'),
 });
 
 /**

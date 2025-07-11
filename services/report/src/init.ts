@@ -10,7 +10,7 @@ const logger = appLogger.child({ scope: 'init' });
 /**
  * Add default template if not already present
  */
-export async function initTemplates() {
+export async function initTemplates(): Promise<void> {
   try {
     const { id } = await upsertDefaultTemplate();
     config.defaultTemplate.id = id;
@@ -20,6 +20,6 @@ export async function initTemplates() {
       msg: 'Default template ready',
     });
   } catch (error) {
-    logger.error(error, 'Couldn\'t upsert default template');
+    logger.error(error, "Couldn't upsert default template");
   }
 }

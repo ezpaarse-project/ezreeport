@@ -5,20 +5,15 @@ import { z } from '@ezreeport/models/lib/zod';
  * Validation for membership
  */
 export const Membership = z.object({
-  username: z.string().min(1)
-    .describe('Username'),
+  username: z.string().min(1).describe('Username'),
 
-  namespaceId: z.string().min(1)
-    .describe('Namespace ID'),
+  namespaceId: z.string().min(1).describe('Namespace ID'),
 
-  access: z.enum(Access)
-    .describe('Permissions of user on namespace'),
+  access: z.enum(Access).describe('Permissions of user on namespace'),
 
-  createdAt: z.date()
-    .describe('Creation date'),
+  createdAt: z.date().describe('Creation date'),
 
-  updatedAt: z.date().nullable()
-    .describe('Last update date'),
+  updatedAt: z.date().nullable().describe('Last update date'),
 });
 
 /**
@@ -45,16 +40,15 @@ export type InputMembershipType = z.infer<typeof InputMembership>;
 /**
  * Validation for setting multiple memberships
  */
-export const BulkMembership = z.object({
-  username: z.string().min(1)
-    .describe('Username'),
+export const BulkMembership = z
+  .object({
+    username: z.string().min(1).describe('Username'),
 
-  namespaceId: z.string().min(1)
-    .describe('Namespace ID'),
+    namespaceId: z.string().min(1).describe('Namespace ID'),
 
-  access: z.enum(Access)
-    .describe('Permissions of user on namespace'),
-}).strict();
+    access: z.enum(Access).describe('Permissions of user on namespace'),
+  })
+  .strict();
 
 /**
  * Type for setting multiple memberships
@@ -65,16 +59,14 @@ export type BulkMembershipType = z.infer<typeof BulkMembership>;
  * Validation for result of setting multiple memberships
  */
 export const BulkMembershipResult = z.object({
-  memberships: z.object({
-    deleted: z.int().min(0)
-      .describe('Number of item deleted'),
+  memberships: z
+    .object({
+      deleted: z.int().min(0).describe('Number of item deleted'),
 
-    updated: z.int().min(0)
-      .describe('Number of item updated'),
+      updated: z.int().min(0).describe('Number of item updated'),
 
-    created: z.int().min(0)
-      .describe('Number of item created'),
-  })
+      created: z.int().min(0).describe('Number of item created'),
+    })
     .describe('Summary of operations on memberships'),
 });
 

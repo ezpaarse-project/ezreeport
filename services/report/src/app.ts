@@ -11,7 +11,7 @@ import routes from '~/routes';
 
 import { initTemplates } from './init';
 
-const start = async () => {
+async function start(): Promise<void> {
   appLogger.info({
     scope: 'node',
     env: process.env.NODE_ENV,
@@ -40,7 +40,7 @@ const start = async () => {
     });
   } catch (err) {
     appLogger.error(err);
-    process.exit(1);
+    throw err instanceof Error ? err : new Error(`${err}`);
   }
-};
+}
 start();

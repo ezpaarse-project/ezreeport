@@ -15,7 +15,7 @@ export * from './recurrence';
  */
 export async function changeTaskEnableState(
   taskOrId: Omit<Task, 'template'> | string,
-  enabled: boolean,
+  enabled: boolean
 ): Promise<Task> {
   const base = await getTask(taskOrId);
 

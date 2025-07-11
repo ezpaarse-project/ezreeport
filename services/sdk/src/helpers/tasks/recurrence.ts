@@ -12,7 +12,10 @@ import type { TaskRecurrence } from '~/modules/tasks';
  *
  * @returns The new date of the task
  */
-export function calcNextDateFromRecurrence(initial: Date, recurrence: TaskRecurrence): Date {
+export function calcNextDateFromRecurrence(
+  initial: Date,
+  recurrence: TaskRecurrence
+): Date {
   const duration: Duration = {};
 
   switch (recurrence) {

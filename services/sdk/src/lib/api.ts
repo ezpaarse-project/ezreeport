@@ -1,4 +1,4 @@
-export interface ApiResponse<T> {
+export interface ApiResponse<Content> {
   /** API version */
   apiVersion: number;
   /** HTTP status */
@@ -7,21 +7,21 @@ export interface ApiResponse<T> {
     message: string;
   };
   /** Content of response */
-  content: T;
+  content: Content;
 }
 
 export interface ApiResponsePaginated<
-  T,
-  M extends Record<string, unknown> = {},
-> extends ApiResponse<T[]> {
+  Content,
+  Meta extends Record<string, unknown> = Record<string, never>,
+> extends ApiResponse<Content[]> {
   /** Meta about data */
-  meta: M & {
+  meta: Meta & {
     /** Total number of items */
-    total: number,
+    total: number;
     /** Current page */
-    page: number,
+    page: number;
     /** Count in page */
-    count: number,
+    count: number;
   };
 }
 
@@ -29,33 +29,38 @@ export type ApiDeletedResponse = ApiResponse<{ deleted: boolean }>;
 
 interface ApiRequestPagination {
   /** Count wanted in response, 0 to show all (15 by default) */
-  count?: number,
+  count?: number;
   /** Page number (1 by default) */
-  page?: number,
+  page?: number;
   /** Field to sort */
-  sort?: string,
+  sort?: string;
   /** Order of sort (asc by default) */
-  order?: 'asc' | 'desc',
+  order?: 'asc' | 'desc';
 }
 
 type PrimitiveType = number | string | boolean;
 
-type ApiRequestFilters = Record<string, PrimitiveType | PrimitiveType[] | undefined>;
+type ApiRequestFilters = Record<
+  string,
+  PrimitiveType | PrimitiveType[] | undefined
+>;
 
 export interface ApiRequestOptions {
   filters?: ApiRequestFilters;
   pagination?: ApiRequestPagination;
 }
 
-export function apiRequestOptionsToQuery(opts?: ApiRequestOptions) {
+export function apiRequestOptionsToQuery(
+  opts?: ApiRequestOptions
+): ApiRequestFilters & ApiRequestPagination {
   return {
-    ...(opts?.filters ?? {}),
-    ...(opts?.pagination ?? {}),
+    ...opts?.filters,
+    ...opts?.pagination,
   };
 }
 
-export interface SdkPaginated<T> {
-  items: T[];
+export interface SdkPaginated<Item> {
+  items: Item[];
   total: number;
   count: number;
   page: number;

@@ -22,7 +22,10 @@ const deadGenerationExchangeName = 'ezreeport.report:queues:dead';
 
 const logger = appLogger.child({ scope: 'queues', queue: generationQueueName });
 
-async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage | null) {
+async function onMessage(
+  channel: rabbitmq.Channel,
+  msg: rabbitmq.ConsumeMessage | null
+): Promise<void> {
   if (!msg) {
     return;
   }
@@ -45,22 +48,23 @@ async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage
   let startedAt: Date | null = null;
   let pageTotal = 0;
   let pageRendered = 0;
-  const updateProgress = (status: GenerationStatusType) => sendEvent(channel, {
-    id: data.id,
-    taskId: data.task.id,
-    start: data.period.start,
-    end: data.period.end,
-    origin: data.origin,
-    targets: data.targets,
-    writeActivity: !!data.writeActivity,
-    status,
-    progress: pageTotal ? Math.round((pageRendered / pageTotal) * 100) : null,
-    took: startedAt ? Date.now() - startedAt.getTime() : null,
-    reportId,
-    createdAt: data.createdAt,
-    updatedAt: new Date(),
-    startedAt,
-  });
+  const updateProgress = (status: GenerationStatusType) =>
+    sendEvent(channel, {
+      id: data.id,
+      taskId: data.task.id,
+      start: data.period.start,
+      end: data.period.end,
+      origin: data.origin,
+      targets: data.targets,
+      writeActivity: !!data.writeActivity,
+      status,
+      progress: pageTotal ? Math.round((pageRendered / pageTotal) * 100) : null,
+      took: startedAt ? Date.now() - startedAt.getTime() : null,
+      reportId,
+      createdAt: data.createdAt,
+      updatedAt: new Date(),
+      startedAt,
+    });
   events.on('start', (event) => {
     ({ reportId } = event as { reportId: string });
     startedAt = new Date();
@@ -109,28 +113,31 @@ async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage
     period: result.detail.period,
     targets: result.detail.sendingTo || [team],
 
-    filename: result.success && result.detail.files.report
-      ? result.detail.files.report
-      : result.detail.files.detail,
+    filename:
+      result.success && result.detail.files.report
+        ? result.detail.files.report
+        : result.detail.files.detail,
   });
 
   channel.ack(msg);
 }
 
-export async function getReportGenerationQueue(channel: rabbitmq.Channel) {
+export async function getReportGenerationQueue(
+  channel: rabbitmq.Channel
+): Promise<void> {
   const { exchange: deadLetterExchange } = await channel.assertExchange(
     deadGenerationExchangeName,
     'fanout',
-    { durable: false },
+    { durable: false }
   );
 
-  const { queue } = await channel.assertQueue(
-    generationQueueName,
-    { durable: false, deadLetterExchange },
-  );
+  const { queue } = await channel.assertQueue(generationQueueName, {
+    durable: false,
+    deadLetterExchange,
+  });
 
   // Consume generation queue
-  channel.consume(queue, (m) => onMessage(channel, m));
+  channel.consume(queue, (msg) => onMessage(channel, msg));
 
   logger.debug('Generation queue created');
 }

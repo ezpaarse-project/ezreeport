@@ -1,9 +1,13 @@
 import { differenceInMilliseconds, type Interval } from '@ezreeport/dates';
 
-export type BulkResult<T> = {
-  type: 'created' | 'updated' | 'deleted'
-  data: T
-} | { type: 'none' };
+type BulkResultType = 'created' | 'updated' | 'deleted';
+
+export type BulkResult<Type> =
+  | {
+      type: BulkResultType;
+      data: Type;
+    }
+  | { type: 'none' };
 
 export enum FormatIntervalTarget {
   Milliseconds = 1,
@@ -22,8 +26,8 @@ export enum FormatIntervalTarget {
  */
 export const formatInterval = (
   { start, end }: Interval,
-  target = FormatIntervalTarget.Seconds,
-) => (differenceInMilliseconds(end, start) / target).toFixed(2);
+  target = FormatIntervalTarget.Seconds
+): string => (differenceInMilliseconds(end, start) / target).toFixed(2);
 
 /**
  * Convert string to Base64
@@ -35,8 +39,8 @@ export const formatInterval = (
  */
 export const stringToB64 = (
   str: string,
-  encoding: 'base64' | 'base64url' = 'base64',
-) => Buffer.from(str).toString(encoding);
+  encoding: 'base64' | 'base64url' = 'base64'
+): string => Buffer.from(str).toString(encoding);
 
 /**
  * Convert Base46 to string
@@ -48,8 +52,8 @@ export const stringToB64 = (
  */
 export const b64ToString = (
   b64: string,
-  encoding: 'base64' | 'base64url' = 'base64',
-) => Buffer.from(b64, encoding).toString();
+  encoding: 'base64' | 'base64url' = 'base64'
+): string => Buffer.from(b64, encoding).toString();
 
 /**
  * Ensure value is an array
@@ -58,11 +62,10 @@ export const b64ToString = (
  *
  * @returns Copy of value if an array, else an array containing the value
  */
-export const ensureArray = <T>(value: T | T[]): T[] => (
-  Array.isArray(value) ? [...value] : [value]
-);
+export const ensureArray = <Type>(value: Type | Type[]): Type[] =>
+  Array.isArray(value) ? [...value] : [value];
 
-export const ensureInt = (value: string | number | boolean): number => {
+export function ensureInt(value: string | number | boolean): number {
   if (typeof value === 'string') {
     return Number.parseInt(value, 10);
   }
@@ -70,6 +73,11 @@ export const ensureInt = (value: string | number | boolean): number => {
     return value ? 1 : 0;
   }
   return value;
+}
+
+type ParsedBulkResult<Type> = {
+  type: Exclude<BulkResultType, 'none'>;
+  data: Type;
 };
 
 /**
@@ -79,8 +87,10 @@ export const ensureInt = (value: string | number | boolean): number => {
  *
  * @returns Bulk results
  */
-export const parseBulkResults = <T>(itemsSettled: PromiseSettledResult<BulkResult<T>>[]) => {
-  const results: { type: Exclude<BulkResult<T>['type'], 'none'>, data: T }[] = [];
+export function parseBulkResults<Type>(
+  itemsSettled: PromiseSettledResult<BulkResult<Type>>[]
+): ParsedBulkResult<Type>[] {
+  const results: ParsedBulkResult<Type>[] = [];
   for (const settled of itemsSettled) {
     if (settled.status === 'rejected') {
       throw new Error(settled.reason);
@@ -91,4 +101,4 @@ export const parseBulkResults = <T>(itemsSettled: PromiseSettledResult<BulkResul
     }
   }
   return results;
-};
+}

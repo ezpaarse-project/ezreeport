@@ -1,4 +1,4 @@
-import { Generation, GenerationType } from '@ezreeport/models/generations';
+import { Generation, type GenerationType } from '@ezreeport/models/generations';
 import { parseJSONMessage } from '@ezreeport/rabbitmq';
 
 import type rabbitmq from '~/lib/rabbitmq';
@@ -10,11 +10,15 @@ import { editTaskAfterGeneration } from '~/models/tasks';
 
 const eventExchangeName = 'ezreeport.report:event';
 
-const logger = appLogger.child({ scope: 'queues', exchange: eventExchangeName });
+const logger = appLogger.child({
+  scope: 'queues',
+  exchange: eventExchangeName,
+});
 
-const generationFinished = (data: GenerationType) => data.status === 'SUCCESS' || data.status === 'ERROR';
+const generationFinished = (data: GenerationType): boolean =>
+  data.status === 'SUCCESS' || data.status === 'ERROR';
 
-async function updateGeneration(data: GenerationType) {
+async function updateGeneration(data: GenerationType): Promise<void> {
   try {
     await upsertGeneration(data.id, data);
   } catch (err) {
@@ -27,12 +31,16 @@ async function updateGeneration(data: GenerationType) {
   }
 }
 
-async function updateTaskAfterGeneration(data: GenerationType) {
+async function updateTaskAfterGeneration(data: GenerationType): Promise<void> {
   try {
     await createActivity({
       taskId: data.taskId,
-      type: data.status === 'SUCCESS' ? 'generation:success' : 'generation:error',
-      message: data.status === 'SUCCESS' ? `Rapport généré par ${data.origin}` : `Rapport non généré par ${data.origin} suite à une erreur.`,
+      type:
+        data.status === 'SUCCESS' ? 'generation:success' : 'generation:error',
+      message:
+        data.status === 'SUCCESS'
+          ? `Rapport généré par ${data.origin}`
+          : `Rapport non généré par ${data.origin} suite à une erreur.`,
       data: {
         period: { start: data.start, end: data.end },
         targets: data.targets,
@@ -52,7 +60,7 @@ async function updateTaskAfterGeneration(data: GenerationType) {
     await editTaskAfterGeneration(
       data.taskId,
       data.createdAt,
-      data.status !== 'ERROR',
+      data.status !== 'ERROR'
     );
   } catch (err) {
     logger.error({
@@ -64,7 +72,7 @@ async function updateTaskAfterGeneration(data: GenerationType) {
   }
 }
 
-async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
+async function onMessage(msg: rabbitmq.ConsumeMessage | null): Promise<void> {
   if (!msg) {
     return;
   }
@@ -87,29 +95,34 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null) {
 
   const promises: Promise<unknown>[] = [];
 
-  promises.push(
-    updateGeneration(data),
-  );
+  promises.push(updateGeneration(data));
 
   if (data.writeActivity && generationFinished(data)) {
-    promises.push(
-      updateTaskAfterGeneration(data),
-    );
+    promises.push(updateTaskAfterGeneration(data));
   }
 
   // Resolve all promises in parallel
   await Promise.allSettled(promises);
 }
 
-export async function initReportEventExchange(channel: rabbitmq.Channel) {
-  const { exchange: eventExchange } = await channel.assertExchange(eventExchangeName, 'fanout', { durable: false });
+export async function initReportEventExchange(
+  channel: rabbitmq.Channel
+): Promise<void> {
+  const { exchange: eventExchange } = await channel.assertExchange(
+    eventExchangeName,
+    'fanout',
+    { durable: false }
+  );
 
   // Create queue to bind
-  const { queue } = await channel.assertQueue('', { exclusive: true, durable: false });
+  const { queue } = await channel.assertQueue('', {
+    exclusive: true,
+    durable: false,
+  });
   channel.bindQueue(queue, eventExchange, '');
 
   // Consume event exchange
-  channel.consume(queue, (m) => onMessage(m), { noAck: true });
+  channel.consume(queue, (msg) => onMessage(msg), { noAck: true });
 
   logger.debug({
     msg: 'Event exchange created',

@@ -14,7 +14,9 @@ import {
   type TaskActivityIncludeFieldsType,
 } from './types';
 
-function applyFilters(filters: TaskActivityQueryFiltersType) {
+function applyFilters(
+  filters: TaskActivityQueryFiltersType
+): Prisma.TaskActivityWhereInput {
   const where: Prisma.TaskActivityWhereInput = {};
 
   if (filters.taskId) {
@@ -42,11 +44,16 @@ function applyFilters(filters: TaskActivityQueryFiltersType) {
   return where;
 }
 
-function applyIncludes(fields: TaskActivityIncludeFieldsType[]) {
+function applyIncludes(
+  fields: TaskActivityIncludeFieldsType[]
+): Prisma.TaskActivityInclude {
   const include: Prisma.TaskActivityInclude = {};
 
   if (fields.includes('task.namespace')) {
-    const entries = Object.keys(prisma.namespace.fields).map((k) => [k, true]);
+    const entries = Object.keys(prisma.namespace.fields).map((key) => [
+      key,
+      true,
+    ]);
     const namespace = Object.fromEntries(entries) as Prisma.NamespaceSelect;
 
     namespace.fetchLogin = false;
@@ -73,10 +80,11 @@ function applyIncludes(fields: TaskActivityIncludeFieldsType[]) {
 export async function getAllActivity(
   filters?: TaskActivityQueryFiltersType,
   include?: TaskActivityIncludeFieldsType[],
-  pagination?: PaginationType,
+  pagination?: PaginationType
 ): Promise<TaskActivityType[]> {
   // Prepare Prisma query
-  const prismaQuery: Prisma.TaskActivityFindManyArgs = buildPaginatedRequest(pagination);
+  const prismaQuery: Prisma.TaskActivityFindManyArgs =
+    buildPaginatedRequest(pagination);
 
   // Apply filters
   if (filters) {
@@ -93,7 +101,13 @@ export async function getAllActivity(
 
   // Ensure data
   const activity = await Promise.all(
-    data.map((log) => ensureSchema(TaskActivity, log, (t) => `Failed to parse task ${t.id}`)),
+    data.map((log) =>
+      ensureSchema(
+        TaskActivity,
+        log,
+        (activity) => `Failed to parse activity ${activity.id}`
+      )
+    )
   );
   return activity;
 }
@@ -105,7 +119,9 @@ export async function getAllActivity(
  *
  * @returns The created activity
  */
-export async function createActivity(data: InputTaskActivityType): Promise<TaskActivityType> {
+export async function createActivity(
+  data: InputTaskActivityType
+): Promise<TaskActivityType> {
   const activity = await prisma.taskActivity.create({
     data: {
       ...data,
@@ -127,7 +143,9 @@ export async function createActivity(data: InputTaskActivityType): Promise<TaskA
  *
  * @returns Count of activity
  */
-export async function countActivity(filters?: TaskActivityQueryFiltersType): Promise<number> {
+export async function countActivity(
+  filters?: TaskActivityQueryFiltersType
+): Promise<number> {
   const prismaQuery: Prisma.TaskActivityCountArgs = {};
 
   // Apply filters

@@ -6,7 +6,7 @@ export type JSPDFRegisterableFont = {
   path: string;
   family: string;
   weight?: string;
-  style?: string
+  style?: string;
 };
 
 export type PDFReportInit = {
@@ -29,7 +29,7 @@ export type PDFReportInit = {
    */
   name: string;
   period: Interval;
-  namespace: { name: string },
+  namespace: { name: string };
   /**
    * Margin between limit of the page & actual content
    */
@@ -55,7 +55,7 @@ export type PDFReport = PDFReportInit & {
   /** Add a new page to the pdf */
   addPage: () => Promise<void>;
   /** Render the document, further modification of the document is not allowed */
-  render: () => Promise<PDFResult>;
+  render: () => PDFResult;
 };
 
 export type PDFResult = {

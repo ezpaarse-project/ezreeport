@@ -1,4 +1,4 @@
-import setupCrons from '@ezreeport/crons';
+import { CronManager } from '@ezreeport/crons';
 import type { CronType } from '@ezreeport/crons/types';
 
 import config from '~/lib/config';
@@ -6,21 +6,21 @@ import { appLogger } from '~/lib/logger';
 
 import purgeOldReports from './executors/purgeOldReports';
 
-const { timers } = config;
-
 const logger = appLogger.child({ scope: 'crons' });
 
-let service: ReturnType<typeof setupCrons> | undefined;
+const timers = {
+  purgeOldReports: {
+    timer: config.timers.purgeOldReports,
+    executor: purgeOldReports,
+  },
+};
 
-export function initCrons() {
+let manager: CronManager<keyof typeof timers> | undefined;
+
+export function initCrons(): void {
   const start = process.uptime();
 
-  service = setupCrons({
-    purgeOldReports: {
-      timer: timers.purgeOldReports,
-      executor: purgeOldReports,
-    },
-  }, logger);
+  manager = new CronManager(timers, logger);
 
   logger.info({
     msg: 'Crons initialized',
@@ -30,33 +30,33 @@ export function initCrons() {
 }
 
 export function getAllCrons(): CronType[] {
-  if (!service) {
+  if (!manager) {
     throw new Error('Crons not initialized');
   }
 
-  return service.getAllCrons();
+  return manager.getAllCrons();
 }
 
 export function stopCron(cron: string): CronType | null {
-  if (!service) {
+  if (!manager) {
     throw new Error('Crons not initialized');
   }
 
-  return service.stopCron(cron);
+  return manager.stopCron(cron);
 }
 
 export function startCron(cron: string): CronType | null {
-  if (!service) {
+  if (!manager) {
     throw new Error('Crons not initialized');
   }
 
-  return service.startCron(cron);
+  return manager.startCron(cron);
 }
 
 export function forceCron(cron: string): CronType | null {
-  if (!service) {
+  if (!manager) {
     throw new Error('Crons not initialized');
   }
 
-  return service.forceCron(cron);
+  return manager.forceCron(cron);
 }

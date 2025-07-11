@@ -1,14 +1,9 @@
-import { setupRPCServer, type RPCServerRouter } from '@ezreeport/rpc/server';
+import { RPCServer, type RPCServerRouter } from '@ezreeport/rpc/server';
 
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 
-import {
-  getAllCrons,
-  stopCron,
-  startCron,
-  forceCron,
-} from '~/models/crons';
+import { getAllCrons, stopCron, startCron, forceCron } from '~/models/crons';
 
 const logger = appLogger.child({ scope: 'rpc.server' });
 
@@ -19,10 +14,17 @@ const router: RPCServerRouter = {
   forceCron,
 };
 
-export default async function initRPCServer(channel: rabbitmq.Channel) {
+let _cronServer: RPCServer;
+
+export default function initRPCServer(channel: rabbitmq.Channel): void {
   const start = process.uptime();
 
-  await setupRPCServer(channel, 'ezreeport.rpc:crons', router, appLogger);
+  _cronServer = new RPCServer(
+    channel,
+    'ezreeport.rpc:crons',
+    appLogger,
+    router
+  );
 
   logger.info({
     initDuration: process.uptime() - start,

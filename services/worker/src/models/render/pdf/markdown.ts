@@ -1,4 +1,7 @@
-import { MdParser, type MdImgRemoteRequestor } from '@ezpaarse-project/jspdf-md';
+import {
+  MdParser,
+  type MdImgRemoteRequestor,
+} from '@ezpaarse-project/jspdf-md';
 
 import http from '~/lib/http-requests';
 import { appLogger } from '~/lib/logger';
@@ -7,9 +10,9 @@ import type { Position } from '~/models/render/types';
 import type { PDFReport } from '~/models/render/pdf/types';
 
 type MdParams = {
-  start: Position
-  width: number,
-  height: number
+  start: Position;
+  width: number;
+  height: number;
 };
 
 export type InputMdParams = Omit<MdParams, 'width' | 'height' | 'start'>;
@@ -53,23 +56,22 @@ const fetcher: MdImgRemoteRequestor = async (url, method) => {
 export const addMdToPDF = async (
   doc: PDFReport,
   data: string,
-  params: MdParams,
+  params: MdParams
 ) => {
-  const mdDoc = await (new MdParser(data, mdLogger)).parse();
+  const mdDoc = await new MdParser(data, mdLogger).parse();
 
-  await mdDoc.loadImages(
-    fetcher,
-    'assets',
-  );
+  await mdDoc.loadImages(fetcher, 'assets');
 
   mdDoc.render(
     doc.pdf,
     { pageBreak: false },
     {
+      // oxlint-disable-next-line id-length
       x: params.start.x,
+      // oxlint-disable-next-line id-length
       y: params.start.y,
       width: params.width,
       height: params.height,
-    },
+    }
   );
 };

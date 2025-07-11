@@ -7,61 +7,44 @@ import { Recurrence } from './recurrence';
  * Validation for the last extended template
  */
 const LastExtended = z.object({
-  id: z.string().min(1)
-    .describe('Template ID'),
+  id: z.string().min(1).describe('Template ID'),
 
-  name: z.string().min(1)
-    .describe('Template name'),
+  name: z.string().min(1).describe('Template name'),
 
-  tags: z.array(TemplateTag).optional()
-    .describe('Template tags'),
+  tags: z.array(TemplateTag).optional().describe('Template tags'),
 });
 
 /**
  * Validation with a task
  */
 export const Task = z.object({
-  id: z.string().min(1)
-    .describe('Task ID'),
+  id: z.string().min(1).describe('Task ID'),
 
-  name: z.string().min(1)
-    .describe('Task name'),
+  name: z.string().min(1).describe('Task name'),
 
-  description: z.string().optional()
-    .describe('Task description'),
+  description: z.string().optional().describe('Task description'),
 
-  namespaceId: z.string().min(1)
-    .describe('Namespace ID of the task'),
+  namespaceId: z.string().min(1).describe('Namespace ID of the task'),
 
-  extendedId: z.string().min(1)
-    .describe('Extended template ID'),
+  extendedId: z.string().min(1).describe('Extended template ID'),
 
-  template: TaskTemplateBody
-    .describe('Options to extend template'),
+  template: TaskTemplateBody.describe('Options to extend template'),
 
-  lastExtended: LastExtended.nullish()
-    .describe('Last extended template'),
+  lastExtended: LastExtended.nullish().describe('Last extended template'),
 
-  targets: z.array(z.email())
-    .describe('Email addresses to send report'),
+  targets: z.array(z.email()).describe('Email addresses to send report'),
 
-  recurrence: Recurrence
-    .describe('Task recurrence'),
+  recurrence: Recurrence.describe('Task recurrence'),
 
-  nextRun: z.coerce.date()
-    .describe('Next run date, must be in the future'),
+  nextRun: z.coerce.date().describe('Next run date, must be in the future'),
 
-  lastRun: z.coerce.date().nullable()
-    .describe('Last run date'),
+  lastRun: z.coerce.date().nullable().describe('Last run date'),
 
-  enabled: z.boolean()
-    .describe('Is task enabled, default to true'),
+  enabled: z.boolean().describe('Is task enabled, default to true'),
 
-  createdAt: z.coerce.date()
-    .describe('Creation date'),
+  createdAt: z.coerce.date().describe('Creation date'),
 
-  updatedAt: z.coerce.date().nullable()
-    .describe('Last update date'),
+  updatedAt: z.coerce.date().nullable().describe('Last update date'),
 });
 
 /**

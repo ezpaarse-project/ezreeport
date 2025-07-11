@@ -1,10 +1,9 @@
-import type { TemplateBodyGridType, FigureType } from '@ezreeport/models/templates';
-
 import type {
-  Size,
-  Area,
-  Margin,
-} from './types';
+  TemplateBodyGridType,
+  FigureType,
+} from '@ezreeport/models/templates';
+
+import type { Size, Area, Margin } from './types';
 
 // FIXME: WTF + still can have space
 /**
@@ -14,13 +13,14 @@ import type {
  * The math that function is using is crappy and kinda black magic (ty Geogebra) and should
  * be reworked at some time.
  *
- * @param x The margin you want to apply
+ * @param value The margin you want to apply
  *
  * @returns The modifier
  *
  * @deprecated Will be removed once a better solution is found
  */
-const calcModifier = (x: number) => 1.1607 / (1 - (1.405 * (Math.E ** (-0.604 * x))));
+const calcModifier = (value: number): number =>
+  1.1607 / (1 - 1.405 * Math.E ** (-0.604 * value));
 
 /**
  * Generate slots according to template's grid definition
@@ -31,29 +31,41 @@ const calcModifier = (x: number) => 1.1607 / (1 - (1.405 * (Math.E ** (-0.604 * 
  *
  * @returns The slots position & dimensions
  */
-export function generateSlots(viewport: Area, grid: TemplateBodyGridType, margin: Margin) {
-  const baseSlots = Array(grid.rows * grid.cols).fill(0).map<Area>((_v, i, arr) => {
-    const prev = arr[i - 1] as Area | undefined;
+export function generateSlots(
+  viewport: Area,
+  grid: TemplateBodyGridType,
+  margin: Margin
+): Area[] {
+  const baseSlots = Array(grid.rows * grid.cols)
+    .fill(0)
+    .map<Area>((_v, index, arr) => {
+      const prev = arr[index - 1] as Area | undefined;
 
-    const modifierH = calcModifier(grid.cols);
-    const modifierV = calcModifier(grid.rows);
+      const modifierH = calcModifier(grid.cols);
+      const modifierV = calcModifier(grid.rows);
 
-    const slot = {
-      x: prev ? (prev.x + prev.width + (modifierH * (margin.horizontal / 2))) : viewport.x,
-      y: prev?.y ?? viewport.y,
-      width: (viewport.width / grid.cols) - (margin.horizontal / 2),
-      height: (viewport.height / grid.rows) - (margin.vertical / 2),
-    };
+      const slot = {
+        // oxlint-disable-next-line id-length
+        x: prev
+          ? prev.x + prev.width + modifierH * (margin.horizontal / 2)
+          : viewport.x,
+        // oxlint-disable-next-line id-length
+        y: prev?.y ?? viewport.y,
+        width: viewport.width / grid.cols - margin.horizontal / 2,
+        height: viewport.height / grid.rows - margin.vertical / 2,
+      };
 
-    if (prev && i % grid.cols === 0) {
-      slot.x = viewport.x;
-      slot.y = prev.y + prev.height + (modifierV * (margin.vertical / 2));
-    }
+      if (prev && index % grid.cols === 0) {
+        // oxlint-disable-next-line id-length
+        slot.x = viewport.x;
+        // oxlint-disable-next-line id-length
+        slot.y = prev.y + prev.height + modifierV * (margin.vertical / 2);
+      }
 
-    // Reassign param to access to previous
-    arr[i] = slot;
-    return slot;
-  });
+      // Reassign param to access to previous
+      arr[index] = slot;
+      return slot;
+    });
 
   return baseSlots;
 }
@@ -72,7 +84,7 @@ function resolveManualFigureSlot(
   indices: number[],
   nextSlot: Area,
   grid: TemplateBodyGridType,
-  margin: Margin,
+  margin: Margin
 ): Size {
   const additionalSize: Size = {
     width: 0,
@@ -82,9 +94,10 @@ function resolveManualFigureSlot(
   if (
     indices.every(
       // Every index on same row
-      (sIndex, j) => Math.floor(sIndex / grid.cols) === Math.floor(indices[0] / grid.cols)
+      (sIndex, rowIndex) =>
+        Math.floor(sIndex / grid.cols) === Math.floor(indices[0] / grid.cols) &&
         // Possible (ex: we have 3 cols, and we're asking for col 1 & 3 but not 2)
-        && (j === 0 || sIndex - indices[j - 1] === 1),
+        (rowIndex === 0 || sIndex - indices[rowIndex - 1] === 1)
     )
   ) {
     additionalSize.width = nextSlot.width + margin.horizontal;
@@ -93,9 +106,10 @@ function resolveManualFigureSlot(
   if (
     indices.every(
       // Every index on same colon
-      (slotIndex, j) => slotIndex % grid.cols === indices[0] % grid.cols
+      (slotIndex, rowIndex) =>
+        slotIndex % grid.cols === indices[0] % grid.cols &&
         // Possible (ex: we have 3 rows, and we're asking for row 1 & 3 but not 2)
-        && (j === 0 || slotIndex - indices[j - 1] === grid.cols),
+        (rowIndex === 0 || slotIndex - indices[rowIndex - 1] === grid.cols)
     )
   ) {
     additionalSize.height = nextSlot.height + margin.vertical;
@@ -122,8 +136,8 @@ export function resolveSlot(
   figureIndex: number,
   grid: TemplateBodyGridType,
   viewport: Area,
-  margin: Margin,
-) {
+  margin: Margin
+): { slot: Area; figure: FigureType } {
   const figure = figures[figureIndex];
   let slot: Area;
 
@@ -143,7 +157,7 @@ export function resolveSlot(
         indices,
         slots[1],
         grid,
-        margin,
+        margin
       );
 
       slot.width += width;
@@ -164,7 +178,10 @@ export function resolveSlot(
     }
 
     // If in penultimate slot and last figure, take whole remaining space
-    if (figureIndex === slots.length - 2 && figureIndex === figures.length - 1) {
+    if (
+      figureIndex === slots.length - 2 &&
+      figureIndex === figures.length - 1
+    ) {
       slot.width += slots[figureIndex + 1].width + margin.horizontal;
     }
   }

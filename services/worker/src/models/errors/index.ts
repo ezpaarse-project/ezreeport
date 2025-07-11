@@ -4,12 +4,12 @@ export default abstract class TypedError extends Error {
   constructor(
     message: string,
     public type: ReportErrorTypesType,
-    cause?: unknown,
+    cause?: unknown
   ) {
     super(message, { cause });
   }
 
-  toString() {
+  override toString(): string {
     return `${this.type} - ${super.toString()}`;
   }
 }

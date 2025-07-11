@@ -9,11 +9,9 @@ let transporter: Transporter | undefined;
 
 const logger = appLogger.child({ scope: 'nodemailer' });
 
-const {
-  smtp,
-} = config;
+const { smtp } = config;
 
-export function getMailer() {
+export function getMailer(): Transporter {
   if (!transporter) {
     transporter = createTransport(smtp);
     transporter.on('error', (err) => {
@@ -33,13 +31,13 @@ export function getMailer() {
 }
 
 export const SMTPPing = async (): Promise<HeartbeatType> => {
-  const t = getMailer();
-  await t.verify();
+  const transport = getMailer();
+  await transport.verify();
 
   return {
     hostname: smtp.host,
     service: 'smtp',
-    version: t.transporter.version.split('[')[0],
+    version: transport.transporter.version.split('[')[0],
     updatedAt: new Date(),
   };
 };

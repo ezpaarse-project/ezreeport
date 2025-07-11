@@ -6,11 +6,13 @@ import { resolve } from 'node:path';
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
 
-const { paths: { db: dbPath } } = config;
+const {
+  paths: { db: dbPath },
+} = config;
 
 const logger = appLogger.child({ scope: 'knex' });
 
-async function migrateDB(knex: Knex) {
+async function migrateDB(knex: Knex): Promise<void> {
   try {
     const [all, toDo] = await knex.migrate.list();
     logger.debug({ msg: 'Found migrations', all, toDo });
@@ -22,7 +24,7 @@ async function migrateDB(knex: Knex) {
   }
 }
 
-function setupDB() {
+function setupDB(): Knex {
   mkdirSync(dbPath, { recursive: true });
 
   const knex = createKnex({
@@ -43,10 +45,13 @@ function setupDB() {
     useNullAsDefault: true,
   });
 
-  process.on('SIGTERM', () => {
-    knex.destroy()
-      .then(() => logger.debug({ msg: 'Database closed' }))
-      .catch((err) => logger.error({ msg: 'Failed to close database', err }));
+  process.on('SIGTERM', async () => {
+    try {
+      await knex.destroy();
+      logger.debug({ msg: 'Database closed' });
+    } catch (err) {
+      logger.error({ msg: 'Failed to close database', err });
+    }
   });
 
   logger.info({ msg: 'Database ready' });

@@ -18,7 +18,7 @@ export type ReportFilesType = z.infer<typeof ReportFiles>;
  */
 export const ReportFilesOfTask = z.record(
   z.string().describe('Report ID'),
-  ReportFiles,
+  ReportFiles
 );
 
 /**
@@ -29,19 +29,31 @@ export type ReportFilesOfTaskType = z.infer<typeof ReportFilesOfTask>;
 /**
  * Validation for a manual generation
  */
-export const InputManualReport = z.object({
-  period: z.object({
-    start: zStringToStartOfDay
-      .describe('Start of the period'),
+export const InputManualReport = z
+  .object({
+    period: z
+      .object({
+        start: zStringToStartOfDay.describe('Start of the period'),
 
-    end: zStringToEndOfDay
-      .describe('End of the period'),
-  }).optional()
-    .describe('Period to generate report for, will enable first level of debug'),
+        end: zStringToEndOfDay.describe('End of the period'),
+      })
+      .optional()
+      .describe(
+        'Period to generate report for, will enable first level of debug'
+      ),
 
-  targets: z.array(z.email()).min(1).optional()
-    .describe('Custom targets to send report to, will enable first level of debug'),
+    targets: z
+      .array(z.email())
+      .min(1)
+      .optional()
+      .describe(
+        'Custom targets to send report to, will enable first level of debug'
+      ),
 
-  debug: z.boolean().default(false).optional()
-    .describe('Enable second level of debug'),
-}).strict();
+    debug: z
+      .boolean()
+      .default(false)
+      .optional()
+      .describe('Enable second level of debug'),
+  })
+  .strict();

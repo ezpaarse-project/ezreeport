@@ -18,8 +18,8 @@ const {
 
 export default async function sendSuccessReport(
   data: MailReportQueueDataType,
-  logger: Logger,
-) {
+  logger: Logger
+): Promise<void> {
   const file = await createReportReadStream(data.filename, data.task.id);
   const name = basename(data.filename);
   const dateStr = format(data.date, 'dd/MM/yyyy');
@@ -47,10 +47,12 @@ export default async function sendSuccessReport(
             },
             unsubscribeLink,
           }),
-          attachments: [{
-            filename: name,
-            content: file,
-          }],
+          attachments: [
+            {
+              filename: name,
+              content: file,
+            },
+          ],
         });
 
         return to;
@@ -63,10 +65,12 @@ export default async function sendSuccessReport(
         });
         throw err;
       }
-    }),
+    })
   );
 
-  const successTargets = targets.filter((v) => v.status === 'fulfilled').map(({ value }) => value);
+  const successTargets = targets
+    .filter((task) => task.status === 'fulfilled')
+    .map(({ value }) => value);
   if (successTargets.length > 0) {
     logger.info({
       filename: name,

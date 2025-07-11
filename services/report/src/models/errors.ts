@@ -1,7 +1,11 @@
 import { StatusCodes } from 'http-status-codes';
 
 export class HTTPError extends Error {
-  constructor(message: string, public statusCode: StatusCodes, options?: ErrorOptions) {
+  constructor(
+    message: string,
+    public statusCode: StatusCodes,
+    options?: ErrorOptions
+  ) {
     super(message, options);
   }
 }

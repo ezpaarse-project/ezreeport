@@ -14,11 +14,7 @@
       "outputs": ["dist/**"]
     },
     "build": {
-      "dependsOn": [
-        "build:js",
-        "build:types",
-        "build:docs"
-      ]
+      "dependsOn": ["build:js", "build:types", "build:docs"]
     },
     "publish": {},
     "dev": {

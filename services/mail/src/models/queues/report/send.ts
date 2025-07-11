@@ -13,7 +13,10 @@ const mailQueueName = 'ezreeport.report:send:mail';
 
 const logger = appLogger.child({ scope: 'queues', exchange: sendExchangeName });
 
-async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage | null) {
+async function onMessage(
+  channel: rabbitmq.Channel,
+  msg: rabbitmq.ConsumeMessage | null
+): Promise<void> {
   if (!msg) {
     return;
   }
@@ -55,15 +58,23 @@ async function onMessage(channel: rabbitmq.Channel, msg: rabbitmq.ConsumeMessage
   }
 }
 
-export async function initReportSendExchange(channel: rabbitmq.Channel) {
-  const { exchange: sendExchange } = await channel.assertExchange(sendExchangeName, 'direct', { durable: false });
+export async function initReportSendExchange(
+  channel: rabbitmq.Channel
+): Promise<void> {
+  const { exchange: sendExchange } = await channel.assertExchange(
+    sendExchangeName,
+    'direct',
+    { durable: false }
+  );
 
   // Create queue to bind
-  const { queue } = await channel.assertQueue(mailQueueName, { durable: false });
+  const { queue } = await channel.assertQueue(mailQueueName, {
+    durable: false,
+  });
   channel.bindQueue(queue, sendExchange, 'mail');
 
   // Consume mail queue
-  channel.consume(queue, (m) => onMessage(channel, m));
+  channel.consume(queue, (msg) => onMessage(channel, msg));
 
   logger.debug({
     msg: 'Send exchange created',

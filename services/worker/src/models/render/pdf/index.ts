@@ -20,8 +20,9 @@ const { fontFamily, fonts } = config.report;
 
 const logger = appLogger.child({ scope: 'jspdf' });
 
-export async function initPDFEngine() {
+export async function initPDFEngine(): Promise<void[]> {
   // Register fonts
+  // oxlint-disable-next-line prefer-await-to-then
   return Promise.all(
     fonts.map(async ({ path, ...font }: JSPDFRegisterableFont) => {
       await registerJSPDFFont(path, font);
@@ -30,11 +31,14 @@ export async function initPDFEngine() {
         font,
         msg: 'Registered font',
       });
-    }),
+    })
   );
 }
 
-export type PDFReportOptions = Pick<PDFReportInit, 'name' | 'period' | 'namespace'>;
+export type PDFReportOptions = Pick<
+  PDFReportInit,
+  'name' | 'period' | 'namespace'
+>;
 
 /**
  * Print PDF's header
@@ -44,14 +48,14 @@ export type PDFReportOptions = Pick<PDFReportInit, 'name' | 'period' | 'namespac
 async function printHeader(doc: PDFReportInit): Promise<number> {
   let fontSize = 13;
   // "cursor" that will help correct positioning
-  let y = doc.margin.top + fontSize;
+  let yPos = doc.margin.top + fontSize;
   doc.pdf
     .setFont(doc.fontFamily, 'bold')
     .setFontSize(fontSize)
-    .text(doc.name, doc.margin.right, y);
+    .text(doc.name, doc.margin.right, yPos);
 
   // Move "cursor" by 1 line (fontSize) + some space
-  y += fontSize + 2;
+  yPos += fontSize + 2;
   fontSize = 10;
   doc.pdf
     .setFont(doc.fontFamily, 'normal')
@@ -60,11 +64,11 @@ async function printHeader(doc: PDFReportInit): Promise<number> {
     .text(
       `du ${format(doc.period.start, 'dd/MM/yyyy')} au ${format(doc.period.end, 'dd/MM/yyyy')}, pour ${doc.namespace.name}`,
       doc.margin.right,
-      y,
+      yPos
     );
 
   // Move "cursor" by 2 lines (2*fontSize) + some space
-  const cursorOffset = y + 2 * fontSize + 2;
+  const cursorOffset = yPos + 2 * fontSize + 2;
 
   // Print first logo
   const logo = logos.at(0);
@@ -72,7 +76,7 @@ async function printHeader(doc: PDFReportInit): Promise<number> {
     return cursorOffset;
   }
 
-  const logoHeight = y - doc.margin.top; // Wanted height of logo
+  const logoHeight = yPos - doc.margin.top; // Wanted height of logo
   const data = await readFile(logo.path, 'base64');
   const {
     data: imageData,
@@ -87,7 +91,9 @@ async function printHeader(doc: PDFReportInit): Promise<number> {
   doc.pdf
     .addImage({
       imageData,
+      // oxlint-disable-next-line id-length
       x: logoX,
+      // oxlint-disable-next-line id-length
       y: logoY,
       height: logoHeight,
       width: logoWidth,
@@ -104,7 +110,7 @@ async function printHeader(doc: PDFReportInit): Promise<number> {
  */
 async function printFooter(doc: PDFReportInit): Promise<number> {
   const footerLogos = logos.slice(1);
-  const imagesData = [] as { data: string, width: number, url: string }[];
+  const imagesData = [] as { data: string; width: number; url: string }[];
   const height = 20; // Wanted height of logos
   const margin = 10;
   let totalWidth = 0;
@@ -118,7 +124,7 @@ async function printFooter(doc: PDFReportInit): Promise<number> {
       width: rawWidth,
     } = await loadImageAsset(`data:image/png;base64,${data}`);
     // Scaling down logo while preserving aspect ratio
-    const width = ((height * rawWidth) / rawHeight);
+    const width = (height * rawWidth) / rawHeight;
     totalWidth += width + margin;
 
     imagesData.push({
@@ -128,55 +134,59 @@ async function printFooter(doc: PDFReportInit): Promise<number> {
     });
   }
 
-  let x = (doc.width / 2) - (totalWidth / 2);
-  const y = doc.height - doc.margin.bottom - height + 1;
+  let xPos = doc.width / 2 - totalWidth / 2;
+  const yPos = doc.height - doc.margin.bottom - height + 1;
 
   // Print image
   for (const img of imagesData) {
     doc.pdf
       .addImage({
         imageData: img.data,
-        x,
-        y,
+        // oxlint-disable-next-line id-length
+        x: xPos,
+        // oxlint-disable-next-line id-length
+        y: yPos,
         height,
         width: img.width,
       })
-      .link(x, y, img.width, height, { url: img.url });
+      .link(xPos, yPos, img.width, height, { url: img.url });
 
-    x += img.width + margin;
+    xPos += img.width + margin;
   }
 
   // Page numbers are printed when rendering (because we don't know the total page count before)
 
-  return doc.height - y + 2;
+  return doc.height - yPos + 2;
 }
 
 /**
  * Print page numbers, export PDF and reset document
  */
-async function renderDoc(doc: PDFReportInit): Promise<PDFResult> {
+function renderDoc(doc: PDFReportInit): PDFResult {
   // Print page numbers
   const totalPageCount = doc.pdf.internal.pages.length - 1;
   for (let currPage = 1; currPage <= totalPageCount; currPage += 1) {
     doc.pdf.setPage(currPage);
 
-    const x = doc.width - doc.margin.right;
-    const y = doc.height - doc.margin.bottom;
+    const xPos = doc.width - doc.margin.right;
+    const yPos = doc.height - doc.margin.bottom;
     const pageNoText = `${currPage} / ${totalPageCount}`;
-    const w = doc.pdf
+    const width = doc.pdf
       .setFont(doc.fontFamily, 'normal')
       .setTextColor('#000000')
       .setFontSize(13)
       .getTextWidth(pageNoText);
 
     doc.pdf
-      .text(pageNoText, x, y - 3, { align: 'right' })
+      .text(pageNoText, xPos, yPos - 3, { align: 'right' })
       .setFontSize(8)
       .text(
         `Généré le ${format(doc.today, 'dd/MM/yyyy')}`,
-        x - w - 15,
-        y - 5,
-        { align: 'right' },
+        xPos - width - 15,
+        yPos - 5,
+        {
+          align: 'right',
+        }
       );
   }
 
@@ -230,13 +240,17 @@ export async function createPDF(params: PDFReportOptions): Promise<PDFReport> {
   const doc: PDFReport = {
     ...init,
     offset: {
-      top: 5 + await printHeader(init),
+      top: 5 + (await printHeader(init)),
       right: init.margin.right,
-      bottom: 10 + await printFooter(init),
+      bottom: 10 + (await printFooter(init)),
       left: init.margin.left,
     },
-    addPage() { return addDocPage(this); },
-    render() { return renderDoc(this); },
+    addPage() {
+      return addDocPage(this);
+    },
+    render() {
+      return renderDoc(this);
+    },
   };
 
   return doc;
