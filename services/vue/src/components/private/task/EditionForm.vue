@@ -147,7 +147,12 @@ const emit = defineEmits<{
 
 // Utils composables
 const { t } = useI18n();
-const { refreshMapping } = useTemplateEditor();
+const { refreshMapping } = useTemplateEditor({
+  // grid: props.modelValue.template.grid,
+  index: props.modelValue.template.index,
+  dateField: props.modelValue.template.dateField,
+  namespaceId: props.modelValue.namespaceId,
+});
 
 /** Is basic form valid */
 const isValid = ref(false);

@@ -202,7 +202,9 @@ const emit = defineEmits<{
 
 // Utils composables
 const { t } = useI18n();
-const { refreshMapping } = useTemplateEditor();
+const { refreshMapping } = useTemplateEditor({
+  namespaceId: props.namespaceId,
+});
 
 /** Is basic form valid */
 const isValid = ref(false);
