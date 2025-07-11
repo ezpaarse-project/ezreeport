@@ -1,7 +1,7 @@
 import { setTimeout } from 'node:timers/promises';
 
 // oxlint-disable-next-line id-length
-import type z from 'zod/v4';
+import type { z } from 'zod';
 import amqp from 'amqplib';
 
 import type { Logger } from '@ezreeport/logger';

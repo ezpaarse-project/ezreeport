@@ -1,7 +1,8 @@
-import { setup, type Preview } from '@storybook/vue3';
+import { setup, type Preview } from '@storybook/vue3-vite';
 
 import { useI18n } from 'vue-i18n';
 
+// oxlint-disable-next-line no-unassigned-import
 import '@mdi/font/css/materialdesignicons.css';
 import { createVuetify, useTheme } from 'vuetify';
 import { createVueI18nAdapter } from 'vuetify/locale/adapters/vue-i18n';
@@ -75,7 +76,7 @@ const preview: Preview = {
   decorators: [
     (story, { globals: { locale, theme } }) => ({
       components: { story },
-      setup() {
+      setup(): void {
         const { locale: i18nLocale } = useI18n();
         i18nLocale.value = locale;
 

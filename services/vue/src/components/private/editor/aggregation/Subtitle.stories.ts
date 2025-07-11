@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 import type { FigureBaseAggregation, FigureRawAggregation } from '~sdk/helpers/aggregations';
 

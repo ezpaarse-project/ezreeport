@@ -1,4 +1,4 @@
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 import { endOfDay, parseISO, startOfDay } from '@ezreeport/dates';
 import { ensureArray } from './utils';
@@ -58,4 +58,4 @@ export const zStringToEndOfDay = zStringToDay.transform((value) =>
   endOfDay(value)
 );
 
-export * from 'zod/v4';
+export * from 'zod';

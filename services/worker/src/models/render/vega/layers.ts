@@ -527,7 +527,6 @@ export const createArcSpec: CreateSpecFnc = (type, data, params) => {
       {
         field: 'label',
         scale: prepareColorScale(type, data, params),
-        // @ts-expect-error
         sort: {
           field: 'value',
           order: params.order === 'asc' ? 'ascending' : 'descending',

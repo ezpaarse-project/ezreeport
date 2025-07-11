@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 import { createVegaFigureHelper, createMetricFigureHelper, createTableFigureHelper } from '~sdk/helpers/figures';
 import { createLayoutHelper, createTaskLayoutHelper } from '~sdk/helpers/layouts';

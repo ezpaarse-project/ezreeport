@@ -10,5 +10,14 @@
     "unicorn/no-document-cookie": "error",
     "unicorn/prefer-event-target": "error",
     "unicorn/prefer-add-event-listener": "error"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["components/**/*.stories.ts"],
+      "rules": {
+        "no-default-import": "off",
+        "explicit-return-type": "off"
+      }
+    }
+  ]
 }

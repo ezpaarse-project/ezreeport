@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 import type { TemplateFilter } from '~sdk/helpers/filters';
 import { createMetricFigureHelper, type MetricLabel } from '~sdk/helpers/figures';

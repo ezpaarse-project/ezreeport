@@ -3,6 +3,7 @@ import { en as enV, fr as frV } from 'vuetify/locale';
 
 import { en as enR, fr as frR } from '../src/locale';
 
+// oxlint-disable-next-line no-explicit-any
 export default createI18n<any>({
   locale: 'en',
   fallbackLocale: 'en',
