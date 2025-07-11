@@ -18,7 +18,7 @@ export default function useServerSidePagination<T>(
   const total = ref(0);
 
   const page = ref(1);
-  const itemsPerPage = isRef(opts.itemsPerPage) ? opts.itemsPerPage : ref(opts.itemsPerPage || 10);
+  const itemsPerPage = isRef(opts.itemsPerPage) ? opts.itemsPerPage : ref(opts.itemsPerPage ?? 10);
 
   const sortBy = ref<string | undefined>(opts.sortBy);
   const order = ref<'asc' | 'desc'>(opts.order || 'asc');
