@@ -64,7 +64,9 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         content,
         {
           page: request.query.page,
-          total: await memberships.countMemberships(),
+          total: await memberships.countMemberships({
+            username: request.params.username,
+          }),
           count: content.length,
         },
         reply

@@ -155,8 +155,14 @@ export async function deleteMembership({
  *
  * @returns Count of memberships
  */
-export async function countMemberships(): Promise<number> {
-  const result = await prisma.membership.count({ select: { username: true } });
+export async function countMemberships({
+  username,
+  namespaceId,
+}: Partial<FindOneMembership> = {}): Promise<number> {
+  const result = await prisma.membership.count({
+    where: { namespaceId, username },
+    select: { username: true },
+  });
 
   return result.username;
 }
