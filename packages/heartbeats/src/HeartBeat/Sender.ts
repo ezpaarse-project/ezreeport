@@ -32,6 +32,10 @@ export class HeartbeatSender extends HeartbeatManager {
 
     this.interval = setInterval(() => this.send(), this.frequency);
 
+    this._watchingFileSystems = Object.entries(
+      service.filesystems ?? {}
+    ).filter(([, path]) => path);
+
     // If connection to rabbitmq is lost, stop regular heartbeats (and note rabbitmq as down)
     this.channel.on('close', () => {
       clearInterval(this.interval);
