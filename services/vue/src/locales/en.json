@@ -70,7 +70,8 @@
           "title": "An error occurred during generation",
           "layout": "Layout",
           "figure": "Figure",
-          "type": "Type"
+          "type": "Type",
+          "name": "Name"
         },
         "success": {
           "title": "The report was generated with success",
