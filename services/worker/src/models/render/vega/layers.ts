@@ -4,9 +4,9 @@ import {
   type ExprRef,
   type SignalRef,
 } from 'vega';
-import type { Mark } from 'vega-lite/types_unstable/mark.js';
-import type { UnitSpec } from 'vega-lite/types_unstable/spec/unit.js';
-import type { TitleParams } from 'vega-lite/types_unstable/title.js';
+import type { Mark } from 'vega-lite/build/src/mark';
+import type { UnitSpec } from 'vega-lite/build/src/spec/unit';
+import type { TitleParams } from 'vega-lite/build/src/title';
 import { merge } from 'lodash';
 import chroma from 'chroma-js';
 

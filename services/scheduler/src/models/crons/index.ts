@@ -9,7 +9,7 @@ import generateReports from './executors/generateReports';
 const logger = appLogger.child({ scope: 'crons' });
 
 const timers = {
-  purgeOldReports: {
+  generateReports: {
     timer: config.timers.generateReports,
     executor: generateReports,
   },

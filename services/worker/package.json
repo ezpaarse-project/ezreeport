@@ -48,8 +48,8 @@
     "lodash": "^4.17.21",
     "tsx": "catalog:",
     "typescript": "catalog:",
-    "vega": "^6.1.2",
-    "vega-lite": "^6.2.0"
+    "vega": "^5.33.0",
+    "vega-lite": "^5.23.0"
   },
   "devDependencies": {
     "@types/chroma-js": "^3.1.1",

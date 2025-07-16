@@ -25,18 +25,20 @@ export type RPCStreamRouter = {
   createReadStream?: (...args: any[]) => Readable | Promise<Readable>;
 };
 
+type RPCServerTransport = JSONMessageTransport<JSONMessageTransportQueue>;
+
 export class RPCStreamServer {
-  protected logger: Logger;
+  private logger: Logger;
 
-  protected transport: Promise<JSONMessageTransport<JSONMessageTransportQueue>>;
+  private transport: Promise<RPCServerTransport>;
 
-  protected alreadySeenMessages = new Set<string>();
+  private alreadySeenMessages = new Set<string>();
 
   constructor(
-    protected channel: rabbitmq.Channel,
-    protected queueName: string,
+    channel: rabbitmq.Channel,
+    queueName: string,
     appLogger: Logger,
-    protected router: RPCStreamRouter,
+    private router: RPCStreamRouter,
     private opts?: { compression?: boolean }
   ) {
     this.logger = appLogger.child({
@@ -44,36 +46,42 @@ export class RPCStreamServer {
       queue: queueName,
     });
 
-    this.transport = this.assertTransport();
+    this.transport = this.assertTransport(channel, queueName);
   }
 
-  protected async assertTransport(): Promise<
-    JSONMessageTransport<JSONMessageTransportQueue>
-  > {
-    await this.channel.prefetch(1);
+  private async assertTransport(
+    channel: rabbitmq.Channel,
+    queueName: string
+  ): Promise<RPCServerTransport> {
+    try {
+      await channel.prefetch(1);
 
-    // Create rpc queue
-    const rpcQueue = await this.channel.assertQueue(this.queueName, {
-      durable: false,
-    });
-    this.logger.debug({
-      msg: 'Queue created',
-      ...rpcQueue,
-    });
+      // Create rpc queue
+      const rpcQueue = await channel.assertQueue(queueName, {
+        durable: false,
+      });
+      this.logger.debug({
+        msg: 'Queue created',
+        ...rpcQueue,
+      });
 
-    // Consume rpc queue
-    await this.channel.consume(rpcQueue.queue, (msg) => {
-      if (msg) {
-        this.onRPCMessage(msg);
-      }
-    });
+      // Consume rpc queue
+      await channel.consume(rpcQueue.queue, (msg) => {
+        if (msg) {
+          this.onRPCMessage(msg);
+        }
+      });
 
-    this.logger.debug('RPC stream server setup');
+      this.logger.debug('RPC stream server setup');
 
-    return {
-      channel: this.channel,
-      queue: { name: this.queueName },
-    };
+      return {
+        channel: channel,
+        queue: { name: queueName },
+      };
+    } catch (err) {
+      this.logger.error({ msg: "Couldn't setup RPC stream server", err });
+      throw err;
+    }
   }
 
   private async onWriteRequest(
@@ -82,6 +90,8 @@ export class RPCStreamServer {
     if (!this.router.createWriteStream) {
       throw new Error('Method not found');
     }
+
+    const { channel } = await this.transport;
 
     let stream;
     try {
@@ -95,7 +105,7 @@ export class RPCStreamServer {
 
     // Read data from queue and write it to the stream
     await readStreamFromQueue(
-      this.channel,
+      channel,
       request.dataQueue,
       stream,
       this.logger,
@@ -112,6 +122,8 @@ export class RPCStreamServer {
       throw new Error('Method not found');
     }
 
+    const { channel } = await this.transport;
+
     let stream;
     try {
       stream = await this.router.createReadStream(...request.params);
@@ -124,7 +136,7 @@ export class RPCStreamServer {
 
     // Read data from stream and write it to the queue
     const { dataQueue } = await writeStreamIntoQueue(
-      this.channel,
+      channel,
       stream,
       this.logger,
       this.opts?.compression !== false
@@ -133,35 +145,7 @@ export class RPCStreamServer {
     return { dataQueue };
   }
 
-  protected destroyMessage(
-    request: RPCStreamRequestType,
-    msg: rabbitmq.ConsumeMessage,
-    err?: Error
-  ): void {
-    const alreadySeenMessage = this.alreadySeenMessages.has(
-      msg.properties.correlationId
-    );
-
-    this.logger.error({
-      msg: 'Error while processing streams',
-      method: request.method,
-      params: request.params,
-      correlationId: msg.properties.correlationId,
-      err,
-    });
-
-    this.channel.nack(msg, undefined, !alreadySeenMessage);
-    this.logger.debug({
-      msg: 'Result not found, requeuing request',
-      method: request.method,
-      params: request.params,
-      correlationId: msg.properties.correlationId,
-    });
-
-    this.alreadySeenMessages.add(msg.properties.correlationId);
-  }
-
-  protected getMethodOfMessage(
+  private getMethodOfMessage(
     request: RPCStreamRequestType
   ): RPCStreamRouter['createReadStream' | 'createWriteStream'] | undefined {
     if (!this.router[request.method]) {
@@ -176,7 +160,9 @@ export class RPCStreamServer {
     return this.router[request.method];
   }
 
-  protected async onRPCMessage(msg: rabbitmq.ConsumeMessage): Promise<void> {
+  private async onRPCMessage(msg: rabbitmq.ConsumeMessage): Promise<void> {
+    const { channel } = await this.transport;
+
     // Parse message
     const {
       data: request,
@@ -189,13 +175,13 @@ export class RPCStreamServer {
         data: process.env.NODE_ENV === 'production' ? undefined : raw,
         err: parseError,
       });
-      this.channel.nack(msg, undefined, false);
+      channel.nack(msg, undefined, false);
       return;
     }
 
     const method = this.getMethodOfMessage(request);
     if (!method) {
-      this.channel.nack(msg, undefined, false);
+      channel.nack(msg, undefined, false);
       return;
     }
 
@@ -234,7 +220,7 @@ export class RPCStreamServer {
           err: requeueReason,
         });
 
-        this.channel.nack(msg, undefined, !alreadySeenMessage);
+        channel.nack(msg, undefined, !alreadySeenMessage);
         this.logger.debug({
           msg: 'Result not found, requeuing request',
           methodName: request.method,
@@ -260,7 +246,7 @@ export class RPCStreamServer {
     }
 
     const { size } = sendJSONMessage(
-      { channel: this.channel, queue: { name: msg.properties.replyTo } },
+      { channel: channel, queue: { name: msg.properties.replyTo } },
       response,
       { correlationId: msg.properties.correlationId, replyTo }
     );
@@ -271,6 +257,6 @@ export class RPCStreamServer {
       size,
       sizeUnit: 'B',
     });
-    this.channel.ack(msg);
+    channel.ack(msg);
   }
 }

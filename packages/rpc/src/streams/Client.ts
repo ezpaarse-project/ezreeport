@@ -1,17 +1,14 @@
 import { PassThrough, type Readable, type Writable } from 'node:stream';
+import { randomUUID } from 'node:crypto';
 
 import type { Logger } from '@ezreeport/logger';
-import type {
-  JSONMessageTransport,
-  JSONMessageTransportQueue,
-  rabbitmq,
-} from '@ezreeport/rabbitmq';
-
 import {
-  BaseRPCClient,
-  type ResponseQueue,
-  type OnMessageFnc,
-} from '../BaseClient';
+  type rabbitmq,
+  type JSONMessageTransport,
+  type JSONMessageTransportQueue,
+  parseJSONMessage,
+  sendJSONMessage,
+} from '@ezreeport/rabbitmq';
 
 import { setIdleTimeout } from '../timeout';
 import {
@@ -21,8 +18,22 @@ import {
 } from './types';
 import { readStreamFromQueue, writeStreamIntoQueue } from './queue-streams';
 
-export class RPCStreamClient extends BaseRPCClient {
-  protected transport: Promise<JSONMessageTransport<JSONMessageTransportQueue>>;
+type OnMessageFnc<ResponseType extends RPCStreamResponseType> = (
+  msg: rabbitmq.ConsumeMessage,
+  data: ResponseType
+) => Promise<void> | void;
+
+type ResponseQueue = {
+  correlationId: string;
+  replyTo: string;
+};
+
+type RPCClientTransport = JSONMessageTransport<JSONMessageTransportQueue>;
+
+export class RPCStreamClient {
+  private logger: Logger;
+
+  private transport: Promise<RPCClientTransport>;
 
   constructor(
     channel: rabbitmq.Channel,
@@ -30,45 +41,74 @@ export class RPCStreamClient extends BaseRPCClient {
     appLogger: Logger,
     private opts?: { compression?: boolean }
   ) {
-    super(channel, queueName, appLogger);
-
     this.logger = appLogger.child({
       scope: 'rpc-stream.client',
       queue: queueName,
     });
 
-    this.transport = this.assertTransport();
+    this.transport = this.assertTransport(channel, queueName);
   }
 
-  protected assertTransport(): Promise<
-    JSONMessageTransport<JSONMessageTransportQueue>
-  > {
+  private assertTransport(
+    channel: rabbitmq.Channel,
+    queueName: string
+  ): Promise<RPCClientTransport> {
+    this.logger.debug('RPC client setup');
     // oxlint-disable-next-line promise/prefer-await-to-then
     return Promise.resolve({
-      channel: this.channel,
-      queue: { name: this.queueName },
+      channel: channel,
+      queue: { name: queueName },
     });
   }
 
-  protected override setupResponseQueue(
+  private async setupResponseQueue(
     onMessage: OnMessageFnc<RPCStreamResponseType>
   ): Promise<ResponseQueue> {
-    return this._setupResponseQueue(onMessage, RPCStreamResponse);
-  }
+    const { channel } = await this.transport;
 
-  protected override sendRequest(
-    content: RPCStreamRequestType,
-    opts: Omit<rabbitmq.Options.Publish, 'contentType'>
-  ): Promise<void> {
-    return super._sendRequest(content, opts);
+    const correlationId = randomUUID();
+    const { queue: responseQueue } = await channel.assertQueue('', {
+      exclusive: true,
+      durable: false,
+    });
+
+    await channel.consume(responseQueue, async (msg) => {
+      if (!msg) {
+        return;
+      }
+      if (msg.properties.correlationId !== correlationId) {
+        channel.nack(msg);
+        return;
+      }
+
+      // Parse message
+      const { data, raw, parseError } = parseJSONMessage(
+        msg,
+        RPCStreamResponse
+      );
+      if (!data) {
+        this.logger.error({
+          msg: 'Invalid data',
+          data: process.env.NODE_ENV === 'production' ? undefined : raw,
+          err: parseError,
+        });
+        channel.nack(msg, undefined, false);
+        return;
+      }
+
+      await onMessage(msg, data);
+    });
+
+    return { correlationId, replyTo: responseQueue };
   }
 
   public async requestWriteStream(...params: unknown[]): Promise<Writable> {
+    const { channel, queue } = await this.transport;
     const stream = new PassThrough();
 
     // Read data from stream and write it to the queue
     const { dataQueue } = await writeStreamIntoQueue(
-      this.channel,
+      channel,
       stream,
       this.logger,
       this.opts?.compression !== false
@@ -82,7 +122,7 @@ export class RPCStreamClient extends BaseRPCClient {
       }
 
       stream.emit('error', new Error('RPC Request timed out'));
-      await this.channel.deleteQueue(replyTo);
+      await channel.deleteQueue(replyTo);
     }, false);
 
     // Wait and handle response
@@ -92,18 +132,26 @@ export class RPCStreamClient extends BaseRPCClient {
       // TODO: handle error ?
 
       if (replyTo) {
-        await this.channel.deleteQueue(replyTo);
+        await channel.deleteQueue(replyTo);
       }
-      this.channel.ack(msg);
+      channel.ack(msg);
     });
 
     const { correlationId } = responseQueue;
     replyTo = responseQueue.replyTo;
 
-    this.sendRequest(
+    const { size } = sendJSONMessage<RPCStreamRequestType>(
+      { channel, queue },
       { method: 'createWriteStream', params, dataQueue },
       { correlationId, replyTo, expiration: timeout.duration }
     );
+    this.logger.debug({
+      msg: 'Request sent',
+      method: 'createWriteStream',
+      params,
+      size,
+      sizeUnit: 'B',
+    });
 
     timeout.start();
 
@@ -111,6 +159,7 @@ export class RPCStreamClient extends BaseRPCClient {
   }
 
   public async requestReadStream(...params: unknown[]): Promise<Readable> {
+    const { channel, queue } = await this.transport;
     const stream = new PassThrough();
     let replyTo: string | undefined;
 
@@ -120,7 +169,7 @@ export class RPCStreamClient extends BaseRPCClient {
       }
 
       stream.emit('error', new Error('RPC Request timed out'));
-      await this.channel.deleteQueue(replyTo);
+      await channel.deleteQueue(replyTo);
     }, false);
 
     // Wait and handle response
@@ -134,7 +183,7 @@ export class RPCStreamClient extends BaseRPCClient {
       if (data.result) {
         // Read data from stream and write it to the queue
         await readStreamFromQueue(
-          this.channel,
+          channel,
           msg.properties.replyTo,
           stream,
           this.logger,
@@ -143,18 +192,26 @@ export class RPCStreamClient extends BaseRPCClient {
       }
 
       if (replyTo) {
-        await this.channel.deleteQueue(replyTo);
+        await channel.deleteQueue(replyTo);
       }
-      this.channel.ack(msg);
+      channel.ack(msg);
     });
 
     const { correlationId } = responseQueue;
     replyTo = responseQueue.replyTo;
 
-    this.sendRequest(
+    const { size } = sendJSONMessage<RPCStreamRequestType>(
+      { channel, queue },
       { method: 'createReadStream', params },
       { correlationId, replyTo, expiration: timeout.duration }
     );
+    this.logger.debug({
+      msg: 'Request sent',
+      method: 'createReadStream',
+      params,
+      size,
+      sizeUnit: 'B',
+    });
 
     timeout.start();
 

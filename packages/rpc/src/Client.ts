@@ -1,17 +1,16 @@
 import EventEmitter from 'node:events';
+import { randomUUID } from 'node:crypto';
 
 import type { Logger } from '@ezreeport/logger';
-import type {
-  rabbitmq,
-  JSONMessageTransport,
-  JSONMessageTransportExchange,
+import {
+  type rabbitmq,
+  type JSONMessageTransport,
+  type JSONMessageTransportExchange,
+  type JSONMessageTransportQueue,
+  parseJSONMessage,
+  sendJSONMessage,
 } from '@ezreeport/rabbitmq';
 
-import {
-  BaseRPCClient,
-  type OnMessageFnc,
-  type ResponseQueue,
-} from './BaseClient';
 import { setIdleTimeout } from './timeout';
 
 import {
@@ -20,23 +19,38 @@ import {
   type RPCResponseType,
 } from './types';
 
-export class RPCClient extends BaseRPCClient {
-  protected transport: Promise<
-    JSONMessageTransport<JSONMessageTransportExchange>
-  >;
+type OnMessageFnc<ResponseType extends RPCResponseType> = (
+  msg: rabbitmq.ConsumeMessage,
+  data: ResponseType
+) => Promise<void> | void;
+
+type ResponseQueue = {
+  correlationId: string;
+  replyTo: string;
+};
+
+type RPCClientTransport = JSONMessageTransport<
+  JSONMessageTransportQueue & JSONMessageTransportExchange
+>;
+
+export class RPCClient {
+  private logger: Logger;
+
+  private transport: Promise<RPCClientTransport>;
 
   constructor(channel: rabbitmq.Channel, queueName: string, appLogger: Logger) {
-    super(channel, queueName, appLogger);
+    this.logger = appLogger.child({ scope: 'rpc.client', queue: queueName });
 
-    this.transport = this.assertTransport();
+    this.transport = this.assertTransport(channel, queueName);
   }
 
-  protected async assertTransport(): Promise<
-    JSONMessageTransport<JSONMessageTransportExchange>
-  > {
+  private async assertTransport(
+    channel: rabbitmq.Channel,
+    queueName: string
+  ): Promise<RPCClientTransport> {
     try {
-      const { exchange: name, ...exchange } = await this.channel.assertExchange(
-        `${this.queueName}:all`,
+      const { exchange: name, ...exchange } = await channel.assertExchange(
+        `${queueName}:all`,
         'fanout',
         { durable: false }
       );
@@ -44,11 +58,12 @@ export class RPCClient extends BaseRPCClient {
         msg: 'RPC client setup',
         ...exchange,
         exchange: name,
-        queueName: this.queueName,
+        queueName: queueName,
       });
 
       return {
-        channel: this.channel,
+        channel: channel,
+        queue: { name: queueName },
         exchange: { name, routingKey: '' },
       };
     } catch (err) {
@@ -57,26 +72,53 @@ export class RPCClient extends BaseRPCClient {
     }
   }
 
-  protected setupResponseQueue(
+  private async setupResponseQueue(
     onMessage: OnMessageFnc<RPCResponseType>
   ): Promise<ResponseQueue> {
-    return super._setupResponseQueue(onMessage, RPCResponse);
-  }
+    const { channel } = await this.transport;
 
-  protected override sendRequest(
-    content: RPCRequestType,
-    opts: Omit<rabbitmq.Options.Publish, 'contentType'>
-  ): Promise<void> {
-    return super._sendRequest(content, opts);
+    const correlationId = randomUUID();
+    const { queue: responseQueue } = await channel.assertQueue('', {
+      exclusive: true,
+      durable: false,
+    });
+
+    await channel.consume(responseQueue, async (msg) => {
+      if (!msg) {
+        return;
+      }
+      if (msg.properties.correlationId !== correlationId) {
+        channel.nack(msg);
+        return;
+      }
+
+      // Parse message
+      const { data, raw, parseError } = parseJSONMessage(msg, RPCResponse);
+      if (!data) {
+        this.logger.error({
+          msg: 'Invalid data',
+          data: process.env.NODE_ENV === 'production' ? undefined : raw,
+          err: parseError,
+        });
+        channel.nack(msg, undefined, false);
+        return;
+      }
+
+      await onMessage(msg, data);
+    });
+
+    return { correlationId, replyTo: responseQueue };
   }
 
   public async callAll(
     method: string,
     ...params: unknown[]
   ): Promise<(unknown | Error)[]> {
-    // oxlint-disable-next-line unicorn/prefer-event-target
+    const { channel, exchange } = await this.transport;
+
     const events = new EventEmitter();
     const results: (unknown | Error)[] = [];
+
     let replyTo: string | undefined;
 
     const timeout = setIdleTimeout(
@@ -90,26 +132,25 @@ export class RPCClient extends BaseRPCClient {
         } else {
           events.emit('error', new Error('RPC Request timed out'));
         }
-        await this.channel.deleteQueue(replyTo);
+        await channel.deleteQueue(replyTo);
       },
       false,
       1000
     );
 
-    const responseQueue = await this.setupResponseQueue((msg, data) => {
+    const responseQueue = await this.setupResponseQueue(async (msg, data) => {
       timeout.reset();
 
       if (data.error) {
         results.push(new Error(data.error));
-        this.channel.ack(msg);
+        channel.ack(msg);
         return;
       }
 
       results.push(data.result);
-      this.channel.ack(msg);
+      channel.ack(msg);
     });
 
-    // oxlint-disable-next-line promise/avoid-new
     const promise = new Promise<(unknown | Error)[]>((resolve, reject) => {
       events.on('error', (err) => reject(err));
       events.on('end', () => resolve(results));
@@ -118,54 +159,56 @@ export class RPCClient extends BaseRPCClient {
     const { correlationId } = responseQueue;
     replyTo = responseQueue.replyTo;
 
-    await this.sendRequest(
+    const { size } = sendJSONMessage<RPCRequestType>(
+      { channel, exchange },
       { method, params, toAll: true },
       { correlationId, replyTo, expiration: timeout.duration }
     );
+    this.logger.debug({
+      msg: 'Request sent',
+      method,
+      params,
+      size,
+      sizeUnit: 'B',
+    });
+
+    timeout.start();
 
     return promise;
   }
 
   public async call(method: string, ...params: unknown[]): Promise<unknown> {
-    // oxlint-disable-next-line unicorn/prefer-event-target
+    const { channel, queue } = await this.transport;
+
     const events = new EventEmitter();
-    const results: (unknown | Error)[] = [];
+
     let replyTo: string | undefined;
 
-    const timeout = setIdleTimeout(
-      async () => {
-        if (!replyTo) {
-          return;
-        }
+    const timeout = setIdleTimeout(async () => {
+      if (!replyTo) {
+        return;
+      }
 
-        if (results.length > 0) {
-          events.emit('end', results);
-        } else {
-          events.emit('error', new Error('RPC Request timed out'));
-        }
-        await this.channel.deleteQueue(replyTo);
-      },
-      false,
-      1000
-    );
+      events.emit('error', new Error('RPC Request timed out'));
+      await channel.deleteQueue(replyTo);
+    }, false);
 
     const responseQueue = await this.setupResponseQueue(async (msg, data) => {
       timeout.stop();
 
       if (data.error) {
         events.emit('error', new Error(data.error));
-        this.channel.ack(msg);
+        channel.ack(msg);
         return;
       }
 
       if (replyTo) {
-        await this.channel.deleteQueue(replyTo);
+        await channel.deleteQueue(replyTo);
         events.emit('end', data.result);
-        this.channel.ack(msg);
+        channel.ack(msg);
       }
     });
 
-    // oxlint-disable-next-line promise/avoid-new
     const promise = new Promise<unknown>((resolve, reject) => {
       events.on('error', (err) => reject(err));
       events.on('end', (data) => resolve(data));
@@ -174,10 +217,18 @@ export class RPCClient extends BaseRPCClient {
     const { correlationId } = responseQueue;
     replyTo = responseQueue.replyTo;
 
-    await this.sendRequest(
+    const { size } = sendJSONMessage<RPCRequestType>(
+      { channel, queue },
       { method, params },
       { correlationId, replyTo, expiration: timeout.duration }
     );
+    this.logger.debug({
+      msg: 'Request sent',
+      method,
+      params,
+      size,
+      sizeUnit: 'B',
+    });
 
     timeout.start();
 

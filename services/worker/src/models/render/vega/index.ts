@@ -1,6 +1,6 @@
 import { parse, View, type Locale as VegaLocale } from 'vega';
 import { compile, type TopLevelSpec } from 'vega-lite';
-import type { Mark } from 'vega-lite/types_unstable/mark.js';
+import type { Mark } from 'vega-lite/build/src/mark';
 import { registerFont } from 'canvas';
 import { compile as handlebars } from 'handlebars';
 

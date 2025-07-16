@@ -6,9 +6,11 @@
 
     // Used by TypeScript
     "lib": ["ES2024"],
-    "module": "NodeNext",
+    "moduleDetection": "force",
+    "module": "Preserve",
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "isolatedModules": true,
     "noImplicitOverride": true
   }
 }

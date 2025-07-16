@@ -2,7 +2,7 @@ import config from 'config';
 
 import { watch } from 'node:fs/promises';
 
-// const CONFIG_RELOAD_EXIT_CODE = 42; // Why 42 ? Because this is the way of life.
+const ERR_CAUSE = 'ERR_CONFIG_CHANGED';
 
 /**
  * Setup watcher for a config file
@@ -18,22 +18,34 @@ async function setupConfigWatcher(
 ): Promise<void> {
   try {
     const watcher = watch(path, { persistent: false, signal });
-    logger.debug(JSON.stringify({ msg: 'Watching config file', path }));
+    logger.debug(
+      JSON.stringify({
+        msg: 'Watching config file',
+        path,
+      })
+    );
 
     for await (const event of watcher) {
       logger.info(
-        JSON.stringify({ event, msg: 'Config changed, exiting...', path })
+        JSON.stringify({
+          event,
+          msg: 'Config changed, exiting...',
+          path,
+        })
       );
-      // // oxlint-disable-next-line unicorn/no-process-exit
-      // process.exit(CONFIG_RELOAD_EXIT_CODE);
-      throw new Error('Config changed, exiting');
+      throw new Error('Config changed, exiting', { cause: ERR_CAUSE });
     }
   } catch (err) {
-    logger.warn({
-      err,
-      msg: 'Failed to watch config file',
-      path,
-    });
+    if (err instanceof Error && err.cause === ERR_CAUSE) {
+      throw err;
+    }
+    logger.warn(
+      JSON.stringify({
+        err,
+        msg: 'Failed to watch config file',
+        path,
+      })
+    );
   }
 }
 

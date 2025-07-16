@@ -15,54 +15,83 @@ export type RPCServerRouter = Record<
   (...args: any[]) => Promise<unknown> | unknown
 >;
 
+type RPCServerTransport = JSONMessageTransport<JSONMessageTransportQueue>;
+
 export class RPCServer {
-  protected logger: Logger;
+  private logger: Logger;
 
-  protected transport: Promise<JSONMessageTransport<JSONMessageTransportQueue>>;
+  private transport: Promise<RPCServerTransport>;
 
-  protected alreadySeenMessages = new Set<string>();
+  private alreadySeenMessages = new Set<string>();
 
   constructor(
-    protected channel: rabbitmq.Channel,
-    protected queueName: string,
+    channel: rabbitmq.Channel,
+    queueName: string,
     appLogger: Logger,
-    protected router: RPCServerRouter
+    private router: RPCServerRouter
   ) {
     this.logger = appLogger.child({ scope: 'rpc.server', queue: queueName });
 
-    this.transport = this.assertTransport();
+    this.transport = this.assertTransport(channel, queueName);
   }
 
-  protected async assertTransport(): Promise<
-    JSONMessageTransport<JSONMessageTransportQueue>
-  > {
-    await this.channel.prefetch(1);
+  private async assertTransport(
+    channel: rabbitmq.Channel,
+    queueName: string
+  ): Promise<RPCServerTransport> {
+    try {
+      await channel.prefetch(1);
 
-    // Create rpc queue
-    const rpcQueue = await this.channel.assertQueue(this.queueName, {
-      durable: false,
-    });
-    this.logger.debug({
-      msg: 'Queue created',
-      ...rpcQueue,
-    });
+      // Create global rpc queue
+      const rpcQueue = await channel.assertQueue(queueName, { durable: false });
+      this.logger.debug({
+        msg: 'Queue created',
+        ...rpcQueue,
+      });
 
-    // Consume rpc queue
-    await this.channel.consume(rpcQueue.queue, (msg) => {
-      if (msg) {
-        this.onRPCMessage(msg);
-      }
-    });
+      // Consume global rpc queue
+      await channel.consume(rpcQueue.queue, (msg) => {
+        if (msg) {
+          this.onRPCMessage(msg);
+        }
+      });
 
-    this.logger.debug('RPC stream server setup');
+      // Create specific rpc queue
+      const randomQueue = await channel.assertQueue('', {
+        exclusive: true,
+        durable: false,
+      });
+      const exchangeName = `${queueName}:all`;
+      const rpcExchange = await channel.assertExchange(exchangeName, 'fanout', {
+        durable: false,
+      });
+      await channel.bindQueue(randomQueue.queue, exchangeName, '');
+      this.logger.debug({
+        msg: 'Exchange created',
+        ...rpcExchange,
+        ...randomQueue,
+      });
 
-    return {
-      channel: this.channel,
-      queue: { name: this.queueName },
-    };
+      // Consume specific rpc queue
+      await channel.consume(randomQueue.queue, (msg) => {
+        if (msg) {
+          this.onRPCMessage(msg);
+        }
+      });
+
+      this.logger.debug('RPC server setup');
+
+      return {
+        channel: channel,
+        queue: { name: queueName },
+      };
+    } catch (err) {
+      this.logger.error({ msg: "Couldn't setup RPC server", err });
+      throw err;
+    }
   }
 
-  protected async executeMethod(
+  private async executeMethod(
     methodName: string,
     params: unknown[]
   ): Promise<unknown> {
@@ -102,16 +131,18 @@ export class RPCServer {
     }
   }
 
-  protected destroyMessage(
+  private async destroyMessage(
     request: RPCRequestType,
     msg: rabbitmq.ConsumeMessage
-  ): void {
+  ): Promise<void> {
+    const { channel } = await this.transport;
+
     // If message is spread, ignore
     const alreadySeenMessage =
       request.toAll ||
       this.alreadySeenMessages.has(msg.properties.correlationId);
 
-    this.channel.nack(msg, undefined, !alreadySeenMessage);
+    channel.nack(msg, undefined, !alreadySeenMessage);
     this.logger.debug({
       msg: 'Result not found, requeuing request',
       method: request.method,
@@ -122,7 +153,7 @@ export class RPCServer {
     this.alreadySeenMessages.add(msg.properties.correlationId);
   }
 
-  protected getMethodOfMessage(
+  private getMethodOfMessage(
     request: RPCRequestType
   ): RPCServerRouter[string] | undefined {
     if (!this.router[request.method]) {
@@ -137,7 +168,9 @@ export class RPCServer {
     return this.router[request.method];
   }
 
-  protected async onRPCMessage(msg: rabbitmq.ConsumeMessage): Promise<void> {
+  private async onRPCMessage(msg: rabbitmq.ConsumeMessage): Promise<void> {
+    const { channel } = await this.transport;
+
     // Parse message
     const {
       data: request,
@@ -150,13 +183,13 @@ export class RPCServer {
         data: process.env.NODE_ENV === 'production' ? undefined : raw,
         err: parseError,
       });
-      this.channel.nack(msg, undefined, false);
+      channel.nack(msg, undefined, false);
       return;
     }
 
     const method = this.getMethodOfMessage(request);
     if (!method) {
-      this.channel.nack(msg, undefined, false);
+      channel.nack(msg, undefined, false);
       return;
     }
 
@@ -173,12 +206,12 @@ export class RPCServer {
 
     // Method is successful but no result was found, we pass it to next one in queue
     if (response.error == null && response.result == null) {
-      this.destroyMessage(request, msg);
+      await this.destroyMessage(request, msg);
       return;
     }
 
     const { size } = sendJSONMessage(
-      { channel: this.channel, queue: { name: msg.properties.replyTo } },
+      { channel: channel, queue: { name: msg.properties.replyTo } },
       response,
       { correlationId: msg.properties.correlationId }
     );
@@ -189,6 +222,6 @@ export class RPCServer {
       size,
       sizeUnit: 'B',
     });
-    this.channel.ack(msg);
+    channel.ack(msg);
   }
 }

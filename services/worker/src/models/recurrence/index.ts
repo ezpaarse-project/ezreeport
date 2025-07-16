@@ -1,4 +1,4 @@
-import type { TimeUnit } from 'vega-lite/types_unstable/timeunit.js';
+import type { TimeUnit } from 'vega-lite/build/src/timeunit';
 
 import type { RecurrenceType } from '@ezreeport/models/recurrence';
 
@@ -9,7 +9,9 @@ import type { RecurrenceType } from '@ezreeport/models/recurrence';
  *
  * @returns The interval
  */
-export function calcElasticIntervalFromRecurrence(recurrence: RecurrenceType): 'hour' | 'day' | 'month' {
+export function calcElasticIntervalFromRecurrence(
+  recurrence: RecurrenceType
+): 'hour' | 'day' | 'month' {
   switch (recurrence) {
     case 'DAILY':
       return 'hour';
@@ -35,9 +37,10 @@ export function calcElasticIntervalFromRecurrence(recurrence: RecurrenceType): '
  *
  * @returns The interval
  */
-export function calcVegaFormatFromRecurrence(
-  recurrence: RecurrenceType,
-): { timeUnit: TimeUnit, format?: string } {
+export function calcVegaFormatFromRecurrence(recurrence: RecurrenceType): {
+  timeUnit: TimeUnit;
+  format?: string;
+} {
   // Formats : https://github.com/d3/d3-time-format#locale_format
   switch (recurrence) {
     case 'DAILY':
