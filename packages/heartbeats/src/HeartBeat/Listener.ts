@@ -2,15 +2,17 @@ import { type rabbitmq, parseJSONMessage } from '@ezreeport/rabbitmq';
 import type { Logger } from '@ezreeport/logger';
 
 import { type HeartbeatType, Heartbeat } from '../types';
-import { HeartBeatManager } from './Manager';
+import { HeartbeatManager } from './Manager';
 
-export class HeartBeatListener extends HeartBeatManager {
+export class HeartbeatListener extends HeartbeatManager {
   constructor(
     channel: rabbitmq.Channel,
     private onHeartbeat: (beat: HeartbeatType) => Promise<void> | void,
     appLogger: Logger
   ) {
     super(channel, appLogger);
+
+    this.listenToHearbeats();
   }
 
   private async onMessage(msg: rabbitmq.ConsumeMessage | null): Promise<void> {

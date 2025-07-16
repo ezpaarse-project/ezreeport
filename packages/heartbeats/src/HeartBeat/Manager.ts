@@ -5,7 +5,7 @@ import type {
 } from '@ezreeport/rabbitmq';
 import type { Logger } from '@ezreeport/logger';
 
-export abstract class HeartBeatManager {
+export abstract class HeartbeatManager {
   protected logger: Logger;
 
   protected transport: Promise<

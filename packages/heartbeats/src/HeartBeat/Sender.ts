@@ -10,9 +10,9 @@ import type {
   HeartbeatType,
   HeartbeatService,
 } from '../types';
-import { HeartBeatManager } from './Manager';
+import { HeartbeatManager } from './Manager';
 
-export class HeartBeatSender extends HeartBeatManager {
+export class HeartbeatSender extends HeartbeatManager {
   private _watchingFileSystems: [string, string][] = [];
 
   public get watchingFileSystems(): Record<string, string> {
@@ -30,7 +30,7 @@ export class HeartBeatSender extends HeartBeatManager {
   ) {
     super(channel, appLogger, mandatoryServices);
 
-    this.interval = setInterval(this.send, this.frequency);
+    this.interval = setInterval(() => this.send(), this.frequency);
 
     // If connection to rabbitmq is lost, stop regular heartbeats (and note rabbitmq as down)
     this.channel.on('close', () => {
@@ -78,7 +78,7 @@ export class HeartBeatSender extends HeartBeatManager {
     }
   }
 
-  private async sendMainHeartbeat(): Promise<void> {
+  public async sendMainHeartbeat(): Promise<void> {
     const filesystems = await this.getFilesystemStatus();
 
     return this.sendHeartbeat({

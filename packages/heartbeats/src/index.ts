@@ -3,8 +3,8 @@ import type { Logger } from '@ezreeport/logger';
 
 import type { HeartbeatType, HeartbeatService } from './types';
 
-import { HeartBeatSender } from './HeartBeat/Sender';
-import { HeartBeatListener } from './HeartBeat/Listener';
+import { HeartbeatSender } from './HeartBeat/Sender';
+import { HeartbeatListener } from './HeartBeat/Listener';
 
 const mandatoryServices = new Map<string, boolean>();
 
@@ -33,8 +33,8 @@ export const setupHeartbeat = (
   appLogger: Logger,
   isMandatory = false,
   frequency = 10000
-): HeartBeatSender =>
-  new HeartBeatSender(
+): HeartbeatSender =>
+  new HeartbeatSender(
     channel,
     appLogger,
     service,
@@ -46,4 +46,6 @@ export const listenToHeartbeats = (
   channel: rabbitmq.Channel,
   appLogger: Logger,
   onHeartbeat: (beat: HeartbeatType) => Promise<void> | void
-): HeartBeatListener => new HeartBeatListener(channel, onHeartbeat, appLogger);
+): HeartbeatListener => new HeartbeatListener(channel, onHeartbeat, appLogger);
+
+export type { HeartbeatSender, HeartbeatListener };

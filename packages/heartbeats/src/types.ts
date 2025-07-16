@@ -3,11 +3,11 @@ import { z } from '@ezreeport/models/lib/zod';
 export const FileSystemUsage = z.object({
   name: z.string().min(1).describe('Filesystem name'),
 
-  total: z.int().min(0).describe('Total space in bytes'),
+  total: z.int().min(-1).describe('Total space in bytes'),
 
-  used: z.int().min(0).describe('Used space in bytes'),
+  used: z.int().min(-1).describe('Used space in bytes'),
 
-  available: z.int().min(0).describe('Available space in bytes'),
+  available: z.int().min(-1).describe('Available space in bytes'),
 });
 
 export type FileSystemUsageType = z.infer<typeof FileSystemUsage>;
@@ -36,3 +36,6 @@ export type HeartbeatService = {
   filesystems?: Record<string, string>;
   getConnectedServices?: () => Promise<HeartbeatType>[];
 };
+
+export type { HeartbeatSender } from './HeartBeat/Sender';
+export type { HeartbeatListener } from './HeartBeat/Listener';

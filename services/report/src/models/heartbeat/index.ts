@@ -1,12 +1,16 @@
 import { hostname } from 'node:os';
 
 import { isAfter } from '@ezreeport/dates';
-import type { HeartbeatService } from '@ezreeport/heartbeats/types';
 import {
   setupHeartbeat,
   listenToHeartbeats,
   mandatoryService,
 } from '@ezreeport/heartbeats';
+import type {
+  HeartbeatSender,
+  HeartbeatListener,
+  HeartbeatService,
+} from '@ezreeport/heartbeats/types';
 
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
@@ -32,6 +36,8 @@ export const service: HeartbeatService = {
   ],
 };
 
+let heartbeat: HeartbeatSender | undefined;
+let _listener: HeartbeatListener | undefined;
 const services = new Map<string, HeartbeatType>();
 
 export async function initHeartbeat(
@@ -43,9 +49,9 @@ export async function initHeartbeat(
   const channel = await connection.createChannel();
   logger.debug('Channel created');
 
-  const { send } = setupHeartbeat(channel, service, logger, false, frequency);
+  heartbeat = setupHeartbeat(channel, service, logger, false, frequency);
 
-  listenToHeartbeats(channel, logger, function onHeartbeat(beat) {
+  _listener = listenToHeartbeats(channel, logger, function onHeartbeat(beat) {
     // If it's the same machine, then we can consider RabbitMQ as working
     if (beat.hostname === hostname()) {
       onHeartbeat({
@@ -62,7 +68,7 @@ export async function initHeartbeat(
     services.set(`${beat.hostname}_${beat.service}`, { ...beat, createdAt });
   });
 
-  send();
+  heartbeat.send();
 
   logger.info({
     initDuration: process.uptime() - start,

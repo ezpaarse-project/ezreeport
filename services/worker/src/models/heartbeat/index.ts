@@ -1,5 +1,8 @@
 import { setupHeartbeat, mandatoryService } from '@ezreeport/heartbeats';
-import type { HeartbeatService } from '@ezreeport/heartbeats/types';
+import type {
+  HeartbeatService,
+  HeartbeatSender,
+} from '@ezreeport/heartbeats/types';
 
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
@@ -24,6 +27,8 @@ const service: HeartbeatService = {
 
 export { getMissingMandatoryServices } from '@ezreeport/heartbeats';
 
+let heartbeat: HeartbeatSender | undefined;
+
 export async function initHeartbeat(
   connection: rabbitmq.ChannelModel
 ): Promise<void> {
@@ -32,9 +37,9 @@ export async function initHeartbeat(
   const channel = await connection.createChannel();
   logger.debug('Channel created');
 
-  const { send } = setupHeartbeat(channel, service, logger, true, frequency);
+  heartbeat = setupHeartbeat(channel, service, logger, true, frequency);
 
-  send();
+  heartbeat.send();
 
   logger.info({
     initDuration: process.uptime() - start,
