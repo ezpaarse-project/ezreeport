@@ -1,3 +1,27 @@
+# [@ezpaarse-project/ezreeport-sdk-js-v2.2.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@2.1.0...@ezpaarse-project/ezreeport-sdk-js@2.2.0-beta.1) (2025-07-17)
+
+
+### Bug Fixes
+
+* **sdk:** fixed listening to generation ([2acadbe](https://github.com/ezpaarse-project/ezreeport/commit/2acadbe10aedb61c4cbd72b2ed619d20519829ff))
+* **sdk:** fixed permission issues with reports methods ([befb895](https://github.com/ezpaarse-project/ezreeport/commit/befb89563f90419c719fb4653d3905dcc5cdaba7))
+* **sdk:** fixed types in task list and generation ([263789c](https://github.com/ezpaarse-project/ezreeport/commit/263789caa6d5ba7daa6d1b3a7dc79911ed7397ed))
+* **sdk:** fixed typing issues ([76e89ab](https://github.com/ezpaarse-project/ezreeport/commit/76e89abb370978cd37f2933b347d876c91cd23a3))
+* **sdk:** typing issues in reports methods ([4171701](https://github.com/ezpaarse-project/ezreeport/commit/41717013ba8bb4c6c1f2265f4a6424c10759e121))
+
+
+### Features
+
+* added "files" service to handle IO ([4d9f9f3](https://github.com/ezpaarse-project/ezreeport/commit/4d9f9f3fc20d98cf9e913f0b32c96b525a1a4a7e))
+* added filesystem support for heartbeat ([6f50403](https://github.com/ezpaarse-project/ezreeport/commit/6f50403706bfaf2105978885c12fa531f29ad03c))
+* revamped errors in report generation ([721d0c1](https://github.com/ezpaarse-project/ezreeport/commit/721d0c11ebaf62946bf9252f19eba8ce32240e70))
+* **sdk:** added filesystem usage in health routes ([3f37277](https://github.com/ezpaarse-project/ezreeport/commit/3f372771f9dd3cc8556472cf1cc02b4d358c0ba5))
+* **sdk:** added methods of generations ([69414a4](https://github.com/ezpaarse-project/ezreeport/commit/69414a44eb5b4e4525e98d4e761e813a5d561420))
+* **sdk:** added recurrence module ([b2065a3](https://github.com/ezpaarse-project/ezreeport/commit/b2065a3a9fb9b29309d07c32f4eda74b5b6ac698))
+* **sdk:** added websockets to notify generation updates ([bb39f6c](https://github.com/ezpaarse-project/ezreeport/commit/bb39f6c4d1fb4a5cf98dfba48744f1dfa4f3d2e2))
+* **sdk:** generations have now a distinct createdAt and startedAt ([a562a04](https://github.com/ezpaarse-project/ezreeport/commit/a562a04757064051600b3fa8994ca9b2d197e2c5))
+* **sdk:** updated health module ([3bf0880](https://github.com/ezpaarse-project/ezreeport/commit/3bf088077cca0f30c9220413a841f2a341442729))
+
 # [@ezpaarse-project/ezreeport-sdk-js-v2.1.0](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@2.0.0...@ezpaarse-project/ezreeport-sdk-js@2.1.0) (2025-04-25)
 
 
