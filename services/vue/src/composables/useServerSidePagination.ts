@@ -10,20 +10,26 @@ type Options = {
   immediate?: boolean;
 };
 
-export default function useServerSidePagination<T>(
-  fetchFn: (params: ApiRequestOptions & { include?: string[] }) => Promise<SdkPaginated<T>>,
-  opts: Options = {},
+export default function useServerSidePagination<DataType>(
+  fetchFn: (
+    params: ApiRequestOptions & { include?: string[] }
+  ) => Promise<SdkPaginated<DataType>>,
+  opts: Options = {}
 ) {
-  const items = ref<T[]>([]);
+  const items = ref<DataType[]>([]);
   const total = ref(0);
 
   const page = ref(1);
-  const itemsPerPage = isRef(opts.itemsPerPage) ? opts.itemsPerPage : ref(opts.itemsPerPage ?? 10);
+  const itemsPerPage = isRef(opts.itemsPerPage)
+    ? opts.itemsPerPage
+    : ref(opts.itemsPerPage ?? 10);
 
   const sortBy = ref<string | undefined>(opts.sortBy);
   const order = ref<'asc' | 'desc'>(opts.order || 'asc');
 
-  const filters = ref<Required<ApiRequestOptions>['filters']>(opts.filters ?? {});
+  const filters = ref<Required<ApiRequestOptions>['filters']>(
+    opts.filters ?? {}
+  );
 
   const loading = ref(false);
   const error = ref<Error | undefined>(undefined);
@@ -44,8 +50,8 @@ export default function useServerSidePagination<T>(
 
       items.value = newItems;
       total.value = newTotal;
-    } catch (e) {
-      error.value = e instanceof Error ? e : new Error(`${e}`);
+    } catch (err) {
+      error.value = err instanceof Error ? err : new Error(`${err}`);
     }
     loading.value = false;
   }
@@ -57,7 +63,9 @@ export default function useServerSidePagination<T>(
     return fetch();
   }
 
-  async function onSortChange(sort: { key: string, order: 'asc' | 'desc' }[] | undefined) {
+  async function onSortChange(
+    sort: { key: string; order: 'asc' | 'desc' }[] | undefined
+  ) {
     sortBy.value = sort?.[0]?.key;
     order.value = sort?.[0]?.order ?? 'asc';
 
@@ -82,7 +90,9 @@ export default function useServerSidePagination<T>(
     itemsLength: total.value,
     itemsPerPage: itemsPerPage.value,
     itemsPerPageOptions: opts.itemsPerPageOptions,
-    sortBy: sortBy.value ? [{ key: sortBy.value, order: order.value }] : undefined,
+    sortBy: sortBy.value
+      ? [{ key: sortBy.value, order: order.value }]
+      : undefined,
 
     'onUpdate:page': onPageChange,
     'onUpdate:sortBy': onSortChange,
@@ -95,8 +105,10 @@ export default function useServerSidePagination<T>(
 
   debouncedWatch(
     filters,
-    () => { fetch(); },
-    { debounce: 500, deep: true },
+    () => {
+      fetch();
+    },
+    { debounce: 500, deep: true }
   );
 
   return {

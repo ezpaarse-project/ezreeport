@@ -1,28 +1,41 @@
+import { randomUUID } from 'node:crypto';
+
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
+import { compact } from 'lodash';
 
-import { z } from '~/lib/zod';
+import * as dfns from '@ezreeport/dates';
+import { z } from '@ezreeport/models/lib/zod';
+import {
+  calcNextDateFromRecurrence,
+  calcPeriodFromRecurrence,
+} from '@ezreeport/models/lib/periods';
 
 import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
 import { Access } from '~/models/access';
 
 import * as responses from '~/routes/v2/responses';
 
-import * as reports from '~/models/reports';
-import { ReportFilesOfTask, InputManualReport } from '~/models/reports/types';
-import { queueGeneration } from '~/models/queues';
-import { QueueName, GenerationData } from '~/models/queues/types';
+import {
+  InputManualReport,
+  ReportFilesOfTask,
+  type ReportPeriodType,
+} from '~/models/reports/types';
+import { queueGeneration } from '~/models/queues/report/generation';
+import { getAllReports } from '~/models/rpc/client/files';
 import { getTask } from '~/models/tasks';
+import { getTemplate } from '~/models/templates';
+import { getNamespace } from '~/models/namespaces';
 
-import { NotFoundError } from '~/types/errors';
+import { ArgumentError, ConflictError, NotFoundError } from '~/models/errors';
 
 import reportRoutes from './files';
 
 const SpecificTaskParams = z.object({
-  taskId: z.string().min(1)
-    .describe('ID of the task'),
+  taskId: z.string().min(1).describe('ID of the task'),
 });
 
+// oxlint-disable-next-line max-lines-per-function, require-await
 const router: FastifyPluginAsyncZod = async (fastify) => {
   await fastify.register(authPlugin);
 
@@ -33,16 +46,15 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Get list of generated reports, grouped by task',
       tags: ['reports'],
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(
-          z.record(
-            z.string().describe('Task ID'),
-            ReportFilesOfTask,
-          ),
+        ...responses.describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: responses.zSuccessResponse(
+          z.record(z.string().describe('Task ID'), ReportFilesOfTask)
         ),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
     config: {
@@ -50,49 +62,11 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAdmin: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
-      const filesPerTask = await reports.getReportsPerTasks();
+      const reportsOfTasks = await getAllReports();
 
-      return responses.buildSuccessResponse(filesPerTask, reply);
-    },
-  });
-
-  fastify.route({
-    method: 'GET',
-    url: '/:taskId',
-    schema: {
-      summary: 'Get list of generated reports for a specific task',
-      tags: ['reports', 'tasks'],
-      params: SpecificTaskParams,
-      response: {
-        [StatusCodes.OK]: responses.SuccessResponse(ReportFilesOfTask),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
-      },
-    },
-    config: {
-      ezrAuth: {
-        requireUser: true,
-        access: Access.READ,
-      },
-    },
-    preHandler: [
-      async (request) => {
-        const task = await getTask(request.params.taskId);
-        return requireAllowedNamespace(request, task?.namespaceId ?? '');
-      },
-    ],
-    handler: async (request, reply) => {
-      const { taskId } = request.params;
-      const reportsOfTask = await reports.getReportsOfTask(taskId);
-      if (!reportsOfTask) {
-        throw new NotFoundError(`Task ${request.params.taskId} doesn't have any reports`);
-      }
-
-      return responses.buildSuccessResponse(reportsOfTask, reply);
+      return responses.buildSuccessResponse(reportsOfTasks, reply);
     },
   });
 
@@ -105,18 +79,20 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       params: SpecificTaskParams,
       body: InputManualReport,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(
-          z.object({
-            queue: QueueName.describe('Queue name'),
-            id: z.string().describe("Queue's ID"),
-            data: GenerationData.describe("Queue's data"),
-          }).describe("Queue's task created"),
+        ...responses.describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: responses.zSuccessResponse(
+          z
+            .object({
+              id: z.string().describe("Queue's ID"),
+            })
+            .describe('Info to get progress of generation')
         ),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
     config: {
@@ -126,41 +102,79 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       },
     },
     preHandler: [
-      async (request) => {
+      async (request): Promise<void> => {
         const task = await getTask(request.params.taskId);
         return requireAllowedNamespace(request, task?.namespaceId ?? '');
       },
     ],
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const task = await getTask(request.params.taskId);
       if (!task) {
         throw new NotFoundError(`Task ${request.params.taskId} not found`);
       }
+      const template = await getTemplate(task.extendedId);
+      if (!template) {
+        throw new NotFoundError(`Template ${task.extendedId} not found`);
+      }
+      const namespace = await getNamespace(task.namespaceId);
+      if (!namespace) {
+        throw new NotFoundError(`Namespace ${task.namespaceId} not found`);
+      }
 
-      if (request.body.targets) {
-        task.targets = request.body.targets;
+      // Resolve period
+      let period: ReportPeriodType | undefined;
+      if (!request.body.period) {
+        period = calcPeriodFromRecurrence(new Date(), task.recurrence, -1);
+      } else {
+        period = request.body.period;
+
+        // Check if period is compatible with task
+        const expectedPeriodEnd = dfns.endOfDay(
+          dfns.add(calcNextDateFromRecurrence(period.start, task.recurrence), {
+            days: -1,
+          })
+        );
+        if (!dfns.isSameDay(expectedPeriodEnd, period.end)) {
+          const isoStart = dfns.formatISO(period.start);
+          const isoParsedEnd = dfns.formatISO(period.end);
+          const isoEnd = dfns.formatISO(expectedPeriodEnd);
+
+          throw new ConflictError(
+            `Custom period "${isoStart} to ${isoParsedEnd}" doesn't match task's recurrence (${task.recurrence}). Should be : "${isoStart} to ${isoEnd}")`
+          );
+        }
+      }
+
+      // Resolve targets
+      const targets = compact(request.body.targets ?? task.targets);
+      if (targets.length <= 0) {
+        throw new ArgumentError('You must specify at least one target');
       }
 
       const firstLevelDebug = !!request.body.period || !!request.body.targets;
-      const secondLevelDebug = process.env.NODE_ENV !== 'production' && request.body.debug;
+      const secondLevelDebug =
+        process.env.NODE_ENV !== 'production' && request.body.debug;
 
-      const job = await queueGeneration({
+      const id = randomUUID();
+      await queueGeneration({
+        id,
         task,
-        period: request.body.period,
+        namespace,
+        template,
+        period,
+        targets,
         origin: request.user?.username ?? 'unknown',
-        shouldWriteActivity: !firstLevelDebug && !secondLevelDebug,
-        debug: secondLevelDebug,
+        writeActivity: !firstLevelDebug && !secondLevelDebug,
+        printDebug: secondLevelDebug,
       });
 
-      return responses.buildSuccessResponse({
-        id: job?.id ?? '',
-        queue: 'generation' as const,
-        data: job?.data,
-      }, reply);
+      return responses.buildSuccessResponse({ id }, reply);
     },
   });
 
   fastify.register(reportRoutes, { prefix: '/:taskId' }); // Sub routes will be handled by reportRoutes
 };
 
+// oxlint-disable-next-line no-default-exports
 export default router;

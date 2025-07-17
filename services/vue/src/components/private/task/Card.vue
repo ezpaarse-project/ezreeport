@@ -20,7 +20,9 @@
         <v-menu :close-on-content-click="false" max-height="250">
           <template #activator="{ props: menu }">
             <v-list-item
-              :title="$t('$ezreeport.task.targets:count', modelValue.targets.length)"
+              :title="
+                $t('$ezreeport.task.targets:count', modelValue.targets.length)
+              "
               prepend-icon="mdi-mailbox"
               v-bind="menu"
             />
@@ -42,12 +44,20 @@
             </v-list-item>
 
             <v-list max-height="200" density="compact">
-              <v-list-item v-for="target in modelValue.targets" :key="target" :title="target" />
+              <v-list-item
+                v-for="target in modelValue.targets"
+                :key="target"
+                :title="target"
+              />
             </v-list>
           </v-sheet>
         </v-menu>
 
-        <v-menu v-if="modelValue.description" :close-on-content-click="false" max-width="500">
+        <v-menu
+          v-if="modelValue.description"
+          :close-on-content-click="false"
+          max-width="500"
+        >
           <template #activator="{ props: menu }">
             <v-list-item
               :title="$t('$ezreeport.task.description')"
@@ -83,10 +93,11 @@ import type { Task } from '~sdk/tasks';
 // Components props
 const props = defineProps<{
   /** The task to edit */
-  modelValue: Omit<Task, 'template'>,
+  modelValue: Omit<Task, 'template'>;
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 const clipboard = useClipboard();
 
@@ -98,9 +109,11 @@ async function copyTargets() {
     await clipboard.copy(addresses);
 
     isCopied.value = true;
-    setTimeout(() => { isCopied.value = false; }, 1000);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.copy:targets'), e);
+    setTimeout(() => {
+      isCopied.value = false;
+    }, 1000);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.copy:targets'), err);
   }
 }
 </script>

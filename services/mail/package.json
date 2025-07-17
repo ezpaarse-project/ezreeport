@@ -16,30 +16,33 @@
   "main": "src/app.ts",
   "scripts": {
     "dev": "tsx watch --inspect=0.0.0.0 src/app.ts",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "start": "tsx src/app.ts",
     "type-check": "tsc --noEmit --skipLibCheck"
   },
   "dependencies": {
-    "bullmq": "^5.1.1",
-    "config": "^3.3.12",
-    "date-fns": "^4.1.0",
+    "@ezreeport/config": "workspace:*",
+    "@ezreeport/dates": "workspace:*",
+    "@ezreeport/heartbeats": "workspace:*",
+    "@ezreeport/logger": "workspace:*",
+    "@ezreeport/models": "workspace:*",
+    "@ezreeport/rabbitmq": "workspace:*",
+    "@ezreeport/rpc": "workspace:*",
+    "@ezreeport/simple-http": "workspace:*",
     "mjml": "^4.14.1",
-    "nodemailer": "^6.9.15",
+    "nodemailer": "^7.0.5",
     "nunjucks": "^3.2.4",
-    "pino": "^9.4.0",
-    "tsx": "^4.19.1",
-    "typescript": "^5.6.2"
+    "tsx": "catalog:",
+    "typescript": "catalog:"
   },
   "devDependencies": {
-    "@types/config": "^3.3.5",
     "@types/mjml": "^4.7.4",
-    "@types/node": "^22.7.3",
+    "@types/node": "catalog:",
     "@types/nodemailer": "^6.4.16",
     "@types/nunjucks": "^3.2.6",
-    "pino-pretty": "^11.2.2"
+    "pino-pretty": "catalog:"
   },
   "engines": {
-    "node": "^20"
+    "node": "^22"
   }
 }

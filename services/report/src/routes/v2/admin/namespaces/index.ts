@@ -1,14 +1,21 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
-import { z } from '~/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
 
 import authPlugin from '~/plugins/auth';
 
-import * as responses from '~/routes/v2/responses';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+} from '~/routes/v2/responses';
 
 import { buildPaginatedResponse } from '~/models/pagination';
-import { PaginationQuery, PaginationResponse } from '~/models/pagination/types';
+import {
+  PaginationQuery,
+  zPaginationResponse,
+} from '~/models/pagination/types';
 
 import * as namespaces from '~/models/namespaces';
 import {
@@ -19,15 +26,15 @@ import {
   NamespaceQueryFilters,
 } from '~/models/namespaces/types';
 
-import { NotFoundError } from '~/types/errors';
+import { NotFoundError } from '~/models/errors';
 
 import membershipRoutes from './memberships';
 
 const SpecificNamespaceParams = z.object({
-  id: z.string().min(1)
-    .describe('Namespace ID'),
+  id: z.string().min(1).describe('Namespace ID'),
 });
 
+// oxlint-disable-next-line max-lines-per-function, require-await
 const router: FastifyPluginAsyncZod = async (fastify) => {
   await fastify.register(authPlugin);
 
@@ -39,10 +46,12 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['namespaces'],
       querystring: PaginationQuery.and(NamespaceQueryFilters),
       response: {
-        [StatusCodes.OK]: PaginationResponse(Namespace),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zPaginationResponse(Namespace),
       },
     },
     config: {
@@ -50,33 +59,26 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAPIKey: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       // Extract pagination and filters from query
-      const {
+      const { page, count, sort, order, ...filters } = request.query;
+
+      const content = await namespaces.getAllNamespaces(filters, {
         page,
         count,
         sort,
         order,
-        ...filters
-      } = request.query;
-
-      const content = await namespaces.getAllNamespaces(
-        filters,
-        {
-          page,
-          count,
-          sort,
-          order,
-        },
-      );
+      });
 
       return buildPaginatedResponse(
         content,
         {
           page: request.query.page,
           total: await namespaces.countNamespaces(filters),
+          count: content.length,
         },
-        reply,
+        reply
       );
     },
   });
@@ -89,10 +91,12 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['namespaces'],
       body: z.array(BulkNamespace),
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(BulkNamespaceResult),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(BulkNamespaceResult),
       },
     },
     config: {
@@ -100,10 +104,11 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAPIKey: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const content = await namespaces.replaceNamespaces(request.body);
 
-      return responses.buildSuccessResponse(content, reply);
+      return buildSuccessResponse(content, reply);
     },
   });
 
@@ -115,11 +120,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['namespaces'],
       params: SpecificNamespaceParams,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(Namespace),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(Namespace),
       },
     },
     config: {
@@ -127,6 +134,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAPIKey: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const content = await namespaces.getNamespace(request.params.id);
 
@@ -134,7 +142,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         throw new NotFoundError(`Namespace ${request.params.id} not found`);
       }
 
-      return responses.buildSuccessResponse(content, reply);
+      return buildSuccessResponse(content, reply);
     },
   });
 
@@ -147,11 +155,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       params: SpecificNamespaceParams,
       body: InputNamespace,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(Namespace),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(Namespace),
       },
     },
     config: {
@@ -159,17 +169,24 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAPIKey: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const doesExists = await namespaces.doesNamespaceExist(request.params.id);
 
       let namespace;
       if (doesExists) {
-        namespace = await namespaces.editNamespace(request.params.id, request.body);
+        namespace = await namespaces.editNamespace(
+          request.params.id,
+          request.body
+        );
       } else {
-        namespace = await namespaces.createNamespace({ id: request.params.id, ...request.body });
+        namespace = await namespaces.createNamespace({
+          id: request.params.id,
+          ...request.body,
+        });
       }
 
-      return responses.buildSuccessResponse(namespace, reply);
+      return buildSuccessResponse(namespace, reply);
     },
   });
 
@@ -181,11 +198,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['namespaces'],
       params: SpecificNamespaceParams,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(z.object({ deleted: z.boolean() })),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(z.object({ deleted: z.boolean() })),
       },
     },
     config: {
@@ -193,17 +212,19 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAPIKey: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const doesExists = await namespaces.doesNamespaceExist(request.params.id);
       if (doesExists) {
         await namespaces.deleteNamespace(request.params.id);
       }
 
-      return responses.buildSuccessResponse({ deleted: doesExists }, reply);
+      return buildSuccessResponse({ deleted: doesExists }, reply);
     },
   });
 
   fastify.register(membershipRoutes, { prefix: '/:namespaceId/memberships' });
 };
 
+// oxlint-disable-next-line no-default-exports
 export default router;

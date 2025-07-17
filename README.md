@@ -45,18 +45,6 @@ docker compose -f docker-compose.debug.yml pull
 docker compose -f docker-compose.debug.yml up -d
 ```
 
-### Run tests
-
-> [!CAUTION]
-> Tests aren't complete and may be broken
-
-
-Located at `tests/`
-
-```sh
-npm test
-```
-
 ## Contributions
 
 ### Main workflow
@@ -70,23 +58,29 @@ Workflow used here is the same as Git Flow :
 
 ## Components
 
-### Services
+### Services - Node processes
 
 - `services/report`: (ezreeport-report)
-  - Generate PDF reports with HTTP API. Also run cronjob to generate reports
+  - Manage templates with HTTP API
+- `services/worker`
+  - Generate PDF reports
+- `services/scheduler`
+  - Cronjob to generate reports
 - `services/mail`: (ezreeport-mail)
   - Handle email management
 
+### Internal components - Used by Services
 
-### Packages
+They're all under `packages/` and follow the name `@ezreeport/*`. PNPM will handle dependency tree.
+
+### Packages - Published to NPM
 
 - `services/cli/ezra` (@ezpaarse-project/ezreeport-admin)
   - CLI client for managing ezREEPORT instances
-- `services/sdk` (@ezpaarse-project/sdk-js)
-  - SDK for ezReeport API
-- `services/vue` (ezreeport-vue)
+- `services/sdk` (@ezpaarse-project/ezreeport-sdk-js)
+  - SDK for ezREEPORT API
+- `services/vue` (@ezpaarse-project/ezreeport-vue)
   - Vue components that use SDK for displaying info
-  - It also contains an example with [Nuxt](https://nuxtjs.org/) at `src/vue/example` (it's not part of the workspace because of webpack issues)
 
 ### Inter dependencies between components
 
@@ -97,6 +91,8 @@ Here's a quick view to see thoses relations :
 ```
 ├─ ezreeport-mail
 ├─ ezreeport-report
+├─ ezreeport-scheduler
+├─ ezreeport-worker
 ├─ @ezpaarse-project/ezreeport-admin
 └─ @ezpaarse-project/sdk-js
    └─ @ezpaarse-project/vue
@@ -121,12 +117,9 @@ Here's a quick view to see thoses relations :
 # Generate changelogs, etc. as it will bump version (called tag later)
 pnpm run publish
 
-# Build and push report + mail on github registry
-docker build --target $SERVICE -t ezreeport/$SERVICE:$TAG .
-docker tag ezreeport/$SERVICE:$TAG ghcr.io/ezpaarse-project/ezreeport-$SERVICE:$TAG
-docket push ghcr.io/ezpaarse-project/ezreeport-$SERVICE:$TAG
+# Build and push docker services on registries
+VERSION=$TAG docker buildx bake
 
-# Build and push sdk -> vue on npm
-pnpm --filter $PACKAGE run build
-pnpm --filter $PACKAGE publish --access public
+# Build and push npm packages
+pnpm --filter $PACKAGE  turbo publish
 ```

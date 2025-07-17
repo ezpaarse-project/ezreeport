@@ -7,11 +7,7 @@
     show-expand
   >
     <template #top>
-      <v-toolbar
-        :title="title"
-        color="transparent"
-        density="comfortable"
-      >
+      <v-toolbar :title="title" color="transparent" density="comfortable">
         <template v-if="$slots.prepend" #prepend>
           <slot name="prepend" />
         </template>
@@ -142,12 +138,16 @@
         <td :colspan="columns.length">
           <v-row class="my-1">
             <v-col>
-              <div class="font-weight-bold">{{ $t('$ezreeport.task-activity.message') }}</div>
+              <div class="font-weight-bold">
+                {{ $t('$ezreeport.task-activity.message') }}
+              </div>
               {{ item.message }}
             </v-col>
 
             <v-col cols="4">
-              <div class="font-weight-bold">{{ $t('$ezreeport.task-activity.meta') }}</div>
+              <div class="font-weight-bold">
+                {{ $t('$ezreeport.task-activity.meta') }}
+              </div>
               <TaskActivityDataChips :model-value="item" />
             </v-col>
           </v-row>
@@ -181,57 +181,58 @@ const props = defineProps<{
 
 // Components events
 const emit = defineEmits<{
-  (e: 'update:itemsPerPage', value: number): void
+  (event: 'update:itemsPerPage', value: number): void;
 }>();
 
 /** Items per page shortcut */
-const itemsPerPage = computed({ get: () => props.itemsPerPage || 25, set: (v) => emit('update:itemsPerPage', v) });
+const itemsPerPage = computed({
+  get: () => props.itemsPerPage || 25,
+  set: (val) => emit('update:itemsPerPage', val),
+});
 /** List of activity */
-const {
-  total,
-  refresh,
-  loading,
-  filters,
-  vDataTableOptions,
-} = useServerSidePagination(
-  (params) => getAllActivity(params),
-  {
+const { total, refresh, loading, filters, vDataTableOptions } =
+  useServerSidePagination((params) => getAllActivity(params), {
     sortBy: 'createdAt',
     order: 'desc',
     itemsPerPage,
     include: ['task.namespace'],
-  },
-);
+  });
 
 type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 
 // Utils composable
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 const { locale } = useDateLocale();
 
-const title = computed(() => `${props.titlePrefix || ''}${t('$ezreeport.task-activity.title:list', total.value)}`);
+const title = computed(
+  () =>
+    `${props.titlePrefix || ''}${t('$ezreeport.task-activity.title:list', total.value)}`
+);
 
 /** Headers for table */
-const headers = computed((): VDataTableHeaders => [
-  {
-    title: t('$ezreeport.task-activity.task'),
-    value: 'task.name',
-  },
-  {
-    title: t('$ezreeport.namespace'),
-    value: 'task.namespace.name',
-  },
-  {
-    title: t('$ezreeport.task-activity.type'),
-    value: 'type',
-    align: 'center',
-  },
-  {
-    title: t('$ezreeport.task-activity.date'),
-    value: 'createdAt',
-    sortable: true,
-  },
-]);
+const headers = computed(
+  (): VDataTableHeaders => [
+    {
+      title: t('$ezreeport.task-activity.task'),
+      value: 'task.name',
+    },
+    {
+      title: t('$ezreeport.namespace'),
+      value: 'task.namespace.name',
+    },
+    {
+      title: t('$ezreeport.task-activity.type'),
+      value: 'type',
+      align: 'center',
+    },
+    {
+      title: t('$ezreeport.task-activity.date'),
+      value: 'createdAt',
+      sortable: true,
+    },
+  ]
+);
 
 const periodRange = computed({
   get: () => {
@@ -239,7 +240,7 @@ const periodRange = computed({
     const end = new Date(`${filters.value['createdAt.to']}`);
 
     if (!isValid(start)) {
-      return undefined;
+      return;
     }
     if (!isValid(end)) {
       return [start];
@@ -253,7 +254,9 @@ const periodRange = computed({
       return;
     }
     const start = min(range);
-    filters.value['createdAt.from'] = formatISO(start, { representation: 'date' });
+    filters.value['createdAt.from'] = formatISO(start, {
+      representation: 'date',
+    });
     const end = max(range);
     filters.value['createdAt.to'] = formatISO(end, { representation: 'date' });
   },
@@ -271,7 +274,7 @@ const formattedPeriod = computed(() => {
     period.end = format(end, 'dd/MM/yyyy', { locale: locale.value });
   }
   if (!period.start) {
-    return undefined;
+    return;
   }
   if (period.start === period.end) {
     return period.start;

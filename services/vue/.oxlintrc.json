@@ -1,0 +1,23 @@
+{
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "extends": ["../../.oxlintrc.json"],
+  "plugins": ["oxc", "unicorn", "typescript", "import", "node", "promise"],
+  "rules": {
+    // Enforce browser rules
+    "no-alert": "error",
+    "no-script-url": "error",
+    "import/no-namespace": "error",
+    "unicorn/no-document-cookie": "error",
+    "unicorn/prefer-event-target": "error",
+    "unicorn/prefer-add-event-listener": "error"
+  },
+  "overrides": [
+    {
+      "files": ["components/**/*.stories.ts"],
+      "rules": {
+        "no-default-import": "off",
+        "explicit-return-type": "off"
+      }
+    }
+  ]
+}

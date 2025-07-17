@@ -1,61 +1,36 @@
-import Fastify from 'fastify';
-import fastifyCors from '@fastify/cors';
-
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
+import startHTTPServer from '~/lib/http';
+import { useRabbitMQ } from '~/lib/rabbitmq';
 
-import { initQueues } from '~/models/queues';
-import { initCrons } from '~/models/crons';
+import initQueues from '~/models/queues';
+import initRPC from '~/models/rpc';
+import { initHeartbeat } from '~/models/heartbeat';
 
-import loggerPlugin from '~/plugins/logger';
 import routes from '~/routes';
 
 import { initTemplates } from './init';
 
-const { port, allowedOrigins: rawOrigins } = config;
-
-const start = async () => {
+async function start(): Promise<void> {
   appLogger.info({
     scope: 'node',
     env: process.env.NODE_ENV,
     logLevel: config.log.level,
     logDir: config.log.dir,
-    msg: 'Service running',
+    msg: 'Service starting',
   });
 
-  // Create Fastify instance
-  const fastify = Fastify({ logger: false });
-
-  // Register cors
-  const allowedOrigins = rawOrigins.split(',');
-  await fastify.register(
-    fastifyCors,
-    {
-      origin: allowedOrigins,
-    },
-  );
-
-  await fastify.register(loggerPlugin);
-
-  await fastify.register(routes);
-
-  // Start listening
   try {
-    const address = await fastify.listen({ port, host: '::' });
+    // Initialize core services (if fails, service is unhealthy)
+    await startHTTPServer(routes);
+    await initTemplates();
 
-    appLogger.info({
-      scope: 'http',
-      address,
-      startupDuration: process.uptime(),
-      startupDurationUnit: 's',
-      msg: 'Service listening',
+    // Initialize other services (if fails, service is degraded)
+    await useRabbitMQ(async (connection) => {
+      await initQueues(connection);
+      await initRPC(connection);
+      await initHeartbeat(connection);
     });
-
-    await Promise.all([
-      initQueues(),
-      initCrons(),
-      initTemplates(),
-    ]);
 
     appLogger.info({
       scope: 'init',
@@ -65,7 +40,7 @@ const start = async () => {
     });
   } catch (err) {
     appLogger.error(err);
-    process.exit(1);
+    throw err instanceof Error ? err : new Error(`${err}`);
   }
-};
+}
 start();

@@ -1,39 +1,53 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
-import { z } from '~/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
 
-import * as responses from '~/routes/v2/responses';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+  EmptyResponse,
+} from '~/routes/v2/responses';
 
-import * as health from '~/models/health';
-import { Pong, Services } from '~/models/health/types';
+import * as heartbeats from '~/models/heartbeat';
+import { Heartbeat } from '~/models/heartbeat/types';
 
-import { HTTPError } from '~/types/errors';
+import { HTTPError, NotFoundError } from '~/models/errors';
+import { appLogger } from '~/lib/logger';
 
+// oxlint-disable-next-line max-lines-per-function, require-await
 const router: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'GET',
     url: '/',
     logLevel: 'debug',
     schema: {
-      summary: 'Get current service',
+      summary: 'Get status of stack',
       tags: ['health'],
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(
+        ...describeErrors([StatusCodes.INTERNAL_SERVER_ERROR]),
+        [StatusCodes.OK]: zSuccessResponse(
           z.object({
             current: z.string().describe('Current service'),
             version: z.string().describe('Current version'),
-            services: z.array(Services).describe('Services connected to current'),
-          }),
+            services: z
+              .array(Heartbeat)
+              .describe('Services connected to current'),
+          })
         ),
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
       },
     },
-    handler: async (request, reply) => responses.buildSuccessResponse({
-      current: health.serviceName,
-      version: health.serviceVersion,
-      services: Array.from(health.services),
-    }, reply),
+    // oxlint-disable-next-line require-await
+    handler: async (request, reply) =>
+      buildSuccessResponse(
+        {
+          current: heartbeats.service.name,
+          version: heartbeats.service.version,
+          services: heartbeats.getAllServices(),
+        },
+        reply
+      ),
   });
 
   fastify.route({
@@ -44,15 +58,15 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Ping all services',
       tags: ['health'],
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(z.array(Pong)),
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([StatusCodes.INTERNAL_SERVER_ERROR]),
+        [StatusCodes.OK]: zSuccessResponse(
+          z.array(Heartbeat).describe('Services connected to current')
+        ),
       },
     },
-    handler: async (request, reply) => {
-      const content = await health.pingAll();
-
-      return responses.buildSuccessResponse(content, reply);
-    },
+    // oxlint-disable-next-line require-await
+    handler: async (request, reply) =>
+      buildSuccessResponse(heartbeats.getAllServices(), reply),
   });
 
   fastify.route({
@@ -63,18 +77,26 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Ping a service',
       tags: ['health'],
       params: z.object({
-        name: Services.describe('Service name'),
+        name: z.string().describe('Service name'),
       }),
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(Pong),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(Heartbeat),
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
-      const content = await health.ping(request.params.name);
+      const all = heartbeats.getAllServices();
+      const content = all.find((srv) => srv.service === request.params.name);
+      if (!content) {
+        throw new NotFoundError(`Service ${request.params.name} not found`);
+      }
 
-      return responses.buildSuccessResponse(content, reply);
+      return buildSuccessResponse(content, reply);
     },
   });
 
@@ -86,10 +108,11 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Shorthand for liveness probe',
       tags: ['health'],
       response: {
-        [StatusCodes.NO_CONTENT]: responses.schemas[StatusCodes.NO_CONTENT],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([StatusCodes.INTERNAL_SERVER_ERROR]),
+        [StatusCodes.NO_CONTENT]: EmptyResponse,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       reply.status(StatusCodes.NO_CONTENT);
     },
@@ -103,26 +126,32 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Shorthand for readiness probe',
       tags: ['health'],
       response: {
-        [StatusCodes.NO_CONTENT]: responses.schemas[StatusCodes.NO_CONTENT],
-        [StatusCodes.SERVICE_UNAVAILABLE]: responses.schemas[StatusCodes.SERVICE_UNAVAILABLE],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.SERVICE_UNAVAILABLE,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.NO_CONTENT]: EmptyResponse,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
-      const pongs = await health.pingAll();
-      const failedPong = pongs.find((pong) => !pong.status);
-
-      if (failedPong) {
-        let message = `Readiness probe failed: service "${failedPong.name}" is not available`;
-        if ('error' in failedPong) {
-          message += `: ${failedPong.error}`;
-        }
-        throw new HTTPError(message, StatusCodes.SERVICE_UNAVAILABLE);
+      const missing = heartbeats.getMissingMandatoryServices();
+      if (missing.length <= 0) {
+        reply.status(StatusCodes.NO_CONTENT);
+        return;
       }
 
-      reply.status(StatusCodes.NO_CONTENT);
+      appLogger.error({
+        message: 'Readiness probe failed: missing mandatory services',
+        missing,
+      });
+      throw new HTTPError(
+        'Readiness probe failed: missing mandatory services',
+        StatusCodes.SERVICE_UNAVAILABLE
+      );
     },
   });
 };
 
+// oxlint-disable-next-line no-default-exports
 export default router;

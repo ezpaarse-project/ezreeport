@@ -1,31 +1,25 @@
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
 import type { StorybookConfig } from '@storybook/vue3-vite';
+
+const require = createRequire(import.meta.url);
+
+function getAbsolutePath(value: string): string {
+  return dirname(require.resolve(join(value, 'package.json')));
+}
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   addons: [
-    '@storybook/addon-links',
-    '@storybook/addon-essentials',
-    '@chromatic-com/storybook',
-    '@storybook/addon-interactions',
+    getAbsolutePath('@storybook/addon-links'),
+    getAbsolutePath('@chromatic-com/storybook'),
+    getAbsolutePath('@storybook/addon-docs'),
   ],
   framework: {
-    name: '@storybook/vue3-vite',
+    name: getAbsolutePath('@storybook/vue3-vite'),
     options: {
       docgen: 'vue-component-meta',
     },
-  },
-  async viteFinal(viteConfig,) {
-    const { mergeConfig } = await import('vite');
-    const { default: i18n } = await import('@intlify/unplugin-vue-i18n/vite');
-
-    return mergeConfig(viteConfig, {
-      plugins: [
-        i18n({
-          include: 'src/locales/**',
-          ssr: true,
-        }),
-      ],
-    });
   },
 };
 export default config;

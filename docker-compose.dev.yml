@@ -1,0 +1,128 @@
+include:
+  - docker-compose.common.yml
+
+services:
+  db:
+    ports:
+      - 5432:5432
+
+  rabbitmq:
+    image: rabbitmq:4.0.7-management-alpine
+    ports:
+      - 15672:15672
+
+  api:
+    image: node:22.17.0
+    working_dir: /usr/dev/services/report
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
+    extra_hosts:
+      - host.docker.internal:host-gateway # Used because elastic is on the same machine, but not the same network
+    volumes:
+      - .:/usr/dev
+    command: "npm run dev"
+    ports:
+      - 8080:8080
+      - 9230:9229 # Debug port
+    restart: unless-stopped
+
+  worker1:
+    image: node:22.17.0
+    working_dir: /usr/dev/services/worker
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
+    extra_hosts:
+      - host.docker.internal:host-gateway # Used because elastic is on the same machine, but not the same network
+    volumes:
+      - .:/usr/dev
+    command: "npm run dev"
+    ports:
+      - 9231:9229 # Debug port
+    restart: unless-stopped
+
+  worker2:
+    image: node:22.17.0
+    working_dir: /usr/dev/services/worker
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
+    extra_hosts:
+      - host.docker.internal:host-gateway # Used because elastic is on the same machine, but not the same network
+    volumes:
+      - .:/usr/dev
+    command: "npm run dev"
+    restart: unless-stopped
+
+  scheduler:
+    image: node:22.17.0
+    working_dir: /usr/dev/services/scheduler
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
+    volumes:
+      - .:/usr/dev
+    command: "npm run dev"
+    ports:
+      - 9232:9229 # Debug port
+    restart: unless-stopped
+
+  mail:
+    image: node:22.17.0
+    working_dir: /usr/dev/services/mail
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
+    volumes:
+      - .:/usr/dev
+    command: "npm run dev"
+    ports:
+      - 9233:9229 # Debug port
+    restart: unless-stopped
+
+  files:
+    image: node:22.17.0
+    working_dir: /usr/dev/services/files
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
+    volumes:
+      - .:/usr/dev
+      - ./data/files-1/reports:/data/ezreeport/reports # Report output
+      - ./data/files-1/db:/data/ezreeport/db # Files DB
+    command: "npm run dev"
+    ports:
+      - 9234:9229 # Debug port
+    restart: unless-stopped
+
+  storybook:
+    image: node:22.17.0
+    working_dir: /usr/dev/services/vue
+    env_file:
+      - .env
+      - path: .env.local
+        required: false
+    volumes:
+      - .:/usr/dev
+    command: "npm run dev -- --no-open"
+    ports:
+      - 6006:6006
+    restart: unless-stopped
+
+  maildev:
+    image: maildev/maildev
+    ports:
+      - 1080:1080 # web interface
+      - 1025:1025
+    deploy:
+      resources:
+          limits:
+            memory: 2G
+    restart: unless-stopped

@@ -1,6 +1,7 @@
-import prisma, { Prisma } from '~/lib/prisma';
+import { ensureSchema } from '@ezreeport/models/lib/zod';
+import type { Prisma } from '@ezreeport/database/types';
+import prisma from '~/lib/prisma';
 import { appLogger } from '~/lib/logger';
-import { ensureSchema } from '~/lib/zod';
 
 import type { PaginationType } from '~/models/pagination/types';
 import { buildPaginatedRequest } from '~/models/pagination';
@@ -15,7 +16,9 @@ import {
 
 const logger = appLogger.child({ scope: 'models', model: 'task-presets' });
 
-function applyFilters(filters: TaskPresetQueryFiltersType) {
+function applyFilters(
+  filters: TaskPresetQueryFiltersType
+): Prisma.TaskPresetWhereInput {
   const where: Prisma.TaskPresetWhereInput = {};
 
   where.templateId = filters.templateId;
@@ -27,13 +30,18 @@ function applyFilters(filters: TaskPresetQueryFiltersType) {
   }
 
   if (filters.query) {
-    where.name = { contains: filters.query, mode: 'insensitive' as Prisma.QueryMode };
+    where.name = {
+      contains: filters.query,
+      mode: 'insensitive' as Prisma.QueryMode,
+    };
   }
 
   return where;
 }
 
-function applyIncludes(fields: TaskPresetIncludeFieldsType[]): Prisma.TaskPresetInclude {
+function applyIncludes(
+  fields: TaskPresetIncludeFieldsType[]
+): Prisma.TaskPresetInclude {
   let template: Prisma.TemplateSelect | undefined;
 
   if (fields.includes('template.tags')) {
@@ -62,15 +70,16 @@ function applyIncludes(fields: TaskPresetIncludeFieldsType[]): Prisma.TaskPreset
 export async function getAllTaskPresets(
   filters?: TaskPresetQueryFiltersType,
   include?: TaskPresetIncludeFieldsType[],
-  pagination?: PaginationType,
+  pagination?: PaginationType
 ): Promise<TaskPresetType[]> {
   // Prepare Prisma query
-  const prismaQuery: Prisma.TaskPresetFindManyArgs = buildPaginatedRequest(pagination);
+  const prismaQuery: Prisma.TaskPresetFindManyArgs =
+    buildPaginatedRequest(pagination);
 
   // Apply filters
   if (filters) {
     prismaQuery.where = {
-      ...(prismaQuery.where || {}),
+      ...prismaQuery.where,
       ...applyFilters(filters),
     };
   }
@@ -78,7 +87,7 @@ export async function getAllTaskPresets(
   // Apply includes
   if (include) {
     prismaQuery.include = {
-      ...(prismaQuery.include || {}),
+      ...prismaQuery.include,
       ...applyIncludes(include),
     };
   }
@@ -88,7 +97,13 @@ export async function getAllTaskPresets(
 
   // Ensure data
   const presets = await Promise.all(
-    data.map((preset) => ensureSchema(TaskPreset, preset, (t) => `Failed to parse preset ${t.id}`)),
+    data.map((preset) =>
+      ensureSchema(
+        TaskPreset,
+        preset,
+        (preset) => `Failed to parse preset ${preset.id}`
+      )
+    )
   );
   return presets;
 }
@@ -102,7 +117,7 @@ export async function getAllTaskPresets(
  */
 export async function getTaskPreset(
   id: string,
-  include?: TaskPresetIncludeFieldsType[],
+  include?: TaskPresetIncludeFieldsType[]
 ): Promise<TaskPresetType | null> {
   // Prepare Prisma query
   const prismaQuery: Prisma.TaskPresetFindUniqueArgs = { where: { id } };
@@ -110,7 +125,7 @@ export async function getTaskPreset(
   // Apply includes
   if (include) {
     prismaQuery.include = {
-      ...(prismaQuery.include || {}),
+      ...prismaQuery.include,
       ...applyIncludes(include),
     };
   }
@@ -128,7 +143,7 @@ export async function getTaskPreset(
  * @returns The created preset
  */
 export async function createTaskPreset(
-  data: InputTaskPresetType & { id?: string },
+  data: InputTaskPresetType & { id?: string }
 ): Promise<TaskPresetType> {
   const preset = await prisma.taskPreset.create({
     data: {
@@ -158,7 +173,7 @@ export async function createTaskPreset(
  */
 export async function editTaskPreset(
   id: string,
-  data: InputTaskPresetType,
+  data: InputTaskPresetType
 ): Promise<TaskPresetType> {
   const preset = await prisma.taskPreset.update({
     where: { id },
@@ -205,7 +220,9 @@ export async function deleteTaskPreset(id: string): Promise<TaskPresetType> {
  *
  * @returns Count of presets
  */
-export async function countTaskPresets(filters?: TaskPresetQueryFiltersType): Promise<number> {
+export async function countTaskPresets(
+  filters?: TaskPresetQueryFiltersType
+): Promise<number> {
   const prismaQuery: Prisma.TaskPresetCountArgs = {};
 
   // Apply filters
@@ -230,7 +247,10 @@ export async function countTaskPresets(filters?: TaskPresetQueryFiltersType): Pr
  * @returns True if task exists
  */
 export async function doesTaskPresetExist(id: string): Promise<boolean> {
-  const count = await prisma.taskPreset.count({ where: { id }, select: { id: true } });
+  const count = await prisma.taskPreset.count({
+    where: { id },
+    select: { id: true },
+  });
 
   return count.id > 0;
 }

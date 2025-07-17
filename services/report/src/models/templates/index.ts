@@ -1,7 +1,8 @@
-import prisma, { type Prisma } from '~/lib/prisma';
+import { ensureSchema } from '@ezreeport/models/lib/zod';
+import type { Prisma } from '@ezreeport/database/types';
+import prisma from '~/lib/prisma';
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
-import { ensureSchema } from '~/lib/zod';
 
 import type { PaginationType } from '~/models/pagination/types';
 import { buildPaginatedRequest } from '~/models/pagination';
@@ -25,7 +26,10 @@ function applyFilters(filters: TemplateQueryFiltersType) {
   }
 
   if (filters.query) {
-    where.name = { contains: filters.query, mode: 'insensitive' as Prisma.QueryMode };
+    where.name = {
+      contains: filters.query,
+      mode: 'insensitive' as Prisma.QueryMode,
+    };
   }
 
   return where;
@@ -40,10 +44,11 @@ function applyFilters(filters: TemplateQueryFiltersType) {
  */
 export async function getAllTemplates(
   filters?: TemplateQueryFiltersType,
-  pagination?: PaginationType,
+  pagination?: PaginationType
 ): Promise<TemplateType[]> {
   // Prepare Prisma query
-  const prismaQuery: Prisma.TemplateFindManyArgs = buildPaginatedRequest(pagination);
+  const prismaQuery: Prisma.TemplateFindManyArgs =
+    buildPaginatedRequest(pagination);
 
   // Apply filters
   if (filters) {
@@ -55,7 +60,13 @@ export async function getAllTemplates(
 
   // Ensure data
   const templates = await Promise.all(
-    data.map((template) => ensureSchema(Template, template, (t) => `Failed to parse template ${t.id}`)),
+    data.map((template) =>
+      ensureSchema(
+        Template,
+        template,
+        (template) => `Failed to parse template ${template.id}`
+      )
+    )
   );
   return templates;
 }
@@ -81,7 +92,7 @@ export async function getTemplate(id: string): Promise<TemplateType | null> {
  * @returns The created template
  */
 export async function createTemplate(
-  data: InputTemplateType & { id?: string },
+  data: InputTemplateType & { id?: string }
 ): Promise<TemplateType> {
   const template = await prisma.template.create({ data });
 
@@ -102,7 +113,10 @@ export async function createTemplate(
  *
  * @returns The edited template
  */
-export async function editTemplate(id: string, data: InputTemplateType): Promise<TemplateType> {
+export async function editTemplate(
+  id: string,
+  data: InputTemplateType
+): Promise<TemplateType> {
   const template = await prisma.template.update({ where: { id }, data });
 
   logger.debug({
@@ -140,7 +154,9 @@ export async function deleteTemplate(id: string): Promise<TemplateType> {
  *
  * @returns Count of templates
  */
-export async function countTemplates(filters?: TemplateQueryFiltersType): Promise<number> {
+export async function countTemplates(
+  filters?: TemplateQueryFiltersType
+): Promise<number> {
   const prismaQuery: Prisma.TemplateCountArgs = {};
 
   // Apply filters
@@ -164,7 +180,10 @@ export async function countTemplates(filters?: TemplateQueryFiltersType): Promis
  * @returns True if template exists
  */
 export async function doesTemplateExist(id: string): Promise<boolean> {
-  const count = await prisma.template.count({ where: { id }, select: { id: true } });
+  const count = await prisma.template.count({
+    where: { id },
+    select: { id: true },
+  });
 
   return count.id > 0;
 }

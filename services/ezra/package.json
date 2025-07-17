@@ -15,8 +15,8 @@
   "main": "",
   "types": "dist/index.d.ts",
   "bin": {
-    "ezreeport-admin": "./bin/run.js",
-    "ezra": "./bin/run.js"
+    "ezra": "./bin/run.js",
+    "ezreeport-admin": "./bin/run.js"
   },
   "files": [
     "/bin",
@@ -25,16 +25,19 @@
   ],
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
-    "lint": "eslint --ext .ts .",
-    "type-check": "tsc --noEmit --skipLibCheck",
-    "prepack": "npm run build && oclif manifest && oclif readme",
+    "lint": "oxlint",
+    "prepack": "oclif manifest && oclif readme",
     "postpack": "shx rm -f oclif.manifest.json",
-    "prepare": "npm run build",
+    "publish": "npm publish",
+    "type-check": "tsc --noEmit --skipLibCheck",
     "version": "oclif readme && git add README.md"
   },
   "lint-staged": {
     "*.ts": [
-      "eslint --fix"
+      "oxlint --fix"
+    ],
+    "package.json": [
+      "sort-package-json"
     ]
   },
   "dependencies": {
@@ -55,12 +58,12 @@
     "@types/chai": "^5.0.0",
     "@types/cli-progress": "^3.11.6",
     "@types/lodash": "^4.17.9",
-    "@types/node": "^22.7.3",
+    "@types/node": "catalog:",
     "@types/semver": "^7.5.8",
     "oclif": "^4.14.35",
     "shx": "^0.3.4",
-    "tsx": "^4.19.1",
-    "typescript": "^5.6.2"
+    "tsx": "catalog:",
+    "typescript": "catalog:"
   },
   "engines": {
     "node": ">=20"

@@ -1,49 +1,56 @@
-import http from 'node:http';
-
-import healthChecks from '~/models/healthchecks';
-
 import { appLogger } from '~/lib/logger';
+import { useRabbitMQ } from '~/lib/rabbitmq';
+import config from '~/lib/config';
+import startHTTPServer from '~/lib/http';
 
-const server = http.createServer((req, res) => {
-  switch (req.url) {
-    // Liveness probe, check if the server is up
-    case '/liveness':
-    case '/liveness/':
-      res.writeHead(204).end();
-      break;
+import { initSMTP } from '~/models/mail';
+import initQueues from '~/models/queues';
+import initRPC from '~/models/rpc';
+import { initHeartbeat, getMissingMandatoryServices } from '~/models/heartbeat';
 
-    // Readiness probe, check if the server is ready
-    case '/readiness':
-    case '/readiness/':
-      healthChecks()
-        .then(() => {
-          res.writeHead(204).end();
-        })
-        .catch((err) => {
-          appLogger.error({
-            scope: 'ping',
-            err,
-            msg: 'Error when getting services',
-          });
-          res.writeHead(503).end(JSON.stringify(err));
-        });
-      break;
-
-    // Route not found
-    default:
-      res.writeHead(404).end();
-      break;
-  }
-});
-
-const PORT = 8080;
-
-server.listen(PORT, () => {
+async function start(): Promise<void> {
   appLogger.info({
-    scope: 'http',
-    address: `http://0.0.0.0:${PORT}`,
-    startupDuration: process.uptime(),
-    startupDurationUnit: 's',
-    msg: 'Service listening',
+    scope: 'node',
+    env: process.env.NODE_ENV,
+    logLevel: config.log.level,
+    logDir: config.log.dir,
+    msg: 'Service starting',
   });
-});
+  try {
+    // Initialize health routes
+    await startHTTPServer({
+      '/liveness': (req, res) => {
+        res.writeHead(204).end();
+      },
+      '/readiness': (req, res) => {
+        const missing = getMissingMandatoryServices();
+        if (missing.length > 0) {
+          res.writeHead(503).end();
+        } else {
+          res.writeHead(204).end();
+        }
+      },
+    });
+
+    // Initialize core services (if fails, service is not alive)
+    initSMTP();
+
+    // Initialize other services (if fails, service is not ready)
+    await useRabbitMQ(async (connection) => {
+      await initQueues(connection);
+      await initRPC(connection);
+      await initHeartbeat(connection);
+    });
+
+    appLogger.info({
+      scope: 'init',
+      readyDuration: process.uptime(),
+      readyDurationUnit: 's',
+      msg: 'Service ready',
+    });
+  } catch (err) {
+    appLogger.error(err);
+    throw err instanceof Error ? err : new Error(`${err}`);
+  }
+}
+start();

@@ -1,0 +1,43 @@
+{
+  "name": "@ezreeport/heartbeats",
+  "version": "0.0.0",
+  "private": true,
+  "description": "",
+  "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
+  "bugs": {
+    "url": "https://github.com/ezpaarse-project/ezreeport/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
+  },
+  "license": "CeCILL",
+  "author": "oxypomme",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "type-check": "tsc --noEmit --skipLibCheck"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "oxlint --fix"
+    ],
+    "package.json": [
+      "sort-package-json"
+    ]
+  },
+  "dependencies": {
+    "@ezreeport/logger": "workspace:*",
+    "@ezreeport/models": "workspace:*",
+    "@ezreeport/rabbitmq": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": "^22"
+  }
+}

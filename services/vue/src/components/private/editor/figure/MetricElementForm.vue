@@ -1,16 +1,17 @@
 <template>
   <v-card
-    :title="modelValue ? $t('$ezreeport.editor.figures.metric.elements.title:edit') : $t('$ezreeport.editor.figures.metric.elements.title:new')"
+    :title="
+      modelValue
+        ? $t('$ezreeport.editor.figures.metric.elements.title:edit')
+        : $t('$ezreeport.editor.figures.metric.elements.title:new')
+    "
     prepend-icon="mdi-playlist-plus"
   >
     <template #text>
       <v-form ref="formRef" v-model="isValid">
         <v-row>
           <v-col>
-            <EditorAggregationForm
-              v-model="label.aggregation"
-              type="metric"
-            />
+            <EditorAggregationForm v-model="label.aggregation" type="metric" />
           </v-col>
         </v-row>
 
@@ -61,10 +62,7 @@
             <v-text-field
               v-model="label.text"
               :label="$t('$ezreeport.name')"
-              :rules="[
-                (v) => !!v || $t('$ezreeport.required'),
-                isUniqueRule,
-              ]"
+              :rules="[(val) => !!val || $t('$ezreeport.required'), isUniqueRule]"
               prepend-icon="mdi-rename"
               variant="underlined"
               required
@@ -97,25 +95,28 @@ import { getMetricLabelKey, type MetricLabel } from '~sdk/helpers/figures';
 // Components props
 const props = defineProps<{
   /** Label to edit, leave undefined to create a new one */
-  modelValue?: MetricLabel | undefined,
+  modelValue?: MetricLabel | undefined;
   /** Other headers */
-  headers?: Set<string>,
+  headers?: Set<string>;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated label */
-  (e: 'update:modelValue', value: MetricLabel): void,
+  (event: 'update:modelValue', value: MetricLabel): void;
 }>();
 
 // Util composables
+// oxlint-disable-next-line id-length
 const { t, te } = useI18n();
 
 /** Is form valid */
 const isValid = ref(false);
 
 /** Label to edit */
-const { cloned: label } = useCloned<MetricLabel>(props.modelValue ?? { text: '' });
+const { cloned: label } = useCloned<MetricLabel>(
+  props.modelValue ?? { text: '' }
+);
 
 /** Validate form on mounted */
 useTemplateVForm('formRef');
@@ -178,13 +179,17 @@ const formatParamPlaceholder = computed(() => {
       return 'fr';
 
     default:
-      return undefined;
+      return;
   }
 });
 /** The label of format param */
 const formatParamLabel = computed(() => {
   const key = `$ezreeport.editor.figures.metric.elements.formatOptionsLabel.${format.value}`;
-  return te(key) ? t(key) : t('$ezreeport.editor.figures.metric.elements.formatOptionsLabel._default');
+  return te(key)
+    ? t(key)
+    : t(
+        '$ezreeport.editor.figures.metric.elements.formatOptionsLabel._default'
+      );
 });
 /** The hint of format param */
 const formatParamHintKey = computed(() => {
@@ -195,11 +200,11 @@ const formatParamHintKey = computed(() => {
 /**
  * Check if the label is unique
  */
-function isUniqueRule(v: string) {
-  if (props.modelValue && getMetricLabelKey(props.modelValue) === v) {
+function isUniqueRule(val: string) {
+  if (props.modelValue && getMetricLabelKey(props.modelValue) === val) {
     return true;
   }
-  if (props.headers?.has(v)) {
+  if (props.headers?.has(val)) {
     return t('$ezreeport.duplicate');
   }
   return true;
@@ -208,22 +213,29 @@ function isUniqueRule(v: string) {
 /**
  * Generate name of the element when aggregation changed
  */
-watch(() => label.value, (newLabel, oldLabel) => {
-  if (
-    (newLabel.aggregation && isRawAggregation(newLabel.aggregation))
-    || (oldLabel.aggregation && isRawAggregation(oldLabel.aggregation))
-  ) {
-    return;
-  }
+watch(
+  () => label.value,
+  (newLabel, oldLabel) => {
+    if (
+      (newLabel.aggregation && isRawAggregation(newLabel.aggregation)) ||
+      (oldLabel.aggregation && isRawAggregation(oldLabel.aggregation))
+    ) {
+      return;
+    }
 
-  if (
-    oldLabel.aggregation?.type === newLabel.aggregation?.type
-    && oldLabel.aggregation?.field === newLabel.aggregation?.field
-  ) {
-    return;
-  }
+    if (
+      oldLabel.aggregation?.type === newLabel.aggregation?.type &&
+      oldLabel.aggregation?.field === newLabel.aggregation?.field
+    ) {
+      return;
+    }
 
-  // TODO: prevent user provided value to be overwritten
-  label.value.text = t('$ezreeport.editor.aggregation.aggregationTemplate', newLabel.aggregation ?? {});
-}, { deep: true });
+    // TODO: prevent user provided value to be overwritten
+    label.value.text = t(
+      '$ezreeport.editor.aggregation.aggregationTemplate',
+      newLabel.aggregation ?? {}
+    );
+  },
+  { deep: true }
+);
 </script>

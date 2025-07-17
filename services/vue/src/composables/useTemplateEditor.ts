@@ -28,13 +28,14 @@ const namespaceId = ref<string | undefined>();
 const dateField = ref<string>('');
 
 // Computed properties
-const mappingItems = computed(
-  () => Object.entries(mapping.value)
+const mappingItems = computed(() =>
+  Object.entries(mapping.value)
     .map(([field, type]) => mappingToOption(field, type))
-    .sort((a, b) => a.value.localeCompare(b.value)),
+    .sort((itemA, itemB) => itemA.value.localeCompare(itemB.value))
 );
 
 export default function useTemplateEditor(defaultOptions?: Options) {
+  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   /**
@@ -51,8 +52,8 @@ export default function useTemplateEditor(defaultOptions?: Options) {
     }
   }
 
-  function updateDateField(v: string) {
-    dateField.value = v;
+  function updateDateField(val: string) {
+    dateField.value = val;
   }
 
   /**
@@ -63,14 +64,19 @@ export default function useTemplateEditor(defaultOptions?: Options) {
    *
    * @returns Options to use
    */
-  function getOptionsFromMapping(type?: string | string[], vars: { dateField?: boolean } = {}) {
+  function getOptionsFromMapping(
+    type?: string | string[],
+    vars: { dateField?: boolean } = {}
+  ) {
     const items = [...mappingItems.value];
     const types = type == null || Array.isArray(type) ? type : [type];
 
     if (vars.dateField) {
       items.unshift({
         value: '{{ dateField }}',
-        title: t('$ezreeport.editor.varsList.dateField', { field: dateField.value }),
+        title: t('$ezreeport.editor.varsList.dateField', {
+          field: dateField.value,
+        }),
         props: {
           subtitle: 'date',
           appendIcon: 'mdi-variable',
@@ -83,13 +89,17 @@ export default function useTemplateEditor(defaultOptions?: Options) {
       return items;
     }
 
-    const optionsMap = new Map(types.flatMap((currentType) => {
-      const alias = elasticTypeAliases.get(currentType);
+    const optionsMap = new Map(
+      types.flatMap((currentType) => {
+        const alias = elasticTypeAliases.get(currentType);
 
-      return items
-        .filter((item) => elasticTypeAliases.get(item.props.subtitle) === alias)
-        .map((item) => [item.value, item]);
-    }));
+        return items
+          .filter(
+            (item) => elasticTypeAliases.get(item.props.subtitle) === alias
+          )
+          .map((item) => [item.value, item]);
+      })
+    );
 
     const options = Array.from(optionsMap.values());
 

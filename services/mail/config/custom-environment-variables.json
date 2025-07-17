@@ -1,14 +1,18 @@
 {
-  "allowedOrigins": "API_ALLOWED_ORIGINS",
+  "port": { "__name": "HTTP_PORT", "__format": "number" },
+  "heartbeat": { "__name": "HEARTBEAT_FREQUENCY", "__format": "number" },
   "log": {
     "level": "LOG_LEVEL",
     "dir": "LOG_DIR",
-    "ignore": "LOG_IGNORE"
+    "ignore": { "__name": "LOG_IGNORE", "__format": "json" }
   },
-  "redis": {
-    "host": "REDIS_HOST",
-    "port": { "__name": "REDIS_PASSWORD", "__format": "number" },
-    "password": "REDIS_PASSWORD"
+  "rabbitmq": {
+    "protocol": "RABBITMQ_PROTOCOL",
+    "host": "RABBITMQ_HOST",
+    "port": { "__name": "RABBITMQ_PORT", "__format": "number" },
+    "vhost": "RABBITMQ_VHOST",
+    "username": "RABBITMQ_USERNAME",
+    "password": "RABBITMQ_PASSWORD"
   },
   "smtp": {
     "host": "SMTP_HOST",
@@ -18,10 +22,6 @@
       "ignore": { "__name": "SMTP_IGNORE_TLS", "__format": "boolean" },
       "rejectUnauthorized": { "__name": "SMTP_REJECT_UNAUTHORIZED", "__format": "boolean" }
     }
-  },
-  "workers": {
-    "concurrence": { "__name": "WORKERS_CONCURRENCE", "__format": "number" },
-    "maxExecTime": { "__name": "WORKERS_MAX_EXEC_TIME", "__format": "number" }
   },
   "mail": {
     "sender": "EMAIL_SENDER",

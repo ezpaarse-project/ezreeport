@@ -9,3 +9,9 @@ dist
 .env.*.local
 .env.local
 local*.json
+.prisma
+.turbo
+docker*
+release.config.cjs
+.eslint*
+.oxlint*

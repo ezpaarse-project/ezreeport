@@ -57,15 +57,12 @@ export default class MigrateApply extends EzrCommand<typeof MigrateApply> {
 
     const migrationsToApply = [];
     if (!flags.file) {
-      // eslint-disable-next-line no-restricted-syntax
       for (const migration of Object.values(migrations)) {
         if (semverLte(migration.name, currentVersion)) {
-          // eslint-disable-next-line no-continue
           continue;
         }
 
         if (flags.to && !semverLte(migration.name, flags.to)) {
-          // eslint-disable-next-line no-continue
           continue;
         }
 
@@ -107,11 +104,9 @@ export default class MigrateApply extends EzrCommand<typeof MigrateApply> {
 
     const sortedMigrations = migrationsToApply.sort((a, b) => semverCompare(a.name, b.name));
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const migration of sortedMigrations) {
       const action = ora(chalk.blue(`Applying migration: ${chalk.bold(migration.name)}`)).start();
       try {
-        // eslint-disable-next-line no-await-in-loop
         data = await migration.migrate(data, this.instances[0]);
       } catch (error) {
         action.fail(chalk.red((error as Error).message));

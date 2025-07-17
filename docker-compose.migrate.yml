@@ -6,9 +6,7 @@ services:
 
   api:
     build:
-      target: api-prisma
-    entrypoint: ""
-    command: ["/bin/sh", "-c", "npm run db:install && npm run db:migrate"]
+      target: migrate
     env_file:
       - .env
       - path: .env.local

@@ -1,49 +1,13 @@
+include:
+  - docker-compose.common.yml
+
 services:
-  db:
-    image: postgres:15.1-alpine3.16
-    env_file:
-      - .env
-      - path: .env.local
-        required: false
-    volumes:
-      - ./data/db:/var/lib/postgresql/data
-    deploy:
-      resources:
-          limits:
-            memory: 256MB
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
-      interval: 60s
-      timeout: 10s
-      retries: 5
-      start_period: 20s
-
-  redis:
-    image: redis:7.0.7-alpine3.17
-    command: redis-server --requirepass ${REDIS_PASSWORD}
-    env_file:
-      - .env
-      - path: .env.local
-        required: false
-    deploy:
-      resources:
-          limits:
-            memory: 2G
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "redis-cli --pass ${REDIS_PASSWORD} ping | grep PONG"]
-      interval: 60s
-      timeout: 10s
-      retries: 5
-      start_period: 20s
-
-  api:
+  ezreeport:
     build:
-      target: api
+      target: aio
     volumes:
-      - ./data/api:/data/ezreeport/report # Report output
-      - ./logs/api:/var/log/ezreeport # Logs output
+      - ./data/files-1/reports:/data/ezreeport/reports # Report output
+      - ./data/files-1/db:/data/ezreeport/db # Files DB
     ports:
       - 8080:8080
     env_file:
@@ -55,28 +19,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      redis:
+      rabbitmq:
         condition: service_healthy
     deploy:
       resources:
-          limits:
-            memory: ${REPORT_MEM_LIMIT:-7}G
-    restart: unless-stopped
-
-  mail:
-    build:
-      target: mail
-    volumes:
-      - ./logs/mail:/var/log/ezreeport # Logs output
-    env_file:
-      - .env
-      - path: .env.local
-        required: false
-    depends_on:
-      redis:
-        condition: service_healthy
-    deploy:
-      resources:
-          limits:
-            memory: ${EMAIL_MEM_LIMIT:-3}G
+        limits:
+          memory: ${MEM_LIMIT:-7}G
     restart: unless-stopped

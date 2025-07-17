@@ -91,7 +91,7 @@ const props = defineProps<{
 // Components events
 const emit = defineEmits<{
   /** Updated filters */
-  (e: 'update:modelValue', value: TemplateFilterMap): void,
+  (event: 'update:modelValue', value: TemplateFilterMap): void,
 }>();
 
 /** Should show the filter form */
@@ -137,7 +137,6 @@ function setFilter(filter: TemplateFilter) {
  */
 function replaceFilters(filters: TemplateFilter[]) {
   props.modelValue.clear();
-  // eslint-disable-next-line no-restricted-syntax
   for (const filter of filters) {
     props.modelValue.set(filter.name, filter);
   }

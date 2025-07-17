@@ -6,6 +6,6 @@ export default defineConfig({
   dts: { only: true },
   outDir: 'dist',
   entry: viteConfig.build!.lib
-    ? viteConfig.build!.lib.entry as Record<string, string>
+    ? (viteConfig.build!.lib.entry as Record<string, string>)
     : {},
 });

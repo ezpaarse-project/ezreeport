@@ -1,7 +1,10 @@
-import prisma, { Prisma, type Recurrence } from '~/lib/prisma';
+import { ensureSchema } from '@ezreeport/models/lib/zod';
+import { ensureArray } from '@ezreeport/models/lib/utils';
+import { Prisma, type Recurrence } from '@ezreeport/database/types';
+
+import prisma from '~/lib/prisma';
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
-import { ensureSchema } from '~/lib/zod';
 
 import type { PaginationType } from '~/models/pagination/types';
 import { buildPaginatedRequest } from '~/models/pagination';
@@ -15,13 +18,12 @@ import {
   type TaskQueryFiltersType,
   type TaskIncludeFieldsType,
 } from './types';
-import { ensureArray } from '~/lib/utils';
 
 const logger = appLogger.child({ scope: 'models', model: 'tasks' });
 
 const { id: defaultTemplateId } = config.defaultTemplate;
 
-function applyFilters(filters: TaskQueryFiltersType) {
+function applyFilters(filters: TaskQueryFiltersType): Prisma.TaskWhereInput {
   const where: Prisma.TaskWhereInput = {};
 
   where.extendedId = filters.extendedId;
@@ -68,7 +70,10 @@ function applyIncludes(fields: TaskIncludeFieldsType[]): Prisma.TaskInclude {
   }
 
   if (fields.includes('namespace')) {
-    const entries = Object.keys(prisma.namespace.fields).map((k) => [k, true]);
+    const entries = Object.keys(prisma.namespace.fields).map((key) => [
+      key,
+      true,
+    ]);
     namespace = Object.fromEntries(entries) as Prisma.NamespaceSelect;
 
     namespace.fetchLogin = false;
@@ -93,10 +98,11 @@ function applyIncludes(fields: TaskIncludeFieldsType[]): Prisma.TaskInclude {
 export async function getAllTasks(
   filters?: TaskQueryFiltersType,
   include?: TaskIncludeFieldsType[],
-  pagination?: PaginationType,
+  pagination?: PaginationType
 ): Promise<TaskType[]> {
   // Prepare Prisma query
-  const prismaQuery: Prisma.TaskFindManyArgs = buildPaginatedRequest(pagination);
+  const prismaQuery: Prisma.TaskFindManyArgs =
+    buildPaginatedRequest(pagination);
 
   // Apply filters
   if (filters) {
@@ -120,7 +126,9 @@ export async function getAllTasks(
 
   // Ensure data
   const tasks = await Promise.all(
-    data.map((task) => ensureSchema(Task, task, (t) => `Failed to parse task ${t.id}`)),
+    data.map((task) =>
+      ensureSchema(Task, task, (task) => `Failed to parse task ${task.id}`)
+    )
   );
   return tasks;
 }
@@ -129,12 +137,13 @@ export async function getAllTasks(
  * Get one task
  *
  * @param id The task's id
+ * @param include Fields to include
  *
  * @returns The found task, or `null` if not found
  */
 export async function getTask(
   id: string,
-  include?: TaskIncludeFieldsType[],
+  include?: TaskIncludeFieldsType[]
 ): Promise<TaskType | null> {
   const prismaQuery: Prisma.TaskFindUniqueArgs = { where: { id } };
 
@@ -156,7 +165,7 @@ export async function getTask(
  * @returns The created task
  */
 export async function createTask(
-  data: InputTaskType & { id?: string },
+  data: InputTaskType & { id?: string }
 ): Promise<TaskType> {
   const task = await prisma.task.create({
     data: {
@@ -168,7 +177,8 @@ export async function createTask(
       namespaceId: undefined,
       namespace: { connect: { id: data.namespaceId } },
 
-      lastExtended: data.lastExtended === null ? Prisma.DbNull : data.lastExtended,
+      lastExtended:
+        data.lastExtended === null ? Prisma.DbNull : data.lastExtended,
     },
   });
 
@@ -189,7 +199,10 @@ export async function createTask(
  *
  * @returns The edited task
  */
-export async function editTask(id: string, data: InputTaskType): Promise<TaskType> {
+export async function editTask(
+  id: string,
+  data: InputTaskType
+): Promise<TaskType> {
   const task = await prisma.task.update({
     where: { id },
     data: {
@@ -240,7 +253,9 @@ export async function deleteTask(id: string): Promise<TaskType> {
  *
  * @returns Count of tasks
  */
-export async function countTasks(filters?: TaskQueryFiltersType): Promise<number> {
+export async function countTasks(
+  filters?: TaskQueryFiltersType
+): Promise<number> {
   const prismaQuery: Prisma.TaskCountArgs = {};
 
   // Apply filters
@@ -264,7 +279,10 @@ export async function countTasks(filters?: TaskQueryFiltersType): Promise<number
  * @returns True if task exists
  */
 export async function doesTaskExist(id: string): Promise<boolean> {
-  const count = await prisma.task.count({ where: { id }, select: { id: true } });
+  const count = await prisma.task.count({
+    where: { id },
+    select: { id: true },
+  });
 
   return count.id > 0;
 }
@@ -283,7 +301,7 @@ export async function doesSimilarTaskExist(
   namespaceId: string,
   recurrence: Recurrence,
   templateId: string,
-  index: string,
+  index: string
 ): Promise<boolean> {
   const data = await prisma.task.findFirst({
     where: {
@@ -302,34 +320,6 @@ export async function doesSimilarTaskExist(
 }
 
 /**
- * Update task data after generation
- *
- * @param id Task's id
- * @param lastRun Last run date
- * @param nextRun Next run date
- * @param enabled Is task enabled
- *
- * @returns The updated task
- */
-export async function editTaskAfterGeneration(
-  id: string,
-  lastRun?: Date,
-  nextRun?: Date,
-  enabled?: boolean,
-): Promise<TaskType> {
-  const task = await prisma.task.update({
-    where: { id },
-    data: {
-      lastRun,
-      nextRun,
-      enabled,
-    },
-  });
-
-  return ensureSchema(Task, task);
-}
-
-/**
  * Unlinks a task from its template.
  *
  * @param id The ID of the task to unlink.
@@ -337,22 +327,30 @@ export async function editTaskAfterGeneration(
  * @return A promise that resolves to the updated task.
  */
 export async function unlinkTaskFromTemplate(id: string): Promise<TaskType> {
-  const {
-    extends: rawTemplate,
-    ...rawTask
-  } = await prisma.task.findUniqueOrThrow({
-    where: { id },
-    include: { extends: true },
-  });
+  const { extends: rawTemplate, ...rawTask } =
+    await prisma.task.findUniqueOrThrow({
+      where: { id },
+      include: { extends: true },
+    });
 
-  const task = await ensureSchema(Task, rawTask, (t) => `Failed to parse task ${t.id}`);
-  const template = await ensureSchema(Template, rawTemplate, (t) => `Failed to parse template ${t.id}`);
+  const task = await ensureSchema(
+    Task,
+    rawTask,
+    (task) => `Failed to parse task ${task.id}`
+  );
+  const template = await ensureSchema(
+    Template,
+    rawTemplate,
+    (template) => `Failed to parse template ${template.id}`
+  );
 
-  // eslint-disable-next-line no-restricted-syntax
-  for (const { at, ...layout } of (task.template.inserts ?? [])) {
+  for (const { at, ...layout } of task.template.inserts ?? []) {
     template.body.layouts.splice(at, 0, layout);
   }
-  task.template.inserts = template.body.layouts.map((l, at) => ({ ...l, at }));
+  task.template.inserts = template.body.layouts.map((layout, at) => ({
+    ...layout,
+    at,
+  }));
 
   const result = await prisma.task.update({
     where: { id },

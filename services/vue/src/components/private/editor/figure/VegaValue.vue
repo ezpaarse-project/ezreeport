@@ -40,7 +40,7 @@ const props = defineProps<{
 // Components events
 const emit = defineEmits<{
   /** Updated layer */
-  (e: 'update:modelValue', value: VegaLayer): void
+  (event: 'update:modelValue', value: VegaLayer): void
 }>();
 
 /** Layer's aggregation */

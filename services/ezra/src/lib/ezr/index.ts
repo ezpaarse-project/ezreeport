@@ -16,7 +16,6 @@ const logError = (error: any, logToStderr: Command['logToStderr']) => {
   }
 
   if (isAxiosError(error)) {
-    // eslint-disable-next-line prefer-object-spread
     const data = Object.assign(
       { error: { message: 'Unknown details' } },
       error.response?.data,
@@ -26,7 +25,6 @@ const logError = (error: any, logToStderr: Command['logToStderr']) => {
 
   logToStderr(chalk.red(text));
   if (!isAxiosError(error)) {
-    // eslint-disable-next-line no-console
     console.trace();
   }
 };

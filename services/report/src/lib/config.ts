@@ -1,6 +1,9 @@
-import config from 'config';
+import { setupConfig } from '@ezreeport/config';
+
 import type defaultConfig from '../../config/default.json';
 
-type Config = typeof defaultConfig;
-
-export default config as unknown as Config;
+export default setupConfig<typeof defaultConfig>({
+  watch: {
+    logger: console,
+  },
+});

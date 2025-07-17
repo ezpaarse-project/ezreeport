@@ -1,0 +1,53 @@
+{
+  "name": "ezreeport-files",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
+  "bugs": {
+    "url": "https://github.com/ezpaarse-project/ezreeport/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
+  },
+  "license": "CeCILL",
+  "author": "oxypomme",
+  "main": "src/app.ts",
+  "scripts": {
+    "dev": "tsx watch --inspect=0.0.0.0 src/app.ts",
+    "lint": "oxlint",
+    "start": "tsx src/app.ts",
+    "type-check": "tsc --noEmit --skipLibCheck"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "oxlint --fix"
+    ],
+    "package.json": [
+      "sort-package-json"
+    ]
+  },
+  "dependencies": {
+    "@ezreeport/config": "workspace:*",
+    "@ezreeport/crons": "workspace:*",
+    "@ezreeport/dates": "workspace:*",
+    "@ezreeport/heartbeats": "workspace:*",
+    "@ezreeport/logger": "workspace:*",
+    "@ezreeport/models": "workspace:*",
+    "@ezreeport/rabbitmq": "workspace:*",
+    "@ezreeport/rpc": "workspace:*",
+    "@ezreeport/simple-http": "workspace:*",
+    "better-sqlite3": "^12.2.0",
+    "knex": "^3.1.0",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "pino-pretty": "catalog:"
+  },
+  "engines": {
+    "node": "^22"
+  }
+}

@@ -1,26 +1,29 @@
 import type { TemplateFilter, TemplateBodyFigure } from '~/modules/templates';
 import type { FigureAggregation } from '../aggregations';
 import type { FigureOrder } from './utils';
-import { type FigureHelperWithFilters, createFigureHelperWithFilters } from './base';
+import {
+  type FigureHelperWithFilters,
+  createFigureHelperWithFilters,
+} from './base';
 
 /**
  * Type for columns used in tables
  */
-export type TableColumn = {
+export interface TableColumn {
   /**
    * The name of the column
    */
-  header: string,
+  header: string;
   /**
    * Whether the column is a metric,
    * can only be used once in a table
    */
-  metric?: boolean,
+  metric?: boolean;
   /**
    * The aggregation used to fetch data,
    * if not set, the "value" of the previous column will be used
    */
-  aggregation?: FigureAggregation,
+  aggregation?: FigureAggregation;
   /**
    * The style of the cells in this column
    */
@@ -33,8 +36,8 @@ export type TableColumn = {
     valign?: 'top' | 'middle' | 'bottom';
     fontSize?: number;
     lineColor?: string | [number, number, number];
-  }
-};
+  };
+}
 
 /**
  * Type for tables
@@ -42,9 +45,9 @@ export type TableColumn = {
 export interface TableFigureHelper extends FigureHelperWithFilters {
   readonly type: 'table';
   params: {
-    title: string,
-    columns: TableColumn[],
-    total?: boolean,
+    title: string;
+    columns: TableColumn[];
+    total?: boolean;
     order?: FigureOrder;
   };
 }
@@ -55,7 +58,7 @@ export function createTableFigureHelper(
   total: boolean = false,
   filters: TemplateFilter[] = [],
   order: FigureOrder = true,
-  slots?: number[],
+  slots?: number[]
 ): TableFigureHelper {
   return createFigureHelperWithFilters(
     'table',
@@ -66,22 +69,26 @@ export function createTableFigureHelper(
       total,
       order,
     },
-    slots,
+    slots
   );
 }
 
-export function createTableFigureHelperFrom(figure: TemplateBodyFigure): TableFigureHelper {
+export function createTableFigureHelperFrom(
+  figure: TemplateBodyFigure
+): TableFigureHelper {
   return createTableFigureHelper(
     figure.params?.title,
     figure.params?.columns ?? [],
     figure.params?.total ?? false,
     figure.filters ?? [],
     figure.params?.order ?? true,
-    figure.slots,
+    figure.slots
   );
 }
 
-export function tableHelperParamsToJSON(params: TableFigureHelper['params']): TemplateBodyFigure['params'] {
+export function tableHelperParamsToJSON(
+  params: TableFigureHelper['params']
+): TemplateBodyFigure['params'] {
   return {
     title: params.title,
     columns: params.columns,
@@ -94,44 +101,54 @@ export function getTableColumnKey(column: TableColumn): string {
   return column.header;
 }
 
-export function getAllTableColumnKeysOfHelper(figure: TableFigureHelper): string[] {
+export function getAllTableColumnKeysOfHelper(
+  figure: TableFigureHelper
+): string[] {
   return figure.params.columns.map(getTableColumnKey);
 }
 
 export function addTableColumnOfHelper(
   figure: TableFigureHelper,
   element: TableColumn,
-  index?: number,
+  index?: number
 ): TableFigureHelper {
   const key = getTableColumnKey(element);
-  if (figure.params.columns.some((c) => getTableColumnKey(c) === key)) {
+  if (figure.params.columns.some((col) => getTableColumnKey(col) === key)) {
     throw new Error(`Column "${element.header}" already exists`);
   }
-  figure.params.columns.splice(index ?? figure.params.columns.length, 0, element);
+  figure.params.columns.splice(
+    index ?? figure.params.columns.length,
+    0,
+    element
+  );
   return figure;
 }
 
 export function removeTableColumnOfHelper(
   figure: TableFigureHelper,
-  element: TableColumn,
+  element: TableColumn
 ): TableFigureHelper {
-  const f = figure;
+  const fig = figure;
   const key = getTableColumnKey(element);
-  f.params.columns = figure.params.columns.filter((c) => getTableColumnKey(c) !== key);
+  fig.params.columns = figure.params.columns.filter(
+    (col) => getTableColumnKey(col) !== key
+  );
   return figure;
 }
 
 export function updateTableColumnOfHelper(
   figure: TableFigureHelper,
   oldElement: TableColumn,
-  newElement: TableColumn,
+  newElement: TableColumn
 ): TableFigureHelper {
   const oldKey = getTableColumnKey(oldElement);
-  const index = figure.params.columns.findIndex((c) => getTableColumnKey(c) === oldKey);
+  const index = figure.params.columns.findIndex(
+    (col) => getTableColumnKey(col) === oldKey
+  );
   if (index < 0) {
     throw new Error(`Column "${oldKey}" not found`);
   }
-  const f = figure;
-  f.params.columns[index] = newElement;
+  const fig = figure;
+  fig.params.columns[index] = newElement;
   return figure;
 }

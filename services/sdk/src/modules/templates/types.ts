@@ -32,7 +32,6 @@ export interface TemplateBodyFigure {
   /** Figure data, only used for Markdown figures */
   data?: unknown;
   /** Figure params, not used for Markdown figures */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params?: any;
   /** Filters used when fetching data of this figure */
   filters?: TemplateFilter[];

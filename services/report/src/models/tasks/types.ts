@@ -1,23 +1,21 @@
 import {
   z,
-  stringToStartOfDay,
-  stringToEndOfDay,
-  stringOrArray,
-  stringToBool,
-} from '~/lib/zod';
-import { ensureArray } from '~/lib/utils';
+  zStringToStartOfDay,
+  zStringToEndOfDay,
+  zStringOrArray,
+} from '@ezreeport/models/lib/zod';
+import { ensureArray } from '@ezreeport/models/lib/utils';
 
+import { Task as CommonTask } from '@ezreeport/models/tasks';
 import { Namespace } from '~/models/namespaces/types';
-import { TaskTemplateBody, TemplateTag } from '~/models/templates/types';
-import { Recurrence } from '~/models/recurrence/types';
+import { TemplateTag } from '~/models/templates/types';
+
+export * from '@ezreeport/models/tasks';
 
 /**
  * Validation for task include fields
  */
-const TaskIncludeFields = z.enum([
-  'extends.tags',
-  'namespace',
-] as const);
+const TaskIncludeFields = z.enum(['extends.tags', 'namespace'] as const);
 
 /**
  * Type for task include fields
@@ -25,74 +23,22 @@ const TaskIncludeFields = z.enum([
 export type TaskIncludeFieldsType = z.infer<typeof TaskIncludeFields>;
 
 /**
- * Validation for the last extended template
- */
-const LastExtended = z.object({
-  id: z.string().min(1)
-    .describe('Template ID'),
-
-  name: z.string().min(1)
-    .describe('Template name'),
-
-  tags: z.array(TemplateTag).optional()
-    .describe('Template tags'),
-});
-
-/**
  * Validation with a task
  */
-export const Task = z.object({
-  id: z.string().min(1).readonly()
-    .describe('Task ID'),
-
-  name: z.string().min(1)
-    .describe('Task name'),
-
-  description: z.string().optional()
-    .describe('Task description'),
-
-  namespaceId: z.string().min(1)
-    .describe('Namespace ID of the task'),
-
-  extendedId: z.string().min(1)
-    .describe('Extended template ID'),
-
-  template: TaskTemplateBody
-    .describe('Options to extend template'),
-
-  lastExtended: LastExtended.nullish()
-    .describe('Last extended template'),
-
-  targets: z.array(z.string().email())
-    .describe('Email addresses to send report'),
-
-  recurrence: Recurrence
-    .describe('Task recurrence'),
-
-  nextRun: z.coerce.date()
-    .describe('Next run date, must be in the future'),
-
-  lastRun: z.date().nullable()
-    .describe('Last run date'),
-
-  enabled: z.boolean()
-    .describe('Is task enabled, default to true'),
-
-  createdAt: z.date().readonly()
-    .describe('Creation date'),
-
-  updatedAt: z.date().nullable().readonly()
-    .describe('Last update date'),
-
+export const Task = CommonTask.extend({
   // Includes fields
-
-  namespace: Namespace.omit({ fetchLogin: true, fetchOptions: true }).optional().readonly()
+  namespace: Namespace.omit({ fetchLogin: true, fetchOptions: true })
+    .optional()
     .describe('[Includes] Namespace related to the task'),
 
-  extends: z.object({
-    tags: z.array(TemplateTag).optional().readonly()
-      .describe('[Includes] Template tags'),
-  }).optional().readonly()
+  extends: z
+    .object({
+      tags: z
+        .array(TemplateTag)
+        .optional()
+        .describe('[Includes] Template tags'),
+    })
+    .optional()
     .describe('[Includes] Template extended by the task'),
 });
 
@@ -124,26 +70,31 @@ export type InputTaskType = z.infer<typeof InputTask>;
  * Validation for query filters of a task
  */
 export const TaskQueryFilters = z.object({
-  query: z.string().optional()
-    .describe('Query used for searching'),
+  query: z.string().optional().describe('Query used for searching'),
 
-  extendedId: z.string().min(1).optional()
+  extendedId: z
+    .string()
+    .min(1)
+    .optional()
     .describe('ID of template extended by the task'),
 
-  namespaceId: stringOrArray.optional()
+  namespaceId: zStringOrArray
+    .optional()
     .describe('Possible namespace ID of the task'),
 
-  targets: stringOrArray.optional()
+  targets: zStringOrArray
+    .optional()
     .describe('Email addresses used by the task'),
 
-  'nextRun.from': stringToStartOfDay.optional()
+  'nextRun.from': zStringToStartOfDay
+    .optional()
     .describe('Minimum date of next run of the task'),
 
-  'nextRun.to': stringToEndOfDay.optional()
+  'nextRun.to': zStringToEndOfDay
+    .optional()
     .describe('Maximum date of next run of the task'),
 
-  enabled: stringToBool.optional()
-    .describe('If task is enabled'),
+  enabled: z.stringbool().optional().describe('If task is enabled'),
 });
 
 /**
@@ -156,6 +107,7 @@ export type TaskQueryFiltersType = z.infer<typeof TaskQueryFilters>;
  */
 export const TaskQueryInclude = z.object({
   include: TaskIncludeFields.or(z.array(TaskIncludeFields))
-    .transform((v) => ensureArray(v)).optional()
+    .transform((value) => ensureArray(value))
+    .optional()
     .describe('Fields to include'),
 });

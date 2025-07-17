@@ -11,7 +11,7 @@ export {
 
 export type {
   ReportFiles,
-  ReportErrorCause,
+  ReportError,
   ReportPeriod,
   ReportStats,
   ReportDetails,

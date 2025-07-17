@@ -1,4 +1,4 @@
-import { z } from '~/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
 
 /**
  * Validation for index

@@ -49,13 +49,15 @@ import type { TaskActivity } from '~sdk/task-activity';
 // Components props
 const props = defineProps<{
   /** The tag to show */
-  modelValue: TaskActivity,
+  modelValue: TaskActivity;
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
-const isObject = (value: unknown): value is object => !!value && typeof value === 'object' && !Array.isArray(value);
+const isObject = (value: unknown): value is object =>
+  !!value && typeof value === 'object' && !Array.isArray(value);
 
 const data = computed(() => {
   if (isObject(props.modelValue.data)) {
@@ -68,14 +70,18 @@ const user = computed(() => {
   if ('user' in data.value && typeof data.value.user === 'string') {
     return data.value.user;
   }
-  return undefined;
+  return;
 });
 
 const targets = computed(() => {
-  if ('targets' in data.value && Array.isArray(data.value.targets) && data.value.targets.every((v) => typeof v === 'string')) {
+  if (
+    'targets' in data.value &&
+    Array.isArray(data.value.targets) &&
+    data.value.targets.every((val) => typeof val === 'string')
+  ) {
     return data.value.targets;
   }
-  return undefined;
+  return;
 });
 
 const files = computed(() => {
@@ -84,18 +90,26 @@ const files = computed(() => {
   if ('destroyAt' in data.value && typeof data.value.destroyAt === 'string') {
     const date = new Date(data.value.destroyAt);
     if (isValid(date) && isBefore(date, now)) {
-      return undefined;
+      return;
     }
   }
 
   if ('files' in data.value && isObject(data.value.files)) {
     return {
-      report: 'report' in data.value.files && typeof data.value.files.report === 'string' ? data.value.files.report : undefined,
-      detail: 'detail' in data.value.files && typeof data.value.files.detail === 'string' ? data.value.files.detail : undefined,
+      report:
+        'report' in data.value.files &&
+        typeof data.value.files.report === 'string'
+          ? data.value.files.report
+          : undefined,
+      detail:
+        'detail' in data.value.files &&
+        typeof data.value.files.detail === 'string'
+          ? data.value.files.detail
+          : undefined,
     };
   }
 
-  return undefined;
+  return;
 });
 
 async function downloadGenerationFile(path: string) {
@@ -103,8 +117,8 @@ async function downloadGenerationFile(path: string) {
     const filename = path.split('/').pop() ?? 'download';
     const blob = await getFileAsBlob(props.modelValue.taskId, path);
     downloadBlob(blob, filename);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.errors.download', { path }), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.errors.download', { path }), err);
   }
 }
 </script>

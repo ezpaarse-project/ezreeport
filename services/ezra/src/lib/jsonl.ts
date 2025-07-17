@@ -8,7 +8,6 @@ export const readJSONL = async (file: string) => {
   });
 
   const data = [];
-  // eslint-disable-next-line no-restricted-syntax
   for await (const line of rl) {
     data.push(JSON.parse(line));
   }
@@ -17,7 +16,6 @@ export const readJSONL = async (file: string) => {
 
 export const writeJSONL = (file: string, data: any[]) => {
   const ws = createWriteStream(file);
-  // eslint-disable-next-line no-restricted-syntax
   for (const element of data) {
     ws.write(`${JSON.stringify(element)}\n`);
   }

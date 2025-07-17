@@ -1,0 +1,34 @@
+{
+  "port": { "__name": "HTTP_PORT", "__format": "number" },
+  "heartbeat": { "__name": "HEARTBEAT_FREQUENCY", "__format": "number" },
+  "log": {
+    "level": "LOG_LEVEL",
+    "dir": "LOG_DIR",
+    "ignore": { "__name": "LOG_IGNORE", "__format": "json" }
+  },
+  "fetcher": {
+    "bannedDomains": { "__name": "REPORT_FETCHER_BANNED_DOMAINS", "__format": "json" }
+  },
+  "elasticsearch": {
+    "url": "ELASTIC_URL",
+    "username": "ELASTIC_USERNAME",
+    "password": "ELASTIC_PASSWORD",
+    "apiKey": "ELASTIC_API_KEY",
+    "requiredStatus": "ELASTIC_REQUIRED_STATUS"
+  },
+  "rabbitmq": {
+    "protocol": "RABBITMQ_PROTOCOL",
+    "host": "RABBITMQ_HOST",
+    "port": { "__name": "RABBITMQ_PORT", "__format": "number" },
+    "vhost": "RABBITMQ_VHOST",
+    "username": "RABBITMQ_USERNAME",
+    "password": "RABBITMQ_PASSWORD"
+  },
+  "report": {
+    "ttl": {
+      "iterations": { "__name": "REPORT_ITERATIONS_TO_LIVE", "__format": "number" },
+      "days": { "__name": "REPORT_DAYS_TO_LIVE", "__format": "number" }
+    },
+    "team": "EMAIL_DEV_TEAM"
+  }
+}

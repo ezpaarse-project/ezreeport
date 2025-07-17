@@ -1,14 +1,21 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
-import { z } from '~/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
 
 import authPlugin from '~/plugins/auth';
 
-import * as responses from '~/routes/v2/responses';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+} from '~/routes/v2/responses';
 
 import { buildPaginatedResponse } from '~/models/pagination';
-import { PaginationQuery, PaginationResponse } from '~/models/pagination/types';
+import {
+  PaginationQuery,
+  zPaginationResponse,
+} from '~/models/pagination/types';
 
 import * as users from '~/models/users';
 import {
@@ -19,15 +26,15 @@ import {
   UserQueryFilters,
 } from '~/models/users/types';
 
-import { NotFoundError } from '~/types/errors';
+import { NotFoundError } from '~/models/errors';
 
 import membershipRoutes from './memberships';
 
 const SpecificUserParams = z.object({
-  username: z.string().min(1)
-    .describe('Username'),
+  username: z.string().min(1).describe('Username'),
 });
 
+// oxlint-disable-next-line max-lines-per-function, require-await
 const router: FastifyPluginAsyncZod = async (fastify) => {
   await fastify.register(authPlugin);
 
@@ -39,10 +46,12 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['users'],
       querystring: PaginationQuery.and(UserQueryFilters),
       response: {
-        [StatusCodes.OK]: PaginationResponse(User),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zPaginationResponse(User),
       },
     },
     config: {
@@ -50,33 +59,26 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAPIKey: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       // Extract pagination and filters from query
-      const {
+      const { page, count, sort, order, ...filters } = request.query;
+
+      const content = await users.getAllUsers(filters, {
         page,
         count,
         sort,
         order,
-        ...filters
-      } = request.query;
-
-      const content = await users.getAllUsers(
-        filters,
-        {
-          page,
-          count,
-          sort,
-          order,
-        },
-      );
+      });
 
       return buildPaginatedResponse(
         content,
         {
           page: request.query.page,
           total: await users.countUsers(filters),
+          count: content.length,
         },
-        reply,
+        reply
       );
     },
   });
@@ -89,10 +91,12 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['users'],
       body: z.array(BulkUser),
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(BulkUserResult),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(BulkUserResult),
       },
     },
     config: {
@@ -100,10 +104,11 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAPIKey: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const content = await users.replaceUsers(request.body);
 
-      return responses.buildSuccessResponse(content, reply);
+      return buildSuccessResponse(content, reply);
     },
   });
 
@@ -115,11 +120,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['users'],
       params: SpecificUserParams,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(User),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(User),
       },
     },
     config: {
@@ -127,6 +134,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAPIKey: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const content = await users.getUser(request.params.username);
 
@@ -134,7 +142,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         throw new NotFoundError(`User ${request.params.username} not found`);
       }
 
-      return responses.buildSuccessResponse(content, reply);
+      return buildSuccessResponse(content, reply);
     },
   });
 
@@ -147,11 +155,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       params: SpecificUserParams,
       body: InputUser,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(User),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(User),
       },
     },
     config: {
@@ -159,6 +169,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAPIKey: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const doesExists = await users.doesUserExist(request.params.username);
 
@@ -166,10 +177,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       if (doesExists) {
         user = await users.editUser(request.params.username, request.body);
       } else {
-        user = await users.createUser({ username: request.params.username, ...request.body });
+        user = await users.createUser({
+          username: request.params.username,
+          ...request.body,
+        });
       }
 
-      return responses.buildSuccessResponse(user, reply);
+      return buildSuccessResponse(user, reply);
     },
   });
 
@@ -181,11 +195,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['users'],
       params: SpecificUserParams,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(z.object({ deleted: z.boolean() })),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(z.object({ deleted: z.boolean() })),
       },
     },
     config: {
@@ -193,17 +209,19 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAPIKey: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const doesExists = await users.doesUserExist(request.params.username);
       if (doesExists) {
         await users.deleteUser(request.params.username);
       }
 
-      return responses.buildSuccessResponse({ deleted: doesExists }, reply);
+      return buildSuccessResponse({ deleted: doesExists }, reply);
     },
   });
 
   fastify.register(membershipRoutes, { prefix: '/:username/memberships' });
 };
 
+// oxlint-disable-next-line no-default-exports
 export default router;

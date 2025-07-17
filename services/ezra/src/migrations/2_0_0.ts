@@ -82,7 +82,6 @@ const migrateEsAggregation = (aggregation: any) => {
   if (!aggregation) {
     return undefined;
   }
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   const { name: _, ...agg } = aggregation;
   const type = Object.keys(agg)[0];
   const field = agg[type]?.field;
@@ -176,11 +175,11 @@ const migrateTableParams = ({ params, fetchOptions }: any) => {
     let aggregation;
     let matches;
     if (
-      // eslint-disable-next-line no-cond-assign
+      // oxlint-disable-next-line no-constant-binary-expression
       dK === 'key' ? (matches = ['', dataKey]) : false
-      // eslint-disable-next-line no-cond-assign
+      // oxlint-disable-next-line no-constant-binary-expression
       || (matches = /^(?:.+\.)?(.+)\.key$/.exec(dK)) !== null
-      // eslint-disable-next-line no-cond-assign
+      // oxlint-disable-next-line no-constant-binary-expression
       || (matches = /^(?:.+\.)?(.+)\.value$/.exec(dK)) !== null
     ) {
       aggregation = bucketMap.get(matches?.[1]);

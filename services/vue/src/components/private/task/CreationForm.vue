@@ -14,7 +14,7 @@
             <v-autocomplete
               v-model="currentPreset"
               :label="$t('$ezreeport.task-preset.title')"
-              :rules="[(v) => !!v || $t('$ezreeport.required')]"
+              :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :items="presets"
               :return-object="true"
               :loading="loadingPresets"
@@ -27,10 +27,16 @@
             >
               <template #append-inner>
                 <div v-if="currentPreset" class="d-flex align-center">
-                  <TemplateTagView :model-value="currentPreset.template?.tags ?? []" />
+                  <TemplateTagView
+                    :model-value="currentPreset.template?.tags ?? []"
+                  />
 
                   <v-chip
-                    :text="$t(`$ezreeport.task.recurrenceList.${currentPreset.recurrence}`)"
+                    :text="
+                      $t(
+                        `$ezreeport.task.recurrenceList.${currentPreset.recurrence}`
+                      )
+                    "
                     color="primary"
                     variant="outlined"
                     size="small"
@@ -47,7 +53,9 @@
 
                   <template #append>
                     <v-chip
-                      :text="$t(`$ezreeport.task.recurrenceList.${item.recurrence}`)"
+                      :text="
+                        $t(`$ezreeport.task.recurrenceList.${item.recurrence}`)
+                      "
                       color="primary"
                       variant="outlined"
                       size="small"
@@ -64,7 +72,7 @@
             <v-autocomplete
               v-model="data.namespaceId"
               :label="$t('$ezreeport.namespace')"
-              :rules="[(v) => !!v || $t('$ezreeport.required')]"
+              :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :items="namespaces"
               :return-object="false"
               :loading="loadingNamespaces"
@@ -82,7 +90,7 @@
             <v-text-field
               v-model="data.name"
               :label="$t('$ezreeport.name')"
-              :rules="[(v) => !!v || $t('$ezreeport.required')]"
+              :rules="[(val) => !!val || $t('$ezreeport.required')]"
               prepend-icon="mdi-rename"
               variant="underlined"
               required
@@ -96,8 +104,11 @@
               :model-value="data.targets"
               :label="$t('$ezreeport.task.targets')"
               :add-label="$t('$ezreeport.task.targets:add')"
-              :rules="[(v) => v.length > 0 || $t('$ezreeport.required')]"
-              :item-rules="[(v, i) => isEmail(v) || $t('$ezreeport.errors.invalidEmail', i + 1)]"
+              :rules="[(val) => val.length > 0 || $t('$ezreeport.required')]"
+              :item-rules="[
+                (val, i) =>
+                  isEmail(val) || $t('$ezreeport.errors.invalidEmail', i + 1),
+              ]"
               :item-placeholder="$t('$ezreeport.task.targets:hint')"
               prepend-icon="mdi-mailbox"
               variant="underlined"
@@ -130,7 +141,7 @@
               <IndexSelector
                 v-model="data.index"
                 :namespace-id="data.namespaceId"
-                :rules="[(v) => !!v || $t('$ezreeport.required')]"
+                :rules="[(val) => !!val || $t('$ezreeport.required')]"
                 required
                 @index:valid="refreshMapping($event)"
               />
@@ -189,18 +200,22 @@ const props = defineProps<{
   /** Namespace to create task in */
   namespaceId?: string;
   /** Should show advanced button */
-  showAdvanced?: boolean
+  showAdvanced?: boolean;
 }>();
 
 // Component events
 const emit = defineEmits<{
   /** Updated task */
-  (e: 'update:modelValue', value: Task): void
+  (event: 'update:modelValue', value: Task): void;
   /** Asked to open task in advanced form */
-  (e: 'open:advanced', value: { data: AdditionalDataForPreset, preset?: TaskPreset }): void
+  (
+    event: 'open:advanced',
+    value: { data: AdditionalDataForPreset; preset?: TaskPreset }
+  ): void;
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 const { refreshMapping } = useTemplateEditor({
   namespaceId: props.namespaceId,
@@ -228,9 +243,9 @@ const hasNameChanged = ref(false);
 
 /** Filters of task */
 const filters = computed({
-  get: () => new Map((data.value.filters ?? []).map((f) => [f.name, f])),
-  set: (v) => {
-    const values = Array.from(v.values());
+  get: () => new Map((data.value.filters ?? []).map((fil) => [fil.name, fil])),
+  set: (value) => {
+    const values = Array.from(value.values());
     if (values.length > 0) {
       data.value.filters = values;
       return;
@@ -244,9 +259,12 @@ const presets = computedAsync(async () => {
 
   loadingPresets.value = true;
   try {
-    ({ items } = await getAllTaskPresets({ pagination: { count: 0, sort: 'name' }, include: ['template.tags'] }));
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.fetchPresets'), e);
+    ({ items } = await getAllTaskPresets({
+      pagination: { count: 0, sort: 'name' },
+      include: ['template.tags'],
+    }));
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.fetchPresets'), err);
   }
   loadingPresets.value = false;
 
@@ -265,9 +283,11 @@ const namespaces = computedAsync(async () => {
   loadingNamespaces.value = true;
   try {
     const currentNamespaces = await getCurrentNamespaces();
-    items = currentNamespaces.sort((a, b) => a.name.localeCompare(b.name));
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), e);
+    items = currentNamespaces.sort((namespaceA, namespaceB) =>
+      namespaceA.name.localeCompare(namespaceB.name)
+    );
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), err);
   }
   loadingNamespaces.value = false;
 
@@ -297,9 +317,11 @@ function onTargetUpdated(targets: string | string[] | undefined) {
   data.value.targets = Array.from(
     new Set(
       allTargets
-        .join(';').replace(/[,]/g, ';')
-        .split(';').map((mail) => mail.trim()),
-    ),
+        .join(';')
+        .replaceAll(/[,]/g, ';')
+        .split(';')
+        .map((mail) => mail.trim())
+    )
   );
 }
 
@@ -312,12 +334,17 @@ async function save() {
     const result = await createTaskFromPreset(currentPreset.value, data.value);
 
     emit('update:modelValue', result);
-  } catch (e) {
-    if (e && typeof e === 'object' && 'statusCode' in e && e.statusCode === 409) {
-      handleEzrError(t('$ezreeport.task.errors.create:duplicate'), e);
+  } catch (err) {
+    if (
+      err &&
+      typeof err === 'object' &&
+      'statusCode' in err &&
+      err.statusCode === 409
+    ) {
+      handleEzrError(t('$ezreeport.task.errors.create:duplicate'), err);
       return;
     }
-    handleEzrError(t('$ezreeport.task.errors.create:preset'), e);
+    handleEzrError(t('$ezreeport.task.errors.create:preset'), err);
   }
 }
 </script>

@@ -1,35 +1,27 @@
 import { client } from '~/lib/fetch';
 import type { ApiResponse } from '~/lib/api';
+import { transformCreatedUpdated } from '~/lib/transform';
 
-import type { ApiStatus, Pong } from './types';
+import type {
+  ApiService,
+  ApiStatus,
+  RawApiStatus,
+  RawApiService,
+} from './types';
+
+export const transformService = (s: RawApiService): ApiService => ({
+  ...transformCreatedUpdated(s),
+});
 
 /**
  * Get status of service
  *
  * @returns The current service
  */
-export async function getStatus() {
-  const { content } = await client.fetch<ApiResponse<ApiStatus>>('/health');
-  return content;
-}
-
-/**
- * Ping all connected services at once
- *
- * @returns Result of pings
- */
-export async function pingAllServices() {
-  const { content } = await client.fetch<ApiResponse<Pong[]>>('/health/services');
-  return content;
-}
-
-/**
- * Ping connected services
- * @param service The name of the service
- *
- * @returns Result of ping
- */
-export async function pingService(service: string) {
-  const { content } = await client.fetch<ApiResponse<Pong>>(`/health/services/${service}`);
-  return content;
+export async function getStatus(): Promise<ApiStatus> {
+  const { content } = await client.fetch<ApiResponse<RawApiStatus>>('/health');
+  return {
+    ...content,
+    services: content.services.map(transformService),
+  };
 }

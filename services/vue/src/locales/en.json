@@ -73,7 +73,8 @@
           "title": "An error occurred during generation",
           "layout": "Layout",
           "figure": "Figure",
-          "type": "Type"
+          "type": "Type",
+          "name": "Name"
         },
         "success": {
           "title": "The report was generated with success",
@@ -294,12 +295,7 @@
             "square": "Square"
           },
           "slots": "Figure slots",
-          "slotsList": [
-            "Top left",
-            "Top right",
-            "Bottom left",
-            "Bottom right"
-          ]
+          "slotsList": ["Top left", "Top right", "Bottom left", "Bottom right"]
         },
         "md": {
           "title": "Markdown@:$ezreeport.editor.figures._.titleTemplate",
@@ -429,60 +425,57 @@
     "health": {
       "title:list": "ezREEPORT's status",
       "client": "Client status",
-      "server": "Server status",
+      "services": "Services status",
+      "instances": "{n} instances are ready",
+      "ko": "Service is not ready, some features of ezREEPORT won't work",
+      "fs": "Filesystems status",
+      "fsUsage": {
+        "total": "Total: {value}",
+        "used": "Used: {value}",
+        "available": "Available: {value}"
+      },
+      "fsUsage%": "Usage: {value}",
       "errors": {
         "fetch": "Can't fetch ezREEPORT's status"
       }
     },
-    "queues": {
-      "_": {
-        "title:list": "Queues",
-        "title:jobs": "Jobs ({n})",
-        "tries": "Tries",
-        "status": "Job's status",
-        "duration": "Duration",
-        "added": "Add date",
-        "started": "Start date",
-        "ended": "End date",
-        "info": "Job's information",
-        "id": "Job's ID",
-        "statusList": {
-          "completed": "Completed",
-          "failed": "Failed",
-          "delayed": "Delayed",
-          "active": "Active",
-          "waiting": "Waiting"
-        },
-        "errors": {
-          "fetch": "Can't get queues",
-          "edit": "Can't update queue",
-          "retry": "Can't retry job",
-          "open": "Can't get job informations"
-        }
+    "generations": {
+      "title": "Report generations ({n})",
+      "id": "Generation ID",
+      "status": "Generation status",
+      "statusList": {
+        "SUCCESS": "Success",
+        "ERROR": "Error",
+        "PROCESSING": "Processing",
+        "PENDING": "Pending",
+        "ABORTED": "Aborted"
       },
-      "generation": {
-        "title": "Generation queue",
-        "task": "Report's name",
-        "template": "Template's name",
-        "status": "Generation status",
-        "origin": "Origin",
-        "debug": "Test report",
-        "auth": "Elastic User",
-        "header:request": "Generation parameters",
-        "header:task": "Generated report",
-        "header:result": "Generation result",
-        "header:files": "Generated files"
-      },
-      "mail": {
-        "title": "Mailing queue",
-        "error": "Error message",
-        "errorDate": "Error date",
-        "task": "Report's name",
-        "attachement": "Attachement",
-        "generationDate": "Generation date",
-        "generationJob": "Informations about generation",
-        "header:generation": "Generation summary",
-        "header:mail": "Mail informations"
+      "period": "Period",
+      "duration": "Duration",
+      "started": "Start date",
+      "ended": "End date",
+      "queued": "Queued date",
+      "lastUpdate": "Last update date",
+      "info": "Generation's informations",
+      "task": "Report's name",
+      "template": "Template's name",
+      "origin": "Origin",
+      "progress": "Progress",
+      "debug": "Test report",
+      "auth": "Elastic User",
+      "scheduler": "Scheduled report",
+      "header:request": "Generation parameters",
+      "header:fetch:template": "Fetching template...",
+      "header:task": "Generated report",
+      "header:fetch:task": "Fetching periodic report...",
+      "header:result": "Generation result",
+      "header:fetch:result": "Fetching result...",
+      "header:files": "Generated files",
+      "header:error": "Error details",
+      "errors": {
+        "fetch": "Unable to get generations",
+        "open": "Unable to get generation informations",
+        "retry": "Unable to retry generation"
       }
     },
     "errors": {
@@ -490,6 +483,8 @@
       "download": "Can't download file \"{path}\"",
       "downloadAttachement": "Can't download attachement",
       "refreshNamespaces": "Can't refresh @:$ezreeport.namespace",
+      "resolveNextDate": "Can't resolve next delivery",
+      "resolvePeriod": "Can't resolve the period",
       "futureDate": "Date must be in the future"
     }
   }

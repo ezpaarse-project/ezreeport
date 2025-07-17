@@ -1,50 +1,29 @@
 {
   "port": { "__name": "HTTP_PORT", "__format": "number" },
-  "allowedOrigins": "API_ALLOWED_ORIGINS",
-  "adminKey": "REPORT_ADMIN_KEY",
+  "heartbeat": { "__name": "HEARTBEAT_FREQUENCY", "__format": "number" },
+  "allowedOrigins": "ALLOWED_ORIGINS",
+  "adminKey": "ADMIN_KEY",
   "log": {
     "level": "LOG_LEVEL",
     "dir": "LOG_DIR",
-    "ignore": "LOG_IGNORE"
+    "ignore": { "__name": "LOG_IGNORE", "__format": "json" }
   },
   "defaultTemplate": {
-    "name": "REPORT_DEFAULT_TEMPLATE_NAME",
-    "dateField": "REPORT_DEFAULT_TEMPLATE_DATEFIELD"
-  },
-  "fetcher": {
-    "bannedDomains": { "__name": "REPORT_FETCHER_BANNED_DOMAINS", "__format": "json" }
+    "name": "DEFAULT_TEMPLATE_NAME",
+    "dateField": "DEFAULT_TEMPLATE_DATEFIELD"
   },
   "elasticsearch": {
     "url": "ELASTIC_URL",
     "username": "ELASTIC_USERNAME",
     "password": "ELASTIC_PASSWORD",
-    "apiKey": "ELASTIC_API_KEY",
-    "requiredStatus": "ELASTIC_REQUIRED_STATUS",
-    "maxTries": { "__name": "ELASTIC_MAX_TRIES", "__format": "number" }
+    "apiKey": "ELASTIC_API_KEY"
   },
-  "redis": {
-    "host": "REDIS_HOST",
-    "port": { "__name": "REDIS_PORT", "__format": "number" },
-    "password": "REDIS_PASSWORD"
-  },
-  "workers": {
-    "concurrence": { "__name": "WORKERS_CONCURRENCE", "__format": "number" },
-    "maxExecTime": { "__name": "WORKERS_MAX_EXEC_TIME", "__format": "number" }
-  },
-  "crons": {
-    "options": {
-      "tz": "TZ"
-    },
-    "timers": {
-      "generateReports": "REPORT_CRON_TIMER_GENERATE_REPORT",
-      "purgeOldReports": "REPORT_CRON_TIMER_PURGE_OLD_REPORT"
-    }
-  },
-  "report": {
-    "ttl": {
-      "iterations": { "__name": "REPORT_ITERATIONS_TO_LIVE", "__format": "number" },
-      "days": { "__name": "REPORT_DAYS_TO_LIVE", "__format": "number" }
-    },
-    "team": "EMAIL_DEV_TEAM"
+  "rabbitmq": {
+    "protocol": "RABBITMQ_PROTOCOL",
+    "host": "RABBITMQ_HOST",
+    "port": { "__name": "RABBITMQ_PORT", "__format": "number" },
+    "vhost": "RABBITMQ_VHOST",
+    "username": "RABBITMQ_USERNAME",
+    "password": "RABBITMQ_PASSWORD"
   }
 }

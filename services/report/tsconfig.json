@@ -1,23 +1,9 @@
 {
-  "include": [
-    "**/*.ts",
-    "**/*.js",
-    ".eslintrc.js"
-  ],
+  "include": ["**/*.ts", "**/public/**/*.js"],
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    // Used by ESBuild
-    "target": "ES2023",
-    "strict": true,
     "paths": {
-      "~/*": [
-        "./src/*"
-      ]
-    },
-
-    // Used by TypeScript
-    "lib": ["ES2023"],
-    "module": "commonjs",
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
+      "~/*": ["./src/*"]
+    }
   }
 }

@@ -1,0 +1,141 @@
+import {
+  Client,
+  type estypes as ElasticTypes,
+  type ApiResponse,
+  type ClientOptions,
+  type RequestParams,
+} from '@elastic/elasticsearch';
+
+import type { HeartbeatType } from '@ezreeport/heartbeats/types';
+
+import config from './config';
+import { appLogger } from './logger';
+
+const logger = appLogger.child(
+  { scope: 'elastic' },
+  {
+    redact: {
+      paths: ['config.*.password'],
+      censor: (value) => value && ''.padStart(`${value}`.length, '*'),
+    },
+  }
+);
+
+const { url, username, password, apiKey, requiredStatus } =
+  config.elasticsearch;
+
+enum ElasticStatus {
+  red = 0,
+  yellow = 1,
+  green = 2,
+}
+type KeyofElasticStatus = keyof typeof ElasticStatus;
+
+const isElasticStatus = (status: string): status is KeyofElasticStatus =>
+  Object.keys(ElasticStatus).includes(status);
+
+// Parse some env var
+const REQUIRED_STATUS = isElasticStatus(requiredStatus)
+  ? requiredStatus
+  : 'green';
+const ES_AUTH = apiKey ? { apiKey } : { username, password };
+
+const clientConfig: ClientOptions = {
+  node: {
+    url: new URL(url),
+  },
+  auth: ES_AUTH,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+};
+
+let client: Client | undefined;
+
+/**
+ * Get elastic client
+ *
+ * @returns Elastic client
+ */
+export function initElasticClient(): Client {
+  if (!client) {
+    client = new Client(clientConfig);
+
+    logger.info({
+      config: clientConfig.node,
+      msg: 'Elastic client ready',
+    });
+  }
+
+  return client;
+}
+
+/**
+ * Get elastic client once it's ready
+ *
+ * @returns Elastic client
+ */
+async function elasticReady(): Promise<Client> {
+  const client = initElasticClient();
+
+  await client.cluster.health<ElasticTypes.ClusterHealthResponse>({
+    wait_for_status: REQUIRED_STATUS,
+    timeout: '5s',
+  });
+
+  return client;
+}
+
+/**
+ * Ping elastic to check connection
+ *
+ * @returns If elastic is up
+ */
+export const elasticPing = async (): Promise<HeartbeatType> => {
+  const elastic = await elasticReady();
+
+  const { body } =
+    await elastic.cluster.stats<ElasticTypes.ClusterStatsResponse>();
+
+  return {
+    hostname: body.cluster_name,
+    service: 'elastic',
+    version: body.nodes.versions.at(0),
+    filesystems: [
+      {
+        name: 'elastic',
+        total: body.nodes.fs.total_in_bytes,
+        used: body.nodes.fs.total_in_bytes - body.nodes.fs.available_in_bytes,
+        available: body.nodes.fs.available_in_bytes,
+      },
+    ],
+    updatedAt: new Date(),
+  };
+};
+
+/**
+ * Shorthand to search multiple queries with elastic
+ *
+ * @param params The search params
+ * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
+ *
+ * @returns The results of the search
+ */
+export const elasticMSearch = async <
+  ResponseType extends Record<string, unknown>,
+>(
+  params: RequestParams.Msearch<ElasticTypes.MsearchRequestItem[]>,
+  runAs?: string
+): Promise<ApiResponse<ElasticTypes.MsearchResponse<ResponseType>>> => {
+  const elastic = await elasticReady();
+
+  const headers: Record<string, unknown> = {};
+  if (runAs) {
+    headers['es-security-runas-user'] = runAs;
+  }
+
+  return elastic.msearch<
+    ElasticTypes.MsearchResponse<ResponseType>,
+    ElasticTypes.MsearchRequestItem[]
+  >(params, { headers });
+};

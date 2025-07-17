@@ -1,51 +1,22 @@
-import { ensureArray } from '~/lib/utils';
+import { ensureArray } from '@ezreeport/models/lib/utils';
+import { TaskActivity as CommonTaskActivity } from '@ezreeport/models/task-activity';
 import {
   z,
-  stringOrArray,
-  stringToStartOfDay,
-  stringToEndOfDay,
-} from '~/lib/zod';
+  zStringOrArray,
+  zStringToStartOfDay,
+  zStringToEndOfDay,
+} from '@ezreeport/models/lib/zod';
 
 import { Task } from '~/models/tasks/types';
 
 /**
- * Validation for event include fields
- */
-const TaskActivityIncludeFields = z.enum([
-  'task',
-  'task.namespace',
-] as const);
-
-/**
- * Type for event include fields
- */
-export type TaskActivityIncludeFieldsType = z.infer<typeof TaskActivityIncludeFields>;
-
-/**
  * Validation for event
  */
-export const TaskActivity = z.object({
-  id: z.string().min(1)
-    .describe('Activity ID'),
-
-  taskId: z.string().min(1)
-    .describe('Task ID'),
-
-  type: z.string().min(1)
-    .describe('Activity type'),
-
-  message: z.string().min(1)
-    .describe('Activity message'),
-
-  data: z.record(z.any()).nullish()
-    .describe('Activity data'),
-
-  createdAt: z.date()
-    .describe('Creation date'),
-
+export const TaskActivity = CommonTaskActivity.extend({
   // Includes fields
 
-  task: Task.omit({ template: true }).optional().readonly()
+  task: Task.omit({ template: true })
+    .optional()
     .describe('[Includes] Task related to event'),
 });
 
@@ -71,35 +42,55 @@ export const InputTaskActivity = TaskActivity.omit({
 export type InputTaskActivityType = z.infer<typeof InputTaskActivity>;
 
 /**
+ * Validation for event include fields
+ */
+const TaskActivityIncludeFields = z.enum(['task', 'task.namespace'] as const);
+
+/**
+ * Type for event include fields
+ */
+export type TaskActivityIncludeFieldsType = z.infer<
+  typeof TaskActivityIncludeFields
+>;
+
+/**
  * Validation for query filters of a event
  */
 export const TaskActivityQueryFilters = z.object({
-  taskId: z.string().min(1).optional()
-    .describe('ID of the task'),
+  taskId: z.string().min(1).optional().describe('ID of the task'),
 
-  extendedId: z.string().min(1).optional()
+  extendedId: z
+    .string()
+    .min(1)
+    .optional()
     .describe('ID of template extended by the task'),
 
-  namespaceId: stringOrArray.optional()
+  namespaceId: zStringOrArray
+    .optional()
     .describe('Possible namespace ID of the task'),
 
-  'createdAt.from': stringToStartOfDay.optional()
+  'createdAt.from': zStringToStartOfDay
+    .optional()
     .describe('Minimum date of event'),
 
-  'createdAt.to': stringToEndOfDay.optional()
+  'createdAt.to': zStringToEndOfDay
+    .optional()
     .describe('Maximum date of event'),
 });
 
 /**
  * Type for query filters of a event
  */
-export type TaskActivityQueryFiltersType = z.infer<typeof TaskActivityQueryFilters>;
+export type TaskActivityQueryFiltersType = z.infer<
+  typeof TaskActivityQueryFilters
+>;
 
 /**
  * Validation for event include fields
  */
 export const TaskActivityQueryInclude = z.object({
   include: TaskActivityIncludeFields.or(z.array(TaskActivityIncludeFields))
-    .transform((v) => ensureArray(v)).optional()
+    .transform((value) => ensureArray(value))
+    .optional()
     .describe('Fields to include'),
 });

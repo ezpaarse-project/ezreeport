@@ -1,0 +1,49 @@
+{
+  "name": "@ezreeport/database",
+  "version": "0.0.0",
+  "private": true,
+  "description": "",
+  "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
+  "bugs": {
+    "url": "https://github.com/ezpaarse-project/ezreeport/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
+  },
+  "license": "CeCILL",
+  "author": "oxypomme",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts"
+  },
+  "scripts": {
+    "db:deploy": "prisma migrate deploy",
+    "db:diff": "prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma",
+    "db:generate": "prisma generate",
+    "db:gui": "prisma studio",
+    "db:migrate": "prisma migrate dev --skip-generate",
+    "lint": "oxlint",
+    "type-check": "tsc --noEmit --skipLibCheck"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "oxlint --fix"
+    ],
+    "package.json": [
+      "sort-package-json"
+    ]
+  },
+  "dependencies": {
+    "@ezreeport/heartbeats": "workspace:*",
+    "@ezreeport/logger": "workspace:*",
+    "@prisma/client": "^6.11.1"
+  },
+  "devDependencies": {
+    "prisma": "^6.11.1",
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": "^22"
+  }
+}

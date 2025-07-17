@@ -15,11 +15,7 @@
   <v-menu :activator="indexRef?.$el" @update:model-value="$event && refresh()">
     <v-card>
       <template #text>
-        <v-alert
-          v-if="error"
-          :text="error.message"
-          type="error"
-        />
+        <v-alert v-if="error" :text="error.message" type="error" />
 
         <v-row>
           <v-col>
@@ -37,11 +33,15 @@
                 </tr>
               </thead>
               <tbody>
-                <tr
-                  v-for="item in autocompleteIndices"
-                  :key="item"
-                >
-                  <td><v-icon v-if="resolvedIndices.includes(item)" icon="mdi-check" color="primary" small /></td>
+                <tr v-for="item in autocompleteIndices" :key="item">
+                  <td>
+                    <v-icon
+                      v-if="resolvedIndices.includes(item)"
+                      icon="mdi-check"
+                      color="primary"
+                      small
+                    />
+                  </td>
                   <td>{{ item }}</td>
                 </tr>
               </tbody>
@@ -62,22 +62,23 @@ const invalidCharsMessage = invalidChars.join(' ');
 
 // Components props
 const props = defineProps<{
-  modelValue: string | undefined,
-  namespaceId?: string,
-  rules?: (((v: string) => true | string) | true | string)[]
-  required?: boolean
-  density?: 'comfortable' | 'compact' | 'default'
-  disabled?: boolean
-  readonly?: boolean
+  modelValue: string | undefined;
+  namespaceId?: string;
+  rules?: (((val: string) => true | string) | true | string)[];
+  required?: boolean;
+  density?: 'comfortable' | 'compact' | 'default';
+  disabled?: boolean;
+  readonly?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
-  (e: 'update:model-value', value: string): void
-  (e: 'index:valid', value: string): void
+  (event: 'update:model-value', value: string): void;
+  (event: 'index:valid', value: string): void;
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 /* Is the input loading */
@@ -95,7 +96,7 @@ const indexRef = useTemplateRef('indexRef');
 /** Current value of index */
 const index = computed({
   get: () => props.modelValue || '',
-  set: (v) => emit('update:model-value', v || ''),
+  set: (val) => emit('update:model-value', val || ''),
 });
 /** Indices to show in menu */
 const autocompleteIndices = computed(() => {
@@ -104,8 +105,9 @@ const autocompleteIndices = computed(() => {
   }
 
   if (index.value.length > 0) {
-    return availableIndices.value
-      .filter((v) => v.includes(index.value.trim()));
+    return availableIndices.value.filter((val) =>
+      val.includes(index.value.trim())
+    );
   }
 
   return availableIndices.value;
@@ -115,8 +117,11 @@ const innerRules = computed(() => {
   const invalidCharsRegex = new RegExp(`[${invalidChars.join('')}\\s]`, 'i');
 
   return [
-    (v: string) => !invalidCharsRegex.test(v) || t('$ezreeport.index.invalidChars', { message: invalidCharsMessage }),
-    () => resolvedIndices.value.length > 0 || `${t('$ezreeport.index.required')}`,
+    (val: string) =>
+      !invalidCharsRegex.test(val) ||
+      t('$ezreeport.index.invalidChars', { message: invalidCharsMessage }),
+    () =>
+      resolvedIndices.value.length > 0 || `${t('$ezreeport.index.required')}`,
     ...(props.rules ?? []),
   ];
 });
@@ -130,7 +135,9 @@ async function fetchIndices() {
     availableIndices.value = await getAllIndices(props.namespaceId);
   } catch (err) {
     error.value = err instanceof Error ? err : new Error(`${err}`);
-    setTimeout(() => { error.value = undefined; }, 5000);
+    setTimeout(() => {
+      error.value = undefined;
+    }, 5000);
     availableIndices.value = [];
   }
   loading.value = false;
@@ -155,7 +162,9 @@ async function resolveIndex() {
     }
   } catch (err) {
     error.value = err instanceof Error ? err : new Error(`${err}`);
-    setTimeout(() => { error.value = undefined; }, 5000);
+    setTimeout(() => {
+      error.value = undefined;
+    }, 5000);
     resolvedIndices.value = [];
   }
   loading.value = false;
@@ -163,12 +172,12 @@ async function resolveIndex() {
 }
 
 async function refresh() {
-  await Promise.all([
-    fetchIndices(),
-    resolveIndex(),
-  ]);
+  await Promise.all([fetchIndices(), resolveIndex()]);
 }
 
 watch(index, () => resolveIndex(), { immediate: true });
-watch(() => props.namespaceId, () => refresh());
+watch(
+  () => props.namespaceId,
+  () => refresh()
+);
 </script>

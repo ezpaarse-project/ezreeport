@@ -1,0 +1,24 @@
+{
+  "port": 8080,
+  "heartbeat": 10000,
+  "log": {
+    "level": "debug",
+    "dir": "",
+    "ignore": ["hostname"]
+  },
+  "rabbitmq": {
+    "protocol": "amqp",
+    "host": "rabbitmq",
+    "port": 5672,
+    "vhost": "/",
+    "username": "guest",
+    "password": "guest"
+  },
+  "timers": {
+    "purgeOldReports": "0 1 * * *"
+  },
+  "paths": {
+    "db": "/data/ezreeport/db",
+    "reports": "/data/ezreeport/reports/"
+  }
+}

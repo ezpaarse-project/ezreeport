@@ -105,10 +105,11 @@ const props = defineProps<{
 // Components events
 const emit = defineEmits<{
   /** Updated options */
-  (e: 'update:modelValue', value: VegaDataLabelOptions | undefined): void
+  (event: 'update:modelValue', value: VegaDataLabelOptions | undefined): void
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 /** Backup of the layer, used when enabling/disabling */

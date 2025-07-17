@@ -17,17 +17,17 @@ import type { TemplateFilter } from '~sdk/helpers/filters';
 // Components props
 const props = defineProps<{
   /** The filter to display */
-  modelValue: TemplateFilter,
+  modelValue: TemplateFilter;
   /** Should the chip closable */
-  closable?: boolean,
+  closable?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Click on a chip */
-  (e: 'click', ev: MouseEvent | KeyboardEvent): void
+  (event: 'click', ev: MouseEvent | KeyboardEvent): void;
   /** Click on the close button of a chip */
-  (e: 'click:close', ev: MouseEvent): void
+  (event: 'click:close', ev: MouseEvent): void;
 }>();
 </script>
 

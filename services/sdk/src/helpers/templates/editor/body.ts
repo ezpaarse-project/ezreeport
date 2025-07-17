@@ -1,5 +1,13 @@
-import type { TemplateBody, TemplateFilter, TemplateBodyGrid } from '~/modules/templates';
-import { createLayoutHelperFrom, layoutHelperToJSON, type LayoutHelper } from './layouts';
+import type {
+  TemplateBody,
+  TemplateFilter,
+  TemplateBodyGrid,
+} from '~/modules/templates';
+import {
+  createLayoutHelperFrom,
+  layoutHelperToJSON,
+  type LayoutHelper,
+} from './layouts';
 
 export interface TemplateBodyHelper {
   readonly version: number;
@@ -15,7 +23,7 @@ export function createTemplateBodyHelper(
   dateField: string = '',
   layouts: LayoutHelper[] = [],
   filters: TemplateFilter[] = [],
-  grid?: TemplateBodyGrid,
+  grid?: TemplateBodyGrid
 ): TemplateBodyHelper {
   return {
     version: 2,
@@ -27,21 +35,25 @@ export function createTemplateBodyHelper(
   };
 }
 
-export function createTemplateBodyHelperFrom(body: TemplateBody): TemplateBodyHelper {
+export function createTemplateBodyHelperFrom(
+  body: TemplateBody
+): TemplateBodyHelper {
   return createTemplateBodyHelper(
     body.index,
     body.dateField,
-    body.layouts.map((l) => createLayoutHelperFrom(l)),
+    body.layouts.map((lay) => createLayoutHelperFrom(lay)),
     body.filters,
-    body.grid,
+    body.grid
   );
 }
 
-export function templateHelperBodyToJSON(body: TemplateBodyHelper): TemplateBody {
+export function templateHelperBodyToJSON(
+  body: TemplateBodyHelper
+): TemplateBody {
   return {
     version: body.version,
     dateField: body.dateField,
-    layouts: body.layouts.map((l) => layoutHelperToJSON(l)),
+    layouts: body.layouts.map((lay) => layoutHelperToJSON(lay)),
     filters: Array.from(body.filters.values()),
     grid: body.grid,
     index: body.index,
@@ -51,9 +63,9 @@ export function templateHelperBodyToJSON(body: TemplateBodyHelper): TemplateBody
 export function addLayoutOfHelper(
   body: TemplateBodyHelper,
   layout: LayoutHelper,
-  index?: number,
+  index?: number
 ): TemplateBodyHelper {
-  if (body.layouts.some((l) => l.id === layout.id)) {
+  if (body.layouts.some((lay) => lay.id === layout.id)) {
     throw new Error(`Layout "${layout.id}" already exists`);
   }
   body.layouts.splice(index ?? body.layouts.length, 0, layout);
@@ -62,19 +74,19 @@ export function addLayoutOfHelper(
 
 export function removeLayoutOfHelper(
   body: TemplateBodyHelper,
-  layout: LayoutHelper,
+  layout: LayoutHelper
 ): TemplateBodyHelper {
   const template = body;
-  template.layouts = body.layouts.filter((l) => l.id !== layout.id);
+  template.layouts = body.layouts.filter((lay) => lay.id !== layout.id);
   return body;
 }
 
 export function updateLayoutOfHelper(
   body: TemplateBodyHelper,
   oldLayout: LayoutHelper,
-  newLayout: LayoutHelper,
+  newLayout: LayoutHelper
 ): TemplateBodyHelper {
-  const index = body.layouts.findIndex((l) => l.id === oldLayout.id);
+  const index = body.layouts.findIndex((lay) => lay.id === oldLayout.id);
   if (index < 0) {
     throw new Error(`Layout "${oldLayout.id}" not found`);
   }

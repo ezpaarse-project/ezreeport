@@ -31,7 +31,11 @@
       <v-icon
         v-for="[icon, def] in styleIcons"
         :key="icon"
-        v-tooltip="{ text: def.tooltip, disabled: !def.tooltip, location: 'bottom' }"
+        v-tooltip="{
+          text: def.tooltip,
+          disabled: !def.tooltip,
+          location: 'bottom',
+        }"
         :icon="icon"
         :style="def.style"
         color="grey"
@@ -49,10 +53,11 @@ import type { TableColumn } from '~sdk/helpers/figures';
 // Components props
 const props = defineProps<{
   /** The column to display */
-  modelValue: TableColumn
+  modelValue: TableColumn;
 }>();
 
 // Util composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 type IconDefinition = {
@@ -68,9 +73,15 @@ const styleIcons = computed((): [string, IconDefinition][] => {
     return [];
   }
 
-  const fillColor = Array.isArray(styles.fillColor) ? `rgb(${styles.fillColor.join(',')})` : `#${styles.fillColor}`;
-  const textColor = Array.isArray(styles.textColor) ? `rgb(${styles.textColor.join(',')})` : `#${styles.textColor}`;
-  const lineColor = Array.isArray(styles.lineColor) ? `rgb(${styles.lineColor.join(',')})` : `#${styles.lineColor}`;
+  const fillColor = Array.isArray(styles.fillColor)
+    ? `rgb(${styles.fillColor.join(',')})`
+    : `#${styles.fillColor}`;
+  const textColor = Array.isArray(styles.textColor)
+    ? `rgb(${styles.textColor.join(',')})`
+    : `#${styles.textColor}`;
+  const lineColor = Array.isArray(styles.lineColor)
+    ? `rgb(${styles.lineColor.join(',')})`
+    : `#${styles.lineColor}`;
 
   const icons: Record<string, IconDefinition> = {
     // Color

@@ -43,10 +43,15 @@
       "node": "./dist/namespaces.js",
       "browser": "./dist/namespaces.mjs"
     },
-    "./queues": {
-      "types": "./dist/queues.d.ts",
-      "node": "./dist/queues.js",
-      "browser": "./dist/queues.mjs"
+    "./recurrence": {
+      "types": "./dist/recurrence.d.ts",
+      "node": "./dist/recurrence.js",
+      "browser": "./dist/recurrence.mjs"
+    },
+    "./generations": {
+      "types": "./dist/generations.d.ts",
+      "node": "./dist/generations.js",
+      "browser": "./dist/generations.mjs"
     },
     "./reports": {
       "types": "./dist/reports.d.ts",
@@ -88,10 +93,10 @@
       "node": "./dist/helpers/filters.js",
       "browser": "./dist/helpers/filters.mjs"
     },
-    "./helpers/jobs": {
-      "types": "./dist/helpers/jobs.d.ts",
-      "node": "./dist/helpers/jobs.js",
-      "browser": "./dist/helpers/jobs.mjs"
+    "./helpers/generations": {
+      "types": "./dist/helpers/generations.d.ts",
+      "node": "./dist/helpers/generations.js",
+      "browser": "./dist/helpers/generations.mjs"
     },
     "./helpers/layouts": {
       "types": "./dist/helpers/layouts.d.ts",
@@ -124,37 +129,41 @@
     "dist"
   ],
   "scripts": {
-    "prebuild": "rimraf --glob 'dist/*'",
-    "build": "pnpm run /^build:.*/",
     "build:docs": "typedoc",
     "build:js": "vite build",
     "build:types": "tsup",
     "dev": "pnpm run --parallel \"/^(watch:docs)|(preview)$/\"",
-    "lint": "eslint .",
-    "preview": "vite docs --open",
+    "lint": "oxlint",
+    "prebuild": "rimraf --glob 'dist/*'",
+    "preview:docs": "vite docs --open",
+    "publish": "npm publish",
     "type-check": "tsc --noEmit --skipLibCheck",
     "watch:docs": "typedoc --watch"
   },
   "lint-staged": {
     "*.ts": [
-      "eslint --fix"
+      "oxlint --fix"
+    ],
+    "package.json": [
+      "sort-package-json"
     ]
   },
   "dependencies": {
     "date-fns": "^4.1.0",
-    "nanoid": "^5.0.7",
+    "nanoid": "^5.1.5",
     "object-hash": "^3.0.0",
-    "ofetch": "^1.4.1"
+    "ofetch": "^1.4.1",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
-    "@types/node": "^22.7.3",
+    "@types/node": "catalog:",
     "@types/object-hash": "^3.0.6",
     "events": "^3.3.0",
     "rimraf": "^6.0.1",
-    "tsup": "^8.3.5",
-    "typedoc": "^0.27.1",
-    "typescript": "^5.7.2",
-    "vite": "^5.4.8"
+    "tsup": "^8.5.0",
+    "typedoc": "^0.28.7",
+    "typescript": "catalog:",
+    "vite": "^7.0.4"
   },
   "engines": {
     "node": "^20"

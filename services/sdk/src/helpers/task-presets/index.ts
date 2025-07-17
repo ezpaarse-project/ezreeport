@@ -1,4 +1,8 @@
-import { getTaskPreset, upsertTaskPreset, type TaskPreset } from '~/modules/task-presets';
+import {
+  getTaskPreset,
+  upsertTaskPreset,
+  type TaskPreset,
+} from '~/modules/task-presets';
 
 import { assignDependencies } from '~/helpers/permissions/decorator';
 
@@ -10,10 +14,9 @@ import { assignDependencies } from '~/helpers/permissions/decorator';
  *
  * @returns Updated preset
  */
-// eslint-disable-next-line import/prefer-default-export
 export async function changeTaskPresetVisibility(
   presetOrId: TaskPreset | string,
-  hidden: boolean,
+  hidden: boolean
 ): Promise<TaskPreset> {
   let base = presetOrId;
   if (typeof base === 'string') {
@@ -31,4 +34,7 @@ export async function changeTaskPresetVisibility(
 
   return preset;
 }
-assignDependencies(changeTaskPresetVisibility, [getTaskPreset, upsertTaskPreset]);
+assignDependencies(changeTaskPresetVisibility, [
+  getTaskPreset,
+  upsertTaskPreset,
+]);

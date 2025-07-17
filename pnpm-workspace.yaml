@@ -1,6 +1,17 @@
 packages:
-  - "services/report"
-  - "services/mail"
-  - "services/sdk"
-  - "services/ezra"
-  - "services/vue"
+  - "packages/*"
+  - "services/*"
+
+onlyBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - better-sqlite3
+  - canvas
+
+catalog:
+  # deps
+  typescript: ^5.8.3
+  tsx: ^4.20.3
+  # dev deps
+  "@types/node": ^24.0.10
+  pino-pretty: ^13.0.0

@@ -7,6 +7,10 @@ import vuetify from 'vite-plugin-vuetify';
 import components from 'unplugin-vue-components/vite';
 import autoImport from 'unplugin-auto-import/vite';
 
+import sdkViteConfig from '../sdk/vite.config.mjs';
+
+const sdkExternal = sdkViteConfig.build?.rollupOptions?.external;
+
 const VITE_CACHE_DIR = resolve(__dirname, '.vite');
 const SRC_DIR = resolve(__dirname, 'src');
 const COMPONENTS_DIR = resolve(SRC_DIR, 'components');
@@ -68,6 +72,8 @@ export default defineConfig({
     },
     rollupOptions: {
       external: [
+        // We want to bundle the SDK, not it's dependencies
+        ...(Array.isArray(sdkExternal) ? sdkExternal : []),
         'vue',
         /^vuetify(\/.*)?/,
         'vue-i18n',
@@ -77,6 +83,7 @@ export default defineConfig({
         'dompurify',
         '@formkit/drag-and-drop/vue',
         'chroma',
+        'pretty-bytes',
       ],
       output: {
         globals: {

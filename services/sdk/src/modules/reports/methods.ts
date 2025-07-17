@@ -83,7 +83,10 @@ assignPermission(getReportsOfTask, 'GET /reports/:taskId', true);
  *
  * @returns The blob
  */
-export async function getFileAsBlob(taskOrId: Omit<Task, 'template'> | string, path: string) {
+export async function getFileAsBlob(
+  taskOrId: Omit<Task, 'template'> | string,
+  path: string,
+): Promise<Blob> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   if (!id) {
     throw new Error('Task id is required');
@@ -93,7 +96,7 @@ export async function getFileAsBlob(taskOrId: Omit<Task, 'template'> | string, p
     responseType: 'blob',
   });
 }
-assignPermission(getFileAsBlob, 'GET /reports/:taskId/:year/:yearMonth/:reportId.:type.:ext', true);
+assignPermission(getFileAsBlob, 'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext', true);
 
 /**
  * Get a report file as an array buffer
@@ -103,7 +106,10 @@ assignPermission(getFileAsBlob, 'GET /reports/:taskId/:year/:yearMonth/:reportId
  *
  * @returns The array buffer
  */
-export async function getFileAsArrayBuffer(taskOrId: Omit<Task, 'template'> | string, path: string) {
+export async function getFileAsArrayBuffer(
+  taskOrId: Omit<Task, 'template'> | string,
+  path: string,
+): Promise<ArrayBuffer> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   if (!id) {
     throw new Error('Task id is required');
@@ -113,7 +119,7 @@ export async function getFileAsArrayBuffer(taskOrId: Omit<Task, 'template'> | st
     responseType: 'arrayBuffer',
   });
 }
-assignPermission(getFileAsArrayBuffer, 'GET /reports/:taskId/:year/:yearMonth/:reportId.:type.:ext', true);
+assignPermission(getFileAsArrayBuffer, 'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext', true);
 
 /**
  * Get a report file as a stream
@@ -123,7 +129,10 @@ assignPermission(getFileAsArrayBuffer, 'GET /reports/:taskId/:year/:yearMonth/:r
  *
  * @returns The stream
  */
-export async function getFileAsStream(taskOrId: Omit<Task, 'template'> | string, path: string) {
+export async function getFileAsStream(
+  taskOrId: Omit<Task, 'template'> | string,
+  path: string,
+): Promise<ReadableStream<Uint8Array<ArrayBufferLike>>> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   if (!id) {
     throw new Error('Task id is required');
@@ -133,7 +142,7 @@ export async function getFileAsStream(taskOrId: Omit<Task, 'template'> | string,
     responseType: 'stream',
   });
 }
-assignPermission(getFileAsStream, 'GET /reports/:taskId/:year/:yearMonth/:reportId.:type.:ext', true);
+assignPermission(getFileAsStream, 'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext', true);
 
 /**
  * Get a report file as a text
@@ -143,7 +152,10 @@ assignPermission(getFileAsStream, 'GET /reports/:taskId/:year/:yearMonth/:report
  *
  * @returns The text
  */
-export async function getFileAsText(taskOrId: Omit<Task, 'template'> | string, path: string) {
+export async function getFileAsText(
+  taskOrId: Omit<Task, 'template'> | string,
+  path: string,
+): Promise<string> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   if (!id) {
     throw new Error('Task id is required');
@@ -153,7 +165,7 @@ export async function getFileAsText(taskOrId: Omit<Task, 'template'> | string, p
     responseType: 'text',
   });
 }
-assignPermission(getFileAsText, 'GET /reports/:taskId/:year/:yearMonth/:reportId.:type.:ext', true);
+assignPermission(getFileAsText, 'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext', true);
 
 /**
  * Get a report file as a JSON object
@@ -164,15 +176,19 @@ assignPermission(getFileAsText, 'GET /reports/:taskId/:year/:yearMonth/:reportId
  *
  * @returns The JSON object
  */
-export async function getFileAsJson(taskOrId: Omit<Task, 'template'> | string, path: `${string}.det.json`) {
+export async function getFileAsJson(
+  taskOrId: Omit<Task, 'template'> | string,
+  path: `${string}.det.json`,
+): Promise<ReportResult> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   if (!id) {
     throw new Error('Task id is required');
   }
 
-  return client.fetch<ReportResult>(`/reports/${id}/${path}`);
+  const content = await client.fetch<RawReportResult>(`/reports/${id}/${path}`);
+  return transformReportResult(content);
 }
-assignPermission(getFileAsJson, 'GET /reports/:taskId/:year/:yearMonth/:reportId.:type.:ext', true);
+assignPermission(getFileAsJson, 'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext', true);
 
 /**
  * Start a report generation
@@ -187,7 +203,7 @@ export async function generateReportOfTask(
   taskOrId: Omit<Task, 'template'> | string,
   period?: { start: Date, end: Date },
   targets?: string[],
-) {
+): Promise<{ id: string }> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   if (!id) {
     throw new Error('Task id is required');
@@ -203,7 +219,7 @@ export async function generateReportOfTask(
 
   const {
     content,
-  } = await client.fetch<ApiResponse<{ queue: string, id: string }>>(
+  } = await client.fetch<ApiResponse<{ id: string }>>(
     `/reports/${id}`,
     {
       method: 'POST',
@@ -214,9 +230,6 @@ export async function generateReportOfTask(
     },
   );
 
-  return {
-    queue: content.queue,
-    jobId: content.id,
-  };
+  return content;
 }
 assignPermission(generateReportOfTask, 'POST /reports/:taskId', true);

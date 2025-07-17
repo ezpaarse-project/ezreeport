@@ -10,7 +10,7 @@
       @update:model-value="editFigure($event, element)"
     >
       <template #append>
-        <span style="font-size: 1.5em; opacity: 0.5;">
+        <span style="font-size: 1.5em; opacity: 0.5">
           {{ index + 1 }}
         </span>
       </template>
@@ -43,36 +43,39 @@ import {
 import type { AnyFigureHelper } from '~sdk/helpers/figures';
 
 type Element = {
-  id: string,
-  figure?: AnyFigureHelper,
-  slot: number,
+  id: string;
+  figure?: AnyFigureHelper;
+  slot: number;
 };
 
 // Components props
 const props = defineProps<{
   /** The layout to edit */
-  modelValue: AnyLayoutHelper,
+  modelValue: AnyLayoutHelper;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated layout */
-  (e: 'update:modelValue', value: AnyLayoutHelper): void
+  (event: 'update:modelValue', value: AnyLayoutHelper): void;
 }>();
 
 // Utils composables
 const { grid } = useTemplateEditor();
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 const unusedSlots = computed(() => {
   const possibleSlots = Array.from(
     { length: grid.value.cols * grid.value.rows },
-    (_, i) => i,
+    (__, index) => index
   );
-  const usedSlots = new Set(props.modelValue.figures.map((f) => [...f.slots]).flat());
-  return possibleSlots.filter((s) => !usedSlots.has(s));
+  const usedSlots = new Set(
+    props.modelValue.figures.flatMap((fig) => [...fig.slots])
+  );
+  return possibleSlots.filter((sl) => !usedSlots.has(sl));
 });
 
 const elements = computed((): Element[] => {
@@ -109,8 +112,8 @@ function editFigure(figure: AnyFigureHelper, element: Element) {
       addFigureOfHelper(props.modelValue, figure);
     }
     emit('update:modelValue', props.modelValue);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.editor.layouts.errors.edit'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.editor.layouts.errors.edit'), err);
   }
 }
 
@@ -120,8 +123,8 @@ function deleteFigure(element: Element) {
       removeFigureOfHelper(props.modelValue, element.figure);
     }
     emit('update:modelValue', props.modelValue);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.editor.layouts.errors.delete'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.editor.layouts.errors.delete'), err);
   }
 }
 </script>

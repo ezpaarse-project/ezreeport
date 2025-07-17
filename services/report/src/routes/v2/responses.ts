@@ -1,14 +1,18 @@
 import type { FastifyReply } from 'fastify';
-import { getReasonPhrase, StatusCodes } from 'http-status-codes';
+import type { StatusCodes } from 'http-status-codes';
+import { getReasonPhrase } from 'http-status-codes';
 
-import { z } from '~/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
 
 export const BaseResponse = z.object({
-  apiVersion: z.number(),
+  apiVersion: z.int().min(1),
 
-  status: z.object({ code: z.number(), message: z.string() })
+  status: z
+    .object({ code: z.int(), message: z.string() })
     .describe('HTTP Status'),
 });
+
+type BaseResponseType = z.Infer<typeof BaseResponse>;
 
 function buildResponse(reply: FastifyReply): z.infer<typeof BaseResponse> {
   return {
@@ -20,28 +24,44 @@ function buildResponse(reply: FastifyReply): z.infer<typeof BaseResponse> {
   };
 }
 
-export const SuccessResponse = <T extends z.ZodSchema>(
-  content: T,
+export type SuccessResponseType<Content> = BaseResponseType & {
+  content: Content;
+};
+
+export const zSuccessResponse = <Content extends z.ZodSchema>(
+  content: Content
 ) => BaseResponse.extend({ content });
 
 export function buildSuccessResponse<
-  T extends Record<string, unknown> | unknown[],
->(content: T, reply: FastifyReply) {
+  Content extends Record<string, unknown> | unknown[],
+>(content: Content, reply: FastifyReply): SuccessResponseType<Content> {
   return {
     ...buildResponse(reply),
     content,
   };
 }
 
-export const SuccessResponseWithMeta = <T extends z.ZodSchema, M extends z.ZodSchema>(
-  content: T,
-  meta: M,
-) => SuccessResponse(content).extend({ meta });
+export type SuccessResponseTypeWithMeta<Content, Meta> =
+  SuccessResponseType<Content> & {
+    meta: Meta;
+  };
+
+export const zSuccessResponseWithMeta = <
+  Content extends z.ZodSchema,
+  Meta extends z.ZodSchema,
+>(
+  content: Content,
+  meta: Meta
+) => zSuccessResponse(content).extend({ meta });
 
 export function buildSuccessResponseWithMeta<
-  T extends Record<string, unknown> | unknown[],
-  M extends Record<string, unknown>,
->(content: T, meta: M, reply: FastifyReply) {
+  Content extends Record<string, unknown> | unknown[],
+  Meta extends Record<string, unknown>,
+>(
+  content: Content,
+  meta: Meta,
+  reply: FastifyReply
+): SuccessResponseTypeWithMeta<Content, Meta> {
   return {
     ...buildSuccessResponse(content, reply),
     meta,
@@ -50,17 +70,19 @@ export function buildSuccessResponseWithMeta<
 
 export const ErrorResponse = BaseResponse.and(
   z.object({
-    error: z.object({
-      message: z.string(),
-      cause: z.any().optional(),
-      stack: z.array(z.string()).optional(),
-    }).describe('Error details'),
-  }),
+    error: z
+      .object({
+        message: z.string(),
+        cause: z.any().optional(),
+        stack: z.array(z.string()).optional(),
+      })
+      .describe('Error details'),
+  })
 );
 
 export function buildErrorResponse(
   error: Error,
-  reply: FastifyReply,
+  reply: FastifyReply
 ): z.infer<typeof ErrorResponse> {
   return {
     ...buildResponse(reply),
@@ -74,12 +96,12 @@ export function buildErrorResponse(
 
 export const EmptyResponse = z.null().describe('Success response');
 
-export const describeErrors = (errors: StatusCodes[]) => Object.fromEntries(
-  errors.map((code) => [
-    code,
-    ErrorResponse.describe(getReasonPhrase(code)),
-  ]),
-) as Record<StatusCodes, typeof ErrorResponse>;
+export const describeErrors = (
+  errors: StatusCodes[]
+): Record<StatusCodes, typeof ErrorResponse> =>
+  Object.fromEntries(
+    errors.map((code) => [code, ErrorResponse.describe(getReasonPhrase(code))])
+  ) as Record<StatusCodes, typeof ErrorResponse>;
 
 /**
  * @deprecated Use `describeErrors` and `Empty Response`

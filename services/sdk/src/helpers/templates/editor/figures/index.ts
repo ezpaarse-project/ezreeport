@@ -1,4 +1,7 @@
-import type { TemplateFilter, TemplateBodyFigure as IFigure } from '~/modules/templates';
+import type {
+  TemplateFilter,
+  TemplateBodyFigure as IFigure,
+} from '~/modules/templates';
 import type { FigureOrder } from './utils';
 
 import {
@@ -26,7 +29,11 @@ import {
   vegaHelperParamsToJSON,
 } from './vega';
 
-export type AnyFigureHelper = MdFigure | MetricFigureHelper | TableFigureHelper | VegaFigureHelper;
+export type AnyFigureHelper =
+  | MdFigure
+  | MetricFigureHelper
+  | TableFigureHelper
+  | VegaFigureHelper;
 
 export type FigureHelperSet = Map<string, AnyFigureHelper>;
 
@@ -41,22 +48,14 @@ export function createFigureHelper(
   type: AnyFigureHelper['type'],
   filters?: TemplateFilter[],
   order?: FigureOrder,
-  slots?: number[],
+  slots?: number[]
 ): AnyFigureHelper {
   switch (type) {
     case 'md':
-      return createMdFigureHelper(
-        undefined,
-        slots,
-      );
+      return createMdFigureHelper(undefined, slots);
 
     case 'metric':
-      return createMetricFigureHelper(
-        undefined,
-        filters,
-        order,
-        slots,
-      );
+      return createMetricFigureHelper(undefined, filters, order, slots);
 
     case 'table':
       return createTableFigureHelper(
@@ -65,7 +64,7 @@ export function createFigureHelper(
         undefined,
         filters,
         order,
-        slots,
+        slots
       );
 
     default:
@@ -79,7 +78,7 @@ export function createFigureHelper(
         undefined,
         filters,
         order,
-        slots,
+        slots
       );
   }
 }
@@ -137,25 +136,36 @@ export function figureHelperToJSON(figure: AnyFigureHelper): IFigure {
   return {
     type: figure.type,
     data: 'data' in figure ? figure.data : undefined,
-    filters: 'filters' in figure ? Array.from(figure.filters.values()) : undefined,
+    filters:
+      'filters' in figure ? Array.from(figure.filters.values()) : undefined,
     params,
     slots: Array.from(figure.slots),
   };
 }
 
-export function isFigureHelperMarkdown(figure: AnyFigureHelper): figure is MdFigure {
+export function isFigureHelperMarkdown(
+  figure: AnyFigureHelper
+): figure is MdFigure {
   return figure.type === 'md';
 }
-export function isFigureHelperMetric(figure: AnyFigureHelper): figure is MetricFigureHelper {
+export function isFigureHelperMetric(
+  figure: AnyFigureHelper
+): figure is MetricFigureHelper {
   return figure.type === 'metric';
 }
-export function isFigureHelperTable(figure: AnyFigureHelper): figure is TableFigureHelper {
+export function isFigureHelperTable(
+  figure: AnyFigureHelper
+): figure is TableFigureHelper {
   return figure.type === 'table';
 }
-export function isFigureHelperVega(figure: AnyFigureHelper): figure is VegaFigureHelper {
-  return !isFigureHelperMarkdown(figure)
-    && !isFigureHelperMetric(figure)
-    && !isFigureHelperTable(figure);
+export function isFigureHelperVega(
+  figure: AnyFigureHelper
+): figure is VegaFigureHelper {
+  return (
+    !isFigureHelperMarkdown(figure) &&
+    !isFigureHelperMetric(figure) &&
+    !isFigureHelperTable(figure)
+  );
 }
 
 export * from './utils';

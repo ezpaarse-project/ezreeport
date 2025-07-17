@@ -1,9 +1,11 @@
-import prisma, { type Prisma } from '~/lib/prisma';
+import type { Prisma } from '@ezreeport/database/types';
+import { ensureSchema } from '@ezreeport/models/lib/zod';
+
+import prisma from '~/lib/prisma';
 import { appLogger } from '~/lib/logger';
-import { ensureSchema } from '~/lib/zod';
 
 import { buildPaginatedRequest } from '~/models/pagination';
-import { PaginationType } from '~/models/pagination/types';
+import type { PaginationType } from '~/models/pagination/types';
 
 import { replaceMemberships } from '~/models/memberships';
 import type { BulkMembershipType } from '~/models/memberships/types';
@@ -18,11 +20,16 @@ import {
 
 const logger = appLogger.child({ scope: 'models', model: 'namespaces' });
 
-function applyFilters(filters: NamespaceQueryFiltersType) {
+function applyFilters(
+  filters: NamespaceQueryFiltersType
+): Prisma.NamespaceWhereInput {
   const where: Prisma.NamespaceWhereInput = {};
 
   if (filters.query) {
-    where.name = { contains: filters.query, mode: 'insensitive' as Prisma.QueryMode };
+    where.name = {
+      contains: filters.query,
+      mode: 'insensitive' as Prisma.QueryMode,
+    };
   }
 
   return where;
@@ -36,13 +43,13 @@ function applyFilters(filters: NamespaceQueryFiltersType) {
  *
  * @returns All namespaces following pagination
  */
-// eslint-disable-next-line import/prefer-default-export
 export async function getAllNamespaces(
   filters?: NamespaceQueryFiltersType,
-  pagination?: PaginationType,
+  pagination?: PaginationType
 ): Promise<NamespaceType[]> {
   // Prepare Prisma query
-  const prismaQuery: Prisma.NamespaceFindManyArgs = buildPaginatedRequest(pagination);
+  const prismaQuery: Prisma.NamespaceFindManyArgs =
+    buildPaginatedRequest(pagination);
 
   // Apply filters
   if (filters) {
@@ -54,7 +61,13 @@ export async function getAllNamespaces(
 
   // Ensure data
   const namespaces = await Promise.all(
-    data.map((namespace) => ensureSchema(Namespace, namespace, (n) => `Failed to parse namespace ${n.id}`)),
+    data.map((namespace) =>
+      ensureSchema(
+        Namespace,
+        namespace,
+        (space) => `Failed to parse namespace ${space.id}`
+      )
+    )
   );
   return namespaces;
 }
@@ -80,7 +93,7 @@ export async function getNamespace(id: string): Promise<NamespaceType | null> {
  * @returns The created namespace
  */
 export async function createNamespace(
-  data: InputNamespaceType & { id: string },
+  data: InputNamespaceType & { id: string }
 ): Promise<NamespaceType> {
   const namespace = await prisma.namespace.create({ data });
 
@@ -101,7 +114,10 @@ export async function createNamespace(
  *
  * @returns The edited namespace
  */
-export async function editNamespace(id: string, data: InputNamespaceType): Promise<NamespaceType> {
+export async function editNamespace(
+  id: string,
+  data: InputNamespaceType
+): Promise<NamespaceType> {
   const namespace = await prisma.namespace.update({
     where: {
       id,
@@ -144,7 +160,9 @@ export async function deleteNamespace(id: string): Promise<NamespaceType> {
  *
  * @returns Count of namespaces
  */
-export async function countNamespaces(filters?: NamespaceQueryFiltersType): Promise<number> {
+export async function countNamespaces(
+  filters?: NamespaceQueryFiltersType
+): Promise<number> {
   const prismaQuery: Prisma.NamespaceCountArgs = {};
 
   // Apply filters
@@ -168,7 +186,10 @@ export async function countNamespaces(filters?: NamespaceQueryFiltersType): Prom
  * @returns True if namespace exists
  */
 export async function doesNamespaceExist(id: string): Promise<boolean> {
-  const count = await prisma.namespace.count({ where: { id }, select: { id: true } });
+  const count = await prisma.namespace.count({
+    where: { id },
+    select: { id: true },
+  });
 
   return count.id > 0;
 }
@@ -181,51 +202,51 @@ export async function doesNamespaceExist(id: string): Promise<boolean> {
  * @returns Summary of operations
  */
 export async function replaceNamespaces(data: BulkNamespaceType[]) {
-  const dataPerId = new Map(data.map((n) => [n.id, n]));
+  const dataPerId = new Map(data.map((namespace) => [namespace.id, namespace]));
 
   // Prepare operations
   const current = await prisma.namespace.findMany();
 
-  const toDelete = current.filter((n) => !dataPerId.has(n.id));
+  const toDelete = current.filter((namespace) => !dataPerId.has(namespace.id));
 
-  const toEdit = current.filter((n) => dataPerId.has(n.id));
-  const editData = toEdit.map((n) => ({
-    // toEdit is made of dataPerId so we can assume it is safe
-    ...dataPerId.get(n.id)!,
-    // Skip memberships, we will replace them later
-    memberships: undefined,
-  } satisfies Prisma.NamespaceUpdateInput));
+  const toEdit = current.filter((namespace) => dataPerId.has(namespace.id));
+  const editData = toEdit.map(
+    (namespace) =>
+      ({
+        // toEdit is made of dataPerId so we can assume it is safe
+        ...dataPerId.get(namespace.id)!,
+        // Skip memberships, we will replace them later
+        memberships: undefined,
+      }) satisfies Prisma.NamespaceUpdateInput
+  );
 
-  const toEditIds = new Set(toEdit.map((n) => n.id));
-  const toCreate = data.filter((n) => !toEditIds.has(n.id));
-  const createData = toCreate.map((n) => ({
-    // toCreate is made of toEdit so we can assume it is safe
-    ...dataPerId.get(n.id)!,
-    // Skip memberships, we will replace them later
-    memberships: undefined,
-  } satisfies Prisma.NamespaceCreateInput));
+  const toEditIds = new Set(toEdit.map((namespace) => namespace.id));
+  const toCreate = data.filter((namespace) => !toEditIds.has(namespace.id));
+  const createData = toCreate.map(
+    (namespace) =>
+      ({
+        // toCreate is made of toEdit so we can assume it is safe
+        ...dataPerId.get(namespace.id)!,
+        // Skip memberships, we will replace them later
+        memberships: undefined,
+      }) satisfies Prisma.NamespaceCreateInput
+  );
 
   // Executing operations
-  const [
-    deleted,
-    updated,
-    created,
-  ] = await prisma.$transaction(async (tx) => {
+  const [deleted, updated, created] = await prisma.$transaction(async (tx) => {
     const deleteOperations = prisma.namespace.deleteMany({
-      where: { id: { in: toDelete.map((n) => n.id) } },
+      where: { id: { in: toDelete.map((namespace) => namespace.id) } },
     });
 
-    const updateOperations = Promise.all(editData.map(
-      (newData) => tx.namespace.update({ where: { id: newData.id }, data: newData }),
-    ));
+    const updateOperations = Promise.all(
+      editData.map((newData) =>
+        tx.namespace.update({ where: { id: newData.id }, data: newData })
+      )
+    );
 
     const createOperations = prisma.namespace.createMany({ data: createData });
 
-    return Promise.all([
-      deleteOperations,
-      updateOperations,
-      createOperations,
-    ]);
+    return Promise.all([deleteOperations, updateOperations, createOperations]);
   });
 
   logger.debug({
@@ -237,8 +258,11 @@ export async function replaceNamespaces(data: BulkNamespaceType[]) {
   });
 
   let membershipResult;
-  const memberships: BulkMembershipType[] = data.flatMap(
-    (n) => (n.memberships ?? []).map((m) => ({ ...m, namespaceId: n.id })),
+  const memberships: BulkMembershipType[] = data.flatMap((namespace) =>
+    (namespace.memberships ?? []).map((membership) => ({
+      ...membership,
+      namespaceId: namespace.id,
+    }))
   );
   if (memberships.length > 0) {
     membershipResult = await replaceMemberships(memberships);

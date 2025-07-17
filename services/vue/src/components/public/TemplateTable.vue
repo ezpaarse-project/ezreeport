@@ -8,11 +8,7 @@
     item-value="id"
   >
     <template #top>
-      <v-toolbar
-        :title="title"
-        color="transparent"
-        density="comfortable"
-      >
+      <v-toolbar :title="title" color="transparent" density="comfortable">
         <template v-if="$slots.prepend" #prepend>
           <slot name="prepend" />
         </template>
@@ -111,7 +107,9 @@
 
           <v-list-item
             :title="$t('$ezreeport.delete')"
-            :disabled="!availableActions.delete || item.id === defaultTemplateId"
+            :disabled="
+              !availableActions.delete || item.id === defaultTemplateId
+            "
             prepend-icon="mdi-delete"
             @click="deleteItem(item)"
           />
@@ -169,10 +167,9 @@
     <template #default>
       <TemplateForm
         :model-value="updatedTemplate"
-        :readonly=" updatedTemplate.id === defaultTemplateId"
+        :readonly="updatedTemplate.id === defaultTemplateId"
         @update:model-value="onSave($event)"
       >
-
         <template #actions>
           <v-btn :text="$t('$ezreeport.cancel')" @click="closeForm()" />
         </template>
@@ -212,10 +209,11 @@ const props = defineProps<{
 
 // Components events
 const emit = defineEmits<{
-  (e: 'update:itemsPerPage', value: number): void
+  (event: 'update:itemsPerPage', value: number): void;
 }>();
 
 // Utils composable
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 const defaultTemplateId = ref('');
@@ -225,58 +223,65 @@ const updatedTemplate = ref<TemplateHelper>(createTemplateHelper());
 const isFormOpen = ref(false);
 
 /** Items per page shortcut */
-const itemsPerPage = computed({ get: () => props.itemsPerPage || 10, set: (v) => emit('update:itemsPerPage', v) });
+const itemsPerPage = computed({
+  get: () => props.itemsPerPage || 10,
+  set: (value) => emit('update:itemsPerPage', value),
+});
 /** List of templates */
-const {
-  total,
-  refresh,
-  loading,
-  filters,
-  vDataTableOptions,
-} = useServerSidePagination(
-  async (params) => {
-    const res = await getAllTemplates(params);
-    defaultTemplateId.value = res.meta.default;
-    return res;
-  },
-  { sortBy: 'name', itemsPerPage, itemsPerPageOptions: props.itemsPerPageOptions },
+const { total, refresh, loading, filters, vDataTableOptions } =
+  useServerSidePagination(
+    async (params) => {
+      const res = await getAllTemplates(params);
+      defaultTemplateId.value = res.meta.default;
+      return res;
+    },
+    {
+      sortBy: 'name',
+      itemsPerPage,
+      itemsPerPageOptions: props.itemsPerPageOptions,
+    }
+  );
+
+const title = computed(
+  () =>
+    `${props.titlePrefix || ''}${t('$ezreeport.template.title:list', total.value)}`
 );
 
-const title = computed(() => `${props.titlePrefix || ''}${t('$ezreeport.template.title:list', total.value)}`);
-
 /** Headers for table */
-const headers = computed((): VDataTableHeaders => [
-  {
-    title: t('$ezreeport.name'),
-    value: 'name',
-    sortable: true,
-  },
-  {
-    title: t('$ezreeport.template.tags.title'),
-    value: 'tags',
-  },
-  {
-    title: t('$ezreeport.updatedAt'),
-    value: 'updatedAt',
-    sortable: true,
-  },
-  {
-    title: t('$ezreeport.createdAt'),
-    value: 'createdAt',
-    sortable: true,
-  },
-  {
-    title: t('$ezreeport.template.hidden'),
-    value: 'hidden',
-    sortable: true,
-    align: 'center',
-  },
-  {
-    title: t('$ezreeport.actions'),
-    value: '_actions',
-    align: 'center',
-  },
-]);
+const headers = computed(
+  (): VDataTableHeaders => [
+    {
+      title: t('$ezreeport.name'),
+      value: 'name',
+      sortable: true,
+    },
+    {
+      title: t('$ezreeport.template.tags.title'),
+      value: 'tags',
+    },
+    {
+      title: t('$ezreeport.updatedAt'),
+      value: 'updatedAt',
+      sortable: true,
+    },
+    {
+      title: t('$ezreeport.createdAt'),
+      value: 'createdAt',
+      sortable: true,
+    },
+    {
+      title: t('$ezreeport.template.hidden'),
+      value: 'hidden',
+      sortable: true,
+      align: 'center',
+    },
+    {
+      title: t('$ezreeport.actions'),
+      value: '_actions',
+      align: 'center',
+    },
+  ]
+);
 
 const availableActions = computed(() => {
   if (!arePermissionsReady.value) {
@@ -293,37 +298,41 @@ const availableActions = computed(() => {
 
 const selectedTemplateIds = computed({
   get: () => selectedTemplates.value.map((template) => template.id),
-  set: (v) => {
-    const ids = new Set(v);
-    selectedTemplates.value = selectedTemplates.value.filter((template) => ids.has(template.id));
+  set: (value) => {
+    const ids = new Set(value);
+    selectedTemplates.value = selectedTemplates.value.filter((template) =>
+      ids.has(template.id)
+    );
   },
 });
 
 async function openForm(template?: Omit<Template, 'body'>) {
   try {
     if (template) {
-      updatedTemplate.value = createTemplateHelperFrom(await getTemplate(template));
+      updatedTemplate.value = createTemplateHelperFrom(
+        await getTemplate(template)
+      );
     } else {
       updatedTemplate.value = createTemplateHelper();
     }
 
     isFormOpen.value = true;
-  } catch (e) {
-    handleEzrError(t('$ezreeport.template.errors.open'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.template.errors.open'), err);
   }
 }
 
 async function openDuplicateForm(template: Omit<Template, 'body'>) {
   try {
     updatedTemplate.value = createTemplateHelperFrom({
-      ...await getTemplate(template),
+      ...(await getTemplate(template)),
       name: `${template.name} (copy)`,
       id: '',
     });
 
     isFormOpen.value = true;
-  } catch (e) {
-    handleEzrError(t('$ezreeport.template.errors.open'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.template.errors.open'), err);
   }
 }
 
@@ -337,19 +346,21 @@ async function deleteItem(template: Omit<Template, 'body'>) {
   try {
     await deleteTemplate(template);
     refresh();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.template.errors.delete'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.template.errors.delete'), err);
   }
 }
 
 async function deleteSelected() {
   // TODO: show warning
   try {
-    await Promise.all(selectedTemplates.value.map((template) => deleteTemplate(template)));
+    await Promise.all(
+      selectedTemplates.value.map((template) => deleteTemplate(template))
+    );
     selectedTemplates.value = [];
     refresh();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.template.errors.delete'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.template.errors.delete'), err);
   }
 }
 
@@ -357,20 +368,22 @@ async function toggleItemVisibility(template: Omit<Template, 'body'>) {
   try {
     await changeTemplateVisibility(template, !template.hidden);
     refresh();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.template.errors.edit'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.template.errors.edit'), err);
   }
 }
 
 async function toggleSelectedVisibility() {
   try {
-    await Promise.all(selectedTemplates.value.map(
-      (template) => changeTemplateVisibility(template, !template.hidden),
-    ));
+    await Promise.all(
+      selectedTemplates.value.map((template) =>
+        changeTemplateVisibility(template, !template.hidden)
+      )
+    );
     selectedTemplates.value = [];
     refresh();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.template.errors.edit'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.template.errors.edit'), err);
   }
 }
 
@@ -384,12 +397,16 @@ async function onSave(template: TemplateHelper) {
       result = await createTemplate(data);
     }
     openForm(result);
-  } catch (e) {
-    const msg = template.id ? t('$ezreeport.template.errors.edit') : t('$ezreeport.template.errors.create');
+  } catch (err) {
+    const msg = template.id
+      ? t('$ezreeport.template.errors.edit')
+      : t('$ezreeport.template.errors.create');
     handleEzrError(msg, e);
   }
 }
 
-refreshPermissions()
-  .then(() => { arePermissionsReady.value = true; });
+// oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
+refreshPermissions().then(() => {
+  arePermissionsReady.value = true;
+});
 </script>

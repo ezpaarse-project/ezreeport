@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 import { createFigureHelperFrom } from '~sdk/helpers/figures';
 
@@ -38,12 +38,7 @@ export const Markdown: Story = {
     modelValue: createFigureHelperFrom({
       data: "![ezMESURE](https://raw.githubusercontent.com/ezpaarse-project/ezpaarse-project.github.io/master/ezmesure/static/images/logo-ezMESURE-350.png)\n\n## Tableau de bord générique ezPAARSE - ezMESURE\nIl s'agit du premier tableau de bord chargé automatiquement dans votre espace ezMESURE après un premier chargement de vos données d'usages traitées par ezPAARSE.\n\nRappel: \n  -  [Comment se connecter à ezMESURE pour la première fois ?](https://blog.readmetrics.org/2021/03/faq-comment-se-connecter-a-ezmesure-pour-la-premiere-fois/) .\n -  [Automatisez vos chargements dans ezMESURE](https://blog.readmetrics.org/2019/10/communication-automatisez-vos-chargements-dans-ezmesure/) .\n-  [Tutoriel ezPAARSE-ezMESURE - guide des bonnes pratiques](https://blog.readmetrics.org/2020/10/tutoriel-ezpaarse-ezmesure-guide-des-bonnes-pratiques/) .\n\n N'hésitez pas à consulter le blog ezPAARSE pour d'autres informations (tutos, FAQ, Supports mutualisés) (https://blog.readmetrics.org/)\n\nL'équipe ezTEAM.\n",
       type: 'md',
-      slots: [
-        0,
-        1,
-        2,
-        3,
-      ],
+      slots: [0, 1, 2, 3],
       params: {},
       filters: [],
     }),
@@ -61,12 +56,7 @@ export const Metric: Story = {
   args: {
     modelValue: createFigureHelperFrom({
       type: 'metric',
-      slots: [
-        0,
-        1,
-        2,
-        3,
-      ],
+      slots: [0, 1, 2, 3],
       params: {
         labels: [
           {
@@ -133,12 +123,10 @@ export const Table: Story = {
   args: {
     modelValue: createFigureHelperFrom({
       type: 'table',
-      slots: [
-        1,
-        3,
-      ],
+      slots: [1, 3],
       params: {
-        title: 'ezpaarse : générique les{{ length }} plateformes les plus consultées',
+        title:
+          'ezpaarse : générique les{{ length }} plateformes les plus consultées',
         columns: [
           {
             header: 'plateforme',
@@ -153,9 +141,6 @@ export const Table: Story = {
             },
           },
           {
-            _: {
-              dragged: false,
-            },
             header: 'Value',
             metric: true,
             styles: {
@@ -182,12 +167,7 @@ export const Vega: Story = {
   args: {
     modelValue: createFigureHelperFrom({
       type: 'bar',
-      slots: [
-        0,
-        1,
-        2,
-        3,
-      ],
+      slots: [0, 1, 2, 3],
       params: {
         label: {
           aggregation: {
@@ -216,10 +196,7 @@ export const Readonly: Story = {
   args: {
     modelValue: createFigureHelperFrom({
       type: 'arc',
-      slots: [
-        0,
-        2,
-      ],
+      slots: [0, 2],
       params: {
         label: {
           title: 'plateformes',
@@ -229,7 +206,8 @@ export const Readonly: Story = {
             field: 'platform_name',
           },
         },
-        title: 'ezpaarse : générique les {{ length }} premières plateformes éditeur',
+        title:
+          'ezpaarse : générique les {{ length }} premières plateformes éditeur',
         value: {},
         dataLabel: {
           format: 'percent',

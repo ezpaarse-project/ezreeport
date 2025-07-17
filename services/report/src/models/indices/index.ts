@@ -1,6 +1,11 @@
-import { ensureSchema } from '~/lib/zod';
+import { ensureSchema } from '@ezreeport/models/lib/zod';
+
 import prisma from '~/lib/prisma';
-import { elasticIndexMapping, elasticListIndices, elasticResolveIndex } from '~/lib/elastic';
+import {
+  elasticIndexMapping,
+  elasticListIndices,
+  elasticResolveIndex,
+} from '~/lib/elastic';
 
 import { Namespace } from '~/models/namespaces/types';
 
@@ -13,12 +18,17 @@ import type { IndexType, MappingType } from './types';
  *
  * @returns The elastic username
  */
-async function getElasticUserForNamespace(namespaceId: string) {
+async function getElasticUserForNamespace(
+  namespaceId: string
+): Promise<string> {
   const namespace = await prisma.namespace.findUniqueOrThrow({
     where: { id: namespaceId },
     select: { fetchLogin: true },
   });
-  const fetchOptions = await ensureSchema(Namespace.shape.fetchLogin, namespace.fetchLogin);
+  const fetchOptions = await ensureSchema(
+    Namespace.shape.fetchLogin,
+    namespace.fetchLogin
+  );
   return fetchOptions.elastic.username;
 }
 
@@ -32,7 +42,7 @@ async function getElasticUserForNamespace(namespaceId: string) {
  */
 export async function getAllIndices(
   namespaceId?: string,
-  query?: string,
+  query?: string
 ): Promise<IndexType[]> {
   let elasticUser: string | undefined;
   if (namespaceId) {
@@ -56,7 +66,7 @@ export async function getAllIndices(
  */
 export async function getIndex(
   index: string,
-  namespaceId?: string,
+  namespaceId?: string
 ): Promise<MappingType> {
   let elasticUser: string | undefined;
   if (namespaceId) {

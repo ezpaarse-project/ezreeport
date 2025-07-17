@@ -5,11 +5,11 @@ import type { TemplateFilter, TemplateBodyFigure } from '~/modules/templates';
 
 interface FigureHelper {
   readonly id: string;
-  readonly type: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  params: Record<string, any>,
-  slots: Set<number>,
-  readonly hash: string
+  readonly type: string;
+  // oxlint-disable-next-line no-explicit-any
+  params: Record<string, any>;
+  slots: Set<number>;
+  readonly hash: string;
 }
 
 function hashFigure(figure: FigureHelper | TemplateBodyFigure): string {
@@ -22,37 +22,39 @@ function hashFigure(figure: FigureHelper | TemplateBodyFigure): string {
   });
 }
 
-function createFigureHelper<T extends FigureHelper = FigureHelper>(
+function createFigureHelper<Fig extends FigureHelper = FigureHelper>(
   type: string,
   params: Record<string, unknown> = {},
-  slots?: number[],
-): T {
+  slots?: number[]
+): Fig {
   return {
     id: nanoid(),
     type,
     params,
     slots: new Set(slots ?? []),
     hash: '',
-  } satisfies FigureHelper as T;
+  } satisfies FigureHelper as Fig;
 }
 
 export interface FigureHelperWithData extends FigureHelper {
   data: string | unknown[];
 }
 
-export function createFigureHelperWithData<T extends FigureHelperWithData = FigureHelperWithData>(
+export function createFigureHelperWithData<
+  Fig extends FigureHelperWithData = FigureHelperWithData,
+>(
   type: string,
   data: string | unknown[],
   params: Record<string, unknown> = {},
-  slots?: number[],
-): T {
+  slots?: number[]
+): Fig {
   const figure = {
     ...createFigureHelper(type, params, slots),
     data,
   } satisfies FigureHelperWithData;
 
   figure.hash = hashFigure(figure);
-  return figure as T;
+  return figure as Fig;
 }
 
 export interface FigureHelperWithFilters extends FigureHelper {
@@ -60,13 +62,13 @@ export interface FigureHelperWithFilters extends FigureHelper {
 }
 
 export function createFigureHelperWithFilters<
-  T extends FigureHelperWithFilters = FigureHelperWithFilters,
+  Fig extends FigureHelperWithFilters = FigureHelperWithFilters,
 >(
   type: string,
   filters: TemplateFilter[] = [],
   params: Record<string, unknown> = {},
-  slots?: number[],
-): T {
+  slots?: number[]
+): Fig {
   const figure = {
     ...createFigureHelper(type, params, slots),
     filters: new Map(filters?.map((filter) => [filter.name, filter]) ?? []),
@@ -74,5 +76,5 @@ export function createFigureHelperWithFilters<
   } satisfies FigureHelperWithFilters;
 
   figure.hash = hashFigure(figure);
-  return figure as T;
+  return figure as Fig;
 }

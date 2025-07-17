@@ -1,21 +1,32 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
-import { z } from '~/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
+
+import { Cron } from '@ezreeport/models/crons';
 
 import authPlugin from '~/plugins/auth';
-import * as responses from '~/routes/v2/responses';
 
-import * as crons from '~/models/crons';
-import { CronName, CronDescription, InputCron } from '~/models/crons/types';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+} from '~/routes/v2/responses';
 
-import { NotFoundError } from '~/types/errors';
+import {
+  getAllCrons,
+  stopCron,
+  startCron,
+  forceCron,
+} from '~/models/rpc/client/crons';
+
+import { NotFoundError } from '~/models/errors';
 
 const SpecificCronParams = z.object({
-  name: CronName
-    .describe('Name of the cron'),
+  name: z.string().min(1).describe('Name of the cron'),
 });
 
+// oxlint-disable-next-line max-lines-per-function, require-await
 const router: FastifyPluginAsyncZod = async (fastify) => {
   await fastify.register(authPlugin);
 
@@ -26,10 +37,12 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Get all crons',
       tags: ['crons'],
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(z.array(CronDescription)),
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(z.array(Cron)),
       },
     },
     config: {
@@ -37,10 +50,11 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAdmin: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
-      const content = await crons.getAllCrons();
+      const content = await getAllCrons();
 
-      return responses.buildSuccessResponse(content, reply);
+      return buildSuccessResponse(content, reply);
     },
   });
 
@@ -52,12 +66,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['crons'],
       params: SpecificCronParams,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(CronDescription),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(Cron),
       },
     },
     config: {
@@ -65,14 +81,15 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAdmin: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
-      const content = await crons.getAllCrons();
+      const content = await getAllCrons();
       const item = content.find((cron) => cron.name === request.params.name);
       if (!item) {
         throw new NotFoundError(`Cron ${request.params.name} not found`);
       }
 
-      return responses.buildSuccessResponse(item, reply);
+      return buildSuccessResponse(item, reply);
     },
   });
 
@@ -83,14 +100,18 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Update a cron',
       tags: ['crons'],
       params: SpecificCronParams,
-      body: InputCron.partial(),
+      body: z.object({
+        running: z.boolean().optional(),
+      }),
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(CronDescription),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(Cron),
       },
     },
     config: {
@@ -98,18 +119,26 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAdmin: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
-      const content = await crons.getAllCrons();
+      const content = await getAllCrons();
       let item = content.find((cron) => cron.name === request.params.name);
       if (!item) {
         throw new NotFoundError(`Cron ${request.params.name} not found`);
       }
 
-      if (request.body.running != null && request.body.running !== item.running) {
-        item = await crons.toggleCron(request.params.name);
+      if (
+        request.body.running != null &&
+        request.body.running !== item.running
+      ) {
+        if (request.body.running) {
+          item = await startCron(item.name);
+        } else {
+          item = await stopCron(item.name);
+        }
       }
 
-      return responses.buildSuccessResponse(item, reply);
+      return buildSuccessResponse(item, reply);
     },
   });
 
@@ -121,11 +150,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['crons'],
       params: SpecificCronParams,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(CronDescription),
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.FORBIDDEN]: responses.schemas[StatusCodes.FORBIDDEN],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.FORBIDDEN,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(Cron),
       },
     },
     config: {
@@ -133,18 +164,20 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAdmin: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
-      const content = await crons.getAllCrons();
+      const content = await getAllCrons();
       let item = content.find((cron) => cron.name === request.params.name);
       if (!item) {
         throw new NotFoundError(`Cron ${request.params.name} not found`);
       }
 
-      item = await crons.restartCron(request.params.name);
+      item = await forceCron(request.params.name);
 
-      return responses.buildSuccessResponse(item, reply);
+      return buildSuccessResponse(item, reply);
     },
   });
 };
 
+// oxlint-disable-next-line no-default-exports
 export default router;

@@ -46,10 +46,11 @@ import { isRawFilter, type TemplateFilter } from '~sdk/helpers/filters';
 // Components events
 defineEmits<{
   /** Imported filters */
-  (e: 'update:modelValue', value: TemplateFilter[]): void,
+  (event: 'update:modelValue', value: TemplateFilter[]): void,
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 /** Text from filters found in Kibana */
@@ -118,5 +119,5 @@ const filters = computed(() => kibanaText.value
       };
     },
   )
-  .filter((v) => !!v));
+  .filter((val) => !!val));
 </script>

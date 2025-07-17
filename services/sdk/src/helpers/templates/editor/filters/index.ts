@@ -1,4 +1,8 @@
-import type { TemplateBasicFilter, TemplateRawFilter, TemplateFilter } from '~/modules/templates';
+import type {
+  TemplateBasicFilter,
+  TemplateRawFilter,
+  TemplateFilter,
+} from '~/modules/templates';
 
 type TemplateFilterMap = Map<string, TemplateFilter>;
 

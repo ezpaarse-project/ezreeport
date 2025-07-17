@@ -20,13 +20,12 @@
   </div>
 
   <div v-else-if="recurrence === 'MONTHLY'">
-    <p>Vous voulez recevoir votre rapport le {{ formattedMonthDate }} de chaque mois.</p>
+    <p>
+      Vous voulez recevoir votre rapport le {{ formattedMonthDate }} de chaque
+      mois.
+    </p>
 
-    <div
-      color="primary"
-      mandatory
-      class="monthly-picker"
-    >
+    <div color="primary" mandatory class="monthly-picker">
       <v-btn
         v-for="day in monthDates"
         :key="day.text"
@@ -40,7 +39,10 @@
   </div>
 
   <div v-else-if="recurrence === 'QUARTERLY'">
-    <p>Vous voulez recevoir votre rapport le {{ formattedMonthDate }} du {{ formattedQuarterMonth }} de chaque trimestre.</p>
+    <p>
+      Vous voulez recevoir votre rapport le {{ formattedMonthDate }} du
+      {{ formattedQuarterMonth }} de chaque trimestre.
+    </p>
 
     <v-btn-toggle
       v-model="selectedQuarterMonth"
@@ -56,11 +58,7 @@
       />
     </v-btn-toggle>
 
-    <div
-      color="primary"
-      mandatory
-      class="monthly-picker"
-    >
+    <div color="primary" mandatory class="monthly-picker">
       <v-btn
         v-for="day in monthDates"
         :key="day.text"
@@ -124,17 +122,17 @@ const DAYS_IN_MONTH = 28;
 // Components props
 const props = defineProps<{
   /** The Date to edit */
-  modelValue?: Date,
+  modelValue?: Date;
   /** Task's recurrence */
-  recurrence: TaskRecurrence,
+  recurrence: TaskRecurrence;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated Date */
-  (e: 'update:modelValue', value: Date): void
+  (event: 'update:modelValue', value: Date): void;
 }>();
 
 // Utils composables
@@ -153,10 +151,14 @@ const { locale } = useDateLocale();
 // });
 const nextRun = ref(new Date());
 
-const debug = computed(() => format(nextRun.value, 'yyyy-MM-dd', { locale: locale.value }));
+const debug = computed(() =>
+  format(nextRun.value, 'yyyy-MM-dd', { locale: locale.value })
+);
 
-const formatWeekDay = (date: Date) => format(date, 'EEEE', { locale: locale.value });
-const formatMonthDate = (date: Date) => format(date, 'd', { locale: locale.value });
+const formatWeekDay = (date: Date) =>
+  format(date, 'EEEE', { locale: locale.value });
+const formatMonthDate = (date: Date) =>
+  format(date, 'd', { locale: locale.value });
 const formatMonth = (month: number) => `${month + 1}e mois`;
 
 const weekDays = computed(() => {
@@ -169,8 +171,8 @@ const weekDays = computed(() => {
 });
 const selectedWeekDay = computed({
   get: () => nextRun.value.getDay() as Day,
-  set: (v) => {
-    nextRun.value = nextDay(nextRun.value, v);
+  set: (value) => {
+    nextRun.value = nextDay(nextRun.value, value);
   },
 });
 const formattedWeekDay = computed(() => formatWeekDay(nextRun.value));
@@ -185,7 +187,9 @@ const monthDates = computed(() => {
 });
 const selectedMonthDate = computed({
   get: () => nextRun.value.getDate(),
-  set: (v) => { nextRun.value = setDate(nextRun.value, v); },
+  set: (value) => {
+    nextRun.value = setDate(nextRun.value, value);
+  },
 });
 const formattedMonthDate = computed(() => formatMonthDate(nextRun.value));
 
@@ -199,15 +203,17 @@ const quarterMonths = computed(() => {
 });
 const selectedQuarterMonth = computed({
   get: () => nextRun.value.getMonth() % monthsInQuarter,
-  set: (v) => {
-    const date = add(startOfQuarter(nextRun.value), { months: v });
+  set: (value) => {
+    const date = add(startOfQuarter(nextRun.value), { months: value });
     nextRun.value = setDate(date, selectedMonthDate.value);
   },
 });
-const formattedQuarterMonth = computed(() => formatMonth(selectedQuarterMonth.value));
+const formattedQuarterMonth = computed(() =>
+  formatMonth(selectedQuarterMonth.value)
+);
 
-const firstDayOfWeek = computed(
-  () => startOfWeek(nextRun.value, { locale: locale.value }).getDay(),
+const firstDayOfWeek = computed(() =>
+  startOfWeek(nextRun.value, { locale: locale.value }).getDay()
 );
 
 const min = computed(() => startOfYear(nextRun.value).toISOString());

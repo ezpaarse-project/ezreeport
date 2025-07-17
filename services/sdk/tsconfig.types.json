@@ -8,6 +8,6 @@
     "noEmit": false,
     "declaration": true,
     "emitDeclarationOnly": true,
-    "lib": [],
-  },
+    "lib": []
+  }
 }

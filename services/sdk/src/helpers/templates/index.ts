@@ -1,4 +1,8 @@
-import { type Template, getTemplate, upsertTemplate } from '~/modules/templates';
+import {
+  type Template,
+  getTemplate,
+  upsertTemplate,
+} from '~/modules/templates';
 
 import { assignDependencies } from '~/helpers/permissions/decorator';
 
@@ -14,7 +18,7 @@ export * from './editor';
  */
 export async function changeTemplateVisibility(
   templateOrId: Omit<Template, 'body'> | string,
-  hidden: boolean,
+  hidden: boolean
 ): Promise<Template> {
   const base = await getTemplate(templateOrId);
 

@@ -58,7 +58,9 @@ export async function forceCron(
 
   const {
     content,
-  } = await client.fetch<ApiResponse<RawCron>>(`/crons/${name}`);
+  } = await client.fetch<ApiResponse<RawCron>>(`/crons/${name}`, {
+    method: 'POST',
+  });
 
   return transformCron(content);
 }

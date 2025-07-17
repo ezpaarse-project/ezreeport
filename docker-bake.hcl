@@ -1,5 +1,5 @@
 group "default" {
-  targets = ["api", "mail", "vuedoc"]
+  targets = ["migrate", "api", "worker", "scheduler", "mail", "files", "aio"]
 }
 
 variable "VERSION" {
@@ -11,13 +11,39 @@ target "_base" {
   dockerfile = "Dockerfile"
 }
 
+target "migrate" {
+  inherits = ["_base"]
+  target = "migrate"
+  output = [{ type = "registry" }]
+  tags = [
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/migrate:${VERSION}"
+  ]
+}
+
 target "api" {
   inherits = ["_base"]
   target = "api"
   output = [{ type = "registry" }]
   tags = [
-    "vxnexus-registry.intra.inist.fr:8083/ezreeport/api:${VERSION}",
-    "ghcr.io/ezpaarse-project/ezreeport-api:${VERSION}"
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/api:${VERSION}"
+  ]
+}
+
+target "worker" {
+  inherits = ["_base"]
+  target = "worker"
+  output = [{ type = "registry" }]
+  tags = [
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/worker:${VERSION}"
+  ]
+}
+
+target "scheduler" {
+  inherits = ["_base"]
+  target = "scheduler"
+  output = [{ type = "registry" }]
+  tags = [
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/scheduler:${VERSION}"
   ]
 }
 
@@ -26,8 +52,25 @@ target "mail" {
   target = "mail"
   output = [{ type = "registry" }]
   tags = [
-    "vxnexus-registry.intra.inist.fr:8083/ezreeport/mail:${VERSION}",
-    "ghcr.io/ezpaarse-project/ezreeport-mail:${VERSION}"
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/mail:${VERSION}"
+  ]
+}
+
+target "files" {
+  inherits = ["_base"]
+  target = "files"
+  output = [{ type = "registry" }]
+  tags = [
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/files:${VERSION}"
+  ]
+}
+
+target "aio" {
+  inherits = ["_base"]
+  target = "aio"
+  output = [{ type = "registry" }]
+  tags = [
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/aio:${VERSION}"
   ]
 }
 
@@ -48,7 +91,6 @@ target "vuedoc" {
   target = "vuedoc"
   output = [{ type = "registry" }]
   tags = [
-    "vxnexus-registry.intra.inist.fr:8083/ezreeport/vuedoc:${VERSION}:",
-    "ghcr.io/ezpaarse-project/ezreeport-vuedoc:${VERSION}:"
+    "vxnexus-registry.intra.inist.fr:8083/ezreeport/vuedoc:${VERSION}"
   ]
 }

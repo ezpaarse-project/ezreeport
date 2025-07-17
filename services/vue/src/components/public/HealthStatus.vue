@@ -16,52 +16,78 @@
         color="primary"
         prepend-icon="mdi-refresh"
         class="ml-2"
-        @click="refresh"
+        @click="refresh()"
       />
     </template>
   </v-toolbar>
 
   <v-progress-linear :active="loading" color="primary" indeterminate />
 
-  <v-list lines="two">
-    <v-list-subheader :title="$t('$ezreeport.health.client')" />
+  <v-row>
+    <v-col>
+      <v-list lines="two" density="compact">
+        <v-list-subheader :title="$t('$ezreeport.health.client')" />
 
-    <v-list-item title="client" :subtitle="`v${version}`" />
-    <v-list-item title="sdk" :subtitle="`v${sdkVersion}`" />
+        <v-list-item title="client" :subtitle="`v${version}`" />
+        <v-list-item title="sdk" :subtitle="`v${sdkVersion}`" />
 
-    <v-list-item v-if="status" :title="status.current" :subtitle="`v${status.version}`">
-      <template #append>
-        <v-chip v-if="latency == null" text="KO" color="red" />
-        <v-chip v-else :text="`${latency} ms`" :color="latency >= 1000 ? 'orange' : 'green'" />
-      </template>
-    </v-list-item>
+        <v-list-item
+          v-if="status"
+          :title="status.current"
+          :subtitle="`v${status.version}`"
+        />
+      </v-list>
+    </v-col>
+  </v-row>
 
+  <template v-if="status">
     <v-divider />
 
-    <v-list-subheader :title="$t('$ezreeport.health.server')" />
+    <v-row>
+      <v-col>
+        <v-list lines="two" density="compact">
+          <v-list-subheader :title="$t('$ezreeport.health.services')" />
 
-    <v-list-item
-      v-for="pong in pongs"
-      :key="pong.name"
-      :title="pong.name"
-    >
-      <template #append>
-        <v-chip v-if="pong.status" :text="`${pong.elapsedTime}ms`" :color="pong.elapsedTime >= 1000 ? 'orange' : 'green'" />
-        <v-chip v-else text="KO" />
-      </template>
-    </v-list-item>
-  </v-list>
+          <HealthServiceItem
+            v-for="[key, instances] in services"
+            :key="key"
+            :label="key"
+            :modelValue="instances"
+          />
+        </v-list>
+      </v-col>
+
+      <v-col>
+        <v-list lines="two" density="compact">
+          <v-list-subheader :title="$t('$ezreeport.health.fs')" />
+
+          <HealthFileSystemItem
+            v-for="[key, usages] in fileSystems"
+            :key="key"
+            :modelValue="usages"
+          />
+        </v-list>
+      </v-col>
+    </v-row>
+  </template>
 </template>
 
 <script setup lang="ts">
 import { version } from '~/../package.json';
 import { version as sdkVersion } from '~sdk';
-import {
-  getStatus,
-  pingAllServices,
-  type Pong,
-  type ApiStatus,
-} from '~sdk/health';
+import { getStatus, type ApiService, type ApiStatus } from '~sdk/health';
+
+const MINIMUM_SERVICES = [
+  'rabbitmq',
+  'api',
+  'database',
+  'worker',
+  'elastic',
+  'scheduler',
+  'mail',
+  'smtp',
+  'files',
+];
 
 // Components props
 defineProps<{
@@ -69,32 +95,47 @@ defineProps<{
 }>();
 
 // Utils composable
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 /** Is loading */
 const loading = ref(false);
-/** Available services */
-const pongs = ref<Pong[]>([]);
-/** Latency towards API in ms */
-const latency = ref<number | undefined>();
 /** API status */
 const status = ref<ApiStatus | undefined>();
 
+const services = computed(() => {
+  const minimum = MINIMUM_SERVICES.map(
+    (service) => [service, []] as [string, ApiService[]]
+  );
+  const fromAPI = Map.groupBy(
+    status.value?.services ?? [],
+    ({ service }) => service
+  );
+  return new Map([...minimum, ...fromAPI]);
+});
+
+const fileSystems = computed(() => {
+  const values = (status.value?.services ?? []).flatMap(
+    ({ hostname, service, filesystems }) =>
+      (filesystems ?? []).map((fs) => ({
+        ...fs,
+        host: { name: hostname, service },
+      }))
+  );
+
+  const unsorted = Map.groupBy(values, ({ name }) => name);
+  return Array.from(unsorted).sort((fsA, fsB) => fsA[0].localeCompare(fsB[0]));
+});
+
 async function refresh() {
   loading.value = true;
-  let ping;
   try {
-    const now = Date.now();
     status.value = await getStatus();
-    ping = Date.now() - now;
-
-    pongs.value = await pingAllServices();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.health.errors.fetch'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.health.errors.fetch'), err);
   }
-  latency.value = ping;
   loading.value = false;
 }
 
-refresh();
+useIntervalFn(refresh, 10000, { immediate: true, immediateCallback: true });
 </script>

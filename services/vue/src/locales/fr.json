@@ -73,7 +73,8 @@
           "title": "Une erreur est survenue lors de la génération",
           "layout": "Page",
           "figure": "Visualisation",
-          "type": "Type"
+          "type": "Type",
+          "name": "Nom"
         },
         "success": {
           "title": "Le rapport a été généré avec succès",
@@ -429,60 +430,57 @@
     "health": {
       "title:list": "Statut d'ezREEPORT",
       "client": "Statut client",
-      "server": "Statut serveur",
+      "services": "Statut des services",
+      "instances": "{n} instances sont prêtes",
+      "ko": "Ce service n'est pas prêt, certaines fonctionnalités d'ezREEPORT ne fonctionneront pas",
+      "fs": "Statut des systèmes de fichiers",
+      "fsUsage": {
+        "total": "Total: {value}",
+        "used": "Utilisé: {value}",
+        "available": "Disponible: {value}"
+      },
+      "fsUsage%": "Utilisation: {value}",
       "errors": {
         "fetch": "Impossible de récupérer le statut d'ezREEPORT"
       }
     },
-    "queues": {
-      "_": {
-        "title:list": "Files d'attente",
-        "title:jobs": "Tâches ({n})",
-        "tries": "Tentatives",
-        "status": "Statut de la tâche",
-        "duration": "Durée",
-        "added": "Date d'ajout",
-        "started": "Date de démarrage",
-        "ended": "Date de fin",
-        "info": "Informations sur la tâche",
-        "id": "ID de la tâche",
-        "statusList": {
-          "completed": "Terminée",
-          "failed": "Échouée",
-          "delayed": "Retardée",
-          "active": "Active",
-          "waiting": "En attente"
-        },
-        "errors": {
-          "edit": "Impossible de mettre à jour la file d'attente",
-          "fetch": "Impossible d'avoir des files d'attente",
-          "open": "Impossible d'obtenir des informations sur la tâche",
-          "retry": "Impossible de réessayer la tâche"
-        }
+    "generations": {
+      "title": "Générations de rapports ({n})",
+      "id": "ID de la génération",
+      "status": "Statut de la génération",
+      "statusList": {
+        "SUCCESS": "Terminée",
+        "ERROR": "Échouée",
+        "PROCESSING": "Active",
+        "PENDING": "En attente",
+        "ABORTED": "Abandonnée"
       },
-      "generation": {
-        "title": "File d'attente de génération",
-        "task": "Nom du rapport",
-        "template": "Nom du modèle",
-        "status": "Statut de la génération",
-        "origin": "Origine",
-        "debug": "Rapport de test",
-        "auth": "Utilisateur Elastic",
-        "header:request": "Paramètres de génération",
-        "header:task": "Rapport généré",
-        "header:result": "Résultat de la génération",
-        "header:files": "Fichiers générés"
-      },
-      "mail": {
-        "title": "File d'attente de mailing",
-        "error": "Message d'erreur",
-        "errorDate": "Date de l'erreur",
-        "task": "Nom du rapport",
-        "attachement": "Pièce jointe",
-        "generationDate": "Date de génération",
-        "generationJob": "Informations sur la génération",
-        "header:generation": "Résumé de la génération",
-        "header:mail": "Informations sur le mail"
+      "period": "Période",
+      "duration": "Durée",
+      "started": "Date de démarrage",
+      "ended": "Date de fin",
+      "queued": "Date d'ajout",
+      "lastUpdate": "Dernière mise à jour",
+      "info": "Informations sur la génération",
+      "task": "Nom du rapport",
+      "template": "Nom du modèle",
+      "origin": "Origine",
+      "progress": "Progression",
+      "debug": "Rapport de test",
+      "auth": "Utilisateur Elastic",
+      "scheduler": "Rapport programmé",
+      "header:request": "Paramètres de génération",
+      "header:fetch:template": "Récupération du modèle...",
+      "header:task": "Rapport généré",
+      "header:fetch:task": "Récupération du rapport périodique...",
+      "header:result": "Résultat de la génération",
+      "header:fetch:result": "Récupération du résultat...",
+      "header:files": "Fichiers générés",
+      "header:error": "Détails de l'erreur",
+      "errors": {
+        "fetch": "Impossible d'obtenir les générations",
+        "open": "Impossible d'obtenir des informations sur la génération",
+        "retry": "Impossible de réessayer la génération"
       }
     },
     "errors": {
@@ -490,6 +488,8 @@
       "download": "Impossible de télécharger le fichier \"{path}\"",
       "downloadAttachement": "Impossible de télécharger la pièce jointe",
       "refreshNamespaces": "Impossible d'actualiser les @:$ezreeport.namespace",
+      "resolveNextDate": "Impossible de résoudre la prochaine date de prochain envoi",
+      "resolvePeriod": "Impossible de résoudre la période demandée",
       "futureDate": "La date doit se trouver dans le futur"
     }
   }

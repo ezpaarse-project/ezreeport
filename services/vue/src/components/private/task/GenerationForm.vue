@@ -21,35 +21,44 @@
       <v-row v-if="result || error">
         <v-col>
           <v-alert
-            :title="error ? $t('$ezreeport.task.generation.error.title') : $t('$ezreeport.task.generation.success.title')"
+            :title="
+              error
+                ? $t('$ezreeport.task.generation.error.title')
+                : $t('$ezreeport.task.generation.success.title')
+            "
             :text="$t('$ezreeport.task.generation.success.description')"
-            :type="error ? 'error' : 'success'"
+            :type="alertColor"
           >
             <template v-if="error" #text>
               <ul>
                 <li>{{ error.message }}</li>
-                <template v-if="error.cause">
-                  <li v-if="error.cause.type">
-                    {{ $t('$ezreeport.task.generation.error.type') }}: "{{ error.cause.type }}"
-                  </li>
-                  <li v-if="error.cause.layout">
-                    {{ $t('$ezreeport.task.generation.error.layout') }}: "{{ error.cause.layout }}"
-                  </li>
-                  <li v-if="error.cause.figure">
-                    {{ $t('$ezreeport.task.generation.error.figure') }}: "{{ error.cause.figure }}"
-                  </li>
-                </template>
+                <li>
+                  {{ $t('$ezreeport.task.generation.error.type') }}: "{{
+                    error.type
+                  }}"
+                </li>
+                <li>
+                  {{ $t('$ezreeport.task.generation.error.name') }}: "{{
+                    error.name
+                  }}"
+                </li>
+                <li v-if="error.cause?.layout">
+                  {{ $t('$ezreeport.task.generation.error.layout') }}: "{{
+                    error.cause.layout
+                  }}"
+                </li>
+                <li v-if="error.cause?.figure">
+                  {{ $t('$ezreeport.task.generation.error.figure') }}: "{{
+                    error.cause.figure
+                  }}"
+                </li>
               </ul>
             </template>
 
             <template #append v-if="result">
               <v-menu>
                 <template #activator="{ props: menu }">
-                  <v-btn
-                    v-bind="menu"
-                    variant="elevated"
-                    icon="mdi-download"
-                  />
+                  <v-btn v-bind="menu" variant="elevated" icon="mdi-download" />
                 </template>
 
                 <v-list>
@@ -60,7 +69,11 @@
                     @click="downloadGenerationFile(result.detail.files.report)"
                   />
 
-                  <v-divider v-if="result.detail.files.report && result.detail.files.detail" />
+                  <v-divider
+                    v-if="
+                      result.detail.files.report && result.detail.files.detail
+                    "
+                  />
 
                   <v-list-item
                     v-if="result.detail.files.detail"
@@ -82,8 +95,11 @@
               :model-value="targets"
               :label="$t('$ezreeport.task.targets')"
               :add-label="$t('$ezreeport.task.targets:add')"
-              :rules="[(v) => v.length >= 0 || $t('$ezreeport.required')]"
-              :item-rules="[(v, i) => isEmail(v) || $t('$ezreeport.errors.invalidEmail', i + 1)]"
+              :rules="[(val) => val.length >= 0 || $t('$ezreeport.required')]"
+              :item-rules="[
+                (val, i) =>
+                  isEmail(val) || $t('$ezreeport.errors.invalidEmail', i + 1),
+              ]"
               :item-placeholder="$t('$ezreeport.task.targets:hint')"
               prepend-icon="mdi-mailbox"
               variant="underlined"
@@ -100,6 +116,7 @@
                 <v-text-field
                   :model-value="formattedPeriod"
                   :label="$t('$ezreeport.task.period')"
+                  :loading="periodResolving && 'primary'"
                   prepend-icon="mdi-calendar-range"
                   variant="underlined"
                   readonly
@@ -107,14 +124,14 @@
                 />
               </template>
 
-              <v-card>
+              <v-card :loading="periodResolving && 'primary'">
                 <template #text>
                   <v-date-picker
                     :model-value="periodRange"
                     :max="maxDate"
                     hide-header
                     show-adjacent-months
-                    @update:model-value="updatePeriod($event)"
+                    @update:model-value="updatePeriodFromRange($event)"
                   />
                 </template>
               </v-card>
@@ -147,41 +164,32 @@ import {
   format,
   add,
   endOfDay,
-  endOfMonth,
-  endOfQuarter,
-  endOfWeek,
-  endOfYear,
-  getYear,
-  isAfter,
-  startOfDay,
-  startOfMonth,
-  startOfQuarter,
-  startOfWeek,
-  startOfYear,
   max,
   isValid as isValidDate,
 } from 'date-fns';
 
+import { downloadBlob } from '~/lib/files';
+import { isEmail } from '~/utils/validate';
+
 import {
   getFileAsBlob,
   type ReportResult,
-  type ReportErrorCause,
+  type ReportError,
 } from '~sdk/reports';
-import { generateAndListenReportOfTask } from '~sdk/helpers/jobs';
+import { getPeriodFromRecurrence } from '~sdk/recurrence';
+import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
 import type { Task } from '~sdk/tasks';
-
-import { downloadBlob } from '~/lib/files';
-import { isEmail } from '~/utils/validate';
 
 const maxDate = add(endOfDay(new Date()), { days: -1 });
 
 // Components props
 const props = defineProps<{
   /** The task to edit */
-  modelValue: Omit<Task, 'template'>,
+  modelValue: Omit<Task, 'template'>;
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 /** Is basic form valid */
@@ -190,19 +198,34 @@ const isValid = ref(false);
 const targets = ref(props.modelValue.targets);
 /** Custom period */
 const period = ref({ start: new Date(), end: new Date() });
+/** Is the period resolving */
+const periodResolving = ref(false);
 /** Is the report being generated */
 const loading = ref(false);
 /** Progress of the generation */
 const progress = ref(0);
 /** Error in the generation */
-const error = ref<{ message: string, cause?: ReportErrorCause } | undefined>();
+const error = ref<ReportError | undefined>();
 /** Result of the generation */
 const result = ref<ReportResult | undefined>();
 
 /** Formatted period */
-const formattedPeriod = computed(() => `${format(period.value.start, 'dd/MM/yyyy')} ~ ${format(period.value.end, 'dd/MM/yyyy')}`);
+const formattedPeriod = computed(
+  () =>
+    `${format(period.value.start, 'dd/MM/yyyy')} ~ ${format(period.value.end, 'dd/MM/yyyy')}`
+);
 /** Days in period */
 const periodRange = computed(() => eachDayOfInterval(period.value));
+/** Color of the alert */
+const alertColor = computed(() => {
+  if (!error.value) {
+    return 'success';
+  }
+  if (error.value.name === 'NoDataError') {
+    return 'warning';
+  }
+  return 'error';
+});
 
 function onTargetUpdated(emails: string | string[] | undefined) {
   if (emails == null) {
@@ -219,86 +242,39 @@ function onTargetUpdated(emails: string | string[] | undefined) {
   targets.value = Array.from(
     new Set(
       allTargets
-        .join(';').replace(/[,]/g, ';')
-        .split(';').map((mail) => mail.trim()),
-    ),
+        .join(';')
+        .replaceAll(/[,]/g, ';')
+        .split(';')
+        .map((mail) => mail.trim())
+    )
   );
 }
 
-/**
- * Get period based on Recurrence
- *
- * @param today The today's date
- * @param offset The offset, negative for previous, positive for next, 0 for current
- */
-function calcPeriodFromRecurrence(
-  today: Date,
-  offset = 0,
-): void {
-  let value;
-  switch (props.modelValue.recurrence) {
-    case 'DAILY': {
-      const target = add(today, { days: offset });
-      value = { start: startOfDay(target), end: endOfDay(target) };
-      break;
-    }
-
-    case 'WEEKLY': {
-      const target = add(today, { weeks: offset });
-      value = {
-        start: startOfWeek(target, { weekStartsOn: 1 }),
-        end: endOfWeek(target, { weekStartsOn: 1 }),
-      };
-      break;
-    }
-
-    case 'MONTHLY': {
-      const target = add(today, { months: offset });
-      value = { start: startOfMonth(target), end: endOfMonth(target) };
-      break;
-    }
-
-    case 'QUARTERLY': {
-      const target = add(today, { months: 3 * offset });
-      value = { start: startOfQuarter(target), end: endOfQuarter(target) };
-      break;
-    }
-
-    case 'BIENNIAL': {
-      const target = add(today, { months: 6 * offset });
-      const year = getYear(target);
-      const midYear = new Date(year, 5, 30);
-      if (isAfter(target, midYear)) {
-        value = { start: add(midYear, { days: 1 }), end: endOfYear(midYear) };
-        break;
-      }
-      value = { start: startOfYear(midYear), end: midYear };
-      break;
-    }
-
-    case 'YEARLY': {
-      const target = add(today, { years: offset });
-      value = { start: startOfYear(target), end: endOfYear(target) };
-      break;
-    }
-
-    default:
-      throw new Error('Recurrence not found');
-  }
-
-  if (isAfter(value.end, maxDate)) {
+async function updatePeriodFromRecurrence(date: Date, offset = 0) {
+  if (periodResolving.value) {
     return;
   }
 
-  period.value = value;
+  periodResolving.value = true;
+  try {
+    period.value = await getPeriodFromRecurrence(
+      props.modelValue.recurrence,
+      date,
+      offset
+    );
+  } catch (err) {
+    handleEzrError(t('$ezreeport.errors.resolvePeriod'), err);
+  }
+  periodResolving.value = false;
 }
 
-function updatePeriod(range: Date | Date[]) {
+async function updatePeriodFromRange(range: Date | Date[]) {
   const date = Array.isArray(range) ? max(range) : range;
   if (!isValidDate(date)) {
     return;
   }
-  calcPeriodFromRecurrence(date, 0);
+
+  await updatePeriodFromRecurrence(date);
 }
 
 async function generate() {
@@ -308,8 +284,16 @@ async function generate() {
   result.value = undefined;
 
   try {
-    const generation = generateAndListenReportOfTask(props.modelValue, period.value, targets.value);
-    generation.on('progress', (ev) => { progress.value = ev.progress * 100; });
+    const generation = generateAndListenReportOfTask(
+      props.modelValue,
+      period.value,
+      targets.value
+    );
+    generation.on('progress', (ev) => {
+      if (ev.progress != null) {
+        progress.value = ev.progress;
+      }
+    });
 
     const res = await generation;
     if (!res.success && res.detail.error) {
@@ -318,7 +302,7 @@ async function generate() {
 
     result.value = res;
   } catch (err) {
-    error.value = { message: err instanceof Error ? err.message : `${err}` };
+    handleEzrError(t('$ezreeport.task.errors.generate'), err);
   }
   loading.value = false;
 }
@@ -332,14 +316,14 @@ async function downloadGenerationFile(path: string) {
     const filename = path.split('/').pop() ?? 'download';
     const blob = await getFileAsBlob(result.value.detail.taskId, path);
     downloadBlob(blob, filename);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.errors.download', { path }), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.errors.download', { path }), err);
   }
 }
 
 watch(
   () => props.modelValue,
-  (v) => v && calcPeriodFromRecurrence(new Date(), -1),
-  { immediate: true },
+  (val) => val && updatePeriodFromRecurrence(new Date(), -1),
+  { immediate: true }
 );
 </script>

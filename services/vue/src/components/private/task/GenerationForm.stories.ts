@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/vue3';
+import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 import TaskGenerationForm from './GenerationForm.vue';
 
@@ -79,7 +79,7 @@ export const Monthly: Story = {
       id: '443b2219-3d92-4124-832d-8f3865fdd012',
       name: 'OMEKA mensuel',
       description: '',
-      targets: ['ezteam@couperin.org', 'alexandra.petitjean@inist.fr', 'Julien.franck@inist.fr', 'claire.francois@inist.fr', 'paolo.lai@inist.fr', 'nicolas.thouvenin@inist.fr', 'michele.bonthoux@inist.fr', 'camille.gagny@inist.fr', 'cecilia.fabry@inist.fr', 'laurent.schmitt@inist.fr', 'philippe.borgnet@inist.fr', 'titouan.boudart@inist.fr', 'francois.debeaupuis@inist.fr', 'eric.lebourhis@inist.fr', 'lauriane.locatelli@inist.fr', 'louis.maillard@inist.fr', 'edwige.pierot@inist.fr', 'bernard.sampite@inist.fr', 'alain.zasadzinski@inist.fr', 'nathalie.frick@inist.fr', 'laurent.pelletier@inist.fr'],
+      targets: ['ezteam@couperin.org', 'alexandra.petitjean@foo.br', 'Julien.franck@foo.br', 'claire.francois@foo.br', 'paolo.lai@foo.br', 'nicolas.thouvenin@foo.br', 'michele.bonthoux@foo.br', 'camille.gagny@foo.br', 'cecilia.fabry@foo.br', 'laurent.schmitt@foo.br', 'philippe.borgnet@foo.br', 'titouan.boudart@foo.br', 'francois.debeaupuis@foo.br', 'eric.lebourhis@foo.br', 'lauriane.locatelli@foo.br', 'louis.maillard@foo.br', 'edwige.pierot@foo.br', 'bernard.sampite@foo.br', 'alain.zasadzinski@foo.br', 'nathalie.frick@foo.br', 'laurent.pelletier@foo.br'],
       recurrence: 'MONTHLY',
       nextRun: new Date('2025-02-01T06:00:45.959Z'),
       lastRun: new Date('2024-12-02T06:00:45.959Z'),

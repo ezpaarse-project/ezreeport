@@ -1,14 +1,18 @@
 {
-  "allowedOrigins": "*",
+  "port": 8080,
+  "heartbeat": 10000,
   "log": {
     "level": "debug",
     "dir": "",
     "ignore": ["hostname"]
   },
-  "redis": {
-    "host": "redis",
-    "port": 6379,
-    "password": ""
+  "rabbitmq": {
+    "protocol": "amqp",
+    "host": "rabbitmq",
+    "port": 5672,
+    "vhost": "/",
+    "username": "guest",
+    "password": "guest"
   },
   "smtp": {
     "host": "maildev",
@@ -19,20 +23,14 @@
       "rejectUnauthorized": false
     }
   },
-  "workers": {
-    "concurrence": 5,
-    "maxExecTime": 10000
-  },
   "mail": {
     "sender": "ezREEPORT <ezreeport@inist.fr>",
     "team": "ezteam@couperin.org",
     "attempts": 5,
-    "interval": 2000
+    "interval": 2000,
+    "templateDir": "src/templates"
   },
   "api": {
     "url": "http://localhost:8080"
-  },
-  "templates": {
-    "dir": "src/templates"
   }
 }

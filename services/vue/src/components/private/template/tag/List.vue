@@ -18,10 +18,7 @@
 
     <template v-if="modelValue.size > 0" #text>
       <v-slide-group>
-        <v-slide-group-item
-          v-for="[key, tag] in modelValue"
-          :key="key"
-        >
+        <v-slide-group-item v-for="[key, tag] in modelValue" :key="key">
           <TemplateTagChip
             :model-value="tag"
             :closable="!readonly"
@@ -34,7 +31,9 @@
     </template>
 
     <template v-else #text>
-      <span class="text-disabled">{{ $t('$ezreeport.template.tags.empty') }}</span>
+      <span class="text-disabled">{{
+        $t('$ezreeport.template.tags.empty')
+      }}</span>
     </template>
 
     <v-menu
@@ -61,20 +60,20 @@
 <script setup lang="ts">
 import type { TemplateTagMap, TemplateTag } from '~sdk/helpers/templates';
 
-type TagWithKey = { key: string, tag: TemplateTag };
+type TagWithKey = { key: string; tag: TemplateTag };
 
 // Components props
 const props = defineProps<{
   /** The tags */
-  modelValue: TemplateTagMap,
+  modelValue: TemplateTagMap;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated tags */
-  (e: 'update:modelValue', value: TemplateTagMap): void,
+  (event: 'update:modelValue', value: TemplateTagMap): void;
 }>();
 
 /** Should show the tag form */

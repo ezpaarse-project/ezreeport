@@ -8,11 +8,7 @@
     item-value="id"
   >
     <template #top>
-      <v-toolbar
-        :title="title"
-        color="transparent"
-        density="comfortable"
-      >
+      <v-toolbar :title="title" color="transparent" density="comfortable">
         <template v-if="$slots.prepend" #prepend>
           <slot name="prepend" />
         </template>
@@ -60,7 +56,11 @@
 
     <template #[`item.name`]="{ value, item }">
       {{ value }}
-      <TemplateTagView v-if="item.template?.tags" :model-value="item.template.tags" size="x-small" />
+      <TemplateTagView
+        v-if="item.template?.tags"
+        :model-value="item.template.tags"
+        size="x-small"
+      />
     </template>
 
     <template #[`item.recurrence`]="{ value }">
@@ -74,9 +74,11 @@
 
     <template #[`item.hidden`]="{ value, item }">
       <div
-        v-tooltip="item.template?.hidden
-          ? $t('$ezreeport.task-preset.template-hidden:desc')
-          : $t('$ezreeport.task-preset.hidden:desc', value ? 1 : 0)"
+        v-tooltip="
+          item.template?.hidden
+            ? $t('$ezreeport.task-preset.template-hidden:desc')
+            : $t('$ezreeport.task-preset.hidden:desc', value ? 1 : 0)
+        "
       >
         <v-btn
           :icon="item.template?.hidden || value ? 'mdi-eye-off' : 'mdi-eye'"
@@ -182,7 +184,10 @@
     @update:model-value="$event || refresh()"
   >
     <template #default>
-      <TaskPresetForm :model-value="updatedTaskPreset" @update:model-value="closeForm()">
+      <TaskPresetForm
+        :model-value="updatedTaskPreset"
+        @update:model-value="closeForm()"
+      >
         <template #actions>
           <v-btn :text="$t('$ezreeport.cancel')" @click="closeForm()" />
         </template>
@@ -215,10 +220,11 @@ const props = defineProps<{
 
 // Components events
 const emit = defineEmits<{
-  (e: 'update:itemsPerPage', value: number): void
+  (event: 'update:itemsPerPage', value: number): void;
 }>();
 
 // Utils composable
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 const arePermissionsReady = ref(false);
@@ -227,58 +233,61 @@ const updatedTaskPreset = ref<TaskPreset | undefined>();
 const isFormOpen = ref(false);
 
 /** Items per page shortcut */
-const itemsPerPage = computed({ get: () => props.itemsPerPage || 10, set: (v) => emit('update:itemsPerPage', v) });
+const itemsPerPage = computed({
+  get: () => props.itemsPerPage || 10,
+  set: (value) => emit('update:itemsPerPage', value),
+});
 /** List of templates */
-const {
-  total,
-  refresh,
-  loading,
-  filters,
-  vDataTableOptions,
-} = useServerSidePagination(
-  (params) => getAllTaskPresets(params),
-  {
-    sortBy: 'name', include: ['template.tags', 'template.hidden'], itemsPerPage, itemsPerPageOptions: props.itemsPerPageOptions,
-  },
+const { total, refresh, loading, filters, vDataTableOptions } =
+  useServerSidePagination((params) => getAllTaskPresets(params), {
+    sortBy: 'name',
+    include: ['template.tags', 'template.hidden'],
+    itemsPerPage,
+    itemsPerPageOptions: props.itemsPerPageOptions,
+  });
+
+const title = computed(
+  () =>
+    `${props.titlePrefix || ''}${t('$ezreeport.task-preset.title:list', total.value)}`
 );
 
-const title = computed(() => `${props.titlePrefix || ''}${t('$ezreeport.task-preset.title:list', total.value)}`);
-
 /** Headers for table */
-const headers = computed((): VDataTableHeaders => [
-  {
-    title: t('$ezreeport.name'),
-    value: 'name',
-    sortable: true,
-  },
-  {
-    title: t('$ezreeport.task.recurrence'),
-    value: 'recurrence',
-    sortable: true,
-    align: 'center',
-  },
-  {
-    title: t('$ezreeport.updatedAt'),
-    value: 'updatedAt',
-    sortable: true,
-  },
-  {
-    title: t('$ezreeport.createdAt'),
-    value: 'createdAt',
-    sortable: true,
-  },
-  {
-    title: t('$ezreeport.template.hidden'),
-    value: 'hidden',
-    sortable: true,
-    align: 'center',
-  },
-  {
-    title: t('$ezreeport.actions'),
-    value: '_actions',
-    align: 'center',
-  },
-]);
+const headers = computed(
+  (): VDataTableHeaders => [
+    {
+      title: t('$ezreeport.name'),
+      value: 'name',
+      sortable: true,
+    },
+    {
+      title: t('$ezreeport.task.recurrence'),
+      value: 'recurrence',
+      sortable: true,
+      align: 'center',
+    },
+    {
+      title: t('$ezreeport.updatedAt'),
+      value: 'updatedAt',
+      sortable: true,
+    },
+    {
+      title: t('$ezreeport.createdAt'),
+      value: 'createdAt',
+      sortable: true,
+    },
+    {
+      title: t('$ezreeport.template.hidden'),
+      value: 'hidden',
+      sortable: true,
+      align: 'center',
+    },
+    {
+      title: t('$ezreeport.actions'),
+      value: '_actions',
+      align: 'center',
+    },
+  ]
+);
 
 const availableActions = computed(() => {
   if (!arePermissionsReady.value) {
@@ -295,10 +304,10 @@ const availableActions = computed(() => {
 
 const selectedTaskPresetIds = computed({
   get: () => selectedTaskPresets.value.map((taskPreset) => taskPreset.id),
-  set: (v) => {
-    const ids = new Set(v);
-    selectedTaskPresets.value = selectedTaskPresets.value.filter(
-      (taskPreset) => ids.has(taskPreset.id),
+  set: (value) => {
+    const ids = new Set(value);
+    selectedTaskPresets.value = selectedTaskPresets.value.filter((taskPreset) =>
+      ids.has(taskPreset.id)
     );
   },
 });
@@ -328,19 +337,23 @@ async function deleteItem(taskPreset: TaskPreset) {
   try {
     await deleteTaskPreset(taskPreset);
     refresh();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task-preset.errors.delete'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task-preset.errors.delete'), err);
   }
 }
 
 async function deleteSelected() {
   // TODO: show warning
   try {
-    await Promise.all(selectedTaskPresets.value.map((taskPreset) => deleteTaskPreset(taskPreset)));
+    await Promise.all(
+      selectedTaskPresets.value.map((taskPreset) =>
+        deleteTaskPreset(taskPreset)
+      )
+    );
     selectedTaskPresets.value = [];
     refresh();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task-preset.errors.delete'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task-preset.errors.delete'), err);
   }
 }
 
@@ -348,23 +361,27 @@ async function toggleItemVisibility(taskPreset: TaskPreset) {
   try {
     await changeTaskPresetVisibility(taskPreset, !taskPreset.hidden);
     refresh();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task-preset.errors.edit'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task-preset.errors.edit'), err);
   }
 }
 
 async function toggleSelectedVisibility() {
   try {
-    await Promise.all(selectedTaskPresets.value.map(
-      (taskPreset) => changeTaskPresetVisibility(taskPreset, !taskPreset.hidden),
-    ));
+    await Promise.all(
+      selectedTaskPresets.value.map((taskPreset) =>
+        changeTaskPresetVisibility(taskPreset, !taskPreset.hidden)
+      )
+    );
     selectedTaskPresets.value = [];
     refresh();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task-preset.errors.edit'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task-preset.errors.edit'), err);
   }
 }
 
-refreshPermissions()
-  .then(() => { arePermissionsReady.value = true; });
+// oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
+refreshPermissions().then(() => {
+  arePermissionsReady.value = true;
+});
 </script>

@@ -13,10 +13,9 @@ export * from './recurrence';
  *
  * @returns Updated task
  */
-// eslint-disable-next-line import/prefer-default-export
 export async function changeTaskEnableState(
   taskOrId: Omit<Task, 'template'> | string,
-  enabled: boolean,
+  enabled: boolean
 ): Promise<Task> {
   const base = await getTask(taskOrId);
 

@@ -1,9 +1,5 @@
 <template>
-  <v-toolbar
-    :title="title"
-    color="transparent"
-    density="comfortable"
-  >
+  <v-toolbar :title="title" color="transparent" density="comfortable">
     <template v-if="$slots.prepend" #prepend>
       <slot name="prepend" />
     </template>
@@ -32,20 +28,26 @@
     <v-list-item
       v-for="cron in crons"
       :key="cron.name"
-      :title="$te(`$ezreeport.crons.${cron.name}`) ? $t(`$ezreeport.crons.${cron.name}`) : cron.name"
+      :title="
+        $te(`$ezreeport.crons.${cron.name}`)
+          ? $t(`$ezreeport.crons.${cron.name}`)
+          : cron.name
+      "
     >
       <template #append>
         <v-switch
           :model-value="cron.running"
-          :label="cron.running
-            ? $t('$ezreeport.task.enabled')
-            : $t('$ezreeport.task.disabled')"
+          :label="
+            cron.running
+              ? $t('$ezreeport.task.enabled')
+              : $t('$ezreeport.task.disabled')
+          "
           :disabled="!availableActions.update"
           :loading="loading"
           density="comfortable"
           color="primary"
           hide-details
-          style="transform: scale(0.8);"
+          style="transform: scale(0.8)"
           @update:model-value="toggleItemState(cron)"
         />
       </template>
@@ -85,6 +87,7 @@ const props = defineProps<{
 }>();
 
 // Utils composable
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 /** Is loading */
@@ -94,7 +97,9 @@ const crons = ref<Cron[]>([]);
 /** Are permissions ready */
 const arePermissionsReady = ref(false);
 
-const title = computed(() => `${props.titlePrefix || ''}${t('$ezreeport.crons.title:list')}`);
+const title = computed(
+  () => `${props.titlePrefix || ''}${t('$ezreeport.crons.title:list')}`
+);
 
 const availableActions = computed(() => {
   if (!arePermissionsReady.value) {
@@ -109,8 +114,8 @@ async function refresh() {
   loading.value = true;
   try {
     crons.value = await getAllCrons();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.crons.errors.refresh'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.crons.errors.refresh'), err);
   }
   loading.value = false;
 }
@@ -120,14 +125,16 @@ async function toggleItemState(cron: Cron) {
   try {
     await updateCron({ name: cron.name, running: !cron.running });
     refresh();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.crons.errors.edit'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.crons.errors.edit'), err);
     loading.value = false;
   }
 }
 
 refresh();
 
-refreshPermissions()
-  .then(() => { arePermissionsReady.value = true; });
+// oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
+refreshPermissions().then(() => {
+  arePermissionsReady.value = true;
+});
 </script>

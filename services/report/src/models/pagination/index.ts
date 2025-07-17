@@ -2,9 +2,17 @@ import type { FastifyReply } from 'fastify';
 
 import { buildSuccessResponseWithMeta } from '~/routes/v2/responses';
 
-import type { PaginationType } from '~/models/pagination/types';
+import type { PaginationMeta, PaginationType } from '~/models/pagination/types';
 
-export function buildPaginatedRequest(pagination?: PaginationType) {
+type PaginationOptions = {
+  take?: number;
+  skip: number;
+  orderBy?: Record<string, 'asc' | 'desc'>;
+};
+
+export function buildPaginatedRequest(
+  pagination?: PaginationType
+): PaginationOptions {
   const count = pagination?.count ?? 15;
   const page = pagination?.page || 1;
 
@@ -21,12 +29,8 @@ export function buildPaginatedRequest(pagination?: PaginationType) {
 }
 
 export function buildPaginatedResponse<
-  T extends unknown[],
-  M extends Record<string, unknown>,
->(data: T, meta: { total: number, page: number } & M, reply: FastifyReply) {
-  return buildSuccessResponseWithMeta(
-    data,
-    { ...meta, count: data.length },
-    reply,
-  );
+  Data extends unknown[],
+  Meta extends Record<string, unknown> & PaginationMeta,
+>(data: Data, meta: Meta, reply: FastifyReply) {
+  return buildSuccessResponseWithMeta(data, meta, reply);
 }

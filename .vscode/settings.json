@@ -16,7 +16,10 @@
     "tests",
     "sdk",
     "vue",
-    "ezra"
+    "ezra",
+    "worker",
+    "scheduler",
+    "files"
   ],
   "eslint.workingDirectories": [
     {

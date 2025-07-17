@@ -56,24 +56,24 @@ type VegaLegend = Exclude<VegaLayer['legend'], null | undefined>;
 // Components props
 const props = defineProps<{
   /** The vega layer to edit */
-  modelValue: VegaLayer,
+  modelValue: VegaLayer;
   /** Type of the figure */
-  type: string,
+  type: string;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated layer */
-  (e: 'update:modelValue', value: VegaLayer): void
+  (event: 'update:modelValue', value: VegaLayer): void;
 }>();
 
 /** Backup of the layer, used when enabling/disabling */
-const {
-  cloned: legendBackup,
-  sync: syncBackup,
-} = useCloned<VegaLegend>(props.modelValue.legend ?? {}, { manual: true });
+const { cloned: legendBackup, sync: syncBackup } = useCloned<VegaLegend>(
+  props.modelValue.legend ?? {},
+  { manual: true }
+);
 
 /** Layer's aggregation */
 const aggregation = computed({
@@ -96,7 +96,10 @@ const legendShow = computed({
     if (!value) {
       syncBackup();
     }
-    emit('update:modelValue', { ...props.modelValue, legend: value ? legendBackup.value : null });
+    emit('update:modelValue', {
+      ...props.modelValue,
+      legend: value ? legendBackup.value : null,
+    });
   },
 });
 /** Should show legend */
@@ -105,7 +108,10 @@ const legendTitle = computed({
   set: (value) => {
     const params = props.modelValue;
     const legend = params.legend ?? {};
-    emit('update:modelValue', { ...props.modelValue, legend: { ...legend, title: value } });
+    emit('update:modelValue', {
+      ...props.modelValue,
+      legend: { ...legend, title: value },
+    });
   },
 });
 </script>

@@ -25,10 +25,10 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies ⚙️
-        run: pnpm fetch
+        run: pnpm i --frozen-lockfile
 
       - name: Type check packages 🚨
-        run: pnpm run type-check
+        run: pnpm turbo run type-check
 
       - name: Lint packages 🚨
-        run: pnpm run lint
+        run: pnpm turbo run lint

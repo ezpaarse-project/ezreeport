@@ -1,7 +1,7 @@
 import { getCurrentPermissions } from '~/modules/auth/methods';
 import type { UserPermissions } from '~/modules/auth/types';
 
-import { isSDKFunction } from './decorator';
+import { isSDKFunction, type LambdaFunction } from './decorator';
 
 let currentUserPermissions: UserPermissions | undefined;
 
@@ -20,16 +20,23 @@ export async function refreshPermissions(): Promise<void> {
  *
  * @returns If the user have the permission
  */
-export function hasPermission(fnc: Function, namespaceIds?: string[]): boolean {
+export function hasPermission(
+  fnc: LambdaFunction,
+  namespaceIds?: string[]
+): boolean {
   if (!isSDKFunction(fnc)) {
-    // eslint-disable-next-line no-console
-    console.warn(`[ezr][hasPermission] Function ${fnc.name} is not compatible with ezrPermission decorator`);
+    // oxlint-disable-next-line no-console
+    console.warn(
+      `[ezr][hasPermission] Function ${fnc.name} is not compatible with ezrPermission decorator`
+    );
     return true;
   }
 
   if (!currentUserPermissions) {
-    // eslint-disable-next-line no-console
-    console.warn('[ezr][hasPermission] No current permissions set, please call refreshPermissions() first');
+    // oxlint-disable-next-line no-console
+    console.warn(
+      '[ezr][hasPermission] No current permissions set, please call refreshPermissions() first'
+    );
     return false;
   }
 

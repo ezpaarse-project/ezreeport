@@ -10,7 +10,10 @@
       :key="layout.id"
       :model-value="layout"
       :current="index === modelValue"
-      :class="{ 'mb-4': true, 'template-layout-preview--readonly': layout.readonly }"
+      :class="{
+        'mb-4': true,
+        'template-layout-preview--readonly': layout.readonly,
+      }"
       @click="$emit('update:modelValue', index)"
     >
       <template #prepend>
@@ -57,30 +60,30 @@ import { dragAndDrop } from '@formkit/drag-and-drop/vue';
 
 import type { AnyLayoutHelper } from '~sdk/helpers/layouts';
 
-type DrawerLayout = (AnyLayoutHelper & { readonly?: boolean });
+type DrawerLayout = AnyLayoutHelper & { readonly?: boolean };
 
 // Components props
 const props = defineProps<{
   /** Current index */
-  modelValue: number,
+  modelValue: number;
   /** The layouts to preview */
-  items: DrawerLayout[],
+  items: DrawerLayout[];
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated index */
-  (e: 'update:modelValue', value: number): void
+  (event: 'update:modelValue', value: number): void;
   /** Updated items */
-  (e: 'update:items', value: DrawerLayout[]): void
+  (event: 'update:items', value: DrawerLayout[]): void;
   /** Create new layout */
-  (e: 'click:create'): void
+  (event: 'click:create'): void;
   /** Duplicate layout */
-  (e: 'click:duplicate', value: DrawerLayout, index: number): void
+  (event: 'click:duplicate', value: DrawerLayout, index: number): void;
   /** Delete layout */
-  (e: 'click:delete', value: DrawerLayout): void
+  (event: 'click:delete', value: DrawerLayout): void;
 }>();
 
 /** Scroller of layout list */

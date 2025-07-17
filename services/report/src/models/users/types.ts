@@ -1,25 +1,32 @@
-import { z, stringToBool } from '~/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
 
-import { BulkMembership, BulkMembershipResult } from '~/models/memberships/types';
+import {
+  BulkMembership,
+  BulkMembershipResult,
+} from '~/models/memberships/types';
 
 /**
  * Validation for a user
  */
 export const User = z.object({
-  username: z.string().min(1).readonly()
-    .describe('Username'),
+  username: z.string().min(1).describe('Username'),
 
-  token: z.string().min(1).readonly()
-    .describe('Token used to authenticate user, generated when user is created'),
+  token: z
+    .string()
+    .min(1)
+    .describe(
+      'Token used to authenticate user, generated when user is created'
+    ),
 
-  isAdmin: z.boolean().default(false).optional()
+  isAdmin: z
+    .boolean()
+    .default(false)
+    .optional()
     .describe('If user is an admin'),
 
-  createdAt: z.date().readonly()
-    .describe('Creation date'),
+  createdAt: z.date().describe('Creation date'),
 
-  updatedAt: z.date().nullable().readonly()
-    .describe('Last update date'),
+  updatedAt: z.date().nullable().describe('Last update date'),
 });
 
 /**
@@ -47,11 +54,9 @@ export type InputUserType = z.infer<typeof InputUser>;
  * Validation for filters
  */
 export const UserQueryFilters = z.object({
-  query: z.string().optional()
-    .describe('Query used for searching'),
+  query: z.string().optional().describe('Query used for searching'),
 
-  isAdmin: stringToBool.optional()
-    .describe('If user is an admin'),
+  isAdmin: z.stringbool().optional().describe('If user is an admin'),
 });
 
 /**
@@ -63,15 +68,17 @@ export type UserQueryFiltersType = z.infer<typeof UserQueryFilters>;
  * Validation for setting multiple users
  */
 export const BulkUser = z.object({
-  username: z.string().min(1).readonly()
-    .describe('Username'),
+  username: z.string().min(1).describe('Username'),
 
-  isAdmin: z.boolean().default(false).optional()
+  isAdmin: z
+    .boolean()
+    .default(false)
+    .optional()
     .describe('If user is an admin'),
 
-  memberships: z.array(
-    BulkMembership.omit({ username: true }),
-  ).optional()
+  memberships: z
+    .array(BulkMembership.omit({ username: true }))
+    .optional()
     .describe('Namespaces of the user'),
 });
 
@@ -83,19 +90,19 @@ export type BulkUserType = z.infer<typeof BulkUser>;
 /**
  * Validation for result of setting multiple users
  */
-export const BulkUserResult = z.object({
-  users: z.object({
-    deleted: z.number().min(0)
-      .describe('Number of item deleted'),
+export const BulkUserResult = z
+  .object({
+    users: z
+      .object({
+        deleted: z.int().min(0).describe('Number of item deleted'),
 
-    updated: z.number().min(0)
-      .describe('Number of item updated'),
+        updated: z.int().min(0).describe('Number of item updated'),
 
-    created: z.number().min(0)
-      .describe('Number of item created'),
+        created: z.int().min(0).describe('Number of item created'),
+      })
+      .describe('Summary of operations on users'),
   })
-    .describe('Summary of operations on users'),
-}).and(BulkMembershipResult.partial());
+  .and(BulkMembershipResult.partial());
 
 /**
  * Type for result of setting multiple users

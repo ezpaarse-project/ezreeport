@@ -1,26 +1,32 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
-import { z } from '~/lib/zod';
+import { z } from '@ezreeport/models/lib/zod';
 
-import * as responses from '~/routes/v2/responses';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+} from '~/routes/v2/responses';
 
 import { buildPaginatedResponse } from '~/models/pagination';
-import { PaginationQuery, PaginationResponse } from '~/models/pagination/types';
+import {
+  PaginationQuery,
+  zPaginationResponse,
+} from '~/models/pagination/types';
 
 import * as memberships from '~/models/memberships';
 import { InputMembership, Membership } from '~/models/memberships/types';
 
-import { NotFoundError } from '~/types/errors';
+import { NotFoundError } from '~/models/errors';
 
 const SpecificMembershipParams = z.object({
-  namespaceId: z.string().min(1)
-    .describe('Namespace ID'),
+  namespaceId: z.string().min(1).describe('Namespace ID'),
 
-  username: z.string().min(1)
-    .describe('Username'),
+  username: z.string().min(1).describe('Username'),
 });
 
+// oxlint-disable-next-line max-lines-per-function, require-await
 const router: FastifyPluginAsyncZod = async (fastify) => {
   fastify.route({
     method: 'GET',
@@ -30,14 +36,15 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['memberships'],
       querystring: PaginationQuery,
       params: z.object({
-        namespaceId: z.string().min(1)
-          .describe('Namespace ID'),
+        namespaceId: z.string().min(1).describe('Namespace ID'),
       }),
       response: {
-        [StatusCodes.OK]: PaginationResponse(Membership),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zPaginationResponse(Membership),
       },
     },
     config: {
@@ -45,16 +52,23 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAPIKey: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
-      const content = await memberships.getAllMemberships(request.params, request.query);
+      const content = await memberships.getAllMemberships(
+        request.params,
+        request.query
+      );
 
       return buildPaginatedResponse(
         content,
         {
           page: request.query.page,
-          total: await memberships.countMemberships(),
+          total: await memberships.countMemberships({
+            namespaceId: request.params.namespaceId,
+          }),
+          count: content.length,
         },
-        reply,
+        reply
       );
     },
   });
@@ -67,11 +81,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['memberships'],
       params: SpecificMembershipParams,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(Membership),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(Membership),
       },
     },
     config: {
@@ -79,14 +95,17 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAPIKey: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const content = await memberships.getMembership(request.params);
 
       if (!content) {
-        throw new NotFoundError(`Membership for ${request.params.namespaceId} and ${request.params.username} not found`);
+        throw new NotFoundError(
+          `Membership for ${request.params.namespaceId} and ${request.params.username} not found`
+        );
       }
 
-      return responses.buildSuccessResponse(content, reply);
+      return buildSuccessResponse(content, reply);
     },
   });
 
@@ -99,11 +118,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       params: SpecificMembershipParams,
       body: InputMembership,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(Membership),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(Membership),
       },
     },
     config: {
@@ -111,17 +132,24 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAPIKey: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const doesExists = await memberships.doesMembershipExist(request.params);
 
       let membership;
       if (doesExists) {
-        membership = await memberships.editMembership(request.params, request.body);
+        membership = await memberships.editMembership(
+          request.params,
+          request.body
+        );
       } else {
-        membership = await memberships.createMembership({ ...request.params, ...request.body });
+        membership = await memberships.createMembership({
+          ...request.params,
+          ...request.body,
+        });
       }
 
-      return responses.buildSuccessResponse(membership, reply);
+      return buildSuccessResponse(membership, reply);
     },
   });
 
@@ -133,11 +161,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       tags: ['memberships'],
       params: SpecificMembershipParams,
       response: {
-        [StatusCodes.OK]: responses.SuccessResponse(z.object({ deleted: z.boolean() })),
-        [StatusCodes.BAD_REQUEST]: responses.schemas[StatusCodes.BAD_REQUEST],
-        [StatusCodes.UNAUTHORIZED]: responses.schemas[StatusCodes.UNAUTHORIZED],
-        [StatusCodes.NOT_FOUND]: responses.schemas[StatusCodes.NOT_FOUND],
-        [StatusCodes.INTERNAL_SERVER_ERROR]: responses.schemas[StatusCodes.INTERNAL_SERVER_ERROR],
+        ...describeErrors([
+          StatusCodes.BAD_REQUEST,
+          StatusCodes.UNAUTHORIZED,
+          StatusCodes.NOT_FOUND,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ]),
+        [StatusCodes.OK]: zSuccessResponse(z.object({ deleted: z.boolean() })),
       },
     },
     config: {
@@ -145,15 +175,17 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireAPIKey: true,
       },
     },
+    // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const doesExists = await memberships.doesMembershipExist(request.params);
       if (doesExists) {
         await memberships.deleteMembership(request.params);
       }
 
-      return responses.buildSuccessResponse({ deleted: doesExists }, reply);
+      return buildSuccessResponse({ deleted: doesExists }, reply);
     },
   });
 };
 
+// oxlint-disable-next-line no-default-exports
 export default router;
