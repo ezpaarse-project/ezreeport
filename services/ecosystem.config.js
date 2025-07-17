@@ -32,6 +32,7 @@ const rabbitmqEnv = {
   RABBITMQ_PASSWORD: env('RABBITMQ_PASSWORD', 'guest'),
 };
 
+// oxlint-disable-next-line import/no-commonjs
 module.exports = {
   apps: [
     {

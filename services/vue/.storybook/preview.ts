@@ -81,7 +81,7 @@ const preview: Preview = {
         i18nLocale.value = locale;
 
         const vuetifyTheme = useTheme();
-        vuetifyTheme.global.name.value = theme;
+        vuetifyTheme.change(theme);
       },
       template: '<story />',
     }),
