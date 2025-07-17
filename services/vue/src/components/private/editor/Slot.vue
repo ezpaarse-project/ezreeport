@@ -66,11 +66,27 @@
           @update:modelValue="emit('update:modelValue', $event)"
         >
           <template #append>
-            <v-btn icon="mdi-close" variant="text" density="comfortable" @click="isFormVisible = false" />
+            <v-btn
+              icon="mdi-close"
+              variant="text"
+              density="comfortable"
+              @click="isFormVisible = false"
+            />
           </template>
           <template #actions>
-            <v-btn v-if="readonly" :text="$t('$ezreeport.close')" append-icon="mdi-close" @click="isFormVisible = false" />
-            <v-btn v-else :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="isFormVisible = false" />
+            <v-btn
+              v-if="readonly"
+              :text="$t('$ezreeport.close')"
+              append-icon="mdi-close"
+              @click="isFormVisible = false"
+            />
+            <v-btn
+              v-else
+              :text="$t('$ezreeport.confirm')"
+              append-icon="mdi-check"
+              color="primary"
+              @click="isFormVisible = false"
+            />
           </template>
         </EditorFigureMd>
 
@@ -81,11 +97,27 @@
           @update:modelValue="emit('update:modelValue', $event)"
         >
           <template #append>
-            <v-btn icon="mdi-close" variant="text" density="comfortable" @click="isFormVisible = false" />
+            <v-btn
+              icon="mdi-close"
+              variant="text"
+              density="comfortable"
+              @click="isFormVisible = false"
+            />
           </template>
           <template #actions>
-            <v-btn v-if="readonly" :text="$t('$ezreeport.close')" append-icon="mdi-close" @click="isFormVisible = false" />
-            <v-btn v-else :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="isFormVisible = false" />
+            <v-btn
+              v-if="readonly"
+              :text="$t('$ezreeport.close')"
+              append-icon="mdi-close"
+              @click="isFormVisible = false"
+            />
+            <v-btn
+              v-else
+              :text="$t('$ezreeport.confirm')"
+              append-icon="mdi-check"
+              color="primary"
+              @click="isFormVisible = false"
+            />
           </template>
         </EditorFigureMetric>
 
@@ -96,11 +128,27 @@
           @update:modelValue="emit('update:modelValue', $event)"
         >
           <template #append>
-            <v-btn icon="mdi-close" variant="text" density="comfortable" @click="isFormVisible = false" />
+            <v-btn
+              icon="mdi-close"
+              variant="text"
+              density="comfortable"
+              @click="isFormVisible = false"
+            />
           </template>
           <template #actions>
-            <v-btn v-if="readonly" :text="$t('$ezreeport.close')" append-icon="mdi-close" @click="isFormVisible = false" />
-            <v-btn v-else :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="isFormVisible = false" />
+            <v-btn
+              v-if="readonly"
+              :text="$t('$ezreeport.close')"
+              append-icon="mdi-close"
+              @click="isFormVisible = false"
+            />
+            <v-btn
+              v-else
+              :text="$t('$ezreeport.confirm')"
+              append-icon="mdi-check"
+              color="primary"
+              @click="isFormVisible = false"
+            />
           </template>
         </EditorFigureTable>
 
@@ -111,11 +159,27 @@
           @update:modelValue="emit('update:modelValue', $event)"
         >
           <template #append>
-            <v-btn icon="mdi-close" variant="text" density="comfortable" @click="isFormVisible = false" />
+            <v-btn
+              icon="mdi-close"
+              variant="text"
+              density="comfortable"
+              @click="isFormVisible = false"
+            />
           </template>
           <template #actions>
-            <v-btn v-if="readonly" :text="$t('$ezreeport.close')" append-icon="mdi-close" @click="isFormVisible = false" />
-            <v-btn v-else :text="$t('$ezreeport.confirm')" append-icon="mdi-check" color="primary" @click="isFormVisible = false" />
+            <v-btn
+              v-if="readonly"
+              :text="$t('$ezreeport.close')"
+              append-icon="mdi-close"
+              @click="isFormVisible = false"
+            />
+            <v-btn
+              v-else
+              :text="$t('$ezreeport.confirm')"
+              append-icon="mdi-check"
+              color="primary"
+              @click="isFormVisible = false"
+            />
           </template>
         </EditorFigureVega>
       </v-dialog>
@@ -127,7 +191,7 @@
       class="template-layout-slot--empty"
       @click="addFigure()"
     >
-      <v-icon icon="mdi-plus" color="green" style="font-size: 3rem;" />
+      <v-icon icon="mdi-plus" color="green" style="font-size: 3rem" />
       <div>{{ $t('$ezreeport.editor.figures._.create') }}</div>
     </v-card>
   </v-col>
@@ -155,22 +219,23 @@ const SLOT_ICONS = new Map([
 // Components props
 const props = defineProps<{
   /** The figure to edit */
-  modelValue: AnyFigureHelper | undefined,
+  modelValue: AnyFigureHelper | undefined;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
   /** Default slot of figure */
-  defaultSlot?: number,
+  defaultSlot?: number;
   /** Unused slots */
-  unusedSlots?: number[],
+  unusedSlots?: number[];
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated figure */
-  (e: 'update:modelValue', value: AnyFigureHelper): void
+  (event: 'update:modelValue', value: AnyFigureHelper): void;
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 const { grid } = useTemplateEditor();
 
@@ -184,7 +249,7 @@ const title = computed(() => {
   if (props.modelValue && 'title' in props.modelValue.params) {
     return props.modelValue.params.title;
   }
-  return undefined;
+  return;
 });
 /** The figure slot */
 const slots = computed({
@@ -199,40 +264,44 @@ const slots = computed({
   },
 });
 /** Icon for current type */
-const typeIcon = computed(
-  () => (props.modelValue ? figureIcons.get(props.modelValue.type) : undefined),
+const typeIcon = computed(() =>
+  props.modelValue ? figureIcons.get(props.modelValue.type) : undefined
 );
 /** Types options */
-const typeOptions = computed(() => Array.from(figureIcons.keys()).map((figureType) => ({
-  value: figureType,
-  title: t(`$ezreeport.editor.figures._.types.${figureType}`),
-  props: {
-    appendIcon: figureIcons.get(figureType),
-  },
-})));
-/** Slots options */
-const slotsOptions = computed(
-  () => {
-    const length = grid.value.cols * grid.value.rows;
-    return Array.from({ length }, (_, i) => i).map((slot) => ({
-      value: slot,
-      title: length === SLOT_ICONS.size ? t(`$ezreeport.editor.figures._.slotsList.${slot}`) : slot,
-      props: {
-        appendIcon: length === SLOT_ICONS.size ? SLOT_ICONS.get(slot) : undefined,
-        // Unused slots provided AND current slot is used
-        // AND current slot is not used by current figure, unless it's the only one
-        disabled: props.unusedSlots && !props.unusedSlots.includes(slot)
-          && (!props.modelValue?.slots.has(slot) || props.modelValue.slots.size === 1),
-      },
-    }));
-  },
+const typeOptions = computed(() =>
+  Array.from(figureIcons.keys()).map((figureType) => ({
+    value: figureType,
+    title: t(`$ezreeport.editor.figures._.types.${figureType}`),
+    props: {
+      appendIcon: figureIcons.get(figureType),
+    },
+  }))
 );
+/** Slots options */
+const slotsOptions = computed(() => {
+  const length = grid.value.cols * grid.value.rows;
+  return Array.from({ length }, (__, index) => index).map((slot) => ({
+    value: slot,
+    title:
+      length === SLOT_ICONS.size
+        ? t(`$ezreeport.editor.figures._.slotsList.${slot}`)
+        : slot,
+    props: {
+      appendIcon: length === SLOT_ICONS.size ? SLOT_ICONS.get(slot) : undefined,
+      disabled:
+        // Unused slots provided AND current slot is used
+        props.unusedSlots &&
+        !props.unusedSlots.includes(slot) &&
+        // AND current slot is not used by current figure, unless it's the only one
+        (!props.modelValue?.slots.has(slot) ||
+          props.modelValue.slots.size === 1),
+    },
+  }));
+});
 /** Position in CSS grid */
-const gridPosition = computed(() => figureToGridPosition(
-  props.modelValue,
-  props.defaultSlot ?? 0,
-  grid.value,
-));
+const gridPosition = computed(() =>
+  figureToGridPosition(props.modelValue, props.defaultSlot ?? 0, grid.value)
+);
 
 /**
  * Update figure type
@@ -275,7 +344,10 @@ function onTypeChange(type: string) {
  * Create a new figure
  */
 function addFigure() {
-  emit('update:modelValue', createMdFigureHelper(undefined, [props.defaultSlot ?? 0]));
+  emit(
+    'update:modelValue',
+    createMdFigureHelper(undefined, [props.defaultSlot ?? 0])
+  );
 }
 </script>
 
@@ -287,8 +359,10 @@ function addFigure() {
     height: 100%;
   }
 
-  grid-column: v-bind('gridPosition.start.col + 1') / v-bind('gridPosition.end.col + 2');
-  grid-row: v-bind('gridPosition.start.row + 1') / v-bind('gridPosition.end.row + 2');
+  grid-column: v-bind('gridPosition.start.col + 1') /
+    v-bind('gridPosition.end.col + 2');
+  grid-row: v-bind('gridPosition.start.row + 1') /
+    v-bind('gridPosition.end.row + 2');
 
   &--empty {
     position: relative;

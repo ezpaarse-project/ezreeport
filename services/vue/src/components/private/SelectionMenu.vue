@@ -37,7 +37,7 @@ defineProps<{
 }>();
 
 defineEmits<{
-  (e: 'update:modelValue', selection: string[]): void
+  (event: 'update:modelValue', selection: string[]): void
 }>();
 
 const open = ref(false);

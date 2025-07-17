@@ -27,8 +27,16 @@
 
     <template #[`item.task.name`]="{ value, item }">
       {{ value }}
-      <v-icon v-if="!item.writeActivity" v-tooltip="$t('$ezreeport.generations.debug')" icon="mdi-bug-outline" />
-      <TemplateTagView v-if="item.task?.extends?.tags" :model-value="item.task.extends.tags" size="x-small" />
+      <v-icon
+        v-if="!item.writeActivity"
+        v-tooltip="$t('$ezreeport.generations.debug')"
+        icon="mdi-bug-outline"
+      />
+      <TemplateTagView
+        v-if="item.task?.extends?.tags"
+        :model-value="item.task.extends.tags"
+        size="x-small"
+      />
     </template>
 
     <template #[`item.origin`]="{ value }">
@@ -107,17 +115,18 @@
     </template>
   </v-data-table-server>
 
-  <v-dialog
-    v-model="isInfoOpen"
-    width="75%"
-    scrollable
-  >
+  <v-dialog v-model="isInfoOpen" width="75%" scrollable>
     <template #default>
-      <GenerationCard v-if="selectedGeneration" :model-value="selectedGeneration">
+      <GenerationCard
+        v-if="selectedGeneration"
+        :model-value="selectedGeneration"
+      >
         <template #actions>
           <v-btn
             :text="$t('$ezreeport.restart')"
-            :disabled="!availableActions.retry || !isGenerationEnded(selectedGeneration)"
+            :disabled="
+              !availableActions.retry || !isGenerationEnded(selectedGeneration)
+            "
             prepend-icon="mdi-restart"
             color="orange"
             @click="restartGen(selectedGeneration)"
@@ -135,7 +144,10 @@
 import type { VDataTable } from 'vuetify/components';
 
 import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
-import { isGenerationEnded, listenAllGenerations } from '~sdk/helpers/generations';
+import {
+  isGenerationEnded,
+  listenAllGenerations,
+} from '~sdk/helpers/generations';
 import {
   getAllGenerations,
   getGeneration,
@@ -146,13 +158,14 @@ import {
 
 type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 
-const statusColors: Map<GenerationStatus, string> = new Map([
+const statusColors = new Map<GenerationStatus, string>([
   ['PENDING', 'grey'],
   ['SUCCESS', 'success'],
   ['ERROR', 'error'],
 ]);
 
 // Utils composable
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 const arePermissionsReady = ref(false);
@@ -168,10 +181,11 @@ const {
   refresh,
   loading,
   vDataTableOptions,
-} = useServerSidePagination(
-  (params) => getAllGenerations(params),
-  { sortBy: 'createdAt', order: 'desc', include: ['task.namespace', 'task.extends.tags'] },
-);
+} = useServerSidePagination((params) => getAllGenerations(params), {
+  sortBy: 'createdAt',
+  order: 'desc',
+  include: ['task.namespace', 'task.extends.tags'],
+});
 
 // Listen and update generations
 const { stop: stopListening } = listenAllGenerations((generation) => {
@@ -199,60 +213,62 @@ const availableActions = computed(() => {
   };
 });
 
-const headers = computed((): VDataTableHeaders => [
-  {
-    title: t('$ezreeport.generations.task'),
-    value: 'task.name',
-  },
-  {
-    title: t('$ezreeport.namespace'),
-    value: 'task.namespace.name',
-  },
-  {
-    title: t('$ezreeport.generations.origin'),
-    value: 'origin',
-    sortable: true,
-    align: 'center',
-  },
-  {
-    title: t('$ezreeport.generations.period'),
-    value: '_period',
-    align: 'center',
-  },
-  {
-    title: t('$ezreeport.generations.status'),
-    value: 'status',
-    align: 'center',
-    sortable: true,
-  },
-  {
-    title: t('$ezreeport.generations.progress'),
-    value: 'progress',
-    align: 'center',
-    sortable: true,
-  },
-  {
-    title: t('$ezreeport.generations.duration'),
-    value: 'took',
-    align: 'center',
-    sortable: true,
-  },
-  {
-    title: t('$ezreeport.generations.queued'),
-    value: 'createdAt',
-    sortable: true,
-  },
-  {
-    title: t('$ezreeport.actions'),
-    value: '_actions',
-  },
-]);
+const headers = computed(
+  (): VDataTableHeaders => [
+    {
+      title: t('$ezreeport.generations.task'),
+      value: 'task.name',
+    },
+    {
+      title: t('$ezreeport.namespace'),
+      value: 'task.namespace.name',
+    },
+    {
+      title: t('$ezreeport.generations.origin'),
+      value: 'origin',
+      sortable: true,
+      align: 'center',
+    },
+    {
+      title: t('$ezreeport.generations.period'),
+      value: '_period',
+      align: 'center',
+    },
+    {
+      title: t('$ezreeport.generations.status'),
+      value: 'status',
+      align: 'center',
+      sortable: true,
+    },
+    {
+      title: t('$ezreeport.generations.progress'),
+      value: 'progress',
+      align: 'center',
+      sortable: true,
+    },
+    {
+      title: t('$ezreeport.generations.duration'),
+      value: 'took',
+      align: 'center',
+      sortable: true,
+    },
+    {
+      title: t('$ezreeport.generations.queued'),
+      value: 'createdAt',
+      sortable: true,
+    },
+    {
+      title: t('$ezreeport.actions'),
+      value: '_actions',
+    },
+  ]
+);
 
 async function restartGen(gen: Generation) {
   try {
     await restartGeneration(gen);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.generations.errors.retry'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.generations.errors.retry'), err);
   }
 }
 
@@ -262,13 +278,15 @@ async function openInfo(gen: Generation) {
     selectedGeneration.value = fullJob;
 
     isInfoOpen.value = true;
-  } catch (e) {
-    handleEzrError(t('$ezreeport.generations.errors.info'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.generations.errors.info'), err);
   }
 }
 
-refreshPermissions()
-  .then(() => { arePermissionsReady.value = true; });
+// oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
+refreshPermissions().then(() => {
+  arePermissionsReady.value = true;
+});
 
 onUnmounted(() => {
   stopListening();

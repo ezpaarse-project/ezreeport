@@ -4,20 +4,36 @@
     :prepend-icon="cardIcon"
   >
     <template #append>
+      <v-alert
+        v-if="readonly"
+        :title="$t('$ezreeport.readonly')"
+        icon="mdi-lock"
+        density="compact"
+        class="mr-2"
+      />
+
       <slot name="append" />
     </template>
 
     <template #text>
       <v-row>
         <v-col>
-          <EditorFilterList :model-value="modelValue.filters" :readonly="readonly" />
+          <EditorFilterList
+            :model-value="modelValue.filters"
+            :readonly="readonly"
+          />
         </v-col>
       </v-row>
 
       <v-row>
         <v-col>
           <v-card
-            :title="$t('$ezreeport.editor.figures.metric.elements.title', modelValue.params.labels.length)"
+            :title="
+              $t(
+                '$ezreeport.editor.figures.metric.elements.title',
+                modelValue.params.labels.length
+              )
+            "
             prepend-icon="mdi-format-list-bulleted"
             variant="outlined"
           >
@@ -33,10 +49,7 @@
               />
             </template>
 
-            <template
-              v-if="modelValue.params.labels.length > 0"
-              #text
-            >
+            <template v-if="modelValue.params.labels.length > 0" #text>
               <v-list ref="elementListRef" lines="two">
                 <EditorFigureMetricElement
                   v-for="element in modelValue.params.labels"
@@ -51,7 +64,7 @@
                     <v-icon
                       icon="mdi-drag-horizontal"
                       class="metric--element-handle"
-                      style="cursor: grab;"
+                      style="cursor: grab"
                       @click.stop=""
                     />
                   </template>
@@ -105,18 +118,19 @@ import {
 // Components props
 const props = defineProps<{
   /** The metric figure to edit */
-  modelValue: MetricFigureHelper,
+  modelValue: MetricFigureHelper;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated figure */
-  (e: 'update:modelValue', value: MetricFigureHelper): void
+  (event: 'update:modelValue', value: MetricFigureHelper): void;
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 /** Should show the label form */
@@ -149,7 +163,9 @@ if (!props.readonly) {
 /** Icon of the card */
 const cardIcon = figureIcons.get('metric');
 /** Set of headers */
-const headers = computed(() => new Set(getAllMetricLabelKeysOfHelper(props.modelValue)));
+const headers = computed(
+  () => new Set(getAllMetricLabelKeysOfHelper(props.modelValue))
+);
 
 /**
  * Close the label form
@@ -177,8 +193,11 @@ function removeLabel(label: MetricLabel) {
   try {
     removeMetricLabelOfHelper(props.modelValue, label);
     emit('update:modelValue', props.modelValue);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.editor.figures.metric.elements.errors.delete'), e);
+  } catch (err) {
+    handleEzrError(
+      t('$ezreeport.editor.figures.metric.elements.errors.delete'),
+      err
+    );
   }
 }
 
@@ -197,15 +216,20 @@ function setLabel(label: MetricLabel) {
 
     emit('update:modelValue', props.modelValue);
     closeLabelForm();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.editor.figures.metric.elements.errors.edit'), e);
+  } catch (err) {
+    handleEzrError(
+      t('$ezreeport.editor.figures.metric.elements.errors.edit'),
+      err
+    );
   }
 }
 </script>
 
 <style scoped>
 .metric--element {
-  transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+  transition:
+    transform 0.1s ease-in-out,
+    box-shadow 0.1s ease-in-out;
 }
 
 .metric--element--dragging {

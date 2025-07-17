@@ -3,10 +3,7 @@
     <v-label :text="t('$ezreeport.editor.figures._.order')" />
   </div>
 
-  <v-btn-toggle
-    v-model="value"
-    color="primary"
-  >
+  <v-btn-toggle v-model="value" color="primary">
     <v-btn
       :text="t('$ezreeport.editor.order.desc')"
       :readonly="readonly"
@@ -29,34 +26,35 @@ import type { FigureOrder } from '~sdk/helpers/figures';
 // Components props
 const props = defineProps<{
   /** The table figure to edit */
-  modelValue?: FigureOrder,
+  modelValue?: FigureOrder;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated figure */
-  (e: 'update:modelValue', value: FigureOrder): void
+  (event: 'update:modelValue', value: FigureOrder): void;
 }>();
 
 // Util composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 /** Value for the button group */
 const value = computed<'asc' | 'desc' | undefined>({
   get: () => {
-    const v = props.modelValue ?? true;
-    if (v === true) {
+    const val = props.modelValue ?? true;
+    if (val === true) {
       return 'desc';
     }
-    if (v === false) {
-      return undefined;
+    if (val === false) {
+      return;
     }
-    return v;
+    return val;
   },
-  set: (v) => {
-    emit('update:modelValue', v || false);
+  set: (value) => {
+    emit('update:modelValue', value || false);
   },
 });
 </script>

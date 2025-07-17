@@ -1,9 +1,21 @@
 <template>
   <v-card
-    :title="isEditing ? $t('$ezreeport.task.title:edit') : $t('$ezreeport.task.title:new')"
+    :title="
+      isEditing
+        ? $t('$ezreeport.task.title:edit')
+        : $t('$ezreeport.task.title:new')
+    "
     :prepend-icon="isEditing ? 'mdi-email' : 'mdi-email-plus'"
   >
     <template #append>
+      <v-alert
+        :title="$t('$ezreeport.superUserMode')"
+        icon="mdi-tools"
+        type="warning"
+        variant="tonal"
+        density="compact"
+      />
+
       <slot name="append" />
     </template>
 
@@ -14,7 +26,7 @@
             <v-autocomplete
               v-model="extendedId"
               :label="$t('$ezreeport.task.extended')"
-              :rules="[(v) => !!v || $t('$ezreeport.required')]"
+              :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :items="templates"
               :return-object="false"
               :loading="loadingTemplates"
@@ -25,7 +37,9 @@
               required
             >
               <template v-if="extendedTemplate" #append-inner>
-                <TemplateTagView :model-value="Array.from(extendedTemplate.tags.values())" />
+                <TemplateTagView
+                  :model-value="Array.from(extendedTemplate.tags.values())"
+                />
               </template>
 
               <template #item="{ item: { raw: item }, props: listItem }">
@@ -44,7 +58,7 @@
             <v-autocomplete
               v-model="taskNamespaceId"
               :label="$t('$ezreeport.namespace')"
-              :rules="[(v) => !!v || $t('$ezreeport.required')]"
+              :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :items="namespaces"
               :return-object="false"
               :loading="loadingNamespaces"
@@ -73,7 +87,7 @@
             <v-text-field
               v-model="name"
               :label="$t('$ezreeport.name')"
-              :rules="[(v) => !!v || $t('$ezreeport.required')]"
+              :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :readonly="readonly"
               prepend-icon="mdi-rename"
               variant="underlined"
@@ -86,7 +100,7 @@
             <v-select
               v-model="recurrence"
               :label="$t('$ezreeport.task.recurrence')"
-              :rules="[(v) => !!v || $t('$ezreeport.required')]"
+              :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :items="recurrenceOptions"
               :readonly="readonly"
               :return-object="false"
@@ -103,8 +117,11 @@
               v-model="targets"
               :label="$t('$ezreeport.task.targets')"
               :add-label="$t('$ezreeport.task.targets:add')"
-              :rules="[(v) => v.length > 0 || $t('$ezreeport.required')]"
-              :item-rules="[(v, i) => isEmail(v) || $t('$ezreeport.errors.invalidEmail', i + 1)]"
+              :rules="[(val) => val.length > 0 || $t('$ezreeport.required')]"
+              :item-rules="[
+                (val, i) =>
+                  isEmail(val) || $t('$ezreeport.errors.invalidEmail', i + 1),
+              ]"
               :item-placeholder="$t('$ezreeport.task.targets:hint')"
               prepend-icon="mdi-mailbox"
               variant="underlined"
@@ -132,8 +149,8 @@
               :loading="nextDateResolving"
               :min="today"
               :rules="[
-                (v) => !!v || $t('$ezreeport.required'),
-                (v) => v > today || $t('$ezreeport.errors.futureDate'),
+                (val) => !!val || $t('$ezreeport.required'),
+                (val) => val > today || $t('$ezreeport.errors.futureDate'),
               ]"
               prepend-icon="mdi-calendar-start"
               variant="underlined"
@@ -149,10 +166,12 @@
               v-model="index"
               :readonly="readonly"
               :namespace-id="namespaceId || taskNamespaceId"
-              @index:valid="{
-                hasIndexChanged = true;
-                refreshMapping($event);
-              }"
+              @index:valid="
+                {
+                  hasIndexChanged = true;
+                  refreshMapping($event);
+                }
+              "
             />
           </v-col>
 
@@ -161,7 +180,12 @@
               v-model="dateField"
               :label="$t('$ezreeport.template.dateField')"
               :items="dateMapping"
-              :rules="[(v) => !!v || !!extendedTemplate?.body.dateField || $t('$ezreeport.required')]"
+              :rules="[
+                (val) =>
+                  !!val ||
+                  !!extendedTemplate?.body.dateField ||
+                  $t('$ezreeport.required'),
+              ]"
               :return-object="false"
               :placeholder="extendedTemplate?.body.dateField"
               :persistent-placeholder="!!extendedTemplate?.body.dateField"
@@ -177,7 +201,10 @@
       <template v-if="extendedTemplate">
         <v-row>
           <v-col>
-            <EditorFilterList :model-value="modelValue.template.filters" :readonly="readonly" />
+            <EditorFilterList
+              :model-value="modelValue.template.filters"
+              :readonly="readonly"
+            />
           </v-col>
         </v-row>
         <v-row>
@@ -215,7 +242,11 @@
                     >
                       <template #prepend>
                         <span>{{ index + 1 }}</span>
-                        <v-icon v-if="layout.readonly" icon="mdi-lock" size="x-small" />
+                        <v-icon
+                          v-if="layout.readonly"
+                          icon="mdi-lock"
+                          size="x-small"
+                        />
                       </template>
                     </EditorPreviewLayout>
                   </v-col>
@@ -284,6 +315,22 @@
             @click="closeEditor()"
           />
         </template>
+
+        <template #actions>
+          <v-btn
+            v-if="readonly"
+            :text="$t('$ezreeport.close')"
+            append-icon="mdi-close"
+            @click="closeEditor()"
+          />
+          <v-btn
+            v-else
+            :text="$t('$ezreeport.confirm')"
+            append-icon="mdi-check"
+            color="primary"
+            @click="closeEditor()"
+          />
+        </template>
       </EditorTask>
     </v-dialog>
   </v-card>
@@ -292,11 +339,7 @@
 <script setup lang="ts">
 import { isEmail } from '~/utils/validate';
 import type { Namespace } from '~sdk/namespaces';
-import {
-  getAllTemplates,
-  getTemplate,
-  type Template,
-} from '~sdk/templates';
+import { getAllTemplates, getTemplate, type Template } from '~sdk/templates';
 import {
   getLayoutsOfHelpers,
   hasTaskChanged,
@@ -311,25 +354,29 @@ const today = new Date();
 // Components props
 const props = defineProps<{
   /** The task to edit */
-  modelValue: TaskHelper,
+  modelValue: TaskHelper;
   /** Namespace to create/edit task in */
   namespaceId?: string;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated task */
-  (e: 'update:modelValue', value: TaskHelper): void
+  (event: 'update:modelValue', value: TaskHelper): void;
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
-const { getOptionsFromMapping, refreshMapping } = useTemplateEditor({
-  // grid: props.modelValue.template.grid,
-  index: props.modelValue.template.index,
-});
+const { getOptionsFromMapping, refreshMapping, updateDateField } =
+  useTemplateEditor({
+    // grid: props.modelValue.template.grid,
+    index: props.modelValue.template.index,
+    dateField: props.modelValue.template.dateField,
+    namespaceId: props.namespaceId,
+  });
 
 /** Selected index */
 const selectedIndex = ref(0);
@@ -360,58 +407,61 @@ const isValid = computed(() => isFormValid.value);
 /** Mapping options for dateField */
 const dateMapping = computed(() => getOptionsFromMapping('date'));
 /** Has template changed since form is opened */
-const hasChanged = computed(() => !props.modelValue.id || hasTaskChanged(props.modelValue));
+const hasChanged = computed(
+  () => !props.modelValue.id || hasTaskChanged(props.modelValue)
+);
 /** Name of the template */
 const name = computed({
   get: () => props.modelValue.name,
-  set: (v) => {
+  set: (value) => {
     const params = props.modelValue;
-    params.name = v;
+    params.name = value;
   },
 });
 /** Index of the template */
 const index = computed({
   get: () => props.modelValue.template.index,
-  set: (v) => {
+  set: (value) => {
     const { template } = props.modelValue;
-    template.index = v;
+    template.index = value;
   },
 });
 /** DateField of the template */
 const dateField = computed({
   get: () => props.modelValue.template.dateField,
-  set: (v) => {
+  set: (value) => {
     const { template } = props.modelValue;
-    template.dateField = v;
+    updateDateField(value || '');
+    template.dateField = value;
   },
 });
 /** Namespace id of the task */
 const taskNamespaceId = computed({
   get: () => props.modelValue.namespaceId,
-  set: (v) => {
+  set: (value) => {
     const params = props.modelValue;
-    params.namespaceId = v;
+    params.namespaceId = value;
   },
 });
 /** Task recurrence */
 const recurrence = computed({
   get: () => props.modelValue.recurrence,
-  set: (v) => {
+  set: (value) => {
     const params = props.modelValue;
-    params.recurrence = v;
+    params.recurrence = value;
   },
 });
 /** Task targets */
 const targets = computed({
   get: () => props.modelValue.targets,
-  set: (v) => {
+  set: (value) => {
     const params = props.modelValue;
 
-    if (v == null) {
+    if (value == null) {
       params.targets = [];
     }
 
-    let all = v;
+    let all = value;
     if (!Array.isArray(all)) {
       all = [all];
     }
@@ -420,34 +470,36 @@ const targets = computed({
     params.targets = Array.from(
       new Set(
         all
-          .join(';').replace(/[,]/g, ';')
-          .split(';').map((mail) => mail.trim()),
-      ),
+          .join(';')
+          .replaceAll(/[,]/g, ';')
+          .split(';')
+          .map((mail) => mail.trim())
+      )
     );
   },
 });
 /** Task description */
 const description = computed({
   get: () => props.modelValue.description,
-  set: (v) => {
+  set: (value) => {
     const params = props.modelValue;
-    params.description = v;
+    params.description = value;
   },
 });
 /** Task next iteration */
 const nextRun = computed({
   get: () => props.modelValue.nextRun,
-  set: (v) => {
+  set: (value) => {
     const params = props.modelValue;
-    params.nextRun = v;
+    params.nextRun = value;
   },
 });
 /** Extended id */
 const extendedId = computed({
   get: () => props.modelValue.extendedId,
-  set: (v) => {
+  set: (value) => {
     const params = props.modelValue;
-    params.extendedId = v;
+    params.extendedId = value;
   },
 });
 /** Extended template */
@@ -462,8 +514,8 @@ const extendedTemplate = computedAsync(async () => {
   try {
     const res = await getTemplate(extendedId.value);
     template = createTemplateHelperFrom(res);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.template.errors.open'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.template.errors.open'), err);
   }
   loadingCurrentTemplate.value = false;
 
@@ -475,18 +527,16 @@ const mergedLayouts = computed(() => {
     return [];
   }
 
-  return getLayoutsOfHelpers(props.modelValue.template, extendedTemplate.value.body);
+  return getLayoutsOfHelpers(
+    props.modelValue.template,
+    extendedTemplate.value.body
+  );
 });
 /** Recurrence options */
-const recurrenceOptions = computed(
-  () => [
-    'DAILY',
-    'WEEKLY',
-    'MONTHLY',
-    'QUARTERLY',
-    'BIENNIAL',
-    'YEARLY',
-  ].map((value) => ({ value, title: t(`$ezreeport.task.recurrenceList.${value}`) })),
+const recurrenceOptions = computed(() =>
+  ['DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'BIENNIAL', 'YEARLY'].map(
+    (value) => ({ value, title: t(`$ezreeport.task.recurrenceList.${value}`) })
+  )
 );
 /** Template list */
 const templates = computedAsync(async () => {
@@ -495,12 +545,14 @@ const templates = computedAsync(async () => {
   loadingTemplates.value = true;
   try {
     let meta;
-    ({ items, meta } = await getAllTemplates({ pagination: { count: 0, sort: 'name' } }));
+    ({ items, meta } = await getAllTemplates({
+      pagination: { count: 0, sort: 'name' },
+    }));
     if (!extendedId.value) {
       extendedId.value = meta.default;
     }
-  } catch (e) {
-    handleEzrError(t('$ezreeport.template.errors.fetch'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.template.errors.fetch'), err);
   }
   loadingTemplates.value = false;
 
@@ -519,16 +571,20 @@ const namespaces = computedAsync(async () => {
   loadingNamespaces.value = true;
   try {
     const currentNamespaces = await getCurrentNamespaces();
-    items = currentNamespaces.sort((a, b) => a.name.localeCompare(b.name));
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), e);
+    items = currentNamespaces.sort((namespaceA, namespaceB) =>
+      namespaceA.name.localeCompare(namespaceB.name)
+    );
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), err);
   }
   loadingNamespaces.value = false;
 
   return items;
 }, []);
 /** Current namespace */
-const namespace = computed(() => namespaces.value.find((n) => n.id === taskNamespaceId.value));
+const namespace = computed(() =>
+  namespaces.value.find((nsp) => nsp.id === taskNamespaceId.value)
+);
 
 function regenerateName() {
   if (hasNameChanged.value || !extendedTemplate.value) {

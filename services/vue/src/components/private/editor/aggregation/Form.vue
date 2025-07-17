@@ -7,7 +7,7 @@
     <template #append>
       <v-btn
         v-if="!readonly"
-        v-tooltip="$t('$ezreeport.advanced')"
+        v-tooltip="$t('$ezreeport.superUserMode')"
         :color="isAdvanced ? 'orange' : 'grey'"
         :variant="isAdvanced ? 'flat' : 'text'"
         :disabled="isAdvanced && (!!rawParseError || rawHasChanged)"
@@ -60,7 +60,7 @@
                   v-model="aggregation.field"
                   :label="$t('$ezreeport.editor.aggregation.field')"
                   :items="fieldOptions"
-                  :rules="[(v) => !!v || $t('$ezreeport.required')]"
+                  :rules="[(val) => !!val || $t('$ezreeport.required')]"
                   :readonly="readonly"
                   :disabled="disabled"
                   :return-object="false"
@@ -73,7 +73,9 @@
           </v-slide-y-transition>
 
           <v-slide-y-transition>
-            <v-row v-if="isMetric === false && aggregation.type !== 'date_histogram'">
+            <v-row
+              v-if="isMetric === false && aggregation.type !== 'date_histogram'"
+            >
               <v-col cols="12">
                 <v-text-field
                   :model-value="`${aggregation.size ?? 10}`"
@@ -84,7 +86,9 @@
                   prepend-icon="mdi-image-size-select-small"
                   variant="underlined"
                   hide-details
-                  @update:model-value="aggregation.size = Number.parseInt($event)"
+                  @update:model-value="
+                    aggregation.size = Number.parseInt($event)
+                  "
                 />
               </v-col>
 
@@ -92,7 +96,7 @@
                 <v-switch
                   v-model="showMissing"
                   :label="$t('$ezreeport.editor.aggregation.missing:show')"
-                  :disabled="readonly"
+                  :readonly="readonly"
                   prepend-icon="mdi-progress-question"
                   color="primary"
                   hide-details
@@ -130,27 +134,32 @@ import {
   isBaseAggregation,
   aggregationFieldTypes,
 } from '~/lib/aggregations';
-import { type FigureAggregation, type AggregationType, aggregationTypes } from '~sdk/helpers/aggregations';
+import {
+  type FigureAggregation,
+  type AggregationType,
+  aggregationTypes,
+} from '~sdk/helpers/aggregations';
 
 // Component props
 const props = defineProps<{
   /** Aggregation to edit */
-  modelValue?: FigureAggregation | undefined,
+  modelValue?: FigureAggregation | undefined;
   /** Should be disabled */
-  disabled?: boolean,
+  disabled?: boolean;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
   /** Types of aggregations allowed in options */
-  type?: AggregationType,
+  type?: AggregationType;
 }>();
 
 // Component events
 const emit = defineEmits<{
   /** Aggregation updated */
-  (e: 'update:modelValue', value: FigureAggregation | undefined): void,
+  (event: 'update:modelValue', value: FigureAggregation | undefined): void;
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 const { getOptionsFromMapping } = useTemplateEditor();
 
@@ -158,9 +167,13 @@ const { getOptionsFromMapping } = useTemplateEditor();
 const isValid = ref(false);
 
 /** Aggregation to edit */
-const { cloned: aggregation } = useCloned<InnerAggregation>(props.modelValue ?? { type: '', field: '' });
+const { cloned: aggregation } = useCloned<InnerAggregation>(
+  props.modelValue ?? { type: '', field: '' }
+);
 /** Backup of the aggregation in the last mode (simple/advanced) */
-const { cloned: aggregationBackup, sync: syncBackup } = useCloned(aggregation, { manual: true });
+const { cloned: aggregationBackup, sync: syncBackup } = useCloned(aggregation, {
+  manual: true,
+});
 
 /** Ref to VForm + validate on mount */
 const vform = useTemplateVForm('formRef');
@@ -171,7 +184,9 @@ const {
   hasChanged: rawHasChanged,
   parseError: rawParseError,
   onChange: onChangeRawValue,
-} = useJSONRef(() => (isRawAggregation(aggregation.value) ? aggregation.value.raw : undefined));
+} = useJSONRef(() =>
+  isRawAggregation(aggregation.value) ? aggregation.value.raw : undefined
+);
 
 /** Is the aggregation in advanced mode */
 const isAdvanced = computed(() => isRawAggregation(aggregation.value));
@@ -179,11 +194,11 @@ const isAdvanced = computed(() => isRawAggregation(aggregation.value));
 const isMetric = computed(() => {
   const current = aggregation.value;
   if (isRawAggregation(current)) {
-    return undefined;
+    return;
   }
   const aggDef = aggregationTypes.find(({ name }) => current.type === name);
   if (!aggDef) {
-    return undefined;
+    return;
   }
   return aggDef.type === 'metric';
 });
@@ -203,13 +218,15 @@ const showMissing = computed({
   },
 });
 /** Type of fields needed for the current aggregation */
-const fieldTypes = computed(() => (
+const fieldTypes = computed(() =>
   !isRawAggregation(aggregation.value) && aggregation.value.type
     ? aggregationFieldTypes.get(aggregation.value.type)
     : undefined
-));
+);
 /** Options for the field, based on current mapping */
-const fieldOptions = computed(() => getOptionsFromMapping(fieldTypes.value, { dateField: true }));
+const fieldOptions = computed(() =>
+  getOptionsFromMapping(fieldTypes.value, { dateField: true })
+);
 /** Options for the aggregation type */
 const typeOptions = computed(() => {
   let types = [...aggregationTypes];
@@ -217,51 +234,58 @@ const typeOptions = computed(() => {
     types = types.filter((type) => type.type === props.type);
   }
 
-  const grouped = Map.groupBy(types, (aggType) => aggType.isCommonlyFound ?? false);
-  return Array.from(grouped)
-    // Put common in first
-    .sort(([a], [b]) => Number(b) - Number(a))
-    .flatMap(([isCommonlyFound, value]) => {
-      const items: unknown[] = [
-        // There's no way to add "headers", "groups" or "children" into a
-        // VSelect (and other derivate), so headers are items with custom style
-        {
-          title: t(`$ezreeport.editor.aggregation.typeGroups.${isCommonlyFound ? 'common' : 'others'}`),
-          value: isCommonlyFound,
-          props: {
-            disabled: true,
-          },
-        },
-      ];
-
-      // Add count metric type
-      if (isCommonlyFound && (!props.type || props.type === 'metric')) {
-        items.push({
-          title: t('$ezreeport.editor.aggregation.types._count'),
-          value: '',
-          props: {
-            style: {
-              paddingLeft: '2rem',
+  const grouped = Map.groupBy(
+    types,
+    (aggType) => aggType.isCommonlyFound ?? false
+  );
+  return (
+    Array.from(grouped)
+      // Put common in first
+      .sort(([nameA], [nameB]) => Number(nameB) - Number(nameA))
+      .flatMap(([isCommonlyFound, value]) => {
+        const items: unknown[] = [
+          // There's no way to add "headers", "groups" or "children" into a
+          // VSelect (and other derivate), so headers are items with custom style
+          {
+            title: t(
+              `$ezreeport.editor.aggregation.typeGroups.${isCommonlyFound ? 'common' : 'others'}`
+            ),
+            value: isCommonlyFound,
+            props: {
+              disabled: true,
             },
           },
-        });
-      }
+        ];
 
-      return [
-        ...items,
-        // Map items
-        ...value.map((type) => ({
-          title: t(`$ezreeport.editor.aggregation.types.${type.name}`),
-          value: type.name,
-          props: {
-            subtitle: type.name,
-            style: {
-              paddingLeft: '2rem',
+        // Add count metric type
+        if (isCommonlyFound && (!props.type || props.type === 'metric')) {
+          items.push({
+            title: t('$ezreeport.editor.aggregation.types._count'),
+            value: '',
+            props: {
+              style: {
+                paddingLeft: '2rem',
+              },
             },
-          },
-        })),
-      ];
-    });
+          });
+        }
+
+        return [
+          ...items,
+          // Map items
+          ...value.map((type) => ({
+            title: t(`$ezreeport.editor.aggregation.types.${type.name}`),
+            value: type.name,
+            props: {
+              subtitle: type.name,
+              style: {
+                paddingLeft: '2rem',
+              },
+            },
+          })),
+        ];
+      })
+  );
 });
 
 /**
@@ -302,15 +326,22 @@ onChangeRawValue((value) => {
 /**
  * Update modelValue when aggregation changes
  */
-watch(aggregation, () => {
-  vform.value?.validate();
-  // Update modelValue if raw or valid aggregation
-  if (isRawAggregation(aggregation.value) || isBaseAggregation(aggregation.value)) {
-    emit('update:modelValue', aggregation.value);
-    return;
-  }
-  // Otherwise reset modelValue
-  aggregation.value.field = '';
-  emit('update:modelValue', undefined);
-}, { deep: true });
+watch(
+  aggregation,
+  () => {
+    vform.value?.validate();
+    // Update modelValue if raw or valid aggregation
+    if (
+      isRawAggregation(aggregation.value) ||
+      isBaseAggregation(aggregation.value)
+    ) {
+      emit('update:modelValue', aggregation.value);
+      return;
+    }
+    // Otherwise reset modelValue
+    aggregation.value.field = '';
+    emit('update:modelValue');
+  },
+  { deep: true }
+);
 </script>

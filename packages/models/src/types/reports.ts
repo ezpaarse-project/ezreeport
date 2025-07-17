@@ -187,7 +187,7 @@ export const ReportResult = z.object({
 
     error: ReportError.optional().describe('Error details'),
 
-    meta: z.any().optional().describe('Meta data'),
+    meta: z.any().optional().describe('Metadata'),
   }),
 });
 

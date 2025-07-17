@@ -48,14 +48,19 @@ const ICONS: Record<string, string> = {
 };
 
 const props = defineProps<{
-  modelValue: (FileSystemUsage & { host: { service: string, name: string } })[],
+  modelValue: (FileSystemUsage & { host: { service: string; name: string } })[];
 }>();
 
+// oxlint-disable-next-line id-length
 const { locale, t } = useI18n();
 
 function usageToItem(usage: FileSystemUsage) {
-  const percentage = usage.used >= 0 && usage.total >= 0 ? usage.used / usage.total : undefined;
-  const percentageStr = percentage?.toLocaleString(locale.value, { style: 'percent', minimumFractionDigits: 2 });
+  const percentage =
+    usage.used >= 0 && usage.total >= 0 ? usage.used / usage.total : undefined;
+  const percentageStr = percentage?.toLocaleString(locale.value, {
+    style: 'percent',
+    minimumFractionDigits: 2,
+  });
 
   // Prettify bytes
   const stats = {
@@ -67,10 +72,18 @@ function usageToItem(usage: FileSystemUsage) {
 
   // Build subtitle
   const subtitle = [
-    usage.total >= 0 ? t('$ezreeport.health.fsUsage.total', { value: stats.total }) : 0,
-    usage.used >= 0 ? t('$ezreeport.health.fsUsage.used', { value: stats.used }) : 0,
-    usage.available >= 0 ? t('$ezreeport.health.fsUsage.available', { value: stats.available }) : 0,
-  ].filter((v) => !!v).join(' | ');
+    usage.total >= 0
+      ? t('$ezreeport.health.fsUsage.total', { value: stats.total })
+      : 0,
+    usage.used >= 0
+      ? t('$ezreeport.health.fsUsage.used', { value: stats.used })
+      : 0,
+    usage.available >= 0
+      ? t('$ezreeport.health.fsUsage.available', { value: stats.available })
+      : 0,
+  ]
+    .filter((val) => !!val)
+    .join(' | ');
 
   // Extract title and icon
   let prependIcon;
@@ -90,15 +103,18 @@ function usageToItem(usage: FileSystemUsage) {
   };
 }
 
-const perHostname = computed(() => new Map(
-  props.modelValue.map(({ host, ...usage }) => [
-    `${host.name}_${host.service}`,
-    {
-      service: host.service,
-      ...usageToItem(usage),
-    },
-  ]),
-));
+const perHostname = computed(
+  () =>
+    new Map(
+      props.modelValue.map(({ host, ...usage }) => [
+        `${host.name}_${host.service}`,
+        {
+          service: host.service,
+          ...usageToItem(usage),
+        },
+      ])
+    )
+);
 
 const fsItem = computed(() => {
   const usageTotal = props.modelValue.reduce(
@@ -113,7 +129,7 @@ const fsItem = computed(() => {
       available: 0,
       used: 0,
       total: 0,
-    },
+    }
   );
 
   return usageToItem(usageTotal);

@@ -39,21 +39,22 @@ export const InputManualReport = z
       })
       .optional()
       .describe(
-        'Period to generate report for, will enable first level of debug'
+        'Period to generate report for, enable first level of debug if provided'
       ),
 
     targets: z
       .array(z.email())
-      .min(1)
       .optional()
       .describe(
-        'Custom targets to send report to, will enable first level of debug'
+        'Custom targets to send report to, enable first level of debug if provided'
       ),
 
     debug: z
       .boolean()
       .default(false)
       .optional()
-      .describe('Enable second level of debug'),
+      .describe(
+        'Enable second level of debug, not available in production environment'
+      ),
   })
   .strict();

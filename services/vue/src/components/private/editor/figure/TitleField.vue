@@ -36,7 +36,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:model-value', value: string): void;
+  (event: 'update:model-value', value: string): void;
 }>();
 
 const inputRef = useTemplateRef('input');

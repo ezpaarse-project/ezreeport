@@ -1,16 +1,13 @@
 <template>
   <v-data-iterator
     :items="tasks"
+    items-per-page="0"
     show-select
     return-object
     item-value="id"
   >
     <template #header>
-      <v-toolbar
-        :title="title"
-        color="transparent"
-        density="comfortable"
-      >
+      <v-toolbar :title="title" color="transparent" density="comfortable">
         <template v-if="$slots.prepend" #prepend>
           <slot name="prepend" />
         </template>
@@ -63,15 +60,16 @@
             cols="12"
             sm="6"
             md="4"
-            lg="3"
           >
             <TaskCard :model-value="task">
               <template #actions>
                 <v-switch
                   :model-value="task.enabled"
-                  :label="task.enabled
-                    ? $t('$ezreeport.task.enabled')
-                    : $t('$ezreeport.task.disabled')"
+                  :label="
+                    task.enabled
+                      ? $t('$ezreeport.task.enabled')
+                      : $t('$ezreeport.task.disabled')
+                  "
                   :disabled="!availableActions.state"
                   :loading="loading"
                   density="comfortable"
@@ -174,14 +172,19 @@
         :model-value="updatedTask"
         show-advanced
         @update:model-value="closeForm()"
-        @open:advanced="openAdvancedForm({ update: { data: $event, raw: updatedTask } })"
+        @open:advanced="
+          openAdvancedForm({ update: { data: $event, raw: updatedTask } })
+        "
       >
         <template #actions>
           <v-btn :text="$t('$ezreeport.cancel')" @click="closeForm()" />
         </template>
       </TaskEditionForm>
 
-      <TaskGenerationForm v-else-if="generatedTask" :model-value="generatedTask">
+      <TaskGenerationForm
+        v-else-if="generatedTask"
+        :model-value="generatedTask"
+      >
         <template #actions>
           <v-btn :text="$t('$ezreeport.cancel')" @click="closeForm()" />
         </template>
@@ -231,6 +234,7 @@ const props = defineProps<{
 }>();
 
 // Utils composable
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 const arePermissionsReady = ref(false);
@@ -246,17 +250,17 @@ const {
   loading,
   filters,
   items: tasks,
-} = useServerSidePagination(
-  (params) => getAllTasks(params),
-  {
-    sortBy: 'name',
-    include: ['extends.tags'],
-    itemsPerPage: 0,
-    filters: { namespaceId: props.namespaceId },
-  },
-);
+} = useServerSidePagination((params) => getAllTasks(params), {
+  sortBy: 'name',
+  include: ['extends.tags'],
+  itemsPerPage: 0,
+  filters: { namespaceId: props.namespaceId },
+});
 
-const title = computed(() => `${props.titlePrefix || ''}${t('$ezreeport.task.title:list', total.value)}`);
+const title = computed(
+  () =>
+    `${props.titlePrefix || ''}${t('$ezreeport.task.title:list', total.value)}`
+);
 
 const availableActions = computed(() => {
   if (!arePermissionsReady.value) {
@@ -276,11 +280,11 @@ async function openForm(task?: Omit<Task, 'template'>) {
   try {
     advancedTask.value = undefined;
     generatedTask.value = undefined;
-    updatedTask.value = task && await getTask(task);
+    updatedTask.value = task && (await getTask(task));
 
     isFormOpen.value = true;
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.open'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.open'), err);
   }
 }
 
@@ -297,8 +301,8 @@ async function openDuplicateForm(task: Omit<Task, 'template'>) {
     };
 
     isFormOpen.value = true;
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.open'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.open'), err);
   }
 }
 
@@ -309,21 +313,21 @@ async function openGeneration(task: Omit<Task, 'template'>) {
     updatedTask.value = undefined;
 
     isFormOpen.value = true;
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.open'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.open'), err);
   }
 }
 
 /** Type to hold data from others forms */
 type AdvancedFormCurrent = {
   create?: {
-    data: AdditionalDataForPreset,
-    preset?: TaskPreset,
-  }
+    data: AdditionalDataForPreset;
+    preset?: TaskPreset;
+  };
   update?: {
-    data: InputTask,
-    raw: Task,
-  }
+    data: InputTask;
+    raw: Task;
+  };
 };
 
 async function openAdvancedForm(current?: AdvancedFormCurrent) {
@@ -345,7 +349,7 @@ async function openAdvancedForm(current?: AdvancedFormCurrent) {
         data.index || preset?.fetchOptions.index,
         preset?.fetchOptions.dateField,
         undefined,
-        data.filters,
+        data.filters
       );
 
       value = createTaskHelper(
@@ -355,7 +359,7 @@ async function openAdvancedForm(current?: AdvancedFormCurrent) {
         preset?.templateId,
         template,
         data.targets,
-        preset?.recurrence,
+        preset?.recurrence
       );
     } else {
       value = createTaskHelper();
@@ -369,8 +373,8 @@ async function openAdvancedForm(current?: AdvancedFormCurrent) {
 
       isFormOpen.value = true;
     }, 250);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.open'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.open'), err);
   }
 }
 
@@ -383,8 +387,8 @@ async function toggleItemState(task: Omit<Task, 'template'>) {
   try {
     await changeTaskEnableState(task, !task.enabled);
     refresh();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.edit'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.edit'), err);
   }
 }
 
@@ -393,8 +397,8 @@ async function deleteItem(task: Omit<Task, 'template'>) {
   try {
     await deleteTask(task);
     refresh();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.delete'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.delete'), err);
   }
 }
 
@@ -413,12 +417,16 @@ async function onAdvancedSave(task: TaskHelper) {
         raw: result,
       },
     });
-  } catch (e) {
-    const msg = task.id ? t('$ezreeport.task.errors.edit') : t('$ezreeport.task.errors.create');
-    handleEzrError(msg, e);
+  } catch (err) {
+    const msg = task.id
+      ? t('$ezreeport.task.errors.edit')
+      : t('$ezreeport.task.errors.create');
+    handleEzrError(msg, err);
   }
 }
 
-refreshPermissions()
-  .then(() => { arePermissionsReady.value = true; });
+// oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
+refreshPermissions().then(() => {
+  arePermissionsReady.value = true;
+});
 </script>

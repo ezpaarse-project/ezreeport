@@ -1,6 +1,10 @@
 <template>
   <v-card
-    :title="modelValue.id ? $t('$ezreeport.template.title:edit') : $t('$ezreeport.template.title:new')"
+    :title="
+      modelValue.id
+        ? $t('$ezreeport.template.title:edit')
+        : $t('$ezreeport.template.title:new')
+    "
     :prepend-icon="modelValue.id ? 'mdi-view-grid' : 'mdi-view-grid-plus'"
   >
     <template #append>
@@ -14,7 +18,7 @@
             <v-text-field
               v-model="name"
               :label="$t('$ezreeport.name')"
-              :rules="[(v) => !!v || $t('$ezreeport.required')]"
+              :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :readonly="readonly"
               prepend-icon="mdi-rename"
               variant="underlined"
@@ -25,7 +29,10 @@
 
         <v-row>
           <v-col>
-            <TemplateTagList :model-value="modelValue.tags" :readonly="readonly" />
+            <TemplateTagList
+              :model-value="modelValue.tags"
+              :readonly="readonly"
+            />
           </v-col>
         </v-row>
 
@@ -43,7 +50,7 @@
               v-model="dateField"
               :label="$t('$ezreeport.template.dateField')"
               :items="dateMapping"
-              :rules="[(v) => !!v || $t('$ezreeport.required')]"
+              :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :return-object="false"
               :readonly="readonly"
               prepend-icon="mdi-calendar-search"
@@ -56,14 +63,19 @@
 
       <v-row>
         <v-col>
-          <EditorFilterList :model-value="modelValue.body.filters" :readonly="readonly" />
+          <EditorFilterList
+            :model-value="modelValue.body.filters"
+            :readonly="readonly"
+          />
         </v-col>
       </v-row>
 
       <v-row>
         <v-col>
           <v-card
-            :title="$t('$ezreeport.template.layouts', modelValue.body.layouts.length)"
+            :title="
+              $t('$ezreeport.template.layouts', modelValue.body.layouts.length)
+            "
             prepend-icon="mdi-grid"
             variant="outlined"
           >
@@ -157,33 +169,54 @@
             @click="closeEditor()"
           />
         </template>
+
+        <template #actions>
+          <v-btn
+            v-if="readonly"
+            :text="$t('$ezreeport.close')"
+            append-icon="mdi-close"
+            @click="closeEditor()"
+          />
+          <v-btn
+            v-else
+            :text="$t('$ezreeport.confirm')"
+            append-icon="mdi-check"
+            color="primary"
+            @click="closeEditor()"
+          />
+        </template>
       </EditorTemplate>
     </v-dialog>
   </v-card>
 </template>
 
 <script setup lang="ts">
-import { hasTemplateChanged, type TemplateHelper } from '~sdk/helpers/templates';
+import {
+  hasTemplateChanged,
+  type TemplateHelper,
+} from '~sdk/helpers/templates';
 
 // Components props
 const props = defineProps<{
   /** The template to edit */
-  modelValue: TemplateHelper,
+  modelValue: TemplateHelper;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated template */
-  (e: 'update:modelValue', value: TemplateHelper): void
+  (event: 'update:modelValue', value: TemplateHelper): void;
 }>();
 
 // Utils composables
-const { getOptionsFromMapping, refreshMapping } = useTemplateEditor({
-  grid: props.modelValue.body.grid,
-  index: props.modelValue.body.index,
-});
+const { getOptionsFromMapping, refreshMapping, updateDateField } =
+  useTemplateEditor({
+    grid: props.modelValue.body.grid,
+    index: props.modelValue.body.index,
+    dateField: props.modelValue.body.dateField,
+  });
 
 /** Selected index */
 const selectedIndex = ref(0);
@@ -200,29 +233,32 @@ const isValid = computed(() => isFormValid.value);
 /** Mapping options for dateField */
 const dateMapping = computed(() => getOptionsFromMapping('date'));
 /** Has template changed since form is opened */
-const hasChanged = computed(() => !props.modelValue.id || hasTemplateChanged(props.modelValue));
+const hasChanged = computed(
+  () => !props.modelValue.id || hasTemplateChanged(props.modelValue)
+);
 /** Name of the template */
 const name = computed({
   get: () => props.modelValue.name,
-  set: (v) => {
+  set: (value) => {
     const params = props.modelValue;
-    params.name = v;
+    params.name = value;
   },
 });
 /** Index of the template */
 const index = computed({
   get: () => props.modelValue.body.index,
-  set: (v) => {
+  set: (value) => {
     const { body } = props.modelValue;
-    body.index = v;
+    body.index = value;
   },
 });
 /** DateField of the template */
 const dateField = computed({
   get: () => props.modelValue.body.dateField,
-  set: (v) => {
+  set: (value) => {
     const { body } = props.modelValue;
-    body.dateField = v;
+    updateDateField(value);
+    body.dateField = value;
   },
 });
 

@@ -1,3 +1,65 @@
+# [@ezpaarse-project/ezreeport-vue-v2.3.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.2.0...@ezpaarse-project/ezreeport-vue@2.3.0-beta.1) (2025-05-19)
+
+
+### Bug Fixes
+
+* **report:** fixed issue with pagination in task cards ([ed446ae](https://github.com/ezpaarse-project/ezreeport/commit/ed446ae87e84ffb599af4193f5e566dca0d46c00))
+* **vue:** fixed actions not visible in some cases in template editor ([e7db444](https://github.com/ezpaarse-project/ezreeport/commit/e7db4445179092133abf19d41df1182a5b797b65))
+* **vue:** fixed auth issue when getting mapping ([5c2dbab](https://github.com/ezpaarse-project/ezreeport/commit/5c2dbabc19170529936865400625e27fd8645b19))
+* **vue:** fixed duplication of tasks ([ee6d79e](https://github.com/ezpaarse-project/ezreeport/commit/ee6d79e6989fe322071f845c5608f1936f9126a3))
+* **vue:** fixed issue with duplicating tags/filters when editing them ([890aa03](https://github.com/ezpaarse-project/ezreeport/commit/890aa0339cddc1461dc578b7bd09853f29b9092e))
+* **vue:** fixed minor issue with menu sizes ([571403d](https://github.com/ezpaarse-project/ezreeport/commit/571403d1077ebf003b9c9a85307bd8792e8a489e))
+* **vue:** fixed missing key in locales ([4107f6b](https://github.com/ezpaarse-project/ezreeport/commit/4107f6bd38f5a9ea52e8de149c32219caee91396))
+
+
+### Features
+
+* **vue:** added button to confirm template editor ([b28f91b](https://github.com/ezpaarse-project/ezreeport/commit/b28f91b033d0d1ece2fe907ef4bb93d94f6bf552))
+* **vue:** added labels to show form state ([c320e82](https://github.com/ezpaarse-project/ezreeport/commit/c320e829d51d11202d10169487b22d84ea0ade50))
+* **vue:** datefield label now shows the field ([23855f1](https://github.com/ezpaarse-project/ezreeport/commit/23855f17e83467803bf8caa464accc4e3ee5448b))
+
+# [@ezpaarse-project/ezreeport-vue-v2.2.0](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.1.0...@ezpaarse-project/ezreeport-vue@2.2.0) (2025-04-25)
+
+
+### Bug Fixes
+
+* **vue:** added aggregation parameter "missing" ([47d775f](https://github.com/ezpaarse-project/ezreeport/commit/47d775f7028711977c574c70c1b8262bdf2bf8dc))
+* **vue:** allow multiple types when getting options from mapping ([93b543c](https://github.com/ezpaarse-project/ezreeport/commit/93b543c16c37bef8d94d7c47e98fb527721b15d8))
+* **vue:** disabling animation when dragging ([c44a4d6](https://github.com/ezpaarse-project/ezreeport/commit/c44a4d65c2412b025408be47b7099444bb05f782))
+* **vue:** disabling editor when task is not valid ([e3d1734](https://github.com/ezpaarse-project/ezreeport/commit/e3d173412d6193c3e5fc1b924675cb3b056dfbaf))
+* **vue:** fixed locales with missing option ([7d19c91](https://github.com/ezpaarse-project/ezreeport/commit/7d19c913e7cf1feb6d43d14afd3360a9e8a6c982))
+* **vue:** fixed page count in task editor ([cb9842e](https://github.com/ezpaarse-project/ezreeport/commit/cb9842e50a13e412000aa69b3373984e535bcf31))
+* **vue:** fixed with of some dialogs ([99e1b9a](https://github.com/ezpaarse-project/ezreeport/commit/99e1b9a4a5792ae4d9ee205c716a1a686648890b))
+
+
+### Features
+
+* **vue:** added back the advanced task form ([e84b311](https://github.com/ezpaarse-project/ezreeport/commit/e84b311e7b6c18d0357e9777a7e163646073695d))
+* **vue:** added next run in task cards ([c9ac8f6](https://github.com/ezpaarse-project/ezreeport/commit/c9ac8f6593596aef45d7d351fe7b59f06b3cba69))
+* **vue:** added way to pass itemsPerPage as an application dev ([3a564dd](https://github.com/ezpaarse-project/ezreeport/commit/3a564dd755ada579d63b749a1b9a42f0a3756228))
+* **vue:** support for custom titles in public components ([f1416a8](https://github.com/ezpaarse-project/ezreeport/commit/f1416a828f295bb78621a68fdf588a3825da2fbe))
+
+# [@ezpaarse-project/ezreeport-vue-v2.2.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.1.0...@ezpaarse-project/ezreeport-vue@2.2.0-rc.1) (2025-04-11)
+
+
+### Bug Fixes
+
+* **vue:** added aggregation parameter "missing" ([47d775f](https://github.com/ezpaarse-project/ezreeport/commit/47d775f7028711977c574c70c1b8262bdf2bf8dc))
+* **vue:** allow multiple types when getting options from mapping ([93b543c](https://github.com/ezpaarse-project/ezreeport/commit/93b543c16c37bef8d94d7c47e98fb527721b15d8))
+* **vue:** disabling animation when dragging ([c44a4d6](https://github.com/ezpaarse-project/ezreeport/commit/c44a4d65c2412b025408be47b7099444bb05f782))
+* **vue:** disabling editor when task is not valid ([e3d1734](https://github.com/ezpaarse-project/ezreeport/commit/e3d173412d6193c3e5fc1b924675cb3b056dfbaf))
+* **vue:** fixed locales with missing option ([7d19c91](https://github.com/ezpaarse-project/ezreeport/commit/7d19c913e7cf1feb6d43d14afd3360a9e8a6c982))
+* **vue:** fixed page count in task editor ([cb9842e](https://github.com/ezpaarse-project/ezreeport/commit/cb9842e50a13e412000aa69b3373984e535bcf31))
+* **vue:** fixed with of some dialogs ([99e1b9a](https://github.com/ezpaarse-project/ezreeport/commit/99e1b9a4a5792ae4d9ee205c716a1a686648890b))
+
+
+### Features
+
+* **vue:** added back the advanced task form ([e84b311](https://github.com/ezpaarse-project/ezreeport/commit/e84b311e7b6c18d0357e9777a7e163646073695d))
+* **vue:** added next run in task cards ([c9ac8f6](https://github.com/ezpaarse-project/ezreeport/commit/c9ac8f6593596aef45d7d351fe7b59f06b3cba69))
+* **vue:** added way to pass itemsPerPage as an application dev ([3a564dd](https://github.com/ezpaarse-project/ezreeport/commit/3a564dd755ada579d63b749a1b9a42f0a3756228))
+* **vue:** support for custom titles in public components ([f1416a8](https://github.com/ezpaarse-project/ezreeport/commit/f1416a828f295bb78621a68fdf588a3825da2fbe))
+
 # [@ezpaarse-project/ezreeport-vue-v2.2.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.1.0...@ezpaarse-project/ezreeport-vue@2.2.0-beta.1) (2025-04-11)
 
 

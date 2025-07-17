@@ -1,6 +1,10 @@
 <template>
   <v-card
-    :title="modelValue ? $t('$ezreeport.editor.figures.table.columns.title:edit') : $t('$ezreeport.editor.figures.table.columns.title:new')"
+    :title="
+      modelValue
+        ? $t('$ezreeport.editor.figures.table.columns.title:edit')
+        : $t('$ezreeport.editor.figures.table.columns.title:new')
+    "
     prepend-icon="mdi-playlist-plus"
   >
     <template #text>
@@ -11,7 +15,7 @@
               v-model="column.header"
               :label="$t('$ezreeport.editor.figures.table.columns.header')"
               :rules="[
-                (v) => !!v || $t('$ezreeport.required'),
+                (val) => !!val || $t('$ezreeport.required'),
                 isUniqueRule,
               ]"
               prepend-icon="mdi-rename"
@@ -29,11 +33,13 @@
               @update:model-value="onAggregationChange($event)"
             >
               <template #text>
-                <v-row v-if="column.aggregation && ('raw' in column.aggregation)">
+                <v-row v-if="column.aggregation && 'raw' in column.aggregation">
                   <v-col>
                     <v-switch
                       v-model="column.metric"
-                      :label="$t('$ezreeport.editor.figures.table.columns.metric')"
+                      :label="
+                        $t('$ezreeport.editor.figures.table.columns.metric')
+                      "
                       :disabled="hasAlreadyMetric"
                       prepend-icon="mdi-counter"
                       color="primary"
@@ -49,34 +55,40 @@
         <v-row>
           <v-col>
             <div>
-              <v-label>{{ $t('$ezreeport.editor.figures.table.columns.styles.halign') }}</v-label>
+              <v-label>{{
+                $t('$ezreeport.editor.figures.table.columns.styles.halign')
+              }}</v-label>
             </div>
 
-            <v-btn-toggle
-              v-model="horizontalAlign"
-              color="primary"
-              mandatory
-            >
+            <v-btn-toggle v-model="horizontalAlign" color="primary" mandatory>
               <v-btn
-                v-tooltip:top="$t('$ezreeport.editor.figures.table.columns.styles.hleft')"
+                v-tooltip:top="
+                  $t('$ezreeport.editor.figures.table.columns.styles.hleft')
+                "
                 icon="mdi-format-align-left"
                 value="left"
               />
 
               <v-btn
-                v-tooltip:top="$t('$ezreeport.editor.figures.table.columns.styles.hcenter')"
+                v-tooltip:top="
+                  $t('$ezreeport.editor.figures.table.columns.styles.hcenter')
+                "
                 icon="mdi-format-align-center"
                 value="center"
               />
 
               <v-btn
-                v-tooltip:top="$t('$ezreeport.editor.figures.table.columns.styles.hright')"
+                v-tooltip:top="
+                  $t('$ezreeport.editor.figures.table.columns.styles.hright')
+                "
                 icon="mdi-format-align-right"
                 value="right"
               />
 
               <v-btn
-                v-tooltip:top="$t('$ezreeport.editor.figures.table.columns.styles.hjustify')"
+                v-tooltip:top="
+                  $t('$ezreeport.editor.figures.table.columns.styles.hjustify')
+                "
                 icon="mdi-format-align-justify"
                 value="justify"
               />
@@ -85,28 +97,32 @@
 
           <v-col>
             <div>
-              <v-label>{{ $t('$ezreeport.editor.figures.table.columns.styles.valign') }}</v-label>
+              <v-label>{{
+                $t('$ezreeport.editor.figures.table.columns.styles.valign')
+              }}</v-label>
             </div>
 
-            <v-btn-toggle
-              v-model="verticalAlign"
-              color="primary"
-              mandatory
-            >
+            <v-btn-toggle v-model="verticalAlign" color="primary" mandatory>
               <v-btn
-                v-tooltip:top="$t('$ezreeport.editor.figures.table.columns.styles.vtop')"
+                v-tooltip:top="
+                  $t('$ezreeport.editor.figures.table.columns.styles.vtop')
+                "
                 icon="mdi-format-align-top"
                 value="top"
               />
 
               <v-btn
-                v-tooltip:top="$t('$ezreeport.editor.figures.table.columns.styles.vmiddle')"
+                v-tooltip:top="
+                  $t('$ezreeport.editor.figures.table.columns.styles.vmiddle')
+                "
                 icon="mdi-format-align-middle"
                 value="middle"
               />
 
               <v-btn
-                v-tooltip:top="$t('$ezreeport.editor.figures.table.columns.styles.vbottom')"
+                v-tooltip:top="
+                  $t('$ezreeport.editor.figures.table.columns.styles.vbottom')
+                "
                 icon="mdi-format-align-bottom"
                 value="bottom"
               />
@@ -115,22 +131,24 @@
 
           <v-col>
             <div>
-              <v-label>{{ $t('$ezreeport.editor.figures.table.columns.styles.fontStyle') }}</v-label>
+              <v-label>{{
+                $t('$ezreeport.editor.figures.table.columns.styles.fontStyle')
+              }}</v-label>
             </div>
 
-            <v-btn-toggle
-              v-model="fontStyles"
-              color="primary"
-              multiple
-            >
+            <v-btn-toggle v-model="fontStyles" color="primary" multiple>
               <v-btn
-                v-tooltip:top="$t('$ezreeport.editor.figures.table.columns.styles.bold')"
+                v-tooltip:top="
+                  $t('$ezreeport.editor.figures.table.columns.styles.bold')
+                "
                 icon="mdi-format-bold"
                 value="bold"
               />
 
               <v-btn
-                v-tooltip:top="$t('$ezreeport.editor.figures.table.columns.styles.italic')"
+                v-tooltip:top="
+                  $t('$ezreeport.editor.figures.table.columns.styles.italic')
+                "
                 icon="mdi-format-italic"
                 value="italic"
               />
@@ -157,7 +175,11 @@
 </template>
 
 <script setup lang="ts">
-import { aggregationTypes, isRawAggregation, type FigureAggregation } from '~sdk/helpers/aggregations';
+import {
+  aggregationTypes,
+  isRawAggregation,
+  type FigureAggregation,
+} from '~sdk/helpers/aggregations';
 import { getTableColumnKey, type TableColumn } from '~sdk/helpers/figures';
 
 type VAlign = Exclude<Required<TableColumn>['styles']['valign'], undefined>;
@@ -168,52 +190,60 @@ type FontStyles = Exclude<RawFontStyle, undefined | 'bolditalic' | 'normal'>[];
 // Components props
 const props = defineProps<{
   /** Column to edit, leave undefined to create a new one */
-  modelValue?: TableColumn,
+  modelValue?: TableColumn;
   /** Other headers */
-  headers?: Set<string>,
+  headers?: Set<string>;
   /** Is the table already have a metric */
-  hasAlreadyMetric?: boolean
+  hasAlreadyMetric?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated label */
-  (e: 'update:modelValue', value: TableColumn): void,
+  (event: 'update:modelValue', value: TableColumn): void;
 }>();
 
 // Util composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 /** Is form valid */
 const isValid = ref(false);
 
 /** Column to edit */
-const { cloned: column } = useCloned<TableColumn>(props.modelValue ?? { header: '', metric: true });
+const { cloned: column } = useCloned<TableColumn>(
+  props.modelValue ?? { header: '', metric: true }
+);
 
 /** Validate form on mounted */
 useTemplateVForm('formRef');
 
 /** Is a bucket needed */
-const isBucketNeeded = computed(() => props.hasAlreadyMetric && !props.modelValue?.metric);
+const isBucketNeeded = computed(
+  () => props.hasAlreadyMetric && !props.modelValue?.metric
+);
 /** Vertical alignment */
 const verticalAlign = computed<VAlign>({
   get: () => column.value.styles?.valign ?? 'middle',
   set: (value) => {
-    column.value.styles = { ...(column.value.styles ?? {}), valign: value };
+    column.value.styles = { ...column.value.styles, valign: value };
   },
 });
 /** Horizontal alignment */
 const horizontalAlign = computed<HAlign>({
   get: () => column.value.styles?.halign ?? 'left',
   set: (value) => {
-    column.value.styles = { ...(column.value.styles ?? {}), halign: value };
+    column.value.styles = { ...column.value.styles, halign: value };
   },
 });
 /** Font styles */
 const fontStyles = computed<FontStyles>({
   get: () => {
     // No font style means normal
-    if (!column.value.styles?.fontStyle || column.value.styles.fontStyle === 'normal') {
+    if (
+      !column.value.styles?.fontStyle ||
+      column.value.styles.fontStyle === 'normal'
+    ) {
       return [];
     }
     // Split bold and italic into two buttons
@@ -236,18 +266,18 @@ const fontStyles = computed<FontStyles>({
       fontStyle = 'italic';
     }
 
-    column.value.styles = { ...(column.value.styles ?? {}), fontStyle };
+    column.value.styles = { ...column.value.styles, fontStyle };
   },
 });
 
 /**
  * Check if the column is unique
  */
-function isUniqueRule(v: string) {
-  if (props.modelValue && getTableColumnKey(props.modelValue) === v) {
+function isUniqueRule(val: string) {
+  if (props.modelValue && getTableColumnKey(props.modelValue) === val) {
     return true;
   }
-  if (props.headers?.has(v)) {
+  if (props.headers?.has(val)) {
     return t('$ezreeport.duplicate');
   }
   return true;
@@ -269,7 +299,7 @@ function onAggregationChange(aggregation: FigureAggregation | undefined) {
   }
 
   // If it's a base aggregation, guess if it's a metric or not
-  const aggType = aggregationTypes.find((a) => a.name === aggregation.type);
+  const aggType = aggregationTypes.find((agg) => agg.name === aggregation.type);
   column.value.metric = aggType?.type === 'metric';
 }
 </script>

@@ -1,6 +1,10 @@
 <template>
   <v-card
-    :title="modelValue?.id ? $t('$ezreeport.task-preset.title:edit') : $t('$ezreeport.task-preset.title:new')"
+    :title="
+      modelValue?.id
+        ? $t('$ezreeport.task-preset.title:edit')
+        : $t('$ezreeport.task-preset.title:new')
+    "
     :prepend-icon="modelValue?.id ? 'mdi-file' : 'mdi-file-plus'"
   >
     <template #append>
@@ -25,7 +29,10 @@
               @update:model-value="onTemplateChange($event)"
             >
               <template #append-inner>
-                <TemplateTagView v-if="currentTemplate" :model-value="currentTemplate.tags ?? []" />
+                <TemplateTagView
+                  v-if="currentTemplate"
+                  :model-value="currentTemplate.tags ?? []"
+                />
               </template>
 
               <template #item="{ item: { raw: item }, props: listItem }">
@@ -44,7 +51,7 @@
             <v-text-field
               v-model="preset.name"
               :label="$t('$ezreeport.name')"
-              :rules="[(v) => !!v || $t('$ezreeport.required')]"
+              :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :readonly="readonly"
               prepend-icon="mdi-rename"
               variant="underlined"
@@ -71,7 +78,7 @@
           <v-col cols="6">
             <IndexSelector
               v-model="preset.fetchOptions.index"
-              :rules="[(v) => !!v || $t('$ezreeport.required')]"
+              :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :readonly="readonly"
               required
               @index:valid="refreshMapping($event)"
@@ -82,7 +89,7 @@
             <v-combobox
               v-model="preset.fetchOptions.dateField"
               :label="$t('$ezreeport.template.dateField')"
-              :rules="[(v) => !!v || $t('$ezreeport.required')]"
+              :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :items="dateMapping"
               :readonly="readonly"
               prepend-icon="mdi-calendar-search"
@@ -129,10 +136,11 @@ const props = defineProps<{
 // Components events
 const emit = defineEmits<{
   /** Updated template */
-  (e: 'update:modelValue', value: TaskPreset): void
+  (event: 'update:modelValue', value: TaskPreset): void;
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 const { getOptionsFromMapping, refreshMapping } = useTemplateEditor();
 
@@ -163,40 +171,39 @@ const templates = computedAsync(async () => {
   loadingTemplates.value = true;
   try {
     let meta;
-    ({ items, meta } = await getAllTemplates({ pagination: { count: 0, sort: 'name' } }));
+    ({ items, meta } = await getAllTemplates({
+      pagination: { count: 0, sort: 'name' },
+    }));
     templates.value = items;
 
     if (!preset.value.templateId) {
       preset.value.templateId = meta.default;
     }
-  } catch (e) {
-    handleEzrError(t('$ezreeport.templates.errors.fetch'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.templates.errors.fetch'), err);
   }
   loadingTemplates.value = false;
 
   return items;
 }, []);
 /** Current template */
-const currentTemplate = computed(
-  () => templates.value.find((template) => template.id === preset.value.templateId),
+const currentTemplate = computed(() =>
+  templates.value.find((template) => template.id === preset.value.templateId)
 );
 /** Recurrence options */
-const recurrences = computed(
-  () => [
-    'DAILY',
-    'WEEKLY',
-    'MONTHLY',
-    'QUARTERLY',
-    'BIENNIAL',
-    'YEARLY',
-  ].map((value) => ({ value, title: t(`$ezreeport.task.recurrenceList.${value}`) })),
+const recurrences = computed(() =>
+  ['DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'BIENNIAL', 'YEARLY'].map(
+    (value) => ({ value, title: t(`$ezreeport.task.recurrenceList.${value}`) })
+  )
 );
 
 function regenerateName() {
   if (props.modelValue?.name || hasNameChanged.value) {
     return;
   }
-  const recurrence = t(`$ezreeport.task.recurrenceList.${preset.value.recurrence}`);
+  const recurrence = t(
+    `$ezreeport.task.recurrenceList.${preset.value.recurrence}`
+  );
   preset.value.name = `${currentTemplate.value?.name} ${recurrence.toLocaleLowerCase()}`;
 }
 
@@ -212,8 +219,8 @@ async function onTemplateChange(id: string) {
       },
     };
     regenerateName();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.templates.errors.open'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.templates.errors.open'), err);
   }
 }
 
@@ -230,9 +237,11 @@ async function save() {
     }
 
     emit('update:modelValue', result);
-  } catch (e) {
-    const msg = props.modelValue?.id ? t('$ezreeport.task-preset.errors.edit') : t('$ezreeport.task-preset.errors.create');
-    handleEzrError(msg, e);
+  } catch (err) {
+    const msg = props.modelValue?.id
+      ? t('$ezreeport.task-preset.errors.edit')
+      : t('$ezreeport.task-preset.errors.create');
+    handleEzrError(msg, err);
   }
 }
 </script>

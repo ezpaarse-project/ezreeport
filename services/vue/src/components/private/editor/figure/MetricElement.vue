@@ -56,7 +56,7 @@ const props = defineProps<{
 // Components events
 defineEmits<{
   /** Click on the close button */
-  (e: 'click:close', value: MouseEvent): void
+  (event: 'click:close', value: MouseEvent): void
 }>();
 
 /** The icon to display based on format */

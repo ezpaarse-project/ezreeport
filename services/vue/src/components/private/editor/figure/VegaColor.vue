@@ -46,27 +46,28 @@ import type { VegaLayer } from '~sdk/helpers/figures';
 // Components props
 const props = defineProps<{
   /** The vega layer to edit */
-  modelValue: VegaLayer | undefined,
+  modelValue: VegaLayer | undefined;
   /** Type of the figure */
-  type: string,
+  type: string;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated layer */
-  (e: 'update:modelValue', value: VegaLayer | undefined): void
+  (event: 'update:modelValue', value: VegaLayer | undefined): void;
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t, te } = useI18n();
 
 /** Backup of the layer, used when enabling/disabling */
-const {
-  cloned: layerBackup,
-  sync: syncBackup,
-} = useCloned(props.modelValue ?? {}, { manual: true });
+const { cloned: layerBackup, sync: syncBackup } = useCloned(
+  props.modelValue ?? {},
+  { manual: true }
+);
 
 /** Label to enabling grouping */
 const enabledLabel = computed(() => {

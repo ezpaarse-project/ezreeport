@@ -4,6 +4,14 @@
     :prepend-icon="cardIcon"
   >
     <template #append>
+      <v-alert
+        v-if="readonly"
+        :title="$t('$ezreeport.readonly')"
+        icon="mdi-lock"
+        density="compact"
+        class="mr-2"
+      />
+
       <slot name="append" />
     </template>
 
@@ -107,10 +115,11 @@ const props = defineProps<{
 // Components events
 const emit = defineEmits<{
   /** Updated figure */
-  (e: 'update:modelValue', value: VegaFigureHelper): void
+  (event: 'update:modelValue', value: VegaFigureHelper): void
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 const tab = ref(0);

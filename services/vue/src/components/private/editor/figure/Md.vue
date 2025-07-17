@@ -4,6 +4,14 @@
     :prepend-icon="cardIcon"
   >
     <template #append>
+      <v-alert
+        v-if="readonly"
+        :title="$t('$ezreeport.readonly')"
+        icon="mdi-lock"
+        density="compact"
+        class="mr-2"
+      />
+
       <slot name="append" />
     </template>
 
@@ -35,7 +43,6 @@
 
       <slot name="actions" />
     </template>
-
   </v-card>
 </template>
 
@@ -48,15 +55,15 @@ import type { MdFigure } from '~sdk/helpers/figures';
 // Components props
 const props = defineProps<{
   /** The metric figure to edit */
-  modelValue: MdFigure,
+  modelValue: MdFigure;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated figure */
-  (e: 'update:modelValue', value: MdFigure): void
+  (event: 'update:modelValue', value: MdFigure): void;
 }>();
 
 /** Rendered markdown */
@@ -79,11 +86,14 @@ function updateData(data: string) {
 /**
  * Update the preview when the data changes
  */
-debouncedWatch(() => props.modelValue.data, (data) => {
-  marked(data || '', { async: true }).then((html) => {
+debouncedWatch(
+  () => props.modelValue.data,
+  async (data) => {
+    const html = await marked(data || '', { async: true });
     renderedMD.value = DOMPurify.sanitize(html);
-  });
-}, { immediate: true, debounce: 500 });
+  },
+  { immediate: true, debounce: 500 }
+);
 </script>
 
 <style lang="scss" scoped>

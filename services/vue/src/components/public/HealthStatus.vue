@@ -31,7 +31,11 @@
         <v-list-item title="client" :subtitle="`v${version}`" />
         <v-list-item title="sdk" :subtitle="`v${sdkVersion}`" />
 
-        <v-list-item v-if="status" :title="status.current" :subtitle="`v${status.version}`" />
+        <v-list-item
+          v-if="status"
+          :title="status.current"
+          :subtitle="`v${status.version}`"
+        />
       </v-list>
     </v-col>
   </v-row>
@@ -73,7 +77,17 @@ import { version } from '~/../package.json';
 import { version as sdkVersion } from '~sdk';
 import { getStatus, type ApiService, type ApiStatus } from '~sdk/health';
 
-const MINIMUM_SERVICES = ['rabbitmq', 'api', 'database', 'worker', 'elastic', 'scheduler', 'mail', 'smtp', 'files'];
+const MINIMUM_SERVICES = [
+  'rabbitmq',
+  'api',
+  'database',
+  'worker',
+  'elastic',
+  'scheduler',
+  'mail',
+  'smtp',
+  'files',
+];
 
 // Components props
 defineProps<{
@@ -81,6 +95,7 @@ defineProps<{
 }>();
 
 // Utils composable
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 /** Is loading */
@@ -89,34 +104,35 @@ const loading = ref(false);
 const status = ref<ApiStatus | undefined>();
 
 const services = computed(() => {
-  const minimum = MINIMUM_SERVICES.map((service) => ([service, []] as [string, ApiService[]]));
+  const minimum = MINIMUM_SERVICES.map(
+    (service) => [service, []] as [string, ApiService[]]
+  );
   const fromAPI = Map.groupBy(
     status.value?.services ?? [],
-    ({ service }) => service,
+    ({ service }) => service
   );
   return new Map([...minimum, ...fromAPI]);
 });
 
 const fileSystems = computed(() => {
   const values = (status.value?.services ?? []).flatMap(
-    ({ hostname, service, filesystems }) => (filesystems ?? [])
-      .map((fs) => ({
+    ({ hostname, service, filesystems }) =>
+      (filesystems ?? []).map((fs) => ({
         ...fs,
         host: { name: hostname, service },
-      })),
+      }))
   );
 
   const unsorted = Map.groupBy(values, ({ name }) => name);
-  return Array.from(unsorted)
-    .sort((a, b) => a[0].localeCompare(b[0]));
+  return Array.from(unsorted).sort((fsA, fsB) => fsA[0].localeCompare(fsB[0]));
 });
 
 async function refresh() {
   loading.value = true;
   try {
     status.value = await getStatus();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.health.errors.fetch'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.health.errors.fetch'), err);
   }
   loading.value = false;
 }

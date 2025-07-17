@@ -4,6 +4,14 @@
     :prepend-icon="cardIcon"
   >
     <template #append>
+      <v-alert
+        v-if="readonly"
+        :title="$t('$ezreeport.readonly')"
+        icon="mdi-lock"
+        density="compact"
+        class="mr-2"
+      />
+
       <slot name="append" />
     </template>
 
@@ -16,14 +24,22 @@
 
       <v-row>
         <v-col>
-          <EditorFilterList :model-value="modelValue.filters" :readonly="readonly" />
+          <EditorFilterList
+            :model-value="modelValue.filters"
+            :readonly="readonly"
+          />
         </v-col>
       </v-row>
 
       <v-row>
         <v-col>
           <v-card
-            :title="$t('$ezreeport.editor.figures.table.columns.title', modelValue.params.columns.length)"
+            :title="
+              $t(
+                '$ezreeport.editor.figures.table.columns.title',
+                modelValue.params.columns.length
+              )
+            "
             variant="outlined"
             prepend-icon="mdi-table-column"
           >
@@ -52,7 +68,7 @@
                       <v-icon
                         icon="mdi-drag-vertical"
                         class="mr-1 table-preview--column-handle"
-                        style="cursor: grab;"
+                        style="cursor: grab"
                       />
                     </template>
 
@@ -84,7 +100,9 @@
             </template>
 
             <template v-else #text>
-              <span class="text-error">{{ $t('$ezreeport.editor.figures.table.columns.empty') }}</span>
+              <span class="text-error">{{
+                $t('$ezreeport.editor.figures.table.columns.empty')
+              }}</span>
             </template>
           </v-card>
         </v-col>
@@ -152,18 +170,19 @@ import {
 // Components props
 const props = defineProps<{
   /** The table figure to edit */
-  modelValue: TableFigureHelper,
+  modelValue: TableFigureHelper;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated figure */
-  (e: 'update:modelValue', value: TableFigureHelper): void
+  (event: 'update:modelValue', value: TableFigureHelper): void;
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 /** Should show the column form */
@@ -223,9 +242,13 @@ const showTotal = computed({
   },
 });
 /** Is the table already have a metric */
-const hasMetric = computed(() => props.modelValue.params.columns.some((column) => !!column.metric));
+const hasMetric = computed(() =>
+  props.modelValue.params.columns.some((column) => !!column.metric)
+);
 /** Set of headers */
-const headers = computed(() => new Set(getAllTableColumnKeysOfHelper(props.modelValue)));
+const headers = computed(
+  () => new Set(getAllTableColumnKeysOfHelper(props.modelValue))
+);
 
 /**
  * Close the column form
@@ -253,8 +276,11 @@ function removeColumn(column: TableColumn) {
   try {
     removeTableColumnOfHelper(props.modelValue, column);
     emit('update:modelValue', props.modelValue);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.editor.figures.table.columns.errors.delete'), e);
+  } catch (err) {
+    handleEzrError(
+      t('$ezreeport.editor.figures.table.columns.errors.delete'),
+      err
+    );
   }
 }
 
@@ -273,8 +299,11 @@ function setColumn(column: TableColumn) {
 
     emit('update:modelValue', props.modelValue);
     closeColumnForm();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.editor.figures.table.columns.errors.edit'), e);
+  } catch (err) {
+    handleEzrError(
+      t('$ezreeport.editor.figures.table.columns.errors.edit'),
+      err
+    );
   }
 }
 </script>
@@ -293,7 +322,9 @@ $border: 1px solid rgba(0, 0, 0, 0.1);
     flex: 1;
     min-width: 16rem;
     max-width: unset;
-    transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+    transition:
+      transform 0.1s ease-in-out,
+      box-shadow 0.1s ease-in-out;
 
     &:not(:last-child) {
       border-right: $border;

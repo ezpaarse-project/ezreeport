@@ -1,8 +1,5 @@
 <template>
-  <v-card
-    :title="$t('$ezreeport.task.title:edit')"
-    prepend-icon="mdi-email"
-  >
+  <v-card :title="$t('$ezreeport.task.title:edit')" prepend-icon="mdi-email">
     <template #append>
       <slot name="append" />
     </template>
@@ -14,7 +11,7 @@
             <v-text-field
               v-model="task.name"
               :label="$t('$ezreeport.name')"
-              :rules="[(v) => !!v || $t('$ezreeport.required')]"
+              :rules="[(val) => !!val || $t('$ezreeport.required')]"
               prepend-icon="mdi-rename"
               variant="underlined"
               required
@@ -40,8 +37,11 @@
               :model-value="task.targets"
               :label="$t('$ezreeport.task.targets')"
               :add-label="$t('$ezreeport.task.targets:add')"
-              :rules="[(v) => v.length > 0 || $t('$ezreeport.required')]"
-              :item-rules="[(v, i) => isEmail(v) || $t('$ezreeport.errors.invalidEmail', i + 1)]"
+              :rules="[(val) => val.length > 0 || $t('$ezreeport.required')]"
+              :item-rules="[
+                (val, i) =>
+                  isEmail(val) || $t('$ezreeport.errors.invalidEmail', i + 1),
+              ]"
               :item-placeholder="$t('$ezreeport.task.targets:hint')"
               prepend-icon="mdi-mailbox"
               variant="underlined"
@@ -74,7 +74,7 @@
               <IndexSelector
                 v-model="task.template.index"
                 :namespace-id="task.namespaceId"
-                :rules="[(v) => !!v || $t('$ezreeport.required')]"
+                :rules="[(val) => !!val || $t('$ezreeport.required')]"
                 required
                 @index:valid="refreshMapping($event)"
               />
@@ -83,8 +83,8 @@
 
               <v-btn
                 v-if="showAdvanced"
-                v-tooltip:top="$t('$ezreeport.task.superUserMode:tooltip')"
-                :text="$t('$ezreeport.task.superUserMode')"
+                v-tooltip:top="$t('$ezreeport.superUserMode:tooltip')"
+                :text="$t('$ezreeport.superUserMode')"
                 prepend-icon="mdi-tools"
                 append-icon="mdi-tools"
                 color="warning"
@@ -118,35 +118,37 @@
 <script setup lang="ts">
 import type { Namespace } from '~sdk/namespaces';
 import { getCurrentNamespaces } from '~sdk/auth';
-import {
-  upsertTask,
-  type Task,
-  type InputTask,
-} from '~sdk/tasks';
+import { upsertTask, createTask, type Task, type InputTask } from '~sdk/tasks';
 
 import { isEmail } from '~/utils/validate';
 
 // Components props
 const props = defineProps<{
   /** The task to edit */
-  modelValue: Task,
+  modelValue: Task;
   /** Should show namespace */
-  showNamespace?: boolean,
+  showNamespace?: boolean;
   /** Should show advanced button */
-  showAdvanced?: boolean
+  showAdvanced?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated task */
-  (e: 'update:modelValue', value: Task): void
+  (event: 'update:modelValue', value: Task): void;
   /** Asked to open task in advanced form */
-  (e: 'open:advanced', value: InputTask): void
+  (event: 'open:advanced', value: InputTask): void;
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
-const { refreshMapping } = useTemplateEditor();
+const { refreshMapping } = useTemplateEditor({
+  // grid: props.modelValue.template.grid,
+  index: props.modelValue.template.index,
+  dateField: props.modelValue.template.dateField,
+  namespaceId: props.modelValue.namespaceId,
+});
 
 /** Is basic form valid */
 const isValid = ref(false);
@@ -169,9 +171,10 @@ const task = ref<InputTask>({
 
 /** Filters of task */
 const filters = computed({
-  get: () => new Map((task.value.template.filters ?? []).map((f) => [f.name, f])),
-  set: (v) => {
-    const values = Array.from(v.values());
+  get: () =>
+    new Map((task.value.template.filters ?? []).map((fil) => [fil.name, fil])),
+  set: (value) => {
+    const values = Array.from(value.values());
     if (values.length > 0) {
       task.value.template.filters = values;
       return;
@@ -194,9 +197,9 @@ const namespace = computedAsync(async () => {
   loadingNamespaces.value = true;
   try {
     const currentNamespaces = await getCurrentNamespaces();
-    value = currentNamespaces.find((n) => n.id === namespaceId.value);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), e);
+    value = currentNamespaces.find((nsp) => nsp.id === namespaceId.value);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), err);
   }
   loadingNamespaces.value = false;
 
@@ -218,19 +221,26 @@ function onTargetUpdated(targets: string | string[] | undefined) {
   task.value.targets = Array.from(
     new Set(
       allTargets
-        .join(';').replace(/[,]/g, ';')
-        .split(';').map((mail) => mail.trim()),
-    ),
+        .join(';')
+        .replaceAll(/[,]/g, ';')
+        .split(';')
+        .map((mail) => mail.trim())
+    )
   );
 }
 
 async function save() {
   try {
-    const result = await upsertTask({ ...task.value, id: props.modelValue.id });
+    let result;
+    if (props.modelValue.id) {
+      result = await upsertTask({ ...task.value, id: props.modelValue.id });
+    } else {
+      result = await createTask({ ...task.value });
+    }
 
     emit('update:modelValue', result);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.update'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.update'), err);
   }
 }
 </script>

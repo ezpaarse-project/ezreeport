@@ -10,9 +10,18 @@
           <v-list lines="two" density="compact">
             <v-list-subheader :title="$t('$ezreeport.generations.info')" />
 
-            <v-list-item :title="modelValue.id" :subtitle="$t('$ezreeport.generations.id')" prepend-icon="mdi-identifier" />
+            <v-list-item
+              :title="modelValue.id"
+              :subtitle="$t('$ezreeport.generations.id')"
+              prepend-icon="mdi-identifier"
+            />
 
-            <v-list-item :title="$t(`$ezreeport.generations.statusList.${modelValue.status}`)" :subtitle="$t('$ezreeport.generations.status')">
+            <v-list-item
+              :title="
+                $t(`$ezreeport.generations.statusList.${modelValue.status}`)
+              "
+              :subtitle="$t('$ezreeport.generations.status')"
+            >
               <template #prepend>
                 <GenerationStatusIcon :model-value="modelValue" />
               </template>
@@ -24,27 +33,51 @@
           <v-list lines="two" density="compact">
             <v-list-subheader />
 
-            <v-list-item :subtitle="$t('$ezreeport.generations.queued')" prepend-icon="mdi-clock-plus-outline">
+            <v-list-item
+              :subtitle="$t('$ezreeport.generations.queued')"
+              prepend-icon="mdi-clock-plus-outline"
+            >
               <template #title>
                 <LocalDate :model-value="modelValue.createdAt" format="PPPpp" />
               </template>
             </v-list-item>
 
             <template v-if="modelValue.startedAt">
-              <v-list-item :subtitle="$t('$ezreeport.generations.started')" prepend-icon="mdi-timer-play">
+              <v-list-item
+                :subtitle="$t('$ezreeport.generations.started')"
+                prepend-icon="mdi-timer-play"
+              >
                 <template #title>
-                  <LocalDate :model-value="modelValue.startedAt" format="PPPpp" />
+                  <LocalDate
+                    :model-value="modelValue.startedAt"
+                    format="PPPpp"
+                  />
                 </template>
               </v-list-item>
 
-              <v-list-item v-if="isEnded" :subtitle="$t('$ezreeport.generations.ended')" prepend-icon="mdi-timer-stop">
+              <v-list-item
+                v-if="isEnded"
+                :subtitle="$t('$ezreeport.generations.ended')"
+                prepend-icon="mdi-timer-stop"
+              >
                 <template #title>
-                  <LocalDate :model-value="new Date(modelValue.startedAt.getTime() + (modelValue.took ?? 0))" format="PPPpp" />
+                  <LocalDate
+                    :model-value="
+                      new Date(
+                        modelValue.startedAt.getTime() + (modelValue.took ?? 0)
+                      )
+                    "
+                    format="PPPpp"
+                  />
                 </template>
               </v-list-item>
             </template>
 
-            <v-list-item v-if="modelValue.updatedAt" :subtitle="$t('$ezreeport.generations.lastUpdate')" prepend-icon="mdi-clock-edit-outline">
+            <v-list-item
+              v-if="modelValue.updatedAt"
+              :subtitle="$t('$ezreeport.generations.lastUpdate')"
+              prepend-icon="mdi-clock-edit-outline"
+            >
               <template #title>
                 <LocalDate :model-value="modelValue.updatedAt" format="PPPpp" />
               </template>
@@ -70,9 +103,15 @@
       <v-row>
         <v-col>
           <v-list lines="two" density="compact">
-            <v-list-subheader :title="$t('$ezreeport.generations.header:request')" />
+            <v-list-subheader
+              :title="$t('$ezreeport.generations.header:request')"
+            />
 
-            <v-list-item :title="modelValue.origin" :subtitle="$t('$ezreeport.generations.origin')" prepend-icon="mdi-account" />
+            <v-list-item
+              :title="modelValue.origin"
+              :subtitle="$t('$ezreeport.generations.origin')"
+              prepend-icon="mdi-account"
+            />
           </v-list>
         </v-col>
 
@@ -80,7 +119,10 @@
           <v-list lines="two" density="compact">
             <v-list-subheader />
 
-            <v-list-item :subtitle="$t('$ezreeport.task.period')" prepend-icon="mdi-calendar-range">
+            <v-list-item
+              :subtitle="$t('$ezreeport.task.period')"
+              prepend-icon="mdi-calendar-range"
+            >
               <template #title>
                 <LocalDate :model-value="modelValue.start" format="P" />
                 ~
@@ -94,7 +136,15 @@
           <v-list lines="two" density="compact">
             <v-list-subheader />
 
-            <v-list-item :title="modelValue.writeActivity ? $t('$ezreeport.no') : $t('$ezreeport.yes')" :subtitle="$t('$ezreeport.generations.debug')" prepend-icon="mdi-bug-outline" />
+            <v-list-item
+              :title="
+                modelValue.writeActivity
+                  ? $t('$ezreeport.no')
+                  : $t('$ezreeport.yes')
+              "
+              :subtitle="$t('$ezreeport.generations.debug')"
+              prepend-icon="mdi-bug-outline"
+            />
           </v-list>
         </v-col>
       </v-row>
@@ -124,20 +174,36 @@
       <v-divider />
 
       <template v-if="taskLoading">
-        <v-list-subheader :title="$t('$ezreeport.generations.header:fetch:task')" />
+        <v-list-subheader
+          :title="$t('$ezreeport.generations.header:fetch:task')"
+        />
         <v-progress-linear color="primary" indeterminate />
       </template>
 
       <v-row v-if="task">
         <v-col>
           <v-list lines="two" density="compact">
-            <v-list-subheader :title="$t('$ezreeport.generations.header:task')" />
+            <v-list-subheader
+              :title="$t('$ezreeport.generations.header:task')"
+            />
 
-            <v-list-item :title="task.id" :subtitle="$t('$ezreeport.task.id')" prepend-icon="mdi-identifier" />
+            <v-list-item
+              :title="task.id"
+              :subtitle="$t('$ezreeport.task.id')"
+              prepend-icon="mdi-identifier"
+            />
 
-            <v-list-item :title="$t(`$ezreeport.task.recurrenceList.${task.recurrence}`)" :subtitle="$t('$ezreeport.task.recurrence')" prepend-icon="mdi-calendar-refresh" />
+            <v-list-item
+              :title="$t(`$ezreeport.task.recurrenceList.${task.recurrence}`)"
+              :subtitle="$t('$ezreeport.task.recurrence')"
+              prepend-icon="mdi-calendar-refresh"
+            />
 
-            <v-list-item :title="task.template.index" :subtitle="$t('$ezreeport.template.index')" prepend-icon="mdi-database" />
+            <v-list-item
+              :title="task.template.index"
+              :subtitle="$t('$ezreeport.template.index')"
+              prepend-icon="mdi-database"
+            />
           </v-list>
         </v-col>
 
@@ -145,24 +211,40 @@
           <v-list lines="two" density="compact">
             <v-list-subheader />
 
-            <v-list-item :title="task.extendedId" :subtitle="$t('$ezreeport.template.id')" prepend-icon="mdi-identifier" />
+            <v-list-item
+              :title="task.extendedId"
+              :subtitle="$t('$ezreeport.template.id')"
+              prepend-icon="mdi-identifier"
+            />
 
             <template v-if="templateLoading">
-              <v-list-subheader :title="$t('$ezreeport.generations.header:fetch:template')" />
+              <v-list-subheader
+                :title="$t('$ezreeport.generations.header:fetch:template')"
+              />
               <v-progress-linear color="primary" indeterminate />
             </template>
 
             <template v-if="template">
-              <v-list-item :title="template.name" :subtitle="$t('$ezreeport.generations.template')" prepend-icon="mdi-view-grid" />
+              <v-list-item
+                :title="template.name"
+                :subtitle="$t('$ezreeport.generations.template')"
+                prepend-icon="mdi-view-grid"
+              />
 
-              <v-list-item :title="task.template.dateField" :subtitle="$t('$ezreeport.template.dateField')" prepend-icon="mdi-calendar-search" />
+              <v-list-item
+                :title="task.template.dateField"
+                :subtitle="$t('$ezreeport.template.dateField')"
+                prepend-icon="mdi-calendar-search"
+              />
             </template>
           </v-list>
         </v-col>
       </v-row>
 
       <template v-if="resultLoading">
-        <v-list-subheader :title="$t('$ezreeport.generations.header:fetch:result')" />
+        <v-list-subheader
+          :title="$t('$ezreeport.generations.header:fetch:result')"
+        />
         <v-progress-linear color="primary" indeterminate />
       </template>
 
@@ -172,13 +254,25 @@
         <v-row>
           <v-col>
             <v-list lines="two" density="compact">
-              <v-list-subheader :title="$t('$ezreeport.generations.header:result')" />
+              <v-list-subheader
+                :title="$t('$ezreeport.generations.header:result')"
+              />
 
-              <v-list-item v-if="result.detail.period" :subtitle="$t('$ezreeport.task.period')" prepend-icon="mdi-calendar-range">
+              <v-list-item
+                v-if="result.detail.period"
+                :subtitle="$t('$ezreeport.task.period')"
+                prepend-icon="mdi-calendar-range"
+              >
                 <template #title>
-                  <LocalDate :model-value="result.detail.period.start" format="P" />
+                  <LocalDate
+                    :model-value="result.detail.period.start"
+                    format="P"
+                  />
                   ~
-                  <LocalDate :model-value="result.detail.period.end" format="P" />
+                  <LocalDate
+                    :model-value="result.detail.period.end"
+                    format="P"
+                  />
                 </template>
               </v-list-item>
 
@@ -193,14 +287,18 @@
 
           <v-col>
             <v-list lines="two" density="compact">
-              <v-list-subheader :title="$t('$ezreeport.generations.header:files')" />
+              <v-list-subheader
+                :title="$t('$ezreeport.generations.header:files')"
+              />
 
               <v-list-item
                 :title="$t('$ezreeport.task.generation.files.report')"
                 :disabled="!result.detail.files.report"
                 append-icon="mdi-download"
                 prepend-icon="mdi-file-pdf-box"
-                @click="downloadGenerationFile(result.detail.files.report || '')"
+                @click="
+                  downloadGenerationFile(result.detail.files.report || '')
+                "
               />
 
               <v-list-item
@@ -208,7 +306,9 @@
                 :disabled="!result.detail.files.detail"
                 append-icon="mdi-download"
                 prepend-icon="mdi-code-json"
-                @click="downloadGenerationFile(result.detail.files.detail || '')"
+                @click="
+                  downloadGenerationFile(result.detail.files.detail || '')
+                "
               />
 
               <v-list-item
@@ -216,7 +316,9 @@
                 :title="$t('$ezreeport.task.generation.files.debug')"
                 append-icon="mdi-download"
                 prepend-icon="mdi-bug-outline"
-                @click="downloadGenerationFile(`${result.detail.files.debug}` || '')"
+                @click="
+                  downloadGenerationFile(`${result.detail.files.debug}` || '')
+                "
               />
             </v-list>
           </v-col>
@@ -246,23 +348,34 @@
 
         <v-row v-if="result.detail.error">
           <v-col>
-            <v-list-subheader :title="$t('$ezreeport.generations.header:error')" class="ml-4" />
+            <v-list-subheader
+              :title="$t('$ezreeport.generations.header:error')"
+              class="ml-4"
+            />
 
             <v-alert type="error" variant="outlined">
               <template #text>
                 <ul>
                   <li>{{ result.detail.error.message }}</li>
                   <li>
-                    {{ $t('$ezreeport.task.generation.error.type') }}: "{{ result.detail.error.type }}"
+                    {{ $t('$ezreeport.task.generation.error.type') }}: "{{
+                      result.detail.error.type
+                    }}"
                   </li>
                   <li>
-                    {{ $t('$ezreeport.task.generation.error.name') }}: "{{ result.detail.error.name }}"
+                    {{ $t('$ezreeport.task.generation.error.name') }}: "{{
+                      result.detail.error.name
+                    }}"
                   </li>
                   <li v-if="result.detail.error.cause?.layout">
-                    {{ $t('$ezreeport.task.generation.error.layout') }}: "{{ result.detail.error.cause.layout }}"
+                    {{ $t('$ezreeport.task.generation.error.layout') }}: "{{
+                      result.detail.error.cause.layout
+                    }}"
                   </li>
                   <li v-if="result.detail.error.cause?.figure">
-                    {{ $t('$ezreeport.task.generation.error.figure') }}: "{{ result.detail.error.cause.figure }}"
+                    {{ $t('$ezreeport.task.generation.error.figure') }}: "{{
+                      result.detail.error.cause.figure
+                    }}"
                   </li>
                 </ul>
               </template>
@@ -288,9 +401,10 @@ import { isGenerationEnded } from '~sdk/helpers/generations';
 import { downloadBlob } from '~/lib/files';
 
 const props = defineProps<{
-  modelValue: Generation
+  modelValue: Generation;
 }>();
 
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 const taskLoading = ref(false);
@@ -308,10 +422,10 @@ const task = computedAsync(async () => {
     const value = await getTask(taskId.value, ['namespace']);
     taskLoading.value = false;
     return value;
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.open'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.open'), err);
     taskLoading.value = false;
-    return undefined;
+    return;
   }
 });
 
@@ -320,7 +434,7 @@ const extendedId = computed(() => task.value?.extendedId);
 /** Template of the current generation */
 const template = computedAsync(async () => {
   if (!extendedId.value) {
-    return undefined;
+    return;
   }
 
   templateLoading.value = true;
@@ -328,29 +442,34 @@ const template = computedAsync(async () => {
     const value = await getTemplate(extendedId.value);
     templateLoading.value = false;
     return value;
-  } catch (e) {
-    handleEzrError(t('$ezreeport.template.errors.open'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.template.errors.open'), err);
     templateLoading.value = false;
-    return undefined;
+    return;
   }
 });
 
 /** Report id of the current generation, used for cache purposes */
-const reportId = computed(() => (isEnded.value ? props.modelValue.reportId : undefined));
+const reportId = computed(() =>
+  isEnded.value ? props.modelValue.reportId : undefined
+);
 /** Result of the current generation */
 const result = computedAsync(async () => {
   if (!reportId.value) {
-    return undefined;
+    return;
   }
 
   resultLoading.value = true;
   try {
-    const value = await getFileAsJson(taskId.value, `${reportId.value}.det.json`);
+    const value = await getFileAsJson(
+      taskId.value,
+      `${reportId.value}.det.json`
+    );
     resultLoading.value = false;
     return value;
-  } catch (e) {
+  } catch (err) {
     resultLoading.value = false;
-    return undefined;
+    return;
   }
 });
 
@@ -359,8 +478,8 @@ async function downloadGenerationFile(path: string) {
     const filename = path.split('/').pop() ?? 'download';
     const blob = await getFileAsBlob(props.modelValue.taskId, path);
     downloadBlob(blob, filename);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.errors.download', { path }), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.errors.download', { path }), err);
   }
 }
 </script>

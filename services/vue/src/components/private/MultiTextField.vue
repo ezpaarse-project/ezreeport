@@ -1,10 +1,10 @@
 <template>
   <div class="d-flex">
-    <div v-if="prependIcon" style="width: 24px; margin-right: 1rem;">
+    <div v-if="prependIcon" style="width: 24px; margin-right: 1rem">
       <v-icon :icon="prependIcon" color="grey-darken-1" />
     </div>
 
-    <div style="flex: 1;">
+    <div style="flex: 1">
       <v-label :text="`${label || ''} (${elements.length})`" class="mb-0" />
 
       <v-slide-x-transition tag="div" group>
@@ -20,17 +20,14 @@
         />
       </v-slide-x-transition>
 
-      <v-slide-x-transition
-        ref="scrollerRef"
-        tag="div"
-        group
-        class="container"
-      >
+      <v-slide-x-transition ref="scrollerRef" tag="div" group class="container">
         <v-chip
           v-for="(item, i) in elements"
           :key="item.id"
           :closable="!readonly"
-          :color="(itemErrors.get(item.id)?.length ?? 0) > 0 ? 'error' : undefined"
+          :color="
+            (itemErrors.get(item.id)?.length ?? 0) > 0 ? 'error' : undefined
+          "
           density="comfortable"
           class="value-chip my-1"
           @click:close="remValue(item.id)"
@@ -71,36 +68,43 @@ import { nanoid } from 'nanoid/non-secure';
 // Component props
 const props = defineProps<{
   /** Values to edit */
-  modelValue?: string | string[],
+  modelValue?: string | string[];
   /** Is the field readonly */
-  readonly?: boolean,
+  readonly?: boolean;
   /** Icon to prepend */
-  prependIcon?: string,
+  prependIcon?: string;
   /** Label for the field */
-  label?: string,
+  label?: string;
   /** Label for the add button */
   addLabel?: string;
   /** Field variant */
-  variant?: 'filled' | 'underlined' | 'outlined' | 'plain' | 'solo' | 'solo-inverted' | 'solo-filled',
+  variant?:
+    | 'filled'
+    | 'underlined'
+    | 'outlined'
+    | 'plain'
+    | 'solo'
+    | 'solo-inverted'
+    | 'solo-filled';
   /** Field density */
-  density?: 'default' | 'comfortable' | 'compact',
+  density?: 'default' | 'comfortable' | 'compact';
   /** Rules for the field */
-  rules?: ((v: string[]) => boolean | string)[],
+  rules?: ((val: string[]) => boolean | string)[];
   /** Rules for each item */
-  itemRules?: ((v: string, i: number) => boolean | string)[],
+  itemRules?: ((val: string, index: number) => boolean | string)[];
   /** Placeholder for each item */
-  itemPlaceholder?: string,
+  itemPlaceholder?: string;
   /** Maximum number of items */
-  count?: number,
+  count?: number;
 }>();
 
 // Component events
 const emit = defineEmits<{
   /** Updated values */
-  (e: 'update:modelValue', value: string | string[] | undefined): void,
+  (event: 'update:modelValue', value: string | string[] | undefined): void;
 }>();
 
-type Element = { id: string, value: string };
+type Element = { id: string; value: string };
 
 const rawElements = ref<Element[]>([]);
 
@@ -109,24 +113,29 @@ const scrollerRef = useTemplateRef('scrollerRef');
 /** Values as an array */
 const elements = computed({
   get: () => rawElements.value,
-  set: (v) => {
-    rawElements.value = v;
+  set: (val) => {
+    rawElements.value = val;
 
-    if (v.length === 1) {
-      emit('update:modelValue', v[0].value);
+    if (val.length === 1) {
+      emit('update:modelValue', val[0].value);
       return;
     }
 
-    if (v.length === 0) {
-      emit('update:modelValue', undefined);
+    if (val.length === 0) {
+      emit('update:modelValue');
       return;
     }
 
-    emit('update:modelValue', Array.from(new Set(v.map(({ value }) => value))));
+    emit(
+      'update:modelValue',
+      Array.from(new Set(val.map(({ value }) => value)))
+    );
   },
 });
 
-const containerHeight = computed(() => `${Math.min(props.count ?? 6, elements.value.length) * (36 + 2)}px`);
+const containerHeight = computed(
+  () => `${Math.min(props.count ?? 6, elements.value.length) * (36 + 2)}px`
+);
 
 const rulesErrors = computed((): string[] => {
   if (!props.rules) {
@@ -137,7 +146,7 @@ const rulesErrors = computed((): string[] => {
 
   return props.rules
     .map((rule) => rule(values) || 'Error')
-    .filter((v) => v !== true);
+    .filter((val) => val !== true);
 });
 
 const itemErrors = computed((): Map<string, string[]> => {
@@ -152,16 +161,19 @@ const itemErrors = computed((): Map<string, string[]> => {
       item.id,
       rules
         .map((rule) => rule(item.value, index) || 'Error')
-        .filter((v) => v !== true),
-    ]),
+        .filter((val) => val !== true),
+    ])
   );
 });
 
 /** Error messages using given rules */
-const errorMessages = computed(() => new Set([
-  ...rulesErrors.value,
-  ...Array.from(itemErrors.value.values()).flat(),
-]));
+const errorMessages = computed(
+  () =>
+    new Set([
+      ...rulesErrors.value,
+      ...Array.from(itemErrors.value.values()).flat(),
+    ])
+);
 
 async function scrollToBottom() {
   await nextTick();
@@ -176,7 +188,7 @@ async function scrollToBottom() {
  * Add a new value
  */
 function addValue() {
-  if (elements.value.find(({ value }) => value === '')) {
+  if (elements.value.some(({ value }) => value === '')) {
     return;
   }
   const values = [...elements.value, { id: nanoid(), value: '' }];
@@ -208,23 +220,25 @@ function editValue(id: string, newValue: string) {
 
 watch(
   () => props.modelValue,
-  (v) => {
+  (val) => {
     let values: string[] = [];
-    if (Array.isArray(v)) {
-      values = v;
-    } else if (v != null) {
-      values = [v];
+    if (Array.isArray(val)) {
+      values = val;
+    } else if (val != null) {
+      values = [val];
     }
 
     rawElements.value = values.map((value) => {
-      const existingEl = rawElements.value.find(({ value: el }) => el === value);
+      const existingEl = rawElements.value.find(
+        ({ value: el }) => el === value
+      );
       if (existingEl) {
         return existingEl;
       }
       return { id: nanoid(), value };
     });
   },
-  { immediate: true },
+  { immediate: true }
 );
 </script>
 

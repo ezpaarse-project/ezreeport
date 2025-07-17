@@ -11,6 +11,8 @@
     "save": "Sauvegarder",
     "refresh": "Rafraîchir",
     "advanced": "Avancé",
+    "superUserMode": "Mode super utilisateur",
+    "superUserMode:tooltip": "Ce mode est réservé aux \"super utilisateurs\" qui souhaitent créer des rapports très avancés.",
     "show_json": "Afficher le JSON",
     "settings": "Paramètres",
     "required": "Champ requis",
@@ -31,6 +33,7 @@
     "yes": "Oui",
     "no": "Non",
     "restart": "Relancer",
+    "readonly": "Lecture seule",
     "task": {
       "title": "Rapport périodique",
       "title:list": "Rapports périodiques ({n})",
@@ -57,8 +60,6 @@
       "period": "Période",
       "description": "Description",
       "extended": "Modèle de base",
-      "superUserMode": "Mode super utilisateur",
-      "superUserMode:tooltip": "Ce mode est réservé aux \"super utilisateurs\" qui souhaitent créer des rapports très avancés.",
       "recurrenceList": {
         "DAILY": "Quotidien",
         "WEEKLY": "Hebdomadaire",
@@ -172,7 +173,7 @@
       "createLayout": "Créez votre première page",
       "vars": "Variables disponibles",
       "varsList": {
-        "dateField": "Champ date du template",
+        "dateField": "{field} (Champ date du template)",
         "length": "Nombre d'éléments affichés"
       },
       "filters": {
@@ -210,7 +211,7 @@
         }
       },
       "aggregation": {
-        "title": "Aggregation",
+        "title": "Agrégation",
         "field": "@:$ezreeport.field",
         "type": "@:$ezreeport.type",
         "raw": "Requête DSL",
@@ -488,7 +489,8 @@
       "downloadAttachement": "Impossible de télécharger la pièce jointe",
       "refreshNamespaces": "Impossible d'actualiser les @:$ezreeport.namespace",
       "resolveNextDate": "Impossible de résoudre la prochaine date de prochain envoi",
-      "resolvePeriod": "Impossible de résoudre la période demandée"
+      "resolvePeriod": "Impossible de résoudre la période demandée",
+      "futureDate": "La date doit se trouver dans le futur"
     }
   }
 }

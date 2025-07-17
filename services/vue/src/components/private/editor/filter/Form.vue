@@ -5,7 +5,7 @@
   >
     <template #append>
       <v-btn
-        v-tooltip="$t('$ezreeport.advanced')"
+        v-tooltip="$t('$ezreeport.superUserMode')"
         :color="isAdvanced ? 'orange' : 'grey'"
         :disabled="isAdvanced && (!!rawParseError || rawHasChanged)"
         density="comfortable"
@@ -40,7 +40,7 @@
                 v-model="filter.field"
                 :label="$t('$ezreeport.editor.filters.field')"
                 :items="mapping"
-                :rules="[(v) => !!v || $t('$ezreeport.required')]"
+                :rules="[(val) => !!val || $t('$ezreeport.required')]"
                 :return-object="false"
                 prepend-icon="mdi-form-textbox"
                 variant="underlined"
@@ -92,7 +92,7 @@
             <v-text-field
               v-model="filter.name"
               :label="$t('$ezreeport.editor.filters.name')"
-              :rules="[(v) => !!v || $t('$ezreeport.required')]"
+              :rules="[(val) => !!val || $t('$ezreeport.required')]"
               prepend-icon="mdi-rename"
               variant="underlined"
               required
@@ -132,10 +132,11 @@ const props = defineProps<{
 // Component events
 defineEmits<{
   /** Filter created or updated */
-  (e: 'update:modelValue', value: TemplateFilter): void,
+  (event: 'update:modelValue', value: TemplateFilter): void,
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 const { getOptionsFromMapping } = useTemplateEditor();
 

@@ -70,6 +70,10 @@
         </v-col>
       </v-row>
     </v-card-text>
+
+    <v-card-actions v-if="$slots.actions">
+      <slot name="actions" />
+    </v-card-actions>
   </v-card>
 </template>
 
@@ -90,9 +94,9 @@ import {
 // Components props
 const props = defineProps<{
   /** The body to edit */
-  modelValue: TemplateBodyHelper,
+  modelValue: TemplateBodyHelper;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
   /** Current layout index */
   index?: number;
 }>();
@@ -100,12 +104,13 @@ const props = defineProps<{
 // Components events
 const emit = defineEmits<{
   /** Updated body */
-  (e: 'update:modelValue', value: TemplateBodyHelper): void
+  (event: 'update:modelValue', value: TemplateBodyHelper): void;
   /** Updated index */
-  (e: 'update:index', value: number): void
+  (event: 'update:index', value: number): void;
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 /** Current layout index, a computed around props if provided */
@@ -113,7 +118,9 @@ let innerIndex: Ref<number> | WritableComputedRef<number> = ref(0);
 if (props.index != null) {
   innerIndex = computed({
     get: () => props.index ?? 0,
-    set: (v) => { emit('update:index', v); },
+    set: (value) => {
+      emit('update:index', value);
+    },
   });
 }
 
@@ -122,24 +129,24 @@ const drawerRef = useTemplateRef('drawerRef');
 /** Layouts */
 const innerLayouts = computed({
   get: () => props.modelValue.layouts,
-  set: (v) => {
+  set: (value) => {
     const params = props.modelValue;
-    params.layouts = v;
+    params.layouts = value;
     emit('update:modelValue', params);
   },
 });
 /** Current layout selected */
 const currentLayout = computed({
   get: () => props.modelValue.layouts.at(innerIndex.value),
-  set: (v) => {
-    if (!currentLayout.value || !v) {
+  set: (value) => {
+    if (!currentLayout.value || !value) {
       return;
     }
 
     try {
-      updateLayoutOfHelper(props.modelValue, currentLayout.value, v);
-    } catch (e) {
-      handleEzrError(t('$ezreeport.editor.layouts.errors.edit'), e);
+      updateLayoutOfHelper(props.modelValue, currentLayout.value, value);
+    } catch (err) {
+      handleEzrError(t('$ezreeport.editor.layouts.errors.edit'), err);
     }
   },
 });
@@ -152,8 +159,8 @@ async function createNewLayout() {
     innerIndex.value = props.modelValue.layouts.length - 1;
     await nextTick();
     drawerRef.value?.scrollDown();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.editor.layouts.errors.create'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.editor.layouts.errors.create'), err);
   }
 }
 
@@ -167,16 +174,16 @@ async function cloneLayout(layout: LayoutHelper, index: number) {
 
     await nextTick();
     drawerRef.value?.scrollTo(newIndex);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.editor.layouts.errors.clone'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.editor.layouts.errors.clone'), err);
   }
 }
 
 function deleteLayout(layout: LayoutHelper) {
   try {
     removeLayoutOfHelper(props.modelValue, layout);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.editor.layouts.errors.delete'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.editor.layouts.errors.delete'), err);
   }
 }
 

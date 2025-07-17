@@ -9,6 +9,7 @@ const props = defineProps<{
   modelValue: Generation,
 }>();
 
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 const tooltip = computed(() => t(`$ezreeport.generations.statusList.${props.modelValue.status}`));

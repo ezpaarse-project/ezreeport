@@ -21,7 +21,11 @@
       <v-row v-if="result || error">
         <v-col>
           <v-alert
-            :title="error ? $t('$ezreeport.task.generation.error.title') : $t('$ezreeport.task.generation.success.title')"
+            :title="
+              error
+                ? $t('$ezreeport.task.generation.error.title')
+                : $t('$ezreeport.task.generation.success.title')
+            "
             :text="$t('$ezreeport.task.generation.success.description')"
             :type="alertColor"
           >
@@ -29,16 +33,24 @@
               <ul>
                 <li>{{ error.message }}</li>
                 <li>
-                  {{ $t('$ezreeport.task.generation.error.type') }}: "{{ error.type }}"
+                  {{ $t('$ezreeport.task.generation.error.type') }}: "{{
+                    error.type
+                  }}"
                 </li>
                 <li>
-                  {{ $t('$ezreeport.task.generation.error.name') }}: "{{ error.name }}"
+                  {{ $t('$ezreeport.task.generation.error.name') }}: "{{
+                    error.name
+                  }}"
                 </li>
                 <li v-if="error.cause?.layout">
-                  {{ $t('$ezreeport.task.generation.error.layout') }}: "{{ error.cause.layout }}"
+                  {{ $t('$ezreeport.task.generation.error.layout') }}: "{{
+                    error.cause.layout
+                  }}"
                 </li>
                 <li v-if="error.cause?.figure">
-                  {{ $t('$ezreeport.task.generation.error.figure') }}: "{{ error.cause.figure }}"
+                  {{ $t('$ezreeport.task.generation.error.figure') }}: "{{
+                    error.cause.figure
+                  }}"
                 </li>
               </ul>
             </template>
@@ -46,11 +58,7 @@
             <template #append v-if="result">
               <v-menu>
                 <template #activator="{ props: menu }">
-                  <v-btn
-                    v-bind="menu"
-                    variant="elevated"
-                    icon="mdi-download"
-                  />
+                  <v-btn v-bind="menu" variant="elevated" icon="mdi-download" />
                 </template>
 
                 <v-list>
@@ -61,7 +69,11 @@
                     @click="downloadGenerationFile(result.detail.files.report)"
                   />
 
-                  <v-divider v-if="result.detail.files.report && result.detail.files.detail" />
+                  <v-divider
+                    v-if="
+                      result.detail.files.report && result.detail.files.detail
+                    "
+                  />
 
                   <v-list-item
                     v-if="result.detail.files.detail"
@@ -83,8 +95,11 @@
               :model-value="targets"
               :label="$t('$ezreeport.task.targets')"
               :add-label="$t('$ezreeport.task.targets:add')"
-              :rules="[(v) => v.length > 0 || $t('$ezreeport.required')]"
-              :item-rules="[(v, i) => isEmail(v) || $t('$ezreeport.errors.invalidEmail', i + 1)]"
+              :rules="[(val) => val.length >= 0 || $t('$ezreeport.required')]"
+              :item-rules="[
+                (val, i) =>
+                  isEmail(val) || $t('$ezreeport.errors.invalidEmail', i + 1),
+              ]"
               :item-placeholder="$t('$ezreeport.task.targets:hint')"
               prepend-icon="mdi-mailbox"
               variant="underlined"
@@ -170,10 +185,11 @@ const maxDate = add(endOfDay(new Date()), { days: -1 });
 // Components props
 const props = defineProps<{
   /** The task to edit */
-  modelValue: Omit<Task, 'template'>,
+  modelValue: Omit<Task, 'template'>;
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 /** Is basic form valid */
@@ -194,7 +210,10 @@ const error = ref<ReportError | undefined>();
 const result = ref<ReportResult | undefined>();
 
 /** Formatted period */
-const formattedPeriod = computed(() => `${format(period.value.start, 'dd/MM/yyyy')} ~ ${format(period.value.end, 'dd/MM/yyyy')}`);
+const formattedPeriod = computed(
+  () =>
+    `${format(period.value.start, 'dd/MM/yyyy')} ~ ${format(period.value.end, 'dd/MM/yyyy')}`
+);
 /** Days in period */
 const periodRange = computed(() => eachDayOfInterval(period.value));
 /** Color of the alert */
@@ -223,9 +242,11 @@ function onTargetUpdated(emails: string | string[] | undefined) {
   targets.value = Array.from(
     new Set(
       allTargets
-        .join(';').replace(/[,]/g, ';')
-        .split(';').map((mail) => mail.trim()),
-    ),
+        .join(';')
+        .replaceAll(/[,]/g, ';')
+        .split(';')
+        .map((mail) => mail.trim())
+    )
   );
 }
 
@@ -236,7 +257,11 @@ async function updatePeriodFromRecurrence(date: Date, offset = 0) {
 
   periodResolving.value = true;
   try {
-    period.value = await getPeriodFromRecurrence(props.modelValue.recurrence, date, offset);
+    period.value = await getPeriodFromRecurrence(
+      props.modelValue.recurrence,
+      date,
+      offset
+    );
   } catch (err) {
     handleEzrError(t('$ezreeport.errors.resolvePeriod'), err);
   }
@@ -259,7 +284,11 @@ async function generate() {
   result.value = undefined;
 
   try {
-    const generation = generateAndListenReportOfTask(props.modelValue, period.value, targets.value);
+    const generation = generateAndListenReportOfTask(
+      props.modelValue,
+      period.value,
+      targets.value
+    );
     generation.on('progress', (ev) => {
       if (ev.progress != null) {
         progress.value = ev.progress;
@@ -287,14 +316,14 @@ async function downloadGenerationFile(path: string) {
     const filename = path.split('/').pop() ?? 'download';
     const blob = await getFileAsBlob(result.value.detail.taskId, path);
     downloadBlob(blob, filename);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.errors.download', { path }), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.errors.download', { path }), err);
   }
 }
 
 watch(
   () => props.modelValue,
-  (v) => v && updatePeriodFromRecurrence(new Date(), -1),
-  { immediate: true },
+  (val) => val && updatePeriodFromRecurrence(new Date(), -1),
+  { immediate: true }
 );
 </script>

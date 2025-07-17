@@ -1,6 +1,10 @@
 <template>
   <v-card
-    :title="modelValue ? $t('$ezreeport.template.tags.title:edit') : $t('$ezreeport.template.tags.title:new')"
+    :title="
+      modelValue
+        ? $t('$ezreeport.template.tags.title:edit')
+        : $t('$ezreeport.template.tags.title:new')
+    "
     :prepend-icon="modelValue ? 'mdi-tag-edit' : 'mdi-tag-plus'"
   >
     <template #text>
@@ -10,7 +14,7 @@
             <v-text-field
               v-model="tag.name"
               :label="$t('$ezreeport.name')"
-              :rules="[(v) => !!v || $t('$ezreeport.required')]"
+              :rules="[(val) => !!val || $t('$ezreeport.required')]"
               prepend-icon="mdi-rename"
               variant="underlined"
               required
@@ -20,11 +24,7 @@
 
         <v-row>
           <v-col class="d-flex justify-center">
-            <v-color-picker
-              v-model="tag.color"
-              mode="hex"
-              elevation="0"
-            />
+            <v-color-picker v-model="tag.color" mode="hex" elevation="0" />
             <v-color-picker
               v-model="tag.color"
               mode="hex"
@@ -109,20 +109,22 @@ import type { TemplateTag } from '~sdk/helpers/templates';
 // Components props
 const props = defineProps<{
   /** The tag to show */
-  modelValue: TemplateTag | undefined,
+  modelValue: TemplateTag | undefined;
 }>();
 
 // Components events
 defineEmits<{
   /** Updated tag */
-  (e: 'update:modelValue', value: TemplateTag): void
+  (event: 'update:modelValue', value: TemplateTag): void;
 }>();
 
 /** Is form valid */
 const isValid = ref(false);
 
 /** Filter to edit */
-const { cloned: tag } = useCloned<TemplateTag>(props.modelValue ?? { name: '' });
+const { cloned: tag } = useCloned<TemplateTag>(
+  props.modelValue ?? { name: '' }
+);
 
 /** Validate on mount */
 useTemplateVForm('formRef');

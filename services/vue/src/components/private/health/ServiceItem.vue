@@ -29,6 +29,7 @@ const props = defineProps<{
   label: string,
 }>();
 
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 const versions = computed(() => Array.from(
@@ -40,7 +41,7 @@ const tooltip = computed(() => {
     return t('$ezreeport.health.ko');
   }
   if (props.modelValue.length === 1) {
-    return undefined;
+    return;
   }
   return t('$ezreeport.health.instances', props.modelValue.length);
 });

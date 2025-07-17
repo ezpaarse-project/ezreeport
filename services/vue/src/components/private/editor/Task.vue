@@ -18,6 +18,16 @@
 
       <v-col v-if="currentLayout" class="d-flex align-center">
         {{ $t('$ezreeport.editor.title:figures') }}
+
+        <template v-if="readonly || currentLayout.readonly">
+          <v-spacer />
+
+          <v-alert
+            :title="$t('$ezreeport.readonly')"
+            icon="mdi-lock"
+            density="compact"
+          />
+        </template>
       </v-col>
     </v-toolbar>
 
@@ -70,6 +80,14 @@
         </v-col>
       </v-row>
     </v-card-text>
+
+    <template v-if="$slots.actions">
+      <v-divider />
+
+      <v-card-actions>
+        <slot name="actions" />
+      </v-card-actions>
+    </template>
   </v-card>
 </template>
 
@@ -78,8 +96,8 @@ import type { TemplateBodyHelper } from '~sdk/helpers/templates';
 import {
   createTaskLayoutHelper,
   createTaskLayoutHelperFrom,
-  TaskLayoutHelper,
   taskLayoutHelperToJSON,
+  type TaskLayoutHelper,
   type AnyLayoutHelper,
 } from '~sdk/helpers/layouts';
 import {
@@ -93,11 +111,11 @@ import {
 // Components props
 const props = defineProps<{
   /** The body to edit */
-  modelValue: TaskBodyHelper,
+  modelValue: TaskBodyHelper;
   /** The template extended by current task */
-  extends: TemplateBodyHelper,
+  extends: TemplateBodyHelper;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
   /** Current layout index */
   index?: number;
 }>();
@@ -105,12 +123,13 @@ const props = defineProps<{
 // Components events
 const emit = defineEmits<{
   /** Updated body */
-  (e: 'update:modelValue', value: TaskBodyHelper): void
+  (event: 'update:modelValue', value: TaskBodyHelper): void;
   /** Updated index */
-  (e: 'update:index', value: number): void
+  (event: 'update:index', value: number): void;
 }>();
 
 // Utils composables
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 /** Current layout index, a computed around props if provided */
@@ -118,7 +137,9 @@ let innerIndex: Ref<number> | WritableComputedRef<number> = ref(0);
 if (props.index != null) {
   innerIndex = computed({
     get: () => props.index ?? 0,
-    set: (v) => { emit('update:index', v); },
+    set: (value) => {
+      emit('update:index', value);
+    },
   });
 }
 
@@ -127,10 +148,10 @@ const drawerRef = useTemplateRef('drawerRef');
 /** Layouts */
 const innerLayouts = computed({
   get: () => getLayoutsOfHelpers(props.modelValue, props.extends),
-  set: (v) => {
-    const inserts: TaskLayoutHelper[] = v
-      .map((l, i) => ({ ...l, at: i }))
-      .filter((l) => !l.readonly);
+  set: (value) => {
+    const inserts: TaskLayoutHelper[] = value
+      .map((lay, index) => ({ ...lay, at: index }))
+      .filter((lay) => !lay.readonly);
 
     const params = props.modelValue;
     params.inserts = inserts;
@@ -140,16 +161,25 @@ const innerLayouts = computed({
 /** Current layout selected */
 const currentLayout = computed({
   get: () => innerLayouts.value.at(innerIndex.value),
-  set: (v) => {
-    if (!currentLayout.value || currentLayout.value.readonly || !v || v.readonly) {
+  set: (value) => {
+    if (
+      !currentLayout.value ||
+      currentLayout.value.readonly ||
+      !value ||
+      value.readonly
+    ) {
       return;
     }
 
     const at = innerIndex.value;
     try {
-      updateLayoutOfHelper(props.modelValue, { ...currentLayout.value, at }, { ...v, at });
-    } catch (e) {
-      handleEzrError(t('$ezreeport.editor.inserts.errors.edit'), e);
+      updateLayoutOfHelper(
+        props.modelValue,
+        { ...currentLayout.value, at },
+        { ...value, at }
+      );
+    } catch (err) {
+      handleEzrError(t('$ezreeport.editor.inserts.errors.edit'), err);
     }
   },
 });
@@ -162,18 +192,23 @@ async function createNewLayout() {
     innerIndex.value = innerLayouts.value.length - 1;
     await nextTick();
     drawerRef.value?.scrollDown();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.editor.inserts.errors.create'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.editor.inserts.errors.create'), err);
   }
 }
 
-async function cloneLayout(layout: AnyLayoutHelper & { readonly?: boolean }, index: number) {
+async function cloneLayout(
+  layout: AnyLayoutHelper & { readonly?: boolean },
+  index: number
+) {
   if (layout.readonly) {
     return;
   }
 
   try {
-    const clone = createTaskLayoutHelperFrom(taskLayoutHelperToJSON({ ...layout, at: index }));
+    const clone = createTaskLayoutHelperFrom(
+      taskLayoutHelperToJSON({ ...layout, at: index })
+    );
     const newIndex = index + 1;
 
     addLayoutOfHelper(props.modelValue, clone);
@@ -181,8 +216,8 @@ async function cloneLayout(layout: AnyLayoutHelper & { readonly?: boolean }, ind
 
     await nextTick();
     drawerRef.value?.scrollTo(newIndex);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.editor.inserts.errors.clone'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.editor.inserts.errors.clone'), err);
   }
 }
 
@@ -193,8 +228,8 @@ function deleteLayout(layout: AnyLayoutHelper & { readonly?: boolean }) {
 
   try {
     removeLayoutOfHelper(props.modelValue, { ...layout, at: 0 });
-  } catch (e) {
-    handleEzrError(t('$ezreeport.editor.inserts.errors.delete'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.editor.inserts.errors.delete'), err);
   }
 }
 

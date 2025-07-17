@@ -9,11 +9,7 @@
     item-value="id"
   >
     <template #top>
-      <v-toolbar
-        :title="title"
-        color="transparent"
-        density="comfortable"
-      >
+      <v-toolbar :title="title" color="transparent" density="comfortable">
         <template v-if="$slots.prepend" #prepend>
           <slot name="prepend" />
         </template>
@@ -61,7 +57,11 @@
 
     <template #[`item.name`]="{ value, item }">
       {{ value }}
-      <TemplateTagView v-if="item.extends?.tags" :model-value="item.extends.tags" size="x-small" />
+      <TemplateTagView
+        v-if="item.extends?.tags"
+        :model-value="item.extends.tags"
+        size="x-small"
+      />
     </template>
 
     <template #[`item.recurrence`]="{ value }">
@@ -108,15 +108,15 @@
     <template #[`item.enabled`]="{ value, item }">
       <v-switch
         :model-value="value"
-        :label="value
-          ? $t('$ezreeport.task.enabled')
-          : $t('$ezreeport.task.disabled')"
+        :label="
+          value ? $t('$ezreeport.task.enabled') : $t('$ezreeport.task.disabled')
+        "
         :disabled="!availableActions.state"
         :loading="loading"
         density="comfortable"
         color="primary"
         hide-details
-        style="transform: scale(0.8);"
+        style="transform: scale(0.8)"
         @update:model-value="toggleItemState(item)"
       />
     </template>
@@ -170,7 +170,9 @@
       </v-menu>
     </template>
 
-    <template #[`item.data-table-expand`]="{ internalItem, toggleExpand, isExpanded }">
+    <template
+      #[`item.data-table-expand`]="{ internalItem, toggleExpand, isExpanded }"
+    >
       <v-btn
         v-if="internalItem.raw.description"
         :icon="isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
@@ -252,14 +254,19 @@
         show-namespace
         show-advanced
         @update:model-value="closeForm()"
-        @open:advanced="openAdvancedForm({ update: { data: $event, raw: updatedTask } })"
+        @open:advanced="
+          openAdvancedForm({ update: { data: $event, raw: updatedTask } })
+        "
       >
         <template #actions>
           <v-btn :text="$t('$ezreeport.cancel')" @click="closeForm()" />
         </template>
       </TaskEditionForm>
 
-      <TaskGenerationForm v-else-if="generatedTask" :model-value="generatedTask">
+      <TaskGenerationForm
+        v-else-if="generatedTask"
+        :model-value="generatedTask"
+      >
         <template #actions>
           <v-btn :text="$t('$ezreeport.cancel')" @click="closeForm()" />
         </template>
@@ -314,10 +321,11 @@ const props = defineProps<{
 
 // Components events
 const emit = defineEmits<{
-  (e: 'update:itemsPerPage', value: number): void
+  (event: 'update:itemsPerPage', value: number): void;
 }>();
 
 // Utils composable
+// oxlint-disable-next-line id-length
 const { t } = useI18n();
 
 const arePermissionsReady = ref(false);
@@ -328,73 +336,77 @@ const isFormOpen = ref(false);
 const advancedTask = ref<TaskHelper | undefined>();
 
 /** Items per page shortcut */
-const itemsPerPage = computed({ get: () => props.itemsPerPage || 10, set: (v) => emit('update:itemsPerPage', v) });
+const itemsPerPage = computed({
+  get: () => props.itemsPerPage || 10,
+  set: (value) => emit('update:itemsPerPage', value),
+});
 /** List of tasks */
-const {
-  total,
-  refresh,
-  loading,
-  filters,
-  vDataTableOptions,
-} = useServerSidePagination(
-  (params) => getAllTasks(params),
-  { sortBy: 'name', itemsPerPage, include: ['extends.tags', 'namespace'] },
+const { total, refresh, loading, filters, vDataTableOptions } =
+  useServerSidePagination((params) => getAllTasks(params), {
+    sortBy: 'name',
+    itemsPerPage,
+    include: ['extends.tags', 'namespace'],
+  });
+
+const title = computed(
+  () =>
+    `${props.titlePrefix || ''}${t('$ezreeport.task.title:list', total.value)}`
 );
 
-const title = computed(() => `${props.titlePrefix || ''}${t('$ezreeport.task.title:list', total.value)}`);
-
 /** Headers for table */
-const headers = computed((): VDataTableHeaders => [
-  {
-    title: t('$ezreeport.name'),
-    value: 'name',
-    sortable: true,
-  },
-  {
-    title: t('$ezreeport.task.recurrence'),
-    value: 'recurrence',
-    sortable: true,
-    align: 'center',
-  },
-  {
-    title: t('$ezreeport.namespace'),
-    value: 'namespace',
-  },
-  {
-    title: t('$ezreeport.task.targets'),
-    value: 'targets',
-    align: 'center',
-  },
-  {
-    title: t('$ezreeport.task.lastRun'),
-    value: 'lastRun',
-    sortable: true,
-    align: 'center',
-  },
-  {
-    title: t('$ezreeport.task.nextRun'),
-    value: 'nextRun',
-    sortable: true,
-    align: 'center',
-  },
-  {
-    title: t('$ezreeport.task.state'),
-    value: 'enabled',
-    sortable: true,
-    align: 'center',
-    minWidth: '175px',
-  },
-  {
-    title: t('$ezreeport.updatedAt'),
-    value: 'updatedAt',
-    sortable: true,
-  },
-  {
-    title: t('$ezreeport.actions'),
-    value: '_actions',
-    align: 'center',
-  },
-]);
+const headers = computed(
+  (): VDataTableHeaders => [
+    {
+      title: t('$ezreeport.name'),
+      value: 'name',
+      sortable: true,
+    },
+    {
+      title: t('$ezreeport.task.recurrence'),
+      value: 'recurrence',
+      sortable: true,
+      align: 'center',
+    },
+    {
+      title: t('$ezreeport.namespace'),
+      value: 'namespace',
+    },
+    {
+      title: t('$ezreeport.task.targets'),
+      value: 'targets',
+      align: 'center',
+    },
+    {
+      title: t('$ezreeport.task.lastRun'),
+      value: 'lastRun',
+      sortable: true,
+      align: 'center',
+    },
+    {
+      title: t('$ezreeport.task.nextRun'),
+      value: 'nextRun',
+      sortable: true,
+      align: 'center',
+    },
+    {
+      title: t('$ezreeport.task.state'),
+      value: 'enabled',
+      sortable: true,
+      align: 'center',
+      minWidth: '175px',
+    },
+    {
+      title: t('$ezreeport.updatedAt'),
+      value: 'updatedAt',
+      sortable: true,
+    },
+    {
+      title: t('$ezreeport.actions'),
+      value: '_actions',
+      align: 'center',
+    },
+  ]
+);
 
 const availableActions = computed(() => {
   if (!arePermissionsReady.value) {
@@ -412,10 +424,10 @@ const availableActions = computed(() => {
 
 const selectedTaskIds = computed({
   get: () => selectedTasks.value.map((task) => task.id),
-  set: (v) => {
-    const ids = new Set(v);
-    selectedTasks.value = selectedTasks.value.filter(
-      (task) => ids.has(task.id),
+  set: (value) => {
+    const ids = new Set(value);
+    selectedTasks.value = selectedTasks.value.filter((task) =>
+      ids.has(task.id)
     );
   },
 });
@@ -424,11 +436,11 @@ async function openForm(task?: Omit<Task, 'template'>) {
   try {
     advancedTask.value = undefined;
     generatedTask.value = undefined;
-    updatedTask.value = task && await getTask(task);
+    updatedTask.value = task && (await getTask(task));
 
     isFormOpen.value = true;
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.open'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.open'), err);
   }
 }
 
@@ -453,21 +465,21 @@ async function openDuplicateForm(task: Omit<Task, 'template'>) {
     };
 
     isFormOpen.value = true;
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.open'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.open'), err);
   }
 }
 
 /** Type to hold data from others forms */
 type AdvancedFormCurrent = {
   create?: {
-    data: AdditionalDataForPreset,
-    preset?: TaskPreset,
-  }
+    data: AdditionalDataForPreset;
+    preset?: TaskPreset;
+  };
   update?: {
-    data: InputTask,
-    raw: Task,
-  }
+    data: InputTask;
+    raw: Task;
+  };
 };
 
 async function openAdvancedForm(current?: AdvancedFormCurrent) {
@@ -489,7 +501,7 @@ async function openAdvancedForm(current?: AdvancedFormCurrent) {
         data.index || preset?.fetchOptions.index,
         preset?.fetchOptions.dateField,
         undefined,
-        data.filters,
+        data.filters
       );
 
       value = createTaskHelper(
@@ -499,7 +511,7 @@ async function openAdvancedForm(current?: AdvancedFormCurrent) {
         preset?.templateId,
         template,
         data.targets,
-        preset?.recurrence,
+        preset?.recurrence
       );
     } else {
       value = createTaskHelper();
@@ -513,8 +525,8 @@ async function openAdvancedForm(current?: AdvancedFormCurrent) {
 
       isFormOpen.value = true;
     }, 250);
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.open'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.open'), err);
   }
 }
 
@@ -527,20 +539,22 @@ async function toggleItemState(task: Omit<Task, 'template'>) {
   try {
     await changeTaskEnableState(task, !task.enabled);
     refresh();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.edit'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.edit'), err);
   }
 }
 
 async function toggleSelectedState() {
   try {
-    await Promise.all(selectedTasks.value.map(
-      (task) => changeTaskEnableState(task, !task.enabled),
-    ));
+    await Promise.all(
+      selectedTasks.value.map((task) =>
+        changeTaskEnableState(task, !task.enabled)
+      )
+    );
     selectedTasks.value = [];
     refresh();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.edit'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.edit'), err);
   }
 }
 
@@ -549,8 +563,8 @@ async function deleteItem(task: Omit<Task, 'template'>) {
   try {
     await deleteTask(task);
     refresh();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.delete'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.delete'), err);
   }
 }
 
@@ -560,8 +574,8 @@ async function deleteSelected() {
     await Promise.all(selectedTasks.value.map((task) => deleteTask(task)));
     selectedTasks.value = [];
     refresh();
-  } catch (e) {
-    handleEzrError(t('$ezreeport.task.errors.delete'), e);
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.delete'), err);
   }
 }
 
@@ -580,12 +594,16 @@ async function onAdvancedSave(task: TaskHelper) {
         raw: result,
       },
     });
-  } catch (e) {
-    const msg = task.id ? t('$ezreeport.task.errors.edit') : t('$ezreeport.task.errors.create');
-    handleEzrError(msg, e);
+  } catch (err) {
+    const msg = task.id
+      ? t('$ezreeport.task.errors.edit')
+      : t('$ezreeport.task.errors.create');
+    handleEzrError(msg, err);
   }
 }
 
-refreshPermissions()
-  .then(() => { arePermissionsReady.value = true; });
+// oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
+refreshPermissions().then(() => {
+  arePermissionsReady.value = true;
+});
 </script>
