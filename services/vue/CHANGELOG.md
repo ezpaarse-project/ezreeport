@@ -1,3 +1,34 @@
+# [@ezpaarse-project/ezreeport-vue-v2.3.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.3.0-beta.1...@ezpaarse-project/ezreeport-vue@2.3.0-beta.2) (2025-07-17)
+
+
+### Bug Fixes
+
+* **vue:** fixed generation following sdk changes ([0a465e9](https://github.com/ezpaarse-project/ezreeport/commit/0a465e9947350aee0faf92cc13ffa882bb1c06b6))
+* **vue:** fixed issue with dates in vuetify components ([f62ddb8](https://github.com/ezpaarse-project/ezreeport/commit/f62ddb859849a9e551e1cd17f7a786bc6fa15d59))
+* **vue:** fixed minor issues when generation is pending ([ff09722](https://github.com/ezpaarse-project/ezreeport/commit/ff0972225e22b3e227cc3748cd15f0ac08d13407))
+* **vue:** fixed missing i18n key ([64a825e](https://github.com/ezpaarse-project/ezreeport/commit/64a825ef3e2120b37c327088c36ee91093144eae))
+* **vue:** fixed namespace not beign correctly set when creating/editing ([68031c5](https://github.com/ezpaarse-project/ezreeport/commit/68031c501799701d7bcf308cf7fa9fec8fcf63b7))
+* **vue:** fixed rare bug where new generation didn't triggered refresh in generation table ([1326cd9](https://github.com/ezpaarse-project/ezreeport/commit/1326cd995c4af699a4a71eb952eb90d67b24e4fa))
+* **vue:** fixed service shown is filesystems ([287ffd2](https://github.com/ezpaarse-project/ezreeport/commit/287ffd230a5ae138b642d30c214b8ce988c7fa87))
+* **vue:** fixed task cards only showing 10 reports ([0f3d9ef](https://github.com/ezpaarse-project/ezreeport/commit/0f3d9efe3b70e5c4f5132def1ea1d89ad84af4b9))
+* **vue:** update health component ([6fce1f9](https://github.com/ezpaarse-project/ezreeport/commit/6fce1f9c6729cb9053371e8adecf5d1e8cdc008c))
+
+
+### Features
+
+* added "files" service to handle IO ([4d9f9f3](https://github.com/ezpaarse-project/ezreeport/commit/4d9f9f3fc20d98cf9e913f0b32c96b525a1a4a7e))
+* made heartbeats unique per hostname and service ([7a426fd](https://github.com/ezpaarse-project/ezreeport/commit/7a426fdb1ecfe089ce24b704ea6917156d49799e))
+* revamped errors in report generation ([721d0c1](https://github.com/ezpaarse-project/ezreeport/commit/721d0c11ebaf62946bf9252f19eba8ce32240e70))
+* **vue:** added overview of filesystems ([3512750](https://github.com/ezpaarse-project/ezreeport/commit/35127500a6a387cfe63800c35037abd724525f07))
+* **vue:** added tes report information ([490d258](https://github.com/ezpaarse-project/ezreeport/commit/490d2586af00f2c8ff6b188a7e6e81213c5eee33))
+* **vue:** added websockets to notify generation updates ([0c07912](https://github.com/ezpaarse-project/ezreeport/commit/0c07912c738c503b7e724aac0cc659588a1a7c94))
+* **vue:** can now start debug report with no targets ([1f734f9](https://github.com/ezpaarse-project/ezreeport/commit/1f734f97a72c4709e311429db037c95d52b7e8ec))
+* **vue:** generations have now a distinct createdAt and startedAt ([f1b6d6d](https://github.com/ezpaarse-project/ezreeport/commit/f1b6d6dcd81b32a856b8317a570ca7f073c9c1f5))
+* **vue:** improved display of database filesystems ([ccf14c8](https://github.com/ezpaarse-project/ezreeport/commit/ccf14c8fb5df72b98ba989e46e074b311064de23))
+* **vue:** scheduler origin is now an icon in generation table ([03691f2](https://github.com/ezpaarse-project/ezreeport/commit/03691f20301520dbed2506be58d3a9800fb7d1eb))
+* **vue:** updated generation table ([fbcbb5f](https://github.com/ezpaarse-project/ezreeport/commit/fbcbb5fc8917e98264936a35989e2479a6e9f6c0))
+* **vue:** use recurrence module to get period when generating ([d438062](https://github.com/ezpaarse-project/ezreeport/commit/d438062c5ec908c5afd15440db7f1f5760ca79b8))
+
 # [@ezpaarse-project/ezreeport-vue-v2.3.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.2.0...@ezpaarse-project/ezreeport-vue@2.3.0-beta.1) (2025-05-19)
 
 
