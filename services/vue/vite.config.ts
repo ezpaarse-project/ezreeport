@@ -75,7 +75,7 @@ export default defineConfig({
 
         // We want to bundle the SDK, not it's dependencies
         'nanoid',
-        'object-hash',
+        // 'object-hash', // Bundling object-hash to avoid issues
         'ofetch',
         'socket.io-client',
       ],
