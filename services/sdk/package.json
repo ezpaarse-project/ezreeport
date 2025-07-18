@@ -149,11 +149,11 @@
     ]
   },
   "dependencies": {
-    "date-fns": "^4.1.0",
-    "nanoid": "^5.1.5",
-    "object-hash": "^3.0.0",
-    "ofetch": "^1.4.1",
-    "socket.io-client": "^4.8.1"
+    "date-fns": "catalog:sdk",
+    "nanoid": "catalog:sdk",
+    "object-hash": "catalog:sdk",
+    "ofetch": "catalog:sdk",
+    "socket.io-client": "catalog:sdk"
   },
   "devDependencies": {
     "@types/node": "catalog:",

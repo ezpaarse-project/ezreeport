@@ -15,3 +15,11 @@ catalog:
   # dev deps
   "@types/node": ^24.0.10
   pino-pretty: ^13.0.0
+
+catalogs:
+  sdk:
+    date-fns: ^4.1.0
+    nanoid: ^5.1.5
+    object-hash: ^3.0.0
+    ofetch: ^1.4.1
+    socket.io-client: ^4.8.1
