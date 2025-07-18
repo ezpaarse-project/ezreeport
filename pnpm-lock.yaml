@@ -18,6 +18,22 @@ catalogs:
     typescript:
       specifier: ^5.8.3
       version: 5.8.3
+  sdk:
+    date-fns:
+      specifier: ^4.1.0
+      version: 4.1.0
+    nanoid:
+      specifier: ^5.1.5
+      version: 5.1.5
+    object-hash:
+      specifier: ^3.0.0
+      version: 3.0.0
+    ofetch:
+      specifier: ^1.4.1
+      version: 1.4.1
+    socket.io-client:
+      specifier: ^4.8.1
+      version: 4.8.1
 
 importers:
 
@@ -532,19 +548,19 @@ importers:
   services/sdk:
     dependencies:
       date-fns:
-        specifier: ^4.1.0
+        specifier: catalog:sdk
         version: 4.1.0
       nanoid:
-        specifier: ^5.1.5
+        specifier: catalog:sdk
         version: 5.1.5
       object-hash:
-        specifier: ^3.0.0
+        specifier: catalog:sdk
         version: 3.0.0
       ofetch:
-        specifier: ^1.4.1
+        specifier: catalog:sdk
         version: 1.4.1
       socket.io-client:
-        specifier: ^4.8.1
+        specifier: catalog:sdk
         version: 4.8.1
     devDependencies:
       '@types/node':
@@ -587,7 +603,7 @@ importers:
         specifier: ^3.1.1
         version: 3.1.2
       date-fns:
-        specifier: ^4.1.0
+        specifier: catalog:sdk
         version: 4.1.0
       dompurify:
         specifier: ^3.2.6
@@ -596,11 +612,20 @@ importers:
         specifier: ^16.0.0
         version: 16.0.0
       nanoid:
-        specifier: ^5.1.5
+        specifier: catalog:sdk
         version: 5.1.5
+      object-hash:
+        specifier: catalog:sdk
+        version: 3.0.0
+      ofetch:
+        specifier: catalog:sdk
+        version: 1.4.1
       pretty-bytes:
         specifier: ^7.0.0
         version: 7.0.0
+      socket.io-client:
+        specifier: catalog:sdk
+        version: 4.8.1
       vue:
         specifier: ^3.5.17
         version: 3.5.17(typescript@5.8.3)
@@ -661,7 +686,7 @@ importers:
         version: 2.1.1(vite@7.0.4(@types/node@24.0.10)(jiti@2.4.2)(sass-embedded@1.89.2)(terser@5.30.3)(tsx@4.20.3)(yaml@2.8.0))(vue@3.5.17(typescript@5.8.3))(vuetify@3.9.0)
       vue-component-meta:
         specifier: ^3.0.1
-        version: 3.0.1(typescript@5.8.3)(vue-component-type-helpers@3.0.1)
+        version: 3.0.1(typescript@5.8.3)(vue-component-type-helpers@3.0.2)
       vue-tsc:
         specifier: ^3.0.1
         version: 3.0.1(typescript@5.8.3)
@@ -7062,8 +7087,8 @@ packages:
   vue-component-type-helpers@2.2.0:
     resolution: {integrity: sha512-cYrAnv2me7bPDcg9kIcGwjJiSB6Qyi08+jLDo9yuvoFQjzHiPTzML7RnkJB1+3P6KMsX/KbCD4QE3Tv/knEllw==}
 
-  vue-component-type-helpers@3.0.1:
-    resolution: {integrity: sha512-j23mCB5iEbGsyIhnVdXdWUOg+UdwmVxpKnYYf2j+4ppCt5VSFXKjwu9YFt0QYxUaf5G99PuHsVfRScjHCRSsGQ==}
+  vue-component-type-helpers@3.0.2:
+    resolution: {integrity: sha512-pbzPt5TlLZijRXt+/uhYRxTkIQkY09Ylx9t9lSk2ZjCv+bqyDRWH0RDUso7kOYQhG7m6SHXPhXEjD27LxKFryA==}
 
   vue-docgen-api@4.78.0:
     resolution: {integrity: sha512-RsZf+qzTttCCAN9v7AKmBykc2QWmO8csVk1c2aXeOktomSOu0NA7sgK4ObuRB5lpmtOvTnwuxssyYmxXxABr+A==}
@@ -9657,7 +9682,7 @@ snapshots:
       storybook: 9.0.16(@testing-library/dom@10.4.0)(prettier@3.6.2)
       type-fest: 2.19.0
       vue: 3.5.17(typescript@5.8.3)
-      vue-component-type-helpers: 3.0.1
+      vue-component-type-helpers: 3.0.2
 
   '@szmarczak/http-timer@5.0.1':
     dependencies:
@@ -14813,17 +14838,17 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.3
 
-  vue-component-meta@3.0.1(typescript@5.8.3)(vue-component-type-helpers@3.0.1):
+  vue-component-meta@3.0.1(typescript@5.8.3)(vue-component-type-helpers@3.0.2):
     dependencies:
       '@volar/typescript': 2.4.17
       '@vue/language-core': 3.0.1(typescript@5.8.3)
       path-browserify: 1.0.1
       typescript: 5.8.3
-      vue-component-type-helpers: 3.0.1
+      vue-component-type-helpers: 3.0.2
 
   vue-component-type-helpers@2.2.0: {}
 
-  vue-component-type-helpers@3.0.1: {}
+  vue-component-type-helpers@3.0.2: {}
 
   vue-docgen-api@4.78.0(vue@3.5.17(typescript@5.8.3)):
     dependencies:

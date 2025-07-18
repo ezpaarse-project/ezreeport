@@ -25,7 +25,7 @@
       "import": "./dist/components.js",
       "types": "./dist/components.d.ts"
     },
-    "./styles": "./dist/style.css"
+    "./styles": "./dist/ezreeport-vue.css"
   },
   "types": "./dist/main.d.ts",
   "files": [
@@ -52,11 +52,14 @@
     "@mdi/font": "^7.4.47",
     "@vueuse/core": "^13.5.0",
     "chroma-js": "^3.1.1",
-    "date-fns": "^4.1.0",
+    "date-fns": "catalog:sdk",
     "dompurify": "^3.2.6",
     "marked": "^16.0.0",
-    "nanoid": "^5.1.5",
+    "nanoid": "catalog:sdk",
+    "object-hash": "catalog:sdk",
+    "ofetch": "catalog:sdk",
     "pretty-bytes": "^7.0.0",
+    "socket.io-client": "catalog:sdk",
     "vue": "^3.5.17",
     "vue-i18n": "^11.1.9",
     "vuetify": "^3.9.0"
