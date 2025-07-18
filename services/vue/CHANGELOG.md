@@ -1,3 +1,10 @@
+# [@ezpaarse-project/ezreeport-vue-v2.3.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.3.0-beta.2...@ezpaarse-project/ezreeport-vue@2.3.0-beta.3) (2025-07-18)
+
+
+### Bug Fixes
+
+* **vue:** fixed missing dependencies of sdk ([973155b](https://github.com/ezpaarse-project/ezreeport/commit/973155b3cc666e6435d25f24a5408a0b3c5fd966))
+
 # [@ezpaarse-project/ezreeport-vue-v2.3.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.3.0-beta.1...@ezpaarse-project/ezreeport-vue@2.3.0-beta.2) (2025-07-17)
 
 
