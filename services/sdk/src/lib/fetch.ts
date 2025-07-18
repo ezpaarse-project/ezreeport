@@ -25,7 +25,7 @@ export const client = {
 };
 
 const prepareSocketCreator =
-  (baseURL: string, auth?: ApiAuthOptions): SocketCreator =>
+  (baseURL: URL, auth?: ApiAuthOptions): SocketCreator =>
   (namespaceName, rooms) => {
     let namespace = sockets.get(namespaceName);
     const haveSameRooms = (namespace?.rooms ?? []).every((rs) =>
@@ -36,7 +36,9 @@ const prepareSocketCreator =
       namespace = undefined;
     }
     if (!namespace) {
-      const url = new URL(namespaceName, baseURL.replace('http', 'ws'));
+      const url = new URL(namespaceName, baseURL);
+      url.protocol = url.protocol.replace('http', 'ws');
+
       try {
         namespace = {
           con: io(url.href, {
@@ -65,7 +67,10 @@ const prepareSocketCreator =
  * @param baseURL Base HTTP URL of the API
  * @param auth Auth options to be authenticated
  */
-export function prepareClient(baseURL: string, auth?: ApiAuthOptions): void {
+export function prepareClient(
+  baseURL: string | URL,
+  auth?: ApiAuthOptions
+): void {
   // Create HTTP client
   const headers: Record<string, string> = {};
 
@@ -76,11 +81,21 @@ export function prepareClient(baseURL: string, auth?: ApiAuthOptions): void {
   //   headers['X-Api-Key'] = auth.apiKey;
   // }
 
+  let href;
+  let url;
+  if (typeof baseURL === 'string') {
+    href = baseURL;
+    url = new URL(baseURL);
+  } else {
+    href = baseURL.href;
+    url = baseURL;
+  }
+
   client.fetch = ofetch.create({
-    baseURL,
+    baseURL: href,
     headers,
   });
 
   // Set function to handle sockets
-  client.socket = prepareSocketCreator(baseURL, auth);
+  client.socket = prepareSocketCreator(url, auth);
 }
