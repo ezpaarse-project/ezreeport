@@ -164,6 +164,17 @@ const statusColors = new Map<GenerationStatus, string>([
   ['ERROR', 'error'],
 ]);
 
+// Components props
+const props = defineProps<{
+  itemsPerPageOptions?: number[] | { title: string; value: number }[];
+  itemsPerPage?: number;
+}>();
+
+// Components events
+const emit = defineEmits<{
+  (event: 'update:itemsPerPage', value: number): void;
+}>();
+
 // Utils composable
 // oxlint-disable-next-line id-length
 const { t } = useI18n();
@@ -174,6 +185,11 @@ const isInfoOpen = ref(false);
 /** Selected generation */
 const selectedGeneration = ref<Generation | undefined>();
 
+/** Items per page shortcut */
+const itemsPerPage = computed({
+  get: () => props.itemsPerPage || 25,
+  set: (val) => emit('update:itemsPerPage', val),
+});
 /** List of generations */
 const {
   items: generations,
@@ -184,6 +200,7 @@ const {
 } = useServerSidePagination((params) => getAllGenerations(params), {
   sortBy: 'createdAt',
   order: 'desc',
+  itemsPerPage,
   include: ['task.namespace', 'task.extends.tags'],
 });
 
