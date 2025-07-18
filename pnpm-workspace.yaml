@@ -11,7 +11,7 @@ onlyBuiltDependencies:
 catalog:
   # deps
   typescript: ^5.8.3
-  tsx: ^4.20.3
+  tsx: ^4.20.3 # Don't forget to update the aio stage in Dockerfile
   # dev deps
   "@types/node": ^24.0.10
   pino-pretty: ^13.0.0

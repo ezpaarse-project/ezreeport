@@ -3,6 +3,8 @@ import pino from 'pino';
 import { resolve } from 'node:path';
 import { mkdirSync } from 'node:fs';
 
+export const logLevels = pino.levels;
+
 export type Logger = pino.Logger;
 export type Level = pino.Level;
 export type LoggerOptions = Omit<pino.LoggerOptions, 'transports'> & {

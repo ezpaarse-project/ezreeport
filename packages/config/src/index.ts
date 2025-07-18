@@ -1,8 +1,15 @@
-import config from 'config';
-
+import { hostname } from 'node:os';
 import { watch } from 'node:fs/promises';
 
+import config from 'config';
+
 const ERR_CAUSE = 'ERR_CONFIG_CHANGED';
+
+type MinimalLogger = {
+  log: (message: string) => void;
+  levels?: Record<string, unknown>;
+  meta?: Record<string, unknown>;
+};
 
 /**
  * Setup watcher for a config file
@@ -14,38 +21,48 @@ const ERR_CAUSE = 'ERR_CONFIG_CHANGED';
 async function setupConfigWatcher(
   path: string,
   signal: AbortSignal,
-  logger: Console
+  logger: MinimalLogger
 ): Promise<void> {
-  try {
-    const watcher = watch(path, { persistent: false, signal });
-    logger.debug(
+  const host = hostname();
+  // Shorthand to log in a similar format as pino does
+  const log = (msg: Record<string, unknown>): void =>
+    logger.log(
       JSON.stringify({
-        msg: 'Watching config file',
-        path,
+        pid: process.pid,
+        hostname: host,
+        ...logger.meta,
+        time: Date.now(),
+        ...msg,
       })
     );
 
+  try {
+    const watcher = watch(path, { persistent: false, signal });
+    log({
+      level: logger.levels?.debug ?? 20,
+      msg: 'Watching config file',
+      path,
+    });
+
     for await (const event of watcher) {
-      logger.info(
-        JSON.stringify({
-          event,
-          msg: 'Config changed, exiting...',
-          path,
-        })
-      );
+      log({
+        level: logger.levels?.info ?? 30,
+        event,
+        msg: 'Config changed, exiting...',
+        path,
+      });
       throw new Error('Config changed, exiting', { cause: ERR_CAUSE });
     }
   } catch (err) {
     if (err instanceof Error && err.cause === ERR_CAUSE) {
       throw err;
     }
-    logger.warn(
-      JSON.stringify({
-        err,
-        msg: 'Failed to watch config file',
-        path,
-      })
-    );
+    log({
+      level: logger.levels?.warn ?? 40,
+      err,
+      msg: 'Failed to watch config file',
+      path,
+    });
   }
 }
 
@@ -54,14 +71,23 @@ async function setupConfigWatcher(
  *
  * @param logger Logger
  */
-function watchConfigSources(logger: Console): void {
+function watchConfigSources(logger: MinimalLogger): void {
   const sources = config.util.getConfigSources();
   if (sources.length > 0) {
     // Prepare watcher
     const { signal, abort } = new AbortController();
     process.on('SIGTERM', () => {
       abort();
-      logger.debug(JSON.stringify('Aborting config watcher'));
+      logger.log(
+        JSON.stringify({
+          pid: process.pid,
+          hostname: hostname(),
+          ...logger.meta,
+          time: Date.now(),
+          level: logger.levels?.debug ?? 20,
+          msg: 'Aborting config watcher',
+        })
+      );
     });
 
     for (const { name } of sources) {
@@ -71,7 +97,7 @@ function watchConfigSources(logger: Console): void {
 }
 
 type WatcherOptions = {
-  logger: Console;
+  logger: MinimalLogger;
 };
 
 type Options = {

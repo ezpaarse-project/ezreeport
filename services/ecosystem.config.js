@@ -41,7 +41,6 @@ module.exports = {
       interpreter: 'tsx',
       script: './src/app.ts',
       merge_logs: false,
-      log_type: 'json',
       instances: env('APIS_CONCURRENCE', 1),
       increment_var: 'HTTP_PORT',
       env: {
@@ -63,7 +62,6 @@ module.exports = {
       interpreter: 'tsx',
       script: './src/app.ts',
       merge_logs: false,
-      log_type: 'json',
       instances: env('WORKERS_CONCURRENCE', 5),
       increment_var: 'HTTP_PORT',
       env: {
@@ -87,7 +85,6 @@ module.exports = {
       interpreter: 'tsx',
       script: './src/app.ts',
       merge_logs: false,
-      log_type: 'json',
       env: {
         ...nodeEnv,
         ...rabbitmqEnv,
@@ -105,7 +102,6 @@ module.exports = {
       interpreter: 'tsx',
       script: './src/app.ts',
       merge_logs: false,
-      log_type: 'json',
       instances: env('MAILS_CONCURRENCE', 1),
       increment_var: 'HTTP_PORT',
       env: {
@@ -133,7 +129,6 @@ module.exports = {
       interpreter: 'tsx',
       script: './src/app.ts',
       merge_logs: false,
-      log_type: 'json',
       instances: env('FILES_CONCURRENCE', 1),
       increment_var: 'HTTP_PORT',
       env: {
