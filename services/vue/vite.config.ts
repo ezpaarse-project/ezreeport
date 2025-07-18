@@ -7,10 +7,6 @@ import vuetify from 'vite-plugin-vuetify';
 import components from 'unplugin-vue-components/vite';
 import autoImport from 'unplugin-auto-import/vite';
 
-import sdkViteConfig from '../sdk/vite.config.mjs';
-
-const sdkExternal = sdkViteConfig.build?.rollupOptions?.external;
-
 const VITE_CACHE_DIR = resolve(__dirname, '.vite');
 const SRC_DIR = resolve(__dirname, 'src');
 const COMPONENTS_DIR = resolve(SRC_DIR, 'components');
@@ -27,23 +23,14 @@ export default defineConfig({
     // Plugin to auto import components (useful for dev)
     components({
       dts: resolve(VITE_CACHE_DIR, 'components.d.ts'),
-      dirs: [
-        resolve(COMPONENTS_DIR, 'private'),
-      ],
+      dirs: [resolve(COMPONENTS_DIR, 'private')],
       directoryAsNamespace: true,
     }),
     // Plugin to auto import utils and composables (useful for dev)
     autoImport({
       dts: resolve(VITE_CACHE_DIR, 'auto-imports.d.ts'),
-      dirs: [
-        resolve(SRC_DIR, 'composables'),
-        resolve(SRC_DIR, 'utils'),
-      ],
-      imports: [
-        'vue',
-        'vue-i18n',
-        '@vueuse/core',
-      ],
+      dirs: [resolve(SRC_DIR, 'composables'), resolve(SRC_DIR, 'utils')],
+      imports: ['vue', 'vue-i18n', '@vueuse/core'],
     }),
     // Plugin to output main DTS into dist
     dts({
@@ -57,7 +44,10 @@ export default defineConfig({
     alias: [
       { find: '~', replacement: SRC_DIR },
       // alias for sdk
-      { find: /^~sdk(\/.+)?/, replacement: '@ezpaarse-project/ezreeport-sdk-js$1' },
+      {
+        find: /^~sdk(\/.+)?/,
+        replacement: '@ezpaarse-project/ezreeport-sdk-js$1',
+      },
     ],
   },
 
@@ -72,8 +62,6 @@ export default defineConfig({
     },
     rollupOptions: {
       external: [
-        // We want to bundle the SDK, not it's dependencies
-        ...(Array.isArray(sdkExternal) ? sdkExternal : []),
         'vue',
         /^vuetify(\/.*)?/,
         'vue-i18n',
@@ -84,6 +72,12 @@ export default defineConfig({
         '@formkit/drag-and-drop/vue',
         'chroma',
         'pretty-bytes',
+
+        // We want to bundle the SDK, not it's dependencies
+        'nanoid',
+        'object-hash',
+        'ofetch',
+        'socket.io-client',
       ],
       output: {
         globals: {
