@@ -52,7 +52,7 @@ export default defineConfig({
       external: [
         'ofetch',
         'nanoid',
-        'object-hash',
+        // 'object-hash', // Bundling object-hash to avoid issues
         /^date-fns(\/.*)?/,
         'socket.io-client',
       ],
