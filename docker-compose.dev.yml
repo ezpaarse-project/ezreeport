@@ -12,7 +12,7 @@ services:
       - 15672:15672
 
   api:
-    image: node:22.17.0
+    image: node:24.4.1
     working_dir: /usr/dev/services/report
     env_file:
       - .env
@@ -29,7 +29,7 @@ services:
     restart: unless-stopped
 
   worker1:
-    image: node:22.17.0
+    image: node:24.4.1
     working_dir: /usr/dev/services/worker
     env_file:
       - .env
@@ -45,7 +45,7 @@ services:
     restart: unless-stopped
 
   worker2:
-    image: node:22.17.0
+    image: node:24.4.1
     working_dir: /usr/dev/services/worker
     env_file:
       - .env
@@ -59,7 +59,7 @@ services:
     restart: unless-stopped
 
   scheduler:
-    image: node:22.17.0
+    image: node:24.4.1
     working_dir: /usr/dev/services/scheduler
     env_file:
       - .env
@@ -73,7 +73,7 @@ services:
     restart: unless-stopped
 
   mail:
-    image: node:22.17.0
+    image: node:24.4.1
     working_dir: /usr/dev/services/mail
     env_file:
       - .env
@@ -87,7 +87,7 @@ services:
     restart: unless-stopped
 
   files:
-    image: node:22.17.0
+    image: node:24.4.1
     working_dir: /usr/dev/services/files
     env_file:
       - .env
@@ -103,7 +103,7 @@ services:
     restart: unless-stopped
 
   storybook:
-    image: node:22.17.0
+    image: node:24.4.1
     working_dir: /usr/dev/services/vue
     env_file:
       - .env
