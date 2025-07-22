@@ -62,7 +62,10 @@
             <v-text-field
               v-model="label.text"
               :label="$t('$ezreeport.name')"
-              :rules="[(val) => !!val || $t('$ezreeport.required'), isUniqueRule]"
+              :rules="[
+                (val) => !!val || $t('$ezreeport.required'),
+                isUniqueRule,
+              ]"
               prepend-icon="mdi-rename"
               variant="underlined"
               required
@@ -231,10 +234,9 @@ watch(
     }
 
     // TODO: prevent user provided value to be overwritten
-    label.value.text = t(
-      '$ezreeport.editor.aggregation.aggregationTemplate',
-      newLabel.aggregation ?? {}
-    );
+    label.value.text = t('$ezreeport.editor.aggregation.aggregationTemplate', {
+      ...newLabel.aggregation,
+    });
   },
   { deep: true }
 );

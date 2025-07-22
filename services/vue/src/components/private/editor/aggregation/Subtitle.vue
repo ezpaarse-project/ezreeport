@@ -49,10 +49,9 @@ const hasSubtitle = computed(() => {
   }
 
   // If the text is the same, we don't need to show the subtitle
-  const text = t(
-    '$ezreeport.editor.aggregation.aggregationTemplate',
-    props.modelValue
-  );
+  const text = t('$ezreeport.editor.aggregation.aggregationTemplate', {
+    ...props.modelValue,
+  });
   if (text === props.name) {
     return false;
   }

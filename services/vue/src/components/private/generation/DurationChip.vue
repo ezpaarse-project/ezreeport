@@ -1,6 +1,6 @@
 <template>
   <v-chip
-    v-if="modelValue.took > 0"
+    v-if="took > 0"
     variant="outlined"
     size="small"
     prepend-icon="mdi-timer"
@@ -14,14 +14,15 @@ import { formatDuration } from 'date-fns';
 import type { Generation } from '~sdk/generations';
 
 const props = defineProps<{
-  modelValue: Generation
+  modelValue: Generation;
 }>();
 
 // Utils composables
 const { locale } = useDateLocale();
 
-const formatted = computed(() => formatDuration(
-  { seconds: props.modelValue.took / 1000 },
-  { locale: locale.value },
-));
+const took = computed(() => props.modelValue.took ?? 0);
+
+const formatted = computed(() =>
+  formatDuration({ seconds: took.value / 1000 }, { locale: locale.value })
+);
 </script>
