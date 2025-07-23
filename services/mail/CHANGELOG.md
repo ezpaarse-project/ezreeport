@@ -1,3 +1,10 @@
+# [ezreeport-mail-v1.4.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.4.0-beta.1...ezreeport-mail@1.4.0-beta.2) (2025-07-23)
+
+
+### Features
+
+* better logs when watching config ([f0ce7b5](https://github.com/ezpaarse-project/ezreeport/commit/f0ce7b506a273d4697c75588df322a0d423c7566))
+
 # [ezreeport-mail-v1.4.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.3.0...ezreeport-mail@1.4.0-beta.1) (2025-07-17)
 
 
