@@ -1,3 +1,10 @@
+# [@ezpaarse-project/ezreeport-sdk-js-v2.2.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@2.2.0-beta.1...@ezpaarse-project/ezreeport-sdk-js@2.2.0-beta.2) (2025-07-23)
+
+
+### Bug Fixes
+
+* **sdk:** fix issues when trying to setup websockets ([14404a5](https://github.com/ezpaarse-project/ezreeport/commit/14404a54364456a266ac31e52711f1eee158f85a))
+
 # [@ezpaarse-project/ezreeport-sdk-js-v2.2.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@2.1.0...@ezpaarse-project/ezreeport-sdk-js@2.2.0-beta.1) (2025-07-17)
 
 
