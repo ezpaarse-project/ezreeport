@@ -1,3 +1,11 @@
+# [@ezpaarse-project/ezreeport-vue-v2.4.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.4.0-beta.1...@ezpaarse-project/ezreeport-vue@2.4.0-beta.2) (2025-07-23)
+
+
+### Bug Fixes
+
+* **vue:** avoid passing refs into i18n ([7be7bc0](https://github.com/ezpaarse-project/ezreeport/commit/7be7bc025ae1fcb4566018b8d62dc8709ba0327c))
+* **vue:** fixed EzrGenerationTable not beign available ([6054579](https://github.com/ezpaarse-project/ezreeport/commit/6054579e7eeaa497c360374d9af73205c3ee17e3))
+
 # [@ezpaarse-project/ezreeport-vue-v2.4.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-vue@2.3.0...@ezpaarse-project/ezreeport-vue@2.4.0-beta.1) (2025-07-18)
 
 
