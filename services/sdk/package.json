@@ -1,6 +1,6 @@
 {
   "name": "@ezpaarse-project/ezreeport-sdk-js",
-  "version": "2.2.0-beta.3",
+  "version": "2.2.0-rc.1",
   "description": "JS SDK to communicate with ezReeport API",
   "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
   "bugs": {
