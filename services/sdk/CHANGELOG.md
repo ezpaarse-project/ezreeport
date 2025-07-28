@@ -1,3 +1,10 @@
+# [@ezpaarse-project/ezreeport-sdk-js-v2.2.0-beta.3](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@2.2.0-beta.2...@ezpaarse-project/ezreeport-sdk-js@2.2.0-beta.3) (2025-07-28)
+
+
+### Bug Fixes
+
+* **sdk:** fixed issues with socket.io behind reverse proxy ([1df6438](https://github.com/ezpaarse-project/ezreeport/commit/1df64381a900d17047be268990d4dfc1237a6088))
+
 # [@ezpaarse-project/ezreeport-sdk-js-v2.2.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-sdk-js@2.2.0-beta.1...@ezpaarse-project/ezreeport-sdk-js@2.2.0-beta.2) (2025-07-23)
 
 
