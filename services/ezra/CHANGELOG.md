@@ -1,3 +1,10 @@
+# [@ezpaarse-project/ezreeport-admin-v1.2.0-beta.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-admin@1.1.1...@ezpaarse-project/ezreeport-admin@1.2.0-beta.1) (2025-07-28)
+
+
+### Features
+
+* added "files" service to handle IO ([4d9f9f3](https://github.com/ezpaarse-project/ezreeport/commit/4d9f9f3fc20d98cf9e913f0b32c96b525a1a4a7e))
+
 # [@ezpaarse-project/ezreeport-admin-v1.1.1](https://github.com/ezpaarse-project/ezreeport/compare/@ezpaarse-project/ezreeport-admin@1.1.0...@ezpaarse-project/ezreeport-admin@1.1.1) (2025-04-04)
 
 
