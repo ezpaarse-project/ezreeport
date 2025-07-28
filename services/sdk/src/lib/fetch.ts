@@ -24,9 +24,20 @@ export const client = {
   }) as SocketCreator,
 };
 
-const prepareSocketCreator =
-  (baseURL: URL, auth?: ApiAuthOptions): SocketCreator =>
-  (namespaceName, rooms) => {
+const prepareSocketCreator = (
+  baseURL: URL,
+  auth?: ApiAuthOptions
+): SocketCreator => {
+  const wsURL = new URL(baseURL);
+  wsURL.protocol = wsURL.protocol.replace('http', 'ws');
+  // Ensure URL ends with / so we'll respect the baseURL when getting socket.io path
+  if (wsURL.href.at(-1) !== '/') {
+    wsURL.href = `${wsURL.href}/`;
+  }
+  // Respect baseURL for socket.io (allows running behind reverse proxy)
+  const socketIoPath = new URL('socket.io/', wsURL).pathname;
+
+  return (namespaceName, rooms) => {
     let namespace = sockets.get(namespaceName);
     const haveSameRooms = (namespace?.rooms ?? []).every((rs) =>
       (rooms ?? []).includes(rs)
@@ -36,12 +47,12 @@ const prepareSocketCreator =
       namespace = undefined;
     }
     if (!namespace) {
-      const url = new URL(namespaceName, baseURL);
-      url.protocol = url.protocol.replace('http', 'ws');
+      const url = new URL(namespaceName, wsURL);
 
       try {
         namespace = {
           con: io(url.href, {
+            path: socketIoPath,
             auth: auth || undefined,
             query: rooms ? { rooms } : undefined,
           }),
@@ -60,6 +71,7 @@ const prepareSocketCreator =
 
     return namespace.con;
   };
+};
 
 /**
  * Prepare the client for the rest of the SDK, will update config if needed
