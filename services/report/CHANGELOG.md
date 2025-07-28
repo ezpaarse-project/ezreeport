@@ -1,3 +1,45 @@
+# [ezreeport-report-v2.2.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.1.1...ezreeport-report@2.2.0-rc.1) (2025-07-28)
+
+
+### Bug Fixes
+
+* fix crash when trying to send first heartbeat ([e6c6910](https://github.com/ezpaarse-project/ezreeport/commit/e6c6910ddf04756e34312c3e4335864b6688db17))
+* fixed env vars ([568857f](https://github.com/ezpaarse-project/ezreeport/commit/568857f51df9b7bc859692c065e714f0e9521bda))
+* fixed loggers ([f30fb7a](https://github.com/ezpaarse-project/ezreeport/commit/f30fb7a2ea2ba25b0237b46bed24cf893de9157d))
+* fixed order of init ([fe3188d](https://github.com/ezpaarse-project/ezreeport/commit/fe3188da0d5097c7fb7c9f7c2f6464a5c50a8cd0))
+* **report:** disabling tasks if normal generation failed ([7ed390c](https://github.com/ezpaarse-project/ezreeport/commit/7ed390c3692d7a0a20ad0f3f5af794e2dd4ab1d7))
+* **report:** fixed issue when logs aren't in a file ([2663c07](https://github.com/ezpaarse-project/ezreeport/commit/2663c078e7a874264a5b507dd9a386d911976772))
+* **report:** fixed status not beign updated in some edge cases ([0f928df](https://github.com/ezpaarse-project/ezreeport/commit/0f928df7fe7d8e80861c676299ea687683583734))
+* **report:** fixed total when getting memberships of user and namespace ([b02bf54](https://github.com/ezpaarse-project/ezreeport/commit/b02bf54b1bec706aaf12bf5a26523de4a3150010))
+* **report:** fixed valdiation of reference in recurrence routes ([011a63e](https://github.com/ezpaarse-project/ezreeport/commit/011a63e5a80e3d9a49173cc8105bc03f809a2ad7))
+
+
+### Features
+
+* added "files" service to handle IO ([4d9f9f3](https://github.com/ezpaarse-project/ezreeport/commit/4d9f9f3fc20d98cf9e913f0b32c96b525a1a4a7e))
+* added filesystem support for heartbeat ([6f50403](https://github.com/ezpaarse-project/ezreeport/commit/6f50403706bfaf2105978885c12fa531f29ad03c))
+* added reportId to generations ([dd81994](https://github.com/ezpaarse-project/ezreeport/commit/dd81994b80e23590adead0e98f8ea7db83fd8518))
+* **api:** added includable fields in generations ([fad804e](https://github.com/ezpaarse-project/ezreeport/commit/fad804e1f1ee5131d73d71a3dd4fba1912d5f469))
+* better logs when watching config ([f0ce7b5](https://github.com/ezpaarse-project/ezreeport/commit/f0ce7b506a273d4697c75588df322a0d423c7566))
+* can now send a RPC request to all nodes ([88ffe30](https://github.com/ezpaarse-project/ezreeport/commit/88ffe30e3dd09e3bd27bea4fe5d1751c4cc2b5f2))
+* exit service if config changes ([cc5414d](https://github.com/ezpaarse-project/ezreeport/commit/cc5414d282742baac3d84e5a34d8ecbc723ee9b6))
+* files services now handle purge instead of scheduler ([93fa65f](https://github.com/ezpaarse-project/ezreeport/commit/93fa65f3f85f58b6dfc1c5798def503739f4eed4))
+* generations have now a distinct createdAt and startedAt ([466fc9a](https://github.com/ezpaarse-project/ezreeport/commit/466fc9abb79a4f5eccf9e0b5050aadccd0362033))
+* made heartbeats unique per hostname and service ([7a426fd](https://github.com/ezpaarse-project/ezreeport/commit/7a426fdb1ecfe089ce24b704ea6917156d49799e))
+* **report:** added filesystem usage in health routes ([fdc187d](https://github.com/ezpaarse-project/ezreeport/commit/fdc187db024fb03129a33f4c671a847925379d3d))
+* **report:** added routes to calculate recurrence ([0f70e5f](https://github.com/ezpaarse-project/ezreeport/commit/0f70e5f9aeca59601e58bc4ffe51ae95ad543102))
+* **report:** added websockets to notify generation updates ([2ffe015](https://github.com/ezpaarse-project/ezreeport/commit/2ffe015c6a6700d9ed5e357a53fa2e1d7d1e40f6))
+* **report:** can now start debug report with no targets ([9600ea7](https://github.com/ezpaarse-project/ezreeport/commit/9600ea71b0ce079005d5a214a5ca86a54cc3d841))
+* **report:** generations have now a distinct createdAt and startedAt ([8109b42](https://github.com/ezpaarse-project/ezreeport/commit/8109b42b8a9bae927a87e1314f791b62fe57365d))
+* **report:** removed rpc server ([cfc73ee](https://github.com/ezpaarse-project/ezreeport/commit/cfc73ee2e30a8731df0d7b36f7d50dc741fa33ad))
+* **report:** resilient rabbitmq + heartbeat ([7433415](https://github.com/ezpaarse-project/ezreeport/commit/7433415bfa98b4312039a5320ecd45bbd80b799f))
+* **report:** scheduler now handles generation status ([708fc66](https://github.com/ezpaarse-project/ezreeport/commit/708fc6613b2934e156248b5929e7f3015b3f705e))
+* **report:** show self in services ([3e54629](https://github.com/ezpaarse-project/ezreeport/commit/3e5462977cca7339a7fa72f35f0549d2554250e0))
+* **report:** switched to common and workers ([ecbbd93](https://github.com/ezpaarse-project/ezreeport/commit/ecbbd930a84e99c2d542de1a64dfbf774b815a69))
+* **report:** use rpc to get files [wip] ([4d06178](https://github.com/ezpaarse-project/ezreeport/commit/4d061782ad4a9ad8793168b633ccb8182f8cf68f))
+* sending event when adding to generation queue ([ee5cca3](https://github.com/ezpaarse-project/ezreeport/commit/ee5cca33fe6d4dec3da6e05e719096f610fa74bf))
+* using rabbitmq shorthands everywhere ([481c8a6](https://github.com/ezpaarse-project/ezreeport/commit/481c8a6f04eae389c0bc32927015e5ec6029c571))
+
 # [ezreeport-report-v2.2.0-beta.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.2.0-beta.1...ezreeport-report@2.2.0-beta.2) (2025-07-23)
 
 
