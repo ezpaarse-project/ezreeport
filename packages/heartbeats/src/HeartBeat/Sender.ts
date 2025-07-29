@@ -87,7 +87,7 @@ export class HeartbeatSender extends HeartbeatManager {
 
     return this.sendHeartbeat({
       service: this.service.name,
-      hostname: hostname(),
+      hostname: `${hostname()}:${process.pid}`,
       version: this.service.version,
       filesystems: filesystems.length > 0 ? filesystems : undefined,
       updatedAt: new Date(),
