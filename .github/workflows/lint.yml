@@ -6,6 +6,9 @@ on:
       - '*'
   workflow_dispatch:
 
+env:
+  TURBO_UI: 'false'
+
 jobs:
   lint:
     permissions:
