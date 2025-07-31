@@ -44,7 +44,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies ⚙️
-        run: pnpm fetch
+        run: pnpm i --frozen-lockfile
 
       - name: Commit files 🚀
         run: |
