@@ -1,3 +1,10 @@
+# [ezreeport-report-v2.2.0-rc.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.2.0-rc.1...ezreeport-report@2.2.0-rc.2) (2025-08-01)
+
+
+### Features
+
+* **heartbeat:** using pid to make hostname unique ([1f25d4c](https://github.com/ezpaarse-project/ezreeport/commit/1f25d4cfd2d9d5899e5c9d2001bb7596a7fb1ddb))
+
 # [ezreeport-report-v2.2.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-report@2.1.1...ezreeport-report@2.2.0-rc.1) (2025-07-28)
 
 
