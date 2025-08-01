@@ -6,8 +6,11 @@
       "outputs": ["storybook-static/**"]
     },
     "build": {
+      "dependsOn": ["@ezpaarse-project/ezreeport-sdk-js#build"],
       "outputs": ["dist/**"]
     },
-    "publish": {}
+    "type-check": {
+      "dependsOn": ["@ezpaarse-project/ezreeport-sdk-js#build:types"]
+    }
   }
 }

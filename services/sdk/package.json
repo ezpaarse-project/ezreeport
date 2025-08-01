@@ -136,7 +136,6 @@
     "lint": "oxlint",
     "prebuild": "rimraf --glob 'dist/*'",
     "preview:docs": "vite docs --open",
-    "publish": "npm publish",
     "type-check": "tsc --noEmit --skipLibCheck",
     "watch:docs": "typedoc --watch"
   },

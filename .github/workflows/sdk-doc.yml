@@ -4,8 +4,11 @@ on:
   push:
     branches:
       - master
-    paths:
-      - 'services/sdk/**'
+    tags:
+      - '@ezpaarse-project/ezreeport-sdk-js@*'
+
+env:
+  TURBO_UI: 'false'
 
 concurrency:
   group: "pages"
@@ -38,7 +41,7 @@ jobs:
         run: pnpm i --frozen-lockfile
 
       - name: Build documentation 🔧
-        run: pnpm --filter @ezpaarse-project/ezreeport-sdk-js run build:docs
+        run: pnpm turbo run @ezpaarse-project/ezreeport-sdk-js#build:docs
 
       - name: Upload artifact 🚚
         uses: actions/upload-pages-artifact@v3
