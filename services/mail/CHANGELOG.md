@@ -1,3 +1,10 @@
+# [ezreeport-mail-v1.4.0-rc.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.4.0-rc.1...ezreeport-mail@1.4.0-rc.2) (2025-08-01)
+
+
+### Bug Fixes
+
+* **mail:** forcing contentDisposition to avoid any issues ([6c00089](https://github.com/ezpaarse-project/ezreeport/commit/6c00089d3ace6ed30b8a937035d14a6f80e28404))
+
 # [ezreeport-mail-v1.4.0-rc.1](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.3.0...ezreeport-mail@1.4.0-rc.1) (2025-07-28)
 
 
