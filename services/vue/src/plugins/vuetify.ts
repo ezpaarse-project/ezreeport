@@ -1,3 +1,4 @@
+// oxlint-disable-next-line no-unassigned-import
 import 'vuetify/styles';
 import { createVuetify, type VuetifyOptions } from 'vuetify';
 import { aliases, mdi } from 'vuetify/iconsets/mdi';
@@ -18,6 +19,7 @@ export const config: VuetifyOptions = {
 
 declare module 'vuetify' {
   namespace DateModule {
+    // oxlint-disable-next-line no-empty-interface, consistent-type-definitions, no-empty-object-type
     interface Adapter extends DateFnsAdapter {}
   }
 }
