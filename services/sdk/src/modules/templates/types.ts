@@ -32,6 +32,7 @@ export interface TemplateBodyFigure {
   /** Figure data, only used for Markdown figures */
   data?: unknown;
   /** Figure params, not used for Markdown figures */
+  // oxlint-disable-next-line no-explicit-any
   params?: any;
   /** Filters used when fetching data of this figure */
   filters?: TemplateFilter[];

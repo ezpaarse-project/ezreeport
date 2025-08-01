@@ -10,8 +10,8 @@ import {
   type SdkPaginated,
 } from '~/lib/api';
 
-import type { Generation, RawGeneration } from './types';
 import { transformTaskWithoutBody } from '../tasks/methods';
+import type { Generation, RawGeneration } from './types';
 
 export const transformGeneration = (generation: RawGeneration): Generation => ({
   ...transformCreatedUpdated(generation),
@@ -25,22 +25,17 @@ export const transformGeneration = (generation: RawGeneration): Generation => ({
 type PaginatedGenerations = SdkPaginated<Generation>;
 
 export async function getAllGenerations(
-  opts?: ApiRequestOptions & { include?: string[] },
+  opts?: ApiRequestOptions & { include?: string[] }
 ): Promise<PaginatedGenerations> {
   const {
     content,
-    meta: {
-      total, count, page,
+    meta: { total, count, page },
+  } = await client.fetch<ApiResponsePaginated<RawGeneration>>('/generations', {
+    query: {
+      ...apiRequestOptionsToQuery(opts),
+      include: opts?.include,
     },
-  } = await client.fetch<ApiResponsePaginated<RawGeneration>>(
-    '/generations',
-    {
-      query: {
-        ...apiRequestOptionsToQuery(opts),
-        include: opts?.include,
-      },
-    },
-  );
+  });
 
   return {
     items: content.map(transformGeneration),
@@ -53,30 +48,34 @@ assignPermission(getAllGenerations, 'GET /generations');
 
 export async function getGeneration(
   generationOrId: Generation | string,
-  include?: string[],
+  include?: string[]
 ): Promise<Generation> {
-  const id = typeof generationOrId === 'string' ? generationOrId : generationOrId.id;
+  const id =
+    typeof generationOrId === 'string' ? generationOrId : generationOrId.id;
 
-  const {
-    content,
-  } = await client.fetch<ApiResponse<RawGeneration>>(`/generations/${id}`, {
-    query: { include },
-  });
+  const { content } = await client.fetch<ApiResponse<RawGeneration>>(
+    `/generations/${id}`,
+    {
+      query: { include },
+    }
+  );
 
   return transformGeneration(content);
 }
 assignPermission(getGeneration, 'GET /generations/:id', true);
 
 export async function restartGeneration(
-  generationOrId: Generation | string,
+  generationOrId: Generation | string
 ): Promise<{ id: string }> {
-  const id = typeof generationOrId === 'string' ? generationOrId : generationOrId.id;
+  const id =
+    typeof generationOrId === 'string' ? generationOrId : generationOrId.id;
 
-  const {
-    content,
-  } = await client.fetch<ApiResponse<{ id: string }>>(`/generations/${id}`, {
-    method: 'PUT',
-  });
+  const { content } = await client.fetch<ApiResponse<{ id: string }>>(
+    `/generations/${id}`,
+    {
+      method: 'PUT',
+    }
+  );
 
   return content;
 }

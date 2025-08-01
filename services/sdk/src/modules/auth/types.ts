@@ -1,10 +1,6 @@
-export interface GeneralPermissions {
-  [routeId: string]: boolean;
-}
+export type GeneralPermissions = Record<string, boolean>;
 
-export interface NamespacePermissions {
-  [namespaceId: string]: GeneralPermissions;
-}
+export type NamespacePermissions = Record<string, GeneralPermissions>;
 
 export interface UserPermissions {
   general: GeneralPermissions;
