@@ -9,6 +9,10 @@ on:
     tags:
       - 'ezreeport-mail@*'
 
+env:
+  HUSKY: 0
+  TURBO_UI: 'false'
+
 jobs:
   build:
     permissions:

@@ -8,6 +8,7 @@ on:
       - '@ezpaarse-project/ezreeport-sdk-js@*'
 
 env:
+  HUSKY: 0
   TURBO_UI: 'false'
 
 concurrency:

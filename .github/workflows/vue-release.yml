@@ -10,6 +10,7 @@ on:
       - '@ezpaarse-project/ezreeport-vue@*'
 
 env:
+  HUSKY: 0
   TURBO_UI: 'false'
 
 jobs:

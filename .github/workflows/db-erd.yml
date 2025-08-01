@@ -8,6 +8,8 @@ on:
       - 'packages/database/prisma/schema.prisma'
 
 env:
+  HUSKY: 0
+  TURBO_UI: 'false'
   PRISMA_SCHEMA: packages/database/prisma/schema.prisma
   OUT_ERD_PATH: docs/ERD.svg
   OUT_DIC_PATH: docs/DIC.md
@@ -48,7 +50,6 @@ jobs:
 
       - name: Commit files 🚀
         run: |
-          HUSKY=0
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add .
