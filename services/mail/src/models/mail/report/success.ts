@@ -36,7 +36,7 @@ export default async function sendSuccessReport(
         await sendMail({
           to,
           subject: `Reporting ezMESURE [${dateStr}] - ${data.task.name}`,
-          body: await generateMail('success', {
+          body: generateMail('success', {
             recurrence: recurrenceToStr(data.task.recurrence),
             name: data.task.name,
             namespace: data.namespace.name,
@@ -51,6 +51,7 @@ export default async function sendSuccessReport(
             {
               filename: name,
               content: file,
+              contentDisposition: 'attachment',
             },
           ],
         });
