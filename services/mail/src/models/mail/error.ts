@@ -27,7 +27,7 @@ export default async function sendError(
     ],
     to: [team],
     subject: `Erreur de Reporting ezMESURE [${dateStr}]`,
-    body: await generateMail('error', {
+    body: generateMail('error', {
       error: 'Unknown error, see attachements',
       date: format(date, 'dd/MM/yyyy à HH:mm:ss'),
       period: { start: '', end: '' },
