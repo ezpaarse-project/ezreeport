@@ -52,6 +52,7 @@ docker compose -f docker-compose.debug.yml up -d
 Workflow used here is the same as Git Flow :
 
 - To make new changes : create a `feature/*` branch
+- Once feature is completed, run `pnpm changeset add`
 - Once feature is completed, make a [Pull Request](https://github.com/ezpaarse-project/ezreeport/compare) from your branch to the `dev` branch
 - Once a new version is ready, create a new `rc/*` branch and make a (draft) PR to the `master` branch
 - Once the new version is deployed, merge the PR
@@ -108,18 +109,3 @@ Here's a quick view to see thoses relations :
 - `dev`:
   - Should be the version used on dev (vd)
   - Versions are suffixed by `-beta.*`
-
-## Publishing components
-
-```bash
-# Test, and build a first time to test if everything is stable
-
-# Generate changelogs, etc. as it will bump version (called tag later)
-pnpm run publish
-
-# Build and push docker services on registries
-VERSION=$TAG docker buildx bake
-
-# Build and push npm packages
-pnpm --filter $PACKAGE  turbo publish
-```
