@@ -1,3 +1,10 @@
+# [ezreeport-files-v1.0.0-rc.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-files@1.0.0-rc.1...ezreeport-files@1.0.0-rc.2) (2025-08-01)
+
+
+### Bug Fixes
+
+* **files:** added writes locks to avoid any concurrence issue ([8a30427](https://github.com/ezpaarse-project/ezreeport/commit/8a30427aa02a3d83c8e6c475479f1e3b20e6763a))
+
 # ezreeport-files-v1.0.0-rc.1 (2025-07-28)
 
 
