@@ -1,3 +1,5 @@
+import type { Writable } from 'node:stream';
+
 import { RPCServer, type RPCServerRouter } from '@ezreeport/rpc/server';
 import {
   RPCStreamServer,
@@ -23,8 +25,25 @@ const buckets: Record<string, RPCStreamRouter> = {
   },
 };
 
+const writeLocks = new Map<string, Promise<unknown>>();
+
+function acquireWriteLock(id: string, stream: Writable) {
+  // Keep the promise alive until the file is written
+  writeLocks.set(
+    id,
+    // oxlint-disable-next-line promise/avoid-new
+    new Promise<void>((resolve, reject) => {
+      stream.on('finish', () => {
+        writeLocks.delete(id);
+        resolve();
+      });
+      stream.on('error', reject);
+    })
+  );
+}
+
 const streamRouter: RPCStreamRouter = {
-  createWriteStream: (
+  createWriteStream: async (
     bucketName: string,
     filename: string,
     // oxlint-disable-next-line no-explicit-any
@@ -38,9 +57,12 @@ const streamRouter: RPCStreamRouter = {
       throw new Error('Method not found for bucket');
     }
 
-    return bucket.createWriteStream(filename, ...params);
+    const stream = await bucket.createWriteStream(filename, ...params);
+    acquireWriteLock(`${bucket}:${filename}`, stream);
+
+    return stream;
   },
-  createReadStream: (
+  createReadStream: async (
     bucketName: string,
     filename: string,
     // oxlint-disable-next-line no-explicit-any
@@ -52,6 +74,11 @@ const streamRouter: RPCStreamRouter = {
     }
     if (!bucket.createReadStream) {
       throw new Error('Method not found for bucket');
+    }
+
+    const lock = writeLocks.get(`${bucket}:${filename}`);
+    if (lock) {
+      await lock;
     }
 
     return bucket.createReadStream(filename, ...params);
