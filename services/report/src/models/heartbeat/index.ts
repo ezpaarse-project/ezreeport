@@ -51,9 +51,11 @@ export async function initHeartbeat(
 
   heartbeat = setupHeartbeat(channel, service, logger, false, frequency);
 
+  const nodeId = `${hostname()}:${process.pid}`;
+
   _listener = listenToHeartbeats(channel, logger, function onHeartbeat(beat) {
     // If it's the same machine, then we can consider RabbitMQ as working
-    if (beat.hostname === hostname()) {
+    if (beat.hostname === nodeId) {
       onHeartbeat({
         service: 'rabbitmq',
         hostname: server.cluster_name || 'rabbitmq',

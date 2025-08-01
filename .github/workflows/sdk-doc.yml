@@ -7,6 +7,9 @@ on:
     paths:
       - 'services/sdk/**'
 
+env:
+  TURBO_UI: 'false'
+
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -38,7 +41,7 @@ jobs:
         run: pnpm i --frozen-lockfile
 
       - name: Build documentation 🔧
-        run: pnpm --filter @ezpaarse-project/ezreeport-sdk-js run build:docs
+        run: pnpm turbo run @ezpaarse-project/ezreeport-sdk-js#build:docs
 
       - name: Upload artifact 🚚
         uses: actions/upload-pages-artifact@v3
