@@ -1,0 +1,50 @@
+name: Release SDK package
+
+on:
+  push:
+    branches:
+      - master
+      - rc/*
+      # - dev
+    tags:
+      - '@ezpaarse-project/ezreeport-vue@*'
+
+env:
+  TURBO_UI: 'false'
+
+jobs:
+  build:
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm ⚙️
+        uses: pnpm/action-setup@v3
+
+      - name: Setup Node ⚙️
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies ⚙️
+        run: pnpm i --frozen-lockfile
+
+      - name: Build SDK 🔧
+        run: pnpm turbo run @ezpaarse-project/ezreeport-vue#build
+
+      - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies 🔍
+        run: pnpm --filter @ezpaarse-project/ezreeport-vue exec -- npm audit signatures
+
+      # - name: Release 🚀
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      #     NPM_CONFIG_PROVENANCE: true
+      #     EZR_TAG: ${{ github.ref == 'refs/heads/master' && 'latest' || (github.ref == 'refs/heads/dev' && 'dev' || 'rc') }}
+      #   run: pnpm --filter @ezpaarse-project/ezreeport-vue publish --provenance --tag $EZR_TAG --access public
