@@ -2,10 +2,6 @@ name: Release Migration container
 
 on:
   push:
-    branches:
-      - master
-      - rc/*
-      # - dev
     tags:
       - '@ezreeport/database@*'
 
@@ -47,7 +43,7 @@ jobs:
       - name: Build and push 🚚
         uses: docker/build-push-action@v6
         with:
-          push: false
+          push: true
           target: migrate
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

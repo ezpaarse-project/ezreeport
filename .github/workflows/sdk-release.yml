@@ -2,10 +2,6 @@ name: Release SDK package
 
 on:
   push:
-    branches:
-      - master
-      - rc/*
-      # - dev
     tags:
       - '@ezpaarse-project/ezreeport-sdk-js@*'
 
@@ -42,10 +38,10 @@ jobs:
       - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies 🔍
         run: pnpm --filter @ezpaarse-project/ezreeport-sdk-js exec -- npm audit signatures
 
-      # - name: Release 🚀
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      #     NPM_CONFIG_PROVENANCE: true
-      #     EZR_TAG: ${{ github.ref == 'refs/heads/master' && 'latest' || (github.ref == 'refs/heads/dev' && 'dev' || 'rc') }}
-      #   run: pnpm --filter @ezpaarse-project/ezreeport-sdk-js publish --provenance --tag $EZR_TAG --access public
+      - name: Release 🚀
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
+          EZR_TAG: ${{ github.ref == 'refs/heads/master' && 'latest' || (github.ref == 'refs/heads/dev' && 'dev' || 'rc') }}
+        run: pnpm --filter @ezpaarse-project/ezreeport-sdk-js publish --provenance --tag $EZR_TAG --access public
