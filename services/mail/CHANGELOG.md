@@ -1,3 +1,32 @@
+# [ezreeport-mail-v1.4.0](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.3.0...ezreeport-mail@1.4.0) (2025-08-08)
+
+
+### Bug Fixes
+
+* better message acknowledgements ([f0e90b8](https://github.com/ezpaarse-project/ezreeport/commit/f0e90b847a38de2a78b5677ec4891636e309d4cd))
+* fix crash when trying to send first heartbeat ([e6c6910](https://github.com/ezpaarse-project/ezreeport/commit/e6c6910ddf04756e34312c3e4335864b6688db17))
+* fixed env vars ([568857f](https://github.com/ezpaarse-project/ezreeport/commit/568857f51df9b7bc859692c065e714f0e9521bda))
+* fixed loggers ([f30fb7a](https://github.com/ezpaarse-project/ezreeport/commit/f30fb7a2ea2ba25b0237b46bed24cf893de9157d))
+* fixed order of init ([fe3188d](https://github.com/ezpaarse-project/ezreeport/commit/fe3188da0d5097c7fb7c9f7c2f6464a5c50a8cd0))
+* **mail:** forcing contentDisposition to avoid any issues ([6c00089](https://github.com/ezpaarse-project/ezreeport/commit/6c00089d3ace6ed30b8a937035d14a6f80e28404))
+
+
+### Features
+
+* added "files" service to handle IO ([4d9f9f3](https://github.com/ezpaarse-project/ezreeport/commit/4d9f9f3fc20d98cf9e913f0b32c96b525a1a4a7e))
+* added filesystem support for heartbeat ([6f50403](https://github.com/ezpaarse-project/ezreeport/commit/6f50403706bfaf2105978885c12fa531f29ad03c))
+* better logs when watching config ([f0ce7b5](https://github.com/ezpaarse-project/ezreeport/commit/f0ce7b506a273d4697c75588df322a0d423c7566))
+* can now send a RPC request to all nodes ([88ffe30](https://github.com/ezpaarse-project/ezreeport/commit/88ffe30e3dd09e3bd27bea4fe5d1751c4cc2b5f2))
+* exit service if config changes ([cc5414d](https://github.com/ezpaarse-project/ezreeport/commit/cc5414d282742baac3d84e5a34d8ecbc723ee9b6))
+* **files:** added taskId to report list ([9cc347a](https://github.com/ezpaarse-project/ezreeport/commit/9cc347a2697ff839045a96947bdd5567fd356260))
+* **mail:** added compression of files ([6225386](https://github.com/ezpaarse-project/ezreeport/commit/6225386fff1ab1a15673542dd8dd33a2c1c0aa83))
+* **mail:** gracefully stops http server ([64f9a5a](https://github.com/ezpaarse-project/ezreeport/commit/64f9a5a4b9fe2670eff36f1d17ae104a4656b910))
+* **mail:** resilient rabbitmq + heartbeat ([e554677](https://github.com/ezpaarse-project/ezreeport/commit/e55467710ecb088697d761a10c8ab28789a11de2))
+* **mail:** use files service to send generated reports ([95e78f4](https://github.com/ezpaarse-project/ezreeport/commit/95e78f4a728d598e1aa023e8be17b26ccfbaa792))
+* **mail:** using rabbitmq to send generated reports ([c4c3255](https://github.com/ezpaarse-project/ezreeport/commit/c4c32557e9127fda45bd30a8c4d4ba3602906732))
+* revamped errors in report generation ([721d0c1](https://github.com/ezpaarse-project/ezreeport/commit/721d0c11ebaf62946bf9252f19eba8ce32240e70))
+* using rabbitmq shorthands everywhere ([481c8a6](https://github.com/ezpaarse-project/ezreeport/commit/481c8a6f04eae389c0bc32927015e5ec6029c571))
+
 # [ezreeport-mail-v1.4.0-rc.2](https://github.com/ezpaarse-project/ezreeport/compare/ezreeport-mail@1.4.0-rc.1...ezreeport-mail@1.4.0-rc.2) (2025-08-01)
 
 
