@@ -77,17 +77,16 @@
               v-if="isMetric === false && aggregation.type !== 'date_histogram'"
             >
               <v-col cols="12">
-                <v-text-field
-                  :model-value="`${aggregation.size ?? 10}`"
+                <v-number-input
+                  :model-value="aggregation.size ?? 10"
                   :label="$t('$ezreeport.editor.aggregation.size')"
                   :readonly="readonly"
                   :disabled="disabled"
-                  type="number"
                   prepend-icon="mdi-image-size-select-small"
                   variant="underlined"
                   hide-details
                   @update:model-value="
-                    aggregation.size = Number.parseInt($event)
+                    aggregation.size = Number.isNaN($event) ? 10 : $event
                   "
                 />
               </v-col>

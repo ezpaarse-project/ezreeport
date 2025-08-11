@@ -1,6 +1,6 @@
 {
   "name": "@ezreeport/database",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0",
   "private": true,
   "description": "",
   "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
@@ -19,10 +19,10 @@
   },
   "scripts": {
     "db:deploy": "prisma migrate deploy",
-    "db:diff": "prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma",
-    "db:generate": "prisma generate",
-    "db:gui": "prisma studio",
-    "db:migrate": "prisma migrate dev --skip-generate",
+    "db:diff": "dotenvx run -- prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma",
+    "db:generate": "dotenvx run -- prisma generate",
+    "db:gui": "dotenvx run -- prisma studio",
+    "db:migrate": "dotenvx run -- prisma migrate dev --skip-generate",
     "lint": "oxlint",
     "type-check": "tsc --noEmit --skipLibCheck"
   },
@@ -40,6 +40,7 @@
     "@prisma/client": "^6.11.1"
   },
   "devDependencies": {
+    "@dotenvx/dotenvx": "^1.48.4",
     "prisma": "^6.11.1",
     "typescript": "catalog:"
   },
