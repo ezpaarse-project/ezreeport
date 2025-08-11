@@ -1,4 +1,4 @@
-name: Release SDK package
+name: Release Vue package
 
 on:
   push:
