@@ -33,11 +33,26 @@ jobs:
       - name: Install dependencies ⚙️
         run: pnpm i --frozen-lockfile
 
+      - name: Get prerelease state ⚗️
+        id: prerelease_state
+        run: |
+          content=`cat ./.changeset/pre.json`
+          # the following lines are only required for multi line json
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          # end of optional handling for multi line json
+          echo "::set-output name=preJson::$content"
+
       - name: Enter pre-release mode ⚗️
-        if: "github.ref != 'refs/heads/master'"
+        if: "github.ref != 'refs/heads/master' && fromJson(steps.prerelease_state.outputs.preJson).mode != 'pre"
         env:
           EZR_TAG: ${{ github.ref == 'refs/heads/dev' && 'beta' || 'rc' }}
         run: pnpm changeset pre enter $EZR_TAG
+
+      - name: Exit pre-release mode ⚗️
+        if: "github.ref == 'refs/heads/master' && fromJson(steps.prerelease_state.outputs.preJson).mode == 'pre"
+        run: pnpm changeset pre exit
 
       - name: Build changelogs 📝
         run: pnpm changeset version
