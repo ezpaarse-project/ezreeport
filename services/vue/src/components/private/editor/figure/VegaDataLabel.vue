@@ -23,7 +23,9 @@
   <v-row>
     <v-col cols="6">
       <div>
-        <v-label :text="$t('$ezreeport.editor.figures.vega._.dataLabel:position')" />
+        <v-label
+          :text="$t('$ezreeport.editor.figures.vega._.dataLabel:position')"
+        />
       </div>
 
       <v-btn-toggle
@@ -74,7 +76,7 @@
     </v-col>
 
     <v-col cols="6">
-      <v-text-field
+      <v-number-input
         v-model="minValue"
         :label="$t('$ezreeport.editor.figures.vega._.dataLabel:minValue')"
         :append-inner-icon="appendIconMin"
@@ -82,7 +84,6 @@
         :min="format === 'percent' ? 0 : undefined"
         :disabled="!isEnabled"
         :readonly="readonly"
-        type="number"
         variant="underlined"
       />
     </v-col>
@@ -95,17 +96,17 @@ import type { VegaDataLabelOptions } from '~sdk/helpers/figures';
 // Components props
 const props = defineProps<{
   /** The data label options to edit */
-  modelValue: VegaDataLabelOptions | undefined,
+  modelValue: VegaDataLabelOptions | undefined;
   /** Type of the figure */
-  type: string,
+  type: string;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated options */
-  (event: 'update:modelValue', value: VegaDataLabelOptions | undefined): void
+  (event: 'update:modelValue', value: VegaDataLabelOptions | undefined): void;
 }>();
 
 // Utils composables
@@ -113,10 +114,10 @@ const emit = defineEmits<{
 const { t } = useI18n();
 
 /** Backup of the layer, used when enabling/disabling */
-const {
-  cloned: paramsBackup,
-  sync: syncBackup,
-} = useCloned<VegaDataLabelOptions>(props.modelValue ?? { format: 'numeric' }, { manual: true });
+const { cloned: paramsBackup, sync: syncBackup } =
+  useCloned<VegaDataLabelOptions>(props.modelValue ?? { format: 'numeric' }, {
+    manual: true,
+  });
 
 /** Is grouping enabled */
 const isEnabled = computed({
@@ -172,7 +173,8 @@ const position = computed({
 });
 /** Should show labels */
 const showLabel = computed({
-  get: () => props.modelValue?.showLabel ?? paramsBackup.value.showLabel ?? false,
+  get: () =>
+    props.modelValue?.showLabel ?? paramsBackup.value.showLabel ?? false,
   set: (value) => {
     if (!props.modelValue) {
       return;
@@ -183,36 +185,38 @@ const showLabel = computed({
   },
 });
 /** Icon to append to minimum value */
-const appendIconMin = computed(
-  () => (format.value === 'percent' ? formatIcons.get('percent') : undefined),
+const appendIconMin = computed(() =>
+  format.value === 'percent' ? formatIcons.get('percent') : undefined
 );
 /** Minimum value to show datalabel */
 const minValue = computed({
   get: () => {
     const value = props.modelValue?.minValue ?? paramsBackup.value.minValue;
     if (value != null) {
-      return `${value}`;
+      return value;
     }
     if (format.value === 'percent') {
       // By default it's 3 percent
-      return '3';
+      return 3;
     }
-    return '';
+    return 0;
   },
   set: (value) => {
     if (!props.modelValue) {
       return;
     }
 
-    let number: number | undefined = Number.parseInt(value, 10);
+    let number: number | undefined = Number.isNaN(value) ? 10 : value;
     if (Number.isNaN(number)) {
       number = undefined;
     }
 
-    if (number != null && format.value === 'percent') {
-      if (number < 0 || number > 100) {
-        return;
-      }
+    if (
+      number != null &&
+      format.value === 'percent' &&
+      (number < 0 || number > 100)
+    ) {
+      return;
     }
 
     const params = props.modelValue;

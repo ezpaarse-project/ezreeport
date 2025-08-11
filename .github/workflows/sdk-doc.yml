@@ -11,6 +11,9 @@ env:
   HUSKY: 0
   TURBO_UI: 'false'
 
+env:
+  TURBO_UI: 'false'
+
 concurrency:
   group: "pages"
   cancel-in-progress: false
