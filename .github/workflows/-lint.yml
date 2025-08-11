@@ -4,9 +4,9 @@ on:
   pull_request:
     branches:
       - '*'
-  workflow_dispatch:
 
 env:
+  HUSKY: 0
   TURBO_UI: 'false'
 
 jobs:
@@ -35,3 +35,6 @@ jobs:
 
       - name: Lint packages 🚨
         run: pnpm turbo run lint
+
+      - name: Have a changeset 🚨
+        run: pnpm changeset status --since ${{ github.base_ref }}
