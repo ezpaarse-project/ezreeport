@@ -1,0 +1,2 @@
+LATEST_PUSHED=$(git rev-parse @{push});
+changeset status --since "${LATEST_PUSHED}"

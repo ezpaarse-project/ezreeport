@@ -36,7 +36,6 @@
     "build:docs": "storybook build",
     "dev": "storybook dev -p 6006",
     "lint": "oxlint",
-    "publish": "npm publish",
     "type-check": "vue-tsc --noEmit --skipLibCheck"
   },
   "lint-staged": {

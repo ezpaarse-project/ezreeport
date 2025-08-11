@@ -1,23 +1,27 @@
-import type { AggregationName, FigureBaseAggregation, FigureRawAggregation } from '~sdk/helpers/aggregations';
+import type {
+  AggregationName,
+  FigureBaseAggregation,
+  FigureRawAggregation,
+} from '~sdk/helpers/aggregations';
 import { elasticTypeAliases } from './elastic';
 
-export interface InnerBaseAggregation extends Omit<FigureBaseAggregation, 'type'> {
+export type InnerBaseAggregation = Omit<FigureBaseAggregation, 'type'> & {
   type: FigureBaseAggregation['type'] | '';
-}
+};
 
 export type InnerAggregation = FigureRawAggregation | InnerBaseAggregation;
 
 export const isRawAggregation = (
-  agg: InnerAggregation,
+  agg: InnerAggregation
 ): agg is FigureRawAggregation => 'raw' in agg && !!agg.raw;
 
 export const isBaseAggregation = (
-  agg: InnerAggregation,
+  agg: InnerAggregation
 ): agg is FigureBaseAggregation => !isRawAggregation(agg) && agg.type !== '';
 
 const typeAliases = Array.from(elasticTypeAliases.entries());
-const findAliases = (search: string) => typeAliases
-  .filter(([, alias]) => alias === search).map(([key]) => key);
+const findAliases = (search: string) =>
+  typeAliases.filter(([, alias]) => alias === search).map(([key]) => key);
 
 const numberAliases = findAliases('number');
 const dateAliases = findAliases('date');

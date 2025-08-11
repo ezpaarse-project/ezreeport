@@ -16,7 +16,6 @@
     "build": {
       "dependsOn": ["build:js", "build:types", "build:docs"]
     },
-    "publish": {},
     "dev": {
       "dependsOn": ["^watch:docs", "^preview:docs"],
       "persistent": true

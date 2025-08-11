@@ -15,7 +15,7 @@ export interface Namespace {
   };
   /** Additional options for fetchers used for namespace */
   fetchOptions: {
-    elastic: {};
+    elastic: Record<string, never>;
   };
   /** Namespace logo */
   logoId?: string;
@@ -28,7 +28,8 @@ export interface Namespace {
 /**
  * Type for a namespace from the API
  */
-export interface RawNamespace extends Omit<Namespace, 'createdAt' | 'updatedAt'> {
+export interface RawNamespace
+  extends Omit<Namespace, 'createdAt' | 'updatedAt'> {
   createdAt: string;
   updatedAt?: string | null;
 }

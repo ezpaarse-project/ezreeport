@@ -6,6 +6,7 @@ LABEL maintainer="ezTeam <ezteam@couperin.org>"
 LABEL org.opencontainers.image.source="https://github.com/ezpaarse-project/ezreeport"
 
 ENV HUSKY=0
+ENV TURBO_UI=false
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 

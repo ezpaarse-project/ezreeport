@@ -9,8 +9,8 @@ import type {
   RawApiService,
 } from './types';
 
-export const transformService = (s: RawApiService): ApiService => ({
-  ...transformCreatedUpdated(s),
+export const transformService = (service: RawApiService): ApiService => ({
+  ...transformCreatedUpdated(service),
 });
 
 /**

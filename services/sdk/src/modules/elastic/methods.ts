@@ -3,9 +3,9 @@ import type { ApiResponse } from '~/lib/api';
 
 import { assignPermission } from '~/helpers/permissions/decorator';
 
-import { Namespace } from '~/modules/namespaces/types';
+import type { Namespace } from '~/modules/namespaces/types';
 
-import { Index, Mapping } from './types';
+import type { Index, Mapping } from './types';
 
 /**
  * List all available indices
@@ -18,15 +18,20 @@ import { Index, Mapping } from './types';
  */
 export async function getAllIndices(
   namespaceOrId?: Namespace | string,
-  query?: string,
+  query?: string
 ): Promise<Index[]> {
-  const namespaceId = typeof namespaceOrId === 'string' ? namespaceOrId : namespaceOrId?.id;
+  const namespaceId =
+    typeof namespaceOrId === 'string' ? namespaceOrId : namespaceOrId?.id;
 
-  const {
-    content,
-  } = await client.fetch<ApiResponse<Index[]>>('/elastic/indices', {
-    query: { query: query || undefined, namespaceId: namespaceId || undefined },
-  });
+  const { content } = await client.fetch<ApiResponse<Index[]>>(
+    '/elastic/indices',
+    {
+      query: {
+        query: query || undefined,
+        namespaceId: namespaceId || undefined,
+      },
+    }
+  );
 
   return content;
 }
@@ -43,15 +48,17 @@ assignPermission(getAllIndices, 'GET /elastic/indices', true);
 
 export async function getIndexMapping(
   index: string,
-  namespaceOrId?: Namespace | string,
+  namespaceOrId?: Namespace | string
 ): Promise<Mapping> {
-  const namespaceId = typeof namespaceOrId === 'string' ? namespaceOrId : namespaceOrId?.id;
+  const namespaceId =
+    typeof namespaceOrId === 'string' ? namespaceOrId : namespaceOrId?.id;
 
-  const {
-    content,
-  } = await client.fetch<ApiResponse<Mapping>>(`/elastic/indices/${index}`, {
-    query: { namespaceId: namespaceId || undefined },
-  });
+  const { content } = await client.fetch<ApiResponse<Mapping>>(
+    `/elastic/indices/${index}`,
+    {
+      query: { namespaceId: namespaceId || undefined },
+    }
+  );
 
   return content;
 }

@@ -17,20 +17,21 @@ import type { TemplateTag } from '~sdk/helpers/templates';
 // Components props
 const props = defineProps<{
   /** The tag to show */
-  modelValue: TemplateTag,
+  modelValue: TemplateTag;
 }>();
 
 const color = computed(() => {
   if (!props.modelValue.color) {
-    return undefined;
+    return;
   }
   return chroma(props.modelValue.color).hex('rgb');
 });
 
 const textColor = computed(() => {
   if (!color.value) {
-    return undefined;
+    return;
   }
+  // oxlint-disable-next-line no-named-as-default-member
   return chroma.contrast(color.value, 'black') > 5 ? 'black' : 'white';
 });
 </script>

@@ -18,16 +18,20 @@ import type { RawNamespace } from '~/modules/namespaces/types';
 
 import type { InputTask, RawTask, Task } from './types';
 
-export const transformTaskWithoutBody = (t: Omit<RawTask, 'template'>): Omit<Task, 'template'> => ({
-  ...transformCreatedUpdated(t),
-  nextRun: parseISO(t.nextRun),
-  lastRun: t.lastRun ? parseISO(t.lastRun) : undefined,
-  namespace: t.namespace && transformNamespace(t.namespace as RawNamespace),
+export const transformTaskWithoutBody = (
+  template: Omit<RawTask, 'template'>
+): Omit<Task, 'template'> => ({
+  ...transformCreatedUpdated(template),
+  nextRun: parseISO(template.nextRun),
+  lastRun: template.lastRun ? parseISO(template.lastRun) : undefined,
+  namespace:
+    template.namespace &&
+    transformNamespace(template.namespace as RawNamespace),
 });
 
-export const transformTask = (t: RawTask): Task => ({
-  ...transformTaskWithoutBody(t),
-  template: t.template,
+export const transformTask = (template: RawTask): Task => ({
+  ...transformTaskWithoutBody(template),
+  template: template.template,
 });
 
 type PaginatedTasks = SdkPaginated<Omit<Task, 'template'>>;
@@ -38,13 +42,11 @@ type PaginatedTasks = SdkPaginated<Omit<Task, 'template'>>;
  * @returns All tasks' info
  */
 export async function getAllTasks(
-  opts?: ApiRequestOptions & { include?: string[] },
+  opts?: ApiRequestOptions & { include?: string[] }
 ): Promise<PaginatedTasks> {
   const {
     content,
-    meta: {
-      total, count, page,
-    },
+    meta: { total, count, page },
   } = await client.fetch<ApiResponsePaginated<Omit<RawTask, 'template'>>>(
     '/tasks',
     {
@@ -52,7 +54,7 @@ export async function getAllTasks(
         ...apiRequestOptionsToQuery(opts),
         include: opts?.include,
       },
-    },
+    }
   );
 
   return {
@@ -74,16 +76,14 @@ assignPermission(getAllTasks, 'GET /tasks', true);
  */
 export async function getTask(
   taskOrId: Omit<Task, 'template'> | string,
-  include?: string[],
+  include?: string[]
 ): Promise<Task> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   if (!id) {
     throw new Error('Task id is required');
   }
 
-  const {
-    content,
-  } = await client.fetch<ApiResponse<RawTask>>(`/tasks/${id}`, {
+  const { content } = await client.fetch<ApiResponse<RawTask>>(`/tasks/${id}`, {
     query: { include },
   });
 
@@ -98,16 +98,11 @@ assignPermission(getTask, 'GET /tasks/:id', true);
  *
  * @returns Created task's info
  */
-export async function createTask(
-  task: InputTask,
-): Promise<Task> {
-  const { content } = await client.fetch<ApiResponse<RawTask>>(
-    '/tasks',
-    {
-      method: 'POST',
-      body: task,
-    },
-  );
+export async function createTask(task: InputTask): Promise<Task> {
+  const { content } = await client.fetch<ApiResponse<RawTask>>('/tasks', {
+    method: 'POST',
+    body: task,
+  });
 
   return transformTask(content);
 }
@@ -120,18 +115,14 @@ assignPermission(createTask, 'POST /tasks', true);
  *
  * @returns Updated/Created Task's info
  */
-export async function upsertTask(
-  { id, ...task }: InputTask & { id: Task['id'] },
-): Promise<Task> {
-  const {
-    content,
-  } = await client.fetch<ApiResponse<RawTask>>(
-    `/tasks/${id}`,
-    {
-      method: 'PUT',
-      body: task,
-    },
-  );
+export async function upsertTask({
+  id,
+  ...task
+}: InputTask & { id: Task['id'] }): Promise<Task> {
+  const { content } = await client.fetch<ApiResponse<RawTask>>(`/tasks/${id}`, {
+    method: 'PUT',
+    body: task,
+  });
 
   return transformTask(content);
 }
@@ -145,19 +136,16 @@ assignPermission(upsertTask, 'PUT /tasks/:id', true);
  * @returns Whether the task was deleted
  */
 export async function deleteTask(
-  taskOrId: Omit<Task, 'template'> | string,
+  taskOrId: Omit<Task, 'template'> | string
 ): Promise<boolean> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   if (!id) {
     return false;
   }
 
-  const {
-    content,
-  } = await client.fetch<ApiDeletedResponse>(
-    `/tasks/${id}`,
-    { method: 'DELETE' },
-  );
+  const { content } = await client.fetch<ApiDeletedResponse>(`/tasks/${id}`, {
+    method: 'DELETE',
+  });
 
   return content.deleted;
 }
@@ -171,18 +159,16 @@ assignPermission(deleteTask, 'DELETE /tasks/:id', true);
  * @returns Updated task
  */
 export async function unlinkTaskFromTemplate(
-  taskOrId: Omit<Task, 'template'> | string,
+  taskOrId: Omit<Task, 'template'> | string
 ): Promise<Task> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   if (!id) {
     throw new Error('Task id is required');
   }
 
-  const {
-    content,
-  } = await client.fetch<ApiResponse<RawTask>>(
+  const { content } = await client.fetch<ApiResponse<RawTask>>(
     `/tasks/${id}/extends`,
-    { method: 'DELETE' },
+    { method: 'DELETE' }
   );
 
   return transformTask(content);

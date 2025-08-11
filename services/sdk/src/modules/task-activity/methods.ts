@@ -14,9 +14,9 @@ import type { RawTask } from '~/modules/tasks/types';
 
 import type { RawTaskActivity, TaskActivity } from './types';
 
-export const transformActivity = (t: RawTaskActivity): TaskActivity => ({
-  ...transformCreated(t),
-  task: t.task ? transformTask(t.task as RawTask) : undefined,
+export const transformActivity = (activity: RawTaskActivity): TaskActivity => ({
+  ...transformCreated(activity),
+  task: activity.task ? transformTask(activity.task as RawTask) : undefined,
 });
 
 type PaginatedActivity = SdkPaginated<TaskActivity>;
@@ -27,13 +27,11 @@ type PaginatedActivity = SdkPaginated<TaskActivity>;
  * @returns All activity' info
  */
 export async function getAllActivity(
-  opts?: ApiRequestOptions & { include?: string[] },
+  opts?: ApiRequestOptions & { include?: string[] }
 ): Promise<PaginatedActivity> {
   const {
     content,
-    meta: {
-      total, count, page,
-    },
+    meta: { total, count, page },
   } = await client.fetch<ApiResponsePaginated<RawTaskActivity>>(
     '/task-activity',
     {
@@ -41,7 +39,7 @@ export async function getAllActivity(
         ...apiRequestOptionsToQuery(opts),
         include: opts?.include,
       },
-    },
+    }
   );
 
   return {
