@@ -1,8 +1,12 @@
-name: Release Worker container
+name: Release All In One container
 
 on:
   push:
     tags:
+      - 'ezreeport-report@*'
+      - 'ezreeport-files@*'
+      - 'ezreeport-mail@*'
+      - 'ezreeport-scheduler@*'
       - 'ezreeport-worker@*'
 
 env:
@@ -20,9 +24,9 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ghcr.io/ezpaarse-project/ezreeport-worker
+            ghcr.io/ezpaarse-project/ezreeport-aio
           tags: |
-            type=match=,pattern=^ezreeport-worker@(.+)$,group=1
+            type=raw,value={{commit_date 'YYYYMMDD'}}
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
             type=raw,value=rc,enable=${{ startsWith('refs/heads/rc/', github.ref) }}
             type=raw,value=dev,enable=${{ github.ref == 'refs/heads/dev' }}
@@ -44,6 +48,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          target: worker
+          target: aio
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
