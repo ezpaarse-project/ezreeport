@@ -16,11 +16,29 @@ const {
   api: { url: APIurl },
 } = config;
 
+async function getFileFromRemote(
+  filename: string,
+  id: string
+): Promise<Buffer> {
+  const stream = await createReportReadStream(filename, id);
+  // oxlint-disable-next-line promise/avoid-new
+  return new Promise<Buffer>((resolve, reject) => {
+    const buffers: Buffer[] = [];
+
+    stream
+      .on('data', (chunk: Buffer) => {
+        buffers.push(chunk);
+      })
+      .on('end', () => resolve(Buffer.concat(buffers)))
+      .on('error', (err) => reject(err));
+  });
+}
+
 export default async function sendSuccessReport(
   data: MailReportQueueDataType,
   logger: Logger
 ): Promise<void> {
-  const file = await createReportReadStream(data.filename, data.task.id);
+  const file = await getFileFromRemote(data.filename, data.task.id);
   const name = basename(data.filename);
   const dateStr = format(data.date, 'dd/MM/yyyy');
 
