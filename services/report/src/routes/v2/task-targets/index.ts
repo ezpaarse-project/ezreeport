@@ -5,7 +5,6 @@ import { z } from '@ezreeport/models/lib/zod';
 
 import authPlugin, { restrictNamespaces } from '~/plugins/auth';
 
-import { PaginationQuery } from '~/models/pagination/types';
 import {
   describeErrors,
   buildSuccessResponse,
@@ -28,9 +27,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     schema: {
       summary: 'Get all targets of all tasks',
       tags: ['task-targets'],
-      querystring: PaginationQuery.and(
-        TaskQueryFilters.pick({ namespaceId: true })
-      ),
+      querystring: TaskQueryFilters.pick({ namespaceId: true }),
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -59,11 +56,15 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const { namespaceId } = request.query;
-      const tasks = await getAllTasks({ namespaceId });
+      const tasks = await getAllTasks({ namespaceId }, undefined, {
+        count: 0,
+        page: 1,
+        order: 'asc',
+      });
 
       const content = new Set(tasks.flatMap(({ targets }) => targets));
 
-      return buildSuccessResponse(Array.from(content), reply);
+      return buildSuccessResponse(Array.from(content).sort(), reply);
     },
   });
 

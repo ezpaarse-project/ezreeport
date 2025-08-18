@@ -45,7 +45,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const filter = { targets: [request.params.email] };
-      const content = await tasks.getAllTasks(filter);
+      const content = await tasks.getAllTasks(filter, undefined, request.query);
 
       return buildPaginatedResponse(
         content,
