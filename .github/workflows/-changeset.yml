@@ -35,6 +35,7 @@ jobs:
 
       - name: Get prerelease state ⚗️
         id: prerelease_state
+        if: "hashFiles('./.changeset/pre.json') != ''"
         run: |
           content=`cat ./.changeset/pre.json`
           # the following lines are only required for multi line json
