@@ -10,6 +10,8 @@ on:
 env:
   HUSKY: 0
   TURBO_UI: 'false'
+  EZR_PRERELEASE_MODE: ${{ github.ref == 'refs/heads/master' && 'exit' || 'pre' }}
+  EZR_PRERELEASE_TAG: ${{ github.ref == 'refs/heads/dev' && 'beta' || 'rc' }}
 
 jobs:
   release:
@@ -35,6 +37,7 @@ jobs:
 
       - name: Get prerelease state ⚗️
         id: prerelease_state
+        if: "hashFiles('./.changeset/pre.json') != ''"
         run: |
           content=`cat ./.changeset/pre.json`
           # the following lines are only required for multi line json
@@ -44,15 +47,13 @@ jobs:
           # end of optional handling for multi line json
           echo "::set-output name=preJson::$content"
 
-      - name: Enter pre-release mode ⚗️
-        if: "github.ref != 'refs/heads/master' && fromJson(steps.prerelease_state.outputs.preJson).mode != 'pre'"
-        env:
-          EZR_TAG: ${{ github.ref == 'refs/heads/dev' && 'beta' || 'rc' }}
-        run: pnpm changeset pre enter $EZR_TAG
-
       - name: Exit pre-release mode ⚗️
-        if: "github.ref == 'refs/heads/master' && fromJson(steps.prerelease_state.outputs.preJson).mode == 'pre'"
+        if: "hashFiles('./.changeset/pre.json') != '' && (fromJson(steps.prerelease_state.outputs.preJson).mode != env.EZR_PRERELEASE_MODE || fromJson(steps.prerelease_state.outputs.preJson).tag != env.EZR_PRERELEASE_TAG)"
         run: pnpm changeset pre exit
+
+      - name: Enter pre-release mode ⚗️
+        if: "env.EZR_PRERELEASE_MODE == 'pre' && (hashFiles('./.changeset/pre.json') == '' || fromJson(steps.prerelease_state.outputs.preJson).mode != env.EZR_PRERELEASE_MODE || fromJson(steps.prerelease_state.outputs.preJson).tag != env.EZR_PRERELEASE_TAG)"
+        run: pnpm changeset pre enter ${{ env.EZR_PRERELEASE_TAG }}
 
       - name: Build changelogs 📝
         run: pnpm changeset version
@@ -65,4 +66,4 @@ jobs:
         with:
           message: 'chore(release): publish changelogs'
           default_author: github_actions
-          push: '--atomic'
+          push: '--follow-tags'
