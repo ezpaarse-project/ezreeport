@@ -84,8 +84,12 @@ function assertFigureAgg(aggregation: unknown): aggregation is FigureAggType {
   }
 
   // Will throw if invalid
-  FigureAgg.parse(aggregation);
-  return true;
+  try {
+    FigureAgg.parse(aggregation);
+    return true;
+  } catch (err) {
+    throw new TemplateError(err instanceof Error ? err.message : `${err}`);
+  }
 }
 
 /**
