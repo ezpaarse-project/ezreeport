@@ -2,8 +2,6 @@ name: Build and Deploy SDK documentation
 
 on:
   push:
-    branches:
-      - master
     tags:
       - '@ezpaarse-project/ezreeport-sdk-js@*'
 
