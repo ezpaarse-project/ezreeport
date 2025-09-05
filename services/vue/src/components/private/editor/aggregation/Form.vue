@@ -77,17 +77,15 @@
               v-if="isMetric === false && aggregation.type !== 'date_histogram'"
             >
               <v-col cols="12">
-                <v-number-input
-                  :model-value="aggregation.size ?? 10"
+                <v-text-field
+                  v-model="aggregationSize"
                   :label="$t('$ezreeport.editor.aggregation.size')"
                   :readonly="readonly"
                   :disabled="disabled"
+                  type="number"
                   prepend-icon="mdi-image-size-select-small"
                   variant="underlined"
                   hide-details
-                  @update:model-value="
-                    aggregation.size = Number.isNaN($event) ? 10 : $event
-                  "
                 />
               </v-col>
 
@@ -189,6 +187,34 @@ const {
 
 /** Is the aggregation in advanced mode */
 const isAdvanced = computed(() => isRawAggregation(aggregation.value));
+/** Size of the aggregation */
+const aggregationSize = computed<string>({
+  get: () => {
+    if (isRawAggregation(aggregation.value)) {
+      return '0';
+    }
+    return `${aggregation.value.size ?? 10}`;
+  },
+  set: (value) => {
+    if (isRawAggregation(aggregation.value)) {
+      return;
+    }
+
+    if (!value) {
+      aggregation.value.size = 10;
+      return;
+    }
+
+    const size = Number.parseInt(value, 10);
+
+    if (Number.isNaN(size)) {
+      aggregation.value.size = 10;
+      return;
+    }
+
+    aggregation.value.size = Math.max(size, 0);
+  },
+});
 /** Is the aggregation a metric one */
 const isMetric = computed(() => {
   const current = aggregation.value;
