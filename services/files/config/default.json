@@ -1,6 +1,12 @@
 {
   "port": 8080,
-  "heartbeat": 10000,
+  "heartbeat": {
+    "self": 5000,
+    "connected": {
+      "min": 5000,
+      "max": 300000
+    }
+  },
   "log": {
     "level": "debug",
     "dir": "",
