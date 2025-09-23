@@ -4,7 +4,15 @@ const nodeEnv = {
   NODE_ENV: env('NODE_ENV'),
   TZ: env('TZ'),
 
-  HEARTBEAT_FREQUENCY: env('HEARTBEAT_FREQUENCY', 10000),
+  HEARTBEAT_FREQUENCY: env('HEARTBEAT_FREQUENCY', 5000),
+  HEARTBEAT_EXTERNAL_FREQUENCY_MIN: env(
+    'HEARTBEAT_EXTERNAL_FREQUENCY_MIN',
+    5000
+  ),
+  HEARTBEAT_EXTERNAL_FREQUENCY_MAX: env(
+    'HEARTBEAT_EXTERNAL_FREQUENCY_MAX',
+    300000
+  ),
 
   LOG_LEVEL: env('LOG_LEVEL', 'info'),
   LOG_DIR: env('API_LOG_DIR'),
@@ -20,7 +28,10 @@ const elasticEnv = {
 };
 
 const dbEnv = {
-  DATABASE_URL: env('DATABASE_URL', 'postgresql://postgres:changeme@localhost:5432/?schema=public'),
+  DATABASE_URL: env(
+    'DATABASE_URL',
+    'postgresql://postgres:changeme@localhost:5432/?schema=public'
+  ),
 };
 
 const rabbitmqEnv = {
@@ -53,7 +64,10 @@ module.exports = {
         ALLOWED_ORIGINS: env('ALLOWED_ORIGINS', '*'),
         ADMIN_KEY: env('ADMIN_KEY', '00000000-0000-0000-0000-000000000000'),
         DEFAULT_TEMPLATE_NAME: env('DEFAULT_TEMPLATE_NAME', 'scratch'),
-        DEFAULT_TEMPLATE_DATEFIELD: env('DEFAULT_TEMPLATE_DATEFIELD', 'datetime'),
+        DEFAULT_TEMPLATE_DATEFIELD: env(
+          'DEFAULT_TEMPLATE_DATEFIELD',
+          'datetime'
+        ),
       },
     },
     {
