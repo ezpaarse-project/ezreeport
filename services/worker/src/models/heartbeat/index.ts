@@ -22,7 +22,9 @@ const service: HeartbeatService = {
   filesystems: {
     logs: config.log.dir,
   },
-  getConnectedServices: () => [mandatoryService('elastic', elasticPing)],
+  connectedServices: {
+    elastic: mandatoryService('elastic', elasticPing),
+  },
 };
 
 export { getMissingMandatoryServices } from '@ezreeport/heartbeats';

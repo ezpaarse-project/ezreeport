@@ -91,7 +91,9 @@ async function elasticReady(): Promise<Client> {
  *
  * @returns If elastic is up
  */
-export const elasticPing = async (): Promise<HeartbeatType> => {
+export const elasticPing = async (): Promise<
+  Omit<HeartbeatType, 'nextAt' | 'updatedAt'>
+> => {
   const elastic = await elasticReady();
 
   const { body } =
@@ -109,7 +111,6 @@ export const elasticPing = async (): Promise<HeartbeatType> => {
         available: body.nodes.fs.available_in_bytes,
       },
     ],
-    updatedAt: new Date(),
   };
 };
 
