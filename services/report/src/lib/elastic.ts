@@ -59,7 +59,9 @@ function getElasticClient(): Client {
  *
  * @returns If elastic is up
  */
-export async function elasticPing(): Promise<HeartbeatType> {
+export async function elasticPing(): Promise<
+  Omit<HeartbeatType, 'nextAt' | 'updatedAt'>
+> {
   const elastic = getElasticClient();
 
   const { body } =
@@ -77,7 +79,6 @@ export async function elasticPing(): Promise<HeartbeatType> {
         available: body.nodes.fs.available_in_bytes,
       },
     ],
-    updatedAt: new Date(),
   };
 }
 

@@ -30,10 +30,10 @@ export const service: HeartbeatService = {
   filesystems: {
     logs: config.log.dir,
   },
-  getConnectedServices: () => [
-    mandatoryService('database', dbPing),
-    elasticPing(),
-  ],
+  connectedServices: {
+    database: mandatoryService('database', dbPing),
+    elastic: elasticPing,
+  },
 };
 
 let heartbeat: HeartbeatSender | undefined;
@@ -56,11 +56,14 @@ export async function initHeartbeat(
   _listener = listenToHeartbeats(channel, logger, function onHeartbeat(beat) {
     // If it's the same machine, then we can consider RabbitMQ as working
     if (beat.hostname === nodeId) {
+      const now = new Date();
+
       onHeartbeat({
         service: 'rabbitmq',
         hostname: server.cluster_name || 'rabbitmq',
         version: server.version,
-        updatedAt: new Date(),
+        updatedAt: now,
+        nextAt: new Date(now.getTime() + frequency.self),
       });
     }
 
@@ -82,11 +85,13 @@ export async function initHeartbeat(
 export { getMissingMandatoryServices } from '@ezreeport/heartbeats';
 
 export function getAllServices(): HeartbeatType[] {
+  const now = new Date();
+
   return (
     Array.from(services.values())
-      // Filter out services that haven't given heartbeats in 2x the frequency
+      // Filter out services that haven't given heartbeats in time
       .filter((service) =>
-        isAfter(service.updatedAt, new Date(Date.now() - frequency * 2))
+        isAfter(service.nextAt.getTime() + frequency.connected.max, now)
       )
   );
 }
