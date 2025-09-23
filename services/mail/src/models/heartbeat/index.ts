@@ -21,7 +21,9 @@ const service: HeartbeatService = {
   filesystems: {
     logs: config.log.dir,
   },
-  getConnectedServices: () => [mandatoryService('smtp', SMTPPing)],
+  connectedServices: {
+    smtp: mandatoryService('smtp', SMTPPing),
+  },
 };
 
 export { getMissingMandatoryServices } from '@ezreeport/heartbeats';
