@@ -26,16 +26,30 @@ export const Heartbeat = z.object({
     .describe('Filesystems used by the service'),
 
   updatedAt: z.coerce.date().describe('Creation date of heartbeat'),
+
+  nextAt: z.coerce.date().describe('When the next heartbeat should happen'),
 });
 
 export type HeartbeatType = z.infer<typeof Heartbeat>;
+
+export type HeartbeatConnectedServicePing = () => Promise<
+  Omit<HeartbeatType, 'nextAt' | 'updatedAt'>
+>;
 
 export type HeartbeatService = {
   name: string;
   version: string;
   filesystems?: Record<string, string>;
-  getConnectedServices?: () => Promise<HeartbeatType>[];
+  connectedServices?: Record<string, HeartbeatConnectedServicePing>;
 };
 
 export type { HeartbeatSender } from './HeartBeat/Sender';
 export type { HeartbeatListener } from './HeartBeat/Listener';
+
+export type HeartbeatFrequency = {
+  self: number;
+  connected: {
+    min: number;
+    max: number;
+  };
+};
