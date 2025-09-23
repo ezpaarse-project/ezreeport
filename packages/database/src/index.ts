@@ -50,7 +50,9 @@ export function setupDB(logger: Logger): PrismaClient {
   return client;
 }
 
-export async function pingDB(client: PrismaClient): Promise<HeartbeatType> {
+export async function pingDB(
+  client: PrismaClient
+): Promise<Omit<HeartbeatType, 'nextAt' | 'updatedAt'>> {
   const response = await client.$queryRaw<
     { version: string; db: string; usage: string }[]
   >`
@@ -66,7 +68,6 @@ export async function pingDB(client: PrismaClient): Promise<HeartbeatType> {
     hostname: DATABASE_HOST,
     service: 'database',
     version: versionMatch?.[1],
-    updatedAt: new Date(),
     filesystems: [
       {
         name: `[database] ${db}`,
