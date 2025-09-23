@@ -6,4 +6,4 @@
 'ezreeport-mail': minor
 ---
 
-feat: heartbeats to external services now use dynamic frequency
+✨ heartbeats to external services now use dynamic frequency

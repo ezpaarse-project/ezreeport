@@ -6,4 +6,4 @@
 '@ezpaarse-project/ezreeport-vue': major
 ---
 
-switched release management to changeset
+🏗️ switched release management to changeset
