@@ -15,7 +15,7 @@ RUN apk update \
   && apk upgrade -U -a
 
 RUN corepack enable \
-  && corepack prepare pnpm@10.7.1 --activate
+  && corepack prepare pnpm@10.17.1 --activate
 
 # endregion
 # ---
