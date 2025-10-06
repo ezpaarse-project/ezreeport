@@ -35,10 +35,24 @@ function checkEsErrors(
 > {
   // Checks any errors
   if ('error' in response) {
-    const reason =
-      response.error.failed_shards?.[0]?.reason?.reason ||
-      response.error.reason;
-    throw new FetchError(reason, 'ElasticError');
+    if (response.error.failed_shards?.length) {
+      const reasons = response.error.failed_shards
+        // oxlint-disable-next-line no-explicit-any - Elastic Types are a pain
+        .map((shard: any) => shard?.reasons?.reason)
+        .join('; ');
+
+      throw new FetchError(
+        `An error occurred when fetching data : ${reasons || 'Unknown, try query to get more info'}`,
+        'ShardError'
+      );
+    }
+
+    const reason = response.error.caused_by?.reason || response.error.reason;
+
+    throw new FetchError(
+      `An error occurred when fetching data : ${reason || 'Unknown, try query to get more info'}`,
+      'ElasticError'
+    );
   }
 
   // Checks any shard errors
@@ -46,8 +60,9 @@ function checkEsErrors(
     const reasons = response._shards.failures
       .map((err) => err.reason.reason)
       .join(' ; ');
+
     throw new FetchError(
-      `An error occurred when fetching data : ${reasons}`,
+      `An error occurred when fetching data : ${reasons || 'Unknown, try query to get more info'}`,
       'ShardError'
     );
   }
