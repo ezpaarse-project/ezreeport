@@ -100,6 +100,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         requireUser: true,
         access: Access.READ_WRITE,
       },
+      rateLimit: {
+        max: 5,
+        timeWindow: '1 minute',
+      },
     },
     preHandler: [
       async (request): Promise<void> => {

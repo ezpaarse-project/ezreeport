@@ -1,6 +1,7 @@
 {
   "port": { "__name": "HTTP_PORT", "__format": "number" },
   "allowedOrigins": "ALLOWED_ORIGINS",
+  "allowedProxies": "ALLOWED_PROXIES",
   "adminKey": "ADMIN_KEY",
   "heartbeat": {
     "self": { "__name": "HEARTBEAT_FREQUENCY", "__format": "number" },

@@ -150,6 +150,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       ezrAuth: {
         requireAdmin: true,
       },
+      rateLimit: {
+        max: 5,
+        timeWindow: '1 minute',
+      },
     },
     // oxlint-disable-next-line require-await
     handler: async (request, reply) => {

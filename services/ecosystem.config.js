@@ -62,6 +62,7 @@ module.exports = {
 
         HTTP_PORT: +env('API_HTTP_PORT', 8080),
         ALLOWED_ORIGINS: env('ALLOWED_ORIGINS', '*'),
+        ALLOWED_PROXIES: env('ALLOWED_PROXIES', '*'),
         ADMIN_KEY: env('ADMIN_KEY', '00000000-0000-0000-0000-000000000000'),
         DEFAULT_TEMPLATE_NAME: env('DEFAULT_TEMPLATE_NAME', 'scratch'),
         DEFAULT_TEMPLATE_DATEFIELD: env(

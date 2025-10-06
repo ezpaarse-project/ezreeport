@@ -1,6 +1,7 @@
 {
   "port": 8080,
   "allowedOrigins": "*",
+  "allowedProxies": "*",
   "adminKey": "00000000-0000-0000-0000-000000000000",
   "heartbeat": {
     "self": 5000,

@@ -1,6 +1,6 @@
 import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
-import startHTTPServer from '~/lib/http';
+import { startHTTPServer } from '~/lib/http';
 import { useRabbitMQ } from '~/lib/rabbitmq';
 
 import initQueues from '~/models/queues';

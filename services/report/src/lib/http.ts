@@ -1,5 +1,9 @@
-import createFastify, { type FastifyPluginAsync } from 'fastify';
+import createFastify, {
+  type FastifyInstance,
+  type FastifyPluginAsync,
+} from 'fastify';
 import fastifyCors from '@fastify/cors';
+import fastifyRateLimit from '@fastify/rate-limit';
 import fastifyIO from 'fastify-socket.io';
 
 import { appLogger } from '~/lib/logger';
@@ -7,23 +11,40 @@ import config from '~/lib/config';
 import { closeWS, registerWSNamespaces } from '~/lib/sockets';
 
 import loggerPlugin from '~/plugins/logger';
+import { RateLimitStore } from './http-rate-limit';
 
-const { port, allowedOrigins } = config;
+const { port, allowedOrigins, allowedProxies } = config;
 const logger = appLogger.child({ scope: 'http' });
 
+// Split origins while allowing *
 const corsOrigin: '*' | string[] =
   allowedOrigins === '*' ? '*' : allowedOrigins.split(',');
 
-export default async function startHTTPServer(routes: FastifyPluginAsync) {
+// Split proxies while allowing *
+let trustProxy: true | string[] =
+  allowedProxies === '*' ? true : allowedProxies.split(',');
+
+export async function startHTTPServer(
+  routes: FastifyPluginAsync
+): Promise<FastifyInstance> {
   const start = process.uptime();
 
   // Create Fastify instance
-  const fastify = createFastify({ logger: false });
+  const fastify = createFastify({
+    trustProxy,
+    logger: false,
+  });
 
   // Register cors
   await fastify.register(fastifyCors, {
     origin: corsOrigin,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  });
+
+  // Register rate limit
+  await fastify.register(fastifyRateLimit, {
+    global: false, // don't apply these settings to all the routes of the context
+    store: RateLimitStore,
   });
 
   // Register logger
