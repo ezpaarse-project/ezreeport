@@ -135,7 +135,6 @@
     <v-dialog
       v-if="!readonly"
       :model-value="isFormVisible"
-      :scrim="false"
       width="50%"
       @update:model-value="$event || closeColumnForm()"
     >
