@@ -11,7 +11,6 @@ env:
   HUSKY: 0
   TURBO_UI: 'false'
   PRISMA_FOLDER: packages/database/prisma/
-  PRISMA_TMP_SCHEMA: '${{ runner.temp }}/schema.prisma'
   OUT_ERD_PATH: docs/ERD.svg
   OUT_DIC_PATH: docs/DIC.md
   DIC_NAME: ezREEPORT
@@ -29,13 +28,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Merge schema ⚙️
-        run: 'find ${{ env.PRISMA_FOLDER }} -type f -name "*.prisma" -exec cat {} + > ${{ env.PRISMA_TMP_SCHEMA }}'
+        run: 'find ${{ env.PRISMA_FOLDER }} -type f -name "*.prisma" -exec cat {} + > ${{ runner.temp }}/schema.prisma'
 
       - name: Generate ERD 🔧
-        run: 'curl -X POST -d "$(cat ${{ env.PRISMA_TMP_SCHEMA }})" -H "Content-Type: text/plain" -H "X-Api-Key: ${{ env.ERD_WS_KEY }}" -o "${{ env.OUT_ERD_PATH }}" ${{ env.ERD_WS }}/erd/'
+        run: 'curl -X POST -d "$(cat ${{ runner.temp }}/schema.prisma)" -H "Content-Type: text/plain" -H "X-Api-Key: ${{ env.ERD_WS_KEY }}" -o "${{ env.OUT_ERD_PATH }}" ${{ env.ERD_WS }}/erd/'
 
       - name: Generate Data dictionary 🔧
-        run: 'curl -X POST -d "$(cat ${{ env.PRISMA_TMP_SCHEMA }})" -H "Content-Type: text/plain" -H "X-Api-Key: ${{ env.ERD_WS_KEY }}" -o "${{ env.OUT_DIC_PATH }}" ${{ env.ERD_WS }}/dict/\?name\=${{ env.DIC_NAME }}'
+        run: 'curl -X POST -d "$(cat ${{ runner.temp }}/schema.prisma)" -H "Content-Type: text/plain" -H "X-Api-Key: ${{ env.ERD_WS_KEY }}" -o "${{ env.OUT_DIC_PATH }}" ${{ env.ERD_WS }}/dict/\?name\=${{ env.DIC_NAME }}'
 
       # - name: Setup pnpm ⚙️
       #   uses: pnpm/action-setup@v3
