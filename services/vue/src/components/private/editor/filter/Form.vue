@@ -151,7 +151,7 @@ const { cloned: filter } = useCloned<TemplateFilter>(props.modelValue ?? { name:
 const { cloned: filterBackup, sync: syncBackup } = useCloned(filter.value, { manual: true });
 
 /** Validate on mount */
-useTemplateVForm('formRef');
+useTemplateVForm('formRef', { immediate: !!props.modelValue });
 
 /** Value (and other meta) of the raw filter in text format */
 const {

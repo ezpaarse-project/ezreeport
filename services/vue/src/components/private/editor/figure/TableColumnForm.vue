@@ -216,7 +216,7 @@ const { cloned: column } = useCloned<TableColumn>(
 );
 
 /** Validate form on mounted */
-useTemplateVForm('formRef');
+useTemplateVForm('formRef', { immediate: !!props.modelValue });
 
 /** Is a bucket needed */
 const isBucketNeeded = computed(

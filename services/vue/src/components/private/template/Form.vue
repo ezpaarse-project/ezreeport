@@ -226,7 +226,7 @@ const isFormValid = ref(false);
 const isEditorVisible = ref(false);
 
 /** Validate on mount */
-useTemplateVForm('formRef');
+useTemplateVForm('formRef', { immediate: !!props.modelValue?.id });
 
 /** Is valid */
 const isValid = computed(() => isFormValid.value);

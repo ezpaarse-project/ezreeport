@@ -127,5 +127,5 @@ const { cloned: tag } = useCloned<TemplateTag>(
 );
 
 /** Validate on mount */
-useTemplateVForm('formRef');
+useTemplateVForm('formRef', { immediate: !!props.modelValue });
 </script>

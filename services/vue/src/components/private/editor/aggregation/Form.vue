@@ -173,7 +173,7 @@ const { cloned: aggregationBackup, sync: syncBackup } = useCloned(aggregation, {
 });
 
 /** Ref to VForm + validate on mount */
-const vform = useTemplateVForm('formRef');
+const vform = useTemplateVForm('formRef', { immediate: !!props.modelValue });
 
 /** Value (and other meta) of the raw aggregation in text format */
 const {

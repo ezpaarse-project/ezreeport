@@ -121,8 +121,8 @@ const { cloned: label } = useCloned<MetricLabel>(
   props.modelValue ?? { text: '' }
 );
 
-/** Validate form on mounted */
-useTemplateVForm('formRef');
+/** Validate form on mounted if editing */
+useTemplateVForm('formRef', { immediate: !!props.modelValue });
 
 /** Format */
 const format = computed<string>({

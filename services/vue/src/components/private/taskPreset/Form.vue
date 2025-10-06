@@ -160,7 +160,7 @@ const preset = ref<InputTaskPreset>({
 const loadingTemplates = ref(false);
 
 /** Validate on mount */
-useTemplateVForm('formRef');
+useTemplateVForm('formRef', { immediate: !!props.modelValue?.id });
 
 /** Mapping options for dateField */
 const dateMapping = computed(() => getOptionsFromMapping('date'));
