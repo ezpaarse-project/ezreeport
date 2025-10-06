@@ -1,0 +1,17 @@
+/// A user of ezREEPORT
+model User {
+  /// The username of the user
+  username    String       @id
+  /// Token used to identify user
+  token       String       @unique
+  /// Is the user an administrator of ezREEPORT
+  isAdmin     Boolean      @default(false)
+  /// Namespaces of the user
+  memberships Membership[]
+  /// When the user was created
+  createdAt   DateTime     @default(now())
+  /// When the user was updated for the last time
+  updatedAt   DateTime?    @updatedAt
+
+  @@index([token])
+}

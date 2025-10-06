@@ -1,0 +1,42 @@
+
+/// Possible values of the status of a generation
+enum GenerationStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  ERROR
+  ABORTED
+}
+
+/// A generation of a task
+model Generation {
+  /// Id of the generation
+  id            String           @id
+  /// Task linked to the event
+  task          Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId        String
+  /// Period start
+  start         DateTime
+  /// Period end
+  end           DateTime
+  /// Email adresses to send generated report
+  targets       String[]
+  /// Origin of the generation
+  origin        String
+  /// Should write activity in DB
+  writeActivity Boolean          @default(false)
+  /// Status of generation
+  status        GenerationStatus @default(PENDING)
+  /// Progress of generation
+  progress      Int?
+  /// Number of milliseconds took to generate report
+  took          Int?
+  /// Id of the generated report
+  reportId      String
+  /// When the generation was created/queued
+  createdAt     DateTime         @default(now())
+  /// When the generation was updated for the last time
+  updatedAt     DateTime?        @updatedAt
+  /// When the generation was started
+  startedAt     DateTime?
+}

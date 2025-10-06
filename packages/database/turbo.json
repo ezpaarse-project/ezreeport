@@ -15,6 +15,10 @@
       "interactive": true,
       "env": ["DATABASE_URL"]
     },
+    "db:push": {
+      "cache": false,
+      "env": ["DATABASE_URL"]
+    },
     "type-check": {
       "dependsOn": ["db:generate"]
     }

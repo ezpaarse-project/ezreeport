@@ -23,6 +23,7 @@
     "db:generate": "dotenvx run -- prisma generate",
     "db:gui": "dotenvx run -- prisma studio",
     "db:migrate": "dotenvx run -- prisma migrate dev --skip-generate",
+    "db:push": "dotenvx run -- prisma db push --skip-generate",
     "lint": "oxlint",
     "type-check": "tsc --noEmit --skipLibCheck"
   },
@@ -37,11 +38,11 @@
   "dependencies": {
     "@ezreeport/heartbeats": "workspace:*",
     "@ezreeport/logger": "workspace:*",
-    "@prisma/client": "^6.11.1"
+    "@prisma/client": "^6.16.3"
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.48.4",
-    "prisma": "^6.11.1",
+    "prisma": "^6.16.3",
     "typescript": "catalog:"
   },
   "engines": {

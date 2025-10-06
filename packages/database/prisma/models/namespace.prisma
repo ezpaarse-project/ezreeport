@@ -1,0 +1,47 @@
+
+/// Possible access level for memberships
+enum Access {
+  READ
+  READ_WRITE
+  SUPER_USER
+}
+
+/// Link a User and a Namespace with given Access
+model Membership {
+  /// The User linked to the Namespace
+  user        User      @relation(fields: [username], references: [username], onDelete: Cascade)
+  username    String
+  /// The Namespace linked to the User
+  namespace   Namespace @relation(fields: [namespaceId], references: [id], onDelete: Cascade)
+  namespaceId String
+  /// Access level of the user on this Namespace
+  access      Access
+  /// When the membership was created
+  createdAt   DateTime  @default(now())
+  /// When the membership was updated for the last time
+  updatedAt   DateTime? @updatedAt
+
+  @@id([username, namespaceId])
+}
+
+/// A namespace for grouping users and reports
+model Namespace {
+  /// The id of the namespace
+  id           String       @id
+  /// The name of the namespace
+  name         String
+  /// Specific credentials used when fetching data (when generating reports) for this namespace
+  fetchLogin   Json
+  /// Specific options used when fetching data (when generating reports) for this namespace
+  fetchOptions Json
+  /// Id of the logo of the namespace
+  logoId       String?
+  /// Members of the namespaces
+  memberships  Membership[]
+  /// Reports of the namespace
+  tasks        Task[]
+  /// When the namespace was created
+  createdAt    DateTime     @default(now())
+  /// When the namespace was updated for the last time
+  updatedAt    DateTime?    @updatedAt
+}

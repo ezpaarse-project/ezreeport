@@ -1,0 +1,21 @@
+/// Base template used by reports
+model Template {
+  /// The id of the template
+  id        String       @id @default(uuid())
+  /// The name of the template
+  name      String       @unique
+  /// Should the template be hidden to users (except admins)
+  hidden    Boolean      @default(false)
+  /// Tags of the template
+  tags      Json[]       @default([])
+  /// The layouts used to generate the report
+  body      Json
+  /// When the template was created
+  createdAt DateTime     @default(now())
+  /// When the template was updated for the last time
+  updatedAt DateTime?    @updatedAt
+  /// Tasks using template
+  tasks     Task[]
+  /// Presets using template
+  presets   TaskPreset[]
+}
