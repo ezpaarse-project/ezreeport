@@ -219,6 +219,15 @@
         "missing:show": "Afficher les valeurs manquantes",
         "missing:label": "Etiquette des valeurs manquantes",
         "aggregationTemplate": "{type} de {field}",
+        "filters": {
+          "title": "Groupes de filtres",
+          "title:new": "Ajouter un groupe de filtres",
+          "title:edit": "Editer un groupe de filtres",
+          "elements": {
+            "label": "Étiquette du groupe",
+            "filters": "1 filtre|{n} filtres"
+          }
+        },
         "typeGroups": {
           "common": "Communs",
           "others": "@:$ezreeport.others"

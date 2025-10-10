@@ -18,9 +18,9 @@ function getInitialJson(initial: MaybeRefOrGetter<unknown>): string {
 export default function useJSONRef<Data = Record<string, unknown>>(
   initial: MaybeRefOrGetter<Data>
 ) {
-  const hasChanged = ref(false);
+  const hasChanged = shallowRef(false);
   const parseError = ref<Error | undefined>();
-  const value = ref(getInitialJson(initial));
+  const value = shallowRef(getInitialJson(initial));
 
   const { on: onChange, trigger: changeTrigger } = createEventHook<Data>();
 
