@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:15.1-alpine3.16
+    image: postgres:18.0-alpine3.22
     env_file:
       - .env
       - path: .env.local
@@ -20,7 +20,7 @@ services:
       start_period: 20s
 
   rabbitmq:
-    image: rabbitmq:4.0.7-alpine
+    image: rabbitmq:4.1.4-alpine
     ports:
       - 5672:5672
     restart: unless-stopped
