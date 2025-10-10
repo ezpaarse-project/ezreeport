@@ -42,20 +42,58 @@ export const Filter = z
 export type FilterType = z.infer<typeof Filter>;
 
 /**
+ * Validation for a figure raw aggregation
+ */
+export const RawFigureAgg = z.object({
+  raw: z.record(z.string(), z.record(z.string(), z.any())),
+});
+
+/**
+ * Type for a figure raw aggregation
+ */
+export type RawFigureAggType = z.infer<typeof RawFigureAgg>;
+
+/**
+ * Validation for a figure filters aggregation
+ */
+export const FiltersFigureAgg = z.object({
+  type: z.literal('filters'),
+  values: z.array(
+    z.object({
+      label: z.string(),
+      filters: z.array(Filter),
+    })
+  ),
+  missing: z.string().min(0).optional(),
+});
+
+/**
+ * Type for a figure filters aggregation
+ */
+export type FiltersFigureAggType = z.infer<typeof FiltersFigureAgg>;
+
+/**
+ * Validation for a figure basic aggregation
+ */
+export const BasicFigureAgg = z.object({
+  type: z.string().min(1),
+  field: z.string().min(1),
+  size: z.int().min(0).optional(),
+  missing: z.string().min(0).optional(),
+});
+
+/**
+ * Type for a figure basic aggregation
+ */
+export type BasicFigureAggType = z.infer<typeof BasicFigureAgg>;
+
+/**
  * Validation for a figure aggregation
  */
 export const FigureAgg = z
-  .object({
-    type: z.string().min(1),
-    field: z.string().min(1),
-    size: z.int().min(0).optional(),
-    missing: z.string().min(0).optional(),
-  })
-  .or(
-    z.object({
-      raw: z.record(z.string(), z.record(z.string(), z.any())),
-    })
-  );
+  .union([BasicFigureAgg, FiltersFigureAgg])
+  .or(RawFigureAgg);
+// z.discriminatedUnion('type', [BasicFigureAgg, FiltersFigureAgg]),
 
 /**
  * Type for a figure aggregation
