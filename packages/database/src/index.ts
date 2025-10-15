@@ -2,12 +2,16 @@ import type { Logger } from '@ezreeport/logger';
 import type { HeartbeatType } from '@ezreeport/heartbeats/types';
 
 import { PrismaClient } from '../.prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 const DATABASE_URL = new URL(process.env.DATABASE_URL ?? '');
-const DATABASE_HOST = DATABASE_URL.hostname;
 
 export function setupDB(logger: Logger): PrismaClient {
   const client = new PrismaClient({
+    adapter: new PrismaPg(
+      { connectionString: DATABASE_URL.href },
+      { schema: DATABASE_URL.searchParams.get('schema') || undefined }
+    ),
     // Disable logger of Prisma, in order to events to our own
     log: [
       { level: 'query', emit: 'event' },
@@ -56,16 +60,16 @@ export async function pingDB(
   const response = await client.$queryRaw<
     { version: string; db: string; usage: string }[]
   >`
-  SELECT version(),
-    current_database() AS db,
-    pg_database_size(current_database()) AS usage
+  SELECT version()::text,
+    current_database()::text AS db,
+    pg_database_size(current_database())::text AS usage
   `;
 
   const { version, usage, db } = response[0];
   const versionMatch = /^PostgreSQL (\S+) /.exec(version);
 
   return {
-    hostname: DATABASE_HOST,
+    hostname: DATABASE_URL.hostname,
     service: 'database',
     version: versionMatch?.[1],
     filesystems: [

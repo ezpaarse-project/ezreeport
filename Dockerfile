@@ -62,6 +62,9 @@ RUN apk add --no-cache --update python3 \
 
 COPY --from=database-pnpm /usr/build/database/dev .
 
+# Shared TS config
+COPY ./tsconfig.json /usr/build/tsconfig.json
+
 # Generate prisma-client
 RUN pnpm run db:generate
 # ---
