@@ -124,7 +124,7 @@ WORKDIR /usr/build/worker
 
 # Install node-canvas build dependencies
 # see https://github.com/Automattic/node-canvas/issues/866
-RUN apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev pixman-dev
+RUN apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev pixman-dev librsvg-dev
 
 COPY --from=worker-turbo /usr/src/worker/json .
 
@@ -142,7 +142,7 @@ ENV NODE_ENV=production
 WORKDIR /usr/build/worker
 
 # Install node-canvas dependencies
-RUN apk add --no-cache cairo jpeg pango pixman
+RUN apk add --no-cache cairo jpeg pango pixman librsvg
 
 # Shared TS config
 COPY ./tsconfig.json /usr/tsconfig.json
@@ -282,7 +282,7 @@ WORKDIR /usr/build
 COPY ./services/ecosystem.config.js .
 RUN npm install -g pm2@^6.0.8 tsx@^4.20.3
 
-RUN apk add --no-cache cairo jpeg pango pixman
+RUN apk add --no-cache cairo jpeg pango pixman librsvg
 
 # Shared TS config
 COPY ./tsconfig.json /usr/tsconfig.json
