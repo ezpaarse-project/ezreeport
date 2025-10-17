@@ -304,18 +304,19 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       // Check if similar task already exists
       async (request): Promise<void> => {
         // If filters are provided, trust user
-        if (request.body.filters) {
+        const { filters } = request.body;
+        if ((filters?.length ?? 0) > 0) {
           return;
         }
 
         // We already checked the task preset exists in preHandler
-        const taskPreset = (await taskPresets.getTaskPreset(
-          request.params.id
-        ))!;
+        const { id } = request.params;
+        const preset = (await taskPresets.getTaskPreset(id))!;
+
         const similarTaskExists = await doesSimilarTaskExist(
           request.body.namespaceId,
-          taskPreset.recurrence,
-          taskPreset.templateId,
+          preset.recurrence,
+          preset.templateId,
           request.body.index
         );
 
