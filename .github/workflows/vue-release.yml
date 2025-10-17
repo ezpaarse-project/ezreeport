@@ -2,6 +2,10 @@ name: Release Vue package
 
 on:
   push:
+    branches:
+      - master
+      - 'rc/*'
+      # - dev
     tags:
       - '@ezpaarse-project/ezreeport-vue@*'
 

@@ -22,7 +22,7 @@ jobs:
           images: |
             ghcr.io/ezpaarse-project/ezreeport-migrate
           tags: |
-            type=match=,pattern=^@ezreeport/database@(.+)$,group=1
+            type=match,pattern=^@ezreeport/database@(.+)$,group=1
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
             type=raw,value=rc,enable=${{ startsWith('refs/heads/rc/', github.ref) }}
             type=raw,value=dev,enable=${{ github.ref == 'refs/heads/dev' }}
