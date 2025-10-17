@@ -1,6 +1,7 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { merge } from 'lodash';
 
+import { prettifyError } from '@ezreeport/models/lib/zod';
 import {
   FigureAgg,
   type BasicFigureAggType,
@@ -108,13 +109,15 @@ function assertFigureAgg(aggregation: unknown): aggregation is FigureAggType {
     return false;
   }
 
-  // Will throw if invalid
-  try {
-    FigureAgg.parse(aggregation);
+  const result = FigureAgg.safeParse(aggregation);
+  if (result.success) {
     return true;
-  } catch (err) {
-    throw new TemplateError(err instanceof Error ? err.message : `${err}`);
   }
+
+  throw new TemplateError(prettifyError(result.error), 'AggregationInvalid', {
+    name: result.error.name,
+    issues: result.error.issues,
+  });
 }
 
 /**
