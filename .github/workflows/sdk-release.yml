@@ -9,6 +9,10 @@ env:
   HUSKY: 0
   TURBO_UI: 'false'
 
+concurrency:
+  group: "release-sdk"
+  cancel-in-progress: true
+
 jobs:
   build:
     permissions:
@@ -44,4 +48,4 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
           EZR_TAG: ${{ github.ref == 'refs/heads/master' && 'latest' || (github.ref == 'refs/heads/dev' && 'dev' || 'rc') }}
-        run: pnpm --filter @ezpaarse-project/ezreeport-sdk-js publish --provenance --tag $EZR_TAG --access public
+        run: pnpm --filter @ezpaarse-project/ezreeport-sdk-js publish --provenance --tag $EZR_TAG --access public --no-git-checks

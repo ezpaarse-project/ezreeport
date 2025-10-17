@@ -13,10 +13,15 @@ env:
   HUSKY: 0
   TURBO_UI: 'false'
 
+concurrency:
+  group: "release-aio"
+  cancel-in-progress: true
+
 jobs:
   build:
     permissions:
       contents: read
+      packages: write
     runs-on: ubuntu-latest
     steps:
       - name: Docker meta 🔧
