@@ -1,2 +1,11 @@
-LATEST_PUSHED=$(git rev-parse @{push});
-changeset status --since "${LATEST_PUSHED}"
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+EXISTS_IN_REMOTE=$(git ls-remote --heads origin ${BRANCH})
+
+if [[ -z ${EXISTS_IN_REMOTE} ]]; then
+  echo "${BRANCH} doesn't exists on remote, checking if changeset is empty"
+  changeset status
+else
+  echo "${BRANCH} exists on remote, checking changeset against last push"
+  LATEST_PUSHED=$(git rev-parse @{push})
+  changeset status --since "${LATEST_PUSHED}"
+fi
