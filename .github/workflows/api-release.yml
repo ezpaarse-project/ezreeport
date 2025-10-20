@@ -8,6 +8,8 @@ on:
 env:
   HUSKY: 0
   TURBO_UI: 'false'
+  EZR_IS_DEV: ${{ contains(github.ref_name, 'beta') }}
+  EZR_IS_RC: ${{ contains(github.ref_name, 'rc') }}
 
 concurrency:
   group: "release-api"
@@ -28,9 +30,9 @@ jobs:
             ghcr.io/ezpaarse-project/ezreeport-api
           tags: |
             type=match,pattern=^ezreeport-report@(.+)$,group=1
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
-            type=raw,value=rc,enable=${{ startsWith('refs/heads/rc/', github.ref) }}
-            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/dev' }}
+            type=raw,value=latest,enable=${{ !env.EZR_IS_DEV && !env.EZR_IS_RC }}
+            type=raw,value=rc,enable=${{ env.EZR_IS_RC }}
+            type=raw,value=dev,enable=${{ env.EZR_IS_DEV }}
 
       - name: Login to GitHub Container Registry 🔑
         uses: docker/login-action@v3
