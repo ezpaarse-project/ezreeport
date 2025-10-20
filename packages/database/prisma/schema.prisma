@@ -13,5 +13,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  // This will be overriden at runtime while following the same format
   url      = env("DATABASE_URL")
 }

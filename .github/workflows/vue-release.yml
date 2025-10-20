@@ -2,16 +2,14 @@ name: Release Vue package
 
 on:
   push:
-    branches:
-      - master
-      - 'rc/*'
-      # - dev
     tags:
       - '@ezpaarse-project/ezreeport-vue@*'
 
 env:
   HUSKY: 0
   TURBO_UI: 'false'
+  EZR_IS_DEV: ${{ contains(github.ref_name, 'beta') }}
+  EZR_IS_RC: ${{ contains(github.ref_name, 'rc') }}
 
 concurrency:
   group: "release-vue"
@@ -51,5 +49,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
-          EZR_TAG: ${{ github.ref == 'refs/heads/master' && 'latest' || (github.ref == 'refs/heads/dev' && 'dev' || 'rc') }}
+          EZR_TAG: ${{ (env.EZR_IS_RC && 'rc') || ((env.EZR_IS_DEV && 'dev') || 'latest') }}
         run: pnpm --filter @ezpaarse-project/ezreeport-vue publish --provenance --tag $EZR_TAG --access public --no-git-checks
