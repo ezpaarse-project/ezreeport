@@ -184,25 +184,31 @@ export class HeartbeatSender extends HeartbeatManager {
     ping: HeartbeatConnectedServicePing,
     frequency: number
   ): Promise<void> {
-    const timeout = frequency / 2;
+    const timeout = frequency * 0.75;
 
     try {
-      await Promise.race([
+      const pingResult = await Promise.race([
         // Try to connect to service
         ping().then((service) => {
           const now = new Date();
 
-          this.sendHeartbeat({
+          return {
             ...service,
             updatedAt: now,
             nextAt: new Date(now.getTime() + frequency),
-          });
+          };
         }),
         // Throw on timeout
-        sleep(timeout).then(() => {
-          throw new Error('TimeoutError');
-        }),
+        sleep(timeout, new Error('TimeoutError')),
       ]);
+
+      // If timeout happened
+      if (pingResult instanceof Error) {
+        throw pingResult;
+      }
+
+      // If everything is fine, send heartbeat
+      await this.sendHeartbeat(pingResult);
     } catch (err) {
       this.logger.error({
         msg: 'Error when getting connected service',
