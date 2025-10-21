@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "^7.17.12",
-    "@ezpaarse-project/jspdf-md": "^1.1.2",
+    "@ezpaarse-project/jspdf-md": "^1.1.3",
     "@ezreeport/config": "workspace:*",
     "@ezreeport/dates": "workspace:*",
     "@ezreeport/heartbeats": "workspace:*",
