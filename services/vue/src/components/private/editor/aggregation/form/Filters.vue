@@ -179,7 +179,7 @@ const { t } = useI18n();
 const isValid = shallowRef(false);
 const showForm = shallowRef(false);
 const currentEntries = ref<Map<string, FigureFilterAggregationEntry>>(
-  new Map(props.modelValue.values.map((entry) => [entry.label, entry]))
+  new Map(props.modelValue.values?.map((entry) => [entry.label, entry]))
 );
 /** Currently edited entry */
 const editedItem = ref<
