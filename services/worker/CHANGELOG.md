@@ -1,5 +1,12 @@
 # ezreeport-worker
 
+## 1.1.0-rc.1
+
+### Patch Changes
+
+- 603e0b7: 🐛 fixed issue with svg in markdowns
+- a0711c7: 🐛 fixed issue with timeout errors still beign able to send heartbeats
+
 ## 1.1.0-rc.0
 
 ### Minor Changes

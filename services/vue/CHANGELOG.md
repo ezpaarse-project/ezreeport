@@ -1,5 +1,11 @@
 # @ezpaarse-project/ezreeport-vue
 
+## 3.0.0-rc.1
+
+### Patch Changes
+
+- 14b3ca7: 🐛 fixed issue with filters aggregations
+
 ## 3.0.0-rc.0
 
 ### Major Changes

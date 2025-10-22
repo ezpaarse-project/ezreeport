@@ -1,5 +1,11 @@
 # ezreeport-mail
 
+## 2.0.0-rc.1
+
+### Patch Changes
+
+- a0711c7: 🐛 fixed issue with timeout errors still beign able to send heartbeats
+
 ## 2.0.0-rc.0
 
 ### Major Changes
