@@ -1,6 +1,6 @@
 import { hostname } from 'node:os';
 
-import { isAfter } from '@ezreeport/dates';
+import { isBefore } from '@ezreeport/dates';
 import {
   setupHeartbeat,
   listenToHeartbeats,
@@ -90,8 +90,10 @@ export function getAllServices(): HeartbeatType[] {
   return (
     Array.from(services.values())
       // Filter out services that haven't given heartbeats in time
-      .filter((service) =>
-        isAfter(service.nextAt.getTime() + frequency.connected.max, now)
-      )
+      .filter((service) => {
+        const maxTimestamp = service.nextAt.getTime() + frequency.connected.max;
+
+        return isBefore(now, maxTimestamp);
+      })
   );
 }
