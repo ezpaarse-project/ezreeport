@@ -8,8 +8,6 @@ on:
 env:
   HUSKY: 0
   TURBO_UI: 'false'
-  EZR_IS_DEV: ${{ contains(github.ref_name, 'beta') }}
-  EZR_IS_RC: ${{ contains(github.ref_name, 'rc') }}
 
 concurrency:
   group: "release-sdk"
@@ -22,6 +20,17 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
+      - name: Get tags of package ⚙️
+        id: npm_tags
+        run: |
+          if [ ${{ contains(github.ref_name, '-rc.') }} ]; then
+            echo "tag=rc" >> $GITHUB_OUTPUT
+          elif [ ${{ contains(github.ref_name, '-beta.') }} ]; then
+            echo "tag=dev" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
@@ -49,5 +58,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
-          EZR_TAG: ${{ (env.EZR_IS_RC && 'rc') || ((env.EZR_IS_DEV && 'dev') || 'latest') }}
-        run: pnpm --filter @ezpaarse-project/ezreeport-sdk-js publish --provenance --tag $EZR_TAG --access public --no-git-checks
+        run: pnpm --filter @ezpaarse-project/ezreeport-sdk-js publish --provenance --tag ${{ steps.npm_tags.outputs.tag }} --access public --no-git-checks
