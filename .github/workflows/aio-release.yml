@@ -34,7 +34,7 @@ jobs:
             ghcr.io/ezpaarse-project/ezreeport-aio
           tags: |
             type=raw,value={{commit_date 'YYYYMM'}},suffix=${{ (env.EZR_IS_DEV && 'dev') || ((env.EZR_IS_RC && 'rc') || '')  }}
-            type=raw,value=latest,enable=${{ !env.EZR_IS_DEV && !env.EZR_IS_RC }}
+            type=raw,value=stable,enable=${{ !env.EZR_IS_DEV && !env.EZR_IS_RC }}
             type=raw,value=rc,enable=${{ env.EZR_IS_RC }}
             type=raw,value=dev,enable=${{ env.EZR_IS_DEV }}
 

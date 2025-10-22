@@ -30,7 +30,7 @@ jobs:
             ghcr.io/ezpaarse-project/ezreeport-mail
           tags: |
             type=match,pattern=^ezreeport-mail@(.+)$,group=1
-            type=raw,value=latest,enable=${{ !env.EZR_IS_DEV && !env.EZR_IS_RC }}
+            type=raw,value=stable,enable=${{ !env.EZR_IS_DEV && !env.EZR_IS_RC }}
             type=raw,value=rc,enable=${{ env.EZR_IS_RC }}
             type=raw,value=dev,enable=${{ env.EZR_IS_DEV }}
 
