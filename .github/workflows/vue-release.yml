@@ -23,9 +23,9 @@ jobs:
       - name: Get tags of package ⚙️
         id: npm_tags
         run: |
-          if [ ${{ contains(github.ref_name, '-rc.') }} ]; then
+          if ${{ contains(github.ref_name, '-rc.') }}; then
             echo "tag=rc" >> $GITHUB_OUTPUT
-          elif [ ${{ contains(github.ref_name, '-beta.') }} ]; then
+          elif ${{ contains(github.ref_name, '-beta.') }}; then
             echo "tag=dev" >> $GITHUB_OUTPUT
           else
             echo "tag=latest" >> $GITHUB_OUTPUT

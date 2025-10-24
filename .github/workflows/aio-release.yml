@@ -27,10 +27,10 @@ jobs:
       - name: Get tags of image ⚙️
         id: docker_tags
         run: |
-          if [ ${{ contains(github.ref_name, '-rc.') }} ]; then
+          if ${{ contains(github.ref_name, '-rc.') }}; then
             echo "suffix=-rc" >> $GITHUB_OUTPUT
             echo "tag=rc" >> $GITHUB_OUTPUT
-          elif [ ${{ contains(github.ref_name, '-beta.') }} ]; then
+          elif ${{ contains(github.ref_name, '-beta.') }}; then
             echo "suffix=-dev" >> $GITHUB_OUTPUT
             echo "tag=dev" >> $GITHUB_OUTPUT
           else
