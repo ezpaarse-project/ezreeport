@@ -47,7 +47,7 @@ jobs:
           content="${content//$'\n'/'%0A'}"
           content="${content//$'\r'/'%0D'}"
           # end of optional handling for multi line json
-          echo "preJson=$content" >> $GITHUB_OUTPUT
+          echo "::set-output name=preJson::$content"
 
       - name: Exit pre-release mode ⚗️
         if: "hashFiles('./.changeset/pre.json') != '' && (fromJson(steps.prerelease_state.outputs.preJson).mode != env.EZR_PRERELEASE_MODE || fromJson(steps.prerelease_state.outputs.preJson).tag != env.EZR_PRERELEASE_TAG)"
