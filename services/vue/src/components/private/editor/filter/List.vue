@@ -34,10 +34,7 @@
 
     <template v-if="modelValue.size > 0" #text>
       <v-slide-group>
-        <v-slide-group-item
-          v-for="[key, filter] in modelValue"
-          :key="key"
-        >
+        <v-slide-group-item v-for="[key, filter] in modelValue" :key="key">
           <EditorFilterChip
             :model-value="filter"
             :closable="!readonly"
@@ -45,13 +42,14 @@
             @click="openFilterForm({ key, filter })"
             @click:close="deleteFilter(key)"
           />
-
         </v-slide-group-item>
       </v-slide-group>
     </template>
 
     <template v-else #text>
-      <span class="text-disabled">{{ $t('$ezreeport.editor.filters.empty') }}</span>
+      <span class="text-disabled">
+        {{ $t('$ezreeport.editor.filters.empty') }}
+      </span>
     </template>
 
     <v-menu
@@ -61,6 +59,7 @@
       target="parent"
       min-width="500"
       max-width="750"
+      persistent
       @update:model-value="$event || closeFilterForm()"
     >
       <EditorFilterForm
@@ -78,20 +77,20 @@
 <script setup lang="ts">
 import type { TemplateFilterMap, TemplateFilter } from '~sdk/helpers/filters';
 
-type FilterWithKey = { key: string, filter: TemplateFilter };
+type FilterWithKey = { key: string; filter: TemplateFilter };
 
 // Components props
 const props = defineProps<{
   /** The filters */
-  modelValue: TemplateFilterMap,
+  modelValue: TemplateFilterMap;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated filters */
-  (event: 'update:modelValue', value: TemplateFilterMap): void,
+  (event: 'update:modelValue', value: TemplateFilterMap): void;
 }>();
 
 /** Should show the filter form */
@@ -104,7 +103,7 @@ const updatedFilter = ref<FilterWithKey | undefined>();
 /**
  * Close the filter form
  */
-function closeFilterForm() {
+function closeFilterForm(): void {
   isFormVisible.value = false;
 }
 
@@ -113,7 +112,7 @@ function closeFilterForm() {
  *
  * @param filter The filter to edit
  */
-function openFilterForm(filter?: FilterWithKey) {
+function openFilterForm(filter?: FilterWithKey): void {
   updatedFilter.value = filter;
   isFormVisible.value = true;
 }
@@ -123,7 +122,7 @@ function openFilterForm(filter?: FilterWithKey) {
  *
  * @param filter The filter to set
  */
-function setFilter(filter: TemplateFilter) {
+function setFilter(filter: TemplateFilter): void {
   props.modelValue.set(updatedFilter.value?.key ?? filter.name, filter);
   closeFilterForm();
   updatedFilter.value = undefined;
@@ -135,7 +134,7 @@ function setFilter(filter: TemplateFilter) {
  *
  * @param filters The filters
  */
-function replaceFilters(filters: TemplateFilter[]) {
+function replaceFilters(filters: TemplateFilter[]): void {
   props.modelValue.clear();
   for (const filter of filters) {
     props.modelValue.set(filter.name, filter);
@@ -149,7 +148,7 @@ function replaceFilters(filters: TemplateFilter[]) {
  *
  * @param key The filter's key
  */
-function deleteFilter(key: string) {
+function deleteFilter(key: string): void {
   props.modelValue.delete(key);
   emit('update:modelValue', props.modelValue);
 }

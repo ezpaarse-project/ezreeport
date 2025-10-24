@@ -20,7 +20,9 @@ export const service: HeartbeatService = {
   filesystems: {
     logs: config.log.dir,
   },
-  getConnectedServices: () => [mandatoryService('database', dbPing)],
+  connectedServices: {
+    database: mandatoryService('database', dbPing),
+  },
 };
 
 const logger = appLogger.child({ scope: 'heartbeat' });

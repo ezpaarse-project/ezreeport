@@ -2,17 +2,30 @@
   "$schema": "https://turbo.build/schema.json",
   "extends": ["//"],
   "tasks": {
-    "db:diff": {
+    "db:generate": {
       "cache": false,
       "env": ["DATABASE_URL"]
     },
-    "db:generate": {
+    "db:diff": {
       "cache": false,
       "env": ["DATABASE_URL"]
     },
     "db:migrate": {
       "cache": false,
       "interactive": true,
+      "env": ["DATABASE_URL"]
+    },
+    "db:reset": {
+      "cache": false,
+      "interactive": true,
+      "env": ["DATABASE_URL"]
+    },
+    "db:push": {
+      "cache": false,
+      "env": ["DATABASE_URL"]
+    },
+    "db:gui": {
+      "cache": false,
       "env": ["DATABASE_URL"]
     },
     "type-check": {

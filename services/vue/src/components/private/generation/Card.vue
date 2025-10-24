@@ -357,25 +357,36 @@
               <template #text>
                 <ul>
                   <li>{{ result.detail.error.message }}</li>
+
+                  <v-divider color="black" class="my-2" />
+
                   <li>
-                    {{ $t('$ezreeport.task.generation.error.type') }}: "{{
-                      result.detail.error.type
-                    }}"
+                    {{
+                      $t('$ezreeport.task.generation.error.type', {
+                        value: result.detail.error.type,
+                      })
+                    }}
                   </li>
                   <li>
-                    {{ $t('$ezreeport.task.generation.error.name') }}: "{{
-                      result.detail.error.name
-                    }}"
+                    {{
+                      $t('$ezreeport.task.generation.error.name', {
+                        value: result.detail.error.name,
+                      })
+                    }}
                   </li>
-                  <li v-if="result.detail.error.cause?.layout">
-                    {{ $t('$ezreeport.task.generation.error.layout') }}: "{{
-                      result.detail.error.cause.layout
-                    }}"
+                  <li v-if="result.detail.error.cause?.layout != null">
+                    {{
+                      $t('$ezreeport.task.generation.error.layout', {
+                        value: result.detail.error.cause.layout + 1,
+                      })
+                    }}
                   </li>
-                  <li v-if="result.detail.error.cause?.figure">
-                    {{ $t('$ezreeport.task.generation.error.figure') }}: "{{
-                      result.detail.error.cause.figure
-                    }}"
+                  <li v-if="result.detail.error.cause?.figure != null">
+                    {{
+                      $t('$ezreeport.task.generation.error.figure', {
+                        value: result.detail.error.cause.figure + 1,
+                      })
+                    }}
                   </li>
                 </ul>
               </template>

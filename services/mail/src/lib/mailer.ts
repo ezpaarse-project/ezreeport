@@ -30,7 +30,9 @@ export function getMailer(): Transporter {
   return transporter;
 }
 
-export const SMTPPing = async (): Promise<HeartbeatType> => {
+export const SMTPPing = async (): Promise<
+  Omit<HeartbeatType, 'nextAt' | 'updatedAt'>
+> => {
   const transport = getMailer();
   await transport.verify();
 
@@ -38,7 +40,6 @@ export const SMTPPing = async (): Promise<HeartbeatType> => {
     hostname: smtp.host,
     service: 'smtp',
     version: transport.transporter.version.split('[')[0],
-    updatedAt: new Date(),
   };
 };
 

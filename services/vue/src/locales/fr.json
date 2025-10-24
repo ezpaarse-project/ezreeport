@@ -71,10 +71,10 @@
       "generation": {
         "error": {
           "title": "Une erreur est survenue lors de la génération",
-          "layout": "Page",
-          "figure": "Visualisation",
-          "type": "Type",
-          "name": "Nom"
+          "layout": "Page n°{value}",
+          "figure": "Visualisation n°{value}",
+          "type": "Type: \"{value}\"",
+          "name": "Nom: \"{value}\""
         },
         "success": {
           "title": "Le rapport a été généré avec succès",
@@ -219,6 +219,15 @@
         "missing:show": "Afficher les valeurs manquantes",
         "missing:label": "Etiquette des valeurs manquantes",
         "aggregationTemplate": "{type} de {field}",
+        "filters": {
+          "title": "Groupes de filtres",
+          "title:new": "Ajouter un groupe de filtres",
+          "title:edit": "Editer un groupe de filtres",
+          "elements": {
+            "label": "Étiquette du groupe",
+            "filters": "1 filtre|{n} filtres"
+          }
+        },
         "typeGroups": {
           "common": "Communs",
           "others": "@:$ezreeport.others"

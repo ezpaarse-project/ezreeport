@@ -14,4 +14,6 @@ export default client;
  *
  * @returns If the connection is working
  */
-export const dbPing = (): Promise<HeartbeatType> => pingDB(client);
+export const dbPing = (): Promise<
+  Omit<HeartbeatType, 'nextAt' | 'updatedAt'>
+> => pingDB(client);

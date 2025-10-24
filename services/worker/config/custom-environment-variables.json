@@ -1,13 +1,28 @@
 {
   "port": { "__name": "HTTP_PORT", "__format": "number" },
-  "heartbeat": { "__name": "HEARTBEAT_FREQUENCY", "__format": "number" },
+  "heartbeat": {
+    "self": { "__name": "HEARTBEAT_FREQUENCY", "__format": "number" },
+    "connected": {
+      "min": {
+        "__name": "HEARTBEAT_EXTERNAL_FREQUENCY_MIN",
+        "__format": "number"
+      },
+      "max": {
+        "__name": "HEARTBEAT_EXTERNAL_FREQUENCY_MAX",
+        "__format": "number"
+      }
+    }
+  },
   "log": {
     "level": "LOG_LEVEL",
     "dir": "LOG_DIR",
     "ignore": { "__name": "LOG_IGNORE", "__format": "json" }
   },
   "fetcher": {
-    "bannedDomains": { "__name": "REPORT_FETCHER_BANNED_DOMAINS", "__format": "json" }
+    "bannedDomains": {
+      "__name": "REPORT_FETCHER_BANNED_DOMAINS",
+      "__format": "json"
+    }
   },
   "elasticsearch": {
     "url": "ELASTIC_URL",
@@ -26,7 +41,10 @@
   },
   "report": {
     "ttl": {
-      "iterations": { "__name": "REPORT_ITERATIONS_TO_LIVE", "__format": "number" },
+      "iterations": {
+        "__name": "REPORT_ITERATIONS_TO_LIVE",
+        "__format": "number"
+      },
       "days": { "__name": "REPORT_DAYS_TO_LIVE", "__format": "number" }
     },
     "team": "EMAIL_DEV_TEAM"

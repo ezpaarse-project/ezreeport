@@ -1,26 +1,33 @@
 import type { rabbitmq } from '@ezreeport/rabbitmq';
 import type { Logger } from '@ezreeport/logger';
 
-import type { HeartbeatType, HeartbeatService } from './types';
+import type {
+  HeartbeatType,
+  HeartbeatService,
+  HeartbeatFrequency,
+  HeartbeatConnectedServicePing,
+} from './types';
 
 import { HeartbeatSender } from './HeartBeat/Sender';
 import { HeartbeatListener } from './HeartBeat/Listener';
 
 const mandatoryServices = new Map<string, boolean>();
 
-export async function mandatoryService(
-  name: string,
-  pinger: () => Promise<HeartbeatType>
-): Promise<HeartbeatType> {
-  try {
-    const beat = await pinger();
-    mandatoryServices.set(name, true);
-    return beat;
-  } catch (error) {
-    mandatoryServices.set(name, false);
-    throw error;
-  }
-}
+export const mandatoryService =
+  (
+    name: string,
+    pinger: HeartbeatConnectedServicePing
+  ): HeartbeatConnectedServicePing =>
+  async () => {
+    try {
+      const beat = await pinger();
+      mandatoryServices.set(name, true);
+      return beat;
+    } catch (error) {
+      mandatoryServices.set(name, false);
+      throw error;
+    }
+  };
 
 export const getMissingMandatoryServices = (): string[] =>
   Array.from(mandatoryServices.entries())
@@ -32,7 +39,7 @@ export const setupHeartbeat = (
   service: HeartbeatService,
   appLogger: Logger,
   isMandatory = false,
-  frequency = 10000
+  frequency?: HeartbeatFrequency
 ): HeartbeatSender =>
   new HeartbeatSender(
     channel,

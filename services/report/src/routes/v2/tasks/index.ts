@@ -126,7 +126,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       // Check if similar task already exists
       async (request): Promise<void> => {
         // If filters are provided, trust user
-        if (request.body.template.filters || (request.body.template.inserts?.length ?? 0) > 0) {
+        const { filters, inserts } = request.body.template;
+        if ((filters?.length ?? 0) > 0 || (inserts?.length ?? 0) > 0) {
           return;
         }
 

@@ -57,6 +57,7 @@ export const ReportTemplateErrorNames = z.enum([
   'MultipleMetricsError',
   'MissingParameterError',
   'ParameterFormatError',
+  'AggregationInvalid',
   'UnknownError',
 ] as const);
 

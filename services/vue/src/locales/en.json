@@ -71,10 +71,10 @@
       "generation": {
         "error": {
           "title": "An error occurred during generation",
-          "layout": "Layout",
-          "figure": "Figure",
-          "type": "Type",
-          "name": "Name"
+          "layout": "Layout {value}",
+          "figure": "Figure {value}",
+          "type": "Type: \"{value}\"",
+          "name": "Name: \"{value}\""
         },
         "success": {
           "title": "The report was generated with success",
@@ -222,6 +222,15 @@
         "typeGroups": {
           "common": "Common",
           "others": "@:$ezreeport.others"
+        },
+        "filters": {
+          "title": "Filters groups",
+          "title:new": "Add filters group",
+          "title:edit": "Edit filters group",
+          "element": {
+            "label": "Label of group",
+            "filters": "1 filter|{n} filters"
+          }
         },
         "types": {
           "_count": "Count",

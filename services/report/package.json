@@ -1,7 +1,7 @@
 {
   "name": "ezreeport-report",
-  "version": "2.2.0",
-  "private": true,
+  "version": "3.0.0-rc.1",
+  "private": false,
   "description": "",
   "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
   "bugs": {
@@ -40,6 +40,7 @@
     "@ezreeport/rpc": "workspace:*",
     "@fastify/autoload": "^6.3.1",
     "@fastify/cors": "^11.0.1",
+    "@fastify/rate-limit": "^10.3.0",
     "@fastify/static": "^8.2.0",
     "@fastify/swagger": "^9.5.1",
     "@fastify/swagger-ui": "^5.2.3",

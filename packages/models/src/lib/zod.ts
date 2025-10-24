@@ -33,7 +33,7 @@ export async function ensureSchema<Type, Data>(
   const result = await schema.safeParseAsync(data);
   if (!result.success) {
     throw new Error(errorMessage(data), {
-      cause: result.error.issues.map((issue) => simplifyZodIssue(issue)),
+      cause: result.error,
     });
   }
   return result.data;

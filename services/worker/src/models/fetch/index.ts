@@ -54,8 +54,7 @@ export async function fetchElastic(options: ElasticFetchOptionsType) {
   const requests: ElasticTypes.MsearchMultisearchBody[] = figures.map((fig) => {
     const query = prepareEsQuery(
       [options.filters, fig.filters].filter((filter) => !!filter).flat(), // Merge filters
-      options.dateField,
-      options.period
+      { value: options.period, dateField: options.dateField }
     );
 
     const aggregations = prepareEsAggregations(

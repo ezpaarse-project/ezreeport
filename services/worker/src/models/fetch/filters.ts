@@ -34,15 +34,14 @@ function prepareEsFilter(
  * Prepare ElasticSearch query (filters)
  *
  * @param filters The filters to apply
- * @param dateField The date field of the ES index
- * @param period The period of the report
+ * @param period.value The period of the report
+ * @param period.dateField The date field of the ES index
  *
  * @returns ElasticSearch query
  */
 export function prepareEsQuery(
   filters: FilterType[],
-  dateField: string,
-  period: Interval
+  period?: { value: Interval; dateField: string }
 ): ElasticTypes.QueryDslQueryContainer {
   const must: ElasticTypes.QueryDslQueryContainer[] = [];
   const mustNot: ElasticTypes.QueryDslQueryContainer[] = [];
@@ -57,15 +56,17 @@ export function prepareEsQuery(
   }
 
   // Add date filter
-  must.push({
-    range: {
-      [dateField]: {
-        gte: formatISO(period.start),
-        lte: formatISO(period.end),
-        format: 'strict_date_optional_time',
+  if (period) {
+    must.push({
+      range: {
+        [period.dateField]: {
+          gte: formatISO(period.value.start),
+          lte: formatISO(period.value.end),
+          format: 'strict_date_optional_time',
+        },
       },
-    },
-  });
+    });
+  }
 
   return {
     bool: {

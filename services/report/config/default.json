@@ -1,8 +1,15 @@
 {
   "port": 8080,
-  "heartbeat": 10000,
   "allowedOrigins": "*",
+  "allowedProxies": "*",
   "adminKey": "00000000-0000-0000-0000-000000000000",
+  "heartbeat": {
+    "self": 5000,
+    "connected": {
+      "min": 5000,
+      "max": 300000
+    }
+  },
   "log": {
     "level": "debug",
     "dir": "",

@@ -15,7 +15,7 @@ RUN apk update \
   && apk upgrade -U -a
 
 RUN corepack enable \
-  && corepack prepare pnpm@10.7.1 --activate
+  && corepack prepare pnpm@10.17.1 --activate
 
 # endregion
 # ---
@@ -61,6 +61,9 @@ RUN apk add --no-cache --update python3 \
   && ln -sf python3 /usr/bin/python
 
 COPY --from=database-pnpm /usr/build/database/dev .
+
+# Shared TS config
+COPY ./tsconfig.json /usr/build/tsconfig.json
 
 # Generate prisma-client
 RUN pnpm run db:generate
@@ -124,7 +127,7 @@ WORKDIR /usr/build/worker
 
 # Install node-canvas build dependencies
 # see https://github.com/Automattic/node-canvas/issues/866
-RUN apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev pixman-dev
+RUN apk add --no-cache build-base g++ cairo-dev jpeg-dev pango-dev pixman-dev librsvg-dev
 
 COPY --from=worker-turbo /usr/src/worker/json .
 
@@ -142,7 +145,7 @@ ENV NODE_ENV=production
 WORKDIR /usr/build/worker
 
 # Install node-canvas dependencies
-RUN apk add --no-cache cairo jpeg pango pixman
+RUN apk add --no-cache cairo jpeg pango pixman librsvg
 
 # Shared TS config
 COPY ./tsconfig.json /usr/tsconfig.json
@@ -282,7 +285,7 @@ WORKDIR /usr/build
 COPY ./services/ecosystem.config.js .
 RUN npm install -g pm2@^6.0.8 tsx@^4.20.3
 
-RUN apk add --no-cache cairo jpeg pango pixman
+RUN apk add --no-cache cairo jpeg pango pixman librsvg
 
 # Shared TS config
 COPY ./tsconfig.json /usr/tsconfig.json

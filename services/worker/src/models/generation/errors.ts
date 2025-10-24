@@ -5,8 +5,9 @@ import TypedError from '~/models/errors';
 export default class TemplateError extends TypedError {
   constructor(
     message: string,
-    public override name: ReportTemplateErrorNamesType = 'UnknownError'
+    public override name: ReportTemplateErrorNamesType = 'UnknownError',
+    cause?: unknown
   ) {
-    super(message, 'TemplateError');
+    super(message, 'TemplateError', cause);
   }
 }

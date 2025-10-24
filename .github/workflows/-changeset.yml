@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-      - rc/*
+      - 'rc/*'
       # - dev
 
 env:
@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PATNAME }}
 
       - name: Setup pnpm ⚙️
         uses: pnpm/action-setup@v3
@@ -58,12 +60,26 @@ jobs:
       - name: Build changelogs 📝
         run: pnpm changeset version
 
-      - name: Add tags 🔖
-        run: pnpm changeset tag
-
-      - name: Commit files 🚀
+      - name: Push changelogs 🚀
         uses: EndBug/add-and-commit@v9
         with:
           message: 'chore(release): publish changelogs'
           default_author: github_actions
-          push: '--follow-tags'
+
+      - name: Add tags 🔖
+        run: |
+          pnpm changeset tag
+
+          # GitHub doesn't trigger workflows if more than 3 tags are pushed simultaneously,
+          # so we push them one by one (and avoid pushing already pushed tags)
+          # See: https://github.com/orgs/community/discussions/56152#discussioncomment-9676206
+          comm -23 \
+            <(git tag --list | sort) \
+            <(git ls-remote --tags origin \
+              | awk '{print $2}' \
+              | sed 's|refs/tags/||' \
+              | sort) \
+          | while read tag; do
+              echo "Pushing tag: $tag"
+              git push origin "$tag"
+            done

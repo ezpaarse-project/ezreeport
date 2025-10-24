@@ -1,18 +1,38 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 import { merge } from 'lodash';
 
+import { prettifyError } from '@ezreeport/models/lib/zod';
 import {
   FigureAgg,
+  type BasicFigureAggType,
+  type FiltersFigureAggType,
   type FigureAggType,
   type FigureType,
 } from '@ezreeport/models/templates';
 
 import TemplateError from '~/models/generation/errors';
 
+import { prepareEsQuery } from './filters';
+
 type EsAggregation = Record<
   string,
   ElasticTypes.AggregationsAggregationContainer
 >;
+
+function transformEsAggFilters(
+  agg: FiltersFigureAggType
+): ElasticTypes.AggregationsAggregationContainer {
+  const entries = agg.values.map(({ label, filters }) => [
+    label,
+    prepareEsQuery(filters),
+  ]);
+
+  return {
+    filters: {
+      filters: Object.fromEntries(entries),
+    },
+  };
+}
 
 /**
  * Transform aggregation to ElasticSearch's format
@@ -33,9 +53,13 @@ function transformEsAgg(
   subAggs?: EsAggregation
 ): EsAggregation {
   if ('raw' in agg) {
-    return {
-      [name]: agg.raw,
-    };
+    return { [name]: agg.raw };
+  }
+
+  // Filters aggregations are a bit special, we need to handle them
+  if (agg.type === 'filters') {
+    // We need to cast as `string` overlaps `filters`
+    return { [name]: transformEsAggFilters(agg as FiltersFigureAggType) };
   }
 
   // Add additional fields for specific types
@@ -50,8 +74,10 @@ function transformEsAgg(
       break;
   }
 
+  const baseAgg = agg as BasicFigureAggType;
+
   // Replace `{{ dateField }}` by actual dateField
-  if (/{{ ?dateField ?}}/.test(agg.field)) {
+  if (/{{ ?dateField ?}}/.test(baseAgg.field)) {
     meta.field = dateField;
   }
 
@@ -59,10 +85,10 @@ function transformEsAgg(
 
   return {
     [name]: {
-      [agg.type]: {
-        field: agg.field,
-        missing: agg.missing,
-        size: agg.size,
+      [baseAgg.type]: {
+        field: baseAgg.field,
+        missing: baseAgg.missing,
+        size: baseAgg.size,
         ...meta,
       },
       aggregations: subAggs,
@@ -83,9 +109,15 @@ function assertFigureAgg(aggregation: unknown): aggregation is FigureAggType {
     return false;
   }
 
-  // Will throw if invalid
-  FigureAgg.parse(aggregation);
-  return true;
+  const result = FigureAgg.safeParse(aggregation);
+  if (result.success) {
+    return true;
+  }
+
+  throw new TemplateError(prettifyError(result.error), 'AggregationInvalid', {
+    name: result.error.name,
+    issues: result.error.issues,
+  });
 }
 
 /**
@@ -128,7 +160,7 @@ function mergeExtractedEsBuckets(
       }
 
       // Add order cause it needs to be on the same level as `field`
-      if (!('raw' in bucket) && order !== false) {
+      if (!('raw' in bucket) && bucket.type !== 'filters' && order !== false) {
         merge(aggregation, {
           [name]: {
             [bucket.type]: {

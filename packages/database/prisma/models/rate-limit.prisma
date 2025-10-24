@@ -1,0 +1,9 @@
+/// Table to keep track of rate limits between nodes
+model RateLimit {
+  source  String
+  route   String
+  count   Int?
+  ttl     DateTime?
+
+  @@id([source, route])
+}

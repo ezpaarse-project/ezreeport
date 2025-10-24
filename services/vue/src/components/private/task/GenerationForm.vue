@@ -32,6 +32,9 @@
             <template v-if="error" #text>
               <ul>
                 <li>{{ error.message }}</li>
+
+                <v-divider color="white" class="my-2" />
+
                 <li>
                   {{ $t('$ezreeport.task.generation.error.type') }}: "{{
                     error.type
@@ -42,15 +45,15 @@
                     error.name
                   }}"
                 </li>
-                <li v-if="error.cause?.layout">
-                  {{ $t('$ezreeport.task.generation.error.layout') }}: "{{
-                    error.cause.layout
-                  }}"
+                <li v-if="error.cause?.layout != null">
+                  {{ $t('$ezreeport.task.generation.error.layout') }}: n°{{
+                    error.cause.layout + 1
+                  }}
                 </li>
-                <li v-if="error.cause?.figure">
-                  {{ $t('$ezreeport.task.generation.error.figure') }}: "{{
-                    error.cause.figure
-                  }}"
+                <li v-if="error.cause?.figure != null">
+                  {{ $t('$ezreeport.task.generation.error.figure') }}: n°{{
+                    error.cause.figure + 1
+                  }}
                 </li>
               </ul>
             </template>

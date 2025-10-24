@@ -400,7 +400,7 @@ const loadingTemplates = ref(false);
 const loadingCurrentTemplate = ref(false);
 
 /** Validate on mount */
-useTemplateVForm('formRef');
+useTemplateVForm('formRef', { immediate: isEditing.value });
 
 /** Is valid */
 const isValid = computed(() => isFormValid.value);

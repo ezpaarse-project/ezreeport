@@ -59,7 +59,9 @@ function getElasticClient(): Client {
  *
  * @returns If elastic is up
  */
-export async function elasticPing(): Promise<HeartbeatType> {
+export async function elasticPing(): Promise<
+  Omit<HeartbeatType, 'nextAt' | 'updatedAt'>
+> {
   const elastic = getElasticClient();
 
   const { body } =
@@ -77,7 +79,6 @@ export async function elasticPing(): Promise<HeartbeatType> {
         available: body.nodes.fs.available_in_bytes,
       },
     ],
-    updatedAt: new Date(),
   };
 }
 
@@ -139,13 +140,13 @@ function simplifyMapping(
 /**
  * Shorthand to get index mapping with elastic
  *
- * @param index name of the index
+ * @param indexName name of the index
  * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
  *
  * @returns The js-like index mapping
  */
 export async function elasticIndexMapping(
-  index: string,
+  indexName: string,
   runAs?: string
 ): Promise<Record<string, string>> {
   const elastic = getElasticClient();
@@ -157,7 +158,7 @@ export async function elasticIndexMapping(
 
   const { body } =
     await elastic.indices.getMapping<ElasticTypes.IndicesGetMappingResponse>(
-      { index },
+      { index: indexName },
       { headers }
     );
 
