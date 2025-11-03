@@ -1,0 +1,1 @@
+ALTER TABLE "RateLimit" SET UNLOGGED;
