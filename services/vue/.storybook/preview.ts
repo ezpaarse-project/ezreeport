@@ -6,6 +6,7 @@ import { useI18n } from 'vue-i18n';
 import '@mdi/font/css/materialdesignicons.css';
 import { createVuetify, useTheme } from 'vuetify';
 import { createVueI18nAdapter } from 'vuetify/locale/adapters/vue-i18n';
+import { VApp, VMain } from 'vuetify/components';
 
 import { config as vuetifyConfig } from '../src/plugins/vuetify';
 import i18n from './i18n';
@@ -75,7 +76,7 @@ const preview: Preview = {
   },
   decorators: [
     (story, { globals: { locale, theme } }) => ({
-      components: { story },
+      components: { story, VApp, VMain },
       setup(): void {
         const { locale: i18nLocale } = useI18n();
         i18nLocale.value = locale;
@@ -83,7 +84,7 @@ const preview: Preview = {
         const vuetifyTheme = useTheme();
         vuetifyTheme.change(theme);
       },
-      template: '<story />',
+      template: '<VApp><VMain><story /></VMain></VApp>',
     }),
   ],
 };
