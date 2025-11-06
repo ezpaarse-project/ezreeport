@@ -12,6 +12,7 @@ import {
   type TemplateType,
   type InputTemplateType,
   type TemplateQueryFiltersType,
+  type TemplateIncludeFieldsType,
 } from './types';
 
 const { defaultTemplate } = config;
@@ -35,6 +36,14 @@ function applyFilters(filters: TemplateQueryFiltersType) {
   return where;
 }
 
+function applyIncludes(
+  fields: TemplateIncludeFieldsType[]
+): Prisma.TemplateInclude {
+  return {
+    tags: fields.includes('tags'),
+  };
+}
+
 /**
  * Get all templates
  *
@@ -44,6 +53,7 @@ function applyFilters(filters: TemplateQueryFiltersType) {
  */
 export async function getAllTemplates(
   filters?: TemplateQueryFiltersType,
+  include?: TemplateIncludeFieldsType[],
   pagination?: PaginationType
 ): Promise<TemplateType[]> {
   // Prepare Prisma query
@@ -53,6 +63,11 @@ export async function getAllTemplates(
   // Apply filters
   if (filters) {
     prismaQuery.where = applyFilters(filters);
+  }
+
+  // Apply includes
+  if (include) {
+    prismaQuery.include = applyIncludes(include);
   }
 
   // Fetch data
@@ -78,7 +93,17 @@ export async function getAllTemplates(
  *
  * @returns The found template, or `null` if not found
  */
-export async function getTemplate(id: string): Promise<TemplateType | null> {
+export async function getTemplate(
+  id: string,
+  include?: TemplateIncludeFieldsType[]
+): Promise<TemplateType | null> {
+  const prismaQuery: Prisma.TemplateFindUniqueArgs = { where: { id } };
+
+  // Apply includes
+  if (include) {
+    prismaQuery.include = applyIncludes(include);
+  }
+
   const template = await prisma.template.findUnique({ where: { id } });
 
   return template && ensureSchema(Template, template);
@@ -94,7 +119,17 @@ export async function getTemplate(id: string): Promise<TemplateType | null> {
 export async function createTemplate(
   data: InputTemplateType & { id?: string }
 ): Promise<TemplateType> {
-  const template = await prisma.template.create({ data });
+  const template = await prisma.template.create({
+    data: {
+      ...data,
+      tags: {
+        connectOrCreate: data.tags.map((tag) => ({
+          where: { ...tag },
+          create: tag,
+        })),
+      },
+    },
+  });
 
   logger.debug({
     id: template.id,
@@ -117,7 +152,18 @@ export async function editTemplate(
   id: string,
   data: InputTemplateType
 ): Promise<TemplateType> {
-  const template = await prisma.template.update({ where: { id }, data });
+  const template = await prisma.template.update({
+    where: { id },
+    data: {
+      ...data,
+      tags: {
+        connectOrCreate: data.tags.map((tag) => ({
+          where: { ...tag },
+          create: tag,
+        })),
+      },
+    },
+  });
 
   logger.debug({
     id: template.id,
@@ -207,7 +253,7 @@ export async function getDefaultTemplate(): Promise<TemplateType | null> {
  * @returns The default template
  */
 export async function upsertDefaultTemplate(): Promise<TemplateType> {
-  const data: InputTemplateType = {
+  const data: Omit<InputTemplateType, 'tags'> = {
     name: defaultTemplate.name,
     hidden: true,
     body: {

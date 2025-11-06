@@ -24,6 +24,7 @@ import {
   Template,
   InputTemplate,
   TemplateQueryFilters,
+  TemplateQueryInclude,
 } from '~/models/templates/types';
 
 import { NotFoundError } from '~/models/errors';
@@ -46,6 +47,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       querystring: z.object({
         ...PaginationQuery.shape,
         ...TemplateQueryFilters.shape,
+        ...TemplateQueryInclude.shape,
       }),
       response: {
         ...describeErrors([
@@ -69,9 +71,9 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       // Extract pagination and filters from query
-      const { page, count, sort, order, ...filters } = request.query;
+      const { page, count, sort, order, include, ...filters } = request.query;
 
-      const content = await templates.getAllTemplates(filters, {
+      const content = await templates.getAllTemplates(filters, include, {
         page,
         count,
         sort,
@@ -129,6 +131,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Get specific template',
       tags: ['templates'],
       params: SpecificTemplateParams,
+      querystring: TemplateQueryInclude,
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -148,7 +151,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     },
     // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
-      const content = await templates.getTemplate(request.params.id);
+      const content = await templates.getTemplate(
+        request.params.id,
+        request.query.include
+      );
 
       if (!content) {
         throw new NotFoundError(`Template ${request.params.id} not found`);

@@ -11,7 +11,10 @@ const LastExtended = z.object({
 
   name: z.string().min(1).describe('Template name'),
 
-  tags: z.array(TemplateTag).optional().describe('Template tags'),
+  tags: z
+    .array(TemplateTag.pick({ id: true, name: true, color: true }))
+    .optional()
+    .describe('Template tags'),
 });
 
 /**

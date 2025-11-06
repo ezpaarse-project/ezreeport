@@ -1,3 +1,15 @@
+/// Tag used to quickly identify a template
+model TemplateTag {
+  /// The id of the tag
+  id        String       @id @default(uuid())
+  /// The name of the tag
+  name      String       @unique
+  /// The color of the tag
+  color     String?
+  /// Templates using the tag
+  templates Template[]
+}
+
 /// Base template used by reports
 model Template {
   /// The id of the template
@@ -7,7 +19,7 @@ model Template {
   /// Should the template be hidden to users (except admins)
   hidden    Boolean      @default(false)
   /// Tags of the template
-  tags      Json[]       @default([])
+  tags      TemplateTag[]
   /// The layouts used to generate the report
   body      Json
   /// When the template was created
