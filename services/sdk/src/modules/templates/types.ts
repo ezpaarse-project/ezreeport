@@ -80,6 +80,8 @@ export interface TemplateBody {
  * Tag of a template
  */
 export interface TemplateTag {
+  /** Tag id */
+  id: string;
   /** Tag name */
   name: string;
   /** Tag color. Should be in hex format */
@@ -114,4 +116,9 @@ export interface RawTemplate extends Omit<Template, 'createdAt' | 'updatedAt'> {
 /**
  * Data needed to create/edit a template
  */
-export type InputTemplate = Omit<Template, 'id' | 'createdAt' | 'updatedAt'>;
+export type InputTemplate = Omit<
+  Template,
+  'id' | 'createdAt' | 'updatedAt' | 'tags'
+> & {
+  tags?: Omit<TemplateTag, 'id'>[];
+};

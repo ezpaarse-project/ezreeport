@@ -54,7 +54,7 @@ export function createTemplateHelperFrom(template: Template): TemplateHelper {
   return createTemplateHelper(
     template.name,
     createTemplateBodyHelperFrom(template.body),
-    new Map(template.tags?.map((tag) => [tag.name, tag]) ?? []),
+    new Map(template.tags?.map((tag) => [tag.id, tag]) ?? []),
     template.id,
     template.createdAt,
     template.updatedAt
