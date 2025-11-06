@@ -33,7 +33,7 @@ export type PaginationMeta = {
 
 export const zPaginationResponse = <
   Content extends z.ZodSchema,
-  Meta extends z.ZodSchema,
+  Meta extends z.ZodObject,
 >(
   content: Content,
   customMeta?: Meta
@@ -41,13 +41,13 @@ export const zPaginationResponse = <
   zSuccessResponseWithMeta(
     z.array(content).min(0),
 
-    z
-      .object({
-        total: z.int().min(0).describe('Total number of items'),
+    z.object({
+      ...customMeta?.shape,
 
-        page: z.int().min(1).describe('Page number'),
+      total: z.int().min(0).describe('Total number of items'),
 
-        count: z.int().min(0).describe('Count of items returned'),
-      })
-      .and(customMeta || z.object({}))
+      page: z.int().min(1).describe('Page number'),
+
+      count: z.int().min(0).describe('Count of items returned'),
+    })
   );

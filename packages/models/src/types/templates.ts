@@ -147,11 +147,11 @@ export type LayoutType = z.infer<typeof Layout>;
 /**
  * Validation for a task layout
  */
-export const TaskLayout = Layout.and(
-  z.object({
-    at: z.int().min(0).describe('Position where to insert this layout'),
-  })
-);
+export const TaskLayout = z.object({
+  ...Layout.shape,
+
+  at: z.int().min(0).describe('Position where to insert this layout'),
+});
 
 /**
  * Validation for the grid

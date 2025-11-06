@@ -25,7 +25,9 @@ export type TaskIncludeFieldsType = z.infer<typeof TaskIncludeFields>;
 /**
  * Validation with a task
  */
-export const Task = CommonTask.extend({
+export const Task = z.object({
+  ...CommonTask.shape,
+
   // Includes fields
   namespace: Namespace.omit({ fetchLogin: true, fetchOptions: true })
     .optional()

@@ -46,7 +46,11 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     schema: {
       summary: 'Get all tasks',
       tags: ['tasks'],
-      querystring: PaginationQuery.and(TaskQueryFilters).and(TaskQueryInclude),
+      querystring: z.object({
+        ...PaginationQuery.shape,
+        ...TaskQueryFilters.shape,
+        ...TaskQueryInclude.shape,
+      }),
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,

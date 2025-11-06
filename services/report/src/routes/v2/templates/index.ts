@@ -43,7 +43,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     schema: {
       summary: 'Get all templates',
       tags: ['templates'],
-      querystring: PaginationQuery.and(TemplateQueryFilters),
+      querystring: z.object({
+        ...PaginationQuery.shape,
+        ...TemplateQueryFilters.shape,
+      }),
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,

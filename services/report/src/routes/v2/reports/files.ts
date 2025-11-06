@@ -142,12 +142,11 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     schema: {
       summary: 'Get file of a generated report',
       tags: ['reports'],
-      params: SpecificReportParams.and(
-        z.object({
-          type: z.string().min(1),
-          ext: z.string().min(1),
-        })
-      ),
+      params: z.object({
+        ...SpecificReportParams.shape,
+        type: z.string().min(1),
+        ext: z.string().min(1),
+      }),
       querystring: z.object({
         download: z.coerce.boolean().default(false),
       }),

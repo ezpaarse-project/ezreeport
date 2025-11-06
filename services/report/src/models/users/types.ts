@@ -90,19 +90,19 @@ export type BulkUserType = z.infer<typeof BulkUser>;
 /**
  * Validation for result of setting multiple users
  */
-export const BulkUserResult = z
-  .object({
-    users: z
-      .object({
-        deleted: z.int().min(0).describe('Number of item deleted'),
+export const BulkUserResult = z.object({
+  ...BulkMembershipResult.partial().shape,
 
-        updated: z.int().min(0).describe('Number of item updated'),
+  users: z
+    .object({
+      deleted: z.int().min(0).describe('Number of item deleted'),
 
-        created: z.int().min(0).describe('Number of item created'),
-      })
-      .describe('Summary of operations on users'),
-  })
-  .and(BulkMembershipResult.partial());
+      updated: z.int().min(0).describe('Number of item updated'),
+
+      created: z.int().min(0).describe('Number of item created'),
+    })
+    .describe('Summary of operations on users'),
+});
 
 /**
  * Type for result of setting multiple users

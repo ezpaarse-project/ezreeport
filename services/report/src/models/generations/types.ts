@@ -14,7 +14,9 @@ export type GenerationIncludeFieldsType = z.infer<
   typeof GenerationIncludeFields
 >;
 
-export const Generation = CommonGeneration.extend({
+export const Generation = z.object({
+  ...CommonGeneration.shape,
+
   // Includes fields
   task: Task.omit({ template: true })
     .optional()

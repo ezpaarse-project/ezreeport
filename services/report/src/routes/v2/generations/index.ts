@@ -40,7 +40,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     schema: {
       summary: 'Get all generations',
       tags: ['generations'],
-      querystring: PaginationQuery.and(GenerationQueryInclude),
+      querystring: z.object({
+        ...PaginationQuery.shape,
+        ...GenerationQueryInclude.shape,
+      }),
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,

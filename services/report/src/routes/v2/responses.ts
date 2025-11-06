@@ -30,7 +30,7 @@ export type SuccessResponseType<Content> = BaseResponseType & {
 
 export const zSuccessResponse = <Content extends z.ZodSchema>(
   content: Content
-) => BaseResponse.extend({ content });
+) => z.object({ ...BaseResponse.shape, content });
 
 export function buildSuccessResponse<
   Content extends Record<string, unknown> | unknown[],
@@ -52,7 +52,7 @@ export const zSuccessResponseWithMeta = <
 >(
   content: Content,
   meta: Meta
-) => zSuccessResponse(content).extend({ meta });
+) => z.object({ ...zSuccessResponse(content).shape, meta });
 
 export function buildSuccessResponseWithMeta<
   Content extends Record<string, unknown> | unknown[],
@@ -68,17 +68,16 @@ export function buildSuccessResponseWithMeta<
   };
 }
 
-export const ErrorResponse = BaseResponse.and(
-  z.object({
-    error: z
-      .object({
-        message: z.string(),
-        cause: z.any().optional(),
-        stack: z.array(z.string()).optional(),
-      })
-      .describe('Error details'),
-  })
-);
+export const ErrorResponse = z.object({
+  ...BaseResponse.shape,
+  error: z
+    .object({
+      message: z.string(),
+      cause: z.any().optional(),
+      stack: z.array(z.string()).optional(),
+    })
+    .describe('Error details'),
+});
 
 export function buildErrorResponse(
   error: Error,
