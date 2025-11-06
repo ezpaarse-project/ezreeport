@@ -239,6 +239,7 @@ const { total, refresh, loading, filters, vDataTableOptions } =
       sortBy: 'name',
       itemsPerPage,
       itemsPerPageOptions: props.itemsPerPageOptions,
+      include: ['tags'],
     }
   );
 

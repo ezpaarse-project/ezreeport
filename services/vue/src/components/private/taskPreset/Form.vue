@@ -173,6 +173,7 @@ const templates = computedAsync(async () => {
     let meta;
     ({ items, meta } = await getAllTemplates({
       pagination: { count: 0, sort: 'name' },
+      include: ['tags'],
     }));
     templates.value = items;
 
