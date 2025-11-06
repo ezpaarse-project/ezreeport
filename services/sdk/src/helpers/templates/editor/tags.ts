@@ -1,4 +1,4 @@
-import type { TemplateTag } from '~/modules/templates';
+import type { TemplateTag } from '~/modules/template-tags/types';
 
 type TemplateTagMap = Map<string, TemplateTag>;
 

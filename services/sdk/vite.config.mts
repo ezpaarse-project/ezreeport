@@ -32,6 +32,7 @@ export default defineConfig({
         reports: src('modules/reports/index.ts'),
         tasks: src('modules/tasks/index.ts'),
         templates: src('modules/templates/index.ts'),
+        'template-tags': src('modules/template-tags/index.ts'),
         'task-activity': src('modules/task-activity/index.ts'),
         'task-presets': src('modules/task-presets/index.ts'),
         // Helpers

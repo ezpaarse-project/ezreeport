@@ -25,6 +25,7 @@ export const InputTemplate = z.strictObject({
     createdAt: true,
     updatedAt: true,
   }).shape,
+  // Allow creation of tags when creating template
   tags: z.array(
     z.strictObject({
       ...TemplateTag.shape,

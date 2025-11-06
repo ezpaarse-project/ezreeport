@@ -68,6 +68,11 @@
       "node": "./dist/templates.js",
       "browser": "./dist/templates.mjs"
     },
+    "./template-tags": {
+      "types": "./dist/template-tags.d.ts",
+      "node": "./dist/template-tags.js",
+      "browser": "./dist/template-tags.mjs"
+    },
     "./task-activity": {
       "types": "./dist/task-activity.d.ts",
       "node": "./dist/task-activity.js",

@@ -52,6 +52,7 @@ const OPENAPI_TAGS = [
   { name: 'task-targets', description: 'Task targets routes' },
   { name: 'tasks', description: 'Task management' },
   { name: 'templates', description: 'Templates management' },
+  { name: 'template-tags', description: 'Template tags management' },
   { name: 'unsubscribe', description: 'Unsubscribe routes' },
   { name: 'users', description: 'User management' },
 ];

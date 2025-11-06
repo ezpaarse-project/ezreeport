@@ -1,4 +1,5 @@
-import type { TemplateFilter, TemplateTag } from '~/modules/templates/types';
+import type { TemplateFilter } from '~/modules/templates/types';
+import type { TemplateTag } from '~/modules/template-tags/types';
 import type { TaskRecurrence } from '~/modules/tasks/types';
 
 export interface TaskPreset {
@@ -36,12 +37,16 @@ export interface TaskPreset {
 /**
  * Task preset in raw format
  */
-export interface RawTaskPreset extends Omit<TaskPreset, 'createdAt' | 'updatedAt'> {
+export interface RawTaskPreset
+  extends Omit<TaskPreset, 'createdAt' | 'updatedAt'> {
   createdAt: string;
   updatedAt?: string | null;
 }
 
-export type InputTaskPreset = Omit<TaskPreset, 'id' | 'createdAt' | 'updatedAt' | 'template'>;
+export type InputTaskPreset = Omit<
+  TaskPreset,
+  'id' | 'createdAt' | 'updatedAt' | 'template'
+>;
 
 export interface AdditionalDataForPreset {
   /** Task name */

@@ -1,3 +1,5 @@
+import type { TemplateTag as OriginalTemplateTag } from '~/modules/template-tags';
+
 export interface TemplateBasicFilter {
   /** Filter name */
   name: string;
@@ -78,15 +80,10 @@ export interface TemplateBody {
 
 /**
  * Tag of a template
+ *
+ * @deprecated Use template-tags module
  */
-export interface TemplateTag {
-  /** Tag id */
-  id: string;
-  /** Tag name */
-  name: string;
-  /** Tag color. Should be in hex format */
-  color?: string;
-}
+export type TemplateTag = OriginalTemplateTag;
 
 export interface Template {
   /** Template ID */
@@ -96,7 +93,7 @@ export interface Template {
   /** Template body */
   body: TemplateBody;
   /** Template tags */
-  tags?: TemplateTag[];
+  tags?: OriginalTemplateTag[];
   /** If template is hidden to normal users */
   hidden?: boolean;
   /** Creation date */
@@ -120,5 +117,5 @@ export type InputTemplate = Omit<
   Template,
   'id' | 'createdAt' | 'updatedAt' | 'tags'
 > & {
-  tags?: Omit<TemplateTag, 'id'>[];
+  tags?: Omit<OriginalTemplateTag, 'id'>[];
 };

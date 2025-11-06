@@ -1,13 +1,14 @@
 import type { Namespace, RawNamespace } from '~/modules/namespaces/types';
-import type { TemplateBodyLayout, TemplateFilter, TemplateTag } from '~/modules/templates';
+import type { TemplateBodyLayout, TemplateFilter } from '~/modules/templates';
+import type { TemplateTag } from '~/modules/template-tags/types';
 
 export type TaskRecurrence =
- | 'DAILY'
- | 'WEEKLY'
- | 'MONTHLY'
- | 'QUARTERLY'
- | 'BIENNIAL'
- | 'YEARLY';
+  | 'DAILY'
+  | 'WEEKLY'
+  | 'MONTHLY'
+  | 'QUARTERLY'
+  | 'BIENNIAL'
+  | 'YEARLY';
 
 /**
  * Layout of a task
@@ -39,7 +40,7 @@ export interface LastExtended {
   /** Old template name */
   name: string;
   /** Old template tags */
-  tags: TemplateTag[];
+  tags: Pick<TemplateTag, 'id' | 'name' | 'color'>[];
 }
 
 export interface Task {
@@ -84,7 +85,11 @@ export interface Task {
 /**
  * Task in raw format
  */
-export interface RawTask extends Omit<Task, 'nextRun' | 'lastRun' | 'namespace' | 'createdAt' | 'updatedAt'> {
+export interface RawTask
+  extends Omit<
+    Task,
+    'nextRun' | 'lastRun' | 'namespace' | 'createdAt' | 'updatedAt'
+  > {
   nextRun: string;
   lastRun?: string | null;
   createdAt: string;
@@ -95,4 +100,7 @@ export interface RawTask extends Omit<Task, 'nextRun' | 'lastRun' | 'namespace' 
 /**
  * Data needed to create/edit a task
  */
-export type InputTask = Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'lastRun' | 'extends'>;
+export type InputTask = Omit<
+  Task,
+  'id' | 'createdAt' | 'updatedAt' | 'lastRun' | 'extends'
+>;

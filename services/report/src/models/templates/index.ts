@@ -19,7 +19,9 @@ const { defaultTemplate } = config;
 
 const logger = appLogger.child({ scope: 'models', model: 'templates' });
 
-function applyFilters(filters: TemplateQueryFiltersType) {
+function applyFilters(
+  filters: TemplateQueryFiltersType
+): Prisma.TemplateWhereInput {
   const where: Prisma.TemplateWhereInput = {};
 
   if (filters.hidden != null) {
@@ -104,7 +106,7 @@ export async function getTemplate(
     prismaQuery.include = applyIncludes(include);
   }
 
-  const template = await prisma.template.findUnique({ where: { id } });
+  const template = await prisma.template.findUnique(prismaQuery);
 
   return template && ensureSchema(Template, template);
 }
