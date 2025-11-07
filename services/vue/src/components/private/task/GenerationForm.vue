@@ -36,23 +36,31 @@
                 <v-divider color="white" class="my-2" />
 
                 <li>
-                  {{ $t('$ezreeport.task.generation.error.type') }}: "{{
-                    error.type
-                  }}"
+                  {{
+                    $t('$ezreeport.task.generation.error.type', {
+                      value: error.type,
+                    })
+                  }}
                 </li>
                 <li>
-                  {{ $t('$ezreeport.task.generation.error.name') }}: "{{
-                    error.name
-                  }}"
+                  {{
+                    $t('$ezreeport.task.generation.error.name', {
+                      value: error.name,
+                    })
+                  }}
                 </li>
                 <li v-if="error.cause?.layout != null">
-                  {{ $t('$ezreeport.task.generation.error.layout') }}: n°{{
-                    error.cause.layout + 1
+                  {{
+                    $t('$ezreeport.task.generation.error.layout', {
+                      value: error.cause.layout + 1,
+                    })
                   }}
                 </li>
                 <li v-if="error.cause?.figure != null">
-                  {{ $t('$ezreeport.task.generation.error.figure') }}: n°{{
-                    error.cause.figure + 1
+                  {{
+                    $t('$ezreeport.task.generation.error.figure', {
+                      value: error.cause.figure + 1,
+                    })
                   }}
                 </li>
               </ul>
