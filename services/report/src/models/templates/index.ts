@@ -121,16 +121,21 @@ export async function getTemplate(
 export async function createTemplate(
   data: InputTemplateType & { id?: string }
 ): Promise<TemplateType> {
-  const template = await prisma.template.create({
-    data: {
-      ...data,
-      tags: {
-        connectOrCreate: data.tags.map((tag) => ({
-          where: { ...tag },
-          create: tag,
-        })),
+  const template = await prisma.$transaction(async (tx) => {
+    const createdTags = await tx.templateTag.createManyAndReturn({
+      data: data.tags,
+      skipDuplicates: true,
+    });
+
+    // Keep existing tags and link created tags
+    const tags = [...data.tags.filter((tag) => tag.id), ...createdTags];
+
+    return tx.template.create({
+      data: {
+        ...data,
+        tags: { connect: tags },
       },
-    },
+    });
   });
 
   logger.debug({
@@ -154,17 +159,22 @@ export async function editTemplate(
   id: string,
   data: InputTemplateType
 ): Promise<TemplateType> {
-  const template = await prisma.template.update({
-    where: { id },
-    data: {
-      ...data,
-      tags: {
-        connectOrCreate: data.tags.map((tag) => ({
-          where: { ...tag },
-          create: tag,
-        })),
+  const template = await prisma.$transaction(async (tx) => {
+    const createdTags = await tx.templateTag.createManyAndReturn({
+      data: data.tags,
+      skipDuplicates: true,
+    });
+
+    // Keep existing tags and link created tags
+    const tags = [...data.tags.filter((tag) => tag.id), ...createdTags];
+
+    return tx.template.update({
+      where: { id },
+      data: {
+        ...data,
+        tags: { set: tags },
       },
-    },
+    });
   });
 
   logger.debug({
