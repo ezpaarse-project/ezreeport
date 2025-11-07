@@ -148,6 +148,7 @@
         "title:new": "Create tag",
         "title:edit": "Edit tag",
         "color": "Color",
+        "readonly": "This tag is not editable",
         "empty": "No tags are defined, click the button at the top right to create one."
       },
       "errors": {

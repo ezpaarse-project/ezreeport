@@ -36,53 +36,6 @@
               show-swatches
             />
           </v-col>
-
-          <!-- <v-col>
-            <v-menu :close-on-content-click="false" location="start" height="350">
-              <template #activator="{ props }">
-                <v-text-field
-                  :model-value="tag.color"
-                  :label="$t('$ezreeport.template.tags.color')"
-                  prepend-icon="mdi-palette"
-                  variant="underlined"
-                  readonly
-                  v-bind="props"
-                >
-                  <template #append-inner>
-                    <v-badge :color="tag.color" inline />
-                  </template>
-
-                  <template v-if="tag.color" #append>
-                    <v-btn
-                      icon="mdi-close"
-                      variant="text"
-                      density="comfortable"
-                      size="small"
-                      @click="tag.color = undefined"
-                    />
-                  </template>
-                </v-text-field>
-              </template>
-
-              <v-sheet class="d-flex">
-                <v-color-picker
-                  v-model="tag.color"
-                  mode="hex"
-                  elevation="0"
-                />
-                <v-color-picker
-                  v-model="tag.color"
-                  mode="hex"
-                  elevation="0"
-                  swatches-max-height="350"
-                  hide-canvas
-                  hide-inputs
-                  hide-sliders
-                  show-swatches
-                />
-              </v-sheet>
-            </v-menu>
-          </v-col> -->
         </v-row>
       </v-form>
     </template>
@@ -104,25 +57,25 @@
 </template>
 
 <script setup lang="ts">
-import type { TemplateTag } from '~sdk/helpers/templates';
+import type { InputTemplateTag } from '~sdk/template-tags';
 
 // Components props
 const props = defineProps<{
   /** The tag to show */
-  modelValue: TemplateTag | undefined;
+  modelValue: TemplateTag | InputTemplateTag | undefined;
 }>();
 
 // Components events
 defineEmits<{
   /** Updated tag */
-  (event: 'update:modelValue', value: TemplateTag): void;
+  (event: 'update:modelValue', value: TemplateTag | InputTemplateTag): void;
 }>();
 
 /** Is form valid */
-const isValid = ref(false);
+const isValid = shallowRef(false);
 
 /** Filter to edit */
-const { cloned: tag } = useCloned<TemplateTag>(
+const { cloned: tag } = useCloned<TemplateTag | InputTemplateTag>(
   props.modelValue ?? { name: '' }
 );
 

@@ -148,6 +148,7 @@
         "title:new": "Créer une étiquette",
         "title:edit": "Éditer l'étiquette",
         "color": "Couleur",
+        "readonly": "Cette étiquette n'est pas éditable",
         "empty": "Aucune etiquette n'est définie, cliquez sur le bouton en haut à droite pour en créer une."
       },
       "errors": {

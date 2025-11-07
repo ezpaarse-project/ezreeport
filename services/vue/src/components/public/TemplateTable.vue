@@ -307,11 +307,11 @@ const selectedTemplateIds = computed({
   },
 });
 
-async function openForm(template?: Omit<Template, 'body'>) {
+async function openForm(template?: Omit<Template, 'body'>): Promise<void> {
   try {
     if (template) {
       updatedTemplate.value = createTemplateHelperFrom(
-        await getTemplate(template)
+        await getTemplate(template, ['tags'])
       );
     } else {
       updatedTemplate.value = createTemplateHelper();
@@ -323,10 +323,12 @@ async function openForm(template?: Omit<Template, 'body'>) {
   }
 }
 
-async function openDuplicateForm(template: Omit<Template, 'body'>) {
+async function openDuplicateForm(
+  template: Omit<Template, 'body'>
+): Promise<void> {
   try {
     updatedTemplate.value = createTemplateHelperFrom({
-      ...(await getTemplate(template)),
+      ...(await getTemplate(template, ['tags'])),
       name: `${template.name} (copy)`,
       id: '',
     });
@@ -337,12 +339,12 @@ async function openDuplicateForm(template: Omit<Template, 'body'>) {
   }
 }
 
-function closeForm() {
+function closeForm(): void {
   isFormOpen.value = false;
   refresh();
 }
 
-async function deleteItem(template: Omit<Template, 'body'>) {
+async function deleteItem(template: Omit<Template, 'body'>): Promise<void> {
   // TODO: show warning
   try {
     await deleteTemplate(template);
@@ -352,7 +354,7 @@ async function deleteItem(template: Omit<Template, 'body'>) {
   }
 }
 
-async function deleteSelected() {
+async function deleteSelected(): Promise<void> {
   // TODO: show warning
   try {
     await Promise.all(
@@ -365,7 +367,9 @@ async function deleteSelected() {
   }
 }
 
-async function toggleItemVisibility(template: Omit<Template, 'body'>) {
+async function toggleItemVisibility(
+  template: Omit<Template, 'body'>
+): Promise<void> {
   try {
     await changeTemplateVisibility(template, !template.hidden);
     refresh();
@@ -374,7 +378,7 @@ async function toggleItemVisibility(template: Omit<Template, 'body'>) {
   }
 }
 
-async function toggleSelectedVisibility() {
+async function toggleSelectedVisibility(): Promise<void> {
   try {
     await Promise.all(
       selectedTemplates.value.map((template) =>
@@ -388,7 +392,7 @@ async function toggleSelectedVisibility() {
   }
 }
 
-async function onSave(template: TemplateHelper) {
+async function onSave(template: TemplateHelper): Promise<void> {
   try {
     let result;
     const data = templateHelperToJSON(template);
@@ -402,7 +406,7 @@ async function onSave(template: TemplateHelper) {
     const msg = template.id
       ? t('$ezreeport.template.errors.edit')
       : t('$ezreeport.template.errors.create');
-    handleEzrError(msg, e);
+    handleEzrError(msg, err);
   }
 }
 
