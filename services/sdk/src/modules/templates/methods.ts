@@ -30,7 +30,9 @@ export async function getAllTemplates(
     meta: { total, count, page, ...meta },
   } = await client.fetch<
     ApiResponsePaginated<Omit<RawTemplate, 'body'>, { default: string }>
-  >('/templates', { query: apiRequestOptionsToQuery(opts) });
+  >('/templates', {
+    query: { ...apiRequestOptionsToQuery(opts), include: opts?.include },
+  });
 
   return {
     items: content.map(transformCreatedUpdated),
