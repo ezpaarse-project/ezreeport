@@ -1,7 +1,10 @@
 import { z } from '@ezreeport/models/lib/zod';
 import { ensureArray } from '@ezreeport/models/lib/utils';
 
-import { Template, TemplateTag } from '@ezreeport/models/templates';
+import {
+  Template as CommonTemplate,
+  TemplateTag,
+} from '@ezreeport/models/templates';
 
 export * from '@ezreeport/models/templates';
 
@@ -16,10 +19,28 @@ const TemplateIncludeFields = z.enum(['tags'] as const);
 export type TemplateIncludeFieldsType = z.infer<typeof TemplateIncludeFields>;
 
 /**
+ * Validation with a template
+ */
+export const Template = z.object({
+  ...CommonTemplate.shape,
+
+  // Includes fields
+  tags: z
+    .array(TemplateTag)
+    .optional()
+    .describe('[Includes] Tags of the template'),
+});
+
+/**
+ * Type for a template
+ */
+export type TemplateType = z.infer<typeof Template>;
+
+/**
  * Validation for creating/updating a template
  */
 export const InputTemplate = z.strictObject({
-  ...Template.omit({
+  ...CommonTemplate.omit({
     // Stripping readonly properties
     id: true,
     createdAt: true,
