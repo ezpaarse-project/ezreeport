@@ -27,7 +27,6 @@ import {
 } from '~/models/template-tags/types';
 
 import { NotFoundError } from '~/models/errors';
-import { appLogger } from '~/lib/logger';
 
 const SpecificTemplateTagParams = z.object({
   id: z.string().min(1).describe('ID of the tag'),
@@ -184,7 +183,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       const doesExists = await templateTags.doesTemplateTagExist(
         request.params.id
       );
-      appLogger.debug(request.params.id);
 
       let template;
       if (doesExists) {

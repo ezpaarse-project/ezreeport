@@ -11,6 +11,7 @@ import {
   Template,
   type TemplateType,
   type InputTemplateType,
+  type TemplateTagType,
   type TemplateQueryFiltersType,
   type TemplateIncludeFieldsType,
 } from './types';
@@ -112,6 +113,28 @@ export async function getTemplate(
 }
 
 /**
+ * Utility to create needed template tags
+ *
+ * @param input The tags to ensure
+ * @param tx The prisma client (or transaction)
+ */
+function createNeededTemplateTags(
+  input: InputTemplateType['tags'],
+  tx: Prisma.TransactionClient = prisma
+): Promise<TemplateTagType[]> {
+  // oxlint-disable-next-line prefer-await-to-then
+  return Promise.all(
+    input.map((tag) =>
+      tx.templateTag.upsert({
+        where: tag.id ? { id: tag.id } : { name: tag.name },
+        create: tag,
+        update: {},
+      })
+    )
+  );
+}
+
+/**
  * Create a new template, throws if constraint is broken
  *
  * @param data The template's data
@@ -122,13 +145,7 @@ export async function createTemplate(
   data: InputTemplateType & { id?: string }
 ): Promise<TemplateType> {
   const template = await prisma.$transaction(async (tx) => {
-    const createdTags = await tx.templateTag.createManyAndReturn({
-      data: data.tags,
-      skipDuplicates: true,
-    });
-
-    // Keep existing tags and link created tags
-    const tags = [...data.tags.filter((tag) => tag.id), ...createdTags];
+    const tags = await createNeededTemplateTags(data.tags, tx);
 
     return tx.template.create({
       data: {
@@ -160,13 +177,7 @@ export async function editTemplate(
   data: InputTemplateType
 ): Promise<TemplateType> {
   const template = await prisma.$transaction(async (tx) => {
-    const createdTags = await tx.templateTag.createManyAndReturn({
-      data: data.tags,
-      skipDuplicates: true,
-    });
-
-    // Keep existing tags and link created tags
-    const tags = [...data.tags.filter((tag) => tag.id), ...createdTags];
+    const tags = await createNeededTemplateTags(data.tags, tx);
 
     return tx.template.update({
       where: { id },

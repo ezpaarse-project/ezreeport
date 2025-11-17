@@ -28,7 +28,6 @@ import {
 } from '~/models/templates/types';
 
 import { NotFoundError } from '~/models/errors';
-import { appLogger } from '~/lib/logger';
 
 const SpecificTemplateParams = z.object({
   id: z.string().min(1).describe('ID of the template'),
@@ -191,7 +190,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const doesExists = await templates.doesTemplateExist(request.params.id);
-      appLogger.debug(request.params.id);
 
       let template;
       if (doesExists) {
