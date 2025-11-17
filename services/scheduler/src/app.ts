@@ -7,6 +7,7 @@ import { initCrons } from '~/models/crons';
 import initRPC from '~/models/rpc';
 import initQueues from '~/models/queues';
 import { initHeartbeat, getMissingMandatoryServices } from '~/models/heartbeat';
+import { abortDanglingGenerations } from '~/models/generations';
 
 async function start(): Promise<void> {
   appLogger.info({
@@ -41,6 +42,10 @@ async function start(): Promise<void> {
       await initQueues(connection);
       await initHeartbeat(connection);
     });
+
+    // Abort dangling generations. If they were still active, events will mark them as active again
+    await abortDanglingGenerations();
+    appLogger.info({ msg: 'Dangling generations aborted' });
 
     appLogger.info({
       scope: 'init',
