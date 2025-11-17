@@ -161,17 +161,21 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         process.env.NODE_ENV !== 'production' && request.body.debug;
 
       const id = randomUUID();
-      await queueGeneration({
-        id,
-        task,
-        namespace,
-        template,
-        period,
-        targets,
-        origin: request.user?.username ?? 'unknown',
-        writeActivity: !firstLevelDebug && !secondLevelDebug,
-        printDebug: secondLevelDebug,
-      });
+      await queueGeneration(
+        {
+          id,
+          task,
+          namespace,
+          template,
+          period,
+          targets,
+          origin: request.user?.username ?? 'unknown',
+          writeActivity: !firstLevelDebug && !secondLevelDebug,
+          printDebug: secondLevelDebug,
+        },
+        // Keep message for 1 min, otherwise will be aborted (only in test mode)
+        firstLevelDebug || secondLevelDebug ? 1 * 60 * 1000 : undefined
+      );
 
       return responses.buildSuccessResponse({ id }, reply);
     },
