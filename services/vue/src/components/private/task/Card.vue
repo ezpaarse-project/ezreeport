@@ -1,23 +1,20 @@
 <template>
   <v-card :title="modelValue.name">
     <template #subtitle>
-      <div class="d-flex">
-        <TemplateTagView :model-value="modelValue.extends?.tags ?? []" />
+      <v-chip
+        :text="$t(`$ezreeport.task.recurrenceList.${modelValue.recurrence}`)"
+        color="primary"
+        variant="outlined"
+        size="small"
+        class="mb-2"
+      />
 
-        <v-spacer />
-
-        <v-chip
-          :text="$t(`$ezreeport.task.recurrenceList.${modelValue.recurrence}`)"
-          color="primary"
-          variant="outlined"
-          size="small"
-        />
-      </div>
+      <TemplateTagView :model-value="modelValue.extends?.tags ?? []" />
     </template>
 
     <template #text>
-      <v-list lines="two">
-        <v-menu :close-on-content-click="false" max-height="250">
+      <v-list lines="one" density="compact">
+        <v-menu :close-on-content-click="false">
           <template #activator="{ props: menu }">
             <v-list-item
               :title="
@@ -28,29 +25,33 @@
             />
           </template>
 
-          <v-sheet>
-            <v-list-item density="compact">
-              <template v-if="clipboard.isSupported" #append>
-                <v-btn
-                  v-tooltip:top="$t('$ezreeport.task.targets:copy')"
-                  :icon="isCopied ? 'mdi-check' : 'mdi-content-copy'"
-                  :color="isCopied ? 'success' : undefined"
-                  density="comfortable"
-                  size="small"
-                  variant="flat"
-                  @click="copyTargets()"
-                />
-              </template>
-            </v-list-item>
-
-            <v-list max-height="200" density="compact">
-              <v-list-item
-                v-for="target in modelValue.targets"
-                :key="target"
-                :title="target"
+          <v-card
+            :title="$t('$ezreeport.task.targets')"
+            prepend-icon="mdi-mailbox"
+            density="compact"
+          >
+            <template v-if="clipboard.isSupported" #append>
+              <v-btn
+                v-tooltip:top="$t('$ezreeport.task.targets:copy')"
+                :icon="isCopied ? 'mdi-check' : 'mdi-content-copy'"
+                :color="isCopied ? 'success' : undefined"
+                density="comfortable"
+                size="small"
+                variant="flat"
+                @click="copyTargets()"
               />
-            </v-list>
-          </v-sheet>
+            </template>
+
+            <template #text>
+              <v-list max-height="200" density="compact">
+                <v-list-item
+                  v-for="target in modelValue.targets"
+                  :key="target"
+                  :title="target"
+                />
+              </v-list>
+            </template>
+          </v-card>
         </v-menu>
 
         <v-menu
@@ -66,7 +67,12 @@
             />
           </template>
 
-          <v-card :text="modelValue.description" />
+          <v-card
+            :title="$t('$ezreeport.task.description')"
+            :text="modelValue.description"
+            prepend-icon="mdi-text"
+            density="compact"
+          />
         </v-menu>
 
         <v-list-item
@@ -103,7 +109,7 @@ const clipboard = useClipboard();
 
 const isCopied = ref(false);
 
-async function copyTargets() {
+async function copyTargets(): Promise<void> {
   try {
     const addresses = props.modelValue.targets.join('; ');
     await clipboard.copy(addresses);

@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex" style="gap: 0.25rem;">
+  <div class="d-flex flex-wrap" style="gap: 0.25rem">
     <TemplateTagChip
       v-for="tag in modelValue"
       :key="tag.name"
@@ -13,7 +13,7 @@
 import type { TemplateTag } from '~sdk/helpers/templates';
 
 defineProps<{
-  modelValue: TemplateTag[],
-  size?: string
+  modelValue: TemplateTag[];
+  size?: string;
 }>();
 </script>

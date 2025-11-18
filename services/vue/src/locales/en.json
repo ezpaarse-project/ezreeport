@@ -34,6 +34,15 @@
     "no": "No",
     "restart": "Restart",
     "readonly": "Read-only",
+    "all": "All",
+    "api-filters": {
+      "empty": "None",
+      "reset": "Clear filters",
+      "button": "Filter",
+      "tasks": {
+        "title": "Filter reports"
+      }
+    },
     "task": {
       "title": "Periodic report",
       "title:list": "Periodic reports ({n})",

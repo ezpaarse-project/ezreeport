@@ -34,6 +34,15 @@
     "no": "Non",
     "restart": "Relancer",
     "readonly": "Lecture seule",
+    "all": "Tout",
+    "api-filters": {
+      "empty": "Aucun",
+      "reset": "Effacer les filtres",
+      "button": "Filtrer",
+      "tasks": {
+        "title": "Filtrer les rapports"
+      }
+    },
     "task": {
       "title": "Rapport périodique",
       "title:list": "Rapports périodiques ({n})",

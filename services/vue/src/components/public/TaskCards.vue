@@ -37,6 +37,22 @@
             @click="refresh"
           />
 
+          <v-badge
+            :model-value="filterCount > 0"
+            :content="filterCount"
+            color="primary"
+            offset-x="10"
+          >
+            <v-btn
+              :text="$t('$ezreeport.api-filters.button')"
+              prepend-icon="mdi-filter"
+              variant="tonal"
+              color="primary"
+              class="ml-2"
+              @click="isFiltersPanelOpen = true"
+            />
+          </v-badge>
+
           <v-text-field
             v-model="filters.query"
             :placeholder="$t('$ezreeport.search')"
@@ -49,6 +65,18 @@
           />
         </template>
       </v-toolbar>
+
+      <v-tabs
+        v-model="currentFilterTab"
+        :items="filterTabs"
+        color="primary"
+        @update:model-value="onTabChange(`${$event}`)"
+      >
+        <template v-slot:tab="{ item }">
+          <v-divider v-if="'separator' in item" vertical class="mx-2" />
+          <v-tab v-else :text="item.text" :value="item.value" />
+        </template>
+      </v-tabs>
     </template>
 
     <template #default="{ items }">
@@ -103,7 +131,7 @@
                       :title="$t('$ezreeport.duplicate')"
                       :disabled="!availableActions.create"
                       prepend-icon="mdi-content-copy"
-                      @click="openDuplicateForm(task)"
+                      @click="openCopyForm(task)"
                     />
 
                     <v-divider />
@@ -148,6 +176,13 @@
       </v-empty-state>
     </template>
   </v-data-iterator>
+
+  <TaskApiFiltersPanel
+    v-model="isFiltersPanelOpen"
+    v-model:filters="filters"
+    :tags="allTags"
+    @reset:filters="filters = { namespaceId: props.namespaceId }"
+  />
 
   <v-dialog
     v-model="isFormOpen"
@@ -209,13 +244,16 @@
 import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
 import type { AdditionalDataForPreset, TaskPreset } from '~sdk/task-presets';
 import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
+import type { TemplateTag } from '~sdk/templates';
 import {
+  RECURRENCES,
   changeTaskEnableState,
   createTaskHelper,
   createTaskBodyHelper,
   createTaskHelperFrom,
   taskHelperToJSON,
   type TaskHelper,
+  isRecurrence,
 } from '~sdk/helpers/tasks';
 import {
   getAllTasks,
@@ -237,13 +275,16 @@ const props = defineProps<{
 // oxlint-disable-next-line id-length
 const { t } = useI18n();
 
-const arePermissionsReady = ref(false);
+const arePermissionsReady = shallowRef(false);
 const updatedTask = ref<Task | undefined>();
 const generatedTask = ref<Omit<Task, 'template'> | undefined>();
-const isFormOpen = ref(false);
+const isFormOpen = shallowRef(false);
 const advancedTask = ref<TaskHelper | undefined>();
+const currentFilterTab = shallowRef('all');
+const isFiltersPanelOpen = shallowRef(false);
+const tagMap = ref(new Map<string, TemplateTag>());
 
-/** List of templates */
+/** List of tasks */
 const {
   total,
   refresh,
@@ -276,7 +317,27 @@ const availableActions = computed(() => {
   };
 });
 
-async function openForm(task?: Omit<Task, 'template'>) {
+const allTags = computed(() => [...tagMap.value.values()]);
+
+const filterCount = computed(
+  () => Object.entries(filters.value).filter(([, val]) => !!val).length - 1
+);
+
+const filterTabs = computed(() => [
+  { value: 'all', text: t('$ezreeport.all') },
+  { separator: true },
+  ...RECURRENCES.map((value) => ({
+    value,
+    text: t(`$ezreeport.task.recurrenceList.${value}`),
+  })),
+  { separator: true },
+]);
+
+function onTabChange(tab: string): void {
+  filters.value.recurrence = isRecurrence(tab) ? tab : undefined;
+}
+
+async function openForm(task?: Omit<Task, 'template'>): Promise<void> {
   try {
     advancedTask.value = undefined;
     generatedTask.value = undefined;
@@ -288,7 +349,7 @@ async function openForm(task?: Omit<Task, 'template'>) {
   }
 }
 
-async function openDuplicateForm(task: Omit<Task, 'template'>) {
+async function openCopyForm(task: Omit<Task, 'template'>): Promise<void> {
   try {
     const base = await getTask(task);
 
@@ -306,7 +367,7 @@ async function openDuplicateForm(task: Omit<Task, 'template'>) {
   }
 }
 
-async function openGeneration(task: Omit<Task, 'template'>) {
+function openGeneration(task: Omit<Task, 'template'>): void {
   try {
     advancedTask.value = undefined;
     generatedTask.value = task;
@@ -330,7 +391,7 @@ type AdvancedFormCurrent = {
   };
 };
 
-async function openAdvancedForm(current?: AdvancedFormCurrent) {
+function openAdvancedForm(current?: AdvancedFormCurrent): void {
   try {
     let value: TaskHelper;
 
@@ -378,12 +439,12 @@ async function openAdvancedForm(current?: AdvancedFormCurrent) {
   }
 }
 
-function closeForm() {
+function closeForm(): void {
   isFormOpen.value = false;
   refresh();
 }
 
-async function toggleItemState(task: Omit<Task, 'template'>) {
+async function toggleItemState(task: Omit<Task, 'template'>): Promise<void> {
   try {
     await changeTaskEnableState(task, !task.enabled);
     refresh();
@@ -392,7 +453,7 @@ async function toggleItemState(task: Omit<Task, 'template'>) {
   }
 }
 
-async function deleteItem(task: Omit<Task, 'template'>) {
+async function deleteItem(task: Omit<Task, 'template'>): Promise<void> {
   // TODO: show warning
   try {
     await deleteTask(task);
@@ -402,7 +463,7 @@ async function deleteItem(task: Omit<Task, 'template'>) {
   }
 }
 
-async function onAdvancedSave(task: TaskHelper) {
+async function onAdvancedSave(task: TaskHelper): Promise<void> {
   try {
     let result;
     const data = taskHelperToJSON(task);
@@ -424,6 +485,35 @@ async function onAdvancedSave(task: TaskHelper) {
     handleEzrError(msg, err);
   }
 }
+
+watch(tasks, () => {
+  const entries = [
+    ...tagMap.value,
+    ...tasks.value.flatMap((task) =>
+      (task.extends?.tags ?? []).map((tag): [string, TemplateTag] => [
+        tag.name,
+        tag,
+      ])
+    ),
+  ];
+
+  tagMap.value = new Map(entries);
+});
+
+// watch(
+//   () => filters.value.recurrence,
+//   (val) => {
+//     if (!val) {
+//       currentFilterTab.value = 'all';
+//       return;
+//     }
+
+//     const isTab = filterTabs.value.some((tab) => tab.value === val);
+//     if (isTab && currentFilterTab.value !== val) {
+//       currentFilterTab.value = `${val}`;
+//     }
+//   }
+// );
 
 // oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
 refreshPermissions().then(() => {

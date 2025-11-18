@@ -341,6 +341,7 @@ import { isEmail } from '~/utils/validate';
 import type { Namespace } from '~sdk/namespaces';
 import { getAllTemplates, getTemplate, type Template } from '~sdk/templates';
 import {
+  RECURRENCES,
   getLayoutsOfHelpers,
   hasTaskChanged,
   type TaskHelper,
@@ -534,9 +535,10 @@ const mergedLayouts = computed(() => {
 });
 /** Recurrence options */
 const recurrenceOptions = computed(() =>
-  ['DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'BIENNIAL', 'YEARLY'].map(
-    (value) => ({ value, title: t(`$ezreeport.task.recurrenceList.${value}`) })
-  )
+  RECURRENCES.map((value) => ({
+    value,
+    title: t(`$ezreeport.task.recurrenceList.${value}`),
+  }))
 );
 /** Template list */
 const templates = computedAsync(async () => {

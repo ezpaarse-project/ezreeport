@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import type { InputTemplateTag } from '~sdk/template-tags';
+import type { TemplateTag, InputTemplateTag } from '~sdk/template-tags';
 
 // Components props
 const props = defineProps<{
