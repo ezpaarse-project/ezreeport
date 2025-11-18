@@ -10,8 +10,7 @@ export default defineConfig({
   platform: 'neutral',
 
   outDir: 'dist',
-  minify: false,
-  unbundle: false,
+  minify: true,
 
   exports: true,
 
