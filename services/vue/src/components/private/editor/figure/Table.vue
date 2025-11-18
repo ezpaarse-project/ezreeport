@@ -307,43 +307,41 @@ function setColumn(column: TableColumn) {
 }
 </script>
 
-<style lang="scss" scoped>
-$border: 1px solid rgba(0, 0, 0, 0.1);
-
+<style lang="css" scoped>
 .table-preview {
   flex-wrap: nowrap;
   overflow-x: auto;
 
   padding: 0.5em 1em;
+}
 
-  &--column {
-    padding: 0;
-    flex: 1;
-    min-width: 16rem;
-    max-width: unset;
-    transition:
-      transform 0.1s ease-in-out,
-      box-shadow 0.1s ease-in-out;
+.table-preview--column {
+  padding: 0;
+  flex: 1;
+  min-width: 16rem;
+  max-width: unset;
+  transition:
+    transform 0.1s ease-in-out,
+    box-shadow 0.1s ease-in-out;
 
-    &:not(:last-child) {
-      border-right: $border;
-    }
-
-    :deep(.table-preview--column-header) {
-      border-bottom: $border;
-      padding: 12px;
-    }
-
-    :deep(.table-preview--column-value) {
-      padding: 12px;
-    }
-
-    &--dragging {
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
-      transform: scale(0.9);
-    }
+  &:not(:last-child) {
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
   }
+
+  & :deep(.table-preview--column-header) {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 12px;
+  }
+
+  & :deep(.table-preview--column-value) {
+    padding: 12px;
+  }
+}
+
+.table-preview--column--dragging {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+  transform: scale(0.9);
 }
 </style>

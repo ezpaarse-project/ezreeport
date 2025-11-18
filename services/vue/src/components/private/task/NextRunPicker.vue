@@ -220,7 +220,7 @@ const min = computed(() => startOfYear(nextRun.value).toISOString());
 const max = computed(() => endOfYear(nextRun.value).toISOString());
 </script>
 
-<style lang="scss" scoped>
+<style lang="css" scoped>
 .monthly-picker {
   display: grid;
   grid-template-columns: repeat(7, 1fr);

@@ -66,7 +66,7 @@ const buttons = computed(() =>
 );
 </script>
 
-<style lang="scss" scoped>
+<style lang="css" scoped>
 .container {
   display: flex;
   align-items: center;

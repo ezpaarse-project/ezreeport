@@ -242,7 +242,7 @@ watch(
 );
 </script>
 
-<style lang="scss" scoped>
+<style lang="css" scoped>
 .container {
   height: v-bind('containerHeight');
   overflow-x: auto;
@@ -252,7 +252,7 @@ watch(
 .value-chip {
   width: 97%;
 
-  :deep(.v-chip__content) {
+  & :deep(.v-chip__content) {
     width: 100%;
 
     & > span {
