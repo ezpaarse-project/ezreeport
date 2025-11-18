@@ -145,13 +145,25 @@
       "noTemplate:desc": "Créez votre modèle en ouvrant l'éditeur de modèles",
       "tags": {
         "title": "Étiquettes",
+        "title:list": "Étiquettes ({n})",
         "title:new": "Créer une étiquette",
         "title:edit": "Éditer l'étiquette",
+        "manage": "Gérer {n} étiquettes",
         "color": "Couleur",
         "readonly": "Cette étiquette n'est pas éditable",
-        "empty": "Aucune etiquette n'est définie, cliquez sur le bouton en haut à droite pour en créer une."
+        "empty": "Aucune etiquette n'est définie, cliquez sur le bouton en haut à droite pour en créer une.",
+        "noList": "Aucune étiquette trouvée",
+        "noList:desc": "Pour crééer une étiquette et retrouvez rapidement vos rapports, cliquez sur le bouton @:$ezreeport.new",
+        "errors": {
+          "create": "Impossible de créer une étiquette",
+          "delete": "Impossible de supprimer l'étiquette",
+          "edit": "Impossible de mettre à jour l'étiquette"
+        }
       },
       "errors": {
+        "create": "Impossible de créer un modèle",
+        "delete": "Impossible de supprimer le modèle",
+        "edit": "Impossible de mettre à jour le modèle",
         "fetch": "Impossible d'obtenir les modèles",
         "open": "Impossible d'obtenir les informations sur le modèle"
       }

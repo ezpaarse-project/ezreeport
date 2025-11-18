@@ -145,13 +145,25 @@
       "noTemplate:desc": "Create your template by opening the template editor",
       "tags": {
         "title": "Tags",
+        "title:list": "Tags ({n})",
         "title:new": "Create tag",
         "title:edit": "Edit tag",
+        "manage": "Manage {n} tags",
         "color": "Color",
         "readonly": "This tag is not editable",
-        "empty": "No tags are defined, click the button at the top right to create one."
+        "empty": "No tags are defined, click the button at the top right to create one.",
+        "noList": "No tags were found",
+        "noList:desc": "To create a tag et quickly find your reports, click on the @:$ezreeport.new button",
+        "errors": {
+          "create": "Cannot create tag",
+          "edit": "Cannot update tag",
+          "delete": "Cannot delete tag"
+        }
       },
       "errors": {
+        "create": "Cannot create template",
+        "edit": "Cannot update template",
+        "delete": "Cannot delete template",
         "fetch": "Can't get templates",
         "open": "Can't get template informations"
       }
