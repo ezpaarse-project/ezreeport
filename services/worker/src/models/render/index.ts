@@ -96,7 +96,7 @@ async function renderLayoutWithVega(
   doc: PDFReport,
   options: LayoutRenderOptionsType,
   events: EventEmitter<RenderEventMap>
-) {
+): Promise<void> {
   const { figures } = options.layout;
   // Limit number of figures to the number of possible slots
   figures.length = Math.min(figures.length, options.slots.length);
@@ -163,7 +163,7 @@ export async function renderPdfWithVega(
 ): Promise<PDFResult> {
   const colorMap = new Map<string, string>();
 
-  const doc = await createPDF(options.doc);
+  const doc = createPDF(options.doc);
 
   /**
    * Usage space in page
@@ -195,8 +195,7 @@ export async function renderPdfWithVega(
     const layout = options.layouts[layoutIndex];
 
     if (layoutIndex > 0) {
-      // oxlint-disable-next-line no-await-in-loop
-      await doc.addPage();
+      doc.addPage();
     }
 
     try {

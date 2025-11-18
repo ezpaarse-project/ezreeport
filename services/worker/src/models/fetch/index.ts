@@ -30,6 +30,30 @@ type ElasticFetchOptionsType = {
 // oxlint-disable-next-line id-length
 type FigureWithId = FigureType & { _: { id: number } };
 
+function prepareRequestsOfFigures(
+  options: ElasticFetchOptionsType,
+  figure: FigureWithId,
+  calendarInterval: 'hour' | 'day' | 'month'
+): ElasticTypes.MsearchMultisearchBody {
+  const query = prepareEsQuery(
+    [options.filters, figure.filters].filter((filter) => !!filter).flat(), // Merge filters
+    { value: options.period, dateField: options.dateField }
+  );
+
+  const aggregations = prepareEsAggregations(
+    figure,
+    options.dateField,
+    calendarInterval
+  );
+
+  return {
+    query,
+    aggregations,
+    size: 0,
+    track_total_hits: true,
+  };
+}
+
 /**
  * Fetch data from Elastic for the given figures
  *
@@ -37,7 +61,9 @@ type FigureWithId = FigureType & { _: { id: number } };
  *
  * @returns The data
  */
-export async function fetchElastic(options: ElasticFetchOptionsType) {
+export async function fetchElastic(
+  options: ElasticFetchOptionsType
+): Promise<void> {
   if (!options.index) {
     throw new TemplateError('No index provided', 'MissingIndexError');
   }
@@ -51,29 +77,13 @@ export async function fetchElastic(options: ElasticFetchOptionsType) {
     .map((fig, index): FigureWithId => ({ ...fig, _: { id: index } }))
     .filter((fig) => fig.type !== 'md');
 
-  const requests: ElasticTypes.MsearchMultisearchBody[] = figures.map((fig) => {
-    const query = prepareEsQuery(
-      [options.filters, fig.filters].filter((filter) => !!filter).flat(), // Merge filters
-      { value: options.period, dateField: options.dateField }
-    );
-
-    const aggregations = prepareEsAggregations(
-      fig,
-      options.dateField,
-      calendarInterval
-    );
-
-    return {
-      query,
-      aggregations,
-      size: 0,
-      track_total_hits: true,
-    };
-  });
-
-  if (requests.length <= 0) {
-    return [];
+  if (figures.length <= 0) {
+    return;
   }
+
+  const requests: ElasticTypes.MsearchMultisearchBody[] = figures.map((fig) =>
+    prepareRequestsOfFigures(options, fig, calendarInterval)
+  );
 
   const responses = await elasticMSearch(
     {
@@ -96,12 +106,12 @@ export async function fetchElastic(options: ElasticFetchOptionsType) {
     throw responses;
   }
 
-  const results = responses.map((response, index) => {
+  for (let index = 0; index < responses.length; index += 1) {
     const figureId = figures[index]._.id;
     const figure = options.figures[figureId];
 
     try {
-      figure.data = handleEsResponse(response, figure);
+      figure.data = handleEsResponse(responses[index], figure);
     } catch (error) {
       const cause = {
         esIndex: options.index,
@@ -120,9 +130,5 @@ export async function fetchElastic(options: ElasticFetchOptionsType) {
         cause
       );
     }
-
-    return figure.data;
-  });
-
-  return results;
+  }
 }
