@@ -6,15 +6,10 @@
       "outputs": ["docs/**"]
     },
     "build:js": {
-      "dependsOn": ["^prebuild"],
-      "outputs": ["dist/**"]
-    },
-    "build:types": {
-      "dependsOn": ["^prebuild"],
       "outputs": ["dist/**"]
     },
     "build": {
-      "dependsOn": ["build:js", "build:types", "build:docs"]
+      "dependsOn": ["build:js", "build:docs"]
     },
     "dev": {
       "dependsOn": ["^watch:docs", "^preview:docs"],

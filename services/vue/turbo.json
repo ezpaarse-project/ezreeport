@@ -10,7 +10,7 @@
       "outputs": ["dist/**"]
     },
     "type-check": {
-      "dependsOn": ["@ezpaarse-project/ezreeport-sdk-js#build:types"]
+      "dependsOn": ["@ezpaarse-project/ezreeport-sdk-js#build:js"]
     }
   }
 }
