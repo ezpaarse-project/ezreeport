@@ -57,6 +57,16 @@ function applyFilters(filters: TaskQueryFiltersType): Prisma.TaskWhereInput {
     };
   }
 
+  if (filters['extends.tags']) {
+    where.extends = {
+      tags: { some: { id: { in: filters['extends.tags'] } } },
+    };
+  }
+
+  if (filters.recurrence) {
+    where.recurrence = filters.recurrence;
+  }
+
   return where;
 }
 
