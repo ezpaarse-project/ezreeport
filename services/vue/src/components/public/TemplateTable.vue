@@ -204,12 +204,6 @@ type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 const props = defineProps<{
   titlePrefix?: string;
   itemsPerPageOptions?: number[] | { title: string; value: number }[];
-  itemsPerPage?: number;
-}>();
-
-// Components events
-const emit = defineEmits<{
-  (event: 'update:itemsPerPage', value: number): void;
 }>();
 
 // Utils composable
@@ -222,11 +216,8 @@ const selectedTemplates = ref<Omit<Template, 'body'>[]>([]);
 const updatedTemplate = ref<TemplateHelper>(createTemplateHelper());
 const isFormOpen = ref(false);
 
-/** Items per page shortcut */
-const itemsPerPage = computed({
-  get: () => props.itemsPerPage || 10,
-  set: (value) => emit('update:itemsPerPage', value),
-});
+/** Items per page */
+const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
 /** List of templates */
 const { total, refresh, loading, filters, vDataTableOptions } =
   useServerSidePagination(

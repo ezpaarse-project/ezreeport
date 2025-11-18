@@ -176,19 +176,10 @@ const maxDate = new Date();
 const props = defineProps<{
   titlePrefix?: string;
   itemsPerPageOptions?: number[] | { title: string; value: number }[];
-  itemsPerPage?: number;
 }>();
 
-// Components events
-const emit = defineEmits<{
-  (event: 'update:itemsPerPage', value: number): void;
-}>();
-
-/** Items per page shortcut */
-const itemsPerPage = computed({
-  get: () => props.itemsPerPage || 25,
-  set: (val) => emit('update:itemsPerPage', val),
-});
+/** Items per page */
+const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
 /** List of activity */
 const { total, refresh, loading, filters, vDataTableOptions } =
   useServerSidePagination((params) => getAllActivity(params), {

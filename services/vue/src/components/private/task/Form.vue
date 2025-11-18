@@ -547,6 +547,7 @@ const templates = computedAsync(async () => {
     let meta;
     ({ items, meta } = await getAllTemplates({
       pagination: { count: 0, sort: 'name' },
+      include: ['tags'],
     }));
     if (!extendedId.value) {
       extendedId.value = meta.default;

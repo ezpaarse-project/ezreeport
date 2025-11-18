@@ -2,7 +2,7 @@
   <v-row>
     <v-col cols="12">
       <EditorAggregationTypeAutocomplete
-        v-model="currentType"
+        v-model="modelValue.type"
         :disabled="disabled"
         :readonly="readonly"
         :allowed-type="allowedType"
@@ -10,18 +10,20 @@
     </v-col>
 
     <v-slide-y-transition>
-      <v-col v-if="currentType" cols="12">
+      <v-col v-if="modelValue.type" cols="12">
         <EditorAggregationFieldAutocomplete
-          v-model="currentField"
+          v-model="modelValue.field"
           :disabled="disabled"
           :readonly="readonly"
-          :type="currentType"
+          :type="modelValue.type"
         />
       </v-col>
     </v-slide-y-transition>
 
     <v-slide-y-transition group>
-      <template v-if="isMetric === false && currentType !== 'date_histogram'">
+      <template
+        v-if="isMetric === false && modelValue.type !== 'date_histogram'"
+      >
         <v-col cols="12">
           <v-text-field
             v-model="currentSize"
@@ -50,7 +52,7 @@
           <v-slide-x-transition>
             <v-text-field
               v-if="showMissing"
-              v-model="currentMissing"
+              v-model="modelValue.missing"
               :label="$t('$ezreeport.editor.aggregation.missing:label')"
               :readonly="readonly"
               :disabled="disabled"
@@ -74,9 +76,10 @@ import {
 import type { InnerBaseAggregation } from '~/lib/aggregations';
 
 // Component props
-const props = defineProps<{
-  /** Aggregation to edit */
-  modelValue: InnerBaseAggregation;
+/** Aggregation to edit */
+const modelValue = defineModel<InnerBaseAggregation>({ required: true });
+
+defineProps<{
   /** Should be disabled */
   disabled?: boolean;
   /** Should be readonly */
@@ -85,25 +88,9 @@ const props = defineProps<{
   allowedType?: AggregationType;
 }>();
 
-// Component events
-const emit = defineEmits<{
-  /** Aggregation updated */
-  (event: 'update:modelValue', value: InnerBaseAggregation): void;
-}>();
-
-/** Current aggregation type */
-const currentType = computed<InnerBaseAggregation['type']>({
-  get: () => props.modelValue.type ?? '',
-  set: (type) => emit('update:modelValue', { ...props.modelValue, type }),
-});
-/** Current aggregation field */
-const currentField = computed<string>({
-  get: () => props.modelValue.field ?? '',
-  set: (field) => emit('update:modelValue', { ...props.modelValue, field }),
-});
 /** Current aggregation size */
 const currentSize = computed<string>({
-  get: () => `${props.modelValue.size ?? 10}`,
+  get: () => `${modelValue.value.size ?? 10}`,
   set: (value) => {
     let size = 10;
 
@@ -114,27 +101,23 @@ const currentSize = computed<string>({
       }
     }
 
-    emit('update:modelValue', { ...props.modelValue, size });
+    modelValue.value = { ...modelValue.value, size };
   },
-});
-/** Current aggregation missing */
-const currentMissing = computed<string | undefined>({
-  get: () => props.modelValue.missing,
-  set: (missing) => emit('update:modelValue', { ...props.modelValue, missing }),
 });
 /** If we should show the missing values */
 const showMissing = computed({
-  get: () => !!currentMissing.value,
-  set: (value) =>
-    emit('update:modelValue', {
-      ...props.modelValue,
+  get: () => !!modelValue.value.missing,
+  set: (value) => {
+    modelValue.value = {
+      ...modelValue.value,
       missing: value ? 'Missing' : undefined,
-    }),
+    };
+  },
 });
 /** Is the aggregation a metric one */
 const isMetric = computed(() => {
   const aggDef = aggregationTypes.find(
-    ({ name }) => currentType.value === name
+    ({ name }) => modelValue.value.type === name
   );
   if (!aggDef) {
     return;
