@@ -64,14 +64,15 @@
   "dependencies": {
     "date-fns": "catalog:sdk",
     "nanoid": "catalog:sdk",
-    "object-hash": "catalog:sdk",
     "ofetch": "catalog:sdk",
     "socket.io-client": "catalog:sdk"
   },
   "devDependencies": {
+    "@types/native-events": "npm:@types/events@^3.0.3",
     "@types/node": "catalog:",
     "@types/object-hash": "^3.0.6",
-    "events": "^3.3.0",
+    "native-events": "npm:events@^3.3.0",
+    "object-hash": "^3.0.0",
     "serve": "^14.2.5",
     "tsdown": "^0.16.5",
     "typedoc": "^0.28.7",

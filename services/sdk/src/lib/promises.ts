@@ -1,5 +1,5 @@
 // oxlint-disable-next-line prefer-node-protocol
-import EventEmitter from 'events';
+import EventEmitter from 'native-events';
 
 // oxlint-disable-next-line no-explicit-any
 type EventMap = Record<string, any[]>;
