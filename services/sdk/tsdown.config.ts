@@ -3,12 +3,11 @@ import { defineConfig } from 'tsdown';
 // oxlint-disable-next-line no-default-export
 export default defineConfig({
   target: ['node14', 'es6'],
+  format: ['cjs', 'es'],
   platform: 'neutral',
 
   outDir: 'dist',
   minify: true,
-
-  exports: true,
 
   dts: {
     sourcemap: true,
@@ -43,12 +42,12 @@ export default defineConfig({
     'helpers/templates': 'src/helpers/templates/index.ts',
   },
 
+  exports: true,
+
   alias: {
     '~': 'src/',
   },
 
-  // Avoid bundling node APIs
-  external: ['crypto'],
   // Bundling some dependencies to avoid issues
-  noExternal: ['native-events', 'object-hash'],
+  noExternal: ['native-events'],
 });

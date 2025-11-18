@@ -13,34 +13,103 @@
   "license": "CeCILL",
   "author": "oxypomme",
   "exports": {
-    ".": "./dist/index.mjs",
-    "./auth": "./dist/auth.mjs",
-    "./crons": "./dist/crons.mjs",
-    "./elastic": "./dist/elastic.mjs",
-    "./generations": "./dist/generations.mjs",
-    "./health": "./dist/health.mjs",
-    "./helpers/aggregations": "./dist/helpers/aggregations.mjs",
-    "./helpers/figures": "./dist/helpers/figures.mjs",
-    "./helpers/filters": "./dist/helpers/filters.mjs",
-    "./helpers/generations": "./dist/helpers/generations.mjs",
-    "./helpers/layouts": "./dist/helpers/layouts.mjs",
-    "./helpers/permissions": "./dist/helpers/permissions.mjs",
-    "./helpers/task-presets": "./dist/helpers/task-presets.mjs",
-    "./helpers/tasks": "./dist/helpers/tasks.mjs",
-    "./helpers/templates": "./dist/helpers/templates.mjs",
-    "./namespaces": "./dist/namespaces.mjs",
-    "./recurrence": "./dist/recurrence.mjs",
-    "./reports": "./dist/reports.mjs",
-    "./task-activity": "./dist/task-activity.mjs",
-    "./task-presets": "./dist/task-presets.mjs",
-    "./tasks": "./dist/tasks.mjs",
-    "./template-tags": "./dist/template-tags.mjs",
-    "./templates": "./dist/templates.mjs",
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./auth": {
+      "import": "./dist/auth.mjs",
+      "require": "./dist/auth.js"
+    },
+    "./crons": {
+      "import": "./dist/crons.mjs",
+      "require": "./dist/crons.js"
+    },
+    "./elastic": {
+      "import": "./dist/elastic.mjs",
+      "require": "./dist/elastic.js"
+    },
+    "./generations": {
+      "import": "./dist/generations.mjs",
+      "require": "./dist/generations.js"
+    },
+    "./health": {
+      "import": "./dist/health.mjs",
+      "require": "./dist/health.js"
+    },
+    "./helpers/aggregations": {
+      "import": "./dist/helpers/aggregations.mjs",
+      "require": "./dist/helpers/aggregations.js"
+    },
+    "./helpers/figures": {
+      "import": "./dist/helpers/figures.mjs",
+      "require": "./dist/helpers/figures.js"
+    },
+    "./helpers/filters": {
+      "import": "./dist/helpers/filters.mjs",
+      "require": "./dist/helpers/filters.js"
+    },
+    "./helpers/generations": {
+      "import": "./dist/helpers/generations.mjs",
+      "require": "./dist/helpers/generations.js"
+    },
+    "./helpers/layouts": {
+      "import": "./dist/helpers/layouts.mjs",
+      "require": "./dist/helpers/layouts.js"
+    },
+    "./helpers/permissions": {
+      "import": "./dist/helpers/permissions.mjs",
+      "require": "./dist/helpers/permissions.js"
+    },
+    "./helpers/task-presets": {
+      "import": "./dist/helpers/task-presets.mjs",
+      "require": "./dist/helpers/task-presets.js"
+    },
+    "./helpers/tasks": {
+      "import": "./dist/helpers/tasks.mjs",
+      "require": "./dist/helpers/tasks.js"
+    },
+    "./helpers/templates": {
+      "import": "./dist/helpers/templates.mjs",
+      "require": "./dist/helpers/templates.js"
+    },
+    "./namespaces": {
+      "import": "./dist/namespaces.mjs",
+      "require": "./dist/namespaces.js"
+    },
+    "./recurrence": {
+      "import": "./dist/recurrence.mjs",
+      "require": "./dist/recurrence.js"
+    },
+    "./reports": {
+      "import": "./dist/reports.mjs",
+      "require": "./dist/reports.js"
+    },
+    "./task-activity": {
+      "import": "./dist/task-activity.mjs",
+      "require": "./dist/task-activity.js"
+    },
+    "./task-presets": {
+      "import": "./dist/task-presets.mjs",
+      "require": "./dist/task-presets.js"
+    },
+    "./tasks": {
+      "import": "./dist/tasks.mjs",
+      "require": "./dist/tasks.js"
+    },
+    "./template-tags": {
+      "import": "./dist/template-tags.mjs",
+      "require": "./dist/template-tags.js"
+    },
+    "./templates": {
+      "import": "./dist/templates.mjs",
+      "require": "./dist/templates.js"
+    },
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.mjs",
+  "main": "./dist/index.js",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
@@ -64,6 +133,7 @@
   "dependencies": {
     "date-fns": "catalog:sdk",
     "nanoid": "catalog:sdk",
+    "object-hash": "catalog:sdk",
     "ofetch": "catalog:sdk",
     "socket.io-client": "catalog:sdk"
   },
@@ -72,7 +142,6 @@
     "@types/node": "catalog:",
     "@types/object-hash": "^3.0.6",
     "native-events": "npm:events@^3.3.0",
-    "object-hash": "^3.0.0",
     "serve": "^14.2.5",
     "tsdown": "^0.16.5",
     "typedoc": "^0.28.7",
