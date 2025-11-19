@@ -245,7 +245,7 @@
           "title": "Groupes de filtres",
           "title:new": "Ajouter un groupe de filtres",
           "title:edit": "Editer un groupe de filtres",
-          "elements": {
+          "element": {
             "label": "Étiquette du groupe",
             "filters": "1 filtre|{n} filtres"
           }
