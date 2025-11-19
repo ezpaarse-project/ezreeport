@@ -25,7 +25,11 @@ export const Default: Story = {
       name: 'Métriques API',
       description: '',
       template: {
-        version: 2, index: '.ezmesure-metrics', dateField: 'datetime', filters: [], inserts: [],
+        version: 2,
+        index: '.ezmesure-metrics',
+        dateField: 'datetime',
+        filters: [],
+        inserts: [],
       },
       targets: ['ezteam@couperin.org'],
       recurrence: 'DAILY',
@@ -35,7 +39,7 @@ export const Default: Story = {
       createdAt: new Date('2024-06-26T14:49:50.401Z'),
       updatedAt: new Date('2024-12-03T06:00:02.901Z'),
       extends: {
-        tags: [{ name: 'Administration', color: '#D3339A' }],
+        tags: [{ id: '0', name: 'Administration', color: '#D3339A' }],
       },
       extendedId: 'a538ba09-5c2d-479a-b6f9-0dff77863002',
       namespaceId: 'clxvxybz801d84qdpy1ekrjwn',

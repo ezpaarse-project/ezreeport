@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 import { createTaskHelper, createTaskHelperFrom } from '~sdk/helpers/tasks';
 
-import { createTemplateHelper, createTemplateHelperFrom } from '~sdk/helpers/templates';
+import {
+  createTemplateHelper,
+  createTemplateHelperFrom,
+} from '~sdk/helpers/templates';
 import EditorTask from './Task.vue';
 
 const meta: Meta<typeof EditorTask> = {
@@ -53,11 +56,24 @@ export const Existing: Story = {
                 type: 'bar',
                 slots: [2, 3],
                 params: {
-                  label: { title: 'datetime', aggregation: { type: 'date_histogram', field: '{{ dateField }}' } }, title: 'panist : histo jour requêtes', value: { title: 'Count' }, dataLabel: { format: 'numeric', showLabel: false }, invertAxis: false,
+                  label: {
+                    title: 'datetime',
+                    aggregation: {
+                      type: 'date_histogram',
+                      field: '{{ dateField }}',
+                    },
+                  },
+                  title: 'panist : histo jour requêtes',
+                  value: { title: 'Count' },
+                  dataLabel: { format: 'numeric', showLabel: false },
+                  invertAxis: false,
                 },
                 filters: [
                   {
-                    name: '_index is panist*', field: '_index', isNot: false, value: 'panist*',
+                    name: '_index is panist*',
+                    field: '_index',
+                    isNot: false,
+                    value: 'panist*',
                   },
                 ],
               },
@@ -74,7 +90,7 @@ export const Existing: Story = {
       createdAt: new Date('2024-06-26T14:49:50.401Z'),
       updatedAt: new Date('2024-12-03T06:00:02.901Z'),
       extends: {
-        tags: [{ name: 'Administration', color: '#D3339A' }],
+        tags: [{ id: '0', name: 'Administration', color: '#D3339A' }],
       },
       extendedId: 'a538ba09-5c2d-479a-b6f9-0dff77863002',
       namespaceId: 'clxvxybz801d84qdpy1ekrjwn',
@@ -143,10 +159,7 @@ export const Existing: Story = {
                   ],
                 },
                 filters: [],
-                slots: [
-                  0,
-                  1,
-                ],
+                slots: [0, 1],
               },
               {
                 type: 'bar',
@@ -169,9 +182,7 @@ export const Existing: Story = {
                   invertAxis: true,
                 },
                 filters: [],
-                slots: [
-                  2,
-                ],
+                slots: [2],
               },
               {
                 type: 'bar',
@@ -193,9 +204,7 @@ export const Existing: Story = {
                   invertAxis: true,
                 },
                 filters: [],
-                slots: [
-                  3,
-                ],
+                slots: [3],
               },
             ],
           },
@@ -228,10 +237,7 @@ export const Existing: Story = {
                     value: 'indices/insert',
                   },
                 ],
-                slots: [
-                  2,
-                  3,
-                ],
+                slots: [2, 3],
               },
               {
                 type: 'bar',
@@ -256,10 +262,7 @@ export const Existing: Story = {
                   },
                 },
                 filters: [],
-                slots: [
-                  0,
-                  1,
-                ],
+                slots: [0, 1],
               },
             ],
           },
@@ -284,10 +287,7 @@ export const Existing: Story = {
                   },
                 },
                 filters: [],
-                slots: [
-                  0,
-                  2,
-                ],
+                slots: [0, 2],
               },
               {
                 type: 'table',
@@ -320,10 +320,7 @@ export const Existing: Story = {
                   ],
                 },
                 filters: [],
-                slots: [
-                  1,
-                  3,
-                ],
+                slots: [1, 3],
               },
             ],
           },
@@ -331,6 +328,7 @@ export const Existing: Story = {
       },
       tags: [
         {
+          id: '0',
           name: 'Administration',
           color: '#D3339A',
         },

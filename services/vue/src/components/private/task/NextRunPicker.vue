@@ -93,23 +93,24 @@ import {
   startOfYear,
   endOfYear,
   type Day,
-  getQuarter,
-  setQuarter,
+  // getQuarter,
+  // setQuarter,
   startOfQuarter,
   endOfQuarter,
   eachMonthOfInterval,
   add,
-  formatISO,
-  isBefore,
-  Duration,
-  isAfter,
-  startOfDay,
+  // formatISO,
+  // isBefore,
+  // Duration,
+  // isAfter,
+  // startOfDay,
 } from 'date-fns';
-import { monthsInQuarter, quartersInYear } from 'date-fns/constants';
+import { monthsInQuarter } from 'date-fns/constants';
+// import { monthsInQuarter, quartersInYear } from 'date-fns/constants';
 
 import type { TaskRecurrence } from '~sdk/tasks';
 
-const minDate = add(startOfDay(new Date()), { days: 1 });
+// const minDate = add(startOfDay(new Date()), { days: 1 });
 
 /**
  * In monthly recurrence, ezREEPORT adds 1 month to the next run every time a generation is
@@ -120,7 +121,7 @@ const minDate = add(startOfDay(new Date()), { days: 1 });
 const DAYS_IN_MONTH = 28;
 
 // Components props
-const props = defineProps<{
+defineProps<{
   /** The Date to edit */
   modelValue?: Date;
   /** Task's recurrence */
@@ -130,7 +131,7 @@ const props = defineProps<{
 }>();
 
 // Components events
-const emit = defineEmits<{
+defineEmits<{
   /** Updated Date */
   (event: 'update:modelValue', value: Date): void;
 }>();

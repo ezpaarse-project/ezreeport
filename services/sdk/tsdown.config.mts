@@ -1,5 +1,7 @@
 import { defineConfig } from 'tsdown';
 
+const isReleaseMode = process.env.NODE_ENV === 'release';
+
 // oxlint-disable-next-line no-default-export
 export default defineConfig({
   target: ['node14', 'es6'],
@@ -7,10 +9,10 @@ export default defineConfig({
   platform: 'neutral',
 
   outDir: 'dist',
-  minify: true,
+  minify: isReleaseMode,
 
   dts: {
-    sourcemap: true,
+    sourcemap: !isReleaseMode,
   },
 
   entry: {
@@ -42,12 +44,11 @@ export default defineConfig({
     'helpers/templates': 'src/helpers/templates/index.ts',
   },
 
-  exports: true,
+  exports: !isReleaseMode,
 
   alias: {
     '~': 'src/',
   },
 
-  // Bundling some dependencies to avoid issues
-  noExternal: ['native-events'],
+  external: ['native-events'],
 });

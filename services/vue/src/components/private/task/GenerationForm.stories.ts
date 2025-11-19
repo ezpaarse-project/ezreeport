@@ -32,7 +32,7 @@ export const Daily: Story = {
       createdAt: new Date('2024-06-26T14:49:50.401Z'),
       updatedAt: new Date('2024-12-03T06:00:02.901Z'),
       extends: {
-        tags: [{ name: 'Administration', color: '#D3339A' }],
+        tags: [{ id: '0', name: 'Administration', color: '#D3339A' }],
       },
       extendedId: 'a538ba09-5c2d-479a-b6f9-0dff77863002',
       namespaceId: 'clxvxybz801d84qdpy1ekrjwn',
@@ -79,7 +79,29 @@ export const Monthly: Story = {
       id: '443b2219-3d92-4124-832d-8f3865fdd012',
       name: 'OMEKA mensuel',
       description: '',
-      targets: ['ezteam@couperin.org', 'alexandra.petitjean@foo.br', 'Julien.franck@foo.br', 'claire.francois@foo.br', 'paolo.lai@foo.br', 'nicolas.thouvenin@foo.br', 'michele.bonthoux@foo.br', 'camille.gagny@foo.br', 'cecilia.fabry@foo.br', 'laurent.schmitt@foo.br', 'philippe.borgnet@foo.br', 'titouan.boudart@foo.br', 'francois.debeaupuis@foo.br', 'eric.lebourhis@foo.br', 'lauriane.locatelli@foo.br', 'louis.maillard@foo.br', 'edwige.pierot@foo.br', 'bernard.sampite@foo.br', 'alain.zasadzinski@foo.br', 'nathalie.frick@foo.br', 'laurent.pelletier@foo.br'],
+      targets: [
+        'ezteam@couperin.org',
+        'alexandra.petitjean@foo.br',
+        'Julien.franck@foo.br',
+        'claire.francois@foo.br',
+        'paolo.lai@foo.br',
+        'nicolas.thouvenin@foo.br',
+        'michele.bonthoux@foo.br',
+        'camille.gagny@foo.br',
+        'cecilia.fabry@foo.br',
+        'laurent.schmitt@foo.br',
+        'philippe.borgnet@foo.br',
+        'titouan.boudart@foo.br',
+        'francois.debeaupuis@foo.br',
+        'eric.lebourhis@foo.br',
+        'lauriane.locatelli@foo.br',
+        'louis.maillard@foo.br',
+        'edwige.pierot@foo.br',
+        'bernard.sampite@foo.br',
+        'alain.zasadzinski@foo.br',
+        'nathalie.frick@foo.br',
+        'laurent.pelletier@foo.br',
+      ],
       recurrence: 'MONTHLY',
       nextRun: new Date('2025-02-01T06:00:45.959Z'),
       lastRun: new Date('2024-12-02T06:00:45.959Z'),
@@ -115,8 +137,7 @@ export const Quarterly: Story = {
       enabled: true,
       createdAt: new Date('2025-03-10T09:25:56.703Z'),
       updatedAt: new Date('2025-03-10T09:25:56.703Z'),
-    }
-    ,
+    },
   },
 };
 
@@ -144,7 +165,6 @@ export const Biennial: Story = {
       createdAt: new Date('2025-03-10T09:25:56.256Z'),
       updatedAt: new Date('2025-03-10T09:25:56.256Z'),
     },
-
   },
 };
 
@@ -161,7 +181,11 @@ export const Yearly: Story = {
       id: '9a0f8b83-ae34-4768-8d08-1646037a9e8d',
       name: 'PR Searches_Platform annuel',
       description: '',
-      targets: ['ezteam@couperin.org', 'celine.paillaret@univ-montp3.fr', 'marie.nikichine@univ-montp3.fr'],
+      targets: [
+        'ezteam@couperin.org',
+        'celine.paillaret@univ-montp3.fr',
+        'marie.nikichine@univ-montp3.fr',
+      ],
       recurrence: 'YEARLY',
       nextRun: new Date('2025-02-01T05:00:00.000Z'),
       enabled: true,
@@ -169,7 +193,6 @@ export const Yearly: Story = {
       updatedAt: new Date('2024-12-02T14:15:25.864Z'),
       extendedId: 'a538ba09-5c2d-479a-b6f9-0dff77863002',
       namespaceId: 'clxvxybz801d84qdpy1ekrjwn',
-    }
-    ,
+    },
   },
 };

@@ -31,6 +31,7 @@ export default function useJSONRef<Data = Record<string, unknown>>(
     }
 
     try {
+      // @ts-expect-error - Type issue with createEventHook
       await changeTrigger(JSON.parse(value.value));
       parseError.value = undefined;
     } catch (error) {

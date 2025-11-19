@@ -165,7 +165,7 @@ const statusColors = new Map<GenerationStatus, string>([
 ]);
 
 // Components props
-const props = defineProps<{
+defineProps<{
   itemsPerPageOptions?: number[] | { title: string; value: number }[];
 }>();
 

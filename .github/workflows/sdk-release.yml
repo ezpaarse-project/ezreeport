@@ -47,8 +47,10 @@ jobs:
       - name: Install dependencies ⚙️
         run: pnpm i --frozen-lockfile
 
-      - name: Build SDK 🔧
-        run: pnpm turbo run @ezpaarse-project/ezreeport-sdk-js#build:js @ezpaarse-project/ezreeport-sdk-js#build:types
+      - name: Build package 🔧
+        env:
+          NODE_ENV: production
+        run: pnpm turbo run @ezpaarse-project/ezreeport-sdk-js#build:js
 
       - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies 🔍
         run: pnpm --filter @ezpaarse-project/ezreeport-sdk-js exec -- npm audit signatures

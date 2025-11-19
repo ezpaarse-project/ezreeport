@@ -50,11 +50,24 @@ export const Existing: Story = {
                 type: 'bar',
                 slots: [2, 3],
                 params: {
-                  label: { title: 'datetime', aggregation: { type: 'date_histogram', field: '{{ dateField }}' } }, title: 'panist : histo jour requêtes', value: { title: 'Count' }, dataLabel: { format: 'numeric', showLabel: false }, invertAxis: false,
+                  label: {
+                    title: 'datetime',
+                    aggregation: {
+                      type: 'date_histogram',
+                      field: '{{ dateField }}',
+                    },
+                  },
+                  title: 'panist : histo jour requêtes',
+                  value: { title: 'Count' },
+                  dataLabel: { format: 'numeric', showLabel: false },
+                  invertAxis: false,
                 },
                 filters: [
                   {
-                    name: '_index is panist*', field: '_index', isNot: false, value: 'panist*',
+                    name: '_index is panist*',
+                    field: '_index',
+                    isNot: false,
+                    value: 'panist*',
                   },
                 ],
               },
@@ -71,7 +84,7 @@ export const Existing: Story = {
       createdAt: new Date('2024-06-26T14:49:50.401Z'),
       updatedAt: new Date('2024-12-03T06:00:02.901Z'),
       extends: {
-        tags: [{ name: 'Administration', color: '#D3339A' }],
+        tags: [{ id: '0', name: 'Administration', color: '#D3339A' }],
       },
       extendedId: 'a538ba09-5c2d-479a-b6f9-0dff77863002',
       namespaceId: 'clxvxybz801d84qdpy1ekrjwn',
