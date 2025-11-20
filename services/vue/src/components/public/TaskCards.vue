@@ -191,8 +191,14 @@
     @update:model-value="$event || refresh()"
   >
     <template #default>
+      <TaskGenerationForm v-if="generatedTask" :model-value="generatedTask">
+        <template #actions>
+          <v-btn :text="$t('$ezreeport.cancel')" @click="closeForm()" />
+        </template>
+      </TaskGenerationForm>
+
       <TaskForm
-        v-if="advancedTask"
+        v-else-if="advancedTask"
         v-model="advancedTask"
         :namespace-id="namespaceId"
         @update:model-value="onAdvancedSave($event)"
@@ -215,15 +221,6 @@
           <v-btn :text="$t('$ezreeport.cancel')" @click="closeForm()" />
         </template>
       </TaskEditionForm>
-
-      <TaskGenerationForm
-        v-else-if="generatedTask"
-        :model-value="generatedTask"
-      >
-        <template #actions>
-          <v-btn :text="$t('$ezreeport.cancel')" @click="closeForm()" />
-        </template>
-      </TaskGenerationForm>
 
       <TaskCreationForm
         v-else
