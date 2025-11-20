@@ -53,7 +53,17 @@ function transformEsAgg(
   subAggs?: EsAggregation
 ): EsAggregation {
   if ('raw' in agg) {
-    return { [name]: agg.raw };
+    const rawSubAggs = agg.raw.aggs || agg.raw.aggregations;
+    return {
+      [name]: {
+        ...agg.raw,
+        aggs: undefined,
+        aggregations: {
+          ...rawSubAggs,
+          ...subAggs,
+        },
+      },
+    };
   }
 
   // Filters aggregations are a bit special, we need to handle them
