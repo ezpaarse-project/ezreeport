@@ -30,15 +30,16 @@ jobs:
       - name: Get tags of image ⚙️
         id: docker_tags
         run: |
-          DATE="{{ commit_date 'YYYYMM' }}"
+          #!/usr/bin/env bash
+          DATE="$(date +%Y%m)"
 
           # Define label and suffix by type of pre-release
           SUFFIX=""
-          if ${{ contains(github.ref_name, '-rc.') }}; then
+          if true; then
             echo "label=rc" >> $GITHUB_OUTPUT
 
             SUFFIX="-rc"
-          elif ${{ contains(github.ref_name, '-beta.') }}; then
+          elif false; then
             echo "label=dev" >> $GITHUB_OUTPUT
 
             SUFFIX="-dev"
@@ -47,17 +48,21 @@ jobs:
           fi
 
           # Get latest tag (by type of pre-release)
-          git tag -l "ezreeport-aio@${DATE}${SUFFIX}.*" --no-column --sort -v:refname | {
-            read latest
-            if [[ ! -z $latest ]]; then
-              # If tag exists, adds 1 to suffix
+          tags=$(git tag -l "ezreeport-aio@${DATE}${SUFFIX}.*" --no-column --sort -v:refname)
+
+          if [[ ! -z $tags ]]; then
+            # If some tag exists, adds 1 to suffix of latest one
+            echo $tags | {
+              read latest
+
               latest_suffix=$(echo $latest | sed 's/.*\.//')
               echo "tag=${DATE}${SUFFIX}.$((${latest_suffix} + 1))" >> $GITHUB_OUTPUT
-            else
-              # If tag doesn't exists, set suffix to 0
-              echo "tag=${DATE}${SUFFIX}.0" >> $GITHUB_OUTPUT
-            fi
-          }
+            }
+          else
+            # If tag doesn't exists, set suffix to 0
+            echo "tag=${DATE}${SUFFIX}.0" >> $GITHUB_OUTPUT
+          fi
+
 
       - name: Docker meta 🔧
         id: meta
