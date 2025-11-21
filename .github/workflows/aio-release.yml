@@ -24,6 +24,9 @@ jobs:
       packages: write
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+
       - name: Get tags of image ⚙️
         id: docker_tags
         run: |
