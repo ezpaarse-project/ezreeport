@@ -1,40 +1,12 @@
 {
-  "language_servers": ["!eslint", "..."],
+  "format_on_save": "on",
+  "formatter": "prettier",
+
+  "file_types": {
+    "JSONC": [".oxlintrc.json"]
+  },
 
   "languages": {
-    "Vue.js": {
-      "format_on_save": "on",
-      "formatter": {
-        "external": {
-          "command": "pnpm",
-          "arguments": ["exec", "prettier", "--stdin-filepath", "{buffer_path}"]
-        }
-      }
-    },
-    "JavaScript": {
-      "format_on_save": "on",
-      "formatter": {
-        "external": {
-          "command": "pnpm",
-          "arguments": ["exec", "prettier", "--stdin-filepath", "{buffer_path}"]
-        }
-      }
-    },
-    "TypeScript": {
-      "format_on_save": "on",
-      "formatter": {
-        "external": {
-          "command": "pnpm",
-          "arguments": ["exec", "prettier", "--stdin-filepath", "{buffer_path}"]
-        }
-      }
-    },
-    "JSONC": {
-      "format_on_save": "on"
-    },
-    "JSON": {
-      "format_on_save": "on"
-    },
     "YAML": {
       "format_on_save": "off"
     }
