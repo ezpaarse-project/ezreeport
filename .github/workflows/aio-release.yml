@@ -31,7 +31,7 @@ jobs:
         id: docker_tags
         run: |
           #!/usr/bin/env bash
-          DATE="${{ commit_date 'YYYYMM' }}"
+          DATE="$(date +%Y%m)"
 
           # Define label and suffix by type of pre-release
           SUFFIX=""
