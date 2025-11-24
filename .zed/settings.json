@@ -1,14 +1,4 @@
 {
   "format_on_save": "on",
-  "formatter": "prettier",
-
-  "file_types": {
-    "JSONC": [".oxlintrc.json"]
-  },
-
-  "languages": {
-    "YAML": {
-      "format_on_save": "off"
-    }
-  }
+  "formatter": "prettier"
 }
