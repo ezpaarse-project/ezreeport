@@ -40,14 +40,7 @@ jobs:
       - name: Get prerelease state ⚗️
         id: prerelease_state
         if: "hashFiles('./.changeset/pre.json') != ''"
-        run: |
-          content=`cat ./.changeset/pre.json`
-          # the following lines are only required for multi line json
-          content="${content//'%'/'%25'}"
-          content="${content//$'\n'/'%0A'}"
-          content="${content//$'\r'/'%0D'}"
-          # end of optional handling for multi line json
-          echo "::set-output name=preJson::$content"
+        run: echo "preJson=$(pnpm fx ./.changeset/pre.json 'JSON.stringify(this)')" >> $GITHUB_OUTPUT
 
       - name: Exit pre-release mode ⚗️
         if: "hashFiles('./.changeset/pre.json') != '' && (fromJson(steps.prerelease_state.outputs.preJson).mode != env.EZR_PRERELEASE_MODE || fromJson(steps.prerelease_state.outputs.preJson).tag != env.EZR_PRERELEASE_TAG)"
