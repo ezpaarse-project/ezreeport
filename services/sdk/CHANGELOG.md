@@ -1,5 +1,17 @@
 # @ezpaarse-project/ezreeport-sdk-js
 
+## 3.1.0
+
+### Minor Changes
+
+- f73b1cd: ✨ template tags are now in their own table (must now include with templates to get them), new routes, methods and components are available to manage them
+
+## 3.1.0-rc.0
+
+### Minor Changes
+
+- f73b1cd: ✨ template tags are now in their own table (must now include with templates to get them), new routes, methods and components are available to manage them
+
 ## 3.0.0
 
 ### Major Changes

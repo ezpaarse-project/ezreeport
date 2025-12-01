@@ -14,7 +14,7 @@ env:
   TURBO_UI: 'false'
 
 concurrency:
-  group: "release-aio"
+  group: 'release-aio'
   cancel-in-progress: true
 
 jobs:
@@ -35,11 +35,11 @@ jobs:
 
           # Define label and suffix by type of pre-release
           SUFFIX=""
-          if true; then
+          if ${{ contains(github.ref_name, '-rc.') }}; then
             echo "label=rc" >> $GITHUB_OUTPUT
 
             SUFFIX="-rc"
-          elif false; then
+          elif ${{ contains(github.ref_name, '-beta.') }}; then
             echo "label=dev" >> $GITHUB_OUTPUT
 
             SUFFIX="-dev"
@@ -62,7 +62,6 @@ jobs:
             # If tag doesn't exists, set suffix to 0
             echo "tag=${DATE}${SUFFIX}.0" >> $GITHUB_OUTPUT
           fi
-
 
       - name: Docker meta 🔧
         id: meta
@@ -100,5 +99,7 @@ jobs:
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
 
-          git tag 'ezreeport-aio@${{ steps.docker_tags.outputs.tag }}'
-          git push --tags
+          tag_name="ezreeport-aio@${{ steps.docker_tags.outputs.tag }}"
+
+          git tag $tag_name
+          git push origin $tag_name
