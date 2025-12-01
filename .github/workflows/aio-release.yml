@@ -35,11 +35,11 @@ jobs:
 
           # Define label and suffix by type of pre-release
           SUFFIX=""
-          if true; then
+          if ${{ contains(github.ref_name, '-rc.') }}; then
             echo "label=rc" >> $GITHUB_OUTPUT
 
             SUFFIX="-rc"
-          elif false; then
+          elif ${{ contains(github.ref_name, '-beta.') }}; then
             echo "label=dev" >> $GITHUB_OUTPUT
 
             SUFFIX="-dev"
