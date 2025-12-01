@@ -14,7 +14,7 @@ env:
   TURBO_UI: 'false'
 
 concurrency:
-  group: "release-aio"
+  group: 'release-aio'
   cancel-in-progress: true
 
 jobs:
@@ -63,7 +63,6 @@ jobs:
             echo "tag=${DATE}${SUFFIX}.0" >> $GITHUB_OUTPUT
           fi
 
-
       - name: Docker meta 🔧
         id: meta
         uses: docker/metadata-action@v5
@@ -100,5 +99,7 @@ jobs:
           git config user.name "${GITHUB_ACTOR}"
           git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
 
-          git tag 'ezreeport-aio@${{ steps.docker_tags.outputs.tag }}'
-          git push --tags
+          tag_name="ezreeport-aio@${{ steps.docker_tags.outputs.tag }}"
+
+          git tag $tag_name
+          git push origin $tag_name
