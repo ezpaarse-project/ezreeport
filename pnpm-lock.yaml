@@ -51,6 +51,9 @@ importers:
       '@prettier/plugin-oxc':
         specifier: ^0.0.4
         version: 0.0.4
+      fx:
+        specifier: ^39.2.0
+        version: 39.2.0
       husky:
         specifier: ^9.1.6
         version: 9.1.7
@@ -224,6 +227,10 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 5.8.3
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.0.15
 
   services/ezra:
     dependencies:
@@ -680,7 +687,7 @@ importers:
         version: 4.5.4(@types/node@24.0.15)(rollup@4.44.2)(typescript@5.8.3)(vite@7.0.4(@types/node@24.0.15)(jiti@2.4.2)(sass-embedded@1.89.2)(terser@5.30.3)(tsx@4.20.3)(yaml@2.8.0))
       vue-component-meta:
         specifier: ^3.0.1
-        version: 3.0.1(typescript@5.8.3)(vue-component-type-helpers@3.1.4)
+        version: 3.0.1(typescript@5.8.3)(vue-component-type-helpers@3.1.5)
       vue-tsc:
         specifier: ^3.1.4
         version: 3.1.4(typescript@5.8.3)
@@ -3956,6 +3963,10 @@ packages:
   function-bind@1.1.2:
     resolution: {integrity: sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==}
 
+  fx@39.2.0:
+    resolution: {integrity: sha512-z4HgJGGBD8ZWI6sdHs2N5JT0gEyVvl8SLOdmedKOkom9LDeqMHAUt0y2GBdI2tNgTalWhdO7Wd9KdeRZF6UwQA==}
+    hasBin: true
+
   get-caller-file@2.0.5:
     resolution: {integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==}
     engines: {node: 6.* || 8.* || >= 10.*}
@@ -6473,8 +6484,8 @@ packages:
   vue-component-type-helpers@2.2.0:
     resolution: {integrity: sha512-cYrAnv2me7bPDcg9kIcGwjJiSB6Qyi08+jLDo9yuvoFQjzHiPTzML7RnkJB1+3P6KMsX/KbCD4QE3Tv/knEllw==}
 
-  vue-component-type-helpers@3.1.4:
-    resolution: {integrity: sha512-Uws7Ew1OzTTqHW8ZVl/qLl/HB+jf08M0NdFONbVWAx0N4gMLK8yfZDgeB77hDnBmaigWWEn5qP8T9BG59jIeyQ==}
+  vue-component-type-helpers@3.1.5:
+    resolution: {integrity: sha512-7V3yJuNWW7/1jxCcI1CswnpDsvs02Qcx/N43LkV+ZqhLj2PKj50slUflHAroNkN4UWiYfzMUUUXiNuv9khmSpQ==}
 
   vue-docgen-api@4.78.0:
     resolution: {integrity: sha512-RsZf+qzTttCCAN9v7AKmBykc2QWmO8csVk1c2aXeOktomSOu0NA7sgK4ObuRB5lpmtOvTnwuxssyYmxXxABr+A==}
@@ -8982,7 +8993,7 @@ snapshots:
       storybook: 9.0.16(@testing-library/dom@10.4.0)(prettier@3.6.2)
       type-fest: 2.19.0
       vue: 3.5.17(typescript@5.8.3)
-      vue-component-type-helpers: 3.1.4
+      vue-component-type-helpers: 3.1.5
 
   '@szmarczak/http-timer@5.0.1':
     dependencies:
@@ -10486,6 +10497,8 @@ snapshots:
 
   function-bind@1.1.2: {}
 
+  fx@39.2.0: {}
+
   get-caller-file@2.0.5: {}
 
   get-east-asian-width@1.2.0: {}
@@ -10688,7 +10701,7 @@ snapshots:
   http-call@5.3.0:
     dependencies:
       content-type: 1.0.5
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3
       is-retry-allowed: 1.2.0
       is-stream: 2.0.1
       parse-json: 4.0.0
@@ -10898,7 +10911,7 @@ snapshots:
 
   json-schema-resolver@3.0.0:
     dependencies:
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3
       fast-uri: 3.0.6
       rfdc: 1.4.1
     transitivePeerDependencies:
@@ -13424,17 +13437,17 @@ snapshots:
     optionalDependencies:
       typescript: 5.8.3
 
-  vue-component-meta@3.0.1(typescript@5.8.3)(vue-component-type-helpers@3.1.4):
+  vue-component-meta@3.0.1(typescript@5.8.3)(vue-component-type-helpers@3.1.5):
     dependencies:
       '@volar/typescript': 2.4.17
       '@vue/language-core': 3.0.1(typescript@5.8.3)
       path-browserify: 1.0.1
       typescript: 5.8.3
-      vue-component-type-helpers: 3.1.4
+      vue-component-type-helpers: 3.1.5
 
   vue-component-type-helpers@2.2.0: {}
 
-  vue-component-type-helpers@3.1.4: {}
+  vue-component-type-helpers@3.1.5: {}
 
   vue-docgen-api@4.78.0(vue@3.5.17(typescript@5.8.3)):
     dependencies:
