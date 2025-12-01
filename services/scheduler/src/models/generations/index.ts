@@ -15,7 +15,7 @@ const logger = appLogger.child({ scope: 'models', model: 'generations' });
  */
 export async function upsertGeneration(
   id: string,
-  data: GenerationType,
+  data: GenerationType
 ): Promise<GenerationType> {
   const generation = await prisma.generation.upsert({
     where: {
@@ -32,4 +32,24 @@ export async function upsertGeneration(
   });
 
   return Generation.parseAsync(generation);
+}
+
+/**
+ * Mark as `ABORTED` all prior generations
+ */
+export async function abortDanglingGenerations(): Promise<void> {
+  const { count } = await prisma.generation.updateMany({
+    where: {
+      status: { in: ['PENDING', 'PROCESSING'] },
+    },
+    data: {
+      status: 'ABORTED',
+    },
+  });
+
+  logger.debug({
+    count,
+    action: 'Updated',
+    msg: 'Dangling(s) aborted',
+  });
 }

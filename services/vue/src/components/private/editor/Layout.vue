@@ -129,7 +129,7 @@ function deleteFigure(element: Element) {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="css" scoped>
 .template-layout-elements {
   display: grid;
   grid-template-columns: repeat(v-bind('grid.cols'), 1fr);

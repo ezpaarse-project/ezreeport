@@ -139,38 +139,36 @@ defineExpose({
 });
 </script>
 
-<style lang="scss" scoped>
-.template-layout-preview {
-  &-drawer {
-    overflow-y: scroll;
-    scroll-behavior: smooth;
-    height: 100%;
-    transition: transform 0.1s ease-in-out;
+<style lang="css" scoped>
+.template-layout-preview-drawer {
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+  height: 100%;
+  transition: transform 0.1s ease-in-out;
 
-    &:deep(.template-layout-elements) {
-      transition: box-shadow 0.1s ease-in-out;
-    }
-
-    &--dragging {
-      background-color: white;
-      transform: scale(0.8);
-
-      &:deep(.template-layout-elements) {
-        box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
-      }
-    }
+  &:deep(.template-layout-elements) {
+    transition: box-shadow 0.1s ease-in-out;
   }
+}
 
-  &--empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-left: 1rem;
+.template-layout-preview--dragging {
+  background-color: white;
+  transform: scale(0.8);
 
-    border-style: dashed;
-
-    aspect-ratio: 297/210; // A4 format in mm
+  &:deep(.template-layout-elements) {
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
   }
+}
+
+.template-layout-preview--empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-left: 1rem;
+
+  border-style: dashed;
+
+  aspect-ratio: 297/210; /* A4 format in mm */
 }
 </style>

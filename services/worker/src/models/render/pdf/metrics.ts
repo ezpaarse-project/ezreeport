@@ -107,7 +107,7 @@ const formatNumber = (
     case 'fr-FR':
       locale.identifier = 'en-US';
       locale.params.useGrouping = true;
-      locale.cb = (val) => val.replaceAll(/,/g, ' ').replaceAll(/\./g, ',');
+      locale.cb = (val) => val.replaceAll(",", ' ').replaceAll("\\.", ',');
       break;
 
     default:
@@ -252,7 +252,8 @@ export const addMetricToPDF = (
 
   // Calc positions of cells
   const counts = {
-    cols: Math.floor(params.width / (cell.width + margin.x)),
+    // At this point, we know that we'll need at least 1 column
+    cols: Math.max(1, Math.floor(params.width / (cell.width + margin.x))),
     // Will be calculated later since we need cols
     rows: 0,
   };

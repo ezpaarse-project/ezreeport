@@ -27,7 +27,8 @@ type CustomGenerationQueueDataType = Omit<
 };
 
 export async function queueGeneration(
-  data: CustomGenerationQueueDataType
+  data: CustomGenerationQueueDataType,
+  ttl?: number
 ): Promise<void> {
   const createdAt = data.createdAt ?? new Date();
 
@@ -77,7 +78,8 @@ export async function queueGeneration(
         createdAt,
         updatedAt: new Date(),
         startedAt: null,
-      }
+      },
+      { expiration: ttl }
     );
   } catch (err) {
     logger.warn({ msg: 'Failed to send event', err });

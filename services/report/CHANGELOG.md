@@ -1,5 +1,19 @@
 # ezreeport-report
 
+## 3.1.0-rc.0
+
+### Minor Changes
+
+- b41d558: ✨ added filters on tasks cards/table components
+- f73b1cd: ✨ template tags are now in their own table (must now include with templates to get them), new routes, methods and components are available to manage them
+
+### Patch Changes
+
+- 3f6a307: 🥅 added ttl for test generations
+- Updated dependencies [566ae6c]
+- Updated dependencies [f73b1cd]
+  - @ezreeport/database@1.2.0-rc.0
+
 ## 3.0.0
 
 ### Major Changes

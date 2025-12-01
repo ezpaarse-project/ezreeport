@@ -20,23 +20,49 @@ concurrency:
 jobs:
   build:
     permissions:
-      contents: read
+      contents: write
       packages: write
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+
       - name: Get tags of image ⚙️
         id: docker_tags
         run: |
-          if [ ${{ contains(github.ref_name, '-rc.') }} ]; then
-            echo "suffix=-rc" >> $GITHUB_OUTPUT
-            echo "tag=rc" >> $GITHUB_OUTPUT
-          elif [ ${{ contains(github.ref_name, '-beta.') }} ]; then
-            echo "suffix=-dev" >> $GITHUB_OUTPUT
-            echo "tag=dev" >> $GITHUB_OUTPUT
+          #!/usr/bin/env bash
+          DATE="$(date +%Y%m)"
+
+          # Define label and suffix by type of pre-release
+          SUFFIX=""
+          if true; then
+            echo "label=rc" >> $GITHUB_OUTPUT
+
+            SUFFIX="-rc"
+          elif false; then
+            echo "label=dev" >> $GITHUB_OUTPUT
+
+            SUFFIX="-dev"
           else
-            echo "suffix=" >> $GITHUB_OUTPUT
             echo "tag=stable" >> $GITHUB_OUTPUT
           fi
+
+          # Get latest tag (by type of pre-release)
+          tags=$(git tag -l "ezreeport-aio@${DATE}${SUFFIX}.*" --no-column --sort -v:refname)
+
+          if [[ ! -z $tags ]]; then
+            # If some tag exists, adds 1 to suffix of latest one
+            echo $tags | {
+              read latest
+
+              latest_suffix=$(echo $latest | sed 's/.*\.//')
+              echo "tag=${DATE}${SUFFIX}.$((${latest_suffix} + 1))" >> $GITHUB_OUTPUT
+            }
+          else
+            # If tag doesn't exists, set suffix to 0
+            echo "tag=${DATE}${SUFFIX}.0" >> $GITHUB_OUTPUT
+          fi
+
 
       - name: Docker meta 🔧
         id: meta
@@ -45,8 +71,8 @@ jobs:
           images: |
             ghcr.io/ezpaarse-project/ezreeport-aio
           tags: |
-            type=raw,value={{commit_date 'YYYYMM'}},suffix=${{ steps.docker_tags.outputs.suffix }}
             type=raw,value=${{ steps.docker_tags.outputs.tag }}
+            type=raw,value=${{ steps.docker_tags.outputs.label }}
 
       - name: Login to GitHub Container Registry 🔑
         uses: docker/login-action@v3
@@ -68,3 +94,11 @@ jobs:
           target: aio
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Push tag 🔖
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
+          git tag 'ezreeport-aio@${{ steps.docker_tags.outputs.tag }}'
+          git push --tags

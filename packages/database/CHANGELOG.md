@@ -1,5 +1,15 @@
 # @ezreeport/database-v1.0.0 (2025-08-08)
 
+## 1.2.0-rc.0
+
+### Minor Changes
+
+- f73b1cd: ✨ template tags are now in their own table (must now include with templates to get them), new routes, methods and components are available to manage them
+
+### Patch Changes
+
+- 566ae6c: ⚡ improved performance on rate limits
+
 ## 1.1.0
 
 ### Minor Changes

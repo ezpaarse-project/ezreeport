@@ -5,12 +5,15 @@
     "build:docs": {
       "outputs": ["storybook-static/**"]
     },
-    "build": {
-      "dependsOn": ["@ezpaarse-project/ezreeport-sdk-js#build"],
+    "build:js": {
+      "dependsOn": ["@ezpaarse-project/ezreeport-sdk-js#build:js"],
       "outputs": ["dist/**"]
     },
+    "build": {
+      "dependsOn": ["build:js", "build:docs"]
+    },
     "type-check": {
-      "dependsOn": ["@ezpaarse-project/ezreeport-sdk-js#build:types"]
+      "dependsOn": ["@ezpaarse-project/ezreeport-sdk-js#build:js"]
     }
   }
 }

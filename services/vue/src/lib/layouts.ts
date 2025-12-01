@@ -3,7 +3,7 @@ import type { TemplateBodyGrid } from '~sdk/templates';
 
 export function slotToGridPosition(slot: number, maxCols: number) {
   const col = slot % maxCols;
-  const row = Math.floor(slot / maxCols);
+  const row = Math.floor(slot / Math.max(1, maxCols));
   return {
     col,
     row,
@@ -13,7 +13,7 @@ export function slotToGridPosition(slot: number, maxCols: number) {
 export function figureToGridPosition(
   figure: AnyFigureHelper | undefined,
   index: number,
-  grid: TemplateBodyGrid,
+  grid: TemplateBodyGrid
 ) {
   // Resolve each slot to a grid position
   let slots = [index];

@@ -41,6 +41,23 @@
             @click="refresh"
           />
 
+          <v-badge
+            :model-value="filterCount > 0"
+            :content="filterCount"
+            color="primary"
+            offset-x="10"
+          >
+            <v-btn
+              :text="$t('$ezreeport.api-filters.button')"
+              variant="tonal"
+              color="primary"
+              icon="mdi-filter"
+              density="comfortable"
+              class="ml-2"
+              @click="isFiltersPanelOpen = true"
+            />
+          </v-badge>
+
           <v-text-field
             v-model="filters.query"
             :placeholder="$t('$ezreeport.search')"
@@ -231,6 +248,13 @@
     </template>
   </SelectionMenu>
 
+  <TaskApiFiltersPanel
+    v-model="isFiltersPanelOpen"
+    v-model:filters="filters"
+    :tags="availableTags"
+    :namespaces="namespaces"
+  />
+
   <v-dialog
     v-model="isFormOpen"
     :width="advancedTask ? '75%' : '50%'"
@@ -289,9 +313,11 @@
 <script setup lang="ts">
 import type { VDataTable } from 'vuetify/components';
 
+import type { Namespace } from '~sdk/namespaces';
 import type { AdditionalDataForPreset, TaskPreset } from '~sdk/task-presets';
 import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
 import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
+import { getCurrentNamespaces } from '~sdk/auth';
 import {
   changeTaskEnableState,
   createTaskHelper,
@@ -309,6 +335,7 @@ import {
   type Task,
   type InputTask,
 } from '~sdk/tasks';
+import { getAllTemplateTags } from '~sdk/template-tags';
 
 type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 
@@ -316,30 +343,22 @@ type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 const props = defineProps<{
   titlePrefix?: string;
   itemsPerPageOptions?: number[] | { title: string; value: number }[];
-  itemsPerPage?: number;
-}>();
-
-// Components events
-const emit = defineEmits<{
-  (event: 'update:itemsPerPage', value: number): void;
 }>();
 
 // Utils composable
 // oxlint-disable-next-line id-length
 const { t } = useI18n();
 
-const arePermissionsReady = ref(false);
+const arePermissionsReady = shallowRef(false);
 const selectedTasks = ref<Omit<Task, 'template'>[]>([]);
 const updatedTask = ref<Task | undefined>();
 const generatedTask = ref<Omit<Task, 'template'> | undefined>();
-const isFormOpen = ref(false);
+const isFormOpen = shallowRef(false);
 const advancedTask = ref<TaskHelper | undefined>();
+const isFiltersPanelOpen = shallowRef(false);
 
-/** Items per page shortcut */
-const itemsPerPage = computed({
-  get: () => props.itemsPerPage || 10,
-  set: (value) => emit('update:itemsPerPage', value),
-});
+/** Items per page */
+const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
 /** List of tasks */
 const { total, refresh, loading, filters, vDataTableOptions } =
   useServerSidePagination((params) => getAllTasks(params), {
@@ -347,7 +366,30 @@ const { total, refresh, loading, filters, vDataTableOptions } =
     itemsPerPage,
     include: ['extends.tags', 'namespace'],
   });
+/** List of possible tags */
+const availableTags = computedAsync(async () => {
+  try {
+    const { items } = await getAllTemplateTags({ pagination: { count: 0 } });
+    return items;
+  } catch {
+    return [];
+  }
+}, []);
+/** List of possible list */
+const namespaces = computedAsync(async () => {
+  let items: Omit<Namespace, 'fetchLogin' | 'fetchOptions'>[] = [];
 
+  try {
+    const currentNamespaces = await getCurrentNamespaces();
+    items = currentNamespaces.sort((namespaceA, namespaceB) =>
+      namespaceA.name.localeCompare(namespaceB.name)
+    );
+  } catch (err) {
+    handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), err);
+  }
+
+  return items;
+}, []);
 const title = computed(
   () =>
     `${props.titlePrefix || ''}${t('$ezreeport.task.title:list', total.value)}`
@@ -432,7 +474,11 @@ const selectedTaskIds = computed({
   },
 });
 
-async function openForm(task?: Omit<Task, 'template'>) {
+const filterCount = computed(
+  () => Object.entries(filters.value).filter(([, val]) => !!val).length - 1
+);
+
+async function openForm(task?: Omit<Task, 'template'>): Promise<void> {
   try {
     advancedTask.value = undefined;
     generatedTask.value = undefined;
@@ -444,7 +490,7 @@ async function openForm(task?: Omit<Task, 'template'>) {
   }
 }
 
-async function openGeneration(task: Omit<Task, 'template'>) {
+function openGeneration(task: Omit<Task, 'template'>): void {
   advancedTask.value = undefined;
   generatedTask.value = task;
   updatedTask.value = undefined;
@@ -452,7 +498,7 @@ async function openGeneration(task: Omit<Task, 'template'>) {
   isFormOpen.value = true;
 }
 
-async function openDuplicateForm(task: Omit<Task, 'template'>) {
+async function openDuplicateForm(task: Omit<Task, 'template'>): Promise<void> {
   try {
     const base = await getTask(task);
 
@@ -482,7 +528,7 @@ type AdvancedFormCurrent = {
   };
 };
 
-async function openAdvancedForm(current?: AdvancedFormCurrent) {
+function openAdvancedForm(current?: AdvancedFormCurrent): void {
   try {
     let value: TaskHelper;
 
@@ -530,12 +576,12 @@ async function openAdvancedForm(current?: AdvancedFormCurrent) {
   }
 }
 
-function closeForm() {
+function closeForm(): void {
   isFormOpen.value = false;
   refresh();
 }
 
-async function toggleItemState(task: Omit<Task, 'template'>) {
+async function toggleItemState(task: Omit<Task, 'template'>): Promise<void> {
   try {
     await changeTaskEnableState(task, !task.enabled);
     refresh();
@@ -544,7 +590,7 @@ async function toggleItemState(task: Omit<Task, 'template'>) {
   }
 }
 
-async function toggleSelectedState() {
+async function toggleSelectedState(): Promise<void> {
   try {
     await Promise.all(
       selectedTasks.value.map((task) =>
@@ -558,7 +604,7 @@ async function toggleSelectedState() {
   }
 }
 
-async function deleteItem(task: Omit<Task, 'template'>) {
+async function deleteItem(task: Omit<Task, 'template'>): Promise<void> {
   // TODO: show warning
   try {
     await deleteTask(task);
@@ -568,7 +614,7 @@ async function deleteItem(task: Omit<Task, 'template'>) {
   }
 }
 
-async function deleteSelected() {
+async function deleteSelected(): Promise<void> {
   // TODO: show warning
   try {
     await Promise.all(selectedTasks.value.map((task) => deleteTask(task)));
@@ -579,7 +625,7 @@ async function deleteSelected() {
   }
 }
 
-async function onAdvancedSave(task: TaskHelper) {
+async function onAdvancedSave(task: TaskHelper): Promise<void> {
   try {
     let result;
     const data = taskHelperToJSON(task);

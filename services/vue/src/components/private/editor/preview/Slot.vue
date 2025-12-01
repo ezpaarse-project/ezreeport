@@ -26,7 +26,7 @@ const gridPosition = computed(() =>
 const typeIcon = computed(() => figureIcons.get(props.modelValue.type));
 </script>
 
-<style lang="scss" scoped>
+<style lang="css" scoped>
 .template-layout-slot--preview {
   grid-column: v-bind('gridPosition.start.col + 1') /
     v-bind('gridPosition.end.col + 2');

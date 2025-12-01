@@ -4,7 +4,12 @@
       v-if="$slots.prepend || $slots.actions"
       class="template-layout-preview-prepend--container"
     >
-      <div :class="{ 'template-layout-preview-prepend': true, 'text-primary': current }">
+      <div
+        :class="{
+          'template-layout-preview-prepend': true,
+          'text-primary': current,
+        }"
+      >
         <slot name="prepend" />
       </div>
 
@@ -19,7 +24,12 @@
       rounded
       class="template-layout-preview"
     >
-      <v-fade-transition tag="div" group class="template-layout-preview-grid" :disabled="dragging">
+      <v-fade-transition
+        tag="div"
+        group
+        class="template-layout-preview-grid"
+        :disabled="dragging"
+      >
         <EditorPreviewSlot
           v-for="figure in modelValue.figures"
           :key="figure.id"
@@ -37,9 +47,9 @@ import type { AnyLayoutHelper } from '~sdk/helpers/layouts';
 // Components props
 defineProps<{
   /** The layout to edit */
-  modelValue: AnyLayoutHelper,
+  modelValue: AnyLayoutHelper;
   /** Is currently selected */
-  current?: boolean,
+  current?: boolean;
 }>();
 
 const { grid } = useTemplateEditor();
@@ -55,13 +65,13 @@ state.on('dragEnded', () => {
 });
 </script>
 
-<style lang="scss" scoped>
+<style lang="css" scoped>
 .template-layout-preview {
   position: relative;
   flex: 1;
   padding: 0.5rem;
 
-  aspect-ratio: 297/210; // A4 format in mm
+  aspect-ratio: 297/210; /* A4 format in mm */
   cursor: pointer;
 
   &::before {
@@ -81,34 +91,34 @@ state.on('dragEnded', () => {
   &:hover::before {
     opacity: var(--v-theme-surface-overlay-multiplier);
   }
+}
 
-  &-container {
-    width: 100%;
-    display: flex;
-    gap: 0.5rem;
-  }
+.template-layout-preview-container {
+  width: 100%;
+  display: flex;
+  gap: 0.5rem;
+}
 
-  &-prepend {
-    &, &--container, &--actions {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
+.template-layout-preview-prepend,
+.template-layout-preview-prepend--container,
+.template-layout-preview-prepend--actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
 
-    &--actions {
-      justify-content: end;
-      flex: 1;
-    }
-  }
+.template-layout-preview-prepend--actions {
+  justify-content: end;
+  flex: 1;
+}
 
-  &-grid {
-    display: grid;
-    grid-template-columns: repeat(v-bind('grid.cols'), 1fr);
-    grid-template-rows: repeat(v-bind('grid.rows'), 1fr);
-    gap: 0.25rem;
+.template-layout-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(v-bind('grid.cols'), 1fr);
+  grid-template-rows: repeat(v-bind('grid.rows'), 1fr);
+  gap: 0.25rem;
 
-    height: 100%;
-  }
+  height: 100%;
 }
 </style>

@@ -120,6 +120,7 @@
 
 <script setup lang="ts">
 import { getAllTemplates, getTemplate, type Template } from '~sdk/templates';
+import { RECURRENCES } from '~sdk/helpers/tasks';
 import {
   createTaskPreset,
   upsertTaskPreset,
@@ -173,6 +174,7 @@ const templates = computedAsync(async () => {
     let meta;
     ({ items, meta } = await getAllTemplates({
       pagination: { count: 0, sort: 'name' },
+      include: ['tags'],
     }));
     templates.value = items;
 
@@ -192,9 +194,10 @@ const currentTemplate = computed(() =>
 );
 /** Recurrence options */
 const recurrences = computed(() =>
-  ['DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'BIENNIAL', 'YEARLY'].map(
-    (value) => ({ value, title: t(`$ezreeport.task.recurrenceList.${value}`) })
-  )
+  RECURRENCES.map((value) => ({
+    value,
+    title: t(`$ezreeport.task.recurrenceList.${value}`),
+  }))
 );
 
 function regenerateName() {

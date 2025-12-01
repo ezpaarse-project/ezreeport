@@ -1,5 +1,12 @@
 # ezreeport-worker
 
+## 1.1.1-rc.0
+
+### Patch Changes
+
+- 4ac80b1: 🚑 fixed OOM when having a text too large for metrics
+- 26523a5: 🐛 fixed issue with metrics' aggregations using raw buckets
+
 ## 1.1.0
 
 ### Minor Changes

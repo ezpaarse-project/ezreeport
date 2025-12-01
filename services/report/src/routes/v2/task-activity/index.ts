@@ -1,6 +1,8 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
+import { z } from '@ezreeport/models/lib/zod';
+
 import authPlugin, { restrictNamespaces } from '~/plugins/auth';
 import { Access } from '~/models/access';
 
@@ -29,9 +31,11 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     schema: {
       summary: 'Get all task activity',
       tags: ['task-activity'],
-      querystring: PaginationQuery.and(TaskActivityQueryFilters).and(
-        TaskActivityQueryInclude
-      ),
+      querystring: z.object({
+        ...PaginationQuery.shape,
+        ...TaskActivityQueryFilters.shape,
+        ...TaskActivityQueryInclude.shape,
+      }),
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,

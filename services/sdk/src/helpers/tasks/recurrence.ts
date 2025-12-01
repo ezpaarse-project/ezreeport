@@ -43,3 +43,15 @@ export function calcNextDateFromRecurrence(
 
   return add(initial, duration);
 }
+
+export const RECURRENCES: Readonly<TaskRecurrence[]> = [
+  'DAILY',
+  'WEEKLY',
+  'MONTHLY',
+  'QUARTERLY',
+  'BIENNIAL',
+  'YEARLY',
+] as const;
+
+export const isRecurrence = (value: string): value is TaskRecurrence =>
+  (RECURRENCES as string[]).includes(value);

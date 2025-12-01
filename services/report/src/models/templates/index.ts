@@ -11,14 +11,18 @@ import {
   Template,
   type TemplateType,
   type InputTemplateType,
+  type TemplateTagType,
   type TemplateQueryFiltersType,
+  type TemplateIncludeFieldsType,
 } from './types';
 
 const { defaultTemplate } = config;
 
 const logger = appLogger.child({ scope: 'models', model: 'templates' });
 
-function applyFilters(filters: TemplateQueryFiltersType) {
+function applyFilters(
+  filters: TemplateQueryFiltersType
+): Prisma.TemplateWhereInput {
   const where: Prisma.TemplateWhereInput = {};
 
   if (filters.hidden != null) {
@@ -35,6 +39,14 @@ function applyFilters(filters: TemplateQueryFiltersType) {
   return where;
 }
 
+function applyIncludes(
+  fields: TemplateIncludeFieldsType[]
+): Prisma.TemplateInclude {
+  return {
+    tags: fields.includes('tags'),
+  };
+}
+
 /**
  * Get all templates
  *
@@ -44,6 +56,7 @@ function applyFilters(filters: TemplateQueryFiltersType) {
  */
 export async function getAllTemplates(
   filters?: TemplateQueryFiltersType,
+  include?: TemplateIncludeFieldsType[],
   pagination?: PaginationType
 ): Promise<TemplateType[]> {
   // Prepare Prisma query
@@ -53,6 +66,11 @@ export async function getAllTemplates(
   // Apply filters
   if (filters) {
     prismaQuery.where = applyFilters(filters);
+  }
+
+  // Apply includes
+  if (include) {
+    prismaQuery.include = applyIncludes(include);
   }
 
   // Fetch data
@@ -78,10 +96,42 @@ export async function getAllTemplates(
  *
  * @returns The found template, or `null` if not found
  */
-export async function getTemplate(id: string): Promise<TemplateType | null> {
-  const template = await prisma.template.findUnique({ where: { id } });
+export async function getTemplate(
+  id: string,
+  include?: TemplateIncludeFieldsType[]
+): Promise<TemplateType | null> {
+  const prismaQuery: Prisma.TemplateFindUniqueArgs = { where: { id } };
+
+  // Apply includes
+  if (include) {
+    prismaQuery.include = applyIncludes(include);
+  }
+
+  const template = await prisma.template.findUnique(prismaQuery);
 
   return template && ensureSchema(Template, template);
+}
+
+/**
+ * Utility to create needed template tags
+ *
+ * @param input The tags to ensure
+ * @param tx The prisma client (or transaction)
+ */
+function createNeededTemplateTags(
+  input: InputTemplateType['tags'],
+  tx: Prisma.TransactionClient = prisma
+): Promise<TemplateTagType[]> {
+  // oxlint-disable-next-line prefer-await-to-then
+  return Promise.all(
+    input.map((tag) =>
+      tx.templateTag.upsert({
+        where: tag.id ? { id: tag.id } : { name: tag.name },
+        create: tag,
+        update: {},
+      })
+    )
+  );
 }
 
 /**
@@ -94,7 +144,16 @@ export async function getTemplate(id: string): Promise<TemplateType | null> {
 export async function createTemplate(
   data: InputTemplateType & { id?: string }
 ): Promise<TemplateType> {
-  const template = await prisma.template.create({ data });
+  const template = await prisma.$transaction(async (tx) => {
+    const tags = await createNeededTemplateTags(data.tags, tx);
+
+    return tx.template.create({
+      data: {
+        ...data,
+        tags: { connect: tags },
+      },
+    });
+  });
 
   logger.debug({
     id: template.id,
@@ -117,7 +176,17 @@ export async function editTemplate(
   id: string,
   data: InputTemplateType
 ): Promise<TemplateType> {
-  const template = await prisma.template.update({ where: { id }, data });
+  const template = await prisma.$transaction(async (tx) => {
+    const tags = await createNeededTemplateTags(data.tags, tx);
+
+    return tx.template.update({
+      where: { id },
+      data: {
+        ...data,
+        tags: { set: tags },
+      },
+    });
+  });
 
   logger.debug({
     id: template.id,
@@ -207,7 +276,7 @@ export async function getDefaultTemplate(): Promise<TemplateType | null> {
  * @returns The default template
  */
 export async function upsertDefaultTemplate(): Promise<TemplateType> {
-  const data: InputTemplateType = {
+  const data: Omit<InputTemplateType, 'tags'> = {
     name: defaultTemplate.name,
     hidden: true,
     body: {

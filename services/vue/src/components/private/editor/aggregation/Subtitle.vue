@@ -13,7 +13,7 @@
         <b class="text-capitalize">{{ modelValue.type }}</b>
       </template>
 
-      <template #field>
+      <template v-if="'field' in modelValue" #field>
         <b>{{ modelValue.field }}</b>
       </template>
     </i18n-t>

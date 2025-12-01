@@ -1,17 +1,27 @@
-node_modules
-data
-logs
-dist
-.prisma
-.git
-.gitignore
-*.md
-.env.*.local
-.env.local
-local*.json
-.prisma
-.turbo
+# Dependencies
+**/node_modules/
+
+# Build results
+**/.prisma/
+**/.turbo/
+**/dist/
+
+**/.env.*.local
+**/.env.local
+**/local*.json
+
+# Git files
+.git/
+**/.gitignore
+
+# Docs
+**/docs/
+**/*.md
+
+# Dev volumes
+data/
+logs/
+
+# Dev tools
+**/.oxlint*
 docker*
-release.config.cjs
-.eslint*
-.oxlint*

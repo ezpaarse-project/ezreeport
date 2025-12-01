@@ -3,7 +3,7 @@
     "new": "Créer",
     "edit": "Éditer",
     "delete": "Supprimer",
-    "duplicate": "Dupliquer",
+    "duplicate": "Créer une copie",
     "cancel": "Annuler",
     "confirm": "Confirmer",
     "close": "Fermer",
@@ -34,6 +34,15 @@
     "no": "Non",
     "restart": "Relancer",
     "readonly": "Lecture seule",
+    "all": "Tout",
+    "api-filters": {
+      "empty": "Aucun",
+      "reset": "Effacer les filtres",
+      "button": "Filtrer",
+      "tasks": {
+        "title": "Filtrer les rapports"
+      }
+    },
     "task": {
       "title": "Rapport périodique",
       "title:list": "Rapports périodiques ({n})",
@@ -145,12 +154,25 @@
       "noTemplate:desc": "Créez votre modèle en ouvrant l'éditeur de modèles",
       "tags": {
         "title": "Étiquettes",
+        "title:list": "Étiquettes ({n})",
         "title:new": "Créer une étiquette",
         "title:edit": "Éditer l'étiquette",
+        "manage": "Gérer {n} étiquettes",
         "color": "Couleur",
-        "empty": "Aucune etiquette n'est définie, cliquez sur le bouton en haut à droite pour en créer une."
+        "readonly": "Cette étiquette n'est pas éditable",
+        "empty": "Aucune etiquette n'est définie, cliquez sur le bouton en haut à droite pour en créer une.",
+        "noList": "Aucune étiquette trouvée",
+        "noList:desc": "Pour crééer une étiquette et retrouvez rapidement vos rapports, cliquez sur le bouton @:$ezreeport.new",
+        "errors": {
+          "create": "Impossible de créer une étiquette",
+          "delete": "Impossible de supprimer l'étiquette",
+          "edit": "Impossible de mettre à jour l'étiquette"
+        }
       },
       "errors": {
+        "create": "Impossible de créer un modèle",
+        "delete": "Impossible de supprimer le modèle",
+        "edit": "Impossible de mettre à jour le modèle",
         "fetch": "Impossible d'obtenir les modèles",
         "open": "Impossible d'obtenir les informations sur le modèle"
       }
@@ -223,7 +245,7 @@
           "title": "Groupes de filtres",
           "title:new": "Ajouter un groupe de filtres",
           "title:edit": "Editer un groupe de filtres",
-          "elements": {
+          "element": {
             "label": "Étiquette du groupe",
             "filters": "1 filtre|{n} filtres"
           }

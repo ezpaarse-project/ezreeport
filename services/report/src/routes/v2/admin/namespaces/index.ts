@@ -44,7 +44,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     schema: {
       summary: 'Get all namespaces',
       tags: ['namespaces'],
-      querystring: PaginationQuery.and(NamespaceQueryFilters),
+      querystring: z.object({
+        ...PaginationQuery.shape,
+        ...NamespaceQueryFilters.shape,
+      }),
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,

@@ -165,14 +165,8 @@ const statusColors = new Map<GenerationStatus, string>([
 ]);
 
 // Components props
-const props = defineProps<{
+defineProps<{
   itemsPerPageOptions?: number[] | { title: string; value: number }[];
-  itemsPerPage?: number;
-}>();
-
-// Components events
-const emit = defineEmits<{
-  (event: 'update:itemsPerPage', value: number): void;
 }>();
 
 // Utils composable
@@ -185,11 +179,8 @@ const isInfoOpen = ref(false);
 /** Selected generation */
 const selectedGeneration = ref<Generation | undefined>();
 
-/** Items per page shortcut */
-const itemsPerPage = computed({
-  get: () => props.itemsPerPage || 25,
-  set: (val) => emit('update:itemsPerPage', val),
-});
+/** Items per page */
+const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
 /** List of generations */
 const {
   items: generations,

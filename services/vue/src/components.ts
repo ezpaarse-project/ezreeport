@@ -8,6 +8,7 @@ import EzrTaskCards from '~/components/public/TaskCards.vue';
 import EzrTaskPresetTable from '~/components/public/TaskPresetTable.vue';
 import EzrTaskTable from '~/components/public/TaskTable.vue';
 import EzrTemplateTable from '~/components/public/TemplateTable.vue';
+import EzrTemplateTagTable from '~/components/public/TemplateTagTable.vue';
 
 declare module 'vue' {
   // oxlint-disable-next-line consistent-type-definitions
@@ -22,6 +23,7 @@ declare module 'vue' {
     EzrTaskPresetTable: typeof EzrTaskPresetTable;
     EzrTaskTable: typeof EzrTaskTable;
     EzrTemplateTable: typeof EzrTemplateTable;
+    EzrTemplateTagTable: typeof EzrTemplateTagTable;
   }
 }
 
@@ -36,4 +38,5 @@ export function registerComponents(app: App): void {
   app.component('ezr-task-preset-table', EzrTaskPresetTable);
   app.component('ezr-task-table', EzrTaskTable);
   app.component('ezr-template-table', EzrTemplateTable);
+  app.component('ezr-template-tag-table', EzrTemplateTagTable);
 }

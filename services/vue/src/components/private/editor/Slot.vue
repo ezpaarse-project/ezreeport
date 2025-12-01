@@ -351,26 +351,26 @@ function addFigure() {
 }
 </script>
 
-<style lang="scss" scoped>
-.template-layout-slot {
-  &,
-  &--empty,
-  &--figure {
-    height: 100%;
-  }
+<style lang="css" scoped>
+.template-layout-slot,
+.template-layout-slot--empty,
+.template-layout-slot--figure {
+  height: 100%;
+}
 
+.template-layout-slot {
   grid-column: v-bind('gridPosition.start.col + 1') /
     v-bind('gridPosition.end.col + 2');
   grid-row: v-bind('gridPosition.start.row + 1') /
     v-bind('gridPosition.end.row + 2');
+}
 
-  &--empty {
-    position: relative;
-    border-style: dashed;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
+.template-layout-slot--empty {
+  position: relative;
+  border-style: dashed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 </style>

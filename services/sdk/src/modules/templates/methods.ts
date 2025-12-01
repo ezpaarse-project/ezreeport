@@ -13,7 +13,9 @@ import { assignPermission } from '~/helpers/permissions/decorator';
 
 import type { InputTemplate, RawTemplate, Template } from './types';
 
-type PaginatedTemplates = SdkPaginated<Omit<Template, 'body'>> & { meta: { default: string } };
+type PaginatedTemplates = SdkPaginated<Omit<Template, 'body'>> & {
+  meta: { default: string };
+};
 
 /**
  * Get all available templates
@@ -21,17 +23,16 @@ type PaginatedTemplates = SdkPaginated<Omit<Template, 'body'>> & { meta: { defau
  * @returns All templates' info
  */
 export async function getAllTemplates(
-  opts?: ApiRequestOptions,
+  opts?: ApiRequestOptions & { include?: string[] }
 ): Promise<PaginatedTemplates> {
   const {
     content,
-    meta: {
-      total, count, page, ...meta
-    },
-  } = await client.fetch<ApiResponsePaginated<Omit<RawTemplate, 'body'>, { default: string }>>(
-    '/templates',
-    { query: apiRequestOptionsToQuery(opts) },
-  );
+    meta: { total, count, page, ...meta },
+  } = await client.fetch<
+    ApiResponsePaginated<Omit<RawTemplate, 'body'>, { default: string }>
+  >('/templates', {
+    query: { ...apiRequestOptionsToQuery(opts), include: opts?.include },
+  });
 
   return {
     items: content.map(transformCreatedUpdated),
@@ -52,15 +53,19 @@ assignPermission(getAllTemplates, 'GET /templates', true);
  */
 export async function getTemplate(
   templateOrId: Omit<Template, 'body'> | string,
+  include?: string[]
 ): Promise<Template> {
   const id = typeof templateOrId === 'string' ? templateOrId : templateOrId.id;
   if (!id) {
     throw new Error('Template id is required');
   }
 
-  const {
-    content,
-  } = await client.fetch<ApiResponse<RawTemplate>>(`/templates/${id}`);
+  const { content } = await client.fetch<ApiResponse<RawTemplate>>(
+    `/templates/${id}`,
+    {
+      query: { include },
+    }
+  );
 
   return transformCreatedUpdated(content);
 }
@@ -74,14 +79,14 @@ assignPermission(getTemplate, 'GET /templates/:id', true);
  * @returns Created template's info
  */
 export async function createTemplate(
-  template: InputTemplate,
+  template: InputTemplate
 ): Promise<Template> {
   const { content } = await client.fetch<ApiResponse<RawTemplate>>(
     '/templates',
     {
       method: 'POST',
       body: template,
-    },
+    }
   );
 
   return transformCreatedUpdated(content);
@@ -95,17 +100,16 @@ assignPermission(createTemplate, 'POST /templates');
  *
  * @returns Updated/Created Template's info
  */
-export async function upsertTemplate(
-  { id, ...template }: InputTemplate & { id: string },
-): Promise<Template> {
-  const {
-    content,
-  } = await client.fetch<ApiResponse<RawTemplate>>(
+export async function upsertTemplate({
+  id,
+  ...template
+}: InputTemplate & { id: string }): Promise<Template> {
+  const { content } = await client.fetch<ApiResponse<RawTemplate>>(
     `/templates/${id}`,
     {
       method: 'PUT',
       body: template,
-    },
+    }
   );
 
   return transformCreatedUpdated(content);
@@ -120,18 +124,16 @@ assignPermission(upsertTemplate, 'PUT /templates/:id');
  * @returns Whether the template was deleted
  */
 export async function deleteTemplate(
-  templateOrId: Omit<Template, 'body'> | string,
+  templateOrId: Omit<Template, 'body'> | string
 ): Promise<boolean> {
   const id = typeof templateOrId === 'string' ? templateOrId : templateOrId.id;
   if (!id) {
     return false;
   }
 
-  const {
-    content,
-  } = await client.fetch<ApiDeletedResponse>(
+  const { content } = await client.fetch<ApiDeletedResponse>(
     `/templates/${id}`,
-    { method: 'DELETE' },
+    { method: 'DELETE' }
   );
 
   return content.deleted;

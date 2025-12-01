@@ -65,7 +65,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     schema: {
       summary: 'Get unsubscribe id for a task',
       tags: ['task-targets'],
-      params: SpecificEmailParams.and(z.object({ id: z.string().min(1) })),
+      params: z.object({
+        ...SpecificEmailParams.shape,
+        id: z.string().min(1),
+      }),
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,

@@ -7,6 +7,12 @@ import { jsPDF } from 'jspdf';
 // oxlint-disable-next-line id-length
 type Area = { x: number; y: number; width: number; height: number };
 
+export type PDFLoadedImageAsset = {
+  data: string;
+  width: number;
+  height: number;
+};
+
 /**
  * Loads an image with some info
  *
@@ -15,7 +21,7 @@ type Area = { x: number; y: number; width: number; height: number };
  */
 export const loadImageAsset = async (
   data: string
-): Promise<{ data: string; width: number; height: number }> => {
+): Promise<PDFLoadedImageAsset> => {
   // Waiting Image to "render" to get width & height
   // oxlint-disable-next-line promise/avoid-new
   const img = await new Promise<Image>((resolve, reject) => {

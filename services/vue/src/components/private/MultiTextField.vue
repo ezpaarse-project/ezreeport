@@ -65,6 +65,10 @@
 <script setup lang="ts">
 import { nanoid } from 'nanoid/non-secure';
 
+const modelValue = defineModel<string | string[] | undefined>({
+  default: undefined,
+});
+
 // Component props
 const props = defineProps<{
   /** Values to edit */
@@ -98,12 +102,6 @@ const props = defineProps<{
   count?: number;
 }>();
 
-// Component events
-const emit = defineEmits<{
-  /** Updated values */
-  (event: 'update:modelValue', value: string | string[] | undefined): void;
-}>();
-
 type Element = { id: string; value: string };
 
 const rawElements = ref<Element[]>([]);
@@ -117,19 +115,16 @@ const elements = computed({
     rawElements.value = val;
 
     if (val.length === 1) {
-      emit('update:modelValue', val[0].value);
+      modelValue.value = val[0].value;
       return;
     }
 
     if (val.length === 0) {
-      emit('update:modelValue');
+      modelValue.value = undefined;
       return;
     }
 
-    emit(
-      'update:modelValue',
-      Array.from(new Set(val.map(({ value }) => value)))
-    );
+    modelValue.value = Array.from(new Set(val.map(({ value }) => value)));
   },
 });
 
@@ -242,7 +237,7 @@ watch(
 );
 </script>
 
-<style lang="scss" scoped>
+<style lang="css" scoped>
 .container {
   height: v-bind('containerHeight');
   overflow-x: auto;
@@ -252,7 +247,7 @@ watch(
 .value-chip {
   width: 97%;
 
-  :deep(.v-chip__content) {
+  & :deep(.v-chip__content) {
     width: 100%;
 
     & > span {

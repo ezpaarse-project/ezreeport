@@ -227,8 +227,12 @@ watch(
     }
 
     if (
-      oldLabel.aggregation?.type === newLabel.aggregation?.type &&
-      oldLabel.aggregation?.field === newLabel.aggregation?.field
+      oldLabel.aggregation &&
+      'field' in oldLabel.aggregation &&
+      newLabel.aggregation &&
+      'field' in newLabel.aggregation &&
+      oldLabel.aggregation.type === newLabel.aggregation.type &&
+      oldLabel.aggregation.field === newLabel.aggregation.field
     ) {
       return;
     }

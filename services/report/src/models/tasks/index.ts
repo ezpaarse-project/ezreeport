@@ -57,6 +57,16 @@ function applyFilters(filters: TaskQueryFiltersType): Prisma.TaskWhereInput {
     };
   }
 
+  if (filters['extends.tags']) {
+    where.extends = {
+      tags: { some: { id: { in: filters['extends.tags'] } } },
+    };
+  }
+
+  if (filters.recurrence) {
+    where.recurrence = filters.recurrence;
+  }
+
   return where;
 }
 
@@ -344,6 +354,17 @@ export async function unlinkTaskFromTemplate(id: string): Promise<TaskType> {
     (template) => `Failed to parse template ${template.id}`
   );
 
+  const tags = await prisma.templateTag.findMany({
+    where: {
+      templates: { every: { id: template.id } },
+    },
+    select: {
+      id: true,
+      name: true,
+      color: true,
+    },
+  });
+
   for (const { at, ...layout } of task.template.inserts ?? []) {
     template.body.layouts.splice(at, 0, layout);
   }
@@ -360,7 +381,7 @@ export async function unlinkTaskFromTemplate(id: string): Promise<TaskType> {
       lastExtended: {
         id: template.id,
         name: template.name,
-        tags: template.tags,
+        tags: tags,
       },
     },
   });

@@ -147,11 +147,11 @@ export type LayoutType = z.infer<typeof Layout>;
 /**
  * Validation for a task layout
  */
-export const TaskLayout = Layout.and(
-  z.object({
-    at: z.int().min(0).describe('Position where to insert this layout'),
-  })
-);
+export const TaskLayout = z.object({
+  ...Layout.shape,
+
+  at: z.int().min(0).describe('Position where to insert this layout'),
+});
 
 /**
  * Validation for the grid
@@ -236,9 +236,11 @@ export type TaskTemplateBodyType = z.infer<typeof TaskTemplateBody>;
  * Validation for a template's tag
  */
 export const TemplateTag = z.object({
+  id: z.string().min(1).describe('Tag ID'),
+
   name: z.string().min(1).describe('Tag name'),
 
-  color: z.string().optional().describe('Tag color. Should be in hex format.'),
+  color: z.string().nullish().describe('Tag color. Should be in hex format.'),
 });
 
 /**
@@ -255,8 +257,6 @@ export const Template = z.object({
   name: z.string().min(1).describe('Template name'),
 
   body: TemplateBody.describe('Template body'),
-
-  tags: z.array(TemplateTag).optional().describe('Template tags'),
 
   hidden: z
     .boolean()

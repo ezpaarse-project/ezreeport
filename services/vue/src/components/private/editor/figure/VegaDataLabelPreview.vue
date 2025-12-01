@@ -32,21 +32,19 @@ import type { VegaDataLabelOptions } from '~sdk/helpers/figures';
 // Components props
 const props = defineProps<{
   /** The data label options to preview */
-  modelValue: VegaDataLabelOptions | undefined,
+  modelValue: VegaDataLabelOptions | undefined;
   /** Type of the figure */
-  type: string,
+  type: string;
 }>();
 
-const randomValue = (Math.random() * 100) + 1;
+const randomValue = Math.random() * 100 + 1;
 
-const exampleValue = computed(
-  () => Math.max(props.modelValue?.minValue || 0, randomValue).toFixed(),
+const exampleValue = computed(() =>
+  Math.max(props.modelValue?.minValue || 0, randomValue).toFixed(0)
 );
 </script>
 
-<style lang="scss" scoped>
-$transition-duration: 0.5s;
-
+<style lang="css" scoped>
 .datalabel-preview {
   display: flex;
   flex-direction: column;
@@ -57,7 +55,7 @@ $transition-duration: 0.5s;
   padding: 0.5rem 0;
   height: 100%;
   background-color: transparent !important;
-  transition: color $transition-duration;
+  transition: color 0.5s;
 
   &::before {
     content: '';
@@ -68,22 +66,22 @@ $transition-duration: 0.5s;
     height: 100%;
     width: 100%;
     background-color: rgb(var(--v-theme-primary));
-    transition: top $transition-duration;
+    transition: top 0.5s;
   }
+}
 
-  &--in::before {
-    top: 0;
-  }
-  &--arc::before {
-    border-radius: 100% 100% 0 0;
-  }
+.datalabel-preview--in::before {
+  top: 0;
+}
+.datalabel-preview--arc::before {
+  border-radius: 100% 100% 0 0;
+}
 
-  &-container {
-    height: 60px;
-  }
+.datalabel-preview-container {
+  height: 60px;
+}
 
-  &-value {
-    font-weight: bold;
-  }
+.datalabel-preview-value {
+  font-weight: bold;
 }
 </style>

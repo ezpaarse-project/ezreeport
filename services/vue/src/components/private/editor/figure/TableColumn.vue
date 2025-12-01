@@ -141,12 +141,10 @@ const styleIcons = computed((): [string, IconDefinition][] => {
 });
 </script>
 
-<style lang="scss" scoped>
-.table-preview--column {
-  &-header,
-  &-value {
-    display: flex;
-    align-items: center;
-  }
+<style lang="css" scoped>
+.table-preview--column-header,
+.table-preview--column-value {
+  display: flex;
+  align-items: center;
 }
 </style>

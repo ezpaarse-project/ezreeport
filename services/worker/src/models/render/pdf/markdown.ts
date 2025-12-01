@@ -57,7 +57,7 @@ export const addMdToPDF = async (
   doc: PDFReport,
   data: string,
   params: MdParams
-) => {
+): Promise<void> => {
   const mdDoc = await new MdParser(data, mdLogger).parse();
 
   await mdDoc.loadImages(fetcher, 'assets');

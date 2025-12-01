@@ -1,6 +1,6 @@
 {
   "name": "@ezpaarse-project/ezreeport-sdk-js",
-  "version": "3.0.0",
+  "version": "3.1.0-rc.0",
   "description": "JS SDK to communicate with ezReeport API",
   "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
   "bugs": {
@@ -14,128 +14,111 @@
   "author": "oxypomme",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "node": "./dist/index.js",
-      "browser": "./dist/index.mjs"
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
     },
     "./auth": {
-      "types": "./dist/auth.d.ts",
-      "node": "./dist/auth.js",
-      "browser": "./dist/auth.mjs"
+      "import": "./dist/auth.mjs",
+      "require": "./dist/auth.js"
     },
     "./crons": {
-      "types": "./dist/crons.d.ts",
-      "node": "./dist/crons.js",
-      "browser": "./dist/crons.mjs"
+      "import": "./dist/crons.mjs",
+      "require": "./dist/crons.js"
     },
     "./elastic": {
-      "types": "./dist/elastic.d.ts",
-      "node": "./dist/elastic.js",
-      "browser": "./dist/elastic.mjs"
-    },
-    "./health": {
-      "types": "./dist/health.d.ts",
-      "node": "./dist/health.js",
-      "browser": "./dist/health.mjs"
-    },
-    "./namespaces": {
-      "types": "./dist/namespaces.d.ts",
-      "node": "./dist/namespaces.js",
-      "browser": "./dist/namespaces.mjs"
-    },
-    "./recurrence": {
-      "types": "./dist/recurrence.d.ts",
-      "node": "./dist/recurrence.js",
-      "browser": "./dist/recurrence.mjs"
+      "import": "./dist/elastic.mjs",
+      "require": "./dist/elastic.js"
     },
     "./generations": {
-      "types": "./dist/generations.d.ts",
-      "node": "./dist/generations.js",
-      "browser": "./dist/generations.mjs"
+      "import": "./dist/generations.mjs",
+      "require": "./dist/generations.js"
     },
-    "./reports": {
-      "types": "./dist/reports.d.ts",
-      "node": "./dist/reports.js",
-      "browser": "./dist/reports.mjs"
-    },
-    "./tasks": {
-      "types": "./dist/tasks.d.ts",
-      "node": "./dist/tasks.js",
-      "browser": "./dist/tasks.mjs"
-    },
-    "./templates": {
-      "types": "./dist/templates.d.ts",
-      "node": "./dist/templates.js",
-      "browser": "./dist/templates.mjs"
-    },
-    "./task-activity": {
-      "types": "./dist/task-activity.d.ts",
-      "node": "./dist/task-activity.js",
-      "browser": "./dist/task-activity.mjs"
-    },
-    "./task-presets": {
-      "types": "./dist/task-presets.d.ts",
-      "node": "./dist/task-presets.js",
-      "browser": "./dist/task-presets.mjs"
+    "./health": {
+      "import": "./dist/health.mjs",
+      "require": "./dist/health.js"
     },
     "./helpers/aggregations": {
-      "types": "./dist/helpers/aggregations.d.ts",
-      "node": "./dist/helpers/aggregations.js",
-      "browser": "./dist/helpers/aggregations.mjs"
+      "import": "./dist/helpers/aggregations.mjs",
+      "require": "./dist/helpers/aggregations.js"
     },
     "./helpers/figures": {
-      "types": "./dist/helpers/figures.d.ts",
-      "node": "./dist/helpers/figures.js",
-      "browser": "./dist/helpers/figures.mjs"
+      "import": "./dist/helpers/figures.mjs",
+      "require": "./dist/helpers/figures.js"
     },
     "./helpers/filters": {
-      "types": "./dist/helpers/filters.d.ts",
-      "node": "./dist/helpers/filters.js",
-      "browser": "./dist/helpers/filters.mjs"
+      "import": "./dist/helpers/filters.mjs",
+      "require": "./dist/helpers/filters.js"
     },
     "./helpers/generations": {
-      "types": "./dist/helpers/generations.d.ts",
-      "node": "./dist/helpers/generations.js",
-      "browser": "./dist/helpers/generations.mjs"
+      "import": "./dist/helpers/generations.mjs",
+      "require": "./dist/helpers/generations.js"
     },
     "./helpers/layouts": {
-      "types": "./dist/helpers/layouts.d.ts",
-      "node": "./dist/helpers/layouts.js",
-      "browser": "./dist/helpers/layouts.mjs"
+      "import": "./dist/helpers/layouts.mjs",
+      "require": "./dist/helpers/layouts.js"
     },
     "./helpers/permissions": {
-      "types": "./dist/helpers/permissions.d.ts",
-      "node": "./dist/helpers/permissions.js",
-      "browser": "./dist/helpers/permissions.mjs"
+      "import": "./dist/helpers/permissions.mjs",
+      "require": "./dist/helpers/permissions.js"
     },
     "./helpers/task-presets": {
-      "types": "./dist/helpers/task-presets.d.ts",
-      "node": "./dist/helpers/task-presets.js",
-      "browser": "./dist/helpers/task-presets.mjs"
+      "import": "./dist/helpers/task-presets.mjs",
+      "require": "./dist/helpers/task-presets.js"
     },
     "./helpers/tasks": {
-      "types": "./dist/helpers/tasks.d.ts",
-      "node": "./dist/helpers/tasks.js",
-      "browser": "./dist/helpers/tasks.mjs"
+      "import": "./dist/helpers/tasks.mjs",
+      "require": "./dist/helpers/tasks.js"
     },
     "./helpers/templates": {
-      "types": "./dist/helpers/templates.d.ts",
-      "node": "./dist/helpers/templates.js",
-      "browser": "./dist/helpers/templates.mjs"
-    }
+      "import": "./dist/helpers/templates.mjs",
+      "require": "./dist/helpers/templates.js"
+    },
+    "./namespaces": {
+      "import": "./dist/namespaces.mjs",
+      "require": "./dist/namespaces.js"
+    },
+    "./recurrence": {
+      "import": "./dist/recurrence.mjs",
+      "require": "./dist/recurrence.js"
+    },
+    "./reports": {
+      "import": "./dist/reports.mjs",
+      "require": "./dist/reports.js"
+    },
+    "./task-activity": {
+      "import": "./dist/task-activity.mjs",
+      "require": "./dist/task-activity.js"
+    },
+    "./task-presets": {
+      "import": "./dist/task-presets.mjs",
+      "require": "./dist/task-presets.js"
+    },
+    "./tasks": {
+      "import": "./dist/tasks.mjs",
+      "require": "./dist/tasks.js"
+    },
+    "./template-tags": {
+      "import": "./dist/template-tags.mjs",
+      "require": "./dist/template-tags.js"
+    },
+    "./templates": {
+      "import": "./dist/templates.mjs",
+      "require": "./dist/templates.js"
+    },
+    "./package.json": "./package.json"
   },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
     "build:docs": "typedoc",
-    "build:js": "vite build",
-    "build:types": "tsup",
+    "build:js": "tsdown",
     "dev": "pnpm run --parallel \"/^(watch:docs)|(preview)$/\"",
     "lint": "oxlint",
-    "prebuild": "rimraf --glob 'dist/*'",
-    "preview:docs": "vite docs --open",
+    "preview:docs": "serve docs",
     "type-check": "tsc --noEmit --skipLibCheck",
     "watch:docs": "typedoc --watch"
   },
@@ -155,16 +138,17 @@
     "socket.io-client": "catalog:sdk"
   },
   "devDependencies": {
+    "@types/native-events": "npm:@types/events@^3.0.3",
     "@types/node": "catalog:",
     "@types/object-hash": "^3.0.6",
-    "events": "^3.3.0",
-    "rimraf": "^6.0.1",
-    "tsup": "^8.5.0",
+    "native-events": "npm:events@^3.3.0",
+    "serve": "^14.2.5",
+    "tsdown": "^0.16.5",
     "typedoc": "^0.28.7",
     "typescript": "catalog:",
     "vite": "^7.0.4"
   },
   "engines": {
-    "node": "^20 || ^22 || ^24"
+    "node": "^14 || ^16 || ^18 || ^20 || ^22 || ^24"
   }
 }

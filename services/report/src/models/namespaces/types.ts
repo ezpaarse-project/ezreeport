@@ -80,19 +80,19 @@ export type BulkNamespaceType = z.infer<typeof BulkNamespace>;
 /**
  * Validation for result of setting multiple namespace
  */
-export const BulkNamespaceResult = z
-  .object({
-    namespaces: z
-      .object({
-        deleted: z.int().min(0).describe('Number of item deleted'),
+export const BulkNamespaceResult = z.object({
+  ...BulkMembershipResult.partial().shape,
 
-        updated: z.int().min(0).describe('Number of item updated'),
+  namespaces: z
+    .object({
+      deleted: z.int().min(0).describe('Number of item deleted'),
 
-        created: z.int().min(0).describe('Number of item created'),
-      })
-      .describe('Summary of operations on namespace'),
-  })
-  .and(BulkMembershipResult.partial());
+      updated: z.int().min(0).describe('Number of item updated'),
+
+      created: z.int().min(0).describe('Number of item created'),
+    })
+    .describe('Summary of operations on namespace'),
+});
 
 /**
  * Type for result of setting multiple namespace

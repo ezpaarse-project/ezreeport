@@ -53,7 +53,7 @@ export type PDFReport = PDFReportInit & {
   };
 
   /** Add a new page to the pdf */
-  addPage: () => Promise<void>;
+  addPage: () => void;
   /** Render the document, further modification of the document is not allowed */
   render: () => PDFResult;
 };

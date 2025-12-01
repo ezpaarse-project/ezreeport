@@ -151,9 +151,9 @@ const { refreshMapping } = useTemplateEditor({
 });
 
 /** Is basic form valid */
-const isValid = ref(false);
+const isValid = shallowRef(false);
 /** Are namespaces loading */
-const loadingNamespaces = ref(false);
+const loadingNamespaces = shallowRef(false);
 /** Task to create */
 const task = ref<InputTask>({
   name: props.modelValue.name,
@@ -187,26 +187,28 @@ const isNamespaced = computed(() => !props.showNamespace);
 /** Current namespace's id */
 const namespaceId = computed(() => task.value.namespaceId);
 /** Curent namespace */
-const namespace = computedAsync(async () => {
-  let value: Omit<Namespace, 'fetchLogin' | 'fetchOptions'> | undefined;
+const namespace = computedAsync(
+  async () => {
+    let value: Omit<Namespace, 'fetchLogin' | 'fetchOptions'> | undefined;
 
-  if (isNamespaced.value) {
+    if (isNamespaced.value) {
+      return value;
+    }
+
+    try {
+      const currentNamespaces = await getCurrentNamespaces();
+      value = currentNamespaces.find((nsp) => nsp.id === namespaceId.value);
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), err);
+    }
+
     return value;
-  }
+  },
+  undefined,
+  { evaluating: loadingNamespaces }
+);
 
-  loadingNamespaces.value = true;
-  try {
-    const currentNamespaces = await getCurrentNamespaces();
-    value = currentNamespaces.find((nsp) => nsp.id === namespaceId.value);
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), err);
-  }
-  loadingNamespaces.value = false;
-
-  return value;
-});
-
-function onTargetUpdated(targets: string | string[] | undefined) {
+function onTargetUpdated(targets: string | string[] | undefined): void {
   if (targets == null) {
     task.value.targets = [];
     return;
@@ -229,18 +231,20 @@ function onTargetUpdated(targets: string | string[] | undefined) {
   );
 }
 
-async function save() {
+async function save(): Promise<void> {
   try {
+    const data = { ...task.value, id: undefined };
+
     let result;
     if (props.modelValue.id) {
-      result = await upsertTask({ ...task.value, id: props.modelValue.id });
+      result = await upsertTask({ ...data, id: props.modelValue.id });
     } else {
-      result = await createTask({ ...task.value });
+      result = await createTask(data);
     }
 
     emit('update:modelValue', result);
   } catch (err) {
-    handleEzrError(t('$ezreeport.task.errors.update'), err);
+    handleEzrError(t('$ezreeport.task.errors.edit'), err);
   }
 }
 </script>

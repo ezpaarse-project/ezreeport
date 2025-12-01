@@ -15,8 +15,47 @@ const logger = appLogger.child({
   exchange: eventExchangeName,
 });
 
+const generationEndedCache = new Map<string, NodeJS.Timeout>();
+
+/**
+ * Check if generation is finished
+ *
+ * @param data The generation
+ *
+ * @returns Is the generation finished
+ */
 const generationFinished = (data: GenerationType): boolean =>
   data.status === 'SUCCESS' || data.status === 'ERROR';
+
+/**
+ * Check if generation is finished, debounce using locks
+ *
+ * @param data The generation
+ *
+ * @returns Is the generation finished and if lock is free
+ */
+function debouncedGenerationFinished(data: GenerationType): boolean {
+  const hasGenerationFinished = generationFinished(data);
+  const timeoutId = generationEndedCache.get(data.id);
+
+  if (!timeoutId && hasGenerationFinished) {
+    // Generation has ended and is not yet in cache, so we set the lock for 1 min
+    generationEndedCache.set(
+      data.id,
+      setTimeout(() => generationEndedCache.delete(data.id), 1 * 60 * 1000)
+    );
+
+    return true;
+  }
+
+  if (timeoutId && !hasGenerationFinished) {
+    // Generation was restarted, so we remove the timeout and the cache entry
+    clearTimeout(timeoutId);
+    generationEndedCache.delete(data.id);
+  }
+
+  return false;
+}
 
 async function updateGeneration(data: GenerationType): Promise<void> {
   try {
@@ -42,6 +81,7 @@ async function updateTaskAfterGeneration(data: GenerationType): Promise<void> {
           ? `Rapport généré par ${data.origin}`
           : `Rapport non généré par ${data.origin} suite à une erreur.`,
       data: {
+        generationId: data.id,
         period: { start: data.start, end: data.end },
         targets: data.targets,
       },
@@ -93,11 +133,9 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null): Promise<void> {
     data.status = 'SUCCESS';
   }
 
-  const promises: Promise<unknown>[] = [];
+  const promises: Promise<unknown>[] = [updateGeneration(data)];
 
-  promises.push(updateGeneration(data));
-
-  if (data.writeActivity && generationFinished(data)) {
+  if (data.writeActivity && debouncedGenerationFinished(data)) {
     promises.push(updateTaskAfterGeneration(data));
   }
 
