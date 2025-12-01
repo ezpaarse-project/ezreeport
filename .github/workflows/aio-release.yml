@@ -44,7 +44,7 @@ jobs:
 
             SUFFIX="-dev"
           else
-            echo "tag=stable" >> $GITHUB_OUTPUT
+            echo "label=stable" >> $GITHUB_OUTPUT
           fi
 
           # Get latest tag (by type of pre-release)
