@@ -1,5 +1,19 @@
 # @ezpaarse-project/ezreeport-vue
 
+## 3.1.0
+
+### Minor Changes
+
+- b41d558: ✨ added filters on tasks cards/table components
+- f73b1cd: ✨ template tags are now in their own table (must now include with templates to get them), new routes, methods and components are available to manage them
+
+### Patch Changes
+
+- 3ceb54b: 🐛 fixed issue where errors were incorrectly shown after a generation
+- 2d1884a: 💬 fixed texts of filters aggregations
+- 5ea566e: 💬 renamed "duplicate" to "create a copy"
+- 6ff1109: 💬 fixed error message when duplication error
+
 ## 3.1.0-rc.0
 
 ### Minor Changes
