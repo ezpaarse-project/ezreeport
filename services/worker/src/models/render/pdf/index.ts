@@ -151,10 +151,10 @@ function printFooter(doc: PDFReportInit): number {
   const height = 20; // Wanted height of logos
   const margin = 10;
 
-  let xPos = doc.width / 2;
-  const yPos = doc.height - doc.margin.bottom - height + 1;
-
-  // Print image
+  // Get assets of logos and scale down
+  const assets = [];
+  let assetsWidth = 0;
+  // Skip first item as header already prints it
   for (const { path } of logos.slice(1)) {
     const asset = loadedImages.get(path);
     if (!asset) {
@@ -163,7 +163,17 @@ function printFooter(doc: PDFReportInit): number {
 
     // Scaling down logo while preserving aspect ratio
     const width = (height * asset.width) / Math.max(1, asset.height);
+    assetsWidth += width;
 
+    assets.push({ ...asset, height, width });
+  }
+
+  // Align logos to the bottom center
+  let xPos = doc.width / 2 - assetsWidth / 2;
+  const yPos = doc.height - doc.margin.bottom - height + 1;
+
+  // Print images
+  for (const asset of assets) {
     doc.pdf
       .addImage({
         imageData: asset.data,
@@ -171,10 +181,10 @@ function printFooter(doc: PDFReportInit): number {
         x: xPos,
         // oxlint-disable-next-line id-length
         y: yPos,
-        height,
-        width,
+        height: asset.height,
+        width: asset.width,
       })
-      .link(xPos, yPos, width, height, { url: asset.link });
+      .link(xPos, yPos, asset.width, asset.height, { url: asset.link });
 
     xPos += asset.width + margin;
   }
