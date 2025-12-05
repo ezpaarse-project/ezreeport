@@ -26,11 +26,9 @@ jobs:
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
-        with:
-          # Fetching the last 10 commits to get the previous tags
-          # see https://github.com/actions/checkout/issues/1467
-          fetch-depth: 10
-          fetch-tags: true
+
+      - name: Checkout tags 🛎️
+        run: git fetch --tags
 
       - name: Get tags of image ⚙️
         id: docker_tags
