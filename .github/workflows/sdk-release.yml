@@ -10,7 +10,7 @@ env:
   TURBO_UI: 'false'
 
 concurrency:
-  group: "release-sdk"
+  group: 'release-sdk'
   cancel-in-progress: true
 
 jobs:
@@ -58,6 +58,5 @@ jobs:
       - name: Release 🚀
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
         run: pnpm --filter @ezpaarse-project/ezreeport-sdk-js publish --provenance --tag ${{ steps.npm_tags.outputs.tag }} --access public --no-git-checks
