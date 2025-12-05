@@ -1,5 +1,11 @@
 # ezreeport-worker
 
+## 1.1.2
+
+### Patch Changes
+
+- b7453b5: 🚑 fixed logo position in footer
+
 ## 1.1.1
 
 ### Patch Changes
