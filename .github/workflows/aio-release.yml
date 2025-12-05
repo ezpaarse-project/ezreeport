@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
+        with:
+          fetch-tags: true
 
       - name: Get tags of image ⚙️
         id: docker_tags
@@ -48,6 +50,7 @@ jobs:
           fi
 
           # Get latest tag (by type of pre-release)
+          echo "Looking for tags looking like ezreeport-aio@${DATE}${SUFFIX}.*"
           tags=$(git tag -l "ezreeport-aio@${DATE}${SUFFIX}.*" --no-column --sort -v:refname)
 
           if [[ ! -z $tags ]]; then
@@ -56,11 +59,17 @@ jobs:
               read latest
 
               latest_suffix=$(echo $latest | sed 's/.*\.//')
-              echo "tag=${DATE}${SUFFIX}.$((${latest_suffix} + 1))" >> $GITHUB_OUTPUT
+              new_tag="${DATE}${SUFFIX}.$((${latest_suffix} + 1))"
+
+              echo "tag=${new_tag}" >> $GITHUB_OUTPUT
+              echo "Resolved ${new_tag}"
             }
           else
             # If tag doesn't exists, set suffix to 0
-            echo "tag=${DATE}${SUFFIX}.0" >> $GITHUB_OUTPUT
+            new_tag="${DATE}${SUFFIX}.0"
+
+            echo "tag=${new_tag}" >> $GITHUB_OUTPUT
+            echo "Resolved ${new_tag}"
           fi
 
       - name: Docker meta 🔧
