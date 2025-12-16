@@ -1,7 +1,4 @@
-import axios, {
-  type AxiosRequestHeaders,
-  type InternalAxiosRequestConfig,
-} from 'axios';
+import { createFetch } from 'ofetch';
 
 import pckg from '../../package.json';
 
@@ -41,43 +38,30 @@ export function initHttpRequests(): void {
     warnNoBannedDomains();
     return;
   }
+
   logger.info({
     bannedDomains: bannedDomainsRegexp.map((reg) => reg.source),
     msg: 'Registered banned domains',
   });
 }
 
-/**
- * Throws an error if a call is attempted on a banned domain
- *
- * @param data The request data
- * @param headers The request headers
- *
- * @returns The unmodified request data
- */
-function preventForbiddenDomains<Data>(
-  this: InternalAxiosRequestConfig,
-  data: Data,
-  _headers: AxiosRequestHeaders
-): Data {
-  if (bannedDomainsRegexp.length <= 0) {
-    warnNoBannedDomains();
-    return data;
-  }
+export const http = createFetch({
+  defaults: {
+    headers: {
+      // Custom User Agent
+      'User-Agent': `Mozilla/5.0 (compatible; ezREEPORT/${pckg.version}; +${pckg.homepage}); ofetch/${pckg.dependencies.ofetch.slice(1)}`,
+    },
+    // Check if not attempting to request banned domain
+    onRequest: ({ request }) => {
+      if (bannedDomainsRegexp.length <= 0) {
+        warnNoBannedDomains();
+        return;
+      }
 
-  const { hostname } = new URL(this.url ?? '', this.baseURL);
-  if (bannedDomainsRegexp.some((regexp) => regexp.test(hostname))) {
-    throw new Error(`Cannot fetch banned domain: ${hostname}`);
-  }
-
-  return data;
-}
-
-const http = axios.create({
-  transformRequest: [preventForbiddenDomains],
-  headers: {
-    'User-Agent': `ezREEPORT/${pckg.version}`,
+      const { hostname } = new URL(request.url);
+      if (bannedDomainsRegexp.some((regexp) => regexp.test(hostname))) {
+        throw new Error(`Cannot fetch banned domain: ${hostname}`);
+      }
+    },
   },
 });
-
-export default http;

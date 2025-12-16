@@ -3,7 +3,7 @@ import {
   type MdImgRemoteRequestor,
 } from '@ezpaarse-project/jspdf-md';
 
-import http from '~/lib/http-requests';
+import { http } from '~/lib/http-requests';
 import { appLogger } from '~/lib/logger';
 
 import type { Position } from '~/models/render/types';

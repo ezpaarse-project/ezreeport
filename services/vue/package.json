@@ -49,7 +49,7 @@
     "dompurify": "^3.2.6",
     "marked": "^16.0.0",
     "nanoid": "catalog:sdk",
-    "ofetch": "catalog:sdk",
+    "ofetch": "catalog:",
     "pretty-bytes": "^7.0.0",
     "socket.io-client": "catalog:sdk",
     "vue": "^3.5.17",
