@@ -314,6 +314,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         // We already checked the task preset exists in preHandler
         const { id } = request.params;
         const preset = (await taskPresets.getTaskPreset(id))!;
+        // If filters are provided, trust user
+        if ((preset.fetchOptions?.filters?.length ?? 0) > 0) {
+          return;
+        }
 
         const similarTaskExists = await doesSimilarTaskExist(
           request.body.namespaceId,
