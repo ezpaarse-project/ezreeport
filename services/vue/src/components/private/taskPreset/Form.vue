@@ -77,7 +77,7 @@
         <v-row>
           <v-col cols="6">
             <IndexSelector
-              v-model="preset.fetchOptions.index"
+              v-model="fetchOptions.index"
               :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :readonly="readonly"
               required
@@ -87,7 +87,7 @@
 
           <v-col cols="6">
             <v-combobox
-              v-model="preset.fetchOptions.dateField"
+              v-model="fetchOptions.dateField"
               :label="$t('$ezreeport.template.dateField')"
               :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :items="dateMapping"
@@ -165,6 +165,11 @@ useTemplateVForm('formRef', { immediate: !!props.modelValue?.id });
 
 /** Mapping options for dateField */
 const dateMapping = computed(() => getOptionsFromMapping('date'));
+/** Fetch Options */
+const fetchOptions = computed({
+  get: () => preset.value.fetchOptions ?? {},
+  set: (val) => { preset.value.fetchOptions = val },
+});
 /** Templates list */
 const templates = computedAsync(async () => {
   let items: Omit<Template, 'body'>[] = [];
@@ -200,7 +205,7 @@ const recurrences = computed(() =>
   }))
 );
 
-function regenerateName() {
+function regenerateName(): void {
   if (props.modelValue?.name || hasNameChanged.value) {
     return;
   }
@@ -210,7 +215,7 @@ function regenerateName() {
   preset.value.name = `${currentTemplate.value?.name} ${recurrence.toLocaleLowerCase()}`;
 }
 
-async function onTemplateChange(id: string) {
+async function onTemplateChange(id: string): Promise<void> {
   try {
     const template = await getTemplate(id);
 
@@ -227,7 +232,7 @@ async function onTemplateChange(id: string) {
   }
 }
 
-async function save() {
+async function save(): Promise<void> {
   try {
     let result;
     if (props.modelValue?.id) {

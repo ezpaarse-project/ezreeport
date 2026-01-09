@@ -283,7 +283,7 @@ const namespaces = computedAsync(async () => {
   loadingNamespaces.value = true;
   try {
     const currentNamespaces = await getCurrentNamespaces();
-    items = currentNamespaces.sort((namespaceA, namespaceB) =>
+    items = currentNamespaces.toSorted((namespaceA, namespaceB) =>
       namespaceA.name.localeCompare(namespaceB.name)
     );
   } catch (err) {
@@ -294,15 +294,15 @@ const namespaces = computedAsync(async () => {
   return items;
 }, []);
 
-function onPresetChange(preset: TaskPreset | undefined) {
-  data.value.index = preset?.fetchOptions.index || '';
+function onPresetChange(preset: TaskPreset | undefined): void {
+  data.value.index = preset?.fetchOptions?.index || '';
 
   if (!hasNameChanged.value) {
     data.value.name = preset?.name || '';
   }
 }
 
-function onTargetUpdated(targets: string | string[] | undefined) {
+function onTargetUpdated(targets: string | string[] | undefined): void {
   if (targets == null) {
     data.value.targets = [];
     return;
