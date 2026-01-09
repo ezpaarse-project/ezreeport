@@ -222,7 +222,7 @@ const { refreshMapping } = useTemplateEditor({
 });
 
 /** Is basic form valid */
-const isValid = ref(false);
+const isValid = shallowRef(false);
 /** Task to create */
 const data = ref<AdditionalDataForPreset>({
   name: '',
@@ -233,24 +233,28 @@ const data = ref<AdditionalDataForPreset>({
   filters: undefined,
 });
 /** Is preset list loading */
-const loadingPresets = ref(false);
+const loadingPresets = shallowRef(false);
 /** Current preset selected */
 const currentPreset = ref<TaskPreset | undefined>();
 /** Is namespace list loading */
-const loadingNamespaces = ref(false);
+const loadingNamespaces = shallowRef(false);
 /** Has name manually changed */
-const hasNameChanged = ref(false);
+const hasNameChanged = shallowRef(false);
 
 /** Filters of task */
 const filters = computed({
-  get: () => new Map((data.value.filters ?? []).map((fil) => [fil.name, fil])),
+  get: () => new Map(
+    (data.value.filters ?? currentPreset?.value?.fetchOptions?.filters ?? [])
+      .map((fil) => [fil.name, fil])
+  ),
   set: (value) => {
-    const values = Array.from(value.values());
-    if (values.length > 0) {
-      data.value.filters = values;
+    if (!value) {
+      data.value.filters = undefined;
       return;
     }
-    data.value.filters = undefined;
+
+    const values = Array.from(value.values());
+    data.value.filters = values;
   },
 });
 /** Preset list */
@@ -325,7 +329,7 @@ function onTargetUpdated(targets: string | string[] | undefined): void {
   );
 }
 
-async function save() {
+async function save(): Promise<void> {
   if (!currentPreset.value) {
     return;
   }
