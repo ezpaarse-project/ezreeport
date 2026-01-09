@@ -12,14 +12,16 @@ export interface TaskPreset {
   /** Recurrence */
   recurrence: TaskRecurrence;
   /** Options used to fetch data for the report */
-  fetchOptions: {
+  fetchOptions?: {
     /** Default elastic date field to fetch data from */
-    dateField: string;
+    dateField?: string;
+    /** Global filters used when fetching data */
+    filters?: TemplateFilter[];
     /** Default elastic index to fetch data from */
-    index: string;
+    index?: string;
   };
   /** If preset is hidden */
-  hidden: boolean;
+  hidden?: boolean;
   /** Preset creation date */
   createdAt: Date;
   /** Preset last update date */
