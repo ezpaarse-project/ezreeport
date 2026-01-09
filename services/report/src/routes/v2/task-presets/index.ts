@@ -349,7 +349,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           version: 2,
           index: request.body.index,
           dateField: taskPreset.fetchOptions?.dateField,
-          filters: request.body.filters,
+          filters: request.body.filters || taskPreset.fetchOptions?.filters,
         },
         recurrence: taskPreset.recurrence,
         extendedId: taskPreset.templateId,

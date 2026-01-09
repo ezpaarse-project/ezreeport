@@ -38,6 +38,11 @@ export const TaskPreset = z.object({
         .optional()
         .describe('Default elastic date field to fetch data from'),
 
+      filters: z
+        .array(Filter)
+        .optional()
+        .describe('Global filters used when fetching data'),
+
       index: z
         .string()
         .min(1)
