@@ -1,7 +1,7 @@
 import { z } from '../lib/zod';
 
 import { TaskTemplateBody, TemplateTag } from './templates';
-import { Recurrence } from './recurrence';
+import { Recurrence, RecurrenceOffset } from './recurrence';
 
 /**
  * Validation for the last extended template
@@ -38,6 +38,8 @@ export const Task = z.object({
   targets: z.array(z.email()).describe('Email addresses to send report'),
 
   recurrence: Recurrence.describe('Task recurrence'),
+
+  recurrenceOffset: RecurrenceOffset.describe('Task recurrence offset'),
 
   nextRun: z.coerce.date().describe('Next run date, must be in the future'),
 
