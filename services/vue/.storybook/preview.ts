@@ -7,9 +7,9 @@ import '@mdi/font/css/materialdesignicons.css';
 import { useTheme } from 'vuetify';
 import { VApp, VMain } from 'vuetify/components';
 
-import i18n from './i18n';
-import vuetify from './vuetify';
-import setupEzR from './ezr';
+import { i18n } from './i18n';
+import { vuetify } from './vuetify';
+import { setupEzR } from './ezr';
 
 setup((app) => {
   app.use(i18n);

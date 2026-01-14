@@ -9,15 +9,21 @@
     "import/no-namespace": "error",
     "unicorn/no-document-cookie": "error",
     "unicorn/prefer-event-target": "error",
-    "unicorn/prefer-add-event-listener": "error"
+    "unicorn/prefer-add-event-listener": "error",
   },
   "overrides": [
     {
       "files": ["components/**/*.stories.ts"],
       "rules": {
         "no-default-import": "off",
-        "explicit-return-type": "off"
-      }
-    }
-  ]
+        "explicit-return-type": "off",
+      },
+    },
+    {
+      "files": ["composables/*.ts"],
+      "rules": {
+        "import/no-default-export": "off",
+      },
+    },
+  ],
 }
