@@ -19,9 +19,9 @@ const logger = appLogger.child({ scope: 'models', model: 'task-presets' });
 function applyFilters(
   filters: TaskPresetQueryFiltersType
 ): Prisma.TaskPresetWhereInput {
-  const where: Prisma.TaskPresetWhereInput = {};
-
-  where.templateId = filters.templateId;
+  const where: Prisma.TaskPresetWhereInput = {
+    templateId: filters.templateId,
+  };
 
   if (filters.hidden != null) {
     where.hidden = filters.hidden;

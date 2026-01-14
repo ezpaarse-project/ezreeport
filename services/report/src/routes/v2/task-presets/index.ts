@@ -1,9 +1,8 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
-import { startOfDay } from '@ezreeport/dates';
 import { z } from '@ezreeport/models/lib/zod';
-import { calcPeriodFromRecurrence } from '@ezreeport/models/lib/periods';
+import { calcNextDateFromRecurrence } from '@ezreeport/models/lib/periods';
 
 import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
 import { Access } from '~/models/access';
@@ -336,13 +335,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       // We already checked the task preset exists in preHandler
       const taskPreset = (await taskPresets.getTaskPreset(request.params.id))!;
 
-      // Set next run to start of recurrence (start of week for weekly, etc.)
-      const currentPeriod = calcPeriodFromRecurrence(
+      const nextRun = calcNextDateFromRecurrence(
         new Date(),
-        taskPreset.recurrence,
-        1
+        taskPreset.recurrence
       );
-      const nextRun = startOfDay(currentPeriod.start);
 
       const task = await createTask({
         name: request.body.name,
@@ -356,6 +352,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           filters: request.body.filters || taskPreset.fetchOptions?.filters,
         },
         recurrence: taskPreset.recurrence,
+        recurrenceOffset: taskPreset.recurrenceOffset,
         extendedId: taskPreset.templateId,
         nextRun,
         enabled: true,

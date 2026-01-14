@@ -2,7 +2,7 @@ import { z } from '@ezreeport/models/lib/zod';
 import { ensureArray } from '@ezreeport/models/lib/utils';
 
 import { Filter } from '@ezreeport/models/templates';
-import { Recurrence } from '@ezreeport/models/recurrence';
+import { Recurrence, RecurrenceOffset } from '@ezreeport/models/recurrence';
 import { TemplateTag } from '~/models/templates/types';
 
 /**
@@ -59,6 +59,8 @@ export const TaskPreset = z.object({
     .describe('If preset is hidden to normal users'),
 
   recurrence: Recurrence.describe('Preset recurrence'),
+
+  recurrenceOffset: RecurrenceOffset.describe('Preset recurrence offset'),
 
   createdAt: z.date().describe('Creation date'),
 
