@@ -5,11 +5,11 @@ import type {
   InputTask,
   LastExtended,
   TaskRecurrence,
+  TaskRecurrenceOffset,
 } from '~/modules/tasks/types';
 
 import type { TemplateBodyHelper } from '../../templates/editor/body';
 import type { AnyLayoutHelper } from '../../templates/editor/layouts';
-import { calcNextDateFromRecurrence } from '../recurrence';
 import {
   createTaskBodyHelper,
   createTaskBodyHelperFrom,
@@ -26,6 +26,7 @@ export interface TaskHelper {
   template: TaskBodyHelper;
   targets: string[];
   recurrence: TaskRecurrence;
+  recurrenceOffset: TaskRecurrenceOffset;
   nextRun: Date;
   enabled: boolean;
   readonly lastExtended?: LastExtended | null;
@@ -49,19 +50,20 @@ function hashTask(task: TaskHelper | Task): string {
 }
 
 export function createTaskHelper(
-  name: string = '',
-  description: string = '',
-  namespaceId: string = '',
-  extendedId: string = '',
+  name = '',
+  description = '',
+  namespaceId = '',
+  extendedId = '',
   template?: TaskBodyHelper,
   targets: string[] = [],
   recurrence: TaskRecurrence = 'DAILY',
-  nextRun?: Date,
-  enabled: boolean = true,
+  recurrenceOffset: TaskRecurrenceOffset = {},
+  nextRun: Date = new Date(),
+  enabled = true,
   lastExtended?: LastExtended,
   lastRun?: Date,
-  id: string = '',
-  createdAt: Date = new Date(),
+  id = '',
+  createdAt = new Date(),
   updatedAt?: Date
 ): TaskHelper {
   const task = {
@@ -73,7 +75,8 @@ export function createTaskHelper(
     template: template ?? createTaskBodyHelper(),
     targets,
     recurrence,
-    nextRun: nextRun ?? calcNextDateFromRecurrence(new Date(), recurrence),
+    recurrenceOffset,
+    nextRun,
     enabled,
     lastExtended,
     lastRun,
@@ -96,6 +99,7 @@ export function createTaskHelperFrom(task: Task): TaskHelper {
     createTaskBodyHelperFrom(task.template),
     task.targets,
     task.recurrence,
+    task.recurrenceOffset,
     task.nextRun,
     task.enabled,
     task.lastExtended ?? undefined,
@@ -115,6 +119,7 @@ export function taskHelperToJSON(task: TaskHelper): InputTask {
     template: taskBodyHelperToJSON(task.template),
     targets: task.targets,
     recurrence: task.recurrence,
+    recurrenceOffset: task.recurrenceOffset,
     nextRun: task.nextRun,
     enabled: task.enabled,
     lastExtended: task.lastExtended,

@@ -27,6 +27,7 @@ export async function changeTaskEnableState(
     namespaceId: base.namespaceId,
     nextRun: base.nextRun,
     recurrence: base.recurrence,
+    recurrenceOffset: base.recurrenceOffset,
     targets: base.targets,
     template: base.template,
     lastExtended: base.lastExtended,

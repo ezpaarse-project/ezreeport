@@ -9,6 +9,7 @@ export {
 
 export type {
   TaskRecurrence,
+  TaskRecurrenceOffset,
   LastExtended,
   TaskBodyLayout,
   TaskBody,

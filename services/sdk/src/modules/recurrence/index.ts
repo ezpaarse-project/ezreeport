@@ -1,8 +1,3 @@
-export {
-  getPeriodFromRecurrence,
-  getNextDateFromRecurrence,
-} from './methods';
+export { getPeriodFromRecurrence, getNextDateFromRecurrence } from './methods';
 
-export type {
-  Recurrence,
-} from './types';
+export type { Recurrence, RecurrenceOffset } from './types';
