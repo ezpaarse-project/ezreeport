@@ -6,7 +6,7 @@ import type { ApiResponse } from '~/lib/api';
 import type { RawReportPeriod, ReportPeriod } from '~/modules/reports/types';
 import { transformPeriod } from '~/modules/reports/methods';
 
-import type { Recurrence } from './types';
+import type { Recurrence, RecurrenceOffset } from './types';
 
 /**
  * Get the period covered by a recurrence
@@ -23,9 +23,10 @@ export async function getPeriodFromRecurrence(
   offset?: number
 ): Promise<ReportPeriod> {
   const { content } = await client.fetch<ApiResponse<RawReportPeriod>>(
-    `/recurrence/${recurrence}/period`,
+    `/recurrence/${recurrence}/_resolve/period`,
     {
-      params: {
+      method: 'POST',
+      body: {
         reference: reference && formatISO(reference),
         offset,
       },
@@ -45,13 +46,16 @@ export async function getPeriodFromRecurrence(
  */
 export async function getNextDateFromRecurrence(
   recurrence: Recurrence,
-  reference?: Date
+  reference?: Date,
+  offset?: RecurrenceOffset
 ): Promise<Date> {
   const { content } = await client.fetch<ApiResponse<{ value: string }>>(
-    `/recurrence/${recurrence}/nextDate`,
+    `/recurrence/${recurrence}/_resolve/nextDate`,
     {
-      params: {
+      method: 'POST',
+      body: {
         reference: reference && formatISO(reference),
+        offset,
       },
     }
   );
