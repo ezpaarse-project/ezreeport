@@ -1,4 +1,4 @@
-import type { Locale } from 'date-fns';
+import { formatDate, type Locale } from 'date-fns';
 import { fr, enGB } from 'date-fns/locale';
 
 const dateFnsLocales: Record<string, Locale> = {
@@ -10,7 +10,19 @@ const dateFnsLocales: Record<string, Locale> = {
 export default function useDateLocale() {
   const { locale } = useI18n();
 
+  const dateLocale = computed(() => dateFnsLocales[locale.value]);
+
   return {
-    locale: computed(() => dateFnsLocales[locale.value]),
+    locale: dateLocale,
+
+    formatDateWithTZ: (date: Date, format: string): string => {
+      const tzDate = new Date(
+        date.valueOf() + date.getTimezoneOffset() * -60 * 1000
+      );
+
+      return formatDate(tzDate, format, {
+        locale: dateLocale.value,
+      });
+    },
   };
 }

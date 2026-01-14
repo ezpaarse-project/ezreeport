@@ -1,224 +1,271 @@
 <template>
-  {{ debug }}
-
-  <div v-if="recurrence === 'WEEKLY'">
-    <p>Vous voulez recevoir votre rapport chaque {{ formattedWeekDay }}.</p>
-
-    <v-btn-toggle
-      v-model="selectedWeekDay"
-      :disabled="readonly"
-      color="primary"
-      mandatory
-    >
-      <v-btn
-        v-for="day in weekDays"
-        :key="day.text"
-        :value="day.value"
-        :text="day.text"
+  <v-menu
+    :disabled="readonly || (recurrence === 'DAILY' && !nextRun)"
+    :close-on-content-click="false"
+    max-width="500"
+  >
+    <template #activator="{ props: menu }">
+      <v-text-field
+        :label="$t('$ezreeport.task.nextRunPicker.label')"
+        :model-value="humanLabel"
+        :error="errorState?.status"
+        :error-messages="errorState?.messages"
+        prepend-icon="mdi-calendar-arrow-right"
+        variant="underlined"
+        v-bind="menu"
       />
-    </v-btn-toggle>
-  </div>
+    </template>
 
-  <div v-else-if="recurrence === 'MONTHLY'">
-    <p>
-      Vous voulez recevoir votre rapport le {{ formattedMonthDate }} de chaque
-      mois.
-    </p>
+    <v-card>
+      <template #text>
+        <v-row v-if="recurrence !== 'DAILY'">
+          <v-col v-if="recurrence === 'WEEKLY'" cols="12">
+            <v-btn-toggle
+              v-model="offsetDaysValue"
+              :disabled="readonly"
+              color="primary"
+              mandatory
+            >
+              <v-btn
+                v-for="day in weekDayOptions.days"
+                :key="day.text"
+                :value="day.value"
+                :text="day.text"
+              />
+            </v-btn-toggle>
+          </v-col>
 
-    <div color="primary" mandatory class="monthly-picker">
-      <v-btn
-        v-for="day in monthDates"
-        :key="day.text"
-        :text="day.text"
-        :color="selectedMonthDate === day.value ? 'primary' : undefined"
-        :disabled="readonly"
-        variant="flat"
-        @click="selectedMonthDate = day.value"
-      />
-    </div>
-  </div>
+          <template v-else>
+            <v-col v-if="recurrence !== 'MONTHLY'" cols="12">
+              <v-btn-toggle
+                v-model="offsetMonthsValue"
+                :disabled="readonly"
+                color="primary"
+                mandatory
+              >
+                <v-btn
+                  v-for="month in monthOptions.months"
+                  :key="month.text"
+                  :value="month.value"
+                  :text="month.text"
+                />
+              </v-btn-toggle>
+            </v-col>
 
-  <div v-else-if="recurrence === 'QUARTERLY'">
-    <p>
-      Vous voulez recevoir votre rapport le {{ formattedMonthDate }} du
-      {{ formattedQuarterMonth }} de chaque trimestre.
-    </p>
+            <v-col cols="12" class="monthly-picker">
+              <div v-for="day in monthOptions.days" :key="day.value">
+                <v-btn
+                  :text="day.text"
+                  :color="offsetDaysValue === day.value ? 'primary' : undefined"
+                  :disabled="readonly"
+                  variant="flat"
+                  rounded
+                  @click="offsetDaysValue = day.value"
+                />
+              </div>
+            </v-col>
+          </template>
+        </v-row>
 
-    <v-btn-toggle
-      v-model="selectedQuarterMonth"
-      :disabled="readonly"
-      color="primary"
-      mandatory
-    >
-      <v-btn
-        v-for="quarter in quarterMonths"
-        :key="quarter.text"
-        :value="quarter.value"
-        :text="quarter.text"
-      />
-    </v-btn-toggle>
+        <v-divider v-if="recurrence !== 'DAILY' && nextRun" class="my-2" />
 
-    <div color="primary" mandatory class="monthly-picker">
-      <v-btn
-        v-for="day in monthDates"
-        :key="day.text"
-        :text="day.text"
-        :color="selectedMonthDate === day.value ? 'primary' : undefined"
-        :disabled="readonly"
-        variant="flat"
-        @click="selectedMonthDate = day.value"
-      />
-    </div>
-  </div>
-
-  <v-date-picker
-    v-else
-    v-model="nextRun"
-    :first-day-of-week="firstDayOfWeek"
-    :disabled="readonly"
-    :min="min"
-    :max="max"
-  />
+        <v-row v-if="nextRun">
+          <v-col>
+            <DateField
+              v-model="nextRun"
+              :label="$t('$ezreeport.task.nextRun')"
+              :loading="nextDateResolving"
+              :disabled="nextDateResolving"
+              :min="today"
+              prepend-icon="mdi-calendar-start"
+              variant="underlined"
+            />
+          </v-col>
+        </v-row>
+      </template>
+    </v-card>
+  </v-menu>
 </template>
 
 <script setup lang="ts">
+import type { Day, Month } from 'date-fns';
+import { daysInWeek, monthsInQuarter, monthsInYear } from 'date-fns/constants';
+
 import {
-  endOfWeek,
-  format,
-  nextDay,
-  startOfWeek,
-  eachDayOfInterval,
-  startOfMonth,
-  setDate,
-  startOfYear,
-  endOfYear,
-  type Day,
-  // getQuarter,
-  // setQuarter,
-  startOfQuarter,
-  endOfQuarter,
-  eachMonthOfInterval,
-  add,
-  // formatISO,
-  // isBefore,
-  // Duration,
-  // isAfter,
-  // startOfDay,
-} from 'date-fns';
-import { monthsInQuarter } from 'date-fns/constants';
-// import { monthsInQuarter, quartersInYear } from 'date-fns/constants';
+  type Recurrence,
+  type RecurrenceOffset,
+  getNextDateFromRecurrence,
+} from '~sdk/recurrence';
 
-import type { TaskRecurrence } from '~sdk/tasks';
+const today = new Date();
+// date-fns is missing the "semester" granularity
+const monthsInSemester = 6;
+// we want a general rule, so we want the maximum days in a month
+const daysInMonth = 31;
 
-// const minDate = add(startOfDay(new Date()), { days: 1 });
+const nextRun = defineModel<Date | undefined>();
 
-/**
- * In monthly recurrence, ezREEPORT adds 1 month to the next run every time a generation is
- * triggered, or February can have only 28 days, so every other date after the 28th will eventually
- * lead to be ran the 28 anyway.
- * Example : 31/10 -> 30/11 -> 30/12 -> 30/01 -> 28/02 -> 28/03
- */
-const DAYS_IN_MONTH = 28;
+const offset = defineModel<RecurrenceOffset>('offset', {
+  required: true,
+});
 
 // Components props
-defineProps<{
-  /** The Date to edit */
-  modelValue?: Date;
+const { recurrence, rules } = defineProps<{
   /** Task's recurrence */
-  recurrence: TaskRecurrence;
+  recurrence: Recurrence;
   /** Should be readonly */
   readonly?: boolean;
-}>();
-
-// Components events
-defineEmits<{
-  /** Updated Date */
-  (event: 'update:modelValue', value: Date): void;
+  /** Rules */
+  rules?: ((val: Date) => string | boolean)[];
 }>();
 
 // Utils composables
-const { locale } = useDateLocale();
+// oxlint-disable-next-line id-length
+const { t } = useI18n();
+const { locale: dateLocale } = useDateLocale();
 
-// Daily shouldn't be shown
-// Weekly should ask for which day (Monday, etc.) -> OK
-// Monthly should ask for day of the month -> OK
-// Quarterly should ask for day of the month, restricted to 3 months ?
-// Biennial should ask for day of the month, restricted to 6 months ?
-// Yearly is a simple date picker (without year choice)
+/** Is nextDate resolving */
+const nextDateResolving = shallowRef(false);
 
-// const nextRun = computed({
-//   get: () => props.modelValue || new Date(),
-//   set: (value) => emit('update:modelValue', value),
-// });
-const nextRun = ref(new Date());
-
-const debug = computed(() =>
-  format(nextRun.value, 'yyyy-MM-dd', { locale: locale.value })
-);
-
-const formatWeekDay = (date: Date) =>
-  format(date, 'EEEE', { locale: locale.value });
-const formatMonthDate = (date: Date) =>
-  format(date, 'd', { locale: locale.value });
-const formatMonth = (month: number) => `${month + 1}e mois`;
-
-const weekDays = computed(() => {
-  const start = startOfWeek(nextRun.value, { locale: locale.value });
-  const end = endOfWeek(nextRun.value, { locale: locale.value });
-  return eachDayOfInterval({ start, end }).map((day) => ({
-    value: day.getDay(),
-    text: formatWeekDay(day),
-  }));
-});
-const selectedWeekDay = computed({
-  get: () => nextRun.value.getDay() as Day,
-  set: (value) => {
-    nextRun.value = nextDay(nextRun.value, value);
+const offsetDaysValue = computed({
+  get: () => offset.value.days ?? 0,
+  set: (days) => {
+    offset.value = { ...offset.value, days };
   },
 });
-const formattedWeekDay = computed(() => formatWeekDay(nextRun.value));
 
-const monthDates = computed(() => {
-  const start = startOfMonth(nextRun.value);
-  const end = add(start, { days: DAYS_IN_MONTH - 1 });
-  return eachDayOfInterval({ start, end }).map((day) => ({
-    value: day.getDate(),
-    text: format(day, 'd', { locale: locale.value }),
-  }));
-});
-const selectedMonthDate = computed({
-  get: () => nextRun.value.getDate(),
-  set: (value) => {
-    nextRun.value = setDate(nextRun.value, value);
+const offsetMonthsValue = computed({
+  get: () => offset.value.months ?? 0,
+  set: (months) => {
+    offset.value = { ...offset.value, months };
   },
 });
-const formattedMonthDate = computed(() => formatMonthDate(nextRun.value));
 
-const quarterMonths = computed(() => {
-  const start = startOfQuarter(startOfYear(nextRun.value));
-  const end = endOfQuarter(start);
-  return eachMonthOfInterval({ start, end }).map((month) => ({
-    value: month.getMonth(),
-    text: formatMonth(month.getMonth()),
-  }));
+const weekDayOptions = computed(() => {
+  const startsOn = dateLocale.value.options?.weekStartsOn ?? 0;
+
+  return {
+    days: Array.from({ length: daysInWeek }, (__, index) => {
+      const day = ((startsOn + index) % daysInWeek) as Day;
+      return {
+        value: index,
+        text: dateLocale.value.localize.day(day),
+      };
+    }),
+  };
 });
-const selectedQuarterMonth = computed({
-  get: () => nextRun.value.getMonth() % monthsInQuarter,
-  set: (value) => {
-    const date = add(startOfQuarter(nextRun.value), { months: value });
-    nextRun.value = setDate(date, selectedMonthDate.value);
+
+const monthOptions = computed(() => {
+  let numberOfMonths = 0;
+  if (recurrence === 'QUARTERLY') {
+    numberOfMonths = monthsInQuarter;
+  }
+  if (recurrence === 'BIENNIAL') {
+    numberOfMonths = monthsInSemester;
+  }
+  if (recurrence === 'YEARLY') {
+    numberOfMonths = monthsInYear;
+  }
+
+  return {
+    days: Array.from({ length: daysInMonth }, (__, day) => ({
+      value: day,
+      text: `${day + 1}`,
+    })),
+
+    months: Array.from({ length: numberOfMonths }, (__, month) => ({
+      value: month,
+      text:
+        recurrence === 'YEARLY'
+          ? dateLocale.value.localize.month(month as Month)
+          : t('$ezreeport.task.nextRunPicker.month:list', month + 1),
+    })),
+  };
+});
+
+const humanLabel = computed(() => {
+  const { days, months } = monthOptions.value;
+
+  let { text: day } =
+    days.find(({ value }) => value === offsetDaysValue.value) ?? {};
+
+  let { text: month } =
+    months.find(({ value }) => value === offsetMonthsValue.value) ?? {};
+
+  if (recurrence === 'DAILY') {
+    day = t('$ezreeport.task.nextRunPicker.days');
+    month = '';
+  } else if (recurrence === 'WEEKLY') {
+    day =
+      weekDayOptions.value.days.find(
+        ({ value }) => value === offsetDaysValue.value
+      )?.text || '';
+    month = '';
+  } else if (recurrence === 'MONTHLY') {
+    month = t('$ezreeport.task.nextRunPicker.months');
+  }
+
+  let key =
+    day && month
+      ? '$ezreeport.task.nextRunPicker.text'
+      : '$ezreeport.task.nextRunPicker.text:day';
+
+  return key ? t(key, { day, month }) : '';
+});
+
+const errorState = computed(() => {
+  if (!nextRun.value) {
+    return;
+  }
+
+  const { value } = nextRun;
+  const messages =
+    rules
+      ?.map((rule) => rule(value))
+      ?.filter((res) => typeof res === 'string') ?? [];
+
+  return {
+    status: messages.length > 0,
+    messages,
+  };
+});
+
+function resetOffset(previousRecurrence: Recurrence | undefined): void {
+  if (previousRecurrence === recurrence) {
+    return;
+  }
+
+  offset.value = {};
+}
+
+async function updateNextDate(): Promise<void> {
+  if (!nextRun.value) {
+    return;
+  }
+
+  nextDateResolving.value = true;
+  try {
+    nextRun.value = await getNextDateFromRecurrence(
+      recurrence,
+      today,
+      offset.value
+    );
+  } catch (err) {
+    handleEzrError(t('$ezreeport.errors.resolveNextDate'), err);
+  }
+  nextDateResolving.value = false;
+}
+
+watch(
+  (): Recurrence => recurrence,
+  (__, previous) => {
+    resetOffset(previous);
+    updateNextDate();
   },
-});
-const formattedQuarterMonth = computed(() =>
-  formatMonth(selectedQuarterMonth.value)
+  { immediate: true }
 );
 
-const firstDayOfWeek = computed(() =>
-  startOfWeek(nextRun.value, { locale: locale.value }).getDay()
-);
-
-const min = computed(() => startOfYear(nextRun.value).toISOString());
-const max = computed(() => endOfYear(nextRun.value).toISOString());
+watch(offset, () => updateNextDate());
 </script>
 
 <style lang="css" scoped>
@@ -226,5 +273,7 @@ const max = computed(() => endOfYear(nextRun.value).toISOString());
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 0.25rem;
+
+  text-align: center;
 }
 </style>

@@ -84,19 +84,6 @@
 
         <v-row>
           <v-col>
-            <v-text-field
-              v-model="name"
-              :label="$t('$ezreeport.name')"
-              :rules="[(val) => !!val || $t('$ezreeport.required')]"
-              :readonly="readonly"
-              prepend-icon="mdi-rename"
-              variant="underlined"
-              required
-              @update:model-value="hasNameChanged = true"
-            />
-          </v-col>
-
-          <v-col cols="3">
             <v-select
               v-model="recurrence"
               :label="$t('$ezreeport.task.recurrence')"
@@ -107,6 +94,35 @@
               prepend-icon="mdi-calendar-refresh"
               variant="underlined"
               required
+            />
+          </v-col>
+
+          <v-col>
+            <TaskNextRunPicker
+              v-model="nextRun"
+              v-model:offset="recurrenceOffset"
+              :recurrence="recurrence"
+              :readonly="readonly"
+              :rules="[
+                (val) =>
+                  (val && val > new Date()) ||
+                  $t('$ezreeport.errors.futureDate'),
+              ]"
+            />
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col>
+            <v-text-field
+              v-model="name"
+              :label="$t('$ezreeport.name')"
+              :rules="[(val) => !!val || $t('$ezreeport.required')]"
+              :readonly="readonly"
+              prepend-icon="mdi-rename"
+              variant="underlined"
+              required
+              @update:model-value="hasNameChanged = true"
             />
           </v-col>
         </v-row>
@@ -136,23 +152,6 @@
               v-model="description"
               :label="$t('$ezreeport.task.description')"
               prepend-icon="mdi-text"
-              variant="underlined"
-            />
-          </v-col>
-        </v-row>
-
-        <v-row>
-          <v-col>
-            <DateField
-              v-model="nextRun"
-              :label="$t('$ezreeport.task.nextRun')"
-              :loading="nextDateResolving"
-              :min="today"
-              :rules="[
-                (val) => !!val || $t('$ezreeport.required'),
-                (val) => val > today || $t('$ezreeport.errors.futureDate'),
-              ]"
-              prepend-icon="mdi-calendar-start"
               variant="underlined"
             />
           </v-col>
@@ -289,7 +288,7 @@
         :append-icon="isEditing ? 'mdi-content-save' : 'mdi-plus'"
         :disabled="!isValid || !hasChanged"
         color="primary"
-        @click="emit('update:modelValue', modelValue)"
+        @click="modelValue = modelValue"
       />
     </template>
 
@@ -346,26 +345,17 @@ import {
   hasTaskChanged,
   type TaskHelper,
 } from '~sdk/helpers/tasks';
-import { getNextDateFromRecurrence } from '~sdk/recurrence';
 import { createTemplateHelperFrom } from '~sdk/helpers/templates';
 import { getCurrentNamespaces } from '~sdk/auth';
 
-const today = new Date();
+const modelValue = defineModel<TaskHelper>({ required: true });
 
 // Components props
-const props = defineProps<{
-  /** The task to edit */
-  modelValue: TaskHelper;
+const { namespaceId } = defineProps<{
   /** Namespace to create/edit task in */
   namespaceId?: string;
   /** Should be readonly */
   readonly?: boolean;
-}>();
-
-// Components events
-const emit = defineEmits<{
-  /** Updated task */
-  (event: 'update:modelValue', value: TaskHelper): void;
 }>();
 
 // Utils composables
@@ -373,32 +363,30 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const { getOptionsFromMapping, refreshMapping, updateDateField } =
   useTemplateEditor({
-    // grid: props.modelValue.template.grid,
-    index: props.modelValue.template.index,
-    dateField: props.modelValue.template.dateField,
-    namespaceId: props.namespaceId,
+    // grid: modelValue.value.template.grid,
+    index: modelValue.value.template.index,
+    dateField: modelValue.value.template.dateField,
+    namespaceId,
   });
 
 /** Selected index */
-const selectedIndex = ref(0);
+const selectedIndex = shallowRef(0);
 /** Is task already exists */
-const isEditing = ref(!!props.modelValue.id);
+const isEditing = shallowRef(!!modelValue.value.id);
 /** Has name manually changed */
-const hasNameChanged = ref(!!props.modelValue.name);
+const hasNameChanged = shallowRef(!!modelValue.value.name);
 /** Has index manually changed */
-const hasIndexChanged = ref(!!props.modelValue.template.index);
-/** Is nextDate resolving */
-const nextDateResolving = ref(false);
+const hasIndexChanged = shallowRef(!!modelValue.value.template.index);
 /** Is basic form valid */
-const isFormValid = ref(false);
+const isFormValid = shallowRef(false);
 /** Is editor visible */
-const isEditorVisible = ref(false);
+const isEditorVisible = shallowRef(false);
 /** Is namespace list loading */
-const loadingNamespaces = ref(false);
+const loadingNamespaces = shallowRef(false);
 /** Is template list loading */
-const loadingTemplates = ref(false);
+const loadingTemplates = shallowRef(false);
 /** Is selected template loading */
-const loadingCurrentTemplate = ref(false);
+const loadingCurrentTemplate = shallowRef(false);
 
 /** Validate on mount */
 useTemplateVForm('formRef', { immediate: isEditing.value });
@@ -409,54 +397,62 @@ const isValid = computed(() => isFormValid.value);
 const dateMapping = computed(() => getOptionsFromMapping('date'));
 /** Has template changed since form is opened */
 const hasChanged = computed(
-  () => !props.modelValue.id || hasTaskChanged(props.modelValue)
+  () => !modelValue.value.id || hasTaskChanged(modelValue.value)
 );
 /** Name of the template */
 const name = computed({
-  get: () => props.modelValue.name,
+  get: () => modelValue.value.name,
   set: (value) => {
-    const params = props.modelValue;
+    const params = modelValue.value;
     params.name = value;
   },
 });
 /** Index of the template */
 const index = computed({
-  get: () => props.modelValue.template.index,
+  get: () => modelValue.value.template.index,
   set: (value) => {
-    const { template } = props.modelValue;
+    const { template } = modelValue.value;
     template.index = value;
   },
 });
 /** DateField of the template */
 const dateField = computed({
-  get: () => props.modelValue.template.dateField,
+  get: () => modelValue.value.template.dateField,
   set: (value) => {
-    const { template } = props.modelValue;
+    const { template } = modelValue.value;
     updateDateField(value || '');
     template.dateField = value;
   },
 });
 /** Namespace id of the task */
 const taskNamespaceId = computed({
-  get: () => props.modelValue.namespaceId,
+  get: () => modelValue.value.namespaceId,
   set: (value) => {
-    const params = props.modelValue;
+    const params = modelValue.value;
     params.namespaceId = value;
   },
 });
 /** Task recurrence */
 const recurrence = computed({
-  get: () => props.modelValue.recurrence,
+  get: () => modelValue.value.recurrence,
   set: (value) => {
-    const params = props.modelValue;
+    const params = modelValue.value;
     params.recurrence = value;
+  },
+});
+/** Task recurrence offset */
+const recurrenceOffset = computed({
+  get: () => modelValue.value.recurrenceOffset,
+  set: (value) => {
+    const params = modelValue.value;
+    params.recurrenceOffset = value;
   },
 });
 /** Task targets */
 const targets = computed({
-  get: () => props.modelValue.targets,
+  get: () => modelValue.value.targets,
   set: (value) => {
-    const params = props.modelValue;
+    const params = modelValue.value;
 
     if (value == null) {
       params.targets = [];
@@ -481,25 +477,25 @@ const targets = computed({
 });
 /** Task description */
 const description = computed({
-  get: () => props.modelValue.description,
+  get: () => modelValue.value.description,
   set: (value) => {
-    const params = props.modelValue;
+    const params = modelValue.value;
     params.description = value;
   },
 });
 /** Task next iteration */
 const nextRun = computed({
-  get: () => props.modelValue.nextRun,
+  get: () => modelValue.value.nextRun,
   set: (value) => {
-    const params = props.modelValue;
+    const params = modelValue.value;
     params.nextRun = value;
   },
 });
 /** Extended id */
 const extendedId = computed({
-  get: () => props.modelValue.extendedId,
+  get: () => modelValue.value.extendedId,
   set: (value) => {
-    const params = props.modelValue;
+    const params = modelValue.value;
     params.extendedId = value;
   },
 });
@@ -529,7 +525,7 @@ const mergedLayouts = computed(() => {
   }
 
   return getLayoutsOfHelpers(
-    props.modelValue.template,
+    modelValue.value.template,
     extendedTemplate.value.body
   );
 });
@@ -562,7 +558,7 @@ const templates = computedAsync(async () => {
   return items;
 }, []);
 /** Is form namespaced */
-const isNamespaced = computed(() => !!props.namespaceId);
+const isNamespaced = computed(() => !!namespaceId);
 /** Namespace list */
 const namespaces = computedAsync(async () => {
   let items: Omit<Namespace, 'fetchLogin' | 'fetchOptions'>[] = [];
@@ -574,7 +570,7 @@ const namespaces = computedAsync(async () => {
   loadingNamespaces.value = true;
   try {
     const currentNamespaces = await getCurrentNamespaces();
-    items = currentNamespaces.sort((namespaceA, namespaceB) =>
+    items = currentNamespaces.toSorted((namespaceA, namespaceB) =>
       namespaceA.name.localeCompare(namespaceB.name)
     );
   } catch (err) {
@@ -589,7 +585,7 @@ const namespace = computed(() =>
   namespaces.value.find((nsp) => nsp.id === taskNamespaceId.value)
 );
 
-function regenerateName() {
+function regenerateName(): void {
   if (hasNameChanged.value || !extendedTemplate.value) {
     return;
   }
@@ -597,28 +593,14 @@ function regenerateName() {
   name.value = `${extendedTemplate.value.name} ${rec.toLocaleLowerCase()}`;
 }
 
-function applyIndexFromTemplate() {
+function applyIndexFromTemplate(): void {
   if (hasIndexChanged.value || !extendedTemplate.value) {
     return;
   }
   index.value = extendedTemplate.value.body.index || '';
 }
 
-async function updateNextDate() {
-  if (nextDateResolving.value) {
-    return;
-  }
-
-  nextDateResolving.value = true;
-  try {
-    nextRun.value = await getNextDateFromRecurrence(recurrence.value);
-  } catch (err) {
-    handleEzrError(t('$ezreeport.errors.resolveNextDate'), err);
-  }
-  nextDateResolving.value = false;
-}
-
-function openEditor(layoutIndex: number = 0) {
+function openEditor(layoutIndex = 0): void {
   if (!isValid.value) {
     return;
   }
@@ -627,11 +609,10 @@ function openEditor(layoutIndex: number = 0) {
   isEditorVisible.value = true;
 }
 
-function closeEditor() {
+function closeEditor(): void {
   isEditorVisible.value = false;
 }
 
 watch(extendedTemplate, () => applyIndexFromTemplate);
 watch([extendedTemplate, recurrence], () => regenerateName());
-watch(recurrence, () => updateNextDate());
 </script>

@@ -164,6 +164,7 @@ const task = ref<InputTask>({
   lastExtended: props.modelValue.lastExtended,
   targets: props.modelValue.targets,
   recurrence: props.modelValue.recurrence,
+  recurrenceOffset: props.modelValue.recurrenceOffset,
   nextRun: props.modelValue.nextRun,
   enabled: props.modelValue.enabled,
   namespace: props.modelValue.namespace,

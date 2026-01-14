@@ -40,6 +40,7 @@ export const Existing: Story = {
       fetchOptions: { index: '*-publisher*', dateField: 'X_Date_Month' },
       hidden: false,
       recurrence: 'YEARLY',
+      recurrenceOffset: {},
       createdAt: new Date('2024-07-12T06:47:17.163Z'),
       updatedAt: new Date('2024-11-25T08:54:47.387Z'),
     },

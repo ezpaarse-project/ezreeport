@@ -69,6 +69,14 @@
       "period": "Period",
       "description": "Description",
       "extended": "Extended template",
+      "nextRunPicker": {
+        "label": "The report will be sent",
+        "days": "day",
+        "months": "month",
+        "month:list": "{n}st month",
+        "text": "Every {day} of every {month}",
+        "text:day": "Every {day}"
+      },
       "recurrenceList": {
         "DAILY": "Daily",
         "WEEKLY": "Weekly",

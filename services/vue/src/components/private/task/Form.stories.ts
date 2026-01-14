@@ -78,6 +78,7 @@ export const Existing: Story = {
       },
       targets: ['ezteam@couperin.org'],
       recurrence: 'DAILY',
+      recurrenceOffset: {},
       nextRun: new Date('2024-12-04T06:00:00.240Z'),
       lastRun: new Date('2024-12-03T06:00:00.240Z'),
       enabled: true,

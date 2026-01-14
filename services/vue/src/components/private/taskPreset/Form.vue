@@ -59,7 +59,9 @@
               @update:model-value="hasNameChanged = true"
             />
           </v-col>
+        </v-row>
 
+        <v-row>
           <v-col>
             <v-select
               v-model="preset.recurrence"
@@ -69,10 +71,20 @@
               prepend-icon="mdi-calendar-refresh"
               variant="underlined"
               required
-              @update:model-value="regenerateName()"
+              @update:model-value="onRecurrenceChange()"
+            />
+          </v-col>
+
+          <v-col>
+            <TaskNextRunPicker
+              v-model:offset="preset.recurrenceOffset"
+              :recurrence="preset.recurrence"
+              :readonly="readonly"
             />
           </v-col>
         </v-row>
+
+        <v-divider class="mb-2" />
 
         <v-row>
           <v-col cols="6">
@@ -135,9 +147,7 @@ import {
   type TaskPreset,
 } from '~sdk/task-presets';
 
-const modelValue = defineModel<TaskPreset | undefined>({
-  required: false,
-});
+const modelValue = defineModel<TaskPreset | undefined>();
 
 // Components props
 defineProps<{
@@ -153,17 +163,18 @@ const { getOptionsFromMapping, refreshMapping } = useTemplateEditor();
 const isValid = shallowRef(false);
 /** Has name manually changed */
 const hasNameChanged = shallowRef(false);
+/** Is template list loading */
+const loadingTemplates = shallowRef(false);
 /** Preset to edit */
 const { cloned: preset } = useCloned<InputTaskPreset>(
   modelValue.value ?? {
     name: '',
     recurrence: 'MONTHLY',
+    recurrenceOffset: {},
     templateId: '',
     hidden: false,
   }
 );
-/** Is template list loading */
-const loadingTemplates = shallowRef(false);
 
 /** Validate on mount */
 useTemplateVForm('formRef', { immediate: !!modelValue.value?.id });
@@ -234,6 +245,11 @@ function regenerateName(): void {
     `$ezreeport.task.recurrenceList.${preset.value.recurrence}`
   );
   preset.value.name = `${currentTemplate.value?.name} ${recurrence.toLocaleLowerCase()}`;
+}
+
+function onRecurrenceChange(): void {
+  preset.value.recurrenceOffset = {};
+  regenerateName();
 }
 
 async function onTemplateChange(id: string): Promise<void> {
