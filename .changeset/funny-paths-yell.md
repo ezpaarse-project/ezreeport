@@ -7,4 +7,4 @@
 '@ezpaarse-project/ezreeport-vue': minor
 ---
 
-✨ can now explicetly delay reports
+✨ can now explicitly delay reports
