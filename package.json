@@ -16,7 +16,7 @@
   "scripts": {
     "prepare": "husky",
     "publish": "bin/publish.sh",
-    "turbo:install": "npm i -g turbo@^2.5.4"
+    "turbo:install": "npm i -g turbo@^2.7.3"
   },
   "lint-staged": {
     "package.json": [
