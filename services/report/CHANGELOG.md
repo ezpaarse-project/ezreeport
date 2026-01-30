@@ -1,5 +1,21 @@
 # ezreeport-report
 
+## 3.2.0-rc.0
+
+### Minor Changes
+
+- 8c872a3: ✨ can now explicitly delay reports
+- 6f7103f: ✨ added filters to task presets
+
+### Patch Changes
+
+- Updated dependencies [8c872a3]
+- Updated dependencies [361bf43]
+  - @ezreeport/database@1.3.0-rc.0
+  - @ezreeport/models@0.1.0-rc.0
+  - @ezreeport/heartbeats@0.0.1-rc.0
+  - @ezreeport/rpc@0.0.1-rc.0
+
 ## 3.1.0
 
 ### Minor Changes
