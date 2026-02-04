@@ -91,6 +91,7 @@
 import type { Day, Month } from 'date-fns';
 import { daysInWeek, monthsInQuarter, monthsInYear } from 'date-fns/constants';
 
+import type { TaskRecurrenceOffset } from '~sdk/tasks';
 import {
   type Recurrence,
   type RecurrenceOffset,
@@ -260,12 +261,15 @@ watch(
   (): Recurrence => recurrence,
   (__, previous) => {
     resetOffset(previous);
+  }
+);
+watch(
+  (): [Recurrence, TaskRecurrenceOffset] => [recurrence, offset.value],
+  () => {
     updateNextDate();
   },
   { immediate: true }
 );
-
-watch(offset, () => updateNextDate());
 </script>
 
 <style lang="css" scoped>

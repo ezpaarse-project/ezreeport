@@ -288,7 +288,7 @@
         :append-icon="isEditing ? 'mdi-content-save' : 'mdi-plus'"
         :disabled="!isValid || !hasChanged"
         color="primary"
-        @click="modelValue = modelValue"
+        @click="$emit('update:model-value', modelValue)"
       />
     </template>
 
@@ -348,14 +348,18 @@ import {
 import { createTemplateHelperFrom } from '~sdk/helpers/templates';
 import { getCurrentNamespaces } from '~sdk/auth';
 
-const modelValue = defineModel<TaskHelper>({ required: true });
-
 // Components props
-const { namespaceId } = defineProps<{
+const { modelValue, namespaceId } = defineProps<{
+  /** Task to create/update - not using defineModel cause using refs */
+  modelValue: TaskHelper;
   /** Namespace to create/edit task in */
   namespaceId?: string;
   /** Should be readonly */
   readonly?: boolean;
+}>();
+
+defineEmits<{
+  'update:model-value': [TaskHelper];
 }>();
 
 // Utils composables
@@ -363,20 +367,20 @@ const { namespaceId } = defineProps<{
 const { t } = useI18n();
 const { getOptionsFromMapping, refreshMapping, updateDateField } =
   useTemplateEditor({
-    // grid: modelValue.value.template.grid,
-    index: modelValue.value.template.index,
-    dateField: modelValue.value.template.dateField,
+    // grid: modelValue.template.grid,
+    index: modelValue.template.index,
+    dateField: modelValue.template.dateField,
     namespaceId,
   });
 
 /** Selected index */
 const selectedIndex = shallowRef(0);
 /** Is task already exists */
-const isEditing = shallowRef(!!modelValue.value.id);
+const isEditing = shallowRef(!!modelValue.id);
 /** Has name manually changed */
-const hasNameChanged = shallowRef(!!modelValue.value.name);
+const hasNameChanged = shallowRef(!!modelValue.name);
 /** Has index manually changed */
-const hasIndexChanged = shallowRef(!!modelValue.value.template.index);
+const hasIndexChanged = shallowRef(!!modelValue.template.index);
 /** Is basic form valid */
 const isFormValid = shallowRef(false);
 /** Is editor visible */
@@ -396,63 +400,61 @@ const isValid = computed(() => isFormValid.value);
 /** Mapping options for dateField */
 const dateMapping = computed(() => getOptionsFromMapping('date'));
 /** Has template changed since form is opened */
-const hasChanged = computed(
-  () => !modelValue.value.id || hasTaskChanged(modelValue.value)
-);
+const hasChanged = computed(() => !modelValue.id || hasTaskChanged(modelValue));
 /** Name of the template */
 const name = computed({
-  get: () => modelValue.value.name,
+  get: () => modelValue.name,
   set: (value) => {
-    const params = modelValue.value;
+    const params = modelValue;
     params.name = value;
   },
 });
 /** Index of the template */
 const index = computed({
-  get: () => modelValue.value.template.index,
+  get: () => modelValue.template.index,
   set: (value) => {
-    const { template } = modelValue.value;
+    const { template } = modelValue;
     template.index = value;
   },
 });
 /** DateField of the template */
 const dateField = computed({
-  get: () => modelValue.value.template.dateField,
+  get: () => modelValue.template.dateField,
   set: (value) => {
-    const { template } = modelValue.value;
+    const { template } = modelValue;
     updateDateField(value || '');
     template.dateField = value;
   },
 });
 /** Namespace id of the task */
 const taskNamespaceId = computed({
-  get: () => modelValue.value.namespaceId,
+  get: () => modelValue.namespaceId,
   set: (value) => {
-    const params = modelValue.value;
+    const params = modelValue;
     params.namespaceId = value;
   },
 });
 /** Task recurrence */
 const recurrence = computed({
-  get: () => modelValue.value.recurrence,
+  get: () => modelValue.recurrence,
   set: (value) => {
-    const params = modelValue.value;
+    const params = modelValue;
     params.recurrence = value;
   },
 });
 /** Task recurrence offset */
 const recurrenceOffset = computed({
-  get: () => modelValue.value.recurrenceOffset,
+  get: () => modelValue.recurrenceOffset,
   set: (value) => {
-    const params = modelValue.value;
+    const params = modelValue;
     params.recurrenceOffset = value;
   },
 });
 /** Task targets */
 const targets = computed({
-  get: () => modelValue.value.targets,
+  get: () => modelValue.targets,
   set: (value) => {
-    const params = modelValue.value;
+    const params = modelValue;
 
     if (value == null) {
       params.targets = [];
@@ -477,25 +479,25 @@ const targets = computed({
 });
 /** Task description */
 const description = computed({
-  get: () => modelValue.value.description,
+  get: () => modelValue.description,
   set: (value) => {
-    const params = modelValue.value;
+    const params = modelValue;
     params.description = value;
   },
 });
 /** Task next iteration */
 const nextRun = computed({
-  get: () => modelValue.value.nextRun,
+  get: () => modelValue.nextRun,
   set: (value) => {
-    const params = modelValue.value;
+    const params = modelValue;
     params.nextRun = value;
   },
 });
 /** Extended id */
 const extendedId = computed({
-  get: () => modelValue.value.extendedId,
+  get: () => modelValue.extendedId,
   set: (value) => {
-    const params = modelValue.value;
+    const params = modelValue;
     params.extendedId = value;
   },
 });
@@ -524,10 +526,7 @@ const mergedLayouts = computed(() => {
     return [];
   }
 
-  return getLayoutsOfHelpers(
-    modelValue.value.template,
-    extendedTemplate.value.body
-  );
+  return getLayoutsOfHelpers(modelValue.template, extendedTemplate.value.body);
 });
 /** Recurrence options */
 const recurrenceOptions = computed(() =>
