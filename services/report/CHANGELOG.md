@@ -1,5 +1,11 @@
 # ezreeport-report
 
+## 3.2.0-rc.1
+
+### Patch Changes
+
+- a4ad8b1: 🐛 fixed regressions introduced with offsets
+
 ## 3.2.0-rc.0
 
 ### Minor Changes
