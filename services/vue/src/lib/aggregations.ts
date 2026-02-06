@@ -17,17 +17,17 @@ export type InnerAggregation =
   | InnerBaseAggregation;
 
 export const isRawAggregation = (
-  agg: InnerAggregation
-): agg is FigureRawAggregation => 'raw' in agg && agg.raw != null;
+  agg: InnerAggregation | null
+): agg is FigureRawAggregation => !!agg && 'raw' in agg && agg.raw != null;
 
 export const isBaseAggregation = (
-  agg: InnerAggregation
-): agg is InnerBaseAggregation => 'type' in agg && agg.type != null;
+  agg: InnerAggregation | null
+): agg is InnerBaseAggregation => !agg || ('type' in agg && agg.type != null);
 
 export const isFiltersAggregation = (
-  agg: InnerAggregation
+  agg: InnerAggregation | null
 ): agg is FigureFilterAggregation =>
-  isBaseAggregation(agg) && agg.type === 'filters';
+  isBaseAggregation(agg) && agg?.type === 'filters';
 
 const typeAliases = Array.from(elasticTypeAliases.entries());
 const findAliases = (search: string): string[] =>

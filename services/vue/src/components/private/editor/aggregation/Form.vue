@@ -85,8 +85,8 @@ const emit = defineEmits<{
 const isValid = ref(false);
 
 /** Aggregation to edit */
-const { cloned: aggregation } = useCloned<InnerAggregation>(
-  props.modelValue ?? { type: '', field: '' }
+const { cloned: aggregation } = useCloned<InnerAggregation | null>(
+  props.modelValue ?? null
 );
 /** Backup of the aggregation in the last mode (simple/advanced) */
 const { cloned: aggregationBackup, sync: syncBackup } = useCloned(aggregation, {
@@ -130,7 +130,10 @@ watch(
   aggregation,
   () => {
     vform.value?.validate();
-    emit('update:modelValue', aggregation.value as FigureAggregation);
+    emit(
+      'update:modelValue',
+      (aggregation.value ?? undefined) as FigureAggregation | undefined
+    );
   },
   { deep: true }
 );
