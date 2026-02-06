@@ -171,6 +171,7 @@ const { cloned: preset } = useCloned<InputTaskPreset>(
     name: '',
     recurrence: 'MONTHLY',
     recurrenceOffset: {},
+    fetchOptions: {},
     templateId: '',
     hidden: false,
   }

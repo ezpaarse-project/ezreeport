@@ -547,7 +547,7 @@ function openAdvancedForm(current?: AdvancedFormCurrent): void {
         data.index || preset?.fetchOptions?.index,
         preset?.fetchOptions?.dateField,
         undefined,
-        data.filters
+        data.filters || preset?.fetchOptions?.filters
       );
 
       value = createTaskHelper(

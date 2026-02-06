@@ -2,7 +2,7 @@
   <v-row>
     <v-col cols="12">
       <EditorAggregationTypeAutocomplete
-        v-model="modelValue.type"
+        v-model="aggType"
         :disabled="disabled"
         :readonly="readonly"
         :allowed-type="allowedType"
@@ -10,7 +10,7 @@
     </v-col>
 
     <v-slide-y-transition>
-      <v-col v-if="modelValue.type" cols="12">
+      <v-col v-if="modelValue?.type" cols="12">
         <EditorAggregationFieldAutocomplete
           v-model="modelValue.field"
           :disabled="disabled"
@@ -22,7 +22,11 @@
 
     <v-slide-y-transition group>
       <template
-        v-if="isMetric === false && modelValue.type !== 'date_histogram'"
+        v-if="
+          modelValue &&
+          isMetric === false &&
+          modelValue.type !== 'date_histogram'
+        "
       >
         <v-col cols="12">
           <v-text-field
@@ -51,7 +55,7 @@
         <v-col cols="6">
           <v-slide-x-transition>
             <v-text-field
-              v-if="showMissing"
+              v-if="modelValue && showMissing"
               v-model="modelValue.missing"
               :label="$t('$ezreeport.editor.aggregation.missing:label')"
               :readonly="readonly"
@@ -77,7 +81,9 @@ import type { InnerBaseAggregation } from '~/lib/aggregations';
 
 // Component props
 /** Aggregation to edit */
-const modelValue = defineModel<InnerBaseAggregation>({ required: true });
+const modelValue = defineModel<InnerBaseAggregation | null>({
+  required: true,
+});
 
 defineProps<{
   /** Should be disabled */
@@ -88,10 +94,24 @@ defineProps<{
   allowedType?: AggregationType;
 }>();
 
+const aggType = computed({
+  get: () => modelValue.value?.type ?? '',
+  set: (type) => {
+    if (type === '') {
+      modelValue.value = null;
+      return;
+    }
+    modelValue.value = { ...modelValue.value, type, field: '' };
+  },
+});
 /** Current aggregation size */
 const currentSize = computed<string>({
-  get: () => `${modelValue.value.size ?? 10}`,
+  get: () => `${modelValue.value?.size ?? 10}`,
   set: (value) => {
+    if (!modelValue.value) {
+      return;
+    }
+
     let size = 10;
 
     if (value) {
@@ -106,8 +126,12 @@ const currentSize = computed<string>({
 });
 /** If we should show the missing values */
 const showMissing = computed({
-  get: () => !!modelValue.value.missing,
+  get: () => !!modelValue.value?.missing,
   set: (value) => {
+    if (!modelValue.value) {
+      return;
+    }
+
     modelValue.value = {
       ...modelValue.value,
       missing: value ? 'Missing' : undefined,
@@ -117,7 +141,7 @@ const showMissing = computed({
 /** Is the aggregation a metric one */
 const isMetric = computed(() => {
   const aggDef = aggregationTypes.find(
-    ({ name }) => modelValue.value.type === name
+    ({ name }) => modelValue.value?.type === name
   );
   if (!aggDef) {
     return;

@@ -337,7 +337,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
 
       const nextRun = calcNextDateFromRecurrence(
         new Date(),
-        taskPreset.recurrence
+        taskPreset.recurrence,
+        taskPreset.recurrenceOffset
       );
 
       const task = await createTask({

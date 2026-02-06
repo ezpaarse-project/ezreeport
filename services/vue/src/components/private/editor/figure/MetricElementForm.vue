@@ -220,8 +220,10 @@ watch(
   () => label.value,
   (newLabel, oldLabel) => {
     if (
-      (newLabel.aggregation && isRawAggregation(newLabel.aggregation)) ||
-      (oldLabel.aggregation && isRawAggregation(oldLabel.aggregation))
+      !newLabel.aggregation ||
+      isRawAggregation(newLabel.aggregation) ||
+      !oldLabel.aggregation ||
+      isRawAggregation(oldLabel.aggregation)
     ) {
       return;
     }
