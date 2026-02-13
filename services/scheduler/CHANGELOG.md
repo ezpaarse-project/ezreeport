@@ -1,5 +1,21 @@
 # ezreeport-scheduler
 
+## 1.3.0
+
+### Minor Changes
+
+- 8c872a3: ✨ can now explicitly delay reports
+
+### Patch Changes
+
+- Updated dependencies [8c872a3]
+- Updated dependencies [361bf43]
+  - @ezreeport/database@1.3.0
+  - @ezreeport/models@0.1.0
+  - @ezreeport/crons@0.0.1
+  - @ezreeport/heartbeats@0.0.1
+  - @ezreeport/rpc@0.0.1
+
 ## 1.3.0-rc.0
 
 ### Minor Changes

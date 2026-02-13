@@ -1,5 +1,15 @@
 # ezreeport-files
 
+## 1.1.1
+
+### Patch Changes
+
+- Updated dependencies [8c872a3]
+  - @ezreeport/models@0.1.0
+  - @ezreeport/crons@0.0.1
+  - @ezreeport/heartbeats@0.0.1
+  - @ezreeport/rpc@0.0.1
+
 ## 1.1.1-rc.0
 
 ### Patch Changes
