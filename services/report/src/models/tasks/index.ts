@@ -24,9 +24,9 @@ const logger = appLogger.child({ scope: 'models', model: 'tasks' });
 const { id: defaultTemplateId } = config.defaultTemplate;
 
 function applyFilters(filters: TaskQueryFiltersType): Prisma.TaskWhereInput {
-  const where: Prisma.TaskWhereInput = {};
-
-  where.extendedId = filters.extendedId;
+  const where: Prisma.TaskWhereInput = {
+    extendedId: filters.extendedId,
+  };
 
   if (filters.query) {
     where.OR = [

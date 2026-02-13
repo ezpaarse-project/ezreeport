@@ -28,6 +28,7 @@ export async function changeTaskPresetVisibility(
     name: base.name,
     templateId: base.templateId,
     recurrence: base.recurrence,
+    recurrenceOffset: base.recurrenceOffset,
     fetchOptions: base.fetchOptions,
     hidden,
   });

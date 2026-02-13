@@ -1,6 +1,7 @@
 import { endOfDay } from '@ezreeport/dates';
 import { ensureSchema } from '@ezreeport/models/lib/zod';
 import { Task, type TaskType } from '@ezreeport/models/tasks';
+import { RecurrenceOffset } from '@ezreeport/models/recurrence';
 import { calcNextDateFromRecurrence } from '@ezreeport/models/lib/periods';
 
 import prisma from '~/lib/prisma';
@@ -46,10 +47,19 @@ export async function editTaskAfterGeneration(
 ): Promise<TaskType> {
   let nextRun: Date | undefined;
   if (lastRun) {
-    const { recurrence } = await prisma.task.findUniqueOrThrow({
+    const data = await prisma.task.findUniqueOrThrow({
       where: { id },
+      select: {
+        recurrence: true,
+        recurrenceOffset: true,
+      },
     });
-    nextRun = calcNextDateFromRecurrence(lastRun, recurrence);
+
+    nextRun = calcNextDateFromRecurrence(
+      lastRun,
+      data.recurrence,
+      RecurrenceOffset.safeParse(data.recurrenceOffset).data
+    );
   }
 
   const task = await prisma.task.update({

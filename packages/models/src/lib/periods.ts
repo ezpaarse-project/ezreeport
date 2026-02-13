@@ -12,49 +12,52 @@ import {
   isAfter,
   endOfYear,
   startOfYear,
+  getDaysInMonth,
   type Duration,
+  constants,
 } from '@ezreeport/dates';
 
-import type { RecurrenceType } from '../types/recurrence';
+import type { RecurrenceOffsetType, RecurrenceType } from '../types/recurrence';
 import type { ReportPeriodType } from '../types/reports';
+import { limitNumber } from './utils';
 
 /**
  * Get period based on Recurrence
  *
- * @param today The today's date
+ * @param reference The date of reference
  * @param recurrence The recurrence
  * @param offset The offset, negative for previous, positive for next, 0 for current
  *
  * @returns The period
  */
 export function calcPeriodFromRecurrence(
-  today: Date,
+  reference: Date,
   recurrence: RecurrenceType,
   offset = 0
 ): ReportPeriodType {
   switch (recurrence) {
     case 'DAILY': {
-      const target = add(today, { days: offset });
+      const target = add(reference, { days: offset });
       return { start: startOfDay(target), end: endOfDay(target) };
     }
 
     case 'WEEKLY': {
-      const target = add(today, { weeks: offset });
+      const target = add(reference, { weeks: offset });
       return { start: startOfWeek(target), end: endOfWeek(target) };
     }
 
     case 'MONTHLY': {
-      const target = add(today, { months: offset });
+      const target = add(reference, { months: offset });
       return { start: startOfMonth(target), end: endOfMonth(target) };
     }
 
     case 'QUARTERLY': {
-      const target = add(today, { months: 3 * offset });
+      const target = add(reference, { months: 3 * offset });
       return { start: startOfQuarter(target), end: endOfQuarter(target) };
     }
 
     case 'BIENNIAL': {
-      const target = add(today, { months: 6 * offset });
+      const target = add(reference, { months: 6 * offset });
       const year = getYear(target);
       const midYear = new Date(year, 5, 30);
       if (isAfter(target, midYear)) {
@@ -65,7 +68,7 @@ export function calcPeriodFromRecurrence(
     }
 
     case 'YEARLY': {
-      const target = add(today, { years: offset });
+      const target = add(reference, { years: offset });
       return { start: startOfYear(target), end: endOfYear(target) };
     }
 
@@ -73,6 +76,29 @@ export function calcPeriodFromRecurrence(
       throw new Error('Recurrence not found');
   }
 }
+
+const safeOffsetInMonth = (
+  offset: RecurrenceOffsetType,
+  targetMonth: Date
+): Duration => {
+  const daysInMonth = getDaysInMonth(targetMonth);
+  return {
+    days: limitNumber(0, offset.days ?? 0, daysInMonth - 1),
+  };
+};
+
+const safeOffsetInYear = (
+  offset: RecurrenceOffsetType,
+  targetMonth: Date,
+  monthsIn: number
+): Duration => {
+  const months = limitNumber(0, offset.months ?? 0, monthsIn - 1);
+
+  return {
+    months,
+    ...safeOffsetInMonth(offset, add(targetMonth, { months })),
+  };
+};
 
 /**
  * Calculate next run date for the task
@@ -84,32 +110,48 @@ export function calcPeriodFromRecurrence(
  */
 export function calcNextDateFromRecurrence(
   initial: Date,
-  recurrence: RecurrenceType
+  recurrence: RecurrenceType,
+  offset: RecurrenceOffsetType = {}
 ): Date {
-  const duration: Duration = {};
+  const nextPeriod = calcPeriodFromRecurrence(initial, recurrence, 1);
 
+  let safeOffset: Duration = {};
   switch (recurrence) {
     case 'DAILY':
-      duration.days = 1;
+      // DAILY can't have offsets, as it'll be sent... everyday...
       break;
     case 'WEEKLY':
-      duration.weeks = 1;
+      safeOffset = {
+        days: limitNumber(0, offset.days ?? 0, constants.daysInWeek - 1),
+      };
       break;
     case 'MONTHLY':
-      duration.months = 1;
+      safeOffset = safeOffsetInMonth(offset, nextPeriod.start);
       break;
     case 'QUARTERLY':
-      duration.months = 3;
+      safeOffset = safeOffsetInYear(
+        offset,
+        nextPeriod.start,
+        constants.monthsInQuarter
+      );
       break;
     case 'BIENNIAL':
-      duration.months = 6;
+      safeOffset = safeOffsetInYear(
+        offset,
+        nextPeriod.start,
+        constants.monthsInSemester
+      );
       break;
     case 'YEARLY':
-      duration.years = 1;
+      safeOffset = safeOffsetInYear(
+        offset,
+        nextPeriod.start,
+        constants.monthsInYear
+      );
       break;
     default:
       throw new Error('Recurrence not found');
   }
 
-  return add(initial, duration);
+  return add(nextPeriod.start, safeOffset);
 }

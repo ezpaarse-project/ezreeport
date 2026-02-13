@@ -28,8 +28,10 @@ model Task {
   lastExtended Json?
   /// Email adresses to send generated report
   targets      String[]
-  /// Defines when the report will be generated
+  /// Defines how often the report will be generated
   recurrence   Recurrence
+  /// Defines when the report will be generated, based on recurrence
+  recurrenceOffset Json       @default("{}")
   /// Next time the report will be generated
   nextRun      DateTime
   /// Last time the report has been generated
@@ -78,8 +80,10 @@ model TaskPreset {
   fetchOptions Json?
   /// Should the preset be hidden to users (except admins)
   hidden       Boolean    @default(false)
-  /// Defines when the report will be generated
+  /// Defines how often the report will be generated
   recurrence   Recurrence
+  /// Defines when the report will be generated, based on recurrence
+  recurrenceOffset Json       @default("{}")
   /// When the preset was created
   createdAt    DateTime   @default(now())
   /// When the preset was updated for the last time

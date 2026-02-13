@@ -5,7 +5,7 @@ import enLocale from '../src/locales/en.json';
 import frLocale from '../src/locales/fr.json';
 
 // oxlint-disable-next-line no-explicit-any
-export default createI18n<any>({
+export const i18n = createI18n<any>({
   legacy: false,
   locale: 'en',
   fallbackLocale: 'en',

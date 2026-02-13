@@ -1,9 +1,8 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
-import { startOfDay } from '@ezreeport/dates';
 import { z } from '@ezreeport/models/lib/zod';
-import { calcPeriodFromRecurrence } from '@ezreeport/models/lib/periods';
+import { calcNextDateFromRecurrence } from '@ezreeport/models/lib/periods';
 
 import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
 import { Access } from '~/models/access';
@@ -314,6 +313,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         // We already checked the task preset exists in preHandler
         const { id } = request.params;
         const preset = (await taskPresets.getTaskPreset(id))!;
+        // If filters are provided, trust user
+        if ((preset.fetchOptions?.filters?.length ?? 0) > 0) {
+          return;
+        }
 
         const similarTaskExists = await doesSimilarTaskExist(
           request.body.namespaceId,
@@ -332,13 +335,11 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       // We already checked the task preset exists in preHandler
       const taskPreset = (await taskPresets.getTaskPreset(request.params.id))!;
 
-      // Set next run to start of recurrence (start of week for weekly, etc.)
-      const currentPeriod = calcPeriodFromRecurrence(
+      const nextRun = calcNextDateFromRecurrence(
         new Date(),
         taskPreset.recurrence,
-        1
+        taskPreset.recurrenceOffset
       );
-      const nextRun = startOfDay(currentPeriod.start);
 
       const task = await createTask({
         name: request.body.name,
@@ -349,9 +350,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           version: 2,
           index: request.body.index,
           dateField: taskPreset.fetchOptions?.dateField,
-          filters: request.body.filters,
+          filters: request.body.filters || taskPreset.fetchOptions?.filters,
         },
         recurrence: taskPreset.recurrence,
+        recurrenceOffset: taskPreset.recurrenceOffset,
         extendedId: taskPreset.templateId,
         nextRun,
         enabled: true,

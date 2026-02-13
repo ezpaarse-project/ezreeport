@@ -102,3 +102,6 @@ export function parseBulkResults<Type>(
   }
   return results;
 }
+
+export const limitNumber = (min: number, value: number, max: number): number =>
+  Math.max(min, Math.min(value, max));

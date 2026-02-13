@@ -3,16 +3,16 @@ import 'vuetify/styles';
 import { createVuetify, type VuetifyOptions } from 'vuetify';
 import { aliases, mdi } from 'vuetify/iconsets/mdi';
 import { createVueI18nAdapter } from 'vuetify/locale/adapters/vue-i18n';
-import DateFnsAdapter from '@date-io/date-fns';
 import { useI18n } from 'vue-i18n';
 
 import { Tooltip } from 'vuetify/directives';
 
-import i18n from './i18n';
+import { i18n } from '../i18n';
+import { LocaleDateFnsAdapter } from './date-io';
 
 const config: VuetifyOptions = {
   date: {
-    adapter: DateFnsAdapter,
+    adapter: LocaleDateFnsAdapter,
   },
   icons: {
     defaultSet: 'mdi',
@@ -39,11 +39,4 @@ const config: VuetifyOptions = {
   },
 };
 
-declare module 'vuetify' {
-  namespace DateModule {
-    // oxlint-disable-next-line no-empty-interface, consistent-type-definitions, no-empty-object-type
-    interface Adapter extends DateFnsAdapter {}
-  }
-}
-
-export default createVuetify(config);
+export const vuetify = createVuetify(config);

@@ -8,12 +8,14 @@
     :prepend-icon="prependIcon"
     :hint="hint"
     :persistent-hint="hint !== undefined"
+    hide-details="auto"
     readonly
   />
 
   <v-menu
     :activator="fieldRef?.$el"
     :close-on-content-click="false"
+    :disabled="readonly"
     min-width="350"
     max-width="350"
   >
@@ -30,8 +32,6 @@
 </template>
 
 <script setup lang="ts">
-import { format as formatDate } from 'date-fns';
-
 const props = defineProps<{
   modelValue: Date;
   format?: string;
@@ -49,13 +49,14 @@ const props = defineProps<{
   hint?: string;
   min?: Date;
   max?: Date;
+  readonly?: boolean;
 }>();
 
 const emit = defineEmits<{
   (event: 'update:modelValue', value: Date): void;
 }>();
 
-const { locale } = useDateLocale();
+const { formatDateWithTZ } = useDateLocale();
 
 /** Ref on text field */
 const fieldRef = useTemplateRef('fieldRef');
@@ -66,7 +67,7 @@ const date = computed({
 });
 
 const formatted = computed(() =>
-  formatDate(props.modelValue, props.format || 'PPP', { locale: locale.value })
+  formatDateWithTZ(props.modelValue, props.format || 'PPP')
 );
 
 const innerRules = computed(() =>

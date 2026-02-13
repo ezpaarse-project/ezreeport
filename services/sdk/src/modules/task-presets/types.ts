@@ -1,6 +1,9 @@
 import type { TemplateFilter } from '~/modules/templates/types';
 import type { TemplateTag } from '~/modules/template-tags/types';
-import type { TaskRecurrence } from '~/modules/tasks/types';
+import type {
+  TaskRecurrence,
+  TaskRecurrenceOffset,
+} from '~/modules/tasks/types';
 
 export interface TaskPreset {
   /** Preset ID */
@@ -11,15 +14,19 @@ export interface TaskPreset {
   templateId: string;
   /** Recurrence */
   recurrence: TaskRecurrence;
+  /** Recurrence offset */
+  recurrenceOffset: TaskRecurrenceOffset;
   /** Options used to fetch data for the report */
-  fetchOptions: {
+  fetchOptions?: {
     /** Default elastic date field to fetch data from */
-    dateField: string;
+    dateField?: string;
+    /** Global filters used when fetching data */
+    filters?: TemplateFilter[];
     /** Default elastic index to fetch data from */
-    index: string;
+    index?: string;
   };
   /** If preset is hidden */
-  hidden: boolean;
+  hidden?: boolean;
   /** Preset creation date */
   createdAt: Date;
   /** Preset last update date */
@@ -37,8 +44,10 @@ export interface TaskPreset {
 /**
  * Task preset in raw format
  */
-export interface RawTaskPreset
-  extends Omit<TaskPreset, 'createdAt' | 'updatedAt'> {
+export interface RawTaskPreset extends Omit<
+  TaskPreset,
+  'createdAt' | 'updatedAt'
+> {
   createdAt: string;
   updatedAt?: string | null;
 }

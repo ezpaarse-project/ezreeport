@@ -10,6 +10,11 @@ export type TaskRecurrence =
   | 'BIENNIAL'
   | 'YEARLY';
 
+export interface TaskRecurrenceOffset {
+  days?: number;
+  months?: number;
+}
+
 /**
  * Layout of a task
  */
@@ -62,6 +67,8 @@ export interface Task {
   targets: string[];
   /** Task recurrence */
   recurrence: TaskRecurrence;
+  /** Task recurrence offset */
+  recurrenceOffset: TaskRecurrenceOffset;
   /** Next run date, must be in the future */
   nextRun: Date;
   /** Last run date */
@@ -85,11 +92,10 @@ export interface Task {
 /**
  * Task in raw format
  */
-export interface RawTask
-  extends Omit<
-    Task,
-    'nextRun' | 'lastRun' | 'namespace' | 'createdAt' | 'updatedAt'
-  > {
+export interface RawTask extends Omit<
+  Task,
+  'nextRun' | 'lastRun' | 'namespace' | 'createdAt' | 'updatedAt'
+> {
   nextRun: string;
   lastRun?: string | null;
   createdAt: string;

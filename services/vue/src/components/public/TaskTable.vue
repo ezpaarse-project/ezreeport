@@ -381,7 +381,7 @@ const namespaces = computedAsync(async () => {
 
   try {
     const currentNamespaces = await getCurrentNamespaces();
-    items = currentNamespaces.sort((namespaceA, namespaceB) =>
+    items = currentNamespaces.toSorted((namespaceA, namespaceB) =>
       namespaceA.name.localeCompare(namespaceB.name)
     );
   } catch (err) {
@@ -544,10 +544,10 @@ function openAdvancedForm(current?: AdvancedFormCurrent): void {
       const { data, preset } = current.create;
 
       const template = createTaskBodyHelper(
-        data.index || preset?.fetchOptions.index,
-        preset?.fetchOptions.dateField,
+        data.index || preset?.fetchOptions?.index,
+        preset?.fetchOptions?.dateField,
         undefined,
-        data.filters
+        data.filters || preset?.fetchOptions?.filters
       );
 
       value = createTaskHelper(
@@ -648,7 +648,7 @@ async function onAdvancedSave(task: TaskHelper): Promise<void> {
   }
 }
 
-// oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
+// oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then, promise/always-return, prefer-top-level-await
 refreshPermissions().then(() => {
   arePermissionsReady.value = true;
 });

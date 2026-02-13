@@ -1,5 +1,19 @@
 # @ezpaarse-project/ezreeport-vue
 
+## 3.2.0-rc.1
+
+### Patch Changes
+
+- 05d46a3: 🐛 fixed issue where changing aggregation type would make form dissapear
+- a4ad8b1: 🐛 fixed regressions introduced with offsets
+
+## 3.2.0-rc.0
+
+### Minor Changes
+
+- 8c872a3: ✨ can now explicitly delay reports
+- 6f7103f: ✨ added filters to task presets
+
 ## 3.1.0
 
 ### Minor Changes

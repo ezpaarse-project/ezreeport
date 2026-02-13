@@ -1,6 +1,6 @@
 {
   "name": "@ezpaarse-project/ezreeport-sdk-js",
-  "version": "3.1.0",
+  "version": "3.2.0-rc.0",
   "description": "JS SDK to communicate with ezReeport API",
   "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
   "bugs": {
@@ -134,7 +134,7 @@
     "date-fns": "catalog:sdk",
     "nanoid": "catalog:sdk",
     "object-hash": "catalog:sdk",
-    "ofetch": "catalog:sdk",
+    "ofetch": "catalog:",
     "socket.io-client": "catalog:sdk"
   },
   "devDependencies": {

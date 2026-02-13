@@ -71,8 +71,6 @@ const modelValue = defineModel<string | string[] | undefined>({
 
 // Component props
 const props = defineProps<{
-  /** Values to edit */
-  modelValue?: string | string[];
   /** Is the field readonly */
   readonly?: boolean;
   /** Icon to prepend */
@@ -170,7 +168,7 @@ const errorMessages = computed(
     ])
 );
 
-async function scrollToBottom() {
+async function scrollToBottom(): Promise<void> {
   await nextTick();
   const element = scrollerRef.value?.$el as HTMLDivElement | undefined;
   if (!element) {
@@ -182,7 +180,7 @@ async function scrollToBottom() {
 /**
  * Add a new value
  */
-function addValue() {
+function addValue(): void {
   if (elements.value.some(({ value }) => value === '')) {
     return;
   }
@@ -194,7 +192,7 @@ function addValue() {
 /**
  * Remove a value
  */
-function remValue(id: string) {
+function remValue(id: string): void {
   const values = elements.value.filter(({ id: el }) => el !== id);
   elements.value = values;
 }
@@ -202,7 +200,7 @@ function remValue(id: string) {
 /**
  * Edit a value
  */
-function editValue(id: string, newValue: string) {
+function editValue(id: string, newValue: string): void {
   const values = elements.value.map((el) => {
     if (el.id !== id) {
       return el;
@@ -214,7 +212,7 @@ function editValue(id: string, newValue: string) {
 }
 
 watch(
-  () => props.modelValue,
+  () => modelValue.value,
   (val) => {
     let values: string[] = [];
     if (Array.isArray(val)) {

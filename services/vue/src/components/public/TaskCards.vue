@@ -404,8 +404,8 @@ function openAdvancedForm(current?: AdvancedFormCurrent): void {
       const { data, preset } = current.create;
 
       const template = createTaskBodyHelper(
-        data.index || preset?.fetchOptions.index,
-        preset?.fetchOptions.dateField,
+        data.index || preset?.fetchOptions?.index,
+        preset?.fetchOptions?.dateField,
         undefined,
         data.filters
       );
@@ -497,22 +497,7 @@ watch(tasks, () => {
   tagMap.value = new Map(entries);
 });
 
-// watch(
-//   () => filters.value.recurrence,
-//   (val) => {
-//     if (!val) {
-//       currentFilterTab.value = 'all';
-//       return;
-//     }
-
-//     const isTab = filterTabs.value.some((tab) => tab.value === val);
-//     if (isTab && currentFilterTab.value !== val) {
-//       currentFilterTab.value = `${val}`;
-//     }
-//   }
-// );
-
-// oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
+// oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then, promise/always-return, prefer-top-level-await
 refreshPermissions().then(() => {
   arePermissionsReady.value = true;
 });

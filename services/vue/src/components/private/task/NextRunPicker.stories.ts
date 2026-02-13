@@ -21,7 +21,7 @@ export const Daily: Story = {
   }),
   args: {
     recurrence: 'DAILY',
-    modelValue: undefined,
+    offset: {},
   },
 };
 
@@ -35,7 +35,7 @@ export const Weekly: Story = {
   }),
   args: {
     recurrence: 'WEEKLY',
-    modelValue: undefined,
+    offset: {},
   },
 };
 
@@ -49,7 +49,7 @@ export const Monthly: Story = {
   }),
   args: {
     recurrence: 'MONTHLY',
-    modelValue: undefined,
+    offset: {},
   },
 };
 
@@ -63,7 +63,7 @@ export const Quarterly: Story = {
   }),
   args: {
     recurrence: 'QUARTERLY',
-    modelValue: undefined,
+    offset: {},
   },
 };
 
@@ -77,7 +77,7 @@ export const Biennial: Story = {
   }),
   args: {
     recurrence: 'BIENNIAL',
-    modelValue: undefined,
+    offset: {},
   },
 };
 
@@ -91,7 +91,7 @@ export const Yearly: Story = {
   }),
   args: {
     recurrence: 'YEARLY',
-    modelValue: undefined,
+    offset: {},
   },
 };
 
@@ -104,8 +104,9 @@ export const Existing: Story = {
     template: '<TaskNextRunPicker v-bind="args" />',
   }),
   args: {
-    recurrence: 'DAILY',
+    recurrence: 'BIENNIAL',
     modelValue: new Date('2024-12-04T06:00:00.240Z'),
+    offset: {},
   },
 };
 
@@ -118,8 +119,9 @@ export const Readonly: Story = {
     template: '<TaskNextRunPicker v-bind="args" />',
   }),
   args: {
-    recurrence: 'DAILY',
+    recurrence: 'YEARLY',
     modelValue: new Date('2024-12-04T06:00:00.240Z'),
+    offset: {},
     readonly: true,
   },
 };

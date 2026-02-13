@@ -16,3 +16,16 @@ export const Recurrence = z.enum([
  * Type for a recurrence
  */
 export type RecurrenceType = z.infer<typeof Recurrence>;
+
+/**
+ * Validation for a recurrence offset
+ */
+export const RecurrenceOffset = z.object({
+  days: z.number().min(0).optional(),
+  months: z.number().min(0).optional(),
+});
+
+/**
+ * Type for a recurrence offset
+ */
+export type RecurrenceOffsetType = z.infer<typeof RecurrenceOffset>;

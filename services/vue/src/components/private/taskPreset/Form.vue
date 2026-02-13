@@ -59,7 +59,9 @@
               @update:model-value="hasNameChanged = true"
             />
           </v-col>
+        </v-row>
 
+        <v-row>
           <v-col>
             <v-select
               v-model="preset.recurrence"
@@ -69,15 +71,25 @@
               prepend-icon="mdi-calendar-refresh"
               variant="underlined"
               required
-              @update:model-value="regenerateName()"
+              @update:model-value="onRecurrenceChange()"
+            />
+          </v-col>
+
+          <v-col>
+            <TaskNextRunPicker
+              v-model:offset="preset.recurrenceOffset"
+              :recurrence="preset.recurrence"
+              :readonly="readonly"
             />
           </v-col>
         </v-row>
 
+        <v-divider class="mb-2" />
+
         <v-row>
           <v-col cols="6">
             <IndexSelector
-              v-model="preset.fetchOptions.index"
+              v-model="fetchOptions.index"
               :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :readonly="readonly"
               required
@@ -87,15 +99,22 @@
 
           <v-col cols="6">
             <v-combobox
-              v-model="preset.fetchOptions.dateField"
+              v-model="fetchOptions.dateField"
               :label="$t('$ezreeport.template.dateField')"
               :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :items="dateMapping"
               :readonly="readonly"
+              :return-object="false"
               prepend-icon="mdi-calendar-search"
               variant="underlined"
               required
             />
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col>
+            <EditorFilterList v-model="filters" />
           </v-col>
         </v-row>
       </v-form>
@@ -128,16 +147,11 @@ import {
   type TaskPreset,
 } from '~sdk/task-presets';
 
-// Components props
-const props = defineProps<{
-  modelValue: TaskPreset | undefined;
-  readonly?: boolean;
-}>();
+const modelValue = defineModel<TaskPreset | undefined>();
 
-// Components events
-const emit = defineEmits<{
-  /** Updated template */
-  (event: 'update:modelValue', value: TaskPreset): void;
+// Components props
+defineProps<{
+  readonly?: boolean;
 }>();
 
 // Utils composables
@@ -146,25 +160,49 @@ const { t } = useI18n();
 const { getOptionsFromMapping, refreshMapping } = useTemplateEditor();
 
 /** Is basic form valid */
-const isValid = ref(false);
+const isValid = shallowRef(false);
 /** Has name manually changed */
-const hasNameChanged = ref(false);
-/** Preset to edit */
-const preset = ref<InputTaskPreset>({
-  name: props.modelValue?.name ?? '',
-  fetchOptions: props.modelValue?.fetchOptions ?? { dateField: '', index: '' },
-  hidden: props.modelValue?.hidden ?? false,
-  recurrence: props.modelValue?.recurrence ?? 'MONTHLY',
-  templateId: props.modelValue?.templateId ?? '',
-});
+const hasNameChanged = shallowRef(false);
 /** Is template list loading */
-const loadingTemplates = ref(false);
+const loadingTemplates = shallowRef(false);
+/** Preset to edit */
+const { cloned: preset } = useCloned<InputTaskPreset>(
+  modelValue.value ?? {
+    name: '',
+    recurrence: 'MONTHLY',
+    recurrenceOffset: {},
+    fetchOptions: {},
+    templateId: '',
+    hidden: false,
+  }
+);
 
 /** Validate on mount */
-useTemplateVForm('formRef', { immediate: !!props.modelValue?.id });
+useTemplateVForm('formRef', { immediate: !!modelValue.value?.id });
 
 /** Mapping options for dateField */
 const dateMapping = computed(() => getOptionsFromMapping('date'));
+/** Fetch Options */
+const fetchOptions = computed({
+  get: () => preset.value.fetchOptions ?? {},
+  set: (val) => {
+    preset.value.fetchOptions = val;
+  },
+});
+/** Filters of task */
+const filters = computed({
+  get: () =>
+    new Map((fetchOptions.value.filters ?? []).map((fil) => [fil.name, fil])),
+  set: (value) => {
+    if (!value) {
+      fetchOptions.value.filters = undefined;
+      return;
+    }
+
+    const values = Array.from(value.values());
+    fetchOptions.value.filters = values;
+  },
+});
 /** Templates list */
 const templates = computedAsync(async () => {
   let items: Omit<Template, 'body'>[] = [];
@@ -200,8 +238,8 @@ const recurrences = computed(() =>
   }))
 );
 
-function regenerateName() {
-  if (props.modelValue?.name || hasNameChanged.value) {
+function regenerateName(): void {
+  if (modelValue.value?.name || hasNameChanged.value) {
     return;
   }
   const recurrence = t(
@@ -210,16 +248,18 @@ function regenerateName() {
   preset.value.name = `${currentTemplate.value?.name} ${recurrence.toLocaleLowerCase()}`;
 }
 
-async function onTemplateChange(id: string) {
+function onRecurrenceChange(): void {
+  preset.value.recurrenceOffset = {};
+  regenerateName();
+}
+
+async function onTemplateChange(id: string): Promise<void> {
   try {
     const template = await getTemplate(id);
 
-    preset.value = {
-      ...preset.value,
-      fetchOptions: {
-        dateField: template.body.dateField,
-        index: template.body.index || '',
-      },
+    preset.value.fetchOptions = {
+      dateField: template.body.dateField,
+      index: template.body.index || '',
     };
     regenerateName();
   } catch (err) {
@@ -227,21 +267,27 @@ async function onTemplateChange(id: string) {
   }
 }
 
-async function save() {
+async function save(): Promise<void> {
   try {
-    let result;
-    if (props.modelValue?.id) {
-      result = await upsertTaskPreset({
-        ...preset.value,
-        id: props.modelValue.id,
+    const body = {
+      ...preset.value,
+      // Remove readonly properties
+      id: undefined,
+      createdAt: undefined,
+      updatedAt: undefined,
+      template: undefined,
+    };
+
+    if (modelValue.value?.id) {
+      modelValue.value = await upsertTaskPreset({
+        ...body,
+        id: modelValue.value.id,
       });
     } else {
-      result = await createTaskPreset(preset.value);
+      modelValue.value = await createTaskPreset(body);
     }
-
-    emit('update:modelValue', result);
   } catch (err) {
-    const msg = props.modelValue?.id
+    const msg = modelValue.value?.id
       ? t('$ezreeport.task-preset.errors.edit')
       : t('$ezreeport.task-preset.errors.create');
     handleEzrError(msg, err);

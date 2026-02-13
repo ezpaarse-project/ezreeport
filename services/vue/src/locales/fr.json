@@ -69,6 +69,14 @@
       "period": "Période",
       "description": "Description",
       "extended": "Modèle de base",
+      "nextRunPicker": {
+        "label": "Le rapport sera envoyé",
+        "days": "jours",
+        "months": "mois",
+        "month:list": "{n}er mois",
+        "text": "Tous les {day} de chaque {month}",
+        "text:day": "Tous les {day}"
+      },
       "recurrenceList": {
         "DAILY": "Quotidien",
         "WEEKLY": "Hebdomadaire",
