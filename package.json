@@ -2,7 +2,7 @@
   "name": "ezreeport",
   "version": "0.0.0",
   "private": true,
-  "description": "Reporting service for ezMESURE/ezCOUNTER",
+  "description": "Reporting service for ezPAARSE/ezCOUNTER",
   "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
   "bugs": {
     "url": "https://github.com/ezpaarse-project/ezreeport/issues"
@@ -15,7 +15,6 @@
   "author": "oxypomme",
   "scripts": {
     "prepare": "husky",
-    "publish": "bin/publish.sh",
     "turbo:install": "npm i -g turbo@^2.7.3"
   },
   "lint-staged": {

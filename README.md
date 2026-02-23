@@ -1,11 +1,12 @@
-# ezReeport
+# ezREEPORT
 
-Reporting service for ezMESURE/ezCOUNTER
+Reporting service for ezPAARSE/ezCOUNTER
 
 ## Prerequisites
-* [docker](https://www.docker.com/)
-* [docker-compose](https://docs.docker.com/compose/)
-* [pnpm](https://pnpm.io/)
+
+- [docker](https://www.docker.com/)
+- [docker-compose](https://docs.docker.com/compose/)
+- [pnpm](https://pnpm.io/)
 
 ## Installation
 
