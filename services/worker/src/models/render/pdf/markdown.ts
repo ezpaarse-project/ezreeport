@@ -37,13 +37,19 @@ const mdLogger: Console = {
  * @returns The data fetched
  */
 const fetcher: MdImgRemoteRequestor = async (url, method) => {
-  const { data, headers } = await http({
+  const { _data, headers } = await http.raw(url, {
     method,
-    url,
-    responseType: 'arraybuffer',
+    responseType: 'arrayBuffer',
   });
 
-  return { data, headers: headers as Record<string, string> };
+  if (_data) {
+    return {
+      data: _data,
+      headers: Object.fromEntries(headers.entries()),
+    };
+  }
+
+  throw new Error(`${url} didn't send any data`);
 };
 
 /**
