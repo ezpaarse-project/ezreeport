@@ -1,5 +1,27 @@
 # @ezreeport/database-v1.0.0 (2025-08-08)
 
+## 1.3.0
+
+### Minor Changes
+
+- 8c872a3: ✨ can now explicitly delay reports
+- 361bf43: 🗃️ added migration for recurrence offset
+
+### Patch Changes
+
+- @ezreeport/heartbeats@0.0.1
+
+## 1.3.0-rc.0
+
+### Minor Changes
+
+- 8c872a3: ✨ can now explicitly delay reports
+- 361bf43: 🗃️ added migration for recurrence offset
+
+### Patch Changes
+
+- @ezreeport/heartbeats@0.0.1-rc.0
+
 ## 1.2.0
 
 ### Minor Changes

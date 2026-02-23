@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Checkout tags 🛎️
-        run: git fetch --tags
+        run: git fetch --tags --force
 
       - name: Get tags of image ⚙️
         id: docker_tags
