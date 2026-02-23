@@ -239,7 +239,7 @@ function resetOffset(previousRecurrence: Recurrence | undefined): void {
   offset.value = {};
 }
 
-async function updateNextDate(): Promise<void> {
+async function updateNextRun(): Promise<void> {
   if (!nextRun.value) {
     return;
   }
@@ -257,19 +257,27 @@ async function updateNextDate(): Promise<void> {
   nextDateResolving.value = false;
 }
 
+// Reset offset when recurrence changes
 watch(
   (): Recurrence => recurrence,
   (__, previous) => {
     resetOffset(previous);
   }
 );
+// Updates nextRun when recurrence or offset changes
 watch(
   (): [Recurrence, TaskRecurrenceOffset] => [recurrence, offset.value],
   () => {
-    updateNextDate();
-  },
-  { immediate: true }
+    updateNextRun();
+  }
 );
+
+onMounted(() => {
+  // If nextRun is in the past, update it
+  if ((nextRun.value?.getTime() ?? 0) < today.getTime()) {
+    updateNextRun();
+  }
+});
 </script>
 
 <style lang="css" scoped>
