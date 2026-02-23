@@ -1,5 +1,11 @@
 # ezreeport-worker
 
+## 1.1.4
+
+### Patch Changes
+
+- 0e0bc36: 🚑 fixed error when fetching images for markdown figures
+
 ## 1.1.3
 
 ### Patch Changes

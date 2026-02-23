@@ -58,7 +58,7 @@ export const http = createFetch({
         return;
       }
 
-      const { hostname } = new URL(request.url);
+      const { hostname } = new URL(request);
       if (bannedDomainsRegexp.some((regexp) => regexp.test(hostname))) {
         throw new Error(`Cannot fetch banned domain: ${hostname}`);
       }
