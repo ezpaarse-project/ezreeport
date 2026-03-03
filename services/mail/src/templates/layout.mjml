@@ -1,10 +1,18 @@
 <mjml>
   <mj-head>
     {% block title %}{% endblock %}
-    <mj-font name="Roboto" href="https://fonts.googleapis.com/css?family=Roboto:400,500"></mj-font>
+    <mj-font
+      name="Roboto"
+      href="https://fonts.googleapis.com/css?family=Roboto:400,500"
+    ></mj-font>
     <mj-attributes>
       <mj-all font-family="Roboto, Helvetica, sans-serif"></mj-all>
-      <mj-text font-weight="400" font-size="14px" color="#616161" line-height="24px"></mj-text>
+      <mj-text
+        font-weight="400"
+        font-size="14px"
+        color="#616161"
+        line-height="24px"
+      ></mj-text>
       <mj-section padding="0px" />
       <mj-class name="headline" font-weight="500" font-size="20px" />
       <mj-class name="subheading" font-weight="500" font-size="16px" />
@@ -35,10 +43,7 @@
 
       <mj-section>
         <mj-column width="150px" padding="0 10px" vertical-align="middle">
-          <mj-image
-            src="cid:ezreeport.png"
-            padding="0"
-          />
+          <mj-image src="cid:ezreeport.png" padding="0" />
         </mj-column>
 
         <mj-column width="150px" padding="0 10px" vertical-align="middle">
@@ -52,9 +57,21 @@
         <mj-group width="50%" vertical-align="middle">
           <mj-column>
             <mj-social align="right" padding="0">
-              <mj-social-element name="web" src="cid:web.png" href="https://readmetrics.org/" />
-              <mj-social-element name="youtube" src="cid:youtube.png" href="https://www.youtube.com/channel/UCcR-0UE9WjYiwS4fMG2T4tQ" />
-              <mj-social-element name="github-noshare" src="cid:github.png" href="https://github.com/ezpaarse-project/" />
+              <mj-social-element
+                name="web"
+                src="cid:web.png"
+                href="https://readmetrics.org/"
+              />
+              <mj-social-element
+                name="youtube"
+                src="cid:youtube.png"
+                href="https://www.youtube.com/channel/UCcR-0UE9WjYiwS4fMG2T4tQ"
+              />
+              <mj-social-element
+                name="github-noshare"
+                src="cid:github.png"
+                href="https://github.com/ezpaarse-project/"
+              />
             </mj-social>
           </mj-column>
         </mj-group>
@@ -64,7 +81,8 @@
     <mj-section>
       <mj-column>
         <mj-text align="center" font-size="12px">
-          Pour toute question, contactez-nous à l'adresse <a href="mailto:ezteam@couperin.org">ezteam@couperin.org</a>
+          Pour toute question, contactez-nous à l'adresse
+          <a href="mailto:ezteam@couperin.org">ezteam@couperin.org</a>
         </mj-text>
       </mj-column>
     </mj-section>

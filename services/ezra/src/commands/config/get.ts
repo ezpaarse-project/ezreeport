@@ -9,9 +9,7 @@ import { BaseCommand } from '../../lib/oclif/BaseCommand.js';
 export default class ConfigGet extends BaseCommand<typeof ConfigGet> {
   static description = 'Show configs & profiles loaded';
 
-  static examples = [
-    '<%= config.bin %> <%= command.id %>',
-  ];
+  static examples = ['<%= config.bin %> <%= command.id %>'];
 
   static flags = {
     profile: Flags.string({
@@ -36,7 +34,9 @@ export default class ConfigGet extends BaseCommand<typeof ConfigGet> {
   };
 
   private showMain(field?: string) {
-    const config = field ? lodash.pick(this.ezraConfig.config, [field]) : this.ezraConfig.config;
+    const config = field
+      ? lodash.pick(this.ezraConfig.config, [field])
+      : this.ezraConfig.config;
     if (Object.keys(config).length <= 0) {
       return;
     }
@@ -72,7 +72,9 @@ export default class ConfigGet extends BaseCommand<typeof ConfigGet> {
       this.showMain(args.field);
     }
 
-    const profiles = flags.profile ? [[flags.profile]] : this.ezraConfig.getLoadedProfiles();
+    const profiles = flags.profile
+      ? [[flags.profile]]
+      : this.ezraConfig.getLoadedProfiles();
 
     for (const [name] of profiles) {
       this.showProfile(name, args.field);

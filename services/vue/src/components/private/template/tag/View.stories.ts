@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof TemplateTagView>;
 
 export const Empty: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TemplateTagView },
     setup() {
       return { args };
@@ -25,7 +25,7 @@ export const Empty: Story = {
 };
 
 export const Existing: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TemplateTagView },
     setup() {
       return { args };
@@ -33,9 +33,6 @@ export const Existing: Story = {
     template: '<TemplateTagView v-bind="args" />',
   }),
   args: {
-    modelValue: [
-      { name: 'ezPAARSE' },
-      { name: 'bibCNRS', color: '#001E3D' },
-    ],
+    modelValue: [{ name: 'ezPAARSE' }, { name: 'bibCNRS', color: '#001E3D' }],
   },
 };

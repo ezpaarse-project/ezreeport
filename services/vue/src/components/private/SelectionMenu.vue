@@ -10,7 +10,7 @@
           position="fixed"
           location="bottom right"
           size="large"
-          style="bottom: 1rem; right: 1rem;"
+          style="bottom: 1rem; right: 1rem"
           v-bind="menu"
         />
       </v-slide-y-reverse-transition>
@@ -32,12 +32,12 @@
 
 <script lang="ts" setup>
 defineProps<{
-  modelValue: string[],
-  text: string,
+  modelValue: string[];
+  text: string;
 }>();
 
 defineEmits<{
-  (event: 'update:modelValue', selection: string[]): void
+  (event: 'update:modelValue', selection: string[]): void;
 }>();
 
 const open = ref(false);

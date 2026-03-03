@@ -2,7 +2,7 @@ import { onMounted } from 'vue';
 import type { VForm } from 'vuetify/components';
 
 type UseVFormOptions = {
-  immediate: boolean
+  immediate: boolean;
 };
 
 export default function useTemplateVForm(key: string, opts?: UseVFormOptions) {

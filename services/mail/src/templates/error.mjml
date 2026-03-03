@@ -1,36 +1,33 @@
-{% extends "layout.mjml" %}
-
-{% block title %}
+{% extends "layout.mjml" %} {% block title %}
 <mj-title>Rapport ezREEPORT du {{ date }} en erreur.</mj-title>
-{% endblock %}
-
-{% block content %}
+{% endblock %} {% block content %}
 
 <mj-section>
   <mj-column>
     <mj-text>
       <p>Bonjour,</p>
       <p>
-        La génération du rapport « <strong>{{ name }}</strong> » pour l'établissement 
-        « <strong>{{ namespace }}</strong> » a rencontré une erreur. Ce faisant la tâche de
-        reporting a été désactivée, pensez donc à la réactiver une fois l'erreur corrigée.
+        La génération du rapport « <strong>{{ name }}</strong> » pour
+        l'établissement « <strong>{{ namespace }}</strong> » a rencontré une
+        erreur. Ce faisant la tâche de reporting a été désactivée, pensez donc à
+        la réactiver une fois l'erreur corrigée.
       </p>
+      <p>Informations sur l'erreur :</p>
+      <ul>
+        <li><strong>Rapport</strong>: {{ name }}</li>
+        <li><strong>Établissement</strong>: {{ namespace }}</li>
+        <li><strong>Date</strong>: {{ date }} (UTC+0)</li>
+        <li><strong>Recurrence</strong>: {{ recurrence }}</li>
+        <li><strong>Période</strong>: {{ period.start }} ~ {{ period.end }}</li>
+        <li>
+          <strong>Message</strong>: <em>{{ error }}</em>
+        </li>
+      </ul>
+      <p>Vous trouverez plus d'informations en pièce jointe.</p>
       <p>
-        Informations sur l'erreur :
-        <ul>
-          <li><strong>Rapport</strong>: {{ name }}</li>
-          <li><strong>Établissement</strong>: {{ namespace }}</li>
-          <li><strong>Date</strong>: {{ date }} (UTC+0)</li>
-          <li><strong>Recurrence</strong>: {{ recurrence }}</li>
-          <li><strong>Période</strong>: {{ period.start }} ~ {{ period.end }}</li>
-          <li><strong>Message</strong>: <em>{{ error }}</em></li>
-        </ul>
-        Vous trouverez plus d'informations en pièce jointe.
-      </p>
-      <p>
-        Ce message est envoyé automatiquement par l'application ezREEPORT,
-        vous le recevez parce que vous êtes le correspondant de l'établissement générant
-        la tâche de rapport.
+        Ce message est envoyé automatiquement par l'application ezREEPORT, vous
+        le recevez parce que vous êtes le correspondant de l'établissement
+        générant la tâche de rapport.
       </p>
     </mj-text>
 

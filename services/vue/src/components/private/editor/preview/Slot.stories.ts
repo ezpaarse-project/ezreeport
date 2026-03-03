@@ -14,7 +14,7 @@ export default meta;
 type Story = StoryObj<typeof EditorPreviewSlot>;
 
 export const Default: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorPreviewSlot },
     setup() {
       return { args };
@@ -46,7 +46,7 @@ export const Default: Story = {
       undefined,
       undefined,
       undefined,
-      [0],
+      [0]
     ),
   },
 };

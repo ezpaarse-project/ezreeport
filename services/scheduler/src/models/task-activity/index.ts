@@ -16,7 +16,9 @@ import {
  *
  * @returns The created activity
  */
-export async function createActivity(data: InputTaskActivityType): Promise<TaskActivityType> {
+export async function createActivity(
+  data: InputTaskActivityType
+): Promise<TaskActivityType> {
   const activity = await prisma.taskActivity.create({
     data: {
       ...data,

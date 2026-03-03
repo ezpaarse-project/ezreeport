@@ -27,7 +27,9 @@ const migrateEsFilter = (filter: any, i: number, isNot = false) => {
     const value = filter.match_phrase[field];
     if (value && typeof value !== 'object') {
       return {
-        name: [field, 'is', isNot ? 'not' : '', value].filter((x) => !!x).join(' '),
+        name: [field, 'is', isNot ? 'not' : '', value]
+          .filter((x) => !!x)
+          .join(' '),
         field,
         isNot,
         value,
@@ -37,21 +39,26 @@ const migrateEsFilter = (filter: any, i: number, isNot = false) => {
   if ('bool' in filter && filter.bool) {
     const subFilters = filter.bool.should;
     if (subFilters) {
-      const values = subFilters.map(
-        (f: any) => {
+      const values = subFilters
+        .map((f: any) => {
           const field = Object.keys(f.match_phrase ?? {})[0];
           const value = f.match_phrase?.[field];
           return {
-            name: [field, 'is', isNot ? 'not' : '', value].filter((x) => !!x).join(' '),
+            name: [field, 'is', isNot ? 'not' : '', value]
+              .filter((x) => !!x)
+              .join(' '),
             field,
             isNot,
             value,
           };
-        },
-      ).filter((f: any) => f.field);
+        })
+        .filter((f: any) => f.field);
 
       const firstField = values[0]?.field;
-      if (values.length > 0 && values.every((f: any) => f.field === firstField)) {
+      if (
+        values.length > 0 &&
+        values.every((f: any) => f.field === firstField)
+      ) {
         const valueParts = values.slice(0, 2).map((f: any) => f.value);
         const valueText = [...valueParts, 'etc.'].join(', ');
 
@@ -109,9 +116,13 @@ const migrateEsAggregation = (aggregation: any) => {
  * @returns A map with the name of the aggregation as the key and the
  * migrated aggregation as the value
  */
-const mapEsAggregations = (aggregations: any) => new Map<string, any>(
-  (aggregations ?? []).map((agg: any) => [agg.name, migrateEsAggregation(agg)]),
-);
+const mapEsAggregations = (aggregations: any) =>
+  new Map<string, any>(
+    (aggregations ?? []).map((agg: any) => [
+      agg.name,
+      migrateEsAggregation(agg),
+    ])
+  );
 
 /**
  * Migrate filters from the old format to the new format
@@ -120,20 +131,20 @@ const mapEsAggregations = (aggregations: any) => new Map<string, any>(
  *
  * @returns The migrated filters
  */
-const migrateFilters = (filters: { filter: any[], must_not: any[] } | undefined) => {
+const migrateFilters = (
+  filters: { filter: any[]; must_not: any[] } | undefined
+) => {
   if (!filters) {
     return [];
   }
 
   const res = [];
   if (filters.filter) {
-    res.push(
-      ...filters.filter.map((filter, i) => migrateEsFilter(filter, i)),
-    );
+    res.push(...filters.filter.map((filter, i) => migrateEsFilter(filter, i)));
   }
   if (filters.must_not) {
     res.push(
-      ...filters.must_not.map((filter, i) => migrateEsFilter(filter, i, true)),
+      ...filters.must_not.map((filter, i) => migrateEsFilter(filter, i, true))
     );
   }
 
@@ -168,34 +179,41 @@ const migrateMetricParams = ({ params, fetchOptions }: any) => {
  */
 const migrateTableParams = ({ params, fetchOptions }: any) => {
   const { dataKey, maxLength } = params;
-  const bucketMap = mapEsAggregations([...fetchOptions.buckets, fetchOptions.metric ?? {}]);
+  const bucketMap = mapEsAggregations([
+    ...fetchOptions.buckets,
+    fetchOptions.metric ?? {},
+  ]);
   const columnStyles = new Map(Object.entries(params.columnStyles ?? {}));
 
-  const columns = (params.columns as any[]).map(({ dataKey: dK, ...column }, i) => {
-    let aggregation;
-    let matches;
-    if (
-      // oxlint-disable-next-line no-constant-binary-expression
-      dK === 'key' ? (matches = ['', dataKey]) : false
-      // oxlint-disable-next-line no-constant-binary-expression
-      || (matches = /^(?:.+\.)?(.+)\.key$/.exec(dK)) !== null
-      // oxlint-disable-next-line no-constant-binary-expression
-      || (matches = /^(?:.+\.)?(.+)\.value$/.exec(dK)) !== null
-    ) {
-      aggregation = bucketMap.get(matches?.[1]);
-    }
+  const columns = (params.columns as any[]).map(
+    ({ dataKey: dK, ...column }, i) => {
+      let aggregation;
+      let matches;
+      if (
+        // oxlint-disable-next-line no-constant-binary-expression
+        dK === 'key'
+          ? (matches = ['', dataKey])
+          : false ||
+            // oxlint-disable-next-line no-constant-binary-expression
+            (matches = /^(?:.+\.)?(.+)\.key$/.exec(dK)) !== null ||
+            // oxlint-disable-next-line no-constant-binary-expression
+            (matches = /^(?:.+\.)?(.+)\.value$/.exec(dK)) !== null
+      ) {
+        aggregation = bucketMap.get(matches?.[1]);
+      }
 
-    if (aggregation && !aggregation.size && i === 0) {
-      aggregation.size = maxLength;
-    }
+      if (aggregation && !aggregation.size && i === 0) {
+        aggregation.size = maxLength;
+      }
 
-    return {
-      ...column,
-      metric: i === params.columns.length - 1,
-      styles: columnStyles.get(dK),
-      aggregation,
-    };
-  });
+      return {
+        ...column,
+        metric: i === params.columns.length - 1,
+        styles: columnStyles.get(dK),
+        aggregation,
+      };
+    }
+  );
 
   return {
     ...params,
@@ -215,7 +233,10 @@ const migrateTableParams = ({ params, fetchOptions }: any) => {
  * @returns The migrated params
  */
 const migrateOtherParams = ({ params, fetchOptions }: any) => {
-  const bucketMap = mapEsAggregations([...fetchOptions.buckets, fetchOptions.metric ?? {}]);
+  const bucketMap = mapEsAggregations([
+    ...fetchOptions.buckets,
+    fetchOptions.metric ?? {},
+  ]);
   const { dataKey } = params;
 
   const labelAgg = bucketMap.get(dataKey) ?? {};
@@ -259,33 +280,34 @@ const migrateOtherParams = ({ params, fetchOptions }: any) => {
  *
  * @returns Migrated figures
  */
-const migrateFigures = (figures: any[] | undefined) => (figures ?? []).map((figure: any) => {
-  const filters = migrateFilters(figure.fetchOptions?.filters);
-  let params = {};
-  switch (figure.type) {
-    case 'md':
-      break;
+const migrateFigures = (figures: any[] | undefined) =>
+  (figures ?? []).map((figure: any) => {
+    const filters = migrateFilters(figure.fetchOptions?.filters);
+    let params = {};
+    switch (figure.type) {
+      case 'md':
+        break;
 
-    case 'metric':
-      params = migrateMetricParams(figure);
-      break;
+      case 'metric':
+        params = migrateMetricParams(figure);
+        break;
 
-    case 'table':
-      params = migrateTableParams(figure);
-      break;
+      case 'table':
+        params = migrateTableParams(figure);
+        break;
 
-    default:
-      params = migrateOtherParams(figure);
-      break;
-  }
+      default:
+        params = migrateOtherParams(figure);
+        break;
+    }
 
-  return {
-    ...figure,
-    fetchOptions: undefined,
-    filters,
-    params,
-  };
-});
+    return {
+      ...figure,
+      fetchOptions: undefined,
+      filters,
+      params,
+    };
+  });
 
 /**
  * Migrate layouts
@@ -294,11 +316,12 @@ const migrateFigures = (figures: any[] | undefined) => (figures ?? []).map((figu
  *
  * @returns Migrated layouts
  */
-const migrateLayouts = (layouts: any[] | undefined) => (layouts ?? []).map((layout: any) => ({
-  ...layout,
-  fetchOptions: undefined,
-  figures: migrateFigures(layout.figures),
-}));
+const migrateLayouts = (layouts: any[] | undefined) =>
+  (layouts ?? []).map((layout: any) => ({
+    ...layout,
+    fetchOptions: undefined,
+    figures: migrateFigures(layout.figures),
+  }));
 
 /**
  * Migrate templates: moving index, dateField and filters out of fetchOptions
@@ -307,16 +330,17 @@ const migrateLayouts = (layouts: any[] | undefined) => (layouts ?? []).map((layo
  *
  * @returns Migrated templates
  */
-const migrateTemplates = (templates: any[]) => templates.map((template: any) => ({
-  ...template,
-  body: {
-    version: 2,
-    index: template.body?.fetchOptions?.index,
-    dateField: template.body?.fetchOptions?.dateField,
-    filters: migrateFilters(template.body?.fetchOptions?.filters),
-    layouts: migrateLayouts(template.body?.layouts),
-  },
-}));
+const migrateTemplates = (templates: any[]) =>
+  templates.map((template: any) => ({
+    ...template,
+    body: {
+      version: 2,
+      index: template.body?.fetchOptions?.index,
+      dateField: template.body?.fetchOptions?.dateField,
+      filters: migrateFilters(template.body?.fetchOptions?.filters),
+      layouts: migrateLayouts(template.body?.layouts),
+    },
+  }));
 
 /**
  * Migrate inserts
@@ -325,29 +349,31 @@ const migrateTemplates = (templates: any[]) => templates.map((template: any) => 
  *
  * @returns Migrated tasks
  */
-const migrateTasks = (tasks: any[]) => tasks.map((task: any) => ({
-  ...task,
-  extended: undefined,
-  extendedId: task.extends.id,
-  namespace: undefined,
-  namespaceId: task.namespace.id,
-  template: {
-    version: 2,
-    index: task.template?.fetchOptions?.index,
-    dateField: task.template?.fetchOptions?.dateField,
-    filters: migrateFilters(task.template?.fetchOptions?.filters),
-    inserts: migrateLayouts(task.template?.inserts),
-  },
-}));
+const migrateTasks = (tasks: any[]) =>
+  tasks.map((task: any) => ({
+    ...task,
+    extended: undefined,
+    extendedId: task.extends.id,
+    namespace: undefined,
+    namespaceId: task.namespace.id,
+    template: {
+      version: 2,
+      index: task.template?.fetchOptions?.index,
+      dateField: task.template?.fetchOptions?.dateField,
+      filters: migrateFilters(task.template?.fetchOptions?.filters),
+      inserts: migrateLayouts(task.template?.inserts),
+    },
+  }));
 
 /**
  * Migrate presets to 2.0.0's format
  */
-const migratePresets = (presets: any[]) => presets.map((preset: any) => ({
-  ...preset,
-  template: undefined,
-  templateId: preset.template.id,
-}));
+const migratePresets = (presets: any[]) =>
+  presets.map((preset: any) => ({
+    ...preset,
+    template: undefined,
+    templateId: preset.template.id,
+  }));
 
 /**
  * Migrate data to 2.0.0's format

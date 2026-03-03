@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof GenerationCard>;
 
 export const Default: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { GenerationCard },
     setup() {
       return { args };
@@ -67,7 +67,7 @@ export const Default: Story = {
 };
 
 export const Failed: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { GenerationCard },
     setup() {
       return { args };
@@ -80,9 +80,7 @@ export const Failed: Story = {
       taskId: '1e1b8d36-1154-4ed5-9335-c95545680962',
       start: new Date('2024-09-30T22:00:00.000Z'),
       end: new Date('2024-12-31T22:59:59.999Z'),
-      targets: [
-        'ezteam@couperin.org',
-      ],
+      targets: ['ezteam@couperin.org'],
       origin: 'ezmesure-admin',
       writeActivity: false,
       status: 'ERROR',

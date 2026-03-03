@@ -243,10 +243,14 @@ const hasNameChanged = shallowRef(false);
 
 /** Filters of task */
 const filters = computed({
-  get: () => new Map(
-    (data.value.filters ?? currentPreset?.value?.fetchOptions?.filters ?? [])
-      .map((fil) => [fil.name, fil])
-  ),
+  get: () =>
+    new Map(
+      (
+        data.value.filters ??
+        currentPreset?.value?.fetchOptions?.filters ??
+        []
+      ).map((fil) => [fil.name, fil])
+    ),
   set: (value) => {
     if (!value) {
       data.value.filters = undefined;

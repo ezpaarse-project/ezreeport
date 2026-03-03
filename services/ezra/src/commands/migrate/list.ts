@@ -17,11 +17,10 @@ import { createTree } from '../../lib/tree.js';
 import migrations from '../../migrations/index.js';
 
 export default class MigrateList extends EzrCommand<typeof MigrateList> {
-  static description = 'List migrations available for instance or a data directory';
+  static description =
+    'List migrations available for instance or a data directory';
 
-  static examples = [
-    '<%= config.bin %> <%= command.id %>',
-  ];
+  static examples = ['<%= config.bin %> <%= command.id %>'];
 
   static flags = {
     dir: Flags.directory({
@@ -42,7 +41,9 @@ export default class MigrateList extends EzrCommand<typeof MigrateList> {
     let currentVersion;
     try {
       if (flags.dir) {
-        currentVersion = (await readFile(resolve(flags.dir, 'version'), 'utf8')).trim();
+        currentVersion = (
+          await readFile(resolve(flags.dir, 'version'), 'utf8')
+        ).trim();
       } else {
         const { data } = await this.instances[0].fetch('/health/');
         currentVersion = data.content.currentVersion;
@@ -62,10 +63,14 @@ export default class MigrateList extends EzrCommand<typeof MigrateList> {
     const tree = createTree(this);
     for (const name of versionsAvailable) {
       if (semverGt(currentVersion, name) && flags.all) {
-        tree.insert(chalk.grey(`${name} ${chalk.italic('(previous version)')}`));
+        tree.insert(
+          chalk.grey(`${name} ${chalk.italic('(previous version)')}`)
+        );
       }
       if (semverEq(currentVersion, name)) {
-        tree.insert(chalk.green(`${name} ${chalk.italic('(current version)')}`));
+        tree.insert(
+          chalk.green(`${name} ${chalk.italic('(current version)')}`)
+        );
       }
       if (semverLt(currentVersion, name)) {
         tree.insert(name);
@@ -77,7 +82,9 @@ export default class MigrateList extends EzrCommand<typeof MigrateList> {
       this.log('Available migrations:');
       tree.display();
     } else {
-      this.log(`No migrations available for this ${flags.dir ? 'data' : 'instance'}`);
+      this.log(
+        `No migrations available for this ${flags.dir ? 'data' : 'instance'}`
+      );
     }
   }
 }

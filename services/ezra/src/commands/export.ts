@@ -20,9 +20,7 @@ import { createTasksReadStream } from '../lib/ezr/tasks.js';
 export default class Export extends EzrCommand<typeof Export> {
   static description = 'Export instance data into a dedicated folder';
 
-  static examples = [
-    '<%= config.bin %> <%= command.id %>',
-  ];
+  static examples = ['<%= config.bin %> <%= command.id %>'];
 
   static flags = {
     namespaces: Flags.boolean({
@@ -55,23 +53,28 @@ export default class Export extends EzrCommand<typeof Export> {
   };
 
   private async exportData(opts: {
-    type: string,
-    createDataReadStream: (ezr: EZR) => Promise<{ count: number, stream: Readable }>,
-    outFile: string,
+    type: string;
+    createDataReadStream: (
+      ezr: EZR
+    ) => Promise<{ count: number; stream: Readable }>;
+    outFile: string;
   }) {
     try {
       this.log(chalk.blue(`Backing ${chalk.bold(opts.type)}...`));
 
-      const { count, stream } = await opts.createDataReadStream(this.instances[0]);
+      const { count, stream } = await opts.createDataReadStream(
+        this.instances[0]
+      );
       const { progress } = createProgressBarStream({
         total: count,
-        onEnd: (c) => this.log(chalk.green(`${chalk.bold(c)} ${chalk.bold(opts.type)} backed up`)),
+        onEnd: (c) =>
+          this.log(
+            chalk.green(`${chalk.bold(c)} ${chalk.bold(opts.type)} backed up`)
+          ),
       });
 
       await createStreamPromise(
-        stream
-          .pipe(createJSONLWriteStream(opts.outFile))
-          .pipe(progress),
+        stream.pipe(createJSONLWriteStream(opts.outFile)).pipe(progress)
       );
     } catch (error) {
       this.logToStderr(chalk.red((error as Error).message));

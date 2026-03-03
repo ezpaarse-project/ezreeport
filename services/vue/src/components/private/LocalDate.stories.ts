@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof LocaleDate>;
 
 export const Default: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { LocaleDate },
     setup() {
       return { args };
@@ -25,7 +25,7 @@ export const Default: Story = {
 };
 
 export const FormattedDate: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { LocaleDate },
     setup() {
       return { args };
@@ -39,7 +39,7 @@ export const FormattedDate: Story = {
 };
 
 export const FormattedTime: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { LocaleDate },
     setup() {
       return { args };
@@ -53,7 +53,7 @@ export const FormattedTime: Story = {
 };
 
 export const FormattedDateTime: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { LocaleDate },
     setup() {
       return { args };

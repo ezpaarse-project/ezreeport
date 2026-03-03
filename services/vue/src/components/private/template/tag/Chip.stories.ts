@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof TemplateTagChip>;
 
 export const Default: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TemplateTagChip },
     setup() {
       return { args };
@@ -25,7 +25,7 @@ export const Default: Story = {
 };
 
 export const Light: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TemplateTagChip },
     setup() {
       return { args };
@@ -38,7 +38,7 @@ export const Light: Story = {
 };
 
 export const Dark: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TemplateTagChip },
     setup() {
       return { args };

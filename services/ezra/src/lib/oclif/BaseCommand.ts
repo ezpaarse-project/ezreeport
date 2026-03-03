@@ -3,8 +3,12 @@ import chalk from 'chalk';
 
 import { EZRAConfig } from '../config.js';
 
-export type CustomFlags<T extends typeof Command> = Interfaces.InferredFlags<typeof BaseCommand['baseFlags'] & T['flags']>;
-export type CustomArgs<T extends typeof Command> = Interfaces.InferredArgs<T['args']>;
+export type CustomFlags<T extends typeof Command> = Interfaces.InferredFlags<
+  (typeof BaseCommand)['baseFlags'] & T['flags']
+>;
+export type CustomArgs<T extends typeof Command> = Interfaces.InferredArgs<
+  T['args']
+>;
 
 export abstract class BaseCommand<T extends typeof Command> extends Command {
   protected ezraConfig: EZRAConfig = {} as EZRAConfig;

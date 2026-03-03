@@ -1,7 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
-import { createLayoutHelper, createTaskLayoutHelper } from '~sdk/helpers/layouts';
-import { createVegaFigureHelper, createMetricFigureHelper, createTableFigureHelper } from '~sdk/helpers/figures';
+import {
+  createLayoutHelper,
+  createTaskLayoutHelper,
+} from '~sdk/helpers/layouts';
+import {
+  createVegaFigureHelper,
+  createMetricFigureHelper,
+  createTableFigureHelper,
+} from '~sdk/helpers/figures';
 
 import EditorPreviewLayout from './Layout.vue';
 
@@ -15,7 +22,7 @@ export default meta;
 type Story = StoryObj<typeof EditorPreviewLayout>;
 
 export const Empty: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorPreviewLayout },
     setup() {
       return { args };
@@ -28,7 +35,7 @@ export const Empty: Story = {
 };
 
 export const Full: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorPreviewLayout },
     setup() {
       return { args };
@@ -61,7 +68,7 @@ export const Full: Story = {
         undefined,
         undefined,
         undefined,
-        [0],
+        [0]
       ),
       createVegaFigureHelper(
         'arc',
@@ -87,7 +94,7 @@ export const Full: Story = {
         undefined,
         undefined,
         undefined,
-        [1],
+        [1]
       ),
       createMetricFigureHelper(
         [
@@ -144,14 +151,14 @@ export const Full: Story = {
         ],
         undefined,
         undefined,
-        [2, 3],
+        [2, 3]
       ),
     ]),
   },
 };
 
 export const Task: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorPreviewLayout },
     setup() {
       return { args };
@@ -159,36 +166,39 @@ export const Task: Story = {
     template: '<EditorPreviewLayout v-bind="args" />',
   }),
   args: {
-    modelValue: createTaskLayoutHelper([
-      createTableFigureHelper(
-        'publisher : profils-table',
-        [
-          {
-            header: 'Profil/compte:Fonds/Antenne',
-            metric: false,
-            aggregation: {
-              type: 'terms',
-              field: 'X_Package',
+    modelValue: createTaskLayoutHelper(
+      [
+        createTableFigureHelper(
+          'publisher : profils-table',
+          [
+            {
+              header: 'Profil/compte:Fonds/Antenne',
+              metric: false,
+              aggregation: {
+                type: 'terms',
+                field: 'X_Package',
+              },
             },
-          },
-          {
-            header: 'Value',
-            metric: true,
-            styles: {
-              halign: 'right',
-              valign: 'top',
+            {
+              header: 'Value',
+              metric: true,
+              styles: {
+                halign: 'right',
+                valign: 'top',
+              },
+              aggregation: {
+                type: 'sum',
+                field: 'Count',
+              },
             },
-            aggregation: {
-              type: 'sum',
-              field: 'Count',
-            },
-          },
-        ],
-        false,
-        undefined,
-        undefined,
-        [1, 3],
-      ),
-    ], 5),
+          ],
+          false,
+          undefined,
+          undefined,
+          [1, 3]
+        ),
+      ],
+      5
+    ),
   },
 };

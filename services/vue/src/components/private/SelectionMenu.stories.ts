@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof SelectionMenu>;
 
 export const Default: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { SelectionMenu },
     setup() {
       return { args };

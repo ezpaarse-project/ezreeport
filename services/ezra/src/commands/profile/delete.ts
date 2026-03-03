@@ -6,9 +6,7 @@ import { BaseCommand } from '../../lib/oclif/BaseCommand.js';
 export default class ProfileDelete extends BaseCommand<typeof ProfileDelete> {
   static description = 'Delete profile and unload it if needed';
 
-  static examples = [
-    '<%= config.bin %> <%= command.id %>',
-  ];
+  static examples = ['<%= config.bin %> <%= command.id %>'];
 
   static args = {
     name: Args.string({ description: 'Profile name', required: true }),

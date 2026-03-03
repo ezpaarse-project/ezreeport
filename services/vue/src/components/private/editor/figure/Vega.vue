@@ -1,6 +1,10 @@
 <template>
   <v-card
-    :title="$t('$ezreeport.editor.figures.vega._.title', { type: $t(`$ezreeport.editor.figures._.types.${modelValue.type}`) })"
+    :title="
+      $t('$ezreeport.editor.figures.vega._.title', {
+        type: $t(`$ezreeport.editor.figures._.types.${modelValue.type}`),
+      })
+    "
     :prepend-icon="cardIcon"
   >
     <template #append>
@@ -24,7 +28,10 @@
 
       <v-row>
         <v-col>
-          <EditorFilterList :model-value="modelValue.filters" :readonly="readonly" />
+          <EditorFilterList
+            :model-value="modelValue.filters"
+            :readonly="readonly"
+          />
         </v-col>
       </v-row>
 
@@ -107,15 +114,15 @@ import type { VegaFigureHelper } from '~sdk/helpers/figures';
 // Components props
 const props = defineProps<{
   /** The vega figure to edit */
-  modelValue: VegaFigureHelper,
+  modelValue: VegaFigureHelper;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated figure */
-  (event: 'update:modelValue', value: VegaFigureHelper): void
+  (event: 'update:modelValue', value: VegaFigureHelper): void;
 }>();
 
 // Utils composables
@@ -130,29 +137,69 @@ const cardIcon = computed(() => figureIcons.get(props.modelValue.type));
 const tabs = computed(() => {
   const { type } = props.modelValue;
 
-  const valueTab = { value: 'value', text: t('$ezreeport.editor.figures.vega._.value'), icon: 'mdi-database' };
-  const labelTab = { value: 'label', text: t('$ezreeport.editor.figures.vega._.label'), icon: 'mdi-label' };
-  const colorTab = { value: 'color', text: t('$ezreeport.editor.figures.vega._.color'), icon: 'mdi-format-list-group' };
-  const dataLabelTab = { value: 'dataLabel', text: t('$ezreeport.editor.figures.vega._.dataLabel'), icon: 'mdi-tag-text' };
+  const valueTab = {
+    value: 'value',
+    text: t('$ezreeport.editor.figures.vega._.value'),
+    icon: 'mdi-database',
+  };
+  const labelTab = {
+    value: 'label',
+    text: t('$ezreeport.editor.figures.vega._.label'),
+    icon: 'mdi-label',
+  };
+  const colorTab = {
+    value: 'color',
+    text: t('$ezreeport.editor.figures.vega._.color'),
+    icon: 'mdi-format-list-group',
+  };
+  const dataLabelTab = {
+    value: 'dataLabel',
+    text: t('$ezreeport.editor.figures.vega._.dataLabel'),
+    icon: 'mdi-tag-text',
+  };
 
   switch (type) {
     case 'arc':
       return [
         valueTab,
-        { ...labelTab, text: t('$ezreeport.editor.figures.vega.arc.label'), icon: 'mdi-circle-slice-3' },
+        {
+          ...labelTab,
+          text: t('$ezreeport.editor.figures.vega.arc.label'),
+          icon: 'mdi-circle-slice-3',
+        },
         dataLabelTab,
       ];
     case 'bar': {
-      const valueAxisKey = props.modelValue.params.invertAxis ? 'label' : 'value';
-      const valueAxisText = t(`$ezreeport.editor.figures.vega.bar.${valueAxisKey}`);
-      const valueAxisIcon = props.modelValue.params.invertAxis ? 'mdi-arrow-right-thin' : 'mdi-arrow-up-thin';
+      const valueAxisKey = props.modelValue.params.invertAxis
+        ? 'label'
+        : 'value';
+      const valueAxisText = t(
+        `$ezreeport.editor.figures.vega.bar.${valueAxisKey}`
+      );
+      const valueAxisIcon = props.modelValue.params.invertAxis
+        ? 'mdi-arrow-right-thin'
+        : 'mdi-arrow-up-thin';
 
-      const labelAxisKey = props.modelValue.params.invertAxis ? 'value' : 'label';
-      const labelAxisIcon = props.modelValue.params.invertAxis ? 'mdi-arrow-up-thin' : 'mdi-arrow-right-thin';
+      const labelAxisKey = props.modelValue.params.invertAxis
+        ? 'value'
+        : 'label';
+      const labelAxisIcon = props.modelValue.params.invertAxis
+        ? 'mdi-arrow-up-thin'
+        : 'mdi-arrow-right-thin';
       return [
         { ...valueTab, text: valueAxisText, icon: valueAxisIcon },
-        { ...labelTab, text: t(`$ezreeport.editor.figures.vega.bar.${labelAxisKey}`), icon: labelAxisIcon },
-        { ...colorTab, text: t('$ezreeport.editor.figures.vega.bar.color', { axis: valueAxisText }), icon: 'mdi-chart-bar-stacked' },
+        {
+          ...labelTab,
+          text: t(`$ezreeport.editor.figures.vega.bar.${labelAxisKey}`),
+          icon: labelAxisIcon,
+        },
+        {
+          ...colorTab,
+          text: t('$ezreeport.editor.figures.vega.bar.color', {
+            axis: valueAxisText,
+          }),
+          icon: 'mdi-chart-bar-stacked',
+        },
         dataLabelTab,
       ];
     }

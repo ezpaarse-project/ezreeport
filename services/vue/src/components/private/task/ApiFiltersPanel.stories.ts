@@ -37,7 +37,7 @@ const mockNamespaces: Namespace[] = [
 ];
 
 export const Default: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { ApiFiltersPanel },
     setup() {
       return { args };
@@ -52,7 +52,7 @@ export const Default: Story = {
 };
 
 export const WithTags: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { ApiFiltersPanel },
     setup() {
       return { args };
@@ -66,7 +66,7 @@ export const WithTags: Story = {
 };
 
 export const WithNamespaces: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { ApiFiltersPanel },
     setup() {
       return { args };

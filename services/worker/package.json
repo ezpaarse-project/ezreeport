@@ -7,26 +7,18 @@
   "bugs": {
     "url": "https://github.com/ezpaarse-project/ezreeport/issues"
   },
+  "license": "CeCILL",
+  "author": "oxypomme",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
   },
-  "license": "CeCILL",
-  "author": "oxypomme",
   "main": "src/app.ts",
   "scripts": {
     "dev": "tsx watch --inspect=0.0.0.0 src/app.ts",
     "lint": "oxlint",
     "start": "tsx src/app.ts",
     "type-check": "tsc --noEmit --skipLibCheck"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "oxlint --fix"
-    ],
-    "package.json": [
-      "sort-package-json"
-    ]
   },
   "dependencies": {
     "@elastic/elasticsearch": "^7.17.12",
@@ -39,13 +31,13 @@
     "@ezreeport/rabbitmq": "workspace:*",
     "@ezreeport/rpc": "workspace:*",
     "@ezreeport/simple-http": "workspace:*",
-    "ofetch": "catalog:",
     "canvas": "^3.1.2",
     "chroma-js": "^3.1.1",
     "handlebars": "^4.7.8",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "lodash": "^4.17.21",
+    "ofetch": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
     "vega": "^5.33.0",
@@ -56,6 +48,15 @@
     "@types/lodash": "^4.17.20",
     "@types/node": "catalog:",
     "pino-pretty": "catalog:"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "oxlint --fix",
+      "oxfmt --no-error-on-unmatched-pattern"
+    ],
+    "package.json": [
+      "oxfmt --no-error-on-unmatched-pattern"
+    ]
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

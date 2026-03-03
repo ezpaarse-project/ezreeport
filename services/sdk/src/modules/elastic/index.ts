@@ -1,9 +1,3 @@
-export {
-  getAllIndices,
-  getIndexMapping,
-} from './methods';
+export { getAllIndices, getIndexMapping } from './methods';
 
-export type {
-  Index,
-  Mapping,
-} from './types';
+export type { Index, Mapping } from './types';

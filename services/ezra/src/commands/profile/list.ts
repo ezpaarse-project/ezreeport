@@ -8,16 +8,15 @@ import { createTree } from '../../lib/tree.js';
 export default class ProfileList extends BaseCommand<typeof ProfileList> {
   static description = 'List available profiles';
 
-  static examples = [
-    '<%= config.bin %> <%= command.id %>',
-  ];
+  static examples = ['<%= config.bin %> <%= command.id %>'];
 
   public async run(): Promise<void> {
     await this.parse(ProfileList);
 
     const tree = createTree(this);
     for (const [name, configOrError] of this.ezraConfig.getPossibleProfiles()) {
-      const profile = configOrError instanceof Error ? undefined : configOrError;
+      const profile =
+        configOrError instanceof Error ? undefined : configOrError;
       const error = !profile ? configOrError : undefined;
 
       if (profile) {
@@ -25,7 +24,9 @@ export default class ProfileList extends BaseCommand<typeof ProfileList> {
 
         subTree.insert(chalk.grey(`URL: ${chalk.underline(profile.url)}`));
         if (profile.priority) {
-          subTree.insert(chalk.green(`Priority: ${chalk.bold(profile.priority)}`));
+          subTree.insert(
+            chalk.green(`Priority: ${chalk.bold(profile.priority)}`)
+          );
         }
 
         tree.insert(name, subTree);

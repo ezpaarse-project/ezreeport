@@ -8,9 +8,7 @@ import { BaseCommand } from '../../lib/oclif/BaseCommand.js';
 export default class ProfileNew extends BaseCommand<typeof ProfileNew> {
   static description = 'Create a new profile';
 
-  static examples = [
-    '<%= config.bin %> <%= command.id %>',
-  ];
+  static examples = ['<%= config.bin %> <%= command.id %>'];
 
   static flags = {
     file: Flags.file({
@@ -24,10 +22,9 @@ export default class ProfileNew extends BaseCommand<typeof ProfileNew> {
       description: 'Load the profile after creating it',
     }),
     priority: Flags.integer({
-      relationships: [
-        { type: 'all', flags: ['load'] },
-      ],
-      description: 'Priority when loading the profile. If not set, it will be the highest priority',
+      relationships: [{ type: 'all', flags: ['load'] }],
+      description:
+        'Priority when loading the profile. If not set, it will be the highest priority',
     }),
 
     url: Flags.string({
@@ -90,8 +87,15 @@ export default class ProfileNew extends BaseCommand<typeof ProfileNew> {
     this.log(chalk.green(`Profile "${chalk.bold(args.name)}" created`));
 
     if (flags.load) {
-      const { priority, profile } = await this.ezraConfig.loadProfile(args.name, flags.priority);
-      this.log(chalk.green(`Profile "${chalk.bold(args.name)}" (${chalk.underline(profile.path)}) loaded with priority "${chalk.bold(priority)}"`));
+      const { priority, profile } = await this.ezraConfig.loadProfile(
+        args.name,
+        flags.priority
+      );
+      this.log(
+        chalk.green(
+          `Profile "${chalk.bold(args.name)}" (${chalk.underline(profile.path)}) loaded with priority "${chalk.bold(priority)}"`
+        )
+      );
     }
   }
 }

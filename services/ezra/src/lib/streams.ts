@@ -15,8 +15,7 @@ export const createJSONLWriteStream = (filename: string) => {
     },
   });
 
-  stream
-    .pipe(createWriteStream(filename, { encoding: 'utf-8' }));
+  stream.pipe(createWriteStream(filename, { encoding: 'utf-8' }));
 
   return stream;
 };
@@ -42,9 +41,8 @@ export const createJSONLReadStream = (filename: string) => {
   });
 };
 
-export const createStreamPromise = (stream: Stream) => new Promise<void>(
-  (resolve, reject) => {
+export const createStreamPromise = (stream: Stream) =>
+  new Promise<void>((resolve, reject) => {
     stream.on('finish', () => resolve());
     stream.on('error', (err) => reject(err));
-  },
-);
+  });

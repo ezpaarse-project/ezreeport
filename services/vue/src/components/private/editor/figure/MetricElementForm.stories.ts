@@ -21,7 +21,7 @@ const mockData: MetricLabel = {
 };
 
 export const New: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureMetricElementForm },
     setup() {
       return { args };
@@ -31,7 +31,7 @@ export const New: Story = {
 };
 
 export const Existing: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureMetricElementForm },
     setup() {
       return { args };

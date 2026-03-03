@@ -32,7 +32,7 @@ const mockDataWithAggregation: MetricLabel = {
 };
 
 export const Simple: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureMetricElement },
     setup() {
       return { args };
@@ -45,7 +45,7 @@ export const Simple: Story = {
 };
 
 export const WithAggregation: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureMetricElement },
     setup() {
       return { args };
@@ -58,7 +58,7 @@ export const WithAggregation: Story = {
 };
 
 export const Readonly: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureMetricElement },
     setup() {
       return { args };

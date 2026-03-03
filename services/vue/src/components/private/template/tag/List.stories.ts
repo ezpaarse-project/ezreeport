@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof TemplateTagList>;
 
 export const Empty: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TemplateTagList },
     setup() {
       return { args };
@@ -25,7 +25,7 @@ export const Empty: Story = {
 };
 
 export const Existing: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TemplateTagList },
     setup() {
       return { args };

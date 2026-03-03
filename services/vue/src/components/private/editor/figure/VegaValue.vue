@@ -30,17 +30,17 @@ import type { VegaLayer } from '~sdk/helpers/figures';
 // Components props
 const props = defineProps<{
   /** The vega layer to edit */
-  modelValue: VegaLayer,
+  modelValue: VegaLayer;
   /** Type of the figure */
-  type: string,
+  type: string;
   /** Should be readonly */
-  readonly?: boolean,
+  readonly?: boolean;
 }>();
 
 // Components events
 const emit = defineEmits<{
   /** Updated layer */
-  (event: 'update:modelValue', value: VegaLayer): void
+  (event: 'update:modelValue', value: VegaLayer): void;
 }>();
 
 /** Layer's aggregation */

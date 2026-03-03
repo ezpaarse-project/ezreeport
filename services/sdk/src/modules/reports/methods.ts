@@ -25,13 +25,17 @@ export const transformPeriod = (period: RawReportPeriod): ReportPeriod => ({
   end: parseISO(period.end),
 });
 
-export const transformReportDetails = (detail: RawReportDetails): ReportDetails => ({
+export const transformReportDetails = (
+  detail: RawReportDetails
+): ReportDetails => ({
   ...transformCreated(detail),
   destroyAt: parseISO(detail.destroyAt),
   period: detail.period ? transformPeriod(detail.period) : undefined,
 });
 
-export const transformReportResult = (report: RawReportResult): ReportResult => ({
+export const transformReportResult = (
+  report: RawReportResult
+): ReportResult => ({
   ...report,
   detail: transformReportDetails(report.detail),
 });
@@ -42,11 +46,8 @@ export const transformReportResult = (report: RawReportResult): ReportResult => 
  * @returns Object with keys being task IDs, values being report IDs
  */
 export async function getAllReports(): Promise<Record<string, ReportMap>> {
-  const {
-    content,
-  } = await client.fetch<ApiResponse<Record<string, ReportMap>>>(
-    '/reports',
-  );
+  const { content } =
+    await client.fetch<ApiResponse<Record<string, ReportMap>>>('/reports');
 
   return content;
 }
@@ -59,16 +60,16 @@ assignPermission(getAllReports, 'GET /reports');
  *
  * @returns Object with keys being report IDs, values being files
  */
-export async function getReportsOfTask(taskOrId: Omit<Task, 'template'> | string): Promise<ReportMap> {
+export async function getReportsOfTask(
+  taskOrId: Omit<Task, 'template'> | string
+): Promise<ReportMap> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   if (!id) {
     throw new Error('Task id is required');
   }
 
-  const {
-    content,
-  } = await client.fetch<ApiResponse<ReportMap>>(
-    `/reports/${id}`,
+  const { content } = await client.fetch<ApiResponse<ReportMap>>(
+    `/reports/${id}`
   );
 
   return content;
@@ -85,7 +86,7 @@ assignPermission(getReportsOfTask, 'GET /reports/:taskId', true);
  */
 export async function getFileAsBlob(
   taskOrId: Omit<Task, 'template'> | string,
-  path: string,
+  path: string
 ): Promise<Blob> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   if (!id) {
@@ -96,7 +97,11 @@ export async function getFileAsBlob(
     responseType: 'blob',
   });
 }
-assignPermission(getFileAsBlob, 'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext', true);
+assignPermission(
+  getFileAsBlob,
+  'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext',
+  true
+);
 
 /**
  * Get a report file as an array buffer
@@ -108,7 +113,7 @@ assignPermission(getFileAsBlob, 'GET /reports/:taskId/:yearMonth/:reportName.:ty
  */
 export async function getFileAsArrayBuffer(
   taskOrId: Omit<Task, 'template'> | string,
-  path: string,
+  path: string
 ): Promise<ArrayBuffer> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   if (!id) {
@@ -119,7 +124,11 @@ export async function getFileAsArrayBuffer(
     responseType: 'arrayBuffer',
   });
 }
-assignPermission(getFileAsArrayBuffer, 'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext', true);
+assignPermission(
+  getFileAsArrayBuffer,
+  'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext',
+  true
+);
 
 /**
  * Get a report file as a stream
@@ -131,7 +140,7 @@ assignPermission(getFileAsArrayBuffer, 'GET /reports/:taskId/:yearMonth/:reportN
  */
 export async function getFileAsStream(
   taskOrId: Omit<Task, 'template'> | string,
-  path: string,
+  path: string
 ): Promise<ReadableStream<Uint8Array<ArrayBufferLike>>> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   if (!id) {
@@ -142,7 +151,11 @@ export async function getFileAsStream(
     responseType: 'stream',
   });
 }
-assignPermission(getFileAsStream, 'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext', true);
+assignPermission(
+  getFileAsStream,
+  'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext',
+  true
+);
 
 /**
  * Get a report file as a text
@@ -154,7 +167,7 @@ assignPermission(getFileAsStream, 'GET /reports/:taskId/:yearMonth/:reportName.:
  */
 export async function getFileAsText(
   taskOrId: Omit<Task, 'template'> | string,
-  path: string,
+  path: string
 ): Promise<string> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   if (!id) {
@@ -165,7 +178,11 @@ export async function getFileAsText(
     responseType: 'text',
   });
 }
-assignPermission(getFileAsText, 'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext', true);
+assignPermission(
+  getFileAsText,
+  'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext',
+  true
+);
 
 /**
  * Get a report file as a JSON object
@@ -178,7 +195,7 @@ assignPermission(getFileAsText, 'GET /reports/:taskId/:yearMonth/:reportName.:ty
  */
 export async function getFileAsJson(
   taskOrId: Omit<Task, 'template'> | string,
-  path: `${string}.det.json`,
+  path: `${string}.det.json`
 ): Promise<ReportResult> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   if (!id) {
@@ -188,7 +205,11 @@ export async function getFileAsJson(
   const content = await client.fetch<RawReportResult>(`/reports/${id}/${path}`);
   return transformReportResult(content);
 }
-assignPermission(getFileAsJson, 'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext', true);
+assignPermission(
+  getFileAsJson,
+  'GET /reports/:taskId/:yearMonth/:reportName.:type.:ext',
+  true
+);
 
 /**
  * Start a report generation
@@ -201,8 +222,8 @@ assignPermission(getFileAsJson, 'GET /reports/:taskId/:yearMonth/:reportName.:ty
  */
 export async function generateReportOfTask(
   taskOrId: Omit<Task, 'template'> | string,
-  period?: { start: Date, end: Date },
-  targets?: string[],
+  period?: { start: Date; end: Date },
+  targets?: string[]
 ): Promise<{ id: string }> {
   const id = typeof taskOrId === 'string' ? taskOrId : taskOrId.id;
   if (!id) {
@@ -217,9 +238,7 @@ export async function generateReportOfTask(
     };
   }
 
-  const {
-    content,
-  } = await client.fetch<ApiResponse<{ id: string }>>(
+  const { content } = await client.fetch<ApiResponse<{ id: string }>>(
     `/reports/${id}`,
     {
       method: 'POST',
@@ -227,7 +246,7 @@ export async function generateReportOfTask(
         period: periodDate,
         targets,
       },
-    },
+    }
   );
 
   return content;

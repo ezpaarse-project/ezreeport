@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof TemplateTagTable>;
 
 export const Default: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TemplateTagTable },
     setup() {
       return { args };

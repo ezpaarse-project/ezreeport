@@ -1,15 +1,15 @@
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=827846 to learn about workspace recommendations.
-    // Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
-    // List of extensions which should be recommended for users of this workspace.
-    "recommendations": [
-			"oxc.oxc-vscode",	// oxlint integration
-			"christian-kohler.npm-intellisense", // NPM auto-completion
-			"streetsidesoftware.code-spell-checker", // Spell checker
-			"vivaxy.vscode-conventional-commits", // Conventional commits
-			"exiasr.hadolint", // Hadolint
-			"mikestead.dotenv", // dotenv support
-			"prisma.prisma", // Prisma support
-			"vue.volar" // Volar
-		]
+  // See https://go.microsoft.com/fwlink/?LinkId=827846 to learn about workspace recommendations.
+  // Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
+  // List of extensions which should be recommended for users of this workspace.
+  "recommendations": [
+    "oxc.oxc-vscode", // oxlint integration
+    "christian-kohler.npm-intellisense", // NPM auto-completion
+    "streetsidesoftware.code-spell-checker", // Spell checker
+    "vivaxy.vscode-conventional-commits", // Conventional commits
+    "exiasr.hadolint", // Hadolint
+    "mikestead.dotenv", // dotenv support
+    "prisma.prisma", // Prisma support
+    "vue.volar" // Volar
+  ]
 }

@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof TaskPresetTable>;
 
 export const Default: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskPresetTable },
     setup() {
       return { args };

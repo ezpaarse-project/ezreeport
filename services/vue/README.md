@@ -22,18 +22,23 @@ In order to use ezreeport components, you need to register the plugin in your Vu
 ```js
 import { createApp } from 'vue';
 
-import '@mdi/font/css/materialdesignicons.css'
-import 'vuetify/styles'
+import '@mdi/font/css/materialdesignicons.css';
+import 'vuetify/styles';
 import { en as vuetifyEn, fr as vuetifyFr } from 'vuetify/locale';
-import { createVuetify } from 'vuetify'
+import { createVuetify } from 'vuetify';
 
 import { createI18n } from 'vue-i18n';
 
 import '@ezpaarse-project/ezreeport-vue/styles';
-import { en as ezrEn, fr as ezrFr } from '@ezpaarse-project/ezreeport-vue/locale';
+import {
+  en as ezrEn,
+  fr as ezrFr,
+} from '@ezpaarse-project/ezreeport-vue/locale';
 import ezreeportVue from '@ezpaarse-project/ezreeport-vue';
 
-const app = createApp({ /* ... */ });
+const app = createApp({
+  /* ... */
+});
 
 const i18n = createI18n({
   // You can manually merge messages
@@ -42,10 +47,12 @@ const i18n = createI18n({
     en: { $vuetify: vuetifyEn, $ezreeport: ezrEn },
     fr: { $vuetify: vuetifyFr, $ezreeport: ezrFr },
   },
-})
+});
 app.use(i18n);
 
-const vuetify = createVuetify({ /* ... */ });
+const vuetify = createVuetify({
+  /* ... */
+});
 app.use(vuetify); // You need to setup Vuetify before ezreeport
 
 app.use(ezreeportVue, {
@@ -58,14 +65,14 @@ app.use(ezreeportVue, {
       // Or pass individual definitions
       label: {
         en: 'Institution',
-        fr: 'Établissement'
-      }
+        fr: 'Établissement',
+      },
     },
   },
   errorHandler: (msg, err) => {
     console.error(msg, err);
-  }
-})
+  },
+});
 ```
 
 Whenever you'll use a ezreeport component, you will need to setup ezreeport's SDK with the `prepareClient` function :
@@ -76,13 +83,13 @@ Whenever you'll use a ezreeport component, you will need to setup ezreeport's SD
 </template>
 
 <script setup>
-// ezreeport setup
-import { prepareClient } from '@ezpaarse-project/ezreeport-vue';
+  // ezreeport setup
+  import { prepareClient } from '@ezpaarse-project/ezreeport-vue';
 
-prepareClient(
-  'http://localhost:8080', // ezREEPORT API url
-  { token: '<CURRENT USER TOKEN>' }
-);
+  prepareClient(
+    'http://localhost:8080', // ezREEPORT API url
+    { token: '<CURRENT USER TOKEN>' }
+  );
 </script>
 ```
 

@@ -46,7 +46,7 @@ import { isRawFilter, type TemplateFilter } from '~sdk/helpers/filters';
 // Components events
 defineEmits<{
   /** Imported filters */
-  (event: 'update:modelValue', value: TemplateFilter[]): void,
+  (event: 'update:modelValue', value: TemplateFilter[]): void;
 }>();
 
 // Utils composables
@@ -56,7 +56,9 @@ const { t } = useI18n();
 /** Text from filters found in Kibana */
 const kibanaText = ref('');
 
-function generateFilterName(filterRef: MaybeRefOrGetter<TemplateFilter>): string {
+function generateFilterName(
+  filterRef: MaybeRefOrGetter<TemplateFilter>
+): string {
   const filter = toValue(filterRef);
 
   // Don't generate name if it's a raw filter
@@ -85,7 +87,8 @@ function generateFilterName(filterRef: MaybeRefOrGetter<TemplateFilter>): string
       return t('$ezreeport.editor.filters.nameTemplate.exists:not', data);
     }
     return t('$ezreeport.editor.filters.nameTemplate.exists', data);
-  } if (filter.isNot) {
+  }
+  if (filter.isNot) {
     return t('$ezreeport.editor.filters.nameTemplate.is:not', data);
   }
   return t('$ezreeport.editor.filters.nameTemplate.is', data);
@@ -94,11 +97,13 @@ function generateFilterName(filterRef: MaybeRefOrGetter<TemplateFilter>): string
 /**
  * Filters found in Kibana text
  */
-const filters = computed(() => kibanaText.value
-  .split('\n')
-  .map(
-    (line): TemplateFilter | undefined => {
-      const matches = /^(?:(?<invert>NOT)\s)?(?<field>.+): (?<value>.*)/.exec(line);
+const filters = computed(() =>
+  kibanaText.value
+    .split('\n')
+    .map((line): TemplateFilter | undefined => {
+      const matches = /^(?:(?<invert>NOT)\s)?(?<field>.+): (?<value>.*)/.exec(
+        line
+      );
       const { invert, field, value } = matches?.groups ?? {};
       // If no matches, it's not a valid line
       if (!field || !value) {
@@ -117,7 +122,7 @@ const filters = computed(() => kibanaText.value
         ...filter,
         name,
       };
-    },
-  )
-  .filter((val) => !!val));
+    })
+    .filter((val) => !!val)
+);
 </script>

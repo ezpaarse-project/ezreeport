@@ -6,13 +6,15 @@
 import type { Generation } from '~sdk/generations';
 
 const props = defineProps<{
-  modelValue: Generation,
+  modelValue: Generation;
 }>();
 
 // oxlint-disable-next-line id-length
 const { t } = useI18n();
 
-const tooltip = computed(() => t(`$ezreeport.generations.statusList.${props.modelValue.status}`));
+const tooltip = computed(() =>
+  t(`$ezreeport.generations.statusList.${props.modelValue.status}`)
+);
 
 const iconProps = computed(() => {
   switch (props.modelValue.status) {

@@ -10,7 +10,7 @@ env:
   TURBO_UI: 'false'
 
 concurrency:
-  group: "pages"
+  group: 'pages'
   cancel-in-progress: true
 
 jobs:

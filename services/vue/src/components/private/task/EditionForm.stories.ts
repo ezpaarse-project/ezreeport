@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof TaskEditionForm>;
 
 export const Default: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskEditionForm },
     setup() {
       return { args };

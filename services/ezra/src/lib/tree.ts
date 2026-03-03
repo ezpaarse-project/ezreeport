@@ -9,13 +9,19 @@ interface SimpleTree {
   display(options?: Options): void;
 }
 
-const isSimpleTree = (value: Tree | SimpleTree): value is SimpleTree => typeof value?.insert === 'function';
+const isSimpleTree = (value: Tree | SimpleTree): value is SimpleTree =>
+  typeof value?.insert === 'function';
 
-export const createTree = (command: Command, initial: Tree = {}): SimpleTree => {
+export const createTree = (
+  command: Command,
+  initial: Tree = {}
+): SimpleTree => {
   const instance = { ...initial };
 
   return {
-    get nodes() { return instance; },
+    get nodes() {
+      return instance;
+    },
 
     display(options: Options = {}): void {
       command.log(treeify(instance, options));

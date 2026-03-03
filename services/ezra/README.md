@@ -1,16 +1,19 @@
-ezreeport-admin
-=================
+# ezreeport-admin
 
 CLI for managing ezreeport instance
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 
 <!-- toc -->
-* [Usage](#usage)
-* [Commands](#commands)
+
+- [Usage](#usage)
+- [Commands](#commands)
 <!-- tocstop -->
+
 # Usage
+
 <!-- usage -->
+
 ```sh-session
 $ npm install -g @ezpaarse-project/ezreeport-admin
 $ ezreeport-admin COMMAND
@@ -22,11 +25,15 @@ USAGE
   $ ezreeport-admin COMMAND
 ...
 ```
+
 <!-- usagestop -->
+
 # Commands
+
 <!-- commands -->
-* [`ezreeport-admin autocomplete [SHELL]`](#ezreeport-admin-autocomplete-shell)
-* [`ezreeport-admin help [COMMAND]`](#ezreeport-admin-help-command)
+
+- [`ezreeport-admin autocomplete [SHELL]`](#ezreeport-admin-autocomplete-shell)
+- [`ezreeport-admin help [COMMAND]`](#ezreeport-admin-help-command)
 
 ## `ezreeport-admin autocomplete [SHELL]`
 
@@ -78,4 +85,5 @@ DESCRIPTION
 ```
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.18/src/commands/help.ts)_
+
 <!-- commandsstop -->

@@ -31,8 +31,8 @@ export const aggregationTypes = [
   { name: 'variable_width_histogram', type: 'bucket', isCommonlyFound: false },
 ] as const;
 
-export type AggregationName = typeof aggregationTypes[number]['name'];
-export type AggregationType = typeof aggregationTypes[number]['type'];
+export type AggregationName = (typeof aggregationTypes)[number]['name'];
+export type AggregationType = (typeof aggregationTypes)[number]['type'];
 
 export function isAggregationName(name: string): name is AggregationName {
   return aggregationTypes.some((agg) => agg.name === name);

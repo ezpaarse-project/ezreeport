@@ -1,9 +1,3 @@
-export {
-  getStatus,
-} from './methods';
+export { getStatus } from './methods';
 
-export type {
-  ApiStatus,
-  ApiService,
-  FileSystemUsage,
-} from './types';
+export type { ApiStatus, ApiService, FileSystemUsage } from './types';

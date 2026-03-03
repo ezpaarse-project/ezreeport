@@ -107,7 +107,7 @@ const formatNumber = (
     case 'fr-FR':
       locale.identifier = 'en-US';
       locale.params.useGrouping = true;
-      locale.cb = (val) => val.replaceAll(",", ' ').replaceAll("\\.", ',');
+      locale.cb = (val) => val.replaceAll(',', ' ').replaceAll('\\.', ',');
       break;
 
     default:

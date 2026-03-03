@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof EditorFigureVegaDataLabelPreview>;
 
 export const InFigure: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureVegaDataLabelPreview },
     setup() {
       return { args };
@@ -29,7 +29,7 @@ export const InFigure: Story = {
 };
 
 export const OutFigure: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureVegaDataLabelPreview },
     setup() {
       return { args };

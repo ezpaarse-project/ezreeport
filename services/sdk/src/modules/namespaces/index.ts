@@ -1,6 +1,4 @@
 // export {
 // } from './methods';
 
-export type {
-  Namespace,
-} from './types';
+export type { Namespace } from './types';

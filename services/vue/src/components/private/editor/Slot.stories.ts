@@ -14,7 +14,7 @@ export default meta;
 type Story = StoryObj<typeof EditorSlot>;
 
 export const Empty: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorSlot },
     setup() {
       return { args };
@@ -27,7 +27,7 @@ export const Empty: Story = {
 };
 
 export const Markdown: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorSlot },
     setup() {
       return { args };
@@ -46,7 +46,7 @@ export const Markdown: Story = {
 };
 
 export const Metric: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorSlot },
     setup() {
       return { args };
@@ -113,7 +113,7 @@ export const Metric: Story = {
 };
 
 export const Table: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorSlot },
     setup() {
       return { args };
@@ -157,7 +157,7 @@ export const Table: Story = {
 };
 
 export const Vega: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorSlot },
     setup() {
       return { args };
@@ -186,7 +186,7 @@ export const Vega: Story = {
 };
 
 export const Readonly: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorSlot },
     setup() {
       return { args };

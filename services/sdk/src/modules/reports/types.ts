@@ -33,9 +33,9 @@ export interface ReportError {
   message: string;
   /** Where error happened */
   cause?: {
-    layout?: number,
-    figure?: number,
-  }
+    layout?: number;
+    figure?: number;
+  };
 }
 
 export interface ReportDetails {
@@ -57,8 +57,8 @@ export interface ReportDetails {
     elastic: {
       /** Elastic username used to fetch data */
       username: string;
-    }
-  }
+    };
+  };
   /** Stats about the report */
   stats?: ReportStats;
   /** Error details */
@@ -67,7 +67,10 @@ export interface ReportDetails {
   meta?: unknown;
 }
 
-export interface RawReportDetails extends Omit<ReportDetails, 'period' | 'createdAt' | 'destroyAt'> {
+export interface RawReportDetails extends Omit<
+  ReportDetails,
+  'period' | 'createdAt' | 'destroyAt'
+> {
   createdAt: string;
   destroyAt: string;
   period?: RawReportPeriod;
@@ -77,9 +80,9 @@ export interface ReportResult {
   /** Whether the report was successfully generated */
   success: boolean;
   /** Details */
-  detail: ReportDetails
+  detail: ReportDetails;
 }
 
 export interface RawReportResult extends Omit<ReportResult, 'detail'> {
-  detail: RawReportDetails
+  detail: RawReportDetails;
 }

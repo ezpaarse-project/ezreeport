@@ -9,17 +9,28 @@ import { createStreamPromise } from '../lib/streams.js';
 import { createProgressBarStream } from '../lib/progress.js';
 
 import type { EZR } from '../lib/ezr/index.js';
-import { createNamespacesReadStream, createNamespacesWriteStream } from '../lib/ezr/namespaces.js';
-import { createTemplatesReadStream, createTemplatesWriteStream } from '../lib/ezr/templates.js';
-import { createTaskPresetsReadStream, createTaskPresetsWriteStream } from '../lib/ezr/tasksPresets.js';
-import { createTasksReadStream, createTasksWriteStream } from '../lib/ezr/tasks.js';
+import {
+  createNamespacesReadStream,
+  createNamespacesWriteStream,
+} from '../lib/ezr/namespaces.js';
+import {
+  createTemplatesReadStream,
+  createTemplatesWriteStream,
+} from '../lib/ezr/templates.js';
+import {
+  createTaskPresetsReadStream,
+  createTaskPresetsWriteStream,
+} from '../lib/ezr/tasksPresets.js';
+import {
+  createTasksReadStream,
+  createTasksWriteStream,
+} from '../lib/ezr/tasks.js';
 
 export default class Transfer extends EzrCommand<typeof Transfer> {
-  static description = "Transfer first profile's to a second profile's instance";
+  static description =
+    "Transfer first profile's to a second profile's instance";
 
-  static examples = [
-    '<%= config.bin %> <%= command.id %>',
-  ];
+  static examples = ['<%= config.bin %> <%= command.id %>'];
 
   static flags = {
     namespaces: Flags.boolean({
@@ -49,9 +60,11 @@ export default class Transfer extends EzrCommand<typeof Transfer> {
   }
 
   private async transferData(opts: {
-    type: string,
-    createDataReadStream: (ezr: EZR) => Promise<{ count: number, stream: Readable }>,
-    createDataWriteStream: (ezr: EZR) => { stream: Duplex },
+    type: string;
+    createDataReadStream: (
+      ezr: EZR
+    ) => Promise<{ count: number; stream: Readable }>;
+    createDataWriteStream: (ezr: EZR) => { stream: Duplex };
   }) {
     try {
       this.log(chalk.blue(`Transferring ${opts.type}...`));
@@ -64,11 +77,7 @@ export default class Transfer extends EzrCommand<typeof Transfer> {
         onEnd: (c) => this.log(chalk.green(`${c} ${opts.type} transferred`)),
       });
 
-      await createStreamPromise(
-        inStream
-          .pipe(outStream)
-          .pipe(progress),
-      );
+      await createStreamPromise(inStream.pipe(outStream).pipe(progress));
     } catch (error) {
       this.logToStderr(chalk.red((error as Error).message));
     }
@@ -78,7 +87,9 @@ export default class Transfer extends EzrCommand<typeof Transfer> {
     const { flags } = await this.parse(Transfer);
 
     const [src, dst] = this.instances;
-    const confirmed = await confirm({ message: `Do you wish to transfer data from ${chalk.underline(src.fetch.defaults.baseURL)} to ${chalk.underline(dst.fetch.defaults.baseURL)} ?` });
+    const confirmed = await confirm({
+      message: `Do you wish to transfer data from ${chalk.underline(src.fetch.defaults.baseURL)} to ${chalk.underline(dst.fetch.defaults.baseURL)} ?`,
+    });
     if (!confirmed) {
       this.exit(0);
     }

@@ -3,8 +3,5 @@
   "commands": "./dist/commands",
   "dirname": "ezreeport-admin",
   "topicSeparator": " ",
-  "plugins": [
-    "@oclif/plugin-help",
-    "@oclif/plugin-autocomplete"
-  ]
+  "plugins": ["@oclif/plugin-help", "@oclif/plugin-autocomplete"]
 }

@@ -33,7 +33,7 @@ const mockMetricData: TableColumn = {
 };
 
 export const Basic: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureTableColumn },
     setup() {
       return { args };
@@ -46,7 +46,7 @@ export const Basic: Story = {
 };
 
 export const Metric: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureTableColumn },
     setup() {
       return { args };

@@ -6,12 +6,18 @@
   "bugs": {
     "url": "https://github.com/ezpaarse-project/ezreeport/issues"
   },
+  "license": "CeCILL",
+  "author": "oxypomme",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
   },
-  "license": "CeCILL",
-  "author": "oxypomme",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
@@ -107,12 +113,6 @@
     },
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build:docs": "typedoc",
     "build:js": "tsdown",
@@ -121,14 +121,6 @@
     "preview:docs": "serve docs",
     "type-check": "tsc --noEmit --skipLibCheck",
     "watch:docs": "typedoc --watch"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "oxlint --fix"
-    ],
-    "package.json": [
-      "sort-package-json"
-    ]
   },
   "dependencies": {
     "date-fns": "catalog:sdk",
@@ -147,6 +139,15 @@
     "typedoc": "^0.28.7",
     "typescript": "catalog:",
     "vite": "^7.0.4"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "oxlint --fix",
+      "oxfmt --no-error-on-unmatched-pattern"
+    ],
+    "package.json": [
+      "oxfmt --no-error-on-unmatched-pattern"
+    ]
   },
   "engines": {
     "node": "^14 || ^16 || ^18 || ^20 || ^22 || ^24"

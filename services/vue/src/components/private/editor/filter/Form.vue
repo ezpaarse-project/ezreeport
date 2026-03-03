@@ -1,6 +1,10 @@
 <template>
   <v-card
-    :title="modelValue ? $t('$ezreeport.editor.filters.title:edit') : $t('$ezreeport.editor.filters.title:new')"
+    :title="
+      modelValue
+        ? $t('$ezreeport.editor.filters.title:edit')
+        : $t('$ezreeport.editor.filters.title:new')
+    "
     prepend-icon="mdi-filter-plus"
   >
     <template #append>
@@ -64,17 +68,20 @@
             <v-col cols="8">
               <p class="text-medium-emphasis">
                 {{ $t('$ezreeport.editor.filters.hints.type') }}
-
-                <ul class="pl-3">
-                  <li>{{ $t('$ezreeport.editor.filters.hints.type:exists') }}</li>
-                  <li>{{ $t('$ezreeport.editor.filters.hints.type:is') }}</li>
-                  <li>{{ $t('$ezreeport.editor.filters.hints.type:in') }}</li>
-                </ul>
               </p>
+
+              <ul class="pl-3">
+                <li>{{ $t('$ezreeport.editor.filters.hints.type:exists') }}</li>
+                <li>{{ $t('$ezreeport.editor.filters.hints.type:is') }}</li>
+                <li>{{ $t('$ezreeport.editor.filters.hints.type:in') }}</li>
+              </ul>
             </v-col>
 
             <v-col cols="4">
-              <v-checkbox :label="$t('$ezreeport.editor.filters.isNot')" v-model="filter.isNot" />
+              <v-checkbox
+                :label="$t('$ezreeport.editor.filters.isNot')"
+                v-model="filter.isNot"
+              />
 
               <v-text-field
                 :model-value="filterType"
@@ -126,13 +133,13 @@ import { isRawFilter, type TemplateFilter } from '~sdk/helpers/filters';
 // Component props
 const props = defineProps<{
   /** Filter to edit, leave undefined to create a new one */
-  modelValue?: TemplateFilter | undefined,
+  modelValue?: TemplateFilter | undefined;
 }>();
 
 // Component events
 defineEmits<{
   /** Filter created or updated */
-  (event: 'update:modelValue', value: TemplateFilter): void,
+  (event: 'update:modelValue', value: TemplateFilter): void;
 }>();
 
 // Utils composables
@@ -146,9 +153,13 @@ const isValid = ref(false);
 const hasNameChanged = ref(false);
 
 /** Filter to edit */
-const { cloned: filter } = useCloned<TemplateFilter>(props.modelValue ?? { name: '', field: '' });
+const { cloned: filter } = useCloned<TemplateFilter>(
+  props.modelValue ?? { name: '', field: '' }
+);
 /** Backup of the filter in the last mode (simple/advanced) */
-const { cloned: filterBackup, sync: syncBackup } = useCloned(filter.value, { manual: true });
+const { cloned: filterBackup, sync: syncBackup } = useCloned(filter.value, {
+  manual: true,
+});
 
 /** Validate on mount */
 useTemplateVForm('formRef', { immediate: !!props.modelValue });
@@ -159,7 +170,9 @@ const {
   hasChanged: rawHasChanged,
   parseError: rawParseError,
   onChange: onChangeRawValue,
-} = useJSONRef(() => (isRawFilter(filter.value) ? filter.value.raw : undefined));
+} = useJSONRef(() =>
+  isRawFilter(filter.value) ? filter.value.raw : undefined
+);
 
 /** Is the filter in advanced mode */
 const isAdvanced = computed(() => isRawFilter(filter.value));
@@ -197,7 +210,11 @@ function generateFilterName(): string {
   }
 
   // Generate value text
-  const valueText = t('$ezreeport.editor.filters.nameTemplate.values', values, values.length - 1);
+  const valueText = t(
+    '$ezreeport.editor.filters.nameTemplate.values',
+    values,
+    values.length - 1
+  );
   const data = { field: filter.value.field, valueText };
 
   // Generate name
@@ -206,7 +223,8 @@ function generateFilterName(): string {
       return t('$ezreeport.editor.filters.nameTemplate.exists:not', data);
     }
     return t('$ezreeport.editor.filters.nameTemplate.exists', data);
-  } if (filter.value.isNot) {
+  }
+  if (filter.value.isNot) {
     return t('$ezreeport.editor.filters.nameTemplate.is:not', data);
   }
   return t('$ezreeport.editor.filters.nameTemplate.is', data);
@@ -250,14 +268,18 @@ onChangeRawValue((value) => {
 /**
  * Generate name when filter changes
  */
-watch(filter.value, () => {
-  if (props.modelValue?.name || hasNameChanged.value) {
-    return;
-  }
+watch(
+  filter.value,
+  () => {
+    if (props.modelValue?.name || hasNameChanged.value) {
+      return;
+    }
 
-  const name = generateFilterName();
-  if (name) {
-    filter.value.name = name;
-  }
-}, { deep: true });
+    const name = generateFilterName();
+    if (name) {
+      filter.value.name = name;
+    }
+  },
+  { deep: true }
+);
 </script>

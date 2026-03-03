@@ -1,5 +1,10 @@
 <template>
-  <v-chip :text="modelValue.type" size="small" variant="outlined" v-bind="chip" />
+  <v-chip
+    :text="modelValue.type"
+    size="small"
+    variant="outlined"
+    v-bind="chip"
+  />
 </template>
 
 <script setup lang="ts">
@@ -8,7 +13,7 @@ import type { TaskActivity } from '~sdk/task-activity';
 // Components props
 const props = defineProps<{
   /** The tag to show */
-  modelValue: TaskActivity,
+  modelValue: TaskActivity;
 }>();
 
 const chip = computed(() => {

@@ -1,6 +1,11 @@
 import type { RawTask, Task } from '../tasks/types';
 
-export type GenerationStatus = 'PENDING' | 'PROCESSING' | 'SUCCESS' | 'ERROR' | 'ABORTED';
+export type GenerationStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'SUCCESS'
+  | 'ERROR'
+  | 'ABORTED';
 
 export interface Generation {
   id: string;
@@ -22,7 +27,10 @@ export interface Generation {
   task?: Omit<Task, 'template'>;
 }
 
-export interface RawGeneration extends Omit<Generation, 'start' | 'end' | 'createdAt' | 'updatedAt' | 'startedAt' | 'task'> {
+export interface RawGeneration extends Omit<
+  Generation,
+  'start' | 'end' | 'createdAt' | 'updatedAt' | 'startedAt' | 'task'
+> {
   start: string;
   end: string;
   createdAt: string;

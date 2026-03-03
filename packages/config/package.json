@@ -7,24 +7,16 @@
   "bugs": {
     "url": "https://github.com/ezpaarse-project/ezreeport/issues"
   },
+  "license": "CeCILL",
+  "author": "oxypomme",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
   },
-  "license": "CeCILL",
-  "author": "oxypomme",
   "exports": "./src/index.ts",
   "scripts": {
     "lint": "oxlint",
     "type-check": "tsc --noEmit --skipLibCheck"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "oxlint --fix"
-    ],
-    "package.json": [
-      "sort-package-json"
-    ]
   },
   "dependencies": {
     "config": "^4.1.1"
@@ -33,6 +25,15 @@
     "@types/config": "^3.3.5",
     "@types/node": "catalog:",
     "typescript": "catalog:"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "oxlint --fix",
+      "oxfmt --no-error-on-unmatched-pattern"
+    ],
+    "package.json": [
+      "oxfmt --no-error-on-unmatched-pattern"
+    ]
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

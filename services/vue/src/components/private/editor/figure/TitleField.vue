@@ -10,14 +10,22 @@
     @update:model-value="$emit('update:model-value', $event)"
   />
 
-  <v-menu :activator="inputRef?.$el" :disabled="readonly" :close-on-content-click="false">
+  <v-menu
+    :activator="inputRef?.$el"
+    :disabled="readonly"
+    :close-on-content-click="false"
+  >
     <v-list>
       <v-list-subheader :title="$t('$ezreeport.editor.vars')" />
 
       <v-list-item
         v-for="variable in variablesOptions"
         :key="variable.value"
-        :title="$te(`$ezreeport.editor.varsList.${variable.title}`) ? $t(`$ezreeport.editor.varsList.${variable.title}`) : undefined"
+        :title="
+          $te(`$ezreeport.editor.varsList.${variable.title}`)
+            ? $t(`$ezreeport.editor.varsList.${variable.title}`)
+            : undefined
+        "
         :subtitle="variable.value"
         :value="variable.value"
         class="font-italic"

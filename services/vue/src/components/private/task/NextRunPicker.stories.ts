@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof TaskNextRunPicker>;
 
 export const Daily: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskNextRunPicker },
     setup() {
       return { args };
@@ -26,7 +26,7 @@ export const Daily: Story = {
 };
 
 export const Weekly: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskNextRunPicker },
     setup() {
       return { args };
@@ -40,7 +40,7 @@ export const Weekly: Story = {
 };
 
 export const Monthly: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskNextRunPicker },
     setup() {
       return { args };
@@ -54,7 +54,7 @@ export const Monthly: Story = {
 };
 
 export const Quarterly: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskNextRunPicker },
     setup() {
       return { args };
@@ -68,7 +68,7 @@ export const Quarterly: Story = {
 };
 
 export const Biennial: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskNextRunPicker },
     setup() {
       return { args };
@@ -82,7 +82,7 @@ export const Biennial: Story = {
 };
 
 export const Yearly: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskNextRunPicker },
     setup() {
       return { args };
@@ -96,7 +96,7 @@ export const Yearly: Story = {
 };
 
 export const Existing: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskNextRunPicker },
     setup() {
       return { args };
@@ -111,7 +111,7 @@ export const Existing: Story = {
 };
 
 export const Readonly: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskNextRunPicker },
     setup() {
       return { args };

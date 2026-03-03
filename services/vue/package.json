@@ -5,13 +5,19 @@
   "bugs": {
     "url": "https://github.com/ezpaarse-project/ezreeport/issues"
   },
+  "license": "CeCILL",
+  "author": "oxypomme",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
   },
-  "license": "CeCILL",
-  "author": "oxypomme",
+  "files": [
+    "dist"
+  ],
   "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
     "./components": "./dist/components.js",
@@ -19,26 +25,12 @@
     "./package.json": "./package.json",
     "./styles": "./dist/components.styles.css"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build:docs": "storybook build",
     "build:js": "tsdown",
     "dev": "storybook dev -p 6006",
     "lint": "oxlint",
     "type-check": "vue-tsc --noEmit --skipLibCheck"
-  },
-  "lint-staged": {
-    "*.{ts,vue}": [
-      "oxlint --fix"
-    ],
-    "package.json": [
-      "sort-package-json"
-    ]
   },
   "dependencies": {
     "@formkit/drag-and-drop": "^0.5.3",
@@ -64,7 +56,6 @@
     "@storybook/addon-links": "^9.0.16",
     "@storybook/vue3-vite": "^9.0.16",
     "@types/chroma-js": "^3.1.1",
-    "~sdk": "workspace:@ezpaarse-project/ezreeport-sdk-js@*",
     "storybook": "^9.0.16",
     "tsdown": "^0.16.5",
     "typescript": "catalog:",
@@ -74,6 +65,15 @@
     "vite": "^7.0.4",
     "vite-plugin-dts": "^4.5.4",
     "vue-component-meta": "^3.0.1",
-    "vue-tsc": "^3.1.4"
+    "vue-tsc": "^3.1.4",
+    "~sdk": "workspace:@ezpaarse-project/ezreeport-sdk-js@*"
+  },
+  "lint-staged": {
+    "*.{ts,vue}": [
+      "oxlint --fix"
+    ],
+    "package.json": [
+      "sort-package-json"
+    ]
   }
 }

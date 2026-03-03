@@ -18,9 +18,7 @@ import { createTasksWriteStream } from '../lib/ezr/tasks.js';
 export default class Import extends EzrCommand<typeof Import> {
   static description = 'Import instance data from a dedicated folder';
 
-  static examples = [
-    '<%= config.bin %> <%= command.id %>',
-  ];
+  static examples = ['<%= config.bin %> <%= command.id %>'];
 
   static flags = {
     namespaces: Flags.boolean({
@@ -54,9 +52,9 @@ export default class Import extends EzrCommand<typeof Import> {
   };
 
   private async importData(opts: {
-    type: string,
-    createDataWriteStream: (ezr: EZR) => { stream: Duplex },
-    inFile: string,
+    type: string;
+    createDataWriteStream: (ezr: EZR) => { stream: Duplex };
+    inFile: string;
   }) {
     try {
       this.log(chalk.blue(`Restoring ${opts.type}...`));
@@ -70,7 +68,7 @@ export default class Import extends EzrCommand<typeof Import> {
         createJSONLReadStream(opts.inFile)
           .pipe(total)
           .pipe(stream)
-          .pipe(progress),
+          .pipe(progress)
       );
     } catch (error) {
       this.logToStderr(chalk.red((error as Error).message));
@@ -80,7 +78,9 @@ export default class Import extends EzrCommand<typeof Import> {
   public async run(): Promise<void> {
     const { args, flags } = await this.parse(Import);
 
-    const confirmed = await confirm({ message: `Do you wish to import data from ${chalk.underline(args.dir)} into ${chalk.underline(this.instances[0].fetch.defaults.baseURL ?? '')} ?` });
+    const confirmed = await confirm({
+      message: `Do you wish to import data from ${chalk.underline(args.dir)} into ${chalk.underline(this.instances[0].fetch.defaults.baseURL ?? '')} ?`,
+    });
     if (!confirmed) {
       this.exit(0);
     }
