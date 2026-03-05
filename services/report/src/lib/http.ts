@@ -1,16 +1,17 @@
+import fastifyCors from '@fastify/cors';
+import fastifyRateLimit from '@fastify/rate-limit';
 import createFastify, {
   type FastifyInstance,
   type FastifyPluginAsync,
 } from 'fastify';
-import fastifyCors from '@fastify/cors';
-import fastifyRateLimit from '@fastify/rate-limit';
 import fastifyIO from 'fastify-socket.io';
 
-import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
+import { appLogger } from '~/lib/logger';
 import { closeWS, registerWSNamespaces } from '~/lib/sockets';
 
 import loggerPlugin from '~/plugins/logger';
+
 import { RateLimitStore } from './http-rate-limit';
 
 const { port, allowedOrigins, allowedProxies } = config;

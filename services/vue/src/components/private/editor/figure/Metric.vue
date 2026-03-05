@@ -103,7 +103,6 @@
 
 <script setup lang="ts">
   import { dragAndDrop } from '@formkit/drag-and-drop/vue';
-
   import {
     getMetricLabelKey,
     getAllMetricLabelKeysOfHelper,

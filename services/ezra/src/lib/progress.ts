@@ -1,7 +1,7 @@
-import { SingleBar } from 'cli-progress';
-import chalk from 'chalk';
-
 import { PassThrough, Writable } from 'node:stream';
+
+import chalk from 'chalk';
+import { SingleBar } from 'cli-progress';
 
 export const createProgressBarStream = (opts: {
   total?: number;

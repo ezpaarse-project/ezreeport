@@ -3,18 +3,18 @@ import { StatusCodes } from 'http-status-codes';
 
 import { z } from '@ezreeport/models/lib/zod';
 
+import { appLogger } from '~/lib/logger';
+
+import { HTTPError, NotFoundError } from '~/models/errors';
+import * as heartbeats from '~/models/heartbeat';
+import { Heartbeat } from '~/models/heartbeat/types';
+
 import {
   describeErrors,
   buildSuccessResponse,
   zSuccessResponse,
   EmptyResponse,
 } from '~/routes/v2/responses';
-
-import * as heartbeats from '~/models/heartbeat';
-import { Heartbeat } from '~/models/heartbeat/types';
-
-import { HTTPError, NotFoundError } from '~/models/errors';
-import { appLogger } from '~/lib/logger';
 
 // oxlint-disable-next-line max-lines-per-function, require-await
 const router: FastifyPluginAsyncZod = async (fastify) => {

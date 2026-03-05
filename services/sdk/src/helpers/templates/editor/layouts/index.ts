@@ -1,6 +1,6 @@
 import type { AnyFigureHelper } from '../figures';
-import { hashLayout, type LayoutHelper } from './templates';
 import type { TaskLayoutHelper } from './tasks';
+import { hashLayout, type LayoutHelper } from './templates';
 
 export type AnyLayoutHelper = LayoutHelper | TaskLayoutHelper;
 

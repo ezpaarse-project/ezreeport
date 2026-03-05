@@ -1,8 +1,8 @@
-import type { RouteOptions } from 'fastify';
 import type {
   FastifyRateLimitOptions,
   FastifyRateLimitStore,
 } from '@fastify/rate-limit';
+import type { RouteOptions } from 'fastify';
 
 import { appLogger } from '~/lib/logger';
 import prisma from '~/lib/prisma';

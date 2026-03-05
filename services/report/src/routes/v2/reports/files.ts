@@ -6,21 +6,20 @@ import { ReportFiles } from '@ezreeport/models/reports';
 
 import { appLogger } from '~/lib/logger';
 
-import { requireAllowedNamespace } from '~/plugins/auth';
 import { Access } from '~/models/access';
+import { NotFoundError } from '~/models/errors';
+import {
+  createReportReadStream,
+  getAllReports,
+} from '~/models/rpc/client/files';
+import { getTask } from '~/models/tasks';
 
+import { requireAllowedNamespace } from '~/plugins/auth';
 import {
   describeErrors,
   buildSuccessResponse,
   zSuccessResponse,
 } from '~/routes/v2/responses';
-
-import { getTask } from '~/models/tasks';
-import {
-  createReportReadStream,
-  getAllReports,
-} from '~/models/rpc/client/files';
-import { NotFoundError } from '~/models/errors';
 
 const SpecificReportParams = z.object({
   taskId: z.string().min(1).describe('ID of the task'),

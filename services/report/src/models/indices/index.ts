@@ -1,11 +1,11 @@
 import { ensureSchema } from '@ezreeport/models/lib/zod';
 
-import prisma from '~/lib/prisma';
 import {
   elasticIndexMapping,
   elasticListIndices,
   elasticResolveIndex,
 } from '~/lib/elastic';
+import prisma from '~/lib/prisma';
 
 import { Namespace } from '~/models/namespaces/types';
 

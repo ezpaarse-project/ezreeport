@@ -3,8 +3,8 @@ import { endOfDay } from '@ezreeport/dates';
 import knex from '~/lib/knex';
 
 import type { Executor } from '~/models/crons/types';
-import { deleteReport } from '~/models/reports';
 import type { DBReportEntry } from '~/models/reports/types';
+import { deleteReport } from '~/models/reports';
 
 const purgeOldReports: Executor = async (logger) => {
   const today = endOfDay(Date.now());

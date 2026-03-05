@@ -1,13 +1,12 @@
 import type { Readable, Writable } from 'node:stream';
 import { createGzip, createGunzip } from 'node:zlib';
 
+import type { Logger } from '@ezreeport/logger';
 import {
   parseJSONMessage,
   sendJSONMessage,
   type rabbitmq,
 } from '@ezreeport/rabbitmq';
-
-import type { Logger } from '@ezreeport/logger';
 
 import { RPCStreamChunk, type RPCStreamChunkType } from './types';
 

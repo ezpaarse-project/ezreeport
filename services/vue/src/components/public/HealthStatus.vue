@@ -73,9 +73,10 @@
 </template>
 
 <script setup lang="ts">
-  import { version } from '~/../package.json';
   import { version as sdkVersion } from '~sdk';
   import { getStatus, type ApiService, type ApiStatus } from '~sdk/health';
+
+  import { version } from '~/../package.json';
 
   const MINIMUM_SERVICES = [
     'rabbitmq',

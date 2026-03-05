@@ -1,16 +1,16 @@
-import { setupHeartbeat, mandatoryService } from '@ezreeport/heartbeats';
 import type {
   HeartbeatService,
   HeartbeatSender,
 } from '@ezreeport/heartbeats/types';
+import { setupHeartbeat, mandatoryService } from '@ezreeport/heartbeats';
 
-import config from '~/lib/config';
-import { appLogger } from '~/lib/logger';
 import type rabbitmq from '~/lib/rabbitmq';
-
-import { version } from '../../../package.json';
+import config from '~/lib/config';
 // import getChannel from './channel';
 import { elasticPing } from '~/lib/elastic';
+import { appLogger } from '~/lib/logger';
+
+import { version } from '../../../package.json';
 
 const { heartbeat: frequency } = config;
 

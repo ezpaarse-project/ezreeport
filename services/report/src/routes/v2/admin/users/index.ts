@@ -3,20 +3,12 @@ import { StatusCodes } from 'http-status-codes';
 
 import { z } from '@ezreeport/models/lib/zod';
 
-import authPlugin from '~/plugins/auth';
-
-import {
-  describeErrors,
-  buildSuccessResponse,
-  zSuccessResponse,
-} from '~/routes/v2/responses';
-
+import { NotFoundError } from '~/models/errors';
 import { buildPaginatedResponse } from '~/models/pagination';
 import {
   PaginationQuery,
   zPaginationResponse,
 } from '~/models/pagination/types';
-
 import * as users from '~/models/users';
 import {
   BulkUser,
@@ -26,7 +18,12 @@ import {
   UserQueryFilters,
 } from '~/models/users/types';
 
-import { NotFoundError } from '~/models/errors';
+import authPlugin from '~/plugins/auth';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+} from '~/routes/v2/responses';
 
 import membershipRoutes from './memberships';
 

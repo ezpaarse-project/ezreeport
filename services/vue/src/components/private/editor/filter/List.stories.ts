@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import type { TemplateFilterMap } from '~sdk/helpers/filters';
 
 import EditorFilter from './List.vue';

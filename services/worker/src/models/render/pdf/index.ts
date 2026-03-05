@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { jsPDF as PDF } from 'jspdf';
 
 import { format } from '@ezreeport/dates';
+
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
 
@@ -12,7 +13,6 @@ import type {
   PDFReport,
   PDFResult,
 } from './types';
-
 import {
   type PDFLoadedImageAsset,
   loadImageAsset,

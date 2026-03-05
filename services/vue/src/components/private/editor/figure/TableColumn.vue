@@ -47,7 +47,6 @@
 
 <script setup lang="ts">
   import type { CSSProperties } from 'vue';
-
   import type { TableColumn } from '~sdk/helpers/figures';
 
   // Components props

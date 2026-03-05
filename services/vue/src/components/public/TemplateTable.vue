@@ -180,7 +180,6 @@
 
 <script setup lang="ts">
   import type { VDataTable } from 'vuetify/components';
-
   import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
   import {
     changeTemplateVisibility,

@@ -138,7 +138,6 @@
 </template>
 
 <script setup lang="ts">
-  import { getAllTemplates, getTemplate, type Template } from '~sdk/templates';
   import { RECURRENCES } from '~sdk/helpers/tasks';
   import {
     createTaskPreset,
@@ -146,6 +145,7 @@
     type InputTaskPreset,
     type TaskPreset,
   } from '~sdk/task-presets';
+  import { getAllTemplates, getTemplate, type Template } from '~sdk/templates';
 
   const modelValue = defineModel<TaskPreset | undefined>();
 

@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import type { TemplateFilter } from '~sdk/helpers/filters';
 
 import FilterChip from './Chip.vue';

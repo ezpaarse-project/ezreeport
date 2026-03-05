@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid/non-secure';
 import objectHash from 'object-hash';
 
 import type { TemplateBodyLayout } from '~/modules/templates';
+
 import {
   createFigureHelperFrom,
   figureHelperToJSON,

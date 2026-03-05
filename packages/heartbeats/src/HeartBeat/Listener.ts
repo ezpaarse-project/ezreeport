@@ -1,5 +1,5 @@
-import { type rabbitmq, parseJSONMessage } from '@ezreeport/rabbitmq';
 import type { Logger } from '@ezreeport/logger';
+import { type rabbitmq, parseJSONMessage } from '@ezreeport/rabbitmq';
 
 import { type HeartbeatType, Heartbeat } from '../types';
 import { HeartbeatManager } from './Manager';

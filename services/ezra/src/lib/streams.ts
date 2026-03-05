@@ -1,6 +1,6 @@
-import { type Stream, Transform, Readable } from 'node:stream';
 import { createWriteStream, createReadStream } from 'node:fs';
 import readline from 'node:readline';
+import { type Stream, Transform, Readable } from 'node:stream';
 
 export const createJSONLWriteStream = (filename: string) => {
   const stream = new Transform({

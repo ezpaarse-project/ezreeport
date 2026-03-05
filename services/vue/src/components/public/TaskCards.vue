@@ -238,10 +238,10 @@
 </template>
 
 <script setup lang="ts">
-  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
   import type { AdditionalDataForPreset, TaskPreset } from '~sdk/task-presets';
-  import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
   import type { TemplateTag } from '~sdk/templates';
+  import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
+  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
   import {
     RECURRENCES,
     changeTaskEnableState,

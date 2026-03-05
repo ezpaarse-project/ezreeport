@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import { createFigureHelperFrom } from '~sdk/helpers/figures';
 
 import EditorSlot from './Slot.vue';

@@ -1,17 +1,16 @@
-import { Args, Flags } from '@oclif/core';
-import { lte as semverLte, compare as semverCompare } from 'semver';
-import { format } from 'date-fns';
-import chalk from 'chalk';
-import ora from 'ora';
-
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 
-import { EzrCommand } from '../../lib/oclif/EzrCommand.js';
-import { readJSONL, writeJSONL } from '../../lib/jsonl.js';
+import { Args, Flags } from '@oclif/core';
+import chalk from 'chalk';
+import { format } from 'date-fns';
+import ora from 'ora';
+import { lte as semverLte, compare as semverCompare } from 'semver';
 
-import migrations from '../../migrations/index.js';
 import type { MigrationData } from '../../migrations/common.js';
+import { readJSONL, writeJSONL } from '../../lib/jsonl.js';
+import { EzrCommand } from '../../lib/oclif/EzrCommand.js';
+import migrations from '../../migrations/index.js';
 
 export default class MigrateApply extends EzrCommand<typeof MigrateApply> {
   static description =

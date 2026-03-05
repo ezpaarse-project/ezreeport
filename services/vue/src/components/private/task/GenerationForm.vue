@@ -170,6 +170,7 @@
 </template>
 
 <script setup lang="ts">
+  import type { Task } from '~sdk/tasks';
   import {
     eachDayOfInterval,
     format,
@@ -178,18 +179,17 @@
     max,
     isValid as isValidDate,
   } from 'date-fns';
-
-  import { downloadBlob } from '~/lib/files';
-  import { isEmail } from '~/utils/validate';
-
+  import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
+  import { getPeriodFromRecurrence } from '~sdk/recurrence';
   import {
     getFileAsBlob,
     type ReportResult,
     type ReportError,
   } from '~sdk/reports';
-  import { getPeriodFromRecurrence } from '~sdk/recurrence';
-  import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
-  import type { Task } from '~sdk/tasks';
+
+  import { downloadBlob } from '~/lib/files';
+
+  import { isEmail } from '~/utils/validate';
 
   const maxDate = add(endOfDay(new Date()), { days: -1 });
 

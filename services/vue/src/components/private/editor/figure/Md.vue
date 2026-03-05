@@ -47,10 +47,9 @@
 </template>
 
 <script setup lang="ts">
-  import { marked } from 'marked';
-  import DOMPurify from 'dompurify';
-
   import type { MdFigure } from '~sdk/helpers/figures';
+  import DOMPurify from 'dompurify';
+  import { marked } from 'marked';
 
   // Components props
   const props = defineProps<{

@@ -10,9 +10,8 @@
 </template>
 
 <script setup lang="ts">
-  import chroma from 'chroma-js';
-
   import type { TemplateTag, InputTemplateTag } from '~sdk/template-tags';
+  import chroma from 'chroma-js';
 
   // Components props
   const { modelValue, variant = 'flat' } = defineProps<{

@@ -1,7 +1,7 @@
 import { Generation, type GenerationType } from '@ezreeport/models/generations';
 
-import prisma from '~/lib/prisma';
 import { appLogger } from '~/lib/logger';
+import prisma from '~/lib/prisma';
 
 const logger = appLogger.child({ scope: 'models', model: 'generations' });
 

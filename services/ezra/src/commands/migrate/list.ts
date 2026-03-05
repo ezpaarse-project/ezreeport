@@ -1,19 +1,18 @@
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+
 import { Flags } from '@oclif/core';
+import chalk from 'chalk';
+import ora from 'ora';
 import {
   lt as semverLt,
   eq as semverEq,
   gt as semverGt,
   compare as semverCompare,
 } from 'semver';
-import chalk from 'chalk';
-import ora from 'ora';
-
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
 
 import { EzrCommand } from '../../lib/oclif/EzrCommand.js';
 import { createTree } from '../../lib/tree.js';
-
 import migrations from '../../migrations/index.js';
 
 export default class MigrateList extends EzrCommand<typeof MigrateList> {

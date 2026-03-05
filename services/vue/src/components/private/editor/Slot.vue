@@ -198,8 +198,6 @@
 </template>
 
 <script setup lang="ts">
-  import { figureToGridPosition } from '~/lib/layouts';
-
   import {
     isFigureHelperMarkdown,
     isFigureHelperMetric,
@@ -208,6 +206,8 @@
     createMdFigureHelper,
     type AnyFigureHelper,
   } from '~sdk/helpers/figures';
+
+  import { figureToGridPosition } from '~/lib/layouts';
 
   const SLOT_ICONS = new Map([
     [0, 'mdi-pan-top-left'],

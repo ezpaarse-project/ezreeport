@@ -41,8 +41,8 @@
 </template>
 
 <script setup lang="ts">
-  import { state } from '@formkit/drag-and-drop';
   import type { AnyLayoutHelper } from '~sdk/helpers/layouts';
+  import { state } from '@formkit/drag-and-drop';
 
   // Components props
   defineProps<{

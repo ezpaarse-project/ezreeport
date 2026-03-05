@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import type { FigureAggregation } from '~sdk/helpers/aggregations';
 
 import EditorAggregationForm from './Form.vue';

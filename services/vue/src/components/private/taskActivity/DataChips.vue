@@ -39,12 +39,11 @@
 </template>
 
 <script setup lang="ts">
+  import type { TaskActivity } from '~sdk/task-activity';
   import { isBefore, isValid } from 'date-fns';
-
-  import { downloadBlob } from '~/lib/files';
   import { getFileAsBlob } from '~sdk/reports';
 
-  import type { TaskActivity } from '~sdk/task-activity';
+  import { downloadBlob } from '~/lib/files';
 
   // Components props
   const props = defineProps<{

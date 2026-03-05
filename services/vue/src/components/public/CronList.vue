@@ -78,8 +78,8 @@
 </template>
 
 <script setup lang="ts">
-  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
   import { getAllCrons, updateCron, type Cron } from '~sdk/crons';
+  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
 
   // Components props
   const props = defineProps<{

@@ -1,10 +1,10 @@
 import { randomBytes } from 'node:crypto';
 
 import { Access, type Prisma } from '@ezreeport/database/types';
-
 import { ensureSchema } from '@ezreeport/models/lib/zod';
-import prisma from '~/lib/prisma';
+
 import { appLogger } from '~/lib/logger';
+import prisma from '~/lib/prisma';
 
 import { Namespace, type NamespaceType } from '../namespaces/types';
 import { User, type UserType } from '../users/types';

@@ -1,5 +1,5 @@
-import { ref, watch, toValue, type MaybeRefOrGetter } from 'vue';
 import { createEventHook, useDebounceFn } from '@vueuse/core';
+import { ref, watch, toValue, type MaybeRefOrGetter } from 'vue';
 
 function getInitialJson(initial: MaybeRefOrGetter<unknown>): string {
   const original = toValue(initial);

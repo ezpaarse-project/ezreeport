@@ -1,6 +1,6 @@
 import { setDefaultOptions } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import * as dfnsConstants from 'date-fns/constants';
+import { fr } from 'date-fns/locale';
 
 setDefaultOptions({ locale: fr, weekStartsOn: 1 });
 

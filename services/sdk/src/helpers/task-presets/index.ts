@@ -1,10 +1,9 @@
+import { assignDependencies } from '~/helpers/permissions/decorator';
 import {
   getTaskPreset,
   upsertTaskPreset,
   type TaskPreset,
 } from '~/modules/task-presets';
-
-import { assignDependencies } from '~/helpers/permissions/decorator';
 
 /**
  * Change visibility of a preset

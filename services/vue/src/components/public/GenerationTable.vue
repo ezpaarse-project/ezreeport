@@ -142,12 +142,6 @@
 
 <script setup lang="ts">
   import type { VDataTable } from 'vuetify/components';
-
-  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
-  import {
-    isGenerationEnded,
-    listenAllGenerations,
-  } from '~sdk/helpers/generations';
   import {
     getAllGenerations,
     getGeneration,
@@ -155,6 +149,11 @@
     type GenerationStatus,
     type Generation,
   } from '~sdk/generations';
+  import {
+    isGenerationEnded,
+    listenAllGenerations,
+  } from '~sdk/helpers/generations';
+  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
 
   type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 

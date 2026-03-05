@@ -1,22 +1,23 @@
 import EventEmitter from 'node:events';
 
 import type { RecurrenceType } from '@ezreeport/models/recurrence';
+import type { ReportPeriodType } from '@ezreeport/models/reports';
 import type {
   FigureType,
   LayoutType,
   TemplateBodyGridType,
 } from '@ezreeport/models/templates';
-import type { ReportPeriodType } from '@ezreeport/models/reports';
+
 import { appLogger } from '~/lib/logger';
 
+import type { PDFReport, PDFResult } from './pdf/types';
 import type { Area, Margin } from './types';
-import { generateSlots, resolveSlot } from './slots';
+import RenderError from './errors';
 import renderFigure from './figures';
 import { createPDF, initPDFEngine } from './pdf';
 import { drawAreaRef } from './pdf/utils';
-import type { PDFReport, PDFResult } from './pdf/types';
+import { generateSlots, resolveSlot } from './slots';
 import { initVegaEngine } from './vega';
-import RenderError from './errors';
 
 export async function initRenderEngine(): Promise<void> {
   const start = process.uptime();

@@ -1,10 +1,10 @@
+import { Readable, Transform } from 'node:stream';
+
 import type { Command } from '@oclif/core';
-import axios, { isAxiosError, type AxiosInstance } from 'axios';
 import { input } from '@inquirer/prompts';
+import axios, { isAxiosError, type AxiosInstance } from 'axios';
 import chalk from 'chalk';
 import ora from 'ora';
-
-import { Readable, Transform } from 'node:stream';
 
 const logError = (error: any, logToStderr: Command['logToStderr']) => {
   let text = '\nError: ';

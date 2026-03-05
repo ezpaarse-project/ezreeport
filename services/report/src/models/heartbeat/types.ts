@@ -1,5 +1,5 @@
-import { z } from '@ezreeport/models/lib/zod';
 import { Heartbeat as CommonHeartbeat } from '@ezreeport/heartbeats/types';
+import { z } from '@ezreeport/models/lib/zod';
 
 export const Heartbeat = z.object({
   ...CommonHeartbeat.shape,

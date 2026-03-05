@@ -1,8 +1,9 @@
-import type { Logger } from '@ezreeport/logger';
+import { PrismaPg } from '@prisma/adapter-pg';
+
 import type { HeartbeatType } from '@ezreeport/heartbeats/types';
+import type { Logger } from '@ezreeport/logger';
 
 import { PrismaClient } from '../.prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
 
 const DATABASE_URL = new URL(process.env.DATABASE_URL ?? '');
 

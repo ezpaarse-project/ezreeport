@@ -1,12 +1,8 @@
-import { Flags, Config } from '@oclif/core';
-import chalk from 'chalk';
-import { confirm } from '@inquirer/prompts';
-
 import type { Readable, Duplex } from 'node:stream';
 
-import { EzrCommand } from '../lib/oclif/EzrCommand.js';
-import { createStreamPromise } from '../lib/streams.js';
-import { createProgressBarStream } from '../lib/progress.js';
+import { confirm } from '@inquirer/prompts';
+import { Flags, Config } from '@oclif/core';
+import chalk from 'chalk';
 
 import type { EZR } from '../lib/ezr/index.js';
 import {
@@ -14,17 +10,20 @@ import {
   createNamespacesWriteStream,
 } from '../lib/ezr/namespaces.js';
 import {
-  createTemplatesReadStream,
-  createTemplatesWriteStream,
-} from '../lib/ezr/templates.js';
+  createTasksReadStream,
+  createTasksWriteStream,
+} from '../lib/ezr/tasks.js';
 import {
   createTaskPresetsReadStream,
   createTaskPresetsWriteStream,
 } from '../lib/ezr/tasksPresets.js';
 import {
-  createTasksReadStream,
-  createTasksWriteStream,
-} from '../lib/ezr/tasks.js';
+  createTemplatesReadStream,
+  createTemplatesWriteStream,
+} from '../lib/ezr/templates.js';
+import { EzrCommand } from '../lib/oclif/EzrCommand.js';
+import { createProgressBarStream } from '../lib/progress.js';
+import { createStreamPromise } from '../lib/streams.js';
 
 export default class Transfer extends EzrCommand<typeof Transfer> {
   static description =

@@ -1,4 +1,5 @@
 import objectHash from 'object-hash';
+
 import type { InputTemplate, Template } from '~/modules/templates';
 
 import type { TemplateTagMap } from './tags';

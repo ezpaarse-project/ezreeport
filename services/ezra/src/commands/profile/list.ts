@@ -1,6 +1,6 @@
-import chalk from 'chalk';
-
 import { join } from 'node:path';
+
+import chalk from 'chalk';
 
 import { BaseCommand } from '../../lib/oclif/BaseCommand.js';
 import { createTree } from '../../lib/tree.js';

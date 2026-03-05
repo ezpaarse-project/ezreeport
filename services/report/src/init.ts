@@ -1,5 +1,5 @@
-import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
+import { appLogger } from '~/lib/logger';
 
 import { upsertDefaultTemplate } from '~/models/templates';
 

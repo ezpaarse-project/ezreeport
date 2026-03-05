@@ -1,7 +1,7 @@
 import { parseISO } from 'date-fns';
 
-import { client } from '~/lib/fetch';
 import type { ApiResponse } from '~/lib/api';
+import { client } from '~/lib/fetch';
 
 import { assignPermission } from '~/helpers/permissions/decorator';
 

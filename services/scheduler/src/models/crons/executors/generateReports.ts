@@ -1,10 +1,10 @@
 import { compact } from 'lodash';
 
 import type { Executor } from '@ezreeport/crons/types';
-import { Task } from '@ezreeport/models/tasks';
-import { Namespace } from '@ezreeport/models/namespaces';
-import { Template } from '@ezreeport/models/templates';
 import { calcPeriodFromRecurrence } from '@ezreeport/models/lib/periods';
+import { Namespace } from '@ezreeport/models/namespaces';
+import { Task } from '@ezreeport/models/tasks';
+import { Template } from '@ezreeport/models/templates';
 
 import { queueGeneration } from '~/models/queues/report/generation';
 import { getTasksToGenerate } from '~/models/tasks';

@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import type { MetricLabel } from '~sdk/helpers/figures';
 
 import EditorFigureMetricElement from './MetricElement.vue';

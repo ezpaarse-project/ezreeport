@@ -1,14 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
-import {
-  createLayoutHelper,
-  createTaskLayoutHelper,
-} from '~sdk/helpers/layouts';
 import {
   createVegaFigureHelper,
   createMetricFigureHelper,
   createTableFigureHelper,
 } from '~sdk/helpers/figures';
+import {
+  createLayoutHelper,
+  createTaskLayoutHelper,
+} from '~sdk/helpers/layouts';
 
 import EditorPreviewLayout from './Layout.vue';
 

@@ -147,12 +147,12 @@
 </template>
 
 <script setup lang="ts">
-  import type { TemplateFilterMap } from '~sdk/helpers/filters';
   import type {
     AggregationType,
     FigureFilterAggregation,
     FigureFilterAggregationEntry,
   } from '~sdk/helpers/aggregations';
+  import type { TemplateFilterMap } from '~sdk/helpers/filters';
 
   // Component props
   const props = defineProps<{

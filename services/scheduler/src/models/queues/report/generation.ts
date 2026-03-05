@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
 
+import type { GenerationType } from '@ezreeport/models/generations';
 import {
   GenerationQueueData,
   type GenerationQueueDataType,
 } from '@ezreeport/models/queues';
-import type { GenerationType } from '@ezreeport/models/generations';
 import { parseJSONMessage, sendJSONMessage } from '@ezreeport/rabbitmq';
 
 import type rabbitmq from '~/lib/rabbitmq';

@@ -90,12 +90,12 @@
 </template>
 
 <script setup lang="ts">
+  import type { TemplateTagMap } from '~sdk/helpers/templates';
   import {
     getAllTemplateTags,
     type TemplateTag,
     type InputTemplateTag,
   } from '~sdk/template-tags';
-  import type { TemplateTagMap } from '~sdk/helpers/templates';
 
   type TagWithKey = { key: string; tag: TemplateTag | InputTemplateTag };
 

@@ -1,8 +1,8 @@
-import { Args, Flags } from '@oclif/core';
-import lodash from 'lodash';
-import chalk from 'chalk';
-
 import { type InspectOptions, inspect } from 'node:util';
+
+import { Args, Flags } from '@oclif/core';
+import chalk from 'chalk';
+import lodash from 'lodash';
 
 import { BaseCommand } from '../../lib/oclif/BaseCommand.js';
 

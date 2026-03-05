@@ -1,11 +1,10 @@
 // oxlint-disable-next-line no-unassigned-import
 import 'vuetify/styles';
+import { useI18n } from 'vue-i18n';
 import { createVuetify, type VuetifyOptions } from 'vuetify';
+import { Tooltip } from 'vuetify/directives';
 import { aliases, mdi } from 'vuetify/iconsets/mdi';
 import { createVueI18nAdapter } from 'vuetify/locale/adapters/vue-i18n';
-import { useI18n } from 'vue-i18n';
-
-import { Tooltip } from 'vuetify/directives';
 
 import { i18n } from '../i18n';
 import { LocaleDateFnsAdapter } from './date-io';

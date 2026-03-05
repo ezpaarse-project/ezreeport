@@ -3,6 +3,7 @@ import * as AutoTable from 'jspdf-autotable';
 import { merge } from 'lodash';
 
 import { ensureInt } from '@ezreeport/models/lib/utils';
+
 import { appLogger } from '~/lib/logger';
 
 import type { FetchResultItem } from '~/models/fetch/results';

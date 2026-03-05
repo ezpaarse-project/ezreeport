@@ -312,12 +312,11 @@
 
 <script setup lang="ts">
   import type { VDataTable } from 'vuetify/components';
-
   import type { Namespace } from '~sdk/namespaces';
   import type { AdditionalDataForPreset, TaskPreset } from '~sdk/task-presets';
-  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
-  import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
   import { getCurrentNamespaces } from '~sdk/auth';
+  import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
+  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
   import {
     changeTaskEnableState,
     createTaskHelper,

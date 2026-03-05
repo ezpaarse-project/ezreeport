@@ -1,5 +1,5 @@
-import type { TemplateFilter } from '~/modules/templates';
 import type { Task } from '~/modules/tasks';
+import type { TemplateFilter } from '~/modules/templates';
 
 import {
   createTaskLayoutHelperFrom,

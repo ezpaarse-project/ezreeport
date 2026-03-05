@@ -38,8 +38,8 @@
 </template>
 
 <script setup lang="ts">
-  import prettyBytes from 'pretty-bytes';
   import type { FileSystemUsage } from '~sdk/health';
+  import prettyBytes from 'pretty-bytes';
 
   const NAME_REGEX = /^(?:\[(?<type>[a-z]+)\] )?(?<name>[a-z]+)$/;
 

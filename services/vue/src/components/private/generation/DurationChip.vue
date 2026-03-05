@@ -10,8 +10,8 @@
 </template>
 
 <script setup lang="ts">
-  import { formatDuration } from 'date-fns';
   import type { Generation } from '~sdk/generations';
+  import { formatDuration } from 'date-fns';
 
   const props = defineProps<{
     modelValue: Generation;

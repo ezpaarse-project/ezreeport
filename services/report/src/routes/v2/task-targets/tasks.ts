@@ -1,24 +1,23 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
-import { z } from '@ezreeport/models/lib/zod';
 import { stringToB64 } from '@ezreeport/models/lib/utils';
+import { z } from '@ezreeport/models/lib/zod';
+
+import { NotFoundError, ArgumentError } from '~/models/errors';
+import { buildPaginatedResponse } from '~/models/pagination';
+import {
+  PaginationQuery,
+  zPaginationResponse,
+} from '~/models/pagination/types';
+import * as tasks from '~/models/tasks';
+import { Task } from '~/models/tasks/types';
 
 import {
   describeErrors,
   buildSuccessResponse,
   zSuccessResponse,
 } from '~/routes/v2/responses';
-
-import { buildPaginatedResponse } from '~/models/pagination';
-import {
-  PaginationQuery,
-  zPaginationResponse,
-} from '~/models/pagination/types';
-
-import * as tasks from '~/models/tasks';
-import { Task } from '~/models/tasks/types';
-import { NotFoundError, ArgumentError } from '~/models/errors';
 
 const SpecificEmailParams = z.object({
   email: z.email().min(1).describe('Email of the target'),

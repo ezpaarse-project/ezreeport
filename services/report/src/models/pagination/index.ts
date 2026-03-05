@@ -1,8 +1,8 @@
 import type { FastifyReply } from 'fastify';
 
-import { buildSuccessResponseWithMeta } from '~/routes/v2/responses';
-
 import type { PaginationMeta, PaginationType } from '~/models/pagination/types';
+
+import { buildSuccessResponseWithMeta } from '~/routes/v2/responses';
 
 type PaginationOptions = {
   take?: number;

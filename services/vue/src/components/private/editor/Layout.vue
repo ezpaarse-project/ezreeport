@@ -34,13 +34,13 @@
 </template>
 
 <script setup lang="ts">
+  import type { AnyFigureHelper } from '~sdk/helpers/figures';
   import {
     addFigureOfHelper,
     updateFigureOfHelper,
     removeFigureOfHelper,
     type AnyLayoutHelper,
   } from '~sdk/helpers/layouts';
-  import type { AnyFigureHelper } from '~sdk/helpers/figures';
 
   type Element = {
     id: string;

@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import { createVegaFigureHelper } from '~sdk/helpers/figures';
 
 import EditorFigureVega from './Vega.vue';

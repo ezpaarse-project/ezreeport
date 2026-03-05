@@ -56,9 +56,8 @@
 </template>
 
 <script setup lang="ts">
-  import { dragAndDrop } from '@formkit/drag-and-drop/vue';
-
   import type { AnyLayoutHelper } from '~sdk/helpers/layouts';
+  import { dragAndDrop } from '@formkit/drag-and-drop/vue';
 
   type DrawerLayout = AnyLayoutHelper & { readonly?: boolean };
 

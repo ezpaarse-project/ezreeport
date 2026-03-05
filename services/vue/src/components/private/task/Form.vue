@@ -336,9 +336,8 @@
 </template>
 
 <script setup lang="ts">
-  import { isEmail } from '~/utils/validate';
   import type { Namespace } from '~sdk/namespaces';
-  import { getAllTemplates, getTemplate, type Template } from '~sdk/templates';
+  import { getCurrentNamespaces } from '~sdk/auth';
   import {
     RECURRENCES,
     getLayoutsOfHelpers,
@@ -346,7 +345,9 @@
     type TaskHelper,
   } from '~sdk/helpers/tasks';
   import { createTemplateHelperFrom } from '~sdk/helpers/templates';
-  import { getCurrentNamespaces } from '~sdk/auth';
+  import { getAllTemplates, getTemplate, type Template } from '~sdk/templates';
+
+  import { isEmail } from '~/utils/validate';
 
   // Components props
   const { modelValue, namespaceId } = defineProps<{

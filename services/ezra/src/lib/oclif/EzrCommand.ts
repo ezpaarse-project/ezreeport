@@ -1,9 +1,8 @@
 import { Config, type Command } from '@oclif/core';
 import chalk from 'chalk';
 
-import { BaseCommand } from './BaseCommand.js';
-
 import { EZR } from '../ezr/index.js';
+import { BaseCommand } from './BaseCommand.js';
 
 export abstract class EzrCommand<
   T extends typeof Command,

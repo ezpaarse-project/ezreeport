@@ -1,7 +1,7 @@
 import { formatISO, parseISO } from 'date-fns';
 
-import { client } from '~/lib/fetch';
 import type { ApiResponse } from '~/lib/api';
+import { client } from '~/lib/fetch';
 
 import type { RawReportPeriod, ReportPeriod } from '~/modules/reports/types';
 import { transformPeriod } from '~/modules/reports/methods';

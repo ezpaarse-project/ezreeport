@@ -167,7 +167,6 @@
     max,
     min,
   } from 'date-fns';
-
   import { getAllActivity } from '~sdk/task-activity';
 
   const maxDate = new Date();

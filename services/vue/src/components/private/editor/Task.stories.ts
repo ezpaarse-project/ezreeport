@@ -1,11 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import { createTaskHelper, createTaskHelperFrom } from '~sdk/helpers/tasks';
-
 import {
   createTemplateHelper,
   createTemplateHelperFrom,
 } from '~sdk/helpers/templates';
+
 import EditorTask from './Task.vue';
 
 const meta: Meta<typeof EditorTask> = {

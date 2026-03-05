@@ -5,9 +5,9 @@
 </template>
 
 <script setup lang="ts">
-  import { figureToGridPosition } from '~/lib/layouts';
-
   import type { AnyFigureHelper } from '~sdk/helpers/figures';
+
+  import { figureToGridPosition } from '~/lib/layouts';
 
   // Components props
   const props = defineProps<{

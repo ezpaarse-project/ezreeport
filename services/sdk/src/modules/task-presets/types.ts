@@ -1,9 +1,9 @@
-import type { TemplateFilter } from '~/modules/templates/types';
-import type { TemplateTag } from '~/modules/template-tags/types';
 import type {
   TaskRecurrence,
   TaskRecurrenceOffset,
 } from '~/modules/tasks/types';
+import type { TemplateTag } from '~/modules/template-tags/types';
+import type { TemplateFilter } from '~/modules/templates/types';
 
 export interface TaskPreset {
   /** Preset ID */

@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import type { Namespace } from '~sdk/namespaces';
 import type { TemplateTag } from '~sdk/template-tags';
 

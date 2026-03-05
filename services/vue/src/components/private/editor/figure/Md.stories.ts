@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import { createMdFigureHelper } from '~sdk/helpers/figures';
 
 import EditorFigureMd from './Md.vue';

@@ -81,10 +81,10 @@
 </template>
 
 <script setup lang="ts">
-  import { RECURRENCES } from '~sdk/helpers/tasks';
   import type { Namespace } from '~sdk/namespaces';
   import type { Recurrence } from '~sdk/recurrence';
   import type { TemplateTag } from '~sdk/templates';
+  import { RECURRENCES } from '~sdk/helpers/tasks';
 
   type TaskFilters = {
     namespaceId?: string[];

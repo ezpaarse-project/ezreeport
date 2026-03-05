@@ -1,8 +1,9 @@
-import { merge } from 'lodash';
 import type { Mark } from 'vega-lite/build/src/mark';
+import { merge } from 'lodash';
 
 import type { RecurrenceType } from '@ezreeport/models/recurrence';
 import type { FigureType } from '@ezreeport/models/templates';
+
 import type { FetchResultItem } from '~/models/fetch/results';
 import type { PDFReport } from '~/models/render/pdf/types';
 import type { Area } from '~/models/render/types';

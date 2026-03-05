@@ -2,8 +2,8 @@ import type {
   TemplateFilter,
   TemplateBodyFigure as IFigure,
 } from '~/modules/templates';
-import type { FigureOrder } from './utils';
 
+import type { FigureOrder } from './utils';
 import {
   type MdFigure,
   createMdFigureHelper,

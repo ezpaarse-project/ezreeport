@@ -1,9 +1,9 @@
-import { hostname } from 'node:os';
 import { statfs } from 'node:fs/promises';
+import { hostname } from 'node:os';
 import { setTimeout as sleep } from 'node:timers/promises';
 
-import { type rabbitmq, sendJSONMessage } from '@ezreeport/rabbitmq';
 import type { Logger } from '@ezreeport/logger';
+import { type rabbitmq, sendJSONMessage } from '@ezreeport/rabbitmq';
 
 import type {
   FileSystemUsageType,
@@ -12,7 +12,6 @@ import type {
   HeartbeatFrequency,
   HeartbeatConnectedServicePing,
 } from '../types';
-
 import { HeartbeatManager } from './Manager';
 
 export class HeartbeatSender extends HeartbeatManager {

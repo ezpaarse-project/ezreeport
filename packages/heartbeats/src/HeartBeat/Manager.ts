@@ -1,9 +1,9 @@
+import type { Logger } from '@ezreeport/logger';
 import type {
   rabbitmq,
   JSONMessageTransport,
   JSONMessageTransportExchange,
 } from '@ezreeport/rabbitmq';
-import type { Logger } from '@ezreeport/logger';
 
 export abstract class HeartbeatManager {
   protected logger: Logger;

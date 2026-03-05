@@ -1,14 +1,14 @@
-import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
+import { initElasticClient } from '~/lib/elastic';
 import startHTTPServer from '~/lib/http';
 import { initHttpRequests } from '~/lib/http-requests';
-import { initElasticClient } from '~/lib/elastic';
+import { appLogger } from '~/lib/logger';
 import { useRabbitMQ } from '~/lib/rabbitmq';
 
-import { initRenderEngine } from '~/models/render';
-import initQueues from '~/models/queues';
-import initRPC from '~/models/rpc';
 import { initHeartbeat, getMissingMandatoryServices } from '~/models/heartbeat';
+import initQueues from '~/models/queues';
+import { initRenderEngine } from '~/models/render';
+import initRPC from '~/models/rpc';
 
 async function start(): Promise<void> {
   appLogger.info({

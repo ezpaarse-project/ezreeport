@@ -403,11 +403,11 @@
 </template>
 
 <script setup lang="ts">
-  import { getTask } from '~sdk/tasks';
-  import { getTemplate } from '~sdk/templates';
-  import { getFileAsBlob, getFileAsJson } from '~sdk/reports';
   import type { Generation } from '~sdk/generations';
   import { isGenerationEnded } from '~sdk/helpers/generations';
+  import { getFileAsBlob, getFileAsJson } from '~sdk/reports';
+  import { getTask } from '~sdk/tasks';
+  import { getTemplate } from '~sdk/templates';
 
   import { downloadBlob } from '~/lib/files';
 

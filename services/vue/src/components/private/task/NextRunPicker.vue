@@ -89,9 +89,8 @@
 
 <script setup lang="ts">
   import type { Day, Month } from 'date-fns';
-  import { daysInWeek, monthsInQuarter, monthsInYear } from 'date-fns/constants';
-
   import type { TaskRecurrenceOffset } from '~sdk/tasks';
+  import { daysInWeek, monthsInQuarter, monthsInYear } from 'date-fns/constants';
   import {
     type Recurrence,
     type RecurrenceOffset,

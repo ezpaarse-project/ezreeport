@@ -3,17 +3,16 @@ import { StatusCodes } from 'http-status-codes';
 
 import { z } from '@ezreeport/models/lib/zod';
 
-import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
 import { Access } from '~/models/access';
+import * as indices from '~/models/indices';
+import { Index, Mapping } from '~/models/indices/types';
 
+import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
 import {
   describeErrors,
   buildSuccessResponse,
   zSuccessResponse,
 } from '~/routes/v2/responses';
-
-import * as indices from '~/models/indices';
-import { Index, Mapping } from '~/models/indices/types';
 
 const SpecificIndexParams = z.object({
   index: z.string().min(1).describe('Index name'),

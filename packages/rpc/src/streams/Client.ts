@@ -1,5 +1,5 @@
-import { PassThrough, type Readable, type Writable } from 'node:stream';
 import { randomUUID } from 'node:crypto';
+import { PassThrough, type Readable, type Writable } from 'node:stream';
 
 import type { Logger } from '@ezreeport/logger';
 import {
@@ -11,12 +11,12 @@ import {
 } from '@ezreeport/rabbitmq';
 
 import { setIdleTimeout } from '../timeout';
+import { readStreamFromQueue, writeStreamIntoQueue } from './queue-streams';
 import {
   type RPCStreamRequestType,
   RPCStreamResponse,
   type RPCStreamResponseType,
 } from './types';
-import { readStreamFromQueue, writeStreamIntoQueue } from './queue-streams';
 
 type OnMessageFnc<ResponseType extends RPCStreamResponseType> = (
   msg: rabbitmq.ConsumeMessage,

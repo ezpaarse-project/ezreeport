@@ -1,8 +1,8 @@
 import type { App } from 'vue';
 
 import EzrCronList from '~/components/public/CronList.vue';
-import EzrHealthStatus from '~/components/public/HealthStatus.vue';
 import EzrGenerationTable from '~/components/public/GenerationTable.vue';
+import EzrHealthStatus from '~/components/public/HealthStatus.vue';
 import EzrTaskActivityTable from '~/components/public/TaskActivityTable.vue';
 import EzrTaskCards from '~/components/public/TaskCards.vue';
 import EzrTaskPresetTable from '~/components/public/TaskPresetTable.vue';

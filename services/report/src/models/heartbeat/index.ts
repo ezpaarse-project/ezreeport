@@ -1,25 +1,25 @@
 import { hostname } from 'node:os';
 
+import type {
+  HeartbeatSender,
+  HeartbeatListener,
+  HeartbeatService,
+} from '@ezreeport/heartbeats/types';
 import { isBefore } from '@ezreeport/dates';
 import {
   setupHeartbeat,
   listenToHeartbeats,
   mandatoryService,
 } from '@ezreeport/heartbeats';
-import type {
-  HeartbeatSender,
-  HeartbeatListener,
-  HeartbeatService,
-} from '@ezreeport/heartbeats/types';
 
-import { appLogger } from '~/lib/logger';
-import config from '~/lib/config';
 import type rabbitmq from '~/lib/rabbitmq';
+import config from '~/lib/config';
 import { elasticPing } from '~/lib/elastic';
+import { appLogger } from '~/lib/logger';
 import { dbPing } from '~/lib/prisma';
 
-import { version } from '../../../package.json';
 import type { HeartbeatType } from './types';
+import { version } from '../../../package.json';
 
 const { heartbeat: frequency } = config;
 const logger = appLogger.child({ scope: 'heartbeat' });

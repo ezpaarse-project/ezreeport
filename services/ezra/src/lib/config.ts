@@ -1,11 +1,11 @@
-import type { Command } from '@oclif/core';
-
 import { existsSync, mkdirSync, readdirSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
-import { join, resolve, relative } from 'node:path';
 import { homedir } from 'node:os';
+import { join, resolve, relative } from 'node:path';
 
+import type { Command } from '@oclif/core';
 import chalk from 'chalk';
+
 import { readJSONSync, writeJSON } from './json.js';
 
 export class EZRAConfig {

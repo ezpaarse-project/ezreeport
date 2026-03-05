@@ -1,4 +1,5 @@
 import type { TemplateFilter, TemplateBodyFigure } from '~/modules/templates';
+
 import type { FigureAggregation } from '../aggregations';
 import type { FigureOrder } from './utils';
 import {

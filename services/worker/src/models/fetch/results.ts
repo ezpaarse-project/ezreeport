@@ -1,8 +1,7 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 
-import { ensureInt } from '@ezreeport/models/lib/utils';
-
 import type { FigureType } from '@ezreeport/models/templates';
+import { ensureInt } from '@ezreeport/models/lib/utils';
 
 import FetchError from './errors';
 
