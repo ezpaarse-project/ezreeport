@@ -138,159 +138,159 @@
 </template>
 
 <script setup lang="ts">
-import { getAllTemplates, getTemplate, type Template } from '~sdk/templates';
-import { RECURRENCES } from '~sdk/helpers/tasks';
-import {
-  createTaskPreset,
-  upsertTaskPreset,
-  type InputTaskPreset,
-  type TaskPreset,
-} from '~sdk/task-presets';
+  import { getAllTemplates, getTemplate, type Template } from '~sdk/templates';
+  import { RECURRENCES } from '~sdk/helpers/tasks';
+  import {
+    createTaskPreset,
+    upsertTaskPreset,
+    type InputTaskPreset,
+    type TaskPreset,
+  } from '~sdk/task-presets';
 
-const modelValue = defineModel<TaskPreset | undefined>();
+  const modelValue = defineModel<TaskPreset | undefined>();
 
-// Components props
-defineProps<{
-  readonly?: boolean;
-}>();
+  // Components props
+  defineProps<{
+    readonly?: boolean;
+  }>();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
-const { getOptionsFromMapping, refreshMapping } = useTemplateEditor();
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
+  const { getOptionsFromMapping, refreshMapping } = useTemplateEditor();
 
-/** Is basic form valid */
-const isValid = shallowRef(false);
-/** Has name manually changed */
-const hasNameChanged = shallowRef(false);
-/** Is template list loading */
-const loadingTemplates = shallowRef(false);
-/** Preset to edit */
-const { cloned: preset } = useCloned<InputTaskPreset>(
-  modelValue.value ?? {
-    name: '',
-    recurrence: 'MONTHLY',
-    recurrenceOffset: {},
-    fetchOptions: {},
-    templateId: '',
-    hidden: false,
-  }
-);
+  /** Is basic form valid */
+  const isValid = shallowRef(false);
+  /** Has name manually changed */
+  const hasNameChanged = shallowRef(false);
+  /** Is template list loading */
+  const loadingTemplates = shallowRef(false);
+  /** Preset to edit */
+  const { cloned: preset } = useCloned<InputTaskPreset>(
+    modelValue.value ?? {
+      name: '',
+      recurrence: 'MONTHLY',
+      recurrenceOffset: {},
+      fetchOptions: {},
+      templateId: '',
+      hidden: false,
+    }
+  );
 
-/** Validate on mount */
-useTemplateVForm('formRef', { immediate: !!modelValue.value?.id });
+  /** Validate on mount */
+  useTemplateVForm('formRef', { immediate: !!modelValue.value?.id });
 
-/** Mapping options for dateField */
-const dateMapping = computed(() => getOptionsFromMapping('date'));
-/** Fetch Options */
-const fetchOptions = computed({
-  get: () => preset.value.fetchOptions ?? {},
-  set: (val) => {
-    preset.value.fetchOptions = val;
-  },
-});
-/** Filters of task */
-const filters = computed({
-  get: () =>
-    new Map((fetchOptions.value.filters ?? []).map((fil) => [fil.name, fil])),
-  set: (value) => {
-    if (!value) {
-      fetchOptions.value.filters = undefined;
+  /** Mapping options for dateField */
+  const dateMapping = computed(() => getOptionsFromMapping('date'));
+  /** Fetch Options */
+  const fetchOptions = computed({
+    get: () => preset.value.fetchOptions ?? {},
+    set: (val) => {
+      preset.value.fetchOptions = val;
+    },
+  });
+  /** Filters of task */
+  const filters = computed({
+    get: () =>
+      new Map((fetchOptions.value.filters ?? []).map((fil) => [fil.name, fil])),
+    set: (value) => {
+      if (!value) {
+        fetchOptions.value.filters = undefined;
+        return;
+      }
+
+      const values = Array.from(value.values());
+      fetchOptions.value.filters = values;
+    },
+  });
+  /** Templates list */
+  const templates = computedAsync(async () => {
+    let items: Omit<Template, 'body'>[] = [];
+
+    loadingTemplates.value = true;
+    try {
+      let meta;
+      ({ items, meta } = await getAllTemplates({
+        pagination: { count: 0, sort: 'name' },
+        include: ['tags'],
+      }));
+      templates.value = items;
+
+      if (!preset.value.templateId) {
+        preset.value.templateId = meta.default;
+      }
+    } catch (err) {
+      handleEzrError(t('$ezreeport.templates.errors.fetch'), err);
+    }
+    loadingTemplates.value = false;
+
+    return items;
+  }, []);
+  /** Current template */
+  const currentTemplate = computed(() =>
+    templates.value.find((template) => template.id === preset.value.templateId)
+  );
+  /** Recurrence options */
+  const recurrences = computed(() =>
+    RECURRENCES.map((value) => ({
+      value,
+      title: t(`$ezreeport.task.recurrenceList.${value}`),
+    }))
+  );
+
+  function regenerateName(): void {
+    if (modelValue.value?.name || hasNameChanged.value) {
       return;
     }
-
-    const values = Array.from(value.values());
-    fetchOptions.value.filters = values;
-  },
-});
-/** Templates list */
-const templates = computedAsync(async () => {
-  let items: Omit<Template, 'body'>[] = [];
-
-  loadingTemplates.value = true;
-  try {
-    let meta;
-    ({ items, meta } = await getAllTemplates({
-      pagination: { count: 0, sort: 'name' },
-      include: ['tags'],
-    }));
-    templates.value = items;
-
-    if (!preset.value.templateId) {
-      preset.value.templateId = meta.default;
-    }
-  } catch (err) {
-    handleEzrError(t('$ezreeport.templates.errors.fetch'), err);
+    const recurrence = t(
+      `$ezreeport.task.recurrenceList.${preset.value.recurrence}`
+    );
+    preset.value.name = `${currentTemplate.value?.name} ${recurrence.toLocaleLowerCase()}`;
   }
-  loadingTemplates.value = false;
 
-  return items;
-}, []);
-/** Current template */
-const currentTemplate = computed(() =>
-  templates.value.find((template) => template.id === preset.value.templateId)
-);
-/** Recurrence options */
-const recurrences = computed(() =>
-  RECURRENCES.map((value) => ({
-    value,
-    title: t(`$ezreeport.task.recurrenceList.${value}`),
-  }))
-);
-
-function regenerateName(): void {
-  if (modelValue.value?.name || hasNameChanged.value) {
-    return;
-  }
-  const recurrence = t(
-    `$ezreeport.task.recurrenceList.${preset.value.recurrence}`
-  );
-  preset.value.name = `${currentTemplate.value?.name} ${recurrence.toLocaleLowerCase()}`;
-}
-
-function onRecurrenceChange(): void {
-  preset.value.recurrenceOffset = {};
-  regenerateName();
-}
-
-async function onTemplateChange(id: string): Promise<void> {
-  try {
-    const template = await getTemplate(id);
-
-    preset.value.fetchOptions = {
-      dateField: template.body.dateField,
-      index: template.body.index || '',
-    };
+  function onRecurrenceChange(): void {
+    preset.value.recurrenceOffset = {};
     regenerateName();
-  } catch (err) {
-    handleEzrError(t('$ezreeport.templates.errors.open'), err);
   }
-}
 
-async function save(): Promise<void> {
-  try {
-    const body = {
-      ...preset.value,
-      // Remove readonly properties
-      id: undefined,
-      createdAt: undefined,
-      updatedAt: undefined,
-      template: undefined,
-    };
+  async function onTemplateChange(id: string): Promise<void> {
+    try {
+      const template = await getTemplate(id);
 
-    if (modelValue.value?.id) {
-      modelValue.value = await upsertTaskPreset({
-        ...body,
-        id: modelValue.value.id,
-      });
-    } else {
-      modelValue.value = await createTaskPreset(body);
+      preset.value.fetchOptions = {
+        dateField: template.body.dateField,
+        index: template.body.index || '',
+      };
+      regenerateName();
+    } catch (err) {
+      handleEzrError(t('$ezreeport.templates.errors.open'), err);
     }
-  } catch (err) {
-    const msg = modelValue.value?.id
-      ? t('$ezreeport.task-preset.errors.edit')
-      : t('$ezreeport.task-preset.errors.create');
-    handleEzrError(msg, err);
   }
-}
+
+  async function save(): Promise<void> {
+    try {
+      const body = {
+        ...preset.value,
+        // Remove readonly properties
+        id: undefined,
+        createdAt: undefined,
+        updatedAt: undefined,
+        template: undefined,
+      };
+
+      if (modelValue.value?.id) {
+        modelValue.value = await upsertTaskPreset({
+          ...body,
+          id: modelValue.value.id,
+        });
+      } else {
+        modelValue.value = await createTaskPreset(body);
+      }
+    } catch (err) {
+      const msg = modelValue.value?.id
+        ? t('$ezreeport.task-preset.errors.edit')
+        : t('$ezreeport.task-preset.errors.create');
+      handleEzrError(msg, err);
+    }
+  }
 </script>

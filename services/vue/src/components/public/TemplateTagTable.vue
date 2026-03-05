@@ -139,136 +139,136 @@
 </template>
 
 <script setup lang="ts">
-import type { VDataTable } from 'vuetify/components';
+  import type { VDataTable } from 'vuetify/components';
 
-import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
-import {
-  createTemplateTag,
-  deleteTemplateTag,
-  getAllTemplateTags,
-  upsertTemplateTag,
-  type InputTemplateTag,
-  type TemplateTag,
-} from '~sdk/template-tags';
+  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
+  import {
+    createTemplateTag,
+    deleteTemplateTag,
+    getAllTemplateTags,
+    upsertTemplateTag,
+    type InputTemplateTag,
+    type TemplateTag,
+  } from '~sdk/template-tags';
 
-type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
+  type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 
-// Components props
-const props = defineProps<{
-  titlePrefix?: string;
-  itemsPerPageOptions?: number[] | { title: string; value: number }[];
-}>();
+  // Components props
+  const props = defineProps<{
+    titlePrefix?: string;
+    itemsPerPageOptions?: number[] | { title: string; value: number }[];
+  }>();
 
-// Utils composable
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // Utils composable
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-const selectedTags = ref<TemplateTag[]>([]);
-const arePermissionsReady = shallowRef(false);
-const updatedTag = ref<TemplateTag | undefined>();
-const isFormOpen = shallowRef(false);
+  const selectedTags = ref<TemplateTag[]>([]);
+  const arePermissionsReady = shallowRef(false);
+  const updatedTag = ref<TemplateTag | undefined>();
+  const isFormOpen = shallowRef(false);
 
-/** Items per page */
-const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
-/** List of tags */
-const { total, refresh, loading, filters, vDataTableOptions } =
-  useServerSidePagination((params) => getAllTemplateTags(params), {
-    sortBy: 'name',
-    itemsPerPage,
-    itemsPerPageOptions: props.itemsPerPageOptions,
+  /** Items per page */
+  const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
+  /** List of tags */
+  const { total, refresh, loading, filters, vDataTableOptions } =
+    useServerSidePagination((params) => getAllTemplateTags(params), {
+      sortBy: 'name',
+      itemsPerPage,
+      itemsPerPageOptions: props.itemsPerPageOptions,
+    });
+
+  const title = computed(
+    () =>
+      `${props.titlePrefix || ''}${t('$ezreeport.template.tags.title:list', total.value)}`
+  );
+
+  /** Headers for table */
+  const headers = computed(
+    (): VDataTableHeaders => [
+      {
+        title: t('$ezreeport.name'),
+        value: 'name',
+        sortable: true,
+      },
+      {
+        title: t('$ezreeport.actions'),
+        value: '_actions',
+        align: 'center',
+      },
+    ]
+  );
+
+  const availableActions = computed(() => {
+    if (!arePermissionsReady.value) {
+      return {};
+    }
+    return {
+      create: hasPermission(createTemplateTag),
+      update: hasPermission(upsertTemplateTag),
+      delete: hasPermission(deleteTemplateTag),
+    };
   });
 
-const title = computed(
-  () =>
-    `${props.titlePrefix || ''}${t('$ezreeport.template.tags.title:list', total.value)}`
-);
-
-/** Headers for table */
-const headers = computed(
-  (): VDataTableHeaders => [
-    {
-      title: t('$ezreeport.name'),
-      value: 'name',
-      sortable: true,
+  const selectedTagIds = computed({
+    get: () => selectedTags.value.map((template) => template.id),
+    set: (value) => {
+      const ids = new Set(value);
+      selectedTags.value = selectedTags.value.filter((tag) => ids.has(tag.id));
     },
-    {
-      title: t('$ezreeport.actions'),
-      value: '_actions',
-      align: 'center',
-    },
-  ]
-);
+  });
 
-const availableActions = computed(() => {
-  if (!arePermissionsReady.value) {
-    return {};
+  function openForm(tag?: TemplateTag): void {
+    updatedTag.value = tag;
+    isFormOpen.value = true;
   }
-  return {
-    create: hasPermission(createTemplateTag),
-    update: hasPermission(upsertTemplateTag),
-    delete: hasPermission(deleteTemplateTag),
-  };
-});
 
-const selectedTagIds = computed({
-  get: () => selectedTags.value.map((template) => template.id),
-  set: (value) => {
-    const ids = new Set(value);
-    selectedTags.value = selectedTags.value.filter((tag) => ids.has(tag.id));
-  },
-});
-
-function openForm(tag?: TemplateTag): void {
-  updatedTag.value = tag;
-  isFormOpen.value = true;
-}
-
-function closeForm(): void {
-  isFormOpen.value = false;
-  refresh();
-}
-
-async function deleteItem(tag: TemplateTag): Promise<void> {
-  // TODO: show warning
-  try {
-    await deleteTemplateTag(tag);
+  function closeForm(): void {
+    isFormOpen.value = false;
     refresh();
-  } catch (err) {
-    handleEzrError(t('$ezreeport.template.tags.errors.delete'), err);
   }
-}
 
-async function deleteSelected(): Promise<void> {
-  // TODO: show warning
-  try {
-    await Promise.all(
-      selectedTagIds.value.map((tag) => deleteTemplateTag(tag))
-    );
-    selectedTagIds.value = [];
-    refresh();
-  } catch (err) {
-    handleEzrError(t('$ezreeport.template.tags.errors.delete'), err);
-  }
-}
-async function onSave(tag: TemplateTag | InputTemplateTag): Promise<void> {
-  try {
-    if ('id' in tag && tag.id) {
-      await upsertTemplateTag(tag);
-    } else {
-      await createTemplateTag(tag);
+  async function deleteItem(tag: TemplateTag): Promise<void> {
+    // TODO: show warning
+    try {
+      await deleteTemplateTag(tag);
+      refresh();
+    } catch (err) {
+      handleEzrError(t('$ezreeport.template.tags.errors.delete'), err);
     }
-    closeForm();
-  } catch (err) {
-    const msg =
-      'id' in tag && tag.id
-        ? t('$ezreeport.template.tags.errors.edit')
-        : t('$ezreeport.template.tags.errors.create');
-    handleEzrError(msg, err);
   }
-}
 
-// oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
-refreshPermissions().then(() => {
-  arePermissionsReady.value = true;
-});
+  async function deleteSelected(): Promise<void> {
+    // TODO: show warning
+    try {
+      await Promise.all(
+        selectedTagIds.value.map((tag) => deleteTemplateTag(tag))
+      );
+      selectedTagIds.value = [];
+      refresh();
+    } catch (err) {
+      handleEzrError(t('$ezreeport.template.tags.errors.delete'), err);
+    }
+  }
+  async function onSave(tag: TemplateTag | InputTemplateTag): Promise<void> {
+    try {
+      if ('id' in tag && tag.id) {
+        await upsertTemplateTag(tag);
+      } else {
+        await createTemplateTag(tag);
+      }
+      closeForm();
+    } catch (err) {
+      const msg =
+        'id' in tag && tag.id
+          ? t('$ezreeport.template.tags.errors.edit')
+          : t('$ezreeport.template.tags.errors.create');
+      handleEzrError(msg, err);
+    }
+  }
+
+  // oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
+  refreshPermissions().then(() => {
+    arePermissionsReady.value = true;
+  });
 </script>

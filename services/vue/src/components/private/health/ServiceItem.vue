@@ -22,29 +22,29 @@
 </template>
 
 <script setup lang="ts">
-import type { ApiService } from '~sdk/health';
+  import type { ApiService } from '~sdk/health';
 
-const props = defineProps<{
-  modelValue: ApiService[];
-  label: string;
-}>();
+  const props = defineProps<{
+    modelValue: ApiService[];
+    label: string;
+  }>();
 
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-const versions = computed(() =>
-  Array.from(new Set(props.modelValue.map(({ version }) => version))).join(
-    ' | '
-  )
-);
+  const versions = computed(() =>
+    Array.from(new Set(props.modelValue.map(({ version }) => version))).join(
+      ' | '
+    )
+  );
 
-const tooltip = computed(() => {
-  if (props.modelValue.length === 0) {
-    return t('$ezreeport.health.ko');
-  }
-  if (props.modelValue.length === 1) {
-    return;
-  }
-  return t('$ezreeport.health.instances', props.modelValue.length);
-});
+  const tooltip = computed(() => {
+    if (props.modelValue.length === 0) {
+      return t('$ezreeport.health.ko');
+    }
+    if (props.modelValue.length === 1) {
+      return;
+    }
+    return t('$ezreeport.health.instances', props.modelValue.length);
+  });
 </script>

@@ -63,199 +63,199 @@
 </template>
 
 <script setup lang="ts">
-import { nanoid } from 'nanoid/non-secure';
+  import { nanoid } from 'nanoid/non-secure';
 
-const modelValue = defineModel<string | string[] | undefined>({
-  default: undefined,
-});
-
-// Component props
-const props = defineProps<{
-  /** Is the field readonly */
-  readonly?: boolean;
-  /** Icon to prepend */
-  prependIcon?: string;
-  /** Label for the field */
-  label?: string;
-  /** Label for the add button */
-  addLabel?: string;
-  /** Field variant */
-  variant?:
-    | 'filled'
-    | 'underlined'
-    | 'outlined'
-    | 'plain'
-    | 'solo'
-    | 'solo-inverted'
-    | 'solo-filled';
-  /** Field density */
-  density?: 'default' | 'comfortable' | 'compact';
-  /** Rules for the field */
-  rules?: ((val: string[]) => boolean | string)[];
-  /** Rules for each item */
-  itemRules?: ((val: string, index: number) => boolean | string)[];
-  /** Placeholder for each item */
-  itemPlaceholder?: string;
-  /** Maximum number of items */
-  count?: number;
-}>();
-
-type Element = { id: string; value: string };
-
-const rawElements = ref<Element[]>([]);
-
-const scrollerRef = useTemplateRef('scrollerRef');
-
-/** Values as an array */
-const elements = computed({
-  get: () => rawElements.value,
-  set: (val) => {
-    rawElements.value = val;
-
-    if (val.length === 1) {
-      modelValue.value = val[0].value;
-      return;
-    }
-
-    if (val.length === 0) {
-      modelValue.value = undefined;
-      return;
-    }
-
-    modelValue.value = Array.from(new Set(val.map(({ value }) => value)));
-  },
-});
-
-const containerHeight = computed(
-  () => `${Math.min(props.count ?? 6, elements.value.length) * (36 + 2)}px`
-);
-
-const rulesErrors = computed((): string[] => {
-  if (!props.rules) {
-    return [];
-  }
-
-  const values = elements.value.map(({ value }) => value);
-
-  return props.rules
-    .map((rule) => rule(values) || 'Error')
-    .filter((val) => val !== true);
-});
-
-const itemErrors = computed((): Map<string, string[]> => {
-  if (!props.itemRules) {
-    return new Map();
-  }
-
-  const rules = props.itemRules;
-
-  return new Map(
-    elements.value.map((item, index) => [
-      item.id,
-      rules
-        .map((rule) => rule(item.value, index) || 'Error')
-        .filter((val) => val !== true),
-    ])
-  );
-});
-
-/** Error messages using given rules */
-const errorMessages = computed(
-  () =>
-    new Set([
-      ...rulesErrors.value,
-      ...Array.from(itemErrors.value.values()).flat(),
-    ])
-);
-
-async function scrollToBottom(): Promise<void> {
-  await nextTick();
-  const element = scrollerRef.value?.$el as HTMLDivElement | undefined;
-  if (!element) {
-    return;
-  }
-  element.scrollTop = element.scrollHeight;
-}
-
-/**
- * Add a new value
- */
-function addValue(): void {
-  if (elements.value.some(({ value }) => value === '')) {
-    return;
-  }
-  const values = [...elements.value, { id: nanoid(), value: '' }];
-  elements.value = values;
-  scrollToBottom();
-}
-
-/**
- * Remove a value
- */
-function remValue(id: string): void {
-  const values = elements.value.filter(({ id: el }) => el !== id);
-  elements.value = values;
-}
-
-/**
- * Edit a value
- */
-function editValue(id: string, newValue: string): void {
-  const values = elements.value.map((el) => {
-    if (el.id !== id) {
-      return el;
-    }
-    return { ...el, value: newValue };
+  const modelValue = defineModel<string | string[] | undefined>({
+    default: undefined,
   });
 
-  elements.value = values;
-}
+  // Component props
+  const props = defineProps<{
+    /** Is the field readonly */
+    readonly?: boolean;
+    /** Icon to prepend */
+    prependIcon?: string;
+    /** Label for the field */
+    label?: string;
+    /** Label for the add button */
+    addLabel?: string;
+    /** Field variant */
+    variant?:
+      | 'filled'
+      | 'underlined'
+      | 'outlined'
+      | 'plain'
+      | 'solo'
+      | 'solo-inverted'
+      | 'solo-filled';
+    /** Field density */
+    density?: 'default' | 'comfortable' | 'compact';
+    /** Rules for the field */
+    rules?: ((val: string[]) => boolean | string)[];
+    /** Rules for each item */
+    itemRules?: ((val: string, index: number) => boolean | string)[];
+    /** Placeholder for each item */
+    itemPlaceholder?: string;
+    /** Maximum number of items */
+    count?: number;
+  }>();
 
-watch(
-  () => modelValue.value,
-  (val) => {
-    let values: string[] = [];
-    if (Array.isArray(val)) {
-      values = val;
-    } else if (val != null) {
-      values = [val];
+  type Element = { id: string; value: string };
+
+  const rawElements = ref<Element[]>([]);
+
+  const scrollerRef = useTemplateRef('scrollerRef');
+
+  /** Values as an array */
+  const elements = computed({
+    get: () => rawElements.value,
+    set: (val) => {
+      rawElements.value = val;
+
+      if (val.length === 1) {
+        modelValue.value = val[0].value;
+        return;
+      }
+
+      if (val.length === 0) {
+        modelValue.value = undefined;
+        return;
+      }
+
+      modelValue.value = Array.from(new Set(val.map(({ value }) => value)));
+    },
+  });
+
+  const containerHeight = computed(
+    () => `${Math.min(props.count ?? 6, elements.value.length) * (36 + 2)}px`
+  );
+
+  const rulesErrors = computed((): string[] => {
+    if (!props.rules) {
+      return [];
     }
 
-    rawElements.value = values.map((value) => {
-      const existingEl = rawElements.value.find(
-        ({ value: el }) => el === value
-      );
-      if (existingEl) {
-        return existingEl;
+    const values = elements.value.map(({ value }) => value);
+
+    return props.rules
+      .map((rule) => rule(values) || 'Error')
+      .filter((val) => val !== true);
+  });
+
+  const itemErrors = computed((): Map<string, string[]> => {
+    if (!props.itemRules) {
+      return new Map();
+    }
+
+    const rules = props.itemRules;
+
+    return new Map(
+      elements.value.map((item, index) => [
+        item.id,
+        rules
+          .map((rule) => rule(item.value, index) || 'Error')
+          .filter((val) => val !== true),
+      ])
+    );
+  });
+
+  /** Error messages using given rules */
+  const errorMessages = computed(
+    () =>
+      new Set([
+        ...rulesErrors.value,
+        ...Array.from(itemErrors.value.values()).flat(),
+      ])
+  );
+
+  async function scrollToBottom(): Promise<void> {
+    await nextTick();
+    const element = scrollerRef.value?.$el as HTMLDivElement | undefined;
+    if (!element) {
+      return;
+    }
+    element.scrollTop = element.scrollHeight;
+  }
+
+  /**
+   * Add a new value
+   */
+  function addValue(): void {
+    if (elements.value.some(({ value }) => value === '')) {
+      return;
+    }
+    const values = [...elements.value, { id: nanoid(), value: '' }];
+    elements.value = values;
+    scrollToBottom();
+  }
+
+  /**
+   * Remove a value
+   */
+  function remValue(id: string): void {
+    const values = elements.value.filter(({ id: el }) => el !== id);
+    elements.value = values;
+  }
+
+  /**
+   * Edit a value
+   */
+  function editValue(id: string, newValue: string): void {
+    const values = elements.value.map((el) => {
+      if (el.id !== id) {
+        return el;
       }
-      return { id: nanoid(), value };
+      return { ...el, value: newValue };
     });
-  },
-  { immediate: true }
-);
+
+    elements.value = values;
+  }
+
+  watch(
+    () => modelValue.value,
+    (val) => {
+      let values: string[] = [];
+      if (Array.isArray(val)) {
+        values = val;
+      } else if (val != null) {
+        values = [val];
+      }
+
+      rawElements.value = values.map((value) => {
+        const existingEl = rawElements.value.find(
+          ({ value: el }) => el === value
+        );
+        if (existingEl) {
+          return existingEl;
+        }
+        return { id: nanoid(), value };
+      });
+    },
+    { immediate: true }
+  );
 </script>
 
 <style lang="css" scoped>
-.container {
-  height: v-bind('containerHeight');
-  overflow-x: auto;
-  scroll-behavior: smooth;
-}
+  .container {
+    height: v-bind('containerHeight');
+    overflow-x: auto;
+    scroll-behavior: smooth;
+  }
 
-.value-chip {
-  width: 97%;
+  .value-chip {
+    width: 97%;
 
-  & :deep(.v-chip__content) {
-    width: 100%;
+    & :deep(.v-chip__content) {
+      width: 100%;
 
-    & > span {
-      display: inline-block;
-      vertical-align: bottom;
-      max-width: 15rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      & > span {
+        display: inline-block;
+        vertical-align: bottom;
+        max-width: 15rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
   }
-}
 </style>

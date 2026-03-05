@@ -39,76 +39,76 @@
 </template>
 
 <script setup lang="ts">
-type VAutocompleteItem =
-  | string
-  | {
-      title: string;
-      value: string;
-      props?: Record<string, unknown>;
-    };
-
-// Component props
-const modelValue = defineModel<string | string[] | null | undefined>({
-  default: undefined,
-});
-
-const { items, allowEmpty } = defineProps<{
-  items?: VAutocompleteItem[];
-  allowEmpty?: boolean;
-}>();
-
-// Utils composable
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
-
-const search = shallowRef('');
-
-const value = computed({
-  get: () => {
-    if (allowEmpty && modelValue.value === '') {
-      return t('$ezreeport.api-filters.empty');
-    }
-    return modelValue.value;
-  },
-  set: (val) => {
-    modelValue.value = val;
-  },
-});
-
-const isEmptyActive = computed(() => modelValue.value === null);
-const isEmptyDisabled = computed(
-  () => Array.isArray(modelValue.value) && modelValue.value.length > 0
-);
-const selectItems = computed(() => {
-  if (!items) {
-    return [];
-  }
-
-  return items.map((item) => {
-    const baseProps = {
-      disabled: allowEmpty && isEmptyActive.value,
-      color: 'primary',
-    };
-
-    if (typeof item === 'string') {
-      return {
-        title: item,
-        value: item,
-        props: baseProps,
+  type VAutocompleteItem =
+    | string
+    | {
+        title: string;
+        value: string;
+        props?: Record<string, unknown>;
       };
+
+  // Component props
+  const modelValue = defineModel<string | string[] | null | undefined>({
+    default: undefined,
+  });
+
+  const { items, allowEmpty } = defineProps<{
+    items?: VAutocompleteItem[];
+    allowEmpty?: boolean;
+  }>();
+
+  // Utils composable
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
+
+  const search = shallowRef('');
+
+  const value = computed({
+    get: () => {
+      if (allowEmpty && modelValue.value === '') {
+        return t('$ezreeport.api-filters.empty');
+      }
+      return modelValue.value;
+    },
+    set: (val) => {
+      modelValue.value = val;
+    },
+  });
+
+  const isEmptyActive = computed(() => modelValue.value === null);
+  const isEmptyDisabled = computed(
+    () => Array.isArray(modelValue.value) && modelValue.value.length > 0
+  );
+  const selectItems = computed(() => {
+    if (!items) {
+      return [];
     }
 
-    return {
-      ...item,
-      props: {
-        ...baseProps,
-        ...item.props,
-      },
-    };
-  });
-});
+    return items.map((item) => {
+      const baseProps = {
+        disabled: allowEmpty && isEmptyActive.value,
+        color: 'primary',
+      };
 
-function toggleEmpty(): void {
-  modelValue.value = isEmptyActive.value ? [] : null;
-}
+      if (typeof item === 'string') {
+        return {
+          title: item,
+          value: item,
+          props: baseProps,
+        };
+      }
+
+      return {
+        ...item,
+        props: {
+          ...baseProps,
+          ...item.props,
+        },
+      };
+    });
+  });
+
+  function toggleEmpty(): void {
+    modelValue.value = isEmptyActive.value ? [] : null;
+  }
 </script>

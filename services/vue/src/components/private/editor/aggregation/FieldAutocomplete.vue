@@ -15,41 +15,41 @@
 </template>
 
 <script setup lang="ts">
-import {
-  type InnerBaseAggregation,
-  aggregationFieldTypes,
-} from '~/lib/aggregations';
+  import {
+    type InnerBaseAggregation,
+    aggregationFieldTypes,
+  } from '~/lib/aggregations';
 
-// Component props
-const props = defineProps<{
-  /** Aggregation to edit */
-  modelValue: string;
-  /** Should be disabled */
-  disabled?: boolean;
-  /** Should be readonly */
-  readonly?: boolean;
-  /** Types of aggregation */
-  type?: InnerBaseAggregation['type'];
-}>();
+  // Component props
+  const props = defineProps<{
+    /** Aggregation to edit */
+    modelValue: string;
+    /** Should be disabled */
+    disabled?: boolean;
+    /** Should be readonly */
+    readonly?: boolean;
+    /** Types of aggregation */
+    type?: InnerBaseAggregation['type'];
+  }>();
 
-// Component events
-defineEmits<{
-  /** Aggregation updated */
-  (event: 'update:modelValue', value: string): void;
-}>();
+  // Component events
+  defineEmits<{
+    /** Aggregation updated */
+    (event: 'update:modelValue', value: string): void;
+  }>();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
-const { getOptionsFromMapping } = useTemplateEditor();
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
+  const { getOptionsFromMapping } = useTemplateEditor();
 
-/** Type of fields needed for the current aggregation */
-const fieldTypes = computed(
-  () => props.type && aggregationFieldTypes.get(props.type)
-);
+  /** Type of fields needed for the current aggregation */
+  const fieldTypes = computed(
+    () => props.type && aggregationFieldTypes.get(props.type)
+  );
 
-/** Options for the field, based on current mapping */
-const fieldOptions = computed(() =>
-  getOptionsFromMapping(fieldTypes.value, { dateField: true })
-);
+  /** Options for the field, based on current mapping */
+  const fieldOptions = computed(() =>
+    getOptionsFromMapping(fieldTypes.value, { dateField: true })
+  );
 </script>

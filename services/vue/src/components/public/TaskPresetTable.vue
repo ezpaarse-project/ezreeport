@@ -197,182 +197,182 @@
 </template>
 
 <script setup lang="ts">
-import type { VDataTable } from 'vuetify/components';
+  import type { VDataTable } from 'vuetify/components';
 
-import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
-import { changeTaskPresetVisibility } from '~sdk/helpers/task-presets';
-import {
-  getAllTaskPresets,
-  createTaskPreset,
-  upsertTaskPreset,
-  deleteTaskPreset,
-  type TaskPreset,
-} from '~sdk/task-presets';
+  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
+  import { changeTaskPresetVisibility } from '~sdk/helpers/task-presets';
+  import {
+    getAllTaskPresets,
+    createTaskPreset,
+    upsertTaskPreset,
+    deleteTaskPreset,
+    type TaskPreset,
+  } from '~sdk/task-presets';
 
-type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
+  type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 
-// Components props
-const props = defineProps<{
-  titlePrefix?: string;
-  itemsPerPageOptions?: number[] | { title: string; value: number }[];
-}>();
+  // Components props
+  const props = defineProps<{
+    titlePrefix?: string;
+    itemsPerPageOptions?: number[] | { title: string; value: number }[];
+  }>();
 
-// Utils composable
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // Utils composable
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-const arePermissionsReady = ref(false);
-const selectedTaskPresets = ref<TaskPreset[]>([]);
-const updatedTaskPreset = ref<TaskPreset | undefined>();
-const isFormOpen = ref(false);
+  const arePermissionsReady = ref(false);
+  const selectedTaskPresets = ref<TaskPreset[]>([]);
+  const updatedTaskPreset = ref<TaskPreset | undefined>();
+  const isFormOpen = ref(false);
 
-/** Items per page */
-const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
-/** List of templates */
-const { total, refresh, loading, filters, vDataTableOptions } =
-  useServerSidePagination((params) => getAllTaskPresets(params), {
-    sortBy: 'name',
-    include: ['template.tags', 'template.hidden'],
-    itemsPerPage,
-    itemsPerPageOptions: props.itemsPerPageOptions,
+  /** Items per page */
+  const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
+  /** List of templates */
+  const { total, refresh, loading, filters, vDataTableOptions } =
+    useServerSidePagination((params) => getAllTaskPresets(params), {
+      sortBy: 'name',
+      include: ['template.tags', 'template.hidden'],
+      itemsPerPage,
+      itemsPerPageOptions: props.itemsPerPageOptions,
+    });
+
+  const title = computed(
+    () =>
+      `${props.titlePrefix || ''}${t('$ezreeport.task-preset.title:list', total.value)}`
+  );
+
+  /** Headers for table */
+  const headers = computed(
+    (): VDataTableHeaders => [
+      {
+        title: t('$ezreeport.name'),
+        value: 'name',
+        sortable: true,
+      },
+      {
+        title: t('$ezreeport.task.recurrence'),
+        value: 'recurrence',
+        sortable: true,
+        align: 'center',
+      },
+      {
+        title: t('$ezreeport.updatedAt'),
+        value: 'updatedAt',
+        sortable: true,
+      },
+      {
+        title: t('$ezreeport.createdAt'),
+        value: 'createdAt',
+        sortable: true,
+      },
+      {
+        title: t('$ezreeport.template.hidden'),
+        value: 'hidden',
+        sortable: true,
+        align: 'center',
+      },
+      {
+        title: t('$ezreeport.actions'),
+        value: '_actions',
+        align: 'center',
+      },
+    ]
+  );
+
+  const availableActions = computed(() => {
+    if (!arePermissionsReady.value) {
+      return {};
+    }
+    return {
+      create: hasPermission(createTaskPreset),
+      update: hasPermission(upsertTaskPreset),
+      delete: hasPermission(deleteTaskPreset),
+
+      visibility: hasPermission(changeTaskPresetVisibility),
+    };
   });
 
-const title = computed(
-  () =>
-    `${props.titlePrefix || ''}${t('$ezreeport.task-preset.title:list', total.value)}`
-);
+  const selectedTaskPresetIds = computed({
+    get: () => selectedTaskPresets.value.map((taskPreset) => taskPreset.id),
+    set: (value) => {
+      const ids = new Set(value);
+      selectedTaskPresets.value = selectedTaskPresets.value.filter((taskPreset) =>
+        ids.has(taskPreset.id)
+      );
+    },
+  });
 
-/** Headers for table */
-const headers = computed(
-  (): VDataTableHeaders => [
-    {
-      title: t('$ezreeport.name'),
-      value: 'name',
-      sortable: true,
-    },
-    {
-      title: t('$ezreeport.task.recurrence'),
-      value: 'recurrence',
-      sortable: true,
-      align: 'center',
-    },
-    {
-      title: t('$ezreeport.updatedAt'),
-      value: 'updatedAt',
-      sortable: true,
-    },
-    {
-      title: t('$ezreeport.createdAt'),
-      value: 'createdAt',
-      sortable: true,
-    },
-    {
-      title: t('$ezreeport.template.hidden'),
-      value: 'hidden',
-      sortable: true,
-      align: 'center',
-    },
-    {
-      title: t('$ezreeport.actions'),
-      value: '_actions',
-      align: 'center',
-    },
-  ]
-);
+  function openForm(taskPreset?: TaskPreset) {
+    updatedTaskPreset.value = taskPreset;
 
-const availableActions = computed(() => {
-  if (!arePermissionsReady.value) {
-    return {};
+    isFormOpen.value = true;
   }
-  return {
-    create: hasPermission(createTaskPreset),
-    update: hasPermission(upsertTaskPreset),
-    delete: hasPermission(deleteTaskPreset),
 
-    visibility: hasPermission(changeTaskPresetVisibility),
-  };
-});
+  function openDuplicateForm(taskPreset: TaskPreset) {
+    updatedTaskPreset.value = {
+      ...taskPreset,
+      id: '',
+    };
 
-const selectedTaskPresetIds = computed({
-  get: () => selectedTaskPresets.value.map((taskPreset) => taskPreset.id),
-  set: (value) => {
-    const ids = new Set(value);
-    selectedTaskPresets.value = selectedTaskPresets.value.filter((taskPreset) =>
-      ids.has(taskPreset.id)
-    );
-  },
-});
+    isFormOpen.value = true;
+  }
 
-function openForm(taskPreset?: TaskPreset) {
-  updatedTaskPreset.value = taskPreset;
-
-  isFormOpen.value = true;
-}
-
-function openDuplicateForm(taskPreset: TaskPreset) {
-  updatedTaskPreset.value = {
-    ...taskPreset,
-    id: '',
-  };
-
-  isFormOpen.value = true;
-}
-
-function closeForm() {
-  isFormOpen.value = false;
-  refresh();
-}
-
-async function deleteItem(taskPreset: TaskPreset) {
-  // TODO: show warning
-  try {
-    await deleteTaskPreset(taskPreset);
+  function closeForm() {
+    isFormOpen.value = false;
     refresh();
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task-preset.errors.delete'), err);
   }
-}
 
-async function deleteSelected() {
-  // TODO: show warning
-  try {
-    await Promise.all(
-      selectedTaskPresets.value.map((taskPreset) =>
-        deleteTaskPreset(taskPreset)
-      )
-    );
-    selectedTaskPresets.value = [];
-    refresh();
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task-preset.errors.delete'), err);
+  async function deleteItem(taskPreset: TaskPreset) {
+    // TODO: show warning
+    try {
+      await deleteTaskPreset(taskPreset);
+      refresh();
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task-preset.errors.delete'), err);
+    }
   }
-}
 
-async function toggleItemVisibility(taskPreset: TaskPreset) {
-  try {
-    await changeTaskPresetVisibility(taskPreset, !taskPreset.hidden);
-    refresh();
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task-preset.errors.edit'), err);
+  async function deleteSelected() {
+    // TODO: show warning
+    try {
+      await Promise.all(
+        selectedTaskPresets.value.map((taskPreset) =>
+          deleteTaskPreset(taskPreset)
+        )
+      );
+      selectedTaskPresets.value = [];
+      refresh();
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task-preset.errors.delete'), err);
+    }
   }
-}
 
-async function toggleSelectedVisibility() {
-  try {
-    await Promise.all(
-      selectedTaskPresets.value.map((taskPreset) =>
-        changeTaskPresetVisibility(taskPreset, !taskPreset.hidden)
-      )
-    );
-    selectedTaskPresets.value = [];
-    refresh();
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task-preset.errors.edit'), err);
+  async function toggleItemVisibility(taskPreset: TaskPreset) {
+    try {
+      await changeTaskPresetVisibility(taskPreset, !taskPreset.hidden);
+      refresh();
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task-preset.errors.edit'), err);
+    }
   }
-}
 
-// oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
-refreshPermissions().then(() => {
-  arePermissionsReady.value = true;
-});
+  async function toggleSelectedVisibility() {
+    try {
+      await Promise.all(
+        selectedTaskPresets.value.map((taskPreset) =>
+          changeTaskPresetVisibility(taskPreset, !taskPreset.hidden)
+        )
+      );
+      selectedTaskPresets.value = [];
+      refresh();
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task-preset.errors.edit'), err);
+    }
+  }
+
+  // oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
+  refreshPermissions().then(() => {
+    arePermissionsReady.value = true;
+  });
 </script>

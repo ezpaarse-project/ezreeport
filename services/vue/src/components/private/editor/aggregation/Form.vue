@@ -51,90 +51,90 @@
 </template>
 
 <script setup lang="ts">
-import type {
-  FigureAggregation,
-  AggregationType,
-} from '~sdk/helpers/aggregations';
+  import type {
+    FigureAggregation,
+    AggregationType,
+  } from '~sdk/helpers/aggregations';
 
-import {
-  isBaseAggregation,
-  isFiltersAggregation,
-  isRawAggregation,
-  type InnerAggregation,
-} from '~/lib/aggregations';
+  import {
+    isBaseAggregation,
+    isFiltersAggregation,
+    isRawAggregation,
+    type InnerAggregation,
+  } from '~/lib/aggregations';
 
-// Component props
-const props = defineProps<{
+  // Component props
+  const props = defineProps<{
+    /** Aggregation to edit */
+    modelValue?: FigureAggregation | undefined;
+    /** Should be disabled */
+    disabled?: boolean;
+    /** Should be readonly */
+    readonly?: boolean;
+    /** Types of aggregations allowed in options */
+    type?: AggregationType;
+  }>();
+
+  // Component events
+  const emit = defineEmits<{
+    /** Aggregation updated */
+    (event: 'update:modelValue', value: FigureAggregation | undefined): void;
+  }>();
+
+  /** Is form valid */
+  const isValid = ref(false);
+
   /** Aggregation to edit */
-  modelValue?: FigureAggregation | undefined;
-  /** Should be disabled */
-  disabled?: boolean;
-  /** Should be readonly */
-  readonly?: boolean;
-  /** Types of aggregations allowed in options */
-  type?: AggregationType;
-}>();
+  const { cloned: aggregation } = useCloned<InnerAggregation | null>(
+    props.modelValue ?? null
+  );
+  /** Backup of the aggregation in the last mode (simple/advanced) */
+  const { cloned: aggregationBackup, sync: syncBackup } = useCloned(aggregation, {
+    manual: true,
+  });
 
-// Component events
-const emit = defineEmits<{
-  /** Aggregation updated */
-  (event: 'update:modelValue', value: FigureAggregation | undefined): void;
-}>();
+  /** Ref to VForm + validate on mount */
+  const vform = useTemplateVForm('formRef', { immediate: !!props.modelValue });
 
-/** Is form valid */
-const isValid = ref(false);
+  /** Is the aggregation in advanced mode */
+  const isAdvanced = computed(() => isRawAggregation(aggregation.value));
 
-/** Aggregation to edit */
-const { cloned: aggregation } = useCloned<InnerAggregation | null>(
-  props.modelValue ?? null
-);
-/** Backup of the aggregation in the last mode (simple/advanced) */
-const { cloned: aggregationBackup, sync: syncBackup } = useCloned(aggregation, {
-  manual: true,
-});
-
-/** Ref to VForm + validate on mount */
-const vform = useTemplateVForm('formRef', { immediate: !!props.modelValue });
-
-/** Is the aggregation in advanced mode */
-const isAdvanced = computed(() => isRawAggregation(aggregation.value));
-
-/**
- * Switch between advanced and simple mode, also restore the backup
- */
-function switchMode(): void {
-  let newAggregation;
-  if (isAdvanced.value) {
-    newAggregation = {
-      type: '',
-      field: '',
-      ...aggregationBackup.value,
-      raw: undefined,
-    };
-  } else {
-    newAggregation = {
-      raw: {},
-      ...aggregationBackup.value,
-      type: undefined,
-      field: undefined,
-    };
+  /**
+   * Switch between advanced and simple mode, also restore the backup
+   */
+  function switchMode(): void {
+    let newAggregation;
+    if (isAdvanced.value) {
+      newAggregation = {
+        type: '',
+        field: '',
+        ...aggregationBackup.value,
+        raw: undefined,
+      };
+    } else {
+      newAggregation = {
+        raw: {},
+        ...aggregationBackup.value,
+        type: undefined,
+        field: undefined,
+      };
+    }
+    syncBackup();
+    aggregation.value = newAggregation as InnerAggregation;
   }
-  syncBackup();
-  aggregation.value = newAggregation as InnerAggregation;
-}
 
-/**
- * Update modelValue when aggregation changes
- */
-watch(
-  aggregation,
-  () => {
-    vform.value?.validate();
-    emit(
-      'update:modelValue',
-      (aggregation.value ?? undefined) as FigureAggregation | undefined
-    );
-  },
-  { deep: true }
-);
+  /**
+   * Update modelValue when aggregation changes
+   */
+  watch(
+    aggregation,
+    () => {
+      vform.value?.validate();
+      emit(
+        'update:modelValue',
+        (aggregation.value ?? undefined) as FigureAggregation | undefined
+      );
+    },
+    { deep: true }
+  );
 </script>

@@ -10,10 +10,10 @@
 </template>
 
 <script setup lang="ts">
-import type { TemplateTag, InputTemplateTag } from '~sdk/template-tags';
+  import type { TemplateTag, InputTemplateTag } from '~sdk/template-tags';
 
-defineProps<{
-  modelValue: (TemplateTag | InputTemplateTag)[];
-  size?: string;
-}>();
+  defineProps<{
+    modelValue: (TemplateTag | InputTemplateTag)[];
+    size?: string;
+  }>();
 </script>

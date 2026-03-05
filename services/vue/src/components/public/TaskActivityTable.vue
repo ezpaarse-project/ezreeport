@@ -158,123 +158,123 @@
 </template>
 
 <script setup lang="ts">
-import type { VDataTable } from 'vuetify/components';
-import {
-  eachDayOfInterval,
-  format,
-  formatISO,
-  isValid,
-  max,
-  min,
-} from 'date-fns';
+  import type { VDataTable } from 'vuetify/components';
+  import {
+    eachDayOfInterval,
+    format,
+    formatISO,
+    isValid,
+    max,
+    min,
+  } from 'date-fns';
 
-import { getAllActivity } from '~sdk/task-activity';
+  import { getAllActivity } from '~sdk/task-activity';
 
-const maxDate = new Date();
+  const maxDate = new Date();
 
-// Components props
-const props = defineProps<{
-  titlePrefix?: string;
-  itemsPerPageOptions?: number[] | { title: string; value: number }[];
-}>();
+  // Components props
+  const props = defineProps<{
+    titlePrefix?: string;
+    itemsPerPageOptions?: number[] | { title: string; value: number }[];
+  }>();
 
-/** Items per page */
-const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
-/** List of activity */
-const { total, refresh, loading, filters, vDataTableOptions } =
-  useServerSidePagination((params) => getAllActivity(params), {
-    sortBy: 'createdAt',
-    order: 'desc',
-    itemsPerPage,
-    include: ['task.namespace'],
+  /** Items per page */
+  const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
+  /** List of activity */
+  const { total, refresh, loading, filters, vDataTableOptions } =
+    useServerSidePagination((params) => getAllActivity(params), {
+      sortBy: 'createdAt',
+      order: 'desc',
+      itemsPerPage,
+      include: ['task.namespace'],
+    });
+
+  type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
+
+  // Utils composable
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
+  const { locale } = useDateLocale();
+
+  const title = computed(
+    () =>
+      `${props.titlePrefix || ''}${t('$ezreeport.task-activity.title:list', total.value)}`
+  );
+
+  /** Headers for table */
+  const headers = computed(
+    (): VDataTableHeaders => [
+      {
+        title: t('$ezreeport.task-activity.task'),
+        value: 'task.name',
+      },
+      {
+        title: t('$ezreeport.namespace'),
+        value: 'task.namespace.name',
+      },
+      {
+        title: t('$ezreeport.task-activity.type'),
+        value: 'type',
+        align: 'center',
+      },
+      {
+        title: t('$ezreeport.task-activity.date'),
+        value: 'createdAt',
+        sortable: true,
+      },
+    ]
+  );
+
+  const periodRange = computed({
+    get: () => {
+      const start = new Date(`${filters.value['createdAt.from']}`);
+      const end = new Date(`${filters.value['createdAt.to']}`);
+
+      if (!isValid(start)) {
+        return;
+      }
+      if (!isValid(end)) {
+        return [start];
+      }
+      return eachDayOfInterval({ start, end });
+    },
+    set: (range) => {
+      if (!range || range.length <= 0) {
+        filters.value['createdAt.from'] = undefined;
+        filters.value['createdAt.to'] = undefined;
+        return;
+      }
+      const start = min(range);
+      filters.value['createdAt.from'] = formatISO(start, {
+        representation: 'date',
+      });
+      const end = max(range);
+      filters.value['createdAt.to'] = formatISO(end, { representation: 'date' });
+    },
   });
 
-type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
-
-// Utils composable
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
-const { locale } = useDateLocale();
-
-const title = computed(
-  () =>
-    `${props.titlePrefix || ''}${t('$ezreeport.task-activity.title:list', total.value)}`
-);
-
-/** Headers for table */
-const headers = computed(
-  (): VDataTableHeaders => [
-    {
-      title: t('$ezreeport.task-activity.task'),
-      value: 'task.name',
-    },
-    {
-      title: t('$ezreeport.namespace'),
-      value: 'task.namespace.name',
-    },
-    {
-      title: t('$ezreeport.task-activity.type'),
-      value: 'type',
-      align: 'center',
-    },
-    {
-      title: t('$ezreeport.task-activity.date'),
-      value: 'createdAt',
-      sortable: true,
-    },
-  ]
-);
-
-const periodRange = computed({
-  get: () => {
+  const formattedPeriod = computed(() => {
     const start = new Date(`${filters.value['createdAt.from']}`);
     const end = new Date(`${filters.value['createdAt.to']}`);
 
-    if (!isValid(start)) {
+    const period = { start: '', end: '' };
+    if (isValid(start)) {
+      period.start = format(start, 'dd/MM/yyyy', { locale: locale.value });
+    }
+    if (isValid(end)) {
+      period.end = format(end, 'dd/MM/yyyy', { locale: locale.value });
+    }
+    if (!period.start) {
       return;
     }
-    if (!isValid(end)) {
-      return [start];
+    if (period.start === period.end) {
+      return period.start;
     }
-    return eachDayOfInterval({ start, end });
-  },
-  set: (range) => {
-    if (!range || range.length <= 0) {
-      filters.value['createdAt.from'] = undefined;
-      filters.value['createdAt.to'] = undefined;
-      return;
-    }
-    const start = min(range);
-    filters.value['createdAt.from'] = formatISO(start, {
-      representation: 'date',
-    });
-    const end = max(range);
-    filters.value['createdAt.to'] = formatISO(end, { representation: 'date' });
-  },
-});
+    return `${period.start} ~ ${period.end}`;
+  });
 
-const formattedPeriod = computed(() => {
-  const start = new Date(`${filters.value['createdAt.from']}`);
-  const end = new Date(`${filters.value['createdAt.to']}`);
-
-  const period = { start: '', end: '' };
-  if (isValid(start)) {
-    period.start = format(start, 'dd/MM/yyyy', { locale: locale.value });
+  function applyTaskFilter(id: string | undefined) {
+    filters.value.namespaceId = undefined;
+    filters.value.taskId = id;
   }
-  if (isValid(end)) {
-    period.end = format(end, 'dd/MM/yyyy', { locale: locale.value });
-  }
-  if (!period.start) {
-    return;
-  }
-  if (period.start === period.end) {
-    return period.start;
-  }
-  return `${period.start} ~ ${period.end}`;
-});
-
-function applyTaskFilter(id: string | undefined) {
-  filters.value.namespaceId = undefined;
-  filters.value.taskId = id;
-}
 </script>

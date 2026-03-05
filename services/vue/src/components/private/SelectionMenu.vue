@@ -31,14 +31,14 @@
 </template>
 
 <script lang="ts" setup>
-defineProps<{
-  modelValue: string[];
-  text: string;
-}>();
+  defineProps<{
+    modelValue: string[];
+    text: string;
+  }>();
 
-defineEmits<{
-  (event: 'update:modelValue', selection: string[]): void;
-}>();
+  defineEmits<{
+    (event: 'update:modelValue', selection: string[]): void;
+  }>();
 
-const open = ref(false);
+  const open = ref(false);
 </script>

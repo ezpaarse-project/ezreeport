@@ -21,40 +21,40 @@
 </template>
 
 <script setup lang="ts">
-import type { FigureOrder } from '~sdk/helpers/figures';
+  import type { FigureOrder } from '~sdk/helpers/figures';
 
-// Components props
-const props = defineProps<{
-  /** The table figure to edit */
-  modelValue?: FigureOrder;
-  /** Should be readonly */
-  readonly?: boolean;
-}>();
+  // Components props
+  const props = defineProps<{
+    /** The table figure to edit */
+    modelValue?: FigureOrder;
+    /** Should be readonly */
+    readonly?: boolean;
+  }>();
 
-// Components events
-const emit = defineEmits<{
-  /** Updated figure */
-  (event: 'update:modelValue', value: FigureOrder): void;
-}>();
+  // Components events
+  const emit = defineEmits<{
+    /** Updated figure */
+    (event: 'update:modelValue', value: FigureOrder): void;
+  }>();
 
-// Util composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // Util composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-/** Value for the button group */
-const value = computed<'asc' | 'desc' | undefined>({
-  get: () => {
-    const val = props.modelValue ?? true;
-    if (val === true) {
-      return 'desc';
-    }
-    if (val === false) {
-      return;
-    }
-    return val;
-  },
-  set: (value) => {
-    emit('update:modelValue', value || false);
-  },
-});
+  /** Value for the button group */
+  const value = computed<'asc' | 'desc' | undefined>({
+    get: () => {
+      const val = props.modelValue ?? true;
+      if (val === true) {
+        return 'desc';
+      }
+      if (val === false) {
+        return;
+      }
+      return val;
+    },
+    set: (value) => {
+      emit('update:modelValue', value || false);
+    },
+  });
 </script>

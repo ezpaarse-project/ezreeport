@@ -75,81 +75,81 @@
 </template>
 
 <script setup lang="ts">
-import type { TemplateFilterMap, TemplateFilter } from '~sdk/helpers/filters';
+  import type { TemplateFilterMap, TemplateFilter } from '~sdk/helpers/filters';
 
-type FilterWithKey = { key: string; filter: TemplateFilter };
+  type FilterWithKey = { key: string; filter: TemplateFilter };
 
-// Components props
-const props = defineProps<{
-  /** The filters */
-  modelValue: TemplateFilterMap;
-  /** Should be readonly */
-  readonly?: boolean;
-}>();
+  // Components props
+  const props = defineProps<{
+    /** The filters */
+    modelValue: TemplateFilterMap;
+    /** Should be readonly */
+    readonly?: boolean;
+  }>();
 
-// Components events
-const emit = defineEmits<{
-  /** Updated filters */
-  (event: 'update:modelValue', value: TemplateFilterMap): void;
-}>();
+  // Components events
+  const emit = defineEmits<{
+    /** Updated filters */
+    (event: 'update:modelValue', value: TemplateFilterMap): void;
+  }>();
 
-/** Should show the filter form */
-const isFormVisible = ref(false);
-/** The filter to edit */
-const isImporterVisible = ref(false);
-/** The filter to edit */
-const updatedFilter = ref<FilterWithKey | undefined>();
+  /** Should show the filter form */
+  const isFormVisible = ref(false);
+  /** The filter to edit */
+  const isImporterVisible = ref(false);
+  /** The filter to edit */
+  const updatedFilter = ref<FilterWithKey | undefined>();
 
-/**
- * Close the filter form
- */
-function closeFilterForm(): void {
-  isFormVisible.value = false;
-}
-
-/**
- * Open the filter form
- *
- * @param filter The filter to edit
- */
-function openFilterForm(filter?: FilterWithKey): void {
-  updatedFilter.value = filter;
-  isFormVisible.value = true;
-}
-
-/**
- * Upsert the filter
- *
- * @param filter The filter to set
- */
-function setFilter(filter: TemplateFilter): void {
-  props.modelValue.set(updatedFilter.value?.key ?? filter.name, filter);
-  closeFilterForm();
-  updatedFilter.value = undefined;
-  emit('update:modelValue', props.modelValue);
-}
-
-/**
- * Replace all filters
- *
- * @param filters The filters
- */
-function replaceFilters(filters: TemplateFilter[]): void {
-  props.modelValue.clear();
-  for (const filter of filters) {
-    props.modelValue.set(filter.name, filter);
+  /**
+   * Close the filter form
+   */
+  function closeFilterForm(): void {
+    isFormVisible.value = false;
   }
-  isImporterVisible.value = false;
-  emit('update:modelValue', props.modelValue);
-}
 
-/**
- * Delete a filter
- *
- * @param key The filter's key
- */
-function deleteFilter(key: string): void {
-  props.modelValue.delete(key);
-  emit('update:modelValue', props.modelValue);
-}
+  /**
+   * Open the filter form
+   *
+   * @param filter The filter to edit
+   */
+  function openFilterForm(filter?: FilterWithKey): void {
+    updatedFilter.value = filter;
+    isFormVisible.value = true;
+  }
+
+  /**
+   * Upsert the filter
+   *
+   * @param filter The filter to set
+   */
+  function setFilter(filter: TemplateFilter): void {
+    props.modelValue.set(updatedFilter.value?.key ?? filter.name, filter);
+    closeFilterForm();
+    updatedFilter.value = undefined;
+    emit('update:modelValue', props.modelValue);
+  }
+
+  /**
+   * Replace all filters
+   *
+   * @param filters The filters
+   */
+  function replaceFilters(filters: TemplateFilter[]): void {
+    props.modelValue.clear();
+    for (const filter of filters) {
+      props.modelValue.set(filter.name, filter);
+    }
+    isImporterVisible.value = false;
+    emit('update:modelValue', props.modelValue);
+  }
+
+  /**
+   * Delete a filter
+   *
+   * @param key The filter's key
+   */
+  function deleteFilter(key: string): void {
+    props.modelValue.delete(key);
+    emit('update:modelValue', props.modelValue);
+  }
 </script>

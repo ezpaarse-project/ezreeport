@@ -36,21 +36,21 @@
 </template>
 
 <script setup lang="ts">
-import { variablesOptions } from '~/lib/figures';
+  import { variablesOptions } from '~/lib/figures';
 
-const props = defineProps<{
-  modelValue?: string;
-  readonly?: boolean;
-}>();
+  const props = defineProps<{
+    modelValue?: string;
+    readonly?: boolean;
+  }>();
 
-const emit = defineEmits<{
-  (event: 'update:model-value', value: string): void;
-}>();
+  const emit = defineEmits<{
+    (event: 'update:model-value', value: string): void;
+  }>();
 
-const inputRef = useTemplateRef('input');
+  const inputRef = useTemplateRef('input');
 
-function onVariableClick(variable: string) {
-  emit('update:model-value', `${props.modelValue ?? ''}${variable}`);
-  inputRef.value?.focus();
-}
+  function onVariableClick(variable: string) {
+    emit('update:model-value', `${props.modelValue ?? ''}${variable}`);
+    inputRef.value?.focus();
+  }
 </script>

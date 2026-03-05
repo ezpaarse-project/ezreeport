@@ -32,45 +32,45 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
-  modelValue: Date;
-  format?: string;
-  label?: string;
-  variant?:
-    | 'filled'
-    | 'underlined'
-    | 'outlined'
-    | 'plain'
-    | 'solo'
-    | 'solo-inverted'
-    | 'solo-filled';
-  rules?: ((value: Date) => boolean | string)[];
-  prependIcon?: string;
-  hint?: string;
-  min?: Date;
-  max?: Date;
-  readonly?: boolean;
-}>();
+  const props = defineProps<{
+    modelValue: Date;
+    format?: string;
+    label?: string;
+    variant?:
+      | 'filled'
+      | 'underlined'
+      | 'outlined'
+      | 'plain'
+      | 'solo'
+      | 'solo-inverted'
+      | 'solo-filled';
+    rules?: ((value: Date) => boolean | string)[];
+    prependIcon?: string;
+    hint?: string;
+    min?: Date;
+    max?: Date;
+    readonly?: boolean;
+  }>();
 
-const emit = defineEmits<{
-  (event: 'update:modelValue', value: Date): void;
-}>();
+  const emit = defineEmits<{
+    (event: 'update:modelValue', value: Date): void;
+  }>();
 
-const { formatDateWithTZ } = useDateLocale();
+  const { formatDateWithTZ } = useDateLocale();
 
-/** Ref on text field */
-const fieldRef = useTemplateRef('fieldRef');
+  /** Ref on text field */
+  const fieldRef = useTemplateRef('fieldRef');
 
-const date = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value),
-});
+  const date = computed({
+    get: () => props.modelValue,
+    set: (value) => emit('update:modelValue', value),
+  });
 
-const formatted = computed(() =>
-  formatDateWithTZ(props.modelValue, props.format || 'PPP')
-);
+  const formatted = computed(() =>
+    formatDateWithTZ(props.modelValue, props.format || 'PPP')
+  );
 
-const innerRules = computed(() =>
-  (props.rules ?? []).map((rule) => rule(props.modelValue))
-);
+  const innerRules = computed(() =>
+    (props.rules ?? []).map((rule) => rule(props.modelValue))
+  );
 </script>

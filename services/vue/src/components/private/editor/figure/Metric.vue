@@ -102,139 +102,139 @@
 </template>
 
 <script setup lang="ts">
-import { dragAndDrop } from '@formkit/drag-and-drop/vue';
+  import { dragAndDrop } from '@formkit/drag-and-drop/vue';
 
-import {
-  getMetricLabelKey,
-  getAllMetricLabelKeysOfHelper,
-  removeMetricLabelOfHelper,
-  updateMetricLabelOfHelper,
-  addMetricLabelOfHelper,
-  type MetricFigureHelper,
-  type MetricLabel,
-} from '~sdk/helpers/figures';
+  import {
+    getMetricLabelKey,
+    getAllMetricLabelKeysOfHelper,
+    removeMetricLabelOfHelper,
+    updateMetricLabelOfHelper,
+    addMetricLabelOfHelper,
+    type MetricFigureHelper,
+    type MetricLabel,
+  } from '~sdk/helpers/figures';
 
-// Components props
-const props = defineProps<{
-  /** The metric figure to edit */
-  modelValue: MetricFigureHelper;
-  /** Should be readonly */
-  readonly?: boolean;
-}>();
+  // Components props
+  const props = defineProps<{
+    /** The metric figure to edit */
+    modelValue: MetricFigureHelper;
+    /** Should be readonly */
+    readonly?: boolean;
+  }>();
 
-// Components events
-const emit = defineEmits<{
-  /** Updated figure */
-  (event: 'update:modelValue', value: MetricFigureHelper): void;
-}>();
+  // Components events
+  const emit = defineEmits<{
+    /** Updated figure */
+    (event: 'update:modelValue', value: MetricFigureHelper): void;
+  }>();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-/** Should show the label form */
-const isFormVisible = ref(false);
-/** The label to edit */
-const updatedLabel = ref<MetricLabel | undefined>();
+  /** Should show the label form */
+  const isFormVisible = ref(false);
+  /** The label to edit */
+  const updatedLabel = ref<MetricLabel | undefined>();
 
-/** The element list ref to DOM */
-const elementListRef = useTemplateRef<HTMLElement>('elementListRef');
+  /** The element list ref to DOM */
+  const elementListRef = useTemplateRef<HTMLElement>('elementListRef');
 
-// Make the elements draggable to sort
-if (!props.readonly) {
-  dragAndDrop({
-    parent: elementListRef as Ref<HTMLElement>,
-    dragHandle: '.metric--element-handle',
-    dragPlaceholderClass: 'metric--element--dragging',
-    dropZone: false,
-    dragImage: () => document.createElement('div'), // Disable drag image
-    values: computed({
-      get: () => props.modelValue.params.labels,
-      set: (value) => {
-        const { params } = props.modelValue;
-        params.labels = value;
-        emit('update:modelValue', props.modelValue);
-      },
-    }),
-  });
-}
-
-/** Icon of the card */
-const cardIcon = figureIcons.get('metric');
-/** Set of headers */
-const headers = computed(
-  () => new Set(getAllMetricLabelKeysOfHelper(props.modelValue))
-);
-
-/**
- * Close the label form
- */
-function closeLabelForm() {
-  isFormVisible.value = false;
-}
-
-/**
- * Open the label form
- *
- * @param label The label to edit
- */
-function openLabelForm(label?: MetricLabel) {
-  updatedLabel.value = label;
-  isFormVisible.value = true;
-}
-
-/**
- * Remove a label
- *
- * @param label The label to remove
- */
-function removeLabel(label: MetricLabel) {
-  try {
-    removeMetricLabelOfHelper(props.modelValue, label);
-    emit('update:modelValue', props.modelValue);
-  } catch (err) {
-    handleEzrError(
-      t('$ezreeport.editor.figures.metric.elements.errors.delete'),
-      err
-    );
+  // Make the elements draggable to sort
+  if (!props.readonly) {
+    dragAndDrop({
+      parent: elementListRef as Ref<HTMLElement>,
+      dragHandle: '.metric--element-handle',
+      dragPlaceholderClass: 'metric--element--dragging',
+      dropZone: false,
+      dragImage: () => document.createElement('div'), // Disable drag image
+      values: computed({
+        get: () => props.modelValue.params.labels,
+        set: (value) => {
+          const { params } = props.modelValue;
+          params.labels = value;
+          emit('update:modelValue', props.modelValue);
+        },
+      }),
+    });
   }
-}
 
-/**
- * Upsert the label
- *
- * @param label The label
- */
-function setLabel(label: MetricLabel) {
-  try {
-    if (updatedLabel.value) {
-      updateMetricLabelOfHelper(props.modelValue, updatedLabel.value, label);
-    } else {
-      addMetricLabelOfHelper(props.modelValue, label);
+  /** Icon of the card */
+  const cardIcon = figureIcons.get('metric');
+  /** Set of headers */
+  const headers = computed(
+    () => new Set(getAllMetricLabelKeysOfHelper(props.modelValue))
+  );
+
+  /**
+   * Close the label form
+   */
+  function closeLabelForm() {
+    isFormVisible.value = false;
+  }
+
+  /**
+   * Open the label form
+   *
+   * @param label The label to edit
+   */
+  function openLabelForm(label?: MetricLabel) {
+    updatedLabel.value = label;
+    isFormVisible.value = true;
+  }
+
+  /**
+   * Remove a label
+   *
+   * @param label The label to remove
+   */
+  function removeLabel(label: MetricLabel) {
+    try {
+      removeMetricLabelOfHelper(props.modelValue, label);
+      emit('update:modelValue', props.modelValue);
+    } catch (err) {
+      handleEzrError(
+        t('$ezreeport.editor.figures.metric.elements.errors.delete'),
+        err
+      );
     }
-
-    emit('update:modelValue', props.modelValue);
-    closeLabelForm();
-  } catch (err) {
-    handleEzrError(
-      t('$ezreeport.editor.figures.metric.elements.errors.edit'),
-      err
-    );
   }
-}
+
+  /**
+   * Upsert the label
+   *
+   * @param label The label
+   */
+  function setLabel(label: MetricLabel) {
+    try {
+      if (updatedLabel.value) {
+        updateMetricLabelOfHelper(props.modelValue, updatedLabel.value, label);
+      } else {
+        addMetricLabelOfHelper(props.modelValue, label);
+      }
+
+      emit('update:modelValue', props.modelValue);
+      closeLabelForm();
+    } catch (err) {
+      handleEzrError(
+        t('$ezreeport.editor.figures.metric.elements.errors.edit'),
+        err
+      );
+    }
+  }
 </script>
 
 <style scoped>
-.metric--element {
-  transition:
-    transform 0.1s ease-in-out,
-    box-shadow 0.1s ease-in-out;
-}
+  .metric--element {
+    transition:
+      transform 0.1s ease-in-out,
+      box-shadow 0.1s ease-in-out;
+  }
 
-.metric--element--dragging {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
-  transform: scale(0.9) translateX(-5%);
-}
+  .metric--element--dragging {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+    transform: scale(0.9) translateX(-5%);
+  }
 </style>

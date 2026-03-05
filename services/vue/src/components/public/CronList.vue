@@ -78,63 +78,63 @@
 </template>
 
 <script setup lang="ts">
-import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
-import { getAllCrons, updateCron, type Cron } from '~sdk/crons';
+  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
+  import { getAllCrons, updateCron, type Cron } from '~sdk/crons';
 
-// Components props
-const props = defineProps<{
-  titlePrefix?: string;
-}>();
+  // Components props
+  const props = defineProps<{
+    titlePrefix?: string;
+  }>();
 
-// Utils composable
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // Utils composable
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-/** Is loading */
-const loading = ref(false);
-/** Available crons */
-const crons = ref<Cron[]>([]);
-/** Are permissions ready */
-const arePermissionsReady = ref(false);
+  /** Is loading */
+  const loading = ref(false);
+  /** Available crons */
+  const crons = ref<Cron[]>([]);
+  /** Are permissions ready */
+  const arePermissionsReady = ref(false);
 
-const title = computed(
-  () => `${props.titlePrefix || ''}${t('$ezreeport.crons.title:list')}`
-);
+  const title = computed(
+    () => `${props.titlePrefix || ''}${t('$ezreeport.crons.title:list')}`
+  );
 
-const availableActions = computed(() => {
-  if (!arePermissionsReady.value) {
-    return {};
-  }
-  return {
-    update: hasPermission(updateCron),
-  };
-});
+  const availableActions = computed(() => {
+    if (!arePermissionsReady.value) {
+      return {};
+    }
+    return {
+      update: hasPermission(updateCron),
+    };
+  });
 
-async function refresh() {
-  loading.value = true;
-  try {
-    crons.value = await getAllCrons();
-  } catch (err) {
-    handleEzrError(t('$ezreeport.crons.errors.refresh'), err);
-  }
-  loading.value = false;
-}
-
-async function toggleItemState(cron: Cron) {
-  loading.value = true;
-  try {
-    await updateCron({ name: cron.name, running: !cron.running });
-    refresh();
-  } catch (err) {
-    handleEzrError(t('$ezreeport.crons.errors.edit'), err);
+  async function refresh() {
+    loading.value = true;
+    try {
+      crons.value = await getAllCrons();
+    } catch (err) {
+      handleEzrError(t('$ezreeport.crons.errors.refresh'), err);
+    }
     loading.value = false;
   }
-}
 
-refresh();
+  async function toggleItemState(cron: Cron) {
+    loading.value = true;
+    try {
+      await updateCron({ name: cron.name, running: !cron.running });
+      refresh();
+    } catch (err) {
+      handleEzrError(t('$ezreeport.crons.errors.edit'), err);
+      loading.value = false;
+    }
+  }
 
-// oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
-refreshPermissions().then(() => {
-  arePermissionsReady.value = true;
-});
+  refresh();
+
+  // oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
+  refreshPermissions().then(() => {
+    arePermissionsReady.value = true;
+  });
 </script>

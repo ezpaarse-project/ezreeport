@@ -90,106 +90,106 @@
 </template>
 
 <script setup lang="ts">
-import {
-  getAllTemplateTags,
-  type TemplateTag,
-  type InputTemplateTag,
-} from '~sdk/template-tags';
-import type { TemplateTagMap } from '~sdk/helpers/templates';
+  import {
+    getAllTemplateTags,
+    type TemplateTag,
+    type InputTemplateTag,
+  } from '~sdk/template-tags';
+  import type { TemplateTagMap } from '~sdk/helpers/templates';
 
-type TagWithKey = { key: string; tag: TemplateTag | InputTemplateTag };
+  type TagWithKey = { key: string; tag: TemplateTag | InputTemplateTag };
 
-// Components props
-const props = defineProps<{
-  /** The tags */
-  modelValue: TemplateTagMap;
-  /** Should be readonly */
-  readonly?: boolean;
-}>();
+  // Components props
+  const props = defineProps<{
+    /** The tags */
+    modelValue: TemplateTagMap;
+    /** Should be readonly */
+    readonly?: boolean;
+  }>();
 
-// Components events
-const emit = defineEmits<{
-  /** Updated tags */
-  (event: 'update:modelValue', value: TemplateTagMap): void;
-}>();
+  // Components events
+  const emit = defineEmits<{
+    /** Updated tags */
+    (event: 'update:modelValue', value: TemplateTagMap): void;
+  }>();
 
-/** Should show the tag form */
-const isFormVisible = shallowRef(false);
-const loadingTags = shallowRef(false);
-/** The tag to edit */
-const updatedItem = ref<TagWithKey | undefined>();
+  /** Should show the tag form */
+  const isFormVisible = shallowRef(false);
+  const loadingTags = shallowRef(false);
+  /** The tag to edit */
+  const updatedItem = ref<TagWithKey | undefined>();
 
-// Utils composable
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // Utils composable
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-/** Tag list */
-const availableTags = computedAsync(
-  async () => {
-    let items: TemplateTag[] = [];
+  /** Tag list */
+  const availableTags = computedAsync(
+    async () => {
+      let items: TemplateTag[] = [];
 
-    try {
-      ({ items } = await getAllTemplateTags({
-        pagination: { count: 0, sort: 'name' },
-        include: ['tags'],
-      }));
-    } catch (err) {
-      handleEzrError(t('$ezreeport.template.errors.fetch'), err);
+      try {
+        ({ items } = await getAllTemplateTags({
+          pagination: { count: 0, sort: 'name' },
+          include: ['tags'],
+        }));
+      } catch (err) {
+        handleEzrError(t('$ezreeport.template.errors.fetch'), err);
+      }
+
+      return items;
+    },
+    [],
+    { evaluating: loadingTags }
+  );
+
+  /**
+   * Close the tag form
+   */
+  function closeTagForm(): void {
+    isFormVisible.value = false;
+  }
+
+  /**
+   * Open the tag form
+   *
+   * @param item The tag to edit
+   */
+  function openTagForm(item?: TagWithKey): void {
+    if (item && 'id' in item.tag) {
+      // Prevent edition of existing tags
+      return;
     }
 
-    return items;
-  },
-  [],
-  { evaluating: loadingTags }
-);
-
-/**
- * Close the tag form
- */
-function closeTagForm(): void {
-  isFormVisible.value = false;
-}
-
-/**
- * Open the tag form
- *
- * @param item The tag to edit
- */
-function openTagForm(item?: TagWithKey): void {
-  if (item && 'id' in item.tag) {
-    // Prevent edition of existing tags
-    return;
+    updatedItem.value = item;
+    isFormVisible.value = true;
   }
 
-  updatedItem.value = item;
-  isFormVisible.value = true;
-}
+  /**
+   * Upsert the tag
+   *
+   * @param tag The tag to set
+   */
+  function setTag(tag: TemplateTag | InputTemplateTag): void {
+    let key = 'id' in tag ? tag.id : tag.name;
+    // Prevent duplication when changing name
+    if (updatedItem.value) {
+      key = updatedItem.value.key;
+    }
 
-/**
- * Upsert the tag
- *
- * @param tag The tag to set
- */
-function setTag(tag: TemplateTag | InputTemplateTag): void {
-  let key = 'id' in tag ? tag.id : tag.name;
-  // Prevent duplication when changing name
-  if (updatedItem.value) {
-    key = updatedItem.value.key;
+    props.modelValue.set(key, tag);
+    closeTagForm();
+    updatedItem.value = undefined;
+    emit('update:modelValue', props.modelValue);
   }
 
-  props.modelValue.set(key, tag);
-  closeTagForm();
-  updatedItem.value = undefined;
-  emit('update:modelValue', props.modelValue);
-}
-
-/**
- * Delete a tag
- *
- * @param key The tag's key
- */
-function removeTag(key: string): void {
-  props.modelValue.delete(key);
-  emit('update:modelValue', props.modelValue);
-}
+  /**
+   * Delete a tag
+   *
+   * @param key The tag's key
+   */
+  function removeTag(key: string): void {
+    props.modelValue.delete(key);
+    emit('update:modelValue', props.modelValue);
+  }
 </script>

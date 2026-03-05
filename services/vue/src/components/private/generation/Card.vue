@@ -403,94 +403,94 @@
 </template>
 
 <script setup lang="ts">
-import { getTask } from '~sdk/tasks';
-import { getTemplate } from '~sdk/templates';
-import { getFileAsBlob, getFileAsJson } from '~sdk/reports';
-import type { Generation } from '~sdk/generations';
-import { isGenerationEnded } from '~sdk/helpers/generations';
+  import { getTask } from '~sdk/tasks';
+  import { getTemplate } from '~sdk/templates';
+  import { getFileAsBlob, getFileAsJson } from '~sdk/reports';
+  import type { Generation } from '~sdk/generations';
+  import { isGenerationEnded } from '~sdk/helpers/generations';
 
-import { downloadBlob } from '~/lib/files';
+  import { downloadBlob } from '~/lib/files';
 
-const props = defineProps<{
-  modelValue: Generation;
-}>();
+  const props = defineProps<{
+    modelValue: Generation;
+  }>();
 
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-const taskLoading = ref(false);
-const templateLoading = ref(false);
-const resultLoading = ref(false);
+  const taskLoading = ref(false);
+  const templateLoading = ref(false);
+  const resultLoading = ref(false);
 
-/** Has generation ended */
-const isEnded = computed(() => isGenerationEnded(props.modelValue));
-/** Task's id, used for cache purposes */
-const taskId = computed(() => props.modelValue.taskId);
-/** Task of the current generation */
-const task = computedAsync(async () => {
-  taskLoading.value = true;
-  try {
-    const value = await getTask(taskId.value, ['namespace']);
-    taskLoading.value = false;
-    return value;
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task.errors.open'), err);
-    taskLoading.value = false;
-    return;
+  /** Has generation ended */
+  const isEnded = computed(() => isGenerationEnded(props.modelValue));
+  /** Task's id, used for cache purposes */
+  const taskId = computed(() => props.modelValue.taskId);
+  /** Task of the current generation */
+  const task = computedAsync(async () => {
+    taskLoading.value = true;
+    try {
+      const value = await getTask(taskId.value, ['namespace']);
+      taskLoading.value = false;
+      return value;
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task.errors.open'), err);
+      taskLoading.value = false;
+      return;
+    }
+  });
+
+  /** Extended template of the current generation, used for cache purposes */
+  const extendedId = computed(() => task.value?.extendedId);
+  /** Template of the current generation */
+  const template = computedAsync(async () => {
+    if (!extendedId.value) {
+      return;
+    }
+
+    templateLoading.value = true;
+    try {
+      const value = await getTemplate(extendedId.value);
+      templateLoading.value = false;
+      return value;
+    } catch (err) {
+      handleEzrError(t('$ezreeport.template.errors.open'), err);
+      templateLoading.value = false;
+      return;
+    }
+  });
+
+  /** Report id of the current generation, used for cache purposes */
+  const reportId = computed(() =>
+    isEnded.value ? props.modelValue.reportId : undefined
+  );
+  /** Result of the current generation */
+  const result = computedAsync(async () => {
+    if (!reportId.value) {
+      return;
+    }
+
+    resultLoading.value = true;
+    try {
+      const value = await getFileAsJson(
+        taskId.value,
+        `${reportId.value}.det.json`
+      );
+      resultLoading.value = false;
+      return value;
+    } catch (err) {
+      resultLoading.value = false;
+      return;
+    }
+  });
+
+  async function downloadGenerationFile(path: string) {
+    try {
+      const filename = path.split('/').pop() ?? 'download';
+      const blob = await getFileAsBlob(props.modelValue.taskId, path);
+      downloadBlob(blob, filename);
+    } catch (err) {
+      handleEzrError(t('$ezreeport.errors.download', { path }), err);
+    }
   }
-});
-
-/** Extended template of the current generation, used for cache purposes */
-const extendedId = computed(() => task.value?.extendedId);
-/** Template of the current generation */
-const template = computedAsync(async () => {
-  if (!extendedId.value) {
-    return;
-  }
-
-  templateLoading.value = true;
-  try {
-    const value = await getTemplate(extendedId.value);
-    templateLoading.value = false;
-    return value;
-  } catch (err) {
-    handleEzrError(t('$ezreeport.template.errors.open'), err);
-    templateLoading.value = false;
-    return;
-  }
-});
-
-/** Report id of the current generation, used for cache purposes */
-const reportId = computed(() =>
-  isEnded.value ? props.modelValue.reportId : undefined
-);
-/** Result of the current generation */
-const result = computedAsync(async () => {
-  if (!reportId.value) {
-    return;
-  }
-
-  resultLoading.value = true;
-  try {
-    const value = await getFileAsJson(
-      taskId.value,
-      `${reportId.value}.det.json`
-    );
-    resultLoading.value = false;
-    return value;
-  } catch (err) {
-    resultLoading.value = false;
-    return;
-  }
-});
-
-async function downloadGenerationFile(path: string) {
-  try {
-    const filename = path.split('/').pop() ?? 'download';
-    const blob = await getFileAsBlob(props.modelValue.taskId, path);
-    downloadBlob(blob, filename);
-  } catch (err) {
-    handleEzrError(t('$ezreeport.errors.download', { path }), err);
-  }
-}
 </script>

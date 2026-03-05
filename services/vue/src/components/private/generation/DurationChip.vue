@@ -10,19 +10,19 @@
 </template>
 
 <script setup lang="ts">
-import { formatDuration } from 'date-fns';
-import type { Generation } from '~sdk/generations';
+  import { formatDuration } from 'date-fns';
+  import type { Generation } from '~sdk/generations';
 
-const props = defineProps<{
-  modelValue: Generation;
-}>();
+  const props = defineProps<{
+    modelValue: Generation;
+  }>();
 
-// Utils composables
-const { locale } = useDateLocale();
+  // Utils composables
+  const { locale } = useDateLocale();
 
-const took = computed(() => props.modelValue.took ?? 0);
+  const took = computed(() => props.modelValue.took ?? 0);
 
-const formatted = computed(() =>
-  formatDuration({ seconds: took.value / 1000 }, { locale: locale.value })
-);
+  const formatted = computed(() =>
+    formatDuration({ seconds: took.value / 1000 }, { locale: locale.value })
+  );
 </script>

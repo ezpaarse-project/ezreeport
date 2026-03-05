@@ -238,267 +238,267 @@
 </template>
 
 <script setup lang="ts">
-import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
-import type { AdditionalDataForPreset, TaskPreset } from '~sdk/task-presets';
-import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
-import type { TemplateTag } from '~sdk/templates';
-import {
-  RECURRENCES,
-  changeTaskEnableState,
-  createTaskHelper,
-  createTaskBodyHelper,
-  createTaskHelperFrom,
-  taskHelperToJSON,
-  type TaskHelper,
-  isRecurrence,
-} from '~sdk/helpers/tasks';
-import {
-  getAllTasks,
-  getTask,
-  createTask,
-  upsertTask,
-  deleteTask,
-  type Task,
-  type InputTask,
-} from '~sdk/tasks';
+  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
+  import type { AdditionalDataForPreset, TaskPreset } from '~sdk/task-presets';
+  import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
+  import type { TemplateTag } from '~sdk/templates';
+  import {
+    RECURRENCES,
+    changeTaskEnableState,
+    createTaskHelper,
+    createTaskBodyHelper,
+    createTaskHelperFrom,
+    taskHelperToJSON,
+    type TaskHelper,
+    isRecurrence,
+  } from '~sdk/helpers/tasks';
+  import {
+    getAllTasks,
+    getTask,
+    createTask,
+    upsertTask,
+    deleteTask,
+    type Task,
+    type InputTask,
+  } from '~sdk/tasks';
 
-// Components props
-const props = defineProps<{
-  namespaceId: string;
-  titlePrefix?: string;
-}>();
+  // Components props
+  const props = defineProps<{
+    namespaceId: string;
+    titlePrefix?: string;
+  }>();
 
-// Utils composable
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // Utils composable
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-const arePermissionsReady = shallowRef(false);
-const updatedTask = ref<Task | undefined>();
-const generatedTask = ref<Omit<Task, 'template'> | undefined>();
-const isFormOpen = shallowRef(false);
-const advancedTask = ref<TaskHelper | undefined>();
-const currentFilterTab = shallowRef('all');
-const isFiltersPanelOpen = shallowRef(false);
-const tagMap = ref(new Map<string, TemplateTag>());
+  const arePermissionsReady = shallowRef(false);
+  const updatedTask = ref<Task | undefined>();
+  const generatedTask = ref<Omit<Task, 'template'> | undefined>();
+  const isFormOpen = shallowRef(false);
+  const advancedTask = ref<TaskHelper | undefined>();
+  const currentFilterTab = shallowRef('all');
+  const isFiltersPanelOpen = shallowRef(false);
+  const tagMap = ref(new Map<string, TemplateTag>());
 
-/** List of tasks */
-const {
-  total,
-  refresh,
-  loading,
-  filters,
-  items: tasks,
-} = useServerSidePagination((params) => getAllTasks(params), {
-  sortBy: 'name',
-  include: ['extends.tags'],
-  itemsPerPage: 0,
-  filters: { namespaceId: props.namespaceId },
-});
+  /** List of tasks */
+  const {
+    total,
+    refresh,
+    loading,
+    filters,
+    items: tasks,
+  } = useServerSidePagination((params) => getAllTasks(params), {
+    sortBy: 'name',
+    include: ['extends.tags'],
+    itemsPerPage: 0,
+    filters: { namespaceId: props.namespaceId },
+  });
 
-const title = computed(
-  () =>
-    `${props.titlePrefix || ''}${t('$ezreeport.task.title:list', total.value)}`
-);
+  const title = computed(
+    () =>
+      `${props.titlePrefix || ''}${t('$ezreeport.task.title:list', total.value)}`
+  );
 
-const availableActions = computed(() => {
-  if (!arePermissionsReady.value) {
-    return {};
-  }
-  return {
-    create: hasPermission(createTask),
-    update: hasPermission(upsertTask),
-    delete: hasPermission(deleteTask),
-
-    generate: hasPermission(generateAndListenReportOfTask),
-    state: hasPermission(changeTaskEnableState),
-  };
-});
-
-const allTags = computed(() => [...tagMap.value.values()]);
-
-const filterCount = computed(
-  () => Object.entries(filters.value).filter(([, val]) => !!val).length - 1
-);
-
-const filterTabs = computed(() => [
-  { value: 'all', text: t('$ezreeport.all') },
-  { separator: true },
-  ...RECURRENCES.map((value) => ({
-    value,
-    text: t(`$ezreeport.task.recurrenceList.${value}`),
-  })),
-  { separator: true },
-]);
-
-function onTabChange(tab: string): void {
-  filters.value.recurrence = isRecurrence(tab) ? tab : undefined;
-}
-
-async function openForm(task?: Omit<Task, 'template'>): Promise<void> {
-  try {
-    advancedTask.value = undefined;
-    generatedTask.value = undefined;
-    updatedTask.value = task && (await getTask(task));
-
-    isFormOpen.value = true;
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task.errors.open'), err);
-  }
-}
-
-async function openCopyForm(task: Omit<Task, 'template'>): Promise<void> {
-  try {
-    const base = await getTask(task);
-
-    advancedTask.value = undefined;
-    generatedTask.value = undefined;
-    updatedTask.value = {
-      ...base,
-      name: `${base.name} (copy)`,
-      id: '',
-    };
-
-    isFormOpen.value = true;
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task.errors.open'), err);
-  }
-}
-
-function openGeneration(task: Omit<Task, 'template'>): void {
-  try {
-    advancedTask.value = undefined;
-    generatedTask.value = task;
-    updatedTask.value = undefined;
-
-    isFormOpen.value = true;
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task.errors.open'), err);
-  }
-}
-
-/** Type to hold data from others forms */
-type AdvancedFormCurrent = {
-  create?: {
-    data: AdditionalDataForPreset;
-    preset?: TaskPreset;
-  };
-  update?: {
-    data: InputTask;
-    raw: Task;
-  };
-};
-
-function openAdvancedForm(current?: AdvancedFormCurrent): void {
-  try {
-    let value: TaskHelper;
-
-    if (current?.update) {
-      const { data, raw } = current.update;
-
-      value = createTaskHelperFrom({
-        id: raw.id,
-        createdAt: raw.createdAt,
-        ...data,
-      });
-    } else if (current?.create) {
-      const { data, preset } = current.create;
-
-      const template = createTaskBodyHelper(
-        data.index || preset?.fetchOptions?.index,
-        preset?.fetchOptions?.dateField,
-        undefined,
-        data.filters
-      );
-
-      value = createTaskHelper(
-        data.name,
-        data.description,
-        data.namespaceId,
-        preset?.templateId,
-        template,
-        data.targets,
-        preset?.recurrence
-      );
-    } else {
-      value = createTaskHelper();
+  const availableActions = computed(() => {
+    if (!arePermissionsReady.value) {
+      return {};
     }
+    return {
+      create: hasPermission(createTask),
+      update: hasPermission(upsertTask),
+      delete: hasPermission(deleteTask),
 
-    isFormOpen.value = false;
-    setTimeout(() => {
-      updatedTask.value = undefined;
+      generate: hasPermission(generateAndListenReportOfTask),
+      state: hasPermission(changeTaskEnableState),
+    };
+  });
+
+  const allTags = computed(() => [...tagMap.value.values()]);
+
+  const filterCount = computed(
+    () => Object.entries(filters.value).filter(([, val]) => !!val).length - 1
+  );
+
+  const filterTabs = computed(() => [
+    { value: 'all', text: t('$ezreeport.all') },
+    { separator: true },
+    ...RECURRENCES.map((value) => ({
+      value,
+      text: t(`$ezreeport.task.recurrenceList.${value}`),
+    })),
+    { separator: true },
+  ]);
+
+  function onTabChange(tab: string): void {
+    filters.value.recurrence = isRecurrence(tab) ? tab : undefined;
+  }
+
+  async function openForm(task?: Omit<Task, 'template'>): Promise<void> {
+    try {
+      advancedTask.value = undefined;
       generatedTask.value = undefined;
-      advancedTask.value = value;
+      updatedTask.value = task && (await getTask(task));
 
       isFormOpen.value = true;
-    }, 250);
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task.errors.open'), err);
-  }
-}
-
-function closeForm(): void {
-  isFormOpen.value = false;
-  refresh();
-}
-
-async function toggleItemState(task: Omit<Task, 'template'>): Promise<void> {
-  try {
-    await changeTaskEnableState(task, !task.enabled);
-    refresh();
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task.errors.edit'), err);
-  }
-}
-
-async function deleteItem(task: Omit<Task, 'template'>): Promise<void> {
-  // TODO: show warning
-  try {
-    await deleteTask(task);
-    refresh();
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task.errors.delete'), err);
-  }
-}
-
-async function onAdvancedSave(task: TaskHelper): Promise<void> {
-  try {
-    let result;
-    const data = taskHelperToJSON(task);
-    if (task.id) {
-      result = await upsertTask({ ...data, id: task.id });
-    } else {
-      result = await createTask(data);
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task.errors.open'), err);
     }
-    openAdvancedForm({
-      update: {
-        data,
-        raw: result,
-      },
-    });
-  } catch (err) {
-    const msg = task.id
-      ? t('$ezreeport.task.errors.edit')
-      : t('$ezreeport.task.errors.create');
-    handleEzrError(msg, err);
   }
-}
 
-watch(tasks, () => {
-  const entries = [
-    ...tagMap.value,
-    ...tasks.value.flatMap((task) =>
-      (task.extends?.tags ?? []).map((tag): [string, TemplateTag] => [
-        tag.name,
-        tag,
-      ])
-    ),
-  ];
+  async function openCopyForm(task: Omit<Task, 'template'>): Promise<void> {
+    try {
+      const base = await getTask(task);
 
-  tagMap.value = new Map(entries);
-});
+      advancedTask.value = undefined;
+      generatedTask.value = undefined;
+      updatedTask.value = {
+        ...base,
+        name: `${base.name} (copy)`,
+        id: '',
+      };
 
-// oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then, promise/always-return, prefer-top-level-await
-refreshPermissions().then(() => {
-  arePermissionsReady.value = true;
-});
+      isFormOpen.value = true;
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task.errors.open'), err);
+    }
+  }
+
+  function openGeneration(task: Omit<Task, 'template'>): void {
+    try {
+      advancedTask.value = undefined;
+      generatedTask.value = task;
+      updatedTask.value = undefined;
+
+      isFormOpen.value = true;
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task.errors.open'), err);
+    }
+  }
+
+  /** Type to hold data from others forms */
+  type AdvancedFormCurrent = {
+    create?: {
+      data: AdditionalDataForPreset;
+      preset?: TaskPreset;
+    };
+    update?: {
+      data: InputTask;
+      raw: Task;
+    };
+  };
+
+  function openAdvancedForm(current?: AdvancedFormCurrent): void {
+    try {
+      let value: TaskHelper;
+
+      if (current?.update) {
+        const { data, raw } = current.update;
+
+        value = createTaskHelperFrom({
+          id: raw.id,
+          createdAt: raw.createdAt,
+          ...data,
+        });
+      } else if (current?.create) {
+        const { data, preset } = current.create;
+
+        const template = createTaskBodyHelper(
+          data.index || preset?.fetchOptions?.index,
+          preset?.fetchOptions?.dateField,
+          undefined,
+          data.filters
+        );
+
+        value = createTaskHelper(
+          data.name,
+          data.description,
+          data.namespaceId,
+          preset?.templateId,
+          template,
+          data.targets,
+          preset?.recurrence
+        );
+      } else {
+        value = createTaskHelper();
+      }
+
+      isFormOpen.value = false;
+      setTimeout(() => {
+        updatedTask.value = undefined;
+        generatedTask.value = undefined;
+        advancedTask.value = value;
+
+        isFormOpen.value = true;
+      }, 250);
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task.errors.open'), err);
+    }
+  }
+
+  function closeForm(): void {
+    isFormOpen.value = false;
+    refresh();
+  }
+
+  async function toggleItemState(task: Omit<Task, 'template'>): Promise<void> {
+    try {
+      await changeTaskEnableState(task, !task.enabled);
+      refresh();
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task.errors.edit'), err);
+    }
+  }
+
+  async function deleteItem(task: Omit<Task, 'template'>): Promise<void> {
+    // TODO: show warning
+    try {
+      await deleteTask(task);
+      refresh();
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task.errors.delete'), err);
+    }
+  }
+
+  async function onAdvancedSave(task: TaskHelper): Promise<void> {
+    try {
+      let result;
+      const data = taskHelperToJSON(task);
+      if (task.id) {
+        result = await upsertTask({ ...data, id: task.id });
+      } else {
+        result = await createTask(data);
+      }
+      openAdvancedForm({
+        update: {
+          data,
+          raw: result,
+        },
+      });
+    } catch (err) {
+      const msg = task.id
+        ? t('$ezreeport.task.errors.edit')
+        : t('$ezreeport.task.errors.create');
+      handleEzrError(msg, err);
+    }
+  }
+
+  watch(tasks, () => {
+    const entries = [
+      ...tagMap.value,
+      ...tasks.value.flatMap((task) =>
+        (task.extends?.tags ?? []).map((tag): [string, TemplateTag] => [
+          tag.name,
+          tag,
+        ])
+      ),
+    ];
+
+    tagMap.value = new Map(entries);
+  });
+
+  // oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then, promise/always-return, prefer-top-level-await
+  refreshPermissions().then(() => {
+    arePermissionsReady.value = true;
+  });
 </script>

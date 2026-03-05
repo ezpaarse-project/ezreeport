@@ -336,282 +336,282 @@
 </template>
 
 <script setup lang="ts">
-import { isEmail } from '~/utils/validate';
-import type { Namespace } from '~sdk/namespaces';
-import { getAllTemplates, getTemplate, type Template } from '~sdk/templates';
-import {
-  RECURRENCES,
-  getLayoutsOfHelpers,
-  hasTaskChanged,
-  type TaskHelper,
-} from '~sdk/helpers/tasks';
-import { createTemplateHelperFrom } from '~sdk/helpers/templates';
-import { getCurrentNamespaces } from '~sdk/auth';
+  import { isEmail } from '~/utils/validate';
+  import type { Namespace } from '~sdk/namespaces';
+  import { getAllTemplates, getTemplate, type Template } from '~sdk/templates';
+  import {
+    RECURRENCES,
+    getLayoutsOfHelpers,
+    hasTaskChanged,
+    type TaskHelper,
+  } from '~sdk/helpers/tasks';
+  import { createTemplateHelperFrom } from '~sdk/helpers/templates';
+  import { getCurrentNamespaces } from '~sdk/auth';
 
-// Components props
-const { modelValue, namespaceId } = defineProps<{
-  /** Task to create/update - not using defineModel cause using refs */
-  modelValue: TaskHelper;
-  /** Namespace to create/edit task in */
-  namespaceId?: string;
-  /** Should be readonly */
-  readonly?: boolean;
-}>();
+  // Components props
+  const { modelValue, namespaceId } = defineProps<{
+    /** Task to create/update - not using defineModel cause using refs */
+    modelValue: TaskHelper;
+    /** Namespace to create/edit task in */
+    namespaceId?: string;
+    /** Should be readonly */
+    readonly?: boolean;
+  }>();
 
-defineEmits<{
-  'update:model-value': [TaskHelper];
-}>();
+  defineEmits<{
+    'update:model-value': [TaskHelper];
+  }>();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
-const { getOptionsFromMapping, refreshMapping, updateDateField } =
-  useTemplateEditor({
-    // grid: modelValue.template.grid,
-    index: modelValue.template.index,
-    dateField: modelValue.template.dateField,
-    namespaceId,
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
+  const { getOptionsFromMapping, refreshMapping, updateDateField } =
+    useTemplateEditor({
+      // grid: modelValue.template.grid,
+      index: modelValue.template.index,
+      dateField: modelValue.template.dateField,
+      namespaceId,
+    });
+
+  /** Selected index */
+  const selectedIndex = shallowRef(0);
+  /** Is task already exists */
+  const isEditing = shallowRef(!!modelValue.id);
+  /** Has name manually changed */
+  const hasNameChanged = shallowRef(!!modelValue.name);
+  /** Has index manually changed */
+  const hasIndexChanged = shallowRef(!!modelValue.template.index);
+  /** Is basic form valid */
+  const isFormValid = shallowRef(false);
+  /** Is editor visible */
+  const isEditorVisible = shallowRef(false);
+  /** Is namespace list loading */
+  const loadingNamespaces = shallowRef(false);
+  /** Is template list loading */
+  const loadingTemplates = shallowRef(false);
+  /** Is selected template loading */
+  const loadingCurrentTemplate = shallowRef(false);
+
+  /** Validate on mount */
+  useTemplateVForm('formRef', { immediate: isEditing.value });
+
+  /** Is valid */
+  const isValid = computed(() => isFormValid.value);
+  /** Mapping options for dateField */
+  const dateMapping = computed(() => getOptionsFromMapping('date'));
+  /** Has template changed since form is opened */
+  const hasChanged = computed(() => !modelValue.id || hasTaskChanged(modelValue));
+  /** Name of the template */
+  const name = computed({
+    get: () => modelValue.name,
+    set: (value) => {
+      const params = modelValue;
+      params.name = value;
+    },
   });
+  /** Index of the template */
+  const index = computed({
+    get: () => modelValue.template.index,
+    set: (value) => {
+      const { template } = modelValue;
+      template.index = value;
+    },
+  });
+  /** DateField of the template */
+  const dateField = computed({
+    get: () => modelValue.template.dateField,
+    set: (value) => {
+      const { template } = modelValue;
+      updateDateField(value || '');
+      template.dateField = value;
+    },
+  });
+  /** Namespace id of the task */
+  const taskNamespaceId = computed({
+    get: () => modelValue.namespaceId,
+    set: (value) => {
+      const params = modelValue;
+      params.namespaceId = value;
+    },
+  });
+  /** Task recurrence */
+  const recurrence = computed({
+    get: () => modelValue.recurrence,
+    set: (value) => {
+      const params = modelValue;
+      params.recurrence = value;
+    },
+  });
+  /** Task recurrence offset */
+  const recurrenceOffset = computed({
+    get: () => modelValue.recurrenceOffset,
+    set: (value) => {
+      const params = modelValue;
+      params.recurrenceOffset = value;
+    },
+  });
+  /** Task targets */
+  const targets = computed({
+    get: () => modelValue.targets,
+    set: (value) => {
+      const params = modelValue;
 
-/** Selected index */
-const selectedIndex = shallowRef(0);
-/** Is task already exists */
-const isEditing = shallowRef(!!modelValue.id);
-/** Has name manually changed */
-const hasNameChanged = shallowRef(!!modelValue.name);
-/** Has index manually changed */
-const hasIndexChanged = shallowRef(!!modelValue.template.index);
-/** Is basic form valid */
-const isFormValid = shallowRef(false);
-/** Is editor visible */
-const isEditorVisible = shallowRef(false);
-/** Is namespace list loading */
-const loadingNamespaces = shallowRef(false);
-/** Is template list loading */
-const loadingTemplates = shallowRef(false);
-/** Is selected template loading */
-const loadingCurrentTemplate = shallowRef(false);
+      if (value == null) {
+        params.targets = [];
+      }
 
-/** Validate on mount */
-useTemplateVForm('formRef', { immediate: isEditing.value });
+      let all = value;
+      if (!Array.isArray(all)) {
+        all = [all];
+      }
 
-/** Is valid */
-const isValid = computed(() => isFormValid.value);
-/** Mapping options for dateField */
-const dateMapping = computed(() => getOptionsFromMapping('date'));
-/** Has template changed since form is opened */
-const hasChanged = computed(() => !modelValue.id || hasTaskChanged(modelValue));
-/** Name of the template */
-const name = computed({
-  get: () => modelValue.name,
-  set: (value) => {
-    const params = modelValue;
-    params.name = value;
-  },
-});
-/** Index of the template */
-const index = computed({
-  get: () => modelValue.template.index,
-  set: (value) => {
-    const { template } = modelValue;
-    template.index = value;
-  },
-});
-/** DateField of the template */
-const dateField = computed({
-  get: () => modelValue.template.dateField,
-  set: (value) => {
-    const { template } = modelValue;
-    updateDateField(value || '');
-    template.dateField = value;
-  },
-});
-/** Namespace id of the task */
-const taskNamespaceId = computed({
-  get: () => modelValue.namespaceId,
-  set: (value) => {
-    const params = modelValue;
-    params.namespaceId = value;
-  },
-});
-/** Task recurrence */
-const recurrence = computed({
-  get: () => modelValue.recurrence,
-  set: (value) => {
-    const params = modelValue;
-    params.recurrence = value;
-  },
-});
-/** Task recurrence offset */
-const recurrenceOffset = computed({
-  get: () => modelValue.recurrenceOffset,
-  set: (value) => {
-    const params = modelValue;
-    params.recurrenceOffset = value;
-  },
-});
-/** Task targets */
-const targets = computed({
-  get: () => modelValue.targets,
-  set: (value) => {
-    const params = modelValue;
+      // Allow multiple mail addresses, separated by semicolon or comma
+      params.targets = Array.from(
+        new Set(
+          all
+            .join(';')
+            .replaceAll(/[,]/g, ';')
+            .split(';')
+            .map((mail) => mail.trim())
+        )
+      );
+    },
+  });
+  /** Task description */
+  const description = computed({
+    get: () => modelValue.description,
+    set: (value) => {
+      const params = modelValue;
+      params.description = value;
+    },
+  });
+  /** Task next iteration */
+  const nextRun = computed({
+    get: () => modelValue.nextRun,
+    set: (value) => {
+      const params = modelValue;
+      params.nextRun = value;
+    },
+  });
+  /** Extended id */
+  const extendedId = computed({
+    get: () => modelValue.extendedId,
+    set: (value) => {
+      const params = modelValue;
+      params.extendedId = value;
+    },
+  });
+  /** Extended template */
+  const extendedTemplate = computedAsync(async () => {
+    let template;
 
-    if (value == null) {
-      params.targets = [];
-    }
-
-    let all = value;
-    if (!Array.isArray(all)) {
-      all = [all];
-    }
-
-    // Allow multiple mail addresses, separated by semicolon or comma
-    params.targets = Array.from(
-      new Set(
-        all
-          .join(';')
-          .replaceAll(/[,]/g, ';')
-          .split(';')
-          .map((mail) => mail.trim())
-      )
-    );
-  },
-});
-/** Task description */
-const description = computed({
-  get: () => modelValue.description,
-  set: (value) => {
-    const params = modelValue;
-    params.description = value;
-  },
-});
-/** Task next iteration */
-const nextRun = computed({
-  get: () => modelValue.nextRun,
-  set: (value) => {
-    const params = modelValue;
-    params.nextRun = value;
-  },
-});
-/** Extended id */
-const extendedId = computed({
-  get: () => modelValue.extendedId,
-  set: (value) => {
-    const params = modelValue;
-    params.extendedId = value;
-  },
-});
-/** Extended template */
-const extendedTemplate = computedAsync(async () => {
-  let template;
-
-  if (!extendedId.value) {
-    return template;
-  }
-
-  loadingCurrentTemplate.value = true;
-  try {
-    const res = await getTemplate(extendedId.value);
-    template = createTemplateHelperFrom(res);
-  } catch (err) {
-    handleEzrError(t('$ezreeport.template.errors.open'), err);
-  }
-  loadingCurrentTemplate.value = false;
-
-  return template;
-});
-/** Layouts merged with extended template */
-const mergedLayouts = computed(() => {
-  if (!extendedTemplate.value) {
-    return [];
-  }
-
-  return getLayoutsOfHelpers(modelValue.template, extendedTemplate.value.body);
-});
-/** Recurrence options */
-const recurrenceOptions = computed(() =>
-  RECURRENCES.map((value) => ({
-    value,
-    title: t(`$ezreeport.task.recurrenceList.${value}`),
-  }))
-);
-/** Template list */
-const templates = computedAsync(async () => {
-  let items: Omit<Template, 'body'>[] = [];
-
-  loadingTemplates.value = true;
-  try {
-    let meta;
-    ({ items, meta } = await getAllTemplates({
-      pagination: { count: 0, sort: 'name' },
-      include: ['tags'],
-    }));
     if (!extendedId.value) {
-      extendedId.value = meta.default;
+      return template;
     }
-  } catch (err) {
-    handleEzrError(t('$ezreeport.template.errors.fetch'), err);
-  }
-  loadingTemplates.value = false;
 
-  return items;
-}, []);
-/** Is form namespaced */
-const isNamespaced = computed(() => !!namespaceId);
-/** Namespace list */
-const namespaces = computedAsync(async () => {
-  let items: Omit<Namespace, 'fetchLogin' | 'fetchOptions'>[] = [];
+    loadingCurrentTemplate.value = true;
+    try {
+      const res = await getTemplate(extendedId.value);
+      template = createTemplateHelperFrom(res);
+    } catch (err) {
+      handleEzrError(t('$ezreeport.template.errors.open'), err);
+    }
+    loadingCurrentTemplate.value = false;
 
-  if (isNamespaced.value) {
+    return template;
+  });
+  /** Layouts merged with extended template */
+  const mergedLayouts = computed(() => {
+    if (!extendedTemplate.value) {
+      return [];
+    }
+
+    return getLayoutsOfHelpers(modelValue.template, extendedTemplate.value.body);
+  });
+  /** Recurrence options */
+  const recurrenceOptions = computed(() =>
+    RECURRENCES.map((value) => ({
+      value,
+      title: t(`$ezreeport.task.recurrenceList.${value}`),
+    }))
+  );
+  /** Template list */
+  const templates = computedAsync(async () => {
+    let items: Omit<Template, 'body'>[] = [];
+
+    loadingTemplates.value = true;
+    try {
+      let meta;
+      ({ items, meta } = await getAllTemplates({
+        pagination: { count: 0, sort: 'name' },
+        include: ['tags'],
+      }));
+      if (!extendedId.value) {
+        extendedId.value = meta.default;
+      }
+    } catch (err) {
+      handleEzrError(t('$ezreeport.template.errors.fetch'), err);
+    }
+    loadingTemplates.value = false;
+
     return items;
+  }, []);
+  /** Is form namespaced */
+  const isNamespaced = computed(() => !!namespaceId);
+  /** Namespace list */
+  const namespaces = computedAsync(async () => {
+    let items: Omit<Namespace, 'fetchLogin' | 'fetchOptions'>[] = [];
+
+    if (isNamespaced.value) {
+      return items;
+    }
+
+    loadingNamespaces.value = true;
+    try {
+      const currentNamespaces = await getCurrentNamespaces();
+      items = currentNamespaces.toSorted((namespaceA, namespaceB) =>
+        namespaceA.name.localeCompare(namespaceB.name)
+      );
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), err);
+    }
+    loadingNamespaces.value = false;
+
+    return items;
+  }, []);
+  /** Current namespace */
+  const namespace = computed(() =>
+    namespaces.value.find((nsp) => nsp.id === taskNamespaceId.value)
+  );
+
+  function regenerateName(): void {
+    if (hasNameChanged.value || !extendedTemplate.value) {
+      return;
+    }
+    const rec = t(`$ezreeport.task.recurrenceList.${recurrence.value}`);
+    name.value = `${extendedTemplate.value.name} ${rec.toLocaleLowerCase()}`;
   }
 
-  loadingNamespaces.value = true;
-  try {
-    const currentNamespaces = await getCurrentNamespaces();
-    items = currentNamespaces.toSorted((namespaceA, namespaceB) =>
-      namespaceA.name.localeCompare(namespaceB.name)
-    );
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), err);
-  }
-  loadingNamespaces.value = false;
-
-  return items;
-}, []);
-/** Current namespace */
-const namespace = computed(() =>
-  namespaces.value.find((nsp) => nsp.id === taskNamespaceId.value)
-);
-
-function regenerateName(): void {
-  if (hasNameChanged.value || !extendedTemplate.value) {
-    return;
-  }
-  const rec = t(`$ezreeport.task.recurrenceList.${recurrence.value}`);
-  name.value = `${extendedTemplate.value.name} ${rec.toLocaleLowerCase()}`;
-}
-
-function applyIndexFromTemplate(): void {
-  if (hasIndexChanged.value || !extendedTemplate.value) {
-    return;
-  }
-  index.value = extendedTemplate.value.body.index || '';
-}
-
-function openEditor(layoutIndex = 0): void {
-  if (!isValid.value) {
-    return;
+  function applyIndexFromTemplate(): void {
+    if (hasIndexChanged.value || !extendedTemplate.value) {
+      return;
+    }
+    index.value = extendedTemplate.value.body.index || '';
   }
 
-  selectedIndex.value = layoutIndex;
-  isEditorVisible.value = true;
-}
+  function openEditor(layoutIndex = 0): void {
+    if (!isValid.value) {
+      return;
+    }
 
-function closeEditor(): void {
-  isEditorVisible.value = false;
-}
+    selectedIndex.value = layoutIndex;
+    isEditorVisible.value = true;
+  }
 
-watch(extendedTemplate, () => applyIndexFromTemplate);
-watch([extendedTemplate, recurrence], () => regenerateName());
+  function closeEditor(): void {
+    isEditorVisible.value = false;
+  }
+
+  watch(extendedTemplate, () => applyIndexFromTemplate);
+  watch([extendedTemplate, recurrence], () => regenerateName());
 </script>

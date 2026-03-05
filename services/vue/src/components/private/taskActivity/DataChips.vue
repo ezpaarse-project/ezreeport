@@ -39,86 +39,86 @@
 </template>
 
 <script setup lang="ts">
-import { isBefore, isValid } from 'date-fns';
+  import { isBefore, isValid } from 'date-fns';
 
-import { downloadBlob } from '~/lib/files';
-import { getFileAsBlob } from '~sdk/reports';
+  import { downloadBlob } from '~/lib/files';
+  import { getFileAsBlob } from '~sdk/reports';
 
-import type { TaskActivity } from '~sdk/task-activity';
+  import type { TaskActivity } from '~sdk/task-activity';
 
-// Components props
-const props = defineProps<{
-  /** The tag to show */
-  modelValue: TaskActivity;
-}>();
+  // Components props
+  const props = defineProps<{
+    /** The tag to show */
+    modelValue: TaskActivity;
+  }>();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-const isObject = (value: unknown): value is object =>
-  !!value && typeof value === 'object' && !Array.isArray(value);
+  const isObject = (value: unknown): value is object =>
+    !!value && typeof value === 'object' && !Array.isArray(value);
 
-const data = computed(() => {
-  if (isObject(props.modelValue.data)) {
-    return props.modelValue.data;
-  }
-  return {};
-});
+  const data = computed(() => {
+    if (isObject(props.modelValue.data)) {
+      return props.modelValue.data;
+    }
+    return {};
+  });
 
-const user = computed(() => {
-  if ('user' in data.value && typeof data.value.user === 'string') {
-    return data.value.user;
-  }
-  return;
-});
+  const user = computed(() => {
+    if ('user' in data.value && typeof data.value.user === 'string') {
+      return data.value.user;
+    }
+    return;
+  });
 
-const targets = computed(() => {
-  if (
-    'targets' in data.value &&
-    Array.isArray(data.value.targets) &&
-    data.value.targets.every((val) => typeof val === 'string')
-  ) {
-    return data.value.targets;
-  }
-  return;
-});
+  const targets = computed(() => {
+    if (
+      'targets' in data.value &&
+      Array.isArray(data.value.targets) &&
+      data.value.targets.every((val) => typeof val === 'string')
+    ) {
+      return data.value.targets;
+    }
+    return;
+  });
 
-const files = computed(() => {
-  const now = new Date();
+  const files = computed(() => {
+    const now = new Date();
 
-  if ('destroyAt' in data.value && typeof data.value.destroyAt === 'string') {
-    const date = new Date(data.value.destroyAt);
-    if (isValid(date) && isBefore(date, now)) {
-      return;
+    if ('destroyAt' in data.value && typeof data.value.destroyAt === 'string') {
+      const date = new Date(data.value.destroyAt);
+      if (isValid(date) && isBefore(date, now)) {
+        return;
+      }
+    }
+
+    if ('files' in data.value && isObject(data.value.files)) {
+      return {
+        report:
+          'report' in data.value.files &&
+          typeof data.value.files.report === 'string'
+            ? data.value.files.report
+            : undefined,
+        detail:
+          'detail' in data.value.files &&
+          typeof data.value.files.detail === 'string'
+            ? data.value.files.detail
+            : undefined,
+      };
+    }
+
+    return;
+  });
+
+  async function downloadGenerationFile(path: string) {
+    try {
+      const filename = path.split('/').pop() ?? 'download';
+      const blob = await getFileAsBlob(props.modelValue.taskId, path);
+      downloadBlob(blob, filename);
+    } catch (err) {
+      handleEzrError(t('$ezreeport.errors.download', { path }), err);
     }
   }
-
-  if ('files' in data.value && isObject(data.value.files)) {
-    return {
-      report:
-        'report' in data.value.files &&
-        typeof data.value.files.report === 'string'
-          ? data.value.files.report
-          : undefined,
-      detail:
-        'detail' in data.value.files &&
-        typeof data.value.files.detail === 'string'
-          ? data.value.files.detail
-          : undefined,
-    };
-  }
-
-  return;
-});
-
-async function downloadGenerationFile(path: string) {
-  try {
-    const filename = path.split('/').pop() ?? 'download';
-    const blob = await getFileAsBlob(props.modelValue.taskId, path);
-    downloadBlob(blob, filename);
-  } catch (err) {
-    handleEzrError(t('$ezreeport.errors.download', { path }), err);
-  }
-}
 </script>

@@ -34,106 +34,106 @@
 </template>
 
 <script setup lang="ts">
-import {
-  addFigureOfHelper,
-  updateFigureOfHelper,
-  removeFigureOfHelper,
-  type AnyLayoutHelper,
-} from '~sdk/helpers/layouts';
-import type { AnyFigureHelper } from '~sdk/helpers/figures';
+  import {
+    addFigureOfHelper,
+    updateFigureOfHelper,
+    removeFigureOfHelper,
+    type AnyLayoutHelper,
+  } from '~sdk/helpers/layouts';
+  import type { AnyFigureHelper } from '~sdk/helpers/figures';
 
-type Element = {
-  id: string;
-  figure?: AnyFigureHelper;
-  slot: number;
-};
+  type Element = {
+    id: string;
+    figure?: AnyFigureHelper;
+    slot: number;
+  };
 
-// Components props
-const props = defineProps<{
-  /** The layout to edit */
-  modelValue: AnyLayoutHelper;
-  /** Should be readonly */
-  readonly?: boolean;
-}>();
+  // Components props
+  const props = defineProps<{
+    /** The layout to edit */
+    modelValue: AnyLayoutHelper;
+    /** Should be readonly */
+    readonly?: boolean;
+  }>();
 
-// Components events
-const emit = defineEmits<{
-  /** Updated layout */
-  (event: 'update:modelValue', value: AnyLayoutHelper): void;
-}>();
+  // Components events
+  const emit = defineEmits<{
+    /** Updated layout */
+    (event: 'update:modelValue', value: AnyLayoutHelper): void;
+  }>();
 
-// Utils composables
-const { grid } = useTemplateEditor();
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // Utils composables
+  const { grid } = useTemplateEditor();
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-const unusedSlots = computed(() => {
-  const possibleSlots = Array.from(
-    { length: grid.value.cols * grid.value.rows },
-    (__, index) => index
-  );
-  const usedSlots = new Set(
-    props.modelValue.figures.flatMap((fig) => [...fig.slots])
-  );
-  return possibleSlots.filter((sl) => !usedSlots.has(sl));
-});
+  const unusedSlots = computed(() => {
+    const possibleSlots = Array.from(
+      { length: grid.value.cols * grid.value.rows },
+      (__, index) => index
+    );
+    const usedSlots = new Set(
+      props.modelValue.figures.flatMap((fig) => [...fig.slots])
+    );
+    return possibleSlots.filter((sl) => !usedSlots.has(sl));
+  });
 
-const elements = computed((): Element[] => {
-  const elementList = props.modelValue.figures.map((figure) => ({
-    id: figure.id,
-    figure,
-    slot: Math.min(...figure.slots, unusedSlots.value.at(0) ?? 0),
-  }));
+  const elements = computed((): Element[] => {
+    const elementList = props.modelValue.figures.map((figure) => ({
+      id: figure.id,
+      figure,
+      slot: Math.min(...figure.slots, unusedSlots.value.at(0) ?? 0),
+    }));
 
-  // If no unusedElement slots, return
-  if (unusedSlots.value.length <= 0) {
-    return elementList;
-  }
-
-  // Add empty slots
-  return [
-    ...elementList,
-    ...unusedSlots.value.map((slot) => ({
-      id: `empty-${slot}`,
-      figure: undefined,
-      slot,
-    })),
-  ];
-});
-
-/**
- *
- */
-function editFigure(figure: AnyFigureHelper, element: Element) {
-  try {
-    if (element.figure) {
-      updateFigureOfHelper(props.modelValue, element.figure, figure);
-    } else {
-      addFigureOfHelper(props.modelValue, figure);
+    // If no unusedElement slots, return
+    if (unusedSlots.value.length <= 0) {
+      return elementList;
     }
-    emit('update:modelValue', props.modelValue);
-  } catch (err) {
-    handleEzrError(t('$ezreeport.editor.layouts.errors.edit'), err);
-  }
-}
 
-function deleteFigure(element: Element) {
-  try {
-    if (element.figure) {
-      removeFigureOfHelper(props.modelValue, element.figure);
+    // Add empty slots
+    return [
+      ...elementList,
+      ...unusedSlots.value.map((slot) => ({
+        id: `empty-${slot}`,
+        figure: undefined,
+        slot,
+      })),
+    ];
+  });
+
+  /**
+   *
+   */
+  function editFigure(figure: AnyFigureHelper, element: Element) {
+    try {
+      if (element.figure) {
+        updateFigureOfHelper(props.modelValue, element.figure, figure);
+      } else {
+        addFigureOfHelper(props.modelValue, figure);
+      }
+      emit('update:modelValue', props.modelValue);
+    } catch (err) {
+      handleEzrError(t('$ezreeport.editor.layouts.errors.edit'), err);
     }
-    emit('update:modelValue', props.modelValue);
-  } catch (err) {
-    handleEzrError(t('$ezreeport.editor.layouts.errors.delete'), err);
   }
-}
+
+  function deleteFigure(element: Element) {
+    try {
+      if (element.figure) {
+        removeFigureOfHelper(props.modelValue, element.figure);
+      }
+      emit('update:modelValue', props.modelValue);
+    } catch (err) {
+      handleEzrError(t('$ezreeport.editor.layouts.errors.delete'), err);
+    }
+  }
 </script>
 
 <style lang="css" scoped>
-.template-layout-elements {
-  display: grid;
-  grid-template-columns: repeat(v-bind('grid.cols'), 1fr);
-  grid-template-rows: repeat(v-bind('grid.rows'), 1fr);
-  height: 100%;
-}
+  .template-layout-elements {
+    display: grid;
+    grid-template-columns: repeat(v-bind('grid.cols'), 1fr);
+    grid-template-rows: repeat(v-bind('grid.rows'), 1fr);
+    height: 100%;
+  }
 </style>
