@@ -12,9 +12,9 @@ export const BaseResponse = z.object({
     .describe('HTTP Status'),
 });
 
-type BaseResponseType = z.Infer<typeof BaseResponse>;
+type BaseResponseType = z.infer<typeof BaseResponse>;
 
-function buildResponse(reply: FastifyReply): z.infer<typeof BaseResponse> {
+function buildResponse(reply: FastifyReply): BaseResponseType {
   return {
     apiVersion: 2,
     status: {

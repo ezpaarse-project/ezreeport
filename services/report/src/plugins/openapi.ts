@@ -23,10 +23,10 @@ type PluginOptions = {
 };
 
 const OPENAPI_INFOS = {
-  title: 'ezReeport API',
+  title: 'ezREEPORT API',
   version,
   contact: {
-    name: 'ezTeam',
+    name: 'ezTEAM',
     url: 'https://github.com/ezpaarse-project',
     email: 'ezpaarse@couperin.org',
   },
