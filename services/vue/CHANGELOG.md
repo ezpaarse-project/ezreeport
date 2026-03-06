@@ -1,5 +1,11 @@
 # @ezpaarse-project/ezreeport-vue
 
+## 3.2.1
+
+### Patch Changes
+
+- 91cfc42: 🐛 fixed next run date resetting when opening task's advanced form
+
 ## 3.2.1-rc.0
 
 ### Patch Changes
