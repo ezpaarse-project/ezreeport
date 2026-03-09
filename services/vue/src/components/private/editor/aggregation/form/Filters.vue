@@ -155,9 +155,12 @@
   import type { TemplateFilterMap } from '~sdk/helpers/filters';
 
   // Component props
-  const props = defineProps<{
-    /** Aggregation to edit */
-    modelValue: FigureFilterAggregation;
+  /** Aggregation to edit */
+  const modelValue = defineModel<FigureFilterAggregation>({
+    required: true,
+  });
+
+  defineProps<{
     /** Should be disabled */
     disabled?: boolean;
     /** Should be readonly */
@@ -166,20 +169,16 @@
     allowedType?: AggregationType;
   }>();
 
-  // Component events
-  const emit = defineEmits<{
-    /** Aggregation updated */
-    (event: 'update:modelValue', value: FigureFilterAggregation): void;
-  }>();
-
   // Utils composables
   // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   const isValid = shallowRef(false);
   const showForm = shallowRef(false);
-  const currentEntries = ref<Map<string, FigureFilterAggregationEntry>>(
-    new Map(props.modelValue.values?.map((entry) => [entry.label, entry]))
+  const currentEntries = ref(
+    new Map<string, FigureFilterAggregationEntry>(
+      modelValue.value.values?.map((entry) => [entry.label, entry])
+    )
   );
   /** Currently edited entry */
   const editedItem = ref<
@@ -189,22 +188,24 @@
 
   /** Current aggregation type */
   const currentType = computed<FigureFilterAggregation['type']>({
-    get: () => props.modelValue.type,
-    set: (type) => emit('update:modelValue', { ...props.modelValue, type }),
+    get: () => modelValue.value.type,
+    set: (type) => {
+      modelValue.value.type = type;
+    },
   });
   /** Current aggregation missing */
   const currentMissing = computed<string | undefined>({
-    get: () => props.modelValue.missing,
-    set: (missing) => emit('update:modelValue', { ...props.modelValue, missing }),
+    get: () => modelValue.value.missing,
+    set: (text) => {
+      modelValue.value.missing = text;
+    },
   });
   /** If we should show the missing values */
   const showMissing = computed({
     get: () => !!currentMissing.value,
-    set: (value) =>
-      emit('update:modelValue', {
-        ...props.modelValue,
-        missing: value ? 'Missing' : undefined,
-      }),
+    set: (value) => {
+      modelValue.value.missing = value ? 'Missing' : undefined;
+    },
   });
 
   function openForm(value?: {
@@ -239,17 +240,10 @@
     };
 
     currentEntries.value.set(editedItem.value.id || entry.label, entry);
+    modelValue.value.values = Array.from(currentEntries.value.values());
 
     showForm.value = false;
     editedItem.value = undefined;
     editedItemFilters.value = undefined;
   }
-
-  // Update props when map updates
-  watch(currentEntries, () => {
-    emit('update:modelValue', {
-      ...props.modelValue,
-      values: Array.from(currentEntries.value.values()),
-    });
-  });
 </script>

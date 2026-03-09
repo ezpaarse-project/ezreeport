@@ -17,15 +17,15 @@ export type InnerAggregation =
   | InnerBaseAggregation;
 
 export const isRawAggregation = (
-  agg: InnerAggregation | null
+  agg: InnerAggregation | null | undefined
 ): agg is FigureRawAggregation => !!agg && 'raw' in agg && agg.raw != null;
 
 export const isBaseAggregation = (
-  agg: InnerAggregation | null
+  agg: InnerAggregation | null | undefined
 ): agg is InnerBaseAggregation => !agg || ('type' in agg && agg.type != null);
 
 export const isFiltersAggregation = (
-  agg: InnerAggregation | null
+  agg: InnerAggregation | null | undefined
 ): agg is FigureFilterAggregation =>
   isBaseAggregation(agg) && agg?.type === 'filters';
 

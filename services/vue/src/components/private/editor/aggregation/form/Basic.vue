@@ -74,14 +74,13 @@
 <script setup lang="ts">
   import {
     type AggregationType,
+    type FigureBaseAggregation,
     aggregationTypes,
   } from '~sdk/helpers/aggregations';
 
-  import type { InnerBaseAggregation } from '~/lib/aggregations';
-
   // Component props
   /** Aggregation to edit */
-  const modelValue = defineModel<InnerBaseAggregation | null>({
+  const modelValue = defineModel<FigureBaseAggregation | undefined>({
     required: true,
   });
 
@@ -98,7 +97,7 @@
     get: () => modelValue.value?.type ?? '',
     set: (type) => {
       if (type === '') {
-        modelValue.value = null;
+        modelValue.value = undefined;
         return;
       }
       modelValue.value = { ...modelValue.value, type, field: '' };
@@ -121,7 +120,7 @@
         }
       }
 
-      modelValue.value = { ...modelValue.value, size };
+      modelValue.value.size = size;
     },
   });
   /** If we should show the missing values */
@@ -132,10 +131,7 @@
         return;
       }
 
-      modelValue.value = {
-        ...modelValue.value,
-        missing: value ? 'Missing' : undefined,
-      };
+      modelValue.value.missing = value ? 'Missing' : undefined;
     },
   });
   /** Is the aggregation a metric one */
