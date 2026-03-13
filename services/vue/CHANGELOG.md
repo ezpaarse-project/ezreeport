@@ -1,5 +1,11 @@
 # @ezpaarse-project/ezreeport-vue
 
+## 3.2.2-rc.0
+
+### Patch Changes
+
+- 73eadc3: 🐛 fixed issue with filters aggregations not saving
+
 ## 3.2.1
 
 ### Patch Changes
