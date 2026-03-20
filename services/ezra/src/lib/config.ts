@@ -1,11 +1,11 @@
-import type { Command } from '@oclif/core';
-
 import { existsSync, mkdirSync, readdirSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
-import { join, resolve, relative } from 'node:path';
 import { homedir } from 'node:os';
+import { join, resolve, relative } from 'node:path';
 
+import type { Command } from '@oclif/core';
 import chalk from 'chalk';
+
 import { readJSONSync, writeJSON } from './json.js';
 
 export class EZRAConfig {
@@ -19,7 +19,10 @@ export class EZRAConfig {
 
   public config: Record<string, any> = {};
 
-  constructor(private command: Command, path?: string) {
+  constructor(
+    private command: Command,
+    path?: string
+  ) {
     this.rootDir = join(homedir(), '.config/ezreeport-admin');
     this.profilesDir = join(this.rootDir, 'profiles');
     this.configPath = path || join(this.rootDir, 'config.json');
@@ -30,12 +33,17 @@ export class EZRAConfig {
 
         // Read paths from config
         this.rootDir = this.config.rootDir || this.rootDir;
-        this.profilesDir = this.config.profilesDir || join(this.rootDir, 'profiles');
+        this.profilesDir =
+          this.config.profilesDir || join(this.rootDir, 'profiles');
 
         // Reload profiles
         this.applyProfiles();
       } catch (error) {
-        command.logToStderr(chalk.red(`Error config ${chalk.underline(this.configPath)}: ${chalk.bold((error as Error).message)}`));
+        command.logToStderr(
+          chalk.red(
+            `Error config ${chalk.underline(this.configPath)}: ${chalk.bold((error as Error).message)}`
+          )
+        );
       }
     }
 
@@ -56,12 +64,17 @@ export class EZRAConfig {
    * @returns The profiles, key is the priority
    */
   private applyProfiles() {
-    if (typeof this.config.profiles !== 'object' || Array.isArray(this.config.profiles)) {
+    if (
+      typeof this.config.profiles !== 'object' ||
+      Array.isArray(this.config.profiles)
+    ) {
       return;
     }
 
     const entries = Object.entries(this.config.profiles)
-      .map(([key, value]) => [Number.parseInt(key, 10), value] as [number, string])
+      .map(
+        ([key, value]) => [Number.parseInt(key, 10), value] as [number, string]
+      )
       .sort(([aPriority], [bPriority]) => bPriority - aPriority);
 
     for (const [priority, file] of entries) {
@@ -82,7 +95,11 @@ export class EZRAConfig {
     try {
       content = readJSONSync(path);
     } catch (error) {
-      this.command.logToStderr(chalk.red(`Error loading profile ${chalk.underline(path)}: ${chalk.bold((error as Error).message)}`));
+      this.command.logToStderr(
+        chalk.red(
+          `Error loading profile ${chalk.underline(path)}: ${chalk.bold((error as Error).message)}`
+        )
+      );
       return;
     }
 
@@ -94,7 +111,11 @@ export class EZRAConfig {
         continue;
       }
 
-      this.command.log(chalk.grey(`${chalk.blue('ℹ')} Setting env ${chalk.bold(key, '=', value)}`));
+      this.command.log(
+        chalk.grey(
+          `${chalk.blue('ℹ')} Setting env ${chalk.bold(key, '=', value)}`
+        )
+      );
       process.env[key] = `${value}`;
     }
 
@@ -103,8 +124,7 @@ export class EZRAConfig {
   }
 
   private static genProfileName(file: string) {
-    return file
-      .replace(/\.json$/i, '');
+    return file.replace(/\.json$/i, '');
   }
 
   public static genProfileFileName(name: string) {
@@ -114,11 +134,10 @@ export class EZRAConfig {
   public getLoadedProfiles() {
     const profiles: Record<string, string> = this.config.profiles || {};
     return new Map(
-      Object.entries(profiles)
-        .map(([priority, file]) => [
-          EZRAConfig.genProfileName(file),
-          { priority, file, path: resolve(this.profilesDir, file) },
-        ]),
+      Object.entries(profiles).map(([priority, file]) => [
+        EZRAConfig.genProfileName(file),
+        { priority, file, path: resolve(this.profilesDir, file) },
+      ])
     );
   }
 
@@ -146,15 +165,12 @@ export class EZRAConfig {
 
         const name = EZRAConfig.genProfileName(content.name || file);
 
-        map.set(
+        map.set(name, {
+          ...content,
           name,
-          {
-            ...content,
-            name,
-            path,
-            priority: loaded.get(name)?.priority,
-          },
-        );
+          path,
+          priority: loaded.get(name)?.priority,
+        });
       } catch (error) {
         map.set(file, error as Error);
       }
@@ -180,7 +196,9 @@ export class EZRAConfig {
       throw new Error(`Profile "${name}" not found`);
     }
     if (profileOrError instanceof Error) {
-      throw new Error(`Error loading profile ${name}: ${(profileOrError as Error).message}`);
+      throw new Error(
+        `Error loading profile ${name}: ${(profileOrError as Error).message}`
+      );
     }
     return profileOrError;
   }
@@ -189,7 +207,7 @@ export class EZRAConfig {
     await writeJSON(
       join(this.profilesDir, EZRAConfig.genProfileFileName(name)),
       data,
-      2,
+      2
     );
   }
 
@@ -242,7 +260,11 @@ export class EZRAConfig {
       this.config = data;
       await writeJSON(this.configPath, data, 2);
     } catch (error) {
-      this.command.logToStderr(chalk.red(`Error saving config ${chalk.underline(this.configPath)}: ${chalk.bold((error as Error).message)}`));
+      this.command.logToStderr(
+        chalk.red(
+          `Error saving config ${chalk.underline(this.configPath)}: ${chalk.bold((error as Error).message)}`
+        )
+      );
     }
   }
 }

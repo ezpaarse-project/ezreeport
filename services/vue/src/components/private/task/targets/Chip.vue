@@ -45,31 +45,31 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{
-  modelValue: string[];
-  showLabel?: boolean;
-  density?: 'default' | 'comfortable' | 'compact';
-  size?: string | number;
-}>();
+  const props = defineProps<{
+    modelValue: string[];
+    showLabel?: boolean;
+    density?: 'default' | 'comfortable' | 'compact';
+    size?: string | number;
+  }>();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
-const clipboard = useClipboard();
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
+  const clipboard = useClipboard();
 
-const isCopied = ref(false);
+  const isCopied = ref(false);
 
-async function copyTargets() {
-  try {
-    const addresses = props.modelValue.join('; ');
-    await clipboard.copy(addresses);
+  async function copyTargets() {
+    try {
+      const addresses = props.modelValue.join('; ');
+      await clipboard.copy(addresses);
 
-    isCopied.value = true;
-    setTimeout(() => {
-      isCopied.value = false;
-    }, 1000);
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task.errors.copy:targets'), err);
+      isCopied.value = true;
+      setTimeout(() => {
+        isCopied.value = false;
+      }, 1000);
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task.errors.copy:targets'), err);
+    }
   }
-}
 </script>

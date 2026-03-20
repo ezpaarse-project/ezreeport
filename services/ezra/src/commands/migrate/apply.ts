@@ -1,24 +1,22 @@
-import { Args, Flags } from '@oclif/core';
-import { lte as semverLte, compare as semverCompare } from 'semver';
-import { format } from 'date-fns';
-import chalk from 'chalk';
-import ora from 'ora';
-
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 
-import { EzrCommand } from '../../lib/oclif/EzrCommand.js';
-import { readJSONL, writeJSONL } from '../../lib/jsonl.js';
+import { Args, Flags } from '@oclif/core';
+import chalk from 'chalk';
+import { format } from 'date-fns';
+import ora from 'ora';
+import { lte as semverLte, compare as semverCompare } from 'semver';
 
-import migrations from '../../migrations/index.js';
 import type { MigrationData } from '../../migrations/common.js';
+import { readJSONL, writeJSONL } from '../../lib/jsonl.js';
+import { EzrCommand } from '../../lib/oclif/EzrCommand.js';
+import migrations from '../../migrations/index.js';
 
 export default class MigrateApply extends EzrCommand<typeof MigrateApply> {
-  static description = 'Apply migrations to the instance, defaults to all migrations';
+  static description =
+    'Apply migrations to the instance, defaults to all migrations';
 
-  static examples = [
-    '<%= config.bin %> <%= command.id %>',
-  ];
+  static examples = ['<%= config.bin %> <%= command.id %>'];
 
   static flags = {
     file: Flags.file({
@@ -48,8 +46,14 @@ export default class MigrateApply extends EzrCommand<typeof MigrateApply> {
   public async run(): Promise<void> {
     const { args, flags } = await this.parse(MigrateApply);
 
-    const currentVersion = (await readFile(resolve(args.dir, 'version'), 'utf8')).trim();
-    this.log(chalk.grey(`${chalk.blue('ℹ')} Version of ezREEPORT's data: ${chalk.bold(currentVersion)}`));
+    const currentVersion = (
+      await readFile(resolve(args.dir, 'version'), 'utf8')
+    ).trim();
+    this.log(
+      chalk.grey(
+        `${chalk.blue('ℹ')} Version of ezREEPORT's data: ${chalk.bold(currentVersion)}`
+      )
+    );
 
     if (!currentVersion) {
       throw new Error('Could not get current version');
@@ -80,32 +84,51 @@ export default class MigrateApply extends EzrCommand<typeof MigrateApply> {
       return;
     }
 
-    const getDataAction = ora(chalk.grey(`Getting data from ${chalk.underline(args.dir)}`)).start();
+    const getDataAction = ora(
+      chalk.grey(`Getting data from ${chalk.underline(args.dir)}`)
+    ).start();
     let data: MigrationData = Object.fromEntries(
       await Promise.all([
-        readJSONL(resolve(args.dir, 'namespaces.jsonl'))
-          .then((namespaces) => ['namespaces', namespaces]),
+        readJSONL(resolve(args.dir, 'namespaces.jsonl')).then((namespaces) => [
+          'namespaces',
+          namespaces,
+        ]),
 
-        readJSONL(resolve(args.dir, 'templates.jsonl'))
-          .then((templates) => ['templates', templates]),
+        readJSONL(resolve(args.dir, 'templates.jsonl')).then((templates) => [
+          'templates',
+          templates,
+        ]),
 
-        readJSONL(resolve(args.dir, 'tasks-presets.jsonl'))
-          .then((tasksPresets) => ['taskPresets', tasksPresets]),
+        readJSONL(resolve(args.dir, 'tasks-presets.jsonl')).then(
+          (tasksPresets) => ['taskPresets', tasksPresets]
+        ),
 
-        readJSONL(resolve(args.dir, 'tasks.jsonl'))
-          .then((tasks) => ['tasks', tasks]),
-      ]),
+        readJSONL(resolve(args.dir, 'tasks.jsonl')).then((tasks) => [
+          'tasks',
+          tasks,
+        ]),
+      ])
     );
     getDataAction.succeed();
-    this.log(chalk.grey(`    ${chalk.bold(`${data.namespaces.length} namespaces`)}`));
-    this.log(chalk.grey(`    ${chalk.bold(`${data.templates.length} templates`)}`));
-    this.log(chalk.grey(`    ${chalk.bold(`${data.taskPresets.length} task presets`)}`));
+    this.log(
+      chalk.grey(`    ${chalk.bold(`${data.namespaces.length} namespaces`)}`)
+    );
+    this.log(
+      chalk.grey(`    ${chalk.bold(`${data.templates.length} templates`)}`)
+    );
+    this.log(
+      chalk.grey(`    ${chalk.bold(`${data.taskPresets.length} task presets`)}`)
+    );
     this.log(chalk.grey(`    ${chalk.bold(`${data.tasks.length} tasks`)}`));
 
-    const sortedMigrations = migrationsToApply.sort((a, b) => semverCompare(a.name, b.name));
+    const sortedMigrations = migrationsToApply.sort((a, b) =>
+      semverCompare(a.name, b.name)
+    );
 
     for (const migration of sortedMigrations) {
-      const action = ora(chalk.blue(`Applying migration: ${chalk.bold(migration.name)}`)).start();
+      const action = ora(
+        chalk.blue(`Applying migration: ${chalk.bold(migration.name)}`)
+      ).start();
       try {
         data = await migration.migrate(data, this.instances[0]);
       } catch (error) {
@@ -115,7 +138,9 @@ export default class MigrateApply extends EzrCommand<typeof MigrateApply> {
       action.succeed();
     }
 
-    const saveAction = ora(chalk.blue(`Saving data to ${chalk.underline(args.dir)}`)).start();
+    const saveAction = ora(
+      chalk.blue(`Saving data to ${chalk.underline(args.dir)}`)
+    ).start();
     await mkdir(flags.out, { recursive: true });
 
     writeJSONL(join(flags.out, 'namespaces.jsonl'), data.namespaces);
@@ -127,6 +152,10 @@ export default class MigrateApply extends EzrCommand<typeof MigrateApply> {
     await writeFile(join(flags.out, 'version'), lastVersion);
     saveAction.succeed();
 
-    this.log(chalk.green(`✔ Data from ${chalk.underline(args.dir)} migrated from ${chalk.bold(currentVersion)} to ${chalk.bold(lastVersion)} in ${chalk.underline(flags.out)}`));
+    this.log(
+      chalk.green(
+        `✔ Data from ${chalk.underline(args.dir)} migrated from ${chalk.bold(currentVersion)} to ${chalk.bold(lastVersion)} in ${chalk.underline(flags.out)}`
+      )
+    );
   }
 }

@@ -8,12 +8,12 @@
       <v-btn
         v-if="!readonly"
         v-tooltip="$t('$ezreeport.superUserMode')"
-        :color="isAdvanced ? 'orange' : 'grey'"
-        :variant="isAdvanced ? 'flat' : 'text'"
-        :disabled="isAdvanced && !isValid"
+        :color="currentForm === 'raw' ? 'orange' : 'grey'"
+        :variant="currentForm === 'raw' ? 'flat' : 'text'"
+        :disabled="currentForm === 'raw' && !isValid"
         density="comfortable"
         icon="mdi-tools"
-        @click="switchMode()"
+        @click="currentForm = currentForm === 'raw' ? 'basic' : 'raw'"
       />
 
       <slot name="append" />
@@ -22,26 +22,26 @@
     <template #text>
       <v-form ref="formRef" v-model="isValid">
         <EditorAggregationFormFilters
-          v-if="isFiltersAggregation(aggregation)"
-          v-model="aggregation"
-          :disabled="disabled"
-          :readonly="readonly"
-          :allowed-type="type"
-        />
-
-        <EditorAggregationFormBasic
-          v-else-if="isBaseAggregation(aggregation)"
-          v-model="aggregation"
+          v-if="isFiltersAggregation(modelValue)"
+          v-model="modelValue"
           :disabled="disabled"
           :readonly="readonly"
           :allowed-type="type"
         />
 
         <EditorAggregationFormRaw
-          v-else-if="isRawAggregation(aggregation)"
-          v-model="aggregation"
+          v-else-if="isRawAggregation(modelValue)"
+          v-model="modelValue"
           :disabled="disabled"
           :readonly="readonly"
+        />
+
+        <EditorAggregationFormBasic
+          v-else-if="!modelValue || isBaseAggregation(modelValue)"
+          v-model="modelValue"
+          :disabled="disabled"
+          :readonly="readonly"
+          :allowed-type="type"
         />
 
         <slot name="text" />
@@ -51,90 +51,94 @@
 </template>
 
 <script setup lang="ts">
-import type {
-  FigureAggregation,
-  AggregationType,
-} from '~sdk/helpers/aggregations';
+  import type {
+    FigureAggregation,
+    AggregationType,
+    FigureFilterAggregation,
+    FigureRawAggregation,
+  } from '~sdk/helpers/aggregations';
 
-import {
-  isBaseAggregation,
-  isFiltersAggregation,
-  isRawAggregation,
-  type InnerAggregation,
-} from '~/lib/aggregations';
+  import {
+    isBaseAggregation,
+    isFiltersAggregation,
+    isRawAggregation,
+  } from '~/lib/aggregations';
 
-// Component props
-const props = defineProps<{
+  type AggFormsType = 'basic' | 'filters' | 'raw';
+
   /** Aggregation to edit */
-  modelValue?: FigureAggregation | undefined;
-  /** Should be disabled */
-  disabled?: boolean;
-  /** Should be readonly */
-  readonly?: boolean;
-  /** Types of aggregations allowed in options */
-  type?: AggregationType;
-}>();
+  const modelValue = defineModel<FigureAggregation | undefined>();
 
-// Component events
-const emit = defineEmits<{
-  /** Aggregation updated */
-  (event: 'update:modelValue', value: FigureAggregation | undefined): void;
-}>();
+  // Component props
+  defineProps<{
+    /** Should be disabled */
+    disabled?: boolean;
+    /** Should be readonly */
+    readonly?: boolean;
+    /** Types of aggregations allowed in options */
+    type?: AggregationType;
+  }>();
 
-/** Is form valid */
-const isValid = ref(false);
+  /** Is form valid */
+  const isValid = shallowRef(false);
+  const currentForm = shallowRef<AggFormsType>('basic');
 
-/** Aggregation to edit */
-const { cloned: aggregation } = useCloned<InnerAggregation | null>(
-  props.modelValue ?? null
-);
-/** Backup of the aggregation in the last mode (simple/advanced) */
-const { cloned: aggregationBackup, sync: syncBackup } = useCloned(aggregation, {
-  manual: true,
-});
+  const aggBackups = new Map<AggFormsType, FigureAggregation | undefined>();
 
-/** Ref to VForm + validate on mount */
-const vform = useTemplateVForm('formRef', { immediate: !!props.modelValue });
+  /** Ref to VForm + validate on mount */
+  useTemplateVForm('formRef', { immediate: !!modelValue.value });
 
-/** Is the aggregation in advanced mode */
-const isAdvanced = computed(() => isRawAggregation(aggregation.value));
+  /**
+   * Change form by setting default values
+   *
+   * @param type - The type of the form
+   * @param old - The previous type of the form
+   */
+  function changeForm(type: AggFormsType, old: AggFormsType): void {
+    // Define default value (if creating a new figure)
+    let def: FigureAggregation | undefined;
+    switch (type) {
+      case 'filters':
+        def = { type: 'filters', values: [] } satisfies FigureFilterAggregation;
+        break;
+      case 'raw':
+        def = { raw: {} } satisfies FigureRawAggregation;
+        break;
 
-/**
- * Switch between advanced and simple mode, also restore the backup
- */
-function switchMode(): void {
-  let newAggregation;
-  if (isAdvanced.value) {
-    newAggregation = {
-      type: '',
-      field: '',
-      ...aggregationBackup.value,
-      raw: undefined,
-    };
-  } else {
-    newAggregation = {
-      raw: {},
-      ...aggregationBackup.value,
-      type: undefined,
-      field: undefined,
-    };
+      default:
+        def = undefined;
+    }
+
+    const backup = aggBackups.get(type);
+    aggBackups.set(old, modelValue.value);
+
+    modelValue.value = backup ?? def;
   }
-  syncBackup();
-  aggregation.value = newAggregation as InnerAggregation;
-}
 
-/**
- * Update modelValue when aggregation changes
- */
-watch(
-  aggregation,
-  () => {
-    vform.value?.validate();
-    emit(
-      'update:modelValue',
-      (aggregation.value ?? undefined) as FigureAggregation | undefined
-    );
-  },
-  { deep: true }
-);
+  /**
+   * Get form type from the aggreation
+   *
+   * @param agg - The aggregation
+   */
+  function getAggFormType(agg: FigureAggregation | undefined): AggFormsType {
+    if (isRawAggregation(agg)) {
+      return 'raw';
+    } else if (isFiltersAggregation(agg)) {
+      return 'filters';
+    }
+    return 'basic';
+  }
+
+  // Update form type with agg type
+  watch(
+    modelValue,
+    (agg) => {
+      currentForm.value = getAggFormType(agg);
+    },
+    { immediate: true }
+  );
+  // Applis changes to form
+  watch(currentForm, (type, old) => {
+    changeForm(type, old);
+  });
 </script>

@@ -1,4 +1,9 @@
 {
   "format_on_save": "on",
-  "formatter": "prettier"
+  "formatter": {
+    "external": {
+      "command": "pnpm",
+      "arguments": ["oxfmt", "--stdin-filepath", "{buffer_path}"]
+    }
+  }
 }

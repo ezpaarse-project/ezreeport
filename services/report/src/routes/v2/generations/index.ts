@@ -3,28 +3,26 @@ import { StatusCodes } from 'http-status-codes';
 
 import { z } from '@ezreeport/models/lib/zod';
 
-import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
 import { Access } from '~/models/access';
-
-import {
-  describeErrors,
-  buildSuccessResponse,
-  zSuccessResponse,
-} from '~/routes/v2/responses';
+import { NotFoundError } from '~/models/errors';
+import * as generations from '~/models/generations';
+import { Generation, GenerationQueryInclude } from '~/models/generations/types';
+import { getNamespace } from '~/models/namespaces';
 import { buildPaginatedResponse } from '~/models/pagination';
 import {
   PaginationQuery,
   zPaginationResponse,
 } from '~/models/pagination/types';
-
-import * as generations from '~/models/generations';
-import { Generation, GenerationQueryInclude } from '~/models/generations/types';
-
-import { NotFoundError } from '~/models/errors';
-import { getTask } from '~/models/tasks';
-import { getNamespace } from '~/models/namespaces';
-import { getTemplate } from '~/models/templates';
 import { queueGeneration } from '~/models/queues/report/generation';
+import { getTask } from '~/models/tasks';
+import { getTemplate } from '~/models/templates';
+
+import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+} from '~/routes/v2/responses';
 
 const SpecificGenerationParams = z.object({
   id: z.string().min(1).describe('ID of the generation'),

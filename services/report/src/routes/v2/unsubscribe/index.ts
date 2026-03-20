@@ -1,25 +1,24 @@
-import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { Readable } from 'node:stream';
 
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import fastifyStatic from '@fastify/static';
-import { StatusCodes } from 'http-status-codes';
 import { compile as handlebars } from 'handlebars';
+import { StatusCodes } from 'http-status-codes';
 
-import { z } from '@ezreeport/models/lib/zod';
 import { b64ToString } from '@ezreeport/models/lib/utils';
+import { z } from '@ezreeport/models/lib/zod';
+
+import { ArgumentError, NotFoundError } from '~/models/errors';
+import { createActivity } from '~/models/task-activity';
+import { getTask, editTask } from '~/models/tasks';
 
 import {
   describeErrors,
   buildSuccessResponse,
   zSuccessResponse,
 } from '~/routes/v2/responses';
-
-import { getTask, editTask } from '~/models/tasks';
-import { createActivity } from '~/models/task-activity';
-
-import { ArgumentError, NotFoundError } from '~/models/errors';
 
 const UnsubscribeParams = z.object({
   unsubscribeId: z.string().min(1),

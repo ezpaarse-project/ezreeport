@@ -6,9 +6,7 @@ import { BaseCommand } from '../../lib/oclif/BaseCommand.js';
 export default class ProfileUnload extends BaseCommand<typeof ProfileUnload> {
   static description = 'Unload profile';
 
-  static examples = [
-    '<%= config.bin %> <%= command.id %>',
-  ];
+  static examples = ['<%= config.bin %> <%= command.id %>'];
 
   static args = {
     name: Args.string({

@@ -3,17 +3,16 @@ import { StatusCodes } from 'http-status-codes';
 
 import { z } from '@ezreeport/models/lib/zod';
 
-import authPlugin from '~/plugins/auth';
+import * as access from '~/models/access';
+import { Namespace } from '~/models/namespaces/types';
+import { User } from '~/models/users/types';
 
+import authPlugin from '~/plugins/auth';
 import {
   describeErrors,
   buildSuccessResponse,
   zSuccessResponse,
 } from '~/routes/v2/responses';
-
-import * as access from '~/models/access';
-import { User } from '~/models/users/types';
-import { Namespace } from '~/models/namespaces/types';
 
 const AccessPerRoute = z.record(
   z.string().min(1).describe('Route name'),

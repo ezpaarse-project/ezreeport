@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import { createVegaFigureHelper } from '~sdk/helpers/figures';
 
 import EditorFigureVega from './Vega.vue';
@@ -39,17 +38,14 @@ const mockArc = createVegaFigureHelper(
       name: 'mime is not DOC, etc.',
       field: 'mime',
       isNot: true,
-      value: [
-        'DOC',
-        'MISC',
-      ],
+      value: ['DOC', 'MISC'],
     },
     {
       name: 'mime exists',
       field: 'mime',
       isNot: true,
     },
-  ],
+  ]
 );
 
 const mockBar = createVegaFigureHelper(
@@ -68,13 +64,13 @@ const mockBar = createVegaFigureHelper(
       type: 'terms',
       field: 'owner',
     },
-  },
+  }
 );
 
 type Story = StoryObj<typeof EditorFigureVega>;
 
 export const New: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureVega },
     setup() {
       return { args };
@@ -87,7 +83,7 @@ export const New: Story = {
 };
 
 export const ArcExisting: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureVega },
     setup() {
       return { args };
@@ -100,7 +96,7 @@ export const ArcExisting: Story = {
 };
 
 export const BarExisting: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureVega },
     setup() {
       return { args };
@@ -113,7 +109,7 @@ export const BarExisting: Story = {
 };
 
 export const ArcReadonly: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureVega },
     setup() {
       return { args };
@@ -127,7 +123,7 @@ export const ArcReadonly: Story = {
 };
 
 export const BarReadonly: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureVega },
     setup() {
       return { args };

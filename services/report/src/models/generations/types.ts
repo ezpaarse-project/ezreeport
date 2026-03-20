@@ -1,6 +1,6 @@
-import { z } from '@ezreeport/models/lib/zod';
-import { ensureArray } from '@ezreeport/models/lib/utils';
 import { Generation as CommonGeneration } from '@ezreeport/models/generations';
+import { ensureArray } from '@ezreeport/models/lib/utils';
+import { z } from '@ezreeport/models/lib/zod';
 
 import { Task } from '~/models/tasks/types';
 

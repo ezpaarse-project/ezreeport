@@ -18,7 +18,10 @@ export interface TaskActivity {
   task?: Omit<Task, 'template'>;
 }
 
-export interface RawTaskActivity extends Omit<TaskActivity, 'task' | 'createdAt'> {
+export interface RawTaskActivity extends Omit<
+  TaskActivity,
+  'task' | 'createdAt'
+> {
   createdAt: string;
   task: Omit<RawTask, 'template'>;
 }

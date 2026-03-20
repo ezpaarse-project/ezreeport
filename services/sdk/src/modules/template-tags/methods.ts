@@ -1,4 +1,3 @@
-import { client } from '~/lib/fetch';
 import {
   apiRequestOptionsToQuery,
   type ApiResponse,
@@ -7,6 +6,7 @@ import {
   type ApiDeletedResponse,
   type SdkPaginated,
 } from '~/lib/api';
+import { client } from '~/lib/fetch';
 
 import { assignPermission } from '~/helpers/permissions/decorator';
 

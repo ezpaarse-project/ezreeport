@@ -2,23 +2,16 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
 import { z } from '@ezreeport/models/lib/zod';
+
 import config from '~/lib/config';
 
-import authPlugin from '~/plugins/auth';
 import { Access } from '~/models/access';
-
-import {
-  describeErrors,
-  buildSuccessResponse,
-  zSuccessResponse,
-} from '~/routes/v2/responses';
-
+import { NotFoundError } from '~/models/errors';
 import { buildPaginatedResponse } from '~/models/pagination';
 import {
   PaginationQuery,
   zPaginationResponse,
 } from '~/models/pagination/types';
-
 import * as templates from '~/models/templates';
 import {
   Template,
@@ -27,7 +20,12 @@ import {
   TemplateQueryInclude,
 } from '~/models/templates/types';
 
-import { NotFoundError } from '~/models/errors';
+import authPlugin from '~/plugins/auth';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+} from '~/routes/v2/responses';
 
 const SpecificTemplateParams = z.object({
   id: z.string().min(1).describe('ID of the template'),

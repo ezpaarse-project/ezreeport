@@ -1,10 +1,9 @@
 import { basename } from 'node:path';
 
 import type { Logger } from '@ezreeport/logger';
-
+import type { MailReportQueueDataType } from '@ezreeport/models/queues';
 import { format } from '@ezreeport/dates';
 import { ReportResult } from '@ezreeport/models/reports';
-import type { MailReportQueueDataType } from '@ezreeport/models/queues';
 
 import config from '~/lib/config';
 

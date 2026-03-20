@@ -88,204 +88,203 @@
 </template>
 
 <script setup lang="ts">
-import type { Day, Month } from 'date-fns';
-import { daysInWeek, monthsInQuarter, monthsInYear } from 'date-fns/constants';
+  import type { Day, Month } from 'date-fns';
+  import type { TaskRecurrenceOffset } from '~sdk/tasks';
+  import { daysInWeek, monthsInQuarter, monthsInYear } from 'date-fns/constants';
+  import {
+    type Recurrence,
+    type RecurrenceOffset,
+    getNextDateFromRecurrence,
+  } from '~sdk/recurrence';
 
-import type { TaskRecurrenceOffset } from '~sdk/tasks';
-import {
-  type Recurrence,
-  type RecurrenceOffset,
-  getNextDateFromRecurrence,
-} from '~sdk/recurrence';
+  const today = new Date();
+  // date-fns is missing the "semester" granularity
+  const monthsInSemester = 6;
+  // we want a general rule, so we want the maximum days in a month
+  const daysInMonth = 31;
 
-const today = new Date();
-// date-fns is missing the "semester" granularity
-const monthsInSemester = 6;
-// we want a general rule, so we want the maximum days in a month
-const daysInMonth = 31;
+  const nextRun = defineModel<Date | undefined>();
 
-const nextRun = defineModel<Date | undefined>();
+  const offset = defineModel<RecurrenceOffset>('offset', {
+    required: true,
+  });
 
-const offset = defineModel<RecurrenceOffset>('offset', {
-  required: true,
-});
+  // Components props
+  const { recurrence, rules } = defineProps<{
+    /** Task's recurrence */
+    recurrence: Recurrence;
+    /** Should be readonly */
+    readonly?: boolean;
+    /** Rules */
+    rules?: ((val: Date) => string | boolean)[];
+  }>();
 
-// Components props
-const { recurrence, rules } = defineProps<{
-  /** Task's recurrence */
-  recurrence: Recurrence;
-  /** Should be readonly */
-  readonly?: boolean;
-  /** Rules */
-  rules?: ((val: Date) => string | boolean)[];
-}>();
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
+  const { locale: dateLocale } = useDateLocale();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
-const { locale: dateLocale } = useDateLocale();
+  /** Is nextDate resolving */
+  const nextDateResolving = shallowRef(false);
 
-/** Is nextDate resolving */
-const nextDateResolving = shallowRef(false);
+  const offsetDaysValue = computed({
+    get: () => offset.value.days ?? 0,
+    set: (days) => {
+      offset.value = { ...offset.value, days };
+    },
+  });
 
-const offsetDaysValue = computed({
-  get: () => offset.value.days ?? 0,
-  set: (days) => {
-    offset.value = { ...offset.value, days };
-  },
-});
+  const offsetMonthsValue = computed({
+    get: () => offset.value.months ?? 0,
+    set: (months) => {
+      offset.value = { ...offset.value, months };
+    },
+  });
 
-const offsetMonthsValue = computed({
-  get: () => offset.value.months ?? 0,
-  set: (months) => {
-    offset.value = { ...offset.value, months };
-  },
-});
+  const weekDayOptions = computed(() => {
+    const startsOn = dateLocale.value.options?.weekStartsOn ?? 0;
 
-const weekDayOptions = computed(() => {
-  const startsOn = dateLocale.value.options?.weekStartsOn ?? 0;
+    return {
+      days: Array.from({ length: daysInWeek }, (__, index) => {
+        const day = ((startsOn + index) % daysInWeek) as Day;
+        return {
+          value: index,
+          text: dateLocale.value.localize.day(day),
+        };
+      }),
+    };
+  });
 
-  return {
-    days: Array.from({ length: daysInWeek }, (__, index) => {
-      const day = ((startsOn + index) % daysInWeek) as Day;
-      return {
-        value: index,
-        text: dateLocale.value.localize.day(day),
-      };
-    }),
-  };
-});
+  const monthOptions = computed(() => {
+    let numberOfMonths = 0;
+    if (recurrence === 'QUARTERLY') {
+      numberOfMonths = monthsInQuarter;
+    }
+    if (recurrence === 'BIENNIAL') {
+      numberOfMonths = monthsInSemester;
+    }
+    if (recurrence === 'YEARLY') {
+      numberOfMonths = monthsInYear;
+    }
 
-const monthOptions = computed(() => {
-  let numberOfMonths = 0;
-  if (recurrence === 'QUARTERLY') {
-    numberOfMonths = monthsInQuarter;
-  }
-  if (recurrence === 'BIENNIAL') {
-    numberOfMonths = monthsInSemester;
-  }
-  if (recurrence === 'YEARLY') {
-    numberOfMonths = monthsInYear;
-  }
+    return {
+      days: Array.from({ length: daysInMonth }, (__, day) => ({
+        value: day,
+        text: `${day + 1}`,
+      })),
 
-  return {
-    days: Array.from({ length: daysInMonth }, (__, day) => ({
-      value: day,
-      text: `${day + 1}`,
-    })),
+      months: Array.from({ length: numberOfMonths }, (__, month) => ({
+        value: month,
+        text:
+          recurrence === 'YEARLY'
+            ? dateLocale.value.localize.month(month as Month)
+            : t('$ezreeport.task.nextRunPicker.month:list', month + 1),
+      })),
+    };
+  });
 
-    months: Array.from({ length: numberOfMonths }, (__, month) => ({
-      value: month,
-      text:
-        recurrence === 'YEARLY'
-          ? dateLocale.value.localize.month(month as Month)
-          : t('$ezreeport.task.nextRunPicker.month:list', month + 1),
-    })),
-  };
-});
+  const humanLabel = computed(() => {
+    const { days, months } = monthOptions.value;
 
-const humanLabel = computed(() => {
-  const { days, months } = monthOptions.value;
+    let { text: day } =
+      days.find(({ value }) => value === offsetDaysValue.value) ?? {};
 
-  let { text: day } =
-    days.find(({ value }) => value === offsetDaysValue.value) ?? {};
+    let { text: month } =
+      months.find(({ value }) => value === offsetMonthsValue.value) ?? {};
 
-  let { text: month } =
-    months.find(({ value }) => value === offsetMonthsValue.value) ?? {};
+    if (recurrence === 'DAILY') {
+      day = t('$ezreeport.task.nextRunPicker.days');
+      month = '';
+    } else if (recurrence === 'WEEKLY') {
+      day =
+        weekDayOptions.value.days.find(
+          ({ value }) => value === offsetDaysValue.value
+        )?.text || '';
+      month = '';
+    } else if (recurrence === 'MONTHLY') {
+      month = t('$ezreeport.task.nextRunPicker.months');
+    }
 
-  if (recurrence === 'DAILY') {
-    day = t('$ezreeport.task.nextRunPicker.days');
-    month = '';
-  } else if (recurrence === 'WEEKLY') {
-    day =
-      weekDayOptions.value.days.find(
-        ({ value }) => value === offsetDaysValue.value
-      )?.text || '';
-    month = '';
-  } else if (recurrence === 'MONTHLY') {
-    month = t('$ezreeport.task.nextRunPicker.months');
-  }
+    let key =
+      day && month
+        ? '$ezreeport.task.nextRunPicker.text'
+        : '$ezreeport.task.nextRunPicker.text:day';
 
-  let key =
-    day && month
-      ? '$ezreeport.task.nextRunPicker.text'
-      : '$ezreeport.task.nextRunPicker.text:day';
+    return key ? t(key, { day, month }) : '';
+  });
 
-  return key ? t(key, { day, month }) : '';
-});
+  const errorState = computed(() => {
+    if (!nextRun.value) {
+      return;
+    }
 
-const errorState = computed(() => {
-  if (!nextRun.value) {
-    return;
-  }
+    const { value } = nextRun;
+    const messages =
+      rules
+        ?.map((rule) => rule(value))
+        ?.filter((res) => typeof res === 'string') ?? [];
 
-  const { value } = nextRun;
-  const messages =
-    rules
-      ?.map((rule) => rule(value))
-      ?.filter((res) => typeof res === 'string') ?? [];
+    return {
+      status: messages.length > 0,
+      messages,
+    };
+  });
 
-  return {
-    status: messages.length > 0,
-    messages,
-  };
-});
+  function resetOffset(previousRecurrence: Recurrence | undefined): void {
+    if (previousRecurrence === recurrence) {
+      return;
+    }
 
-function resetOffset(previousRecurrence: Recurrence | undefined): void {
-  if (previousRecurrence === recurrence) {
-    return;
-  }
-
-  offset.value = {};
-}
-
-async function updateNextRun(): Promise<void> {
-  if (!nextRun.value) {
-    return;
+    offset.value = {};
   }
 
-  nextDateResolving.value = true;
-  try {
-    nextRun.value = await getNextDateFromRecurrence(
-      recurrence,
-      today,
-      offset.value
-    );
-  } catch (err) {
-    handleEzrError(t('$ezreeport.errors.resolveNextDate'), err);
-  }
-  nextDateResolving.value = false;
-}
+  async function updateNextRun(): Promise<void> {
+    if (!nextRun.value) {
+      return;
+    }
 
-// Reset offset when recurrence changes
-watch(
-  (): Recurrence => recurrence,
-  (__, previous) => {
-    resetOffset(previous);
+    nextDateResolving.value = true;
+    try {
+      nextRun.value = await getNextDateFromRecurrence(
+        recurrence,
+        today,
+        offset.value
+      );
+    } catch (err) {
+      handleEzrError(t('$ezreeport.errors.resolveNextDate'), err);
+    }
+    nextDateResolving.value = false;
   }
-);
-// Updates nextRun when recurrence or offset changes
-watch(
-  (): [Recurrence, TaskRecurrenceOffset] => [recurrence, offset.value],
-  () => {
-    updateNextRun();
-  }
-);
 
-onMounted(() => {
-  // If nextRun is in the past, update it
-  if ((nextRun.value?.getTime() ?? 0) < today.getTime()) {
-    updateNextRun();
-  }
-});
+  // Reset offset when recurrence changes
+  watch(
+    (): Recurrence => recurrence,
+    (__, previous) => {
+      resetOffset(previous);
+    }
+  );
+  // Updates nextRun when recurrence or offset changes
+  watch(
+    (): [Recurrence, TaskRecurrenceOffset] => [recurrence, offset.value],
+    () => {
+      updateNextRun();
+    }
+  );
+
+  onMounted(() => {
+    // If nextRun is in the past, update it
+    if ((nextRun.value?.getTime() ?? 0) < today.getTime()) {
+      updateNextRun();
+    }
+  });
 </script>
 
 <style lang="css" scoped>
-.monthly-picker {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 0.25rem;
+  .monthly-picker {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.25rem;
 
-  text-align: center;
-}
+    text-align: center;
+  }
 </style>

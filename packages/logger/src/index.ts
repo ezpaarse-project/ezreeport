@@ -1,7 +1,7 @@
-import pino from 'pino';
-
-import { resolve } from 'node:path';
 import { mkdirSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+import pino from 'pino';
 
 export const logLevels = pino.levels;
 

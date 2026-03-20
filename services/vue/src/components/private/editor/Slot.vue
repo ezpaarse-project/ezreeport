@@ -198,179 +198,179 @@
 </template>
 
 <script setup lang="ts">
-import { figureToGridPosition } from '~/lib/layouts';
+  import {
+    isFigureHelperMarkdown,
+    isFigureHelperMetric,
+    isFigureHelperTable,
+    createFigureHelper,
+    createMdFigureHelper,
+    type AnyFigureHelper,
+  } from '~sdk/helpers/figures';
 
-import {
-  isFigureHelperMarkdown,
-  isFigureHelperMetric,
-  isFigureHelperTable,
-  createFigureHelper,
-  createMdFigureHelper,
-  type AnyFigureHelper,
-} from '~sdk/helpers/figures';
+  import { figureToGridPosition } from '~/lib/layouts';
 
-const SLOT_ICONS = new Map([
-  [0, 'mdi-pan-top-left'],
-  [1, 'mdi-pan-top-right'],
-  [2, 'mdi-pan-bottom-left'],
-  [3, 'mdi-pan-bottom-right'],
-]);
+  const SLOT_ICONS = new Map([
+    [0, 'mdi-pan-top-left'],
+    [1, 'mdi-pan-top-right'],
+    [2, 'mdi-pan-bottom-left'],
+    [3, 'mdi-pan-bottom-right'],
+  ]);
 
-// Components props
-const props = defineProps<{
-  /** The figure to edit */
-  modelValue: AnyFigureHelper | undefined;
-  /** Should be readonly */
-  readonly?: boolean;
-  /** Default slot of figure */
-  defaultSlot?: number;
-  /** Unused slots */
-  unusedSlots?: number[];
-}>();
+  // Components props
+  const props = defineProps<{
+    /** The figure to edit */
+    modelValue: AnyFigureHelper | undefined;
+    /** Should be readonly */
+    readonly?: boolean;
+    /** Default slot of figure */
+    defaultSlot?: number;
+    /** Unused slots */
+    unusedSlots?: number[];
+  }>();
 
-// Components events
-const emit = defineEmits<{
-  /** Updated figure */
-  (event: 'update:modelValue', value: AnyFigureHelper): void;
-}>();
+  // Components events
+  const emit = defineEmits<{
+    /** Updated figure */
+    (event: 'update:modelValue', value: AnyFigureHelper): void;
+  }>();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
-const { grid } = useTemplateEditor();
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
+  const { grid } = useTemplateEditor();
 
-/** Backups of previous figure types */
-const figureBackups = ref<Map<string, AnyFigureHelper>>(new Map());
-/** Should show edit dialog */
-const isFormVisible = ref(false);
+  /** Backups of previous figure types */
+  const figureBackups = ref<Map<string, AnyFigureHelper>>(new Map());
+  /** Should show edit dialog */
+  const isFormVisible = ref(false);
 
-/** The figure title */
-const title = computed(() => {
-  if (props.modelValue && 'title' in props.modelValue.params) {
-    return props.modelValue.params.title;
-  }
-  return;
-});
-/** The figure slot */
-const slots = computed({
-  get: () => Array.from(props.modelValue?.slots ?? []),
-  set: (value) => {
+  /** The figure title */
+  const title = computed(() => {
+    if (props.modelValue && 'title' in props.modelValue.params) {
+      return props.modelValue.params.title;
+    }
+    return;
+  });
+  /** The figure slot */
+  const slots = computed({
+    get: () => Array.from(props.modelValue?.slots ?? []),
+    set: (value) => {
+      if (!props.modelValue) {
+        return;
+      }
+      const spec = props.modelValue;
+      spec.slots = new Set(value);
+      emit('update:modelValue', spec);
+    },
+  });
+  /** Icon for current type */
+  const typeIcon = computed(() =>
+    props.modelValue ? figureIcons.get(props.modelValue.type) : undefined
+  );
+  /** Types options */
+  const typeOptions = computed(() =>
+    Array.from(figureIcons.keys()).map((figureType) => ({
+      value: figureType,
+      title: t(`$ezreeport.editor.figures._.types.${figureType}`),
+      props: {
+        appendIcon: figureIcons.get(figureType),
+      },
+    }))
+  );
+  /** Slots options */
+  const slotsOptions = computed(() => {
+    const length = grid.value.cols * grid.value.rows;
+    return Array.from({ length }, (__, index) => index).map((slot) => ({
+      value: slot,
+      title:
+        length === SLOT_ICONS.size
+          ? t(`$ezreeport.editor.figures._.slotsList.${slot}`)
+          : slot,
+      props: {
+        appendIcon: length === SLOT_ICONS.size ? SLOT_ICONS.get(slot) : undefined,
+        disabled:
+          // Unused slots provided AND current slot is used
+          props.unusedSlots &&
+          !props.unusedSlots.includes(slot) &&
+          // AND current slot is not used by current figure, unless it's the only one
+          (!props.modelValue?.slots.has(slot) ||
+            props.modelValue.slots.size === 1),
+      },
+    }));
+  });
+  /** Position in CSS grid */
+  const gridPosition = computed(() =>
+    figureToGridPosition(props.modelValue, props.defaultSlot ?? 0, grid.value)
+  );
+
+  /**
+   * Update figure type
+   *
+   * @param type
+   */
+  function onTypeChange(type: string) {
     if (!props.modelValue) {
       return;
     }
-    const spec = props.modelValue;
-    spec.slots = new Set(value);
-    emit('update:modelValue', spec);
-  },
-});
-/** Icon for current type */
-const typeIcon = computed(() =>
-  props.modelValue ? figureIcons.get(props.modelValue.type) : undefined
-);
-/** Types options */
-const typeOptions = computed(() =>
-  Array.from(figureIcons.keys()).map((figureType) => ({
-    value: figureType,
-    title: t(`$ezreeport.editor.figures._.types.${figureType}`),
-    props: {
-      appendIcon: figureIcons.get(figureType),
-    },
-  }))
-);
-/** Slots options */
-const slotsOptions = computed(() => {
-  const length = grid.value.cols * grid.value.rows;
-  return Array.from({ length }, (__, index) => index).map((slot) => ({
-    value: slot,
-    title:
-      length === SLOT_ICONS.size
-        ? t(`$ezreeport.editor.figures._.slotsList.${slot}`)
-        : slot,
-    props: {
-      appendIcon: length === SLOT_ICONS.size ? SLOT_ICONS.get(slot) : undefined,
-      disabled:
-        // Unused slots provided AND current slot is used
-        props.unusedSlots &&
-        !props.unusedSlots.includes(slot) &&
-        // AND current slot is not used by current figure, unless it's the only one
-        (!props.modelValue?.slots.has(slot) ||
-          props.modelValue.slots.size === 1),
-    },
-  }));
-});
-/** Position in CSS grid */
-const gridPosition = computed(() =>
-  figureToGridPosition(props.modelValue, props.defaultSlot ?? 0, grid.value)
-);
 
-/**
- * Update figure type
- *
- * @param type
- */
-function onTypeChange(type: string) {
-  if (!props.modelValue) {
-    return;
+    // Backup current params for current type
+    figureBackups.value.set(props.modelValue.type, props.modelValue);
+
+    // Get params for new type or create a new figure
+    let figure = figureBackups.value.get(type);
+    if (!figure) {
+      figure = createFigureHelper(type);
+      // Ensuring id don't change, avoiding useless re-render
+      Object.assign(figure, { id: props.modelValue.id });
+    }
+
+    // Reapply new filters
+    if ('filters' in figure.params && 'filters' in props.modelValue.params) {
+      figure.params.filters = props.modelValue.params.filters;
+    }
+
+    // Reapply new order
+    if ('order' in figure.params && 'order' in props.modelValue.params) {
+      figure.params.order = props.modelValue.params.order;
+    }
+
+    // Reapply new slots
+    figure.slots = props.modelValue.slots;
+
+    emit('update:modelValue', figure);
   }
 
-  // Backup current params for current type
-  figureBackups.value.set(props.modelValue.type, props.modelValue);
-
-  // Get params for new type or create a new figure
-  let figure = figureBackups.value.get(type);
-  if (!figure) {
-    figure = createFigureHelper(type);
-    // Ensuring id don't change, avoiding useless re-render
-    Object.assign(figure, { id: props.modelValue.id });
+  /**
+   * Create a new figure
+   */
+  function addFigure() {
+    emit(
+      'update:modelValue',
+      createMdFigureHelper(undefined, [props.defaultSlot ?? 0])
+    );
   }
-
-  // Reapply new filters
-  if ('filters' in figure.params && 'filters' in props.modelValue.params) {
-    figure.params.filters = props.modelValue.params.filters;
-  }
-
-  // Reapply new order
-  if ('order' in figure.params && 'order' in props.modelValue.params) {
-    figure.params.order = props.modelValue.params.order;
-  }
-
-  // Reapply new slots
-  figure.slots = props.modelValue.slots;
-
-  emit('update:modelValue', figure);
-}
-
-/**
- * Create a new figure
- */
-function addFigure() {
-  emit(
-    'update:modelValue',
-    createMdFigureHelper(undefined, [props.defaultSlot ?? 0])
-  );
-}
 </script>
 
 <style lang="css" scoped>
-.template-layout-slot,
-.template-layout-slot--empty,
-.template-layout-slot--figure {
-  height: 100%;
-}
+  .template-layout-slot,
+  .template-layout-slot--empty,
+  .template-layout-slot--figure {
+    height: 100%;
+  }
 
-.template-layout-slot {
-  grid-column: v-bind('gridPosition.start.col + 1') /
-    v-bind('gridPosition.end.col + 2');
-  grid-row: v-bind('gridPosition.start.row + 1') /
-    v-bind('gridPosition.end.row + 2');
-}
+  .template-layout-slot {
+    grid-column: v-bind('gridPosition.start.col + 1') /
+      v-bind('gridPosition.end.col + 2');
+    grid-row: v-bind('gridPosition.start.row + 1') /
+      v-bind('gridPosition.end.row + 2');
+  }
 
-.template-layout-slot--empty {
-  position: relative;
-  border-style: dashed;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
+  .template-layout-slot--empty {
+    position: relative;
+    border-style: dashed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
 </style>

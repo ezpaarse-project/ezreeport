@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import { createTaskHelper, createTaskHelperFrom } from '~sdk/helpers/tasks';
+
 import TaskForm from './Form.vue';
 
 const meta: Meta<typeof TaskForm> = {
@@ -13,7 +13,7 @@ export default meta;
 type Story = StoryObj<typeof TaskForm>;
 
 export const New: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskForm },
     setup() {
       return { args };
@@ -26,7 +26,7 @@ export const New: Story = {
 };
 
 export const Existing: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskForm },
     setup() {
       return { args };

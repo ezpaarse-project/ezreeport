@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import type { Namespace } from '~sdk/namespaces';
 import type { TemplateTag } from '~sdk/template-tags';
 
@@ -37,7 +36,7 @@ const mockNamespaces: Namespace[] = [
 ];
 
 export const Default: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { ApiFiltersPanel },
     setup() {
       return { args };
@@ -52,7 +51,7 @@ export const Default: Story = {
 };
 
 export const WithTags: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { ApiFiltersPanel },
     setup() {
       return { args };
@@ -66,7 +65,7 @@ export const WithTags: Story = {
 };
 
 export const WithNamespaces: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { ApiFiltersPanel },
     setup() {
       return { args };

@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof MultiTextField>;
 
 export const Empty: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { MultiTextField },
     setup() {
       return { args };
@@ -25,7 +25,7 @@ export const Empty: Story = {
 };
 
 export const OneValue: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { MultiTextField },
     setup() {
       return { args };
@@ -39,7 +39,7 @@ export const OneValue: Story = {
 };
 
 export const MultiValue: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { MultiTextField },
     setup() {
       return { args };
@@ -53,7 +53,7 @@ export const MultiValue: Story = {
 };
 
 export const ManyValue: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { MultiTextField },
     setup() {
       return { args };

@@ -1,11 +1,11 @@
-import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
 import { startHTTPServer } from '~/lib/http';
+import { appLogger } from '~/lib/logger';
 import { useRabbitMQ } from '~/lib/rabbitmq';
 
+import { initHeartbeat } from '~/models/heartbeat';
 import initQueues from '~/models/queues';
 import initRPC from '~/models/rpc';
-import { initHeartbeat } from '~/models/heartbeat';
 
 import routes from '~/routes';
 

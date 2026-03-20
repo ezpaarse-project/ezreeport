@@ -10,14 +10,22 @@
     @update:model-value="$emit('update:model-value', $event)"
   />
 
-  <v-menu :activator="inputRef?.$el" :disabled="readonly" :close-on-content-click="false">
+  <v-menu
+    :activator="inputRef?.$el"
+    :disabled="readonly"
+    :close-on-content-click="false"
+  >
     <v-list>
       <v-list-subheader :title="$t('$ezreeport.editor.vars')" />
 
       <v-list-item
         v-for="variable in variablesOptions"
         :key="variable.value"
-        :title="$te(`$ezreeport.editor.varsList.${variable.title}`) ? $t(`$ezreeport.editor.varsList.${variable.title}`) : undefined"
+        :title="
+          $te(`$ezreeport.editor.varsList.${variable.title}`)
+            ? $t(`$ezreeport.editor.varsList.${variable.title}`)
+            : undefined
+        "
         :subtitle="variable.value"
         :value="variable.value"
         class="font-italic"
@@ -28,21 +36,21 @@
 </template>
 
 <script setup lang="ts">
-import { variablesOptions } from '~/lib/figures';
+  import { variablesOptions } from '~/lib/figures';
 
-const props = defineProps<{
-  modelValue?: string;
-  readonly?: boolean;
-}>();
+  const props = defineProps<{
+    modelValue?: string;
+    readonly?: boolean;
+  }>();
 
-const emit = defineEmits<{
-  (event: 'update:model-value', value: string): void;
-}>();
+  const emit = defineEmits<{
+    (event: 'update:model-value', value: string): void;
+  }>();
 
-const inputRef = useTemplateRef('input');
+  const inputRef = useTemplateRef('input');
 
-function onVariableClick(variable: string) {
-  emit('update:model-value', `${props.modelValue ?? ''}${variable}`);
-  inputRef.value?.focus();
-}
+  function onVariableClick(variable: string) {
+    emit('update:model-value', `${props.modelValue ?? ''}${variable}`);
+    inputRef.value?.focus();
+  }
 </script>

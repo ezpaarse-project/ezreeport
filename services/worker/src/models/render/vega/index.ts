@@ -1,8 +1,8 @@
-import { parse, View, type Locale as VegaLocale } from 'vega';
-import { compile, type TopLevelSpec } from 'vega-lite';
 import type { Mark } from 'vega-lite/build/src/mark';
 import { registerFont } from 'canvas';
 import { compile as handlebars } from 'handlebars';
+import { parse, View, type Locale as VegaLocale } from 'vega';
+import { compile, type TopLevelSpec } from 'vega-lite';
 
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';

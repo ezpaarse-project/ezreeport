@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import type { TemplateFilter } from '~sdk/helpers/filters';
-import { createMetricFigureHelper, type MetricLabel } from '~sdk/helpers/figures';
+import {
+  createMetricFigureHelper,
+  type MetricLabel,
+} from '~sdk/helpers/figures';
 
 import EditorFigureMetric from './Metric.vue';
 
@@ -25,10 +27,7 @@ const mockFilters: TemplateFilter[] = [
     name: 'mime is not DOC, etc.',
     field: 'mime',
     isNot: true,
-    value: [
-      'DOC',
-      'MISC',
-    ],
+    value: ['DOC', 'MISC'],
   },
   {
     name: 'mime exists',
@@ -87,7 +86,7 @@ const mockData: MetricLabel[] = [
 ];
 
 export const New: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureMetric },
     setup() {
       return { args };
@@ -100,7 +99,7 @@ export const New: Story = {
 };
 
 export const Existing: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureMetric },
     setup() {
       return { args };
@@ -113,7 +112,7 @@ export const Existing: Story = {
 };
 
 export const Readonly: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureMetric },
     setup() {
       return { args };

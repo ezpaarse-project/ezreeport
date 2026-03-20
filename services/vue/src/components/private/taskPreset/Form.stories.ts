@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof TaskPresetForm>;
 
 export const Empty: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskPresetForm },
     setup() {
       return { args };
@@ -25,7 +25,7 @@ export const Empty: Story = {
 };
 
 export const Existing: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskPresetForm },
     setup() {
       return { args };

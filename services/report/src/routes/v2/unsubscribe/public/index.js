@@ -9,7 +9,7 @@ export const customAlert = (message, isError = false) => {
   alertBox.classList.add(
     'alert',
     'alert-hidden',
-    isError ? 'alert-error' : 'alert-success',
+    isError ? 'alert-error' : 'alert-success'
   );
   alertBox.innerText = message;
 
@@ -37,7 +37,9 @@ export const unsubscribeFromTask = async (taskId, form) => {
   };
 
   // oxlint-disable-next-line no-array-for-each
-  (new FormData(form)).forEach((value, key) => { obj[key] = value; });
+  new FormData(form).forEach((value, key) => {
+    obj[key] = value;
+  });
 
   try {
     const resp = await fetch('.', {
@@ -54,8 +56,13 @@ export const unsubscribeFromTask = async (taskId, form) => {
       throw new Error(res.error.message);
     }
 
-    customAlert('Vous avez bien été désinscrit. Vous pouvez fermer cette fenêtre.');
+    customAlert(
+      'Vous avez bien été désinscrit. Vous pouvez fermer cette fenêtre.'
+    );
   } catch (err) {
-    customAlert(`Une erreur est survenue pendant le traitement:\n\n${err.message}`, true);
+    customAlert(
+      `Une erreur est survenue pendant le traitement:\n\n${err.message}`,
+      true
+    );
   }
 };

@@ -78,118 +78,118 @@
 </template>
 
 <script setup lang="ts">
-import {
-  createLayoutHelper,
-  createLayoutHelperFrom,
-  layoutHelperToJSON,
-  type LayoutHelper,
-} from '~sdk/helpers/layouts';
-import {
-  addLayoutOfHelper,
-  updateLayoutOfHelper,
-  removeLayoutOfHelper,
-  type TemplateBodyHelper,
-} from '~sdk/helpers/templates';
+  import {
+    createLayoutHelper,
+    createLayoutHelperFrom,
+    layoutHelperToJSON,
+    type LayoutHelper,
+  } from '~sdk/helpers/layouts';
+  import {
+    addLayoutOfHelper,
+    updateLayoutOfHelper,
+    removeLayoutOfHelper,
+    type TemplateBodyHelper,
+  } from '~sdk/helpers/templates';
 
-// Components props
-const props = defineProps<{
-  /** The body to edit */
-  modelValue: TemplateBodyHelper;
-  /** Should be readonly */
-  readonly?: boolean;
-  /** Current layout index */
-  index?: number;
-}>();
+  // Components props
+  const props = defineProps<{
+    /** The body to edit */
+    modelValue: TemplateBodyHelper;
+    /** Should be readonly */
+    readonly?: boolean;
+    /** Current layout index */
+    index?: number;
+  }>();
 
-// Components events
-const emit = defineEmits<{
-  /** Updated body */
-  (event: 'update:modelValue', value: TemplateBodyHelper): void;
-  /** Updated index */
-  (event: 'update:index', value: number): void;
-}>();
+  // Components events
+  const emit = defineEmits<{
+    /** Updated body */
+    (event: 'update:modelValue', value: TemplateBodyHelper): void;
+    /** Updated index */
+    (event: 'update:index', value: number): void;
+  }>();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-/** Current layout index, a computed around props if provided */
-let innerIndex: Ref<number> | WritableComputedRef<number> = ref(0);
-if (props.index != null) {
-  innerIndex = computed({
-    get: () => props.index ?? 0,
+  /** Current layout index, a computed around props if provided */
+  let innerIndex: Ref<number> | WritableComputedRef<number> = ref(0);
+  if (props.index != null) {
+    innerIndex = computed({
+      get: () => props.index ?? 0,
+      set: (value) => {
+        emit('update:index', value);
+      },
+    });
+  }
+
+  /** Drawer of layout list */
+  const drawerRef = useTemplateRef('drawerRef');
+  /** Layouts */
+  const innerLayouts = computed({
+    get: () => props.modelValue.layouts,
     set: (value) => {
-      emit('update:index', value);
+      const params = props.modelValue;
+      params.layouts = value;
+      emit('update:modelValue', params);
     },
   });
-}
+  /** Current layout selected */
+  const currentLayout = computed({
+    get: () => props.modelValue.layouts.at(innerIndex.value),
+    set: (value) => {
+      if (!currentLayout.value || !value) {
+        return;
+      }
 
-/** Drawer of layout list */
-const drawerRef = useTemplateRef('drawerRef');
-/** Layouts */
-const innerLayouts = computed({
-  get: () => props.modelValue.layouts,
-  set: (value) => {
-    const params = props.modelValue;
-    params.layouts = value;
-    emit('update:modelValue', params);
-  },
-});
-/** Current layout selected */
-const currentLayout = computed({
-  get: () => props.modelValue.layouts.at(innerIndex.value),
-  set: (value) => {
-    if (!currentLayout.value || !value) {
-      return;
-    }
+      try {
+        updateLayoutOfHelper(props.modelValue, currentLayout.value, value);
+      } catch (err) {
+        handleEzrError(t('$ezreeport.editor.layouts.errors.edit'), err);
+      }
+    },
+  });
 
+  async function createNewLayout() {
     try {
-      updateLayoutOfHelper(props.modelValue, currentLayout.value, value);
+      const layout = createLayoutHelper([]);
+      addLayoutOfHelper(props.modelValue, layout);
+
+      innerIndex.value = props.modelValue.layouts.length - 1;
+      await nextTick();
+      drawerRef.value?.scrollDown();
     } catch (err) {
-      handleEzrError(t('$ezreeport.editor.layouts.errors.edit'), err);
+      handleEzrError(t('$ezreeport.editor.layouts.errors.create'), err);
     }
-  },
-});
-
-async function createNewLayout() {
-  try {
-    const layout = createLayoutHelper([]);
-    addLayoutOfHelper(props.modelValue, layout);
-
-    innerIndex.value = props.modelValue.layouts.length - 1;
-    await nextTick();
-    drawerRef.value?.scrollDown();
-  } catch (err) {
-    handleEzrError(t('$ezreeport.editor.layouts.errors.create'), err);
   }
-}
 
-async function cloneLayout(layout: LayoutHelper, index: number) {
-  try {
-    const clone = createLayoutHelperFrom(layoutHelperToJSON(layout));
-    const newIndex = index + 1;
+  async function cloneLayout(layout: LayoutHelper, index: number) {
+    try {
+      const clone = createLayoutHelperFrom(layoutHelperToJSON(layout));
+      const newIndex = index + 1;
 
-    addLayoutOfHelper(props.modelValue, clone, newIndex);
-    innerIndex.value = newIndex;
+      addLayoutOfHelper(props.modelValue, clone, newIndex);
+      innerIndex.value = newIndex;
 
-    await nextTick();
-    drawerRef.value?.scrollTo(newIndex);
-  } catch (err) {
-    handleEzrError(t('$ezreeport.editor.layouts.errors.clone'), err);
+      await nextTick();
+      drawerRef.value?.scrollTo(newIndex);
+    } catch (err) {
+      handleEzrError(t('$ezreeport.editor.layouts.errors.clone'), err);
+    }
   }
-}
 
-function deleteLayout(layout: LayoutHelper) {
-  try {
-    removeLayoutOfHelper(props.modelValue, layout);
-  } catch (err) {
-    handleEzrError(t('$ezreeport.editor.layouts.errors.delete'), err);
+  function deleteLayout(layout: LayoutHelper) {
+    try {
+      removeLayoutOfHelper(props.modelValue, layout);
+    } catch (err) {
+      handleEzrError(t('$ezreeport.editor.layouts.errors.delete'), err);
+    }
   }
-}
 
-onMounted(() => {
-  if (props.index != null) {
-    drawerRef.value?.scrollTo(props.index);
-  }
-});
+  onMounted(() => {
+    if (props.index != null) {
+      drawerRef.value?.scrollTo(props.index);
+    }
+  });
 </script>

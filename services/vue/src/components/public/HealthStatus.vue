@@ -73,69 +73,70 @@
 </template>
 
 <script setup lang="ts">
-import { version } from '~/../package.json';
-import { version as sdkVersion } from '~sdk';
-import { getStatus, type ApiService, type ApiStatus } from '~sdk/health';
+  import { version as sdkVersion } from '~sdk';
+  import { getStatus, type ApiService, type ApiStatus } from '~sdk/health';
 
-const MINIMUM_SERVICES = [
-  'rabbitmq',
-  'api',
-  'database',
-  'worker',
-  'elastic',
-  'scheduler',
-  'mail',
-  'smtp',
-  'files',
-];
+  import { version } from '~/../package.json';
 
-// Components props
-defineProps<{
-  titlePrefix?: string;
-}>();
+  const MINIMUM_SERVICES = [
+    'rabbitmq',
+    'api',
+    'database',
+    'worker',
+    'elastic',
+    'scheduler',
+    'mail',
+    'smtp',
+    'files',
+  ];
 
-// Utils composable
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // Components props
+  defineProps<{
+    titlePrefix?: string;
+  }>();
 
-/** Is loading */
-const loading = ref(false);
-/** API status */
-const status = ref<ApiStatus | undefined>();
+  // Utils composable
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-const services = computed(() => {
-  const minimum = MINIMUM_SERVICES.map(
-    (service) => [service, []] as [string, ApiService[]]
-  );
-  const fromAPI = Map.groupBy(
-    status.value?.services ?? [],
-    ({ service }) => service
-  );
-  return new Map([...minimum, ...fromAPI]);
-});
+  /** Is loading */
+  const loading = ref(false);
+  /** API status */
+  const status = ref<ApiStatus | undefined>();
 
-const fileSystems = computed(() => {
-  const values = (status.value?.services ?? []).flatMap(
-    ({ hostname, service, filesystems }) =>
-      (filesystems ?? []).map((fs) => ({
-        ...fs,
-        host: { name: hostname, service },
-      }))
-  );
+  const services = computed(() => {
+    const minimum = MINIMUM_SERVICES.map(
+      (service) => [service, []] as [string, ApiService[]]
+    );
+    const fromAPI = Map.groupBy(
+      status.value?.services ?? [],
+      ({ service }) => service
+    );
+    return new Map([...minimum, ...fromAPI]);
+  });
 
-  const unsorted = Map.groupBy(values, ({ name }) => name);
-  return Array.from(unsorted).sort((fsA, fsB) => fsA[0].localeCompare(fsB[0]));
-});
+  const fileSystems = computed(() => {
+    const values = (status.value?.services ?? []).flatMap(
+      ({ hostname, service, filesystems }) =>
+        (filesystems ?? []).map((fs) => ({
+          ...fs,
+          host: { name: hostname, service },
+        }))
+    );
 
-async function refresh() {
-  loading.value = true;
-  try {
-    status.value = await getStatus();
-  } catch (err) {
-    handleEzrError(t('$ezreeport.health.errors.fetch'), err);
+    const unsorted = Map.groupBy(values, ({ name }) => name);
+    return Array.from(unsorted).sort((fsA, fsB) => fsA[0].localeCompare(fsB[0]));
+  });
+
+  async function refresh() {
+    loading.value = true;
+    try {
+      status.value = await getStatus();
+    } catch (err) {
+      handleEzrError(t('$ezreeport.health.errors.fetch'), err);
+    }
+    loading.value = false;
   }
-  loading.value = false;
-}
 
-useIntervalFn(refresh, 10000, { immediate: true, immediateCallback: true });
+  useIntervalFn(refresh, 10000, { immediate: true, immediateCallback: true });
 </script>

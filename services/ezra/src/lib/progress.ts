@@ -1,16 +1,18 @@
-import { SingleBar } from 'cli-progress';
-import chalk from 'chalk';
-
 import { PassThrough, Writable } from 'node:stream';
 
+import chalk from 'chalk';
+import { SingleBar } from 'cli-progress';
+
 export const createProgressBarStream = (opts: {
-  total?: number,
-  onEnd?: (count: number, total: number) => void,
+  total?: number;
+  onEnd?: (count: number, total: number) => void;
 }) => {
   const progress = new SingleBar({
     barCompleteChar: '\u25A0',
     barIncompleteChar: ' ',
-    format: chalk.grey('\t[{bar}] {percentage}% | ETA: {eta}s | {value}/{total}'),
+    format: chalk.grey(
+      '\t[{bar}] {percentage}% | ETA: {eta}s | {value}/{total}'
+    ),
   });
 
   let hasStarted = false;
@@ -49,8 +51,9 @@ export const createProgressBarStream = (opts: {
   };
 };
 
-export const createDummyWriteStream = () => new Writable({
-  write(chunk, encoding, callback) {
-    callback();
-  },
-});
+export const createDummyWriteStream = () =>
+  new Writable({
+    write(chunk, encoding, callback) {
+      callback();
+    },
+  });

@@ -1,10 +1,11 @@
 import type { Font } from 'jspdf';
 
 import { format, isValid, parseISO } from '@ezreeport/dates';
-import TemplateError from '~/models/generation/errors';
+
 import type { FetchResultItem } from '~/models/fetch/results';
-import type { Position, Size, Area } from '~/models/render/types';
 import type { PDFReport } from '~/models/render/pdf/types';
+import type { Position, Size, Area } from '~/models/render/types';
+import TemplateError from '~/models/generation/errors';
 import RenderError from '~/models/render/errors';
 
 type MetricLabel = {
@@ -107,7 +108,7 @@ const formatNumber = (
     case 'fr-FR':
       locale.identifier = 'en-US';
       locale.params.useGrouping = true;
-      locale.cb = (val) => val.replaceAll(",", ' ').replaceAll("\\.", ',');
+      locale.cb = (val) => val.replaceAll(',', ' ').replaceAll('\\.', ',');
       break;
 
     default:

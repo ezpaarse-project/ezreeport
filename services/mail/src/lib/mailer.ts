@@ -2,8 +2,8 @@ import { createTransport, type Transporter } from 'nodemailer';
 
 import type { HeartbeatType } from '@ezreeport/heartbeats/types';
 
-import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
+import { appLogger } from '~/lib/logger';
 
 let transporter: Transporter | undefined;
 

@@ -92,158 +92,158 @@
 </template>
 
 <script setup lang="ts">
-import { isRawAggregation } from '~sdk/helpers/aggregations';
-import { getMetricLabelKey, type MetricLabel } from '~sdk/helpers/figures';
+  import { isRawAggregation } from '~sdk/helpers/aggregations';
+  import { getMetricLabelKey, type MetricLabel } from '~sdk/helpers/figures';
 
-// Components props
-const props = defineProps<{
-  /** Label to edit, leave undefined to create a new one */
-  modelValue?: MetricLabel | undefined;
-  /** Other headers */
-  headers?: Set<string>;
-}>();
+  // Components props
+  const props = defineProps<{
+    /** Label to edit, leave undefined to create a new one */
+    modelValue?: MetricLabel | undefined;
+    /** Other headers */
+    headers?: Set<string>;
+  }>();
 
-// Components events
-const emit = defineEmits<{
-  /** Updated label */
-  (event: 'update:modelValue', value: MetricLabel): void;
-}>();
+  // Components events
+  const emit = defineEmits<{
+    /** Updated label */
+    (event: 'update:modelValue', value: MetricLabel): void;
+  }>();
 
-// Util composables
-// oxlint-disable-next-line id-length
-const { t, te } = useI18n();
+  // Util composables
+  // oxlint-disable-next-line id-length
+  const { t, te } = useI18n();
 
-/** Is form valid */
-const isValid = ref(false);
+  /** Is form valid */
+  const isValid = ref(false);
 
-/** Label to edit */
-const { cloned: label } = useCloned<MetricLabel>(
-  props.modelValue ?? { text: '' }
-);
+  /** Label to edit */
+  const { cloned: label } = useCloned<MetricLabel>(
+    props.modelValue ?? { text: '' }
+  );
 
-/** Validate form on mounted if editing */
-useTemplateVForm('formRef', { immediate: !!props.modelValue });
+  /** Validate form on mounted if editing */
+  useTemplateVForm('formRef', { immediate: !!props.modelValue });
 
-/** Format */
-const format = computed<string>({
-  get: () => label.value.format?.type || '',
-  set: (value) => {
-    if (!value) {
-      label.value.format = undefined;
-      return;
-    }
-    label.value.format = { type: value as 'number' | 'date' };
-  },
-});
-/** Format options */
-const formatOptions = computed(() => [
-  {
-    value: '',
-    title: t('$ezreeport.editor.figures.metric.elements.formatOptions.none'),
-    props: {
-      appendIcon: formatIcons.get('text'),
+  /** Format */
+  const format = computed<string>({
+    get: () => label.value.format?.type || '',
+    set: (value) => {
+      if (!value) {
+        label.value.format = undefined;
+        return;
+      }
+      label.value.format = { type: value as 'number' | 'date' };
     },
-  },
-  {
-    value: 'date',
-    title: t('$ezreeport.editor.figures.metric.elements.formatOptions.date'),
-    props: {
-      appendIcon: formatIcons.get('date'),
+  });
+  /** Format options */
+  const formatOptions = computed(() => [
+    {
+      value: '',
+      title: t('$ezreeport.editor.figures.metric.elements.formatOptions.none'),
+      props: {
+        appendIcon: formatIcons.get('text'),
+      },
     },
-  },
-  {
-    value: 'number',
-    title: t('$ezreeport.editor.figures.metric.elements.formatOptions.number'),
-    props: {
-      appendIcon: formatIcons.get('number'),
+    {
+      value: 'date',
+      title: t('$ezreeport.editor.figures.metric.elements.formatOptions.date'),
+      props: {
+        appendIcon: formatIcons.get('date'),
+      },
     },
-  },
-]);
-/** Format params */
-const formatParams = computed<string>({
-  get: () => label.value.format?.params?.[0] || '',
-  set: (value) => {
-    if (!label.value.format) {
-      return;
-    }
-    if (!value) {
-      label.value.format.params = undefined;
-      return;
-    }
-    label.value.format.params = [value];
-  },
-});
-/** Placeholder of format param */
-const formatParamPlaceholder = computed(() => {
-  switch (label.value.format?.type) {
-    case 'date':
-      return 'dd/MM/yyyy';
-    case 'number':
-      return 'fr';
+    {
+      value: 'number',
+      title: t('$ezreeport.editor.figures.metric.elements.formatOptions.number'),
+      props: {
+        appendIcon: formatIcons.get('number'),
+      },
+    },
+  ]);
+  /** Format params */
+  const formatParams = computed<string>({
+    get: () => label.value.format?.params?.[0] || '',
+    set: (value) => {
+      if (!label.value.format) {
+        return;
+      }
+      if (!value) {
+        label.value.format.params = undefined;
+        return;
+      }
+      label.value.format.params = [value];
+    },
+  });
+  /** Placeholder of format param */
+  const formatParamPlaceholder = computed(() => {
+    switch (label.value.format?.type) {
+      case 'date':
+        return 'dd/MM/yyyy';
+      case 'number':
+        return 'fr';
 
-    default:
-      return;
-  }
-});
-/** The label of format param */
-const formatParamLabel = computed(() => {
-  const key = `$ezreeport.editor.figures.metric.elements.formatOptionsLabel.${format.value}`;
-  return te(key)
-    ? t(key)
-    : t(
-        '$ezreeport.editor.figures.metric.elements.formatOptionsLabel._default'
-      );
-});
-/** The hint of format param */
-const formatParamHintKey = computed(() => {
-  const key = `$ezreeport.editor.figures.metric.elements.formatOptionsLabel.${format.value}:hint`;
-  return te(key) ? key : '';
-});
+      default:
+        return;
+    }
+  });
+  /** The label of format param */
+  const formatParamLabel = computed(() => {
+    const key = `$ezreeport.editor.figures.metric.elements.formatOptionsLabel.${format.value}`;
+    return te(key)
+      ? t(key)
+      : t(
+          '$ezreeport.editor.figures.metric.elements.formatOptionsLabel._default'
+        );
+  });
+  /** The hint of format param */
+  const formatParamHintKey = computed(() => {
+    const key = `$ezreeport.editor.figures.metric.elements.formatOptionsLabel.${format.value}:hint`;
+    return te(key) ? key : '';
+  });
 
-/**
- * Check if the label is unique
- */
-function isUniqueRule(val: string) {
-  if (props.modelValue && getMetricLabelKey(props.modelValue) === val) {
+  /**
+   * Check if the label is unique
+   */
+  function isUniqueRule(val: string) {
+    if (props.modelValue && getMetricLabelKey(props.modelValue) === val) {
+      return true;
+    }
+    if (props.headers?.has(val)) {
+      return t('$ezreeport.duplicate');
+    }
     return true;
   }
-  if (props.headers?.has(val)) {
-    return t('$ezreeport.duplicate');
-  }
-  return true;
-}
 
-/**
- * Generate name of the element when aggregation changed
- */
-watch(
-  () => label.value,
-  (newLabel, oldLabel) => {
-    if (
-      !newLabel.aggregation ||
-      isRawAggregation(newLabel.aggregation) ||
-      !oldLabel.aggregation ||
-      isRawAggregation(oldLabel.aggregation)
-    ) {
-      return;
-    }
+  /**
+   * Generate name of the element when aggregation changed
+   */
+  watch(
+    () => label.value,
+    (newLabel, oldLabel) => {
+      if (
+        !newLabel.aggregation ||
+        isRawAggregation(newLabel.aggregation) ||
+        !oldLabel.aggregation ||
+        isRawAggregation(oldLabel.aggregation)
+      ) {
+        return;
+      }
 
-    if (
-      oldLabel.aggregation &&
-      'field' in oldLabel.aggregation &&
-      newLabel.aggregation &&
-      'field' in newLabel.aggregation &&
-      oldLabel.aggregation.type === newLabel.aggregation.type &&
-      oldLabel.aggregation.field === newLabel.aggregation.field
-    ) {
-      return;
-    }
+      if (
+        oldLabel.aggregation &&
+        'field' in oldLabel.aggregation &&
+        newLabel.aggregation &&
+        'field' in newLabel.aggregation &&
+        oldLabel.aggregation.type === newLabel.aggregation.type &&
+        oldLabel.aggregation.field === newLabel.aggregation.field
+      ) {
+        return;
+      }
 
-    // TODO: prevent user provided value to be overwritten
-    label.value.text = t('$ezreeport.editor.aggregation.aggregationTemplate', {
-      ...newLabel.aggregation,
-    });
-  },
-  { deep: true }
-);
+      // TODO: prevent user provided value to be overwritten
+      label.value.text = t('$ezreeport.editor.aggregation.aggregationTemplate', {
+        ...newLabel.aggregation,
+      });
+    },
+    { deep: true }
+  );
 </script>

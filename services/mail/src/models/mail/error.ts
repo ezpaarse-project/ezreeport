@@ -1,7 +1,6 @@
 import type { Logger } from '@ezreeport/logger';
-
-import { format } from '@ezreeport/dates';
 import type { MailErrorQueueDataType } from '@ezreeport/models/queues';
+import { format } from '@ezreeport/dates';
 
 import config from '~/lib/config';
 

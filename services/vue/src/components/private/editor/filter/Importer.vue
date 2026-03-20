@@ -41,83 +41,88 @@
 </template>
 
 <script setup lang="ts">
-import { isRawFilter, type TemplateFilter } from '~sdk/helpers/filters';
+  import { isRawFilter, type TemplateFilter } from '~sdk/helpers/filters';
 
-// Components events
-defineEmits<{
-  /** Imported filters */
-  (event: 'update:modelValue', value: TemplateFilter[]): void,
-}>();
+  // Components events
+  defineEmits<{
+    /** Imported filters */
+    (event: 'update:modelValue', value: TemplateFilter[]): void;
+  }>();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-/** Text from filters found in Kibana */
-const kibanaText = ref('');
+  /** Text from filters found in Kibana */
+  const kibanaText = ref('');
 
-function generateFilterName(filterRef: MaybeRefOrGetter<TemplateFilter>): string {
-  const filter = toValue(filterRef);
+  function generateFilterName(
+    filterRef: MaybeRefOrGetter<TemplateFilter>
+  ): string {
+    const filter = toValue(filterRef);
 
-  // Don't generate name if it's a raw filter
-  if (isRawFilter(filter)) {
-    return '';
-  }
-
-  // We need a field to generate a name
-  if (!filter.field) {
-    return '';
-  }
-
-  // Ensure values are an array
-  let values = filter.value ?? '';
-  if (!Array.isArray(values)) {
-    values = [values];
-  }
-
-  // Generate value text
-  const valueText = t('$ezreeport.editor.filters.nameTemplate.values', values);
-  const data = { field: filter.field, valueText };
-
-  // Generate name
-  if (!filter.value) {
-    if (filter.isNot) {
-      return t('$ezreeport.editor.filters.nameTemplate.exists:not', data);
+    // Don't generate name if it's a raw filter
+    if (isRawFilter(filter)) {
+      return '';
     }
-    return t('$ezreeport.editor.filters.nameTemplate.exists', data);
-  } if (filter.isNot) {
-    return t('$ezreeport.editor.filters.nameTemplate.is:not', data);
+
+    // We need a field to generate a name
+    if (!filter.field) {
+      return '';
+    }
+
+    // Ensure values are an array
+    let values = filter.value ?? '';
+    if (!Array.isArray(values)) {
+      values = [values];
+    }
+
+    // Generate value text
+    const valueText = t('$ezreeport.editor.filters.nameTemplate.values', values);
+    const data = { field: filter.field, valueText };
+
+    // Generate name
+    if (!filter.value) {
+      if (filter.isNot) {
+        return t('$ezreeport.editor.filters.nameTemplate.exists:not', data);
+      }
+      return t('$ezreeport.editor.filters.nameTemplate.exists', data);
+    }
+    if (filter.isNot) {
+      return t('$ezreeport.editor.filters.nameTemplate.is:not', data);
+    }
+    return t('$ezreeport.editor.filters.nameTemplate.is', data);
   }
-  return t('$ezreeport.editor.filters.nameTemplate.is', data);
-}
 
-/**
- * Filters found in Kibana text
- */
-const filters = computed(() => kibanaText.value
-  .split('\n')
-  .map(
-    (line): TemplateFilter | undefined => {
-      const matches = /^(?:(?<invert>NOT)\s)?(?<field>.+): (?<value>.*)/.exec(line);
-      const { invert, field, value } = matches?.groups ?? {};
-      // If no matches, it's not a valid line
-      if (!field || !value) {
-        return undefined;
-      }
+  /**
+   * Filters found in Kibana text
+   */
+  const filters = computed(() =>
+    kibanaText.value
+      .split('\n')
+      .map((line): TemplateFilter | undefined => {
+        const matches = /^(?:(?<invert>NOT)\s)?(?<field>.+): (?<value>.*)/.exec(
+          line
+        );
+        const { invert, field, value } = matches?.groups ?? {};
+        // If no matches, it's not a valid line
+        if (!field || !value) {
+          return undefined;
+        }
 
-      const filter = { field, isNot: !!invert, value };
+        const filter = { field, isNot: !!invert, value };
 
-      // Generate name of the filter
-      const name = generateFilterName({ name: '', ...filter });
-      if (!name) {
-        return undefined;
-      }
+        // Generate name of the filter
+        const name = generateFilterName({ name: '', ...filter });
+        if (!name) {
+          return undefined;
+        }
 
-      return {
-        ...filter,
-        name,
-      };
-    },
-  )
-  .filter((val) => !!val));
+        return {
+          ...filter,
+          name,
+        };
+      })
+      .filter((val) => !!val)
+  );
 </script>

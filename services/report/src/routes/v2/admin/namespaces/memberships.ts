@@ -3,22 +3,20 @@ import { StatusCodes } from 'http-status-codes';
 
 import { z } from '@ezreeport/models/lib/zod';
 
-import {
-  describeErrors,
-  buildSuccessResponse,
-  zSuccessResponse,
-} from '~/routes/v2/responses';
-
+import { NotFoundError } from '~/models/errors';
+import * as memberships from '~/models/memberships';
+import { InputMembership, Membership } from '~/models/memberships/types';
 import { buildPaginatedResponse } from '~/models/pagination';
 import {
   PaginationQuery,
   zPaginationResponse,
 } from '~/models/pagination/types';
 
-import * as memberships from '~/models/memberships';
-import { InputMembership, Membership } from '~/models/memberships/types';
-
-import { NotFoundError } from '~/models/errors';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+} from '~/routes/v2/responses';
 
 const SpecificMembershipParams = z.object({
   namespaceId: z.string().min(1).describe('Namespace ID'),

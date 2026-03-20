@@ -1,10 +1,3 @@
-export {
-  getAllGenerations,
-  getGeneration,
-  restartGeneration,
-} from './methods';
+export { getAllGenerations, getGeneration, restartGeneration } from './methods';
 
-export type {
-  Generation,
-  GenerationStatus,
-} from './types';
+export type { Generation, GenerationStatus } from './types';

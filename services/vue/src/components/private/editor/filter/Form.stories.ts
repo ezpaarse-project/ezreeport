@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import type { TemplateFilter } from '~sdk/helpers/filters';
 
 import EditorFilterForm from './Form.vue';
@@ -22,12 +21,16 @@ const mockSimpleFilter: TemplateFilter = {
 
 const mockRawFilter: TemplateFilter = {
   name: 'filter-1',
-  raw: { query_string: { query: '-(host:XXX.XX.XXX.X AND sid:"istex-api-harvester")' } },
+  raw: {
+    query_string: {
+      query: '-(host:XXX.XX.XXX.X AND sid:"istex-api-harvester")',
+    },
+  },
   isNot: false,
 };
 
 export const NewFilter: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFilterForm },
     setup() {
       return { args };
@@ -40,7 +43,7 @@ export const NewFilter: Story = {
 };
 
 export const SimpleFilter: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFilterForm },
     setup() {
       return { args };
@@ -53,7 +56,7 @@ export const SimpleFilter: Story = {
 };
 
 export const RawFilter: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFilterForm },
     setup() {
       return { args };

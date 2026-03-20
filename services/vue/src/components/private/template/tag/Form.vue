@@ -57,28 +57,28 @@
 </template>
 
 <script setup lang="ts">
-import type { TemplateTag, InputTemplateTag } from '~sdk/template-tags';
+  import type { TemplateTag, InputTemplateTag } from '~sdk/template-tags';
 
-// Components props
-const props = defineProps<{
-  /** The tag to show */
-  modelValue: TemplateTag | InputTemplateTag | undefined;
-}>();
+  // Components props
+  const props = defineProps<{
+    /** The tag to show */
+    modelValue: TemplateTag | InputTemplateTag | undefined;
+  }>();
 
-// Components events
-defineEmits<{
-  /** Updated tag */
-  (event: 'update:modelValue', value: TemplateTag | InputTemplateTag): void;
-}>();
+  // Components events
+  defineEmits<{
+    /** Updated tag */
+    (event: 'update:modelValue', value: TemplateTag | InputTemplateTag): void;
+  }>();
 
-/** Is form valid */
-const isValid = shallowRef(false);
+  /** Is form valid */
+  const isValid = shallowRef(false);
 
-/** Filter to edit */
-const { cloned: tag } = useCloned<TemplateTag | InputTemplateTag>(
-  props.modelValue ?? { name: '' }
-);
+  /** Filter to edit */
+  const { cloned: tag } = useCloned<TemplateTag | InputTemplateTag>(
+    props.modelValue ?? { name: '' }
+  );
 
-/** Validate on mount */
-useTemplateVForm('formRef', { immediate: !!props.modelValue });
+  /** Validate on mount */
+  useTemplateVForm('formRef', { immediate: !!props.modelValue });
 </script>

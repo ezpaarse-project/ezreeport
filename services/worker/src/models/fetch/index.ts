@@ -1,18 +1,18 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 
 import type { RecurrenceType } from '@ezreeport/models/recurrence';
-import type { FigureType, FilterType } from '@ezreeport/models/templates';
 import type { ReportPeriodType } from '@ezreeport/models/reports';
+import type { FigureType, FilterType } from '@ezreeport/models/templates';
 
 import { elasticMSearch } from '~/lib/elastic';
 
-import { calcElasticIntervalFromRecurrence } from '~/models/recurrence';
-import TemplateError from '~/models/generation/errors';
 import TypedError from '~/models/errors';
+import TemplateError from '~/models/generation/errors';
+import { calcElasticIntervalFromRecurrence } from '~/models/recurrence';
 
+import { prepareEsAggregations } from './aggs';
 import FetchError from './errors';
 import { prepareEsQuery } from './filters';
-import { prepareEsAggregations } from './aggs';
 import { handleEsResponse } from './results';
 
 type ElasticFetchOptionsType = {

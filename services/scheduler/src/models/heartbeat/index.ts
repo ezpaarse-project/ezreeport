@@ -1,9 +1,9 @@
+import type { HeartbeatService } from '@ezreeport/heartbeats/types';
 import {
   setupHeartbeat,
   mandatoryService,
   type HeartbeatSender,
 } from '@ezreeport/heartbeats';
-import type { HeartbeatService } from '@ezreeport/heartbeats/types';
 
 import type rabbitmq from '~/lib/rabbitmq';
 import config from '~/lib/config';

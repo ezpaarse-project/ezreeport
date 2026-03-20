@@ -19,7 +19,6 @@ import {
   getUserByToken,
   type Access,
 } from '~/models/access';
-
 import { HTTPError } from '~/models/errors';
 
 const { adminKey } = config;

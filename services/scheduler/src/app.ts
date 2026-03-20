@@ -1,13 +1,13 @@
-import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
 import startHTTPServer from '~/lib/http';
+import { appLogger } from '~/lib/logger';
 import { useRabbitMQ } from '~/lib/rabbitmq';
 
 import { initCrons } from '~/models/crons';
-import initRPC from '~/models/rpc';
-import initQueues from '~/models/queues';
-import { initHeartbeat, getMissingMandatoryServices } from '~/models/heartbeat';
 import { abortDanglingGenerations } from '~/models/generations';
+import { initHeartbeat, getMissingMandatoryServices } from '~/models/heartbeat';
+import initQueues from '~/models/queues';
+import initRPC from '~/models/rpc';
 
 async function start(): Promise<void> {
   appLogger.info({

@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof EditorFilterImporter>;
 
 export const Basic: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFilterImporter },
     setup() {
       return { args };

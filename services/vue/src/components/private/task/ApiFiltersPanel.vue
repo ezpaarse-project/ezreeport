@@ -81,59 +81,59 @@
 </template>
 
 <script setup lang="ts">
-import { RECURRENCES } from '~sdk/helpers/tasks';
-import type { Namespace } from '~sdk/namespaces';
-import type { Recurrence } from '~sdk/recurrence';
-import type { TemplateTag } from '~sdk/templates';
+  import type { Namespace } from '~sdk/namespaces';
+  import type { Recurrence } from '~sdk/recurrence';
+  import type { TemplateTag } from '~sdk/templates';
+  import { RECURRENCES } from '~sdk/helpers/tasks';
 
-type TaskFilters = {
-  namespaceId?: string[];
-  ['nextRun.from']?: Date;
-  ['nextRun.to']?: Date;
-  enabled?: boolean;
-  ['extends.tags']?: string[];
-  recurrence?: Recurrence;
-};
+  type TaskFilters = {
+    namespaceId?: string[];
+    ['nextRun.from']?: Date;
+    ['nextRun.to']?: Date;
+    enabled?: boolean;
+    ['extends.tags']?: string[];
+    recurrence?: Recurrence;
+  };
 
-// Component props
-const modelValue = defineModel<boolean>({ required: true });
-const filters = defineModel<TaskFilters>('filters', { default: () => ({}) });
+  // Component props
+  const modelValue = defineModel<boolean>({ required: true });
+  const filters = defineModel<TaskFilters>('filters', { default: () => ({}) });
 
-const { tags = [], namespaces = [] } = defineProps<{
-  tags?: TemplateTag[];
-  namespaces?: Omit<Namespace, 'fetchLogin' | 'fetchOptions'>[];
-}>();
+  const { tags = [], namespaces = [] } = defineProps<{
+    tags?: TemplateTag[];
+    namespaces?: Omit<Namespace, 'fetchLogin' | 'fetchOptions'>[];
+  }>();
 
-defineEmits<{
-  'reset:filters': [];
-}>();
+  defineEmits<{
+    'reset:filters': [];
+  }>();
 
-// Utils composable
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // Utils composable
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-const enabledOptions = computed(() => [
-  { value: true, text: t('$ezreeport.task.enabled') },
-  { value: false, text: t('$ezreeport.task.disabled') },
-]);
-const recurrenceOptions = computed(() =>
-  RECURRENCES.map((recurrence) => ({
-    value: recurrence,
-    title: t(`$ezreeport.task.recurrenceList.${recurrence}`),
-  }))
-);
-const tagsOptions = computed(() =>
-  tags.map((tag) => ({
-    value: tag.id,
-    title: tag.name,
-    tag,
-  }))
-);
-const namespacesOptions = computed(() =>
-  namespaces.map((namespace) => ({
-    value: namespace.id,
-    title: namespace.name,
-    namespace,
-  }))
-);
+  const enabledOptions = computed(() => [
+    { value: true, text: t('$ezreeport.task.enabled') },
+    { value: false, text: t('$ezreeport.task.disabled') },
+  ]);
+  const recurrenceOptions = computed(() =>
+    RECURRENCES.map((recurrence) => ({
+      value: recurrence,
+      title: t(`$ezreeport.task.recurrenceList.${recurrence}`),
+    }))
+  );
+  const tagsOptions = computed(() =>
+    tags.map((tag) => ({
+      value: tag.id,
+      title: tag.name,
+      tag,
+    }))
+  );
+  const namespacesOptions = computed(() =>
+    namespaces.map((namespace) => ({
+      value: namespace.id,
+      title: namespace.name,
+      namespace,
+    }))
+  );
 </script>

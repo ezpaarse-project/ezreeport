@@ -1,15 +1,13 @@
 import { Args, Flags } from '@oclif/core';
-import lodash from 'lodash';
 import chalk from 'chalk';
+import lodash from 'lodash';
 
 import { BaseCommand } from '../../lib/oclif/BaseCommand.js';
 
 export default class ConfigSet extends BaseCommand<typeof ConfigSet> {
   static description = 'describe the command here';
 
-  static examples = [
-    '<%= config.bin %> <%= command.id %>',
-  ];
+  static examples = ['<%= config.bin %> <%= command.id %>'];
 
   static flags = {
     profile: Flags.string({
@@ -39,15 +37,15 @@ export default class ConfigSet extends BaseCommand<typeof ConfigSet> {
 
     if (flags.profile) {
       await this.ezraConfig.upsertProfile(flags.profile, config);
-      this.log(
-        chalk.green(`Updated "${chalk.bold(flags.profile)}"`),
-      );
+      this.log(chalk.green(`Updated "${chalk.bold(flags.profile)}"`));
       return;
     }
 
     await this.ezraConfig.update(config);
     this.log(
-      chalk.green(`Updated main config (${chalk.underline(this.ezraConfig.configPath)})`),
+      chalk.green(
+        `Updated main config (${chalk.underline(this.ezraConfig.configPath)})`
+      )
     );
   }
 }

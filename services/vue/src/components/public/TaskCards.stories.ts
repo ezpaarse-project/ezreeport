@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof TaskCards>;
 
 export const Default: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskCards },
     setup() {
       return { args };

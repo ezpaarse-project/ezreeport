@@ -141,162 +141,161 @@
 </template>
 
 <script setup lang="ts">
-import type { VDataTable } from 'vuetify/components';
+  import type { VDataTable } from 'vuetify/components';
+  import {
+    getAllGenerations,
+    getGeneration,
+    restartGeneration,
+    type GenerationStatus,
+    type Generation,
+  } from '~sdk/generations';
+  import {
+    isGenerationEnded,
+    listenAllGenerations,
+  } from '~sdk/helpers/generations';
+  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
 
-import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
-import {
-  isGenerationEnded,
-  listenAllGenerations,
-} from '~sdk/helpers/generations';
-import {
-  getAllGenerations,
-  getGeneration,
-  restartGeneration,
-  type GenerationStatus,
-  type Generation,
-} from '~sdk/generations';
+  type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 
-type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
+  const statusColors = new Map<GenerationStatus, string>([
+    ['PENDING', 'grey'],
+    ['SUCCESS', 'success'],
+    ['ERROR', 'error'],
+  ]);
 
-const statusColors = new Map<GenerationStatus, string>([
-  ['PENDING', 'grey'],
-  ['SUCCESS', 'success'],
-  ['ERROR', 'error'],
-]);
+  // Components props
+  defineProps<{
+    itemsPerPageOptions?: number[] | { title: string; value: number }[];
+  }>();
 
-// Components props
-defineProps<{
-  itemsPerPageOptions?: number[] | { title: string; value: number }[];
-}>();
+  // Utils composable
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-// Utils composable
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  const arePermissionsReady = ref(false);
+  /** Is info opened */
+  const isInfoOpen = ref(false);
+  /** Selected generation */
+  const selectedGeneration = ref<Generation | undefined>();
 
-const arePermissionsReady = ref(false);
-/** Is info opened */
-const isInfoOpen = ref(false);
-/** Selected generation */
-const selectedGeneration = ref<Generation | undefined>();
+  /** Items per page */
+  const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
+  /** List of generations */
+  const {
+    items: generations,
+    total,
+    refresh,
+    loading,
+    vDataTableOptions,
+  } = useServerSidePagination((params) => getAllGenerations(params), {
+    sortBy: 'createdAt',
+    order: 'desc',
+    itemsPerPage,
+    include: ['task.namespace', 'task.extends.tags'],
+  });
 
-/** Items per page */
-const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
-/** List of generations */
-const {
-  items: generations,
-  total,
-  refresh,
-  loading,
-  vDataTableOptions,
-} = useServerSidePagination((params) => getAllGenerations(params), {
-  sortBy: 'createdAt',
-  order: 'desc',
-  itemsPerPage,
-  include: ['task.namespace', 'task.extends.tags'],
-});
-
-// Listen and update generations
-const { stop: stopListening } = listenAllGenerations((generation) => {
-  const index = generations.value.findIndex(({ id }) => id === generation.id);
-  if (index < 0) {
-    if (!loading.value && generation.status === 'PENDING') {
-      refresh();
+  // Listen and update generations
+  const { stop: stopListening } = listenAllGenerations((generation) => {
+    const index = generations.value.findIndex(({ id }) => id === generation.id);
+    if (index < 0) {
+      if (!loading.value && generation.status === 'PENDING') {
+        refresh();
+      }
+      return;
     }
-    return;
+    const { task } = generations.value[index];
+    generations.value[index] = { ...generation, task };
+
+    if (selectedGeneration.value?.id === generation.id) {
+      selectedGeneration.value = { ...generation, task };
+    }
+  });
+
+  const availableActions = computed(() => {
+    if (!arePermissionsReady.value) {
+      return {};
+    }
+    return {
+      retry: hasPermission(restartGeneration),
+    };
+  });
+
+  const headers = computed(
+    (): VDataTableHeaders => [
+      {
+        title: t('$ezreeport.generations.task'),
+        value: 'task.name',
+      },
+      {
+        title: t('$ezreeport.namespace'),
+        value: 'task.namespace.name',
+      },
+      {
+        title: t('$ezreeport.generations.origin'),
+        value: 'origin',
+        sortable: true,
+        align: 'center',
+      },
+      {
+        title: t('$ezreeport.generations.period'),
+        value: '_period',
+        align: 'center',
+      },
+      {
+        title: t('$ezreeport.generations.status'),
+        value: 'status',
+        align: 'center',
+        sortable: true,
+      },
+      {
+        title: t('$ezreeport.generations.progress'),
+        value: 'progress',
+        align: 'center',
+        sortable: true,
+      },
+      {
+        title: t('$ezreeport.generations.duration'),
+        value: 'took',
+        align: 'center',
+        sortable: true,
+      },
+      {
+        title: t('$ezreeport.generations.queued'),
+        value: 'createdAt',
+        sortable: true,
+      },
+      {
+        title: t('$ezreeport.actions'),
+        value: '_actions',
+      },
+    ]
+  );
+
+  async function restartGen(gen: Generation) {
+    try {
+      await restartGeneration(gen);
+    } catch (err) {
+      handleEzrError(t('$ezreeport.generations.errors.retry'), err);
+    }
   }
-  const { task } = generations.value[index];
-  generations.value[index] = { ...generation, task };
 
-  if (selectedGeneration.value?.id === generation.id) {
-    selectedGeneration.value = { ...generation, task };
+  async function openInfo(gen: Generation) {
+    try {
+      const fullJob = await getGeneration(gen);
+      selectedGeneration.value = fullJob;
+
+      isInfoOpen.value = true;
+    } catch (err) {
+      handleEzrError(t('$ezreeport.generations.errors.info'), err);
+    }
   }
-});
 
-const availableActions = computed(() => {
-  if (!arePermissionsReady.value) {
-    return {};
-  }
-  return {
-    retry: hasPermission(restartGeneration),
-  };
-});
+  // oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
+  refreshPermissions().then(() => {
+    arePermissionsReady.value = true;
+  });
 
-const headers = computed(
-  (): VDataTableHeaders => [
-    {
-      title: t('$ezreeport.generations.task'),
-      value: 'task.name',
-    },
-    {
-      title: t('$ezreeport.namespace'),
-      value: 'task.namespace.name',
-    },
-    {
-      title: t('$ezreeport.generations.origin'),
-      value: 'origin',
-      sortable: true,
-      align: 'center',
-    },
-    {
-      title: t('$ezreeport.generations.period'),
-      value: '_period',
-      align: 'center',
-    },
-    {
-      title: t('$ezreeport.generations.status'),
-      value: 'status',
-      align: 'center',
-      sortable: true,
-    },
-    {
-      title: t('$ezreeport.generations.progress'),
-      value: 'progress',
-      align: 'center',
-      sortable: true,
-    },
-    {
-      title: t('$ezreeport.generations.duration'),
-      value: 'took',
-      align: 'center',
-      sortable: true,
-    },
-    {
-      title: t('$ezreeport.generations.queued'),
-      value: 'createdAt',
-      sortable: true,
-    },
-    {
-      title: t('$ezreeport.actions'),
-      value: '_actions',
-    },
-  ]
-);
-
-async function restartGen(gen: Generation) {
-  try {
-    await restartGeneration(gen);
-  } catch (err) {
-    handleEzrError(t('$ezreeport.generations.errors.retry'), err);
-  }
-}
-
-async function openInfo(gen: Generation) {
-  try {
-    const fullJob = await getGeneration(gen);
-    selectedGeneration.value = fullJob;
-
-    isInfoOpen.value = true;
-  } catch (err) {
-    handleEzrError(t('$ezreeport.generations.errors.info'), err);
-  }
-}
-
-// oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
-refreshPermissions().then(() => {
-  arePermissionsReady.value = true;
-});
-
-onUnmounted(() => {
-  stopListening();
-});
+  onUnmounted(() => {
+    stopListening();
+  });
 </script>

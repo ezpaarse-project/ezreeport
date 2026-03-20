@@ -1,5 +1,4 @@
 import { assignDependencies } from '~/helpers/permissions/decorator';
-
 import { getTask, upsertTask, type Task } from '~/modules/tasks';
 
 export * from './editor';

@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof GenerationTable>;
 
 export const Default: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { GenerationTable },
     setup() {
       return { args };

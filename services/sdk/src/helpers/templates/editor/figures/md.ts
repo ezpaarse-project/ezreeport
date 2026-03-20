@@ -1,4 +1,5 @@
 import type { TemplateBodyFigure } from '~/modules/templates';
+
 import { type FigureHelperWithData, createFigureHelperWithData } from './base';
 
 export interface MdFigure extends FigureHelperWithData {

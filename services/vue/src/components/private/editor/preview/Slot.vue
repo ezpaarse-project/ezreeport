@@ -5,36 +5,36 @@
 </template>
 
 <script setup lang="ts">
-import { figureToGridPosition } from '~/lib/layouts';
+  import type { AnyFigureHelper } from '~sdk/helpers/figures';
 
-import type { AnyFigureHelper } from '~sdk/helpers/figures';
+  import { figureToGridPosition } from '~/lib/layouts';
 
-// Components props
-const props = defineProps<{
-  /** The figure to preview */
-  modelValue: AnyFigureHelper;
-  /** Should be readonly */
-}>();
+  // Components props
+  const props = defineProps<{
+    /** The figure to preview */
+    modelValue: AnyFigureHelper;
+    /** Should be readonly */
+  }>();
 
-const { grid } = useTemplateEditor();
+  const { grid } = useTemplateEditor();
 
-/** Position in CSS grid */
-const gridPosition = computed(() =>
-  figureToGridPosition(props.modelValue, 0, grid.value)
-);
-/** Icon for current type */
-const typeIcon = computed(() => figureIcons.get(props.modelValue.type));
+  /** Position in CSS grid */
+  const gridPosition = computed(() =>
+    figureToGridPosition(props.modelValue, 0, grid.value)
+  );
+  /** Icon for current type */
+  const typeIcon = computed(() => figureIcons.get(props.modelValue.type));
 </script>
 
 <style lang="css" scoped>
-.template-layout-slot--preview {
-  grid-column: v-bind('gridPosition.start.col + 1') /
-    v-bind('gridPosition.end.col + 2');
-  grid-row: v-bind('gridPosition.start.row + 1') /
-    v-bind('gridPosition.end.row + 2');
+  .template-layout-slot--preview {
+    grid-column: v-bind('gridPosition.start.col + 1') /
+      v-bind('gridPosition.end.col + 2');
+    grid-row: v-bind('gridPosition.start.row + 1') /
+      v-bind('gridPosition.end.row + 2');
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 </style>

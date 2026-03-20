@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof DateField>;
 
 export const Default: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { DateField },
     setup() {
       return { args };

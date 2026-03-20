@@ -1,5 +1,5 @@
-import { hostname } from 'node:os';
 import { watch } from 'node:fs/promises';
+import { hostname } from 'node:os';
 
 import config from 'config';
 

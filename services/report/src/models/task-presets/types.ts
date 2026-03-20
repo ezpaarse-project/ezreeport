@@ -1,8 +1,8 @@
-import { z } from '@ezreeport/models/lib/zod';
 import { ensureArray } from '@ezreeport/models/lib/utils';
-
-import { Filter } from '@ezreeport/models/templates';
+import { z } from '@ezreeport/models/lib/zod';
 import { Recurrence, RecurrenceOffset } from '@ezreeport/models/recurrence';
+import { Filter } from '@ezreeport/models/templates';
+
 import { TemplateTag } from '~/models/templates/types';
 
 /**

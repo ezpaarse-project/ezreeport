@@ -28,8 +28,10 @@ export interface Namespace {
 /**
  * Type for a namespace from the API
  */
-export interface RawNamespace
-  extends Omit<Namespace, 'createdAt' | 'updatedAt'> {
+export interface RawNamespace extends Omit<
+  Namespace,
+  'createdAt' | 'updatedAt'
+> {
   createdAt: string;
   updatedAt?: string | null;
 }

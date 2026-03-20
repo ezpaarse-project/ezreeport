@@ -1,7 +1,6 @@
 import { z } from '../lib/zod';
-
-import { TaskTemplateBody, TemplateTag } from './templates';
 import { Recurrence, RecurrenceOffset } from './recurrence';
+import { TaskTemplateBody, TemplateTag } from './templates';
 
 /**
  * Validation for the last extended template

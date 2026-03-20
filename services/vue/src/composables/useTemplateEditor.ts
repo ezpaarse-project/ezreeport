@@ -1,7 +1,7 @@
-import { elasticTypeAliases, elasticTypeIcons } from '~/lib/elastic';
-
-import { getIndexMapping } from '~sdk/elastic';
 import type { TemplateBodyGrid } from '~sdk/templates';
+import { getIndexMapping } from '~sdk/elastic';
+
+import { elasticTypeAliases, elasticTypeIcons } from '~/lib/elastic';
 
 type Options = {
   grid?: TemplateBodyGrid;

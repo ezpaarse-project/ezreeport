@@ -191,83 +191,83 @@
 </template>
 
 <script setup lang="ts">
-import {
-  hasTemplateChanged,
-  type TemplateHelper,
-} from '~sdk/helpers/templates';
+  import {
+    hasTemplateChanged,
+    type TemplateHelper,
+  } from '~sdk/helpers/templates';
 
-// Components props
-const props = defineProps<{
-  /** The template to edit */
-  modelValue: TemplateHelper;
-  /** Should be readonly */
-  readonly?: boolean;
-}>();
+  // Components props
+  const props = defineProps<{
+    /** The template to edit */
+    modelValue: TemplateHelper;
+    /** Should be readonly */
+    readonly?: boolean;
+  }>();
 
-// Components events
-const emit = defineEmits<{
-  /** Updated template */
-  (event: 'update:modelValue', value: TemplateHelper): void;
-}>();
+  // Components events
+  const emit = defineEmits<{
+    /** Updated template */
+    (event: 'update:modelValue', value: TemplateHelper): void;
+  }>();
 
-// Utils composables
-const { getOptionsFromMapping, refreshMapping, updateDateField } =
-  useTemplateEditor({
-    grid: props.modelValue.body.grid,
-    index: props.modelValue.body.index,
-    dateField: props.modelValue.body.dateField,
+  // Utils composables
+  const { getOptionsFromMapping, refreshMapping, updateDateField } =
+    useTemplateEditor({
+      grid: props.modelValue.body.grid,
+      index: props.modelValue.body.index,
+      dateField: props.modelValue.body.dateField,
+    });
+
+  /** Selected index */
+  const selectedIndex = ref(0);
+  /** Is basic form valid */
+  const isFormValid = ref(false);
+  /** Is editor visible */
+  const isEditorVisible = ref(false);
+
+  /** Validate on mount */
+  useTemplateVForm('formRef', { immediate: !!props.modelValue?.id });
+
+  /** Is valid */
+  const isValid = computed(() => isFormValid.value);
+  /** Mapping options for dateField */
+  const dateMapping = computed(() => getOptionsFromMapping('date'));
+  /** Has template changed since form is opened */
+  const hasChanged = computed(
+    () => !props.modelValue.id || hasTemplateChanged(props.modelValue)
+  );
+  /** Name of the template */
+  const name = computed({
+    get: () => props.modelValue.name,
+    set: (value) => {
+      const params = props.modelValue;
+      params.name = value;
+    },
+  });
+  /** Index of the template */
+  const index = computed({
+    get: () => props.modelValue.body.index,
+    set: (value) => {
+      const { body } = props.modelValue;
+      body.index = value;
+    },
+  });
+  /** DateField of the template */
+  const dateField = computed({
+    get: () => props.modelValue.body.dateField,
+    set: (value) => {
+      const { body } = props.modelValue;
+      updateDateField(value);
+      body.dateField = value;
+    },
   });
 
-/** Selected index */
-const selectedIndex = ref(0);
-/** Is basic form valid */
-const isFormValid = ref(false);
-/** Is editor visible */
-const isEditorVisible = ref(false);
+  function openEditor(layoutIndex: number = 0) {
+    selectedIndex.value = layoutIndex;
+    isEditorVisible.value = true;
+  }
 
-/** Validate on mount */
-useTemplateVForm('formRef', { immediate: !!props.modelValue?.id });
-
-/** Is valid */
-const isValid = computed(() => isFormValid.value);
-/** Mapping options for dateField */
-const dateMapping = computed(() => getOptionsFromMapping('date'));
-/** Has template changed since form is opened */
-const hasChanged = computed(
-  () => !props.modelValue.id || hasTemplateChanged(props.modelValue)
-);
-/** Name of the template */
-const name = computed({
-  get: () => props.modelValue.name,
-  set: (value) => {
-    const params = props.modelValue;
-    params.name = value;
-  },
-});
-/** Index of the template */
-const index = computed({
-  get: () => props.modelValue.body.index,
-  set: (value) => {
-    const { body } = props.modelValue;
-    body.index = value;
-  },
-});
-/** DateField of the template */
-const dateField = computed({
-  get: () => props.modelValue.body.dateField,
-  set: (value) => {
-    const { body } = props.modelValue;
-    updateDateField(value);
-    body.dateField = value;
-  },
-});
-
-function openEditor(layoutIndex: number = 0) {
-  selectedIndex.value = layoutIndex;
-  isEditorVisible.value = true;
-}
-
-function closeEditor() {
-  isEditorVisible.value = false;
-}
+  function closeEditor() {
+    isEditorVisible.value = false;
+  }
 </script>

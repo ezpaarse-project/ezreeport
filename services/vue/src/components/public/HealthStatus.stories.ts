@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof HealthStatus>;
 
 export const Default: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { HealthStatus },
     setup() {
       return { args };

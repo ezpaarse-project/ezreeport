@@ -1,7 +1,7 @@
 import { setupRabbitMQ, rabbitmq } from '@ezreeport/rabbitmq';
 
-import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
+import { appLogger } from '~/lib/logger';
 
 const logger = appLogger.child(
   { scope: 'RabbitMQ' },

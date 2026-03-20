@@ -170,171 +170,171 @@
 </template>
 
 <script setup lang="ts">
-import {
-  eachDayOfInterval,
-  format,
-  add,
-  endOfDay,
-  max,
-  isValid as isValidDate,
-} from 'date-fns';
+  import type { Task } from '~sdk/tasks';
+  import {
+    eachDayOfInterval,
+    format,
+    add,
+    endOfDay,
+    max,
+    isValid as isValidDate,
+  } from 'date-fns';
+  import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
+  import { getPeriodFromRecurrence } from '~sdk/recurrence';
+  import {
+    getFileAsBlob,
+    type ReportResult,
+    type ReportError,
+  } from '~sdk/reports';
 
-import { downloadBlob } from '~/lib/files';
-import { isEmail } from '~/utils/validate';
+  import { downloadBlob } from '~/lib/files';
 
-import {
-  getFileAsBlob,
-  type ReportResult,
-  type ReportError,
-} from '~sdk/reports';
-import { getPeriodFromRecurrence } from '~sdk/recurrence';
-import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
-import type { Task } from '~sdk/tasks';
+  import { isEmail } from '~/utils/validate';
 
-const maxDate = add(endOfDay(new Date()), { days: -1 });
+  const maxDate = add(endOfDay(new Date()), { days: -1 });
 
-// Components props
-const props = defineProps<{
-  /** The task to edit */
-  modelValue: Omit<Task, 'template'>;
-}>();
+  // Components props
+  const props = defineProps<{
+    /** The task to edit */
+    modelValue: Omit<Task, 'template'>;
+  }>();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-/** Is basic form valid */
-const isValid = ref(false);
-/** Custom targets */
-const targets = ref(props.modelValue.targets);
-/** Custom period */
-const period = ref({ start: new Date(), end: new Date() });
-/** Is the period resolving */
-const periodResolving = ref(false);
-/** Is the report being generated */
-const loading = ref(false);
-/** Progress of the generation */
-const progress = ref(0);
-/** Error in the generation */
-const error = ref<ReportError | undefined>();
-/** Result of the generation */
-const result = ref<ReportResult | undefined>();
+  /** Is basic form valid */
+  const isValid = ref(false);
+  /** Custom targets */
+  const targets = ref(props.modelValue.targets);
+  /** Custom period */
+  const period = ref({ start: new Date(), end: new Date() });
+  /** Is the period resolving */
+  const periodResolving = ref(false);
+  /** Is the report being generated */
+  const loading = ref(false);
+  /** Progress of the generation */
+  const progress = ref(0);
+  /** Error in the generation */
+  const error = ref<ReportError | undefined>();
+  /** Result of the generation */
+  const result = ref<ReportResult | undefined>();
 
-/** Formatted period */
-const formattedPeriod = computed(
-  () =>
-    `${format(period.value.start, 'dd/MM/yyyy')} ~ ${format(period.value.end, 'dd/MM/yyyy')}`
-);
-/** Days in period */
-const periodRange = computed(() => eachDayOfInterval(period.value));
-/** Color of the alert */
-const alertColor = computed(() => {
-  if (!error.value) {
-    return 'success';
-  }
-  if (error.value.name === 'NoDataError') {
-    return 'warning';
-  }
-  return 'error';
-});
-
-function onTargetUpdated(emails: string | string[] | undefined) {
-  if (emails == null) {
-    targets.value = [];
-    return;
-  }
-
-  let allTargets = emails;
-  if (!Array.isArray(allTargets)) {
-    allTargets = [allTargets];
-  }
-
-  // Allow multiple mail addresses, separated by semicolon or comma
-  targets.value = Array.from(
-    new Set(
-      allTargets
-        .join(';')
-        .replaceAll(/[,]/g, ';')
-        .split(';')
-        .map((mail) => mail.trim())
-    )
+  /** Formatted period */
+  const formattedPeriod = computed(
+    () =>
+      `${format(period.value.start, 'dd/MM/yyyy')} ~ ${format(period.value.end, 'dd/MM/yyyy')}`
   );
-}
+  /** Days in period */
+  const periodRange = computed(() => eachDayOfInterval(period.value));
+  /** Color of the alert */
+  const alertColor = computed(() => {
+    if (!error.value) {
+      return 'success';
+    }
+    if (error.value.name === 'NoDataError') {
+      return 'warning';
+    }
+    return 'error';
+  });
 
-async function updatePeriodFromRecurrence(date: Date, offset = 0) {
-  if (periodResolving.value) {
-    return;
-  }
-
-  periodResolving.value = true;
-  try {
-    period.value = await getPeriodFromRecurrence(
-      props.modelValue.recurrence,
-      date,
-      offset
-    );
-  } catch (err) {
-    handleEzrError(t('$ezreeport.errors.resolvePeriod'), err);
-  }
-  periodResolving.value = false;
-}
-
-async function updatePeriodFromRange(range: Date | Date[]) {
-  const date = Array.isArray(range) ? max(range) : range;
-  if (!isValidDate(date)) {
-    return;
-  }
-
-  await updatePeriodFromRecurrence(date);
-}
-
-async function generate() {
-  loading.value = true;
-  progress.value = 0;
-  error.value = undefined;
-  result.value = undefined;
-
-  try {
-    const generation = generateAndListenReportOfTask(
-      props.modelValue,
-      period.value,
-      targets.value
-    );
-    generation.on('progress', (ev) => {
-      if (ev.progress != null) {
-        progress.value = ev.progress;
-      }
-    });
-
-    const res = await generation;
-    if (!res.success && res.detail.error) {
-      error.value = res.detail.error;
+  function onTargetUpdated(emails: string | string[] | undefined) {
+    if (emails == null) {
+      targets.value = [];
+      return;
     }
 
-    result.value = res;
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task.errors.generate'), err);
-  }
-  loading.value = false;
-}
+    let allTargets = emails;
+    if (!Array.isArray(allTargets)) {
+      allTargets = [allTargets];
+    }
 
-async function downloadGenerationFile(path: string) {
-  if (!result.value) {
-    return;
+    // Allow multiple mail addresses, separated by semicolon or comma
+    targets.value = Array.from(
+      new Set(
+        allTargets
+          .join(';')
+          .replaceAll(/[,]/g, ';')
+          .split(';')
+          .map((mail) => mail.trim())
+      )
+    );
   }
 
-  try {
-    const filename = path.split('/').pop() ?? 'download';
-    const blob = await getFileAsBlob(result.value.detail.taskId, path);
-    downloadBlob(blob, filename);
-  } catch (err) {
-    handleEzrError(t('$ezreeport.errors.download', { path }), err);
-  }
-}
+  async function updatePeriodFromRecurrence(date: Date, offset = 0) {
+    if (periodResolving.value) {
+      return;
+    }
 
-watch(
-  () => props.modelValue,
-  (val) => val && updatePeriodFromRecurrence(new Date(), -1),
-  { immediate: true }
-);
+    periodResolving.value = true;
+    try {
+      period.value = await getPeriodFromRecurrence(
+        props.modelValue.recurrence,
+        date,
+        offset
+      );
+    } catch (err) {
+      handleEzrError(t('$ezreeport.errors.resolvePeriod'), err);
+    }
+    periodResolving.value = false;
+  }
+
+  async function updatePeriodFromRange(range: Date | Date[]) {
+    const date = Array.isArray(range) ? max(range) : range;
+    if (!isValidDate(date)) {
+      return;
+    }
+
+    await updatePeriodFromRecurrence(date);
+  }
+
+  async function generate() {
+    loading.value = true;
+    progress.value = 0;
+    error.value = undefined;
+    result.value = undefined;
+
+    try {
+      const generation = generateAndListenReportOfTask(
+        props.modelValue,
+        period.value,
+        targets.value
+      );
+      generation.on('progress', (ev) => {
+        if (ev.progress != null) {
+          progress.value = ev.progress;
+        }
+      });
+
+      const res = await generation;
+      if (!res.success && res.detail.error) {
+        error.value = res.detail.error;
+      }
+
+      result.value = res;
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task.errors.generate'), err);
+    }
+    loading.value = false;
+  }
+
+  async function downloadGenerationFile(path: string) {
+    if (!result.value) {
+      return;
+    }
+
+    try {
+      const filename = path.split('/').pop() ?? 'download';
+      const blob = await getFileAsBlob(result.value.detail.taskId, path);
+      downloadBlob(blob, filename);
+    } catch (err) {
+      handleEzrError(t('$ezreeport.errors.download', { path }), err);
+    }
+  }
+
+  watch(
+    () => props.modelValue,
+    (val) => val && updatePeriodFromRecurrence(new Date(), -1),
+    { immediate: true }
+  );
 </script>

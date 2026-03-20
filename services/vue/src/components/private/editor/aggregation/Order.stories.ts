@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof EditorAggregationOrder>;
 
 export const Basic: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorAggregationOrder },
     setup() {
       return { args };
@@ -23,7 +23,7 @@ export const Basic: Story = {
 };
 
 export const Readonly: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorAggregationOrder },
     setup() {
       return { args };

@@ -1,10 +1,10 @@
+import { Readable, Transform } from 'node:stream';
+
 import type { Command } from '@oclif/core';
-import axios, { isAxiosError, type AxiosInstance } from 'axios';
 import { input } from '@inquirer/prompts';
+import axios, { isAxiosError, type AxiosInstance } from 'axios';
 import chalk from 'chalk';
 import ora from 'ora';
-
-import { Readable, Transform } from 'node:stream';
 
 const logError = (error: any, logToStderr: Command['logToStderr']) => {
   let text = '\nError: ';
@@ -18,7 +18,7 @@ const logError = (error: any, logToStderr: Command['logToStderr']) => {
   if (isAxiosError(error)) {
     const data = Object.assign(
       { error: { message: 'Unknown details' } },
-      error.response?.data,
+      error.response?.data
     );
     text += ` - ${data.error.message}`;
   }
@@ -40,15 +40,11 @@ export class EZR {
     });
   }
 
-  public async init(opts: {
-    url?: string,
-    apiKey?: string,
-    admin?: string,
-  }) {
+  public async init(opts: { url?: string; apiKey?: string; admin?: string }) {
     const answers = {
-      url: opts?.url || await input({ message: 'API URL' }),
-      apiKey: opts?.apiKey || await input({ message: 'API key' }),
-      admin: opts?.admin || await input({ message: 'Admin username' }),
+      url: opts?.url || (await input({ message: 'API URL' })),
+      apiKey: opts?.apiKey || (await input({ message: 'API key' })),
+      admin: opts?.admin || (await input({ message: 'Admin username' })),
     };
 
     this.fetch.defaults.baseURL = answers.url;
@@ -56,7 +52,9 @@ export class EZR {
 
     const action = ora(chalk.grey('Authenticating as admin...')).start();
     try {
-      const { data: { content: adminUser } } = await this.fetch.get(`/admin/users/${answers.admin}`);
+      const {
+        data: { content: adminUser },
+      } = await this.fetch.get(`/admin/users/${answers.admin}`);
       this.fetch.defaults.headers.common.Authorization = `Bearer ${adminUser.token}`;
     } catch (error) {
       action.fail(chalk.red((error as Error).message));
@@ -68,13 +66,13 @@ export class EZR {
   }
 
   public async createDataReadStream<ListItem, Item>(opts: {
-    type: string,
+    type: string;
     urls: {
-      list: string,
-      item: (item: ListItem) => string,
-    },
-    transform?: (item: Item) => any,
-    filter?: (item: ListItem, meta: any) => boolean,
+      list: string;
+      item: (item: ListItem) => string;
+    };
+    transform?: (item: Item) => any;
+    filter?: (item: ListItem, meta: any) => boolean;
   }) {
     const { fetch } = this;
     const logToStderr = (text: string) => this.command.logToStderr(text);
@@ -87,9 +85,9 @@ export class EZR {
     let list: ListItem[];
     let meta: any;
     try {
-      const { data } = await fetch.get<{ content: ListItem[], meta: any }>(
+      const { data } = await fetch.get<{ content: ListItem[]; meta: any }>(
         opts.urls.list,
-        { params: { count: 0 } },
+        { params: { count: 0 } }
       );
       list = data.content;
       meta = data.meta;
@@ -99,7 +97,9 @@ export class EZR {
     }
     action.stop();
 
-    const filtered = opts.filter ? list.filter((item) => opts.filter?.(item, meta)) : list;
+    const filtered = opts.filter
+      ? list.filter((item) => opts.filter?.(item, meta))
+      : list;
 
     const transformer = opts.transform || ((item) => item);
 
@@ -117,7 +117,9 @@ export class EZR {
           const item = filtered[index];
           if (item) {
             try {
-              const { data } = await fetch.get<{ content: Item }>(opts.urls.item(item));
+              const { data } = await fetch.get<{ content: Item }>(
+                opts.urls.item(item)
+              );
               this.push(transformer(data.content));
             } catch (error) {
               logError(error, logToStderr);
@@ -132,9 +134,9 @@ export class EZR {
 
   public createDataWriteStream<Item>(opts: {
     urls: {
-      item: (item: Item) => string,
-    }
-    transform?: (item: Item) => any
+      item: (item: Item) => string;
+    };
+    transform?: (item: Item) => any;
   }) {
     const { fetch } = this;
     const logToStderr = (text: string) => this.command.logToStderr(text);
@@ -146,9 +148,11 @@ export class EZR {
         objectMode: true,
         async transform(chunk, encoding, callback) {
           try {
-            const { data: { content } } = await fetch.put<{ content: Item }>(
+            const {
+              data: { content },
+            } = await fetch.put<{ content: Item }>(
               opts.urls.item(chunk),
-              transformer(chunk),
+              transformer(chunk)
             );
             callback(null, content);
           } catch (error) {

@@ -10,7 +10,7 @@ env:
   TURBO_UI: 'false'
 
 concurrency:
-  group: "release-mail"
+  group: 'release-mail'
   cancel-in-progress: true
 
 jobs:

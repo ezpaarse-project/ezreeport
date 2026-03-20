@@ -1,10 +1,10 @@
-import { ensureArray } from '@ezreeport/models/lib/utils';
 import {
   createLogger,
   isPrettierInstalled,
   type Level,
   type LoggerOptions,
 } from '@ezreeport/logger';
+import { ensureArray } from '@ezreeport/models/lib/utils';
 
 import config from '~/lib/config';
 

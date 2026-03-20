@@ -1,7 +1,3 @@
-export {
-  getAllActivity,
-} from './methods';
+export { getAllActivity } from './methods';
 
-export type {
-  TaskActivity,
-} from './types';
+export type { TaskActivity } from './types';

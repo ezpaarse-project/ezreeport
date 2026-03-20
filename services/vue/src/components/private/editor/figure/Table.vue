@@ -153,195 +153,194 @@
 </template>
 
 <script setup lang="ts">
-import { dragAndDrop } from '@formkit/drag-and-drop/vue';
+  import { dragAndDrop } from '@formkit/drag-and-drop/vue';
+  import {
+    getTableColumnKey,
+    getAllTableColumnKeysOfHelper,
+    removeTableColumnOfHelper,
+    updateTableColumnOfHelper,
+    addTableColumnOfHelper,
+    type TableFigureHelper,
+    type TableColumn,
+    type FigureOrder,
+  } from '~sdk/helpers/figures';
 
-import {
-  getTableColumnKey,
-  getAllTableColumnKeysOfHelper,
-  removeTableColumnOfHelper,
-  updateTableColumnOfHelper,
-  addTableColumnOfHelper,
-  type TableFigureHelper,
-  type TableColumn,
-  type FigureOrder,
-} from '~sdk/helpers/figures';
+  // Components props
+  const props = defineProps<{
+    /** The table figure to edit */
+    modelValue: TableFigureHelper;
+    /** Should be readonly */
+    readonly?: boolean;
+  }>();
 
-// Components props
-const props = defineProps<{
-  /** The table figure to edit */
-  modelValue: TableFigureHelper;
-  /** Should be readonly */
-  readonly?: boolean;
-}>();
+  // Components events
+  const emit = defineEmits<{
+    /** Updated figure */
+    (event: 'update:modelValue', value: TableFigureHelper): void;
+  }>();
 
-// Components events
-const emit = defineEmits<{
-  /** Updated figure */
-  (event: 'update:modelValue', value: TableFigureHelper): void;
-}>();
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  /** Should show the column form */
+  const isFormVisible = ref(false);
+  /** The column to edit */
+  const updatedColumn = ref<TableColumn | undefined>();
 
-/** Should show the column form */
-const isFormVisible = ref(false);
-/** The column to edit */
-const updatedColumn = ref<TableColumn | undefined>();
+  /** The column list ref to DOM */
+  const columnListRef = useTemplateRef<HTMLElement>('columnListRef');
 
-/** The column list ref to DOM */
-const columnListRef = useTemplateRef<HTMLElement>('columnListRef');
+  // Make the columns draggable to sort
+  if (!props.readonly) {
+    dragAndDrop({
+      parent: columnListRef as Ref<HTMLElement>,
+      dragHandle: '.table-preview--column-handle',
+      dragPlaceholderClass: 'table-preview--column--dragging',
+      dropZone: false,
+      dragImage: () => document.createElement('div'), // Disable drag image
+      values: computed({
+        get: () => props.modelValue.params.columns,
+        set: (value) => {
+          const { params } = props.modelValue;
+          params.columns = value;
+          emit('update:modelValue', props.modelValue);
+        },
+      }),
+    });
+  }
 
-// Make the columns draggable to sort
-if (!props.readonly) {
-  dragAndDrop({
-    parent: columnListRef as Ref<HTMLElement>,
-    dragHandle: '.table-preview--column-handle',
-    dragPlaceholderClass: 'table-preview--column--dragging',
-    dropZone: false,
-    dragImage: () => document.createElement('div'), // Disable drag image
-    values: computed({
-      get: () => props.modelValue.params.columns,
-      set: (value) => {
-        const { params } = props.modelValue;
-        params.columns = value;
-        emit('update:modelValue', props.modelValue);
-      },
-    }),
+  /** Icon of the card */
+  const cardIcon = figureIcons.get('table');
+  /** The figure order */
+  const order = computed<FigureOrder | undefined>({
+    get: () => props.modelValue.params.order,
+    set: (value) => {
+      const { params } = props.modelValue;
+      params.order = value;
+      emit('update:modelValue', props.modelValue);
+    },
   });
-}
+  /** The figure title */
+  const title = computed<string>({
+    get: () => props.modelValue.params.title,
+    set: (value) => {
+      const { params } = props.modelValue;
+      params.title = value;
+      emit('update:modelValue', props.modelValue);
+    },
+  });
+  /** If we should show the total of the metric columns */
+  const showTotal = computed({
+    get: () => props.modelValue.params.total ?? false,
+    set: (value) => {
+      const { params } = props.modelValue;
+      params.total = value;
+      emit('update:modelValue', props.modelValue);
+    },
+  });
+  /** Is the table already have a metric */
+  const hasMetric = computed(() =>
+    props.modelValue.params.columns.some((column) => !!column.metric)
+  );
+  /** Set of headers */
+  const headers = computed(
+    () => new Set(getAllTableColumnKeysOfHelper(props.modelValue))
+  );
 
-/** Icon of the card */
-const cardIcon = figureIcons.get('table');
-/** The figure order */
-const order = computed<FigureOrder | undefined>({
-  get: () => props.modelValue.params.order,
-  set: (value) => {
-    const { params } = props.modelValue;
-    params.order = value;
-    emit('update:modelValue', props.modelValue);
-  },
-});
-/** The figure title */
-const title = computed<string>({
-  get: () => props.modelValue.params.title,
-  set: (value) => {
-    const { params } = props.modelValue;
-    params.title = value;
-    emit('update:modelValue', props.modelValue);
-  },
-});
-/** If we should show the total of the metric columns */
-const showTotal = computed({
-  get: () => props.modelValue.params.total ?? false,
-  set: (value) => {
-    const { params } = props.modelValue;
-    params.total = value;
-    emit('update:modelValue', props.modelValue);
-  },
-});
-/** Is the table already have a metric */
-const hasMetric = computed(() =>
-  props.modelValue.params.columns.some((column) => !!column.metric)
-);
-/** Set of headers */
-const headers = computed(
-  () => new Set(getAllTableColumnKeysOfHelper(props.modelValue))
-);
-
-/**
- * Close the column form
- */
-function closeColumnForm() {
-  isFormVisible.value = false;
-}
-
-/**
- * Open the column form
- *
- * @param column The column to edit
- */
-function openColumnForm(column?: TableColumn) {
-  updatedColumn.value = column;
-  isFormVisible.value = true;
-}
-
-/**
- * Remove a column
- *
- * @param column The column to remove
- */
-function removeColumn(column: TableColumn) {
-  try {
-    removeTableColumnOfHelper(props.modelValue, column);
-    emit('update:modelValue', props.modelValue);
-  } catch (err) {
-    handleEzrError(
-      t('$ezreeport.editor.figures.table.columns.errors.delete'),
-      err
-    );
+  /**
+   * Close the column form
+   */
+  function closeColumnForm() {
+    isFormVisible.value = false;
   }
-}
 
-/**
- * Upsert the column
- *
- * @param column The column
- */
-function setColumn(column: TableColumn) {
-  try {
-    if (updatedColumn.value) {
-      updateTableColumnOfHelper(props.modelValue, updatedColumn.value, column);
-    } else {
-      addTableColumnOfHelper(props.modelValue, column);
+  /**
+   * Open the column form
+   *
+   * @param column The column to edit
+   */
+  function openColumnForm(column?: TableColumn) {
+    updatedColumn.value = column;
+    isFormVisible.value = true;
+  }
+
+  /**
+   * Remove a column
+   *
+   * @param column The column to remove
+   */
+  function removeColumn(column: TableColumn) {
+    try {
+      removeTableColumnOfHelper(props.modelValue, column);
+      emit('update:modelValue', props.modelValue);
+    } catch (err) {
+      handleEzrError(
+        t('$ezreeport.editor.figures.table.columns.errors.delete'),
+        err
+      );
     }
-
-    emit('update:modelValue', props.modelValue);
-    closeColumnForm();
-  } catch (err) {
-    handleEzrError(
-      t('$ezreeport.editor.figures.table.columns.errors.edit'),
-      err
-    );
   }
-}
+
+  /**
+   * Upsert the column
+   *
+   * @param column The column
+   */
+  function setColumn(column: TableColumn) {
+    try {
+      if (updatedColumn.value) {
+        updateTableColumnOfHelper(props.modelValue, updatedColumn.value, column);
+      } else {
+        addTableColumnOfHelper(props.modelValue, column);
+      }
+
+      emit('update:modelValue', props.modelValue);
+      closeColumnForm();
+    } catch (err) {
+      handleEzrError(
+        t('$ezreeport.editor.figures.table.columns.errors.edit'),
+        err
+      );
+    }
+  }
 </script>
 
 <style lang="css" scoped>
-.table-preview {
-  flex-wrap: nowrap;
-  overflow-x: auto;
+  .table-preview {
+    flex-wrap: nowrap;
+    overflow-x: auto;
 
-  padding: 0.5em 1em;
-}
-
-.table-preview--column {
-  padding: 0;
-  flex: 1;
-  min-width: 16rem;
-  max-width: unset;
-  transition:
-    transform 0.1s ease-in-out,
-    box-shadow 0.1s ease-in-out;
-
-  &:not(:last-child) {
-    border-right: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 0.5em 1em;
   }
 
-  & :deep(.table-preview--column-header) {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 12px;
+  .table-preview--column {
+    padding: 0;
+    flex: 1;
+    min-width: 16rem;
+    max-width: unset;
+    transition:
+      transform 0.1s ease-in-out,
+      box-shadow 0.1s ease-in-out;
+
+    &:not(:last-child) {
+      border-right: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    & :deep(.table-preview--column-header) {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      padding: 12px;
+    }
+
+    & :deep(.table-preview--column-value) {
+      padding: 12px;
+    }
   }
 
-  & :deep(.table-preview--column-value) {
-    padding: 12px;
+  .table-preview--column--dragging {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+    transform: scale(0.9);
   }
-}
-
-.table-preview--column--dragging {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
-  transform: scale(0.9);
-}
 </style>

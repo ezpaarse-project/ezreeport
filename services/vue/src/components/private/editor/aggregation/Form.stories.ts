@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import type { FigureAggregation } from '~sdk/helpers/aggregations';
 
 import EditorAggregationForm from './Form.vue';
@@ -293,7 +292,7 @@ const mockFiltersData: FigureAggregation = {
 };
 
 export const NewMetric: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorAggregationForm },
     setup() {
       return { args };
@@ -306,7 +305,7 @@ export const NewMetric: Story = {
 };
 
 export const ExistingMetric: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorAggregationForm },
     setup() {
       return { args };
@@ -320,7 +319,7 @@ export const ExistingMetric: Story = {
 };
 
 export const NewBucket: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorAggregationForm },
     setup() {
       return { args };
@@ -333,7 +332,7 @@ export const NewBucket: Story = {
 };
 
 export const ExistingBucket: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorAggregationForm },
     setup() {
       return { args };
@@ -347,7 +346,7 @@ export const ExistingBucket: Story = {
 };
 
 export const ExistingRaw: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorAggregationForm },
     setup() {
       return { args };
@@ -360,7 +359,7 @@ export const ExistingRaw: Story = {
 };
 
 export const ExistingFilters: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorAggregationForm },
     setup() {
       return { args };
@@ -373,7 +372,7 @@ export const ExistingFilters: Story = {
 };
 
 export const Readonly: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorAggregationForm },
     setup() {
       return { args };
@@ -388,7 +387,7 @@ export const Readonly: Story = {
 };
 
 export const Disabled: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorAggregationForm },
     setup() {
       return { args };

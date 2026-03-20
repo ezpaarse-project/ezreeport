@@ -28,21 +28,22 @@ const migrateFigures = (figures: any[], fetchOptions: any) => {
  *
  * @returns Migrated layouts
  */
-const migrateLayouts = (layouts: any[]) => layouts.map((layout: any) => {
-  let fetchOptions;
-  if (layout.fetchOptions) {
-    fetchOptions = {
-      fetchCount: layout.fetchOptions.fetchCount,
-      filters: layout.fetchOptions.filters,
-    };
-  }
+const migrateLayouts = (layouts: any[]) =>
+  layouts.map((layout: any) => {
+    let fetchOptions;
+    if (layout.fetchOptions) {
+      fetchOptions = {
+        fetchCount: layout.fetchOptions.fetchCount,
+        filters: layout.fetchOptions.filters,
+      };
+    }
 
-  return {
-    ...layout,
-    figures: migrateFigures(layout.figures, layout.fetchOptions),
-    fetchOptions,
-  };
-});
+    return {
+      ...layout,
+      figures: migrateFigures(layout.figures, layout.fetchOptions),
+      fetchOptions,
+    };
+  });
 
 /**
  * Migrate layouts
@@ -51,13 +52,14 @@ const migrateLayouts = (layouts: any[]) => layouts.map((layout: any) => {
  *
  * @returns Migrated templates
  */
-const migrateTemplates = (templates: any[]) => templates.map((template: any) => ({
-  ...template,
-  body: {
-    ...template.body,
-    layouts: migrateLayouts(template.body.layouts),
-  },
-}));
+const migrateTemplates = (templates: any[]) =>
+  templates.map((template: any) => ({
+    ...template,
+    body: {
+      ...template.body,
+      layouts: migrateLayouts(template.body.layouts),
+    },
+  }));
 
 /**
  * Ensure that Elastic fetchOptions are present
@@ -66,13 +68,14 @@ const migrateTemplates = (templates: any[]) => templates.map((template: any) => 
  *
  * @returns Migrated namespaces
  */
-const migrateNamespaces = (namespaces: any[]) => namespaces.map((namespace: any) => ({
-  ...namespace,
-  fetchOptions: {
-    elastic: {},
-    ...(namespace.fetchOptions ?? {}),
-  },
-}));
+const migrateNamespaces = (namespaces: any[]) =>
+  namespaces.map((namespace: any) => ({
+    ...namespace,
+    fetchOptions: {
+      elastic: {},
+      ...(namespace.fetchOptions ?? {}),
+    },
+  }));
 
 /**
  * Migrate inserts
@@ -81,13 +84,14 @@ const migrateNamespaces = (namespaces: any[]) => namespaces.map((namespace: any)
  *
  * @returns Migrated tasks
  */
-const migrateTasks = (tasks: any[]) => tasks.map((task: any) => ({
-  ...task,
-  template: {
-    ...task.template,
-    inserts: task.inserts && migrateLayouts(task.inserts),
-  },
-}));
+const migrateTasks = (tasks: any[]) =>
+  tasks.map((task: any) => ({
+    ...task,
+    template: {
+      ...task.template,
+      inserts: task.inserts && migrateLayouts(task.inserts),
+    },
+  }));
 
 /**
  * Migrate data to 1.0.0-beta.22's format

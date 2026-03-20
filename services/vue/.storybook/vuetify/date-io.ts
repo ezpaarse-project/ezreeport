@@ -1,5 +1,5 @@
-import { enUS } from 'date-fns/locale';
 import DateFnsAdapter from '@date-io/date-fns';
+import { enUS } from 'date-fns/locale';
 
 export class LocaleDateFnsAdapter extends DateFnsAdapter {
   constructor(options?: Record<string, unknown>) {

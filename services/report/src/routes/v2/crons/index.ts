@@ -1,18 +1,10 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
+import { Cron } from '@ezreeport/models/crons';
 import { z } from '@ezreeport/models/lib/zod';
 
-import { Cron } from '@ezreeport/models/crons';
-
-import authPlugin from '~/plugins/auth';
-
-import {
-  describeErrors,
-  buildSuccessResponse,
-  zSuccessResponse,
-} from '~/routes/v2/responses';
-
+import { NotFoundError } from '~/models/errors';
 import {
   getAllCrons,
   stopCron,
@@ -20,7 +12,12 @@ import {
   forceCron,
 } from '~/models/rpc/client/crons';
 
-import { NotFoundError } from '~/models/errors';
+import authPlugin from '~/plugins/auth';
+import {
+  describeErrors,
+  buildSuccessResponse,
+  zSuccessResponse,
+} from '~/routes/v2/responses';
 
 const SpecificCronParams = z.object({
   name: z.string().min(1).describe('Name of the cron'),

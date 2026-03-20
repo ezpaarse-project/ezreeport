@@ -1,0 +1,66 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "trailingComma": "es5",
+  "tabWidth": 2,
+  "semi": true,
+  "singleQuote": true,
+  "printWidth": 80,
+  "ignorePatterns": ["docs/**/*"],
+  "vueIndentScriptAndStyle": true,
+  "sortPackageJson": true,
+  "sortImports": {
+    "customGroups": [
+      {
+        "groupName": "type-common",
+        "elementNamePattern": ["@ezreeport/**"],
+        "modifiers": ["type"]
+      },
+      {
+        "groupName": "value-common",
+        "elementNamePattern": ["@ezreeport/**"]
+      },
+      {
+        "groupName": "type-internal_libs",
+        "elementNamePattern": ["~/lib/**"],
+        "modifiers": ["type"]
+      },
+      {
+        "groupName": "value-internal_libs",
+        "elementNamePattern": ["~/lib/**"]
+      },
+      {
+        "groupName": "type-internal_models",
+        "elementNamePattern": ["~/models/**"],
+        "modifiers": ["type"]
+      },
+      {
+        "groupName": "value-internal_models",
+        "elementNamePattern": ["~/models/**"]
+      }
+    ],
+    "newlinesBetween": false,
+    "groups": [
+      "type-builtin",
+      "value-builtin",
+      { "newlinesBetween": true },
+      "type-external",
+      "value-external",
+      { "newlinesBetween": true },
+      "type-common",
+      "value-common",
+      { "newlinesBetween": true },
+      "type-internal_libs",
+      "value-internal_libs",
+      { "newlinesBetween": true },
+      "type-internal_models",
+      "value-internal_models",
+      { "newlinesBetween": true },
+      "type-internal",
+      "value-internal",
+      { "newlinesBetween": true },
+      ["type-parent", "type-sibling", "type-index"],
+      ["value-parent", "value-sibling", "value-index"],
+      "unknown"
+    ]
+  }
+}

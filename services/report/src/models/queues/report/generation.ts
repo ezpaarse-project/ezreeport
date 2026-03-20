@@ -1,7 +1,7 @@
-import type { GenerationQueueDataType } from '@ezreeport/models/queues';
 import type { GenerationType } from '@ezreeport/models/generations';
-
+import type { GenerationQueueDataType } from '@ezreeport/models/queues';
 import { sendJSONMessage } from '@ezreeport/rabbitmq';
+
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 

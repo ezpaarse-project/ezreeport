@@ -94,32 +94,32 @@
 </template>
 
 <script setup lang="ts">
-import type { Task } from '~sdk/tasks';
+  import type { Task } from '~sdk/tasks';
 
-// Components props
-const props = defineProps<{
-  /** The task to edit */
-  modelValue: Omit<Task, 'template'>;
-}>();
+  // Components props
+  const props = defineProps<{
+    /** The task to edit */
+    modelValue: Omit<Task, 'template'>;
+  }>();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
-const clipboard = useClipboard();
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
+  const clipboard = useClipboard();
 
-const isCopied = ref(false);
+  const isCopied = ref(false);
 
-async function copyTargets(): Promise<void> {
-  try {
-    const addresses = props.modelValue.targets.join('; ');
-    await clipboard.copy(addresses);
+  async function copyTargets(): Promise<void> {
+    try {
+      const addresses = props.modelValue.targets.join('; ');
+      await clipboard.copy(addresses);
 
-    isCopied.value = true;
-    setTimeout(() => {
-      isCopied.value = false;
-    }, 1000);
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task.errors.copy:targets'), err);
+      isCopied.value = true;
+      setTimeout(() => {
+        isCopied.value = false;
+      }, 1000);
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task.errors.copy:targets'), err);
+    }
   }
-}
 </script>

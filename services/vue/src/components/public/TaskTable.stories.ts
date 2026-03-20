@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof TaskTable>;
 
 export const Default: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskTable },
     setup() {
       return { args };

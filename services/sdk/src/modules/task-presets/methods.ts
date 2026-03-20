@@ -1,5 +1,3 @@
-import { client } from '~/lib/fetch';
-import { transformCreatedUpdated } from '~/lib/transform';
 import {
   apiRequestOptionsToQuery,
   type ApiResponse,
@@ -8,11 +6,12 @@ import {
   type ApiDeletedResponse,
   type SdkPaginated,
 } from '~/lib/api';
+import { client } from '~/lib/fetch';
+import { transformCreatedUpdated } from '~/lib/transform';
 
-import { assignPermission } from '~/helpers/permissions/decorator';
-
-import { transformTask } from '~/modules/tasks/methods';
 import type { RawTask, Task } from '~/modules/tasks/types';
+import { assignPermission } from '~/helpers/permissions/decorator';
+import { transformTask } from '~/modules/tasks/methods';
 
 import type {
   AdditionalDataForPreset,
@@ -29,20 +28,17 @@ type PaginatedTaskPresets = SdkPaginated<TaskPreset>;
  * @returns All presets' info
  */
 export async function getAllTaskPresets(
-  opts?: ApiRequestOptions & { include?: string[] },
+  opts?: ApiRequestOptions & { include?: string[] }
 ): Promise<PaginatedTaskPresets> {
   const {
     content,
     meta: { total, count, page },
-  } = await client.fetch<ApiResponsePaginated<RawTaskPreset>>(
-    '/task-presets',
-    {
-      query: {
-        ...apiRequestOptionsToQuery(opts),
-        include: opts?.include,
-      },
+  } = await client.fetch<ApiResponsePaginated<RawTaskPreset>>('/task-presets', {
+    query: {
+      ...apiRequestOptionsToQuery(opts),
+      include: opts?.include,
     },
-  );
+  });
 
   return {
     items: content.map(transformCreatedUpdated),
@@ -61,17 +57,15 @@ assignPermission(getAllTaskPresets, 'GET /task-presets', true);
  * @returns Preset info
  */
 export async function getTaskPreset(
-  presetOrId: TaskPreset | string,
+  presetOrId: TaskPreset | string
 ): Promise<TaskPreset> {
   const id = typeof presetOrId === 'string' ? presetOrId : presetOrId.id;
   if (!id) {
     throw new Error('Task preset id is required');
   }
 
-  const {
-    content,
-  } = await client.fetch<ApiResponse<RawTaskPreset>>(
-    `/task-presets/${id}`,
+  const { content } = await client.fetch<ApiResponse<RawTaskPreset>>(
+    `/task-presets/${id}`
   );
   return transformCreatedUpdated(content);
 }
@@ -86,16 +80,14 @@ assignPermission(getTaskPreset, 'GET /task-presets/:id', true);
  * @returns Created preset's info
  */
 export async function createTaskPreset(
-  preset: InputTaskPreset,
+  preset: InputTaskPreset
 ): Promise<TaskPreset> {
-  const {
-    content,
-  } = await client.fetch<ApiResponse<RawTaskPreset>>(
+  const { content } = await client.fetch<ApiResponse<RawTaskPreset>>(
     '/task-presets/',
     {
       method: 'POST',
       body: preset,
-    },
+    }
   );
 
   return transformCreatedUpdated(content);
@@ -109,17 +101,16 @@ assignPermission(createTaskPreset, 'POST /task-presets');
  *
  * @returns Updated/Created Preset's info
  */
-export async function upsertTaskPreset(
-  { id, ...preset }: InputTaskPreset & { id: string },
-): Promise<TaskPreset> {
-  const {
-    content,
-  } = await client.fetch<ApiResponse<RawTaskPreset>>(
+export async function upsertTaskPreset({
+  id,
+  ...preset
+}: InputTaskPreset & { id: string }): Promise<TaskPreset> {
+  const { content } = await client.fetch<ApiResponse<RawTaskPreset>>(
     `/task-presets/${id}`,
     {
       method: 'PUT',
       body: preset,
-    },
+    }
   );
 
   return transformCreatedUpdated(content);
@@ -134,7 +125,7 @@ assignPermission(upsertTaskPreset, 'PUT /task-presets/:id');
  * @returns Whether the preset was deleted
  */
 export async function deleteTaskPreset(
-  presetOrId: TaskPreset | string,
+  presetOrId: TaskPreset | string
 ): Promise<boolean> {
   const id = typeof presetOrId === 'string' ? presetOrId : presetOrId.id;
   if (!id) {
@@ -145,7 +136,7 @@ export async function deleteTaskPreset(
     `/task-presets/${id}`,
     {
       method: 'DELETE',
-    },
+    }
   );
 
   return content.deleted;
@@ -162,21 +153,19 @@ assignPermission(deleteTaskPreset, 'DELETE /task-presets/:id');
  */
 export async function createTaskFromPreset(
   presetOrId: TaskPreset | string,
-  additionalData: AdditionalDataForPreset,
+  additionalData: AdditionalDataForPreset
 ): Promise<Task> {
   const id = typeof presetOrId === 'string' ? presetOrId : presetOrId.id;
   if (!id) {
     throw new Error('Task preset id is required');
   }
 
-  const {
-    content,
-  } = await client.fetch<ApiResponse<RawTask>>(
+  const { content } = await client.fetch<ApiResponse<RawTask>>(
     `/task-presets/${id}/tasks`,
     {
       method: 'POST',
       body: additionalData,
-    },
+    }
   );
 
   return transformTask(content);

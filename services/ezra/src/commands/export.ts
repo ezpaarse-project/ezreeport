@@ -1,28 +1,25 @@
-import { Args, Flags } from '@oclif/core';
-import { format } from 'date-fns';
-import chalk from 'chalk';
-import ora from 'ora';
-
 import type { Readable } from 'node:stream';
-import { join } from 'node:path';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
-import { EzrCommand } from '../lib/oclif/EzrCommand.js';
-import { createJSONLWriteStream, createStreamPromise } from '../lib/streams.js';
-import { createProgressBarStream } from '../lib/progress.js';
+import { Args, Flags } from '@oclif/core';
+import chalk from 'chalk';
+import { format } from 'date-fns';
+import ora from 'ora';
 
 import type { EZR } from '../lib/ezr/index.js';
 import { createNamespacesReadStream } from '../lib/ezr/namespaces.js';
-import { createTemplatesReadStream } from '../lib/ezr/templates.js';
-import { createTaskPresetsReadStream } from '../lib/ezr/tasksPresets.js';
 import { createTasksReadStream } from '../lib/ezr/tasks.js';
+import { createTaskPresetsReadStream } from '../lib/ezr/tasksPresets.js';
+import { createTemplatesReadStream } from '../lib/ezr/templates.js';
+import { EzrCommand } from '../lib/oclif/EzrCommand.js';
+import { createProgressBarStream } from '../lib/progress.js';
+import { createJSONLWriteStream, createStreamPromise } from '../lib/streams.js';
 
 export default class Export extends EzrCommand<typeof Export> {
   static description = 'Export instance data into a dedicated folder';
 
-  static examples = [
-    '<%= config.bin %> <%= command.id %>',
-  ];
+  static examples = ['<%= config.bin %> <%= command.id %>'];
 
   static flags = {
     namespaces: Flags.boolean({
@@ -55,23 +52,28 @@ export default class Export extends EzrCommand<typeof Export> {
   };
 
   private async exportData(opts: {
-    type: string,
-    createDataReadStream: (ezr: EZR) => Promise<{ count: number, stream: Readable }>,
-    outFile: string,
+    type: string;
+    createDataReadStream: (
+      ezr: EZR
+    ) => Promise<{ count: number; stream: Readable }>;
+    outFile: string;
   }) {
     try {
       this.log(chalk.blue(`Backing ${chalk.bold(opts.type)}...`));
 
-      const { count, stream } = await opts.createDataReadStream(this.instances[0]);
+      const { count, stream } = await opts.createDataReadStream(
+        this.instances[0]
+      );
       const { progress } = createProgressBarStream({
         total: count,
-        onEnd: (c) => this.log(chalk.green(`${chalk.bold(c)} ${chalk.bold(opts.type)} backed up`)),
+        onEnd: (c) =>
+          this.log(
+            chalk.green(`${chalk.bold(c)} ${chalk.bold(opts.type)} backed up`)
+          ),
       });
 
       await createStreamPromise(
-        stream
-          .pipe(createJSONLWriteStream(opts.outFile))
-          .pipe(progress),
+        stream.pipe(createJSONLWriteStream(opts.outFile)).pipe(progress)
       );
     } catch (error) {
       this.logToStderr(chalk.red((error as Error).message));

@@ -20,70 +20,70 @@
 </template>
 
 <script setup lang="ts">
-type PrimitiveValue = boolean | string | number;
-type Value = PrimitiveValue | { text: string; value: PrimitiveValue };
+  type PrimitiveValue = boolean | string | number;
+  type Value = PrimitiveValue | { text: string; value: PrimitiveValue };
 
-// Components props
-const modelValue = defineModel<Value | undefined>();
+  // Components props
+  const modelValue = defineModel<Value | undefined>();
 
-const { items = [true, false] } = defineProps<{
-  items?: Value[];
-  label?: string;
-  prependIcon?: `mdi-${string}`;
-}>();
+  const { items = [true, false] } = defineProps<{
+    items?: Value[];
+    label?: string;
+    prependIcon?: `mdi-${string}`;
+  }>();
 
-// Utils composable
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // Utils composable
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-const buttons = computed(() =>
-  items.map((item) => {
-    let value: PrimitiveValue = '';
-    let text = '';
-    let props = {};
+  const buttons = computed(() =>
+    items.map((item) => {
+      let value: PrimitiveValue = '';
+      let text = '';
+      let props = {};
 
-    if (typeof item === 'boolean') {
-      value = item;
-      text = item ? t('$ezreeport.yes') : t('$ezreeport.no');
-    }
+      if (typeof item === 'boolean') {
+        value = item;
+        text = item ? t('$ezreeport.yes') : t('$ezreeport.no');
+      }
 
-    if (typeof item === 'string' || typeof item === 'number') {
-      value = item;
-      text = `${item}`;
-    }
+      if (typeof item === 'string' || typeof item === 'number') {
+        value = item;
+        text = `${item}`;
+      }
 
-    if (typeof item === 'object') {
-      ({ value, text, ...props } = item);
-    }
+      if (typeof item === 'object') {
+        ({ value, text, ...props } = item);
+      }
 
-    return {
-      ...props,
-      value,
-      text,
-      size: 'small',
-    };
-  })
-);
+      return {
+        ...props,
+        value,
+        text,
+        size: 'small',
+      };
+    })
+  );
 </script>
 
 <style lang="css" scoped>
-.container {
-  display: flex;
-  align-items: center;
+  .container {
+    display: flex;
+    align-items: center;
 
-  & .icon {
-    color: gray;
-  }
+    & .icon {
+      color: gray;
+    }
 
-  & .label {
-    position: absolute !important;
-    max-width: 133%;
-    transform-origin: top left;
-    transform: translateY(-16px) scale(0.75);
+    & .label {
+      position: absolute !important;
+      max-width: 133%;
+      transform-origin: top left;
+      transform: translateY(-16px) scale(0.75);
 
-    & + * {
-      transform: translateY(5px);
+      & + * {
+        transform: translateY(5px);
+      }
     }
   }
-}
 </style>

@@ -1,10 +1,9 @@
+import { assignDependencies } from '~/helpers/permissions/decorator';
 import {
   type Template,
   getTemplate,
   upsertTemplate,
 } from '~/modules/templates';
-
-import { assignDependencies } from '~/helpers/permissions/decorator';
 
 export * from './editor';
 

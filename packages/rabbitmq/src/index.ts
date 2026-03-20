@@ -152,17 +152,13 @@ export function sendJSONMessage<DataType>(
  * @returns The parsed data
  */
 export function parseJSONMessage<DataType>(
-  msg: amqp.ConsumeMessage,
+  msg: amqp.Message,
   schema: z.ZodSchema<DataType>
-): { data?: DataType; raw: unknown; parseError?: unknown } {
+): { data?: DataType; raw: unknown; parseError?: z.ZodError<DataType> } {
   const raw = JSON.parse(msg.content.toString());
-  let data: DataType;
-  try {
-    data = schema.parse(raw);
-  } catch (parseError) {
-    return { raw, parseError };
-  }
-  return { data, raw };
+
+  const { error, data } = schema.safeParse(raw);
+  return { data, raw, parseError: error };
 }
 
 export * as rabbitmq from 'amqplib';

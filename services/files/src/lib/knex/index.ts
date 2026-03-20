@@ -1,7 +1,7 @@
-import createKnex, { type Knex } from 'knex';
-
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
+
+import createKnex, { type Knex } from 'knex';
 
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';

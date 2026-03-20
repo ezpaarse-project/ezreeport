@@ -1,14 +1,14 @@
 import EventEmitter from 'node:events';
 
-import { GenerationQueueData } from '@ezreeport/models/queues';
-import type { TemplateBodyType } from '@ezreeport/models/templates';
 import type { GenerationStatusType } from '@ezreeport/models/generations';
 import type { ReportResultType } from '@ezreeport/models/reports';
+import type { TemplateBodyType } from '@ezreeport/models/templates';
+import { GenerationQueueData } from '@ezreeport/models/queues';
 import { parseJSONMessage } from '@ezreeport/rabbitmq';
 
 import type rabbitmq from '~/lib/rabbitmq';
-import { appLogger } from '~/lib/logger';
 import config from '~/lib/config';
+import { appLogger } from '~/lib/logger';
 
 import { generateReport, type GenerationEventMap } from '~/models/generation';
 

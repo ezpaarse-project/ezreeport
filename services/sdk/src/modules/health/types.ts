@@ -18,7 +18,10 @@ export interface ApiService {
   updatedAt: Date;
 }
 
-export interface RawApiService extends Omit<ApiService, 'createdAt' | 'updatedAt'> {
+export interface RawApiService extends Omit<
+  ApiService,
+  'createdAt' | 'updatedAt'
+> {
   createdAt: string;
   updatedAt: string;
 }

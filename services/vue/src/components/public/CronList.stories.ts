@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof CronList>;
 
 export const Default: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { CronList },
     setup() {
       return { args };

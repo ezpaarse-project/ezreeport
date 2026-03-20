@@ -116,136 +116,136 @@
 </template>
 
 <script setup lang="ts">
-import type { Namespace } from '~sdk/namespaces';
-import { getCurrentNamespaces } from '~sdk/auth';
-import { upsertTask, createTask, type Task, type InputTask } from '~sdk/tasks';
+  import type { Namespace } from '~sdk/namespaces';
+  import { getCurrentNamespaces } from '~sdk/auth';
+  import { upsertTask, createTask, type Task, type InputTask } from '~sdk/tasks';
 
-import { isEmail } from '~/utils/validate';
+  import { isEmail } from '~/utils/validate';
 
-// Components props
-const props = defineProps<{
-  /** The task to edit */
-  modelValue: Task;
-  /** Should show namespace */
-  showNamespace?: boolean;
-  /** Should show advanced button */
-  showAdvanced?: boolean;
-}>();
+  // Components props
+  const props = defineProps<{
+    /** The task to edit */
+    modelValue: Task;
+    /** Should show namespace */
+    showNamespace?: boolean;
+    /** Should show advanced button */
+    showAdvanced?: boolean;
+  }>();
 
-// Components events
-const emit = defineEmits<{
-  /** Updated task */
-  (event: 'update:modelValue', value: Task): void;
-  /** Asked to open task in advanced form */
-  (event: 'open:advanced', value: InputTask): void;
-}>();
+  // Components events
+  const emit = defineEmits<{
+    /** Updated task */
+    (event: 'update:modelValue', value: Task): void;
+    /** Asked to open task in advanced form */
+    (event: 'open:advanced', value: InputTask): void;
+  }>();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
-const { refreshMapping } = useTemplateEditor({
-  // grid: props.modelValue.template.grid,
-  index: props.modelValue.template.index,
-  dateField: props.modelValue.template.dateField,
-  namespaceId: props.modelValue.namespaceId,
-});
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
+  const { refreshMapping } = useTemplateEditor({
+    // grid: props.modelValue.template.grid,
+    index: props.modelValue.template.index,
+    dateField: props.modelValue.template.dateField,
+    namespaceId: props.modelValue.namespaceId,
+  });
 
-/** Is basic form valid */
-const isValid = shallowRef(false);
-/** Are namespaces loading */
-const loadingNamespaces = shallowRef(false);
-/** Task to create */
-const task = ref<InputTask>({
-  name: props.modelValue.name,
-  description: props.modelValue.description,
-  namespaceId: props.modelValue.namespaceId,
-  extendedId: props.modelValue.extendedId,
-  template: props.modelValue.template,
-  lastExtended: props.modelValue.lastExtended,
-  targets: props.modelValue.targets,
-  recurrence: props.modelValue.recurrence,
-  recurrenceOffset: props.modelValue.recurrenceOffset,
-  nextRun: props.modelValue.nextRun,
-  enabled: props.modelValue.enabled,
-  namespace: props.modelValue.namespace,
-});
+  /** Is basic form valid */
+  const isValid = shallowRef(false);
+  /** Are namespaces loading */
+  const loadingNamespaces = shallowRef(false);
+  /** Task to create */
+  const task = ref<InputTask>({
+    name: props.modelValue.name,
+    description: props.modelValue.description,
+    namespaceId: props.modelValue.namespaceId,
+    extendedId: props.modelValue.extendedId,
+    template: props.modelValue.template,
+    lastExtended: props.modelValue.lastExtended,
+    targets: props.modelValue.targets,
+    recurrence: props.modelValue.recurrence,
+    recurrenceOffset: props.modelValue.recurrenceOffset,
+    nextRun: props.modelValue.nextRun,
+    enabled: props.modelValue.enabled,
+    namespace: props.modelValue.namespace,
+  });
 
-/** Filters of task */
-const filters = computed({
-  get: () =>
-    new Map((task.value.template.filters ?? []).map((fil) => [fil.name, fil])),
-  set: (value) => {
-    const values = Array.from(value.values());
-    if (values.length > 0) {
-      task.value.template.filters = values;
+  /** Filters of task */
+  const filters = computed({
+    get: () =>
+      new Map((task.value.template.filters ?? []).map((fil) => [fil.name, fil])),
+    set: (value) => {
+      const values = Array.from(value.values());
+      if (values.length > 0) {
+        task.value.template.filters = values;
+        return;
+      }
+      task.value.template.filters = undefined;
+    },
+  });
+  /** Is form namespaced */
+  const isNamespaced = computed(() => !props.showNamespace);
+  /** Current namespace's id */
+  const namespaceId = computed(() => task.value.namespaceId);
+  /** Curent namespace */
+  const namespace = computedAsync(
+    async () => {
+      let value: Omit<Namespace, 'fetchLogin' | 'fetchOptions'> | undefined;
+
+      if (isNamespaced.value) {
+        return value;
+      }
+
+      try {
+        const currentNamespaces = await getCurrentNamespaces();
+        value = currentNamespaces.find((nsp) => nsp.id === namespaceId.value);
+      } catch (err) {
+        handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), err);
+      }
+
+      return value;
+    },
+    undefined,
+    { evaluating: loadingNamespaces }
+  );
+
+  function onTargetUpdated(targets: string | string[] | undefined): void {
+    if (targets == null) {
+      task.value.targets = [];
       return;
     }
-    task.value.template.filters = undefined;
-  },
-});
-/** Is form namespaced */
-const isNamespaced = computed(() => !props.showNamespace);
-/** Current namespace's id */
-const namespaceId = computed(() => task.value.namespaceId);
-/** Curent namespace */
-const namespace = computedAsync(
-  async () => {
-    let value: Omit<Namespace, 'fetchLogin' | 'fetchOptions'> | undefined;
 
-    if (isNamespaced.value) {
-      return value;
+    let allTargets = targets;
+    if (!Array.isArray(allTargets)) {
+      allTargets = [allTargets];
     }
 
+    // Allow multiple mail addresses, separated by semicolon or comma
+    task.value.targets = Array.from(
+      new Set(
+        allTargets
+          .join(';')
+          .replaceAll(/[,]/g, ';')
+          .split(';')
+          .map((mail) => mail.trim())
+      )
+    );
+  }
+
+  async function save(): Promise<void> {
     try {
-      const currentNamespaces = await getCurrentNamespaces();
-      value = currentNamespaces.find((nsp) => nsp.id === namespaceId.value);
+      const data = { ...task.value, id: undefined };
+
+      let result;
+      if (props.modelValue.id) {
+        result = await upsertTask({ ...data, id: props.modelValue.id });
+      } else {
+        result = await createTask(data);
+      }
+
+      emit('update:modelValue', result);
     } catch (err) {
-      handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), err);
+      handleEzrError(t('$ezreeport.task.errors.edit'), err);
     }
-
-    return value;
-  },
-  undefined,
-  { evaluating: loadingNamespaces }
-);
-
-function onTargetUpdated(targets: string | string[] | undefined): void {
-  if (targets == null) {
-    task.value.targets = [];
-    return;
   }
-
-  let allTargets = targets;
-  if (!Array.isArray(allTargets)) {
-    allTargets = [allTargets];
-  }
-
-  // Allow multiple mail addresses, separated by semicolon or comma
-  task.value.targets = Array.from(
-    new Set(
-      allTargets
-        .join(';')
-        .replaceAll(/[,]/g, ';')
-        .split(';')
-        .map((mail) => mail.trim())
-    )
-  );
-}
-
-async function save(): Promise<void> {
-  try {
-    const data = { ...task.value, id: undefined };
-
-    let result;
-    if (props.modelValue.id) {
-      result = await upsertTask({ ...data, id: props.modelValue.id });
-    } else {
-      result = await createTask(data);
-    }
-
-    emit('update:modelValue', result);
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task.errors.edit'), err);
-  }
-}
 </script>

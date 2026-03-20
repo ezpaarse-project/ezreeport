@@ -1,12 +1,12 @@
-import { appLogger } from '~/lib/logger';
-import { useRabbitMQ } from '~/lib/rabbitmq';
 import config from '~/lib/config';
 import startHTTPServer from '~/lib/http';
+import { appLogger } from '~/lib/logger';
+import { useRabbitMQ } from '~/lib/rabbitmq';
 
+import { initHeartbeat, getMissingMandatoryServices } from '~/models/heartbeat';
 import { initSMTP } from '~/models/mail';
 import initQueues from '~/models/queues';
 import initRPC from '~/models/rpc';
-import { initHeartbeat, getMissingMandatoryServices } from '~/models/heartbeat';
 
 async function start(): Promise<void> {
   appLogger.info({

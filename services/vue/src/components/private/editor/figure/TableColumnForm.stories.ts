@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import type { TableColumn } from '~sdk/helpers/figures';
 
 import EditorFigureTableColumnForm from './TableColumnForm.vue';
@@ -33,7 +32,7 @@ const mockMetricData: TableColumn = {
 };
 
 export const New: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureTableColumnForm },
     setup() {
       return { args };
@@ -44,7 +43,7 @@ export const New: Story = {
 };
 
 export const Basic: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureTableColumnForm },
     setup() {
       return { args };
@@ -57,7 +56,7 @@ export const Basic: Story = {
 };
 
 export const Metric: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureTableColumnForm },
     setup() {
       return { args };

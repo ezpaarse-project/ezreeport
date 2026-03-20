@@ -1,18 +1,18 @@
+import type { Mark } from 'vega-lite/build/src/mark';
+import type { UnitSpec } from 'vega-lite/build/src/spec/unit';
+import type { TitleParams } from 'vega-lite/build/src/title';
+import chroma from 'chroma-js';
+import { merge } from 'lodash';
 import {
   scheme as vegaScheme,
   type Text,
   type ExprRef,
   type SignalRef,
 } from 'vega';
-import type { Mark } from 'vega-lite/build/src/mark';
-import type { UnitSpec } from 'vega-lite/build/src/spec/unit';
-import type { TitleParams } from 'vega-lite/build/src/title';
-import { merge } from 'lodash';
-import chroma from 'chroma-js';
 
+import type { RecurrenceType } from '@ezreeport/models/recurrence';
 import * as dfns from '@ezreeport/dates';
 import { ensureInt } from '@ezreeport/models/lib/utils';
-import type { RecurrenceType } from '@ezreeport/models/recurrence';
 
 import config from '~/lib/config';
 

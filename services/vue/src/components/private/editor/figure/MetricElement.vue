@@ -1,22 +1,18 @@
 <template>
-  <v-list-item
-    :title="modelValue.text"
-    rounded
-  >
+  <v-list-item :title="modelValue.text" rounded>
     <template v-if="$slots.prepend" #prepend>
       <slot name="prepend" />
     </template>
 
     <template #subtitle>
-      <EditorAggregationSubtitle :model-value="modelValue.aggregation" :name="modelValue.text" />
+      <EditorAggregationSubtitle
+        :model-value="modelValue.aggregation"
+        :name="modelValue.text"
+      />
     </template>
 
     <template #append>
-      <v-icon
-        v-if="formatIcon"
-        :icon="formatIcon"
-        start
-      />
+      <v-icon v-if="formatIcon" :icon="formatIcon" start />
 
       <template v-if="!readonly">
         <v-btn
@@ -43,24 +39,27 @@
 </template>
 
 <script setup lang="ts">
-import type { MetricLabel } from '~sdk/helpers/figures';
+  import type { MetricLabel } from '~sdk/helpers/figures';
 
-// Components props
-const props = defineProps<{
-  /** Label to display */
-  modelValue: MetricLabel,
-  /** Is the element readonly */
-  readonly?: boolean,
-}>();
+  // Components props
+  const props = defineProps<{
+    /** Label to display */
+    modelValue: MetricLabel;
+    /** Is the element readonly */
+    readonly?: boolean;
+  }>();
 
-// Components events
-defineEmits<{
-  /** Click on the close button */
-  (event: 'click:close', value: MouseEvent): void
-}>();
+  // Components events
+  defineEmits<{
+    /** Click on the close button */
+    (event: 'click:close', value: MouseEvent): void;
+  }>();
 
-/** The icon to display based on format */
-const formatIcon = computed(
-  () => (props.modelValue.format && formatIcons.get(props.modelValue.format.type)) || undefined,
-);
+  /** The icon to display based on format */
+  const formatIcon = computed(
+    () =>
+      (props.modelValue.format &&
+        formatIcons.get(props.modelValue.format.type)) ||
+      undefined
+  );
 </script>

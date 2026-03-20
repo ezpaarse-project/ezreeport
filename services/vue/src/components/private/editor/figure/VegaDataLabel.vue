@@ -91,136 +91,136 @@
 </template>
 
 <script setup lang="ts">
-import type { VegaDataLabelOptions } from '~sdk/helpers/figures';
+  import type { VegaDataLabelOptions } from '~sdk/helpers/figures';
 
-// Components props
-const props = defineProps<{
-  /** The data label options to edit */
-  modelValue: VegaDataLabelOptions | undefined;
-  /** Type of the figure */
-  type: string;
-  /** Should be readonly */
-  readonly?: boolean;
-}>();
+  // Components props
+  const props = defineProps<{
+    /** The data label options to edit */
+    modelValue: VegaDataLabelOptions | undefined;
+    /** Type of the figure */
+    type: string;
+    /** Should be readonly */
+    readonly?: boolean;
+  }>();
 
-// Components events
-const emit = defineEmits<{
-  /** Updated options */
-  (event: 'update:modelValue', value: VegaDataLabelOptions | undefined): void;
-}>();
+  // Components events
+  const emit = defineEmits<{
+    /** Updated options */
+    (event: 'update:modelValue', value: VegaDataLabelOptions | undefined): void;
+  }>();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-/** Backup of the layer, used when enabling/disabling */
-const { cloned: paramsBackup, sync: syncBackup } =
-  useCloned<VegaDataLabelOptions>(props.modelValue ?? { format: 'numeric' }, {
-    manual: true,
+  /** Backup of the layer, used when enabling/disabling */
+  const { cloned: paramsBackup, sync: syncBackup } =
+    useCloned<VegaDataLabelOptions>(props.modelValue ?? { format: 'numeric' }, {
+      manual: true,
+    });
+
+  /** Is grouping enabled */
+  const isEnabled = computed({
+    get: () => props.modelValue != null,
+    set: (value) => {
+      if (!value) {
+        syncBackup();
+      }
+
+      emit('update:modelValue', value ? paramsBackup.value : undefined);
+    },
   });
-
-/** Is grouping enabled */
-const isEnabled = computed({
-  get: () => props.modelValue != null,
-  set: (value) => {
-    if (!value) {
-      syncBackup();
-    }
-
-    emit('update:modelValue', value ? paramsBackup.value : undefined);
-  },
-});
-/** Format options */
-const formatOptions = computed(() => [
-  {
-    value: 'numeric',
-    title: t('$ezreeport.editor.figures.vega._.dataLabel:formats.numeric'),
-    props: {
-      appendIcon: formatIcons.get('number'),
+  /** Format options */
+  const formatOptions = computed(() => [
+    {
+      value: 'numeric',
+      title: t('$ezreeport.editor.figures.vega._.dataLabel:formats.numeric'),
+      props: {
+        appendIcon: formatIcons.get('number'),
+      },
     },
-  },
-  {
-    value: 'percent',
-    title: t('$ezreeport.editor.figures.vega._.dataLabel:formats.percent'),
-    props: {
-      appendIcon: formatIcons.get('percent'),
+    {
+      value: 'percent',
+      title: t('$ezreeport.editor.figures.vega._.dataLabel:formats.percent'),
+      props: {
+        appendIcon: formatIcons.get('percent'),
+      },
     },
-  },
-]);
-/** Format option */
-const format = computed({
-  get: () => props.modelValue?.format ?? paramsBackup.value.format,
-  set: (value) => {
-    if (!props.modelValue) {
-      return;
-    }
+  ]);
+  /** Format option */
+  const format = computed({
+    get: () => props.modelValue?.format ?? paramsBackup.value.format,
+    set: (value) => {
+      if (!props.modelValue) {
+        return;
+      }
 
-    const params = props.modelValue;
-    emit('update:modelValue', { ...params, format: value });
-  },
-});
-/** Position option */
-const position = computed({
-  get: () => props.modelValue?.position ?? paramsBackup.value.position ?? 'in',
-  set: (value) => {
-    if (!props.modelValue) {
-      return;
-    }
+      const params = props.modelValue;
+      emit('update:modelValue', { ...params, format: value });
+    },
+  });
+  /** Position option */
+  const position = computed({
+    get: () => props.modelValue?.position ?? paramsBackup.value.position ?? 'in',
+    set: (value) => {
+      if (!props.modelValue) {
+        return;
+      }
 
-    const params = props.modelValue;
-    emit('update:modelValue', { ...params, position: value });
-  },
-});
-/** Should show labels */
-const showLabel = computed({
-  get: () =>
-    props.modelValue?.showLabel ?? paramsBackup.value.showLabel ?? false,
-  set: (value) => {
-    if (!props.modelValue) {
-      return;
-    }
+      const params = props.modelValue;
+      emit('update:modelValue', { ...params, position: value });
+    },
+  });
+  /** Should show labels */
+  const showLabel = computed({
+    get: () =>
+      props.modelValue?.showLabel ?? paramsBackup.value.showLabel ?? false,
+    set: (value) => {
+      if (!props.modelValue) {
+        return;
+      }
 
-    const params = props.modelValue;
-    emit('update:modelValue', { ...params, showLabel: value });
-  },
-});
-/** Icon to append to minimum value */
-const appendIconMin = computed(() =>
-  format.value === 'percent' ? formatIcons.get('percent') : undefined
-);
-/** Minimum value to show datalabel */
-const minValue = computed({
-  get: () => {
-    const value = props.modelValue?.minValue ?? paramsBackup.value.minValue;
-    if (value != null) {
-      return value;
-    }
-    if (format.value === 'percent') {
-      // By default it's 3 percent
-      return 3;
-    }
-    return 0;
-  },
-  set: (value) => {
-    if (!props.modelValue) {
-      return;
-    }
+      const params = props.modelValue;
+      emit('update:modelValue', { ...params, showLabel: value });
+    },
+  });
+  /** Icon to append to minimum value */
+  const appendIconMin = computed(() =>
+    format.value === 'percent' ? formatIcons.get('percent') : undefined
+  );
+  /** Minimum value to show datalabel */
+  const minValue = computed({
+    get: () => {
+      const value = props.modelValue?.minValue ?? paramsBackup.value.minValue;
+      if (value != null) {
+        return value;
+      }
+      if (format.value === 'percent') {
+        // By default it's 3 percent
+        return 3;
+      }
+      return 0;
+    },
+    set: (value) => {
+      if (!props.modelValue) {
+        return;
+      }
 
-    let number: number | undefined = Number.isNaN(value) ? 10 : value;
-    if (Number.isNaN(number)) {
-      number = undefined;
-    }
+      let number: number | undefined = Number.isNaN(value) ? 10 : value;
+      if (Number.isNaN(number)) {
+        number = undefined;
+      }
 
-    if (
-      number != null &&
-      format.value === 'percent' &&
-      (number < 0 || number > 100)
-    ) {
-      return;
-    }
+      if (
+        number != null &&
+        format.value === 'percent' &&
+        (number < 0 || number > 100)
+      ) {
+        return;
+      }
 
-    const params = props.modelValue;
-    emit('update:modelValue', { ...params, minValue: number });
-  },
-});
+      const params = props.modelValue;
+      emit('update:modelValue', { ...params, minValue: number });
+    },
+  });
 </script>

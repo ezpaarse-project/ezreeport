@@ -1,11 +1,12 @@
 import { Config, type Command } from '@oclif/core';
 import chalk from 'chalk';
 
+import { EZR } from '../ezr/index.js';
 import { BaseCommand } from './BaseCommand.js';
 
-import { EZR } from '../ezr/index.js';
-
-export abstract class EzrCommand<T extends typeof Command> extends BaseCommand<T> {
+export abstract class EzrCommand<
+  T extends typeof Command,
+> extends BaseCommand<T> {
   protected instances: EZR[] = [];
 
   constructor(argv: string[], config: Config, instanceCount = 1) {
@@ -32,7 +33,11 @@ export abstract class EzrCommand<T extends typeof Command> extends BaseCommand<T
         admin: config.admin,
       });
 
-      this.log(chalk.grey(`${chalk.green('✔')} Connected to ${chalk.underline(inputs.url)}`));
+      this.log(
+        chalk.grey(
+          `${chalk.green('✔')} Connected to ${chalk.underline(inputs.url)}`
+        )
+      );
     }
   }
 }

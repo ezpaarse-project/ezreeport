@@ -3,23 +3,21 @@ import { StatusCodes } from 'http-status-codes';
 
 import { z } from '@ezreeport/models/lib/zod';
 
-import authPlugin, { restrictNamespaces } from '~/plugins/auth';
 import { Access } from '~/models/access';
-
-import { describeErrors } from '~/routes/v2/responses';
-
 import { buildPaginatedResponse } from '~/models/pagination';
 import {
   PaginationQuery,
   zPaginationResponse,
 } from '~/models/pagination/types';
-
 import * as taskActivity from '~/models/task-activity';
 import {
   TaskActivity,
   TaskActivityQueryFilters,
   TaskActivityQueryInclude,
 } from '~/models/task-activity/types';
+
+import authPlugin, { restrictNamespaces } from '~/plugins/auth';
+import { describeErrors } from '~/routes/v2/responses';
 
 // oxlint-disable-next-line max-lines-per-function, require-await
 const router: FastifyPluginAsyncZod = async (fastify) => {

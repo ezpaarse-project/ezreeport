@@ -1,5 +1,5 @@
-import type { rabbitmq } from '@ezreeport/rabbitmq';
 import type { Logger } from '@ezreeport/logger';
+import type { rabbitmq } from '@ezreeport/rabbitmq';
 
 import type {
   HeartbeatType,
@@ -7,9 +7,8 @@ import type {
   HeartbeatFrequency,
   HeartbeatConnectedServicePing,
 } from './types';
-
-import { HeartbeatSender } from './HeartBeat/Sender';
 import { HeartbeatListener } from './HeartBeat/Listener';
+import { HeartbeatSender } from './HeartBeat/Sender';
 
 const mandatoryServices = new Map<string, boolean>();
 

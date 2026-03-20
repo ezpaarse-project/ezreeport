@@ -41,75 +41,75 @@
 </template>
 
 <script setup lang="ts">
-import type { VegaLayer } from '~sdk/helpers/figures';
+  import type { VegaLayer } from '~sdk/helpers/figures';
 
-// Components props
-const props = defineProps<{
-  /** The vega layer to edit */
-  modelValue: VegaLayer | undefined;
-  /** Type of the figure */
-  type: string;
-  /** Should be readonly */
-  readonly?: boolean;
-}>();
+  // Components props
+  const props = defineProps<{
+    /** The vega layer to edit */
+    modelValue: VegaLayer | undefined;
+    /** Type of the figure */
+    type: string;
+    /** Should be readonly */
+    readonly?: boolean;
+  }>();
 
-// Components events
-const emit = defineEmits<{
-  /** Updated layer */
-  (event: 'update:modelValue', value: VegaLayer | undefined): void;
-}>();
+  // Components events
+  const emit = defineEmits<{
+    /** Updated layer */
+    (event: 'update:modelValue', value: VegaLayer | undefined): void;
+  }>();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t, te } = useI18n();
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t, te } = useI18n();
 
-/** Backup of the layer, used when enabling/disabling */
-const { cloned: layerBackup, sync: syncBackup } = useCloned(
-  props.modelValue ?? {},
-  { manual: true }
-);
+  /** Backup of the layer, used when enabling/disabling */
+  const { cloned: layerBackup, sync: syncBackup } = useCloned(
+    props.modelValue ?? {},
+    { manual: true }
+  );
 
-/** Label to enabling grouping */
-const enabledLabel = computed(() => {
-  const key = `$ezreeport.editor.figures.vega.${props.type}.color:enable`;
-  if (te(key)) {
-    return t(key);
-  }
-  return t('$ezreeport.editor.figures.vega._.color:enable');
-});
-/** Is grouping enabled */
-const isEnabled = computed({
-  get: () => props.modelValue != null,
-  set: (value) => {
-    if (!value) {
-      syncBackup();
+  /** Label to enabling grouping */
+  const enabledLabel = computed(() => {
+    const key = `$ezreeport.editor.figures.vega.${props.type}.color:enable`;
+    if (te(key)) {
+      return t(key);
     }
+    return t('$ezreeport.editor.figures.vega._.color:enable');
+  });
+  /** Is grouping enabled */
+  const isEnabled = computed({
+    get: () => props.modelValue != null,
+    set: (value) => {
+      if (!value) {
+        syncBackup();
+      }
 
-    emit('update:modelValue', value ? layerBackup.value : undefined);
-  },
-});
-/** Layer's aggregation */
-const aggregation = computed({
-  get: () => props.modelValue?.aggregation ?? layerBackup.value.aggregation,
-  set: (value) => {
-    if (!props.modelValue) {
-      return;
-    }
+      emit('update:modelValue', value ? layerBackup.value : undefined);
+    },
+  });
+  /** Layer's aggregation */
+  const aggregation = computed({
+    get: () => props.modelValue?.aggregation ?? layerBackup.value.aggregation,
+    set: (value) => {
+      if (!props.modelValue) {
+        return;
+      }
 
-    const params = props.modelValue;
-    emit('update:modelValue', { ...params, aggregation: value });
-  },
-});
-/** Group's title */
-const title = computed({
-  get: () => props.modelValue?.title,
-  set: (value) => {
-    if (!props.modelValue) {
-      return;
-    }
+      const params = props.modelValue;
+      emit('update:modelValue', { ...params, aggregation: value });
+    },
+  });
+  /** Group's title */
+  const title = computed({
+    get: () => props.modelValue?.title,
+    set: (value) => {
+      if (!props.modelValue) {
+        return;
+      }
 
-    const params = props.modelValue;
-    emit('update:modelValue', { ...params, title: value });
-  },
-});
+      const params = props.modelValue;
+      emit('update:modelValue', { ...params, title: value });
+    },
+  });
 </script>

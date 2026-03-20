@@ -1,10 +1,9 @@
-import { client } from '~/lib/fetch';
 import type { ApiResponse } from '~/lib/api';
-
-import { assignPermission } from '~/helpers/permissions/decorator';
+import { client } from '~/lib/fetch';
 
 import type { Namespace } from '~/modules/namespaces/types';
 import type { User } from '~/modules/users/types';
+import { assignPermission } from '~/helpers/permissions/decorator';
 
 import type { UserPermissions } from './types';
 

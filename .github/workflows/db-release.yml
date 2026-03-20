@@ -10,7 +10,7 @@ env:
   TURBO_UI: 'false'
 
 concurrency:
-  group: "release-database"
+  group: 'release-database'
   cancel-in-progress: true
 
 jobs:

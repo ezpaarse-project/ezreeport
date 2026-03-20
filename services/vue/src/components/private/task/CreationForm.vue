@@ -183,172 +183,176 @@
 </template>
 
 <script setup lang="ts">
-import type { Namespace } from '~sdk/namespaces';
-import type { Task } from '~sdk/tasks';
-import { getCurrentNamespaces } from '~sdk/auth';
-import {
-  getAllTaskPresets,
-  createTaskFromPreset,
-  type TaskPreset,
-  type AdditionalDataForPreset,
-} from '~sdk/task-presets';
+  import type { Namespace } from '~sdk/namespaces';
+  import type { Task } from '~sdk/tasks';
+  import { getCurrentNamespaces } from '~sdk/auth';
+  import {
+    getAllTaskPresets,
+    createTaskFromPreset,
+    type TaskPreset,
+    type AdditionalDataForPreset,
+  } from '~sdk/task-presets';
 
-import { isEmail } from '~/utils/validate';
+  import { isEmail } from '~/utils/validate';
 
-// Component props
-const props = defineProps<{
-  /** Namespace to create task in */
-  namespaceId?: string;
-  /** Should show advanced button */
-  showAdvanced?: boolean;
-}>();
+  // Component props
+  const props = defineProps<{
+    /** Namespace to create task in */
+    namespaceId?: string;
+    /** Should show advanced button */
+    showAdvanced?: boolean;
+  }>();
 
-// Component events
-const emit = defineEmits<{
-  /** Updated task */
-  (event: 'update:modelValue', value: Task): void;
-  /** Asked to open task in advanced form */
-  (
-    event: 'open:advanced',
-    value: { data: AdditionalDataForPreset; preset?: TaskPreset }
-  ): void;
-}>();
+  // Component events
+  const emit = defineEmits<{
+    /** Updated task */
+    (event: 'update:modelValue', value: Task): void;
+    /** Asked to open task in advanced form */
+    (
+      event: 'open:advanced',
+      value: { data: AdditionalDataForPreset; preset?: TaskPreset }
+    ): void;
+  }>();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
-const { refreshMapping } = useTemplateEditor({
-  namespaceId: props.namespaceId,
-});
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
+  const { refreshMapping } = useTemplateEditor({
+    namespaceId: props.namespaceId,
+  });
 
-/** Is basic form valid */
-const isValid = shallowRef(false);
-/** Task to create */
-const data = ref<AdditionalDataForPreset>({
-  name: '',
-  description: '',
-  index: '',
-  namespaceId: props?.namespaceId ?? '',
-  targets: [],
-  filters: undefined,
-});
-/** Is preset list loading */
-const loadingPresets = shallowRef(false);
-/** Current preset selected */
-const currentPreset = ref<TaskPreset | undefined>();
-/** Is namespace list loading */
-const loadingNamespaces = shallowRef(false);
-/** Has name manually changed */
-const hasNameChanged = shallowRef(false);
+  /** Is basic form valid */
+  const isValid = shallowRef(false);
+  /** Task to create */
+  const data = ref<AdditionalDataForPreset>({
+    name: '',
+    description: '',
+    index: '',
+    namespaceId: props?.namespaceId ?? '',
+    targets: [],
+    filters: undefined,
+  });
+  /** Is preset list loading */
+  const loadingPresets = shallowRef(false);
+  /** Current preset selected */
+  const currentPreset = ref<TaskPreset | undefined>();
+  /** Is namespace list loading */
+  const loadingNamespaces = shallowRef(false);
+  /** Has name manually changed */
+  const hasNameChanged = shallowRef(false);
 
-/** Filters of task */
-const filters = computed({
-  get: () => new Map(
-    (data.value.filters ?? currentPreset?.value?.fetchOptions?.filters ?? [])
-      .map((fil) => [fil.name, fil])
-  ),
-  set: (value) => {
-    if (!value) {
-      data.value.filters = undefined;
-      return;
+  /** Filters of task */
+  const filters = computed({
+    get: () =>
+      new Map(
+        (
+          data.value.filters ??
+          currentPreset?.value?.fetchOptions?.filters ??
+          []
+        ).map((fil) => [fil.name, fil])
+      ),
+    set: (value) => {
+      if (!value) {
+        data.value.filters = undefined;
+        return;
+      }
+
+      const values = Array.from(value.values());
+      data.value.filters = values;
+    },
+  });
+  /** Preset list */
+  const presets = computedAsync(async () => {
+    let items: TaskPreset[] = [];
+
+    loadingPresets.value = true;
+    try {
+      ({ items } = await getAllTaskPresets({
+        pagination: { count: 0, sort: 'name' },
+        include: ['template.tags'],
+      }));
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task.errors.fetchPresets'), err);
     }
+    loadingPresets.value = false;
 
-    const values = Array.from(value.values());
-    data.value.filters = values;
-  },
-});
-/** Preset list */
-const presets = computedAsync(async () => {
-  let items: TaskPreset[] = [];
-
-  loadingPresets.value = true;
-  try {
-    ({ items } = await getAllTaskPresets({
-      pagination: { count: 0, sort: 'name' },
-      include: ['template.tags'],
-    }));
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task.errors.fetchPresets'), err);
-  }
-  loadingPresets.value = false;
-
-  return items;
-}, []);
-/** Is form namespaced */
-const isNamespaced = computed(() => !!props.namespaceId);
-/** Namespace list */
-const namespaces = computedAsync(async () => {
-  let items: Omit<Namespace, 'fetchLogin' | 'fetchOptions'>[] = [];
-
-  if (isNamespaced.value) {
     return items;
+  }, []);
+  /** Is form namespaced */
+  const isNamespaced = computed(() => !!props.namespaceId);
+  /** Namespace list */
+  const namespaces = computedAsync(async () => {
+    let items: Omit<Namespace, 'fetchLogin' | 'fetchOptions'>[] = [];
+
+    if (isNamespaced.value) {
+      return items;
+    }
+
+    loadingNamespaces.value = true;
+    try {
+      const currentNamespaces = await getCurrentNamespaces();
+      items = currentNamespaces.toSorted((namespaceA, namespaceB) =>
+        namespaceA.name.localeCompare(namespaceB.name)
+      );
+    } catch (err) {
+      handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), err);
+    }
+    loadingNamespaces.value = false;
+
+    return items;
+  }, []);
+
+  function onPresetChange(preset: TaskPreset | undefined): void {
+    data.value.index = preset?.fetchOptions?.index || '';
+
+    if (!hasNameChanged.value) {
+      data.value.name = preset?.name || '';
+    }
   }
 
-  loadingNamespaces.value = true;
-  try {
-    const currentNamespaces = await getCurrentNamespaces();
-    items = currentNamespaces.toSorted((namespaceA, namespaceB) =>
-      namespaceA.name.localeCompare(namespaceB.name)
-    );
-  } catch (err) {
-    handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), err);
-  }
-  loadingNamespaces.value = false;
-
-  return items;
-}, []);
-
-function onPresetChange(preset: TaskPreset | undefined): void {
-  data.value.index = preset?.fetchOptions?.index || '';
-
-  if (!hasNameChanged.value) {
-    data.value.name = preset?.name || '';
-  }
-}
-
-function onTargetUpdated(targets: string | string[] | undefined): void {
-  if (targets == null) {
-    data.value.targets = [];
-    return;
-  }
-
-  let allTargets = targets;
-  if (!Array.isArray(allTargets)) {
-    allTargets = [allTargets];
-  }
-
-  // Allow multiple mail addresses, separated by semicolon or comma
-  data.value.targets = Array.from(
-    new Set(
-      allTargets
-        .join(';')
-        .replaceAll(/[,]/g, ';')
-        .split(';')
-        .map((mail) => mail.trim())
-    )
-  );
-}
-
-async function save(): Promise<void> {
-  if (!currentPreset.value) {
-    return;
-  }
-
-  try {
-    const result = await createTaskFromPreset(currentPreset.value, data.value);
-
-    emit('update:modelValue', result);
-  } catch (err) {
-    if (
-      err &&
-      typeof err === 'object' &&
-      'statusCode' in err &&
-      err.statusCode === 409
-    ) {
-      handleEzrError(t('$ezreeport.task.errors.create:duplicate'), err);
+  function onTargetUpdated(targets: string | string[] | undefined): void {
+    if (targets == null) {
+      data.value.targets = [];
       return;
     }
-    handleEzrError(t('$ezreeport.task.errors.create:preset'), err);
+
+    let allTargets = targets;
+    if (!Array.isArray(allTargets)) {
+      allTargets = [allTargets];
+    }
+
+    // Allow multiple mail addresses, separated by semicolon or comma
+    data.value.targets = Array.from(
+      new Set(
+        allTargets
+          .join(';')
+          .replaceAll(/[,]/g, ';')
+          .split(';')
+          .map((mail) => mail.trim())
+      )
+    );
   }
-}
+
+  async function save(): Promise<void> {
+    if (!currentPreset.value) {
+      return;
+    }
+
+    try {
+      const result = await createTaskFromPreset(currentPreset.value, data.value);
+
+      emit('update:modelValue', result);
+    } catch (err) {
+      if (
+        err &&
+        typeof err === 'object' &&
+        'statusCode' in err &&
+        err.statusCode === 409
+      ) {
+        handleEzrError(t('$ezreeport.task.errors.create:duplicate'), err);
+        return;
+      }
+      handleEzrError(t('$ezreeport.task.errors.create:preset'), err);
+    }
+  }
 </script>

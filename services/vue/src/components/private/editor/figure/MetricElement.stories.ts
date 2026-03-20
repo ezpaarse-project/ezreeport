@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import type { MetricLabel } from '~sdk/helpers/figures';
 
 import EditorFigureMetricElement from './MetricElement.vue';
@@ -32,7 +31,7 @@ const mockDataWithAggregation: MetricLabel = {
 };
 
 export const Simple: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureMetricElement },
     setup() {
       return { args };
@@ -45,7 +44,7 @@ export const Simple: Story = {
 };
 
 export const WithAggregation: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureMetricElement },
     setup() {
       return { args };
@@ -58,7 +57,7 @@ export const WithAggregation: Story = {
 };
 
 export const Readonly: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureMetricElement },
     setup() {
       return { args };

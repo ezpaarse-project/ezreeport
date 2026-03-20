@@ -147,109 +147,103 @@
 </template>
 
 <script setup lang="ts">
-import type { TemplateFilterMap } from '~sdk/helpers/filters';
-import type {
-  AggregationType,
-  FigureFilterAggregation,
-  FigureFilterAggregationEntry,
-} from '~sdk/helpers/aggregations';
+  import type {
+    AggregationType,
+    FigureFilterAggregation,
+    FigureFilterAggregationEntry,
+  } from '~sdk/helpers/aggregations';
+  import type { TemplateFilterMap } from '~sdk/helpers/filters';
 
-// Component props
-const props = defineProps<{
+  // Component props
   /** Aggregation to edit */
-  modelValue: FigureFilterAggregation;
-  /** Should be disabled */
-  disabled?: boolean;
-  /** Should be readonly */
-  readonly?: boolean;
-  /** Types of aggregations allowed in options */
-  allowedType?: AggregationType;
-}>();
+  const modelValue = defineModel<FigureFilterAggregation>({
+    required: true,
+  });
 
-// Component events
-const emit = defineEmits<{
-  /** Aggregation updated */
-  (event: 'update:modelValue', value: FigureFilterAggregation): void;
-}>();
+  defineProps<{
+    /** Should be disabled */
+    disabled?: boolean;
+    /** Should be readonly */
+    readonly?: boolean;
+    /** Types of aggregations allowed in options */
+    allowedType?: AggregationType;
+  }>();
 
-// Utils composables
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-const isValid = shallowRef(false);
-const showForm = shallowRef(false);
-const currentEntries = ref<Map<string, FigureFilterAggregationEntry>>(
-  new Map(props.modelValue.values?.map((entry) => [entry.label, entry]))
-);
-/** Currently edited entry */
-const editedItem = ref<
-  { id: string; entry: FigureFilterAggregationEntry } | undefined
->();
-const editedItemFilters = ref<TemplateFilterMap | undefined>();
-
-/** Current aggregation type */
-const currentType = computed<FigureFilterAggregation['type']>({
-  get: () => props.modelValue.type,
-  set: (type) => emit('update:modelValue', { ...props.modelValue, type }),
-});
-/** Current aggregation missing */
-const currentMissing = computed<string | undefined>({
-  get: () => props.modelValue.missing,
-  set: (missing) => emit('update:modelValue', { ...props.modelValue, missing }),
-});
-/** If we should show the missing values */
-const showMissing = computed({
-  get: () => !!currentMissing.value,
-  set: (value) =>
-    emit('update:modelValue', {
-      ...props.modelValue,
-      missing: value ? 'Missing' : undefined,
-    }),
-});
-
-function openForm(value?: {
-  id: string;
-  entry: FigureFilterAggregationEntry;
-}): void {
-  const entry = value?.entry ?? {
-    label: '',
-    filters: [],
-  };
-
-  editedItem.value = value ?? {
-    id: '',
-    entry,
-  };
-
-  editedItemFilters.value = new Map(
-    entry.filters.map((filter) => [filter.name, filter]) ?? []
+  const isValid = shallowRef(false);
+  const showForm = shallowRef(false);
+  const currentEntries = ref(
+    new Map<string, FigureFilterAggregationEntry>(
+      modelValue.value.values?.map((entry) => [entry.label, entry])
+    )
   );
+  /** Currently edited entry */
+  const editedItem = ref<
+    { id: string; entry: FigureFilterAggregationEntry } | undefined
+  >();
+  const editedItemFilters = ref<TemplateFilterMap | undefined>();
 
-  showForm.value = true;
-}
+  /** Current aggregation type */
+  const currentType = computed<FigureFilterAggregation['type']>({
+    get: () => modelValue.value.type,
+    set: (type) => {
+      modelValue.value.type = type;
+    },
+  });
+  /** Current aggregation missing */
+  const currentMissing = computed<string | undefined>({
+    get: () => modelValue.value.missing,
+    set: (text) => {
+      modelValue.value.missing = text;
+    },
+  });
+  /** If we should show the missing values */
+  const showMissing = computed({
+    get: () => !!currentMissing.value,
+    set: (value) => {
+      modelValue.value.missing = value ? 'Missing' : undefined;
+    },
+  });
 
-function upsertEditedEntry(): void {
-  if (!editedItem.value) {
-    return;
+  function openForm(value?: {
+    id: string;
+    entry: FigureFilterAggregationEntry;
+  }): void {
+    const entry = value?.entry ?? {
+      label: '',
+      filters: [],
+    };
+
+    editedItem.value = value ?? {
+      id: '',
+      entry,
+    };
+
+    editedItemFilters.value = new Map(
+      entry.filters.map((filter) => [filter.name, filter]) ?? []
+    );
+
+    showForm.value = true;
   }
 
-  const entry = {
-    ...editedItem.value.entry,
-    filters: Array.from(editedItemFilters.value?.values() ?? []),
-  };
+  function upsertEditedEntry(): void {
+    if (!editedItem.value) {
+      return;
+    }
 
-  currentEntries.value.set(editedItem.value.id || entry.label, entry);
+    const entry = {
+      ...editedItem.value.entry,
+      filters: Array.from(editedItemFilters.value?.values() ?? []),
+    };
 
-  showForm.value = false;
-  editedItem.value = undefined;
-  editedItemFilters.value = undefined;
-}
+    currentEntries.value.set(editedItem.value.id || entry.label, entry);
+    modelValue.value.values = Array.from(currentEntries.value.values());
 
-// Update props when map updates
-watch(currentEntries, () => {
-  emit('update:modelValue', {
-    ...props.modelValue,
-    values: Array.from(currentEntries.value.values()),
-  });
-});
+    showForm.value = false;
+    editedItem.value = undefined;
+    editedItemFilters.value = undefined;
+  }
 </script>

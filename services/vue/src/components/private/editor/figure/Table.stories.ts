@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import type { TemplateFilter } from '~sdk/helpers/filters';
-import { createTableFigureHelper, type TableColumn } from '~sdk/helpers/figures';
+import {
+  createTableFigureHelper,
+  type TableColumn,
+} from '~sdk/helpers/figures';
 
 import EditorFigureTable from './Table.vue';
 
@@ -25,10 +27,7 @@ const mockFilters: TemplateFilter[] = [
     name: 'mime is not DOC, etc.',
     field: 'mime',
     isNot: true,
-    value: [
-      'DOC',
-      'MISC',
-    ],
+    value: ['DOC', 'MISC'],
   },
   {
     name: 'mime exists',
@@ -75,7 +74,7 @@ const mockData: TableColumn[] = [
 ];
 
 export const New: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureTable },
     setup() {
       return { args };
@@ -88,7 +87,7 @@ export const New: Story = {
 };
 
 export const Existing: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureTable },
     setup() {
       return { args };
@@ -96,12 +95,17 @@ export const Existing: Story = {
     template: '<EditorFigureTable v-bind="args" />',
   }),
   args: {
-    modelValue: createTableFigureHelper(undefined, mockData, undefined, mockFilters),
+    modelValue: createTableFigureHelper(
+      undefined,
+      mockData,
+      undefined,
+      mockFilters
+    ),
   },
 };
 
 export const Readonly: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureTable },
     setup() {
       return { args };
@@ -109,7 +113,12 @@ export const Readonly: Story = {
     template: '<EditorFigureTable v-bind="args" />',
   }),
   args: {
-    modelValue: createTableFigureHelper('Table title', mockData, true, mockFilters),
+    modelValue: createTableFigureHelper(
+      'Table title',
+      mockData,
+      true,
+      mockFilters
+    ),
     readonly: true,
   },
 };

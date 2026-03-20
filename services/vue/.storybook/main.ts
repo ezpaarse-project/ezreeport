@@ -1,12 +1,11 @@
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 
-import vue from 'unplugin-vue/vite';
-import components from 'unplugin-vue-components/vite';
-import { Vuetify3Resolver as vuetify } from 'unplugin-vue-components/resolvers';
-import autoImport from 'unplugin-auto-import/vite';
-
 import type { StorybookConfig } from '@storybook/vue3-vite';
+import autoImport from 'unplugin-auto-import/vite';
+import { Vuetify3Resolver as vuetify } from 'unplugin-vue-components/resolvers';
+import components from 'unplugin-vue-components/vite';
+import vue from 'unplugin-vue/vite';
 
 const require = createRequire(import.meta.url);
 

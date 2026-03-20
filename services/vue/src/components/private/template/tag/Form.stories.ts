@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof TemplateTagForm>;
 
 export const New: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TemplateTagForm },
     setup() {
       return { args };
@@ -25,7 +25,7 @@ export const New: Story = {
 };
 
 export const Existing: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TemplateTagForm },
     setup() {
       return { args };

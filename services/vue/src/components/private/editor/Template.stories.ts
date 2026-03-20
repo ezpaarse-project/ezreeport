@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import {
   createTemplateHelper,
   createTemplateHelperFrom,
@@ -17,7 +16,7 @@ export default meta;
 type Story = StoryObj<typeof EditorTemplate>;
 
 export const Empty: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorTemplate },
     setup() {
       return { args };
@@ -581,7 +580,7 @@ const template = createTemplateHelperFrom({
 });
 
 export const FromTemplate: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorTemplate },
     setup() {
       return { args };

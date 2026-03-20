@@ -1,9 +1,8 @@
 import { defineConfig } from 'tsdown';
-
-import vue from 'unplugin-vue/rolldown';
-import components from 'unplugin-vue-components/rolldown';
-import { Vuetify3Resolver as vuetify } from 'unplugin-vue-components/resolvers';
 import autoImport from 'unplugin-auto-import/rolldown';
+import { Vuetify3Resolver as vuetify } from 'unplugin-vue-components/resolvers';
+import components from 'unplugin-vue-components/rolldown';
+import vue from 'unplugin-vue/rolldown';
 
 const isReleaseMode = process.env.NODE_ENV === 'production';
 

@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import type { TemplateFilterMap } from '~sdk/helpers/filters';
 
 import EditorFilter from './List.vue';
@@ -105,7 +104,7 @@ const mockFilters: TemplateFilterMap = new Map(
 );
 
 export const NewFilters: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFilter },
     setup() {
       return { args };
@@ -118,7 +117,7 @@ export const NewFilters: Story = {
 };
 
 export const ExistingFilters: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFilter },
     setup() {
       return { args };
@@ -131,7 +130,7 @@ export const ExistingFilters: Story = {
 };
 
 export const ReadonlyFilters: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFilter },
     setup() {
       return { args };

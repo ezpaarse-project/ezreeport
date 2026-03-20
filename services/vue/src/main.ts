@@ -1,9 +1,8 @@
 import type { App } from 'vue';
 
-import { setErrorHandler, type ErrorHandler } from './utils/errors';
-
-import { registerLocales, type LocalesOptions } from './locale';
 import { registerComponents } from './components';
+import { registerLocales, type LocalesOptions } from './locale';
+import { setErrorHandler, type ErrorHandler } from './utils/errors';
 
 type Options = {
   locale?: LocalesOptions;

@@ -1,5 +1,5 @@
-import { CronManager } from '@ezreeport/crons';
 import type { CronType } from '@ezreeport/crons/types';
+import { CronManager } from '@ezreeport/crons';
 
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';

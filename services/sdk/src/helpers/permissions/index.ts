@@ -1,5 +1,5 @@
-import { getCurrentPermissions } from '~/modules/auth/methods';
 import type { UserPermissions } from '~/modules/auth/types';
+import { getCurrentPermissions } from '~/modules/auth/methods';
 
 import { isSDKFunction, type LambdaFunction } from './decorator';
 

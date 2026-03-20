@@ -9,11 +9,11 @@ services:
       - ./data/db:/var/lib/postgresql/data
     deploy:
       resources:
-          limits:
-            memory: 256MB
+        limits:
+          memory: 256MB
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready"]
+      test: ['CMD-SHELL', 'pg_isready']
       interval: 60s
       timeout: 10s
       retries: 5

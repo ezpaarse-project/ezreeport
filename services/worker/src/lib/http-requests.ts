@@ -1,7 +1,6 @@
 import { createFetch } from 'ofetch';
 
 import pckg from '../../package.json';
-
 import config from './config';
 import { appLogger } from './logger';
 

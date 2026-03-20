@@ -14,16 +14,17 @@ const name = '1.0.0-beta.19';
  */
 const migrateTemplates = (
   templates: MigrationData['templates'],
-  templateIdsByName: Map<string, string>,
-) => templates.map((template) => {
-  const id = template.name.replace(/\//g, '_');
-  templateIdsByName.set(template.name, id);
+  templateIdsByName: Map<string, string>
+) =>
+  templates.map((template) => {
+    const id = template.name.replace(/\//g, '_');
+    templateIdsByName.set(template.name, id);
 
-  return {
-    id,
-    ...template,
-  };
-});
+    return {
+      id,
+      ...template,
+    };
+  });
 
 /**
  * Moving extends to task root
@@ -35,7 +36,7 @@ const migrateTemplates = (
  */
 const migrateTasks = (
   tasks: MigrationData['tasks'],
-  templateIdsByName: Map<string, string>,
+  templateIdsByName: Map<string, string>
 ) => {
   const nextRun = addDays(new Date(), 1);
   return tasks.map((task) => ({

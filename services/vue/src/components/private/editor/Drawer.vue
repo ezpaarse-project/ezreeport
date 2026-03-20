@@ -56,119 +56,118 @@
 </template>
 
 <script setup lang="ts">
-import { dragAndDrop } from '@formkit/drag-and-drop/vue';
+  import type { AnyLayoutHelper } from '~sdk/helpers/layouts';
+  import { dragAndDrop } from '@formkit/drag-and-drop/vue';
 
-import type { AnyLayoutHelper } from '~sdk/helpers/layouts';
+  type DrawerLayout = AnyLayoutHelper & { readonly?: boolean };
 
-type DrawerLayout = AnyLayoutHelper & { readonly?: boolean };
+  // Components props
+  const props = defineProps<{
+    /** Current index */
+    modelValue: number;
+    /** The layouts to preview */
+    items: DrawerLayout[];
+    /** Should be readonly */
+    readonly?: boolean;
+  }>();
 
-// Components props
-const props = defineProps<{
-  /** Current index */
-  modelValue: number;
-  /** The layouts to preview */
-  items: DrawerLayout[];
-  /** Should be readonly */
-  readonly?: boolean;
-}>();
+  // Components events
+  const emit = defineEmits<{
+    /** Updated index */
+    (event: 'update:modelValue', value: number): void;
+    /** Updated items */
+    (event: 'update:items', value: DrawerLayout[]): void;
+    /** Create new layout */
+    (event: 'click:create'): void;
+    /** Duplicate layout */
+    (event: 'click:duplicate', value: DrawerLayout, index: number): void;
+    /** Delete layout */
+    (event: 'click:delete', value: DrawerLayout): void;
+  }>();
 
-// Components events
-const emit = defineEmits<{
-  /** Updated index */
-  (event: 'update:modelValue', value: number): void;
-  /** Updated items */
-  (event: 'update:items', value: DrawerLayout[]): void;
-  /** Create new layout */
-  (event: 'click:create'): void;
-  /** Duplicate layout */
-  (event: 'click:duplicate', value: DrawerLayout, index: number): void;
-  /** Delete layout */
-  (event: 'click:delete', value: DrawerLayout): void;
-}>();
+  /** Scroller of layout list */
+  const scrollerRef = useTemplateRef('scrollerRef');
 
-/** Scroller of layout list */
-const scrollerRef = useTemplateRef('scrollerRef');
+  function scrollDown() {
+    const element = scrollerRef.value?.$el as HTMLDivElement | undefined;
+    if (!element) {
+      return;
+    }
 
-function scrollDown() {
-  const element = scrollerRef.value?.$el as HTMLDivElement | undefined;
-  if (!element) {
-    return;
+    element.scrollTop = element.scrollHeight;
   }
 
-  element.scrollTop = element.scrollHeight;
-}
+  function scrollTo(index: number) {
+    const element = scrollerRef.value?.$el as HTMLDivElement | undefined;
+    if (!element) {
+      return;
+    }
 
-function scrollTo(index: number) {
-  const element = scrollerRef.value?.$el as HTMLDivElement | undefined;
-  if (!element) {
-    return;
+    const node = element.children[index];
+    node?.scrollIntoView();
   }
 
-  const node = element.children[index];
-  node?.scrollIntoView();
-}
+  // Make the columns draggable to sort
+  if (!props.readonly) {
+    dragAndDrop({
+      parent: scrollerRef as unknown as Ref<HTMLElement | undefined>,
+      dragPlaceholderClass: 'template-layout-preview-drawer--dragging',
+      dropZone: false,
+      dragImage: () => document.createElement('div'), // Disable drag image
+      draggable: (el) => {
+        // Disable draggable for empty items
+        const isEmpty = el.classList.contains('template-layout-preview--empty');
+        return !isEmpty;
+      },
+      values: computed({
+        get: () => props.items,
+        set: (value) => emit('update:items', value),
+      }),
+      onSort: (event) => {
+        emit('update:modelValue', event.position);
+      },
+      onDragend: () => {
+        scrollTo(props.modelValue);
+      },
+    });
+  }
 
-// Make the columns draggable to sort
-if (!props.readonly) {
-  dragAndDrop({
-    parent: scrollerRef as unknown as Ref<HTMLElement | undefined>,
-    dragPlaceholderClass: 'template-layout-preview-drawer--dragging',
-    dropZone: false,
-    dragImage: () => document.createElement('div'), // Disable drag image
-    draggable: (el) => {
-      // Disable draggable for empty items
-      const isEmpty = el.classList.contains('template-layout-preview--empty');
-      return !isEmpty;
-    },
-    values: computed({
-      get: () => props.items,
-      set: (value) => emit('update:items', value),
-    }),
-    onSort: (event) => {
-      emit('update:modelValue', event.position);
-    },
-    onDragend: () => {
-      scrollTo(props.modelValue);
-    },
+  defineExpose({
+    scrollDown,
+    scrollTo,
   });
-}
-
-defineExpose({
-  scrollDown,
-  scrollTo,
-});
 </script>
 
 <style lang="css" scoped>
-.template-layout-preview-drawer {
-  overflow-y: scroll;
-  scroll-behavior: smooth;
-  height: 100%;
-  transition: transform 0.1s ease-in-out;
+  .template-layout-preview-drawer {
+    overflow-y: scroll;
+    scroll-behavior: smooth;
+    height: 100%;
+    transition: transform 0.1s ease-in-out;
 
-  &:deep(.template-layout-elements) {
-    transition: box-shadow 0.1s ease-in-out;
+    &:deep(.template-layout-elements) {
+      transition: box-shadow 0.1s ease-in-out;
+    }
   }
-}
 
-.template-layout-preview--dragging {
-  background-color: white;
-  transform: scale(0.8);
+  .template-layout-preview--dragging {
+    background-color: white;
+    transform: scale(0.8);
 
-  &:deep(.template-layout-elements) {
-    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+    &:deep(.template-layout-elements) {
+      box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+    }
   }
-}
 
-.template-layout-preview--empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-left: 1rem;
+  .template-layout-preview--empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-left: 1rem;
 
-  border-style: dashed;
+    border-style: dashed;
 
-  aspect-ratio: 297/210; /* A4 format in mm */
-}
+    aspect-ratio: 297/210; /* A4 format in mm */
+  }
 </style>

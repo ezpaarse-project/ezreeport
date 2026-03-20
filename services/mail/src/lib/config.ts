@@ -1,5 +1,4 @@
 import { setupConfig } from '@ezreeport/config';
-
 import { logLevels } from '@ezreeport/logger';
 
 import type defaultConfig from '../../config/default.json';

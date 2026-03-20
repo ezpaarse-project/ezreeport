@@ -72,80 +72,76 @@
 </template>
 
 <script setup lang="ts">
-import {
-  type AggregationType,
-  aggregationTypes,
-} from '~sdk/helpers/aggregations';
+  import {
+    type AggregationType,
+    type FigureBaseAggregation,
+    aggregationTypes,
+  } from '~sdk/helpers/aggregations';
 
-import type { InnerBaseAggregation } from '~/lib/aggregations';
+  // Component props
+  /** Aggregation to edit */
+  const modelValue = defineModel<FigureBaseAggregation | undefined>({
+    required: true,
+  });
 
-// Component props
-/** Aggregation to edit */
-const modelValue = defineModel<InnerBaseAggregation | null>({
-  required: true,
-});
+  defineProps<{
+    /** Should be disabled */
+    disabled?: boolean;
+    /** Should be readonly */
+    readonly?: boolean;
+    /** Types of aggregations allowed in options */
+    allowedType?: AggregationType;
+  }>();
 
-defineProps<{
-  /** Should be disabled */
-  disabled?: boolean;
-  /** Should be readonly */
-  readonly?: boolean;
-  /** Types of aggregations allowed in options */
-  allowedType?: AggregationType;
-}>();
-
-const aggType = computed({
-  get: () => modelValue.value?.type ?? '',
-  set: (type) => {
-    if (type === '') {
-      modelValue.value = null;
-      return;
-    }
-    modelValue.value = { ...modelValue.value, type, field: '' };
-  },
-});
-/** Current aggregation size */
-const currentSize = computed<string>({
-  get: () => `${modelValue.value?.size ?? 10}`,
-  set: (value) => {
-    if (!modelValue.value) {
-      return;
-    }
-
-    let size = 10;
-
-    if (value) {
-      const parsed = Number.parseInt(value, 10);
-      if (!Number.isNaN(parsed)) {
-        size = parsed;
+  const aggType = computed({
+    get: () => modelValue.value?.type ?? '',
+    set: (type) => {
+      if (type === '') {
+        modelValue.value = undefined;
+        return;
       }
-    }
+      modelValue.value = { ...modelValue.value, type, field: '' };
+    },
+  });
+  /** Current aggregation size */
+  const currentSize = computed<string>({
+    get: () => `${modelValue.value?.size ?? 10}`,
+    set: (value) => {
+      if (!modelValue.value) {
+        return;
+      }
 
-    modelValue.value = { ...modelValue.value, size };
-  },
-});
-/** If we should show the missing values */
-const showMissing = computed({
-  get: () => !!modelValue.value?.missing,
-  set: (value) => {
-    if (!modelValue.value) {
+      let size = 10;
+
+      if (value) {
+        const parsed = Number.parseInt(value, 10);
+        if (!Number.isNaN(parsed)) {
+          size = parsed;
+        }
+      }
+
+      modelValue.value.size = size;
+    },
+  });
+  /** If we should show the missing values */
+  const showMissing = computed({
+    get: () => !!modelValue.value?.missing,
+    set: (value) => {
+      if (!modelValue.value) {
+        return;
+      }
+
+      modelValue.value.missing = value ? 'Missing' : undefined;
+    },
+  });
+  /** Is the aggregation a metric one */
+  const isMetric = computed(() => {
+    const aggDef = aggregationTypes.find(
+      ({ name }) => modelValue.value?.type === name
+    );
+    if (!aggDef) {
       return;
     }
-
-    modelValue.value = {
-      ...modelValue.value,
-      missing: value ? 'Missing' : undefined,
-    };
-  },
-});
-/** Is the aggregation a metric one */
-const isMetric = computed(() => {
-  const aggDef = aggregationTypes.find(
-    ({ name }) => modelValue.value?.type === name
-  );
-  if (!aggDef) {
-    return;
-  }
-  return aggDef.type === 'metric';
-});
+    return aggDef.type === 'metric';
+  });
 </script>

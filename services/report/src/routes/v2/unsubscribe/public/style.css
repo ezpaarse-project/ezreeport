@@ -29,29 +29,32 @@ p {
 }
 
 .btn-cancel,
-input[type=submit] {
+input[type='submit'] {
   border: 0;
   border-radius: 4px;
   padding: 12px;
   margin: 8px;
   color: white;
   text-transform: uppercase;
-  box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
+  box-shadow:
+    0 3px 1px -2px rgba(0, 0, 0, 0.2),
+    0 2px 2px 0 rgba(0, 0, 0, 0.14),
+    0 1px 5px 0 rgba(0, 0, 0, 0.12);
   transition: background-color 0.25s;
 }
 
-input[type=submit] {
-  background-color: #57AF5B;
+input[type='submit'] {
+  background-color: #57af5b;
   font-size: 1em;
   cursor: pointer;
 }
 
-input[type=submit]:hover {
+input[type='submit']:hover {
   background-color: #6caf6f;
 }
 
 .btn-cancel {
-  background-color: #F75D5D;
+  background-color: #f75d5d;
   text-decoration: none;
 }
 
@@ -68,13 +71,18 @@ input[type=submit]:hover {
 
 .alert {
   color: white;
-  box-shadow: 0 3px 5px -1px rgba(0,0,0,.2),0 5px 8px 0 rgba(0,0,0,.14),0 1px 14px 0 rgba(0,0,0,.12);
+  box-shadow:
+    0 3px 5px -1px rgba(0, 0, 0, 0.2),
+    0 5px 8px 0 rgba(0, 0, 0, 0.14),
+    0 1px 14px 0 rgba(0, 0, 0, 0.12);
   margin: 1rem;
   padding: 1rem;
   border-radius: 8px;
   opacity: 1;
   visibility: visible;
-  transition: opacity 0.25s, visibility 0.25s;
+  transition:
+    opacity 0.25s,
+    visibility 0.25s;
 }
 
 .alert-hidden {
@@ -83,9 +91,9 @@ input[type=submit]:hover {
 }
 
 .alert-error {
-  background-color: #F75D5D;
+  background-color: #f75d5d;
 }
 
 .alert-success {
-  background-color: #57AF5B;
+  background-color: #57af5b;
 }

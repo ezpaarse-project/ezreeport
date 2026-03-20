@@ -1,11 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import { createTaskHelper, createTaskHelperFrom } from '~sdk/helpers/tasks';
-
 import {
   createTemplateHelper,
   createTemplateHelperFrom,
 } from '~sdk/helpers/templates';
+
 import EditorTask from './Task.vue';
 
 const meta: Meta<typeof EditorTask> = {
@@ -18,7 +17,7 @@ export default meta;
 type Story = StoryObj<typeof EditorTask>;
 
 export const New: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorTask },
     setup() {
       return { args };
@@ -32,7 +31,7 @@ export const New: Story = {
 };
 
 export const Existing: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorTask },
     setup() {
       return { args };

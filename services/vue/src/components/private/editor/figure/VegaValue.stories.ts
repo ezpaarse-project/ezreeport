@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof EditorFigureVegaValue>;
 
 export const New: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureVegaValue },
     setup() {
       return { args };
@@ -26,7 +26,7 @@ export const New: Story = {
 };
 
 export const Existing: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureVegaValue },
     setup() {
       return { args };
@@ -40,7 +40,7 @@ export const Existing: Story = {
 };
 
 export const Readonly: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { EditorFigureVegaValue },
     setup() {
       return { args };

@@ -1,9 +1,8 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 
+import type { FilterType } from '@ezreeport/models/templates';
 import { formatISO, type Interval } from '@ezreeport/dates';
 import { ensureArray } from '@ezreeport/models/lib/utils';
-
-import type { FilterType } from '@ezreeport/models/templates';
 
 /**
  * Transform a filter to ElasticSearch's format

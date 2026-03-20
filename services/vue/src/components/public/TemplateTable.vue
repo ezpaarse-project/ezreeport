@@ -179,230 +179,229 @@
 </template>
 
 <script setup lang="ts">
-import type { VDataTable } from 'vuetify/components';
+  import type { VDataTable } from 'vuetify/components';
+  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
+  import {
+    changeTemplateVisibility,
+    createTemplateHelper,
+    createTemplateHelperFrom,
+    templateHelperToJSON,
+    type TemplateHelper,
+  } from '~sdk/helpers/templates';
+  import {
+    getAllTemplates,
+    getTemplate,
+    createTemplate,
+    upsertTemplate,
+    deleteTemplate,
+    type Template,
+  } from '~sdk/templates';
 
-import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
-import {
-  changeTemplateVisibility,
-  createTemplateHelper,
-  createTemplateHelperFrom,
-  templateHelperToJSON,
-  type TemplateHelper,
-} from '~sdk/helpers/templates';
-import {
-  getAllTemplates,
-  getTemplate,
-  createTemplate,
-  upsertTemplate,
-  deleteTemplate,
-  type Template,
-} from '~sdk/templates';
+  type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 
-type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
+  // Components props
+  const props = defineProps<{
+    titlePrefix?: string;
+    itemsPerPageOptions?: number[] | { title: string; value: number }[];
+  }>();
 
-// Components props
-const props = defineProps<{
-  titlePrefix?: string;
-  itemsPerPageOptions?: number[] | { title: string; value: number }[];
-}>();
+  // Utils composable
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
 
-// Utils composable
-// oxlint-disable-next-line id-length
-const { t } = useI18n();
+  const defaultTemplateId = ref('');
+  const arePermissionsReady = ref(false);
+  const selectedTemplates = ref<Omit<Template, 'body'>[]>([]);
+  const updatedTemplate = ref<TemplateHelper>(createTemplateHelper());
+  const isFormOpen = ref(false);
 
-const defaultTemplateId = ref('');
-const arePermissionsReady = ref(false);
-const selectedTemplates = ref<Omit<Template, 'body'>[]>([]);
-const updatedTemplate = ref<TemplateHelper>(createTemplateHelper());
-const isFormOpen = ref(false);
+  /** Items per page */
+  const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
+  /** List of templates */
+  const { total, refresh, loading, filters, vDataTableOptions } =
+    useServerSidePagination(
+      async (params) => {
+        const res = await getAllTemplates(params);
+        defaultTemplateId.value = res.meta.default;
+        return res;
+      },
+      {
+        sortBy: 'name',
+        itemsPerPage,
+        itemsPerPageOptions: props.itemsPerPageOptions,
+        include: ['tags'],
+      }
+    );
 
-/** Items per page */
-const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
-/** List of templates */
-const { total, refresh, loading, filters, vDataTableOptions } =
-  useServerSidePagination(
-    async (params) => {
-      const res = await getAllTemplates(params);
-      defaultTemplateId.value = res.meta.default;
-      return res;
-    },
-    {
-      sortBy: 'name',
-      itemsPerPage,
-      itemsPerPageOptions: props.itemsPerPageOptions,
-      include: ['tags'],
-    }
+  const title = computed(
+    () =>
+      `${props.titlePrefix || ''}${t('$ezreeport.template.title:list', total.value)}`
   );
 
-const title = computed(
-  () =>
-    `${props.titlePrefix || ''}${t('$ezreeport.template.title:list', total.value)}`
-);
+  /** Headers for table */
+  const headers = computed(
+    (): VDataTableHeaders => [
+      {
+        title: t('$ezreeport.name'),
+        value: 'name',
+        sortable: true,
+      },
+      {
+        title: t('$ezreeport.template.tags.title'),
+        value: 'tags',
+      },
+      {
+        title: t('$ezreeport.updatedAt'),
+        value: 'updatedAt',
+        sortable: true,
+      },
+      {
+        title: t('$ezreeport.createdAt'),
+        value: 'createdAt',
+        sortable: true,
+      },
+      {
+        title: t('$ezreeport.template.hidden'),
+        value: 'hidden',
+        sortable: true,
+        align: 'center',
+      },
+      {
+        title: t('$ezreeport.actions'),
+        value: '_actions',
+        align: 'center',
+      },
+    ]
+  );
 
-/** Headers for table */
-const headers = computed(
-  (): VDataTableHeaders => [
-    {
-      title: t('$ezreeport.name'),
-      value: 'name',
-      sortable: true,
-    },
-    {
-      title: t('$ezreeport.template.tags.title'),
-      value: 'tags',
-    },
-    {
-      title: t('$ezreeport.updatedAt'),
-      value: 'updatedAt',
-      sortable: true,
-    },
-    {
-      title: t('$ezreeport.createdAt'),
-      value: 'createdAt',
-      sortable: true,
-    },
-    {
-      title: t('$ezreeport.template.hidden'),
-      value: 'hidden',
-      sortable: true,
-      align: 'center',
-    },
-    {
-      title: t('$ezreeport.actions'),
-      value: '_actions',
-      align: 'center',
-    },
-  ]
-);
+  const availableActions = computed(() => {
+    if (!arePermissionsReady.value) {
+      return {};
+    }
+    return {
+      create: hasPermission(createTemplate),
+      update: hasPermission(upsertTemplate),
+      delete: hasPermission(deleteTemplate),
 
-const availableActions = computed(() => {
-  if (!arePermissionsReady.value) {
-    return {};
-  }
-  return {
-    create: hasPermission(createTemplate),
-    update: hasPermission(upsertTemplate),
-    delete: hasPermission(deleteTemplate),
+      visibility: hasPermission(changeTemplateVisibility),
+    };
+  });
 
-    visibility: hasPermission(changeTemplateVisibility),
-  };
-});
-
-const selectedTemplateIds = computed({
-  get: () => selectedTemplates.value.map((template) => template.id),
-  set: (value) => {
-    const ids = new Set(value);
-    selectedTemplates.value = selectedTemplates.value.filter((template) =>
-      ids.has(template.id)
-    );
-  },
-});
-
-async function openForm(template?: Omit<Template, 'body'>): Promise<void> {
-  try {
-    if (template) {
-      updatedTemplate.value = createTemplateHelperFrom(
-        await getTemplate(template, ['tags'])
+  const selectedTemplateIds = computed({
+    get: () => selectedTemplates.value.map((template) => template.id),
+    set: (value) => {
+      const ids = new Set(value);
+      selectedTemplates.value = selectedTemplates.value.filter((template) =>
+        ids.has(template.id)
       );
-    } else {
-      updatedTemplate.value = createTemplateHelper();
+    },
+  });
+
+  async function openForm(template?: Omit<Template, 'body'>): Promise<void> {
+    try {
+      if (template) {
+        updatedTemplate.value = createTemplateHelperFrom(
+          await getTemplate(template, ['tags'])
+        );
+      } else {
+        updatedTemplate.value = createTemplateHelper();
+      }
+
+      isFormOpen.value = true;
+    } catch (err) {
+      handleEzrError(t('$ezreeport.template.errors.open'), err);
     }
-
-    isFormOpen.value = true;
-  } catch (err) {
-    handleEzrError(t('$ezreeport.template.errors.open'), err);
   }
-}
 
-async function openDuplicateForm(
-  template: Omit<Template, 'body'>
-): Promise<void> {
-  try {
-    updatedTemplate.value = createTemplateHelperFrom({
-      ...(await getTemplate(template, ['tags'])),
-      name: `${template.name} (copy)`,
-      id: '',
-    });
+  async function openDuplicateForm(
+    template: Omit<Template, 'body'>
+  ): Promise<void> {
+    try {
+      updatedTemplate.value = createTemplateHelperFrom({
+        ...(await getTemplate(template, ['tags'])),
+        name: `${template.name} (copy)`,
+        id: '',
+      });
 
-    isFormOpen.value = true;
-  } catch (err) {
-    handleEzrError(t('$ezreeport.template.errors.open'), err);
-  }
-}
-
-function closeForm(): void {
-  isFormOpen.value = false;
-  refresh();
-}
-
-async function deleteItem(template: Omit<Template, 'body'>): Promise<void> {
-  // TODO: show warning
-  try {
-    await deleteTemplate(template);
-    refresh();
-  } catch (err) {
-    handleEzrError(t('$ezreeport.template.errors.delete'), err);
-  }
-}
-
-async function deleteSelected(): Promise<void> {
-  // TODO: show warning
-  try {
-    await Promise.all(
-      selectedTemplates.value.map((template) => deleteTemplate(template))
-    );
-    selectedTemplates.value = [];
-    refresh();
-  } catch (err) {
-    handleEzrError(t('$ezreeport.template.errors.delete'), err);
-  }
-}
-
-async function toggleItemVisibility(
-  template: Omit<Template, 'body'>
-): Promise<void> {
-  try {
-    await changeTemplateVisibility(template, !template.hidden);
-    refresh();
-  } catch (err) {
-    handleEzrError(t('$ezreeport.template.errors.edit'), err);
-  }
-}
-
-async function toggleSelectedVisibility(): Promise<void> {
-  try {
-    await Promise.all(
-      selectedTemplates.value.map((template) =>
-        changeTemplateVisibility(template, !template.hidden)
-      )
-    );
-    selectedTemplates.value = [];
-    refresh();
-  } catch (err) {
-    handleEzrError(t('$ezreeport.template.errors.edit'), err);
-  }
-}
-
-async function onSave(template: TemplateHelper): Promise<void> {
-  try {
-    let result;
-    const data = templateHelperToJSON(template);
-    if (template.id) {
-      result = await upsertTemplate({ ...data, id: template.id });
-    } else {
-      result = await createTemplate(data);
+      isFormOpen.value = true;
+    } catch (err) {
+      handleEzrError(t('$ezreeport.template.errors.open'), err);
     }
-    openForm(result);
-  } catch (err) {
-    const msg = template.id
-      ? t('$ezreeport.template.errors.edit')
-      : t('$ezreeport.template.errors.create');
-    handleEzrError(msg, err);
   }
-}
 
-// oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
-refreshPermissions().then(() => {
-  arePermissionsReady.value = true;
-});
+  function closeForm(): void {
+    isFormOpen.value = false;
+    refresh();
+  }
+
+  async function deleteItem(template: Omit<Template, 'body'>): Promise<void> {
+    // TODO: show warning
+    try {
+      await deleteTemplate(template);
+      refresh();
+    } catch (err) {
+      handleEzrError(t('$ezreeport.template.errors.delete'), err);
+    }
+  }
+
+  async function deleteSelected(): Promise<void> {
+    // TODO: show warning
+    try {
+      await Promise.all(
+        selectedTemplates.value.map((template) => deleteTemplate(template))
+      );
+      selectedTemplates.value = [];
+      refresh();
+    } catch (err) {
+      handleEzrError(t('$ezreeport.template.errors.delete'), err);
+    }
+  }
+
+  async function toggleItemVisibility(
+    template: Omit<Template, 'body'>
+  ): Promise<void> {
+    try {
+      await changeTemplateVisibility(template, !template.hidden);
+      refresh();
+    } catch (err) {
+      handleEzrError(t('$ezreeport.template.errors.edit'), err);
+    }
+  }
+
+  async function toggleSelectedVisibility(): Promise<void> {
+    try {
+      await Promise.all(
+        selectedTemplates.value.map((template) =>
+          changeTemplateVisibility(template, !template.hidden)
+        )
+      );
+      selectedTemplates.value = [];
+      refresh();
+    } catch (err) {
+      handleEzrError(t('$ezreeport.template.errors.edit'), err);
+    }
+  }
+
+  async function onSave(template: TemplateHelper): Promise<void> {
+    try {
+      let result;
+      const data = templateHelperToJSON(template);
+      if (template.id) {
+        result = await upsertTemplate({ ...data, id: template.id });
+      } else {
+        result = await createTemplate(data);
+      }
+      openForm(result);
+    } catch (err) {
+      const msg = template.id
+        ? t('$ezreeport.template.errors.edit')
+        : t('$ezreeport.template.errors.create');
+      handleEzrError(msg, err);
+    }
+  }
+
+  // oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
+  refreshPermissions().then(() => {
+    arePermissionsReady.value = true;
+  });
 </script>

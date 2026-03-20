@@ -1,6 +1,6 @@
 import type { Namespace, RawNamespace } from '~/modules/namespaces/types';
-import type { TemplateBodyLayout, TemplateFilter } from '~/modules/templates';
 import type { TemplateTag } from '~/modules/template-tags/types';
+import type { TemplateBodyLayout, TemplateFilter } from '~/modules/templates';
 
 export type TaskRecurrence =
   | 'DAILY'

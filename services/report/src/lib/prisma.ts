@@ -1,5 +1,5 @@
-import { setupDB, pingDB } from '@ezreeport/database';
 import type { HeartbeatType } from '@ezreeport/heartbeats/types';
+import { setupDB, pingDB } from '@ezreeport/database';
 
 import { appLogger } from '~/lib/logger';
 

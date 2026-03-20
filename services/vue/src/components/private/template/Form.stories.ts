@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-
 import {
   createTemplateHelper,
   createTemplateHelperFrom,
@@ -17,7 +16,7 @@ export default meta;
 type Story = StoryObj<typeof TemplateForm>;
 
 export const Empty: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TemplateForm },
     setup() {
       return { args };
@@ -30,7 +29,7 @@ export const Empty: Story = {
 };
 
 export const ClickAndRead: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TemplateForm },
     setup() {
       return { args };
@@ -294,7 +293,7 @@ export const ClickAndRead: Story = {
 };
 
 export const Doranum: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TemplateForm },
     setup() {
       return { args };

@@ -12,19 +12,18 @@ export default meta;
 type Story = StoryObj<typeof TaskCreationForm>;
 
 export const Admin: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskCreationForm },
     setup() {
       return { args };
     },
     template: '<TaskCreationForm v-bind="args" />',
   }),
-  args: {
-  },
+  args: {},
 };
 
 export const Namespaced: Story = {
-  render: (args) => ({
+  render: (args: unknown) => ({
     components: { TaskCreationForm },
     setup() {
       return { args };
