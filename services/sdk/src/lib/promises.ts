@@ -89,4 +89,5 @@ const createEventfulPromise = <Data, Events extends EventMap = EventMap>(
   return res;
 };
 
+// oxlint-disable-next-line no-default-export
 export default createEventfulPromise;

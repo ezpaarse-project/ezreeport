@@ -2,7 +2,6 @@ import { defineConfig } from 'tsdown';
 
 const isReleaseMode = process.env.NODE_ENV === 'release';
 
-// oxlint-disable-next-line no-default-export
 export default defineConfig({
   target: ['node14', 'es6'],
   format: ['cjs', 'es'],

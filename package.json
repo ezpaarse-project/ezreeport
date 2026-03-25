@@ -21,6 +21,7 @@
     "@changesets/cli": "^2.29.8",
     "@commitlint/cli": "^20.3.0",
     "@commitlint/config-conventional": "^20.3.0",
+    "@ezpaarse-project/oxlint-config": "^0.1.1",
     "fx": "^39.2.0",
     "husky": "^9.1.6",
     "lint-staged": "^16.2.7",

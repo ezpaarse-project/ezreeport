@@ -48,6 +48,9 @@ importers:
       '@commitlint/config-conventional':
         specifier: ^20.3.0
         version: 20.3.0
+      '@ezpaarse-project/oxlint-config':
+        specifier: ^0.1.1
+        version: 0.1.1(oxlint@1.38.0)
       fx:
         specifier: ^39.2.0
         version: 39.2.0
@@ -1306,6 +1309,11 @@ packages:
     resolution: {integrity: sha512-R8M+DxIzIisvlIOF/m4Hl/s4zIVBEFfamCLTbhWMiwSRLlGfYTk0dNMQ5A4+2a4aK0OgjpxQOGC7Xaw+9O2F2A==}
     peerDependencies:
       jspdf: ^3.0.1
+
+  '@ezpaarse-project/oxlint-config@0.1.1':
+    resolution: {integrity: sha512-/HDIaVQU5/imzoqgnC20hBdVeOYUq7oNQPCIMEO6y84WurTJNMEmFrscGriIyMjs9XxmUCbbEVAevWjjZMWiaQ==}
+    peerDependencies:
+      oxlint: ^1
 
   '@fastify/accept-negotiator@2.0.0':
     resolution: {integrity: sha512-/Sce/kBzuTxIq5tJh85nVNOq9wKD8s+viIgX0fFMDBdw95gnpf53qmF1oBgJym3cPFliWUuSloVg/1w/rH0FcQ==}
@@ -7710,6 +7718,10 @@ snapshots:
       marked: 11.2.0
       mime-types: 3.0.1
       sharp: 0.34.4
+
+  '@ezpaarse-project/oxlint-config@0.1.1(oxlint@1.38.0)':
+    dependencies:
+      oxlint: 1.38.0
 
   '@fastify/accept-negotiator@2.0.0': {}
 

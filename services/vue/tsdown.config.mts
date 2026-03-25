@@ -6,7 +6,6 @@ import vue from 'unplugin-vue/rolldown';
 
 const isReleaseMode = process.env.NODE_ENV === 'production';
 
-// oxlint-disable-next-line no-default-export
 export default defineConfig({
   target: 'es6',
   format: 'es',
