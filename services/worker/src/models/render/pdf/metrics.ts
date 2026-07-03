@@ -67,6 +67,10 @@ const formatDate = (
     value = date.getTime();
   }
 
+  if (value === 0) {
+    return '-';
+  }
+
   return format(value, params[0] || 'dd/MM/yyyy');
 };
 

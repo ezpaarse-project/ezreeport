@@ -181,7 +181,7 @@ function sortData(
     order = 'desc';
   }
 
-  return [...data].sort((dataA, dataB) => {
+  return data.toSorted((dataA, dataB) => {
     const aValue = ensureInt(dataA.value);
     const bValue = ensureInt(dataB.value);
 
@@ -232,17 +232,20 @@ const handleMetricsEsResults: HandleEsResultsFnc = (
 
       const aggregation = esData[`${aggregationId}`];
       aggregationId += 1;
-      if (!('value' in aggregation) || typeof aggregation.value !== 'number') {
-        throw new FetchError(
-          'Aggregation value is missing for a metric figure',
-          'NoDataError'
-        );
+      if (
+        'value' in aggregation &&
+        (typeof aggregation.value === 'number' || aggregation.value === null)
+      ) {
+        return {
+          key: `${label.text}`,
+          value: aggregation.value ?? 0,
+        };
       }
 
-      return {
-        key: `${label.text}`,
-        value: aggregation.value ?? 0,
-      };
+      throw new FetchError(
+        'Aggregation value is missing for a metric figure',
+        'NoDataError'
+      );
     }
   );
 
