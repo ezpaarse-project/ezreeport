@@ -10,7 +10,7 @@ const {
   mail: { team },
 } = config;
 
-export default async function sendError(
+export async function sendError(
   { error, date }: MailErrorQueueDataType,
   logger: Logger
 ): Promise<void> {

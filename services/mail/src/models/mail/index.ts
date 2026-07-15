@@ -5,6 +5,9 @@ import type Mail from 'nodemailer/lib/mailer';
 import mjml2html from 'mjml';
 import nunjucks from 'nunjucks';
 
+import type { MailReportQueueDataType } from '@ezreeport/models/queues';
+import { format } from '@ezreeport/dates';
+
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
 import { getMailer } from '~/lib/mailer';
@@ -29,6 +32,25 @@ export type MailOptions = {
   };
   attachments?: Mail.Attachment[];
 };
+
+export function getFilename(data: MailReportQueueDataType): string {
+  let filename = [
+    'ezREEPORT',
+    data.task.name,
+    format(data.period.start, 'yyyy-MM-dd'),
+    format(data.period.end, 'yyyy-MM-dd'),
+  ].join('_');
+
+  const [, type, extension] =
+    /\.([a-z]+)\.([a-z]+)$/i.exec(data.filename) ?? [];
+
+  if (type !== 'rep') {
+    filename += `.${type}`;
+  }
+  filename += `.${extension}`;
+
+  return filename;
+}
 
 export function sendMail(options: MailOptions): Promise<void> {
   const attachments: Mail.Attachment[] = [

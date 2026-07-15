@@ -404,6 +404,7 @@
 
 <script setup lang="ts">
   import type { Generation } from '~sdk/generations';
+  import { format as formatDate } from 'date-fns';
   import { isGenerationEnded } from '~sdk/helpers/generations';
   import { getFileAsBlob, getFileAsJson } from '~sdk/reports';
   import { getTask } from '~sdk/tasks';
@@ -418,9 +419,9 @@
   // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
-  const taskLoading = ref(false);
-  const templateLoading = ref(false);
-  const resultLoading = ref(false);
+  const taskLoading = shallowRef(false);
+  const templateLoading = shallowRef(false);
+  const resultLoading = shallowRef(false);
 
   /** Has generation ended */
   const isEnded = computed(() => isGenerationEnded(props.modelValue));
@@ -436,7 +437,6 @@
     } catch (err) {
       handleEzrError(t('$ezreeport.task.errors.open'), err);
       taskLoading.value = false;
-      return;
     }
   });
 
@@ -456,7 +456,6 @@
     } catch (err) {
       handleEzrError(t('$ezreeport.template.errors.open'), err);
       templateLoading.value = false;
-      return;
     }
   });
 
@@ -480,14 +479,30 @@
       return value;
     } catch (err) {
       resultLoading.value = false;
-      return;
     }
   });
 
-  async function downloadGenerationFile(path: string) {
+  async function downloadGenerationFile(path: string): Promise<void> {
+    if (!path || !task.value || !result.value?.detail?.period) {
+      return;
+    }
+
+    let filename = [
+      'ezREEPORT',
+      task.value.name,
+      formatDate(result.value.detail.period.start, 'yyyy-MM-dd'),
+      formatDate(result.value.detail.period.end, 'yyyy-MM-dd'),
+    ].join('_');
+
+    const [, type, extension] = /\.([a-z]+)\.([a-z]+)$/i.exec(path) ?? [];
+
+    if (type !== 'rep') {
+      filename += `.${type}`;
+    }
+    filename += `.${extension}`;
+
     try {
-      const filename = path.split('/').pop() ?? 'download';
-      const blob = await getFileAsBlob(props.modelValue.taskId, path);
+      const blob = await getFileAsBlob(task.value.id, path);
       downloadBlob(blob, filename);
     } catch (err) {
       handleEzrError(t('$ezreeport.errors.download', { path }), err);

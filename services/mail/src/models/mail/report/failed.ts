@@ -1,5 +1,3 @@
-import { basename } from 'node:path';
-
 import type { Logger } from '@ezreeport/logger';
 import type { MailReportQueueDataType } from '@ezreeport/models/queues';
 import { format } from '@ezreeport/dates';
@@ -10,7 +8,7 @@ import config from '~/lib/config';
 import { recurrenceToStr } from '~/models/recurrence';
 import { createReportReadStream } from '~/models/rpc/client/files';
 
-import { generateMail, sendMail } from '..';
+import { generateMail, getFilename, sendMail } from '..';
 
 const {
   mail: { team },
@@ -51,13 +49,13 @@ function getErrorFromReport(file: string, logger: Logger) {
   }
 }
 
-export default async function sendFailedReport(
+export async function sendFailedReport(
   data: MailReportQueueDataType,
   logger: Logger
 ): Promise<void> {
   const file = await getFileFromRemote(data.filename, data.task.id);
 
-  const name = basename(data.filename);
+  const filename = getFilename(data);
   const dateStr = format(data.date, 'dd/MM/yyyy');
 
   const error = getErrorFromReport(file, logger);
@@ -78,7 +76,7 @@ export default async function sendFailedReport(
     }),
     attachments: [
       {
-        filename: name,
+        filename,
         content: file,
         contentDisposition: 'attachment',
       },
@@ -86,7 +84,7 @@ export default async function sendFailedReport(
   });
 
   logger.info({
-    filename: name,
+    filename,
     to: [team],
     msg: 'Failed report sent to targets',
   });

@@ -7,6 +7,7 @@ import { GenerationQueueData } from '@ezreeport/models/queues';
 import { parseJSONMessage } from '@ezreeport/rabbitmq';
 
 import type rabbitmq from '~/lib/rabbitmq';
+import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
 
 import { generateReport, type GenerationEventMap } from '~/models/generation';
@@ -17,6 +18,7 @@ import { sendReport } from './send';
 const generationQueueName = 'ezreeport.report:queues';
 const deadGenerationExchangeName = 'ezreeport.report:queues:dead';
 
+const { team } = config.report;
 const logger = appLogger.child({ scope: 'queues', queue: generationQueueName });
 
 async function onMessage(
@@ -100,7 +102,8 @@ async function onMessage(
   }
 
   // Send result
-  if (result.detail.sendingTo && result.detail.sendingTo?.length > 0) {
+  const targets = result.detail.sendingTo || [team];
+  if (targets.length > 0) {
     sendReport(channel, 'mail', {
       generationId: data.id,
       task: data.task,
@@ -109,7 +112,7 @@ async function onMessage(
       success: result.success,
       date: result.detail.createdAt,
       period: result.detail.period,
-      targets: result.detail.sendingTo,
+      targets,
 
       filename:
         result.success && result.detail.files.report

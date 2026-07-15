@@ -38,9 +38,9 @@ function prepareReport(
   // Prepare file paths
   const todayStr = format(startTime, 'yyyy-MM');
 
-  let filename = `ezREEPORT_${data.task.name.toLowerCase().replaceAll(/[/ .]/g, '-')}`;
-  if (process.env.NODE_ENV === 'production' || data.writeActivity) {
-    filename += `_${data.id}`;
+  let filename = data.id;
+  if (process.env.NODE_ENV !== 'production' && !data.writeActivity) {
+    filename = data.task.id;
   }
   const reportId = `${todayStr}/${filename}`;
 

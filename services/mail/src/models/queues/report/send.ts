@@ -4,9 +4,9 @@ import { parseJSONMessage } from '@ezreeport/rabbitmq';
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 
-import sendError from '~/models/mail/error';
-import sendFailedReport from '~/models/mail/report/failed';
-import sendSuccessReport from '~/models/mail/report/success';
+import { sendError } from '~/models/mail/error';
+import { sendFailedReport } from '~/models/mail/report/failed';
+import { sendSuccessReport } from '~/models/mail/report/success';
 
 const sendExchangeName = 'ezreeport.report:send';
 const mailQueueName = 'ezreeport.report:send:mail';
