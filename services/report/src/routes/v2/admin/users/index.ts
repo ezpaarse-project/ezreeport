@@ -18,7 +18,7 @@ import {
   UserQueryFilters,
 } from '~/models/users/types';
 
-import authPlugin from '~/plugins/auth';
+import { authPlugin } from '~/plugins/auth';
 import {
   describeErrors,
   buildSuccessResponse,

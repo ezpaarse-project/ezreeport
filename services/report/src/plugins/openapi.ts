@@ -1,8 +1,6 @@
 import type { FastifySchema, FastifyPluginAsync } from 'fastify';
-import fastifySwagger, {
-  type FastifyDynamicSwaggerOptions,
-} from '@fastify/swagger';
-import fastifySwaggerUi from '@fastify/swagger-ui';
+import swagger, { type FastifyDynamicSwaggerOptions } from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 import fp from 'fastify-plugin';
 
 import { version } from '../../package.json';
@@ -98,7 +96,8 @@ const openapiBasePlugin: FastifyPluginAsync<PluginOptions> = async (
   fastify,
   opts
 ) => {
-  await fastify.register(fastifySwagger, {
+  // Register routes as OpenAPI
+  await fastify.register(swagger, {
     openapi: {
       info: OPENAPI_INFOS,
       servers: [
@@ -126,15 +125,15 @@ const openapiBasePlugin: FastifyPluginAsync<PluginOptions> = async (
     transform: wrapTransformWithAuth(opts.transform),
   });
 
-  await fastify.register(fastifySwaggerUi, {
+  // Serve UI
+  await fastify.register(swaggerUi, {
     routePrefix: '/doc',
+    staticCSP: true,
   });
 };
 
 // Register plugin
-const openapiPlugin = fp(openapiBasePlugin, {
+export const openapiPlugin = fp(openapiBasePlugin, {
   name: 'ezr-openapi',
   encapsulate: false,
 });
-
-export default openapiPlugin;

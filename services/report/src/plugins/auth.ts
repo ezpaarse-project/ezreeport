@@ -162,12 +162,10 @@ const authBasePlugin: FastifyPluginAsync = async (fastify) => {
 };
 
 // Register plugin
-const authPlugin = fp(authBasePlugin, {
+export const authPlugin = fp(authBasePlugin, {
   name: 'ezr-auth',
   encapsulate: false,
 });
-
-export default authPlugin;
 
 /**
  * Utility function to restrict namespaces of a list to the ones of the user

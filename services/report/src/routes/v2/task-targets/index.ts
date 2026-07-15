@@ -7,7 +7,7 @@ import { Access } from '~/models/access';
 import { getAllTasks } from '~/models/tasks';
 import { TaskQueryFilters } from '~/models/tasks/types';
 
-import authPlugin, { restrictNamespaces } from '~/plugins/auth';
+import { authPlugin, restrictNamespaces } from '~/plugins/auth';
 import {
   describeErrors,
   buildSuccessResponse,
@@ -63,7 +63,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
 
       const content = new Set(tasks.flatMap(({ targets }) => targets));
 
-      return buildSuccessResponse(Array.from(content).sort(), reply);
+      return buildSuccessResponse(Array.from(content).toSorted(), reply);
     },
   });
 

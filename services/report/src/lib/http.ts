@@ -1,5 +1,6 @@
-import fastifyCors from '@fastify/cors';
-import fastifyRateLimit from '@fastify/rate-limit';
+import cors from '@fastify/cors';
+import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
 import createFastify, {
   type FastifyInstance,
   type FastifyPluginAsync,
@@ -10,7 +11,7 @@ import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
 import { closeWS, registerWSNamespaces } from '~/lib/sockets';
 
-import loggerPlugin from '~/plugins/logger';
+import { loggerPlugin } from '~/plugins/logger';
 
 import { RateLimitStore } from './http-rate-limit';
 
@@ -25,6 +26,9 @@ const corsOrigin: '*' | string[] =
 let trustProxy: true | string[] =
   allowedProxies === '*' ? true : allowedProxies.split(',');
 
+// oxlint-disable-next-line no-magic-numbers - One day as seconds
+const CACHE_OPTIONS_DURATION = 24 * 60 * 60;
+
 export async function startHTTPServer(
   routes: FastifyPluginAsync
 ): Promise<FastifyInstance> {
@@ -37,13 +41,22 @@ export async function startHTTPServer(
   });
 
   // Register cors
-  await fastify.register(fastifyCors, {
+  await fastify.register(cors, {
     origin: corsOrigin,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'X-API-Key'],
+    methods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'POST', 'DELETE'],
+    credentials: false,
+    cacheControl: CACHE_OPTIONS_DURATION,
+    maxAge: CACHE_OPTIONS_DURATION,
+  });
+
+  // Register helmet
+  await fastify.register(helmet, {
+    crossOriginEmbedderPolicy: true,
   });
 
   // Register rate limit
-  await fastify.register(fastifyRateLimit, {
+  await fastify.register(rateLimit, {
     global: false, // don't apply these settings to all the routes of the context
     store: RateLimitStore,
   });

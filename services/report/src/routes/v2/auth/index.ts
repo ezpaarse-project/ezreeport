@@ -7,7 +7,7 @@ import * as access from '~/models/access';
 import { Namespace } from '~/models/namespaces/types';
 import { User } from '~/models/users/types';
 
-import authPlugin from '~/plugins/auth';
+import { authPlugin } from '~/plugins/auth';
 import {
   describeErrors,
   buildSuccessResponse,

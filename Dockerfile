@@ -15,7 +15,7 @@ RUN apk update \
   && apk upgrade -U -a
 
 RUN corepack enable \
-  && corepack prepare pnpm@10.17.1 --activate
+  && corepack prepare pnpm@11.13.0 --activate
 
 # endregion
 # ---
@@ -27,7 +27,8 @@ WORKDIR /usr/src
 
 COPY ./package.json ./
 
-RUN pnpm run turbo:install
+# Install turbo as a global package
+RUN npm i -g turbo@2.8.20
 
 COPY . .
 

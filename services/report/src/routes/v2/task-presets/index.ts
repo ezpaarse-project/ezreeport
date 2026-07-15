@@ -22,7 +22,7 @@ import {
 import { createTask, doesSimilarTaskExist } from '~/models/tasks';
 import { Task } from '~/models/tasks/types';
 
-import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
+import { authPlugin, requireAllowedNamespace } from '~/plugins/auth';
 import {
   describeErrors,
   buildSuccessResponse,

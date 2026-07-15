@@ -19,7 +19,8 @@ import {
   TaskQueryInclude,
 } from '~/models/tasks/types';
 
-import authPlugin, {
+import {
+  authPlugin,
   requireAllowedNamespace,
   restrictNamespaces,
 } from '~/plugins/auth';

@@ -7,7 +7,7 @@ import { Access } from '~/models/access';
 import * as indices from '~/models/indices';
 import { Index, Mapping } from '~/models/indices/types';
 
-import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
+import { authPlugin, requireAllowedNamespace } from '~/plugins/auth';
 import {
   describeErrors,
   buildSuccessResponse,

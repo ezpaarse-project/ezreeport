@@ -12,9 +12,9 @@ import {
 } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
-import { NotFoundError } from '~/models/errors';
+import { HTTPError, NotFoundError } from '~/models/errors';
 
-import openapi from '~/plugins/openapi';
+import { openapiPlugin } from '~/plugins/openapi';
 
 import { buildErrorResponse } from './v2/responses';
 
@@ -25,7 +25,7 @@ const router: FastifyPluginAsync = async (fastify) => {
   app.setSerializerCompiler(serializerCompiler);
 
   // Register openapi and doc
-  app.register(openapi, { transform: jsonSchemaTransform });
+  app.register(openapiPlugin, { transform: jsonSchemaTransform });
 
   // Handle errors
   // oxlint-disable-next-line promise/prefer-await-to-callbacks
@@ -34,7 +34,7 @@ const router: FastifyPluginAsync = async (fastify) => {
     let error: Error | undefined;
 
     // If it's a http error
-    if (err.statusCode) {
+    if (err instanceof HTTPError) {
       status = err.statusCode;
       error = err;
     }
@@ -64,7 +64,11 @@ const router: FastifyPluginAsync = async (fastify) => {
       );
     }
 
-    return reply.status(status).send(buildErrorResponse(error ?? err, reply));
+    if (!error) {
+      error = err instanceof Error ? err : new Error(`${err}`);
+    }
+
+    return reply.status(status).send(buildErrorResponse(error, reply));
   });
 
   // Handle not found

@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@ezreeport/dates": "workspace:*",
-    "zod": "^4.0.5"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "catalog:",

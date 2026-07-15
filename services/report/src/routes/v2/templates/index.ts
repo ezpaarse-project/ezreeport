@@ -20,7 +20,7 @@ import {
   TemplateQueryInclude,
 } from '~/models/templates/types';
 
-import authPlugin from '~/plugins/auth';
+import { authPlugin } from '~/plugins/auth';
 import {
   describeErrors,
   buildSuccessResponse,

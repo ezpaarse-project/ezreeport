@@ -24,7 +24,7 @@ import { getAllReports } from '~/models/rpc/client/files';
 import { getTask } from '~/models/tasks';
 import { getTemplate } from '~/models/templates';
 
-import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
+import { authPlugin, requireAllowedNamespace } from '~/plugins/auth';
 import * as responses from '~/routes/v2/responses';
 
 import reportRoutes from './files';
