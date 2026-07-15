@@ -24,7 +24,7 @@ export async function writeStreamIntoQueue(
   }
 
   const { queue: dataQueue } = await channel.assertQueue('', {
-    durable: false,
+    durable: true,
   });
 
   stream.on('data', (chunk) => {

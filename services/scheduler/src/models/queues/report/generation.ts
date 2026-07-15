@@ -88,7 +88,7 @@ export async function initGenerationQueue(
   const { exchange: deadLetterExchange } = await chan.assertExchange(
     deadGenerationExchangeName,
     'fanout',
-    { durable: false }
+    { durable: true }
   );
 
   const { queue: deadLetterQueue } = await chan.assertQueue('', {
@@ -102,7 +102,7 @@ export async function initGenerationQueue(
 
   // Ensure generation queue exists with correct dead letter exchange
   await chan.assertQueue(generationQueueName, {
-    durable: false,
+    durable: true,
     deadLetterExchange,
   });
 

@@ -128,11 +128,11 @@ export async function getReportGenerationQueue(
   const { exchange: deadLetterExchange } = await channel.assertExchange(
     deadGenerationExchangeName,
     'fanout',
-    { durable: false }
+    { durable: true }
   );
 
   const { queue } = await channel.assertQueue(generationQueueName, {
-    durable: false,
+    durable: true,
     deadLetterExchange,
   });
 

@@ -69,7 +69,7 @@ export async function initReportSendExchange(
 
   // Create queue to bind
   const { queue } = await channel.assertQueue(mailQueueName, {
-    durable: false,
+    durable: true,
   });
   channel.bindQueue(queue, sendExchange, 'mail');
 

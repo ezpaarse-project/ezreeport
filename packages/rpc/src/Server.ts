@@ -43,7 +43,7 @@ export class RPCServer {
       await channel.prefetch(1);
 
       // Create global rpc queue
-      const rpcQueue = await channel.assertQueue(queueName, { durable: false });
+      const rpcQueue = await channel.assertQueue(queueName, { durable: true });
       this.logger.debug({
         msg: 'Queue created',
         ...rpcQueue,
@@ -127,7 +127,7 @@ export class RPCServer {
       if (err instanceof Error) {
         throw err;
       }
-      throw new Error(`${err}`);
+      throw new Error(`${err}`, { cause: err });
     }
   }
 
