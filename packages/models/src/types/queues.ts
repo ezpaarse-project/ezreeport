@@ -23,7 +23,7 @@ export const GenerationQueueData = z.object({
     .min(1)
     .describe('Origin of the request, can be a user or a service'),
 
-  targets: z.array(z.email()).min(1).describe('Targets of the report'),
+  targets: z.array(z.email()).describe('Targets of the report'),
 
   writeActivity: z
     .boolean()
@@ -57,7 +57,7 @@ export const MailReportQueueData = z.object({
 
   period: ReportPeriod.describe('Period used to generate report'),
 
-  targets: z.array(z.email()).min(1).describe('Targets of the report'),
+  targets: z.array(z.email()).describe('Targets of the report'),
 
   date: z.coerce.date().describe('Date of the report'),
 

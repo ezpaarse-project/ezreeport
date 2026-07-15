@@ -7,15 +7,12 @@ import { GenerationQueueData } from '@ezreeport/models/queues';
 import { parseJSONMessage } from '@ezreeport/rabbitmq';
 
 import type rabbitmq from '~/lib/rabbitmq';
-import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
 
 import { generateReport, type GenerationEventMap } from '~/models/generation';
 
 import { sendEvent } from './event';
 import { sendReport } from './send';
-
-const { team } = config.report;
 
 const generationQueueName = 'ezreeport.report:queues';
 const deadGenerationExchangeName = 'ezreeport.report:queues:dead';
@@ -103,21 +100,23 @@ async function onMessage(
   }
 
   // Send result
-  sendReport(channel, 'mail', {
-    generationId: data.id,
-    task: data.task,
-    namespace: data.namespace,
+  if (result.detail.sendingTo && result.detail.sendingTo?.length > 0) {
+    sendReport(channel, 'mail', {
+      generationId: data.id,
+      task: data.task,
+      namespace: data.namespace,
 
-    success: result.success,
-    date: result.detail.createdAt,
-    period: result.detail.period,
-    targets: result.detail.sendingTo || [team],
+      success: result.success,
+      date: result.detail.createdAt,
+      period: result.detail.period,
+      targets: result.detail.sendingTo,
 
-    filename:
-      result.success && result.detail.files.report
-        ? result.detail.files.report
-        : result.detail.files.detail,
-  });
+      filename:
+        result.success && result.detail.files.report
+          ? result.detail.files.report
+          : result.detail.files.detail,
+    });
+  }
 
   channel.ack(msg);
 }

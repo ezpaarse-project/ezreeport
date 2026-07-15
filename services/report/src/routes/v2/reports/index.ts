@@ -12,7 +12,7 @@ import {
 import { z } from '@ezreeport/models/lib/zod';
 
 import { Access } from '~/models/access';
-import { ArgumentError, ConflictError, NotFoundError } from '~/models/errors';
+import { ConflictError, NotFoundError } from '~/models/errors';
 import { getNamespace } from '~/models/namespaces';
 import { queueGeneration } from '~/models/queues/report/generation';
 import {
@@ -150,9 +150,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
 
       // Resolve targets
       const targets = compact(request.body.targets ?? task.targets);
-      if (targets.length <= 0) {
-        throw new ArgumentError('You must specify at least one target');
-      }
 
       const firstLevelDebug = !!request.body.period || !!request.body.targets;
       const secondLevelDebug =
