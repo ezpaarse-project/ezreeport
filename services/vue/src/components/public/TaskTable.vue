@@ -90,6 +90,14 @@
       />
     </template>
 
+    <template #[`item.extends.locale`]="{ value }">
+      <TemplateLocaleFlag
+        v-tooltip:left="$t(`$ezreeport.template.locales.${value}`)"
+        :modelValue="value"
+        size="small"
+      />
+    </template>
+
     <template #[`item.namespace`]="{ value, item }">
       <slot name="item.namespace" :namespace="value" :task="item">
         {{ value.name }}
@@ -316,7 +324,6 @@
   import type { AdditionalDataForPreset, TaskPreset } from '~sdk/task-presets';
   import { getCurrentNamespaces } from '~sdk/auth';
   import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
-  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
   import {
     changeTaskEnableState,
     createTaskHelper,
@@ -348,13 +355,21 @@
   // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
-  const arePermissionsReady = shallowRef(false);
   const selectedTasks = ref<Omit<Task, 'template'>[]>([]);
   const updatedTask = ref<Task | undefined>();
   const generatedTask = ref<Omit<Task, 'template'> | undefined>();
   const isFormOpen = shallowRef(false);
   const advancedTask = ref<TaskHelper | undefined>();
   const isFiltersPanelOpen = shallowRef(false);
+
+  const { availableActions } = usePermissions({
+    create: [createTask],
+    update: [upsertTask],
+    delete: [deleteTask],
+
+    generate: [generateAndListenReportOfTask],
+    state: [changeTaskEnableState],
+  });
 
   /** Items per page */
   const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
@@ -363,7 +378,7 @@
     useServerSidePagination((params) => getAllTasks(params), {
       sortBy: 'name',
       itemsPerPage,
-      include: ['extends.tags', 'namespace'],
+      include: ['extends.tags', 'extends.locale', 'namespace'],
     });
   /** List of possible tags */
   const availableTags = computedAsync(async () => {
@@ -409,6 +424,11 @@
         align: 'center',
       },
       {
+        title: t('$ezreeport.template.locale'),
+        value: 'extends.locale',
+        align: 'center',
+      },
+      {
         title: t('$ezreeport.namespace'),
         value: 'namespace',
       },
@@ -449,20 +469,6 @@
     ]
   );
 
-  const availableActions = computed(() => {
-    if (!arePermissionsReady.value) {
-      return {};
-    }
-    return {
-      create: hasPermission(createTask),
-      update: hasPermission(upsertTask),
-      delete: hasPermission(deleteTask),
-
-      generate: hasPermission(generateAndListenReportOfTask),
-      state: hasPermission(changeTaskEnableState),
-    };
-  });
-
   const selectedTaskIds = computed({
     get: () => selectedTasks.value.map((task) => task.id),
     set: (value) => {
@@ -481,7 +487,7 @@
     try {
       advancedTask.value = undefined;
       generatedTask.value = undefined;
-      updatedTask.value = task && (await getTask(task));
+      updatedTask.value = task && (await getTask(task, ['extends.locale']));
 
       isFormOpen.value = true;
     } catch (err) {
@@ -646,9 +652,4 @@
       handleEzrError(msg, err);
     }
   }
-
-  // oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then, promise/always-return, prefer-top-level-await
-  refreshPermissions().then(() => {
-    arePermissionsReady.value = true;
-  });
 </script>

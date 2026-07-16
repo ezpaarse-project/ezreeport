@@ -153,6 +153,11 @@
       "hidden:desc": "Le modèle est caché pour les utilisateurs|Le modèle est visible pour les utilisateurs",
       "hidden:toggle": "Basculer la visibilité",
       "id": "ID du modèle",
+      "locale": "Langue",
+      "locales": {
+        "en": "Anglais",
+        "fr": "Français"
+      },
       "index": "Index",
       "dateField": "Champ date dans l'index",
       "noList": "Aucun modèle trouvé",

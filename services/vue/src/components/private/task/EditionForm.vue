@@ -1,6 +1,14 @@
 <template>
   <v-card :title="$t('$ezreeport.task.title:edit')" prepend-icon="mdi-email">
     <template #append>
+      <TemplateLocaleFlag
+        v-if="modelValue.extends?.locale"
+        v-tooltip:left="
+          $t(`$ezreeport.template.locales.${modelValue.extends?.locale}`)
+        "
+        :modelValue="modelValue.extends?.locale"
+      />
+
       <slot name="append" />
     </template>
 

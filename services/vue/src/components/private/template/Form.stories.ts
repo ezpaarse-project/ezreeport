@@ -1,3 +1,4 @@
+// oxlint-disable no-default-export
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import {
   createTemplateHelper,
@@ -40,6 +41,7 @@ export const ClickAndRead: Story = {
     modelValue: createTemplateHelperFrom({
       id: '10aa85df-ff20-48c8-b07d-0382c9cd3b12',
       name: 'Click&Read : Suivis multi [ezupw+istex+panist]',
+      locale: 'fr',
       tags: [
         { id: '0', name: 'ezPAARSE' },
         { id: '1', name: 'ezUnpaywall', color: '#00B94C' },
@@ -304,6 +306,7 @@ export const Doranum: Story = {
     modelValue: createTemplateHelperFrom({
       id: '91bf7d4e-83e8-4e1b-be69-6fb0dbe6eee9',
       name: 'DORANUM',
+      locale: 'fr',
       tags: [{ id: '0', name: 'ezPAARSE' }],
       body: {
         version: 2,

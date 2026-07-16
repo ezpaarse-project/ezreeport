@@ -60,15 +60,13 @@ module.exports = {
         ...dbEnv,
         ...elasticEnv,
 
+        DEFAULT_TEMPLATE_NAME: env('DEFAULT_TEMPLATE_NAME', 'scratch'),
+
+        ADMIN_KEY: env('ADMIN_KEY', '00000000-0000-0000-0000-000000000000'),
+
         HTTP_PORT: +env('API_HTTP_PORT', 8080),
         ALLOWED_ORIGINS: env('ALLOWED_ORIGINS', '*'),
         ALLOWED_PROXIES: env('ALLOWED_PROXIES', '*'),
-        ADMIN_KEY: env('ADMIN_KEY', '00000000-0000-0000-0000-000000000000'),
-        DEFAULT_TEMPLATE_NAME: env('DEFAULT_TEMPLATE_NAME', 'scratch'),
-        DEFAULT_TEMPLATE_DATEFIELD: env(
-          'DEFAULT_TEMPLATE_DATEFIELD',
-          'datetime'
-        ),
       },
     },
     {
@@ -107,6 +105,13 @@ module.exports = {
 
         TIMER_GENERATE_REPORT: env('TIMER_GENERATE_REPORT', '0 7 * * * *'),
         TIMER_PURGE_OLD_REPORT: env('TIMER_PURGE_OLD_REPORT', '0 1 * * * *'),
+
+        DEFAULT_TEMPLATE_NAME: env('DEFAULT_TEMPLATE_NAME', 'scratch'),
+        DEFAULT_TEMPLATE_DATEFIELD: env(
+          'DEFAULT_TEMPLATE_DATEFIELD',
+          'datetime'
+        ),
+        DEFAULT_TEMPLATE_LOCALE: env('DEFAULT_TEMPLATE_LOCALE', 'en'),
 
         HTTP_PORT: +env('SCHEDULER_HTTP_PORT', 8280),
       },

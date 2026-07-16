@@ -63,6 +63,14 @@
       />
     </template>
 
+    <template #[`item.template.locale`]="{ value }">
+      <TemplateLocaleFlag
+        v-tooltip:left="$t(`$ezreeport.template.locales.${value}`)"
+        :modelValue="value"
+        size="small"
+      />
+    </template>
+
     <template #[`item.recurrence`]="{ value }">
       <v-chip
         :text="$t(`$ezreeport.task.recurrenceList.${value}`)"
@@ -92,10 +100,6 @@
 
     <template #[`item.updatedAt`]="{ value }">
       <LocalDate v-if="value" :model-value="value" />
-    </template>
-
-    <template #[`item.createdAt`]="{ value }">
-      <LocalDate :model-value="value" />
     </template>
 
     <template #[`item._actions`]="{ item }">
@@ -198,7 +202,6 @@
 
 <script setup lang="ts">
   import type { VDataTable } from 'vuetify/components';
-  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
   import { changeTaskPresetVisibility } from '~sdk/helpers/task-presets';
   import {
     getAllTaskPresets,
@@ -220,10 +223,17 @@
   // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
-  const arePermissionsReady = ref(false);
   const selectedTaskPresets = ref<TaskPreset[]>([]);
   const updatedTaskPreset = ref<TaskPreset | undefined>();
-  const isFormOpen = ref(false);
+  const isFormOpen = shallowRef(false);
+
+  const { availableActions } = usePermissions({
+    create: [createTaskPreset],
+    update: [upsertTaskPreset],
+    delete: [deleteTaskPreset],
+
+    visibility: [changeTaskPresetVisibility],
+  });
 
   /** Items per page */
   const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
@@ -231,7 +241,7 @@
   const { total, refresh, loading, filters, vDataTableOptions } =
     useServerSidePagination((params) => getAllTaskPresets(params), {
       sortBy: 'name',
-      include: ['template.tags', 'template.hidden'],
+      include: ['template.tags', 'template.locale', 'template.hidden'],
       itemsPerPage,
       itemsPerPageOptions: props.itemsPerPageOptions,
     });
@@ -256,13 +266,13 @@
         align: 'center',
       },
       {
-        title: t('$ezreeport.updatedAt'),
-        value: 'updatedAt',
-        sortable: true,
+        title: t('$ezreeport.template.locale'),
+        value: 'template.locale',
+        align: 'center',
       },
       {
-        title: t('$ezreeport.createdAt'),
-        value: 'createdAt',
+        title: t('$ezreeport.updatedAt'),
+        value: 'updatedAt',
         sortable: true,
       },
       {
@@ -279,19 +289,6 @@
     ]
   );
 
-  const availableActions = computed(() => {
-    if (!arePermissionsReady.value) {
-      return {};
-    }
-    return {
-      create: hasPermission(createTaskPreset),
-      update: hasPermission(upsertTaskPreset),
-      delete: hasPermission(deleteTaskPreset),
-
-      visibility: hasPermission(changeTaskPresetVisibility),
-    };
-  });
-
   const selectedTaskPresetIds = computed({
     get: () => selectedTaskPresets.value.map((taskPreset) => taskPreset.id),
     set: (value) => {
@@ -302,13 +299,13 @@
     },
   });
 
-  function openForm(taskPreset?: TaskPreset) {
+  function openForm(taskPreset?: TaskPreset): void {
     updatedTaskPreset.value = taskPreset;
 
     isFormOpen.value = true;
   }
 
-  function openDuplicateForm(taskPreset: TaskPreset) {
+  function openDuplicateForm(taskPreset: TaskPreset): void {
     updatedTaskPreset.value = {
       ...taskPreset,
       id: '',
@@ -317,12 +314,12 @@
     isFormOpen.value = true;
   }
 
-  function closeForm() {
+  function closeForm(): void {
     isFormOpen.value = false;
     refresh();
   }
 
-  async function deleteItem(taskPreset: TaskPreset) {
+  async function deleteItem(taskPreset: TaskPreset): Promise<void> {
     // TODO: show warning
     try {
       await deleteTaskPreset(taskPreset);
@@ -332,7 +329,7 @@
     }
   }
 
-  async function deleteSelected() {
+  async function deleteSelected(): Promise<void> {
     // TODO: show warning
     try {
       await Promise.all(
@@ -347,7 +344,7 @@
     }
   }
 
-  async function toggleItemVisibility(taskPreset: TaskPreset) {
+  async function toggleItemVisibility(taskPreset: TaskPreset): Promise<void> {
     try {
       await changeTaskPresetVisibility(taskPreset, !taskPreset.hidden);
       refresh();
@@ -356,7 +353,7 @@
     }
   }
 
-  async function toggleSelectedVisibility() {
+  async function toggleSelectedVisibility(): Promise<void> {
     try {
       await Promise.all(
         selectedTaskPresets.value.map((taskPreset) =>
@@ -369,9 +366,4 @@
       handleEzrError(t('$ezreeport.task-preset.errors.edit'), err);
     }
   }
-
-  // oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
-  refreshPermissions().then(() => {
-    arePermissionsReady.value = true;
-  });
 </script>

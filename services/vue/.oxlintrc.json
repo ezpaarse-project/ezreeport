@@ -13,14 +13,15 @@
   },
   "overrides": [
     {
-      "files": ["components/**/*.stories.ts"],
+      "files": ["src/components/**/*.stories.ts"],
       "rules": {
         "no-default-import": "off",
+        "no-default-export": "off",
         "explicit-return-type": "off"
       }
     },
     {
-      "files": ["composables/*.ts"],
+      "files": ["src/composables/*.ts"],
       "rules": {
         "import/no-default-export": "off"
       }
