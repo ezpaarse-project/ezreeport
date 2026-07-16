@@ -1,6 +1,10 @@
 import type { Namespace, RawNamespace } from '~/modules/namespaces/types';
 import type { TemplateTag } from '~/modules/template-tags/types';
-import type { TemplateBodyLayout, TemplateFilter } from '~/modules/templates';
+import type {
+  TemplateBodyLayout,
+  TemplateFilter,
+  TemplateLocale,
+} from '~/modules/templates';
 
 export type TaskRecurrence =
   | 'DAILY'
@@ -84,6 +88,8 @@ export interface Task {
   extends?: {
     /** Template tags, must be included when fetching */
     tags?: TemplateTag[];
+    /** Template locale, must be included when fetching */
+    locale?: TemplateLocale;
   };
   /** Namespace of the task, must be included when fetching */
   namespace?: Omit<Namespace, 'fetchLogin' | 'fetchOptions'>;

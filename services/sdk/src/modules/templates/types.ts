@@ -85,6 +85,8 @@ export interface TemplateBody {
  */
 export type TemplateTag = OriginalTemplateTag;
 
+export type TemplateLocale = 'en' | 'fr';
+
 export interface Template {
   /** Template ID */
   id: string;
@@ -92,6 +94,8 @@ export interface Template {
   name: string;
   /** Template body */
   body: TemplateBody;
+  /** Template locale */
+  locale: TemplateLocale;
   /** Template tags */
   tags?: OriginalTemplateTag[];
   /** If template is hidden to normal users */

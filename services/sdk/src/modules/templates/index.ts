@@ -13,6 +13,7 @@ export type {
   TemplateBodyFigure,
   TemplateBodyLayout,
   TemplateTag,
+  TemplateLocale,
   TemplateBodyGrid,
   TemplateBody,
   Template,
