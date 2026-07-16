@@ -41,10 +41,9 @@ export function setupDB(logger: Logger): PrismaClient {
   // Test connection
   client
     .$connect()
-    // oxlint-disable-next-line prefer-await-to-then
+    // oxlint-disable-next-line prefer-await-to-then,  always-return
     .then(() => {
       logger.info({ msg: 'Connected to database' });
-      client.$disconnect();
     })
     // oxlint-disable-next-line prefer-await-to-then,prefer-await-to-callbacks
     .catch((err) => {

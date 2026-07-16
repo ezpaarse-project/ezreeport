@@ -1,7 +1,7 @@
 import { ensureArray } from '@ezreeport/models/lib/utils';
 import { z } from '@ezreeport/models/lib/zod';
 import { Recurrence, RecurrenceOffset } from '@ezreeport/models/recurrence';
-import { Filter } from '@ezreeport/models/templates';
+import { Filter, TemplateLocale } from '@ezreeport/models/templates';
 
 import { TemplateTag } from '~/models/templates/types';
 
@@ -10,6 +10,7 @@ import { TemplateTag } from '~/models/templates/types';
  */
 const TaskPresetIncludeFields = z.enum([
   'template.tags',
+  'template.locale',
   'template.hidden',
 ] as const);
 
@@ -74,6 +75,8 @@ export const TaskPreset = z.object({
         .array(TemplateTag)
         .optional()
         .describe('[Includes] Template tags'),
+
+      locale: TemplateLocale.optional().describe('[Includes] Template locale'),
 
       hidden: z
         .boolean()

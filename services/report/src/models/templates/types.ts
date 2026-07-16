@@ -2,6 +2,7 @@ import { ensureArray } from '@ezreeport/models/lib/utils';
 import { z } from '@ezreeport/models/lib/zod';
 import {
   Template as CommonTemplate,
+  TemplateLocale,
   TemplateTag,
 } from '@ezreeport/models/templates';
 
@@ -64,6 +65,8 @@ export type InputTemplateType = z.infer<typeof InputTemplate>;
  */
 export const TemplateQueryFilters = z.object({
   query: z.string().optional().describe('Query used for searching'),
+
+  locale: TemplateLocale.optional().describe('Locale of the template'),
 
   hidden: z
     .stringbool()

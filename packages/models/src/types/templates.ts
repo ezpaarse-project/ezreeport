@@ -249,6 +249,16 @@ export const TemplateTag = z.object({
 export type TemplateTagType = z.infer<typeof TemplateTag>;
 
 /**
+ * Validation for template locales
+ */
+export const TemplateLocale = z.enum(['en', 'fr'] as const);
+
+/**
+ * Type for template locales
+ */
+export type TemplateLocaleType = z.infer<typeof TemplateLocale>;
+
+/**
  * Validation for a template
  */
 export const Template = z.object({
@@ -257,6 +267,8 @@ export const Template = z.object({
   name: z.string().min(1).describe('Template name'),
 
   body: TemplateBody.describe('Template body'),
+
+  locale: TemplateLocale.describe('Locale to use when generating template'),
 
   hidden: z
     .boolean()

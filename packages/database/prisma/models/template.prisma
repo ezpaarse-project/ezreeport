@@ -20,6 +20,8 @@ model Template {
   hidden    Boolean      @default(false)
   /// Tags of the template
   tags      TemplateTag[]
+  /// Locale of the template
+  locale    String
   /// The layouts used to generate the report
   body      Json
   /// When the template was created

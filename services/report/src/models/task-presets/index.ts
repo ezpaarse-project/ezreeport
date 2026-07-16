@@ -49,13 +49,18 @@ function applyIncludes(
     template.tags = true;
   }
 
+  if (fields.includes('template.locale')) {
+    template = template || {};
+    template.locale = true;
+  }
+
   if (fields.includes('template.hidden')) {
     template = template || {};
     template.hidden = true;
   }
 
   return {
-    template: { select: template },
+    template: template ? { select: template } : undefined,
   };
 }
 

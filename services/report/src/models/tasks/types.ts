@@ -9,14 +9,18 @@ import { Recurrence } from '@ezreeport/models/recurrence';
 import { Task as CommonTask } from '@ezreeport/models/tasks';
 
 import { Namespace } from '~/models/namespaces/types';
-import { TemplateTag } from '~/models/templates/types';
+import { TemplateLocale, TemplateTag } from '~/models/templates/types';
 
 export * from '@ezreeport/models/tasks';
 
 /**
  * Validation for task include fields
  */
-const TaskIncludeFields = z.enum(['extends.tags', 'namespace'] as const);
+const TaskIncludeFields = z.enum([
+  'extends.tags',
+  'extends.locale',
+  'namespace',
+] as const);
 
 /**
  * Type for task include fields
@@ -36,6 +40,8 @@ export const Task = z.object({
 
   extends: z
     .object({
+      locale: TemplateLocale.optional().describe('[Includes] Template locale'),
+
       tags: z
         .array(TemplateTag)
         .optional()
