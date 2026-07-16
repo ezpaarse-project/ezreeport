@@ -9,6 +9,42 @@ import { initHeartbeat, getMissingMandatoryServices } from '~/models/heartbeat';
 import initQueues from '~/models/queues';
 import initRPC from '~/models/rpc';
 
+import { upsertDefaultTemplate } from './models/templates';
+
+async function init(): Promise<void> {
+  // Add default template if not already present
+  try {
+    const { id } = await upsertDefaultTemplate();
+    appLogger.info({
+      scope: 'init',
+      defaultTemplateId: id,
+      msg: 'Default template ready',
+    });
+  } catch (error) {
+    appLogger.error({
+      scope: 'init',
+      err: error,
+      message: "Couldn't upsert default template",
+    });
+  }
+
+  // Abort dangling generations. If they were still active, events will mark them as active again
+  try {
+    const abortedCount = await abortDanglingGenerations();
+    appLogger.info({
+      scope: 'init',
+      msg: 'Dangling generations aborted',
+      abortedCount,
+    });
+  } catch (error) {
+    appLogger.error({
+      scope: 'init',
+      err: error,
+      message: "Couldn't abort dangling generations",
+    });
+  }
+}
+
 async function start(): Promise<void> {
   appLogger.info({
     scope: 'node',
@@ -35,6 +71,7 @@ async function start(): Promise<void> {
 
     // Initialize core services (if fails, service is not alive)
     initCrons();
+    await init();
 
     // Initialize other services (if fails, service is not ready)
     await useRabbitMQ(async (connection) => {
@@ -42,10 +79,6 @@ async function start(): Promise<void> {
       await initQueues(connection);
       await initHeartbeat(connection);
     });
-
-    // Abort dangling generations. If they were still active, events will mark them as active again
-    await abortDanglingGenerations();
-    appLogger.info({ msg: 'Dangling generations aborted' });
 
     appLogger.info({
       scope: 'init',
@@ -58,4 +91,5 @@ async function start(): Promise<void> {
     throw err instanceof Error ? err : new Error(`${err}`);
   }
 }
-start();
+
+void start();

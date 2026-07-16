@@ -36,8 +36,10 @@ export async function upsertGeneration(
 
 /**
  * Mark as `ABORTED` all prior generations
+ *
+ * @returns count of aborted
  */
-export async function abortDanglingGenerations(): Promise<void> {
+export async function abortDanglingGenerations(): Promise<number> {
   const { count } = await prisma.generation.updateMany({
     where: {
       status: { in: ['PENDING', 'PROCESSING'] },
@@ -52,4 +54,6 @@ export async function abortDanglingGenerations(): Promise<void> {
     action: 'Updated',
     msg: 'Dangling(s) aborted',
   });
+
+  return count;
 }

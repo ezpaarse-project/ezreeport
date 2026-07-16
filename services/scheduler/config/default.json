@@ -20,6 +20,11 @@
     "username": "guest",
     "password": "guest"
   },
+  "defaultTemplate": {
+    "name": "scratch",
+    "dateField": "datetime",
+    "locale": "en"
+  },
   "timers": {
     "generateReports": "0 0 * * *"
   }

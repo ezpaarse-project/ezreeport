@@ -17,8 +17,7 @@
   },
   "defaultTemplate": {
     "id": "",
-    "name": "scratch",
-    "dateField": "datetime"
+    "name": "scratch"
   },
   "elasticsearch": {
     "url": "https://host.docker.internal:9000",

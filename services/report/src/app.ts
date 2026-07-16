@@ -6,10 +6,27 @@ import { useRabbitMQ } from '~/lib/rabbitmq';
 import { initHeartbeat } from '~/models/heartbeat';
 import initQueues from '~/models/queues';
 import initRPC from '~/models/rpc';
+import { getDefaultTemplate } from '~/models/templates';
 
 import routes from '~/routes';
 
-import { initTemplates } from './init';
+async function init(): Promise<void> {
+  try {
+    const { id } = await getDefaultTemplate();
+    config.defaultTemplate.id = id;
+    appLogger.info({
+      scope: 'init',
+      defaultTemplateId: id,
+      msg: 'Default template ready',
+    });
+  } catch (error) {
+    appLogger.error({
+      scope: 'init',
+      err: error,
+      message: "Couldn't get default template",
+    });
+  }
+}
 
 async function start(): Promise<void> {
   appLogger.info({
@@ -23,7 +40,7 @@ async function start(): Promise<void> {
   try {
     // Initialize core services (if fails, service is unhealthy)
     await startHTTPServer(routes);
-    await initTemplates();
+    await init();
 
     // Initialize other services (if fails, service is degraded)
     await useRabbitMQ(async (connection) => {
@@ -43,4 +60,5 @@ async function start(): Promise<void> {
     throw err instanceof Error ? err : new Error(`${err}`);
   }
 }
-start();
+
+void start();
