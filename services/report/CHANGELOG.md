@@ -1,5 +1,22 @@
 # ezreeport-report
 
+## 3.3.0-rc.0
+
+### Minor Changes
+
+- b531205: ✨ added security headers
+- 92b1b03: ✨ can now generate test reports without targets
+- 730cac8: ✨ templates can be rendered using locales
+
+### Patch Changes
+
+- Updated dependencies [92b1b03]
+- Updated dependencies [730cac8]
+  - @ezreeport/models@0.2.0-rc.0
+  - @ezreeport/database@1.4.0-rc.0
+  - @ezreeport/heartbeats@0.0.2-rc.0
+  - @ezreeport/rpc@0.0.2-rc.0
+
 ## 3.2.0
 
 ### Minor Changes

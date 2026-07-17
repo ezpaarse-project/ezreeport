@@ -1,5 +1,11 @@
 # @ezpaarse-project/ezreeport-sdk-js
 
+## 3.3.0-rc.0
+
+### Minor Changes
+
+- 730cac8: ✨ templates can be rendered using locales
+
 ## 3.2.0
 
 ### Minor Changes
