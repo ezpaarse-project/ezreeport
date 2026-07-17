@@ -1,6 +1,7 @@
 import type { jsPDF as PDF } from 'jspdf';
 
 import type { Interval } from '@ezreeport/dates';
+import type { TemplateLocaleType } from '@ezreeport/models/templates';
 
 export type JSPDFRegisterableFont = {
   path: string;
@@ -11,7 +12,7 @@ export type JSPDFRegisterableFont = {
 
 export type PDFReportInit = {
   /**
-   * jsPDF instance
+   * JsPDF instance
    */
   pdf: PDF;
   /**
@@ -30,6 +31,7 @@ export type PDFReportInit = {
   name: string;
   period: Interval;
   namespace: { name: string };
+  locale: TemplateLocaleType;
   /**
    * Margin between limit of the page & actual content
    */

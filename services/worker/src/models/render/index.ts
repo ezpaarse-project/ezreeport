@@ -6,6 +6,7 @@ import type {
   FigureType,
   LayoutType,
   TemplateBodyGridType,
+  TemplateLocaleType,
 } from '@ezreeport/models/templates';
 
 import { appLogger } from '~/lib/logger';
@@ -26,10 +27,10 @@ export async function initRenderEngine(): Promise<void> {
   initVegaEngine();
 
   appLogger.info({
-    scope: 'render-engine',
     initDuration: process.uptime() - start,
     initDurationUnit: 's',
     msg: 'Init completed',
+    scope: 'render-engine',
   });
 }
 
@@ -71,14 +72,14 @@ async function renderFigureWithVega(
   }
 
   await renderFigure({
-    doc,
     colorMap: options.colorMap,
-    figure: options.figure,
-    viewport: options.viewport,
-    slot: options.slot,
-    order,
     data: options.figure.data,
+    doc,
+    figure: options.figure,
+    order,
     recurrence: options.recurrence,
+    slot: options.slot,
+    viewport: options.viewport,
   });
 }
 
@@ -119,13 +120,13 @@ async function renderLayoutWithVega(
         figure,
         slot,
       });
-    } catch (err) {
-      if (err instanceof Error) {
-        const cause = err.cause ?? {};
-        err.cause = { ...cause, figure: figureIndex };
-        throw err;
+    } catch (error) {
+      if (error instanceof Error) {
+        const cause = error.cause ?? {};
+        error.cause = { ...cause, figure: figureIndex };
+        throw error;
       }
-      throw new RenderError(`${err}`);
+      throw new RenderError(`${error}`);
     }
 
     events.emit('render:figure', figure);
@@ -139,6 +140,7 @@ export type VegaRenderOptionsType = {
     namespace: {
       name: string;
     };
+    locale: TemplateLocaleType;
   };
   recurrence: RecurrenceType;
   debug: boolean;
@@ -156,7 +158,7 @@ export type VegaRenderOptionsType = {
  * @fires #render:figure When figure is added in a slot.
  * @fires #render:layout When a layout is rendered.
  *
- * @return Stats about PDF
+ * @returns Stats about PDF
  */
 export async function renderPdfWithVega(
   options: VegaRenderOptionsType,
@@ -204,24 +206,24 @@ export async function renderPdfWithVega(
       await renderLayoutWithVega(
         doc,
         {
-          layout,
-          slots,
-          grid: options.grid,
-          viewport,
-          margin: slotMargin,
-          debug: options.debug,
           colorMap,
+          debug: options.debug,
+          grid: options.grid,
+          layout,
+          margin: slotMargin,
           recurrence: options.recurrence,
+          slots,
+          viewport,
         },
         events
       );
-    } catch (err) {
-      if (err instanceof Error) {
-        const cause = err.cause ?? {};
-        err.cause = { ...cause, layout: layoutIndex };
-        throw err;
+    } catch (error) {
+      if (error instanceof Error) {
+        const cause = error.cause ?? {};
+        error.cause = { ...cause, layout: layoutIndex };
+        throw error;
       }
-      throw new RenderError(`${err}`);
+      throw new RenderError(`${error}`);
     }
 
     events.emit('render:layout', options.layouts[layoutIndex]);

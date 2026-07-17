@@ -10,7 +10,7 @@ import type rabbitmq from '~/lib/rabbitmq';
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
 
-import { generateReport, type GenerationEventMap } from '~/models/generation';
+import { type GenerationEventMap, generateReport } from '~/models/generation';
 
 import { sendEvent } from './event';
 import { sendReport } from './send';
@@ -19,7 +19,7 @@ const generationQueueName = 'ezreeport.report:queues';
 const deadGenerationExchangeName = 'ezreeport.report:queues:dead';
 
 const { team } = config.report;
-const logger = appLogger.child({ scope: 'queues', queue: generationQueueName });
+const logger = appLogger.child({ queue: generationQueueName, scope: 'queues' });
 
 async function onMessage(
   channel: rabbitmq.Channel,
@@ -33,9 +33,9 @@ async function onMessage(
   const { data, raw, parseError } = parseJSONMessage(msg, GenerationQueueData);
   if (!data) {
     logger.error({
-      msg: 'Invalid data',
       data: process.env.NODE_ENV === 'production' ? undefined : raw,
       err: parseError,
+      msg: 'Invalid data',
     });
     channel.nack(msg, undefined, false);
     return;
@@ -49,20 +49,20 @@ async function onMessage(
   let pageRendered = 0;
   const updateProgress = (status: GenerationStatusType) =>
     sendEvent(channel, {
-      id: data.id,
-      taskId: data.task.id,
-      start: data.period.start,
-      end: data.period.end,
-      origin: data.origin,
-      targets: data.targets,
-      writeActivity: !!data.writeActivity,
-      status,
-      progress: pageTotal ? Math.round((pageRendered / pageTotal) * 100) : null,
-      took: startedAt ? Date.now() - startedAt.getTime() : null,
-      reportId,
       createdAt: data.createdAt,
-      updatedAt: new Date(),
+      end: data.period.end,
+      id: data.id,
+      origin: data.origin,
+      progress: pageTotal ? Math.round((pageRendered / pageTotal) * 100) : null,
+      reportId,
+      start: data.period.start,
       startedAt,
+      status,
+      targets: data.targets,
+      taskId: data.task.id,
+      took: startedAt ? Date.now() - startedAt.getTime() : null,
+      updatedAt: new Date(),
+      writeActivity: !!data.writeActivity,
     });
   events.on('start', (event) => {
     ({ reportId } = event as { reportId: string });
@@ -90,12 +90,12 @@ async function onMessage(
   let result;
   try {
     result = await generateReport(data, events);
-  } catch (err) {
+  } catch (error) {
     updateProgress('ERROR');
     logger.error({
       jobId: data.id,
       msg: 'Error while generating report',
-      err,
+      error,
     });
     channel.ack(msg);
     return;
@@ -105,19 +105,18 @@ async function onMessage(
   const targets = result.detail.sendingTo || [team];
   if (targets.length > 0) {
     sendReport(channel, 'mail', {
-      generationId: data.id,
-      task: data.task,
-      namespace: data.namespace,
-
-      success: result.success,
       date: result.detail.createdAt,
-      period: result.detail.period,
-      targets,
-
       filename:
         result.success && result.detail.files.report
           ? result.detail.files.report
           : result.detail.files.detail,
+      generationId: data.id,
+      locale: result.detail.locale,
+      namespace: data.namespace,
+      period: result.detail.period,
+      success: result.success,
+      targets,
+      task: data.task,
     });
   }
 
@@ -134,8 +133,8 @@ export async function getReportGenerationQueue(
   );
 
   const { queue } = await channel.assertQueue(generationQueueName, {
-    durable: true,
     deadLetterExchange,
+    durable: true,
   });
 
   // Consume generation queue

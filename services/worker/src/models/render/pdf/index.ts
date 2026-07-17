@@ -2,15 +2,15 @@ import { readFile } from 'node:fs/promises';
 
 import { jsPDF as PDF } from 'jspdf';
 
-import { format } from '@ezreeport/dates';
+import { d, t } from '@ezreeport/i18n';
 
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
 
 import type {
   JSPDFRegisterableFont,
-  PDFReportInit,
   PDFReport,
+  PDFReportInit,
   PDFResult,
 } from './types';
 import {
@@ -26,7 +26,7 @@ type PDFAsset = (typeof logos)[number];
 
 export type PDFReportOptions = Pick<
   PDFReportInit,
-  'name' | 'period' | 'namespace'
+  'name' | 'period' | 'namespace' | 'locale'
 >;
 
 const logger = appLogger.child({ scope: 'jspdf' });
@@ -44,14 +44,14 @@ async function loadImage({ path, link }: PDFAsset): Promise<void> {
 
   loadedImages.set(path, {
     ...asset,
-    path,
     link,
+    path,
   });
 
   logger.debug({
-    path,
     link,
     msg: 'Loaded image',
+    path,
   });
 }
 
@@ -67,31 +67,42 @@ async function loadPDFFont({
   await registerJSPDFFont(path, font);
 
   logger.debug({
-    path,
     font,
     msg: 'Registered font',
+    path,
   });
 }
 
 /**
  * Initialize PDF engine by loading needed assets
+ *
+ * @returns Promise resolving when engine is ready
  */
-export function initPDFEngine(): Promise<void[]> {
+export async function initPDFEngine(): Promise<void> {
   // oxlint-disable-next-line prefer-await-to-then
-  return Promise.all([
+  await Promise.all([
     // Load logos
-    ...logos.map(loadImage),
+    ...logos.map((asset) => loadImage(asset)),
     // Register fonts
-    ...fonts.map(loadPDFFont),
+    ...fonts.map((asset) => loadPDFFont(asset)),
   ]);
 }
 
 /**
- * Print PDF's header
+ * Print PDF's header's subtitle
  *
- * @returns The total height of header with MARGIN
+ * @param doc - The PDF document
+ *
+ * @returns The total height of footer with margin
  */
-function printHeader(doc: PDFReportInit): number {
+function printHeaderSubtitle(doc: PDFReportInit): number {
+  const { period, locale } = doc;
+  const subtitle = t('report.header.subtitle', locale, {
+    namespace: doc.namespace.name,
+    periodEnd: d(period.end, locale, 'P'),
+    periodStart: d(period.start, locale, 'P'),
+  });
+
   let fontSize = 13;
   // "cursor" that will help correct positioning
   let yPos = doc.margin.top + fontSize;
@@ -107,23 +118,30 @@ function printHeader(doc: PDFReportInit): number {
     .setFont(doc.fontFamily, 'normal')
     .setTextColor('#000000')
     .setFontSize(fontSize)
-    .text(
-      `du ${format(doc.period.start, 'dd/MM/yyyy')} au ${format(doc.period.end, 'dd/MM/yyyy')}, pour ${doc.namespace.name}`,
-      doc.margin.right,
-      yPos
-    );
+    .text(subtitle, doc.margin.right, yPos);
 
   // Move "cursor" by 2 lines (2*fontSize) + some space
-  const cursorOffset = yPos + 2 * fontSize + 2;
+  return yPos + 2 * fontSize + 2;
+}
 
+/**
+ * Print PDF's header's logos
+ *
+ * @param doc - The PDF document
+ */
+function printHeaderLogos(doc: PDFReportInit): void {
   // Print first logo
   const logo = loadedImages.get(logos.at(0)?.path || '');
   if (!logo) {
-    return cursorOffset;
+    return;
   }
 
+  const fontSize = 13;
+  // "cursor" that will help correct positioning - based on subtitle
+  const yPos = doc.margin.top + 2 * fontSize + 2;
+
   // Scaling down logo while preserving aspect ratio
-  const logoHeight = Math.max(1, yPos - doc.margin.top); // Wanted height of logo
+  const logoHeight = Math.max(1, yPos - doc.margin.top);
   const logoWidth = (logoHeight * logo.width) / logo.height;
   const logoX = doc.width - doc.margin.right - logoWidth;
   const logoY = doc.margin.top;
@@ -138,17 +156,31 @@ function printHeader(doc: PDFReportInit): number {
       width: logoWidth,
     })
     .link(logoX, logoY, logoWidth, logoHeight, { url: logo.link });
+}
 
-  return cursorOffset;
+/**
+ * Print PDF's header
+ *
+ * @param doc The PDF document
+ *
+ * @returns The total height of header with MARGIN
+ */
+function printHeader(doc: PDFReportInit): number {
+  const offset = printHeaderSubtitle(doc);
+  printHeaderLogos(doc);
+  return offset;
 }
 
 /**
  * Print PDF's footer
  *
+ * @param doc The PDF document
+ *
  * @returns The total height of footer with margin
  */
 function printFooter(doc: PDFReportInit): number {
-  const height = 20; // Wanted height of logos
+  // Wanted height of logos
+  const height = 20;
   const margin = 10;
 
   // Get assets of logos and scale down
@@ -196,45 +228,50 @@ function printFooter(doc: PDFReportInit): number {
 
 /**
  * Print page numbers, export PDF and reset document
+ *
+ * @param doc The PDF document
+ *
+ * @returns Rendered PDF document
  */
 function renderDoc(doc: PDFReportInit): PDFResult {
+  const createdAt = t('report.footer.createdAt', doc.locale, {
+    date: d(doc.today, doc.locale, 'P'),
+  });
+
+  const xPos = doc.width - doc.margin.right;
+  const yPos = doc.height - doc.margin.bottom;
+
+  doc.pdf.setFont(doc.fontFamily, 'normal').setTextColor('#000000');
+
   // Print page numbers
   const totalPageCount = doc.pdf.internal.pages.length - 1;
+
   for (let currPage = 1; currPage <= totalPageCount; currPage += 1) {
     doc.pdf.setPage(currPage);
 
-    const xPos = doc.width - doc.margin.right;
-    const yPos = doc.height - doc.margin.bottom;
     const pageNoText = `${currPage} / ${totalPageCount}`;
-    const width = doc.pdf
-      .setFont(doc.fontFamily, 'normal')
-      .setTextColor('#000000')
-      .setFontSize(13)
-      .getTextWidth(pageNoText);
+    const width = doc.pdf.setFontSize(13).getTextWidth(pageNoText);
 
     doc.pdf
       .text(pageNoText, xPos, yPos - 3, { align: 'right' })
       .setFontSize(8)
-      .text(
-        `Généré le ${format(doc.today, 'dd/MM/yyyy')}`,
-        xPos - width - 15,
-        yPos - 5,
-        {
-          align: 'right',
-        }
-      );
+      .text(createdAt, xPos - width - 15, yPos - 5, {
+        align: 'right',
+      });
   }
 
   // Export document
   const data = doc.pdf.output('arraybuffer');
 
   return {
-    pageCount: totalPageCount,
     data: Buffer.from(data),
+    pageCount: totalPageCount,
   };
 }
 /**
  * Shorthand to add a page to the PDF with header + footer
+ *
+ * @param doc The PDF document
  */
 function addDocPage(doc: PDFReportInit): void {
   doc.pdf.addPage();
@@ -251,37 +288,37 @@ function addDocPage(doc: PDFReportInit): void {
  */
 export function createPDF(params: PDFReportOptions): PDFReport {
   const pdf = new PDF({
-    unit: 'px',
-    orientation: 'landscape',
-    hotfixes: ['px_scaling'],
     compress: true,
+    hotfixes: ['px_scaling'],
+    orientation: 'landscape',
+    unit: 'px',
   });
 
   const init: PDFReportInit = {
     ...params,
-    pdf,
-    width: pdf.internal.pageSize.getWidth(),
-    height: pdf.internal.pageSize.getHeight(),
-    today: new Date(),
     fontFamily,
+    height: pdf.internal.pageSize.getHeight(),
     margin: {
-      top: 30,
-      right: 30,
       bottom: 30,
       left: 30,
+      right: 30,
+      top: 30,
     },
+    pdf,
+    today: new Date(),
+    width: pdf.internal.pageSize.getWidth(),
   };
 
   const doc: PDFReport = {
     ...init,
-    offset: {
-      top: 5 + printHeader(init),
-      right: init.margin.right,
-      bottom: 10 + printFooter(init),
-      left: init.margin.left,
-    },
     addPage() {
       return addDocPage(this);
+    },
+    offset: {
+      bottom: 10 + printFooter(init),
+      left: init.margin.left,
+      right: init.margin.right,
+      top: 5 + printHeader(init),
     },
     render() {
       return renderDoc(this);
