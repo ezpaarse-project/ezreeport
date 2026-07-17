@@ -40,9 +40,9 @@ const createEventfulPromise = <Data, Events extends EventMap = EventMap>(
   executor: (
     emitter: EventfulEmitter<Events>,
     resolve: (value: Data) => void
-  ) => Promise<Data | void>,
+  ) => Promise<void>,
   // oxlint-disable-next-line unicorn/prefer-event-target
-  emitter = new EventEmitter()
+  emitter: EventEmitter = new EventEmitter()
 ): EventfulPromise<Data, Events> => {
   const customEmitter: EventfulEmitter<Events> = {
     emit: (eventName, ...args) => {
@@ -55,8 +55,6 @@ const createEventfulPromise = <Data, Events extends EventMap = EventMap>(
   const promise = new Promise<Data>((resolve, reject) => {
     executor(customEmitter, resolve)
       // oxlint-disable-next-line prefer-await-to-then
-      .then((res) => res && resolve(res))
-      // oxlint-disable-next-line prefer-await-to-then
       .catch(reject);
   });
 
@@ -64,6 +62,13 @@ const createEventfulPromise = <Data, Events extends EventMap = EventMap>(
     Promise<Data>,
     EventfulListener<Events>
   >(promise, {
+    off: (eventName, listener) => {
+      emitter.off(eventName.toString(), (...params) =>
+        // oxlint-disable-next-line no-explicit-any
+        listener(...(params as any))
+      );
+      return res;
+    },
     on: (eventName, listener) => {
       emitter.on(eventName.toString(), (...params) =>
         // oxlint-disable-next-line no-explicit-any
@@ -73,13 +78,6 @@ const createEventfulPromise = <Data, Events extends EventMap = EventMap>(
     },
     once: (eventName, listener) => {
       emitter.once(eventName.toString(), (...params) =>
-        // oxlint-disable-next-line no-explicit-any
-        listener(...(params as any))
-      );
-      return res;
-    },
-    off: (eventName, listener) => {
-      emitter.off(eventName.toString(), (...params) =>
         // oxlint-disable-next-line no-explicit-any
         listener(...(params as any))
       );

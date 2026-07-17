@@ -172,19 +172,18 @@
 <script setup lang="ts">
   import type { Task } from '~sdk/tasks';
   import {
-    eachDayOfInterval,
-    format,
     add,
+    eachDayOfInterval,
     endOfDay,
-    max,
     isValid as isValidDate,
+    max,
   } from 'date-fns';
   import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
   import { getPeriodFromRecurrence } from '~sdk/recurrence';
   import {
-    getFileAsBlob,
-    type ReportResult,
     type ReportError,
+    type ReportResult,
+    getFileAsBlob,
   } from '~sdk/reports';
 
   import { downloadBlob } from '~/lib/files';
@@ -202,19 +201,20 @@
   // Utils composables
   // oxlint-disable-next-line id-length
   const { t } = useI18n();
+  const { formatDate } = useDateLocale();
 
   /** Is basic form valid */
-  const isValid = ref(false);
+  const isValid = shallowRef(false);
   /** Custom targets */
   const targets = ref(props.modelValue.targets);
   /** Custom period */
-  const period = ref({ start: new Date(), end: new Date() });
+  const period = ref({ end: new Date(), start: new Date() });
   /** Is the period resolving */
-  const periodResolving = ref(false);
+  const periodResolving = shallowRef(false);
   /** Is the report being generated */
-  const loading = ref(false);
+  const loading = shallowRef(false);
   /** Progress of the generation */
-  const progress = ref(0);
+  const progress = shallowRef(0);
   /** Error in the generation */
   const error = ref<ReportError | undefined>();
   /** Result of the generation */
@@ -223,7 +223,7 @@
   /** Formatted period */
   const formattedPeriod = computed(
     () =>
-      `${format(period.value.start, 'dd/MM/yyyy')} ~ ${format(period.value.end, 'dd/MM/yyyy')}`
+      `${formatDate(period.value.start, 'P')} ~ ${formatDate(period.value.end, 'P')}`
   );
   /** Days in period */
   const periodRange = computed(() => eachDayOfInterval(period.value));
@@ -238,7 +238,7 @@
     return 'error';
   });
 
-  function onTargetUpdated(emails: string | string[] | undefined) {
+  function onTargetUpdated(emails: string | string[] | undefined): void {
     if (emails == null) {
       targets.value = [];
       return;
@@ -250,18 +250,13 @@
     }
 
     // Allow multiple mail addresses, separated by semicolon or comma
-    targets.value = Array.from(
-      new Set(
-        allTargets
-          .join(';')
-          .replaceAll(/[,]/g, ';')
-          .split(';')
-          .map((mail) => mail.trim())
-      )
-    );
+    targets.value = [...new Set(allTargets.join(';').replaceAll(/[,]/g, ';').split(';').map((mail) => mail.trim()))];
   }
 
-  async function updatePeriodFromRecurrence(date: Date, offset = 0) {
+  async function updatePeriodFromRecurrence(
+    date: Date,
+    offset = 0
+  ): Promise<void> {
     if (periodResolving.value) {
       return;
     }
@@ -273,13 +268,13 @@
         date,
         offset
       );
-    } catch (err) {
-      handleEzrError(t('$ezreeport.errors.resolvePeriod'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.errors.resolvePeriod'), error);
     }
     periodResolving.value = false;
   }
 
-  async function updatePeriodFromRange(range: Date | Date[]) {
+  async function updatePeriodFromRange(range: Date | Date[]): Promise<void> {
     const date = Array.isArray(range) ? max(range) : range;
     if (!isValidDate(date)) {
       return;
@@ -288,7 +283,7 @@
     await updatePeriodFromRecurrence(date);
   }
 
-  async function generate() {
+  async function generate(): Promise<void> {
     loading.value = true;
     progress.value = 0;
     error.value = undefined;
@@ -312,23 +307,36 @@
       }
 
       result.value = res;
-    } catch (err) {
-      handleEzrError(t('$ezreeport.task.errors.generate'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.task.errors.generate'), error);
     }
     loading.value = false;
   }
 
-  async function downloadGenerationFile(path: string) {
-    if (!result.value) {
+  async function downloadGenerationFile(path: string): Promise<void> {
+    if (!path || !props.modelValue || !result.value?.detail?.period) {
       return;
     }
 
+    let filename = [
+      'ezREEPORT',
+      props.modelValue.name,
+      formatDate(result.value.detail.period.start, 'yyyy-MM-dd'),
+      formatDate(result.value.detail.period.end, 'yyyy-MM-dd'),
+    ].join('_');
+
+    const [, type, extension] = /\.([a-z]+)\.([a-z]+)$/i.exec(path) ?? [];
+
+    if (type !== 'rep') {
+      filename += `.${type}`;
+    }
+    filename += `.${extension}`;
+
     try {
-      const filename = path.split('/').pop() ?? 'download';
       const blob = await getFileAsBlob(result.value.detail.taskId, path);
       downloadBlob(blob, filename);
-    } catch (err) {
-      handleEzrError(t('$ezreeport.errors.download', { path }), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.errors.download', { path }), error);
     }
   }
 

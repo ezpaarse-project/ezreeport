@@ -361,8 +361,7 @@
             "formatOptionsLabel": {
               "_default": "Format parameters",
               "date": "Format to use",
-              "date:hint": "Based on {link}",
-              "number": "Locale to use"
+              "date:hint": "Based on {link}"
             },
             "errors": {
               "create": "Can't create element",

@@ -159,14 +159,7 @@
 
 <script setup lang="ts">
   import type { VDataTable } from 'vuetify/components';
-  import {
-    eachDayOfInterval,
-    format,
-    formatISO,
-    isValid,
-    max,
-    min,
-  } from 'date-fns';
+  import { eachDayOfInterval, formatISO, isValid, max, min } from 'date-fns';
   import { getAllActivity } from '~sdk/task-activity';
 
   const maxDate = new Date();
@@ -182,10 +175,10 @@
   /** List of activity */
   const { total, refresh, loading, filters, vDataTableOptions } =
     useServerSidePagination((params) => getAllActivity(params), {
-      sortBy: 'createdAt',
-      order: 'desc',
-      itemsPerPage,
       include: ['task.namespace'],
+      itemsPerPage,
+      order: 'desc',
+      sortBy: 'createdAt',
     });
 
   type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
@@ -193,7 +186,7 @@
   // Utils composable
   // oxlint-disable-next-line id-length
   const { t } = useI18n();
-  const { locale } = useDateLocale();
+  const { formatDate } = useDateLocale();
 
   const title = computed(
     () =>
@@ -212,14 +205,14 @@
         value: 'task.namespace.name',
       },
       {
+        align: 'center',
         title: t('$ezreeport.task-activity.type'),
         value: 'type',
-        align: 'center',
       },
       {
+        sortable: true,
         title: t('$ezreeport.task-activity.date'),
         value: 'createdAt',
-        sortable: true,
       },
     ]
   );
@@ -235,7 +228,7 @@
       if (!isValid(end)) {
         return [start];
       }
-      return eachDayOfInterval({ start, end });
+      return eachDayOfInterval({ end, start });
     },
     set: (range) => {
       if (!range || range.length <= 0) {
@@ -256,12 +249,12 @@
     const start = new Date(`${filters.value['createdAt.from']}`);
     const end = new Date(`${filters.value['createdAt.to']}`);
 
-    const period = { start: '', end: '' };
+    const period = { end: '', start: '' };
     if (isValid(start)) {
-      period.start = format(start, 'dd/MM/yyyy', { locale: locale.value });
+      period.start = formatDate(start, 'P');
     }
     if (isValid(end)) {
-      period.end = format(end, 'dd/MM/yyyy', { locale: locale.value });
+      period.end = formatDate(end, 'P');
     }
     if (!period.start) {
       return;

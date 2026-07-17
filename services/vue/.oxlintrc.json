@@ -15,9 +15,8 @@
     {
       "files": ["src/components/**/*.stories.ts"],
       "rules": {
-        "no-default-import": "off",
         "no-default-export": "off",
-        "explicit-return-type": "off"
+        "explicit-function-return-type": "off"
       }
     },
     {

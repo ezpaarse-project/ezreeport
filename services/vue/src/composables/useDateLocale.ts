@@ -1,8 +1,8 @@
-import { formatDate, type Locale } from 'date-fns';
-import { fr, enGB } from 'date-fns/locale';
+import { type Locale, formatDate } from 'date-fns';
+import { enGB, fr } from 'date-fns/locale';
 
 const dateFnsLocales: Record<string, Locale> = {
-  // keys are i18n locales, values are date-fns locales
+  // Keys are i18n locales, values are date-fns locales
   en: enGB,
   fr,
 };
@@ -13,7 +13,8 @@ export default function useDateLocale() {
   const dateLocale = computed(() => dateFnsLocales[locale.value]);
 
   return {
-    locale: dateLocale,
+    formatDate: (date: Date, format: string): string =>
+      formatDate(date, format, { locale: dateLocale.value }),
 
     formatDateWithTZ: (date: Date, format: string): string => {
       const tzDate = new Date(
@@ -24,5 +25,7 @@ export default function useDateLocale() {
         locale: dateLocale.value,
       });
     },
+
+    locale: dateLocale,
   };
 }

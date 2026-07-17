@@ -1,9 +1,9 @@
-import { ofetch } from 'ofetch';
-import { io, type Socket } from 'socket.io-client';
+import { type $Fetch, ofetch } from 'ofetch';
+import { type Socket, io } from 'socket.io-client';
 
 export interface ApiAuthOptions {
   token?: string;
-  // apiKey?: string;
+  // ApiKey?: string;
 }
 
 type SocketCreator = (
@@ -17,11 +17,11 @@ const sockets = new Map<string, { con: Socket; rooms?: string[] }>();
  * Client for the API
  */
 export const client = {
-  token: '',
-  fetch: ofetch.create({}),
+  fetch: ofetch.create({}) as $Fetch,
   socket: (() => {
     // Will be init later
   }) as SocketCreator,
+  token: '',
 };
 
 const prepareSocketCreator = (
@@ -52,8 +52,8 @@ const prepareSocketCreator = (
       try {
         namespace = {
           con: io(url.href, {
-            path: socketIoPath,
             auth: auth || undefined,
+            path: socketIoPath,
             query: rooms ? { rooms } : undefined,
           }),
           rooms,
@@ -89,8 +89,8 @@ export function prepareClient(
   if (auth?.token) {
     headers.Authorization = `Bearer ${auth.token}`;
   }
-  // if (auth?.apiKey) {
-  //   headers['X-Api-Key'] = auth.apiKey;
+  // If (auth?.apiKey) {
+  //   Headers['X-Api-Key'] = auth.apiKey;
   // }
 
   let href;
