@@ -284,7 +284,7 @@ ENV NODE_ENV=production
 WORKDIR /usr/build
 
 COPY ./services/ecosystem.config.js .
-RUN npm install -g pm2@^6.0.8 tsx@^4.20.3
+RUN npm install -g pm2@^6.0.8 tsx@^4.23.1
 
 RUN apk add --no-cache cairo jpeg pango pixman librsvg
 

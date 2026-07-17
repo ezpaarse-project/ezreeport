@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
     "composite": true,
-    "rootDir": "src",
+    "rootDir": "./src",
     "target": "ESNext",
     "useDefineForClassFields": true,
     "module": "ESNext",
     "lib": ["ESNext", "DOM"],
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "strict": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -17,6 +17,7 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "skipLibCheck": true,
+    "isolatedDeclarations": true,
     "paths": {
       "~/*": ["./src/*"]
     }

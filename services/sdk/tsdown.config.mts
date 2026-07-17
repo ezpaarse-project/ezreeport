@@ -12,6 +12,7 @@ export default defineConfig({
 
   dts: {
     sourcemap: !isReleaseMode,
+    generator: 'oxc',
   },
 
   entry: {
@@ -49,5 +50,7 @@ export default defineConfig({
     '~': 'src/',
   },
 
-  external: ['native-events'],
+  deps: {
+    neverBundle: ['native-events'],
+  },
 });

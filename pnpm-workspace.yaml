@@ -6,11 +6,11 @@ minimumReleaseAge: 1440
 
 catalog:
   # deps
-  typescript: ^5.8.3
-  tsx: ^4.20.3 # Don't forget to update the aio stage in Dockerfile
+  typescript: ^7.0.2
+  tsx: ^4.23.1 # Don't forget to update the aio stage in Dockerfile
   ofetch: ^2.0.0-alpha.3
   # dev deps
-  '@types/node': ^24.0.10
+  '@types/node': ^24
   pino-pretty: ^13.0.0
 
 catalogs:
