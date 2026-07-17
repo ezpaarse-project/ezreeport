@@ -1,0 +1,69 @@
+{
+  "report": {
+    "header": {
+      "subtitle": "du {{{ periodStart }}} au {{{ periodEnd }}}, pour {{{ namespace }}}"
+    },
+    "footer": {
+      "createdAt": "Généré le {{{ date }}}"
+    }
+  },
+  "recurrence": {
+    "DAILY": "quotidien",
+    "WEEKLY": "hebdomadaire",
+    "MONTHLY": "mensuel",
+    "QUARTERLY": "trimestriel",
+    "BIENNIAL": "semestriel",
+    "YEARLY": "annuel"
+  },
+  "mail": {
+    "layout": {
+      "body": {
+        "hello": "Bonjour,"
+      },
+      "footer": {
+        "regards": "Cordialement,<br/>\nL'équipe ReadMetrics.",
+        "forAnyQuestion": "Pour toute question, contactez-nous à l'adresse <a href=\"mailto:{{{ mail }}}\">{{ mail }}</a>"
+      }
+    },
+
+    "report": {
+      "success": {
+        "subject": "Reporting ezMESURE [{{{ date }}}] - {{ name }}",
+        "body": {
+          "title": "Rapport ezREEPORT du {{{ date }}}.",
+          "content": {
+            "report": "Vous trouverez dans ce mail le rapport <strong>{{{ recurrence }}}</strong> « <strong>{{ name }}</strong> » pour l'établissement « <strong>{{ namespace }}</strong> »",
+            "generation": "Généré le <strong>{{{ date }}}</strong>, ce rapport couvre la période du <strong>{{{ periodStart }}}</strong> au <strong>{{{ periodEnd }}}</strong>.",
+            "automated": "Ce message est envoyé automatiquement par l'application ezREEPORT, vous le recevez parce que vous faites partie d'une liste de diffusion de rapports.",
+            "attachment": "- Trouvez votre rapport en pièce jointe -",
+            "unsubscribe": "Si vous ne voulez plus recevoir ce rapport, <a href=\"{{{ unsubscribeLink }}}\">cliquez ici</a> pour vous désincrire."
+          }
+        }
+      },
+      "failed": {
+        "subject": "Erreur de Reporting ezMESURE [{{{ date }}}] - {{ name }}",
+        "body": {
+          "title": "Rapport ezREEPORT du {{{ date }}} en erreur.",
+          "content": {
+            "report": "La génération du rapport « <strong>{{ name }}</strong> » pour l'établissement « <strong>{{ namespace }}</strong> » a rencontré une erreur. Ce faisant la tâche de reporting a été désactivée, pensez donc à la réactiver une fois l'erreur corrigée.",
+            "error": "Informations sur l'erreur :",
+            "details": {
+              "report": "<strong>Rapport</strong>: {{ name }}",
+              "namespace": "<strong>Établissement</strong>: {{ namespace }}",
+              "date": "<strong>Date</strong>: {{{ date }}}",
+              "recurrence": "<strong>Recurrence</strong>: {{{ recurrence }}}",
+              "period": "<strong>Période</strong>: {{{ periodStart }}} ~ {{{ periodEnd }}}",
+              "message": "<strong>Message</strong>: {{{ error }}}"
+            },
+            "attachment": "Vous trouverez plus d'informations en pièce jointe.",
+            "automated": "Ce message est envoyé automatiquement par l'application ezREEPORT, vous le recevez parce que vous êtes le correspondant de l'établissement générant la tâche de rapport."
+          }
+        }
+      },
+      "error": {
+        "subject": "Erreur de Reporting ezMESURE [{{{ date }}}]",
+        "message": "Erreur inconnue, regardez la pièce jointe"
+      }
+    }
+  }
+}
