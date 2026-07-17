@@ -1,11 +1,10 @@
 import type { Logger } from '@ezreeport/logger';
 import type { MailReportQueueDataType } from '@ezreeport/models/queues';
-import { format } from '@ezreeport/dates';
+import { d, t } from '@ezreeport/i18n';
 import { stringToB64 } from '@ezreeport/models/lib/utils';
 
 import config from '~/lib/config';
 
-import { recurrenceToStr } from '~/models/recurrence';
 import { createReportReadStream } from '~/models/rpc/client/files';
 
 import { generateMail, getFilename, sendMail } from '..';
@@ -38,7 +37,6 @@ export async function sendSuccessReport(
 ): Promise<void> {
   const file = await getFileFromRemote(data.filename, data.task.id);
   const filename = getFilename(data);
-  const dateStr = format(data.date, 'dd/MM/yyyy');
 
   // Send one email per target to allow un-subscription prefill
   const targets = await Promise.allSettled(
@@ -51,17 +49,20 @@ export async function sendSuccessReport(
         const unsubscribeLink = `${APIurl}/unsubscribe/${unsubId}`;
         await sendMail({
           to,
-          subject: `Reporting ezMESURE [${dateStr}] - ${data.task.name}`,
-          body: generateMail('success', {
-            recurrence: recurrenceToStr(data.task.recurrence),
+          subject: t('mail.report.success.subject', data.locale, {
+            date: d(data.date, data.locale, 'P'),
             name: data.task.name,
-            namespace: data.namespace.name,
-            date: format(data.date, 'dd/MM/yyyy à HH:mm:ss'),
-            period: {
-              start: format(data.period.start, 'dd/MM/yyyy'),
-              end: format(data.period.end, 'dd/MM/yyyy'),
+          }),
+          body: await generateMail('report-success', data.locale, {
+            data: {
+              recurrence: t(`recurrence.${data.task.recurrence}`, data.locale),
+              name: data.task.name,
+              namespace: data.namespace.name,
+              date: d(data.date, data.locale),
+              periodStart: d(data.period.start, data.locale, 'P'),
+              periodEnd: d(data.period.end, data.locale, 'P'),
+              unsubscribeLink,
             },
-            unsubscribeLink,
           }),
           attachments: [
             {

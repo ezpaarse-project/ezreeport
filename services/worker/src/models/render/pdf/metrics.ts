@@ -289,7 +289,7 @@ export const addMetricToPDF = (
 
   // Print data
   for (let index = 0; index < metrics.length; index += 1) {
-    const { key, value, sizes } = metrics[index];
+    const { key, value, sizes } = metrics[index] ?? {};
     if (!slots[index]) {
       throw new RenderError(`slot ${index} not found`, 'SlotError');
     }
@@ -302,16 +302,16 @@ export const addMetricToPDF = (
       y: offset.y + slots[index].y,
     };
 
-    let yPos = slot.y + sizes.value.h - 5;
+    let yPos = slot.y + (sizes?.value.h ?? 0) - 5;
     valueStyle(doc.pdf, def).text(
-      value,
+      value ?? '',
       slot.x + Math.round(slot.width / 2),
       yPos,
       { align: 'center' }
     );
-    yPos += sizes.key.h + margin.key;
+    yPos += (sizes?.key.h ?? 0) + margin.key;
     keyStyle(doc.pdf, def).text(
-      key,
+      key ?? '',
       slot.x + Math.round(slot.width / 2),
       yPos,
       {

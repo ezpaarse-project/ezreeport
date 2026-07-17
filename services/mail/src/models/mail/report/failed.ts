@@ -1,11 +1,11 @@
 import type { Logger } from '@ezreeport/logger';
 import type { MailReportQueueDataType } from '@ezreeport/models/queues';
-import { format } from '@ezreeport/dates';
+import type { TemplateLocaleType } from '@ezreeport/models/templates';
+import { d, t } from '@ezreeport/i18n';
 import { ReportResult } from '@ezreeport/models/reports';
 
 import config from '~/lib/config';
 
-import { recurrenceToStr } from '~/models/recurrence';
 import { createReportReadStream } from '~/models/rpc/client/files';
 
 import { generateMail, getFilename, sendMail } from '..';
@@ -32,7 +32,11 @@ async function getFileFromRemote(
   });
 }
 
-function getErrorFromReport(file: string, logger: Logger) {
+function getErrorFromReport(
+  file: string,
+  logger: Logger,
+  locale: TemplateLocaleType
+) {
   try {
     const { detail } = ReportResult.parse(JSON.parse(file));
     if (!detail.error) {
@@ -45,7 +49,7 @@ function getErrorFromReport(file: string, logger: Logger) {
       msg: 'Failed to parse report result',
       err,
     });
-    return 'Unknown error, see attachements';
+    return t('mail.report.error.message', locale);
   }
 }
 
@@ -56,23 +60,25 @@ export async function sendFailedReport(
   const file = await getFileFromRemote(data.filename, data.task.id);
 
   const filename = getFilename(data);
-  const dateStr = format(data.date, 'dd/MM/yyyy');
 
-  const error = getErrorFromReport(file, logger);
+  const error = getErrorFromReport(file, logger, data.locale);
 
   await sendMail({
     to: [team],
-    subject: `Erreur de Reporting ezMESURE [${dateStr}] - ${data.task.name}`,
-    body: generateMail('error', {
-      recurrence: recurrenceToStr(data.task.recurrence),
+    subject: t('mail.report.failed.subject', data.locale, {
+      date: d(data.date, data.locale, 'P'),
       name: data.task.name,
-      namespace: data.namespace.name,
-      date: format(data.date, 'dd/MM/yyyy à HH:mm:ss'),
-      period: {
-        start: format(data.period.start, 'dd/MM/yyyy'),
-        end: format(data.period.end, 'dd/MM/yyyy'),
+    }),
+    body: await generateMail('report-failed', data.locale, {
+      data: {
+        recurrence: t(`recurrence.${data.task.recurrence}`, data.locale),
+        name: data.task.name,
+        namespace: data.namespace.name,
+        date: d(data.date, data.locale),
+        periodStart: d(data.period.start, data.locale, 'P'),
+        periodEnd: d(data.period.end, data.locale, 'P'),
+        error,
       },
-      error,
     }),
     attachments: [
       {

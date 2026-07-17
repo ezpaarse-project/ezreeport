@@ -45,6 +45,7 @@
     "interval": { "__name": "EMAIL_ATTEMPTS_INTERVAL", "__format": "number" }
   },
   "api": {
-    "url": "API_URL"
+    "url": "API_URL",
+    "home": "API_HOME"
   }
 }

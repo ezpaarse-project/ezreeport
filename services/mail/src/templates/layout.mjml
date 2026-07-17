@@ -26,17 +26,31 @@
         <mj-image
           height="35px"
           width="200px"
-          href="https://ezmesure.couperin.org"
+          href="{{ HOME_URL }}"
           src="cid:ezreeport_white.png"
         />
       </mj-column>
     </mj-section>
 
     <mj-wrapper background-color="#f7f7f7" border-radius="0px 0px 5px 5px">
+      <mj-section>
+        <mj-column>
+          <mj-text>
+            <p>
+              {{ $t('mail.layout.body.hello') }}
+            </p>
+          </mj-text>
+        </mj-column>
+      </mj-section>
+
       {% block content %}{% endblock %}
 
       <mj-section>
         <mj-column>
+          <mj-text>
+            <p>{{ $t('mail.layout.footer.regards') | safe }}</p>
+          </mj-text>
+
           <mj-divider />
         </mj-column>
       </mj-section>
@@ -47,11 +61,7 @@
         </mj-column>
 
         <mj-column width="150px" padding="0 10px" vertical-align="middle">
-          <mj-image
-            href="https://ezmesure.couperin.org"
-            src="cid:ezmesure.png"
-            padding="0"
-          />
+          <mj-image href="{{ HOME_URL }}" src="cid:ezmesure.png" padding="0" />
         </mj-column>
 
         <mj-group width="50%" vertical-align="middle">
@@ -81,8 +91,9 @@
     <mj-section>
       <mj-column>
         <mj-text align="center" font-size="12px">
-          Pour toute question, contactez-nous à l'adresse
-          <a href="mailto:ezteam@couperin.org">ezteam@couperin.org</a>
+          {{
+            $t('mail.layout.footer.forAnyQuestion', { mail: MAIL_TEAM }) | safe
+          }}
         </mj-text>
       </mj-column>
     </mj-section>

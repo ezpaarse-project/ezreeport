@@ -24,6 +24,7 @@
     "@ezreeport/config": "workspace:*",
     "@ezreeport/dates": "workspace:*",
     "@ezreeport/heartbeats": "workspace:*",
+    "@ezreeport/i18n": "workspace:*",
     "@ezreeport/logger": "workspace:*",
     "@ezreeport/models": "workspace:*",
     "@ezreeport/rabbitmq": "workspace:*",

@@ -1,0 +1,17 @@
+{% extends "layout.txt" %}
+
+{% block content %}
+{{ $t('mail.report.failed.body.content.report', data) | striptags | safe }}
+
+{{ $t('mail.report.failed.body.content.error', data) | striptags | safe }}
+- {{ $t('mail.report.failed.body.content.details.report', data) | striptags | safe }}
+- {{ $t('mail.report.failed.body.content.details.namespace', data) | striptags | safe }}
+- {{ $t('mail.report.failed.body.content.details.date', data) | striptags | safe }}
+- {{ $t('mail.report.failed.body.content.details.recurrence', data) | striptags | safe }}
+- {{ $t('mail.report.failed.body.content.details.period', data) | striptags | safe }}
+- {{ $t('mail.report.failed.body.content.details.message', data) | striptags | safe }}
+
+{{ $t('mail.report.failed.body.content.attachment', data) | striptags | safe }}
+
+{{ $t('mail.report.failed.body.content.automated', data) | striptags | safe }}
+{% endblock %}
