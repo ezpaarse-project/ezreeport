@@ -29,7 +29,7 @@ import { createVuetify } from 'vuetify';
 
 import { createI18n } from 'vue-i18n';
 
-import '@ezpaarse-project/ezreeport-vue/styles';
+import '@ezpaarse-project/ezreeport-vue/style.css';
 import {
   en as ezrEn,
   fr as ezrFr,

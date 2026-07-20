@@ -21,8 +21,7 @@
     "./components": "./dist/components.js",
     "./locale": "./dist/locale.js",
     "./package.json": "./package.json",
-    "./style.css": "./dist/style.css",
-    "./styles": "./dist/components.styles.css"
+    "./style.css": "./dist/style.css"
   },
   "scripts": {
     "build:docs": "storybook build",
