@@ -28,7 +28,7 @@ export default defineConfig({
   // Workaround to have "./styles" in exports
   // can break if CSS is too big
   outputOptions: {
-    cssChunkFileNames: '[name].styles.css',
+    assetFileNames: '[name].styles.css',
   },
   exports: {
     customExports(pkg) {

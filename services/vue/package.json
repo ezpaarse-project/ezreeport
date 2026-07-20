@@ -15,14 +15,13 @@
     "dist"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
     "./components": "./dist/components.js",
     "./locale": "./dist/locale.js",
     "./package.json": "./package.json",
+    "./style.css": "./dist/style.css",
     "./styles": "./dist/components.styles.css"
   },
   "scripts": {
@@ -55,15 +54,15 @@
     "@storybook/addon-docs": "^9.0.16",
     "@storybook/addon-links": "^9.0.16",
     "@storybook/vue3-vite": "^9.0.16",
+    "@tsdown/css": "^0.22.9",
     "@types/chroma-js": "^3.1.1",
     "storybook": "^9.0.16",
-    "tsdown": "^0.16.5",
+    "tsdown": "^0.22.8",
     "typescript": "^6.0.3",
-    "unplugin-auto-import": "^20.2.0",
-    "unplugin-vue": "^7.0.7",
-    "unplugin-vue-components": "^30.0.0",
-    "vite": "^7.0.4",
-    "vite-plugin-dts": "^4.5.4",
+    "unplugin-auto-import": "^21.0.0",
+    "unplugin-vue": "^7.2.0",
+    "unplugin-vue-components": "^32.1.0",
+    "vite": "^7.3.6",
     "vue-component-meta": "^3.0.1",
     "vue-tsc": "^3.3.7",
     "~sdk": "workspace:@ezpaarse-project/ezreeport-sdk-js@*"
@@ -75,5 +74,9 @@
     "package.json": [
       "oxfmt --no-error-on-unmatched-pattern"
     ]
+  },
+  "inlinedDependencies": {
+    "events": "3.3.0",
+    "object-hash": "3.0.0"
   }
 }
