@@ -75,9 +75,5 @@
     "package.json": [
       "oxfmt --no-error-on-unmatched-pattern"
     ]
-  },
-  "inlinedDependencies": {
-    "events": "3.3.0",
-    "object-hash": "3.0.0"
   }
 }
