@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Merge schema ⚙️
         run: 'find ${{ env.PRISMA_FOLDER }} -type f -name "*.prisma" -exec cat {} + > ${{ runner.temp }}/schema.prisma'
