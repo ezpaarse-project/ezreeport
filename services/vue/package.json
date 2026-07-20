@@ -26,6 +26,7 @@
   },
   "scripts": {
     "build:docs": "storybook build",
+    "prebuild:js": "pnpm up --no-save ~sdk @ezpaarse-project/ezreeport-sdk-js",
     "build:js": "tsdown",
     "dev": "storybook dev -p 6006",
     "lint": "oxlint",
