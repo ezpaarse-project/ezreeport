@@ -42,7 +42,12 @@ export default defineConfig({
   },
 
   deps: {
-    onlyBundle: ['@ezpaarse-project/ezreeport-sdk-js', 'events', 'object-hash'],
+    onlyBundle: [
+      '@ezpaarse-project/ezreeport-sdk-js',
+      '~sdk',
+      'events',
+      'object-hash',
+    ],
   },
 
   plugins: [

@@ -160,7 +160,7 @@ CMD [ "npm", "run", "start" ]
 FROM pnpm AS mail-pnpm
 WORKDIR /usr/src
 
-RUN pnpm deploy --legacy --filter ezreeport-mail --prod /usr/build/mail/prod
+RUN pnpm deploy --filter ezreeport-mail --prod /usr/build/mail/prod
 
 # ---
 # Final image to run mail service
@@ -187,7 +187,7 @@ CMD [ "npm", "run", "start" ]
 FROM pnpm AS files-pnpm
 WORKDIR /usr/src
 
-RUN pnpm deploy --legacy --filter ezreeport-files --prod /usr/build/files/prod
+RUN pnpm deploy --filter ezreeport-files --prod /usr/build/files/prod
 
 # ---
 # Final image to run files service
