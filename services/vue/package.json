@@ -67,6 +67,14 @@
     "vue-tsc": "^3.3.7",
     "~sdk": "workspace:@ezpaarse-project/ezreeport-sdk-js@*"
   },
+  "dependenciesMeta": {
+    "@ezpaarse-project/ezreeport-sdk-js": {
+      "injected": false
+    },
+    "~sdk": {
+      "injected": false
+    }
+  },
   "lint-staged": {
     "*.{ts,vue}": [
       "oxlint --fix"
@@ -76,7 +84,7 @@
     ]
   },
   "inlinedDependencies": {
-    "@ezpaarse-project/ezreeport-sdk-js": "3.2.0",
+    "@ezpaarse-project/ezreeport-sdk-js": "3.3.0-rc.0",
     "events": "3.3.0",
     "object-hash": "3.0.0"
   }

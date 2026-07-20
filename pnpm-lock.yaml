@@ -656,6 +656,11 @@ importers:
       vuetify:
         specifier: ^3.9.0
         version: 3.12.10(typescript@6.0.3)(vue@3.5.40(typescript@6.0.3))
+    dependenciesMeta:
+      '@ezpaarse-project/ezreeport-sdk-js':
+        injected: false
+      ~sdk:
+        injected: false
     devDependencies:
       '@chromatic-com/storybook':
         specifier: ^4.0.1

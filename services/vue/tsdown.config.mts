@@ -41,6 +41,10 @@ export default defineConfig({
     '~': 'src/',
   },
 
+  deps: {
+    onlyBundle: ['@ezpaarse-project/ezreeport-sdk-js', 'events', 'object-hash'],
+  },
+
   plugins: [
     // Plugin for Vue SFC
     vue({ isProduction: isReleaseMode, ssr: false }),
