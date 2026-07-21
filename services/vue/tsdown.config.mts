@@ -14,6 +14,11 @@ export default defineConfig({
   outDir: 'dist',
   minify: isReleaseMode,
 
+  loader: {
+    // Matching Vite behaviour
+    '.svg': 'dataurl',
+  },
+
   dts: {
     sourcemap: !isReleaseMode,
     vue: true,

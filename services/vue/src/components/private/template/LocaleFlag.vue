@@ -1,7 +1,7 @@
 <template>
   <v-avatar
     :text="props.modelValue"
-    :image="src?.default"
+    :image="src"
     density="compact"
     variant="outlined"
     :class="{
@@ -13,13 +13,24 @@
 </template>
 
 <script setup lang="ts">
+  import enFlag from '~/assets/locales/en.svg';
+  import frFlag from '~/assets/locales/fr.svg';
+
   const props = defineProps<{
     modelValue: string;
   }>();
 
-  const src = computedAsync(
-    () => import(`~/assets/locales/${props.modelValue}.svg`)
-  );
+  const src = computed(() => {
+    switch (props.modelValue) {
+      case 'fr':
+        return frFlag;
+      case 'en':
+        return enFlag;
+
+      default:
+        return undefined;
+    }
+  });
 
   const shouldCover = computed(
     () => src.value && ['en'].includes(props.modelValue)
