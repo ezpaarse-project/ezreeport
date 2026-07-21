@@ -38,7 +38,7 @@
                 />
               </template>
 
-              <template #item="{ item: { raw: item }, props: listItem }">
+              <template #item="{ item, props: listItem }">
                 <v-list-item :title="item.name" lines="two" v-bind="listItem">
                   <template #subtitle>
                     <div class="d-flex align-center ga-1">

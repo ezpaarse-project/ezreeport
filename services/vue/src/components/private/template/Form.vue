@@ -37,7 +37,7 @@
               variant="underlined"
               required
             >
-              <template #item="{ props, item: { raw: item } }">
+              <template #item="{ props, item }">
                 <v-list-item v-bind="props">
                   <template #prepend>
                     <TemplateLocaleFlag :modelValue="item.value" />

@@ -24,16 +24,20 @@
 
         <v-row>
           <v-col class="d-flex justify-center">
-            <v-color-picker v-model="tag.color" mode="hex" elevation="0" />
             <v-color-picker
               v-model="tag.color"
               mode="hex"
-              elevation="0"
+              class="elevation-0"
+            />
+            <v-color-picker
+              v-model="tag.color"
+              mode="hex"
               swatches-max-height="230"
               hide-canvas
               hide-inputs
               hide-sliders
               show-swatches
+              class="elevation-0"
             />
           </v-col>
         </v-row>

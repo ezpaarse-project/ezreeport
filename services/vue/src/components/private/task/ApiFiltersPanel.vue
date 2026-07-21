@@ -57,8 +57,8 @@
               multiple
               allow-empty
             >
-              <template #chip="{ item: { raw } }">
-                <TemplateTagChip :model-value="(raw as any).tag" />
+              <template #chip="{ item }">
+                <TemplateTagChip :model-value="(item as any).tag" />
               </template>
             </ApiFiltersSelect>
           </v-col>
