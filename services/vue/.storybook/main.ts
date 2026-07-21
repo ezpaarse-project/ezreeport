@@ -1,3 +1,4 @@
+// oxlint-disable import/no-nodejs-modules
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 
@@ -14,14 +15,10 @@ function getAbsolutePath(value: string): string {
 }
 
 function getProjectPath(value: string): string {
-  return join(__dirname, '..', value);
+  return join(import.meta.dirname, '..', value);
 }
 
 const config: StorybookConfig = {
-  stories: [
-    getProjectPath('src/**/*.mdx'),
-    getProjectPath('src/**/*.stories.@(js|jsx|mjs|ts|tsx)'),
-  ],
   addons: [
     getAbsolutePath('@storybook/addon-links'),
     getAbsolutePath('@chromatic-com/storybook'),
@@ -33,18 +30,22 @@ const config: StorybookConfig = {
       docgen: 'vue-component-meta',
     },
   },
+  stories: [
+    getProjectPath('src/**/*.mdx'),
+    getProjectPath('src/**/*.stories.@(js|jsx|mjs|ts|tsx)'),
+  ],
   // We're setting a configuration close to the one used to build (cf. tsdown.config.ts)
-  viteFinal: async (config) => {
+  viteFinal: async (viteConfig) => {
     const { mergeConfig } = await import('vite');
 
-    return mergeConfig(config, {
+    return mergeConfig(viteConfig, {
       plugins: [
         // Plugin for Vue SFC
         vue({}),
         // Plugin to auto import components (useful for dev)
         components({
-          dirs: [getProjectPath('src/components/private/')],
           directoryAsNamespace: true,
+          dirs: [getProjectPath('src/components/private/')],
           // Adding DTS for dev
           dts: getProjectPath('.vite/components.d.ts'),
           // Plugin for Vuetify Components
@@ -56,18 +57,19 @@ const config: StorybookConfig = {
             getProjectPath('src/composables/'),
             getProjectPath('src/utils/'),
           ],
-          imports: ['vue', 'vue-i18n', '@vueuse/core'],
           // Adding DTS for dev
           dts: getProjectPath('.vite/auto-imports.d.ts'),
+          imports: ['vue', 'vue-i18n', '@vueuse/core'],
         }),
       ],
 
       resolve: {
         alias: [
           { find: '~', replacement: getProjectPath('src') },
-          // storybook can have a bit of trouble dealing with npm aliases
+          // Storybook can have a bit of trouble dealing with npm aliases
           {
-            find: /^~sdk(\/.+)?/,
+            // oxlint-disable-next-line prefer-named-capture-group
+            find: /^~sdk(\/.+)?/u,
             replacement: '@ezpaarse-project/ezreeport-sdk-js$1',
           },
         ],
