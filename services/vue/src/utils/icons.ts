@@ -1,16 +1,30 @@
+import {
+  mdiAlphabetical,
+  mdiCalendarBlank,
+  mdiChartArc,
+  mdiChartAreasplineVariant,
+  mdiChartBar,
+  mdiChartLine,
+  mdiCounter,
+  mdiNoteText,
+  mdiNumeric,
+  mdiPercent,
+  mdiTable,
+} from '@mdi/js';
+
 export const formatIcons = new Map([
-  ['text', 'mdi-alphabetical'],
-  ['number', 'mdi-numeric'],
-  ['date', 'mdi-calendar-blank'],
-  ['percent', 'mdi-percent'],
+  ['text', mdiAlphabetical],
+  ['number', mdiNumeric],
+  ['date', mdiCalendarBlank],
+  ['percent', mdiPercent],
 ] as const);
 
 export const figureIcons = new Map<string, string>([
-  ['arc', 'mdi-chart-arc'],
-  ['bar', 'mdi-chart-bar'],
-  ['table', 'mdi-table'],
-  ['md', 'mdi-note-text'],
-  ['metric', 'mdi-counter'],
-  ['area', 'mdi-chart-areaspline-variant'],
-  ['line', 'mdi-chart-line'],
+  ['arc', mdiChartArc],
+  ['bar', mdiChartBar],
+  ['table', mdiTable],
+  ['md', mdiNoteText],
+  ['metric', mdiCounter],
+  ['area', mdiChartAreasplineVariant],
+  ['line', mdiChartLine],
 ]);

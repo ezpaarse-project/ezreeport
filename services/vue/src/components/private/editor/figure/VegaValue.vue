@@ -16,7 +16,7 @@
         v-model="title"
         :label="$t('$ezreeport.editor.figures.vega._.axisTitle')"
         :readonly="readonly"
-        prepend-icon="mdi-axis-arrow-info"
+        :prepend-icon="mdiAxisArrowInfo"
         variant="underlined"
         hide-details
       />
@@ -26,6 +26,7 @@
 
 <script setup lang="ts">
   import type { VegaLayer } from '~sdk/helpers/figures';
+  import { mdiAxisArrowInfo } from '@mdi/js';
 
   // Components props
   const props = defineProps<{

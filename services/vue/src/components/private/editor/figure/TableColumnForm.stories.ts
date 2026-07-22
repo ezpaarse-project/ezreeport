@@ -4,8 +4,8 @@ import type { TableColumn } from '~sdk/helpers/figures';
 import EditorFigureTableColumnForm from './TableColumnForm.vue';
 
 const meta: Meta<typeof EditorFigureTableColumnForm> = {
-  title: 'Template Editor/Figures/Table/ Column Form',
   component: EditorFigureTableColumnForm,
+  title: 'Template Editor/Figures/Table/ Column Form',
 };
 
 export default meta;
@@ -13,13 +13,13 @@ export default meta;
 type Story = StoryObj<typeof EditorFigureTableColumnForm>;
 
 const mockColumnData: TableColumn = {
-  header: 'Nom',
-  metric: false,
   aggregation: {
-    type: 'terms',
     field: 'cnrsData.intituleUnite',
     size: 1,
+    type: 'terms',
   },
+  header: 'Nom',
+  metric: false,
 };
 
 const mockMetricData: TableColumn = {
@@ -32,6 +32,7 @@ const mockMetricData: TableColumn = {
 };
 
 export const New: Story = {
+  args: {},
   render: (args: unknown) => ({
     components: { EditorFigureTableColumnForm },
     setup() {
@@ -39,23 +40,12 @@ export const New: Story = {
     },
     template: '<EditorFigureTableColumnForm v-bind="args" />',
   }),
-  args: {},
 };
 
 export const Basic: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFigureTableColumnForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureTableColumnForm v-bind="args" />',
-  }),
   args: {
     modelValue: mockColumnData,
   },
-};
-
-export const Metric: Story = {
   render: (args: unknown) => ({
     components: { EditorFigureTableColumnForm },
     setup() {
@@ -63,7 +53,17 @@ export const Metric: Story = {
     },
     template: '<EditorFigureTableColumnForm v-bind="args" />',
   }),
+};
+
+export const Metric: Story = {
   args: {
     modelValue: mockMetricData,
   },
+  render: (args: unknown) => ({
+    components: { EditorFigureTableColumnForm },
+    setup() {
+      return { args };
+    },
+    template: '<EditorFigureTableColumnForm v-bind="args" />',
+  }),
 };

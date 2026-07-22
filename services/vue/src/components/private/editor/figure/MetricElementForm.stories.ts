@@ -4,8 +4,8 @@ import type { MetricLabel } from '~sdk/helpers/figures';
 import EditorFigureMetricElementForm from './MetricElementForm.vue';
 
 const meta: Meta<typeof EditorFigureMetricElementForm> = {
-  title: 'Template Editor/Figures/Metric/ Element Form',
   component: EditorFigureMetricElementForm,
+  title: 'Template Editor/Figures/Metric/ Element Form',
 };
 
 export default meta;
@@ -13,10 +13,10 @@ export default meta;
 type Story = StoryObj<typeof EditorFigureMetricElementForm>;
 
 const mockData: MetricLabel = {
-  text: 'total des accès',
   format: {
     type: 'number',
   },
+  text: 'total des accès',
 };
 
 export const New: Story = {
@@ -30,6 +30,9 @@ export const New: Story = {
 };
 
 export const Existing: Story = {
+  args: {
+    modelValue: mockData,
+  },
   render: (args: unknown) => ({
     components: { EditorFigureMetricElementForm },
     setup() {
@@ -37,7 +40,4 @@ export const Existing: Story = {
     },
     template: '<EditorFigureMetricElementForm v-bind="args" />',
   }),
-  args: {
-    modelValue: mockData,
-  },
 };

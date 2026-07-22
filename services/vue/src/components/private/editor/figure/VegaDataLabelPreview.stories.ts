@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import EditorFigureVegaDataLabelPreview from './VegaDataLabelPreview.vue';
 
 const meta: Meta<typeof EditorFigureVegaDataLabelPreview> = {
-  title: 'Template Editor/Figures/Vega/ Data Label Preview',
   component: EditorFigureVegaDataLabelPreview,
+  title: 'Template Editor/Figures/Vega/ Data Label Preview',
 };
 
 export default meta;
@@ -12,13 +12,6 @@ export default meta;
 type Story = StoryObj<typeof EditorFigureVegaDataLabelPreview>;
 
 export const InFigure: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFigureVegaDataLabelPreview },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVegaDataLabelPreview v-bind="args" />',
-  }),
   args: {
     modelValue: {
       format: 'percent',
@@ -26,9 +19,6 @@ export const InFigure: Story = {
     },
     type: 'arc',
   },
-};
-
-export const OutFigure: Story = {
   render: (args: unknown) => ({
     components: { EditorFigureVegaDataLabelPreview },
     setup() {
@@ -36,11 +26,21 @@ export const OutFigure: Story = {
     },
     template: '<EditorFigureVegaDataLabelPreview v-bind="args" />',
   }),
+};
+
+export const OutFigure: Story = {
   args: {
     modelValue: {
-      position: 'out',
       format: 'numeric',
+      position: 'out',
     },
     type: 'arc',
   },
+  render: (args: unknown) => ({
+    components: { EditorFigureVegaDataLabelPreview },
+    setup() {
+      return { args };
+    },
+    template: '<EditorFigureVegaDataLabelPreview v-bind="args" />',
+  }),
 };

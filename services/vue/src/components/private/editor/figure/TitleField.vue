@@ -4,7 +4,7 @@
     :model-value="modelValue"
     :label="$t('$ezreeport.editor.figures._.title')"
     :readonly="readonly"
-    prepend-icon="mdi-rename"
+    :prepend-icon="mdiRename"
     variant="underlined"
     hide-details
     @update:model-value="$emit('update:model-value', $event)"
@@ -36,6 +36,8 @@
 </template>
 
 <script setup lang="ts">
+  import { mdiRename } from '@mdi/js';
+
   import { variablesOptions } from '~/lib/figures';
 
   const props = defineProps<{

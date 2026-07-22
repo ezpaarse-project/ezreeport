@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import EditorFigureVegaValue from './VegaValue.vue';
 
 const meta: Meta<typeof EditorFigureVegaValue> = {
-  title: 'Template Editor/Figures/Vega/ Value Layer',
   component: EditorFigureVegaValue,
+  title: 'Template Editor/Figures/Vega/ Value Layer',
 };
 
 export default meta;
@@ -12,20 +12,24 @@ export default meta;
 type Story = StoryObj<typeof EditorFigureVegaValue>;
 
 export const New: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFigureVegaValue },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVegaValue v-bind="args" />',
-  }),
   args: {
     modelValue: {},
     type: 'line',
   },
+  render: (args: unknown) => ({
+    components: { EditorFigureVegaValue },
+    setup() {
+      return { args };
+    },
+    template: '<EditorFigureVegaValue v-bind="args" />',
+  }),
 };
 
 export const Existing: Story = {
+  args: {
+    modelValue: { aggregation: { field: 'Count', type: 'sum' } },
+    type: 'arc',
+  },
   render: (args: unknown) => ({
     components: { EditorFigureVegaValue },
     setup() {
@@ -33,13 +37,14 @@ export const Existing: Story = {
     },
     template: '<EditorFigureVegaValue v-bind="args" />',
   }),
-  args: {
-    modelValue: { aggregation: { type: 'sum', field: 'Count' } },
-    type: 'arc',
-  },
 };
 
 export const Readonly: Story = {
+  args: {
+    modelValue: { aggregation: { field: 'Count', type: 'sum' } },
+    readonly: true,
+    type: 'bar',
+  },
   render: (args: unknown) => ({
     components: { EditorFigureVegaValue },
     setup() {
@@ -47,9 +52,4 @@ export const Readonly: Story = {
     },
     template: '<EditorFigureVegaValue v-bind="args" />',
   }),
-  args: {
-    modelValue: { aggregation: { type: 'sum', field: 'Count' } },
-    type: 'bar',
-    readonly: true,
-  },
 };

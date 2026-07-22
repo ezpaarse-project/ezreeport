@@ -3,7 +3,7 @@
     v-if="took > 0"
     variant="outlined"
     size="small"
-    prepend-icon="mdi-timer"
+    :prepend-icon="mdiTimer"
   >
     {{ formatted }}
   </v-chip>
@@ -11,6 +11,7 @@
 
 <script setup lang="ts">
   import type { Generation } from '~sdk/generations';
+  import { mdiTimer } from '@mdi/js';
   import { formatDuration } from 'date-fns';
 
   const props = defineProps<{

@@ -1,8 +1,8 @@
 import type { App } from 'vue';
 
 import { registerComponents } from './components';
-import { registerLocales, type LocalesOptions } from './locale';
-import { setErrorHandler, type ErrorHandler } from './utils/errors';
+import { type LocalesOptions, registerLocales } from './locale';
+import { type ErrorHandler, setErrorHandler } from './utils/errors';
 
 type Options = {
   locale?: LocalesOptions;
@@ -26,6 +26,7 @@ const vuePlugin = {
 /**
  * Vue plugin in order to use ezREEPORT components
  */
+// oxlint-disable-next-line import/no-default-export
 export default vuePlugin;
 
 export { prepareClient } from '@ezpaarse-project/ezreeport-sdk-js';

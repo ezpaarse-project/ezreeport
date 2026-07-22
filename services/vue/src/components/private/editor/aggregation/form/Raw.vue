@@ -7,7 +7,7 @@
         :error-messages="parseError?.message"
         :readonly="readonly"
         :disabled="disabled"
-        prepend-icon="mdi-cursor-text"
+        :prepend-icon="mdiCursorText"
         variant="outlined"
         required
         @update:model-value="hasChanged = true"
@@ -27,6 +27,7 @@
 
 <script setup lang="ts">
   import type { FigureRawAggregation } from '~sdk/helpers/aggregations';
+  import { mdiCursorText } from '@mdi/js';
 
   // Component props
   const props = defineProps<{

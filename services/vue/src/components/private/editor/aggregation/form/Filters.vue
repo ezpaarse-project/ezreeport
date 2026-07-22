@@ -16,7 +16,7 @@
 
           <v-btn
             v-tooltip:top="$t('$ezreeport.new')"
-            icon="mdi-plus"
+            :icon="mdiPlus"
             color="green"
             density="compact"
             variant="text"
@@ -35,13 +35,13 @@
               entry.filters.length
             )
           "
-          prepend-icon="mdi-format-list-bulleted-square"
+          :prepend-icon="mdiFormatListBulletedSquare"
           @click="openForm({ id, entry })"
         >
           <template v-if="!readonly" #append>
             <v-btn
               v-tooltip:top="$t('$ezreeport.edit')"
-              icon="mdi-pencil"
+              :icon="mdiPencil"
               color="blue"
               variant="text"
               density="comfortable"
@@ -50,7 +50,7 @@
 
             <v-btn
               v-tooltip:top="$t('$ezreeport.delete')"
-              icon="mdi-delete"
+              :icon="mdiDelete"
               color="red"
               variant="text"
               density="comfortable"
@@ -73,7 +73,7 @@
               ? $t('$ezreeport.editor.aggregation.filters.title:edit')
               : $t('$ezreeport.editor.aggregation.filters.title:new')
           "
-          prepend-icon="mdi-format-list-bulleted-square"
+          :prepend-icon="mdiFormatListBulletedSquare"
         >
           <template #text>
             <v-form v-model="isValid">
@@ -86,7 +86,7 @@
                     "
                     :disabled="disabled"
                     :rules="[(val) => !!val || t('$ezreeport.required')]"
-                    prepend-icon="mdi-rename"
+                    :prepend-icon="mdiRename"
                     variant="underlined"
                     hide-details
                   />
@@ -109,7 +109,7 @@
                 editedItem?.id ? $t('$ezreeport.edit') : $t('$ezreeport.new')
               "
               :disabled="!isValid || (editedItemFilters?.size ?? 0) < 1"
-              append-icon="mdi-pencil"
+              :append-icon="mdiPencil"
               color="primary"
               @click="upsertEditedEntry()"
             />
@@ -123,7 +123,7 @@
         v-model="showMissing"
         :label="$t('$ezreeport.editor.aggregation.missing:show')"
         :readonly="readonly"
-        prepend-icon="mdi-progress-question"
+        :prepend-icon="mdiProgressQuestion"
         color="primary"
         hide-details
       />
@@ -137,7 +137,7 @@
           :label="$t('$ezreeport.editor.aggregation.missing:label')"
           :readonly="readonly"
           :disabled="disabled"
-          prepend-icon="mdi-tooltip-question-outline"
+          :prepend-icon="mdiTooltipQuestionOutline"
           variant="underlined"
           hide-details
         />
@@ -153,6 +153,15 @@
     FigureFilterAggregationEntry,
   } from '~sdk/helpers/aggregations';
   import type { TemplateFilterMap } from '~sdk/helpers/filters';
+  import {
+    mdiDelete,
+    mdiFormatListBulletedSquare,
+    mdiPencil,
+    mdiPlus,
+    mdiProgressQuestion,
+    mdiRename,
+    mdiTooltipQuestionOutline,
+  } from '@mdi/js';
 
   // Component props
   /** Aggregation to edit */
@@ -170,7 +179,6 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   const isValid = shallowRef(false);
@@ -202,7 +210,7 @@
   });
   /** If we should show the missing values */
   const showMissing = computed({
-    get: () => !!currentMissing.value,
+    get: () => Boolean(currentMissing.value),
     set: (value) => {
       modelValue.value.missing = value ? 'Missing' : undefined;
     },
@@ -213,17 +221,17 @@
     entry: FigureFilterAggregationEntry;
   }): void {
     const entry = value?.entry ?? {
-      label: '',
       filters: [],
+      label: '',
     };
 
     editedItem.value = value ?? {
-      id: '',
       entry,
+      id: '',
     };
 
     editedItemFilters.value = new Map(
-      entry.filters.map((filter) => [filter.name, filter]) ?? []
+      entry.filters.map((filter) => [filter.name, filter])
     );
 
     showForm.value = true;
@@ -236,11 +244,11 @@
 
     const entry = {
       ...editedItem.value.entry,
-      filters: Array.from(editedItemFilters.value?.values() ?? []),
+      filters: [...(editedItemFilters.value?.values() ?? [])],
     };
 
     currentEntries.value.set(editedItem.value.id || entry.label, entry);
-    modelValue.value.values = Array.from(currentEntries.value.values());
+    modelValue.value.values = [...currentEntries.value.values()];
 
     showForm.value = false;
     editedItem.value = undefined;

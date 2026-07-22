@@ -1,9 +1,9 @@
 // oxlint-disable-next-line no-unassigned-import
 import 'vuetify/styles';
 import { useI18n } from 'vue-i18n';
-import { createVuetify, type VuetifyOptions } from 'vuetify';
+import { type VuetifyOptions, createVuetify } from 'vuetify';
 import { Tooltip } from 'vuetify/directives';
-import { aliases, mdi } from 'vuetify/iconsets/mdi';
+import { aliases, mdi } from 'vuetify/iconsets/mdi-svg';
 import { createVueI18nAdapter } from 'vuetify/locale/adapters/vue-i18n';
 
 import { i18n } from '../i18n';
@@ -13,9 +13,13 @@ const config: VuetifyOptions = {
   date: {
     adapter: LocaleDateFnsAdapter,
   },
+  // Workaround to have tooltips in storybook, as resolver doesn't import them
+  directives: {
+    Tooltip,
+  },
   icons: {
-    defaultSet: 'mdi',
     aliases,
+    defaultSet: 'mdi',
     sets: {
       mdi,
     },
@@ -31,10 +35,6 @@ const config: VuetifyOptions = {
         },
       },
     },
-  },
-  // Workaround to have tooltips in storybook, as resolver doesn't import them
-  directives: {
-    Tooltip,
   },
 };
 

@@ -1,4 +1,4 @@
-import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
+import { hasPermission, refreshPermissions } from '~sdk/helpers/permissions';
 
 type Params = Parameters<typeof hasPermission>;
 

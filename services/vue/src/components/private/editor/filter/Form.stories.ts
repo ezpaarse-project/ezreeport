@@ -4,8 +4,8 @@ import type { TemplateFilter } from '~sdk/helpers/filters';
 import EditorFilterForm from './Form.vue';
 
 const meta: Meta<typeof EditorFilterForm> = {
-  title: 'Template Editor/Filters/Form',
   component: EditorFilterForm,
+  title: 'Template Editor/Filters/Form',
 };
 
 export default meta;
@@ -13,49 +13,39 @@ export default meta;
 type Story = StoryObj<typeof EditorFilterForm>;
 
 const mockSimpleFilter: TemplateFilter = {
-  name: 'rtype is ARTICLE',
   field: 'rtype',
   isNot: false,
+  name: 'rtype is ARTICLE',
   value: 'ARTICLE',
 };
 
 const mockRawFilter: TemplateFilter = {
+  isNot: false,
   name: 'filter-1',
   raw: {
     query_string: {
       query: '-(host:XXX.XX.XXX.X AND sid:"istex-api-harvester")',
     },
   },
-  isNot: false,
 };
 
 export const NewFilter: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFilterForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFilterForm v-bind="args" />',
-  }),
   args: {
     modelValue: undefined,
   },
+  render: (args: unknown) => ({
+    components: { EditorFilterForm },
+    setup() {
+      return { args };
+    },
+    template: '<EditorFilterForm v-bind="args" />',
+  }),
 };
 
 export const SimpleFilter: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFilterForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFilterForm v-bind="args" />',
-  }),
   args: {
     modelValue: mockSimpleFilter,
   },
-};
-
-export const RawFilter: Story = {
   render: (args: unknown) => ({
     components: { EditorFilterForm },
     setup() {
@@ -63,7 +53,17 @@ export const RawFilter: Story = {
     },
     template: '<EditorFilterForm v-bind="args" />',
   }),
+};
+
+export const RawFilter: Story = {
   args: {
     modelValue: mockRawFilter,
   },
+  render: (args: unknown) => ({
+    components: { EditorFilterForm },
+    setup() {
+      return { args };
+    },
+    template: '<EditorFilterForm v-bind="args" />',
+  }),
 };

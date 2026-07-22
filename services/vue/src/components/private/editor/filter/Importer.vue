@@ -1,7 +1,7 @@
 <template>
   <v-card
     :title="$t('$ezreeport.editor.filters.title:import')"
-    prepend-icon="mdi-filter-menu"
+    :prepend-icon="mdiFilterMenu"
     variant="flat"
   >
     <template #text>
@@ -32,7 +32,7 @@
       <v-btn
         :text="$t('$ezreeport.import')"
         :disabled="filters.length <= 0"
-        prepend-icon="mdi-import"
+        :prepend-icon="mdiImport"
         color="primary"
         @click="$emit('update:modelValue', filters)"
       />
@@ -41,7 +41,8 @@
 </template>
 
 <script setup lang="ts">
-  import { isRawFilter, type TemplateFilter } from '~sdk/helpers/filters';
+  import { mdiFilterMenu, mdiImport } from '@mdi/js';
+  import { type TemplateFilter, isRawFilter } from '~sdk/helpers/filters';
 
   // Components events
   defineEmits<{
@@ -50,11 +51,10 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   /** Text from filters found in Kibana */
-  const kibanaText = ref('');
+  const kibanaText = shallowRef('');
 
   function generateFilterName(
     filterRef: MaybeRefOrGetter<TemplateFilter>
@@ -101,7 +101,7 @@
     kibanaText.value
       .split('\n')
       .map((line): TemplateFilter | undefined => {
-        const matches = /^(?:(?<invert>NOT)\s)?(?<field>.+): (?<value>.*)/.exec(
+        const matches = /^(?:(?<invert>NOT)\s)?(?<field>.+): (?<value>.*)/v.exec(
           line
         );
         const { invert, field, value } = matches?.groups ?? {};
@@ -110,19 +110,18 @@
           return undefined;
         }
 
-        const filter = { field, isNot: !!invert, value };
+        const filter = {
+          field,
+          isNot: Boolean(invert),
+          name: '',
+          value,
+        };
 
         // Generate name of the filter
-        const name = generateFilterName({ name: '', ...filter });
-        if (!name) {
-          return undefined;
-        }
-
-        return {
-          ...filter,
-          name,
-        };
+        filter.name = generateFilterName(filter);
+        return filter.name ? filter : undefined;
       })
+      // oxlint-disable-next-line no-implicit-coercion - Type Guard
       .filter((val) => !!val)
   );
 </script>

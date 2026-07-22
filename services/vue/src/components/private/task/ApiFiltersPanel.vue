@@ -11,17 +11,17 @@
         style="background-color: transparent"
       >
         <template #prepend>
-          <v-icon icon="mdi-email" end />
+          <v-icon :icon="mdiEmail" end />
         </template>
 
         <template #append>
           <v-btn
             v-tooltip="$t('$ezreeport.api-filters.reset')"
-            icon="mdi-filter-off"
+            :icon="mdiFilterOff"
             @click="$emit('reset:filters')"
           />
 
-          <v-btn icon="mdi-close" @click="modelValue = false" />
+          <v-btn :icon="mdiClose" @click="modelValue = false" />
         </template>
       </v-toolbar>
 
@@ -32,7 +32,7 @@
               v-model="filters.enabled"
               :items="enabledOptions"
               :label="$t('$ezreeport.task.state')"
-              prepend-icon="mdi-toggle-switch"
+              :prepend-icon="mdiToggleSwitch"
             />
           </v-col>
 
@@ -41,7 +41,7 @@
               v-model="filters.recurrence"
               :items="recurrenceOptions"
               :label="$t('$ezreeport.task.recurrence')"
-              prepend-icon="mdi-calendar-refresh"
+              :prepend-icon="mdiCalendarRefresh"
               clearable
             />
           </v-col>
@@ -51,7 +51,7 @@
               v-model="filters['extends.tags']"
               :items="tagsOptions"
               :label="$t('$ezreeport.template.tags.title')"
-              prepend-icon="mdi-tag"
+              :prepend-icon="mdiTag"
               clearable
               chips
               multiple
@@ -68,7 +68,7 @@
               v-model="filters.namespaceId"
               :items="namespacesOptions"
               :label="$t('$ezreeport.namespace')"
-              prepend-icon="mdi-folder"
+              :prepend-icon="mdiFolder"
               clearable
               chips
               multiple
@@ -84,6 +84,15 @@
   import type { Namespace } from '~sdk/namespaces';
   import type { Recurrence } from '~sdk/recurrence';
   import type { TemplateTag } from '~sdk/templates';
+  import {
+    mdiCalendarRefresh,
+    mdiClose,
+    mdiEmail,
+    mdiFilterOff,
+    mdiFolder,
+    mdiTag,
+    mdiToggleSwitch,
+  } from '@mdi/js';
   import { RECURRENCES } from '~sdk/helpers/tasks';
 
   type TaskFilters = {
@@ -109,31 +118,30 @@
   }>();
 
   // Utils composable
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   const enabledOptions = computed(() => [
-    { value: true, text: t('$ezreeport.task.enabled') },
-    { value: false, text: t('$ezreeport.task.disabled') },
+    { text: t('$ezreeport.task.enabled'), value: true },
+    { text: t('$ezreeport.task.disabled'), value: false },
   ]);
   const recurrenceOptions = computed(() =>
     RECURRENCES.map((recurrence) => ({
-      value: recurrence,
       title: t(`$ezreeport.task.recurrenceList.${recurrence}`),
+      value: recurrence,
     }))
   );
   const tagsOptions = computed(() =>
     tags.map((tag) => ({
-      value: tag.id,
-      title: tag.name,
       tag,
+      title: tag.name,
+      value: tag.id,
     }))
   );
   const namespacesOptions = computed(() =>
     namespaces.map((namespace) => ({
-      value: namespace.id,
-      title: namespace.name,
       namespace,
+      title: namespace.name,
+      value: namespace.id,
     }))
   );
 </script>

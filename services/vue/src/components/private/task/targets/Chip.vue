@@ -7,7 +7,7 @@
             ? $t('$ezreeport.task.targets:count', modelValue.length)
             : `${modelValue.length}`
         "
-        prepend-icon="mdi-mailbox"
+        :prepend-icon="mdiMailbox"
         :density="density"
         :size="size ?? 'small'"
         v-bind="menu"
@@ -23,7 +23,7 @@
         <template v-if="clipboard.isSupported" #append>
           <v-btn
             v-tooltip:top="$t('$ezreeport.task.targets:copy')"
-            :icon="isCopied ? 'mdi-check' : 'mdi-content-copy'"
+            :icon="isCopied ? mdiCheck : mdiContentCopy"
             :color="isCopied ? 'success' : undefined"
             density="comfortable"
             variant="flat"
@@ -53,9 +53,9 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
   const clipboard = useClipboard();
+  import { mdiMailbox, mdiCheck, mdiContentCopy } from '@mdi/js';
 
   const isCopied = ref(false);
 
@@ -68,8 +68,8 @@
       setTimeout(() => {
         isCopied.value = false;
       }, 1000);
-    } catch (err) {
-      handleEzrError(t('$ezreeport.task.errors.copy:targets'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.task.errors.copy:targets'), error);
     }
   }
 </script>

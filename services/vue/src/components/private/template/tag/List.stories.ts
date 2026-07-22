@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import TemplateTagList from './List.vue';
 
 const meta: Meta<typeof TemplateTagList> = {
-  title: 'Template/Tag - List',
   component: TemplateTagList,
+  title: 'Template/Tag - List',
 };
 
 export default meta;
@@ -12,6 +12,9 @@ export default meta;
 type Story = StoryObj<typeof TemplateTagList>;
 
 export const Empty: Story = {
+  args: {
+    modelValue: new Map(),
+  },
   render: (args: unknown) => ({
     components: { TemplateTagList },
     setup() {
@@ -19,12 +22,15 @@ export const Empty: Story = {
     },
     template: '<TemplateTagList v-bind="args" />',
   }),
-  args: {
-    modelValue: new Map([]),
-  },
 };
 
 export const Existing: Story = {
+  args: {
+    modelValue: new Map([
+      ['ezPAARSE', { name: 'ezPAARSE' }],
+      ['bibCNRS', { color: '#001E3D', name: 'bibCNRS' }],
+    ]),
+  },
   render: (args: unknown) => ({
     components: { TemplateTagList },
     setup() {
@@ -32,10 +38,4 @@ export const Existing: Story = {
     },
     template: '<TemplateTagList v-bind="args" />',
   }),
-  args: {
-    modelValue: new Map([
-      ['ezPAARSE', { name: 'ezPAARSE' }],
-      ['bibCNRS', { name: 'bibCNRS', color: '#001E3D' }],
-    ]),
-  },
 };

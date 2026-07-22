@@ -12,7 +12,7 @@
   <div class="table-preview--column-value">
     <v-icon
       v-if="modelValue.metric"
-      icon="mdi-counter"
+      :icon="mdiCounter"
       color="grey"
       size="small"
       class="mr-1"
@@ -48,6 +48,20 @@
 <script setup lang="ts">
   import type { CSSProperties } from 'vue';
   import type { TableColumn } from '~sdk/helpers/figures';
+  import {
+    mdiCounter,
+    mdiFormatAlignBottom,
+    mdiFormatAlignCenter,
+    mdiFormatAlignJustify,
+    mdiFormatAlignRight,
+    mdiFormatAlignTop,
+    mdiFormatBold,
+    mdiFormatColorFill,
+    mdiFormatColorText,
+    mdiFormatItalic,
+    mdiFormatSize,
+    mdiSelectColor,
+  } from '@mdi/js';
 
   // Components props
   const props = defineProps<{
@@ -56,7 +70,6 @@
   }>();
 
   // Util composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   type IconDefinition = {
@@ -84,53 +97,53 @@
 
     const icons: Record<string, IconDefinition> = {
       // Color
-      'mdi-format-color-fill': {
-        show: !!styles.fillColor,
+      [mdiFormatColorFill]: {
+        show: Boolean(styles.fillColor),
         style: { color: fillColor },
         tooltip: t('$ezreeport.editor.figures.table.columns.styles.fillColor'),
       },
-      'mdi-format-color-text': {
-        show: !!styles.textColor,
+      [mdiFormatColorText]: {
+        show: Boolean(styles.textColor),
         style: { color: textColor },
         tooltip: t('$ezreeport.editor.figures.table.columns.styles.textColor'),
       },
-      'mdi-select-color': {
-        show: !!styles.lineColor,
+      [mdiSelectColor]: {
+        show: Boolean(styles.lineColor),
         style: { color: lineColor },
         tooltip: t('$ezreeport.editor.figures.table.columns.styles.lineColor'),
       },
       // Font
-      'mdi-format-size': {
-        show: !!styles.fontSize,
+      [mdiFormatSize]: {
+        show: Boolean(styles.fontSize),
         tooltip: t('$ezreeport.editor.figures.table.columns.styles.fontSize'),
       },
-      'mdi-format-bold': {
+      [mdiFormatBold]: {
         show: styles.fontStyle === 'bold' || styles.fontStyle === 'bolditalic',
         tooltip: t('$ezreeport.editor.figures.table.columns.styles.bold'),
       },
-      'mdi-format-italic': {
+      [mdiFormatItalic]: {
         show: styles.fontStyle === 'italic' || styles.fontStyle === 'bolditalic',
         tooltip: t('$ezreeport.editor.figures.table.columns.styles.italic'),
       },
       // VAlign
-      'mdi-format-align-top': {
+      [mdiFormatAlignTop]: {
         show: styles.valign === 'top',
         tooltip: t('$ezreeport.editor.figures.table.columns.styles.vtop'),
       },
-      'mdi-format-align-bottom': {
+      [mdiFormatAlignBottom]: {
         show: styles.valign === 'bottom',
         tooltip: t('$ezreeport.editor.figures.table.columns.styles.vbottom'),
       },
       // HAlign
-      'mdi-format-align-center': {
+      [mdiFormatAlignCenter]: {
         show: styles.halign === 'center',
         tooltip: t('$ezreeport.editor.figures.table.columns.styles.hcenter'),
       },
-      'mdi-format-align-right': {
+      [mdiFormatAlignRight]: {
         show: styles.halign === 'right',
         tooltip: t('$ezreeport.editor.figures.table.columns.styles.hright'),
       },
-      'mdi-format-align-justify': {
+      [mdiFormatAlignJustify]: {
         show: styles.halign === 'justify',
         tooltip: t('$ezreeport.editor.figures.table.columns.styles.hjustify'),
       },

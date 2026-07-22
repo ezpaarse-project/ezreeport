@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import CronList from './CronList.vue';
 
 const meta: Meta<typeof CronList> = {
-  title: 'Public/Cron List',
   component: CronList,
+  title: 'Public/Cron List',
 };
 
 export default meta;
@@ -12,6 +12,7 @@ export default meta;
 type Story = StoryObj<typeof CronList>;
 
 export const Default: Story = {
+  args: {},
   render: (args: unknown) => ({
     components: { CronList },
     setup() {
@@ -19,5 +20,4 @@ export const Default: Story = {
     },
     template: '<CronList v-bind="args" />',
   }),
-  args: {},
 };

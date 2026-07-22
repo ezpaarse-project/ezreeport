@@ -5,7 +5,7 @@
         ? $t('$ezreeport.editor.figures.metric.elements.title:edit')
         : $t('$ezreeport.editor.figures.metric.elements.title:new')
     "
-    prepend-icon="mdi-playlist-plus"
+    :prepend-icon="mdiPlaylistPlus"
   >
     <template #text>
       <v-form ref="formRef" v-model="isValid">
@@ -21,7 +21,7 @@
               v-model="format"
               :items="formatOptions"
               :label="$t('$ezreeport.editor.figures.metric.elements.format')"
-              prepend-icon="mdi-format-paint"
+              :prepend-icon="mdiFormatPaint"
               variant="underlined"
             />
           </v-col>
@@ -33,7 +33,7 @@
               v-model="formatParams"
               :label="formatParamLabel"
               :placeholder="formatParamPlaceholder ?? undefined"
-              prepend-icon="mdi-code-braces"
+              :prepend-icon="mdiCodeBraces"
               variant="underlined"
               persistent-placeholder
             >
@@ -50,7 +50,7 @@
                         Unicode Technical Standard #35
                       </a>
 
-                      <v-icon icon="mdi-open-in-new" x-small />
+                      <v-icon :icon="mdiOpenInNew" x-small />
                     </template>
                   </i18n-t>
                 </div>
@@ -68,7 +68,7 @@
                 (val) => !!val || $t('$ezreeport.required'),
                 isUniqueRule,
               ]"
-              prepend-icon="mdi-rename"
+              :prepend-icon="mdiRename"
               variant="underlined"
               required
             />
@@ -84,7 +84,7 @@
 
       <v-btn
         :text="$t('$ezreeport.confirm')"
-        :append-icon="modelValue ? 'mdi-pencil' : 'mdi-plus'"
+        :append-icon="modelValue ? mdiPencil : mdiPlus"
         :disabled="!isValid"
         color="primary"
         @click="emit('update:modelValue', label)"
@@ -94,6 +94,15 @@
 </template>
 
 <script setup lang="ts">
+  import {
+    mdiCodeBraces,
+    mdiFormatPaint,
+    mdiOpenInNew,
+    mdiPencil,
+    mdiPlaylistPlus,
+    mdiPlus,
+    mdiRename,
+  } from '@mdi/js';
   import { isRawAggregation } from '~sdk/helpers/aggregations';
   import { type MetricLabel, getMetricLabelKey } from '~sdk/helpers/figures';
 
@@ -118,7 +127,6 @@
   }>();
 
   // Util composables
-  // oxlint-disable-next-line id-length
   const { t, te } = useI18n();
 
   /** Is form valid */

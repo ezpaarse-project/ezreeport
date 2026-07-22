@@ -8,8 +8,8 @@ import {
 import EditorTask from './Task.vue';
 
 const meta: Meta<typeof EditorTask> = {
-  title: 'Template Editor/Task',
   component: EditorTask,
+  title: 'Template Editor/Task',
 };
 
 export default meta;
@@ -17,6 +17,10 @@ export default meta;
 type Story = StoryObj<typeof EditorTask>;
 
 export const New: Story = {
+  args: {
+    extends: createTemplateHelper().body,
+    modelValue: createTaskHelper().template,
+  },
   render: (args: unknown) => ({
     components: { EditorTask },
     setup() {
@@ -24,91 +28,20 @@ export const New: Story = {
     },
     template: '<EditorTask v-bind="args" />',
   }),
-  args: {
-    modelValue: createTaskHelper().template,
-    extends: createTemplateHelper().body,
-  },
 };
 
 export const Existing: Story = {
-  render: (args: unknown) => ({
-    components: { EditorTask },
-    setup() {
-      return { args };
-    },
-    template: '<EditorTask v-bind="args" />',
-  }),
   args: {
-    modelValue: createTaskHelperFrom({
-      id: 'dc1481b1-ff90-4374-a5a9-e3ef4d7cc0fb',
-      name: 'Métriques API',
-      description: '',
-      template: {
-        version: 2,
-        index: '.ezmesure-metrics',
-        dateField: 'datetime',
-        filters: [],
-        inserts: [
-          {
-            figures: [
-              {
-                type: 'bar',
-                slots: [2, 3],
-                params: {
-                  label: {
-                    title: 'datetime',
-                    aggregation: {
-                      type: 'date_histogram',
-                      field: '{{ dateField }}',
-                    },
-                  },
-                  title: 'panist : histo jour requêtes',
-                  value: { title: 'Count' },
-                  dataLabel: { format: 'numeric', showLabel: false },
-                  invertAxis: false,
-                },
-                filters: [
-                  {
-                    name: '_index is panist*',
-                    field: '_index',
-                    isNot: false,
-                    value: 'panist*',
-                  },
-                ],
-              },
-            ],
-            at: 1,
-          },
-        ],
-      },
-      targets: ['ezteam@couperin.org'],
-      recurrence: 'DAILY',
-      recurrenceOffset: {},
-      nextRun: new Date('2024-12-04T06:00:00.240Z'),
-      lastRun: new Date('2024-12-03T06:00:00.240Z'),
-      enabled: true,
-      createdAt: new Date('2024-06-26T14:49:50.401Z'),
-      updatedAt: new Date('2024-12-03T06:00:02.901Z'),
-      extends: {
-        tags: [{ id: '0', name: 'Administration', color: '#D3339A' }],
-      },
-      extendedId: 'a538ba09-5c2d-479a-b6f9-0dff77863002',
-      namespaceId: 'clxvxybz801d84qdpy1ekrjwn',
-    }).template,
     extends: createTemplateHelperFrom({
-      id: 'a538ba09-5c2d-479a-b6f9-0dff77863002',
-      name: 'Métriques API',
-      locale: 'fr',
       body: {
-        version: 2,
-        index: '.ezmesure-metrics',
         dateField: 'datetime',
         filters: [],
+        index: '.ezmesure-metrics',
         layouts: [
           {
             figures: [
               {
-                type: 'metric',
+                filters: [],
                 params: {
                   labels: [
                     {
@@ -159,77 +92,59 @@ export const Existing: Story = {
                     },
                   ],
                 },
-                filters: [],
                 slots: [0, 1],
+                type: 'metric',
               },
               {
-                type: 'bar',
+                filters: [],
                 params: {
+                  invertAxis: true,
                   label: {
-                    title: 'Utilisateurs',
                     aggregation: {
-                      type: 'terms',
                       field: 'user.name',
+                      type: 'terms',
                     },
+                    title: 'Utilisateurs',
                   },
                   title: 'API - Top utilisateurs',
                   value: {
-                    title: 'Total chargé',
                     aggregation: {
-                      type: 'sum',
                       field: 'response.body.total',
+                      type: 'sum',
                     },
+                    title: 'Total chargé',
                   },
-                  invertAxis: true,
                 },
-                filters: [],
                 slots: [2],
+                type: 'bar',
               },
               {
-                type: 'bar',
+                filters: [],
                 params: {
+                  invertAxis: true,
                   label: {
                     aggregation: {
-                      type: 'terms',
                       field: 'index',
+                      type: 'terms',
                     },
                   },
                   title: 'Top insertions index',
                   value: {
-                    title: 'Total chargé',
                     aggregation: {
-                      type: 'sum',
                       field: 'response.body.total',
+                      type: 'sum',
                     },
+                    title: 'Total chargé',
                   },
-                  invertAxis: true,
                 },
-                filters: [],
                 slots: [3],
+                type: 'bar',
               },
             ],
           },
           {
             figures: [
               {
-                type: 'bar',
-                params: {
-                  label: {
-                    title: 'Date',
-                    aggregation: {
-                      type: 'date_histogram',
-                      field: '{{ dateField }}',
-                    },
-                  },
-                  title: 'Temps de réponse (hors insertions)',
-                  value: {
-                    title: 'Temps de réponse (ms)',
-                    aggregation: {
-                      type: 'max',
-                      field: 'responseTime',
-                    },
-                  },
-                },
                 filters: [
                   {
                     name: 'action is not indices/insert',
@@ -238,63 +153,79 @@ export const Existing: Story = {
                     value: 'indices/insert',
                   },
                 ],
+                params: {
+                  label: {
+                    aggregation: {
+                      field: '{{ dateField }}',
+                      type: 'date_histogram',
+                    },
+                    title: 'Date',
+                  },
+                  title: 'Temps de réponse (hors insertions)',
+                  value: {
+                    aggregation: {
+                      field: 'responseTime',
+                      type: 'max',
+                    },
+                    title: 'Temps de réponse (ms)',
+                  },
+                },
                 slots: [2, 3],
+                type: 'bar',
               },
               {
-                type: 'bar',
+                filters: [],
                 params: {
                   color: {
-                    title: 'Actions',
                     aggregation: {
-                      type: 'terms',
                       field: 'action',
+                      type: 'terms',
                     },
+                    title: 'Actions',
                   },
                   label: {
-                    title: '',
                     aggregation: {
-                      type: 'date_histogram',
                       field: '{{ dateField }}',
+                      type: 'date_histogram',
                     },
+                    title: '',
                   },
                   title: 'Actions',
                   value: {
                     title: "Nombre d'actions",
                   },
                 },
-                filters: [],
                 slots: [0, 1],
+                type: 'bar',
               },
             ],
           },
           {
             figures: [
               {
-                type: 'arc',
+                filters: [],
                 params: {
-                  label: {
-                    title: 'Statuts',
-                    legend: {},
-                    aggregation: {
-                      type: 'terms',
-                      field: 'response.status',
-                    },
-                  },
-                  title: 'Status HTTP',
-                  value: {},
                   dataLabel: {
                     format: 'numeric',
                     showLabel: true,
                   },
+                  label: {
+                    aggregation: {
+                      field: 'response.status',
+                      type: 'terms',
+                    },
+                    legend: {},
+                    title: 'Statuts',
+                  },
+                  title: 'Status HTTP',
+                  value: {},
                 },
-                filters: [],
                 slots: [0, 2],
+                type: 'arc',
               },
               {
-                type: 'table',
+                filters: [],
                 params: {
-                  title: 'Erreurs',
-                  total: false,
                   columns: [
                     {
                       header: 'Erreur',
@@ -319,24 +250,93 @@ export const Existing: Story = {
                       metric: true,
                     },
                   ],
+                  title: 'Erreurs',
+                  total: false,
                 },
-                filters: [],
                 slots: [1, 3],
+                type: 'table',
               },
             ],
           },
         ],
+        version: 2,
       },
+      createdAt: new Date('2025-03-05T12:36:18.743Z'),
+      hidden: true,
+      id: 'a538ba09-5c2d-479a-b6f9-0dff77863002',
+      locale: 'fr',
+      name: 'Métriques API',
       tags: [
         {
+          color: '#D3339A',
           id: '0',
           name: 'Administration',
-          color: '#D3339A',
         },
       ],
-      hidden: true,
-      createdAt: new Date('2025-03-05T12:36:18.743Z'),
       updatedAt: new Date('2025-03-05T12:36:18.743Z'),
     }).body,
+    modelValue: createTaskHelperFrom({
+      createdAt: new Date('2024-06-26T14:49:50.401Z'),
+      description: '',
+      enabled: true,
+      extendedId: 'a538ba09-5c2d-479a-b6f9-0dff77863002',
+      extends: {
+        tags: [{ color: '#D3339A', id: '0', name: 'Administration' }],
+      },
+      id: 'dc1481b1-ff90-4374-a5a9-e3ef4d7cc0fb',
+      lastRun: new Date('2024-12-03T06:00:00.240Z'),
+      name: 'Métriques API',
+      namespaceId: 'clxvxybz801d84qdpy1ekrjwn',
+      nextRun: new Date('2024-12-04T06:00:00.240Z'),
+      recurrence: 'DAILY',
+      recurrenceOffset: {},
+      targets: ['ezteam@couperin.org'],
+      template: {
+        dateField: 'datetime',
+        filters: [],
+        index: '.ezmesure-metrics',
+        inserts: [
+          {
+            at: 1,
+            figures: [
+              {
+                type: 'bar',
+                slots: [2, 3],
+                params: {
+                  label: {
+                    title: 'datetime',
+                    aggregation: {
+                      type: 'date_histogram',
+                      field: '{{ dateField }}',
+                    },
+                  },
+                  title: 'panist : histo jour requêtes',
+                  value: { title: 'Count' },
+                  dataLabel: { format: 'numeric', showLabel: false },
+                  invertAxis: false,
+                },
+                filters: [
+                  {
+                    name: '_index is panist*',
+                    field: '_index',
+                    isNot: false,
+                    value: 'panist*',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        version: 2,
+      },
+      updatedAt: new Date('2024-12-03T06:00:02.901Z'),
+    }).template,
   },
+  render: (args: unknown) => ({
+    components: { EditorTask },
+    setup() {
+      return { args };
+    },
+    template: '<EditorTask v-bind="args" />',
+  }),
 };

@@ -1,7 +1,7 @@
 <template>
   <v-card
     :title="$t('$ezreeport.template.tags.title', modelValue?.size ?? 0)"
-    prepend-icon="mdi-tag"
+    :prepend-icon="mdiTag"
     variant="outlined"
   >
     <template v-if="!readonly" #append>
@@ -9,7 +9,7 @@
         <template #activator="{ props: menu }">
           <v-btn
             v-tooltip:top="$t('$ezreeport.new')"
-            icon="mdi-plus"
+            :icon="mdiPlus"
             color="green"
             density="compact"
             variant="text"
@@ -35,7 +35,7 @@
 
           <v-list-item
             :title="$t('$ezreeport.template.tags.title:new')"
-            prepend-icon="mdi-plus-circle-outline"
+            :prepend-icon="mdiPlusCircleOutline"
             class="my-2"
             @click="openTagForm()"
           />
@@ -91,10 +91,11 @@
 
 <script setup lang="ts">
   import type { TemplateTagMap } from '~sdk/helpers/templates';
+  import { mdiPlus, mdiPlusCircleOutline, mdiTag } from '@mdi/js';
   import {
-    getAllTemplateTags,
-    type TemplateTag,
     type InputTemplateTag,
+    type TemplateTag,
+    getAllTemplateTags,
   } from '~sdk/template-tags';
 
   type TagWithKey = { key: string; tag: TemplateTag | InputTemplateTag };
@@ -120,7 +121,6 @@
   const updatedItem = ref<TagWithKey | undefined>();
 
   // Utils composable
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   /** Tag list */
@@ -130,11 +130,11 @@
 
       try {
         ({ items } = await getAllTemplateTags({
-          pagination: { count: 0, sort: 'name' },
           include: ['tags'],
+          pagination: { count: 0, sort: 'name' },
         }));
-      } catch (err) {
-        handleEzrError(t('$ezreeport.template.errors.fetch'), err);
+      } catch (error) {
+        handleEzrError(t('$ezreeport.template.errors.fetch'), error);
       }
 
       return items;

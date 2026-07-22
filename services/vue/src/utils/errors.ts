@@ -1,9 +1,9 @@
-export type ErrorHandler = (message: string, err?: unknown) => void;
-
 let errorHandler: ErrorHandler = (message: string, err: unknown) => {
   // oxlint-disable-next-line no-console - Default value for error handling
   console.error(`[ezr-vue] ${message}`, err);
 };
+
+export type ErrorHandler = (message: string, err?: unknown) => void;
 
 export function setErrorHandler(handler: ErrorHandler): void {
   errorHandler = handler;

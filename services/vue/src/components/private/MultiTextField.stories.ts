@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import MultiTextField from './MultiTextField.vue';
 
 const meta: Meta<typeof MultiTextField> = {
-  title: 'Utils/MultiTextField',
   component: MultiTextField,
+  title: 'Utils/MultiTextField',
 };
 
 export default meta;
@@ -12,19 +12,9 @@ export default meta;
 type Story = StoryObj<typeof MultiTextField>;
 
 export const Empty: Story = {
-  render: (args: unknown) => ({
-    components: { MultiTextField },
-    setup() {
-      return { args };
-    },
-    template: '<MultiTextField v-bind="args" />',
-  }),
   args: {
     modelValue: undefined,
   },
-};
-
-export const OneValue: Story = {
   render: (args: unknown) => ({
     components: { MultiTextField },
     setup() {
@@ -32,13 +22,13 @@ export const OneValue: Story = {
     },
     template: '<MultiTextField v-bind="args" />',
   }),
+};
+
+export const OneValue: Story = {
   args: {
     label: 'Lorem Ipsum',
     modelValue: 'Lorem',
   },
-};
-
-export const MultiValue: Story = {
   render: (args: unknown) => ({
     components: { MultiTextField },
     setup() {
@@ -46,13 +36,13 @@ export const MultiValue: Story = {
     },
     template: '<MultiTextField v-bind="args" />',
   }),
+};
+
+export const MultiValue: Story = {
   args: {
     label: 'Lorem Ipsum',
     modelValue: ['Lorem', 'Ipsum'],
   },
-};
-
-export const ManyValue: Story = {
   render: (args: unknown) => ({
     components: { MultiTextField },
     setup() {
@@ -60,6 +50,9 @@ export const ManyValue: Story = {
     },
     template: '<MultiTextField v-bind="args" />',
   }),
+};
+
+export const ManyValue: Story = {
   args: {
     label: 'Filtres Omeka',
     modelValue: [
@@ -119,4 +112,11 @@ export const ManyValue: Story = {
       'com/bot',
     ],
   },
+  render: (args: unknown) => ({
+    components: { MultiTextField },
+    setup() {
+      return { args };
+    },
+    template: '<MultiTextField v-bind="args" />',
+  }),
 };

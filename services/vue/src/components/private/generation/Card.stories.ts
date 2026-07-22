@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import GenerationCard from './Card.vue';
 
 const meta: Meta<typeof GenerationCard> = {
-  title: 'Generation/Card',
   component: GenerationCard,
+  title: 'Generation/Card',
 };
 
 export default meta;
@@ -12,19 +12,16 @@ export default meta;
 type Story = StoryObj<typeof GenerationCard>;
 
 export const Default: Story = {
-  render: (args: unknown) => ({
-    components: { GenerationCard },
-    setup() {
-      return { args };
-    },
-    template: '<GenerationCard v-bind="args" />',
-  }),
   args: {
     modelValue: {
-      id: '45f782d4-735a-4fdf-a50d-09425ba0d1b1',
-      taskId: 'ca65ea81-d855-4169-99f6-6e614e6776ea',
-      start: new Date('2023-12-31T23:00:00.000Z'),
+      createdAt: new Date('2025-03-18T14:06:39.678Z'),
       end: new Date('2024-12-31T22:59:59.999Z'),
+      id: '45f782d4-735a-4fdf-a50d-09425ba0d1b1',
+      origin: 'ezmesure-admin',
+      progress: 100,
+      reportId: '2025/2025-03/ezREEPORT_bibcnrs-rapport-ddor-annuel',
+      start: new Date('2023-12-31T23:00:00.000Z'),
+      status: 'SUCCESS',
       targets: [
         'ezteam@couperin.org',
         'isabelle.didelot@foo.br',
@@ -54,19 +51,12 @@ export const Default: Story = {
         'florent.potier@foo.br',
         'melanie.marcon@foo.br',
       ],
-      origin: 'ezmesure-admin',
-      writeActivity: false,
-      status: 'SUCCESS',
-      progress: 100,
+      taskId: 'ca65ea81-d855-4169-99f6-6e614e6776ea',
       took: 1501,
-      reportId: '2025/2025-03/ezREEPORT_bibcnrs-rapport-ddor-annuel',
-      createdAt: new Date('2025-03-18T14:06:39.678Z'),
       updatedAt: new Date('2025-03-18T14:06:41.179Z'),
+      writeActivity: false,
     },
   },
-};
-
-export const Failed: Story = {
   render: (args: unknown) => ({
     components: { GenerationCard },
     setup() {
@@ -74,21 +64,31 @@ export const Failed: Story = {
     },
     template: '<GenerationCard v-bind="args" />',
   }),
+};
+
+export const Failed: Story = {
   args: {
     modelValue: {
-      id: '720cf67b-8ed2-4527-8815-6e19663c4cdf',
-      taskId: '1e1b8d36-1154-4ed5-9335-c95545680962',
-      start: new Date('2024-09-30T22:00:00.000Z'),
-      end: new Date('2024-12-31T22:59:59.999Z'),
-      targets: ['ezteam@couperin.org'],
-      origin: 'ezmesure-admin',
-      writeActivity: false,
-      status: 'ERROR',
-      progress: 0,
-      took: 29,
-      reportId: '2025/2025-03/ezREEPORT_dr-tii-générique-trimestriel',
       createdAt: new Date('2025-03-18T14:04:18.807Z'),
+      end: new Date('2024-12-31T22:59:59.999Z'),
+      id: '720cf67b-8ed2-4527-8815-6e19663c4cdf',
+      origin: 'ezmesure-admin',
+      progress: 0,
+      reportId: '2025/2025-03/ezREEPORT_dr-tii-générique-trimestriel',
+      start: new Date('2024-09-30T22:00:00.000Z'),
+      status: 'ERROR',
+      targets: ['ezteam@couperin.org'],
+      taskId: '1e1b8d36-1154-4ed5-9335-c95545680962',
+      took: 29,
       updatedAt: new Date('2025-03-18T14:04:18.836Z'),
+      writeActivity: false,
     },
   },
+  render: (args: unknown) => ({
+    components: { GenerationCard },
+    setup() {
+      return { args };
+    },
+    template: '<GenerationCard v-bind="args" />',
+  }),
 };

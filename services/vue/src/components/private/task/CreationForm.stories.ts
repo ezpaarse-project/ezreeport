@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import TaskCreationForm from './CreationForm.vue';
 
 const meta: Meta<typeof TaskCreationForm> = {
-  title: 'Task/Creation Form (Simple)',
   component: TaskCreationForm,
+  title: 'Task/Creation Form (Simple)',
 };
 
 export default meta;
@@ -12,6 +12,7 @@ export default meta;
 type Story = StoryObj<typeof TaskCreationForm>;
 
 export const Admin: Story = {
+  args: {},
   render: (args: unknown) => ({
     components: { TaskCreationForm },
     setup() {
@@ -19,10 +20,12 @@ export const Admin: Story = {
     },
     template: '<TaskCreationForm v-bind="args" />',
   }),
-  args: {},
 };
 
 export const Namespaced: Story = {
+  args: {
+    namespaceId: 'abba8400-1216-11eb-af77-ff33b5dd411e',
+  },
   render: (args: unknown) => ({
     components: { TaskCreationForm },
     setup() {
@@ -30,7 +33,4 @@ export const Namespaced: Story = {
     },
     template: '<TaskCreationForm v-bind="args" />',
   }),
-  args: {
-    namespaceId: 'abba8400-1216-11eb-af77-ff33b5dd411e',
-  },
 };

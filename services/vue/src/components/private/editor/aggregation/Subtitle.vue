@@ -33,7 +33,6 @@
   }>();
 
   // Utils function
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   /** Does the element need a subtitle */

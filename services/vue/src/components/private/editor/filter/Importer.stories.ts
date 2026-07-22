@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import EditorFilterImporter from './Importer.vue';
 
 const meta: Meta<typeof EditorFilterImporter> = {
-  title: 'Template Editor/Filters/Importer',
   component: EditorFilterImporter,
+  title: 'Template Editor/Filters/Importer',
 };
 
 export default meta;

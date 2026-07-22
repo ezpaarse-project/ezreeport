@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import TaskTable from './TaskTable.vue';
 
 const meta: Meta<typeof TaskTable> = {
-  title: 'Public/Tasks Table',
   component: TaskTable,
+  title: 'Public/Tasks Table',
 };
 
 export default meta;
@@ -12,6 +12,7 @@ export default meta;
 type Story = StoryObj<typeof TaskTable>;
 
 export const Default: Story = {
+  args: {},
   render: (args: unknown) => ({
     components: { TaskTable },
     setup() {
@@ -19,5 +20,4 @@ export const Default: Story = {
     },
     template: '<TaskTable v-bind="args" />',
   }),
-  args: {},
 };

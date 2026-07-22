@@ -9,13 +9,13 @@
     :disabled="disabled"
     :required="required"
     :readonly="readonly"
-    prepend-icon="mdi-database"
+    :prepend-icon="mdiDatabase"
     variant="underlined"
   />
   <v-menu :activator="indexRef?.$el" @update:model-value="$event && refresh()">
     <v-card>
       <template #text>
-        <v-alert v-if="error" :text="error.message" type="error" />
+        <v-alert v-if="errorAlert" :text="errorAlert.message" type="error" />
 
         <v-row>
           <v-col>
@@ -37,7 +37,7 @@
                   <td>
                     <v-icon
                       v-if="resolvedIndices.includes(item)"
-                      icon="mdi-check"
+                      :icon="mdiCheck"
                       color="primary"
                       small
                     />
@@ -54,9 +54,11 @@
 </template>
 
 <script setup lang="ts">
+  import { mdiCheck, mdiDatabase } from '@mdi/js';
   import { getAllIndices } from '~sdk/elastic';
 
   // Constants
+  const ERROR_ALERT_DURATION = 5000;
   const invalidChars = ['\\', '/', '?', '"', '<', '>', '|'];
   const invalidCharsMessage = invalidChars.join(' ');
 
@@ -74,21 +76,21 @@
   // Components events
   const emit = defineEmits<{
     (event: 'update:model-value', value: string): void;
+    // oxlint-disable-next-line typescript/unified-signatures
     (event: 'index:valid', value: string): void;
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   /* Is the input loading */
-  const loading = ref(false);
+  const loading = shallowRef(false);
   /** The resolved indices */
   const resolvedIndices = ref<string[]>([]);
   /** The available indices */
   const availableIndices = ref<string[]>([]);
   /** The error, if any */
-  const error = ref<Error | undefined>(undefined);
+  const errorAlert = ref<Error | undefined>(undefined);
 
   /** Ref on text field */
   const indexRef = useTemplateRef('indexRef');
@@ -114,13 +116,13 @@
   });
   /** User provided rules + default rules */
   const innerRules = computed(() => {
-    const invalidCharsRegex = new RegExp(`[${invalidChars.join('')}\\s]`, 'i');
+    const invalidCharsRegex = new RegExp(`[${invalidChars.join('')}\\s]`, 'iu');
 
     return [
-      (val: string) =>
+      (val: string): true | string =>
         !invalidCharsRegex.test(val) ||
         t('$ezreeport.index.invalidChars', { message: invalidCharsMessage }),
-      () =>
+      (): true | string =>
         resolvedIndices.value.length > 0 || `${t('$ezreeport.index.required')}`,
       ...(props.rules ?? []),
     ];
@@ -129,15 +131,15 @@
   /**
    * Reload the available indices
    */
-  async function fetchIndices() {
+  async function fetchIndices(): Promise<void> {
     loading.value = true;
     try {
       availableIndices.value = await getAllIndices(props.namespaceId);
-    } catch (err) {
-      error.value = err instanceof Error ? err : new Error(`${err}`);
+    } catch (error) {
+      errorAlert.value = error instanceof Error ? error : new Error(`${error}`);
       setTimeout(() => {
-        error.value = undefined;
-      }, 5000);
+        errorAlert.value = undefined;
+      }, ERROR_ALERT_DURATION);
       availableIndices.value = [];
     }
     loading.value = false;
@@ -146,7 +148,7 @@
   /**
    * Resolve the available indices using current value
    */
-  async function resolveIndex() {
+  async function resolveIndex(): Promise<void> {
     if (!index.value) {
       resolvedIndices.value = [];
       indexRef.value?.validate();
@@ -160,18 +162,18 @@
       if (resolvedIndices.value.length > 0) {
         emit('index:valid', index.value);
       }
-    } catch (err) {
-      error.value = err instanceof Error ? err : new Error(`${err}`);
+    } catch (error) {
+      errorAlert.value = error instanceof Error ? error : new Error(`${error}`);
       setTimeout(() => {
-        error.value = undefined;
-      }, 5000);
+        errorAlert.value = undefined;
+      }, ERROR_ALERT_DURATION);
       resolvedIndices.value = [];
     }
     loading.value = false;
     indexRef.value?.validate();
   }
 
-  async function refresh() {
+  async function refresh(): Promise<void> {
     await Promise.all([fetchIndices(), resolveIndex()]);
   }
 

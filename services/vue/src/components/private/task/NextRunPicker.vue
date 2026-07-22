@@ -10,7 +10,7 @@
         :model-value="humanLabel"
         :error="errorState?.status"
         :error-messages="errorState?.messages"
-        prepend-icon="mdi-calendar-arrow-right"
+        :prepend-icon="mdiCalendarArrowRight"
         variant="underlined"
         v-bind="menu"
       />
@@ -77,7 +77,7 @@
               :loading="nextDateResolving"
               :disabled="nextDateResolving"
               :min="today"
-              prepend-icon="mdi-calendar-start"
+              :prepend-icon="mdiCalendarStart"
               variant="underlined"
             />
           </v-col>
@@ -90,6 +90,7 @@
 <script setup lang="ts">
   import type { Day, Month } from 'date-fns';
   import type { TaskRecurrenceOffset } from '~sdk/tasks';
+  import { mdiCalendarArrowRight, mdiCalendarStart } from '@mdi/js';
   import { daysInWeek, monthsInQuarter, monthsInYear } from 'date-fns/constants';
   import {
     type Recurrence,
@@ -98,9 +99,9 @@
   } from '~sdk/recurrence';
 
   const today = new Date();
-  // date-fns is missing the "semester" granularity
+  // Date-fns is missing the "semester" granularity
   const monthsInSemester = 6;
-  // we want a general rule, so we want the maximum days in a month
+  // We want a general rule, so we want the maximum days in a month
   const daysInMonth = 31;
 
   const nextRun = defineModel<Date | undefined>();
@@ -120,7 +121,6 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
   const { locale: dateLocale } = useDateLocale();
 
@@ -148,8 +148,8 @@
       days: Array.from({ length: daysInWeek }, (__, index) => {
         const day = ((startsOn + index) % daysInWeek) as Day;
         return {
-          value: index,
           text: dateLocale.value.localize.day(day),
+          value: index,
         };
       }),
     };
@@ -169,16 +169,16 @@
 
     return {
       days: Array.from({ length: daysInMonth }, (__, day) => ({
-        value: day,
         text: `${day + 1}`,
+        value: day,
       })),
 
       months: Array.from({ length: numberOfMonths }, (__, month) => ({
-        value: month,
         text:
           recurrence === 'YEARLY'
             ? dateLocale.value.localize.month(month as Month)
             : t('$ezreeport.task.nextRunPicker.month:list', month + 1),
+        value: month,
       })),
     };
   });
@@ -205,7 +205,7 @@
       month = t('$ezreeport.task.nextRunPicker.months');
     }
 
-    let key =
+    const key =
       day && month
         ? '$ezreeport.task.nextRunPicker.text'
         : '$ezreeport.task.nextRunPicker.text:day';
@@ -225,8 +225,8 @@
         ?.filter((res) => typeof res === 'string') ?? [];
 
     return {
-      status: messages.length > 0,
       messages,
+      status: messages.length > 0,
     };
   });
 
@@ -250,8 +250,8 @@
         today,
         offset.value
       );
-    } catch (err) {
-      handleEzrError(t('$ezreeport.errors.resolveNextDate'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.errors.resolveNextDate'), error);
     }
     nextDateResolving.value = false;
   }

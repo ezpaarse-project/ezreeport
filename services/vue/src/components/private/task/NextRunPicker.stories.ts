@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import TaskNextRunPicker from './NextRunPicker.vue';
 
 const meta: Meta<typeof TaskNextRunPicker> = {
-  title: 'Task/Next Run Picker',
   component: TaskNextRunPicker,
+  title: 'Task/Next Run Picker',
 };
 
 export default meta;
@@ -12,6 +12,10 @@ export default meta;
 type Story = StoryObj<typeof TaskNextRunPicker>;
 
 export const Daily: Story = {
+  args: {
+    offset: {},
+    recurrence: 'DAILY',
+  },
   render: (args: unknown) => ({
     components: { TaskNextRunPicker },
     setup() {
@@ -19,13 +23,13 @@ export const Daily: Story = {
     },
     template: '<TaskNextRunPicker v-bind="args" />',
   }),
-  args: {
-    recurrence: 'DAILY',
-    offset: {},
-  },
 };
 
 export const Weekly: Story = {
+  args: {
+    offset: {},
+    recurrence: 'WEEKLY',
+  },
   render: (args: unknown) => ({
     components: { TaskNextRunPicker },
     setup() {
@@ -33,13 +37,13 @@ export const Weekly: Story = {
     },
     template: '<TaskNextRunPicker v-bind="args" />',
   }),
-  args: {
-    recurrence: 'WEEKLY',
-    offset: {},
-  },
 };
 
 export const Monthly: Story = {
+  args: {
+    offset: {},
+    recurrence: 'MONTHLY',
+  },
   render: (args: unknown) => ({
     components: { TaskNextRunPicker },
     setup() {
@@ -47,13 +51,13 @@ export const Monthly: Story = {
     },
     template: '<TaskNextRunPicker v-bind="args" />',
   }),
-  args: {
-    recurrence: 'MONTHLY',
-    offset: {},
-  },
 };
 
 export const Quarterly: Story = {
+  args: {
+    offset: {},
+    recurrence: 'QUARTERLY',
+  },
   render: (args: unknown) => ({
     components: { TaskNextRunPicker },
     setup() {
@@ -61,13 +65,13 @@ export const Quarterly: Story = {
     },
     template: '<TaskNextRunPicker v-bind="args" />',
   }),
-  args: {
-    recurrence: 'QUARTERLY',
-    offset: {},
-  },
 };
 
 export const Biennial: Story = {
+  args: {
+    offset: {},
+    recurrence: 'BIENNIAL',
+  },
   render: (args: unknown) => ({
     components: { TaskNextRunPicker },
     setup() {
@@ -75,13 +79,13 @@ export const Biennial: Story = {
     },
     template: '<TaskNextRunPicker v-bind="args" />',
   }),
-  args: {
-    recurrence: 'BIENNIAL',
-    offset: {},
-  },
 };
 
 export const Yearly: Story = {
+  args: {
+    offset: {},
+    recurrence: 'YEARLY',
+  },
   render: (args: unknown) => ({
     components: { TaskNextRunPicker },
     setup() {
@@ -89,13 +93,14 @@ export const Yearly: Story = {
     },
     template: '<TaskNextRunPicker v-bind="args" />',
   }),
-  args: {
-    recurrence: 'YEARLY',
-    offset: {},
-  },
 };
 
 export const Existing: Story = {
+  args: {
+    modelValue: new Date('2024-12-04T06:00:00.240Z'),
+    offset: {},
+    recurrence: 'BIENNIAL',
+  },
   render: (args: unknown) => ({
     components: { TaskNextRunPicker },
     setup() {
@@ -103,14 +108,15 @@ export const Existing: Story = {
     },
     template: '<TaskNextRunPicker v-bind="args" />',
   }),
-  args: {
-    recurrence: 'BIENNIAL',
-    modelValue: new Date('2024-12-04T06:00:00.240Z'),
-    offset: {},
-  },
 };
 
 export const Readonly: Story = {
+  args: {
+    modelValue: new Date('2024-12-04T06:00:00.240Z'),
+    offset: {},
+    readonly: true,
+    recurrence: 'YEARLY',
+  },
   render: (args: unknown) => ({
     components: { TaskNextRunPicker },
     setup() {
@@ -118,10 +124,4 @@ export const Readonly: Story = {
     },
     template: '<TaskNextRunPicker v-bind="args" />',
   }),
-  args: {
-    recurrence: 'YEARLY',
-    modelValue: new Date('2024-12-04T06:00:00.240Z'),
-    offset: {},
-    readonly: true,
-  },
 };

@@ -5,9 +5,9 @@
 ## Requirements
 
 - `vue@^3.5` ([npm](https://www.npmjs.com/package/vue))
-- `vue-i18n@^10` ([npm](https://github.com/kazupon/vue-i18n))
-- `vuetify@^3.7` ([npm](https://github.com/vuetifyjs/vuetify/tree/v2-stable))
-- `@mdi/font@^7.4` ([npm](https://github.com/Templarian/MaterialDesign-Webfont))
+- `vue-i18n@^11` ([npm](https://github.com/kazupon/vue-i18n))
+- `vuetify@^4` ([npm](https://github.com/vuetifyjs/vuetify/tree/v2-stable))
+- `@mdi/js@^7.4` ([npm](https://github.com/Templarian/MaterialDesign-Webfont))
 
 ## Install
 

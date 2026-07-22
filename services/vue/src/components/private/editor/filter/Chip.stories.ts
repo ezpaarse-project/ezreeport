@@ -4,8 +4,8 @@ import type { TemplateFilter } from '~sdk/helpers/filters';
 import FilterChip from './Chip.vue';
 
 const meta: Meta<typeof FilterChip> = {
-  title: 'Template Editor/Filters/Chip',
   component: FilterChip,
+  title: 'Template Editor/Filters/Chip',
 };
 
 export default meta;
@@ -13,36 +13,26 @@ export default meta;
 type Story = StoryObj<typeof FilterChip>;
 
 const mockSimpleFilter: TemplateFilter = {
-  name: 'rtype is ARTICLE',
   field: 'rtype',
   isNot: false,
+  name: 'rtype is ARTICLE',
   value: 'ARTICLE',
 };
 
 const mockRawFilter: TemplateFilter = {
+  isNot: false,
   name: 'filter-1',
   raw: {
     query_string: {
       query: '-(host:XXX.XX.XXX.X AND sid:"istex-api-harvester")',
     },
   },
-  isNot: false,
 };
 
 export const SimpleFilter: Story = {
-  render: (args: unknown) => ({
-    components: { FilterChip },
-    setup() {
-      return { args };
-    },
-    template: '<FilterChip v-bind="args" />',
-  }),
   args: {
     modelValue: mockSimpleFilter,
   },
-};
-
-export const RawFilter: Story = {
   render: (args: unknown) => ({
     components: { FilterChip },
     setup() {
@@ -50,7 +40,17 @@ export const RawFilter: Story = {
     },
     template: '<FilterChip v-bind="args" />',
   }),
+};
+
+export const RawFilter: Story = {
   args: {
     modelValue: mockRawFilter,
   },
+  render: (args: unknown) => ({
+    components: { FilterChip },
+    setup() {
+      return { args };
+    },
+    template: '<FilterChip v-bind="args" />',
+  }),
 };

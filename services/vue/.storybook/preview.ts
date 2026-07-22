@@ -1,7 +1,5 @@
 import { type Preview, setup } from '@storybook/vue3-vite';
 import { useI18n } from 'vue-i18n';
-// oxlint-disable-next-line no-unassigned-import import/extensions
-// import '@mdi/font/css/materialdesignicons.css';
 import { useTheme } from 'vuetify';
 import { VApp, VMain } from 'vuetify/components';
 
@@ -70,4 +68,5 @@ const preview: Preview = {
   tags: ['autodocs'],
 };
 
+// oxlint-disable-next-line import/no-default-export
 export default preview;

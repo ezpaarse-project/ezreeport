@@ -5,7 +5,7 @@
         ? $t('$ezreeport.editor.filters.title:edit')
         : $t('$ezreeport.editor.filters.title:new')
     "
-    prepend-icon="mdi-filter-plus"
+    :prepend-icon="mdiFilterPlus"
   >
     <template #append>
       <v-btn
@@ -13,7 +13,7 @@
         :color="isAdvanced ? 'orange' : 'grey'"
         :disabled="isAdvanced && (!!rawParseError || rawHasChanged)"
         density="comfortable"
-        icon="mdi-tools"
+        :icon="mdiTools"
         variant="text"
         @click="switchMode()"
       />
@@ -29,7 +29,7 @@
               v-model="rawValue"
               :label="$t('$ezreeport.editor.filters.raw')"
               :error-messages="rawParseError?.message"
-              prepend-icon="mdi-cursor-text"
+              :prepend-icon="mdiCursorText"
               variant="outlined"
               required
               @update:model-value="rawHasChanged = true"
@@ -46,7 +46,7 @@
                 :items="mapping"
                 :rules="[(val) => !!val || $t('$ezreeport.required')]"
                 :return-object="false"
-                prepend-icon="mdi-form-textbox"
+                :prepend-icon="mdiFormTextbox"
                 variant="underlined"
                 required
               />
@@ -58,7 +58,7 @@
               <MultiTextField
                 v-model="filter.value"
                 :label="$t('$ezreeport.editor.filters.value')"
-                prepend-icon="mdi-cursor-text"
+                :prepend-icon="mdiCursorText"
                 variant="underlined"
               />
             </v-col>
@@ -87,7 +87,7 @@
                 :model-value="filterType"
                 :label="$t('$ezreeport.editor.filters.type')"
                 variant="plain"
-                prepend-icon="mdi-format-list-bulleted"
+                :prepend-icon="mdiFormatListBulleted"
                 disabled
               />
             </v-col>
@@ -100,7 +100,7 @@
               v-model="filter.name"
               :label="$t('$ezreeport.editor.filters.name')"
               :rules="[(val) => !!val || $t('$ezreeport.required')]"
-              prepend-icon="mdi-rename"
+              :prepend-icon="mdiRename"
               variant="underlined"
               required
               @update:model-value="hasNameChanged = true"
@@ -117,7 +117,7 @@
 
       <v-btn
         :text="$t('$ezreeport.confirm')"
-        :append-icon="modelValue ? 'mdi-pencil' : 'mdi-plus'"
+        :append-icon="modelValue ? mdiPencil : mdiPlus"
         :disabled="!isValid"
         :loading="rawHasChanged"
         color="primary"
@@ -128,7 +128,17 @@
 </template>
 
 <script setup lang="ts">
-  import { isRawFilter, type TemplateFilter } from '~sdk/helpers/filters';
+  import {
+    mdiCursorText,
+    mdiFilterPlus,
+    mdiFormTextbox,
+    mdiFormatListBulleted,
+    mdiPencil,
+    mdiPlus,
+    mdiRename,
+    mdiTools,
+  } from '@mdi/js';
+  import { type TemplateFilter, isRawFilter } from '~sdk/helpers/filters';
 
   // Component props
   const props = defineProps<{
@@ -143,7 +153,6 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
   const { getOptionsFromMapping } = useTemplateEditor();
 
@@ -154,7 +163,7 @@
 
   /** Filter to edit */
   const { cloned: filter } = useCloned<TemplateFilter>(
-    props.modelValue ?? { name: '', field: '' }
+    props.modelValue ?? { field: '', name: '' }
   );
   /** Backup of the filter in the last mode (simple/advanced) */
   const { cloned: filterBackup, sync: syncBackup } = useCloned(filter.value, {
@@ -162,7 +171,7 @@
   });
 
   /** Validate on mount */
-  useTemplateVForm('formRef', { immediate: !!props.modelValue });
+  useTemplateVForm('formRef', { immediate: Boolean(props.modelValue) });
 
   /** Value (and other meta) of the raw filter in text format */
   const {
@@ -233,23 +242,20 @@
   /**
    * Switch between advanced and simple mode, also restore the backup
    */
-  function switchMode() {
-    let newFilter;
-    if (isAdvanced.value) {
-      newFilter = {
-        value: '',
-        field: '',
-        ...filterBackup.value,
-        raw: undefined,
-      };
-    } else {
-      newFilter = {
-        raw: {},
-        ...filterBackup.value,
-        value: undefined,
-        field: undefined,
-      };
-    }
+  function switchMode(): void {
+    const newFilter = isAdvanced.value
+      ? {
+          field: '',
+          value: '',
+          ...filterBackup.value,
+          raw: undefined,
+        }
+      : {
+          raw: {},
+          ...filterBackup.value,
+          field: undefined,
+          value: undefined,
+        };
     syncBackup();
     filter.value = newFilter;
   }

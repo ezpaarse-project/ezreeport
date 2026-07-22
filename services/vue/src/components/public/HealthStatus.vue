@@ -14,7 +14,7 @@
         :loading="loading"
         variant="tonal"
         color="primary"
-        prepend-icon="mdi-refresh"
+        :prepend-icon="mdiRefresh"
         class="ml-2"
         @click="refresh()"
       />
@@ -73,8 +73,9 @@
 </template>
 
 <script setup lang="ts">
+  import { mdiRefresh } from '@mdi/js';
   import { version as sdkVersion } from '~sdk';
-  import { getStatus, type ApiService, type ApiStatus } from '~sdk/health';
+  import { type ApiService, type ApiStatus, getStatus } from '~sdk/health';
 
   import { version } from '~/../package.json';
 
@@ -96,7 +97,6 @@
   }>();
 
   // Utils composable
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   /** Is loading */
@@ -118,25 +118,29 @@
   const fileSystems = computed(() => {
     const values = (status.value?.services ?? []).flatMap(
       ({ hostname, service, filesystems }) =>
-        (filesystems ?? []).map((fs) => ({
-          ...fs,
-          host: { name: hostname, service },
-        }))
+        (filesystems ?? []).map((fs) =>
+          Object.assign(fs, {
+            host: {
+              name: hostname,
+              service,
+            },
+          })
+        )
     );
 
     const unsorted = Map.groupBy(values, ({ name }) => name);
-    return Array.from(unsorted).sort((fsA, fsB) => fsA[0].localeCompare(fsB[0]));
+    return [...unsorted].toSorted((fsA, fsB) => fsA[0].localeCompare(fsB[0]));
   });
 
   async function refresh() {
     loading.value = true;
     try {
       status.value = await getStatus();
-    } catch (err) {
-      handleEzrError(t('$ezreeport.health.errors.fetch'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.health.errors.fetch'), error);
     }
     loading.value = false;
   }
 
-  useIntervalFn(refresh, 10000, { immediate: true, immediateCallback: true });
+  useIntervalFn(refresh, 10_000, { immediate: true, immediateCallback: true });
 </script>

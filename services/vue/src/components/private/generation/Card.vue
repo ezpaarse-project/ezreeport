@@ -2,7 +2,7 @@
   <v-card
     :title="task?.name ?? modelValue.taskId"
     :subtitle="task?.namespace?.name"
-    prepend-icon="mdi-play-speed"
+    :prepend-icon="mdiPlaySpeed"
   >
     <template #text>
       <v-row>
@@ -13,7 +13,7 @@
             <v-list-item
               :title="modelValue.id"
               :subtitle="$t('$ezreeport.generations.id')"
-              prepend-icon="mdi-identifier"
+              :prepend-icon="mdiIdentifier"
             />
 
             <v-list-item
@@ -35,7 +35,7 @@
 
             <v-list-item
               :subtitle="$t('$ezreeport.generations.queued')"
-              prepend-icon="mdi-clock-plus-outline"
+              :prepend-icon="mdiClockPlusOutline"
             >
               <template #title>
                 <LocalDate :model-value="modelValue.createdAt" format="PPPpp" />
@@ -45,7 +45,7 @@
             <template v-if="modelValue.startedAt">
               <v-list-item
                 :subtitle="$t('$ezreeport.generations.started')"
-                prepend-icon="mdi-timer-play"
+                :prepend-icon="mdiTimerPlay"
               >
                 <template #title>
                   <LocalDate
@@ -58,7 +58,7 @@
               <v-list-item
                 v-if="isEnded"
                 :subtitle="$t('$ezreeport.generations.ended')"
-                prepend-icon="mdi-timer-stop"
+                :prepend-icon="mdiTimerStop"
               >
                 <template #title>
                   <LocalDate
@@ -76,7 +76,7 @@
             <v-list-item
               v-if="modelValue.updatedAt"
               :subtitle="$t('$ezreeport.generations.lastUpdate')"
-              prepend-icon="mdi-clock-edit-outline"
+              :prepend-icon="mdiClockEditOutline"
             >
               <template #title>
                 <LocalDate :model-value="modelValue.updatedAt" format="PPPpp" />
@@ -110,7 +110,7 @@
             <v-list-item
               :title="modelValue.origin"
               :subtitle="$t('$ezreeport.generations.origin')"
-              prepend-icon="mdi-account"
+              :prepend-icon="mdiAccount"
             />
           </v-list>
         </v-col>
@@ -121,7 +121,7 @@
 
             <v-list-item
               :subtitle="$t('$ezreeport.task.period')"
-              prepend-icon="mdi-calendar-range"
+              :prepend-icon="mdiCalendarRange"
             >
               <template #title>
                 <LocalDate :model-value="modelValue.start" format="P" />
@@ -143,7 +143,7 @@
                   : $t('$ezreeport.yes')
               "
               :subtitle="$t('$ezreeport.generations.debug')"
-              prepend-icon="mdi-bug-outline"
+              :prepend-icon="mdiBugOutline"
             />
           </v-list>
         </v-col>
@@ -154,7 +154,7 @@
           <v-list>
             <v-list-subheader :title="$t('$ezreeport.task.targets')" />
 
-            <v-list-item prepend-icon="mdi-email">
+            <v-list-item :prepend-icon="mdiEmail">
               <template #title>
                 <v-chip-group>
                   <v-chip
@@ -190,19 +190,19 @@
             <v-list-item
               :title="task.id"
               :subtitle="$t('$ezreeport.task.id')"
-              prepend-icon="mdi-identifier"
+              :prepend-icon="mdiIdentifier"
             />
 
             <v-list-item
               :title="$t(`$ezreeport.task.recurrenceList.${task.recurrence}`)"
               :subtitle="$t('$ezreeport.task.recurrence')"
-              prepend-icon="mdi-calendar-refresh"
+              :prepend-icon="mdiCalendarRefresh"
             />
 
             <v-list-item
               :title="task.template.index"
               :subtitle="$t('$ezreeport.template.index')"
-              prepend-icon="mdi-database"
+              :prepend-icon="mdiDatabase"
             />
           </v-list>
         </v-col>
@@ -214,7 +214,7 @@
             <v-list-item
               :title="task.extendedId"
               :subtitle="$t('$ezreeport.template.id')"
-              prepend-icon="mdi-identifier"
+              :prepend-icon="mdiIdentifier"
             />
 
             <template v-if="templateLoading">
@@ -228,13 +228,13 @@
               <v-list-item
                 :title="template.name"
                 :subtitle="$t('$ezreeport.generations.template')"
-                prepend-icon="mdi-view-grid"
+                :prepend-icon="mdiViewGrid"
               />
 
               <v-list-item
                 :title="task.template.dateField"
                 :subtitle="$t('$ezreeport.template.dateField')"
-                prepend-icon="mdi-calendar-search"
+                :prepend-icon="mdiCalendarSearch"
               />
             </template>
           </v-list>
@@ -261,7 +261,7 @@
               <v-list-item
                 v-if="result.detail.period"
                 :subtitle="$t('$ezreeport.task.period')"
-                prepend-icon="mdi-calendar-range"
+                :prepend-icon="mdiCalendarRange"
               >
                 <template #title>
                   <LocalDate
@@ -280,7 +280,7 @@
                 v-if="result.detail.auth?.elastic?.username"
                 :title="result.detail.auth.elastic.username"
                 :subtitle="$t('$ezreeport.generations.auth')"
-                prepend-icon="mdi-account-key"
+                :prepend-icon="mdiAccountKey"
               />
             </v-list>
           </v-col>
@@ -294,8 +294,8 @@
               <v-list-item
                 :title="$t('$ezreeport.task.generation.files.report')"
                 :disabled="!result.detail.files.report"
-                append-icon="mdi-download"
-                prepend-icon="mdi-file-pdf-box"
+                :append-icon="mdiDownload"
+                :prepend-icon="mdiFilePdfBox"
                 @click="
                   downloadGenerationFile(result.detail.files.report || '')
                 "
@@ -304,8 +304,8 @@
               <v-list-item
                 :title="$t('$ezreeport.task.generation.files.detail')"
                 :disabled="!result.detail.files.detail"
-                append-icon="mdi-download"
-                prepend-icon="mdi-code-json"
+                :append-icon="mdiDownload"
+                :prepend-icon="mdiCodeJson"
                 @click="
                   downloadGenerationFile(result.detail.files.detail || '')
                 "
@@ -314,8 +314,8 @@
               <v-list-item
                 v-if="'debug' in result.detail.files"
                 :title="$t('$ezreeport.task.generation.files.debug')"
-                append-icon="mdi-download"
-                prepend-icon="mdi-bug-outline"
+                :append-icon="mdiDownload"
+                :prepend-icon="mdiBugOutline"
                 @click="
                   downloadGenerationFile(`${result.detail.files.debug}` || '')
                 "
@@ -329,7 +329,7 @@
             <v-list>
               <v-list-subheader :title="$t('$ezreeport.task.targets')" />
 
-              <v-list-item prepend-icon="mdi-email">
+              <v-list-item :prepend-icon="mdiEmail">
                 <template #title>
                   <v-chip-group>
                     <v-chip
@@ -404,6 +404,26 @@
 
 <script setup lang="ts">
   import type { Generation } from '~sdk/generations';
+  import {
+    mdiAccount,
+    mdiAccountKey,
+    mdiBugOutline,
+    mdiCalendarRange,
+    mdiCalendarRefresh,
+    mdiCalendarSearch,
+    mdiClockEditOutline,
+    mdiClockPlusOutline,
+    mdiCodeJson,
+    mdiDatabase,
+    mdiDownload,
+    mdiEmail,
+    mdiFilePdfBox,
+    mdiIdentifier,
+    mdiPlaySpeed,
+    mdiTimerPlay,
+    mdiTimerStop,
+    mdiViewGrid,
+  } from '@mdi/js';
   import { format as formatDate } from 'date-fns';
   import { isGenerationEnded } from '~sdk/helpers/generations';
   import { getFileAsBlob, getFileAsJson } from '~sdk/reports';
@@ -416,7 +436,6 @@
     modelValue: Generation;
   }>();
 
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   const taskLoading = shallowRef(false);
@@ -434,8 +453,8 @@
       const value = await getTask(taskId.value, ['namespace']);
       taskLoading.value = false;
       return value;
-    } catch (err) {
-      handleEzrError(t('$ezreeport.task.errors.open'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.task.errors.open'), error);
       taskLoading.value = false;
     }
   });
@@ -453,8 +472,8 @@
       const value = await getTemplate(extendedId.value);
       templateLoading.value = false;
       return value;
-    } catch (err) {
-      handleEzrError(t('$ezreeport.template.errors.open'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.template.errors.open'), error);
       templateLoading.value = false;
     }
   });
@@ -477,7 +496,7 @@
       );
       resultLoading.value = false;
       return value;
-    } catch (err) {
+    } catch {
       resultLoading.value = false;
     }
   });
@@ -504,8 +523,8 @@
     try {
       const blob = await getFileAsBlob(task.value.id, path);
       downloadBlob(blob, filename);
-    } catch (err) {
-      handleEzrError(t('$ezreeport.errors.download', { path }), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.errors.download', { path }), error);
     }
   }
 </script>

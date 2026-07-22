@@ -1,7 +1,10 @@
+const DEFAULT_SIZE = 512;
+const ONE_SEC = 1000;
+
 export function b64toBlob(
   b64Data: string,
   contentType = '',
-  sliceSize = 512
+  sliceSize = DEFAULT_SIZE
 ): Blob {
   const byteCharacters = atob(b64Data);
   const byteArrays = [];
@@ -9,9 +12,7 @@ export function b64toBlob(
   for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
     const slice = byteCharacters.slice(offset, offset + sliceSize);
 
-    const byteNumbers = Array.from(slice).map(
-      (char) => char.codePointAt(0) ?? 0
-    );
+    const byteNumbers = [...slice].map((char) => char.codePointAt(0) ?? 0);
 
     const byteArray = new Uint8Array(byteNumbers);
     byteArrays.push(byteArray);
@@ -30,9 +31,9 @@ export function downloadBlob(blob: Blob, filename: string): void {
 
   link.addEventListener('click', () => {
     setTimeout(() => {
-      window.URL.revokeObjectURL(url);
+      URL.revokeObjectURL(url);
       link.remove();
-    }, 1000);
+    }, ONE_SEC);
   });
 
   document.body.append(link);
