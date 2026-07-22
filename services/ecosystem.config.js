@@ -141,6 +141,7 @@ module.exports = {
 
         HTTP_PORT: +env('MAIL_HTTP_PORT', 8380),
         API_URL: env('API_URL', 'http://localhost:8080'),
+        API_HOME: env('API_HOME', 'https://ezmesure.couperin.org'),
       },
     },
     {

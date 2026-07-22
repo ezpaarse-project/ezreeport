@@ -21,8 +21,7 @@
     "./components": "./dist/components.js",
     "./locale": "./dist/locale.js",
     "./package.json": "./package.json",
-    "./style.css": "./dist/style.css",
-    "./styles": "./dist/components.styles.css"
+    "./style.css": "./dist/style.css"
   },
   "scripts": {
     "build:docs": "storybook build",
@@ -83,10 +82,5 @@
     "package.json": [
       "oxfmt --no-error-on-unmatched-pattern"
     ]
-  },
-  "inlinedDependencies": {
-    "@ezpaarse-project/ezreeport-sdk-js": "3.3.0-rc.0",
-    "events": "3.3.0",
-    "object-hash": "3.0.0"
   }
 }

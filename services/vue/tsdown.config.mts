@@ -14,6 +14,11 @@ export default defineConfig({
   outDir: 'dist',
   minify: isReleaseMode,
 
+  loader: {
+    // Matching Vite behaviour
+    '.svg': 'dataurl',
+  },
+
   dts: {
     sourcemap: !isReleaseMode,
     vue: true,
@@ -25,16 +30,8 @@ export default defineConfig({
     locale: 'src/locale.ts',
   },
 
-  // Workaround to have "./styles" in exports
-  // can break if CSS is too big
-  outputOptions: {
-    assetFileNames: '[name].styles.css',
-  },
-  exports: {
-    customExports(pkg) {
-      pkg['./styles'] = './dist/components.styles.css';
-      return pkg;
-    },
+  css: {
+    splitting: false,
   },
 
   alias: {
