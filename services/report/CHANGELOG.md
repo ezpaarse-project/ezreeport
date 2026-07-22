@@ -1,5 +1,11 @@
 # ezreeport-report
 
+## 3.3.0-rc.1
+
+### Patch Changes
+
+- 7dedf0c: 🚑 fixed crash at startup
+
 ## 3.3.0-rc.0
 
 ### Minor Changes
