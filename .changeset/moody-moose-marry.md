@@ -1,6 +1,6 @@
 ---
-"ezreeport-report": patch
-"ezreeport-worker": patch
+'ezreeport-report': patch
+'ezreeport-worker': patch
 ---
 
-🚑 Fixed redact options for logger
+🚑 fixed crash at startup
