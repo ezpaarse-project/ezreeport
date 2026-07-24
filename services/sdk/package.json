@@ -1,6 +1,6 @@
 {
   "name": "@ezpaarse-project/ezreeport-sdk-js",
-  "version": "3.2.0",
+  "version": "3.3.0-rc.0",
   "description": "JS SDK to communicate with ezReeport API",
   "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
   "bugs": {
@@ -134,11 +134,10 @@
     "@types/node": "catalog:",
     "@types/object-hash": "^3.0.6",
     "native-events": "npm:events@^3.3.0",
-    "serve": "^14.2.5",
-    "tsdown": "^0.16.5",
-    "typedoc": "^0.28.7",
-    "typescript": "catalog:",
-    "vite": "^7.0.4"
+    "serve": "^14.2.6",
+    "tsdown": "^0.22.8",
+    "typedoc": "^0.28.20",
+    "typescript": "catalog:"
   },
   "lint-staged": {
     "*.ts": [

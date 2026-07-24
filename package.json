@@ -14,32 +14,24 @@
     "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
   },
   "scripts": {
-    "prepare": "husky",
-    "turbo:install": "npm i -g turbo@^2.7.3"
+    "prepare": "husky"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.8",
     "@commitlint/cli": "^20.3.0",
     "@commitlint/config-conventional": "^20.3.0",
+    "@ezpaarse-project/oxlint-config": "^0.2.4",
     "fx": "^39.2.0",
     "husky": "^9.1.6",
     "lint-staged": "^16.2.7",
     "oxfmt": "^0.36.0",
     "oxlint": "^1.38.0",
-    "turbo": "^2.7.3"
+    "turbo": "^2.8.20"
   },
   "lint-staged": {
     "package.json": [
       "oxfmt --no-error-on-unmatched-pattern"
     ]
   },
-  "packageManager": "pnpm@10.26.0",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@prisma/client",
-      "@prisma/engines",
-      "better-sqlite3",
-      "canvas"
-    ]
-  }
+  "packageManager": "pnpm@11.13.0"
 }

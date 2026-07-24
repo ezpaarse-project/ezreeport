@@ -1,6 +1,6 @@
 {
   "name": "ezreeport-worker",
-  "version": "1.1.4",
+  "version": "1.2.0-rc.0",
   "private": false,
   "description": "",
   "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
@@ -26,6 +26,7 @@
     "@ezreeport/config": "workspace:*",
     "@ezreeport/dates": "workspace:*",
     "@ezreeport/heartbeats": "workspace:*",
+    "@ezreeport/i18n": "workspace:*",
     "@ezreeport/logger": "workspace:*",
     "@ezreeport/models": "workspace:*",
     "@ezreeport/rabbitmq": "workspace:*",

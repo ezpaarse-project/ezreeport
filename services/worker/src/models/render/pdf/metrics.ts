@@ -1,10 +1,12 @@
 import type { Font } from 'jspdf';
 
-import { format, isValid, parseISO } from '@ezreeport/dates';
+import type { TemplateLocaleType } from '@ezreeport/models/templates';
+import { isValid, parseISO } from '@ezreeport/dates';
+import { d } from '@ezreeport/i18n';
 
 import type { FetchResultItem } from '~/models/fetch/results';
 import type { PDFReport } from '~/models/render/pdf/types';
-import type { Position, Size, Area } from '~/models/render/types';
+import type { Area, Position, Size } from '~/models/render/types';
 import TemplateError from '~/models/generation/errors';
 import RenderError from '~/models/render/errors';
 
@@ -41,12 +43,14 @@ type MetricDefault = {
  *
  * @param origValue The value
  * @param params The params provided by the user
+ * @param locale The locale to use
  *
  * @returns The date as a string
  */
 const formatDate = (
   origValue: FetchResultItem['value'],
-  params: string[]
+  params: string[],
+  locale: TemplateLocaleType
 ): string => {
   let value = origValue;
   if (typeof value === 'boolean') {
@@ -67,7 +71,11 @@ const formatDate = (
     value = date.getTime();
   }
 
-  return format(value, params[0] || 'dd/MM/yyyy');
+  if (value === 0) {
+    return '-';
+  }
+
+  return d(value, locale, params[0] || 'P');
 };
 
 /**
@@ -75,16 +83,18 @@ const formatDate = (
  *
  * @param origValue The value
  * @param params The params provided by the user
+ * @param locale The locale to use
  *
  * @returns The number as a string
  */
 const formatNumber = (
   origValue: FetchResultItem['value'],
-  params: string[]
+  params: string[],
+  locale: TemplateLocaleType
 ): string => {
   let value = origValue;
   if (typeof value === 'string') {
-    value = Number.parseInt(value, 10);
+    value = Number(value);
   }
 
   if (typeof value === 'boolean') {
@@ -98,29 +108,14 @@ const formatNumber = (
     );
   }
 
-  const locale = {
-    identifier: params[0] || 'fr-FR',
-    params: {} as Intl.NumberFormatOptions,
-    cb: (val: string) => val,
-  };
-  switch (locale.identifier) {
-    case 'fr':
-    case 'fr-FR':
-      locale.identifier = 'en-US';
-      locale.params.useGrouping = true;
-      locale.cb = (val) => val.replaceAll(',', ' ').replaceAll('\\.', ',');
-      break;
-
-    default:
-      break;
-  }
-
-  value = value.toLocaleString(locale.identifier, locale.params);
-
-  return locale.cb(value);
+  return value.toLocaleString(locale).normalize('NFKD');
 };
 
-function formatValue(label: MetricLabel, data: FetchResultItem) {
+function formatValue(
+  label: MetricLabel,
+  data: FetchResultItem,
+  locale: TemplateLocaleType
+): string | undefined {
   let { value } = data;
   if (value == null) {
     return;
@@ -131,15 +126,14 @@ function formatValue(label: MetricLabel, data: FetchResultItem) {
       const formatParams = label.format.params ?? [];
       switch (label.format.type) {
         case 'date':
-          value = formatDate(value, formatParams);
+          value = formatDate(value, formatParams, locale);
           break;
 
         case 'number':
-          value = formatNumber(value, formatParams);
+          value = formatNumber(value, formatParams, locale);
           break;
 
         default:
-          value = `${value}`;
           break;
       }
     }
@@ -153,7 +147,7 @@ function formatValue(label: MetricLabel, data: FetchResultItem) {
     throw error;
   }
 
-  return value as string;
+  return `${value}`;
 }
 
 /**
@@ -208,19 +202,19 @@ export const addMetricToPDF = (
   }
 
   // oxlint-disable-next-line id-length
-  const margin = { x: doc.margin.left, y: doc.margin.top, key: 3 };
-  const cell: Size = { width: 0, height: 0 };
+  const margin = { key: 3, x: doc.margin.left, y: doc.margin.top };
+  const cell: Size = { height: 0, width: 0 };
   // Calc size of each text + size of cell
   const metrics = (params.labels ?? [])
     .map((met) => {
       const metric = met;
-      const item = data.find((item) => item.key === metric.text);
+      const item = data.find((itm) => itm.key === metric.text);
       if (!item) {
         return null;
       }
 
       const key = `${metric.text}`;
-      const value = formatValue(metric, item);
+      const value = formatValue(metric, item, doc.locale);
       if (!value) {
         return null;
       }
@@ -237,11 +231,11 @@ export const addMetricToPDF = (
 
       return {
         key,
-        value,
         sizes,
+        value,
       };
     })
-    .filter((item) => !!item);
+    .filter((item) => Boolean(item));
 
   const slots: Area[] = [];
   const cursor: Position = {
@@ -282,8 +276,8 @@ export const addMetricToPDF = (
   }
 
   const totalSize: Size = {
-    width: counts.cols * cell.width + (counts.cols - 1) * margin.x,
     height: counts.rows * cell.height + (counts.rows - 1) * margin.y,
+    width: counts.cols * cell.width + (counts.cols - 1) * margin.x,
   };
 
   const offset: Position = {
@@ -295,7 +289,7 @@ export const addMetricToPDF = (
 
   // Print data
   for (let index = 0; index < metrics.length; index += 1) {
-    const { key, value, sizes } = metrics[index];
+    const { key, value, sizes } = metrics[index] ?? {};
     if (!slots[index]) {
       throw new RenderError(`slot ${index} not found`, 'SlotError');
     }
@@ -308,16 +302,16 @@ export const addMetricToPDF = (
       y: offset.y + slots[index].y,
     };
 
-    let yPos = slot.y + sizes.value.h - 5;
+    let yPos = slot.y + (sizes?.value.h ?? 0) - 5;
     valueStyle(doc.pdf, def).text(
-      `${value}`,
+      value ?? '',
       slot.x + Math.round(slot.width / 2),
       yPos,
       { align: 'center' }
     );
-    yPos += sizes.key.h + margin.key;
+    yPos += (sizes?.key.h ?? 0) + margin.key;
     keyStyle(doc.pdf, def).text(
-      key,
+      key ?? '',
       slot.x + Math.round(slot.width / 2),
       yPos,
       {

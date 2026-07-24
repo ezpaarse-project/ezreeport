@@ -8,7 +8,7 @@ export const createTemplatesReadStream = (ezr: EZR) =>
     type: 'templates',
     urls: {
       list: '/templates',
-      item: (item) => `/templates/${item.id}`,
+      item: (item) => `/templates/${item.id}?include=tags`,
     },
     transform: ({ tasks, presets, ...item }) => item,
     filter: (item, meta) => item.id !== '_' && item.id !== meta.default,

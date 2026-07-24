@@ -9,7 +9,7 @@ import type {
   ReportResultType,
 } from '@ezreeport/models/reports';
 import type { TemplateBodyType } from '@ezreeport/models/templates';
-import { format, add, differenceInMilliseconds } from '@ezreeport/dates';
+import { add, differenceInMilliseconds, format } from '@ezreeport/dates';
 
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
@@ -38,9 +38,9 @@ function prepareReport(
   // Prepare file paths
   const todayStr = format(startTime, 'yyyy-MM');
 
-  let filename = `ezREEPORT_${data.task.name.toLowerCase().replaceAll(/[/ .]/g, '-')}`;
-  if (process.env.NODE_ENV === 'production' || data.writeActivity) {
-    filename += `_${data.id}`;
+  let filename = data.id;
+  if (process.env.NODE_ENV !== 'production' && !data.writeActivity) {
+    filename = data.task.id;
   }
   const reportId = `${todayStr}/${filename}`;
 
@@ -51,28 +51,29 @@ function prepareReport(
 
   // Prepare result
   const result: ReportResultType = {
-    success: true,
     detail: {
-      jobId: data.id,
-      taskId: data.task.id,
       createdAt: startTime,
       destroyAt: add(startTime, {
         days: ttl.days,
         seconds: ttl.iterations * (periodDifference / 1000),
       }),
-      period: {
-        start: data.period.start,
-        end: data.period.end,
-      },
-      took: 0,
       files: { detail: `${reportId}.det.json` },
+      jobId: data.id,
+      locale: data.template.locale,
       meta: typeof data.writeActivity === 'object' ? data.writeActivity : {},
+      period: {
+        end: data.period.end,
+        start: data.period.start,
+      },
+      taskId: data.task.id,
+      took: 0,
     },
+    success: true,
   };
 
   return {
-    result,
     reportId,
+    result,
   };
 }
 
@@ -137,9 +138,9 @@ function handleReportError(
   startTime = new Date()
 ): void {
   const error: ReportErrorType = {
-    type: 'UnknownError',
-    name: 'UnknownError',
     message: `${err}`,
+    name: 'UnknownError',
+    type: 'UnknownError',
   };
 
   if (err instanceof Error) {
@@ -157,12 +158,11 @@ function handleReportError(
   res.success = false;
   res.detail = {
     ...result.detail,
-    took: differenceInMilliseconds(new Date(), startTime),
     error,
+    took: differenceInMilliseconds(new Date(), startTime),
   };
 
   logger.error({
-    reportPath: result.detail.files.report,
     duration: result.detail.took,
     durationUnit: 'ms',
     err: {
@@ -174,6 +174,7 @@ function handleReportError(
       },
     },
     msg: 'Report failed to generate',
+    reportPath: result.detail.files.report,
   });
 }
 
@@ -221,8 +222,8 @@ export async function generateReport(
   events = new EventEmitter<GenerationEventMap>()
 ): Promise<ReportResultType> {
   const logger = appLogger.child({
-    scope: 'generateReport',
     jobId: data.id,
+    scope: 'generateReport',
   });
 
   // Prepare report
@@ -262,11 +263,11 @@ export async function generateReport(
   logger.info({
     msg: 'Generation of report started',
     namespace: data.namespace.name,
-    templateId: data.task.extendedId,
-    template: data.template.name,
-    taskId: data.task.id,
-    task: data.task.name,
     reportId,
+    task: data.task.name,
+    taskId: data.task.id,
+    template: data.template.name,
+    templateId: data.task.extendedId,
   });
   events.emit('start', { reportId });
 
@@ -286,23 +287,21 @@ export async function generateReport(
         try {
           const res = await fetchElastic({
             auth: data.namespace.fetchLogin.elastic,
-            recurrence: data.task.recurrence,
-            period: data.period,
-
-            filters: template!.filters,
             dateField: template!.dateField,
-            index: template!.index || '',
-
             figures: layout.figures,
+            filters: template!.filters,
+            index: template!.index || '',
+            period: data.period,
+            recurrence: data.task.recurrence,
           });
 
           return res;
-        } catch (err) {
-          if (err instanceof Error) {
-            const cause = err.cause ?? {};
-            err.cause = { ...cause, layout: index };
+        } catch (error) {
+          if (error instanceof Error) {
+            const cause = error.cause ?? {};
+            error.cause = { ...cause, layout: index };
           }
-          throw err;
+          throw error;
         }
       })
     );
@@ -312,42 +311,43 @@ export async function generateReport(
     // Render report
     const { data: pdfData, pageCount } = await renderPdfWithVega(
       {
+        debug: data.printDebug ?? false,
         doc: {
+          locale: data.template.locale,
           name: data.task.name,
           namespace: data.namespace,
           period: data.period,
         },
-        recurrence: data.task.recurrence,
-        layouts: template.layouts,
         grid: template.grid || { cols: 2, rows: 2 },
-        debug: data.printDebug ?? false,
+        layouts: template.layouts,
+        recurrence: data.task.recurrence,
       },
       events
     );
     logger.debug({
       msg: 'Report generated',
+      pageCount,
       size: pdfData.byteLength,
       sizeUnit: 'B',
-      pageCount,
     });
     events.emit('render:template', template);
 
     // Update result
     result.detail = {
       ...result.detail,
-      took: differenceInMilliseconds(new Date(), startTime),
       sendingTo: data.targets,
       stats: {
-        size: pdfData.byteLength,
         pageCount,
+        size: pdfData.byteLength,
       },
+      took: differenceInMilliseconds(new Date(), startTime),
     };
 
     await writeReportFile(pdfData, `${reportId}.rep.pdf`);
     result.detail.files.report = `${reportId}.rep.pdf`;
     logger.debug({
-      reportPath: `${reportId}.rep.pdf`,
       msg: 'Report wrote',
+      reportPath: `${reportId}.rep.pdf`,
     });
 
     logger.info({
@@ -362,7 +362,7 @@ export async function generateReport(
   // Write detail when process is ending
   try {
     await writeReportFile(
-      Buffer.from(stringify(result), 'utf-8'),
+      Buffer.from(stringify(result), 'utf8'),
       `${reportId}.det.json`
     );
     result.detail.files.detail = `${reportId}.det.json`;
@@ -370,9 +370,9 @@ export async function generateReport(
       detailPath: `${reportId}.det.json`,
       msg: 'Detail wrote',
     });
-  } catch (err) {
+  } catch (error) {
     logger.error({
-      err,
+      error,
       msg: 'Unable to write detail',
     });
   }
@@ -380,7 +380,7 @@ export async function generateReport(
   // Write debug when process is ending
   try {
     await writeReportFile(
-      Buffer.from(stringify(template), 'utf-8'),
+      Buffer.from(stringify(template), 'utf8'),
       `${reportId}.deb.json`
     );
     result.detail.files.debug = `${reportId}.deb.json`;
@@ -388,9 +388,9 @@ export async function generateReport(
       detailPath: result.detail.files.debug,
       msg: 'Debug wrote',
     });
-  } catch (err) {
+  } catch (error) {
     logger.error({
-      err,
+      error,
       msg: 'Unable to write debug',
     });
   }

@@ -78,6 +78,11 @@ function applyIncludes(fields: TaskIncludeFieldsType[]): Prisma.TaskInclude {
     extended.tags = true;
   }
 
+  if (fields.includes('extends.locale')) {
+    extended = extended || {};
+    extended.locale = true;
+  }
+
   if (fields.includes('namespace')) {
     const entries = Object.keys(prisma.namespace.fields).map((key) => [
       key,
@@ -333,7 +338,7 @@ export async function doesSimilarTaskExist(
  *
  * @param id The ID of the task to unlink.
  *
- * @return A promise that resolves to the updated task.
+ * @returns A promise that resolves to the updated task.
  */
 export async function unlinkTaskFromTemplate(id: string): Promise<TaskType> {
   const { extends: rawTemplate, ...rawTask } =

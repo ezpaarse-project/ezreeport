@@ -26,11 +26,13 @@
             />
           </v-col>
 
-          <v-col v-if="label.format">
+          <v-col
+            v-if="label.format && FORMAT_PARAMETERS[label.format.type]?.[0]"
+          >
             <v-text-field
               v-model="formatParams"
               :label="formatParamLabel"
-              :placeholder="formatParamPlaceholder"
+              :placeholder="formatParamPlaceholder ?? undefined"
               prepend-icon="mdi-code-braces"
               variant="underlined"
               persistent-placeholder
@@ -93,7 +95,13 @@
 
 <script setup lang="ts">
   import { isRawAggregation } from '~sdk/helpers/aggregations';
-  import { getMetricLabelKey, type MetricLabel } from '~sdk/helpers/figures';
+  import { type MetricLabel, getMetricLabelKey } from '~sdk/helpers/figures';
+
+  // Helper to describe which parameters can be used
+  const FORMAT_PARAMETERS = {
+    date: ['date format'],
+    number: [],
+  };
 
   // Components props
   const props = defineProps<{
@@ -122,7 +130,7 @@
   );
 
   /** Validate form on mounted if editing */
-  useTemplateVForm('formRef', { immediate: !!props.modelValue });
+  useTemplateVForm('formRef', { immediate: Boolean(props.modelValue) });
 
   /** Format */
   const format = computed<string>({
@@ -138,25 +146,25 @@
   /** Format options */
   const formatOptions = computed(() => [
     {
-      value: '',
-      title: t('$ezreeport.editor.figures.metric.elements.formatOptions.none'),
       props: {
         appendIcon: formatIcons.get('text'),
       },
+      title: t('$ezreeport.editor.figures.metric.elements.formatOptions.none'),
+      value: '',
     },
     {
-      value: 'date',
-      title: t('$ezreeport.editor.figures.metric.elements.formatOptions.date'),
       props: {
         appendIcon: formatIcons.get('date'),
       },
+      title: t('$ezreeport.editor.figures.metric.elements.formatOptions.date'),
+      value: 'date',
     },
     {
-      value: 'number',
-      title: t('$ezreeport.editor.figures.metric.elements.formatOptions.number'),
       props: {
         appendIcon: formatIcons.get('number'),
       },
+      title: t('$ezreeport.editor.figures.metric.elements.formatOptions.number'),
+      value: 'number',
     },
   ]);
   /** Format params */
@@ -178,11 +186,9 @@
     switch (label.value.format?.type) {
       case 'date':
         return 'dd/MM/yyyy';
-      case 'number':
-        return 'fr';
 
       default:
-        return;
+        return null;
     }
   });
   /** The label of format param */
@@ -202,8 +208,12 @@
 
   /**
    * Check if the label is unique
+   *
+   * @param val The value
+   *
+   * @returns `true` if valid or error
    */
-  function isUniqueRule(val: string) {
+  function isUniqueRule(val: string): true | string {
     if (props.modelValue && getMetricLabelKey(props.modelValue) === val) {
       return true;
     }

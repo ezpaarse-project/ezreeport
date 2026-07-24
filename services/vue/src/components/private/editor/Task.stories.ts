@@ -98,6 +98,7 @@ export const Existing: Story = {
     extends: createTemplateHelperFrom({
       id: 'a538ba09-5c2d-479a-b6f9-0dff77863002',
       name: 'Métriques API',
+      locale: 'fr',
       body: {
         version: 2,
         index: '.ezmesure-metrics',

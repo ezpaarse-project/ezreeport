@@ -22,7 +22,7 @@ export const Generation = z.object({
 
   end: z.coerce.date().describe('End of the period'),
 
-  targets: z.array(z.email()).min(1).describe('Targets of the report'),
+  targets: z.array(z.email()).describe('Targets of the report'),
 
   origin: z
     .string()

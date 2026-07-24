@@ -6,7 +6,6 @@ import vue from 'unplugin-vue/rolldown';
 
 const isReleaseMode = process.env.NODE_ENV === 'production';
 
-// oxlint-disable-next-line no-default-export
 export default defineConfig({
   target: 'es6',
   format: 'es',
@@ -14,6 +13,11 @@ export default defineConfig({
 
   outDir: 'dist',
   minify: isReleaseMode,
+
+  loader: {
+    // Matching Vite behaviour
+    '.svg': 'dataurl',
+  },
 
   dts: {
     sourcemap: !isReleaseMode,
@@ -26,20 +30,21 @@ export default defineConfig({
     locale: 'src/locale.ts',
   },
 
-  // Workaround to have "./styles" in exports
-  // can break if CSS is too big
-  outputOptions: {
-    cssChunkFileNames: '[name].styles.css',
-  },
-  exports: {
-    customExports(pkg) {
-      pkg['./styles'] = './dist/components.styles.css';
-      return pkg;
-    },
+  css: {
+    splitting: false,
   },
 
   alias: {
     '~': 'src/',
+  },
+
+  deps: {
+    onlyBundle: [
+      '@ezpaarse-project/ezreeport-sdk-js',
+      '~sdk',
+      'events',
+      'object-hash',
+    ],
   },
 
   plugins: [

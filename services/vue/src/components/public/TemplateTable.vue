@@ -54,6 +54,14 @@
       </v-toolbar>
     </template>
 
+    <template #[`item.locale`]="{ value }">
+      <TemplateLocaleFlag
+        v-tooltip:left="$t(`$ezreeport.template.locales.${value}`)"
+        :modelValue="value"
+        size="small"
+      />
+    </template>
+
     <template #[`item.tags`]="{ value }">
       <TemplateTagView :model-value="value" />
     </template>
@@ -71,10 +79,6 @@
 
     <template #[`item.updatedAt`]="{ value }">
       <LocalDate v-if="value" :model-value="value" />
-    </template>
-
-    <template #[`item.createdAt`]="{ value }">
-      <LocalDate :model-value="value" />
     </template>
 
     <template #[`item._actions`]="{ item }">
@@ -180,7 +184,6 @@
 
 <script setup lang="ts">
   import type { VDataTable } from 'vuetify/components';
-  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
   import {
     changeTemplateVisibility,
     createTemplateHelper,
@@ -209,11 +212,18 @@
   // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
-  const defaultTemplateId = ref('');
-  const arePermissionsReady = ref(false);
+  const defaultTemplateId = shallowRef('');
   const selectedTemplates = ref<Omit<Template, 'body'>[]>([]);
   const updatedTemplate = ref<TemplateHelper>(createTemplateHelper());
-  const isFormOpen = ref(false);
+  const isFormOpen = shallowRef(false);
+
+  const { availableActions } = usePermissions({
+    create: [createTemplate],
+    update: [upsertTemplate],
+    delete: [deleteTemplate],
+
+    visibility: [changeTemplateVisibility],
+  });
 
   /** Items per page */
   const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
@@ -247,17 +257,17 @@
         sortable: true,
       },
       {
+        title: t('$ezreeport.template.locale'),
+        value: 'locale',
+        align: 'center',
+      },
+      {
         title: t('$ezreeport.template.tags.title'),
         value: 'tags',
       },
       {
         title: t('$ezreeport.updatedAt'),
         value: 'updatedAt',
-        sortable: true,
-      },
-      {
-        title: t('$ezreeport.createdAt'),
-        value: 'createdAt',
         sortable: true,
       },
       {
@@ -273,19 +283,6 @@
       },
     ]
   );
-
-  const availableActions = computed(() => {
-    if (!arePermissionsReady.value) {
-      return {};
-    }
-    return {
-      create: hasPermission(createTemplate),
-      update: hasPermission(upsertTemplate),
-      delete: hasPermission(deleteTemplate),
-
-      visibility: hasPermission(changeTemplateVisibility),
-    };
-  });
 
   const selectedTemplateIds = computed({
     get: () => selectedTemplates.value.map((template) => template.id),
@@ -399,9 +396,4 @@
       handleEzrError(msg, err);
     }
   }
-
-  // oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
-  refreshPermissions().then(() => {
-    arePermissionsReady.value = true;
-  });
 </script>

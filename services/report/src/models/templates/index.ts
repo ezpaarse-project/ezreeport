@@ -24,11 +24,10 @@ const logger = appLogger.child({ scope: 'models', model: 'templates' });
 function applyFilters(
   filters: TemplateQueryFiltersType
 ): Prisma.TemplateWhereInput {
-  const where: Prisma.TemplateWhereInput = {};
-
-  if (filters.hidden != null) {
-    where.hidden = filters.hidden;
-  }
+  const where: Prisma.TemplateWhereInput = {
+    locale: filters.locale,
+    hidden: filters.hidden,
+  };
 
   if (filters.query) {
     where.name = {
@@ -118,6 +117,8 @@ export async function getTemplate(
  *
  * @param input The tags to ensure
  * @param tx The prisma client (or transaction)
+ *
+ * @returns Created tags
  */
 function createNeededTemplateTags(
   input: InputTemplateType['tags'],
@@ -263,35 +264,10 @@ export async function doesTemplateExist(id: string): Promise<boolean> {
  *
  * @returns The default template
  */
-export async function getDefaultTemplate(): Promise<TemplateType | null> {
-  const template = await prisma.template.findUnique({
+export async function getDefaultTemplate(): Promise<TemplateType> {
+  const template = await prisma.template.findUniqueOrThrow({
     where: { name: defaultTemplate.name },
   });
 
-  return template && ensureSchema(Template, template);
-}
-
-/**
- * Upsert default template
- *
- * @returns The default template
- */
-export async function upsertDefaultTemplate(): Promise<TemplateType> {
-  const data: Omit<InputTemplateType, 'tags'> = {
-    name: defaultTemplate.name,
-    hidden: true,
-    body: {
-      version: 2,
-      dateField: defaultTemplate.dateField,
-      layouts: [],
-    },
-  };
-
-  const template = await prisma.template.upsert({
-    where: { name: defaultTemplate.name },
-    update: data,
-    create: data,
-  });
-
-  return template && ensureSchema(Template, template);
+  return ensureSchema(Template, template);
 }

@@ -12,7 +12,7 @@ import {
   forceCron,
 } from '~/models/rpc/client/crons';
 
-import authPlugin from '~/plugins/auth';
+import { authPlugin } from '~/plugins/auth';
 import {
   describeErrors,
   buildSuccessResponse,

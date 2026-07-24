@@ -1,6 +1,10 @@
 import objectHash from 'object-hash';
 
-import type { InputTemplate, Template } from '~/modules/templates';
+import type {
+  InputTemplate,
+  Template,
+  TemplateLocale,
+} from '~/modules/templates';
 
 import type { TemplateTagMap } from './tags';
 import {
@@ -13,6 +17,7 @@ import {
 export interface TemplateHelper {
   readonly id: string;
   name: string;
+  locale: 'fr' | 'en';
   body: TemplateBodyHelper;
   tags: TemplateTagMap;
   readonly createdAt: Date;
@@ -23,6 +28,7 @@ export interface TemplateHelper {
 function hashTemplate(template: Template | TemplateHelper): string {
   return objectHash({
     name: template.name,
+    locale: template.locale,
     body: template.body,
     tags: template.tags,
   });
@@ -31,6 +37,7 @@ function hashTemplate(template: Template | TemplateHelper): string {
 export function createTemplateHelper(
   name: string = '',
   body?: TemplateBodyHelper,
+  locale: TemplateLocale = 'en',
   tags: TemplateTagMap = new Map(),
   id: string = '',
   createdAt: Date = new Date(),
@@ -39,6 +46,7 @@ export function createTemplateHelper(
   const template = {
     id,
     name,
+    locale,
     body: body ?? createTemplateBodyHelper(),
     tags,
     createdAt,
@@ -55,6 +63,7 @@ export function createTemplateHelperFrom(template: Template): TemplateHelper {
   return createTemplateHelper(
     template.name,
     createTemplateBodyHelperFrom(template.body),
+    template.locale,
     new Map(template.tags?.map((tag) => [tag.id, tag]) ?? []),
     template.id,
     template.createdAt,
@@ -65,6 +74,7 @@ export function createTemplateHelperFrom(template: Template): TemplateHelper {
 export function templateHelperToJSON(template: TemplateHelper): InputTemplate {
   return {
     name: template.name,
+    locale: template.locale,
     body: templateHelperBodyToJSON(template.body),
     tags: Array.from(template.tags.values()),
   };

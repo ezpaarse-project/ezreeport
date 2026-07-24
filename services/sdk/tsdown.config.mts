@@ -2,7 +2,6 @@ import { defineConfig } from 'tsdown';
 
 const isReleaseMode = process.env.NODE_ENV === 'release';
 
-// oxlint-disable-next-line no-default-export
 export default defineConfig({
   target: ['node14', 'es6'],
   format: ['cjs', 'es'],
@@ -13,6 +12,7 @@ export default defineConfig({
 
   dts: {
     sourcemap: !isReleaseMode,
+    generator: 'oxc',
   },
 
   entry: {
@@ -50,5 +50,7 @@ export default defineConfig({
     '~': 'src/',
   },
 
-  external: ['native-events'],
+  deps: {
+    neverBundle: ['native-events'],
+  },
 });

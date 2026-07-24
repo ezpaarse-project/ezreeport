@@ -22,6 +22,7 @@ export const createTaskPresetsWriteStream = (ezr: EZR) =>
       hidden: item.hidden,
       fetchOptions: item.fetchOptions,
       recurrence: item.recurrence,
+      recurrenceOffset: item.recurrenceOffset,
       templateId: item.templateId,
     }),
   });

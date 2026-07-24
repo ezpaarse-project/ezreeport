@@ -24,6 +24,7 @@ export async function changeTemplateVisibility(
   const template = await upsertTemplate({
     id: base.id,
     name: base.name,
+    locale: base.locale,
     tags: base.tags,
     body: base.body,
     hidden,

@@ -1,5 +1,15 @@
 # @ezreeport/database-v1.0.0 (2025-08-08)
 
+## 1.4.0-rc.0
+
+### Minor Changes
+
+- 730cac8: ✨ templates can be rendered using locales
+
+### Patch Changes
+
+- @ezreeport/heartbeats@0.0.2-rc.0
+
 ## 1.3.0
 
 ### Minor Changes

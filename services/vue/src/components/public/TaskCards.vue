@@ -290,7 +290,7 @@
     items: tasks,
   } = useServerSidePagination((params) => getAllTasks(params), {
     sortBy: 'name',
-    include: ['extends.tags'],
+    include: ['extends.tags', 'extends.locale'],
     itemsPerPage: 0,
     filters: { namespaceId: props.namespaceId },
   });
@@ -338,7 +338,7 @@
     try {
       advancedTask.value = undefined;
       generatedTask.value = undefined;
-      updatedTask.value = task && (await getTask(task));
+      updatedTask.value = task && (await getTask(task, ['extends.locale']));
 
       isFormOpen.value = true;
     } catch (err) {

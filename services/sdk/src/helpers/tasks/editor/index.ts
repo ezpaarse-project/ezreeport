@@ -11,10 +11,10 @@ import type {
 import type { TemplateBodyHelper } from '../../templates/editor/body';
 import type { AnyLayoutHelper } from '../../templates/editor/layouts';
 import {
+  type TaskBodyHelper,
   createTaskBodyHelper,
   createTaskBodyHelperFrom,
   taskBodyHelperToJSON,
-  type TaskBodyHelper,
 } from './body';
 
 export interface TaskHelper {
@@ -38,14 +38,14 @@ export interface TaskHelper {
 
 function hashTask(task: TaskHelper | Task): string {
   return objectHash({
-    name: task.name,
     description: task.description,
-    extendedId: task.extendedId,
-    template: task.template,
-    targets: task.targets,
-    recurrence: task.recurrence,
-    nextRun: task.nextRun,
     enabled: task.enabled,
+    extendedId: task.extendedId,
+    name: task.name,
+    nextRun: task.nextRun,
+    recurrence: task.recurrence,
+    targets: task.targets,
+    template: task.template,
   });
 }
 
@@ -63,26 +63,26 @@ export function createTaskHelper(
   lastExtended?: LastExtended,
   lastRun?: Date,
   id = '',
-  createdAt = new Date(),
+  createdAt: Date = new Date(),
   updatedAt?: Date
 ): TaskHelper {
   const task = {
-    id,
-    name,
+    createdAt,
     description,
-    namespaceId,
-    extendedId,
-    template: template ?? createTaskBodyHelper(),
-    targets,
-    recurrence,
-    recurrenceOffset,
-    nextRun,
     enabled,
+    extendedId,
+    hash: '',
+    id,
     lastExtended,
     lastRun,
-    createdAt,
+    name,
+    namespaceId,
+    nextRun,
+    recurrence,
+    recurrenceOffset,
+    targets,
+    template: template ?? createTaskBodyHelper(),
     updatedAt,
-    hash: '',
   };
 
   task.hash = hashTask(task);
@@ -112,17 +112,17 @@ export function createTaskHelperFrom(task: Task): TaskHelper {
 
 export function taskHelperToJSON(task: TaskHelper): InputTask {
   return {
-    name: task.name,
     description: task.description,
-    namespaceId: task.namespaceId,
+    enabled: task.enabled,
     extendedId: task.extendedId,
-    template: taskBodyHelperToJSON(task.template),
-    targets: task.targets,
+    lastExtended: task.lastExtended,
+    name: task.name,
+    namespaceId: task.namespaceId,
+    nextRun: task.nextRun,
     recurrence: task.recurrence,
     recurrenceOffset: task.recurrenceOffset,
-    nextRun: task.nextRun,
-    enabled: task.enabled,
-    lastExtended: task.lastExtended,
+    targets: task.targets,
+    template: taskBodyHelperToJSON(task.template),
   };
 }
 

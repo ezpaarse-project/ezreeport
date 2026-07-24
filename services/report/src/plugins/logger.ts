@@ -67,9 +67,7 @@ const loggerBasePlugin: FastifyPluginAsync = async (fastify) => {
 };
 
 // Register plugin
-const loggerPlugin = fp(loggerBasePlugin, {
+export const loggerPlugin = fp(loggerBasePlugin, {
   name: 'ezr-logger',
   encapsulate: false,
 });
-
-export default loggerPlugin;

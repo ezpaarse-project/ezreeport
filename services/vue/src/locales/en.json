@@ -153,6 +153,11 @@
       "hidden:desc": "The template is hidden for users|The template is visible for users",
       "hidden:toggle": "Toggle visibility",
       "id": "Template's ID",
+      "locale": "Language",
+      "locales": {
+        "en": "Anglais",
+        "fr": "Français"
+      },
       "index": "Index",
       "dateField": "Date field in index",
       "noList": "No templates were found",
@@ -356,8 +361,7 @@
             "formatOptionsLabel": {
               "_default": "Format parameters",
               "date": "Format to use",
-              "date:hint": "Based on {link}",
-              "number": "Locale to use"
+              "date:hint": "Based on {link}"
             },
             "errors": {
               "create": "Can't create element",

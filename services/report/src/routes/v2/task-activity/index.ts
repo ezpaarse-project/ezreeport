@@ -16,7 +16,7 @@ import {
   TaskActivityQueryInclude,
 } from '~/models/task-activity/types';
 
-import authPlugin, { restrictNamespaces } from '~/plugins/auth';
+import { authPlugin, restrictNamespaces } from '~/plugins/auth';
 import { describeErrors } from '~/routes/v2/responses';
 
 // oxlint-disable-next-line max-lines-per-function, require-await

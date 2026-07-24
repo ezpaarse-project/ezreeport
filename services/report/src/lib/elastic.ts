@@ -14,8 +14,8 @@ const logger = appLogger.child(
   { scope: 'elastic' },
   {
     redact: {
-      paths: ['config.*.password'],
       censor: (value) => value && ''.padStart(`${value}`.length, '*'),
+      paths: ['config.auth.password'],
     },
   }
 );
@@ -23,19 +23,19 @@ const logger = appLogger.child(
 const { url, username, password, apiKey } = config.elasticsearch;
 
 // Parse some env var
-const ES_AUTH = apiKey ? { apiKey } : { username, password };
+const ES_AUTH = apiKey ? { apiKey } : { password, username };
 
 const clientConfig: ClientOptions = {
+  auth: ES_AUTH,
   node: {
     url: new URL(url),
   },
-  auth: ES_AUTH,
   ssl: {
     rejectUnauthorized: false,
   },
 };
 
-let client: Client | undefined;
+let client: Client | null = null;
 
 /**
  * Get elastic client once it's ready
@@ -52,62 +52,6 @@ function getElasticClient(): Client {
     });
   }
   return client;
-}
-
-/**
- * Ping elastic to check connection
- *
- * @returns If elastic is up
- */
-export async function elasticPing(): Promise<
-  Omit<HeartbeatType, 'nextAt' | 'updatedAt'>
-> {
-  const elastic = getElasticClient();
-
-  const { body } =
-    await elastic.cluster.stats<ElasticTypes.ClusterStatsResponse>();
-
-  return {
-    hostname: body.cluster_name,
-    service: 'elastic',
-    version: body.nodes.versions.at(0),
-    filesystems: [
-      {
-        name: 'elastic',
-        total: body.nodes.fs.total_in_bytes,
-        used: body.nodes.fs.total_in_bytes - body.nodes.fs.available_in_bytes,
-        available: body.nodes.fs.available_in_bytes,
-      },
-    ],
-  };
-}
-
-/**
- * Shorthand to list indices with elastic
- *
- * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
- *
- * @returns The indices names
- */
-export async function elasticListIndices(runAs?: string): Promise<string[]> {
-  const elastic = getElasticClient();
-
-  const headers: Record<string, unknown> = {};
-  if (runAs) {
-    headers['es-security-runas-user'] = runAs;
-  }
-
-  const { body } =
-    await elastic.indices.resolveIndex<ElasticTypes.IndicesResolveIndexResponse>(
-      { name: '*' },
-      { headers }
-    );
-
-  const hiddenRegex = /^\./;
-  return [
-    ...body.indices.map((index) => index.name),
-    ...body.aliases.map((alias) => alias.name),
-  ].filter((name) => !hiddenRegex.test(name));
 }
 
 /**
@@ -135,6 +79,61 @@ function simplifyMapping(
   }
 
   return res;
+}
+/**
+ * Ping elastic to check connection
+ *
+ * @returns If elastic is up
+ */
+export async function elasticPing(): Promise<
+  Omit<HeartbeatType, 'nextAt' | 'updatedAt'>
+> {
+  const elastic = getElasticClient();
+
+  const { body } =
+    await elastic.cluster.stats<ElasticTypes.ClusterStatsResponse>();
+
+  return {
+    filesystems: [
+      {
+        available: body.nodes.fs.available_in_bytes,
+        name: 'elastic',
+        total: body.nodes.fs.total_in_bytes,
+        used: body.nodes.fs.total_in_bytes - body.nodes.fs.available_in_bytes,
+      },
+    ],
+    hostname: body.cluster_name,
+    service: 'elastic',
+    version: body.nodes.versions.at(0),
+  };
+}
+
+/**
+ * Shorthand to list indices with elastic
+ *
+ * @param runAs The user to impersonate (see https://www.elastic.co/guide/en/elasticsearch/reference/7.17/run-as-privilege.html)
+ *
+ * @returns The indices names
+ */
+export async function elasticListIndices(runAs?: string): Promise<string[]> {
+  const elastic = getElasticClient();
+
+  const headers: Record<string, unknown> = {};
+  if (runAs) {
+    headers['es-security-runas-user'] = runAs;
+  }
+
+  const { body } =
+    await elastic.indices.resolveIndex<ElasticTypes.IndicesResolveIndexResponse>(
+      { name: '*' },
+      { headers }
+    );
+
+  const hiddenRegex = /^\./v;
+  return [
+    ...body.indices.map((index) => index.name),
+    ...body.aliases.map((alias) => alias.name),
+  ].filter((name) => !hiddenRegex.test(name));
 }
 
 /**
@@ -189,9 +188,9 @@ export async function elasticResolveIndex(
       );
 
     return [
-      ...body.indices.map((index) => index.name),
+      ...body.indices.map((indx) => indx.name),
       ...body.aliases.map((alias) => alias.name),
-    ].sort((nameA, nameB) => nameA.localeCompare(nameB));
+    ].toSorted((nameA, nameB) => nameA.localeCompare(nameB));
   } catch (error) {
     const elasticError = error as {
       meta?: { body?: { error?: { type?: string } } };

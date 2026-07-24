@@ -1,4 +1,6 @@
-export { version } from '../package.json';
+import { version as sdkVersion } from '../package.json' with { type: 'json' };
+
+export const version: string = sdkVersion;
 
 export { type ApiAuthOptions, prepareClient } from './lib/fetch';
 

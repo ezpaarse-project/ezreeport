@@ -25,6 +25,27 @@
               required
             />
           </v-col>
+
+          <v-col cols="3">
+            <v-select
+              v-model="locale"
+              :label="$t('$ezreeport.template.locale')"
+              :items="localeItems"
+              :rules="[(val) => !!val || $t('$ezreeport.required')]"
+              :readonly="readonly"
+              prepend-icon="mdi-flag"
+              variant="underlined"
+              required
+            >
+              <template #item="{ props, item: { raw: item } }">
+                <v-list-item v-bind="props">
+                  <template #prepend>
+                    <TemplateLocaleFlag :modelValue="item.value" />
+                  </template>
+                </v-list-item>
+              </template>
+            </v-select>
+          </v-col>
         </v-row>
 
         <v-row>
@@ -211,6 +232,8 @@
   }>();
 
   // Utils composables
+  // oxlint-disable-next-line id-length
+  const { t } = useI18n();
   const { getOptionsFromMapping, refreshMapping, updateDateField } =
     useTemplateEditor({
       grid: props.modelValue.body.grid,
@@ -219,11 +242,11 @@
     });
 
   /** Selected index */
-  const selectedIndex = ref(0);
+  const selectedIndex = shallowRef(0);
   /** Is basic form valid */
-  const isFormValid = ref(false);
+  const isFormValid = shallowRef(false);
   /** Is editor visible */
-  const isEditorVisible = ref(false);
+  const isEditorVisible = shallowRef(false);
 
   /** Validate on mount */
   useTemplateVForm('formRef', { immediate: !!props.modelValue?.id });
@@ -244,6 +267,14 @@
       params.name = value;
     },
   });
+  /** Locale of the template */
+  const locale = computed({
+    get: () => props.modelValue.locale,
+    set: (value) => {
+      const params = props.modelValue;
+      params.locale = value;
+    },
+  });
   /** Index of the template */
   const index = computed({
     get: () => props.modelValue.body.index,
@@ -261,13 +292,33 @@
       body.dateField = value;
     },
   });
+  /** Items available to set locale */
+  const localeItems = computed(() => [
+    {
+      value: 'en',
+      title: t('$ezreeport.template.locales.en'),
+    },
+    {
+      value: 'fr',
+      title: t('$ezreeport.template.locales.fr'),
+    },
+  ]);
 
-  function openEditor(layoutIndex: number = 0) {
+  function openEditor(layoutIndex = 0): void {
     selectedIndex.value = layoutIndex;
     isEditorVisible.value = true;
   }
 
-  function closeEditor() {
+  function closeEditor(): void {
     isEditorVisible.value = false;
   }
 </script>
+
+<style lang="css" scoped>
+  .locale-flag :deep(.v-img__img) {
+    object-fit: initial;
+  }
+  .locale-flag--cover :deep(.v-img__img) {
+    object-fit: cover;
+  }
+</style>

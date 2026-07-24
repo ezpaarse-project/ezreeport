@@ -58,7 +58,7 @@ export class RPCStreamServer {
 
       // Create rpc queue
       const rpcQueue = await channel.assertQueue(queueName, {
-        durable: false,
+        durable: true,
       });
       this.logger.debug({
         msg: 'Queue created',

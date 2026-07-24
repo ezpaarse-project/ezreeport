@@ -3,7 +3,7 @@ import type {
   TaskRecurrenceOffset,
 } from '~/modules/tasks/types';
 import type { TemplateTag } from '~/modules/template-tags/types';
-import type { TemplateFilter } from '~/modules/templates/types';
+import type { TemplateFilter, TemplateLocale } from '~/modules/templates/types';
 
 export interface TaskPreset {
   /** Preset ID */
@@ -34,8 +34,10 @@ export interface TaskPreset {
 
   /** Template referenced by the preset, must be included when fetching */
   template?: {
-    /** Template tags */
+    /** Template tags, must be included when fetching */
     tags?: TemplateTag[];
+    /** Template locale, must be included when fetching */
+    locale?: TemplateLocale;
     /** If template is hidden */
     hidden?: boolean;
   };

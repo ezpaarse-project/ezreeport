@@ -17,7 +17,7 @@ import { queueGeneration } from '~/models/queues/report/generation';
 import { getTask } from '~/models/tasks';
 import { getTemplate } from '~/models/templates';
 
-import authPlugin, { requireAllowedNamespace } from '~/plugins/auth';
+import { authPlugin, requireAllowedNamespace } from '~/plugins/auth';
 import {
   describeErrors,
   buildSuccessResponse,

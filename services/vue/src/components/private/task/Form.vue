@@ -34,11 +34,15 @@
               item-title="name"
               prepend-icon="mdi-view-grid"
               variant="underlined"
+              hide-details="auto"
               required
             >
-              <template v-if="extendedTemplate" #append-inner>
-                <TemplateTagView
-                  :model-value="Array.from(extendedTemplate.tags.values())"
+              <template v-if="extendedTemplate" #append>
+                <TemplateLocaleFlag
+                  v-tooltip:top="
+                    $t(`$ezreeport.template.locales.${extendedTemplate.locale}`)
+                  "
+                  :modelValue="extendedTemplate.locale"
                 />
               </template>
 
@@ -47,9 +51,24 @@
                   <template #subtitle>
                     <TemplateTagView :model-value="item.tags ?? []" />
                   </template>
+
+                  <template #append>
+                    <TemplateLocaleFlag
+                      v-tooltip:left="
+                        $t(`$ezreeport.template.locales.${item.locale}`)
+                      "
+                      :modelValue="item.locale"
+                    />
+                  </template>
                 </v-list-item>
               </template>
             </v-autocomplete>
+
+            <TemplateTagView
+              v-if="extendedTemplate"
+              :model-value="Array.from(extendedTemplate.tags.values())"
+              class="ml-10 mt-2"
+            />
           </v-col>
         </v-row>
 
@@ -512,7 +531,7 @@
 
     loadingCurrentTemplate.value = true;
     try {
-      const res = await getTemplate(extendedId.value);
+      const res = await getTemplate(extendedId.value, ['tags']);
       template = createTemplateHelperFrom(res);
     } catch (err) {
       handleEzrError(t('$ezreeport.template.errors.open'), err);

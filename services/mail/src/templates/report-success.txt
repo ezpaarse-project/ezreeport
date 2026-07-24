@@ -1,0 +1,13 @@
+{% extends "layout.txt" %}
+
+{% block content %}
+{{ $t('mail.report.success.body.content.report', data) | striptags | safe }}
+
+{{ $t('mail.report.success.body.content.generation', data) | striptags | safe }}
+
+{{ $t('mail.report.success.body.content.automated', automated) | striptags | safe }}
+
+{{ $t('mail.report.success.body.content.attachment', data) | striptags | safe }}
+
+{{ $t('mail.report.success.body.content.unsubscribe', data) | striptags | safe }}
+{% endblock %}

@@ -2,28 +2,32 @@ import { z } from '../lib/zod';
 import { Namespace } from './namespaces';
 import { ReportPeriod } from './reports';
 import { Task } from './tasks';
-import { Template } from './templates';
+import { Template, TemplateLocale } from './templates';
 
 /**
  * Validation for the data used to generate a report
  */
 export const GenerationQueueData = z.object({
+  createdAt: z.coerce.date().describe('Creation date'),
+
   id: z.string().min(1).describe('Job ID'),
 
-  task: Task.describe('Task used to generate report'),
-
   namespace: Namespace.describe('Namespace used to generate report'),
-
-  template: Template.describe('Template of task used to generate report'),
-
-  period: ReportPeriod.describe('Period used to generate report'),
 
   origin: z
     .string()
     .min(1)
     .describe('Origin of the request, can be a user or a service'),
 
-  targets: z.array(z.email()).min(1).describe('Targets of the report'),
+  period: ReportPeriod.describe('Period used to generate report'),
+
+  printDebug: z.boolean().optional().describe('Should print debug information'),
+
+  targets: z.array(z.email()).describe('Targets of the report'),
+
+  task: Task.describe('Task used to generate report'),
+
+  template: Template.describe('Template of task used to generate report'),
 
   writeActivity: z
     .boolean()
@@ -32,10 +36,6 @@ export const GenerationQueueData = z.object({
     .describe(
       'Should write activity to database, if an object is set it will be used as activity data'
     ),
-
-  printDebug: z.boolean().optional().describe('Should print debug information'),
-
-  createdAt: z.coerce.date().describe('Creation date'),
 });
 
 /**
@@ -47,21 +47,23 @@ export type GenerationQueueDataType = z.infer<typeof GenerationQueueData>;
  * Validation for the data used to send a report by mail
  */
 export const MailReportQueueData = z.object({
-  success: z.boolean().describe('If generation success or not'),
+  date: z.coerce.date().describe('Date of the report'),
 
   filename: z.string().min(1).describe('File name, used to retrieve file'),
 
-  task: Task.describe('Task used to generate report'),
+  generationId: z.string().min(1).describe('Generation ID of the report'),
+
+  locale: TemplateLocale.describe('Locale to use when sending report'),
 
   namespace: Namespace.describe('Namespace used to generate report'),
 
   period: ReportPeriod.describe('Period used to generate report'),
 
-  targets: z.array(z.email()).min(1).describe('Targets of the report'),
+  success: z.boolean().describe('If generation success or not'),
 
-  date: z.coerce.date().describe('Date of the report'),
+  targets: z.array(z.email()).describe('Targets of the report'),
 
-  generationId: z.string().min(1).describe('Generation ID of the report'),
+  task: Task.describe('Task used to generate report'),
 });
 
 /**
@@ -73,6 +75,8 @@ export type MailReportQueueDataType = z.infer<typeof MailReportQueueData>;
  * Validation for the data used to send an error log by mail
  */
 export const MailErrorQueueData = z.object({
+  date: z.coerce.date().describe('Date of the report'),
+
   env: z.string().min(1).describe('Environment name'),
 
   error: z.object({
@@ -82,8 +86,6 @@ export const MailErrorQueueData = z.object({
 
     contact: z.email().min(1).describe('Contact to send error log to'),
   }),
-
-  date: z.coerce.date().describe('Date of the report'),
 });
 
 /**

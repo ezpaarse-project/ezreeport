@@ -26,6 +26,11 @@
     "username": "RABBITMQ_USERNAME",
     "password": "RABBITMQ_PASSWORD"
   },
+  "defaultTemplate": {
+    "name": "DEFAULT_TEMPLATE_NAME",
+    "dateField": "DEFAULT_TEMPLATE_DATEFIELD",
+    "locale": "DEFAULT_TEMPLATE_LOCALE"
+  },
   "timers": {
     "generateReports": "TIMER_GENERATE_REPORT"
   }

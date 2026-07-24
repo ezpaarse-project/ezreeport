@@ -18,7 +18,7 @@ import {
   zPaginationResponse,
 } from '~/models/pagination/types';
 
-import authPlugin from '~/plugins/auth';
+import { authPlugin } from '~/plugins/auth';
 import {
   describeErrors,
   buildSuccessResponse,

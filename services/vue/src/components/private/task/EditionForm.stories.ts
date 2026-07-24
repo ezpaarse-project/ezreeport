@@ -41,6 +41,7 @@ export const Default: Story = {
       updatedAt: new Date('2024-12-03T06:00:02.901Z'),
       extends: {
         tags: [{ id: '0', name: 'Administration', color: '#D3339A' }],
+        locale: 'fr',
       },
       extendedId: 'a538ba09-5c2d-479a-b6f9-0dff77863002',
       namespaceId: 'clxvxybz801d84qdpy1ekrjwn',

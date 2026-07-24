@@ -1,0 +1,7 @@
+{{ $t('mail.layout.body.hello') }}
+
+{% block content %}{% endblock %}
+
+{{ $t('mail.layout.footer.regards') | striptags | safe }}
+
+{{ $t('mail.layout.footer.forAnyQuestion', { mail: MAIL_TEAM }) | striptags | safe }}

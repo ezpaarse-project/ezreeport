@@ -22,48 +22,77 @@
               item-title="name"
               prepend-icon="mdi-file"
               variant="underlined"
+              hide-details="auto"
               required
               @update:model-value="onPresetChange($event)"
             >
-              <template #append-inner>
-                <div v-if="currentPreset" class="d-flex align-center">
-                  <TemplateTagView
-                    :model-value="currentPreset.template?.tags ?? []"
-                  />
-
-                  <v-chip
-                    :text="
-                      $t(
-                        `$ezreeport.task.recurrenceList.${currentPreset.recurrence}`
-                      )
-                    "
-                    color="primary"
-                    variant="outlined"
-                    size="small"
-                    class="ml-2"
-                  />
-                </div>
+              <template v-if="currentPreset" #append>
+                <TemplateLocaleFlag
+                  v-if="currentPreset?.template?.locale"
+                  v-tooltip:top="
+                    $t(
+                      `$ezreeport.template.locales.${currentPreset.template?.locale}`
+                    )
+                  "
+                  :modelValue="currentPreset.template?.locale"
+                />
               </template>
 
               <template #item="{ item: { raw: item }, props: listItem }">
                 <v-list-item :title="item.name" lines="two" v-bind="listItem">
                   <template #subtitle>
-                    <TemplateTagView :model-value="item.template?.tags ?? []" />
+                    <div class="d-flex align-center ga-1">
+                      <v-chip
+                        :text="
+                          $t(
+                            `$ezreeport.task.recurrenceList.${item.recurrence}`
+                          )
+                        "
+                        color="primary"
+                        variant="outlined"
+                        size="small"
+                      />
+
+                      <TemplateTagView
+                        :model-value="item.template?.tags ?? []"
+                      />
+                    </div>
                   </template>
 
                   <template #append>
-                    <v-chip
-                      :text="
-                        $t(`$ezreeport.task.recurrenceList.${item.recurrence}`)
+                    <TemplateLocaleFlag
+                      v-if="item?.template?.locale"
+                      v-tooltip:right="
+                        $t(
+                          `$ezreeport.template.locales.${item.template?.locale}`
+                        )
                       "
-                      color="primary"
-                      variant="outlined"
-                      size="small"
+                      :modelValue="item.template?.locale"
                     />
                   </template>
                 </v-list-item>
               </template>
             </v-autocomplete>
+
+            <div
+              v-if="currentPreset"
+              class="d-flex align-center ga-1 ml-10 mt-2"
+            >
+              <v-chip
+                :text="
+                  $t(
+                    `$ezreeport.task.recurrenceList.${currentPreset.recurrence}`
+                  )
+                "
+                color="primary"
+                variant="outlined"
+                size="small"
+              />
+
+              <TemplateTagView
+                :model-value="currentPreset.template?.tags ?? []"
+              />
+            </div>
           </v-col>
         </v-row>
 
@@ -269,7 +298,7 @@
     try {
       ({ items } = await getAllTaskPresets({
         pagination: { count: 0, sort: 'name' },
-        include: ['template.tags'],
+        include: ['template.tags', 'template.locale'],
       }));
     } catch (err) {
       handleEzrError(t('$ezreeport.task.errors.fetchPresets'), err);

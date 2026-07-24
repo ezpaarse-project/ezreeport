@@ -1,12 +1,13 @@
 import { z } from '../lib/zod';
+import { TemplateLocale } from './templates';
 
 /**
  * Validation for report period
  */
 export const ReportPeriod = z.object({
-  start: z.coerce.date().describe('Start of the period'),
-
   end: z.coerce.date().describe('End of the period'),
+
+  start: z.coerce.date().describe('Start of the period'),
 });
 
 /**
@@ -23,16 +24,16 @@ export const ReportType = z.enum(['rep', 'det', 'deb'] as const);
  * Validation for files contained in a report
  */
 export const ReportFiles = z.object({
-  detail: z
-    .string()
-    .describe('File containing details about the generation of report'),
-
   debug: z
     .string()
     .optional()
     .describe(
       'File containing debug information about the generation of report'
     ),
+
+  detail: z
+    .string()
+    .describe('File containing details about the generation of report'),
 
   report: z.string().optional().describe('File containing the report'),
 });
@@ -76,10 +77,10 @@ export type ReportFetchErrorNamesType = z.infer<typeof ReportFetchErrorNames>;
 
 export const ReportFetchErrorMeta = z
   .object({
-    layout: z.int().min(0),
-    figure: z.int().min(0),
     esIndex: z.string().min(1),
     esQuery: z.unknown(),
+    figure: z.int().min(0),
+    layout: z.int().min(0),
   })
   .partial();
 
@@ -98,8 +99,8 @@ export type ReportRenderErrorNamesType = z.infer<typeof ReportRenderErrorNames>;
 
 export const ReportRenderErrorMeta = z
   .object({
-    layout: z.int().min(0),
     figure: z.int().min(0),
+    layout: z.int().min(0),
     vegaSpec: z.unknown(),
   })
   .partial();
@@ -122,11 +123,11 @@ export const ReportErrorMeta = z.union([
 export type ReportErrorMetaType = z.infer<typeof ReportErrorMeta>;
 
 export const ReportError = z.object({
-  type: ReportErrorTypes,
-  name: ReportErrorNames,
-  message: z.string(),
-  stack: z.array(z.string()).optional(),
   cause: ReportErrorMeta.optional(),
+  message: z.string(),
+  name: ReportErrorNames,
+  stack: z.array(z.string()).optional(),
+  type: ReportErrorTypes,
 });
 
 export type ReportErrorType = z.infer<typeof ReportError>;
@@ -135,8 +136,6 @@ export type ReportErrorType = z.infer<typeof ReportError>;
  * Validation for the result of a generation
  */
 export const ReportResult = z.object({
-  success: z.boolean().describe('Was the report successfully generated'),
-
   detail: z.object({
     createdAt: z.coerce.date().describe('Creation date of the report'),
 
@@ -149,6 +148,8 @@ export const ReportResult = z.object({
     jobId: z.string().min(1).describe('Job ID used to generate the report'),
 
     taskId: z.string().min(1).describe('Task ID used to generate the report'),
+
+    locale: TemplateLocale.describe('Locale used when generating report'),
 
     files: ReportFiles.describe('Files'),
 
@@ -190,6 +191,8 @@ export const ReportResult = z.object({
 
     meta: z.any().optional().describe('Metadata'),
   }),
+
+  success: z.boolean().describe('Was the report successfully generated'),
 });
 
 /**

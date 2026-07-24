@@ -1,0 +1,69 @@
+{
+  "report": {
+    "header": {
+      "subtitle": "from {{{periodStart}}} to {{{periodEnd}}}, for {{{namespace}}}"
+    },
+    "footer": {
+      "createdAt": "Generated the {{{date}}}"
+    }
+  },
+  "recurrence": {
+    "DAILY": "daily",
+    "WEEKLY": "weekly",
+    "MONTHLY": "monthly",
+    "QUARTERLY": "quarterly",
+    "BIENNIAL": "semiannual",
+    "YEARLY": "annual"
+  },
+  "mail": {
+    "layout": {
+      "body": {
+        "hello": "Hello,"
+      },
+      "footer": {
+        "regards": "With regards,<br/>\nThe ReadMetrics team.",
+        "forAnyQuestion": "For any question, please contact-us to <a href=\"mailto:{{{ mail }}}\">{{ mail }}</a>"
+      }
+    },
+
+    "report": {
+      "success": {
+        "subject": "ezMESURE Reporting [{{{ date }}}] - {{ name }}",
+        "body": {
+          "title": "ezREEPORT Report from {{{ date }}}.",
+          "content": {
+            "report": "In this email, you will find the <strong>{{{ recurrence }}}</strong> report \"<strong>{{ name }}</strong>\" for the institution \"<strong>{{ namespace }}</strong>\".",
+            "generation": "Generated on <strong>{{{ date }}}</strong>, this report covers the period from <strong>{{{ periodStart }}}</strong> to <strong>{{{ periodEnd }}}</strong>.",
+            "automated": "This message is sent automatically by the ezREEPORT application. You are receiving it because you are part of a report distribution list.",
+            "attachment": "- Find your report attached -",
+            "unsubscribe": "If you no longer wish to receive this report, <a href=\"{{{ unsubscribeLink }}}\">click here</a> to unsubscribe."
+          }
+        }
+      },
+      "failed": {
+        "subject": "ezMESURE Reporting Error [{{{ date }}}] - {{ name }}",
+        "body": {
+          "title": "ezREEPORT report from {{{ date }}} in error.",
+          "content": {
+            "report": "The generation of the report \"<strong>{{ name }}</strong>\" for the institution \"<strong>{{ namespace }}</strong>\" encountered an error. As a result, the reporting task has been disabled. Remember to reactivate it once the error is corrected.",
+            "error": "Error information:",
+            "details": {
+              "report": "<strong>Report</strong>: {{ name }}",
+              "namespace": "<strong>institution</strong>: {{ namespace }}",
+              "date": "<strong>Date</strong>: {{{ date }}}",
+              "recurrence": "<strong>Recurrence</strong>: {{{ recurrence }}}",
+              "period": "<strong>Period</strong>: {{{ periodStart }}} ~ {{{ periodEnd }}}",
+              "message": "<strong>Message</strong>: {{{ error }}}"
+            },
+            "attachment": "You will find more information in the attachment.",
+            "automated": "This message is sent automatically by the ezREEPORT application. You are receiving it because you are the contact for the institution generating the report task."
+          }
+        }
+      },
+      "error": {
+        "subject": "ezMESURE Reporting Error [{{{ date }}}]",
+        "message": "Unknown error, see attachment"
+      }
+    }
+  }
+}

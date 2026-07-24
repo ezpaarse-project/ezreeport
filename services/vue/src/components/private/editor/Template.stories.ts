@@ -35,6 +35,7 @@ const template = createTemplateHelperFrom({
     { id: '0', name: 'ezPAARSE' },
     { id: '1', name: 'Istex', color: '#BED031' },
   ],
+  locale: 'fr',
   body: {
     version: 2,
     index: 'istex*',

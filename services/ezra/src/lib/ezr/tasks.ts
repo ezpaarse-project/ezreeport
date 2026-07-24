@@ -24,6 +24,7 @@ export const createTasksWriteStream = (ezr: EZR) =>
       template: item.template,
       targets: item.targets,
       recurrence: item.recurrence,
+      recurrenceOffset: item.recurrenceOffset,
       nextRun: item.nextRun,
       enabled: item.enabled,
       extendedId: item.extendedId,

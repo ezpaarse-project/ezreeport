@@ -26,12 +26,15 @@
               item-title="name"
               prepend-icon="mdi-view-grid"
               variant="underlined"
+              hide-details
               @update:model-value="onTemplateChange($event)"
             >
-              <template #append-inner>
-                <TemplateTagView
-                  v-if="currentTemplate"
-                  :model-value="currentTemplate.tags ?? []"
+              <template v-if="currentTemplate" #append>
+                <TemplateLocaleFlag
+                  v-tooltip:top="
+                    $t(`$ezreeport.template.locales.${currentTemplate.locale}`)
+                  "
+                  :modelValue="currentTemplate.locale"
                 />
               </template>
 
@@ -40,9 +43,24 @@
                   <template #subtitle>
                     <TemplateTagView :model-value="item.tags ?? []" />
                   </template>
+
+                  <template #append>
+                    <TemplateLocaleFlag
+                      v-tooltip:left="
+                        $t(`$ezreeport.template.locales.${item.locale}`)
+                      "
+                      :modelValue="item.locale"
+                    />
+                  </template>
                 </v-list-item>
               </template>
             </v-autocomplete>
+
+            <TemplateTagView
+              v-if="currentTemplate"
+              :model-value="currentTemplate.tags ?? []"
+              class="ml-10 mt-2"
+            />
           </v-col>
         </v-row>
 

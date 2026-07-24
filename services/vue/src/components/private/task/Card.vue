@@ -54,6 +54,22 @@
           </v-card>
         </v-menu>
 
+        <v-list-item
+          v-if="modelValue.extends?.locale"
+          :subtitle="$t('$ezreeport.template.locale')"
+          :title="
+            $t(`$ezreeport.template.locales.${modelValue.extends?.locale}`)
+          "
+        >
+          <template #prepend>
+            <TemplateLocaleFlag
+              :modelValue="modelValue.extends?.locale"
+              size="small"
+              style="margin-right: 13px"
+            />
+          </template>
+        </v-list-item>
+
         <v-menu
           v-if="modelValue.description"
           :close-on-content-click="false"

@@ -1,16 +1,13 @@
-import { basename } from 'node:path';
-
 import type { Logger } from '@ezreeport/logger';
 import type { MailReportQueueDataType } from '@ezreeport/models/queues';
-import { format } from '@ezreeport/dates';
+import { d, t } from '@ezreeport/i18n';
 import { stringToB64 } from '@ezreeport/models/lib/utils';
 
 import config from '~/lib/config';
 
-import { recurrenceToStr } from '~/models/recurrence';
 import { createReportReadStream } from '~/models/rpc/client/files';
 
-import { generateMail, sendMail } from '..';
+import { generateMail, getFilename, sendMail } from '..';
 
 const {
   api: { url: APIurl },
@@ -34,13 +31,12 @@ async function getFileFromRemote(
   });
 }
 
-export default async function sendSuccessReport(
+export async function sendSuccessReport(
   data: MailReportQueueDataType,
   logger: Logger
 ): Promise<void> {
   const file = await getFileFromRemote(data.filename, data.task.id);
-  const name = basename(data.filename);
-  const dateStr = format(data.date, 'dd/MM/yyyy');
+  const filename = getFilename(data);
 
   // Send one email per target to allow un-subscription prefill
   const targets = await Promise.allSettled(
@@ -53,21 +49,24 @@ export default async function sendSuccessReport(
         const unsubscribeLink = `${APIurl}/unsubscribe/${unsubId}`;
         await sendMail({
           to,
-          subject: `Reporting ezMESURE [${dateStr}] - ${data.task.name}`,
-          body: generateMail('success', {
-            recurrence: recurrenceToStr(data.task.recurrence),
+          subject: t('mail.report.success.subject', data.locale, {
+            date: d(data.date, data.locale, 'P'),
             name: data.task.name,
-            namespace: data.namespace.name,
-            date: format(data.date, 'dd/MM/yyyy à HH:mm:ss'),
-            period: {
-              start: format(data.period.start, 'dd/MM/yyyy'),
-              end: format(data.period.end, 'dd/MM/yyyy'),
+          }),
+          body: await generateMail('report-success', data.locale, {
+            data: {
+              recurrence: t(`recurrence.${data.task.recurrence}`, data.locale),
+              name: data.task.name,
+              namespace: data.namespace.name,
+              date: d(data.date, data.locale),
+              periodStart: d(data.period.start, data.locale, 'P'),
+              periodEnd: d(data.period.end, data.locale, 'P'),
+              unsubscribeLink,
             },
-            unsubscribeLink,
           }),
           attachments: [
             {
-              filename: name,
+              filename,
               content: file,
               contentDisposition: 'attachment',
             },
@@ -77,7 +76,7 @@ export default async function sendSuccessReport(
         return to;
       } catch (err) {
         logger.error({
-          filename: name,
+          filename,
           to,
           err,
           msg: 'Error when sending report',
@@ -92,13 +91,13 @@ export default async function sendSuccessReport(
     .map(({ value }) => value);
   if (successTargets.length > 0) {
     logger.info({
-      filename: name,
+      filename,
       targets: successTargets,
       msg: 'Report sent to targets',
     });
   } else {
     logger.warn({
-      filename: name,
+      filename,
       msg: 'No target to send report',
     });
   }
