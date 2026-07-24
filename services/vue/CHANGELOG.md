@@ -1,5 +1,16 @@
 # @ezpaarse-project/ezreeport-vue
 
+## 3.3.0
+
+### Minor Changes
+
+- 730cac8: ✨ templates can be rendered using locales
+
+### Patch Changes
+
+- 13485af: 🚑️ fixed bundling of sdk
+- 7f575a3: 🐛 changed attachment name generation to avoid filesystem issues
+
 ## 3.3.0-rc.1
 
 ### Patch Changes

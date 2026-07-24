@@ -1,5 +1,19 @@
 # ezreeport-mail
 
+## 2.1.0
+
+### Minor Changes
+
+- 730cac8: ✨ templates can be rendered using locales
+
+### Patch Changes
+
+- 7f575a3: 🐛 changed attachment name generation to avoid filesystem issues
+- Updated dependencies [92b1b03]
+  - @ezreeport/models@0.2.0
+  - @ezreeport/heartbeats@0.0.2
+  - @ezreeport/rpc@0.0.2
+
 ## 2.1.0-rc.0
 
 ### Minor Changes
