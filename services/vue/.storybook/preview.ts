@@ -1,7 +1,5 @@
-import { setup, type Preview } from '@storybook/vue3-vite';
+import { type Preview, setup } from '@storybook/vue3-vite';
 import { useI18n } from 'vue-i18n';
-// oxlint-disable-next-line no-unassigned-import
-import '@mdi/font/css/materialdesignicons.css';
 import { useTheme } from 'vuetify';
 import { VApp, VMain } from 'vuetify/components';
 
@@ -17,47 +15,9 @@ setup((app) => {
 });
 
 const preview: Preview = {
-  tags: ['autodocs'],
-  parameters: {
-    options: {
-      storySort: {
-        order: ['Intro', 'Public', '*', 'Template Editor', 'Utils'],
-      },
-    },
-  },
-  globalTypes: {
-    locale: {
-      name: 'Locale',
-      description: 'Locale',
-      defaultValue: 'en',
-      toolbar: {
-        icon: 'globe',
-        items: [
-          { value: 'en', title: 'English' },
-          { value: 'fr', title: 'Français' },
-        ],
-      },
-    },
-    theme: {
-      name: 'Theme',
-      description: 'Theme',
-      defaultValue: 'light',
-      toolbar: {
-        icon: 'contrast',
-        items: [
-          { value: 'light', title: 'Light' },
-          { value: 'dark', title: 'Dark' },
-        ],
-      },
-    },
-  },
-  initialGlobals: {
-    locale: 'en',
-    theme: 'light',
-  },
   decorators: [
     (story, { globals: { locale, theme } }) => ({
-      components: { story, VApp, VMain },
+      components: { VApp, VMain, story },
       setup(): void {
         const { locale: i18nLocale } = useI18n();
         i18nLocale.value = locale;
@@ -68,6 +28,45 @@ const preview: Preview = {
       template: '<VApp><VMain><story /></VMain></VApp>',
     }),
   ],
+  globalTypes: {
+    locale: {
+      defaultValue: 'en',
+      description: 'Locale',
+      name: 'Locale',
+      toolbar: {
+        icon: 'globe',
+        items: [
+          { title: 'English', value: 'en' },
+          { title: 'Français', value: 'fr' },
+        ],
+      },
+    },
+    theme: {
+      defaultValue: 'light',
+      description: 'Theme',
+      name: 'Theme',
+      toolbar: {
+        icon: 'contrast',
+        items: [
+          { title: 'Light', value: 'light' },
+          { title: 'Dark', value: 'dark' },
+        ],
+      },
+    },
+  },
+  initialGlobals: {
+    locale: 'en',
+    theme: 'light',
+  },
+  parameters: {
+    options: {
+      storySort: {
+        order: ['Intro', 'Public', '*', 'Template Editor', 'Utils'],
+      },
+    },
+  },
+  tags: ['autodocs'],
 };
 
+// oxlint-disable-next-line import/no-default-export
 export default preview;

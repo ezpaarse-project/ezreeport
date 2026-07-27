@@ -3,10 +3,10 @@ import { PassThrough, type Readable, type Writable } from 'node:stream';
 
 import type { Logger } from '@ezreeport/logger';
 import {
-  type rabbitmq,
   type JSONMessageTransport,
   type JSONMessageTransportQueue,
   parseJSONMessage,
+  type rabbitmq,
   sendJSONMessage,
 } from '@ezreeport/rabbitmq';
 
@@ -42,8 +42,8 @@ export class RPCStreamClient {
     private opts?: { compression?: boolean }
   ) {
     this.logger = appLogger.child({
-      scope: 'rpc-stream.client',
       queue: queueName,
+      scope: 'rpc-stream.client',
     });
 
     this.transport = this.assertTransport(channel, queueName);
@@ -56,7 +56,7 @@ export class RPCStreamClient {
     this.logger.debug('RPC client setup');
     // oxlint-disable-next-line promise/prefer-await-to-then
     return Promise.resolve({
-      channel: channel,
+      channel,
       queue: { name: queueName },
     });
   }
@@ -68,8 +68,8 @@ export class RPCStreamClient {
 
     const correlationId = randomUUID();
     const { queue: responseQueue } = await channel.assertQueue('', {
-      exclusive: true,
       durable: false,
+      exclusive: true,
     });
 
     await channel.consume(responseQueue, async (msg) => {
@@ -88,9 +88,9 @@ export class RPCStreamClient {
       );
       if (!data) {
         this.logger.error({
-          msg: 'Invalid data',
           data: process.env.NODE_ENV === 'production' ? undefined : raw,
           err: parseError,
+          msg: 'Invalid data',
         });
         channel.nack(msg, undefined, false);
         return;
@@ -142,12 +142,12 @@ export class RPCStreamClient {
 
     const { size } = sendJSONMessage<RPCStreamRequestType>(
       { channel, queue },
-      { method: 'createWriteStream', params, dataQueue },
-      { correlationId, replyTo, expiration: timeout.duration }
+      { dataQueue, method: 'createWriteStream', params },
+      { correlationId, expiration: timeout.duration, replyTo }
     );
     this.logger.debug({
-      msg: 'Request sent',
       method: 'createWriteStream',
+      msg: 'Request sent',
       params,
       size,
       sizeUnit: 'B',
@@ -203,11 +203,11 @@ export class RPCStreamClient {
     const { size } = sendJSONMessage<RPCStreamRequestType>(
       { channel, queue },
       { method: 'createReadStream', params },
-      { correlationId, replyTo, expiration: timeout.duration }
+      { correlationId, expiration: timeout.duration, replyTo }
     );
     this.logger.debug({
-      msg: 'Request sent',
       method: 'createReadStream',
+      msg: 'Request sent',
       params,
       size,
       sizeUnit: 'B',

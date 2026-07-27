@@ -5,9 +5,9 @@
 ## Requirements
 
 - `vue@^3.5` ([npm](https://www.npmjs.com/package/vue))
-- `vue-i18n@^10` ([npm](https://github.com/kazupon/vue-i18n))
-- `vuetify@^3.7` ([npm](https://github.com/vuetifyjs/vuetify/tree/v2-stable))
-- `@mdi/font@^7.4` ([npm](https://github.com/Templarian/MaterialDesign-Webfont))
+- `vue-i18n@^11` ([npm](https://github.com/kazupon/vue-i18n))
+- `vuetify@^4` ([npm](https://github.com/vuetifyjs/vuetify/tree/v2-stable))
+- `@mdi/js@^7.4` ([npm](https://github.com/Templarian/MaterialDesign-Webfont))
 
 ## Install
 
@@ -36,9 +36,7 @@ import {
 } from '@ezpaarse-project/ezreeport-vue/locale';
 import ezreeportVue from '@ezpaarse-project/ezreeport-vue';
 
-const app = createApp({
-  /* ... */
-});
+const app = createApp({/* ... */});
 
 const i18n = createI18n({
   // You can manually merge messages
@@ -50,9 +48,7 @@ const i18n = createI18n({
 });
 app.use(i18n);
 
-const vuetify = createVuetify({
-  /* ... */
-});
+const vuetify = createVuetify({/* ... */});
 app.use(vuetify); // You need to setup Vuetify before ezreeport
 
 app.use(ezreeportVue, {

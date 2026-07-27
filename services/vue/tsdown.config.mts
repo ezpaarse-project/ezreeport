@@ -7,37 +7,12 @@ import vue from 'unplugin-vue/rolldown';
 const isReleaseMode = process.env.NODE_ENV === 'production';
 
 export default defineConfig({
-  target: 'es6',
-  format: 'es',
-  platform: 'browser',
-
-  outDir: 'dist',
-  minify: isReleaseMode,
-
-  loader: {
-    // Matching Vite behaviour
-    '.svg': 'dataurl',
-  },
-
-  dts: {
-    sourcemap: !isReleaseMode,
-    vue: true,
-  },
-
-  entry: {
-    index: 'src/main.ts',
-    components: 'src/components.ts',
-    locale: 'src/locale.ts',
-  },
-
-  css: {
-    splitting: false,
-  },
-
   alias: {
     '~': 'src/',
   },
-
+  css: {
+    splitting: false,
+  },
   deps: {
     onlyBundle: [
       '@ezpaarse-project/ezreeport-sdk-js',
@@ -46,23 +21,41 @@ export default defineConfig({
       'object-hash',
     ],
   },
-
+  dts: {
+    sourcemap: !isReleaseMode,
+    vue: true,
+  },
+  entry: {
+    components: 'src/components.ts',
+    index: 'src/main.ts',
+    locale: 'src/locale.ts',
+  },
+  format: 'es',
+  loader: {
+    // Matching Vite behaviour
+    '.svg': 'dataurl',
+  },
+  minify: isReleaseMode,
+  outDir: 'dist',
+  platform: 'browser',
   plugins: [
     // Plugin for Vue SFC
     vue({ isProduction: isReleaseMode, ssr: false }),
     // Plugin to resolve auto-imports for components
     components({
-      dirs: ['src/components/private/'],
       directoryAsNamespace: true,
+      dirs: ['src/components/private/'],
       dts: false,
       // Plugin for Vuetify Components
-      resolvers: [vuetify()], // /!\ Doesn't resolve directives
+      // /!\ Doesn't resolve directives
+      resolvers: [vuetify()],
     }),
     // Plugin to resolve auto-imports for utils and composables
     autoImport({
       dirs: ['src/composables/', 'src/utils/'],
-      imports: ['vue', 'vue-i18n', '@vueuse/core'],
       dts: false,
+      imports: ['vue', 'vue-i18n', '@vueuse/core'],
     }),
   ],
+  target: 'es6',
 });

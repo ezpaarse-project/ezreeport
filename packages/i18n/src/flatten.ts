@@ -17,7 +17,7 @@ type IsObject<T, R, Fallback = T> = IsFunction<
 // "a.b.c" => "b.c"
 type Tail<S> = S extends `${string}.${infer T}` ? Tail<T> : S;
 
-// typeof Object.values(T)
+// Typeof Object.values(T)
 type Value<T> = T[keyof T];
 
 // {a: {b: 1, c: 2}} => {"a.b": {b: 1, c: 2}, "a.c": {b: 1, c: 2}}

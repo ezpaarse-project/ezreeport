@@ -35,7 +35,7 @@
             :readonly="readonly"
             :disabled="disabled"
             type="number"
-            prepend-icon="mdi-image-size-select-small"
+            :prepend-icon="mdiImageSizeSelectSmall"
             variant="underlined"
             hide-details
           />
@@ -46,7 +46,7 @@
             v-model="showMissing"
             :label="$t('$ezreeport.editor.aggregation.missing:show')"
             :readonly="readonly"
-            prepend-icon="mdi-progress-question"
+            :prepend-icon="mdiProgressQuestion"
             color="primary"
             hide-details
           />
@@ -60,7 +60,7 @@
               :label="$t('$ezreeport.editor.aggregation.missing:label')"
               :readonly="readonly"
               :disabled="disabled"
-              prepend-icon="mdi-tooltip-question-outline"
+              :prepend-icon="mdiTooltipQuestionOutline"
               variant="underlined"
               hide-details
             />
@@ -73,10 +73,17 @@
 
 <script setup lang="ts">
   import {
+    mdiImageSizeSelectSmall,
+    mdiProgressQuestion,
+    mdiTooltipQuestionOutline,
+  } from '@mdi/js';
+  import {
     type AggregationType,
     type FigureBaseAggregation,
     aggregationTypes,
   } from '~sdk/helpers/aggregations';
+
+  const DEFAULT_AGG_SIZE = 10;
 
   // Component props
   /** Aggregation to edit */
@@ -100,12 +107,12 @@
         modelValue.value = undefined;
         return;
       }
-      modelValue.value = { ...modelValue.value, type, field: '' };
+      modelValue.value = { ...modelValue.value, field: '', type };
     },
   });
   /** Current aggregation size */
   const currentSize = computed<string>({
-    get: () => `${modelValue.value?.size ?? 10}`,
+    get: () => `${modelValue.value?.size ?? DEFAULT_AGG_SIZE}`,
     set: (value) => {
       if (!modelValue.value) {
         return;
@@ -114,7 +121,7 @@
       let size = 10;
 
       if (value) {
-        const parsed = Number.parseInt(value, 10);
+        const parsed = Math.trunc(Number(value));
         if (!Number.isNaN(parsed)) {
           size = parsed;
         }
@@ -125,7 +132,7 @@
   });
   /** If we should show the missing values */
   const showMissing = computed({
-    get: () => !!modelValue.value?.missing,
+    get: () => Boolean(modelValue.value?.missing),
     set: (value) => {
       if (!modelValue.value) {
         return;

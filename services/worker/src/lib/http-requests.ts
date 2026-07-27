@@ -1,6 +1,7 @@
 import { createFetch } from 'ofetch';
 
-import pckg from '../../package.json';
+// oxlint-disable-next-line import/extensions
+import pckg from '../../package.json' with { type: 'json' };
 import config from './config';
 import { appLogger } from './logger';
 

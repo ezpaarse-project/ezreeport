@@ -26,27 +26,19 @@
     "db:push": "dotenvx run -- prisma db push --skip-generate",
     "db:reset": "dotenvx run -- prisma migrate reset --skip-generate",
     "lint": "oxlint",
-    "type-check": "tsc --noEmit --skipLibCheck"
+    "fmt": "oxfmt",
+    "check": "tsc --noEmit --skipLibCheck"
   },
   "dependencies": {
     "@ezreeport/heartbeats": "workspace:*",
     "@ezreeport/logger": "workspace:*",
-    "@prisma/adapter-pg": "^6.17.1",
-    "@prisma/client": "^6.17.1"
+    "@prisma/adapter-pg": "^7.9.0",
+    "@prisma/client": "^7.9.0"
   },
   "devDependencies": {
-    "@dotenvx/dotenvx": "^1.48.4",
-    "prisma": "^6.17.1",
+    "@dotenvx/dotenvx": "^2.18.0",
+    "prisma": "^7.9.0",
     "typescript": "catalog:"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "oxlint --fix",
-      "oxfmt --no-error-on-unmatched-pattern"
-    ],
-    "package.json": [
-      "oxfmt --no-error-on-unmatched-pattern"
-    ]
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

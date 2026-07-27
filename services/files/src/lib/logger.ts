@@ -1,8 +1,8 @@
 import {
-  createLogger,
-  isPrettierInstalled,
   type Level,
   type LoggerOptions,
+  createLogger,
+  isPrettierInstalled,
 } from '@ezreeport/logger';
 
 import config from '~/lib/config';
@@ -10,10 +10,11 @@ import config from '~/lib/config';
 const { level, dir, ignore } = config.log;
 
 const options: Omit<LoggerOptions, 'name'> = {
-  pretty: isPrettierInstalled(require),
+  dir,
   ignore: Array.isArray(ignore) ? ignore : [ignore],
   level: level as Level,
-  dir,
+  // oxlint-disable-next-line unicorn/prefer-module
+  pretty: isPrettierInstalled(require),
 };
 
 export const appLogger = createLogger({ ...options, name: 'files' });

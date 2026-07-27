@@ -16,23 +16,15 @@
   "exports": "./src/index.ts",
   "scripts": {
     "lint": "oxlint",
-    "type-check": "tsc --noEmit --skipLibCheck"
+    "fmt": "oxfmt",
+    "check": "tsc --noEmit --skipLibCheck"
   },
   "dependencies": {
-    "pino": "^9.7.0"
+    "pino": "^10.3.1"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "typescript": "catalog:"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "oxlint --fix",
-      "oxfmt --no-error-on-unmatched-pattern"
-    ],
-    "package.json": [
-      "oxfmt --no-error-on-unmatched-pattern"
-    ]
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

@@ -24,9 +24,9 @@ export type RPCRequestType = z.infer<typeof RPCRequest>;
  * Validation for a RPC response
  */
 export const RPCResponse = z.object({
-  result: z.unknown().optional().describe('RPC method result'),
-
   error: z.string().min(1).optional().describe('RPC method error'),
+
+  result: z.unknown().optional().describe('RPC method result'),
 });
 
 /**

@@ -13,25 +13,16 @@
     "type": "git",
     "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
   },
-  "scripts": {
-    "prepare": "husky"
-  },
   "devDependencies": {
-    "@changesets/cli": "^2.29.8",
-    "@commitlint/cli": "^20.3.0",
-    "@commitlint/config-conventional": "^20.3.0",
+    "@changesets/cli": "^2.31.1",
+    "@commitlint/cli": "^21.2.1",
+    "@commitlint/config-conventional": "^21.2.0",
     "@ezpaarse-project/oxlint-config": "^0.2.4",
     "fx": "^39.2.0",
-    "husky": "^9.1.6",
-    "lint-staged": "^16.2.7",
-    "oxfmt": "^0.36.0",
-    "oxlint": "^1.38.0",
-    "turbo": "^2.8.20"
+    "lefthook": "^2.1.10",
+    "oxfmt": "^0.60.0",
+    "oxlint": "^1.75.0",
+    "turbo": "^2.10.7"
   },
-  "lint-staged": {
-    "package.json": [
-      "oxfmt --no-error-on-unmatched-pattern"
-    ]
-  },
-  "packageManager": "pnpm@11.13.0"
+  "packageManager": "pnpm@11.17.0"
 }

@@ -5,13 +5,13 @@ import { RPCStreamClient } from '@ezreeport/rpc/streams/client';
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 
-// let client: RPCClient | undefined;
+// Let client: RPCClient | undefined;
 let streamClient: RPCStreamClient | undefined;
 
 export function initFilesClient(channel: rabbitmq.Channel): void {
-  // schedulerClient will be called while begin unaware of
-  // rabbitmq connection, so we need to store the channel
-  // here
+  // SchedulerClient will be called while begin unaware of
+  // Rabbitmq connection, so we need to store the channel
+  // Here
   streamClient = new RPCStreamClient(
     channel,
     'ezreeport.rpc:files:stream',

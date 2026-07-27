@@ -5,7 +5,7 @@
         <v-btn
           v-show="modelValue.length > 0"
           :text="text"
-          :prepend-icon="open ? 'mdi-chevron-down' : 'mdi-chevron-up'"
+          :prepend-icon="open ? mdiChevronDown : mdiChevronUp"
           color="primary"
           position="fixed"
           location="bottom right"
@@ -23,7 +23,7 @@
 
       <v-list-item
         :title="$t('$ezreeport.deselect')"
-        prepend-icon="mdi-close"
+        :prepend-icon="mdiClose"
         @click="$emit('update:modelValue', [])"
       />
     </v-list>
@@ -31,6 +31,8 @@
 </template>
 
 <script lang="ts" setup>
+  import { mdiChevronDown, mdiChevronUp, mdiClose } from '@mdi/js';
+
   defineProps<{
     modelValue: string[];
     text: string;

@@ -8,8 +8,11 @@
     "lint": {
       "dependsOn": ["^lint"]
     },
-    "type-check": {
-      "dependsOn": ["db:generate", "^type-check"]
+    "fmt": {
+      "dependsOn": ["^fmt"]
+    },
+    "check": {
+      "dependsOn": ["db:generate", "^check"]
     },
     "build": {
       "dependsOn": ["^build"]

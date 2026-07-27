@@ -1,6 +1,6 @@
 import type {
-  HeartbeatService,
   HeartbeatSender,
+  HeartbeatService,
 } from '@ezreeport/heartbeats/types';
 import { setupHeartbeat } from '@ezreeport/heartbeats';
 
@@ -8,24 +8,25 @@ import type rabbitmq from '~/lib/rabbitmq';
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
 
-import { version } from '../../../package.json';
+// oxlint-disable-next-line import/extensions
+import { version } from '../../../package.json' with { type: 'json' };
 
 const { heartbeat: frequency } = config;
 
+const logger = appLogger.child({ scope: 'heartbeat' });
+
+let heartbeat: HeartbeatSender | null = null;
+
 export const service: HeartbeatService = {
-  name: 'files',
-  version,
   filesystems: {
     logs: config.log.dir,
     reports: config.paths.reports,
   },
+  name: 'files',
+  version,
 };
 
-const logger = appLogger.child({ scope: 'heartbeat' });
-
 export { getMissingMandatoryServices } from '@ezreeport/heartbeats';
-
-let heartbeat: HeartbeatSender | undefined;
 
 export async function initHeartbeat(
   connection: rabbitmq.ChannelModel

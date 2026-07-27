@@ -1,4 +1,4 @@
-import type { Task, RawTask } from '~/modules/tasks/types';
+import type { RawTask, Task } from '~/modules/tasks/types';
 
 export interface TaskActivity {
   /** Activity ID */

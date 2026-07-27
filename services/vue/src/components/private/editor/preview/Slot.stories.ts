@@ -4,8 +4,8 @@ import { createVegaFigureHelper } from '~sdk/helpers/figures';
 import EditorPreviewSlot from './Slot.vue';
 
 const meta: Meta<typeof EditorPreviewSlot> = {
-  title: 'Template Editor/Preview/Slot',
   component: EditorPreviewSlot,
+  title: 'Template Editor/Preview/Slot',
 };
 
 export default meta;
@@ -13,28 +13,21 @@ export default meta;
 type Story = StoryObj<typeof EditorPreviewSlot>;
 
 export const Default: Story = {
-  render: (args: unknown) => ({
-    components: { EditorPreviewSlot },
-    setup() {
-      return { args };
-    },
-    template: '<EditorPreviewSlot v-bind="args" />',
-  }),
   args: {
     modelValue: createVegaFigureHelper(
       'arc',
       'Type de Rapport',
       {
-        legend: null,
         aggregation: {
-          type: 'terms',
           field: 'Report_Header.Report_ID',
+          type: 'terms',
         },
+        legend: null,
       },
       {
         aggregation: {
-          type: 'sum',
           field: 'Count',
+          type: 'sum',
         },
       },
       undefined,
@@ -48,4 +41,11 @@ export const Default: Story = {
       [0]
     ),
   },
+  render: (args: unknown) => ({
+    components: { EditorPreviewSlot },
+    setup() {
+      return { args };
+    },
+    template: '<EditorPreviewSlot v-bind="args" />',
+  }),
 };

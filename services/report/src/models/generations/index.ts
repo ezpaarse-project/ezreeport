@@ -8,8 +8,8 @@ import { buildPaginatedRequest } from '~/models/pagination';
 
 import {
   Generation,
-  type GenerationType,
   type GenerationIncludeFieldsType,
+  type GenerationType,
 } from './types';
 
 function applyIncludes(
@@ -125,8 +125,8 @@ export async function countGenerations(): Promise<number> {
  */
 export async function doesGenerationExist(id: string): Promise<boolean> {
   const count = await prisma.generation.count({
-    where: { id },
     select: { id: true },
+    where: { id },
   });
 
   return count.id > 0;

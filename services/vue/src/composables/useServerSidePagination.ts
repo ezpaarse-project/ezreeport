@@ -17,67 +17,67 @@ export default function useServerSidePagination<DataType>(
   opts: Options = {}
 ) {
   const items = ref<DataType[]>([]);
-  const total = ref(0);
+  const total = shallowRef(0);
 
-  const page = ref(1);
+  const page = shallowRef(1);
   const itemsPerPage = isRef(opts.itemsPerPage)
     ? opts.itemsPerPage
-    : ref(opts.itemsPerPage ?? 10);
+    : shallowRef(opts.itemsPerPage ?? 10);
 
-  const sortBy = ref<string | undefined>(opts.sortBy);
-  const order = ref<'asc' | 'desc'>(opts.order || 'asc');
+  const sortBy = shallowRef<string | undefined>(opts.sortBy);
+  const order = shallowRef<'asc' | 'desc'>(opts.order || 'asc');
 
   const filters = ref<Required<ApiRequestOptions>['filters']>(
     opts.filters ?? {}
   );
 
-  const loading = ref(false);
-  const error = ref<Error | undefined>(undefined);
+  const loading = shallowRef(false);
+  const err = ref<Error | undefined>(undefined);
 
-  async function fetch() {
+  async function fetch(): Promise<void> {
     loading.value = true;
     try {
       const { items: newItems, total: newTotal } = await fetchFn({
-        include: opts.include,
         filters: filters.value,
+        include: opts.include,
         pagination: {
           count: Math.max(itemsPerPage.value, 0),
+          order: order.value,
           page: page.value,
           sort: sortBy.value,
-          order: order.value,
         },
       });
 
       items.value = newItems;
       total.value = newTotal;
-    } catch (err) {
-      error.value = err instanceof Error ? err : new Error(`${err}`);
+    } catch (error) {
+      err.value = error instanceof Error ? error : new Error(`${error}`);
     }
     loading.value = false;
   }
 
-  async function onPageChange(newPage: number) {
+  async function onPageChange(newPage: number): Promise<void> {
     page.value = newPage;
 
     await nextTick();
-    return fetch();
+    await fetch();
   }
 
   async function onSortChange(
     sort: { key: string; order: 'asc' | 'desc' }[] | undefined
-  ) {
+  ): Promise<void> {
     sortBy.value = sort?.[0]?.key;
     order.value = sort?.[0]?.order ?? 'asc';
 
     await nextTick();
-    return fetch();
+    await fetch();
   }
 
-  async function onItemsPerPageChange(newItemsPerPage: number) {
+  async function onItemsPerPageChange(newItemsPerPage: number): Promise<void> {
     itemsPerPage.value = newItemsPerPage;
 
     await nextTick();
-    return fetch();
+    await fetch();
   }
 
   /**
@@ -85,18 +85,17 @@ export default function useServerSidePagination<DataType>(
    */
   const vDataTableOptions = computed(() => ({
     items: items.value ?? [],
-    loading: loading.value && 'primary',
-    page: page.value,
     itemsLength: total.value,
     itemsPerPage: itemsPerPage.value,
     itemsPerPageOptions: opts.itemsPerPageOptions,
+    loading: loading.value && 'primary',
+    'onUpdate:itemsPerPage': onItemsPerPageChange,
+    'onUpdate:page': onPageChange,
+    'onUpdate:sortBy': onSortChange,
+    page: page.value,
     sortBy: sortBy.value
       ? [{ key: sortBy.value, order: order.value }]
       : undefined,
-
-    'onUpdate:page': onPageChange,
-    'onUpdate:sortBy': onSortChange,
-    'onUpdate:itemsPerPage': onItemsPerPageChange,
   }));
 
   if (opts.immediate !== false) {
@@ -112,15 +111,18 @@ export default function useServerSidePagination<DataType>(
   );
 
   return {
+    error: computed(() => err.value),
+
     filters,
 
     items: computed(() => items.value ?? []),
-    total: computed(() => total.value),
-    loading: computed(() => loading.value),
-    error: computed(() => error.value),
 
-    vDataTableOptions,
+    loading: computed(() => loading.value),
 
     refresh: () => fetch(),
+
+    total: computed(() => total.value),
+
+    vDataTableOptions,
   };
 }

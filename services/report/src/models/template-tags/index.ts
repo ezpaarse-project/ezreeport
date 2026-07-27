@@ -13,7 +13,7 @@ import type {
   TemplateTagQueryFiltersType,
 } from './types';
 
-const logger = appLogger.child({ scope: 'models', model: 'template-tags' });
+const logger = appLogger.child({ model: 'template-tags', scope: 'models' });
 
 function applyFilters(
   filters: TemplateTagQueryFiltersType
@@ -56,11 +56,7 @@ export async function getAllTemplateTags(
   // Ensure data
   const tags = await Promise.all(
     data.map((tag) =>
-      ensureSchema(
-        TemplateTag,
-        tag,
-        (tag) => `Failed to parse template ${tag.id}`
-      )
+      ensureSchema(TemplateTag, tag, () => `Failed to parse template ${tag.id}`)
     )
   );
   return tags;
@@ -96,8 +92,8 @@ export async function createTemplateTag(
   const tag = await prisma.templateTag.create({ data });
 
   logger.debug({
-    id: tag.id,
     action: 'Created',
+    id: tag.id,
     msg: 'Created',
   });
 
@@ -116,11 +112,11 @@ export async function editTemplateTag(
   id: string,
   data: InputTemplateTagType
 ): Promise<TemplateTagType> {
-  const tag = await prisma.templateTag.update({ where: { id }, data });
+  const tag = await prisma.templateTag.update({ data, where: { id } });
 
   logger.debug({
-    id: tag.id,
     action: 'Updated',
+    id: tag.id,
     msg: 'Updated',
   });
 
@@ -138,8 +134,8 @@ export async function deleteTemplateTag(id: string): Promise<TemplateTagType> {
   const tag = await prisma.templateTag.delete({ where: { id } });
 
   logger.debug({
-    id: tag.id,
     action: 'Deleted',
+    id: tag.id,
     msg: 'Deleted',
   });
 
@@ -180,8 +176,8 @@ export async function countTemplateTags(
  */
 export async function doesTemplateTagExist(id: string): Promise<boolean> {
   const count = await prisma.templateTag.count({
-    where: { id },
     select: { id: true },
+    where: { id },
   });
 
   return count.id > 0;

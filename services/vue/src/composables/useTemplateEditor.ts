@@ -1,4 +1,5 @@
 import type { TemplateBodyGrid } from '~sdk/templates';
+import { mdiVariable } from '@mdi/js';
 import { getIndexMapping } from '~sdk/elastic';
 
 import { elasticTypeAliases, elasticTypeIcons } from '~/lib/elastic';
@@ -12,13 +13,13 @@ type Options = {
 
 // Utils functions
 const mappingToOption = (field: string, type: string) => ({
-  value: field,
-  title: field,
   props: {
-    subtitle: type,
     appendIcon: elasticTypeIcons.get(elasticTypeAliases.get(type) || ''),
     class: undefined as string | undefined,
+    subtitle: type,
   },
+  title: field,
+  value: field,
 });
 
 // Reactive properties
@@ -34,8 +35,8 @@ const mappingItems = computed(() =>
     .sort((itemA, itemB) => itemA.value.localeCompare(itemB.value))
 );
 
+// oxlint-disable-next-line max-lines-per-function
 export default function useTemplateEditor(defaultOptions?: Options) {
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   /**
@@ -43,7 +44,7 @@ export default function useTemplateEditor(defaultOptions?: Options) {
    *
    * @param index Index to refresh
    */
-  async function refreshMapping(index: string) {
+  async function refreshMapping(index: string): Promise<void> {
     try {
       const data = await getIndexMapping(index, namespaceId.value);
       mapping.value = data;
@@ -52,7 +53,7 @@ export default function useTemplateEditor(defaultOptions?: Options) {
     }
   }
 
-  function updateDateField(val: string) {
+  function updateDateField(val: string): void {
     dateField.value = val;
   }
 
@@ -73,15 +74,15 @@ export default function useTemplateEditor(defaultOptions?: Options) {
 
     if (vars.dateField) {
       items.unshift({
-        value: '{{ dateField }}',
+        props: {
+          appendIcon: mdiVariable,
+          class: 'font-italic',
+          subtitle: 'date',
+        },
         title: t('$ezreeport.editor.varsList.dateField', {
           field: dateField.value,
         }),
-        props: {
-          subtitle: 'date',
-          appendIcon: 'mdi-variable',
-          class: 'font-italic',
-        },
+        value: '{{ dateField }}',
       });
     }
 
@@ -101,13 +102,13 @@ export default function useTemplateEditor(defaultOptions?: Options) {
       })
     );
 
-    const options = Array.from(optionsMap.values());
+    const options = [...optionsMap.values()];
 
     if (types.length > 1) {
       return options;
     }
     // Strip props if only one type
-    return options.map((item) => ({ ...item, props: {} }));
+    return options.map((item) => Object.assign(item, { props: {} }));
   }
 
   // Init editor
@@ -131,9 +132,9 @@ export default function useTemplateEditor(defaultOptions?: Options) {
   }
 
   return {
+    getOptionsFromMapping,
     grid,
     refreshMapping,
-    getOptionsFromMapping,
     updateDateField,
   };
 }

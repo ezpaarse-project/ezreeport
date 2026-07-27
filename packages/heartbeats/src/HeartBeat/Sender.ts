@@ -7,10 +7,10 @@ import { type rabbitmq, sendJSONMessage } from '@ezreeport/rabbitmq';
 
 import type {
   FileSystemUsageType,
-  HeartbeatType,
-  HeartbeatService,
-  HeartbeatFrequency,
   HeartbeatConnectedServicePing,
+  HeartbeatFrequency,
+  HeartbeatService,
+  HeartbeatType,
 } from '../types';
 import { HeartbeatManager } from './Manager';
 
@@ -20,6 +20,7 @@ export class HeartbeatSender extends HeartbeatManager {
 
   /** Map of watched filesystems */
   public get watchingFileSystems(): Record<string, string> {
+    // oxlint-disable-next-line no-underscore-dangle
     return Object.fromEntries(this._watchingFileSystems);
   }
 
@@ -28,13 +29,13 @@ export class HeartbeatSender extends HeartbeatManager {
 
   /** Config of frequency */
   private frequencyConfig: HeartbeatFrequency = {
-    // self: 2 seconds
+    // Self: 2 seconds
     self: 2 * 1000,
 
     connected: {
-      // min: 5 seconds
+      // Min: 5 seconds
       min: 5 * 1000,
-      // max: 5 mins
+      // Max: 5 mins
       max: 5 * 60 * 1000,
     },
   };
@@ -63,16 +64,19 @@ export class HeartbeatSender extends HeartbeatManager {
     }
 
     // Mapping filesystems
+    // oxlint-disable-next-line no-underscore-dangle
     this._watchingFileSystems = Object.entries(
       service.filesystems ?? {}
     ).filter(([, path]) => path);
 
     // Mapping connect services
+    // oxlint-disable-next-line no-underscore-dangle
     this._watchingServices = Object.entries(service.connectedServices ?? {});
 
     this.scheduleNextMainHeartbeat();
-    for (const [key, service] of this._watchingServices) {
-      this.scheduleConnectedHeartbeat(key, service);
+    // oxlint-disable-next-line no-underscore-dangle
+    for (const [key, srv] of this._watchingServices) {
+      this.scheduleConnectedHeartbeat(key, srv);
     }
 
     // If connection to rabbitmq is lost, stop regular heartbeats (and note rabbitmq as down)
@@ -95,6 +99,7 @@ export class HeartbeatSender extends HeartbeatManager {
   private getFilesystemStatus(): Promise<FileSystemUsageType[]> {
     // oxlint-disable-next-line prefer-await-to-then
     return Promise.all(
+      // oxlint-disable-next-line no-underscore-dangle
       this._watchingFileSystems.map(async ([name, path]) => {
         const stats = await statfs(path);
 
@@ -102,9 +107,9 @@ export class HeartbeatSender extends HeartbeatManager {
         const available = stats.bavail * stats.bsize;
 
         return {
+          available,
           name,
           total,
-          available,
           used: total - available,
         };
       })
@@ -125,11 +130,11 @@ export class HeartbeatSender extends HeartbeatManager {
         size,
         sizeUnit: 'B',
       });
-    } catch (err) {
+    } catch (error) {
       this.logger.error({
+        err: error,
         msg: 'Failed to send heartbeat',
         service: data.service,
-        err,
       });
     }
   }
@@ -145,12 +150,12 @@ export class HeartbeatSender extends HeartbeatManager {
     const now = new Date();
 
     return this.sendHeartbeat({
-      service: this.service.name,
-      hostname: `${hostname()}:${process.pid}`,
-      version: this.service.version,
       filesystems: filesystems.length > 0 ? filesystems : undefined,
-      updatedAt: now,
+      hostname: `${hostname()}:${process.pid}`,
       nextAt: new Date(now.getTime() + next),
+      service: this.service.name,
+      updatedAt: now,
+      version: this.service.version,
     });
   }
 
@@ -193,8 +198,8 @@ export class HeartbeatSender extends HeartbeatManager {
 
           return {
             ...service,
-            updatedAt: now,
             nextAt: new Date(now.getTime() + frequency),
+            updatedAt: now,
           };
         }),
         // Throw on timeout
@@ -208,12 +213,12 @@ export class HeartbeatSender extends HeartbeatManager {
 
       // If everything is fine, send heartbeat
       await this.sendHeartbeat(pingResult);
-    } catch (err) {
+    } catch (error) {
       this.logger.error({
+        err: error,
         msg: 'Error when getting connected service',
         service: key,
         timeout,
-        err,
       });
 
       this.frequencyByService.set(key, {
@@ -258,6 +263,7 @@ export class HeartbeatSender extends HeartbeatManager {
   public send(): void {
     this.sendMainHeartbeat(this.frequencyConfig.self);
 
+    // oxlint-disable-next-line no-underscore-dangle
     for (const [key, service] of this._watchingServices) {
       this.sendConnectedHeartbeat(
         key,

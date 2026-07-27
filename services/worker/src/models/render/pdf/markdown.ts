@@ -1,6 +1,6 @@
 import {
-  MdParser,
   type MdImgRemoteRequestor,
+  MdParser,
 } from '@ezpaarse-project/jspdf-md';
 
 import { http } from '~/lib/http-requests';
@@ -21,11 +21,11 @@ const logger = appLogger.child({ scope: 'md-to-pdf' });
 
 const mdLogger: Console = {
   ...console,
-  debug: (msg, ...args) => logger.trace({ msg, args }),
-  log: (msg, ...args) => logger.debug({ msg, args }),
-  info: (msg, ...args) => logger.info({ msg, args }),
-  warn: (msg, ...args) => logger.warn({ msg, args }),
-  error: (msg, ...args) => logger.error({ msg, args }),
+  debug: (msg, ...args) => logger.trace({ args, msg }),
+  error: (msg, ...args) => logger.error({ args, msg }),
+  info: (msg, ...args) => logger.info({ args, msg }),
+  log: (msg, ...args) => logger.debug({ args, msg }),
+  warn: (msg, ...args) => logger.warn({ args, msg }),
 };
 
 /**

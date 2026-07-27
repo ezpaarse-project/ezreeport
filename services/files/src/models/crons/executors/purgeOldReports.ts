@@ -19,18 +19,19 @@ const purgeOldReports: Executor = async (logger) => {
       try {
         await deleteReport(filename);
         return true;
-      } catch (err) {
-        logger.error({ msg: 'Error on file deletion', filename, err });
+      } catch (error) {
+        logger.error({ error, filename, msg: 'Error on file deletion' });
         return false;
       }
     })
   );
 
   return {
+    deletedFiles: deletedFiles.filter((deleted) => Boolean(deleted)).length,
     msg: 'Purged old reports',
     toDeleteFiles: filesToDelete.length,
-    deletedFiles: deletedFiles.filter((deleted) => !!deleted).length,
   };
 };
 
+// oxlint-disable-next-line import/no-default-export
 export default purgeOldReports;

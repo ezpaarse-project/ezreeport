@@ -4,8 +4,8 @@ import { createVegaFigureHelper } from '~sdk/helpers/figures';
 import EditorFigureVega from './Vega.vue';
 
 const meta: Meta<typeof EditorFigureVega> = {
-  title: 'Template Editor/Figures/Vega',
   component: EditorFigureVega,
+  title: 'Template Editor/Figures/Vega',
 };
 
 export default meta;
@@ -14,11 +14,11 @@ const mockArc = createVegaFigureHelper(
   'arc',
   'répartition par mime',
   {
-    legend: null,
     aggregation: {
-      type: 'terms',
       field: 'mime',
+      type: 'terms',
     },
+    legend: null,
   },
   undefined,
   undefined,
@@ -29,21 +29,21 @@ const mockArc = createVegaFigureHelper(
   undefined,
   [
     {
-      name: 'rtype is ARTICLE',
       field: 'rtype',
       isNot: false,
+      name: 'rtype is ARTICLE',
       value: 'ARTICLE',
     },
     {
-      name: 'mime is not DOC, etc.',
       field: 'mime',
       isNot: true,
+      name: 'mime is not DOC, etc.',
       value: ['DOC', 'MISC'],
     },
     {
-      name: 'mime exists',
       field: 'mime',
       isNot: true,
+      name: 'mime exists',
     },
   ]
 );
@@ -53,36 +53,39 @@ const mockBar = createVegaFigureHelper(
   'ip/fede établissements',
   {
     aggregation: {
-      type: 'terms',
       field: 'auth',
+      type: 'terms',
     },
   },
   {},
   {
-    title: 'établissements',
     aggregation: {
-      type: 'terms',
       field: 'owner',
+      type: 'terms',
     },
+    title: 'établissements',
   }
 );
 
 type Story = StoryObj<typeof EditorFigureVega>;
 
 export const New: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFigureVega },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVega v-bind="args" />',
-  }),
   args: {
     modelValue: createVegaFigureHelper('line'),
   },
+  render: (args: unknown) => ({
+    components: { EditorFigureVega },
+    setup() {
+      return { args };
+    },
+    template: '<EditorFigureVega v-bind="args" />',
+  }),
 };
 
 export const ArcExisting: Story = {
+  args: {
+    modelValue: mockArc,
+  },
   render: (args: unknown) => ({
     components: { EditorFigureVega },
     setup() {
@@ -90,25 +93,12 @@ export const ArcExisting: Story = {
     },
     template: '<EditorFigureVega v-bind="args" />',
   }),
-  args: {
-    modelValue: mockArc,
-  },
 };
 
 export const BarExisting: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFigureVega },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVega v-bind="args" />',
-  }),
   args: {
     modelValue: mockBar,
   },
-};
-
-export const ArcReadonly: Story = {
   render: (args: unknown) => ({
     components: { EditorFigureVega },
     setup() {
@@ -116,13 +106,13 @@ export const ArcReadonly: Story = {
     },
     template: '<EditorFigureVega v-bind="args" />',
   }),
+};
+
+export const ArcReadonly: Story = {
   args: {
     modelValue: mockArc,
     readonly: true,
   },
-};
-
-export const BarReadonly: Story = {
   render: (args: unknown) => ({
     components: { EditorFigureVega },
     setup() {
@@ -130,8 +120,18 @@ export const BarReadonly: Story = {
     },
     template: '<EditorFigureVega v-bind="args" />',
   }),
+};
+
+export const BarReadonly: Story = {
   args: {
     modelValue: mockBar,
     readonly: true,
   },
+  render: (args: unknown) => ({
+    components: { EditorFigureVega },
+    setup() {
+      return { args };
+    },
+    template: '<EditorFigureVega v-bind="args" />',
+  }),
 };

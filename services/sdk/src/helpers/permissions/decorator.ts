@@ -24,9 +24,9 @@ export function assignPermission(
   isNamespaced = false
 ): void {
   Object.defineProperty(fnc, 'ezrPermissions', {
-    value: [{ permission, isNamespaced }],
-    writable: false,
     enumerable: false,
+    value: [{ isNamespaced, permission }],
+    writable: false,
   });
 }
 
@@ -49,12 +49,12 @@ export function assignDependencies(
   const permissions = dependencies.flatMap((dep) => dep.ezrPermissions);
 
   if (permission) {
-    permissions.unshift({ permission, isNamespaced });
+    permissions.unshift({ isNamespaced, permission });
   }
 
   Object.defineProperty(fnc, 'ezrPermissions', {
+    enumerable: false,
     value: permissions,
     writable: false,
-    enumerable: false,
   });
 }

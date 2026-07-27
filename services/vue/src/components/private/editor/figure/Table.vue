@@ -7,7 +7,7 @@
       <v-alert
         v-if="readonly"
         :title="$t('$ezreeport.readonly')"
-        icon="mdi-lock"
+        :icon="mdiLock"
         density="compact"
         class="mr-2"
       />
@@ -41,12 +41,12 @@
               )
             "
             variant="outlined"
-            prepend-icon="mdi-table-column"
+            :prepend-icon="mdiTableColumn"
           >
             <template v-if="!readonly" #append>
               <v-btn
                 v-tooltip:top="$t('$ezreeport.new')"
-                icon="mdi-plus"
+                :icon="mdiPlus"
                 color="green"
                 density="compact"
                 variant="text"
@@ -66,7 +66,7 @@
                   <EditorFigureTableColumn :model-value="column">
                     <template v-if="!readonly" #prepend>
                       <v-icon
-                        icon="mdi-drag-vertical"
+                        :icon="mdiDragVertical"
                         class="mr-1 table-preview--column-handle"
                         style="cursor: grab"
                       />
@@ -75,7 +75,7 @@
                     <template v-if="!readonly" #actions>
                       <v-btn
                         v-tooltip:top="$t('$ezreeport.edit')"
-                        icon="mdi-pencil"
+                        :icon="mdiPencil"
                         color="blue"
                         density="compact"
                         variant="text"
@@ -85,7 +85,7 @@
                       />
                       <v-btn
                         v-tooltip:top="$t('$ezreeport.delete')"
-                        icon="mdi-delete"
+                        :icon="mdiDelete"
                         color="red"
                         density="compact"
                         variant="text"
@@ -118,7 +118,7 @@
             v-model="showTotal"
             :label="$t('$ezreeport.editor.figures.table.showTotal')"
             :disabled="readonly || !hasMetric"
-            prepend-icon="mdi-sigma"
+            :prepend-icon="mdiSigma"
             color="primary"
             hide-details
           />
@@ -155,14 +155,23 @@
 <script setup lang="ts">
   import { dragAndDrop } from '@formkit/drag-and-drop/vue';
   import {
-    getTableColumnKey,
+    mdiDelete,
+    mdiDragVertical,
+    mdiLock,
+    mdiPencil,
+    mdiPlus,
+    mdiSigma,
+    mdiTableColumn,
+  } from '@mdi/js';
+  import {
+    type FigureOrder,
+    type TableColumn,
+    type TableFigureHelper,
+    addTableColumnOfHelper,
     getAllTableColumnKeysOfHelper,
+    getTableColumnKey,
     removeTableColumnOfHelper,
     updateTableColumnOfHelper,
-    addTableColumnOfHelper,
-    type TableFigureHelper,
-    type TableColumn,
-    type FigureOrder,
   } from '~sdk/helpers/figures';
 
   // Components props
@@ -180,7 +189,6 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   /** Should show the column form */
@@ -194,11 +202,11 @@
   // Make the columns draggable to sort
   if (!props.readonly) {
     dragAndDrop({
-      parent: columnListRef as Ref<HTMLElement>,
       dragHandle: '.table-preview--column-handle',
+      dragImage: () => document.createElement('div'), // Disable drag image
       dragPlaceholderClass: 'table-preview--column--dragging',
       dropZone: false,
-      dragImage: () => document.createElement('div'), // Disable drag image
+      parent: columnListRef as Ref<HTMLElement>,
       values: computed({
         get: () => props.modelValue.params.columns,
         set: (value) => {
@@ -241,7 +249,7 @@
   });
   /** Is the table already have a metric */
   const hasMetric = computed(() =>
-    props.modelValue.params.columns.some((column) => !!column.metric)
+    props.modelValue.params.columns.some((column) => Boolean(column.metric))
   );
   /** Set of headers */
   const headers = computed(
@@ -274,10 +282,10 @@
     try {
       removeTableColumnOfHelper(props.modelValue, column);
       emit('update:modelValue', props.modelValue);
-    } catch (err) {
+    } catch (error) {
       handleEzrError(
         t('$ezreeport.editor.figures.table.columns.errors.delete'),
-        err
+        error
       );
     }
   }
@@ -290,17 +298,21 @@
   function setColumn(column: TableColumn) {
     try {
       if (updatedColumn.value) {
-        updateTableColumnOfHelper(props.modelValue, updatedColumn.value, column);
+        updateTableColumnOfHelper(
+          props.modelValue,
+          updatedColumn.value,
+          column
+        );
       } else {
         addTableColumnOfHelper(props.modelValue, column);
       }
 
       emit('update:modelValue', props.modelValue);
       closeColumnForm();
-    } catch (err) {
+    } catch (error) {
       handleEzrError(
         t('$ezreeport.editor.figures.table.columns.errors.edit'),
-        err
+        error
       );
     }
   }

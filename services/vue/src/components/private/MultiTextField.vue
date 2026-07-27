@@ -12,7 +12,7 @@
           v-for="(message, i) in errorMessages"
           :key="`err${i}`"
           :text="message"
-          prepend-icon="mdi-alert-circle"
+          :prepend-icon="mdiAlertCircle"
           density="comfortable"
           variant="elevated"
           class="value-chip my-1"
@@ -49,7 +49,7 @@
       <v-chip
         v-if="!readonly"
         :text="addLabel || $t('$ezreeport.addMultiValue')"
-        prepend-icon="mdi-plus"
+        :prepend-icon="mdiPlus"
         density="comfortable"
         variant="elevated"
         class="value-chip mt-1"
@@ -63,6 +63,7 @@
 </template>
 
 <script setup lang="ts">
+  import { mdiAlertCircle, mdiPlus } from '@mdi/js';
   import { nanoid } from 'nanoid/non-secure';
 
   const modelValue = defineModel<string | string[] | undefined>({
@@ -122,7 +123,7 @@
         return;
       }
 
-      modelValue.value = Array.from(new Set(val.map(({ value }) => value)));
+      modelValue.value = [...new Set(val.map(({ value }) => value))];
     },
   });
 
@@ -162,10 +163,7 @@
   /** Error messages using given rules */
   const errorMessages = computed(
     () =>
-      new Set([
-        ...rulesErrors.value,
-        ...Array.from(itemErrors.value.values()).flat(),
-      ])
+      new Set([...rulesErrors.value, ...[...itemErrors.value.values()].flat()])
   );
 
   async function scrollToBottom(): Promise<void> {

@@ -1,5 +1,5 @@
 import { createEventHook, useDebounceFn } from '@vueuse/core';
-import { ref, watch, toValue, type MaybeRefOrGetter } from 'vue';
+import { type MaybeRefOrGetter, ref, toValue, watch } from 'vue';
 
 function getInitialJson(initial: MaybeRefOrGetter<unknown>): string {
   const original = toValue(initial);
@@ -52,8 +52,8 @@ export default function useJSONRef<Data = Record<string, unknown>>(
 
   return {
     hasChanged,
+    onChange,
     parseError,
     value,
-    onChange,
   };
 }

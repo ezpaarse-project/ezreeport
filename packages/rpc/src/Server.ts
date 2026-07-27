@@ -1,10 +1,10 @@
 import type { Logger } from '@ezreeport/logger';
 import {
-  parseJSONMessage,
-  sendJSONMessage,
-  type rabbitmq,
   type JSONMessageTransport,
   type JSONMessageTransportQueue,
+  parseJSONMessage,
+  type rabbitmq,
+  sendJSONMessage,
 } from '@ezreeport/rabbitmq';
 
 import { RPCRequest, type RPCRequestType, type RPCResponseType } from './types';
@@ -30,7 +30,7 @@ export class RPCServer {
     appLogger: Logger,
     private router: RPCServerRouter
   ) {
-    this.logger = appLogger.child({ scope: 'rpc.server', queue: queueName });
+    this.logger = appLogger.child({ queue: queueName, scope: 'rpc.server' });
 
     this.transport = this.assertTransport(channel, queueName);
   }
@@ -58,8 +58,8 @@ export class RPCServer {
 
       // Create specific rpc queue
       const randomQueue = await channel.assertQueue('', {
-        exclusive: true,
         durable: false,
+        exclusive: true,
       });
       const exchangeName = `${queueName}:all`;
       const rpcExchange = await channel.assertExchange(exchangeName, 'fanout', {
@@ -82,12 +82,12 @@ export class RPCServer {
       this.logger.debug('RPC server setup');
 
       return {
-        channel: channel,
+        channel,
         queue: { name: queueName },
       };
-    } catch (err) {
-      this.logger.error({ msg: "Couldn't setup RPC server", err });
-      throw err;
+    } catch (error) {
+      this.logger.error({ err: error, msg: "Couldn't setup RPC server" });
+      throw error;
     }
   }
 
@@ -98,36 +98,36 @@ export class RPCServer {
     const method = this.router[methodName];
 
     this.logger.debug({
-      msg: 'Executing method',
       methodName,
+      msg: 'Executing method',
       params,
     });
     const start = process.uptime();
     try {
       const result = await method(...params);
       this.logger.trace({
-        msg: 'Method executed',
-        methodName,
-        params,
         duration: process.uptime() - start,
         durationUnit: 's',
+        methodName,
+        msg: 'Method executed',
+        params,
       });
 
       return result;
-    } catch (err) {
+    } catch (error) {
       this.logger.error({
-        msg: 'Failed to execute method',
-        methodName,
-        params,
         duration: process.uptime() - start,
         durationUnit: 's',
-        err,
+        err: error,
+        methodName,
+        msg: 'Failed to execute method',
+        params,
       });
 
-      if (err instanceof Error) {
-        throw err;
+      if (error instanceof Error) {
+        throw error;
       }
-      throw new Error(`${err}`, { cause: err });
+      throw new Error(`${error}`, { cause: error });
     }
   }
 
@@ -144,10 +144,10 @@ export class RPCServer {
 
     channel.nack(msg, undefined, !alreadySeenMessage);
     this.logger.debug({
-      msg: 'Result not found, requeuing request',
-      method: request.method,
-      params: request.params,
       correlationId: msg.properties.correlationId,
+      method: request.method,
+      msg: 'Result not found, requeuing request',
+      params: request.params,
     });
 
     this.alreadySeenMessages.add(msg.properties.correlationId);
@@ -158,8 +158,8 @@ export class RPCServer {
   ): RPCServerRouter[string] | undefined {
     if (!this.router[request.method]) {
       this.logger.warn({
-        msg: 'Method not found',
         method: request.method,
+        msg: 'Method not found',
         params: request.params,
       });
       return;
@@ -179,9 +179,9 @@ export class RPCServer {
     } = parseJSONMessage(msg, RPCRequest);
     if (!request) {
       this.logger.error({
-        msg: 'Invalid data',
         data: process.env.NODE_ENV === 'production' ? undefined : raw,
         err: parseError,
+        msg: 'Invalid data',
       });
       channel.nack(msg, undefined, false);
       return;
@@ -199,9 +199,10 @@ export class RPCServer {
         request.method,
         request.params
       );
-    } catch (err) {
+    } catch (error) {
       response.error =
-        (err instanceof Error ? err.message : `${err}`) || 'Unknown error';
+        (error instanceof Error ? error.message : `${error}`) ||
+        'Unknown error';
     }
 
     // Method is successful but no result was found, we pass it to next one in queue
@@ -211,13 +212,13 @@ export class RPCServer {
     }
 
     const { size } = sendJSONMessage(
-      { channel: channel, queue: { name: msg.properties.replyTo } },
+      { channel, queue: { name: msg.properties.replyTo } },
       response,
       { correlationId: msg.properties.correlationId }
     );
     this.logger.debug({
-      msg: 'Result sent',
       method: request.method,
+      msg: 'Result sent',
       params: request.params,
       size,
       sizeUnit: 'B',

@@ -22,12 +22,12 @@ export async function changeTemplateVisibility(
   const base = await getTemplate(templateOrId);
 
   const template = await upsertTemplate({
-    id: base.id,
-    name: base.name,
-    locale: base.locale,
-    tags: base.tags,
     body: base.body,
     hidden,
+    id: base.id,
+    locale: base.locale,
+    name: base.name,
+    tags: base.tags,
   });
 
   return template;

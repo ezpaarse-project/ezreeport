@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import EditorFigureVegaDataLabel from './VegaDataLabel.vue';
 
 const meta: Meta<typeof EditorFigureVegaDataLabel> = {
-  title: 'Template Editor/Figures/Vega/Data Label',
   component: EditorFigureVegaDataLabel,
+  title: 'Template Editor/Figures/Vega/Data Label',
 };
 
 export default meta;
@@ -12,20 +12,10 @@ export default meta;
 type Story = StoryObj<typeof EditorFigureVegaDataLabel>;
 
 export const New: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFigureVegaDataLabel },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVegaDataLabel v-bind="args" />',
-  }),
   args: {
     modelValue: undefined,
     type: 'line',
   },
-};
-
-export const Existing: Story = {
   render: (args: unknown) => ({
     components: { EditorFigureVegaDataLabel },
     setup() {
@@ -33,6 +23,9 @@ export const Existing: Story = {
     },
     template: '<EditorFigureVegaDataLabel v-bind="args" />',
   }),
+};
+
+export const Existing: Story = {
   args: {
     modelValue: {
       format: 'percent',
@@ -40,9 +33,6 @@ export const Existing: Story = {
     },
     type: 'arc',
   },
-};
-
-export const Readonly: Story = {
   render: (args: unknown) => ({
     components: { EditorFigureVegaDataLabel },
     setup() {
@@ -50,12 +40,22 @@ export const Readonly: Story = {
     },
     template: '<EditorFigureVegaDataLabel v-bind="args" />',
   }),
+};
+
+export const Readonly: Story = {
   args: {
     modelValue: {
       format: 'percent',
       showLabel: true,
     },
-    type: 'bar',
     readonly: true,
+    type: 'bar',
   },
+  render: (args: unknown) => ({
+    components: { EditorFigureVegaDataLabel },
+    setup() {
+      return { args };
+    },
+    template: '<EditorFigureVegaDataLabel v-bind="args" />',
+  }),
 };

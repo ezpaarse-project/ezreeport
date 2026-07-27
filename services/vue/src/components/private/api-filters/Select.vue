@@ -58,7 +58,6 @@
   }>();
 
   // Utils composable
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   const search = shallowRef('');
@@ -84,17 +83,18 @@
       return [];
     }
 
+    // oxlint-disable-next-line oxc/no-map-spread
     return items.map((item) => {
       const baseProps = {
-        disabled: allowEmpty && isEmptyActive.value,
         color: 'primary',
+        disabled: allowEmpty && isEmptyActive.value,
       };
 
       if (typeof item === 'string') {
         return {
+          props: baseProps,
           title: item,
           value: item,
-          props: baseProps,
         };
       }
 

@@ -1,17 +1,18 @@
-import type { FastifySchema, FastifyPluginAsync } from 'fastify';
+import type { FastifyPluginAsync, FastifySchema } from 'fastify';
 import swagger, { type FastifyDynamicSwaggerOptions } from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import fp from 'fastify-plugin';
 
-import { version } from '../../package.json';
+// oxlint-disable-next-line import/extensions
+import { version } from '../../package.json' with { type: 'json' };
 
 /*
  * Common API schemas
  */
 export const schemas = {
   security: {
-    user: [{ 'User Token': [] }],
     admin: [{ 'API Key': [] }],
+    user: [{ 'User Token': [] }],
   },
 };
 
@@ -21,38 +22,38 @@ type PluginOptions = {
 };
 
 const OPENAPI_INFOS = {
-  title: 'ezREEPORT API',
-  version,
   contact: {
+    email: 'ezpaarse@couperin.org',
     name: 'ezTEAM',
     url: 'https://github.com/ezpaarse-project',
-    email: 'ezpaarse@couperin.org',
   },
+  description: 'Reporting service',
   license: {
     name: 'CeCILL',
     url: 'https://github.com/ezpaarse-project/ezreeport/blob/master/LICENSE.txt',
   },
-  description: 'Reporting service',
+  title: 'ezREEPORT API',
+  version,
 };
 
 const OPENAPI_TAGS = [
-  { name: 'auth', description: 'Auth management' },
-  { name: 'crons', description: 'Cron management' },
-  { name: 'elastic', description: 'Elastic shorthands routes' },
-  { name: 'generations', description: 'Task generations routes' },
-  { name: 'health', description: 'Health management' },
-  { name: 'memberships', description: 'Membership management' },
-  { name: 'recurrence', description: 'Recurrence utilities' },
-  { name: 'namespaces', description: 'Namespace management' },
-  { name: 'reports', description: 'Report files management' },
-  { name: 'task-activity', description: 'Task activity routes' },
-  { name: 'task-presets', description: 'Task presets management' },
-  { name: 'task-targets', description: 'Task targets routes' },
-  { name: 'tasks', description: 'Task management' },
-  { name: 'templates', description: 'Templates management' },
-  { name: 'template-tags', description: 'Template tags management' },
-  { name: 'unsubscribe', description: 'Unsubscribe routes' },
-  { name: 'users', description: 'User management' },
+  { description: 'Auth management', name: 'auth' },
+  { description: 'Cron management', name: 'crons' },
+  { description: 'Elastic shorthands routes', name: 'elastic' },
+  { description: 'Task generations routes', name: 'generations' },
+  { description: 'Health management', name: 'health' },
+  { description: 'Membership management', name: 'memberships' },
+  { description: 'Recurrence utilities', name: 'recurrence' },
+  { description: 'Namespace management', name: 'namespaces' },
+  { description: 'Report files management', name: 'reports' },
+  { description: 'Task activity routes', name: 'task-activity' },
+  { description: 'Task presets management', name: 'task-presets' },
+  { description: 'Task targets routes', name: 'task-targets' },
+  { description: 'Task management', name: 'tasks' },
+  { description: 'Templates management', name: 'templates' },
+  { description: 'Template tags management', name: 'template-tags' },
+  { description: 'Unsubscribe routes', name: 'unsubscribe' },
+  { description: 'User management', name: 'users' },
 ];
 
 const wrapTransformWithAuth =
@@ -99,30 +100,30 @@ const openapiBasePlugin: FastifyPluginAsync<PluginOptions> = async (
   // Register routes as OpenAPI
   await fastify.register(swagger, {
     openapi: {
-      info: OPENAPI_INFOS,
-      servers: [
-        { url: '/', description: 'Direct' },
-        { url: '/report/api/', description: 'ezMESURE' },
-      ],
-      tags: OPENAPI_TAGS,
       components: {
         securitySchemes: {
-          'User Token': {
-            type: 'http',
-            scheme: 'bearer',
-            description: 'Used by user to interact with service',
-          },
           'API Key': {
+            description: 'Used by linked application to manage service',
+            in: 'header',
             name: 'X-API-Key',
             type: 'apiKey',
-            in: 'header',
-            description: 'Used by linked application to manage service',
+          },
+          'User Token': {
+            description: 'Used by user to interact with service',
+            scheme: 'bearer',
+            type: 'http',
           },
         },
       },
+      info: OPENAPI_INFOS,
+      servers: [
+        { description: 'Direct', url: '/' },
+        { description: 'ezMESURE', url: '/report/api/' },
+      ],
+      tags: OPENAPI_TAGS,
     },
-    transformObject: opts.transformObject,
     transform: wrapTransformWithAuth(opts.transform),
+    transformObject: opts.transformObject,
   });
 
   // Serve UI
@@ -134,6 +135,6 @@ const openapiBasePlugin: FastifyPluginAsync<PluginOptions> = async (
 
 // Register plugin
 export const openapiPlugin = fp(openapiBasePlugin, {
-  name: 'ezr-openapi',
   encapsulate: false,
+  name: 'ezr-openapi',
 });

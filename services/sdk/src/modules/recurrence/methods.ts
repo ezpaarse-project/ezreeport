@@ -25,11 +25,11 @@ export async function getPeriodFromRecurrence(
   const { content } = await client.fetch<ApiResponse<RawReportPeriod>>(
     `/recurrence/${recurrence}/_resolve/period`,
     {
-      method: 'POST',
       body: {
-        reference: reference && formatISO(reference),
         offset,
+        reference: reference && formatISO(reference),
       },
+      method: 'POST',
     }
   );
 
@@ -52,11 +52,11 @@ export async function getNextDateFromRecurrence(
   const { content } = await client.fetch<ApiResponse<{ value: string }>>(
     `/recurrence/${recurrence}/_resolve/nextDate`,
     {
-      method: 'POST',
       body: {
-        reference: reference && formatISO(reference),
         offset,
+        reference: reference && formatISO(reference),
       },
+      method: 'POST',
     }
   );
 

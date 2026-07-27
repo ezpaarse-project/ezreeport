@@ -3,15 +3,16 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import EditorAggregationOrder from './Order.vue';
 
 const meta: Meta<typeof EditorAggregationOrder> = {
-  title: 'Template Editor/Aggregations/Order',
   component: EditorAggregationOrder,
+  title: 'Template Editor/Aggregations/Order',
 };
-
-export default meta;
 
 type Story = StoryObj<typeof EditorAggregationOrder>;
 
+export default meta;
+
 export const Basic: Story = {
+  args: {},
   render: (args: unknown) => ({
     components: { EditorAggregationOrder },
     setup() {
@@ -19,10 +20,12 @@ export const Basic: Story = {
     },
     template: '<EditorAggregationOrder v-bind="args" />',
   }),
-  args: {},
 };
 
 export const Readonly: Story = {
+  args: {
+    readonly: true,
+  },
   render: (args: unknown) => ({
     components: { EditorAggregationOrder },
     setup() {
@@ -30,7 +33,4 @@ export const Readonly: Story = {
     },
     template: '<EditorAggregationOrder v-bind="args" />',
   }),
-  args: {
-    readonly: true,
-  },
 };

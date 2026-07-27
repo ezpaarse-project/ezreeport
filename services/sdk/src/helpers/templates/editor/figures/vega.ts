@@ -1,4 +1,4 @@
-import type { TemplateFilter, TemplateBodyFigure } from '~/modules/templates';
+import type { TemplateBodyFigure, TemplateFilter } from '~/modules/templates';
 
 import type { FigureAggregation } from '../aggregations';
 import type { FigureOrder } from './utils';
@@ -87,13 +87,13 @@ export function createVegaFigureHelper(
     type,
     filters,
     {
-      title,
-      invertAxis,
-      label,
-      value,
       color,
       dataLabel,
+      invertAxis,
+      label,
       order,
+      title,
+      value,
     },
     slots
   );
@@ -120,12 +120,12 @@ export function vegaHelperParamsToJSON(
   params: VegaFigureHelper['params']
 ): TemplateBodyFigure['params'] {
   return {
-    title: params.title,
-    invertAxis: params.invertAxis,
-    label: params.label,
-    value: params.value,
     color: params.color,
     dataLabel: params.dataLabel,
+    invertAxis: params.invertAxis,
+    label: params.label,
     order: params.order,
+    title: params.title,
+    value: params.value,
   };
 }

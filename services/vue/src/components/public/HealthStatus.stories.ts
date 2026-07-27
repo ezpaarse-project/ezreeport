@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import HealthStatus from './HealthStatus.vue';
 
 const meta: Meta<typeof HealthStatus> = {
-  title: 'Public/Health Status',
   component: HealthStatus,
+  title: 'Public/Health Status',
 };
 
 export default meta;
@@ -12,6 +12,7 @@ export default meta;
 type Story = StoryObj<typeof HealthStatus>;
 
 export const Default: Story = {
+  args: {},
   render: (args: unknown) => ({
     components: { HealthStatus },
     setup() {
@@ -19,5 +20,4 @@ export const Default: Story = {
     },
     template: '<HealthStatus v-bind="args" />',
   }),
-  args: {},
 };

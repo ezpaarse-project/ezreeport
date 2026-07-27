@@ -10,10 +10,10 @@ import * as heartbeats from '~/models/heartbeat';
 import { Heartbeat } from '~/models/heartbeat/types';
 
 import {
-  describeErrors,
-  buildSuccessResponse,
-  zSuccessResponse,
   EmptyResponse,
+  buildSuccessResponse,
+  describeErrors,
+  zSuccessResponse,
 } from '~/routes/v2/responses';
 
 // oxlint-disable-next-line max-lines-per-function, require-await
@@ -23,28 +23,28 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     url: '/',
     logLevel: 'debug',
     schema: {
-      summary: 'Get status of stack',
-      tags: ['health'],
       response: {
         ...describeErrors([StatusCodes.INTERNAL_SERVER_ERROR]),
         [StatusCodes.OK]: zSuccessResponse(
           z.object({
             current: z.string().describe('Current service'),
-            version: z.string().describe('Current version'),
             services: z
               .array(Heartbeat)
               .describe('Services connected to current'),
+            version: z.string().describe('Current version'),
           })
         ),
       },
+      summary: 'Get status of stack',
+      tags: ['health'],
     },
     // oxlint-disable-next-line require-await
     handler: async (request, reply) =>
       buildSuccessResponse(
         {
           current: heartbeats.service.name,
-          version: heartbeats.service.version,
           services: heartbeats.getAllServices(),
+          version: heartbeats.service.version,
         },
         reply
       ),
@@ -55,14 +55,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     url: '/services',
     logLevel: 'debug',
     schema: {
-      summary: 'Ping all services',
-      tags: ['health'],
       response: {
         ...describeErrors([StatusCodes.INTERNAL_SERVER_ERROR]),
         [StatusCodes.OK]: zSuccessResponse(
           z.array(Heartbeat).describe('Services connected to current')
         ),
       },
+      summary: 'Ping all services',
+      tags: ['health'],
     },
     // oxlint-disable-next-line require-await
     handler: async (request, reply) =>
@@ -74,8 +74,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     url: '/services/:name',
     logLevel: 'debug',
     schema: {
-      summary: 'Ping a service',
-      tags: ['health'],
       params: z.object({
         name: z.string().describe('Service name'),
       }),
@@ -87,6 +85,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(Heartbeat),
       },
+      summary: 'Ping a service',
+      tags: ['health'],
     },
     // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
@@ -105,12 +105,12 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     url: '/probes/liveness',
     logLevel: 'debug',
     schema: {
-      summary: 'Shorthand for liveness probe',
-      tags: ['health'],
       response: {
         ...describeErrors([StatusCodes.INTERNAL_SERVER_ERROR]),
         [StatusCodes.NO_CONTENT]: EmptyResponse,
       },
+      summary: 'Shorthand for liveness probe',
+      tags: ['health'],
     },
     // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
@@ -123,8 +123,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     url: '/probes/readiness',
     logLevel: 'debug',
     schema: {
-      summary: 'Shorthand for readiness probe',
-      tags: ['health'],
       response: {
         ...describeErrors([
           StatusCodes.SERVICE_UNAVAILABLE,
@@ -132,6 +130,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.NO_CONTENT]: EmptyResponse,
       },
+      summary: 'Shorthand for readiness probe',
+      tags: ['health'],
     },
     // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
@@ -153,5 +153,5 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
   });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

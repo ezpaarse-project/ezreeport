@@ -22,13 +22,13 @@ async function connectToRabbitMQ(
     const connection = await amqp.connect(connectOpts);
 
     logger.info({
-      msg: 'Connected to RabbitMQ',
       config: connectOpts,
+      msg: 'Connected to RabbitMQ',
     });
 
     return connection;
-  } catch (err) {
-    logger.error({ msg: 'Failed to connect to RabbitMQ', err });
+  } catch (error) {
+    logger.error({ err: error, msg: 'Failed to connect to RabbitMQ' });
     await setTimeout(5000);
     return connectToRabbitMQ(connectOpts, logger);
   }
@@ -57,8 +57,8 @@ export function setupRabbitMQ(
       try {
         await connection.close();
         logger.debug('Connection closed');
-      } catch (err) {
-        logger.error({ msg: 'Failed to close connection', err });
+      } catch (error) {
+        logger.error({ err: error, msg: 'Failed to close connection' });
       }
     };
 
@@ -158,7 +158,7 @@ export function parseJSONMessage<DataType>(
   const raw = JSON.parse(msg.content.toString());
 
   const { error, data } = schema.safeParse(raw);
-  return { data, raw, parseError: error };
+  return { data, parseError: error, raw };
 }
 
 export * as rabbitmq from 'amqplib';

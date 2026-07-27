@@ -16,20 +16,12 @@
   "exports": "./src/index.ts",
   "scripts": {
     "lint": "oxlint",
-    "type-check": "tsc --noEmit --skipLibCheck"
+    "fmt": "oxfmt",
+    "check": "tsc --noEmit --skipLibCheck"
   },
   "dependencies": {
-    "date-fns": "^4.1.0",
+    "date-fns": "^4.4.0",
     "typescript": "catalog:"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "oxlint --fix",
-      "oxfmt --no-error-on-unmatched-pattern"
-    ],
-    "package.json": [
-      "oxfmt --no-error-on-unmatched-pattern"
-    ]
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

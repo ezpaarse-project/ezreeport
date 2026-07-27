@@ -1,7 +1,7 @@
 import type { UserPermissions } from '~/modules/auth/types';
 import { getCurrentPermissions } from '~/modules/auth/methods';
 
-import { isSDKFunction, type LambdaFunction } from './decorator';
+import { type LambdaFunction, isSDKFunction } from './decorator';
 
 let currentUserPermissions: UserPermissions | undefined;
 

@@ -1,9 +1,9 @@
 import type {
-  TemplateBodyGridType,
   FigureType,
+  TemplateBodyGridType,
 } from '@ezreeport/models/templates';
 
-import type { Size, Area, Margin } from './types';
+import type { Area, Margin, Size } from './types';
 
 // FIXME: WTF + still can have space
 /**
@@ -87,8 +87,8 @@ function resolveManualFigureSlot(
   margin: Margin
 ): Size {
   const additionalSize: Size = {
-    width: 0,
     height: 0,
+    width: 0,
   };
 
   if (
@@ -144,7 +144,7 @@ export function resolveSlot(
   // Slot resolution
   if (figure.slots && figure.slots.length > 0) {
     // Manual mode
-    const indices = [...figure.slots].sort();
+    const indices = figure.slots.toSorted();
     // Take first wanted slot by default
     slot = { ...slots[indices[0]] };
 
@@ -187,7 +187,7 @@ export function resolveSlot(
   }
 
   return {
-    slot,
     figure,
+    slot,
   };
 }

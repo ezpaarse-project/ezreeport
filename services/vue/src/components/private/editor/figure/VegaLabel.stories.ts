@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import EditorFigureVegaLabel from './VegaLabel.vue';
 
 const meta: Meta<typeof EditorFigureVegaLabel> = {
-  title: 'Template Editor/Figures/Vega/ Label Layer',
   component: EditorFigureVegaLabel,
+  title: 'Template Editor/Figures/Vega/ Label Layer',
 };
 
 export default meta;
@@ -12,40 +12,30 @@ export default meta;
 type Story = StoryObj<typeof EditorFigureVegaLabel>;
 
 export const New: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFigureVegaLabel },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVegaLabel v-bind="args" />',
-  }),
   args: {
     modelValue: {},
     type: 'line',
   },
+  render: (args: unknown) => ({
+    components: { EditorFigureVegaLabel },
+    setup() {
+      return { args };
+    },
+    template: '<EditorFigureVegaLabel v-bind="args" />',
+  }),
 };
 
 export const Existing: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFigureVegaLabel },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVegaLabel v-bind="args" />',
-  }),
   args: {
     modelValue: {
-      legend: null,
       aggregation: {
-        type: 'terms',
         field: 'mime',
+        type: 'terms',
       },
+      legend: null,
     },
     type: 'arc',
   },
-};
-
-export const Readonly: Story = {
   render: (args: unknown) => ({
     components: { EditorFigureVegaLabel },
     setup() {
@@ -53,14 +43,24 @@ export const Readonly: Story = {
     },
     template: '<EditorFigureVegaLabel v-bind="args" />',
   }),
+};
+
+export const Readonly: Story = {
   args: {
     modelValue: {
       aggregation: {
-        type: 'terms',
         field: 'auth',
+        type: 'terms',
       },
     },
-    type: 'bar',
     readonly: true,
+    type: 'bar',
   },
+  render: (args: unknown) => ({
+    components: { EditorFigureVegaLabel },
+    setup() {
+      return { args };
+    },
+    template: '<EditorFigureVegaLabel v-bind="args" />',
+  }),
 };

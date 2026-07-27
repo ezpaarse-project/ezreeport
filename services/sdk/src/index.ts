@@ -1,3 +1,4 @@
+// oxlint-disable-next-line import/extensions
 import { version as sdkVersion } from '../package.json' with { type: 'json' };
 
 export const version: string = sdkVersion;

@@ -10,8 +10,8 @@ const logger = appLogger.child({ scope: 'crons' });
 
 const timers = {
   purgeOldReports: {
-    timer: config.timers.purgeOldReports,
     executor: purgeOldReports,
+    timer: config.timers.purgeOldReports,
   },
 };
 
@@ -23,9 +23,9 @@ export function initCrons(): void {
   manager = new CronManager(timers, logger);
 
   logger.info({
-    msg: 'Crons initialized',
     duration: process.uptime() - start,
     durationUnit: 's',
+    msg: 'Crons initialized',
   });
 }
 

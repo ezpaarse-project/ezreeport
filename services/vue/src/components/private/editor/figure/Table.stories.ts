@@ -1,15 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import type { TemplateFilter } from '~sdk/helpers/filters';
 import {
-  createTableFigureHelper,
   type TableColumn,
+  createTableFigureHelper,
 } from '~sdk/helpers/figures';
 
 import EditorFigureTable from './Table.vue';
 
 const meta: Meta<typeof EditorFigureTable> = {
-  title: 'Template Editor/Figures/Table',
   component: EditorFigureTable,
+  title: 'Template Editor/Figures/Table',
 };
 
 export default meta;
@@ -18,50 +18,50 @@ type Story = StoryObj<typeof EditorFigureTable>;
 
 const mockFilters: TemplateFilter[] = [
   {
-    name: 'rtype is ARTICLE',
     field: 'rtype',
     isNot: false,
+    name: 'rtype is ARTICLE',
     value: 'ARTICLE',
   },
   {
-    name: 'mime is not DOC, etc.',
     field: 'mime',
     isNot: true,
+    name: 'mime is not DOC, etc.',
     value: ['DOC', 'MISC'],
   },
   {
-    name: 'mime exists',
     field: 'mime',
     isNot: true,
+    name: 'mime exists',
   },
 ];
 
 const mockData: TableColumn[] = [
   {
+    aggregation: {
+      field: 'unit',
+      type: 'terms',
+    },
     header: 'Laboratoire',
     metric: false,
-    aggregation: {
-      type: 'terms',
-      field: 'unit',
-    },
   },
   {
-    header: 'Sigle',
-    metric: false,
     aggregation: {
-      type: 'terms',
       field: 'cnrsData.sigleUnite',
       size: 1,
+      type: 'terms',
     },
+    header: 'Sigle',
+    metric: false,
   },
   {
-    header: 'Nom',
-    metric: false,
     aggregation: {
-      type: 'terms',
       field: 'cnrsData.intituleUnite',
       size: 1,
+      type: 'terms',
     },
+    header: 'Nom',
+    metric: false,
   },
   {
     header: 'nombre de consultations',
@@ -74,19 +74,9 @@ const mockData: TableColumn[] = [
 ];
 
 export const New: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFigureTable },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureTable v-bind="args" />',
-  }),
   args: {
     modelValue: createTableFigureHelper(),
   },
-};
-
-export const Existing: Story = {
   render: (args: unknown) => ({
     components: { EditorFigureTable },
     setup() {
@@ -94,6 +84,9 @@ export const Existing: Story = {
     },
     template: '<EditorFigureTable v-bind="args" />',
   }),
+};
+
+export const Existing: Story = {
   args: {
     modelValue: createTableFigureHelper(
       undefined,
@@ -102,9 +95,6 @@ export const Existing: Story = {
       mockFilters
     ),
   },
-};
-
-export const Readonly: Story = {
   render: (args: unknown) => ({
     components: { EditorFigureTable },
     setup() {
@@ -112,6 +102,9 @@ export const Readonly: Story = {
     },
     template: '<EditorFigureTable v-bind="args" />',
   }),
+};
+
+export const Readonly: Story = {
   args: {
     modelValue: createTableFigureHelper(
       'Table title',
@@ -121,4 +114,11 @@ export const Readonly: Story = {
     ),
     readonly: true,
   },
+  render: (args: unknown) => ({
+    components: { EditorFigureTable },
+    setup() {
+      return { args };
+    },
+    template: '<EditorFigureTable v-bind="args" />',
+  }),
 };

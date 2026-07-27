@@ -1,7 +1,7 @@
 <template>
   <v-card
     :title="$t('$ezreeport.editor.title', innerLayouts.length)"
-    prepend-icon="mdi-grid"
+    :prepend-icon="mdiGrid"
   >
     <template v-if="$slots.append" #append>
       <slot name="append" />
@@ -24,7 +24,7 @@
 
           <v-alert
             :title="$t('$ezreeport.readonly')"
-            icon="mdi-lock"
+            :icon="mdiLock"
             density="compact"
           />
         </template>
@@ -53,13 +53,13 @@
           <v-empty-state
             v-if="innerLayouts.length === 0"
             :title="$t('$ezreeport.editor.noLayouts')"
-            icon="mdi-format-page-break"
+            :icon="mdiFormatPageBreak"
           >
             <template #actions>
               <v-btn
                 :text="$t('$ezreeport.editor.createLayout')"
                 color="green"
-                append-icon="mdi-plus"
+                :append-icon="mdiPlus"
                 @click="createNewLayout()"
               />
             </template>
@@ -75,7 +75,7 @@
             v-else
             :title="$t('$ezreeport.editor.noSelected')"
             :text="$t('$ezreeport.editor.noSelected:desc')"
-            icon="mdi-selection"
+            :icon="mdiSelection"
           />
         </v-col>
       </v-row>
@@ -94,18 +94,25 @@
 <script setup lang="ts">
   import type { TemplateBodyHelper } from '~sdk/helpers/templates';
   import {
+    mdiFormatPageBreak,
+    mdiGrid,
+    mdiLock,
+    mdiPlus,
+    mdiSelection,
+  } from '@mdi/js';
+  import {
+    type AnyLayoutHelper,
+    type TaskLayoutHelper,
     createTaskLayoutHelper,
     createTaskLayoutHelperFrom,
     taskLayoutHelperToJSON,
-    type TaskLayoutHelper,
-    type AnyLayoutHelper,
   } from '~sdk/helpers/layouts';
   import {
-    addLayoutOfHelper,
-    updateLayoutOfHelper,
-    removeLayoutOfHelper,
     type TaskBodyHelper,
+    addLayoutOfHelper,
     getLayoutsOfHelpers,
+    removeLayoutOfHelper,
+    updateLayoutOfHelper,
   } from '~sdk/helpers/tasks';
 
   // Components props
@@ -129,7 +136,6 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   /** Current layout index, a computed around props if provided */
@@ -178,8 +184,8 @@
           { ...currentLayout.value, at },
           { ...value, at }
         );
-      } catch (err) {
-        handleEzrError(t('$ezreeport.editor.inserts.errors.edit'), err);
+      } catch (error) {
+        handleEzrError(t('$ezreeport.editor.inserts.errors.edit'), error);
       }
     },
   });
@@ -192,8 +198,8 @@
       innerIndex.value = innerLayouts.value.length - 1;
       await nextTick();
       drawerRef.value?.scrollDown();
-    } catch (err) {
-      handleEzrError(t('$ezreeport.editor.inserts.errors.create'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.editor.inserts.errors.create'), error);
     }
   }
 
@@ -216,8 +222,8 @@
 
       await nextTick();
       drawerRef.value?.scrollTo(newIndex);
-    } catch (err) {
-      handleEzrError(t('$ezreeport.editor.inserts.errors.clone'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.editor.inserts.errors.clone'), error);
     }
   }
 
@@ -228,8 +234,8 @@
 
     try {
       removeLayoutOfHelper(props.modelValue, { ...layout, at: 0 });
-    } catch (err) {
-      handleEzrError(t('$ezreeport.editor.inserts.errors.delete'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.editor.inserts.errors.delete'), error);
     }
   }
 

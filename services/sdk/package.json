@@ -118,8 +118,9 @@
     "build:js": "tsdown",
     "dev": "pnpm run --parallel \"/^(watch:docs)|(preview)$/\"",
     "lint": "oxlint",
+    "fmt": "oxfmt",
     "preview:docs": "serve docs",
-    "type-check": "tsc --noEmit --skipLibCheck",
+    "check": "tsc --noEmit --skipLibCheck",
     "watch:docs": "typedoc --watch"
   },
   "dependencies": {
@@ -135,18 +136,9 @@
     "@types/object-hash": "^3.0.6",
     "native-events": "npm:events@^3.3.0",
     "serve": "^14.2.6",
-    "tsdown": "^0.22.8",
+    "tsdown": "^0.22.14",
     "typedoc": "^0.28.20",
     "typescript": "catalog:"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "oxlint --fix",
-      "oxfmt --no-error-on-unmatched-pattern"
-    ],
-    "package.json": [
-      "oxfmt --no-error-on-unmatched-pattern"
-    ]
   },
   "engines": {
     "node": "^14 || ^16 || ^18 || ^20 || ^22 || ^24"

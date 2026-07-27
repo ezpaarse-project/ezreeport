@@ -7,14 +7,14 @@
     <v-btn
       :text="t('$ezreeport.editor.order.desc')"
       :readonly="readonly"
-      append-icon="mdi-sort-numeric-descending"
+      :append-icon="mdiSortNumericDescending"
       value="desc"
     />
 
     <v-btn
       :text="t('$ezreeport.editor.order.asc')"
       :readonly="readonly"
-      append-icon="mdi-sort-numeric-ascending"
+      :append-icon="mdiSortNumericAscending"
       value="asc"
     />
   </v-btn-toggle>
@@ -22,6 +22,7 @@
 
 <script setup lang="ts">
   import type { FigureOrder } from '~sdk/helpers/figures';
+  import { mdiSortNumericAscending, mdiSortNumericDescending } from '@mdi/js';
 
   // Components props
   const props = defineProps<{
@@ -38,7 +39,6 @@
   }>();
 
   // Util composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   /** Value for the button group */
@@ -53,8 +53,8 @@
       }
       return val;
     },
-    set: (value) => {
-      emit('update:modelValue', value || false);
+    set: (val) => {
+      emit('update:modelValue', val || false);
     },
   });
 </script>

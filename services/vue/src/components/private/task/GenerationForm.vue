@@ -2,7 +2,7 @@
   <v-card
     :title="$t('$ezreeport.task.title:generate')"
     :subtitle="modelValue.name"
-    prepend-icon="mdi-email-fast"
+    :prepend-icon="mdiEmailFast"
   >
     <template v-if="loading" #loader>
       <v-progress-linear
@@ -18,48 +18,48 @@
     </template>
 
     <template #text>
-      <v-row v-if="result || error">
+      <v-row v-if="result || errorAlert">
         <v-col>
           <v-alert
             :title="
-              error
+              errorAlert
                 ? $t('$ezreeport.task.generation.error.title')
                 : $t('$ezreeport.task.generation.success.title')
             "
             :text="$t('$ezreeport.task.generation.success.description')"
             :type="alertColor"
           >
-            <template v-if="error" #text>
+            <template v-if="errorAlert" #text>
               <ul>
-                <li>{{ error.message }}</li>
+                <li>{{ errorAlert.message }}</li>
 
                 <v-divider color="white" class="my-2" />
 
                 <li>
                   {{
                     $t('$ezreeport.task.generation.error.type', {
-                      value: error.type,
+                      value: errorAlert.type,
                     })
                   }}
                 </li>
                 <li>
                   {{
                     $t('$ezreeport.task.generation.error.name', {
-                      value: error.name,
+                      value: errorAlert.name,
                     })
                   }}
                 </li>
-                <li v-if="error.cause?.layout != null">
+                <li v-if="errorAlert.cause?.layout != null">
                   {{
                     $t('$ezreeport.task.generation.error.layout', {
-                      value: error.cause.layout + 1,
+                      value: errorAlert.cause.layout + 1,
                     })
                   }}
                 </li>
-                <li v-if="error.cause?.figure != null">
+                <li v-if="errorAlert.cause?.figure != null">
                   {{
                     $t('$ezreeport.task.generation.error.figure', {
-                      value: error.cause.figure + 1,
+                      value: errorAlert.cause.figure + 1,
                     })
                   }}
                 </li>
@@ -69,14 +69,19 @@
             <template #append v-if="result">
               <v-menu>
                 <template #activator="{ props: menu }">
-                  <v-btn v-bind="menu" variant="elevated" icon="mdi-download" />
+                  <v-btn
+                    v-bind="menu"
+                    :icon="mdiDownload"
+                    variant="elevated"
+                    color="white"
+                  />
                 </template>
 
                 <v-list>
                   <v-list-item
                     v-if="result.detail.files.report"
                     :title="$t('$ezreeport.task.generation.files.report')"
-                    prepend-icon="mdi-file-pdf-box"
+                    :prepend-icon="mdiFilePdfBox"
                     @click="downloadGenerationFile(result.detail.files.report)"
                   />
 
@@ -89,7 +94,7 @@
                   <v-list-item
                     v-if="result.detail.files.detail"
                     :title="$t('$ezreeport.task.generation.files.detail')"
-                    prepend-icon="mdi-code-json"
+                    :prepend-icon="mdiCodeJson"
                     @click="downloadGenerationFile(result.detail.files.detail)"
                   />
                 </v-list>
@@ -112,7 +117,7 @@
                   isEmail(val) || $t('$ezreeport.errors.invalidEmail', i + 1),
               ]"
               :item-placeholder="$t('$ezreeport.task.targets:hint')"
-              prepend-icon="mdi-mailbox"
+              :prepend-icon="mdiMailbox"
               variant="underlined"
               required
               @update:model-value="onTargetUpdated($event)"
@@ -128,7 +133,7 @@
                   :model-value="formattedPeriod"
                   :label="$t('$ezreeport.task.period')"
                   :loading="periodResolving && 'primary'"
-                  prepend-icon="mdi-calendar-range"
+                  :prepend-icon="mdiCalendarRange"
                   variant="underlined"
                   readonly
                   v-bind="menu"
@@ -161,7 +166,7 @@
         :text="$t('$ezreeport.task.generate')"
         :disabled="!isValid"
         :loading="loading"
-        append-icon="mdi-send"
+        :append-icon="mdiSend"
         color="primary"
         @click="generate()"
       />
@@ -171,6 +176,15 @@
 
 <script setup lang="ts">
   import type { Task } from '~sdk/tasks';
+  import {
+    mdiCalendarRange,
+    mdiCodeJson,
+    mdiDownload,
+    mdiEmailFast,
+    mdiFilePdfBox,
+    mdiMailbox,
+    mdiSend,
+  } from '@mdi/js';
   import {
     add,
     eachDayOfInterval,
@@ -199,7 +213,6 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
   const { formatDate } = useDateLocale();
 
@@ -216,7 +229,7 @@
   /** Progress of the generation */
   const progress = shallowRef(0);
   /** Error in the generation */
-  const error = ref<ReportError | undefined>();
+  const errorAlert = ref<ReportError | undefined>();
   /** Result of the generation */
   const result = ref<ReportResult | undefined>();
 
@@ -229,10 +242,10 @@
   const periodRange = computed(() => eachDayOfInterval(period.value));
   /** Color of the alert */
   const alertColor = computed(() => {
-    if (!error.value) {
+    if (!errorAlert.value) {
       return 'success';
     }
-    if (error.value.name === 'NoDataError') {
+    if (errorAlert.value.name === 'NoDataError') {
       return 'warning';
     }
     return 'error';
@@ -250,7 +263,15 @@
     }
 
     // Allow multiple mail addresses, separated by semicolon or comma
-    targets.value = [...new Set(allTargets.join(';').replaceAll(/[,]/g, ';').split(';').map((mail) => mail.trim()))];
+    targets.value = [
+      ...new Set(
+        allTargets
+          .join(';')
+          .replaceAll(/[,]/g, ';')
+          .split(';')
+          .map((mail) => mail.trim())
+      ),
+    ];
   }
 
   async function updatePeriodFromRecurrence(
@@ -286,7 +307,7 @@
   async function generate(): Promise<void> {
     loading.value = true;
     progress.value = 0;
-    error.value = undefined;
+    errorAlert.value = undefined;
     result.value = undefined;
 
     try {
@@ -303,7 +324,7 @@
 
       const res = await generation;
       if (!res.success && res.detail.error) {
-        error.value = res.detail.error;
+        errorAlert.value = res.detail.error;
       }
 
       result.value = res;
@@ -325,7 +346,8 @@
       formatDate(result.value.detail.period.end, 'yyyy-MM-dd'),
     ].join('_');
 
-    const [, type, extension] = /\.([a-z]+)\.([a-z]+)$/i.exec(path) ?? [];
+    const [, type, extension] =
+      /\.(?<type>[a-z]+)\.(?<ext>[a-z]+)$/iv.exec(path) ?? [];
 
     if (type !== 'rep') {
       filename += `.${type}`;

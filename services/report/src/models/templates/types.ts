@@ -64,14 +64,14 @@ export type InputTemplateType = z.infer<typeof InputTemplate>;
  * Validation for query filters of a template
  */
 export const TemplateQueryFilters = z.object({
-  query: z.string().optional().describe('Query used for searching'),
-
-  locale: TemplateLocale.optional().describe('Locale of the template'),
-
   hidden: z
     .stringbool()
     .optional()
     .describe('If preset or template is hidden to normal users'),
+
+  locale: TemplateLocale.optional().describe('Locale of the template'),
+
+  query: z.string().optional().describe('Query used for searching'),
 });
 
 /**

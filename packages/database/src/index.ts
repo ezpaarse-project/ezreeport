@@ -15,10 +15,10 @@ export function setupDB(logger: Logger): PrismaClient {
     ),
     // Disable logger of Prisma, in order to events to our own
     log: [
-      { level: 'query', emit: 'event' },
-      { level: 'info', emit: 'event' },
-      { level: 'warn', emit: 'event' },
-      { level: 'error', emit: 'event' },
+      { emit: 'event', level: 'query' },
+      { emit: 'event', level: 'info' },
+      { emit: 'event', level: 'warn' },
+      { emit: 'event', level: 'error' },
     ],
     // Disable formatted errors in production
     errorFormat: process.env.NODE_ENV === 'production' ? 'minimal' : 'pretty',
@@ -46,9 +46,9 @@ export function setupDB(logger: Logger): PrismaClient {
       logger.info({ msg: 'Connected to database' });
     })
     // oxlint-disable-next-line prefer-await-to-then,prefer-await-to-callbacks
-    .catch((err) => {
-      logger.fatal({ msg: 'Unable to connect to database', err });
-      throw err;
+    .catch((error) => {
+      logger.fatal({ error, msg: 'Unable to connect to database' });
+      throw error;
     });
 
   return client;
@@ -69,16 +69,16 @@ export async function pingDB(
   const versionMatch = /^PostgreSQL (\S+) /.exec(version);
 
   return {
+    filesystems: [
+      {
+        available: -1,
+        name: `[database] ${db}`,
+        total: -1,
+        used: Number(usage),
+      },
+    ],
     hostname: DATABASE_URL.hostname,
     service: 'database',
     version: versionMatch?.[1],
-    filesystems: [
-      {
-        name: `[database] ${db}`,
-        available: -1,
-        used: Number(usage),
-        total: -1,
-      },
-    ],
   };
 }

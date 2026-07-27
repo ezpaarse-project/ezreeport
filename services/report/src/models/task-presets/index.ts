@@ -7,14 +7,14 @@ import prisma from '~/lib/prisma';
 import type { PaginationType } from '~/models/pagination/types';
 import { buildPaginatedRequest } from '~/models/pagination';
 import {
-  TaskPreset,
-  type TaskPresetType,
   type InputTaskPresetType,
-  type TaskPresetQueryFiltersType,
+  TaskPreset,
   type TaskPresetIncludeFieldsType,
+  type TaskPresetQueryFiltersType,
+  type TaskPresetType,
 } from '~/models/task-presets/types';
 
-const logger = appLogger.child({ scope: 'models', model: 'task-presets' });
+const logger = appLogger.child({ model: 'task-presets', scope: 'models' });
 
 function applyFilters(
   filters: TaskPresetQueryFiltersType
@@ -106,7 +106,7 @@ export async function getAllTaskPresets(
       ensureSchema(
         TaskPreset,
         preset,
-        (preset) => `Failed to parse preset ${preset.id}`
+        () => `Failed to parse preset ${preset.id}`
       )
     )
   );
@@ -154,14 +154,14 @@ export async function createTaskPreset(
     data: {
       ...data,
 
-      templateId: undefined,
       template: { connect: { id: data.templateId } },
+      templateId: undefined,
     },
   });
 
   logger.debug({
-    id: preset.id,
     action: 'Created',
+    id: preset.id,
     msg: 'Created',
   });
 
@@ -181,18 +181,18 @@ export async function editTaskPreset(
   data: InputTaskPresetType
 ): Promise<TaskPresetType> {
   const preset = await prisma.taskPreset.update({
-    where: { id },
     data: {
       ...data,
 
-      templateId: undefined,
       template: { connect: { id: data.templateId } },
+      templateId: undefined,
     },
+    where: { id },
   });
 
   logger.debug({
-    id: preset.id,
     action: 'Updated',
+    id: preset.id,
     msg: 'Updated',
   });
 
@@ -210,8 +210,8 @@ export async function deleteTaskPreset(id: string): Promise<TaskPresetType> {
   const preset = await prisma.taskPreset.delete({ where: { id } });
 
   logger.debug({
-    id: preset.id,
     action: 'Deleted',
+    id: preset.id,
     msg: 'Deleted',
   });
 
@@ -253,8 +253,8 @@ export async function countTaskPresets(
  */
 export async function doesTaskPresetExist(id: string): Promise<boolean> {
   const count = await prisma.taskPreset.count({
-    where: { id },
     select: { id: true },
+    where: { id },
   });
 
   return count.id > 0;

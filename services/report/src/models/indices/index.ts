@@ -22,8 +22,8 @@ async function getElasticUserForNamespace(
   namespaceId: string
 ): Promise<string> {
   const namespace = await prisma.namespace.findUniqueOrThrow({
-    where: { id: namespaceId },
     select: { fetchLogin: true },
+    where: { id: namespaceId },
   });
   const fetchOptions = await ensureSchema(
     Namespace.shape.fetchLogin,

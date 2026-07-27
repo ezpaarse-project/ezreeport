@@ -4,8 +4,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import TemplateLocaleFlag from './LocaleFlag.vue';
 
 const meta: Meta<typeof TemplateLocaleFlag> = {
-  title: 'Template/LocaleFlag',
   component: TemplateLocaleFlag,
+  title: 'Template/LocaleFlag',
 };
 
 export default meta;
@@ -13,32 +13,22 @@ export default meta;
 type Story = StoryObj<typeof TemplateLocaleFlag>;
 
 export const French: Story = {
-  render: (args: unknown) => ({
-    components: { TemplateLocaleFlag },
-    setup() {
-      return { args };
-    },
-    template: '<TemplateLocaleFlag v-bind="args" />',
-  }),
   args: {
     modelValue: 'fr',
   },
+  render: (args: unknown) => ({
+    components: { TemplateLocaleFlag },
+    setup() {
+      return { args };
+    },
+    template: '<TemplateLocaleFlag v-bind="args" />',
+  }),
 };
 
 export const English: Story = {
-  render: (args: unknown) => ({
-    components: { TemplateLocaleFlag },
-    setup() {
-      return { args };
-    },
-    template: '<TemplateLocaleFlag v-bind="args" />',
-  }),
   args: {
     modelValue: 'en',
   },
-};
-
-export const Unknown: Story = {
   render: (args: unknown) => ({
     components: { TemplateLocaleFlag },
     setup() {
@@ -46,7 +36,17 @@ export const Unknown: Story = {
     },
     template: '<TemplateLocaleFlag v-bind="args" />',
   }),
+};
+
+export const Unknown: Story = {
   args: {
     modelValue: 'da',
   },
+  render: (args: unknown) => ({
+    components: { TemplateLocaleFlag },
+    setup() {
+      return { args };
+    },
+    template: '<TemplateLocaleFlag v-bind="args" />',
+  }),
 };

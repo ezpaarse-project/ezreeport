@@ -41,8 +41,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/',
     schema: {
-      summary: 'Get list of generated reports, grouped by task',
-      tags: ['reports'],
       response: {
         ...responses.describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -54,6 +52,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           z.record(z.string().describe('Task ID'), ReportFilesOfTask)
         ),
       },
+      summary: 'Get list of generated reports, grouped by task',
+      tags: ['reports'],
     },
     config: {
       ezrAuth: {
@@ -72,10 +72,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'POST',
     url: '/:taskId',
     schema: {
-      summary: 'Start generation of report for a specific task',
-      tags: ['reports', 'tasks'],
-      params: SpecificTaskParams,
       body: InputManualReport,
+      params: SpecificTaskParams,
       response: {
         ...responses.describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -92,11 +90,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
             .describe('Info to get progress of generation')
         ),
       },
+      summary: 'Start generation of report for a specific task',
+      tags: ['reports', 'tasks'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ_WRITE,
+        requireUser: true,
       },
       rateLimit: {
         max: 5,
@@ -126,9 +126,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
 
       // Resolve period
       let period: ReportPeriodType | undefined;
-      if (!request.body.period) {
-        period = calcPeriodFromRecurrence(new Date(), task.recurrence, -1);
-      } else {
+      if (request.body.period) {
         period = request.body.period;
 
         // Check if period is compatible with task
@@ -146,12 +144,15 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
             `Custom period "${isoStart} to ${isoParsedEnd}" doesn't match task's recurrence (${task.recurrence}). Should be : "${isoStart} to ${isoEnd}")`
           );
         }
+      } else {
+        period = calcPeriodFromRecurrence(new Date(), task.recurrence, -1);
       }
 
       // Resolve targets
       const targets = compact(request.body.targets ?? task.targets);
 
-      const firstLevelDebug = !!request.body.period || !!request.body.targets;
+      const firstLevelDebug =
+        Boolean(request.body.period) || Boolean(request.body.targets);
       const secondLevelDebug =
         process.env.NODE_ENV !== 'production' && request.body.debug;
 
@@ -159,14 +160,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       await queueGeneration(
         {
           id,
-          task,
           namespace,
-          template,
-          period,
-          targets,
           origin: request.user?.username ?? 'unknown',
-          writeActivity: !firstLevelDebug && !secondLevelDebug,
+          period,
           printDebug: secondLevelDebug,
+          targets,
+          task,
+          template,
+          writeActivity: !firstLevelDebug && !secondLevelDebug,
         },
         // Keep message for 1 min, otherwise will be aborted (only in test mode)
         firstLevelDebug || secondLevelDebug ? 1 * 60 * 1000 : undefined
@@ -179,5 +180,5 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
   fastify.register(reportRoutes, { prefix: '/:taskId' }); // Sub routes will be handled by reportRoutes
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

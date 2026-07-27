@@ -1,10 +1,10 @@
 import {
-  apiRequestOptionsToQuery,
+  type ApiDeletedResponse,
+  type ApiRequestOptions,
   type ApiResponse,
   type ApiResponsePaginated,
-  type ApiRequestOptions,
-  type ApiDeletedResponse,
   type SdkPaginated,
+  apiRequestOptionsToQuery,
 } from '~/lib/api';
 import { client } from '~/lib/fetch';
 
@@ -32,11 +32,11 @@ export async function getAllTemplateTags(
   >('/template-tags', { query: apiRequestOptionsToQuery(opts) });
 
   return {
-    items: content,
-    total,
     count,
-    page,
+    items: content,
     meta,
+    page,
+    total,
   };
 }
 assignPermission(getAllTemplateTags, 'GET /template-tags', true);
@@ -81,8 +81,8 @@ export async function createTemplateTag(
   const { content } = await client.fetch<ApiResponse<TemplateTag>>(
     '/template-tags',
     {
-      method: 'POST',
       body: tag,
+      method: 'POST',
     }
   );
 
@@ -104,8 +104,8 @@ export async function upsertTemplateTag({
   const { content } = await client.fetch<ApiResponse<TemplateTag>>(
     `/template-tags/${id}`,
     {
-      method: 'PUT',
       body: tag,
+      method: 'PUT',
     }
   );
 

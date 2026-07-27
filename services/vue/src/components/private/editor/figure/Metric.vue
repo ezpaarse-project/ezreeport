@@ -7,7 +7,7 @@
       <v-alert
         v-if="readonly"
         :title="$t('$ezreeport.readonly')"
-        icon="mdi-lock"
+        :icon="mdiLock"
         density="compact"
         class="mr-2"
       />
@@ -34,13 +34,13 @@
                 modelValue.params.labels.length
               )
             "
-            prepend-icon="mdi-format-list-bulleted"
+            :prepend-icon="mdiFormatListBulleted"
             variant="outlined"
           >
             <template v-if="!readonly" #append>
               <v-btn
                 v-tooltip:top="$t('$ezreeport.new')"
-                icon="mdi-plus"
+                :icon="mdiPlus"
                 color="green"
                 density="compact"
                 variant="text"
@@ -62,7 +62,7 @@
                 >
                   <template v-if="!readonly" #prepend>
                     <v-icon
-                      icon="mdi-drag-horizontal"
+                      :icon="mdiDragHorizontal"
                       class="metric--element-handle"
                       style="cursor: grab"
                       @click.stop=""
@@ -104,13 +104,19 @@
 <script setup lang="ts">
   import { dragAndDrop } from '@formkit/drag-and-drop/vue';
   import {
-    getMetricLabelKey,
-    getAllMetricLabelKeysOfHelper,
-    removeMetricLabelOfHelper,
-    updateMetricLabelOfHelper,
-    addMetricLabelOfHelper,
+    mdiDragHorizontal,
+    mdiFormatListBulleted,
+    mdiLock,
+    mdiPlus,
+  } from '@mdi/js';
+  import {
     type MetricFigureHelper,
     type MetricLabel,
+    addMetricLabelOfHelper,
+    getAllMetricLabelKeysOfHelper,
+    getMetricLabelKey,
+    removeMetricLabelOfHelper,
+    updateMetricLabelOfHelper,
   } from '~sdk/helpers/figures';
 
   // Components props
@@ -128,7 +134,6 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   /** Should show the label form */
@@ -142,11 +147,11 @@
   // Make the elements draggable to sort
   if (!props.readonly) {
     dragAndDrop({
-      parent: elementListRef as Ref<HTMLElement>,
       dragHandle: '.metric--element-handle',
+      dragImage: () => document.createElement('div'), // Disable drag image
       dragPlaceholderClass: 'metric--element--dragging',
       dropZone: false,
-      dragImage: () => document.createElement('div'), // Disable drag image
+      parent: elementListRef as Ref<HTMLElement>,
       values: computed({
         get: () => props.modelValue.params.labels,
         set: (value) => {
@@ -191,10 +196,10 @@
     try {
       removeMetricLabelOfHelper(props.modelValue, label);
       emit('update:modelValue', props.modelValue);
-    } catch (err) {
+    } catch (error) {
       handleEzrError(
         t('$ezreeport.editor.figures.metric.elements.errors.delete'),
-        err
+        error
       );
     }
   }
@@ -214,10 +219,10 @@
 
       emit('update:modelValue', props.modelValue);
       closeLabelForm();
-    } catch (err) {
+    } catch (error) {
       handleEzrError(
         t('$ezreeport.editor.figures.metric.elements.errors.edit'),
-        err
+        error
       );
     }
   }

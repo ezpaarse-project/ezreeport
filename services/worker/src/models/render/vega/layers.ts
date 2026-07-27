@@ -1,23 +1,17 @@
-import type { Mark } from 'vega-lite/build/src/mark';
-import type { UnitSpec } from 'vega-lite/build/src/spec/unit';
-import type { TitleParams } from 'vega-lite/build/src/title';
-import chroma from 'chroma-js';
+import type { ExprRef, SignalRef, Text } from 'vega';
+import type { Mark } from 'vega-lite/types_unstable/mark.js';
+import type { UnitSpec } from 'vega-lite/types_unstable/spec/unit.js';
+import type { TitleParams } from 'vega-lite/types_unstable/title.js';
 import { merge } from 'lodash';
-import {
-  scheme as vegaScheme,
-  type Text,
-  type ExprRef,
-  type SignalRef,
-} from 'vega';
 
 import type { RecurrenceType } from '@ezreeport/models/recurrence';
 import * as dfns from '@ezreeport/dates';
 import { ensureInt } from '@ezreeport/models/lib/utils';
 
-import config from '~/lib/config';
-
 import type { FetchResultItem, FetchResultValue } from '~/models/fetch/results';
 import { calcVegaFormatFromRecurrence } from '~/models/recurrence';
+
+import { getVegaScheme } from '.';
 
 export type Title = Text | TitleParams<ExprRef | SignalRef>;
 /**
@@ -75,20 +69,6 @@ type PartialFigureSpec = {
   data?: unknown[];
 };
 
-const { scheme } = config.report;
-
-// Colors of vega (https://vega.github.io/vega/docs/schemes/)
-const colorScheme = vegaScheme(scheme) as string[];
-// Colors of labels for colors of Vega
-const labelScheme = `${scheme}.labels`;
-vegaScheme(
-  labelScheme,
-  colorScheme.map((color) =>
-    // oxlint-disable-next-line import/no-named-as-default-member
-    chroma.contrast(color, 'black') > 5 ? 'black' : 'white'
-  )
-);
-
 /**
  * Ratio between outer and inner radius.
  * Higher means thinner, lower means wider
@@ -106,9 +86,9 @@ function calcRadius(params: VegaParams): ArcRadius {
   const outerRadius = Math.min(params.height, params.width) / 2;
   const innerRadius = outerRadius * RADIUS_OUTER_INNER_RATIO;
   return {
-    outer: Math.round(outerRadius),
-    inner: Math.round(innerRadius),
     center: Math.round(innerRadius + (outerRadius - innerRadius) / 2),
+    inner: Math.round(innerRadius),
+    outer: Math.round(outerRadius),
   };
 }
 
@@ -124,6 +104,7 @@ function calcRadius(params: VegaParams): ArcRadius {
  */
 function isLabelDates(data: FetchResultItem[]): boolean {
   const sample = data.slice(0, data.length / 2);
+  // oxlint-disable-next-line unicorn/no-array-reduce
   const count = sample.reduce((prev: number, { label }) => {
     const labelDate = new Date(ensureInt(label || 'undefined'));
     return prev + (dfns.isValid(labelDate) ? 1 : 0);
@@ -172,8 +153,8 @@ function prepareDataWithDefaultDates(
       const key = new Date(date).getTime();
       return {
         key,
-        value: 0,
         label: key,
+        value: 0,
         z_ezr_dl: '',
       };
     }
@@ -198,6 +179,7 @@ function prepareColorScale(
   params: VegaParams,
   getLabel = (el: FetchResultItem): FetchResultValue => el.label || ''
 ): { domain: FetchResultValue[]; range: string[] } | undefined {
+  const colorScheme = getVegaScheme().colors.values;
   const colorsEntries = new Map<FetchResultValue, string>();
   const unusedColorsSet = new Set(colorScheme);
 
@@ -228,16 +210,24 @@ function prepareColorScale(
   }
 
   return {
-    domain: Array.from(colorsEntries.keys()),
-    range: Array.from(colorsEntries.values()),
+    domain: [...colorsEntries.keys()],
+    range: [...colorsEntries.values()],
   };
 }
 
 const formatPercent = (value: number) =>
   value.toLocaleString('fr-FR', {
-    style: 'percent',
     maximumFractionDigits: 2,
+    style: 'percent',
   });
+
+const calcSumOfData = (prev: number, item: FetchResultItem) => {
+  const value = ensureInt(item.value);
+  if (Number.isNaN(value)) {
+    return prev;
+  }
+  return prev + value;
+};
 
 /**
  * Prepare layers for data labels
@@ -284,11 +274,6 @@ function prepareDataLabelsLayers(
   }
 
   const layer: Layer = {
-    mark: {
-      type: 'text',
-      align: 'center',
-      baseline: 'middle',
-    },
     encoding: {
       text: {
         field: 'z_ezr_dl',
@@ -298,9 +283,14 @@ function prepareDataLabelsLayers(
         legend: null,
         scale: {
           // @ts-expect-error
-          scheme: labelScheme,
+          scheme: getVegaScheme().labels.name,
         },
       },
+    },
+    mark: {
+      align: 'center',
+      baseline: 'middle',
+      type: 'text',
     },
   };
 
@@ -317,8 +307,8 @@ function prepareDataLabelsLayers(
     case 'arc':
       merge(layer, {
         mark: {
-          radius: pos.radius,
           limit: Math.max((radius?.outer ?? 0) - (radius?.inner ?? 0) - 10, 0),
+          radius: pos.radius,
         },
       });
       break;
@@ -334,8 +324,8 @@ function prepareDataLabelsLayers(
         encoding: {
           [valueAxis]: {
             aggregate: textAggregate,
-            field: 'value',
             bandPosition: 0.5,
+            field: 'value',
           },
         },
       });
@@ -348,33 +338,9 @@ function prepareDataLabelsLayers(
   // Format data labels
   switch (params.dataLabel.format) {
     case 'percent': {
-      const calcSumOfData = (prev: number, item: FetchResultItem) => {
-        const value = ensureInt(item.value);
-        if (Number.isNaN(value)) {
-          return prev;
-        }
-        return prev + value;
-      };
-
       const minValue = params.dataLabel.minValue ?? 0.03;
 
-      if (!params.color) {
-        // Calc sum of values
-        const sum = data.reduce(calcSumOfData, 0);
-
-        // Set percentage on each item
-        for (const item of data) {
-          const value = ensureInt(item.value);
-          if (!Number.isNaN(value)) {
-            const percentage = value / sum;
-            if (percentage >= minValue) {
-              item.z_ezr_dl = formatPercent(percentage);
-            }
-          }
-
-          item.z_ezr_dl = item.z_ezr_dl ?? '';
-        }
-      } else {
+      if (params.color) {
         // Calc sum of colors for each label
         const sumPerLabel = new Map<string, number>();
         for (const item of data) {
@@ -400,6 +366,23 @@ function prepareDataLabelsLayers(
 
           item.z_ezr_dl = item.z_ezr_dl ?? '';
         }
+      } else {
+        // Calc sum of values
+        // oxlint-disable-next-line unicorn/no-array-reduce
+        const sum = data.reduce(calcSumOfData, 0);
+
+        // Set percentage on each item
+        for (const item of data) {
+          const value = ensureInt(item.value);
+          if (!Number.isNaN(value)) {
+            const percentage = value / sum;
+            if (percentage >= minValue) {
+              item.z_ezr_dl = formatPercent(percentage);
+            }
+          }
+
+          item.z_ezr_dl = item.z_ezr_dl ?? '';
+        }
       }
       break;
     }
@@ -407,7 +390,7 @@ function prepareDataLabelsLayers(
     default: {
       let { minValue } = params.dataLabel;
       if (minValue == null) {
-        // default to 3% of maximum value
+        // Default to 3% of maximum value
         minValue =
           Math.max(...data.map((item) => ensureInt(item.value)), 0) * 0.03;
       }
@@ -432,10 +415,6 @@ function prepareDataLabelsLayers(
   const textAggregatePrefix = textAggregate && `${textAggregate}_`;
   // Add label layer
   const labelLayer = {
-    mark: merge({}, layer.mark, {
-      dy: -7,
-      fontWeight: 'normal',
-    }),
     encoding: {
       // oxlint-disable-next-line id-length
       y: layer.encoding?.y,
@@ -443,12 +422,16 @@ function prepareDataLabelsLayers(
       x: layer.encoding?.x,
       text: {
         condition: {
-          test: `datum['${textAggregatePrefix}z_ezr_dl'] != ''`,
           field: params.color ? 'color' : 'label',
+          test: `datum['${textAggregatePrefix}z_ezr_dl'] != ''`,
         },
       },
       color: layer.encoding?.color,
     },
+    mark: merge({}, layer.mark, {
+      dy: -7,
+      fontWeight: 'normal',
+    }),
   };
 
   return { dataLayerEdits, layers: [layer, labelLayer] };
@@ -471,8 +454,8 @@ const prepareDataLayer = (
   merge<Layer, CustomLayer | Record<string, never>>(
     {
       mark: {
-        type,
         point: true,
+        type,
       },
     },
     params.dataLayer ?? {}
@@ -489,7 +472,10 @@ const prepareDataLayer = (
 const mergeLayers = (
   dataLayer: Layer,
   ...layers: (Layer | undefined)[]
-): Layer[] => [dataLayer, ...layers.filter((lay): lay is Layer => !!lay)];
+): Layer[] => [
+  dataLayer,
+  ...layers.filter((lay): lay is Layer => Boolean(lay)),
+];
 
 type CreateSpecFnc = (
   type: Mark,
@@ -515,25 +501,25 @@ export const createArcSpec: CreateSpecFnc = (type, data, params) => {
 
   // Prepare encoding
   const encoding: Encoding = {
-    theta: merge<Encoding['theta'], VegaParams['value']>(
-      { field: 'value', stack: true, type: 'quantitative' },
-      params.value
-    ),
-    order: merge<Encoding['order'], VegaParams['value']>(
-      { field: 'value', sort: 'descending', type: 'quantitative' },
-      params.value
-    ),
     color: merge<Encoding['color'], VegaParams['label']>(
       {
         field: 'label',
+        legend: { orient: 'top-right' },
         scale: prepareColorScale(type, data, params),
         sort: {
           field: 'value',
           order: params.order === 'asc' ? 'ascending' : 'descending',
         },
-        legend: { orient: 'top-right' },
       },
       params.label
+    ),
+    order: merge<Encoding['order'], VegaParams['value']>(
+      { field: 'value', sort: 'descending', type: 'quantitative' },
+      params.value
+    ),
+    theta: merge<Encoding['theta'], VegaParams['value']>(
+      { field: 'value', stack: true, type: 'quantitative' },
+      params.value
     ),
   };
 
@@ -542,7 +528,7 @@ export const createArcSpec: CreateSpecFnc = (type, data, params) => {
     prepareDataLabelsLayers(type, data, params, radius);
   merge(dataLayer, dataLayerEdits);
 
-  return { layer: mergeLayers(dataLayer, ...dataLabelLayers), encoding };
+  return { encoding, layer: mergeLayers(dataLayer, ...dataLabelLayers) };
 };
 
 /**
@@ -570,9 +556,9 @@ export const createBarSpec: CreateSpecFnc = (type, data, params) => {
     [labelAxis]: merge<Encoding[typeof labelAxis], VegaParams['label']>(
       {
         field: 'label',
-        type: 'nominal',
-        title: null,
         sort: `-${valueAxis}`,
+        title: null,
+        type: 'nominal',
       },
       params.label
     ),
@@ -602,9 +588,9 @@ export const createBarSpec: CreateSpecFnc = (type, data, params) => {
     merge<Encoding[typeof labelAxis], Encoding[typeof labelAxis]>(
       encoding[labelAxis],
       {
-        timeUnit: timeFormat.timeUnit,
         axis: { format: timeFormat.format },
         sort: 'ascending',
+        timeUnit: timeFormat.timeUnit,
       }
     );
   }
@@ -615,9 +601,9 @@ export const createBarSpec: CreateSpecFnc = (type, data, params) => {
   merge(dataLayer, dataLayerEdits);
 
   return {
-    layer: mergeLayers(dataLayer, ...dataLabelLayers),
     data: editedData,
     encoding,
+    layer: mergeLayers(dataLayer, ...dataLabelLayers),
   };
 };
 
@@ -632,11 +618,11 @@ export const createBarSpec: CreateSpecFnc = (type, data, params) => {
  */
 export const createLineSpec: CreateSpecFnc = (type, data, params) => {
   // Line charts works essentially as the same as bar charts
-  // we just don't allow axis inversion and assume that labels
+  // We just don't allow axis inversion and assume that labels
   const dataLayer = prepareDataLayer(type, data, params);
   const timeFormat = calcVegaFormatFromRecurrence(params.recurrence);
 
-  const sortedData = data.sort(
+  const sortedData = data.toSorted(
     (dataA, dataB) => ensureInt(dataA.label ?? 0) - ensureInt(dataB.label ?? 0)
   );
 
@@ -650,12 +636,12 @@ export const createLineSpec: CreateSpecFnc = (type, data, params) => {
     // oxlint-disable-next-line id-length
     x: merge<Encoding['x'], VegaParams['label']>(
       {
+        axis: { format: timeFormat.format },
         field: 'label',
-        type: 'nominal',
-        title: null,
         sort: 'ascending',
         timeUnit: timeFormat.timeUnit,
-        axis: { format: timeFormat.format },
+        title: null,
+        type: 'nominal',
       },
       params.label
     ),
@@ -678,14 +664,14 @@ export const createLineSpec: CreateSpecFnc = (type, data, params) => {
 
   // Prepare data labels
   // TODO: fix line data labels
-  // const {
-  //   dataLayerEdits,
-  //   layers: dataLabelLayers = [],
+  // Const {
+  //   DataLayerEdits,
+  //   Layers: dataLabelLayers = [],
   // } = prepareDataLabelsLayers(type, data, params, undefined, 'x');
-  // merge(dataLayer, dataLayerEdits);
+  // Merge(dataLayer, dataLayerEdits);
 
   return {
-    // layer: mergeLayers(dataLayer, ...dataLabelLayers),
+    // Layer: mergeLayers(dataLayer, ...dataLabelLayers),
     layer: [dataLayer],
     data: prepareDataWithDefaultDates(type, sortedData, params),
     encoding,
@@ -729,5 +715,5 @@ export const createOtherSpec: CreateSpecFnc = (type, data, params) => {
     prepareDataLabelsLayers(type, data, params);
   merge(dataLayer, dataLayerEdits);
 
-  return { layer: mergeLayers(dataLayer, ...dataLabelLayers), encoding };
+  return { encoding, layer: mergeLayers(dataLayer, ...dataLabelLayers) };
 };

@@ -1,11 +1,11 @@
 import type { Readable, Writable } from 'node:stream';
-import { createGzip, createGunzip } from 'node:zlib';
+import { createGunzip, createGzip } from 'node:zlib';
 
 import type { Logger } from '@ezreeport/logger';
 import {
   parseJSONMessage,
-  sendJSONMessage,
   type rabbitmq,
+  sendJSONMessage,
 } from '@ezreeport/rabbitmq';
 
 import { RPCStreamChunk, type RPCStreamChunkType } from './types';
@@ -33,7 +33,7 @@ export async function writeStreamIntoQueue(
     const { size } = sendJSONMessage<RPCStreamChunkType>(
       { channel, queue: { name: dataQueue } },
       // JSON represents Buffer
-      { chunk: { type: 'Buffer', data: Array.from(buf) }, ended: false }
+      { chunk: { data: [...buf], type: 'Buffer' }, ended: false }
     );
 
     logger.trace({
@@ -46,14 +46,14 @@ export async function writeStreamIntoQueue(
   stream.on('error', (err) => {
     const { size } = sendJSONMessage<RPCStreamChunkType>(
       { channel, queue: { name: dataQueue } },
-      { error: err instanceof Error ? err.message : `${err}`, ended: true }
+      { ended: true, error: err instanceof Error ? err.message : `${err}` }
     );
 
     logger.error({
+      err,
       msg: 'Error while sending chunk',
       size,
       sizeUnit: 'B',
-      err,
     });
   });
 
@@ -98,9 +98,9 @@ export async function readStreamFromQueue(
     const { data, raw, parseError } = parseJSONMessage(msg, RPCStreamChunk);
     if (!data) {
       logger.error({
-        msg: 'Invalid data',
         data: process.env.NODE_ENV === 'production' ? undefined : raw,
         err: parseError,
+        msg: 'Invalid data',
       });
       channel.nack(msg, undefined, false);
       return;

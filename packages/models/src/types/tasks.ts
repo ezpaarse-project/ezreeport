@@ -11,7 +11,7 @@ const LastExtended = z.object({
   name: z.string().min(1).describe('Template name'),
 
   tags: z
-    .array(TemplateTag.pick({ id: true, name: true, color: true }))
+    .array(TemplateTag.pick({ color: true, id: true, name: true }))
     .optional()
     .describe('Template tags'),
 });
@@ -20,33 +20,33 @@ const LastExtended = z.object({
  * Validation with a task
  */
 export const Task = z.object({
-  id: z.string().min(1).describe('Task ID'),
-
-  name: z.string().min(1).describe('Task name'),
+  createdAt: z.coerce.date().describe('Creation date'),
 
   description: z.string().optional().describe('Task description'),
 
-  namespaceId: z.string().min(1).describe('Namespace ID of the task'),
+  enabled: z.boolean().describe('Is task enabled, default to true'),
 
   extendedId: z.string().min(1).describe('Extended template ID'),
 
-  template: TaskTemplateBody.describe('Options to extend template'),
+  id: z.string().min(1).describe('Task ID'),
 
   lastExtended: LastExtended.nullish().describe('Last extended template'),
 
-  targets: z.array(z.email()).min(1).describe('Email addresses to send report'),
+  lastRun: z.coerce.date().nullable().describe('Last run date'),
+
+  name: z.string().min(1).describe('Task name'),
+
+  namespaceId: z.string().min(1).describe('Namespace ID of the task'),
+
+  nextRun: z.coerce.date().describe('Next run date, must be in the future'),
 
   recurrence: Recurrence.describe('Task recurrence'),
 
   recurrenceOffset: RecurrenceOffset.describe('Task recurrence offset'),
 
-  nextRun: z.coerce.date().describe('Next run date, must be in the future'),
+  targets: z.array(z.email()).min(1).describe('Email addresses to send report'),
 
-  lastRun: z.coerce.date().nullable().describe('Last run date'),
-
-  enabled: z.boolean().describe('Is task enabled, default to true'),
-
-  createdAt: z.coerce.date().describe('Creation date'),
+  template: TaskTemplateBody.describe('Options to extend template'),
 
   updatedAt: z.coerce.date().nullable().describe('Last update date'),
 });

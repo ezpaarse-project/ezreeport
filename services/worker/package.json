@@ -17,11 +17,12 @@
   "scripts": {
     "dev": "tsx watch --inspect=0.0.0.0 src/app.ts",
     "lint": "oxlint",
+    "fmt": "oxfmt",
     "start": "tsx src/app.ts",
-    "type-check": "tsc --noEmit --skipLibCheck"
+    "check": "tsc --noEmit --skipLibCheck"
   },
   "dependencies": {
-    "@elastic/elasticsearch": "^7.17.12",
+    "@elastic/elasticsearch": "^7.17.14",
     "@ezpaarse-project/jspdf-md": "^1.1.3",
     "@ezreeport/config": "workspace:*",
     "@ezreeport/dates": "workspace:*",
@@ -32,32 +33,23 @@
     "@ezreeport/rabbitmq": "workspace:*",
     "@ezreeport/rpc": "workspace:*",
     "@ezreeport/simple-http": "workspace:*",
-    "canvas": "^3.1.2",
-    "chroma-js": "^3.1.1",
-    "handlebars": "^4.7.8",
-    "jspdf": "^3.0.1",
-    "jspdf-autotable": "^5.0.2",
-    "lodash": "^4.17.21",
+    "canvas": "^3.2.3",
+    "chroma-js": "^3.2.0",
+    "handlebars": "^4.7.9",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "lodash": "^4.18.1",
     "ofetch": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:",
-    "vega": "^5.33.0",
-    "vega-lite": "^5.23.0"
+    "vega": "^6.3.1",
+    "vega-lite": "^6.4.3"
   },
   "devDependencies": {
-    "@types/chroma-js": "^3.1.1",
-    "@types/lodash": "^4.17.20",
+    "@types/chroma-js": "^3.1.2",
+    "@types/lodash": "^4.17.24",
     "@types/node": "catalog:",
     "pino-pretty": "catalog:"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "oxlint --fix",
-      "oxfmt --no-error-on-unmatched-pattern"
-    ],
-    "package.json": [
-      "oxfmt --no-error-on-unmatched-pattern"
-    ]
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

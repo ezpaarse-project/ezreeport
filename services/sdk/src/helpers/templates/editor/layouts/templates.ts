@@ -4,9 +4,9 @@ import objectHash from 'object-hash';
 import type { TemplateBodyLayout } from '~/modules/templates';
 
 import {
+  type AnyFigureHelper,
   createFigureHelperFrom,
   figureHelperToJSON,
-  type AnyFigureHelper,
 } from '../figures';
 
 export interface LayoutHelper {
@@ -21,9 +21,9 @@ export function hashLayout(layout: LayoutHelper | TemplateBodyLayout): string {
 
 export function createLayoutHelper(figures: AnyFigureHelper[]): LayoutHelper {
   const layout = {
-    id: nanoid(),
     figures,
     hash: '',
+    id: nanoid(),
   };
 
   layout.hash = hashLayout(layout);

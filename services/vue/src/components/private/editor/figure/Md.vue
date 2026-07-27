@@ -7,7 +7,7 @@
       <v-alert
         v-if="readonly"
         :title="$t('$ezreeport.readonly')"
-        icon="mdi-lock"
+        :icon="mdiLock"
         density="compact"
         class="mr-2"
       />
@@ -48,6 +48,7 @@
 
 <script setup lang="ts">
   import type { MdFigure } from '~sdk/helpers/figures';
+  import { mdiLock } from '@mdi/js';
   import DOMPurify from 'dompurify';
   import { marked } from 'marked';
 
@@ -76,7 +77,7 @@
    *
    * @param data The new data
    */
-  function updateData(data: string) {
+  function updateData(data: string): void {
     const figure = props.modelValue;
     figure.data = data;
     emit('update:modelValue', figure);
@@ -91,7 +92,7 @@
       const html = await marked(data || '', { async: true });
       renderedMD.value = DOMPurify.sanitize(html);
     },
-    { immediate: true, debounce: 500 }
+    { debounce: 500, immediate: true }
   );
 </script>
 

@@ -2,20 +2,20 @@ import type { Readable, Writable } from 'node:stream';
 
 import type { Logger } from '@ezreeport/logger';
 import {
-  parseJSONMessage,
-  sendJSONMessage,
-  type rabbitmq,
   type JSONMessageTransport,
   type JSONMessageTransportQueue,
+  parseJSONMessage,
+  type rabbitmq,
+  sendJSONMessage,
 } from '@ezreeport/rabbitmq';
 
 import { readStreamFromQueue, writeStreamIntoQueue } from './queue-streams';
 import {
-  RPCStreamRequest,
-  type RPCWriteStreamRequestType,
   type RPCReadStreamRequestType,
-  type RPCStreamResponseType,
+  RPCStreamRequest,
   type RPCStreamRequestType,
+  type RPCStreamResponseType,
+  type RPCWriteStreamRequestType,
 } from './types';
 
 export type RPCStreamRouter = {
@@ -42,8 +42,8 @@ export class RPCStreamServer {
     private opts?: { compression?: boolean }
   ) {
     this.logger = appLogger.child({
-      scope: 'rpc-stream.server',
       queue: queueName,
+      scope: 'rpc-stream.server',
     });
 
     this.transport = this.assertTransport(channel, queueName);
@@ -75,12 +75,15 @@ export class RPCStreamServer {
       this.logger.debug('RPC stream server setup');
 
       return {
-        channel: channel,
+        channel,
         queue: { name: queueName },
       };
-    } catch (err) {
-      this.logger.error({ msg: "Couldn't setup RPC stream server", err });
-      throw err;
+    } catch (error) {
+      this.logger.error({
+        err: error,
+        msg: "Couldn't setup RPC stream server",
+      });
+      throw error;
     }
   }
 
@@ -96,10 +99,10 @@ export class RPCStreamServer {
     let stream;
     try {
       stream = await this.router.createWriteStream(...request.params);
-    } catch (err) {
+    } catch (error) {
       return {
         reason:
-          err instanceof Error ? err : new Error('Failed to create stream'),
+          error instanceof Error ? error : new Error('Failed to create stream'),
       };
     }
 
@@ -127,10 +130,10 @@ export class RPCStreamServer {
     let stream;
     try {
       stream = await this.router.createReadStream(...request.params);
-    } catch (err) {
+    } catch (error) {
       return {
         reason:
-          err instanceof Error ? err : new Error('Failed to create stream'),
+          error instanceof Error ? error : new Error('Failed to create stream'),
       };
     }
 
@@ -150,8 +153,8 @@ export class RPCStreamServer {
   ): RPCStreamRouter['createReadStream' | 'createWriteStream'] | undefined {
     if (!this.router[request.method]) {
       this.logger.warn({
-        msg: 'Method not found',
         method: request.method,
+        msg: 'Method not found',
         params: request.params,
       });
       return;
@@ -171,9 +174,9 @@ export class RPCStreamServer {
     } = parseJSONMessage(msg, RPCStreamRequest);
     if (!request) {
       this.logger.error({
-        msg: 'Invalid data',
         data: process.env.NODE_ENV === 'production' ? undefined : raw,
         err: parseError,
+        msg: 'Invalid data',
       });
       channel.nack(msg, undefined, false);
       return;
@@ -190,8 +193,8 @@ export class RPCStreamServer {
 
     try {
       this.logger.debug({
-        msg: 'Processing request',
         methodName: request.method,
+        msg: 'Processing request',
         params: request.params,
       });
 
@@ -213,19 +216,19 @@ export class RPCStreamServer {
         );
 
         this.logger.error({
-          msg: 'Error while processing streams',
-          methodName: request.method,
-          params: request.params,
           correlationId: msg.properties.correlationId,
           err: requeueReason,
+          methodName: request.method,
+          msg: 'Error while processing streams',
+          params: request.params,
         });
 
         channel.nack(msg, undefined, !alreadySeenMessage);
         this.logger.debug({
-          msg: 'Result not found, requeuing request',
-          methodName: request.method,
-          params: request.params,
           correlationId: msg.properties.correlationId,
+          methodName: request.method,
+          msg: 'Result not found, requeuing request',
+          params: request.params,
         });
 
         this.alreadySeenMessages.add(msg.properties.correlationId);
@@ -233,26 +236,26 @@ export class RPCStreamServer {
       }
 
       response.result = true;
-    } catch (err) {
+    } catch (error) {
       this.logger.error({
-        msg: 'Error while processing streams',
+        err: error,
         methodName: request.method,
+        msg: 'Error while processing streams',
         params: request.params,
-        err,
       });
 
       response.result = false;
-      response.error = err instanceof Error ? err.message : `${err}`;
+      response.error = error instanceof Error ? error.message : `${error}`;
     }
 
     const { size } = sendJSONMessage(
-      { channel: channel, queue: { name: msg.properties.replyTo } },
+      { channel, queue: { name: msg.properties.replyTo } },
       response,
       { correlationId: msg.properties.correlationId, replyTo }
     );
     this.logger.debug({
-      msg: 'Result sent',
       method: request.method,
+      msg: 'Result sent',
       params: request.params,
       size,
       sizeUnit: 'B',

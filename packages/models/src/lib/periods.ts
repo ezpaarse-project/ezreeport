@@ -1,20 +1,20 @@
 import {
+  type Duration,
   add,
-  startOfDay,
+  constants,
   endOfDay,
-  startOfWeek,
-  endOfWeek,
-  startOfMonth,
   endOfMonth,
-  startOfQuarter,
   endOfQuarter,
+  endOfWeek,
+  endOfYear,
+  getDaysInMonth,
   getYear,
   isAfter,
-  endOfYear,
+  startOfDay,
+  startOfMonth,
+  startOfQuarter,
+  startOfWeek,
   startOfYear,
-  getDaysInMonth,
-  type Duration,
-  constants,
 } from '@ezreeport/dates';
 
 import type { RecurrenceOffsetType, RecurrenceType } from '../types/recurrence';
@@ -38,22 +38,22 @@ export function calcPeriodFromRecurrence(
   switch (recurrence) {
     case 'DAILY': {
       const target = add(reference, { days: offset });
-      return { start: startOfDay(target), end: endOfDay(target) };
+      return { end: endOfDay(target), start: startOfDay(target) };
     }
 
     case 'WEEKLY': {
       const target = add(reference, { weeks: offset });
-      return { start: startOfWeek(target), end: endOfWeek(target) };
+      return { end: endOfWeek(target), start: startOfWeek(target) };
     }
 
     case 'MONTHLY': {
       const target = add(reference, { months: offset });
-      return { start: startOfMonth(target), end: endOfMonth(target) };
+      return { end: endOfMonth(target), start: startOfMonth(target) };
     }
 
     case 'QUARTERLY': {
       const target = add(reference, { months: 3 * offset });
-      return { start: startOfQuarter(target), end: endOfQuarter(target) };
+      return { end: endOfQuarter(target), start: startOfQuarter(target) };
     }
 
     case 'BIENNIAL': {
@@ -62,14 +62,14 @@ export function calcPeriodFromRecurrence(
       const midYear = new Date(year, 5, 30);
       if (isAfter(target, midYear)) {
         const start = add(midYear, { days: 1 });
-        return { start: startOfDay(start), end: endOfYear(midYear) };
+        return { end: endOfYear(midYear), start: startOfDay(start) };
       }
-      return { start: startOfYear(midYear), end: endOfDay(midYear) };
+      return { end: endOfDay(midYear), start: startOfYear(midYear) };
     }
 
     case 'YEARLY': {
       const target = add(reference, { years: offset });
-      return { start: startOfYear(target), end: endOfYear(target) };
+      return { end: endOfYear(target), start: startOfYear(target) };
     }
 
     default:

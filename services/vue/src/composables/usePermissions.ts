@@ -1,8 +1,7 @@
-import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
+import { hasPermission, refreshPermissions } from '~sdk/helpers/permissions';
 
 type Params = Parameters<typeof hasPermission>;
 
-// oxlint-disable-next-line no-default-export
 export default function usePermissions<Key extends string>(
   actions: MaybeRefOrGetter<Record<Key, Params>>
 ): { availableActions: ComputedRef<Record<Key, boolean>> } {

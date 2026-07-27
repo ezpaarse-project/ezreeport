@@ -25,7 +25,7 @@ async function getFileFromRemote(
 
     stream
       .on('data', (chunk: Buffer) => {
-        buffer += chunk.toString('utf-8');
+        buffer += chunk.toString('utf8');
       })
       .on('end', () => resolve(buffer))
       .on('error', (err) => reject(err));
@@ -44,10 +44,10 @@ function getErrorFromReport(
     }
 
     return `${detail.error.type}: ${detail.error.name} - ${detail.error.message}`;
-  } catch (err) {
+  } catch (error) {
     logger.warn({
+      err: error,
       msg: 'Failed to parse report result',
-      err,
     });
     return t('mail.report.error.message', locale);
   }
@@ -64,34 +64,34 @@ export async function sendFailedReport(
   const error = getErrorFromReport(file, logger, data.locale);
 
   await sendMail({
-    to: [team],
+    attachments: [
+      {
+        content: file,
+        contentDisposition: 'attachment',
+        filename,
+      },
+    ],
+    body: await generateMail('report-failed', data.locale, {
+      data: {
+        date: d(data.date, data.locale),
+        error,
+        name: data.task.name,
+        namespace: data.namespace.name,
+        periodEnd: d(data.period.end, data.locale, 'P'),
+        periodStart: d(data.period.start, data.locale, 'P'),
+        recurrence: t(`recurrence.${data.task.recurrence}`, data.locale),
+      },
+    }),
     subject: t('mail.report.failed.subject', data.locale, {
       date: d(data.date, data.locale, 'P'),
       name: data.task.name,
     }),
-    body: await generateMail('report-failed', data.locale, {
-      data: {
-        recurrence: t(`recurrence.${data.task.recurrence}`, data.locale),
-        name: data.task.name,
-        namespace: data.namespace.name,
-        date: d(data.date, data.locale),
-        periodStart: d(data.period.start, data.locale, 'P'),
-        periodEnd: d(data.period.end, data.locale, 'P'),
-        error,
-      },
-    }),
-    attachments: [
-      {
-        filename,
-        content: file,
-        contentDisposition: 'attachment',
-      },
-    ],
+    to: [team],
   });
 
   logger.info({
     filename,
-    to: [team],
     msg: 'Failed report sent to targets',
+    to: [team],
   });
 }

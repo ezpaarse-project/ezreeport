@@ -3,35 +3,22 @@ import { defineConfig } from 'tsdown';
 const isReleaseMode = process.env.NODE_ENV === 'release';
 
 export default defineConfig({
-  target: ['node14', 'es6'],
-  format: ['cjs', 'es'],
-  platform: 'neutral',
-
-  outDir: 'dist',
-  minify: isReleaseMode,
-
-  dts: {
-    sourcemap: !isReleaseMode,
-    generator: 'oxc',
+  alias: {
+    '~': 'src/',
   },
-
+  deps: {
+    neverBundle: ['native-events'],
+  },
+  dts: {
+    generator: 'oxc',
+    sourcemap: !isReleaseMode,
+  },
   entry: {
-    index: 'src/index.ts',
-    // Modules
     auth: 'src/modules/auth/index.ts',
     crons: 'src/modules/crons/index.ts',
     elastic: 'src/modules/elastic/index.ts',
-    health: 'src/modules/health/index.ts',
-    namespaces: 'src/modules/namespaces/index.ts',
-    recurrence: 'src/modules/recurrence/index.ts',
     generations: 'src/modules/generations/index.ts',
-    reports: 'src/modules/reports/index.ts',
-    tasks: 'src/modules/tasks/index.ts',
-    templates: 'src/modules/templates/index.ts',
-    'template-tags': 'src/modules/template-tags/index.ts',
-    'task-activity': 'src/modules/task-activity/index.ts',
-    'task-presets': 'src/modules/task-presets/index.ts',
-    // Helpers
+    health: 'src/modules/health/index.ts',
     'helpers/aggregations':
       'src/helpers/templates/editor/aggregations/index.ts',
     'helpers/figures': 'src/helpers/templates/editor/figures/index.ts',
@@ -42,15 +29,20 @@ export default defineConfig({
     'helpers/task-presets': 'src/helpers/task-presets/index.ts',
     'helpers/tasks': 'src/helpers/tasks/index.ts',
     'helpers/templates': 'src/helpers/templates/index.ts',
+    index: 'src/index.ts',
+    namespaces: 'src/modules/namespaces/index.ts',
+    recurrence: 'src/modules/recurrence/index.ts',
+    reports: 'src/modules/reports/index.ts',
+    'task-activity': 'src/modules/task-activity/index.ts',
+    'task-presets': 'src/modules/task-presets/index.ts',
+    tasks: 'src/modules/tasks/index.ts',
+    'template-tags': 'src/modules/template-tags/index.ts',
+    templates: 'src/modules/templates/index.ts',
   },
-
   exports: !isReleaseMode,
-
-  alias: {
-    '~': 'src/',
-  },
-
-  deps: {
-    neverBundle: ['native-events'],
-  },
+  format: ['cjs', 'es'],
+  minify: isReleaseMode,
+  outDir: 'dist',
+  platform: 'neutral',
+  target: ['node14', 'es6'],
 });

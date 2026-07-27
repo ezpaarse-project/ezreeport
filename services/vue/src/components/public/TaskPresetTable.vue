@@ -23,7 +23,7 @@
             v-tooltip:top="$t('$ezreeport.new')"
             variant="tonal"
             color="green"
-            icon="mdi-plus"
+            :icon="mdiPlus"
             density="comfortable"
             class="ml-2"
             @click="openForm()"
@@ -34,7 +34,7 @@
             :loading="loading"
             variant="tonal"
             color="primary"
-            icon="mdi-refresh"
+            :icon="mdiRefresh"
             density="comfortable"
             class="ml-2"
             @click="refresh"
@@ -43,7 +43,7 @@
           <v-text-field
             v-model="filters.query"
             :placeholder="$t('$ezreeport.search')"
-            append-inner-icon="mdi-magnify"
+            :append-inner-icon="mdiMagnify"
             variant="outlined"
             density="compact"
             width="200"
@@ -89,7 +89,7 @@
         "
       >
         <v-btn
-          :icon="item.template?.hidden || value ? 'mdi-eye-off' : 'mdi-eye'"
+          :icon="item.template?.hidden || value ? mdiEyeOff : mdiEye"
           :disabled="item.template?.hidden || !availableActions.visibility"
           variant="plain"
           density="compact"
@@ -106,7 +106,7 @@
       <v-menu>
         <template #activator="{ props: menu }">
           <v-btn
-            icon="mdi-cog"
+            :icon="mdiCog"
             variant="plain"
             density="compact"
             v-bind="menu"
@@ -117,7 +117,7 @@
           <v-list-item
             :title="$t('$ezreeport.duplicate')"
             :disabled="!availableActions.create"
-            prepend-icon="mdi-content-copy"
+            :prepend-icon="mdiContentCopy"
             @click="openDuplicateForm(item)"
           />
 
@@ -126,14 +126,14 @@
           <v-list-item
             :title="$t('$ezreeport.edit')"
             :disabled="!availableActions.update"
-            prepend-icon="mdi-pencil"
+            :prepend-icon="mdiPencil"
             @click="openForm(item)"
           />
 
           <v-list-item
             :title="$t('$ezreeport.delete')"
             :disabled="!availableActions.delete"
-            prepend-icon="mdi-delete"
+            :prepend-icon="mdiDelete"
             @click="deleteItem(item)"
           />
         </v-list>
@@ -144,14 +144,14 @@
       <v-empty-state
         :title="$t('$ezreeport.task-preset.noList')"
         :text="$t('$ezreeport.task-preset.noList:desc')"
-        icon="mdi-page-outline"
+        :icon="mdiFileOutline"
       >
         <template #actions>
           <v-btn
             v-if="availableActions.create"
             :text="$t('$ezreeport.new')"
             color="green"
-            append-icon="mdi-plus"
+            :append-icon="mdiPlus"
             @click="openForm()"
           />
         </template>
@@ -166,7 +166,7 @@
     <template #actions>
       <v-list-item
         :title="$t('$ezreeport.delete')"
-        prepend-icon="mdi-delete"
+        :prepend-icon="mdiDelete"
         @click="deleteSelected()"
       />
 
@@ -175,7 +175,7 @@
       <v-list-item
         v-if="availableActions.visibility"
         :title="$t('$ezreeport.task-preset.hidden:toggle')"
-        prepend-icon="mdi-eye-off"
+        :prepend-icon="mdiEyeOff"
         @click="toggleSelectedVisibility()"
       />
     </template>
@@ -202,13 +202,25 @@
 
 <script setup lang="ts">
   import type { VDataTable } from 'vuetify/components';
+  import {
+    mdiCog,
+    mdiContentCopy,
+    mdiDelete,
+    mdiEye,
+    mdiEyeOff,
+    mdiFileOutline,
+    mdiMagnify,
+    mdiPencil,
+    mdiPlus,
+    mdiRefresh,
+  } from '@mdi/js';
   import { changeTaskPresetVisibility } from '~sdk/helpers/task-presets';
   import {
-    getAllTaskPresets,
-    createTaskPreset,
-    upsertTaskPreset,
-    deleteTaskPreset,
     type TaskPreset,
+    createTaskPreset,
+    deleteTaskPreset,
+    getAllTaskPresets,
+    upsertTaskPreset,
   } from '~sdk/task-presets';
 
   type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
@@ -220,7 +232,6 @@
   }>();
 
   // Utils composable
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   const selectedTaskPresets = ref<TaskPreset[]>([]);
@@ -229,9 +240,8 @@
 
   const { availableActions } = usePermissions({
     create: [createTaskPreset],
-    update: [upsertTaskPreset],
     delete: [deleteTaskPreset],
-
+    update: [upsertTaskPreset],
     visibility: [changeTaskPresetVisibility],
   });
 
@@ -240,10 +250,10 @@
   /** List of templates */
   const { total, refresh, loading, filters, vDataTableOptions } =
     useServerSidePagination((params) => getAllTaskPresets(params), {
-      sortBy: 'name',
       include: ['template.tags', 'template.locale', 'template.hidden'],
       itemsPerPage,
       itemsPerPageOptions: props.itemsPerPageOptions,
+      sortBy: 'name',
     });
 
   const title = computed(
@@ -255,36 +265,36 @@
   const headers = computed(
     (): VDataTableHeaders => [
       {
+        sortable: true,
         title: t('$ezreeport.name'),
         value: 'name',
-        sortable: true,
       },
       {
+        align: 'center',
+        sortable: true,
         title: t('$ezreeport.task.recurrence'),
         value: 'recurrence',
-        sortable: true,
-        align: 'center',
       },
       {
+        align: 'center',
         title: t('$ezreeport.template.locale'),
         value: 'template.locale',
-        align: 'center',
       },
       {
+        sortable: true,
         title: t('$ezreeport.updatedAt'),
         value: 'updatedAt',
-        sortable: true,
       },
       {
+        align: 'center',
+        sortable: true,
         title: t('$ezreeport.template.hidden'),
         value: 'hidden',
-        sortable: true,
-        align: 'center',
       },
       {
+        align: 'center',
         title: t('$ezreeport.actions'),
         value: '_actions',
-        align: 'center',
       },
     ]
   );
@@ -293,8 +303,8 @@
     get: () => selectedTaskPresets.value.map((taskPreset) => taskPreset.id),
     set: (value) => {
       const ids = new Set(value);
-      selectedTaskPresets.value = selectedTaskPresets.value.filter((taskPreset) =>
-        ids.has(taskPreset.id)
+      selectedTaskPresets.value = selectedTaskPresets.value.filter(
+        (taskPreset) => ids.has(taskPreset.id)
       );
     },
   });
@@ -324,8 +334,8 @@
     try {
       await deleteTaskPreset(taskPreset);
       refresh();
-    } catch (err) {
-      handleEzrError(t('$ezreeport.task-preset.errors.delete'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.task-preset.errors.delete'), error);
     }
   }
 
@@ -339,8 +349,8 @@
       );
       selectedTaskPresets.value = [];
       refresh();
-    } catch (err) {
-      handleEzrError(t('$ezreeport.task-preset.errors.delete'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.task-preset.errors.delete'), error);
     }
   }
 
@@ -348,8 +358,8 @@
     try {
       await changeTaskPresetVisibility(taskPreset, !taskPreset.hidden);
       refresh();
-    } catch (err) {
-      handleEzrError(t('$ezreeport.task-preset.errors.edit'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.task-preset.errors.edit'), error);
     }
   }
 
@@ -362,8 +372,8 @@
       );
       selectedTaskPresets.value = [];
       refresh();
-    } catch (err) {
-      handleEzrError(t('$ezreeport.task-preset.errors.edit'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.task-preset.errors.edit'), error);
     }
   }
 </script>

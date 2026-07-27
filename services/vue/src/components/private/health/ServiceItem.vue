@@ -29,13 +29,10 @@
     label: string;
   }>();
 
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   const versions = computed(() =>
-    Array.from(new Set(props.modelValue.map(({ version }) => version))).join(
-      ' | '
-    )
+    [...new Set(props.modelValue.map(({ version }) => version))].join(' | ')
   );
 
   const tooltip = computed(() => {

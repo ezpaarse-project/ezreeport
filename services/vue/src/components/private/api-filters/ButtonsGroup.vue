@@ -29,11 +29,10 @@
   const { items = [true, false] } = defineProps<{
     items?: Value[];
     label?: string;
-    prependIcon?: `mdi-${string}`;
+    prependIcon?: string;
   }>();
 
   // Utils composable
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   const buttons = computed(() =>
@@ -56,12 +55,11 @@
         ({ value, text, ...props } = item);
       }
 
-      return {
-        ...props,
-        value,
-        text,
+      return Object.assign(props, {
         size: 'small',
-      };
+        text,
+        value,
+      });
     })
   );
 </script>

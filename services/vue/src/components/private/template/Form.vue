@@ -5,7 +5,7 @@
         ? $t('$ezreeport.template.title:edit')
         : $t('$ezreeport.template.title:new')
     "
-    :prepend-icon="modelValue.id ? 'mdi-view-grid' : 'mdi-view-grid-plus'"
+    :prepend-icon="modelValue.id ? mdiViewGrid : mdiViewGridPlus"
   >
     <template #append>
       <slot name="append" />
@@ -20,7 +20,7 @@
               :label="$t('$ezreeport.name')"
               :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :readonly="readonly"
-              prepend-icon="mdi-rename"
+              :prepend-icon="mdiRename"
               variant="underlined"
               required
             />
@@ -33,11 +33,11 @@
               :items="localeItems"
               :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :readonly="readonly"
-              prepend-icon="mdi-flag"
+              :prepend-icon="mdiFlag"
               variant="underlined"
               required
             >
-              <template #item="{ props, item: { raw: item } }">
+              <template #item="{ props, item }">
                 <v-list-item v-bind="props">
                   <template #prepend>
                     <TemplateLocaleFlag :modelValue="item.value" />
@@ -74,7 +74,7 @@
               :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :return-object="false"
               :readonly="readonly"
-              prepend-icon="mdi-calendar-search"
+              :prepend-icon="mdiCalendarSearch"
               variant="underlined"
               required
             />
@@ -97,13 +97,13 @@
             :title="
               $t('$ezreeport.template.layouts', modelValue.body.layouts.length)
             "
-            prepend-icon="mdi-grid"
+            :prepend-icon="mdiGrid"
             variant="outlined"
           >
             <template #append>
               <v-btn
                 v-tooltip:top="$t('$ezreeport.template.editor:open')"
-                icon="mdi-arrow-expand"
+                :icon="mdiArrowExpand"
                 color="primary"
                 density="compact"
                 variant="text"
@@ -137,13 +137,13 @@
                   <v-empty-state
                     :title="$t('$ezreeport.template.noTemplate')"
                     :text="$t('$ezreeport.template.noTemplate:desc')"
-                    icon="mdi-grid-off"
+                    :icon="mdiGridOff"
                   >
                     <template #actions>
                       <v-btn
                         :text="$t('$ezreeport.template.editor:open')"
                         color="primary"
-                        append-icon="mdi-arrow-expand"
+                        :append-icon="mdiArrowExpand"
                         @click="openEditor()"
                       />
                     </template>
@@ -164,7 +164,7 @@
       <v-btn
         v-if="!readonly"
         :text="modelValue.id ? $t('$ezreeport.save') : $t('$ezreeport.new')"
-        :append-icon="modelValue.id ? 'mdi-content-save' : 'mdi-plus'"
+        :append-icon="modelValue.id ? mdiContentSave : mdiPlus"
         :disabled="!isValid || !hasChanged"
         color="primary"
         @click="emit('update:modelValue', modelValue)"
@@ -184,7 +184,7 @@
       >
         <template #append>
           <v-btn
-            icon="mdi-close"
+            :icon="mdiClose"
             variant="text"
             density="comfortable"
             @click="closeEditor()"
@@ -195,13 +195,13 @@
           <v-btn
             v-if="readonly"
             :text="$t('$ezreeport.close')"
-            append-icon="mdi-close"
+            :append-icon="mdiClose"
             @click="closeEditor()"
           />
           <v-btn
             v-else
             :text="$t('$ezreeport.confirm')"
-            append-icon="mdi-check"
+            :append-icon="mdiCheck"
             color="primary"
             @click="closeEditor()"
           />
@@ -213,8 +213,22 @@
 
 <script setup lang="ts">
   import {
-    hasTemplateChanged,
+    mdiArrowExpand,
+    mdiCalendarSearch,
+    mdiCheck,
+    mdiClose,
+    mdiContentSave,
+    mdiFlag,
+    mdiGrid,
+    mdiGridOff,
+    mdiPlus,
+    mdiRename,
+    mdiViewGrid,
+    mdiViewGridPlus,
+  } from '@mdi/js';
+  import {
     type TemplateHelper,
+    hasTemplateChanged,
   } from '~sdk/helpers/templates';
 
   // Components props
@@ -232,13 +246,12 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
   const { getOptionsFromMapping, refreshMapping, updateDateField } =
     useTemplateEditor({
+      dateField: props.modelValue.body.dateField,
       grid: props.modelValue.body.grid,
       index: props.modelValue.body.index,
-      dateField: props.modelValue.body.dateField,
     });
 
   /** Selected index */
@@ -249,7 +262,7 @@
   const isEditorVisible = shallowRef(false);
 
   /** Validate on mount */
-  useTemplateVForm('formRef', { immediate: !!props.modelValue?.id });
+  useTemplateVForm('formRef', { immediate: Boolean(props.modelValue?.id) });
 
   /** Is valid */
   const isValid = computed(() => isFormValid.value);
@@ -295,12 +308,12 @@
   /** Items available to set locale */
   const localeItems = computed(() => [
     {
-      value: 'en',
       title: t('$ezreeport.template.locales.en'),
+      value: 'en',
     },
     {
-      value: 'fr',
       title: t('$ezreeport.template.locales.fr'),
+      value: 'fr',
     },
   ]);
 

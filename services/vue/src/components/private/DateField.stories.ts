@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import DateField from './DateField.vue';
 
 const meta: Meta<typeof DateField> = {
-  title: 'Utils/Date Field',
   component: DateField,
+  title: 'Utils/Date Field',
 };
 
 export default meta;
@@ -12,6 +12,9 @@ export default meta;
 type Story = StoryObj<typeof DateField>;
 
 export const Default: Story = {
+  args: {
+    modelValue: new Date(),
+  },
   render: (args: unknown) => ({
     components: { DateField },
     setup() {
@@ -19,7 +22,4 @@ export const Default: Story = {
     },
     template: '<DateField v-bind="args" />',
   }),
-  args: {
-    modelValue: new Date(),
-  },
 };

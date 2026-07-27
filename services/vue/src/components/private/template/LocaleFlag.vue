@@ -28,7 +28,6 @@
         return enFlag;
 
       default:
-        return undefined;
     }
   });
 

@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import {
-  createVegaFigureHelper,
   createMetricFigureHelper,
   createTableFigureHelper,
+  createVegaFigureHelper,
 } from '~sdk/helpers/figures';
 import {
   createLayoutHelper,
@@ -12,8 +12,8 @@ import {
 import EditorPreviewLayout from './Layout.vue';
 
 const meta: Meta<typeof EditorPreviewLayout> = {
-  title: 'Template Editor/Preview/Layout',
   component: EditorPreviewLayout,
+  title: 'Template Editor/Preview/Layout',
 };
 
 export default meta;
@@ -21,19 +21,9 @@ export default meta;
 type Story = StoryObj<typeof EditorPreviewLayout>;
 
 export const Empty: Story = {
-  render: (args: unknown) => ({
-    components: { EditorPreviewLayout },
-    setup() {
-      return { args };
-    },
-    template: '<EditorPreviewLayout v-bind="args" />',
-  }),
   args: {
     modelValue: createLayoutHelper([]),
   },
-};
-
-export const Full: Story = {
   render: (args: unknown) => ({
     components: { EditorPreviewLayout },
     setup() {
@@ -41,22 +31,25 @@ export const Full: Story = {
     },
     template: '<EditorPreviewLayout v-bind="args" />',
   }),
+};
+
+export const Full: Story = {
   args: {
     modelValue: createLayoutHelper([
       createVegaFigureHelper(
         'arc',
         'Type de Rapport',
         {
-          legend: null,
           aggregation: {
-            type: 'terms',
             field: 'Report_Header.Report_ID',
+            type: 'terms',
           },
+          legend: null,
         },
         {
           aggregation: {
-            type: 'sum',
             field: 'Count',
+            type: 'sum',
           },
         },
         undefined,
@@ -73,16 +66,16 @@ export const Full: Story = {
         'arc',
         'Type de métrique',
         {
-          legend: null,
           aggregation: {
-            type: 'terms',
             field: 'Metric_Type',
+            type: 'terms',
           },
+          legend: null,
         },
         {
           aggregation: {
-            type: 'sum',
             field: 'Count',
+            type: 'sum',
           },
         },
         undefined,
@@ -98,54 +91,54 @@ export const Full: Story = {
       createMetricFigureHelper(
         [
           {
-            text: 'éléments de rapport',
-            format: {
-              type: 'number',
-            },
             aggregation: {
-              type: 'sum',
               field: 'Count',
+              type: 'sum',
             },
-          },
-          {
-            text: 'Platformes',
             format: {
               type: 'number',
             },
+            text: 'éléments de rapport',
+          },
+          {
             aggregation: {
-              type: 'cardinality',
               field: 'Platform',
+              type: 'cardinality',
             },
-          },
-          {
-            text: 'profils/comptes/fonds/antennes',
             format: {
               type: 'number',
             },
+            text: 'Platformes',
+          },
+          {
             aggregation: {
-              type: 'cardinality',
               field: 'X_Package',
+              type: 'cardinality',
             },
+            format: {
+              type: 'number',
+            },
+            text: 'profils/comptes/fonds/antennes',
           },
           {
-            text: 'Période de',
-            format: {
-              type: 'date',
-            },
             aggregation: {
+              field: 'X_Date_Month',
               type: 'min',
-              field: 'X_Date_Month',
             },
-          },
-          {
-            text: 'à',
             format: {
               type: 'date',
             },
+            text: 'Période de',
+          },
+          {
             aggregation: {
-              type: 'max',
               field: 'X_Date_Month',
+              type: 'max',
             },
+            format: {
+              type: 'date',
+            },
+            text: 'à',
           },
         ],
         undefined,
@@ -154,9 +147,6 @@ export const Full: Story = {
       ),
     ]),
   },
-};
-
-export const Task: Story = {
   render: (args: unknown) => ({
     components: { EditorPreviewLayout },
     setup() {
@@ -164,6 +154,9 @@ export const Task: Story = {
     },
     template: '<EditorPreviewLayout v-bind="args" />',
   }),
+};
+
+export const Task: Story = {
   args: {
     modelValue: createTaskLayoutHelper(
       [
@@ -171,23 +164,23 @@ export const Task: Story = {
           'publisher : profils-table',
           [
             {
+              aggregation: {
+                field: 'X_Package',
+                type: 'terms',
+              },
               header: 'Profil/compte:Fonds/Antenne',
               metric: false,
-              aggregation: {
-                type: 'terms',
-                field: 'X_Package',
-              },
             },
             {
+              aggregation: {
+                field: 'Count',
+                type: 'sum',
+              },
               header: 'Value',
               metric: true,
               styles: {
                 halign: 'right',
                 valign: 'top',
-              },
-              aggregation: {
-                type: 'sum',
-                field: 'Count',
               },
             },
           ],
@@ -200,4 +193,11 @@ export const Task: Story = {
       5
     ),
   },
+  render: (args: unknown) => ({
+    components: { EditorPreviewLayout },
+    setup() {
+      return { args };
+    },
+    template: '<EditorPreviewLayout v-bind="args" />',
+  }),
 };
