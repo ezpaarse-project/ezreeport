@@ -1,4 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import DateField from './DateField.vue';
 
@@ -7,19 +9,10 @@ const meta: Meta<typeof DateField> = {
   title: 'Utils/Date Field',
 };
 
+const { defineStory } = useStory(meta);
+
 export default meta;
 
-type Story = StoryObj<typeof DateField>;
-
-export const Default: Story = {
-  args: {
-    modelValue: new Date(),
-  },
-  render: (args: unknown) => ({
-    components: { DateField },
-    setup() {
-      return { args };
-    },
-    template: '<DateField v-bind="args" />',
-  }),
-};
+export const Default = defineStory({
+  modelValue: new Date(),
+});

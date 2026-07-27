@@ -1,5 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
 import type { TableColumn } from '~sdk/helpers/figures';
+
+import { useStory } from '~/__mocks__/utils';
 
 import EditorFigureTableColumnForm from './TableColumnForm.vue';
 
@@ -8,9 +10,9 @@ const meta: Meta<typeof EditorFigureTableColumnForm> = {
   title: 'Template Editor/Figures/Table/ Column Form',
 };
 
-export default meta;
+const { defineStory } = useStory(meta);
 
-type Story = StoryObj<typeof EditorFigureTableColumnForm>;
+export default meta;
 
 const mockColumnData: TableColumn = {
   aggregation: {
@@ -31,39 +33,12 @@ const mockMetricData: TableColumn = {
   },
 };
 
-export const New: Story = {
-  args: {},
-  render: (args: unknown) => ({
-    components: { EditorFigureTableColumnForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureTableColumnForm v-bind="args" />',
-  }),
-};
+export const New = defineStory({});
 
-export const Basic: Story = {
-  args: {
-    modelValue: mockColumnData,
-  },
-  render: (args: unknown) => ({
-    components: { EditorFigureTableColumnForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureTableColumnForm v-bind="args" />',
-  }),
-};
+export const Basic = defineStory({
+  modelValue: mockColumnData,
+});
 
-export const Metric: Story = {
-  args: {
-    modelValue: mockMetricData,
-  },
-  render: (args: unknown) => ({
-    components: { EditorFigureTableColumnForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureTableColumnForm v-bind="args" />',
-  }),
-};
+export const Metric = defineStory({
+  modelValue: mockMetricData,
+});

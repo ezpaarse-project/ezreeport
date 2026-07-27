@@ -1,5 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
 import type { TemplateFilter } from '~sdk/helpers/filters';
+
+import { useStory } from '~/__mocks__/utils';
 
 import FilterChip from './Chip.vue';
 
@@ -8,9 +10,9 @@ const meta: Meta<typeof FilterChip> = {
   title: 'Template Editor/Filters/Chip',
 };
 
-export default meta;
+const { defineStory } = useStory(meta);
 
-type Story = StoryObj<typeof FilterChip>;
+export default meta;
 
 const mockSimpleFilter: TemplateFilter = {
   field: 'rtype',
@@ -29,28 +31,10 @@ const mockRawFilter: TemplateFilter = {
   },
 };
 
-export const SimpleFilter: Story = {
-  args: {
-    modelValue: mockSimpleFilter,
-  },
-  render: (args: unknown) => ({
-    components: { FilterChip },
-    setup() {
-      return { args };
-    },
-    template: '<FilterChip v-bind="args" />',
-  }),
-};
+export const SimpleFilter = defineStory({
+  modelValue: mockSimpleFilter,
+});
 
-export const RawFilter: Story = {
-  args: {
-    modelValue: mockRawFilter,
-  },
-  render: (args: unknown) => ({
-    components: { FilterChip },
-    setup() {
-      return { args };
-    },
-    template: '<FilterChip v-bind="args" />',
-  }),
-};
+export const RawFilter = defineStory({
+  modelValue: mockRawFilter,
+});

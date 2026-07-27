@@ -1,5 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
 import { createVegaFigureHelper } from '~sdk/helpers/figures';
+
+import { useStory } from '~/__mocks__/utils';
 
 import EditorFigureVega from './Vega.vue';
 
@@ -7,6 +9,8 @@ const meta: Meta<typeof EditorFigureVega> = {
   component: EditorFigureVega,
   title: 'Template Editor/Figures/Vega',
 };
+
+const { defineStory } = useStory(meta);
 
 export default meta;
 
@@ -67,71 +71,24 @@ const mockBar = createVegaFigureHelper(
   }
 );
 
-type Story = StoryObj<typeof EditorFigureVega>;
+export const New = defineStory({
+  modelValue: createVegaFigureHelper('line'),
+});
 
-export const New: Story = {
-  args: {
-    modelValue: createVegaFigureHelper('line'),
-  },
-  render: (args: unknown) => ({
-    components: { EditorFigureVega },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVega v-bind="args" />',
-  }),
-};
+export const ArcExisting = defineStory({
+  modelValue: mockArc,
+});
 
-export const ArcExisting: Story = {
-  args: {
-    modelValue: mockArc,
-  },
-  render: (args: unknown) => ({
-    components: { EditorFigureVega },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVega v-bind="args" />',
-  }),
-};
+export const BarExisting = defineStory({
+  modelValue: mockBar,
+});
 
-export const BarExisting: Story = {
-  args: {
-    modelValue: mockBar,
-  },
-  render: (args: unknown) => ({
-    components: { EditorFigureVega },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVega v-bind="args" />',
-  }),
-};
+export const ArcReadonly = defineStory({
+  modelValue: mockArc,
+  readonly: true,
+});
 
-export const ArcReadonly: Story = {
-  args: {
-    modelValue: mockArc,
-    readonly: true,
-  },
-  render: (args: unknown) => ({
-    components: { EditorFigureVega },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVega v-bind="args" />',
-  }),
-};
-
-export const BarReadonly: Story = {
-  args: {
-    modelValue: mockBar,
-    readonly: true,
-  },
-  render: (args: unknown) => ({
-    components: { EditorFigureVega },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVega v-bind="args" />',
-  }),
-};
+export const BarReadonly = defineStory({
+  modelValue: mockBar,
+  readonly: true,
+});

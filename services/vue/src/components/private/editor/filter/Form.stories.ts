@@ -1,5 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
 import type { TemplateFilter } from '~sdk/helpers/filters';
+
+import { useStory } from '~/__mocks__/utils';
 
 import EditorFilterForm from './Form.vue';
 
@@ -8,9 +10,9 @@ const meta: Meta<typeof EditorFilterForm> = {
   title: 'Template Editor/Filters/Form',
 };
 
-export default meta;
+const { defineStory } = useStory(meta);
 
-type Story = StoryObj<typeof EditorFilterForm>;
+export default meta;
 
 const mockSimpleFilter: TemplateFilter = {
   field: 'rtype',
@@ -29,41 +31,14 @@ const mockRawFilter: TemplateFilter = {
   },
 };
 
-export const NewFilter: Story = {
-  args: {
-    modelValue: undefined,
-  },
-  render: (args: unknown) => ({
-    components: { EditorFilterForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFilterForm v-bind="args" />',
-  }),
-};
+export const NewFilter = defineStory({
+  modelValue: undefined,
+});
 
-export const SimpleFilter: Story = {
-  args: {
-    modelValue: mockSimpleFilter,
-  },
-  render: (args: unknown) => ({
-    components: { EditorFilterForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFilterForm v-bind="args" />',
-  }),
-};
+export const SimpleFilter = defineStory({
+  modelValue: mockSimpleFilter,
+});
 
-export const RawFilter: Story = {
-  args: {
-    modelValue: mockRawFilter,
-  },
-  render: (args: unknown) => ({
-    components: { EditorFilterForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFilterForm v-bind="args" />',
-  }),
-};
+export const RawFilter = defineStory({
+  modelValue: mockRawFilter,
+});

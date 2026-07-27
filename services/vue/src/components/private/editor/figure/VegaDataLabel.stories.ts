@@ -1,4 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import EditorFigureVegaDataLabel from './VegaDataLabel.vue';
 
@@ -7,55 +9,28 @@ const meta: Meta<typeof EditorFigureVegaDataLabel> = {
   title: 'Template Editor/Figures/Vega/Data Label',
 };
 
+const { defineStory } = useStory(meta);
+
 export default meta;
 
-type Story = StoryObj<typeof EditorFigureVegaDataLabel>;
+export const New = defineStory({
+  modelValue: undefined,
+  type: 'line',
+});
 
-export const New: Story = {
-  args: {
-    modelValue: undefined,
-    type: 'line',
+export const Existing = defineStory({
+  modelValue: {
+    format: 'percent',
+    showLabel: true,
   },
-  render: (args: unknown) => ({
-    components: { EditorFigureVegaDataLabel },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVegaDataLabel v-bind="args" />',
-  }),
-};
+  type: 'arc',
+});
 
-export const Existing: Story = {
-  args: {
-    modelValue: {
-      format: 'percent',
-      showLabel: true,
-    },
-    type: 'arc',
+export const Readonly = defineStory({
+  modelValue: {
+    format: 'percent',
+    showLabel: true,
   },
-  render: (args: unknown) => ({
-    components: { EditorFigureVegaDataLabel },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVegaDataLabel v-bind="args" />',
-  }),
-};
-
-export const Readonly: Story = {
-  args: {
-    modelValue: {
-      format: 'percent',
-      showLabel: true,
-    },
-    readonly: true,
-    type: 'bar',
-  },
-  render: (args: unknown) => ({
-    components: { EditorFigureVegaDataLabel },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVegaDataLabel v-bind="args" />',
-  }),
-};
+  readonly: true,
+  type: 'bar',
+});

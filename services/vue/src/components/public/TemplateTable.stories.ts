@@ -1,4 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import TemplateTable from './TemplateTable.vue';
 
@@ -7,17 +9,8 @@ const meta: Meta<typeof TemplateTable> = {
   title: 'Public/Templates Table',
 };
 
+const { defineStory } = useStory(meta);
+
 export default meta;
 
-type Story = StoryObj<typeof TemplateTable>;
-
-export const Default: Story = {
-  args: {},
-  render: (args: unknown) => ({
-    components: { TemplateTable },
-    setup() {
-      return { args };
-    },
-    template: '<TemplateTable v-bind="args" />',
-  }),
-};
+export const Default = defineStory({});

@@ -1,5 +1,7 @@
 // oxlint-disable no-default-export
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import TemplateLocaleFlag from './LocaleFlag.vue';
 
@@ -8,45 +10,18 @@ const meta: Meta<typeof TemplateLocaleFlag> = {
   title: 'Template/LocaleFlag',
 };
 
+const { defineStory } = useStory(meta);
+
 export default meta;
 
-type Story = StoryObj<typeof TemplateLocaleFlag>;
+export const French = defineStory({
+  modelValue: 'fr',
+});
 
-export const French: Story = {
-  args: {
-    modelValue: 'fr',
-  },
-  render: (args: unknown) => ({
-    components: { TemplateLocaleFlag },
-    setup() {
-      return { args };
-    },
-    template: '<TemplateLocaleFlag v-bind="args" />',
-  }),
-};
+export const English = defineStory({
+  modelValue: 'en',
+});
 
-export const English: Story = {
-  args: {
-    modelValue: 'en',
-  },
-  render: (args: unknown) => ({
-    components: { TemplateLocaleFlag },
-    setup() {
-      return { args };
-    },
-    template: '<TemplateLocaleFlag v-bind="args" />',
-  }),
-};
-
-export const Unknown: Story = {
-  args: {
-    modelValue: 'da',
-  },
-  render: (args: unknown) => ({
-    components: { TemplateLocaleFlag },
-    setup() {
-      return { args };
-    },
-    template: '<TemplateLocaleFlag v-bind="args" />',
-  }),
-};
+export const Unknown = defineStory({
+  modelValue: 'da',
+});

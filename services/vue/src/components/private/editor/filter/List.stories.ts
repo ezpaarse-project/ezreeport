@@ -1,5 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
 import type { TemplateFilterMap } from '~sdk/helpers/filters';
+
+import { useStory } from '~/__mocks__/utils';
 
 import EditorFilter from './List.vue';
 
@@ -8,9 +10,9 @@ const meta: Meta<typeof EditorFilter> = {
   title: 'Template Editor/Filters/List',
 };
 
-export default meta;
+const { defineStory } = useStory(meta);
 
-type Story = StoryObj<typeof EditorFilter>;
+export default meta;
 
 const mockFilters: TemplateFilterMap = new Map(
   [
@@ -103,42 +105,15 @@ const mockFilters: TemplateFilterMap = new Map(
   ].map((filter) => [filter.name, filter])
 );
 
-export const NewFilters: Story = {
-  args: {
-    modelValue: new Map(),
-  },
-  render: (args: unknown) => ({
-    components: { EditorFilter },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFilter v-bind="args" />',
-  }),
-};
+export const NewFilters = defineStory({
+  modelValue: new Map(),
+});
 
-export const ExistingFilters: Story = {
-  args: {
-    modelValue: mockFilters,
-  },
-  render: (args: unknown) => ({
-    components: { EditorFilter },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFilter v-bind="args" />',
-  }),
-};
+export const ExistingFilters = defineStory({
+  modelValue: mockFilters,
+});
 
-export const ReadonlyFilters: Story = {
-  args: {
-    modelValue: mockFilters,
-    readonly: true,
-  },
-  render: (args: unknown) => ({
-    components: { EditorFilter },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFilter v-bind="args" />',
-  }),
-};
+export const ReadonlyFilters = defineStory({
+  modelValue: mockFilters,
+  readonly: true,
+});

@@ -1,4 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import TemplateTagView from './View.vue';
 
@@ -7,32 +9,14 @@ const meta: Meta<typeof TemplateTagView> = {
   title: 'Template/Tag - View',
 };
 
+const { defineStory } = useStory(meta);
+
 export default meta;
 
-type Story = StoryObj<typeof TemplateTagView>;
+export const Empty = defineStory({
+  modelValue: [],
+});
 
-export const Empty: Story = {
-  args: {
-    modelValue: [],
-  },
-  render: (args: unknown) => ({
-    components: { TemplateTagView },
-    setup() {
-      return { args };
-    },
-    template: '<TemplateTagView v-bind="args" />',
-  }),
-};
-
-export const Existing: Story = {
-  args: {
-    modelValue: [{ name: 'ezPAARSE' }, { color: '#001E3D', name: 'bibCNRS' }],
-  },
-  render: (args: unknown) => ({
-    components: { TemplateTagView },
-    setup() {
-      return { args };
-    },
-    template: '<TemplateTagView v-bind="args" />',
-  }),
-};
+export const Existing = defineStory({
+  modelValue: [{ name: 'ezPAARSE' }, { color: '#001E3D', name: 'bibCNRS' }],
+});

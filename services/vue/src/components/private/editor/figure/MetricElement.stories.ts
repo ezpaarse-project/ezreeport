@@ -1,5 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
 import type { MetricLabel } from '~sdk/helpers/figures';
+
+import { useStory } from '~/__mocks__/utils';
 
 import EditorFigureMetricElement from './MetricElement.vue';
 
@@ -8,9 +10,9 @@ const meta: Meta<typeof EditorFigureMetricElement> = {
   title: 'Template Editor/Figures/Metric/ Element',
 };
 
-export default meta;
+const { defineStory } = useStory(meta);
 
-type Story = StoryObj<typeof EditorFigureMetricElement>;
+export default meta;
 
 const mockData: MetricLabel = {
   format: {
@@ -30,42 +32,15 @@ const mockDataWithAggregation: MetricLabel = {
   text: 'Plateformes',
 };
 
-export const Simple: Story = {
-  args: {
-    modelValue: mockData,
-  },
-  render: (args: unknown) => ({
-    components: { EditorFigureMetricElement },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureMetricElement v-bind="args" />',
-  }),
-};
+export const Simple = defineStory({
+  modelValue: mockData,
+});
 
-export const WithAggregation: Story = {
-  args: {
-    modelValue: mockDataWithAggregation,
-  },
-  render: (args: unknown) => ({
-    components: { EditorFigureMetricElement },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureMetricElement v-bind="args" />',
-  }),
-};
+export const WithAggregation = defineStory({
+  modelValue: mockDataWithAggregation,
+});
 
-export const Readonly: Story = {
-  args: {
-    modelValue: mockData,
-    readonly: true,
-  },
-  render: (args: unknown) => ({
-    components: { EditorFigureMetricElement },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureMetricElement v-bind="args" />',
-  }),
-};
+export const Readonly = defineStory({
+  modelValue: mockData,
+  readonly: true,
+});

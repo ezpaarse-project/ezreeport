@@ -1,4 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import EditorFigureVegaLabel from './VegaLabel.vue';
 
@@ -7,60 +9,33 @@ const meta: Meta<typeof EditorFigureVegaLabel> = {
   title: 'Template Editor/Figures/Vega/ Label Layer',
 };
 
+const { defineStory } = useStory(meta);
+
 export default meta;
 
-type Story = StoryObj<typeof EditorFigureVegaLabel>;
+export const New = defineStory({
+  modelValue: {},
+  type: 'line',
+});
 
-export const New: Story = {
-  args: {
-    modelValue: {},
-    type: 'line',
-  },
-  render: (args: unknown) => ({
-    components: { EditorFigureVegaLabel },
-    setup() {
-      return { args };
+export const Existing = defineStory({
+  modelValue: {
+    aggregation: {
+      field: 'mime',
+      type: 'terms',
     },
-    template: '<EditorFigureVegaLabel v-bind="args" />',
-  }),
-};
+    legend: null,
+  },
+  type: 'arc',
+});
 
-export const Existing: Story = {
-  args: {
-    modelValue: {
-      aggregation: {
-        field: 'mime',
-        type: 'terms',
-      },
-      legend: null,
+export const Readonly = defineStory({
+  modelValue: {
+    aggregation: {
+      field: 'auth',
+      type: 'terms',
     },
-    type: 'arc',
   },
-  render: (args: unknown) => ({
-    components: { EditorFigureVegaLabel },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVegaLabel v-bind="args" />',
-  }),
-};
-
-export const Readonly: Story = {
-  args: {
-    modelValue: {
-      aggregation: {
-        field: 'auth',
-        type: 'terms',
-      },
-    },
-    readonly: true,
-    type: 'bar',
-  },
-  render: (args: unknown) => ({
-    components: { EditorFigureVegaLabel },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVegaLabel v-bind="args" />',
-  }),
-};
+  readonly: true,
+  type: 'bar',
+});

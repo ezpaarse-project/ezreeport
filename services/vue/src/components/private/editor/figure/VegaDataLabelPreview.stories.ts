@@ -1,4 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import EditorFigureVegaDataLabelPreview from './VegaDataLabelPreview.vue';
 
@@ -7,40 +9,22 @@ const meta: Meta<typeof EditorFigureVegaDataLabelPreview> = {
   title: 'Template Editor/Figures/Vega/ Data Label Preview',
 };
 
+const { defineStory } = useStory(meta);
+
 export default meta;
 
-type Story = StoryObj<typeof EditorFigureVegaDataLabelPreview>;
-
-export const InFigure: Story = {
-  args: {
-    modelValue: {
-      format: 'percent',
-      showLabel: true,
-    },
-    type: 'arc',
+export const InFigure = defineStory({
+  modelValue: {
+    format: 'percent',
+    showLabel: true,
   },
-  render: (args: unknown) => ({
-    components: { EditorFigureVegaDataLabelPreview },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVegaDataLabelPreview v-bind="args" />',
-  }),
-};
+  type: 'arc',
+});
 
-export const OutFigure: Story = {
-  args: {
-    modelValue: {
-      format: 'numeric',
-      position: 'out',
-    },
-    type: 'arc',
+export const OutFigure = defineStory({
+  modelValue: {
+    format: 'numeric',
+    position: 'out',
   },
-  render: (args: unknown) => ({
-    components: { EditorFigureVegaDataLabelPreview },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVegaDataLabelPreview v-bind="args" />',
-  }),
-};
+  type: 'arc',
+});

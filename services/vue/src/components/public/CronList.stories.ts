@@ -1,4 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import CronList from './CronList.vue';
 
@@ -7,17 +9,8 @@ const meta: Meta<typeof CronList> = {
   title: 'Public/Cron List',
 };
 
+const { defineStory } = useStory(meta);
+
 export default meta;
 
-type Story = StoryObj<typeof CronList>;
-
-export const Default: Story = {
-  args: {},
-  render: (args: unknown) => ({
-    components: { CronList },
-    setup() {
-      return { args };
-    },
-    template: '<CronList v-bind="args" />',
-  }),
-};
+export const Default = defineStory({});

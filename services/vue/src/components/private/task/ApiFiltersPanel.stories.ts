@@ -1,6 +1,8 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
 import type { Namespace } from '~sdk/namespaces';
 import type { TemplateTag } from '~sdk/template-tags';
+
+import { useStory } from '~/__mocks__/utils';
 
 import ApiFiltersPanel from './ApiFiltersPanel.vue';
 
@@ -9,9 +11,9 @@ const meta: Meta<typeof ApiFiltersPanel> = {
   title: 'Task/API Filters Panel',
 };
 
-export default meta;
+const { defineStory } = useStory(meta);
 
-type Story = StoryObj<typeof ApiFiltersPanel>;
+export default meta;
 
 const mockTags: TemplateTag[] = [
   { color: '#ff0000', id: 'test', name: 'test' },
@@ -35,45 +37,18 @@ const mockNamespaces: Namespace[] = [
   },
 ];
 
-export const Default: Story = {
-  args: {
-    modelValue: true,
-    namespaces: mockNamespaces,
-    tags: mockTags,
-  },
-  render: (args: unknown) => ({
-    components: { ApiFiltersPanel },
-    setup() {
-      return { args };
-    },
-    template: '<ApiFiltersPanel v-bind="args" />',
-  }),
-};
+export const Default = defineStory({
+  modelValue: true,
+  namespaces: mockNamespaces,
+  tags: mockTags,
+});
 
-export const WithTags: Story = {
-  args: {
-    modelValue: true,
-    tags: mockTags,
-  },
-  render: (args: unknown) => ({
-    components: { ApiFiltersPanel },
-    setup() {
-      return { args };
-    },
-    template: '<ApiFiltersPanel v-bind="args" />',
-  }),
-};
+export const WithTags = defineStory({
+  modelValue: true,
+  tags: mockTags,
+});
 
-export const WithNamespaces: Story = {
-  args: {
-    modelValue: true,
-    namespaces: mockNamespaces,
-  },
-  render: (args: unknown) => ({
-    components: { ApiFiltersPanel },
-    setup() {
-      return { args };
-    },
-    template: '<ApiFiltersPanel v-bind="args" />',
-  }),
-};
+export const WithNamespaces = defineStory({
+  modelValue: true,
+  namespaces: mockNamespaces,
+});

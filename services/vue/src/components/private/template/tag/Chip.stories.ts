@@ -1,4 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import TemplateTagChip from './Chip.vue';
 
@@ -7,45 +9,18 @@ const meta: Meta<typeof TemplateTagChip> = {
   title: 'Template/Tag - Chip',
 };
 
+const { defineStory } = useStory(meta);
+
 export default meta;
 
-type Story = StoryObj<typeof TemplateTagChip>;
+export const Default = defineStory({
+  modelValue: { color: '#15B0D6FF', name: 'ezCOUNTER' },
+});
 
-export const Default: Story = {
-  args: {
-    modelValue: { color: '#15B0D6FF', name: 'ezCOUNTER' },
-  },
-  render: (args: unknown) => ({
-    components: { TemplateTagChip },
-    setup() {
-      return { args };
-    },
-    template: '<TemplateTagChip v-bind="args" />',
-  }),
-};
+export const Light = defineStory({
+  modelValue: { color: '#EEEEEEFF', name: 'Some Light Tag' },
+});
 
-export const Light: Story = {
-  args: {
-    modelValue: { color: '#EEEEEEFF', name: 'Some Light Tag' },
-  },
-  render: (args: unknown) => ({
-    components: { TemplateTagChip },
-    setup() {
-      return { args };
-    },
-    template: '<TemplateTagChip v-bind="args" />',
-  }),
-};
-
-export const Dark: Story = {
-  args: {
-    modelValue: { color: '#000000FF', name: 'Some Dark Tag' },
-  },
-  render: (args: unknown) => ({
-    components: { TemplateTagChip },
-    setup() {
-      return { args };
-    },
-    template: '<TemplateTagChip v-bind="args" />',
-  }),
-};
+export const Dark = defineStory({
+  modelValue: { color: '#000000FF', name: 'Some Dark Tag' },
+});

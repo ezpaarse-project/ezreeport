@@ -1,4 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import GenerationTable from './GenerationTable.vue';
 
@@ -7,17 +9,8 @@ const meta: Meta<typeof GenerationTable> = {
   title: 'Public/Generations Table',
 };
 
+const { defineStory } = useStory(meta);
+
 export default meta;
 
-type Story = StoryObj<typeof GenerationTable>;
-
-export const Default: Story = {
-  args: {},
-  render: (args: unknown) => ({
-    components: { GenerationTable },
-    setup() {
-      return { args };
-    },
-    template: '<GenerationTable v-bind="args" />',
-  }),
-};
+export const Default = defineStory({});

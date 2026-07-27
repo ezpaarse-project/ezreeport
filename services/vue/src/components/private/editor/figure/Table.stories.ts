@@ -1,9 +1,11 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
 import type { TemplateFilter } from '~sdk/helpers/filters';
 import {
   type TableColumn,
   createTableFigureHelper,
 } from '~sdk/helpers/figures';
+
+import { useStory } from '~/__mocks__/utils';
 
 import EditorFigureTable from './Table.vue';
 
@@ -12,9 +14,9 @@ const meta: Meta<typeof EditorFigureTable> = {
   title: 'Template Editor/Figures/Table',
 };
 
-export default meta;
+const { defineStory } = useStory(meta);
 
-type Story = StoryObj<typeof EditorFigureTable>;
+export default meta;
 
 const mockFilters: TemplateFilter[] = [
   {
@@ -73,52 +75,25 @@ const mockData: TableColumn[] = [
   },
 ];
 
-export const New: Story = {
-  args: {
-    modelValue: createTableFigureHelper(),
-  },
-  render: (args: unknown) => ({
-    components: { EditorFigureTable },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureTable v-bind="args" />',
-  }),
-};
+export const New = defineStory({
+  modelValue: createTableFigureHelper(),
+});
 
-export const Existing: Story = {
-  args: {
-    modelValue: createTableFigureHelper(
-      undefined,
-      mockData,
-      undefined,
-      mockFilters
-    ),
-  },
-  render: (args: unknown) => ({
-    components: { EditorFigureTable },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureTable v-bind="args" />',
-  }),
-};
+export const Existing = defineStory({
+  modelValue: createTableFigureHelper(
+    undefined,
+    mockData,
+    undefined,
+    mockFilters
+  ),
+});
 
-export const Readonly: Story = {
-  args: {
-    modelValue: createTableFigureHelper(
-      'Table title',
-      mockData,
-      true,
-      mockFilters
-    ),
-    readonly: true,
-  },
-  render: (args: unknown) => ({
-    components: { EditorFigureTable },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureTable v-bind="args" />',
-  }),
-};
+export const Readonly = defineStory({
+  modelValue: createTableFigureHelper(
+    'Table title',
+    mockData,
+    true,
+    mockFilters
+  ),
+  readonly: true,
+});

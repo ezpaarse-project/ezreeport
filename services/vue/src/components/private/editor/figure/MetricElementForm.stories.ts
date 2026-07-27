@@ -1,5 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
 import type { MetricLabel } from '~sdk/helpers/figures';
+
+import { useStory } from '~/__mocks__/utils';
 
 import EditorFigureMetricElementForm from './MetricElementForm.vue';
 
@@ -8,9 +10,9 @@ const meta: Meta<typeof EditorFigureMetricElementForm> = {
   title: 'Template Editor/Figures/Metric/ Element Form',
 };
 
-export default meta;
+const { defineStory } = useStory(meta);
 
-type Story = StoryObj<typeof EditorFigureMetricElementForm>;
+export default meta;
 
 const mockData: MetricLabel = {
   format: {
@@ -19,25 +21,8 @@ const mockData: MetricLabel = {
   text: 'total des accès',
 };
 
-export const New: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFigureMetricElementForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureMetricElementForm v-bind="args" />',
-  }),
-};
+export const New = defineStory({});
 
-export const Existing: Story = {
-  args: {
-    modelValue: mockData,
-  },
-  render: (args: unknown) => ({
-    components: { EditorFigureMetricElementForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureMetricElementForm v-bind="args" />',
-  }),
-};
+export const Existing = defineStory({
+  modelValue: mockData,
+});
