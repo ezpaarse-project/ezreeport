@@ -2,7 +2,7 @@ import { CronJob } from 'cron';
 
 import type { Logger } from '@ezreeport/logger';
 
-import type { Executor, CronType } from './types';
+import type { CronType, Executor } from './types';
 
 type TimersMapValue = { timer: string; executor: Executor };
 
@@ -10,10 +10,10 @@ const formatCron = <Timers extends string>(
   name: Timers,
   job: CronJob
 ): CronType => ({
-  name,
-  running: job.isActive,
   lastRun: job.lastDate() ?? undefined,
+  name,
   nextRun: job.isActive ? job.nextDate().toJSDate() : undefined,
+  running: job.isActive,
 });
 
 export class CronManager<Timers extends string> {
@@ -30,29 +30,32 @@ export class CronManager<Timers extends string> {
       const cron = { key: key as Timers, timer };
       if (!executor) {
         logger.error({
+          cron,
           msg: 'Cron is not implemented',
-          cron,
         });
         return;
       }
-
-      let job;
       try {
-        job = new CronJob(timer, () => this.onTick(cron, executor), null, true);
-      } catch (err) {
-        logger.error({
-          msg: 'Failed to create cron',
+        const job = new CronJob(
+          timer,
+          () => this.onTick(cron, executor),
+          null,
+          true
+        );
+
+        this.crons.set(cron.key, job);
+        logger.debug({
           cron,
-          err,
+          msg: 'Created cron',
+        });
+      } catch (error) {
+        logger.error({
+          cron,
+          err: error,
+          msg: 'Failed to create cron',
         });
         return;
       }
-
-      this.crons.set(cron.key, job);
-      logger.debug({
-        msg: 'Created cron',
-        cron,
-      });
     }
 
     // Handle process exit
@@ -60,8 +63,8 @@ export class CronManager<Timers extends string> {
       for (const [key, job] of this.crons) {
         job.stop();
         logger.debug({
-          msg: 'Cron stopped',
           cron: { key, timer: job.cronTime.toString() },
+          msg: 'Cron stopped',
         });
       }
     });
@@ -74,33 +77,34 @@ export class CronManager<Timers extends string> {
     const start = process.uptime();
     const tickLogger = this.logger.child({ cron });
 
-    let result;
+    let result = null;
     try {
       tickLogger.debug({ msg: 'Executing cron' });
       result = await executor(tickLogger);
-    } catch (err) {
+    } catch (error) {
       tickLogger.error({
-        msg: 'Failed to execute cron',
         duration: process.uptime() - start,
         durationUnit: 's',
-        err,
+        err: error,
+        msg: 'Failed to execute cron',
       });
     }
 
     tickLogger.info({
-      msg: 'Cron executed',
       duration: process.uptime() - start,
       durationUnit: 's',
+      msg: 'Cron executed',
       ...result,
     });
   }
 
   public isCron(timer: string): timer is Timers {
+    // oxlint-disable-next-line unicorn/prefer-spread - Need to cast as string
     return Array.from<string>(this.crons.keys()).includes(timer);
   }
 
   public getAllCrons(): CronType[] {
-    return Array.from(this.crons.entries()).map(([name, job]) =>
+    return [...this.crons.entries()].map(([name, job]) =>
       formatCron(name, job)
     );
   }

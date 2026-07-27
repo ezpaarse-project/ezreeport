@@ -1,12 +1,13 @@
-import type { Mark } from 'vega-lite/build/src/mark';
+import type { Mark } from 'vega-lite/types_unstable/mark.js';
 import { registerFont } from 'canvas';
 import { compile as handlebars } from 'handlebars';
-import { parse, View, type Locale as VegaLocale } from 'vega';
-import { compile, type TopLevelSpec } from 'vega-lite';
+import { type Locale as VegaLocale, View, parse } from 'vega';
+import { type TopLevelSpec, compile } from 'vega-lite';
 
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
-import localeFR from '~/lib/vega/locales/fr-FR.json';
+// oxlint-disable-next-line import/extensions
+import localeFR from '~/lib/vega/locales/fr-FR.json' with { type: 'json' };
 import VegaLogger from '~/lib/vega/logger';
 
 import type { FetchResultItem } from '~/models/fetch/results';

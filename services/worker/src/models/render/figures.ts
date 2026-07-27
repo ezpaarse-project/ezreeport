@@ -1,4 +1,4 @@
-import type { Mark } from 'vega-lite/build/src/mark';
+import type { Mark } from 'vega-lite/types_unstable/mark.js';
 import { merge } from 'lodash';
 
 import type { RecurrenceType } from '@ezreeport/models/recurrence';
@@ -208,4 +208,5 @@ const renderFigure: RenderFigureFnc = (params) => {
   return render(params);
 };
 
+// oxlint-disable-next-line import/no-default-export
 export default renderFigure;

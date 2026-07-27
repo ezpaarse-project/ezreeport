@@ -1,5 +1,5 @@
 <template>
-  <v-fade-transition tag="v-row" group class="template-layout-elements">
+  <v-fade-transition tag="v-row" group class="template-layout-elements ga-4">
     <EditorSlot
       v-for="(element, index) in elements"
       :key="element.id"
@@ -101,10 +101,7 @@
     ];
   });
 
-  /**
-   *
-   */
-  function editFigure(figure: AnyFigureHelper, element: Element) {
+  function editFigure(figure: AnyFigureHelper, element: Element): void {
     try {
       if (element.figure) {
         updateFigureOfHelper(props.modelValue, element.figure, figure);
@@ -117,7 +114,7 @@
     }
   }
 
-  function deleteFigure(element: Element) {
+  function deleteFigure(element: Element): void {
     try {
       if (element.figure) {
         removeFigureOfHelper(props.modelValue, element.figure);

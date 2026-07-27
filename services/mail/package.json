@@ -30,16 +30,16 @@
     "@ezreeport/rabbitmq": "workspace:*",
     "@ezreeport/rpc": "workspace:*",
     "@ezreeport/simple-http": "workspace:*",
-    "mjml": "^4.14.1",
-    "nodemailer": "^7.0.5",
+    "mjml": "^5.4.0",
+    "nodemailer": "^9.0.3",
     "nunjucks": "^3.2.4",
     "tsx": "catalog:",
     "typescript": "catalog:"
   },
   "devDependencies": {
-    "@types/mjml": "^4.7.4",
+    "@types/mjml": "^5.0.0",
     "@types/node": "catalog:",
-    "@types/nodemailer": "^6.4.16",
+    "@types/nodemailer": "^8.0.1",
     "@types/nunjucks": "^3.2.6",
     "pino-pretty": "catalog:"
   },

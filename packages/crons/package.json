@@ -24,19 +24,10 @@
   "dependencies": {
     "@ezreeport/logger": "workspace:*",
     "@ezreeport/models": "workspace:*",
-    "cron": "^4.3.1"
+    "cron": "^4.4.0"
   },
   "devDependencies": {
     "typescript": "catalog:"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "oxlint --fix",
-      "oxfmt --no-error-on-unmatched-pattern"
-    ],
-    "package.json": [
-      "oxfmt --no-error-on-unmatched-pattern"
-    ]
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

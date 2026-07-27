@@ -19,21 +19,11 @@
     "type-check": "tsc --noEmit --skipLibCheck"
   },
   "dependencies": {
-    "config": "^4.1.1"
+    "config": "^4.4.2"
   },
   "devDependencies": {
-    "@types/config": "^3.3.5",
     "@types/node": "catalog:",
     "typescript": "catalog:"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "oxlint --fix",
-      "oxfmt --no-error-on-unmatched-pattern"
-    ],
-    "package.json": [
-      "oxfmt --no-error-on-unmatched-pattern"
-    ]
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

@@ -23,16 +23,8 @@
     {
       "files": ["src/components/**/*.stories.ts"],
       "rules": {
-        "explicit-function-return-type": "off",
         // Storybook expect default exports
         "no-default-export": "off",
-        // Vue conventions
-        "unicorn/filename-case": "off"
-      }
-    },
-    {
-      "files": ["src/components/**/*.example.ts"],
-      "rules": {
         // Vue conventions
         "unicorn/filename-case": "off"
       }

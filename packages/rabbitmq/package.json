@@ -20,22 +20,12 @@
   },
   "dependencies": {
     "@ezreeport/logger": "workspace:*",
-    "amqplib": "^0.10.8",
+    "amqplib": "^2.0.1",
     "typescript": "catalog:",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/amqplib": "^0.10.7",
     "typescript": "catalog:"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "oxlint --fix",
-      "oxfmt --no-error-on-unmatched-pattern"
-    ],
-    "package.json": [
-      "oxfmt --no-error-on-unmatched-pattern"
-    ]
   },
   "engines": {
     "node": "^20 || ^22 || ^24"
