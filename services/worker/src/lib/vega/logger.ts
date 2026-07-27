@@ -1,4 +1,4 @@
-import { Debug, Error, Info, Warn, type LoggerInterface } from 'vega';
+import type { LoggerInterface } from 'vega';
 
 import { appLogger } from '~/lib/logger';
 
@@ -7,17 +7,17 @@ const logger = appLogger.child({ name: 'vega' });
 const logLevelToNumber = (level: string): number => {
   switch (level) {
     case 'error':
-      return Error;
+      return 1;
     case 'warn':
-      return Warn;
+      return 2;
     case 'info':
-      return Info;
+      return 3;
     default:
-      return Debug;
+      return 4;
   }
 };
 
-export default class VegaLogger implements LoggerInterface {
+export class VegaLogger implements LoggerInterface {
   error(...messages: readonly string[]): this {
     logger.error({ messages });
     return this;

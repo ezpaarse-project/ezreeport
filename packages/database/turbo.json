@@ -28,7 +28,7 @@
       "cache": false,
       "env": ["DATABASE_URL"]
     },
-    "type-check": {
+    "check": {
       "dependsOn": ["db:generate"]
     }
   }

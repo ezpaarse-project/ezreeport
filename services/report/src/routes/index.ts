@@ -11,5 +11,5 @@ const router: FastifyPluginAsync = async (fastify) => {
   await fastify.register(v2, { prefix: '/v2' });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

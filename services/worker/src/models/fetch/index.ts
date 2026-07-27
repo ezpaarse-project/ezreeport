@@ -36,8 +36,10 @@ function prepareRequestsOfFigures(
   calendarInterval: 'hour' | 'day' | 'month'
 ): ElasticTypes.MsearchMultisearchBody {
   const query = prepareEsQuery(
-    [options.filters, figure.filters].filter((filter) => !!filter).flat(), // Merge filters
-    { value: options.period, dateField: options.dateField }
+    // Merge filters
+    // oxlint-disable-next-line no-implicit-coercion - TS Guard
+    [options.filters, figure.filters].filter((filter) => !!filter).flat(),
+    { dateField: options.dateField, value: options.period }
   );
 
   const aggregations = prepareEsAggregations(
@@ -47,8 +49,8 @@ function prepareRequestsOfFigures(
   );
 
   return {
-    query,
     aggregations,
+    query,
     size: 0,
     track_total_hits: true,
   };
@@ -87,16 +89,16 @@ export async function fetchElastic(
 
   const responses = await elasticMSearch(
     {
-      index: options.index,
       body: requests.flatMap((request) => [{}, request]),
+      index: options.index,
     },
     options.auth.username
   )
     .then(({ body }) => body.responses)
     .catch(
-      (err) =>
+      (error) =>
         new FetchError(
-          err instanceof Error ? err.message : `${err}`,
+          error instanceof Error ? error.message : `${error}`,
           'UnknownError',
           { esIndex: options.index, esQuery: requests }
         )

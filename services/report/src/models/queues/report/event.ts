@@ -4,15 +4,15 @@ import { parseJSONMessage } from '@ezreeport/rabbitmq';
 
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
-import { getWSNamespace, type Namespace } from '~/lib/sockets';
+import { type Namespace, getWSNamespace } from '~/lib/sockets';
 
 import { getTask } from '~/models/tasks';
 
 const eventExchangeName = 'ezreeport.report:event';
 
 const logger = appLogger.child({
-  scope: 'queues',
   exchange: eventExchangeName,
+  scope: 'queues',
 });
 
 async function sendWSEvents(
@@ -28,8 +28,8 @@ async function sendWSEvents(
       throw new Error(`Task ${data.taskId} not found`);
     }
     namespace = task.namespaceId;
-  } catch (err) {
-    logger.warn({ msg: "Couldn't send WS event to namespace", err });
+  } catch (error) {
+    logger.warn({ error, msg: "Couldn't send WS event to namespace" });
     return;
   }
 
@@ -45,14 +45,14 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null): Promise<void> {
   const { data, raw, parseError } = parseJSONMessage(msg, Generation);
   if (!data) {
     logger.error({
-      msg: 'Invalid data',
       data: process.env.NODE_ENV === 'production' ? undefined : raw,
       err: parseError,
+      msg: 'Invalid data',
     });
     return;
   }
 
-  // try to fix issue where task is completed but not marked as such
+  // Try to fix issue where task is completed but not marked as such
   if (data.progress === 100 && data.status === 'PROCESSING') {
     data.status = 'SUCCESS';
   }
@@ -79,8 +79,8 @@ export async function initReportEventExchange(
 
   // Create queue to bind
   const { queue } = await channel.assertQueue('', {
-    exclusive: true,
     durable: false,
+    exclusive: true,
   });
   channel.bindQueue(queue, eventExchange, '');
 
@@ -88,8 +88,8 @@ export async function initReportEventExchange(
   channel.consume(queue, (msg) => onMessage(msg), { noAck: true });
 
   logger.debug({
-    msg: 'Event exchange created',
     exchange: eventExchange,
+    msg: 'Event exchange created',
     queue,
   });
 }

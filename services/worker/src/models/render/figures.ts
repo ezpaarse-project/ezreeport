@@ -12,7 +12,8 @@ import RenderError from './errors';
 import { addMdToPDF } from './pdf/markdown';
 import { addMetricToPDF } from './pdf/metrics';
 import { addTableToPDF } from './pdf/table';
-import { createVegaLSpec, createVegaView, parseTitle } from './vega';
+import { createVegaView, parseTitle } from './vega';
+import { createVegaLSpec } from './vega/specs';
 
 type RenderFigureFnc = (params: {
   /**
@@ -85,6 +86,7 @@ const renderMarkdown: RenderFigureFnc = async (params) => {
 
   await addMdToPDF(doc, data.toString(), {
     ...figure.params,
+    height: slot.height,
     start: {
       // oxlint-disable-next-line id-length
       x: slot.x,
@@ -92,7 +94,6 @@ const renderMarkdown: RenderFigureFnc = async (params) => {
       y: slot.y,
     },
     width: slot.width,
-    height: slot.height,
   });
 };
 
@@ -101,11 +102,12 @@ const renderMarkdown: RenderFigureFnc = async (params) => {
  *
  * @param params
  */
-const renderMetrics: RenderFigureFnc = async (params) => {
+const renderMetrics: RenderFigureFnc = (params) => {
   const { doc, figure, slot, data } = params;
 
   addMetricToPDF(doc, data, {
     ...figure.params,
+    height: slot.height,
     start: {
       // oxlint-disable-next-line id-length
       x: slot.x,
@@ -113,8 +115,9 @@ const renderMetrics: RenderFigureFnc = async (params) => {
       y: slot.y,
     },
     width: slot.width,
-    height: slot.height,
   });
+
+  return Promise.resolve();
 };
 
 /**
@@ -161,8 +164,8 @@ const renderVegaChart: RenderFigureFnc = async (params) => {
   });
 
   const view = await Promise.resolve(createVegaView(spec)).catch(
-    (err) =>
-      new RenderError(err.message, 'VegaError', {
+    (error) =>
+      new RenderError(error.message, 'VegaError', {
         vegaSpec: { ...spec, datasets: undefined },
       })
   );
@@ -173,7 +176,7 @@ const renderVegaChart: RenderFigureFnc = async (params) => {
 
   doc.pdf.addImage({
     ...slot,
-    // jsPDF only supports PNG, TIFF, JPG, WEBP & BMP meanwhile
+    // JsPDF only supports PNG, TIFF, JPG, WEBP & BMP meanwhile
     // Vega can only export to Canvas (with typings issues), SVG & PNG
     imageData: await view.toImageURL('png', 1.5),
   });

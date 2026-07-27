@@ -1,4 +1,4 @@
-import type { TemplateFilter, TemplateBodyFigure } from '~/modules/templates';
+import type { TemplateBodyFigure, TemplateFilter } from '~/modules/templates';
 
 import type { FigureAggregation } from '../aggregations';
 import type { FigureOrder } from './utils';
@@ -65,10 +65,10 @@ export function createTableFigureHelper(
     'table',
     filters,
     {
-      title,
       columns,
-      total,
       order,
+      title,
+      total,
     },
     slots
   );
@@ -91,10 +91,10 @@ export function tableHelperParamsToJSON(
   params: TableFigureHelper['params']
 ): TemplateBodyFigure['params'] {
   return {
-    title: params.title,
     columns: params.columns,
-    total: params.total,
     order: params.order,
+    title: params.title,
+    total: params.total,
   };
 }
 
@@ -146,7 +146,7 @@ export function updateTableColumnOfHelper(
   const index = figure.params.columns.findIndex(
     (col) => getTableColumnKey(col) === oldKey
   );
-  if (index < 0) {
+  if (index === -1) {
     throw new Error(`Column "${oldKey}" not found`);
   }
   const fig = figure;

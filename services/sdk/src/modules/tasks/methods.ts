@@ -1,12 +1,12 @@
 import { parseISO } from 'date-fns';
 
 import {
-  apiRequestOptionsToQuery,
+  type ApiDeletedResponse,
+  type ApiRequestOptions,
   type ApiResponse,
   type ApiResponsePaginated,
-  type ApiRequestOptions,
-  type ApiDeletedResponse,
   type SdkPaginated,
+  apiRequestOptionsToQuery,
 } from '~/lib/api';
 import { client } from '~/lib/fetch';
 import { transformCreatedUpdated } from '~/lib/transform';
@@ -21,11 +21,11 @@ export const transformTaskWithoutBody = (
   template: Omit<RawTask, 'template'>
 ): Omit<Task, 'template'> => ({
   ...transformCreatedUpdated(template),
-  nextRun: parseISO(template.nextRun),
   lastRun: template.lastRun ? parseISO(template.lastRun) : undefined,
   namespace:
     template.namespace &&
     transformNamespace(template.namespace as RawNamespace),
+  nextRun: parseISO(template.nextRun),
 });
 
 export const transformTask = (template: RawTask): Task => ({
@@ -57,10 +57,10 @@ export async function getAllTasks(
   );
 
   return {
-    items: content.map(transformTaskWithoutBody),
-    total,
     count,
+    items: content.map(transformTaskWithoutBody),
     page,
+    total,
   };
 }
 assignPermission(getAllTasks, 'GET /tasks', true);
@@ -99,8 +99,8 @@ assignPermission(getTask, 'GET /tasks/:id', true);
  */
 export async function createTask(task: InputTask): Promise<Task> {
   const { content } = await client.fetch<ApiResponse<RawTask>>('/tasks', {
-    method: 'POST',
     body: task,
+    method: 'POST',
   });
 
   return transformTask(content);
@@ -119,8 +119,8 @@ export async function upsertTask({
   ...task
 }: InputTask & { id: Task['id'] }): Promise<Task> {
   const { content } = await client.fetch<ApiResponse<RawTask>>(`/tasks/${id}`, {
-    method: 'PUT',
     body: task,
+    method: 'PUT',
   });
 
   return transformTask(content);

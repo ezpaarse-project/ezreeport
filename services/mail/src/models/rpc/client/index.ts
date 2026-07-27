@@ -5,6 +5,7 @@ import { initFilesClient } from './files';
 
 const logger = appLogger.child({ scope: 'rpc.client' });
 
+// oxlint-disable-next-line import/no-default-export
 export default function initRPCClients(channel: rabbitmq.Channel) {
   const start = process.uptime();
 

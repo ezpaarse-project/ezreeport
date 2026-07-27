@@ -1,8 +1,8 @@
 import type { HeartbeatService } from '@ezreeport/heartbeats/types';
 import {
-  setupHeartbeat,
-  mandatoryService,
   type HeartbeatSender,
+  mandatoryService,
+  setupHeartbeat,
 } from '@ezreeport/heartbeats';
 
 import type rabbitmq from '~/lib/rabbitmq';
@@ -10,19 +10,20 @@ import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
 import { dbPing } from '~/lib/prisma';
 
-import { version } from '../../../package.json';
+// oxlint-disable-next-line import/extensions
+import { version } from '../../../package.json' with { type: 'json' };
 
 const { heartbeat: frequency } = config;
 
 export const service: HeartbeatService = {
-  name: 'scheduler',
-  version,
-  filesystems: {
-    logs: config.log.dir,
-  },
   connectedServices: {
     database: mandatoryService('database', dbPing),
   },
+  filesystems: {
+    logs: config.log.dir,
+  },
+  name: 'scheduler',
+  version,
 };
 
 const logger = appLogger.child({ scope: 'heartbeat' });

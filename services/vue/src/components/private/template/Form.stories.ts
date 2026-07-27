@@ -49,9 +49,9 @@ export const ClickAndRead: Story = {
               {
                 filters: [
                   {
-                    name: '_index is ezunpw*',
                     field: '_index',
                     isNot: false,
+                    name: '_index is ezunpw*',
                     value: 'ezunpw*',
                   },
                 ],
@@ -74,38 +74,38 @@ export const ClickAndRead: Story = {
               {
                 filters: [
                   {
-                    name: '_index is ezunpw*',
                     field: '_index',
                     isNot: false,
+                    name: '_index is ezunpw*',
                     value: 'ezunpw*',
                   },
                 ],
                 params: {
                   labels: [
-                    { text: 'Requêtes', format: { type: 'number' } },
+                    { format: { type: 'number' }, text: 'Requêtes' },
                     {
+                      aggregation: { field: 'sid', type: 'cardinality' },
                       text: 'ApiKey',
-                      aggregation: { type: 'cardinality', field: 'sid' },
                     },
                     {
+                      aggregation: { field: 'date', type: 'min' },
+                      format: { type: 'date' },
                       text: 'De',
-                      format: { type: 'date' },
-                      aggregation: { type: 'min', field: 'date' },
                     },
                     {
+                      aggregation: { field: 'date', type: 'max' },
+                      format: { type: 'date' },
                       text: 'à',
-                      format: { type: 'date' },
-                      aggregation: { type: 'max', field: 'date' },
                     },
                     {
+                      aggregation: { field: 'host', type: 'cardinality' },
+                      format: { type: 'number' },
                       text: 'Hôtes uniques',
-                      format: { type: 'number' },
-                      aggregation: { type: 'cardinality', field: 'host' },
                     },
                     {
-                      text: 'DOI recherchés',
+                      aggregation: { field: 'doi_count', type: 'sum' },
                       format: { type: 'number' },
-                      aggregation: { type: 'sum', field: 'doi_count' },
+                      text: 'DOI recherchés',
                     },
                   ],
                 },
@@ -115,9 +115,9 @@ export const ClickAndRead: Story = {
               {
                 filters: [
                   {
-                    name: '_index is ezunpw*',
                     field: '_index',
                     isNot: false,
+                    name: '_index is ezunpw*',
                     value: 'ezunpw*',
                   },
                 ],
@@ -144,33 +144,33 @@ export const ClickAndRead: Story = {
               {
                 filters: [
                   {
-                    name: '_index is istex*',
                     field: '_index',
                     isNot: false,
+                    name: '_index is istex*',
                     value: 'istex*',
                   },
                 ],
                 params: {
                   labels: [
-                    { text: 'Requêtes', format: { type: 'number' } },
+                    { format: { type: 'number' }, text: 'Requêtes' },
                     {
+                      aggregation: { field: 'sid', type: 'cardinality' },
                       text: 'sid',
-                      aggregation: { type: 'cardinality', field: 'sid' },
                     },
                     {
+                      aggregation: { field: 'date', type: 'min' },
+                      format: { type: 'date' },
                       text: 'De',
-                      format: { type: 'date' },
-                      aggregation: { type: 'min', field: 'date' },
                     },
                     {
+                      aggregation: { field: 'date', type: 'max' },
+                      format: { type: 'date' },
                       text: 'à',
-                      format: { type: 'date' },
-                      aggregation: { type: 'max', field: 'date' },
                     },
                     {
-                      text: 'Hôtes uniques',
+                      aggregation: { field: 'host', type: 'cardinality' },
                       format: { type: 'number' },
-                      aggregation: { type: 'cardinality', field: 'host' },
+                      text: 'Hôtes uniques',
                     },
                   ],
                 },
@@ -180,9 +180,9 @@ export const ClickAndRead: Story = {
               {
                 filters: [
                   {
-                    name: '_index is istex*',
                     field: '_index',
                     isNot: false,
+                    name: '_index is istex*',
                     value: 'istex*',
                   },
                 ],
@@ -209,33 +209,33 @@ export const ClickAndRead: Story = {
               {
                 filters: [
                   {
-                    name: '_index is panist*',
                     field: '_index',
                     isNot: false,
+                    name: '_index is panist*',
                     value: 'panist*',
                   },
                 ],
                 params: {
                   labels: [
-                    { text: 'Requêtes', format: { type: 'number' } },
+                    { format: { type: 'number' }, text: 'Requêtes' },
                     {
+                      aggregation: { field: 'sid', type: 'cardinality' },
                       text: 'sid',
-                      aggregation: { type: 'cardinality', field: 'sid' },
                     },
                     {
+                      aggregation: { field: 'date', type: 'min' },
+                      format: { type: 'date' },
                       text: 'De',
-                      format: { type: 'date' },
-                      aggregation: { type: 'min', field: 'date' },
                     },
                     {
+                      aggregation: { field: 'date', type: 'max' },
+                      format: { type: 'date' },
                       text: 'à',
-                      format: { type: 'date' },
-                      aggregation: { type: 'max', field: 'date' },
                     },
                     {
-                      text: 'Hôtes uniques',
+                      aggregation: { field: 'host', type: 'cardinality' },
                       format: { type: 'number' },
-                      aggregation: { type: 'cardinality', field: 'host' },
+                      text: 'Hôtes uniques',
                     },
                   ],
                 },
@@ -245,9 +245,9 @@ export const ClickAndRead: Story = {
               {
                 filters: [
                   {
-                    name: '_index is panist*',
                     field: '_index',
                     isNot: false,
+                    name: '_index is panist*',
                     value: 'panist*',
                   },
                 ],
@@ -382,27 +382,27 @@ export const Doranum: Story = {
                 filters: [],
                 params: {
                   labels: [
-                    { text: 'Total des accès', format: { type: 'number' } },
+                    { format: { type: 'number' }, text: 'Total des accès' },
                     {
+                      aggregation: { field: 'platform', type: 'cardinality' },
                       text: 'Plateformes',
-                      aggregation: { type: 'cardinality', field: 'platform' },
                     },
                     {
-                      text: 'Ressources en ligne',
                       aggregation: {
-                        type: 'cardinality',
                         field: 'publication_title',
+                        type: 'cardinality',
                       },
+                      text: 'Ressources en ligne',
                     },
                     {
+                      aggregation: { field: 'datetime', type: 'min' },
+                      format: { type: 'date' },
                       text: 'Période du',
-                      format: { type: 'date' },
-                      aggregation: { type: 'min', field: 'datetime' },
                     },
                     {
-                      text: 'au',
+                      aggregation: { field: 'datetime', type: 'max' },
                       format: { type: 'date' },
-                      aggregation: { type: 'max', field: 'datetime' },
+                      text: 'au',
                     },
                   ],
                 },
@@ -459,9 +459,9 @@ export const Doranum: Story = {
                 params: {
                   columns: [
                     {
+                      aggregation: { field: 'rtype', size: 2, type: 'terms' },
                       header: 'type de consultation',
                       metric: false,
-                      aggregation: { type: 'terms', field: 'rtype', size: 2 },
                     },
                     {
                       header: 'Count',
@@ -480,9 +480,9 @@ export const Doranum: Story = {
                 params: {
                   columns: [
                     {
+                      aggregation: { field: 'mime', type: 'terms' },
                       header: 'format',
                       metric: false,
-                      aggregation: { type: 'terms', field: 'mime' },
                     },
                     {
                       header: 'Count',
@@ -523,18 +523,18 @@ export const Doranum: Story = {
                 params: {
                   columns: [
                     {
-                      header: 'Titre de la ressource',
-                      metric: false,
                       aggregation: {
-                        type: 'terms',
                         field: 'publication_title',
                         size: 20,
+                        type: 'terms',
                       },
+                      header: 'Titre de la ressource',
+                      metric: false,
                     },
                     {
+                      aggregation: { field: 'doi', size: 1, type: 'terms' },
                       header: 'DOI',
                       metric: false,
-                      aggregation: { type: 'terms', field: 'doi', size: 1 },
                     },
                     {
                       header: 'count',

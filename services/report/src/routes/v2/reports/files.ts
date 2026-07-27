@@ -16,20 +16,20 @@ import { getTask } from '~/models/tasks';
 
 import { requireAllowedNamespace } from '~/plugins/auth';
 import {
-  describeErrors,
   buildSuccessResponse,
+  describeErrors,
   zSuccessResponse,
 } from '~/routes/v2/responses';
 
 const SpecificReportParams = z.object({
+  reportName: z.string().min(1).describe('ID of the report'),
+
   taskId: z.string().min(1).describe('ID of the task'),
 
   yearMonth: z
     .string()
     .regex(/^[0-9]{4}-[0-9]{2}$/)
     .describe('Year and month of generation of the report'),
-
-  reportName: z.string().min(1).describe('ID of the report'),
 });
 
 // oxlint-disable-next-line max-lines-per-function, require-await
@@ -38,8 +38,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/',
     schema: {
-      summary: 'Get list of files for a generated report',
-      tags: ['reports'],
       params: z.object({
         taskId: z.string().min(1).describe('ID of the task'),
       }),
@@ -55,11 +53,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           z.record(z.string().describe('File name'), ReportFiles)
         ),
       },
+      summary: 'Get list of files for a generated report',
+      tags: ['reports'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ,
+        requireUser: true,
       },
     },
     preHandler: [
@@ -86,8 +86,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/:yearMonth/:reportName',
     schema: {
-      summary: 'Get list of files for a generated report',
-      tags: ['reports'],
       params: SpecificReportParams,
       response: {
         ...describeErrors([
@@ -99,11 +97,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(ReportFiles),
       },
+      summary: 'Get list of files for a generated report',
+      tags: ['reports'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ,
+        requireUser: true,
       },
     },
     preHandler: [
@@ -139,12 +139,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/:yearMonth/:reportName.:type.:ext',
     schema: {
-      summary: 'Get file of a generated report',
-      tags: ['reports'],
       params: z.object({
         ...SpecificReportParams.shape,
-        type: z.string().min(1),
         ext: z.string().min(1),
+        type: z.string().min(1),
       }),
       querystring: z.object({
         download: z.coerce.boolean().default(false),
@@ -159,11 +157,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: z.unknown(),
       },
+      summary: 'Get file of a generated report',
+      tags: ['reports'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ,
+        requireUser: true,
       },
     },
     preHandler: [
@@ -181,13 +181,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       const stream = await createReportReadStream(
         filename,
         request.params.taskId
-      ).catch((err) => new Error('Failed to read file', { cause: err }));
+      ).catch((error) => new Error('Failed to read file', { cause: error }));
 
       if (stream instanceof Error) {
         appLogger.error({
-          msg: 'Error on file read',
-          filename,
           err: stream,
+          filename,
+          msg: 'Error on file read',
         });
         throw stream;
       }
@@ -197,5 +197,5 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
   });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

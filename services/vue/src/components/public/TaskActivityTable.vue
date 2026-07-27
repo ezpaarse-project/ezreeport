@@ -159,7 +159,12 @@
 
 <script setup lang="ts">
   import type { VDataTable } from 'vuetify/components';
-  import { mdiCalendarRange, mdiFilter, mdiFilterOff, mdiRefresh } from '@mdi/js';
+  import {
+    mdiCalendarRange,
+    mdiFilter,
+    mdiFilterOff,
+    mdiRefresh,
+  } from '@mdi/js';
   import { eachDayOfInterval, formatISO, isValid, max, min } from 'date-fns';
   import { getAllActivity } from '~sdk/task-activity';
 
@@ -241,7 +246,9 @@
         representation: 'date',
       });
       const end = max(range);
-      filters.value['createdAt.to'] = formatISO(end, { representation: 'date' });
+      filters.value['createdAt.to'] = formatISO(end, {
+        representation: 'date',
+      });
     },
   });
 

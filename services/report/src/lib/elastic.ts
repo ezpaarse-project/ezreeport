@@ -14,8 +14,8 @@ const logger = appLogger.child(
   { scope: 'elastic' },
   {
     redact: {
-      paths: ['config.*.password'],
       censor: (value) => value && ''.padStart(`${value}`.length, '*'),
+      paths: ['config.*.password'],
     },
   }
 );
@@ -23,13 +23,13 @@ const logger = appLogger.child(
 const { url, username, password, apiKey } = config.elasticsearch;
 
 // Parse some env var
-const ES_AUTH = apiKey ? { apiKey } : { username, password };
+const ES_AUTH = apiKey ? { apiKey } : { password, username };
 
 const clientConfig: ClientOptions = {
+  auth: ES_AUTH,
   node: {
     url: new URL(url),
   },
-  auth: ES_AUTH,
   ssl: {
     rejectUnauthorized: false,
   },
@@ -68,17 +68,17 @@ export async function elasticPing(): Promise<
     await elastic.cluster.stats<ElasticTypes.ClusterStatsResponse>();
 
   return {
-    hostname: body.cluster_name,
-    service: 'elastic',
-    version: body.nodes.versions.at(0),
     filesystems: [
       {
+        available: body.nodes.fs.available_in_bytes,
         name: 'elastic',
         total: body.nodes.fs.total_in_bytes,
         used: body.nodes.fs.total_in_bytes - body.nodes.fs.available_in_bytes,
-        available: body.nodes.fs.available_in_bytes,
       },
     ],
+    hostname: body.cluster_name,
+    service: 'elastic',
+    version: body.nodes.versions.at(0),
   };
 }
 
@@ -189,9 +189,9 @@ export async function elasticResolveIndex(
       );
 
     return [
-      ...body.indices.map((index) => index.name),
+      ...body.indices.map((indx) => indx.name),
       ...body.aliases.map((alias) => alias.name),
-    ].sort((nameA, nameB) => nameA.localeCompare(nameB));
+    ].toSorted((nameA, nameB) => nameA.localeCompare(nameB));
   } catch (error) {
     const elasticError = error as {
       meta?: { body?: { error?: { type?: string } } };

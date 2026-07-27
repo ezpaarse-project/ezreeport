@@ -25,7 +25,6 @@
   "exports": "./lib/index.js",
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
-    "lint": "oxlint",
     "prepack": "oclif manifest && oclif readme",
     "postpack": "shx rm -f oclif.manifest.json",
     "publish": "npm publish",

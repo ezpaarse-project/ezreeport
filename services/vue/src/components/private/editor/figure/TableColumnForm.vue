@@ -201,7 +201,10 @@
   type VAlign = Exclude<Required<TableColumn>['styles']['valign'], undefined>;
   type HAlign = Exclude<Required<TableColumn>['styles']['halign'], undefined>;
   type RawFontStyle = Required<TableColumn>['styles']['fontStyle'];
-  type FontStyles = Exclude<RawFontStyle, undefined | 'bolditalic' | 'normal'>[];
+  type FontStyles = Exclude<
+    RawFontStyle,
+    undefined | 'bolditalic' | 'normal'
+  >[];
 
   // Components props
   const props = defineProps<{
@@ -314,7 +317,9 @@
     }
 
     // If it's a base aggregation, guess if it's a metric or not
-    const aggType = aggregationTypes.find((agg) => agg.name === aggregation.type);
+    const aggType = aggregationTypes.find(
+      (agg) => agg.name === aggregation.type
+    );
     column.value.metric = aggType?.type === 'metric';
   }
 </script>

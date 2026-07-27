@@ -16,7 +16,8 @@
   "exports": "./src/index.ts",
   "scripts": {
     "lint": "oxlint",
-    "type-check": "tsc --noEmit --skipLibCheck"
+    "fmt": "oxfmt",
+    "check": "tsc --noEmit --skipLibCheck"
   },
   "dependencies": {
     "date-fns": "^4.4.0",

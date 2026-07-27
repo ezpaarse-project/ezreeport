@@ -5,8 +5,8 @@ import { transformCreatedUpdated } from '~/lib/transform';
 import type {
   ApiService,
   ApiStatus,
-  RawApiStatus,
   RawApiService,
+  RawApiStatus,
 } from './types';
 
 export const transformService = (service: RawApiService): ApiService => ({

@@ -13,10 +13,10 @@ import {
 } from '~/models/pagination/types';
 import * as taskPresets from '~/models/task-presets';
 import {
-  TaskPreset,
-  InputTaskPreset,
-  TaskPresetQueryFilters,
   AdditionalDataForPreset,
+  InputTaskPreset,
+  TaskPreset,
+  TaskPresetQueryFilters,
   TaskPresetQueryInclude,
 } from '~/models/task-presets/types';
 import { createTask, doesSimilarTaskExist } from '~/models/tasks';
@@ -24,8 +24,8 @@ import { Task } from '~/models/tasks/types';
 
 import { authPlugin, requireAllowedNamespace } from '~/plugins/auth';
 import {
-  describeErrors,
   buildSuccessResponse,
+  describeErrors,
   zSuccessResponse,
 } from '~/routes/v2/responses';
 
@@ -41,8 +41,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/',
     schema: {
-      summary: 'Get all task presets',
-      tags: ['task-presets'],
       querystring: z.object({
         ...PaginationQuery.shape,
         ...TaskPresetQueryFilters.shape,
@@ -57,11 +55,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zPaginationResponse(TaskPreset),
       },
+      summary: 'Get all task presets',
+      tags: ['task-presets'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ_WRITE,
+        requireUser: true,
       },
     },
     preHandler: [
@@ -80,18 +80,18 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       const { page, count, sort, order, include, ...filters } = request.query;
 
       const content = await taskPresets.getAllTaskPresets(filters, include, {
-        page,
         count,
-        sort,
         order,
+        page,
+        sort,
       });
 
       return buildPaginatedResponse(
         content,
         {
+          count: content.length,
           page: request.query.page,
           total: await taskPresets.countTaskPresets(filters),
-          count: content.length,
         },
         reply
       );
@@ -102,8 +102,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'POST',
     url: '/',
     schema: {
-      summary: 'Create task preset',
-      tags: ['task-presets'],
       body: InputTaskPreset,
       response: {
         ...describeErrors([
@@ -114,6 +112,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.CREATED]: zSuccessResponse(TaskPreset),
       },
+      summary: 'Create task preset',
+      tags: ['task-presets'],
     },
     config: {
       ezrAuth: {
@@ -133,8 +133,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/:id',
     schema: {
-      summary: 'Get specific task preset',
-      tags: ['task-presets'],
       params: SpecificTaskPresetParams,
       querystring: TaskPresetQueryInclude,
       response: {
@@ -147,11 +145,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(TaskPreset),
       },
+      summary: 'Get specific task preset',
+      tags: ['task-presets'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ_WRITE,
+        requireUser: true,
       },
     },
     preHandler: [
@@ -182,10 +182,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'PUT',
     url: '/:id',
     schema: {
-      summary: 'Upsert specific task preset',
-      tags: ['task-presets'],
-      params: SpecificTaskPresetParams,
       body: InputTaskPreset,
+      params: SpecificTaskPresetParams,
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -196,6 +194,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(TaskPreset),
       },
+      summary: 'Upsert specific task preset',
+      tags: ['task-presets'],
     },
     config: {
       ezrAuth: {
@@ -229,8 +229,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'DELETE',
     url: '/:id',
     schema: {
-      summary: 'Delete specific task preset',
-      tags: ['task-presets'],
       params: SpecificTaskPresetParams,
       response: {
         ...describeErrors([
@@ -242,6 +240,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(z.object({ deleted: z.boolean() })),
       },
+      summary: 'Delete specific task preset',
+      tags: ['task-presets'],
     },
     config: {
       ezrAuth: {
@@ -265,10 +265,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'POST',
     url: '/:id/tasks',
     schema: {
-      summary: 'Create task from task preset',
-      tags: ['task-presets', 'tasks'],
-      params: SpecificTaskPresetParams,
       body: AdditionalDataForPreset,
+      params: SpecificTaskPresetParams,
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -279,11 +277,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.CREATED]: zSuccessResponse(Task),
       },
+      summary: 'Create task from task preset',
+      tags: ['task-presets', 'tasks'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ_WRITE,
+        requireUser: true,
       },
     },
     preHandler: [
@@ -339,21 +339,21 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       );
 
       const task = await createTask({
-        name: request.body.name,
         description: request.body.description,
+        enabled: true,
+        extendedId: taskPreset.templateId,
+        name: request.body.name,
         namespaceId: request.body.namespaceId,
-        targets: request.body.targets,
-        template: {
-          version: 2,
-          index: request.body.index,
-          dateField: taskPreset.fetchOptions?.dateField,
-          filters: request.body.filters || taskPreset.fetchOptions?.filters,
-        },
+        nextRun,
         recurrence: taskPreset.recurrence,
         recurrenceOffset: taskPreset.recurrenceOffset,
-        extendedId: taskPreset.templateId,
-        nextRun,
-        enabled: true,
+        targets: request.body.targets,
+        template: {
+          dateField: taskPreset.fetchOptions?.dateField,
+          filters: request.body.filters || taskPreset.fetchOptions?.filters,
+          index: request.body.index,
+          version: 2,
+        },
       });
 
       return buildSuccessResponse(task, reply);
@@ -361,5 +361,5 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
   });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

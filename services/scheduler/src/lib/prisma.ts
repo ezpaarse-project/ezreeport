@@ -1,5 +1,5 @@
 import type { HeartbeatType } from '@ezreeport/heartbeats/types';
-import { setupDB, pingDB } from '@ezreeport/database';
+import { pingDB, setupDB } from '@ezreeport/database';
 
 import { appLogger } from '~/lib/logger';
 
@@ -7,6 +7,7 @@ const logger = appLogger.child({ scope: 'prisma' });
 
 const client = setupDB(logger);
 
+// oxlint-disable-next-line import/no-default-export
 export default client;
 
 /**

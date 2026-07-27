@@ -135,7 +135,12 @@
     mdiTools,
   } from '@mdi/js';
   import { getCurrentNamespaces } from '~sdk/auth';
-  import { type InputTask, type Task, createTask, upsertTask } from '~sdk/tasks';
+  import {
+    type InputTask,
+    type Task,
+    createTask,
+    upsertTask,
+  } from '~sdk/tasks';
 
   import { isEmail } from '~/utils/validate';
 
@@ -189,7 +194,9 @@
   /** Filters of task */
   const filters = computed({
     get: () =>
-      new Map((task.value.template.filters ?? []).map((fil) => [fil.name, fil])),
+      new Map(
+        (task.value.template.filters ?? []).map((fil) => [fil.name, fil])
+      ),
     set: (value) => {
       const values = [...value.values()];
       if (values.length > 0) {

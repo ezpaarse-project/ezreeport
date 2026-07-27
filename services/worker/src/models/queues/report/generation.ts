@@ -62,7 +62,7 @@ async function onMessage(
       taskId: data.task.id,
       took: startedAt ? Date.now() - startedAt.getTime() : null,
       updatedAt: new Date(),
-      writeActivity: !!data.writeActivity,
+      writeActivity: Boolean(data.writeActivity),
     });
   events.on('start', (event) => {
     ({ reportId } = event as { reportId: string });
@@ -93,9 +93,9 @@ async function onMessage(
   } catch (error) {
     updateProgress('ERROR');
     logger.error({
+      err: error,
       jobId: data.id,
       msg: 'Error while generating report',
-      error,
     });
     channel.ack(msg);
     return;

@@ -1,8 +1,8 @@
 import { assignDependencies } from '~/helpers/permissions/decorator';
 import {
+  type TaskPreset,
   getTaskPreset,
   upsertTaskPreset,
-  type TaskPreset,
 } from '~/modules/task-presets';
 
 /**
@@ -23,13 +23,13 @@ export async function changeTaskPresetVisibility(
   }
 
   const preset = await upsertTaskPreset({
-    id: base.id,
-    name: base.name,
-    templateId: base.templateId,
-    recurrence: base.recurrence,
-    recurrenceOffset: base.recurrenceOffset,
     fetchOptions: base.fetchOptions,
     hidden,
+    id: base.id,
+    name: base.name,
+    recurrence: base.recurrence,
+    recurrenceOffset: base.recurrenceOffset,
+    templateId: base.templateId,
   });
 
   return preset;

@@ -1,7 +1,7 @@
 import type { Logger } from '@ezreeport/logger';
-import { type rabbitmq, parseJSONMessage } from '@ezreeport/rabbitmq';
+import { parseJSONMessage, type rabbitmq } from '@ezreeport/rabbitmq';
 
-import { type HeartbeatType, Heartbeat } from '../types';
+import { Heartbeat, type HeartbeatType } from '../types';
 import { HeartbeatManager } from './Manager';
 
 export class HeartbeatListener extends HeartbeatManager {
@@ -24,9 +24,9 @@ export class HeartbeatListener extends HeartbeatManager {
     const { data, raw, parseError } = parseJSONMessage(msg, Heartbeat);
     if (!data) {
       this.logger.error({
-        msg: 'Invalid data',
         data: process.env.NODE_ENV === 'production' ? undefined : raw,
         err: parseError,
+        msg: 'Invalid data',
       });
       return;
     }

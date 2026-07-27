@@ -374,7 +374,10 @@
     }
 
     try {
-      const result = await createTaskFromPreset(currentPreset.value, data.value);
+      const result = await createTaskFromPreset(
+        currentPreset.value,
+        data.value
+      );
 
       emit('update:modelValue', result);
     } catch (error) {

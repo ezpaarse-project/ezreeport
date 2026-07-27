@@ -13,8 +13,8 @@ import {
 } from '~/models/pagination/types';
 
 import {
-  describeErrors,
   buildSuccessResponse,
+  describeErrors,
   zSuccessResponse,
 } from '~/routes/v2/responses';
 
@@ -30,12 +30,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/',
     schema: {
-      summary: 'Get all members of namespace',
-      tags: ['memberships'],
-      querystring: PaginationQuery,
       params: z.object({
         namespaceId: z.string().min(1).describe('Namespace ID'),
       }),
+      querystring: PaginationQuery,
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -44,6 +42,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zPaginationResponse(Membership),
       },
+      summary: 'Get all members of namespace',
+      tags: ['memberships'],
     },
     config: {
       ezrAuth: {
@@ -60,11 +60,11 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       return buildPaginatedResponse(
         content,
         {
+          count: content.length,
           page: request.query.page,
           total: await memberships.countMemberships({
             namespaceId: request.params.namespaceId,
           }),
-          count: content.length,
         },
         reply
       );
@@ -75,8 +75,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/:username',
     schema: {
-      summary: 'Get specific membership',
-      tags: ['memberships'],
       params: SpecificMembershipParams,
       response: {
         ...describeErrors([
@@ -87,6 +85,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(Membership),
       },
+      summary: 'Get specific membership',
+      tags: ['memberships'],
     },
     config: {
       ezrAuth: {
@@ -111,10 +111,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'PUT',
     url: '/:username',
     schema: {
-      summary: 'Upsert specific membership',
-      tags: ['memberships'],
-      params: SpecificMembershipParams,
       body: InputMembership,
+      params: SpecificMembershipParams,
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -124,6 +122,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(Membership),
       },
+      summary: 'Upsert specific membership',
+      tags: ['memberships'],
     },
     config: {
       ezrAuth: {
@@ -155,8 +155,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'DELETE',
     url: '/:username',
     schema: {
-      summary: 'Delete specific membership',
-      tags: ['memberships'],
       params: SpecificMembershipParams,
       response: {
         ...describeErrors([
@@ -167,6 +165,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(z.object({ deleted: z.boolean() })),
       },
+      summary: 'Delete specific membership',
+      tags: ['memberships'],
     },
     config: {
       ezrAuth: {
@@ -185,5 +185,5 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
   });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

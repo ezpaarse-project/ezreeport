@@ -2,16 +2,16 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
 import {
-  calcPeriodFromRecurrence,
   calcNextDateFromRecurrence,
+  calcPeriodFromRecurrence,
 } from '@ezreeport/models/lib/periods';
-import { zStringToDay, z } from '@ezreeport/models/lib/zod';
+import { z, zStringToDay } from '@ezreeport/models/lib/zod';
 import { Recurrence, RecurrenceOffset } from '@ezreeport/models/recurrence';
 import { ReportPeriod } from '@ezreeport/models/reports';
 
 import {
-  describeErrors,
   buildSuccessResponse,
+  describeErrors,
   zSuccessResponse,
 } from '~/routes/v2/responses';
 
@@ -21,16 +21,11 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/:recurrence/period',
     schema: {
-      summary: 'Get period from recurrence',
-      tags: ['recurrence'],
       deprecated: true,
       params: z.object({
         recurrence: Recurrence,
       }),
       querystring: z.object({
-        reference: zStringToDay
-          .optional()
-          .describe('The date used as reference, defaults to today'),
         offset: z.coerce
           .number()
           .int()
@@ -38,6 +33,9 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           .describe(
             'The offset, negative for previous, positive for next, 0 for current, default to 0'
           ),
+        reference: zStringToDay
+          .optional()
+          .describe('The date used as reference, defaults to today'),
       }),
       response: {
         ...describeErrors([
@@ -46,6 +44,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(ReportPeriod),
       },
+      summary: 'Get period from recurrence',
+      tags: ['recurrence'],
     },
     // oxlint-disable-next-line require-await
     handler: async (request, reply) =>
@@ -63,8 +63,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/:recurrence/nextDate',
     schema: {
-      summary: 'Get next date from recurrence',
-      tags: ['recurrence'],
       deprecated: true,
       params: z.object({
         recurrence: Recurrence,
@@ -85,6 +83,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           })
         ),
       },
+      summary: 'Get next date from recurrence',
+      tags: ['recurrence'],
     },
     // oxlint-disable-next-line require-await
     handler: async (request, reply) =>
@@ -103,16 +103,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'POST',
     url: '/:recurrence/_resolve/period',
     schema: {
-      summary: 'Get period from recurrence',
-      tags: ['recurrence'],
-      params: z.object({
-        recurrence: Recurrence,
-      }),
       body: z
         .object({
-          reference: zStringToDay
-            .optional()
-            .describe('The date used as reference, defaults to today'),
           offset: z
             .number()
             .int()
@@ -120,8 +112,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
             .describe(
               'The offset, negative for previous, positive for next, 0 for current, default to 0'
             ),
+          reference: zStringToDay
+            .optional()
+            .describe('The date used as reference, defaults to today'),
         })
         .optional(),
+      params: z.object({
+        recurrence: Recurrence,
+      }),
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -129,6 +127,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(ReportPeriod),
       },
+      summary: 'Get period from recurrence',
+      tags: ['recurrence'],
     },
     // oxlint-disable-next-line require-await
     handler: async (request, reply) =>
@@ -146,19 +146,17 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'POST',
     url: '/:recurrence/_resolve/nextDate',
     schema: {
-      summary: 'Get next date from recurrence',
-      tags: ['recurrence'],
-      params: z.object({
-        recurrence: Recurrence,
-      }),
       body: z
         .object({
+          offset: RecurrenceOffset.optional().describe('The offset to apply'),
           reference: zStringToDay
             .optional()
             .describe('The date used as reference, defaults to today'),
-          offset: RecurrenceOffset.optional().describe('The offset to apply'),
         })
         .optional(),
+      params: z.object({
+        recurrence: Recurrence,
+      }),
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -170,6 +168,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           })
         ),
       },
+      summary: 'Get next date from recurrence',
+      tags: ['recurrence'],
     },
     // oxlint-disable-next-line require-await
     handler: async (request, reply) =>
@@ -186,5 +186,5 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
   });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

@@ -1,6 +1,7 @@
 export const customAlert = (message, isError = false) => {
   const container = document.querySelector('#alert-container');
   if (!container) {
+    // oxlint-disable-next-line no-alert
     alert(message);
     return;
   }
@@ -11,24 +12,24 @@ export const customAlert = (message, isError = false) => {
     'alert-hidden',
     isError ? 'alert-error' : 'alert-success'
   );
-  alertBox.innerText = message;
+  alertBox.textContent = message;
 
   container.append(alertBox);
 
-  // show
+  // Show
   setTimeout(() => {
     alertBox.classList.remove('alert-hidden');
   }, 100);
 
-  // hide
+  // Hide
   setTimeout(() => {
     alertBox.classList.add('alert-hidden');
   }, 5000);
 
-  // remove
+  // Remove
   setTimeout(() => {
     alertBox.remove();
-  }, 10000);
+  }, 10_000);
 };
 
 export const unsubscribeFromTask = async (taskId, form) => {
@@ -43,12 +44,12 @@ export const unsubscribeFromTask = async (taskId, form) => {
 
   try {
     const resp = await fetch('.', {
-      method: 'POST',
+      body: JSON.stringify(obj),
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(obj),
+      method: 'POST',
     });
     const res = await resp.json();
 
@@ -59,9 +60,9 @@ export const unsubscribeFromTask = async (taskId, form) => {
     customAlert(
       'Vous avez bien été désinscrit. Vous pouvez fermer cette fenêtre.'
     );
-  } catch (err) {
+  } catch (error) {
     customAlert(
-      `Une erreur est survenue pendant le traitement:\n\n${err.message}`,
+      `Une erreur est survenue pendant le traitement:\n\n${error.message}`,
       true
     );
   }

@@ -1,34 +1,35 @@
 import type {
-  HeartbeatService,
   HeartbeatSender,
+  HeartbeatService,
 } from '@ezreeport/heartbeats/types';
-import { setupHeartbeat, mandatoryService } from '@ezreeport/heartbeats';
+import { mandatoryService, setupHeartbeat } from '@ezreeport/heartbeats';
 
 import type rabbitmq from '~/lib/rabbitmq';
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
 import { SMTPPing } from '~/lib/mailer';
 
-import { version } from '../../../package.json';
+// oxlint-disable-next-line import/extensions
+import { version } from '../../../package.json' with { type: 'json' };
 
 const { heartbeat: frequency } = config;
 
 const logger = appLogger.child({ scope: 'heartbeat' });
 
+let heartbeat: HeartbeatSender | null = null;
+
 const service: HeartbeatService = {
-  name: 'mail',
-  version,
-  filesystems: {
-    logs: config.log.dir,
-  },
   connectedServices: {
     smtp: mandatoryService('smtp', SMTPPing),
   },
+  filesystems: {
+    logs: config.log.dir,
+  },
+  name: 'mail',
+  version,
 };
 
 export { getMissingMandatoryServices } from '@ezreeport/heartbeats';
-
-let heartbeat: HeartbeatSender | undefined;
 
 export async function initHeartbeat(
   connection: rabbitmq.ChannelModel

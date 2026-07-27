@@ -118,8 +118,9 @@
     "build:js": "tsdown",
     "dev": "pnpm run --parallel \"/^(watch:docs)|(preview)$/\"",
     "lint": "oxlint",
+    "fmt": "oxfmt",
     "preview:docs": "serve docs",
-    "type-check": "tsc --noEmit --skipLibCheck",
+    "check": "tsc --noEmit --skipLibCheck",
     "watch:docs": "typedoc --watch"
   },
   "dependencies": {

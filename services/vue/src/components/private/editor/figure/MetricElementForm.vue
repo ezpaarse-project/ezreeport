@@ -171,7 +171,9 @@
       props: {
         appendIcon: formatIcons.get('number'),
       },
-      title: t('$ezreeport.editor.figures.metric.elements.formatOptions.number'),
+      title: t(
+        '$ezreeport.editor.figures.metric.elements.formatOptions.number'
+      ),
       value: 'number',
     },
   ]);
@@ -258,9 +260,12 @@
       }
 
       // TODO: prevent user provided value to be overwritten
-      label.value.text = t('$ezreeport.editor.aggregation.aggregationTemplate', {
-        ...newLabel.aggregation,
-      });
+      label.value.text = t(
+        '$ezreeport.editor.aggregation.aggregationTemplate',
+        {
+          ...newLabel.aggregation,
+        }
+      );
     },
     { deep: true }
   );

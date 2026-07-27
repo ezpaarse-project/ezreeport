@@ -439,7 +439,9 @@
   /** Mapping options for dateField */
   const dateMapping = computed(() => getOptionsFromMapping('date'));
   /** Has template changed since form is opened */
-  const hasChanged = computed(() => !modelValue.id || hasTaskChanged(modelValue));
+  const hasChanged = computed(
+    () => !modelValue.id || hasTaskChanged(modelValue)
+  );
   /** Name of the template */
   const name = computed({
     get: () => modelValue.name,
@@ -565,7 +567,10 @@
       return [];
     }
 
-    return getLayoutsOfHelpers(modelValue.template, extendedTemplate.value.body);
+    return getLayoutsOfHelpers(
+      modelValue.template,
+      extendedTemplate.value.body
+    );
   });
   /** Recurrence options */
   const recurrenceOptions = computed(() =>

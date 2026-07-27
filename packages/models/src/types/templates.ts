@@ -30,9 +30,9 @@ const RawFilter = z.object({
  */
 export const Filter = z
   .object({
-    name: z.string().min(1).describe('Filter name'),
-
     isNot: z.boolean().optional().describe('Should invert filter'),
+
+    name: z.string().min(1).describe('Filter name'),
   })
   .and(BaseFilter.or(RawFilter));
 
@@ -57,14 +57,14 @@ export type RawFigureAggType = z.infer<typeof RawFigureAgg>;
  * Validation for a figure filters aggregation
  */
 export const FiltersFigureAgg = z.object({
+  missing: z.string().min(0).optional(),
   type: z.literal('filters'),
   values: z.array(
     z.object({
-      label: z.string(),
       filters: z.array(Filter),
+      label: z.string(),
     })
   ),
-  missing: z.string().min(0).optional(),
 });
 
 /**
@@ -76,10 +76,10 @@ export type FiltersFigureAggType = z.infer<typeof FiltersFigureAgg>;
  * Validation for a figure basic aggregation
  */
 export const BasicFigureAgg = z.object({
-  type: z.string().min(1),
   field: z.string().min(1),
-  size: z.int().min(0).optional(),
   missing: z.string().min(0).optional(),
+  size: z.int().min(0).optional(),
+  type: z.string().min(1),
 });
 
 /**
@@ -93,7 +93,7 @@ export type BasicFigureAggType = z.infer<typeof BasicFigureAgg>;
 export const FigureAgg = z
   .union([BasicFigureAgg, FiltersFigureAgg])
   .or(RawFigureAgg);
-// z.discriminatedUnion('type', [BasicFigureAgg, FiltersFigureAgg]),
+// Z.discriminatedUnion('type', [BasicFigureAgg, FiltersFigureAgg]),
 
 /**
  * Type for a figure aggregation
@@ -104,27 +104,27 @@ export type FigureAggType = z.infer<typeof FigureAgg>;
  * Validation for a figure
  */
 export const Figure = z.object({
-  type: z.string().min(1).describe('Figure type'),
-
   data: z
     .any()
     .optional()
     .describe('Figure data, only used for Markdown figures'),
-
-  params: z
-    .any()
-    .optional()
-    .describe('Figure params, not used for Markdown figures'),
 
   filters: z
     .array(Filter)
     .optional()
     .describe('Filters used when fetching data of this figure'),
 
+  params: z
+    .any()
+    .optional()
+    .describe('Figure params, not used for Markdown figures'),
+
   slots: z
     .array(z.int().min(0))
     .optional()
     .describe('Slots used by this figure'),
+
+  type: z.string().min(1).describe('Figure type'),
 });
 
 /**
@@ -171,14 +171,6 @@ export type TemplateBodyGridType = z.infer<typeof TemplateBodyGrid>;
  * Validation for the template body
  */
 export const TemplateBody = z.object({
-  version: z.int().min(1).optional().describe('Template version'),
-
-  index: z
-    .string()
-    .min(1)
-    .optional()
-    .describe('Elastic index used to create template.'),
-
   dateField: z
     .string()
     .min(1)
@@ -189,11 +181,19 @@ export const TemplateBody = z.object({
     .optional()
     .describe('Global filters used when fetching data'),
 
-  layouts: z.array(Layout).describe('Layouts used when rendering data'),
-
   grid: TemplateBodyGrid.optional().describe(
     'Grid used when rendering data. Default: 2x2'
   ),
+
+  index: z
+    .string()
+    .min(1)
+    .optional()
+    .describe('Elastic index used to create template.'),
+
+  layouts: z.array(Layout).describe('Layouts used when rendering data'),
+
+  version: z.int().min(1).optional().describe('Template version'),
 });
 
 /**
@@ -205,10 +205,6 @@ export type TemplateBodyType = z.infer<typeof TemplateBody>;
  * Validation for the template body of a task
  */
 export const TaskTemplateBody = z.object({
-  version: z.int().min(1).optional().describe('Template version'),
-
-  index: z.string().min(1).describe('Index used to fetch data'),
-
   dateField: z
     .string()
     .optional()
@@ -219,12 +215,16 @@ export const TaskTemplateBody = z.object({
     .optional()
     .describe('Global filters used when fetching data'),
 
+  index: z.string().min(1).describe('Index used to fetch data'),
+
   inserts: z
     .array(TaskLayout)
     .optional()
     .describe(
       'Layouts used when rendering data, added to the ones from the template.'
     ),
+
+  version: z.int().min(1).optional().describe('Template version'),
 });
 
 /**
@@ -236,11 +236,11 @@ export type TaskTemplateBodyType = z.infer<typeof TaskTemplateBody>;
  * Validation for a template's tag
  */
 export const TemplateTag = z.object({
+  color: z.string().nullish().describe('Tag color. Should be in hex format.'),
+
   id: z.string().min(1).describe('Tag ID'),
 
   name: z.string().min(1).describe('Tag name'),
-
-  color: z.string().nullish().describe('Tag color. Should be in hex format.'),
 });
 
 /**
@@ -262,13 +262,9 @@ export type TemplateLocaleType = z.infer<typeof TemplateLocale>;
  * Validation for a template
  */
 export const Template = z.object({
-  id: z.string().min(1).describe('Template ID'),
-
-  name: z.string().min(1).describe('Template name'),
-
   body: TemplateBody.describe('Template body'),
 
-  locale: TemplateLocale.describe('Locale to use when generating template'),
+  createdAt: z.coerce.date().describe('Creation date'),
 
   hidden: z
     .boolean()
@@ -276,7 +272,11 @@ export const Template = z.object({
     .optional()
     .describe('If template is hidden to normal users'),
 
-  createdAt: z.coerce.date().describe('Creation date'),
+  id: z.string().min(1).describe('Template ID'),
+
+  locale: TemplateLocale.describe('Locale to use when generating template'),
+
+  name: z.string().min(1).describe('Template name'),
 
   updatedAt: z.coerce.date().nullable().describe('Last update date'),
 });

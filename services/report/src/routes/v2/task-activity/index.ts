@@ -27,8 +27,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/',
     schema: {
-      summary: 'Get all task activity',
-      tags: ['task-activity'],
       querystring: z.object({
         ...PaginationQuery.shape,
         ...TaskActivityQueryFilters.shape,
@@ -43,11 +41,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zPaginationResponse(TaskActivity),
       },
+      summary: 'Get all task activity',
+      tags: ['task-activity'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ,
+        requireUser: true,
       },
     },
     preHandler: [
@@ -65,18 +65,18 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       const { page, count, sort, order, include, ...filters } = request.query;
 
       const content = await taskActivity.getAllActivity(filters, include, {
-        page,
         count,
-        sort,
         order,
+        page,
+        sort,
       });
 
       return buildPaginatedResponse(
         content,
         {
+          count: content.length,
           page: request.query.page,
           total: await taskActivity.countActivity(filters),
-          count: content.length,
         },
         reply
       );
@@ -84,5 +84,5 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
   });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

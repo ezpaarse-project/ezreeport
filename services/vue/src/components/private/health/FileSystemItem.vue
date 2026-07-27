@@ -49,14 +49,18 @@
   };
 
   const props = defineProps<{
-    modelValue: (FileSystemUsage & { host: { service: string; name: string } })[];
+    modelValue: (FileSystemUsage & {
+      host: { service: string; name: string };
+    })[];
   }>();
 
   const { locale, t } = useI18n();
 
   function usageToItem(usage: FileSystemUsage) {
     const percentage =
-      usage.used >= 0 && usage.total >= 0 ? usage.used / usage.total : undefined;
+      usage.used >= 0 && usage.total >= 0
+        ? usage.used / usage.total
+        : undefined;
     const percentageStr = percentage?.toLocaleString(locale.value, {
       minimumFractionDigits: 2,
       style: 'percent',

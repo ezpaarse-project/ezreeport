@@ -1,8 +1,8 @@
 import {
-  Client,
-  type estypes as ElasticTypes,
   type ApiResponse,
+  Client,
   type ClientOptions,
+  type estypes as ElasticTypes,
   type RequestParams,
 } from '@elastic/elasticsearch';
 
@@ -15,8 +15,8 @@ const logger = appLogger.child(
   { scope: 'elastic' },
   {
     redact: {
-      paths: ['config.*.password'],
       censor: (value) => value && ''.padStart(`${value}`.length, '*'),
+      paths: ['config.*.password'],
     },
   }
 );
@@ -38,13 +38,13 @@ const isElasticStatus = (status: string): status is KeyofElasticStatus =>
 const REQUIRED_STATUS = isElasticStatus(requiredStatus)
   ? requiredStatus
   : 'green';
-const ES_AUTH = apiKey ? { apiKey } : { username, password };
+const ES_AUTH = apiKey ? { apiKey } : { password, username };
 
 const clientConfig: ClientOptions = {
+  auth: ES_AUTH,
   node: {
     url: new URL(url),
   },
-  auth: ES_AUTH,
   ssl: {
     rejectUnauthorized: false,
   },
@@ -76,14 +76,14 @@ export function initElasticClient(): Client {
  * @returns Elastic client
  */
 async function elasticReady(): Promise<Client> {
-  const client = initElasticClient();
+  const elastic = initElasticClient();
 
-  await client.cluster.health<ElasticTypes.ClusterHealthResponse>({
-    wait_for_status: REQUIRED_STATUS,
+  await elastic.cluster.health<ElasticTypes.ClusterHealthResponse>({
     timeout: '5s',
+    wait_for_status: REQUIRED_STATUS,
   });
 
-  return client;
+  return elastic;
 }
 
 /**
@@ -100,17 +100,17 @@ export const elasticPing = async (): Promise<
     await elastic.cluster.stats<ElasticTypes.ClusterStatsResponse>();
 
   return {
-    hostname: body.cluster_name,
-    service: 'elastic',
-    version: body.nodes.versions.at(0),
     filesystems: [
       {
+        available: body.nodes.fs.available_in_bytes,
         name: 'elastic',
         total: body.nodes.fs.total_in_bytes,
         used: body.nodes.fs.total_in_bytes - body.nodes.fs.available_in_bytes,
-        available: body.nodes.fs.available_in_bytes,
       },
     ],
+    hostname: body.cluster_name,
+    service: 'elastic',
+    version: body.nodes.versions.at(0),
   };
 };
 

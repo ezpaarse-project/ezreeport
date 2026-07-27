@@ -17,8 +17,9 @@
   "scripts": {
     "dev": "tsx watch --inspect=0.0.0.0 src/app.ts",
     "lint": "oxlint",
+    "fmt": "oxfmt",
     "start": "tsx src/app.ts",
-    "type-check": "tsc --noEmit --skipLibCheck"
+    "check": "tsc --noEmit --skipLibCheck"
   },
   "dependencies": {
     "@elastic/elasticsearch": "^7.17.14",

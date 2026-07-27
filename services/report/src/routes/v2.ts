@@ -3,12 +3,12 @@ import { join } from 'node:path';
 import type { FastifyPluginAsync } from 'fastify';
 import autoLoad from '@fastify/autoload';
 import {
+  type ZodTypeProvider,
+  hasZodFastifySchemaValidationErrors,
+  isResponseSerializationError,
   jsonSchemaTransform,
   serializerCompiler,
   validatorCompiler,
-  hasZodFastifySchemaValidationErrors,
-  isResponseSerializationError,
-  type ZodTypeProvider,
 } from 'fastify-type-provider-zod';
 import { StatusCodes } from 'http-status-codes';
 
@@ -44,8 +44,8 @@ const router: FastifyPluginAsync = async (fastify) => {
       status = StatusCodes.BAD_REQUEST;
       error = new Error("Request doesn't match the schema", {
         cause: {
-          issues: err.validation,
           context: err.validationContext,
+          issues: err.validation,
         },
       });
     }
@@ -57,8 +57,8 @@ const router: FastifyPluginAsync = async (fastify) => {
         "Response doesn't match the schema. Please contact the administrators",
         {
           cause: {
-            issues: err.cause.issues,
             context: 'response',
+            issues: err.cause.issues,
           },
         }
       );
@@ -78,10 +78,11 @@ const router: FastifyPluginAsync = async (fastify) => {
 
   // Register routes
   app.register(autoLoad, {
+    // oxlint-disable-next-line unicorn/prefer-module
     dir: join(__dirname, 'v2'),
     maxDepth: 2,
   });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

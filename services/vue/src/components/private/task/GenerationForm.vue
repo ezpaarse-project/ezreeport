@@ -347,7 +347,7 @@
     ].join('_');
 
     const [, type, extension] =
-      /\.(?:<type>[a-z]+)\.(?:<ext>[a-z]+)$/iv.exec(path) ?? [];
+      /\.(?<type>[a-z]+)\.(?<ext>[a-z]+)$/iv.exec(path) ?? [];
 
     if (type !== 'rep') {
       filename += `.${type}`;

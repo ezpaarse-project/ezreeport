@@ -2,6 +2,8 @@
   "$schema": "../../node_modules/oxlint/configuration_schema.json",
   "extends": ["../../.oxlintrc.json"],
   "rules": {
+    // isolatedDeclarations requires inferrable types
+    "typescript/no-inferrable-types": "off",
     "typescript/consistent-type-definitions": ["error", "interface"],
     // Enforce browser rules
     "no-alert": "error",

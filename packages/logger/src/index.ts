@@ -16,7 +16,7 @@ export type LoggerOptions = Omit<pino.LoggerOptions, 'transports'> & {
 
 export function isPrettierInstalled(req: NodeJS.Require): boolean {
   try {
-    return !!req.resolve('pino-pretty');
+    return Boolean(req.resolve('pino-pretty'));
   } catch {
     return false;
   }
@@ -25,17 +25,17 @@ export function isPrettierInstalled(req: NodeJS.Require): boolean {
 function getStdOutTarget(options: LoggerOptions): pino.TransportTargetOptions {
   // If no prettier is installed, send logs directly to stdout
   if (!options.pretty) {
-    return { target: 'pino/file', options: { destination: 1 } };
+    return { options: { destination: 1 }, target: 'pino/file' };
   }
 
   return {
     level: options.level,
-    target: 'pino-pretty',
     options: {
-      ignore: [...options.ignore, 'scope'].join(','),
       colorize: true,
+      ignore: [...options.ignore, 'scope'].join(','),
       messageFormat: '{if scope}[{scope}]{end} {msg}',
     },
+    target: 'pino-pretty',
   };
 }
 
@@ -46,13 +46,13 @@ export function createLogger(options: LoggerOptions): Logger {
   if (options.dir) {
     mkdirSync(resolve(options.dir), { recursive: true });
     targets.push({
-      target: 'pino/file',
       level: options.level,
       options: {
         destination: resolve(options.dir, `${options.name}.log`),
-        sync: false,
         ignore: options.ignore.join(','),
+        sync: false,
       },
+      target: 'pino/file',
     });
   }
 

@@ -4,9 +4,7 @@ import { z } from '../lib/zod';
  * Validation for a namespace
  */
 export const Namespace = z.object({
-  id: z.string().min(1).describe('Namespace ID'),
-
-  name: z.string().min(1).describe('Namespace name'),
+  createdAt: z.coerce.date().describe('Creation date'),
 
   fetchLogin: z
     .object({
@@ -27,9 +25,11 @@ export const Namespace = z.object({
     })
     .describe('Additional options for fetchers used for namespace'),
 
+  id: z.string().min(1).describe('Namespace ID'),
+
   logoId: z.string().nullish().describe('Namespace logo'),
 
-  createdAt: z.coerce.date().describe('Creation date'),
+  name: z.string().min(1).describe('Namespace name'),
 
   updatedAt: z.coerce.date().nullable().describe('Last update date'),
 });

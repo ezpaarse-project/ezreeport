@@ -36,9 +36,7 @@ import {
 } from '@ezpaarse-project/ezreeport-vue/locale';
 import ezreeportVue from '@ezpaarse-project/ezreeport-vue';
 
-const app = createApp({
-  /* ... */
-});
+const app = createApp({/* ... */});
 
 const i18n = createI18n({
   // You can manually merge messages
@@ -50,9 +48,7 @@ const i18n = createI18n({
 });
 app.use(i18n);
 
-const vuetify = createVuetify({
-  /* ... */
-});
+const vuetify = createVuetify({/* ... */});
 app.use(vuetify); // You need to setup Vuetify before ezreeport
 
 app.use(ezreeportVue, {

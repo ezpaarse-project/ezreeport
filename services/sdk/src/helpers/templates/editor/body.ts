@@ -1,13 +1,13 @@
 import type {
   TemplateBody,
-  TemplateFilter,
   TemplateBodyGrid,
+  TemplateFilter,
 } from '~/modules/templates';
 
 import {
+  type LayoutHelper,
   createLayoutHelperFrom,
   layoutHelperToJSON,
-  type LayoutHelper,
 } from './layouts';
 
 export interface TemplateBodyHelper {
@@ -27,12 +27,12 @@ export function createTemplateBodyHelper(
   grid?: TemplateBodyGrid
 ): TemplateBodyHelper {
   return {
-    version: 2,
     dateField,
-    layouts,
-    filters: new Map(filters?.map((filter) => [filter.name, filter]) ?? []),
+    filters: new Map(filters?.map((filter) => [filter.name, filter])),
     grid,
     index,
+    layouts,
+    version: 2,
   };
 }
 
@@ -52,12 +52,12 @@ export function templateHelperBodyToJSON(
   body: TemplateBodyHelper
 ): TemplateBody {
   return {
-    version: body.version,
     dateField: body.dateField,
-    layouts: body.layouts.map((lay) => layoutHelperToJSON(lay)),
-    filters: Array.from(body.filters.values()),
+    filters: [...body.filters.values()],
     grid: body.grid,
     index: body.index,
+    layouts: body.layouts.map((lay) => layoutHelperToJSON(lay)),
+    version: body.version,
   };
 }
 
@@ -88,7 +88,7 @@ export function updateLayoutOfHelper(
   newLayout: LayoutHelper
 ): TemplateBodyHelper {
   const index = body.layouts.findIndex((lay) => lay.id === oldLayout.id);
-  if (index < 0) {
+  if (index === -1) {
     throw new Error(`Layout "${oldLayout.id}" not found`);
   }
   const template = body;

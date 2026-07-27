@@ -513,7 +513,8 @@
       formatDate(result.value.detail.period.end, 'yyyy-MM-dd'),
     ].join('_');
 
-    const [, type, extension] = /\.([a-z]+)\.([a-z]+)$/i.exec(path) ?? [];
+    const [, type, extension] =
+      /\.(?<type>[a-z]+)\.(?<ext>[a-z]+)$/iv.exec(path) ?? [];
 
     if (type !== 'rep') {
       filename += `.${type}`;

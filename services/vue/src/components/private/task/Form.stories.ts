@@ -52,29 +52,29 @@ export const Existing: Story = {
             at: 1,
             figures: [
               {
-                type: 'bar',
-                slots: [2, 3],
-                params: {
-                  label: {
-                    title: 'datetime',
-                    aggregation: {
-                      type: 'date_histogram',
-                      field: '{{ dateField }}',
-                    },
-                  },
-                  title: 'panist : histo jour requêtes',
-                  value: { title: 'Count' },
-                  dataLabel: { format: 'numeric', showLabel: false },
-                  invertAxis: false,
-                },
                 filters: [
                   {
-                    name: '_index is panist*',
                     field: '_index',
                     isNot: false,
+                    name: '_index is panist*',
                     value: 'panist*',
                   },
                 ],
+                params: {
+                  dataLabel: { format: 'numeric', showLabel: false },
+                  invertAxis: false,
+                  label: {
+                    aggregation: {
+                      field: '{{ dateField }}',
+                      type: 'date_histogram',
+                    },
+                    title: 'datetime',
+                  },
+                  title: 'panist : histo jour requêtes',
+                  value: { title: 'Count' },
+                },
+                slots: [2, 3],
+                type: 'bar',
               },
             ],
           },

@@ -4,9 +4,9 @@ import { ensureSchema } from '@ezreeport/models/lib/zod';
 import prisma from '~/lib/prisma';
 
 import {
+  type InputTaskActivityType,
   TaskActivity,
   type TaskActivityType,
-  type InputTaskActivityType,
 } from './types';
 
 /**
@@ -23,10 +23,9 @@ export async function createActivity(
     data: {
       ...data,
 
-      taskId: undefined,
-      task: { connect: { id: data.taskId } },
-
       data: data.data ?? Prisma.DbNull,
+      task: { connect: { id: data.taskId } },
+      taskId: undefined,
     },
   });
 

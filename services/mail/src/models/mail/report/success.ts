@@ -48,40 +48,40 @@ export async function sendSuccessReport(
 
         const unsubscribeLink = `${APIurl}/unsubscribe/${unsubId}`;
         await sendMail({
-          to,
+          attachments: [
+            {
+              content: file,
+              contentDisposition: 'attachment',
+              filename,
+            },
+          ],
+          body: await generateMail('report-success', data.locale, {
+            data: {
+              date: d(data.date, data.locale),
+              name: data.task.name,
+              namespace: data.namespace.name,
+              periodEnd: d(data.period.end, data.locale, 'P'),
+              periodStart: d(data.period.start, data.locale, 'P'),
+              recurrence: t(`recurrence.${data.task.recurrence}`, data.locale),
+              unsubscribeLink,
+            },
+          }),
           subject: t('mail.report.success.subject', data.locale, {
             date: d(data.date, data.locale, 'P'),
             name: data.task.name,
           }),
-          body: await generateMail('report-success', data.locale, {
-            data: {
-              recurrence: t(`recurrence.${data.task.recurrence}`, data.locale),
-              name: data.task.name,
-              namespace: data.namespace.name,
-              date: d(data.date, data.locale),
-              periodStart: d(data.period.start, data.locale, 'P'),
-              periodEnd: d(data.period.end, data.locale, 'P'),
-              unsubscribeLink,
-            },
-          }),
-          attachments: [
-            {
-              filename,
-              content: file,
-              contentDisposition: 'attachment',
-            },
-          ],
+          to,
         });
 
         return to;
-      } catch (err) {
+      } catch (error) {
         logger.error({
+          error,
           filename,
-          to,
-          err,
           msg: 'Error when sending report',
+          to,
         });
-        throw err;
+        throw error;
       }
     })
   );
@@ -92,8 +92,8 @@ export async function sendSuccessReport(
   if (successTargets.length > 0) {
     logger.info({
       filename,
-      targets: successTargets,
       msg: 'Report sent to targets',
+      targets: successTargets,
     });
   } else {
     logger.warn({

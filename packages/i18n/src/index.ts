@@ -3,8 +3,10 @@ import { I18n, type LocaleCatalog } from 'i18n';
 import { type DateArg, formatDate, locales } from '@ezreeport/dates';
 
 import type { Flatten } from './flatten';
-import en from '../locales/en.json';
-import fr from '../locales/fr.json';
+// oxlint-disable-next-line import/extensions
+import en from '../locales/en.json' with { type: 'json' };
+// oxlint-disable-next-line import/extensions
+import fr from '../locales/fr.json' with { type: 'json' };
 
 type Locale = 'en' | 'fr';
 
@@ -15,15 +17,17 @@ const dateFnsLocales = {
 } as const satisfies Record<Locale, (typeof locales)[keyof typeof locales]>;
 
 const i18n = new I18n({
+  defaultLocale: 'en',
+
+  objectNotation: true,
+
+  retryInDefaultLocale: true,
+
   staticCatalog: {
     // Casting as unknown cause LocaleCatalog is not accepting object notation
     en: en as unknown as LocaleCatalog,
     fr: fr as unknown as LocaleCatalog,
   },
-
-  objectNotation: true,
-  defaultLocale: 'en',
-  retryInDefaultLocale: true,
 });
 export type Phrase = keyof Flatten<typeof en & typeof fr>;
 
@@ -41,7 +45,8 @@ export const t = (
   phrase: Phrase,
   locale: Locale,
   replacements: Record<string, string> = {}
-): string => i18n.__({ phrase, locale }, replacements);
+  // oxlint-disable-next-line no-underscore-dangle
+): string => i18n.__({ locale, phrase }, replacements);
 
 /**
  * Format date following locale

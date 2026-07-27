@@ -43,7 +43,7 @@ export function setupHTTPServer(
         // oxlint-disable-next-line promise/prefer-await-to-callbacks
         server.close((err) => {
           if (err) {
-            logger.error({ msg: 'Failed to close service', err });
+            logger.error({ err, msg: 'Failed to close service' });
             return;
           }
 

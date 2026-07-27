@@ -26,7 +26,8 @@
     "db:push": "dotenvx run -- prisma db push --skip-generate",
     "db:reset": "dotenvx run -- prisma migrate reset --skip-generate",
     "lint": "oxlint",
-    "type-check": "tsc --noEmit --skipLibCheck"
+    "fmt": "oxfmt",
+    "check": "tsc --noEmit --skipLibCheck"
   },
   "dependencies": {
     "@ezreeport/heartbeats": "workspace:*",

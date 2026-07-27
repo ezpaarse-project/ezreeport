@@ -91,7 +91,11 @@
   import type { Day, Month } from 'date-fns';
   import type { TaskRecurrenceOffset } from '~sdk/tasks';
   import { mdiCalendarArrowRight, mdiCalendarStart } from '@mdi/js';
-  import { daysInWeek, monthsInQuarter, monthsInYear } from 'date-fns/constants';
+  import {
+    daysInWeek,
+    monthsInQuarter,
+    monthsInYear,
+  } from 'date-fns/constants';
   import {
     type Recurrence,
     type RecurrenceOffset,

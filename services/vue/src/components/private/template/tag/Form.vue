@@ -62,7 +62,13 @@
 
 <script setup lang="ts">
   import type { InputTemplateTag, TemplateTag } from '~sdk/template-tags';
-  import { mdiPencil, mdiPlus, mdiRename, mdiTagEdit, mdiTagPlus } from '@mdi/js';
+  import {
+    mdiPencil,
+    mdiPlus,
+    mdiRename,
+    mdiTagEdit,
+    mdiTagPlus,
+  } from '@mdi/js';
 
   // Components props
   const props = defineProps<{

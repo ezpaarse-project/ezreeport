@@ -15,12 +15,12 @@ const logger = appLogger.child({ scope: 'knex' });
 async function migrateDB(knex: Knex): Promise<void> {
   try {
     const [all, toDo] = await knex.migrate.list();
-    logger.debug({ msg: 'Found migrations', all, toDo });
+    logger.debug({ all, msg: 'Found migrations', toDo });
 
     const [, done] = await knex.migrate.latest();
-    logger.info({ msg: 'Database migrated', done });
-  } catch (err) {
-    logger.error({ msg: 'Database migration failed', err });
+    logger.info({ done, msg: 'Database migrated' });
+  } catch (error) {
+    logger.error({ error, msg: 'Database migration failed' });
   }
 }
 
@@ -29,18 +29,19 @@ function setupDB(): Knex {
 
   const knex = createKnex({
     client: 'better-sqlite3',
+    connection: {
+      filename: resolve(dbPath, 'ezrFiles.db'),
+    },
     log: {
       debug: (...args) => logger.debug(...args),
       error: (...args) => logger.error(...args),
       warn: (...args) => logger.warn(...args),
     },
-    connection: {
-      filename: resolve(dbPath, 'ezrFiles.db'),
-    },
     migrations: {
+      // oxlint-disable-next-line unicorn/prefer-module
       directory: resolve(__dirname, 'migrations'),
-      tableName: 'knex_migrations',
       extension: 'ts',
+      tableName: 'knex_migrations',
     },
     useNullAsDefault: true,
   });
@@ -49,8 +50,8 @@ function setupDB(): Knex {
     try {
       await knex.destroy();
       logger.debug({ msg: 'Database closed' });
-    } catch (err) {
-      logger.error({ msg: 'Failed to close database', err });
+    } catch (error) {
+      logger.error({ error, msg: 'Failed to close database' });
     }
   });
 
@@ -63,4 +64,5 @@ function setupDB(): Knex {
 
 const client = setupDB();
 
+// oxlint-disable-next-line import/no-default-export
 export default client;

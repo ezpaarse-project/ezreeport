@@ -8,20 +8,20 @@ import type { Task } from '~/modules/tasks/types';
 import { assignPermission } from '~/helpers/permissions/decorator';
 
 import type {
-  ReportFiles,
-  RawReportPeriod,
-  ReportPeriod,
-  ReportDetails,
   RawReportDetails,
-  ReportResult,
+  RawReportPeriod,
   RawReportResult,
+  ReportDetails,
+  ReportFiles,
+  ReportPeriod,
+  ReportResult,
 } from './types';
 
 type ReportMap = Record<string, ReportFiles>;
 
 export const transformPeriod = (period: RawReportPeriod): ReportPeriod => ({
-  start: parseISO(period.start),
   end: parseISO(period.end),
+  start: parseISO(period.start),
 });
 
 export const transformReportDetails = (
@@ -83,7 +83,7 @@ assignPermission(getReportsOfTask, 'GET /reports/:taskId', true);
  *
  * @returns The blob
  */
-export async function getFileAsBlob(
+export function getFileAsBlob(
   taskOrId: Omit<Task, 'template'> | string,
   path: string
 ): Promise<Blob> {
@@ -110,7 +110,7 @@ assignPermission(
  *
  * @returns The array buffer
  */
-export async function getFileAsArrayBuffer(
+export function getFileAsArrayBuffer(
   taskOrId: Omit<Task, 'template'> | string,
   path: string
 ): Promise<ArrayBuffer> {
@@ -137,7 +137,7 @@ assignPermission(
  *
  * @returns The stream
  */
-export async function getFileAsStream(
+export function getFileAsStream(
   taskOrId: Omit<Task, 'template'> | string,
   path: string
 ): Promise<ReadableStream<Uint8Array<ArrayBufferLike>>> {
@@ -164,7 +164,7 @@ assignPermission(
  *
  * @returns The text
  */
-export async function getFileAsText(
+export function getFileAsText(
   taskOrId: Omit<Task, 'template'> | string,
   path: string
 ): Promise<string> {
@@ -232,19 +232,19 @@ export async function generateReportOfTask(
   let periodDate;
   if (period) {
     periodDate = {
-      start: formatISO(period.start, { representation: 'date' }),
       end: formatISO(period.end, { representation: 'date' }),
+      start: formatISO(period.start, { representation: 'date' }),
     };
   }
 
   const { content } = await client.fetch<ApiResponse<{ id: string }>>(
     `/reports/${id}`,
     {
-      method: 'POST',
       body: {
         period: periodDate,
         targets,
       },
+      method: 'POST',
     }
   );
 

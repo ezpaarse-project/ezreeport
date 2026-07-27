@@ -23,7 +23,7 @@ const corsOrigin: '*' | string[] =
   allowedOrigins === '*' ? '*' : allowedOrigins.split(',');
 
 // Split proxies while allowing *
-let trustProxy: true | string[] =
+const trustProxy: true | string[] =
   allowedProxies === '*' ? true : allowedProxies.split(',');
 
 // oxlint-disable-next-line no-magic-numbers - One day as seconds
@@ -36,18 +36,18 @@ export async function startHTTPServer(
 
   // Create Fastify instance
   const fastify = createFastify({
-    trustProxy,
     logger: false,
+    trustProxy,
   });
 
   // Register cors
   await fastify.register(cors, {
-    origin: corsOrigin,
     allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'X-API-Key'],
-    methods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'POST', 'DELETE'],
-    credentials: false,
     cacheControl: CACHE_OPTIONS_DURATION,
+    credentials: false,
     maxAge: CACHE_OPTIONS_DURATION,
+    methods: ['GET', 'HEAD', 'OPTIONS', 'PUT', 'POST', 'DELETE'],
+    origin: corsOrigin,
   });
 
   // Register helmet
@@ -57,7 +57,7 @@ export async function startHTTPServer(
 
   // Register rate limit
   await fastify.register(rateLimit, {
-    global: false, // don't apply these settings to all the routes of the context
+    global: false, // Don't apply these settings to all the routes of the context
     store: RateLimitStore,
   });
 
@@ -71,7 +71,7 @@ export async function startHTTPServer(
   await fastify.register(fastifyIO, { cors: { origin: corsOrigin } });
 
   // Start server and wait for it to be ready
-  const address = await fastify.listen({ port, host: '::' });
+  const address = await fastify.listen({ host: '::', port });
   await fastify.ready();
 
   // Register SocketIO namespaces
@@ -84,17 +84,17 @@ export async function startHTTPServer(
     try {
       await fastify.close();
       logger.debug('Service HTTP closed');
-    } catch (err) {
-      logger.error({ msg: 'Failed to close HTTP service', err });
+    } catch (error) {
+      logger.error({ error, msg: 'Failed to close HTTP service' });
     }
   });
 
   logger.info({
     address,
-    port,
     initDuration: process.uptime() - start,
     initDurationUnit: 's',
     msg: 'Service listening',
+    port,
   });
 
   return fastify;

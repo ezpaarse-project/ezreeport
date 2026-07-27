@@ -3,11 +3,11 @@ import { merge } from 'lodash';
 
 import { prettifyError } from '@ezreeport/models/lib/zod';
 import {
-  FigureAgg,
   type BasicFigureAggType,
-  type FiltersFigureAggType,
+  FigureAgg,
   type FigureAggType,
   type FigureType,
+  type FiltersFigureAggType,
 } from '@ezreeport/models/templates';
 
 import TemplateError from '~/models/generation/errors';
@@ -57,11 +57,11 @@ function transformEsAgg(
     return {
       [name]: {
         ...agg.raw,
-        aggs: undefined,
         aggregations: {
           ...rawSubAggs,
           ...subAggs,
         },
+        aggs: undefined,
       },
     };
   }
@@ -125,8 +125,8 @@ function assertFigureAgg(aggregation: unknown): aggregation is FigureAggType {
   }
 
   throw new TemplateError(prettifyError(result.error), 'AggregationInvalid', {
-    name: result.error.name,
     issues: result.error.issues,
+    name: result.error.name,
   });
 }
 
@@ -150,6 +150,7 @@ function mergeExtractedEsBuckets(
     ? transformEsAgg(extracted.metric, 'metric', dateField, calendarInterval)
     : undefined;
 
+  // oxlint-disable-next-line unicorn/no-array-reduce
   const aggregations: EsAggregation | undefined = extracted.buckets.reduce(
     (subAggregations, bucket, index): EsAggregation => {
       const name = `${extracted.buckets.length - index}`; // Similar to how data is fetched from ES by Kibana
@@ -228,7 +229,7 @@ const extractMetricsEsAggregations: ExtractEsAggregationsFnc = ({ params }) => {
       }
       return label.aggregation;
     })
-    .filter((aggregation) => !!aggregation);
+    .filter((aggregation) => Boolean(aggregation));
 
   return { aggregations };
 };
@@ -335,5 +336,5 @@ export function prepareEsAggregations(
     );
   }
 
-  return merge({}, ...aggregations.filter((agg) => !!agg));
+  return merge({}, ...aggregations.filter((agg) => Boolean(agg)));
 }

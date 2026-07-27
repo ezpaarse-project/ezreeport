@@ -3,12 +3,13 @@ import { logLevels } from '@ezreeport/logger';
 
 import type defaultConfig from '../../config/default.json';
 
+// oxlint-disable-next-line import/no-default-export
 export default setupConfig<typeof defaultConfig>({
   watch: {
     logger: {
-      log: (message: string): boolean => process.stdout.write(`${message}\n`),
       levels: logLevels.values,
-      meta: { scope: 'config', name: 'mail' },
+      log: (message: string): boolean => process.stdout.write(`${message}\n`),
+      meta: { name: 'mail', scope: 'config' },
     },
   },
 });

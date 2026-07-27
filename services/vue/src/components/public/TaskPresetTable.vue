@@ -303,8 +303,8 @@
     get: () => selectedTaskPresets.value.map((taskPreset) => taskPreset.id),
     set: (value) => {
       const ids = new Set(value);
-      selectedTaskPresets.value = selectedTaskPresets.value.filter((taskPreset) =>
-        ids.has(taskPreset.id)
+      selectedTaskPresets.value = selectedTaskPresets.value.filter(
+        (taskPreset) => ids.has(taskPreset.id)
       );
     },
   });

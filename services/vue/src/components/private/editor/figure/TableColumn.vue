@@ -122,7 +122,8 @@
         tooltip: t('$ezreeport.editor.figures.table.columns.styles.bold'),
       },
       [mdiFormatItalic]: {
-        show: styles.fontStyle === 'italic' || styles.fontStyle === 'bolditalic',
+        show:
+          styles.fontStyle === 'italic' || styles.fontStyle === 'bolditalic',
         tooltip: t('$ezreeport.editor.figures.table.columns.styles.italic'),
       },
       // VAlign

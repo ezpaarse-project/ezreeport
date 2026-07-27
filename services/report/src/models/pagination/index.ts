@@ -22,9 +22,9 @@ export function buildPaginatedRequest(
   }
 
   return {
-    take: count || undefined,
-    skip: (page - 1) * count,
     orderBy,
+    skip: (page - 1) * count,
+    take: count || undefined,
   };
 }
 

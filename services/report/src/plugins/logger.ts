@@ -23,12 +23,12 @@ function logRequest(request: FastifyRequest, reply?: FastifyReply): void {
   requestDates.delete(request.id);
 
   const data = {
-    method: request.method,
-    url: request.url,
-    user: request.user?.username,
-    statusCode: reply?.statusCode ?? 0,
     duration: end * 1000 - start * 1000,
     durationUnit: 'ms',
+    method: request.method,
+    statusCode: reply?.statusCode ?? 0,
+    url: request.url,
+    user: request.user?.username,
   };
 
   if (reply && reply.statusCode >= 200 && reply.statusCode < 400) {
@@ -46,6 +46,7 @@ function logRequest(request: FastifyRequest, reply?: FastifyReply): void {
  *
  * @param fastify The fastify instance
  */
+// oxlint-disable-next-line require-await - Needs async
 const loggerBasePlugin: FastifyPluginAsync = async (fastify) => {
   // Register request date
   // oxlint-disable-next-line require-await
@@ -68,6 +69,6 @@ const loggerBasePlugin: FastifyPluginAsync = async (fastify) => {
 
 // Register plugin
 export const loggerPlugin = fp(loggerBasePlugin, {
-  name: 'ezr-logger',
   encapsulate: false,
+  name: 'ezr-logger',
 });

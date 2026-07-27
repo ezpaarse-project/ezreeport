@@ -2,10 +2,10 @@ import type { Logger } from '@ezreeport/logger';
 import type { rabbitmq } from '@ezreeport/rabbitmq';
 
 import type {
-  HeartbeatType,
-  HeartbeatService,
-  HeartbeatFrequency,
   HeartbeatConnectedServicePing,
+  HeartbeatFrequency,
+  HeartbeatService,
+  HeartbeatType,
 } from './types';
 import { HeartbeatListener } from './HeartBeat/Listener';
 import { HeartbeatSender } from './HeartBeat/Sender';
@@ -29,7 +29,7 @@ export const mandatoryService =
   };
 
 export const getMissingMandatoryServices = (): string[] =>
-  Array.from(mandatoryServices.entries())
+  [...mandatoryServices.entries()]
     .filter(([, value]) => !value)
     .map(([key]) => key);
 
@@ -54,4 +54,5 @@ export const listenToHeartbeats = (
   onHeartbeat: (beat: HeartbeatType) => Promise<void> | void
 ): HeartbeatListener => new HeartbeatListener(channel, onHeartbeat, appLogger);
 
-export type { HeartbeatSender, HeartbeatListener };
+export { HeartbeatListener } from './HeartBeat/Listener';
+export { HeartbeatSender } from './HeartBeat/Sender';

@@ -520,7 +520,9 @@
     isFormOpen.value = true;
   }
 
-  async function openDuplicateForm(task: Omit<Task, 'template'>): Promise<void> {
+  async function openDuplicateForm(
+    task: Omit<Task, 'template'>
+  ): Promise<void> {
     try {
       const base = await getTask(task);
 

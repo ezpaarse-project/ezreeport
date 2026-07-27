@@ -18,6 +18,6 @@ export interface Period extends Omit<RawPeriod, 'start' | 'end'> {
  * @returns Parsed period
  */
 export const parsePeriod = (period: RawPeriod): Period => ({
-  start: parseISO(period.start),
   end: parseISO(period.end),
+  start: parseISO(period.start),
 });

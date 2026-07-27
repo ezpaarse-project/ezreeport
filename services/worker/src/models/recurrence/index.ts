@@ -47,7 +47,7 @@ export function calcVegaFormatFromRecurrence(recurrence: RecurrenceType): {
       return { timeUnit: 'hours' };
     case 'WEEKLY':
     case 'MONTHLY':
-      return { timeUnit: 'yearmonthdate', format: '%d %b %Y' };
+      return { format: '%d %b %Y', timeUnit: 'yearmonthdate' };
     case 'QUARTERLY':
     case 'BIENNIAL':
     case 'YEARLY':

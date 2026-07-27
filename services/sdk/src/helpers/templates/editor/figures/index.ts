@@ -1,6 +1,6 @@
 import type {
-  TemplateFilter,
   TemplateBodyFigure as IFigure,
+  TemplateFilter,
 } from '~/modules/templates';
 
 import type { FigureOrder } from './utils';
@@ -134,12 +134,11 @@ export function figureHelperToJSON(figure: AnyFigureHelper): IFigure {
   }
 
   return {
-    type: figure.type,
     data: 'data' in figure ? figure.data : undefined,
-    filters:
-      'filters' in figure ? Array.from(figure.filters.values()) : undefined,
+    filters: 'filters' in figure ? [...figure.filters.values()] : undefined,
     params,
-    slots: Array.from(figure.slots),
+    slots: [...figure.slots],
+    type: figure.type,
   };
 }
 

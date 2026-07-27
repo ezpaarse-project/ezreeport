@@ -11,8 +11,8 @@ import { editTaskAfterGeneration } from '~/models/tasks';
 const eventExchangeName = 'ezreeport.report:event';
 
 const logger = appLogger.child({
-  scope: 'queues',
   exchange: eventExchangeName,
+  scope: 'queues',
 });
 
 const generationEndedCache = new Map<string, NodeJS.Timeout>();
@@ -60,12 +60,12 @@ function debouncedGenerationFinished(data: GenerationType): boolean {
 async function updateGeneration(data: GenerationType): Promise<void> {
   try {
     await upsertGeneration(data.id, data);
-  } catch (err) {
+  } catch (error) {
     const severity = generationFinished(data) ? 'error' : 'warn';
     logger[severity]({
-      msg: "Couldn't update generation",
+      err: error,
       id: data.id,
-      err,
+      msg: "Couldn't update generation",
     });
   }
 }
@@ -73,25 +73,25 @@ async function updateGeneration(data: GenerationType): Promise<void> {
 async function updateTaskAfterGeneration(data: GenerationType): Promise<void> {
   try {
     await createActivity({
-      taskId: data.taskId,
-      type:
-        data.status === 'SUCCESS' ? 'generation:success' : 'generation:error',
+      data: {
+        generationId: data.id,
+        period: { end: data.end, start: data.start },
+        targets: data.targets,
+      },
       message:
         data.status === 'SUCCESS'
           ? `Rapport généré par ${data.origin}`
           : `Rapport non généré par ${data.origin} suite à une erreur.`,
-      data: {
-        generationId: data.id,
-        period: { start: data.start, end: data.end },
-        targets: data.targets,
-      },
-    });
-  } catch (err) {
-    logger.error({
-      msg: "Couldn't update activity",
-      id: data.id,
       taskId: data.taskId,
-      err,
+      type:
+        data.status === 'SUCCESS' ? 'generation:success' : 'generation:error',
+    });
+  } catch (error) {
+    logger.error({
+      err: error,
+      id: data.id,
+      msg: "Couldn't update activity",
+      taskId: data.taskId,
     });
   }
 
@@ -102,12 +102,12 @@ async function updateTaskAfterGeneration(data: GenerationType): Promise<void> {
       data.createdAt,
       data.status !== 'ERROR'
     );
-  } catch (err) {
+  } catch (error) {
     logger.error({
-      msg: "Couldn't update task",
+      err: error,
       id: data.id,
+      msg: "Couldn't update task",
       taskId: data.taskId,
-      err,
     });
   }
 }
@@ -121,14 +121,14 @@ async function onMessage(msg: rabbitmq.ConsumeMessage | null): Promise<void> {
   const { data, raw, parseError } = parseJSONMessage(msg, Generation);
   if (!data) {
     logger.error({
-      msg: 'Invalid data',
       data: process.env.NODE_ENV === 'production' ? undefined : raw,
       err: parseError,
+      msg: 'Invalid data',
     });
     return;
   }
 
-  // try to fix issue where task is completed but not marked as such
+  // Try to fix issue where task is completed but not marked as such
   if (data.progress === 100 && data.status === 'PROCESSING') {
     data.status = 'SUCCESS';
   }
@@ -154,8 +154,8 @@ export async function initReportEventExchange(
 
   // Create queue to bind
   const { queue } = await channel.assertQueue('', {
-    exclusive: true,
     durable: false,
+    exclusive: true,
   });
   channel.bindQueue(queue, eventExchange, '');
 
@@ -163,8 +163,8 @@ export async function initReportEventExchange(
   channel.consume(queue, (msg) => onMessage(msg), { noAck: true });
 
   logger.debug({
-    msg: 'Event exchange created',
     exchange: eventExchange,
+    msg: 'Event exchange created',
     queue,
   });
 }

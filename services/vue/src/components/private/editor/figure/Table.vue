@@ -298,7 +298,11 @@
   function setColumn(column: TableColumn) {
     try {
       if (updatedColumn.value) {
-        updateTableColumnOfHelper(props.modelValue, updatedColumn.value, column);
+        updateTableColumnOfHelper(
+          props.modelValue,
+          updatedColumn.value,
+          column
+        );
       } else {
         addTableColumnOfHelper(props.modelValue, column);
       }

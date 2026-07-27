@@ -20,8 +20,8 @@ import {
 
 import { authPlugin } from '~/plugins/auth';
 import {
-  describeErrors,
   buildSuccessResponse,
+  describeErrors,
   zSuccessResponse,
 } from '~/routes/v2/responses';
 
@@ -39,8 +39,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/',
     schema: {
-      summary: 'Get all users',
-      tags: ['users'],
       querystring: z.object({
         ...PaginationQuery.shape,
         ...UserQueryFilters.shape,
@@ -53,6 +51,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zPaginationResponse(User),
       },
+      summary: 'Get all users',
+      tags: ['users'],
     },
     config: {
       ezrAuth: {
@@ -65,18 +65,18 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       const { page, count, sort, order, ...filters } = request.query;
 
       const content = await users.getAllUsers(filters, {
-        page,
         count,
-        sort,
         order,
+        page,
+        sort,
       });
 
       return buildPaginatedResponse(
         content,
         {
+          count: content.length,
           page: request.query.page,
           total: await users.countUsers(filters),
-          count: content.length,
         },
         reply
       );
@@ -87,8 +87,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'PUT',
     url: '/',
     schema: {
-      summary: 'Replace all users',
-      tags: ['users'],
       body: z.array(BulkUser),
       response: {
         ...describeErrors([
@@ -98,6 +96,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(BulkUserResult),
       },
+      summary: 'Replace all users',
+      tags: ['users'],
     },
     config: {
       ezrAuth: {
@@ -116,8 +116,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/:username',
     schema: {
-      summary: 'Get specific user',
-      tags: ['users'],
       params: SpecificUserParams,
       response: {
         ...describeErrors([
@@ -128,6 +126,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(User),
       },
+      summary: 'Get specific user',
+      tags: ['users'],
     },
     config: {
       ezrAuth: {
@@ -150,10 +150,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'PUT',
     url: '/:username',
     schema: {
-      summary: 'Upsert specific user',
-      tags: ['users'],
-      params: SpecificUserParams,
       body: InputUser,
+      params: SpecificUserParams,
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -163,6 +161,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(User),
       },
+      summary: 'Upsert specific user',
+      tags: ['users'],
     },
     config: {
       ezrAuth: {
@@ -191,8 +191,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'DELETE',
     url: '/:username',
     schema: {
-      summary: 'Delete specific user',
-      tags: ['users'],
       params: SpecificUserParams,
       response: {
         ...describeErrors([
@@ -203,6 +201,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(z.object({ deleted: z.boolean() })),
       },
+      summary: 'Delete specific user',
+      tags: ['users'],
     },
     config: {
       ezrAuth: {
@@ -223,5 +223,5 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
   fastify.register(membershipRoutes, { prefix: '/:username/memberships' });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

@@ -23,7 +23,7 @@ const accessValues: Record<Access, number> = {
  * @param accessA First access level
  * @param accessB Second access level
  *
- * @return `-1` if a < b, `0` if a === b, `1` if a > b
+ * @returns `-1` if a < b, `0` if a === b, `1` if a > b
  */
 function compareAccess(accessA: Access, accessB: Access): -1 | 0 | 1 {
   if (accessValues[accessA] === accessValues[accessB]) {
@@ -50,9 +50,9 @@ const adminPerRoute = new Map<string, boolean>();
  */
 export function registerRouteWithAccess(route: string, access: Access): void {
   logger.debug({
-    route,
     access,
     msg: 'Registered route with minimum access',
+    route,
   });
   accessPerRoute.set(route, access);
 }
@@ -65,9 +65,9 @@ export function registerRouteWithAccess(route: string, access: Access): void {
  */
 export function registerRoute(route: string, isAdminRequired: boolean): void {
   logger.debug({
-    route,
     isAdminRequired,
     msg: 'Registered route with admin required',
+    route,
   });
   adminPerRoute.set(route, isAdminRequired);
 }
@@ -84,6 +84,7 @@ export function generateToken(): Promise<string> {
     randomBytes(124, (err, buf) => {
       if (err) {
         reject(err);
+        return;
       }
       resolve(buf.toString('base64'));
     });
@@ -131,10 +132,10 @@ export async function getNamespacesOfUser(
   }
 
   const memberships = await prisma.membership.findMany({
-    where,
     select: {
       namespace: true,
     },
+    where,
   });
 
   const namespacesMap = new Map(
@@ -143,7 +144,7 @@ export async function getNamespacesOfUser(
 
   // oxlint-disable-next-line promise/prefer-await-to-then
   return Promise.all(
-    Array.from(namespacesMap.values()).map((namespace) =>
+    [...namespacesMap.values()].map((namespace) =>
       ensureSchema(
         Namespace,
         namespace,
@@ -186,7 +187,7 @@ export async function getRoutesOfUser(
   const user = await prisma.user.findUniqueOrThrow({ where: { username } });
 
   const routes = new Map<string, boolean>(
-    Array.from(adminPerRoute).map(([route, adminRequired]) => [
+    [...adminPerRoute].map(([route, adminRequired]) => [
       route,
       user.isAdmin >= adminRequired,
     ])
@@ -215,7 +216,7 @@ export async function getRoutesPerNamespaceOfUser(
     memberships.map(({ namespaceId, access }) => [
       namespaceId,
       new Map(
-        Array.from(accessPerRoute).map(([route, minAccess]) => [
+        [...accessPerRoute].map(([route, minAccess]) => [
           route,
           compareAccess(access, minAccess) >= 0,
         ])
@@ -234,7 +235,7 @@ export async function getRoutesPerNamespaceOfAdmin(): Promise<
   const routesPerNamespace = new Map<string, Map<string, boolean>>(
     namespaces.map(({ id }) => [
       id,
-      new Map(Array.from(accessPerRoute).map(([route]) => [route, true])),
+      new Map([...accessPerRoute].map(([route]) => [route, true])),
     ])
   );
 

@@ -1,30 +1,31 @@
 import type {
-  HeartbeatService,
   HeartbeatSender,
+  HeartbeatService,
 } from '@ezreeport/heartbeats/types';
-import { setupHeartbeat, mandatoryService } from '@ezreeport/heartbeats';
+import { mandatoryService, setupHeartbeat } from '@ezreeport/heartbeats';
 
 import type rabbitmq from '~/lib/rabbitmq';
 import config from '~/lib/config';
-// import getChannel from './channel';
+// Import getChannel from './channel';
 import { elasticPing } from '~/lib/elastic';
 import { appLogger } from '~/lib/logger';
 
-import { version } from '../../../package.json';
+// oxlint-disable-next-line import/extensions
+import { version } from '../../../package.json' with { type: 'json' };
 
 const { heartbeat: frequency } = config;
 
 const logger = appLogger.child({ scope: 'heartbeat' });
 
 const service: HeartbeatService = {
-  name: 'worker',
-  version,
-  filesystems: {
-    logs: config.log.dir,
-  },
   connectedServices: {
     elastic: mandatoryService('elastic', elasticPing),
   },
+  filesystems: {
+    logs: config.log.dir,
+  },
+  name: 'worker',
+  version,
 };
 
 export { getMissingMandatoryServices } from '@ezreeport/heartbeats';

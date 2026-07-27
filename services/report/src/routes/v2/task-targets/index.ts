@@ -9,8 +9,8 @@ import { TaskQueryFilters } from '~/models/tasks/types';
 
 import { authPlugin, restrictNamespaces } from '~/plugins/auth';
 import {
-  describeErrors,
   buildSuccessResponse,
+  describeErrors,
   zSuccessResponse,
 } from '~/routes/v2/responses';
 
@@ -24,8 +24,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/',
     schema: {
-      summary: 'Get all targets of all tasks',
-      tags: ['task-targets'],
       querystring: TaskQueryFilters.pick({ namespaceId: true }),
       response: {
         ...describeErrors([
@@ -36,11 +34,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(z.array(z.string())),
       },
+      summary: 'Get all targets of all tasks',
+      tags: ['task-targets'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ,
+        requireUser: true,
       },
     },
     preHandler: [
@@ -57,18 +57,18 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       const { namespaceId } = request.query;
       const tasks = await getAllTasks({ namespaceId }, undefined, {
         count: 0,
-        page: 1,
         order: 'asc',
+        page: 1,
       });
 
       const content = new Set(tasks.flatMap(({ targets }) => targets));
 
-      return buildSuccessResponse(Array.from(content).toSorted(), reply);
+      return buildSuccessResponse([...content].toSorted(), reply);
     },
   });
 
   fastify.register(targetRoutes, { prefix: '/:email/tasks' });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

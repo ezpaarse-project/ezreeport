@@ -161,7 +161,8 @@
   });
   /** Position option */
   const position = computed({
-    get: () => props.modelValue?.position ?? paramsBackup.value.position ?? 'in',
+    get: () =>
+      props.modelValue?.position ?? paramsBackup.value.position ?? 'in',
     set: (value) => {
       if (!props.modelValue) {
         return;

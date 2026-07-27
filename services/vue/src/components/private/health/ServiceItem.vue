@@ -32,9 +32,7 @@
   const { t } = useI18n();
 
   const versions = computed(() =>
-    [...new Set(props.modelValue.map(({ version }) => version))].join(
-      ' | '
-    )
+    [...new Set(props.modelValue.map(({ version }) => version))].join(' | ')
   );
 
   const tooltip = computed(() => {

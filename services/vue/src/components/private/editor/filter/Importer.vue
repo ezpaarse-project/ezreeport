@@ -78,7 +78,10 @@
     }
 
     // Generate value text
-    const valueText = t('$ezreeport.editor.filters.nameTemplate.values', values);
+    const valueText = t(
+      '$ezreeport.editor.filters.nameTemplate.values',
+      values
+    );
     const data = { field: filter.field, valueText };
 
     // Generate name
@@ -101,9 +104,8 @@
     kibanaText.value
       .split('\n')
       .map((line): TemplateFilter | undefined => {
-        const matches = /^(?:(?<invert>NOT)\s)?(?<field>.+): (?<value>.*)/v.exec(
-          line
-        );
+        const matches =
+          /^(?:(?<invert>NOT)\s)?(?<field>.+): (?<value>.*)/v.exec(line);
         const { invert, field, value } = matches?.groups ?? {};
         // If no matches, it's not a valid line
         if (!field || !value) {

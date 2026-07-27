@@ -45,50 +45,50 @@ export const Existing: Story = {
                 params: {
                   labels: [
                     {
+                      format: {
+                        type: 'number',
+                      },
                       text: 'Actions',
-                      format: {
-                        type: 'number',
-                      },
                     },
                     {
-                      text: 'ECs insérés',
-                      format: {
-                        type: 'number',
-                      },
                       aggregation: {
-                        type: 'sum',
                         field: 'response.body.inserted',
+                        type: 'sum',
                       },
-                    },
-                    {
-                      text: 'ECs mis à jour',
                       format: {
                         type: 'number',
                       },
+                      text: 'ECs insérés',
+                    },
+                    {
                       aggregation: {
-                        type: 'sum',
                         field: 'response.body.updated',
-                      },
-                    },
-                    {
-                      text: "Erreurs d'insertion",
-                      format: {
-                        type: 'number',
-                      },
-                      aggregation: {
                         type: 'sum',
-                        field: 'response.body.failed',
                       },
-                    },
-                    {
-                      text: "Nombre d'utilisateurs",
                       format: {
                         type: 'number',
                       },
+                      text: 'ECs mis à jour',
+                    },
+                    {
                       aggregation: {
-                        type: 'cardinality',
-                        field: 'user.name',
+                        field: 'response.body.failed',
+                        type: 'sum',
                       },
+                      format: {
+                        type: 'number',
+                      },
+                      text: "Erreurs d'insertion",
+                    },
+                    {
+                      aggregation: {
+                        field: 'user.name',
+                        type: 'cardinality',
+                      },
+                      format: {
+                        type: 'number',
+                      },
+                      text: "Nombre d'utilisateurs",
                     },
                   ],
                 },
@@ -147,9 +147,9 @@ export const Existing: Story = {
               {
                 filters: [
                   {
-                    name: 'action is not indices/insert',
-                    isNot: true,
                     field: 'action',
+                    isNot: true,
+                    name: 'action is not indices/insert',
                     value: 'indices/insert',
                   },
                 ],
@@ -228,22 +228,22 @@ export const Existing: Story = {
                 params: {
                   columns: [
                     {
+                      aggregation: {
+                        field: 'response.body.error',
+                        type: 'terms',
+                      },
                       header: 'Erreur',
                       metric: false,
-                      aggregation: {
-                        type: 'terms',
-                        field: 'response.body.error',
-                      },
                     },
                     {
-                      header: 'Utilisateur',
-                      metric: false,
                       aggregation: {
-                        size: 1,
-                        type: 'terms',
                         field: 'user.name',
                         missing: '-',
+                        size: 1,
+                        type: 'terms',
                       },
+                      header: 'Utilisateur',
+                      metric: false,
                     },
                     {
                       header: 'Value',
@@ -300,29 +300,29 @@ export const Existing: Story = {
             at: 1,
             figures: [
               {
-                type: 'bar',
-                slots: [2, 3],
-                params: {
-                  label: {
-                    title: 'datetime',
-                    aggregation: {
-                      type: 'date_histogram',
-                      field: '{{ dateField }}',
-                    },
-                  },
-                  title: 'panist : histo jour requêtes',
-                  value: { title: 'Count' },
-                  dataLabel: { format: 'numeric', showLabel: false },
-                  invertAxis: false,
-                },
                 filters: [
                   {
-                    name: '_index is panist*',
                     field: '_index',
                     isNot: false,
+                    name: '_index is panist*',
                     value: 'panist*',
                   },
                 ],
+                params: {
+                  dataLabel: { format: 'numeric', showLabel: false },
+                  invertAxis: false,
+                  label: {
+                    aggregation: {
+                      field: '{{ dateField }}',
+                      type: 'date_histogram',
+                    },
+                    title: 'datetime',
+                  },
+                  title: 'panist : histo jour requêtes',
+                  value: { title: 'Count' },
+                },
+                slots: [2, 3],
+                type: 'bar',
               },
             ],
           },

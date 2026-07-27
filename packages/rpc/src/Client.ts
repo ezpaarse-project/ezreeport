@@ -3,11 +3,11 @@ import EventEmitter from 'node:events';
 
 import type { Logger } from '@ezreeport/logger';
 import {
-  type rabbitmq,
   type JSONMessageTransport,
   type JSONMessageTransportExchange,
   type JSONMessageTransportQueue,
   parseJSONMessage,
+  type rabbitmq,
   sendJSONMessage,
 } from '@ezreeport/rabbitmq';
 
@@ -38,7 +38,7 @@ export class RPCClient {
   private transport: Promise<RPCClientTransport>;
 
   constructor(channel: rabbitmq.Channel, queueName: string, appLogger: Logger) {
-    this.logger = appLogger.child({ scope: 'rpc.client', queue: queueName });
+    this.logger = appLogger.child({ queue: queueName, scope: 'rpc.client' });
 
     this.transport = this.assertTransport(channel, queueName);
   }
@@ -57,17 +57,17 @@ export class RPCClient {
         msg: 'RPC client setup',
         ...exchange,
         exchange: name,
-        queueName: queueName,
+        queueName,
       });
 
       return {
-        channel: channel,
-        queue: { name: queueName },
+        channel,
         exchange: { name, routingKey: '' },
+        queue: { name: queueName },
       };
-    } catch (err) {
-      this.logger.error({ msg: "Couldn't setup RPC client", err });
-      throw err;
+    } catch (error) {
+      this.logger.error({ err: error, msg: "Couldn't setup RPC client" });
+      throw error;
     }
   }
 
@@ -78,8 +78,8 @@ export class RPCClient {
 
     const correlationId = randomUUID();
     const { queue: responseQueue } = await channel.assertQueue('', {
-      exclusive: true,
       durable: false,
+      exclusive: true,
     });
 
     await channel.consume(responseQueue, async (msg) => {
@@ -95,9 +95,9 @@ export class RPCClient {
       const { data, raw, parseError } = parseJSONMessage(msg, RPCResponse);
       if (!data) {
         this.logger.error({
-          msg: 'Invalid data',
           data: process.env.NODE_ENV === 'production' ? undefined : raw,
           err: parseError,
+          msg: 'Invalid data',
         });
         channel.nack(msg, undefined, false);
         return;
@@ -137,7 +137,7 @@ export class RPCClient {
       1000
     );
 
-    const responseQueue = await this.setupResponseQueue(async (msg, data) => {
+    const responseQueue = await this.setupResponseQueue((msg, data) => {
       timeout.reset();
 
       if (data.error) {
@@ -161,11 +161,11 @@ export class RPCClient {
     const { size } = sendJSONMessage<RPCRequestType>(
       { channel, exchange },
       { method, params, toAll: true },
-      { correlationId, replyTo, expiration: timeout.duration }
+      { correlationId, expiration: timeout.duration, replyTo }
     );
     this.logger.debug({
-      msg: 'Request sent',
       method,
+      msg: 'Request sent',
       params,
       size,
       sizeUnit: 'B',
@@ -219,11 +219,11 @@ export class RPCClient {
     const { size } = sendJSONMessage<RPCRequestType>(
       { channel, queue },
       { method, params },
-      { correlationId, replyTo, expiration: timeout.duration }
+      { correlationId, expiration: timeout.duration, replyTo }
     );
     this.logger.debug({
-      msg: 'Request sent',
       method,
+      msg: 'Request sent',
       params,
       size,
       sizeUnit: 'B',

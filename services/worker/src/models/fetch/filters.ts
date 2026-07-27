@@ -1,7 +1,7 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 
 import type { FilterType } from '@ezreeport/models/templates';
-import { formatISO, type Interval } from '@ezreeport/dates';
+import { type Interval, formatISO } from '@ezreeport/dates';
 import { ensureArray } from '@ezreeport/models/lib/utils';
 
 /**
@@ -59,9 +59,9 @@ export function prepareEsQuery(
     must.push({
       range: {
         [period.dateField]: {
+          format: 'strict_date_optional_time',
           gte: formatISO(period.value.start),
           lte: formatISO(period.value.end),
-          format: 'strict_date_optional_time',
         },
       },
     });

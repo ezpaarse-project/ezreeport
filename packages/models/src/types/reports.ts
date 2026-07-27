@@ -137,29 +137,6 @@ export type ReportErrorType = z.infer<typeof ReportError>;
  */
 export const ReportResult = z.object({
   detail: z.object({
-    createdAt: z.coerce.date().describe('Creation date of the report'),
-
-    destroyAt: z.coerce
-      .date()
-      .describe('Date when the report will be destroyed'),
-
-    took: z.int().min(0).describe('Time taken to generate the report'),
-
-    jobId: z.string().min(1).describe('Job ID used to generate the report'),
-
-    taskId: z.string().min(1).describe('Task ID used to generate the report'),
-
-    locale: TemplateLocale.describe('Locale used when generating report'),
-
-    files: ReportFiles.describe('Files'),
-
-    sendingTo: z
-      .array(z.email())
-      .optional()
-      .describe('Email addresses the report was sent'),
-
-    period: ReportPeriod.describe('Period used to generate report'),
-
     auth: z
       .object({
         elastic: z
@@ -174,6 +151,29 @@ export const ReportResult = z.object({
       .optional()
       .describe('Auth used to generate report'),
 
+    createdAt: z.coerce.date().describe('Creation date of the report'),
+
+    destroyAt: z.coerce
+      .date()
+      .describe('Date when the report will be destroyed'),
+
+    error: ReportError.optional().describe('Error details'),
+
+    files: ReportFiles.describe('Files'),
+
+    jobId: z.string().min(1).describe('Job ID used to generate the report'),
+
+    locale: TemplateLocale.describe('Locale used when generating report'),
+
+    meta: z.any().optional().describe('Metadata'),
+
+    period: ReportPeriod.describe('Period used to generate report'),
+
+    sendingTo: z
+      .array(z.email())
+      .optional()
+      .describe('Email addresses the report was sent'),
+
     stats: z
       .object({
         pageCount: z
@@ -187,9 +187,9 @@ export const ReportResult = z.object({
       .optional()
       .describe('Stats about the report file'),
 
-    error: ReportError.optional().describe('Error details'),
+    taskId: z.string().min(1).describe('Task ID used to generate the report'),
 
-    meta: z.any().optional().describe('Metadata'),
+    took: z.int().min(0).describe('Time taken to generate the report'),
   }),
 
   success: z.boolean().describe('Was the report successfully generated'),

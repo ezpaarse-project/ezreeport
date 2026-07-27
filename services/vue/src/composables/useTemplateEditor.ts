@@ -108,7 +108,7 @@ export default function useTemplateEditor(defaultOptions?: Options) {
       return options;
     }
     // Strip props if only one type
-    return options.map((item) => (Object.assign(item, { props: {} })));
+    return options.map((item) => Object.assign(item, { props: {} }));
   }
 
   // Init editor

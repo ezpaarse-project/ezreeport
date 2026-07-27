@@ -10,14 +10,14 @@ import { replaceMemberships } from '~/models/memberships';
 import { buildPaginatedRequest } from '~/models/pagination';
 
 import {
-  Namespace,
-  type NamespaceType,
-  type NamespaceQueryFiltersType,
-  type InputNamespaceType,
   type BulkNamespaceType,
+  type InputNamespaceType,
+  Namespace,
+  type NamespaceQueryFiltersType,
+  type NamespaceType,
 } from './types';
 
-const logger = appLogger.child({ scope: 'models', model: 'namespaces' });
+const logger = appLogger.child({ model: 'namespaces', scope: 'models' });
 
 function applyFilters(
   filters: NamespaceQueryFiltersType
@@ -97,8 +97,8 @@ export async function createNamespace(
   const namespace = await prisma.namespace.create({ data });
 
   logger.debug({
-    id: namespace.id,
     action: 'Created',
+    id: namespace.id,
     msg: 'Created',
   });
 
@@ -118,15 +118,15 @@ export async function editNamespace(
   data: InputNamespaceType
 ): Promise<NamespaceType> {
   const namespace = await prisma.namespace.update({
+    data,
     where: {
       id,
     },
-    data,
   });
 
   logger.debug({
-    id: namespace.id,
     action: 'Updated',
+    id: namespace.id,
     msg: 'Updated',
   });
 
@@ -144,8 +144,8 @@ export async function deleteNamespace(id: string): Promise<NamespaceType> {
   const namespace = await prisma.namespace.delete({ where: { id } });
 
   logger.debug({
-    id: namespace.id,
     action: 'Deleted',
+    id: namespace.id,
     msg: 'Deleted',
   });
 
@@ -186,8 +186,8 @@ export async function countNamespaces(
  */
 export async function doesNamespaceExist(id: string): Promise<boolean> {
   const count = await prisma.namespace.count({
-    where: { id },
     select: { id: true },
+    where: { id },
   });
 
   return count.id > 0;
@@ -212,7 +212,7 @@ export async function replaceNamespaces(data: BulkNamespaceType[]) {
   const editData = toEdit.map(
     (namespace) =>
       ({
-        // toEdit is made of dataPerId so we can assume it is safe
+        // ToEdit is made of dataPerId so we can assume it is safe
         ...dataPerId.get(namespace.id)!,
         // Skip memberships, we will replace them later
         memberships: undefined,
@@ -223,23 +223,20 @@ export async function replaceNamespaces(data: BulkNamespaceType[]) {
   const toCreate = data.filter((namespace) => !toEditIds.has(namespace.id));
   const createData = toCreate.map(
     (namespace) =>
-      ({
-        // toCreate is made of toEdit so we can assume it is safe
-        ...dataPerId.get(namespace.id)!,
-        // Skip memberships, we will replace them later
+      Object.assign(dataPerId.get(namespace.id)!, {
         memberships: undefined,
       }) satisfies Prisma.NamespaceCreateInput
   );
 
   // Executing operations
-  const [deleted, updated, created] = await prisma.$transaction(async (tx) => {
+  const [deleted, updated, created] = await prisma.$transaction((tx) => {
     const deleteOperations = prisma.namespace.deleteMany({
       where: { id: { in: toDelete.map((namespace) => namespace.id) } },
     });
 
     const updateOperations = Promise.all(
       editData.map((newData) =>
-        tx.namespace.update({ where: { id: newData.id }, data: newData })
+        tx.namespace.update({ data: newData, where: { id: newData.id } })
       )
     );
 
@@ -249,19 +246,18 @@ export async function replaceNamespaces(data: BulkNamespaceType[]) {
   });
 
   logger.debug({
-    deleted: deleted.count,
-    updated: updated.length,
-    created: created.count,
     action: 'Replaced',
+    created: created.count,
+    deleted: deleted.count,
     msg: 'Replaced',
+    updated: updated.length,
   });
 
   let membershipResult;
   const memberships: BulkMembershipType[] = data.flatMap((namespace) =>
-    (namespace.memberships ?? []).map((membership) => ({
-      ...membership,
-      namespaceId: namespace.id,
-    }))
+    (namespace.memberships ?? []).map((membership) =>
+      Object.assign(membership, { namespaceId: namespace.id })
+    )
   );
   if (memberships.length > 0) {
     membershipResult = await replaceMemberships(memberships);
@@ -269,9 +265,9 @@ export async function replaceNamespaces(data: BulkNamespaceType[]) {
 
   return {
     namespaces: {
+      created: created.count,
       deleted: deleted.count,
       updated: updated.length,
-      created: created.count,
     },
     ...membershipResult,
   };

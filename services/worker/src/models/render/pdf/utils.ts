@@ -17,7 +17,7 @@ export type PDFLoadedImageAsset = {
  * Loads an image with some info
  *
  * @param data Image src
- * @return base64 & other useful information
+ * @returns base64 & other useful information
  */
 export const loadImageAsset = async (
   data: string
@@ -25,15 +25,17 @@ export const loadImageAsset = async (
   // Waiting Image to "render" to get width & height
   // oxlint-disable-next-line promise/avoid-new
   const img = await new Promise<Image>((resolve, reject) => {
-    const img = new Image();
-    img.onload = (): void => resolve(img);
-    img.onerror = reject;
-    img.src = data;
+    const el = new Image();
+    // oxlint-disable-next-line unicorn/prefer-add-event-listener
+    el.onload = (): void => resolve(el);
+    // oxlint-disable-next-line unicorn/prefer-add-event-listener
+    el.onerror = reject;
+    el.src = data;
   });
   return {
     data: img.src.toString(),
-    width: img.width,
     height: img.height,
+    width: img.width,
   };
 };
 

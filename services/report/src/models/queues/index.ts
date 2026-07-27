@@ -6,6 +6,7 @@ import { initGenerationQueue } from './report/generation';
 
 const logger = appLogger.child({ scope: 'queues' });
 
+// oxlint-disable-next-line import/no-default-export
 export default async function initQueues(
   connection: rabbitmq.ChannelModel
 ): Promise<void> {

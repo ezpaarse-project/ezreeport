@@ -12,8 +12,8 @@ import { ensureArray } from './utils';
  * @returns Simplified Zod Issue
  */
 export function simplifyZodIssue(
-  issue: z.ZodIssue
-): Omit<z.ZodIssue, 'path'> & { path: string } {
+  issue: z.core.$ZodIssue
+): Omit<z.core.$ZodIssue, 'path'> & { path: string } {
   return { ...issue, path: issue.path.join('/') };
 }
 

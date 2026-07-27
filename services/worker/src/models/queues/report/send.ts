@@ -6,7 +6,7 @@ import { appLogger } from '~/lib/logger';
 
 const sendExchangeName = 'ezreeport.report:send';
 
-const logger = appLogger.child({ scope: 'queues', exchange: sendExchangeName });
+const logger = appLogger.child({ exchange: sendExchangeName, scope: 'queues' });
 
 export async function getReportSendExchange(
   channel: rabbitmq.Channel
@@ -28,15 +28,15 @@ export function sendReport(
     );
     logger.debug({
       msg: 'Report queued',
-      type,
       size,
       sizeUnit: 'B',
+      type,
     });
-  } catch (err) {
+  } catch (error) {
     logger.error({
+      err: error,
       msg: 'Failed to send report',
       type,
-      err,
     });
   }
 }

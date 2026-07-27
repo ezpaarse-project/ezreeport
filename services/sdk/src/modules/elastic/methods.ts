@@ -26,8 +26,8 @@ export async function getAllIndices(
     '/elastic/indices',
     {
       query: {
-        query: query || undefined,
         namespaceId: namespaceId || undefined,
+        query: query || undefined,
       },
     }
   );

@@ -1,4 +1,4 @@
-import type { TemplateFilter, TemplateBodyFigure } from '~/modules/templates';
+import type { TemplateBodyFigure, TemplateFilter } from '~/modules/templates';
 
 import type { FigureAggregation } from '../aggregations';
 import type { FigureOrder } from './utils';
@@ -118,7 +118,7 @@ export function updateMetricLabelOfHelper(
   const index = figure.params.labels.findIndex(
     (lab) => getMetricLabelKey(lab) === oldKey
   );
-  if (index < 0) {
+  if (index === -1) {
     throw new Error(`Label "${oldElement.text}" not found`);
   }
   const fig = figure;
