@@ -1,5 +1,38 @@
 # ezreeport-worker
 
+## 1.2.0
+
+### Minor Changes
+
+- 92b1b03: ✨ can now generate test reports without targets
+- 730cac8: ✨ templates can be rendered using locales
+
+### Patch Changes
+
+- aa0eb0f: 🐛 fixed metrics on non-existing fields throwing errors
+- 7dedf0c: 🚑 fixed crash at startup
+- 7f575a3: 🐛 changed attachment name generation to avoid filesystem issues
+- Updated dependencies [92b1b03]
+  - @ezreeport/models@0.2.0
+  - @ezreeport/heartbeats@0.0.2
+  - @ezreeport/rpc@0.0.2
+
+## 1.2.0-rc.0
+
+### Minor Changes
+
+- 92b1b03: ✨ can now generate test reports without targets
+- 730cac8: ✨ templates can be rendered using locales
+
+### Patch Changes
+
+- aa0eb0f: 🐛 fixed metrics on non-existing fields throwing errors
+- 7f575a3: 🐛 changed attachment name generation to avoid filesystem issues
+- Updated dependencies [92b1b03]
+  - @ezreeport/models@0.2.0-rc.0
+  - @ezreeport/heartbeats@0.0.2-rc.0
+  - @ezreeport/rpc@0.0.2-rc.0
+
 ## 1.1.4
 
 ### Patch Changes
