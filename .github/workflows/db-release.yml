@@ -6,7 +6,7 @@ on:
       - '@ezreeport/database@*'
 
 env:
-  HUSKY: 0
+  LEFTHOOK: 'false'
   TURBO_UI: 'false'
 
 concurrency:

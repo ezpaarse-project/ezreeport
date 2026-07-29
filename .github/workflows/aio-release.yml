@@ -10,7 +10,7 @@ on:
       - 'ezreeport-worker@*'
 
 env:
-  HUSKY: 0
+  LEFTHOOK: 'false'
   TURBO_UI: 'false'
 
 concurrency:
@@ -18,10 +18,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  release:
     permissions:
       contents: write
-      packages: write
+    outputs:
+      tag: ${{ steps.docker_tags.outputs.tag }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
@@ -73,6 +74,22 @@ jobs:
             echo "Resolved ${new_tag}"
           fi
 
+      - name: Push tag 🔖
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
+          tag_name="ezreeport-aio@${{ steps.docker_tags.outputs.tag }}"
+
+          git tag $tag_name
+          git push origin $tag_name
+
+  build:
+    permissions:
+      packages: write
+    runs-on: ubuntu-latest
+    needs: [release]
+    steps:
       - name: Docker meta 🔧
         id: meta
         uses: docker/metadata-action@v6
@@ -80,8 +97,8 @@ jobs:
           images: |
             ghcr.io/ezpaarse-project/ezreeport-aio
           tags: |
-            type=raw,value=${{ steps.docker_tags.outputs.tag }}
-            type=raw,value=${{ steps.docker_tags.outputs.label }}
+            type=raw,value=${{ needs.release.outputs.tag }}
+            type=raw,value=${{ needs.release.outputs.label }}
 
       - name: Login to GitHub Container Registry 🔑
         uses: docker/login-action@v4
@@ -104,12 +121,40 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Push tag 🔖
-        run: |
-          git config user.name "${GITHUB_ACTOR}"
-          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+  scan:
+    permissions:
+      contents: read
+      packages: read
+    runs-on: ubuntu-latest
+    needs: [release, build]
+    steps:
+      - name: Scan for vulnerability 🔍
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: 'ghcr.io/ezpaarse-project/ezreeport-aio:${{ needs.release.outputs.tag }}'
+          exit-code: 0
+          format: json
+          output: trivy-report.json
 
-          tag_name="ezreeport-aio@${{ steps.docker_tags.outputs.tag }}"
+      - name: Upload vulnerability scan 🚚
+        uses: actions/upload-artifact@v7
+        with:
+          name: trivy-report
+          path: trivy-report.json
+          retention-days: 30
 
-          git tag $tag_name
-          git push origin $tag_name
+      - name: Checkout 🛎️
+        uses: actions/checkout@v7
+
+      - name: Generate vulnerability report 🔍
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: 'ghcr.io/ezpaarse-project/ezreeport-aio:${{ needs.release.outputs.tag }}'
+          exit-code: 0
+          format: template
+          template: '@./.trivy/md.tpl'
+          output: trivy-report.md
+          skip-setup-trivy: true
+
+      - name: Write vulnerability report 📄
+        run: cat trivy-report.md >> $GITHUB_STEP_SUMMARY
