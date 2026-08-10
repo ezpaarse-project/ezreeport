@@ -1,5 +1,13 @@
 # ezreeport-scheduler
 
+## 1.4.1-rc.0
+
+### Patch Changes
+
+- 7806cc2: ⬆️ upgraded dependencies
+- Updated dependencies [7806cc2]
+  - @ezreeport/database@1.4.1-rc.0
+
 ## 1.4.0
 
 ### Minor Changes

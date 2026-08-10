@@ -1,5 +1,11 @@
 # @ezreeport/database-v1.0.0 (2025-08-08)
 
+## 1.4.1-rc.0
+
+### Patch Changes
+
+- 7806cc2: ⬆️ upgraded dependencies
+
 ## 1.4.0
 
 ### Minor Changes

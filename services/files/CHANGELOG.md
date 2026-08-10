@@ -1,5 +1,11 @@
 # ezreeport-files
 
+## 1.1.3-rc.0
+
+### Patch Changes
+
+- 7806cc2: ⬆️ upgraded dependencies
+
 ## 1.1.2
 
 ### Patch Changes

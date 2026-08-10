@@ -1,5 +1,15 @@
 # @ezpaarse-project/ezreeport-vue
 
+## 4.0.0-rc.0
+
+### Major Changes
+
+- 7806cc2: ⬆️ upgraded dependencies: now using Vuetify4 and with `peerDependencies`.
+
+### Minor Changes
+
+- cf3ce2b: ✨ can now click on index in selector to include it
+
 ## 3.3.0
 
 ### Minor Changes

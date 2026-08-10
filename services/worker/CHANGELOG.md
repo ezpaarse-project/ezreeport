@@ -1,5 +1,11 @@
 # ezreeport-worker
 
+## 1.2.1-rc.0
+
+### Patch Changes
+
+- 7806cc2: ⬆️ upgraded dependencies
+
 ## 1.2.0
 
 ### Minor Changes

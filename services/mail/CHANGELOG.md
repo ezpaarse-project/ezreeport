@@ -1,5 +1,11 @@
 # ezreeport-mail
 
+## 2.1.1-rc.0
+
+### Patch Changes
+
+- 7806cc2: ⬆️ upgraded dependencies
+
 ## 2.1.0
 
 ### Minor Changes
