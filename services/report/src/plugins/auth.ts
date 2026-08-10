@@ -55,7 +55,8 @@ const requireUser: preValidationHookHandler = async (request) => {
  *
  * @param request The fastify Request
  */
-const requireAdmin: preValidationHookHandler = (request) => {
+// oxlint-disable-next-line require-await
+const requireAdmin: preValidationHookHandler = async (request) => {
   if (!request.user?.isAdmin) {
     throw new HTTPError('Admin status is required', StatusCodes.FORBIDDEN);
   }
@@ -66,7 +67,8 @@ const requireAdmin: preValidationHookHandler = (request) => {
  *
  * @param request The fastify Request
  */
-const requireAPIKey: preValidationHookHandler = (request) => {
+// oxlint-disable-next-line require-await
+const requireAPIKey: preValidationHookHandler = async (request) => {
   // Getting token
   const token = request.headers['x-api-key'] ?? '';
 
@@ -86,7 +88,8 @@ const requireAPIKey: preValidationHookHandler = (request) => {
 /**
  * Gets pre-validation hooks to the route if needed
  *
- * @param param0 The route options
+ * @param routeConfig The route options
+ * @param routeConfig.ezrAuth Options about auth
  * @param registerName Name to register the route, if not present it won't be registered
  *
  * @returns The pre-validation hooks to add
