@@ -74,7 +74,7 @@ jobs:
       - name: Get version of image ⚙️
         id: version
         run: |
-          version=$(echo '${{ github.ref_name }}' | sed -nE 's/^ezreeport-files@(.+)$/\1/p')
+          version=$(echo '${{ github.ref_name }}' | sed -nE 's|^ezreeport-files@(.+)$|\1|p')
           echo "tag=${version}" >> $GITHUB_OUTPUT
 
       - name: Scan for vulnerability 🔍

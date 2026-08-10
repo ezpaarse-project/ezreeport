@@ -69,7 +69,7 @@ jobs:
       - name: Get version of package ⚙️
         id: version
         run: |
-          version=$(echo '${{ github.ref_name }}' | sed -nE 's/^@ezpaarse-project/ezreeport-sdk-js@(.+)$/\1/p')
+          version=$(echo '${{ github.ref_name }}' | sed -nE 's|^@ezpaarse-project/ezreeport-sdk-js@(.+)$|\1|p')
           echo "tag=${version}" >> $GITHUB_OUTPUT
 
       - name: Setup node ⚙️
