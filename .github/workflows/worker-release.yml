@@ -92,6 +92,9 @@ jobs:
           path: trivy-report.json
           retention-days: 30
 
+      - name: Checkout 🛎️
+        uses: actions/checkout@v7
+
       - name: Generate vulnerability report 🔍
         uses: aquasecurity/trivy-action@v0.36.0
         with:
