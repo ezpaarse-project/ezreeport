@@ -19,7 +19,7 @@ export async function changeTemplateVisibility(
   templateOrId: Omit<Template, 'body'> | string,
   hidden: boolean
 ): Promise<Template> {
-  const base = await getTemplate(templateOrId);
+  const base = await getTemplate(templateOrId, ['tags']);
 
   const template = await upsertTemplate({
     body: base.body,
