@@ -44,7 +44,7 @@ WORKDIR /usr/src
 RUN pnpm deploy --filter @ezreeport/database /usr/build/database/dev
 # ---
 # Generate prisma client using dev dependencies
-FROM pnpm AS database-prisma
+FROM base AS database-prisma
 WORKDIR /usr/build/database/dev
 
 # Install prisma dependencies
@@ -57,7 +57,7 @@ COPY --from=database-pnpm /usr/build/database/dev .
 COPY ./tsconfig.json /usr/build/tsconfig.json
 
 # Generate prisma-client
-RUN pnpm run db:generate
+RUN npm run db:generate
 # ---
 # Final image to run migrations
 FROM database-prisma AS migrate
