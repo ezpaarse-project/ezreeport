@@ -1,5 +1,11 @@
 # @ezreeport/database-v1.0.0 (2025-08-08)
 
+## 1.4.1-rc.1
+
+### Patch Changes
+
+- 2d2cdcb: 🚑 added missing datasource URL used for migrations
+
 ## 1.4.1-rc.0
 
 ### Patch Changes

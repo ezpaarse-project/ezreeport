@@ -1,5 +1,12 @@
 # ezreeport-report
 
+## 3.3.1-rc.1
+
+### Patch Changes
+
+- Updated dependencies [2d2cdcb]
+  - @ezreeport/database@1.4.1-rc.1
+
 ## 3.3.1-rc.0
 
 ### Patch Changes
