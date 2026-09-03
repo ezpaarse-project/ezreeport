@@ -1,5 +1,5 @@
 templates:
-  lint_flags: --fix
+  lint_flags: --fix --quiet
   fmt_flags: --no-error-on-unmatched-pattern
   turbo_flags: --log-order grouped --continue=dependencies-successful
 

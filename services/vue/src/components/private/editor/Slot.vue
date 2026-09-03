@@ -55,6 +55,21 @@
           </v-col>
         </v-row>
 
+        <v-slide-x-transition>
+          <v-row v-if="modelValue.type !== 'md'">
+            <v-col>
+              <v-switch
+                v-model="modelValue.params.displayEmpty"
+                :label="$t('$ezreeport.editor.figures._.displayEmpty')"
+                :prepend-icon="mdiEyeSettings"
+                :readonly="readonly"
+                color="primary"
+                hide-details
+              />
+            </v-col>
+          </v-row>
+        </v-slide-x-transition>
+
         <slot name="text" />
       </template>
 
@@ -202,6 +217,7 @@
     mdiCheck,
     mdiClose,
     mdiCog,
+    mdiEyeSettings,
     mdiGridLarge,
     mdiPanBottomLeft,
     mdiPanBottomRight,
