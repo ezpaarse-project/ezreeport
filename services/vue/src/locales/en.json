@@ -321,6 +321,7 @@
           "order": "Sorting data",
           "type": "Type of figure",
           "create": "Create figure",
+          "displayEmpty": "Display even if no data is available",
           "types": {
             "table": "Table",
             "md": "Markdown",

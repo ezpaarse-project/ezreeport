@@ -39,6 +39,10 @@ const config: StorybookConfig = {
     const { mergeConfig } = await import('vite');
 
     return mergeConfig(viteConfig, {
+      optimizeDeps: {
+        exclude: ['~sdk', '@ezpaarse-project/ezreeport-sdk-js'],
+      },
+
       plugins: [
         // Plugin for Vue SFC
         vue({}),

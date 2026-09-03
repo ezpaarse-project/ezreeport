@@ -321,6 +321,7 @@
           "order": "Tri des données",
           "type": "Type de visualisation",
           "create": "Créer une visualisation",
+          "displayEmpty": "Afficher même si aucune donnée n'est disponible",
           "types": {
             "table": "Tableau",
             "md": "Markdown",
