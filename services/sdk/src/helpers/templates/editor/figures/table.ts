@@ -46,6 +46,7 @@ export interface TableColumn {
 export interface TableFigureHelper extends FigureHelperWithFilters {
   readonly type: 'table';
   params: {
+    displayEmpty?: boolean;
     title: string;
     columns: TableColumn[];
     total?: boolean;
@@ -59,13 +60,15 @@ export function createTableFigureHelper(
   total: boolean = false,
   filters: TemplateFilter[] = [],
   order: FigureOrder = true,
-  slots?: number[]
+  slots?: number[],
+  displayEmpty: boolean = false
 ): TableFigureHelper {
   return createFigureHelperWithFilters(
     'table',
     filters,
     {
       columns,
+      displayEmpty,
       order,
       title,
       total,
@@ -83,7 +86,8 @@ export function createTableFigureHelperFrom(
     figure.params?.total ?? false,
     figure.filters ?? [],
     figure.params?.order ?? true,
-    figure.slots
+    figure.slots,
+    figure.params?.displayEmpty ?? false
   );
 }
 
@@ -92,6 +96,7 @@ export function tableHelperParamsToJSON(
 ): TemplateBodyFigure['params'] {
   return {
     columns: params.columns,
+    displayEmpty: params.displayEmpty,
     order: params.order,
     title: params.title,
     total: params.total,
