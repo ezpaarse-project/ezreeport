@@ -33,6 +33,7 @@ function prepareEsFilter(
  * Prepare ElasticSearch query (filters)
  *
  * @param filters The filters to apply
+ * @param period The period data of the report
  * @param period.value The period of the report
  * @param period.dateField The date field of the ES index
  *
