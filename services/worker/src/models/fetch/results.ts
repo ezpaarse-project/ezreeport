@@ -28,7 +28,8 @@ export type FetchResultItem = {
  * @param response The raw ES repsponse
  */
 function checkEsErrors(
-  response: EsResponse
+  response: EsResponse,
+  checkEmpty: boolean
 ): asserts response is ElasticTypes.MsearchMultiSearchItem<
   Record<string, unknown>
 > {
@@ -68,18 +69,21 @@ function checkEsErrors(
     );
   }
 
-  // Checks if there's data
-  if (
-    response.hits.total && typeof response.hits.total === 'object'
-      ? response.hits.total.value === 0
-      : response.hits.total === 0
-  ) {
-    throw new FetchError('No data found for given request.', 'NoDataError');
-  }
+  if (checkEmpty) {
+    // Check if there's aggregations
+    if (!('aggregations' in response) || !response.aggregations) {
+      throw new FetchError('No aggregations in response', 'NoDataError');
+    }
 
-  // Check if there's aggregations
-  if (!('aggregations' in response) || !response.aggregations) {
-    throw new FetchError('No aggregations in response', 'NoDataError');
+    // Checks if there's data
+    const total =
+      response.hits.total && typeof response.hits.total === 'object'
+        ? response.hits.total.value
+        : response.hits.total;
+
+    if (total === 0) {
+      throw new FetchError('No data found for given request.', 'NoDataError');
+    }
   }
 }
 
@@ -304,7 +308,7 @@ export function handleEsResponse(
   response: EsResponse,
   figure: FigureType
 ): FetchResultItem[] {
-  checkEsErrors(response);
+  checkEsErrors(response, !figure.params?.displayEmpty);
 
   // Guess the function we'll be using
   let handleResults = handleOtherEsResults;

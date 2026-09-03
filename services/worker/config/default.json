@@ -62,6 +62,7 @@
     ]
   },
   "pdf": {
+    "iconsDir": "assets/icons/",
     "logos": [
       {
         "path": "assets/logos/ezmesure.png",

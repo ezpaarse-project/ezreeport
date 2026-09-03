@@ -1,4 +1,5 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
+import { basename, extname, join } from 'node:path';
 
 import { jsPDF as PDF } from 'jspdf';
 
@@ -32,6 +33,10 @@ export type PDFReportOptions = Pick<
 const logger = appLogger.child({ scope: 'jspdf' });
 
 const loadedImages = new Map<string, PDFAsset & PDFLoadedImageAsset>();
+const loadedIcons = new Map<string, PDFLoadedImageAsset>();
+
+export const getIconAsset = (name: string): PDFLoadedImageAsset | undefined =>
+  loadedIcons.get(name);
 
 /**
  * Load asset by reading file and storing it into RAM
@@ -51,6 +56,25 @@ async function loadImage({ path, link }: PDFAsset): Promise<void> {
   logger.debug({
     link,
     msg: 'Loaded image',
+    path,
+  });
+}
+
+/**
+ * Load asset by reading file and storing it into RAM
+ *
+ * @param path The path to asset
+ */
+async function loadIcon(path: string): Promise<void> {
+  const icon = basename(path, extname(path));
+  const data = await readFile(path, 'base64');
+  const asset = await loadImageAsset(`data:image/png;base64,${data}`);
+
+  loadedIcons.set(icon, asset);
+
+  logger.debug({
+    icon,
+    msg: 'Loaded icon',
     path,
   });
 }
@@ -79,10 +103,14 @@ async function loadPDFFont({
  * @returns Promise resolving when engine is ready
  */
 export async function initPDFEngine(): Promise<void> {
+  const icons = await readdir(config.pdf.iconsDir);
+
   // oxlint-disable-next-line prefer-await-to-then
   await Promise.all([
     // Load logos
     ...logos.map((asset) => loadImage(asset)),
+    // Load icons
+    ...icons.map((file) => loadIcon(join(config.pdf.iconsDir, file))),
     // Register fonts
     ...fonts.map((asset) => loadPDFFont(asset)),
   ]);

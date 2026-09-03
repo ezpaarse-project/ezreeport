@@ -3,12 +3,14 @@ import { merge } from 'lodash';
 
 import type { RecurrenceType } from '@ezreeport/models/recurrence';
 import type { FigureType } from '@ezreeport/models/templates';
+import { t } from '@ezreeport/i18n';
 
 import type { FetchResultItem } from '~/models/fetch/results';
 import type { PDFReport } from '~/models/render/pdf/types';
 import type { Area } from '~/models/render/types';
 
 import RenderError from './errors';
+import { getIconAsset } from './pdf';
 import { addMdToPDF } from './pdf/markdown';
 import { addMetricToPDF } from './pdf/metrics';
 import { addTableToPDF } from './pdf/table';
@@ -121,6 +123,60 @@ const renderMetrics: RenderFigureFnc = (params) => {
 };
 
 /**
+ * Render a empty vega figure
+ *
+ * @param params
+ */
+const renderEmptyVegaChart: RenderFigureFnc = (params) => {
+  const { doc, slot } = params;
+
+  const center = {
+    x: slot.x + slot.width / 2,
+    y: slot.y + slot.height / 2,
+  };
+
+  const icon = getIconAsset('file-hidden');
+
+  // Keep icon size between 32px and 128px
+  const iconSize = icon ? Math.min(Math.max(slot.height / 4, 32), 128) : 0;
+  // Keep text size between 12pt and 24pt
+  const textSize = Math.min(Math.max(slot.height / 25, 12), 24);
+
+  const cursor = {
+    x: center.x,
+    y: center.y - (iconSize + textSize) / 2,
+  };
+
+  if (icon) {
+    doc.pdf.addImage({
+      height: iconSize,
+      imageData: icon.data,
+      width: iconSize,
+      x: cursor.x - iconSize / 2,
+      y: cursor.y,
+    });
+
+    cursor.y += iconSize;
+  }
+
+  const text = t('report.figures.empty', doc.locale);
+
+  const fontSize = doc.pdf.getFontSize();
+  doc.pdf.setFontSize(textSize);
+
+  const { h: height, w: width } = doc.pdf.getTextDimensions(text, {
+    maxWidth: slot.width,
+  });
+
+  doc.pdf.text(text, cursor.x - width / 2, cursor.y + height, {
+    maxWidth: slot.width,
+  });
+
+  doc.pdf.setFontSize(fontSize);
+  return Promise.resolve();
+};
+
+/**
  * Render a table
  *
  * @param params
@@ -151,6 +207,11 @@ const renderVegaChart: RenderFigureFnc = async (params) => {
     // oxlint-disable-next-line id-length
     slot.y += 1.25 * height;
     slot.height -= 1.25 * height;
+  }
+
+  // Render empty figure if no data
+  if (!params.data || params.data.length <= 0) {
+    return renderEmptyVegaChart(params);
   }
 
   const spec = createVegaLSpec(figure.type as Mark, data, {

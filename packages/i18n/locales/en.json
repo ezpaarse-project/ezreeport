@@ -5,6 +5,9 @@
     },
     "footer": {
       "createdAt": "Generated the {{{date}}}"
+    },
+    "figures": {
+      "empty": "No data available"
     }
   },
   "recurrence": {
