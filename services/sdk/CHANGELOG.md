@@ -1,5 +1,11 @@
 # @ezpaarse-project/ezreeport-sdk-js
 
+## 3.4.0-rc.1
+
+### Minor Changes
+
+- 884aad6: ✨ can now set up figures that can be render with empty data
+
 ## 3.3.1-rc.0
 
 ### Patch Changes

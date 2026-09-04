@@ -1,5 +1,11 @@
 # @ezpaarse-project/ezreeport-vue
 
+## 4.0.0-rc.1
+
+### Minor Changes
+
+- 884aad6: ✨ can now set up figures that can be render with empty data
+
 ## 4.0.0-rc.0
 
 ### Major Changes

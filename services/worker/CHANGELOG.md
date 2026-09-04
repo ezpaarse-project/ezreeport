@@ -1,5 +1,11 @@
 # ezreeport-worker
 
+## 1.3.0-rc.1
+
+### Minor Changes
+
+- df4feed: ✨ can now render empty figures
+
 ## 1.2.1-rc.0
 
 ### Patch Changes
