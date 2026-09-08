@@ -95,7 +95,7 @@
         },
         "success": {
           "title": "Le rapport a été généré avec succès",
-          "description": "Le rapport PDF sera disponible dans la boîte mail des Destinataires fournies, vous pouvez également le télécharger en utilisant le bouton en haut à droite de cette boîte."
+          "description": "Le rapport PDF sera disponible dans la boîte mail des destinataires fournis, vous pouvez également le télécharger en utilisant le bouton en haut à droite de cette boîte."
         },
         "files": {
           "report": "Rapport PDF",
