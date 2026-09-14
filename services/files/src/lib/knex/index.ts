@@ -40,7 +40,6 @@ function setupDB(): Knex {
     migrations: {
       // oxlint-disable-next-line unicorn/prefer-module
       directory: resolve(__dirname, 'migrations'),
-      extension: 'ts',
       tableName: 'knex_migrations',
     },
     useNullAsDefault: true,

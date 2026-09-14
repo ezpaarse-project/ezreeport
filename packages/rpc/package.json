@@ -26,14 +26,15 @@
     "fmt": "oxfmt",
     "check": "tsc --noEmit --skipLibCheck"
   },
-  "dependencies": {
-    "@ezreeport/logger": "workspace:*",
+  "dependencies": {},
+  "devDependencies": {
     "@ezreeport/models": "workspace:*",
     "@ezreeport/rabbitmq": "workspace:*",
-    "typescript": "catalog:"
+    "@types/node": "catalog:",
+    "typescript": "catalog:dev"
   },
-  "devDependencies": {
-    "typescript": "catalog:"
+  "peerDependencies": {
+    "pino": "catalog:"
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

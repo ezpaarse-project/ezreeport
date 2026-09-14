@@ -78,7 +78,7 @@ jobs:
           package-manager-cache: false
 
       - name: Install package 🔽
-        run: mkdir /tmp/sdk && npm i @ezpaarse-project/ezreeport-vue@${{ steps.version.outputs.tag }}
+        run: mkdir /tmp/vue && npm i --prefix /tmp/vue @ezpaarse-project/ezreeport-vue@${{ steps.version.outputs.tag }}
 
       - name: Scan for vulnerability 🔍
         uses: aquasecurity/trivy-action@v0.36.0

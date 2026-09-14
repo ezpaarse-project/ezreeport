@@ -1,4 +1,5 @@
-import type { Logger } from '@ezreeport/logger';
+import type { Logger } from 'pino';
+
 import type { MailReportQueueDataType } from '@ezreeport/models/queues';
 import { d, t } from '@ezreeport/i18n';
 import { stringToB64 } from '@ezreeport/models/lib/utils';

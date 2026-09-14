@@ -49,7 +49,7 @@ export const http = createFetch({
   defaults: {
     headers: {
       // Custom User Agent
-      'User-Agent': `Mozilla/5.0 (compatible; ezREEPORT/${pckg.version}; +${pckg.homepage}); ofetch/${pckg.dependencies.ofetch.slice(1)}`,
+      'User-Agent': `Mozilla/5.0 (compatible; ezREEPORT/${pckg.version}; +${pckg.homepage})`,
     },
     // Check if not attempting to request banned domain
     onRequest: ({ request }) => {

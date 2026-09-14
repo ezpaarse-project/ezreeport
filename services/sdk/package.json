@@ -124,7 +124,7 @@
     "watch:docs": "typedoc --watch"
   },
   "dependencies": {
-    "date-fns": "catalog:sdk",
+    "date-fns": "catalog:",
     "nanoid": "catalog:sdk",
     "object-hash": "catalog:sdk",
     "ofetch": "catalog:",
@@ -136,9 +136,9 @@
     "@types/object-hash": "^3.0.6",
     "native-events": "npm:events@^3.3.0",
     "serve": "^14.2.6",
-    "tsdown": "^0.22.14",
+    "tsdown": "catalog:build",
     "typedoc": "^0.28.20",
-    "typescript": "catalog:"
+    "typescript": "catalog:dev"
   },
   "engines": {
     "node": "^14 || ^16 || ^18 || ^20 || ^22 || ^24"

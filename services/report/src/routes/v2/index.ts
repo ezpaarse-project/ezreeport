@@ -1,7 +1,4 @@
-import { join } from 'node:path';
-
-import type { FastifyPluginAsync } from 'fastify';
-import autoLoad from '@fastify/autoload';
+import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import {
   type ZodTypeProvider,
   hasZodFastifySchemaValidationErrors,
@@ -16,7 +13,26 @@ import { HTTPError, NotFoundError } from '~/models/errors';
 
 import { openapiPlugin } from '~/plugins/openapi';
 
-import { buildErrorResponse } from './v2/responses';
+import { buildErrorResponse } from './responses';
+
+/**
+ * Utility to register a router
+ *
+ * @param fastify - Fastify instance
+ * @param module - Module
+ * @param prefix - Prefix for routes
+ *
+ * @returns Promise that resolves when router is registered
+ */
+async function registerRouter(
+  fastify: FastifyInstance,
+  module: Promise<{ default: FastifyPluginAsync }>,
+  prefix: string
+): Promise<void> {
+  const { default: router } = await module;
+
+  return fastify.register(router, { prefix });
+}
 
 // oxlint-disable-next-line max-lines-per-function, require-await
 const router: FastifyPluginAsync = async (fastify) => {
@@ -77,11 +93,24 @@ const router: FastifyPluginAsync = async (fastify) => {
   });
 
   // Register routes
-  app.register(autoLoad, {
-    // oxlint-disable-next-line unicorn/prefer-module
-    dir: join(__dirname, 'v2'),
-    maxDepth: 2,
-  });
+  await Promise.all([
+    registerRouter(fastify, import('./auth'), '/auth'),
+    registerRouter(fastify, import('./crons'), '/crons'),
+    registerRouter(fastify, import('./elastic'), '/elastic'),
+    registerRouter(fastify, import('./generations'), '/generations'),
+    registerRouter(fastify, import('./health'), '/health'),
+    registerRouter(fastify, import('./recurrence'), '/recurrence'),
+    registerRouter(fastify, import('./reports'), '/reports'),
+    registerRouter(fastify, import('./task-activity'), '/task-activity'),
+    registerRouter(fastify, import('./task-presets'), '/task-presets'),
+    registerRouter(fastify, import('./task-targets'), '/task-targets'),
+    registerRouter(fastify, import('./tasks'), '/tasks'),
+    registerRouter(fastify, import('./template-tags'), '/template-tags'),
+    registerRouter(fastify, import('./templates'), '/templates'),
+    registerRouter(fastify, import('./unsubscribe'), '/unsubscribe'),
+    registerRouter(fastify, import('./admin/namespaces'), '/admin/namespaces'),
+    registerRouter(fastify, import('./admin/users'), '/admin/users'),
+  ]);
 };
 
 // oxlint-disable-next-line no-default-export

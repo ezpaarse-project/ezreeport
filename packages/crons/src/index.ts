@@ -1,6 +1,5 @@
+import type { Logger } from 'pino';
 import { CronJob } from 'cron';
-
-import type { Logger } from '@ezreeport/logger';
 
 import type { CronType, Executor } from './types';
 

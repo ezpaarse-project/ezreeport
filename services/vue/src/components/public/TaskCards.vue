@@ -98,7 +98,9 @@
                       ? $t('$ezreeport.task.enabled')
                       : $t('$ezreeport.task.disabled')
                   "
-                  :disabled="!availableActions.state"
+                  :disabled="
+                    !availableActions.state || task.targets.length <= 0
+                  "
                   :loading="loading"
                   density="comfortable"
                   color="primary"

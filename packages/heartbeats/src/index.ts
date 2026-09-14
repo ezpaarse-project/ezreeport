@@ -1,4 +1,5 @@
-import type { Logger } from '@ezreeport/logger';
+import type { Logger } from 'pino';
+
 import type { rabbitmq } from '@ezreeport/rabbitmq';
 
 import type {

@@ -1,6 +1,6 @@
 import http from 'node:http';
 
-import type { Logger } from '@ezreeport/logger';
+import type { Logger } from 'pino';
 
 export type Route = (
   req: http.IncomingMessage,

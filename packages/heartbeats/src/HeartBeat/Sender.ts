@@ -2,7 +2,8 @@ import { statfs } from 'node:fs/promises';
 import { hostname } from 'node:os';
 import { setTimeout as sleep } from 'node:timers/promises';
 
-import type { Logger } from '@ezreeport/logger';
+import type { Logger } from 'pino';
+
 import { type rabbitmq, sendJSONMessage } from '@ezreeport/rabbitmq';
 
 import type {

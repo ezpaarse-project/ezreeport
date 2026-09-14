@@ -44,7 +44,7 @@ export const Task = z.object({
 
   recurrenceOffset: RecurrenceOffset.describe('Task recurrence offset'),
 
-  targets: z.array(z.email()).min(1).describe('Email addresses to send report'),
+  targets: z.array(z.email()).describe('Email addresses to send report'),
 
   template: TaskTemplateBody.describe('Options to extend template'),
 

@@ -22,13 +22,12 @@
     "fmt": "oxfmt",
     "check": "tsc --noEmit --skipLibCheck"
   },
-  "dependencies": {
-    "@ezreeport/dates": "workspace:*",
-    "zod": "^4.4.3"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "@ezreeport/dates": "workspace:*",
     "@types/node": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:dev",
+    "zod": "^4.4.3"
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

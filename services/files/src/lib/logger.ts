@@ -1,20 +1,55 @@
-import {
-  type Level,
-  type LoggerOptions,
-  createLogger,
-  isPrettierInstalled,
-} from '@ezreeport/logger';
+import { mkdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
+
+import pino from 'pino';
+
+import { ensureArray } from '@ezreeport/models/lib/utils';
 
 import config from '~/lib/config';
 
-const { level, dir, ignore } = config.log;
+const ignore = ensureArray(config.log.ignore).join(',');
 
-const options: Omit<LoggerOptions, 'name'> = {
-  dir,
-  ignore: Array.isArray(ignore) ? ignore : [ignore],
-  level: level as Level,
-  // oxlint-disable-next-line unicorn/prefer-module
-  pretty: isPrettierInstalled(require),
-};
+function createLogger(name: string): pino.Logger {
+  const targets: pino.TransportTargetOptions[] = [];
 
-export const appLogger = createLogger({ ...options, name: 'files' });
+  try {
+    // Use pino-pretty if present
+    createRequire('.').resolve('pino-pretty');
+    targets.push({
+      level: config.log.level,
+      options: {
+        colorize: true,
+        ignore: [...ignore, 'scope'].join(','),
+        messageFormat: '{if scope}[{scope}]{end} {msg}',
+      },
+      target: 'pino-pretty',
+    });
+  } catch {
+    // Write logs to stdout
+    targets.push({
+      level: config.log.level,
+      options: { destination: 1 },
+      target: 'pino/file',
+    });
+  }
+
+  // If needed add logs into a file
+  if (config.log.dir) {
+    // oxlint-disable-next-line node/no-sync - We want to ensure the dir before creating logger
+    mkdirSync(config.log.dir, { recursive: true });
+    targets.push({
+      level: config.log.level,
+      options: {
+        destination: resolve(config.log.dir, `${name}.log`),
+        ignore,
+        sync: false,
+      },
+      target: 'pino/file',
+    });
+  }
+
+  return pino({ transport: { targets } });
+}
+
+export const appLogger = createLogger('files');

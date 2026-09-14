@@ -57,6 +57,7 @@
       "targets:add": "Add a receiver",
       "targets:count": "{n} receiver|{n} receivers",
       "targets:copy": "Copy mail adresses",
+      "targets:empty": "No receiver is configured for this task. Edit the task to continue receiving reports.",
       "nextRun": "Next delivery",
       "lastRun": "Previous delivery",
       "state": "State",

@@ -1,10 +1,9 @@
 import { setTimeout } from 'node:timers/promises';
 
+import type { Logger } from 'pino';
 // oxlint-disable-next-line id-length
 import type { z } from 'zod';
 import amqp from 'amqplib';
-
-import type { Logger } from '@ezreeport/logger';
 
 /**
  * Attempts to connect to RabbitMQ, reconnecting on failure

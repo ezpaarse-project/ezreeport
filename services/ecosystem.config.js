@@ -1,30 +1,29 @@
+// oxlint-disable no-magic-numbers
 const env = (key, defValue) => process.env[key] || defValue;
 
 const nodeEnv = {
-  NODE_ENV: env('NODE_ENV'),
-  TZ: env('TZ'),
-
-  HEARTBEAT_FREQUENCY: env('HEARTBEAT_FREQUENCY', 5000),
-  HEARTBEAT_EXTERNAL_FREQUENCY_MIN: env(
-    'HEARTBEAT_EXTERNAL_FREQUENCY_MIN',
-    5000
-  ),
   HEARTBEAT_EXTERNAL_FREQUENCY_MAX: env(
     'HEARTBEAT_EXTERNAL_FREQUENCY_MAX',
     300000
   ),
-
-  LOG_LEVEL: env('LOG_LEVEL', 'info'),
+  HEARTBEAT_EXTERNAL_FREQUENCY_MIN: env(
+    'HEARTBEAT_EXTERNAL_FREQUENCY_MIN',
+    5000
+  ),
+  HEARTBEAT_FREQUENCY: env('HEARTBEAT_FREQUENCY', 5000),
   LOG_DIR: env('API_LOG_DIR'),
   LOG_IGNORE: env('LOG_IGNORE', '["hostname"]'),
+  LOG_LEVEL: env('LOG_LEVEL', 'info'),
+  NODE_ENV: env('NODE_ENV'),
+  TZ: env('TZ'),
 };
 
 const elasticEnv = {
+  ELASTIC_API_KEY: env('ELASTIC_API_KEY', ''),
+  ELASTIC_PASSWORD: env('ELASTIC_PASSWORD', 'changeme'),
+  ELASTIC_REQUIRED_STATUS: env('ELASTIC_REQUIRED_STATUS', 'green'),
   ELASTIC_URL: env('ELASTIC_URL', 'http://elastic:9200'),
   ELASTIC_USERNAME: env('ELASTIC_USERNAME', 'elastic'),
-  ELASTIC_PASSWORD: env('ELASTIC_PASSWORD', 'changeme'),
-  ELASTIC_API_KEY: env('ELASTIC_API_KEY', ''),
-  ELASTIC_REQUIRED_STATUS: env('ELASTIC_REQUIRED_STATUS', 'green'),
 };
 
 const dbEnv = {
@@ -35,132 +34,130 @@ const dbEnv = {
 };
 
 const rabbitmqEnv = {
-  RABBITMQ_PROTOCOL: env('RABBITMQ_PROTOCOL', 'amqp'),
   RABBITMQ_HOST: env('RABBITMQ_HOST', 'rabbitmq'),
-  RABBITMQ_PORT: +env('RABBITMQ_PORT', 5672),
-  RABBITMQ_VHOST: env('RABBITMQ_VHOST', '/'),
-  RABBITMQ_USERNAME: env('RABBITMQ_USERNAME', 'guest'),
   RABBITMQ_PASSWORD: env('RABBITMQ_PASSWORD', 'guest'),
+  RABBITMQ_PORT: Number(env('RABBITMQ_PORT', 5672)),
+  RABBITMQ_PROTOCOL: env('RABBITMQ_PROTOCOL', 'amqp'),
+  RABBITMQ_USERNAME: env('RABBITMQ_USERNAME', 'guest'),
+  RABBITMQ_VHOST: env('RABBITMQ_VHOST', '/'),
 };
 
-// oxlint-disable-next-line import/no-commonjs
+// oxlint-disable-next-line import/no-commonjs unicorn/prefer-module
 module.exports = {
   apps: [
     {
-      name: 'api',
-      cwd: './report',
-      interpreter: 'tsx',
-      script: './src/app.ts',
-      merge_logs: false,
-      instances: env('APIS_CONCURRENCE', 1),
-      increment_var: 'HTTP_PORT',
+      cwd: './api',
       env: {
         ...nodeEnv,
         ...rabbitmqEnv,
         ...dbEnv,
         ...elasticEnv,
-
-        DEFAULT_TEMPLATE_NAME: env('DEFAULT_TEMPLATE_NAME', 'scratch'),
 
         ADMIN_KEY: env('ADMIN_KEY', '00000000-0000-0000-0000-000000000000'),
 
-        HTTP_PORT: +env('API_HTTP_PORT', 8080),
         ALLOWED_ORIGINS: env('ALLOWED_ORIGINS', '*'),
+
         ALLOWED_PROXIES: env('ALLOWED_PROXIES', '*'),
+
+        DEFAULT_TEMPLATE_NAME: env('DEFAULT_TEMPLATE_NAME', 'scratch'),
+
+        HTTP_PORT: Number(env('API_HTTP_PORT', 8080)),
       },
+      increment_var: 'HTTP_PORT',
+      instances: env('APIS_CONCURRENCE', 1),
+      interpreter_args: '--enable-source-maps',
+      merge_logs: false,
+      name: 'api',
+      script: 'app.cjs',
     },
     {
-      name: 'worker',
       cwd: './worker',
-      interpreter: 'tsx',
-      script: './src/app.ts',
-      merge_logs: false,
-      instances: env('WORKERS_CONCURRENCE', 5),
-      increment_var: 'HTTP_PORT',
       env: {
         ...nodeEnv,
         ...rabbitmqEnv,
         ...elasticEnv,
 
-        FETCHER_BANNED_DOMAINS: env('FETCHER_BANNED_DOMAINS', '[]'),
-
-        ITERATIONS_TO_LIVE: +env('ITERATIONS_TO_LIVE', 4),
-        DAYS_TO_LIVE: +env('DAYS_TO_LIVE', 7),
+        DAYS_TO_LIVE: Number(env('DAYS_TO_LIVE', 7)),
 
         EMAIL_DEV_TEAM: env('EMAIL_DEV_TEAM', 'ezteam-dev@couperin.org'),
 
-        HTTP_PORT: +env('WORKER_HTTP_PORT', 8180),
+        FETCHER_BANNED_DOMAINS: env('FETCHER_BANNED_DOMAINS', '[]'),
+
+        HTTP_PORT: Number(env('WORKER_HTTP_PORT', 8180)),
+
+        ITERATIONS_TO_LIVE: Number(env('ITERATIONS_TO_LIVE', 4)),
       },
+      increment_var: 'HTTP_PORT',
+      instances: env('WORKERS_CONCURRENCE', 5),
+      interpreter_args: '--enable-source-maps',
+      merge_logs: false,
+      name: 'worker',
+      script: 'app.cjs',
     },
     {
-      name: 'scheduler',
       cwd: './scheduler',
-      interpreter: 'tsx',
-      script: './src/app.ts',
-      merge_logs: false,
       env: {
         ...nodeEnv,
         ...rabbitmqEnv,
         ...dbEnv,
 
-        TIMER_GENERATE_REPORT: env('TIMER_GENERATE_REPORT', '0 7 * * * *'),
-        TIMER_PURGE_OLD_REPORT: env('TIMER_PURGE_OLD_REPORT', '0 1 * * * *'),
-
-        DEFAULT_TEMPLATE_NAME: env('DEFAULT_TEMPLATE_NAME', 'scratch'),
         DEFAULT_TEMPLATE_DATEFIELD: env(
           'DEFAULT_TEMPLATE_DATEFIELD',
           'datetime'
         ),
         DEFAULT_TEMPLATE_LOCALE: env('DEFAULT_TEMPLATE_LOCALE', 'en'),
-
-        HTTP_PORT: +env('SCHEDULER_HTTP_PORT', 8280),
+        DEFAULT_TEMPLATE_NAME: env('DEFAULT_TEMPLATE_NAME', 'scratch'),
+        HTTP_PORT: Number(env('SCHEDULER_HTTP_PORT', 8280)),
+        TIMER_GENERATE_REPORT: env('TIMER_GENERATE_REPORT', '0 7 * * * *'),
+        TIMER_PURGE_OLD_REPORT: env('TIMER_PURGE_OLD_REPORT', '0 1 * * * *'),
       },
+      interpreter_args: '--enable-source-maps',
+      merge_logs: false,
+      name: 'scheduler',
+      script: 'app.cjs',
     },
     {
-      name: 'mail',
       cwd: './mail',
-      interpreter: 'tsx',
-      script: './src/app.ts',
-      merge_logs: false,
-      instances: env('MAILS_CONCURRENCE', 1),
-      increment_var: 'HTTP_PORT',
       env: {
         ...nodeEnv,
         ...rabbitmqEnv,
 
-        SMTP_HOST: env('SMTP_HOST', 'smtp'),
-        SMTP_PORT: env('SMTP_PORT', '25'),
-        SMTP_SECURE: env('SMTP_SECURE', 'false'),
-        SMTP_IGNORE_TLS: env('SMTP_IGNORE_TLS', 'true'),
-        SMTP_REJECT_UNAUTHORIZED: env('SMTP_REJECT_UNAUTHORIZED', 'false'),
-
-        EMAIL_SENDER: env('EMAIL_SENDER', 'ezteam@couperin.org'),
-        EMAIL_SUPPORT_TEAM: env('EMAIL_SUPPORT_TEAM', 'ezteam@couperin.org'),
+        API_HOME: env('API_HOME', 'https://ezmesure.couperin.org'),
+        API_URL: env('API_URL', 'http://localhost:8080'),
         EMAIL_ATTEMPTS: env('EMAIL_ATTEMPTS', '5'),
         EMAIL_ATTEMPTS_INTERVAL: env('EMAIL_ATTEMPTS_INTERVAL', '2000'),
-
-        HTTP_PORT: +env('MAIL_HTTP_PORT', 8380),
-        API_URL: env('API_URL', 'http://localhost:8080'),
-        API_HOME: env('API_HOME', 'https://ezmesure.couperin.org'),
+        EMAIL_SENDER: env('EMAIL_SENDER', 'ezteam@couperin.org'),
+        EMAIL_SUPPORT_TEAM: env('EMAIL_SUPPORT_TEAM', 'ezteam@couperin.org'),
+        HTTP_PORT: Number(env('MAIL_HTTP_PORT', 8380)),
+        SMTP_HOST: env('SMTP_HOST', 'smtp'),
+        SMTP_IGNORE_TLS: env('SMTP_IGNORE_TLS', 'true'),
+        SMTP_PORT: env('SMTP_PORT', '25'),
+        SMTP_REJECT_UNAUTHORIZED: env('SMTP_REJECT_UNAUTHORIZED', 'false'),
+        SMTP_SECURE: env('SMTP_SECURE', 'false'),
       },
+      increment_var: 'HTTP_PORT',
+      instances: env('MAILS_CONCURRENCE', 1),
+      interpreter_args: '--enable-source-maps',
+      merge_logs: false,
+      name: 'mail',
+      script: 'app.cjs',
     },
     {
-      name: 'files',
       cwd: './files',
-      interpreter: 'tsx',
-      script: './src/app.ts',
-      merge_logs: false,
-      instances: env('FILES_CONCURRENCE', 1),
-      increment_var: 'HTTP_PORT',
       env: {
         ...nodeEnv,
         ...rabbitmqEnv,
 
-        PATHS_REPORT: env('PATHS_REPORT', '/data/ezreeport/reports'),
+        HTTP_PORT: Number(env('FILES_HTTP_PORT', 8480)),
         PATHS_DB: env('PATHS_DB', '/data/ezreeport/db'),
-
-        HTTP_PORT: +env('FILES_HTTP_PORT', 8480),
+        PATHS_REPORT: env('PATHS_REPORT', '/data/ezreeport/reports'),
       },
+      increment_var: 'HTTP_PORT',
+      instances: env('FILES_CONCURRENCE', 1),
+      interpreter_args: '--enable-source-maps',
+      merge_logs: false,
+      name: 'files',
+      script: 'app.cjs',
     },
   ].filter((app) => !env(`DISABLE_${app.name.toUpperCase()}`, 0)),
 };

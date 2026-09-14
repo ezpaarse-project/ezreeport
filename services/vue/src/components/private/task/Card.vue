@@ -14,13 +14,16 @@
 
     <template #text>
       <v-list lines="one" density="compact">
-        <v-menu :close-on-content-click="false">
+        <v-menu :close-on-content-click="false" max-width="0">
           <template #activator="{ props: menu }">
             <v-list-item
               :title="
                 $t('$ezreeport.task.targets:count', modelValue.targets.length)
               "
               :prepend-icon="mdiMailbox"
+              :class="
+                modelValue.targets.length <= 0 ? 'text-warning' : undefined
+              "
               v-bind="menu"
             />
           </template>
@@ -30,7 +33,10 @@
             :prepend-icon="mdiMailbox"
             density="compact"
           >
-            <template v-if="clipboard.isSupported" #append>
+            <template
+              v-if="clipboard.isSupported && modelValue.targets.length > 0"
+              #append
+            >
               <v-btn
                 v-tooltip:top="$t('$ezreeport.task.targets:copy')"
                 :icon="isCopied ? mdiCheck : mdiContentCopy"
@@ -43,13 +49,25 @@
             </template>
 
             <template #text>
-              <v-list max-height="200" density="compact">
+              <v-list
+                v-if="modelValue.targets.length > 0"
+                max-height="200"
+                density="compact"
+              >
                 <v-list-item
                   v-for="target in modelValue.targets"
                   :key="target"
                   :title="target"
                 />
               </v-list>
+
+              <v-alert
+                v-else
+                :text="$t('$ezreeport.task.targets:empty')"
+                type="warning"
+                variant="tonal"
+                density="compact"
+              />
             </template>
           </v-card>
         </v-menu>

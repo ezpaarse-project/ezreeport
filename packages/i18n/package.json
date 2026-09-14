@@ -19,13 +19,12 @@
     "fmt": "oxfmt",
     "check": "tsc --noEmit --skipLibCheck"
   },
-  "dependencies": {
-    "@ezreeport/dates": "workspace:*",
-    "i18n": "^0.15.3"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "@ezreeport/dates": "workspace:*",
     "@types/i18n": "^0.13.12",
-    "typescript": "catalog:"
+    "i18n": "^0.15.3",
+    "typescript": "catalog:dev"
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

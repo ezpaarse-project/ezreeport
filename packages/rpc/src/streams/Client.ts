@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { PassThrough, type Readable, type Writable } from 'node:stream';
 
-import type { Logger } from '@ezreeport/logger';
+import type { Logger } from 'pino';
+
 import {
   type JSONMessageTransport,
   type JSONMessageTransportQueue,

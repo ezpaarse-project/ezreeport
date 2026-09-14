@@ -13,32 +13,34 @@
     "type": "git",
     "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
   },
-  "main": "src/app.ts",
+  "main": "dist/app.cjs",
   "scripts": {
     "dev": "tsx watch --inspect=0.0.0.0 src/app.ts",
     "lint": "oxlint",
     "fmt": "oxfmt",
-    "start": "tsx src/app.ts",
-    "check": "tsc --noEmit --skipLibCheck"
+    "check": "tsc --noEmit --skipLibCheck",
+    "build": "tsdown",
+    "start": "node --enable-source-maps dist/app.cjs"
   },
   "dependencies": {
+    "better-sqlite3": "^13.0.1",
+    "pino": "catalog:"
+  },
+  "devDependencies": {
     "@ezreeport/config": "workspace:*",
     "@ezreeport/crons": "workspace:*",
     "@ezreeport/dates": "workspace:*",
     "@ezreeport/heartbeats": "workspace:*",
-    "@ezreeport/logger": "workspace:*",
     "@ezreeport/models": "workspace:*",
     "@ezreeport/rabbitmq": "workspace:*",
     "@ezreeport/rpc": "workspace:*",
     "@ezreeport/simple-http": "workspace:*",
-    "better-sqlite3": "^13.0.1",
-    "knex": "^3.3.0",
-    "tsx": "catalog:",
-    "typescript": "catalog:"
-  },
-  "devDependencies": {
     "@types/node": "catalog:",
-    "pino-pretty": "catalog:"
+    "knex": "^3.3.0",
+    "pino-pretty": "catalog:dev",
+    "tsdown": "catalog:build",
+    "tsx": "catalog:dev",
+    "typescript": "catalog:dev"
   },
   "engines": {
     "node": "^20 || ^22 || ^24"
