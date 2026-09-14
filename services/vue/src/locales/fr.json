@@ -57,6 +57,7 @@
       "targets:add": "Ajouter un destinataire",
       "targets:count": "{n} Destinataire|{n} Destinataires",
       "targets:copy": "Copier les adresses mail",
+      "targets:empty": "Aucun destinataire n'est configuré pour cette tâche. Éditez la tâche pour continuer à recevoir les rapports.",
       "nextRun": "Prochain envoi",
       "lastRun": "Envoi précédent",
       "state": "État",

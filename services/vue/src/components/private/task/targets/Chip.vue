@@ -1,5 +1,5 @@
 <template>
-  <v-menu :close-on-content-click="false">
+  <v-menu :disabled="modelValue.length === 0" :close-on-content-click="false">
     <template #activator="{ props: menu }">
       <v-chip
         :text="
@@ -10,6 +10,7 @@
         :prepend-icon="mdiMailbox"
         :density="density"
         :size="size ?? 'small'"
+        :variant="modelValue.length <= 0 ? 'outlined' : undefined"
         v-bind="menu"
       />
     </template>
@@ -17,7 +18,9 @@
     <v-sheet>
       <v-list-item density="compact">
         <template v-if="!showLabel" #title>
-          <div class="text-overline">{{ $t('$ezreeport.task.targets') }}</div>
+          <div class="text-label-large">
+            {{ $t('$ezreeport.task.targets') }}
+          </div>
         </template>
 
         <template v-if="clipboard.isSupported" #append>
