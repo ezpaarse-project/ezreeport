@@ -1,5 +1,6 @@
+import { levels } from 'pino';
+
 import { setupConfig } from '@ezreeport/config';
-import { logLevels } from '@ezreeport/logger';
 
 import type defaultConfig from '../../config/default.json';
 
@@ -7,7 +8,7 @@ import type defaultConfig from '../../config/default.json';
 export default setupConfig<typeof defaultConfig>({
   watch: {
     logger: {
-      levels: logLevels.values,
+      levels: levels.values,
       log: (message: string): boolean => process.stdout.write(`${message}\n`),
       meta: { name: 'worker', scope: 'config' },
     },

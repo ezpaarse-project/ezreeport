@@ -1,7 +1,8 @@
 import type { Readable, Writable } from 'node:stream';
 import { createGunzip, createGzip } from 'node:zlib';
 
-import type { Logger } from '@ezreeport/logger';
+import type { Logger } from 'pino';
+
 import {
   parseJSONMessage,
   type rabbitmq,

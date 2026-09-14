@@ -1,7 +1,6 @@
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
+import type { Level } from 'pino';
 import fp from 'fastify-plugin';
-
-import type { Level } from '@ezreeport/logger';
 
 import { accessLogger } from '~/lib/logger';
 

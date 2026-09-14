@@ -13,36 +13,38 @@
     "type": "git",
     "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
   },
-  "main": "src/app.ts",
+  "main": "dist/app.cjs",
   "scripts": {
     "dev": "tsx watch --inspect=0.0.0.0 src/app.ts",
     "lint": "oxlint",
     "fmt": "oxfmt",
-    "start": "tsx src/app.ts",
-    "check": "tsc --noEmit --skipLibCheck"
+    "check": "tsc --noEmit --skipLibCheck",
+    "build": "tsdown",
+    "start": "node --enable-source-maps app.cjs"
   },
   "dependencies": {
+    "pino": "catalog:"
+  },
+  "devDependencies": {
     "@ezreeport/config": "workspace:*",
     "@ezreeport/dates": "workspace:*",
     "@ezreeport/heartbeats": "workspace:*",
     "@ezreeport/i18n": "workspace:*",
-    "@ezreeport/logger": "workspace:*",
     "@ezreeport/models": "workspace:*",
     "@ezreeport/rabbitmq": "workspace:*",
     "@ezreeport/rpc": "workspace:*",
     "@ezreeport/simple-http": "workspace:*",
-    "mjml": "^5.4.0",
-    "nodemailer": "^9.0.3",
-    "nunjucks": "^3.2.4",
-    "tsx": "catalog:",
-    "typescript": "catalog:"
-  },
-  "devDependencies": {
     "@types/mjml": "^5.0.0",
     "@types/node": "catalog:",
     "@types/nodemailer": "^8.0.1",
     "@types/nunjucks": "^3.2.6",
-    "pino-pretty": "catalog:"
+    "mjml": "^5.4.0",
+    "nodemailer": "^9.0.3",
+    "nunjucks": "^3.2.4",
+    "pino-pretty": "catalog:dev",
+    "tsdown": "catalog:build",
+    "tsx": "catalog:dev",
+    "typescript": "catalog:dev"
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

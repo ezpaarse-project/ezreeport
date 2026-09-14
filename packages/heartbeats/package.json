@@ -22,13 +22,14 @@
     "fmt": "oxfmt",
     "check": "tsc --noEmit --skipLibCheck"
   },
-  "dependencies": {
-    "@ezreeport/logger": "workspace:*",
-    "@ezreeport/models": "workspace:*",
-    "@ezreeport/rabbitmq": "workspace:*"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "typescript": "catalog:"
+    "@ezreeport/models": "workspace:*",
+    "@ezreeport/rabbitmq": "workspace:*",
+    "typescript": "catalog:dev"
+  },
+  "peerDependencies": {
+    "pino": "catalog:"
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

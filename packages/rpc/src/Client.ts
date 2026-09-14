@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import EventEmitter from 'node:events';
 
-import type { Logger } from '@ezreeport/logger';
+import type { Logger } from 'pino';
+
 import {
   type JSONMessageTransport,
   type JSONMessageTransportExchange,

@@ -2,23 +2,20 @@
   "$schema": "https://v2-8-20.turborepo.dev/schema.json",
   "ui": "tui",
   "tasks": {
-    "db:generate": {
-      "dependsOn": ["^db:generate"]
+    "fmt": {
+      "dependsOn": ["^fmt"]
     },
     "lint": {
       "dependsOn": ["^lint"]
     },
-    "fmt": {
-      "dependsOn": ["^fmt"]
-    },
     "check": {
-      "dependsOn": ["db:generate", "^check"]
+      "dependsOn": ["^check"]
+    },
+    "test": {
+      "dependsOn": ["^test"]
     },
     "build": {
-      "dependsOn": ["^build"]
-    },
-    "publish": {
-      "dependsOn": ["build", "^publish"]
+      "dependsOn": ["check"]
     }
   }
 }

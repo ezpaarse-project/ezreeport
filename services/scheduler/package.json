@@ -13,33 +13,35 @@
     "type": "git",
     "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
   },
-  "main": "src/app.ts",
+  "main": "dist/app.cjs",
   "scripts": {
     "dev": "tsx watch --inspect=0.0.0.0 src/app.ts",
     "lint": "oxlint",
     "fmt": "oxfmt",
-    "start": "tsx src/app.ts",
-    "check": "tsc --noEmit --skipLibCheck"
+    "check": "tsc --noEmit --skipLibCheck",
+    "build": "tsdown",
+    "start": "node --enable-source-maps app.cjs"
   },
   "dependencies": {
+    "pino": "catalog:"
+  },
+  "devDependencies": {
     "@ezreeport/config": "workspace:*",
     "@ezreeport/crons": "workspace:*",
     "@ezreeport/database": "workspace:*",
     "@ezreeport/dates": "workspace:*",
     "@ezreeport/heartbeats": "workspace:*",
-    "@ezreeport/logger": "workspace:*",
     "@ezreeport/models": "workspace:*",
     "@ezreeport/rabbitmq": "workspace:*",
     "@ezreeport/rpc": "workspace:*",
     "@ezreeport/simple-http": "workspace:*",
-    "lodash": "^4.18.1",
-    "tsx": "catalog:",
-    "typescript": "catalog:"
-  },
-  "devDependencies": {
     "@types/lodash": "^4.17.24",
     "@types/node": "catalog:",
-    "pino-pretty": "catalog:"
+    "lodash": "^4.18.1",
+    "pino-pretty": "catalog:dev",
+    "tsdown": "catalog:build",
+    "tsx": "catalog:dev",
+    "typescript": "catalog:dev"
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

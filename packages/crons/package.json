@@ -22,13 +22,14 @@
     "fmt": "oxfmt",
     "check": "tsc --noEmit --skipLibCheck"
   },
-  "dependencies": {
-    "@ezreeport/logger": "workspace:*",
-    "@ezreeport/models": "workspace:*",
-    "cron": "^4.4.0"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "typescript": "catalog:"
+    "@ezreeport/models": "workspace:*",
+    "cron": "^4.4.0",
+    "typescript": "catalog:dev"
+  },
+  "peerDependencies": {
+    "pino": "catalog:"
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

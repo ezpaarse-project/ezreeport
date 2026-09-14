@@ -13,43 +13,46 @@
     "type": "git",
     "url": "git+ssh://git@github.com/ezpaarse-project/ezreeport.git"
   },
-  "main": "src/app.ts",
+  "main": "dist/app.cjs",
   "scripts": {
     "dev": "tsx watch --inspect=0.0.0.0 src/app.ts",
     "lint": "oxlint",
     "fmt": "oxfmt",
-    "start": "tsx src/app.ts",
-    "check": "tsc --noEmit --skipLibCheck"
+    "check": "tsc --noEmit --skipLibCheck",
+    "build": "tsdown",
+    "start": "node --enable-source-maps app.cjs"
   },
   "dependencies": {
+    "canvas": "^3.2.3",
+    "pino": "catalog:",
+    "sharp": "^0.35.4",
+    "vega": "^6.3.1",
+    "vega-lite": "^6.4.3"
+  },
+  "devDependencies": {
     "@elastic/elasticsearch": "^7.17.14",
     "@ezpaarse-project/jspdf-md": "^1.1.3",
     "@ezreeport/config": "workspace:*",
     "@ezreeport/dates": "workspace:*",
     "@ezreeport/heartbeats": "workspace:*",
     "@ezreeport/i18n": "workspace:*",
-    "@ezreeport/logger": "workspace:*",
     "@ezreeport/models": "workspace:*",
     "@ezreeport/rabbitmq": "workspace:*",
     "@ezreeport/rpc": "workspace:*",
     "@ezreeport/simple-http": "workspace:*",
-    "canvas": "^3.2.3",
+    "@types/chroma-js": "^3.1.2",
+    "@types/lodash": "^4.17.24",
+    "@types/node": "catalog:",
     "chroma-js": "^3.2.0",
     "handlebars": "^4.7.9",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "lodash": "^4.18.1",
     "ofetch": "catalog:",
-    "tsx": "catalog:",
-    "typescript": "catalog:",
-    "vega": "^6.3.1",
-    "vega-lite": "^6.4.3"
-  },
-  "devDependencies": {
-    "@types/chroma-js": "^3.1.2",
-    "@types/lodash": "^4.17.24",
-    "@types/node": "catalog:",
-    "pino-pretty": "catalog:"
+    "pino-pretty": "catalog:dev",
+    "tsdown": "catalog:build",
+    "tsx": "catalog:dev",
+    "typescript": "catalog:dev"
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

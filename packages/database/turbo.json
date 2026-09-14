@@ -3,8 +3,8 @@
   "extends": ["//"],
   "tasks": {
     "db:generate": {
-      "cache": false,
-      "env": ["DATABASE_URL"]
+      "env": ["DATABASE_URL"],
+      "outputs": [".prisma"]
     },
     "db:diff": {
       "cache": false,

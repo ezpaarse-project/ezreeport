@@ -20,12 +20,12 @@
     "check": "tsc --noEmit --skipLibCheck"
   },
   "dependencies": {
-    "@ezreeport/logger": "workspace:*",
-    "typescript": "catalog:"
+    "typescript": "catalog:dev"
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "typescript": "catalog:"
+    "pino": "catalog:",
+    "typescript": "catalog:dev"
   },
   "engines": {
     "node": "^20 || ^22 || ^24"
