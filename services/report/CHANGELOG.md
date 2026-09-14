@@ -1,5 +1,12 @@
 # ezreeport-report
 
+## 3.3.1-rc.2
+
+### Patch Changes
+
+- 04b3aa7: ♻️ reduced Docker image size by bundling files
+- adeb47f: 🐛 fixed issue where task with no targets (after target unsubscribe) would lead to 500 errors
+
 ## 3.3.1-rc.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # ezreeport-files
 
+## 1.1.3-rc.1
+
+### Patch Changes
+
+- 04b3aa7: ♻️ reduced Docker image size by bundling files
+
 ## 1.1.3-rc.0
 
 ### Patch Changes

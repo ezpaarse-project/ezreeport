@@ -1,5 +1,11 @@
 # ezreeport-worker
 
+## 1.3.0-rc.2
+
+### Patch Changes
+
+- 04b3aa7: ♻️ reduced Docker image size by bundling files
+
 ## 1.3.0-rc.1
 
 ### Minor Changes

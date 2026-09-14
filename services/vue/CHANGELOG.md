@@ -1,5 +1,15 @@
 # @ezpaarse-project/ezreeport-vue
 
+## 4.0.0-rc.2
+
+### Minor Changes
+
+- 1f1711f: ✨ show warning when empty task is present
+
+### Patch Changes
+
+- 1c7ddf8: 💬 fixed typo in generation success for french
+
 ## 4.0.0-rc.1
 
 ### Minor Changes
