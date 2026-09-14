@@ -59,16 +59,22 @@ export type TaskType = z.infer<typeof Task>;
 /**
  * Validation for creating/updating a task
  */
-export const InputTask = Task.omit({
-  // Stripping readonly properties
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  // Stripping api reserved properties
-  lastRun: true,
-  // Stripping Includes properties
-  extends: true,
-}).strict();
+export const InputTask = z
+  .object({
+    ...Task.omit({
+      // Stripping readonly properties
+      id: true,
+      createdAt: true,
+      updatedAt: true,
+      // Stripping api reserved properties
+      lastRun: true,
+      // Stripping Includes properties
+      extends: true,
+    }).shape,
+
+    targets: Task.shape.targets.min(1),
+  })
+  .strict();
 
 /**
  * Type for creating/updating a task
