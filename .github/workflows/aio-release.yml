@@ -25,6 +25,11 @@ jobs:
       tag: ${{ steps.docker_tags.outputs.tag }}
     runs-on: ubuntu-latest
     steps:
+      # Let other actions start so it can cancel this one if needed
+      - name: Wait for 15 seconds 🕑
+        run: sleep 15s
+        shell: bash
+
       - name: Checkout 🛎️
         uses: actions/checkout@v7
 
