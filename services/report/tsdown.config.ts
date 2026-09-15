@@ -10,7 +10,7 @@ export default defineConfig({
   ],
   entry: 'src/app.ts',
   format: 'cjs',
-  minify: false,
+  minify: true,
   outDir: 'dist/',
   platform: 'node',
   sourcemap: true,
