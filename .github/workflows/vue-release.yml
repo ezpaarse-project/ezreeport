@@ -87,7 +87,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
-          scan-ref: /tmp/sdk
+          scan-ref: /tmp/vue
           exit-code: 0
           format: json
           output: trivy-report.json
@@ -106,7 +106,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
-          scan-ref: /tmp/sdk
+          scan-ref: /tmp/vue
           exit-code: 0
           format: template
           template: '@./.trivy/md.tpl'
