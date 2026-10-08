@@ -1,5 +1,6 @@
 // oxlint-disable no-magic-numbers
-const env = (key, defValue) => process.env[key] || defValue;
+const env = (key, defValue) =>
+  process.env[`EZREEPORT_${key}`] || process.env[key] || defValue;
 
 const nodeEnv = {
   HEARTBEAT_EXTERNAL_FREQUENCY_MAX: env(
@@ -14,16 +15,26 @@ const nodeEnv = {
   LOG_DIR: env('API_LOG_DIR'),
   LOG_IGNORE: env('LOG_IGNORE', '["hostname"]'),
   LOG_LEVEL: env('LOG_LEVEL', 'info'),
-  NODE_ENV: env('NODE_ENV'),
-  TZ: env('TZ'),
+  NODE_ENV: process.env['NODE_ENV'],
+  TZ: process.env['TZ'],
 };
 
 const elasticEnv = {
-  ELASTIC_API_KEY: env('ELASTIC_API_KEY', ''),
-  ELASTIC_PASSWORD: env('ELASTIC_PASSWORD', 'changeme'),
-  ELASTIC_REQUIRED_STATUS: env('ELASTIC_REQUIRED_STATUS', 'green'),
-  ELASTIC_URL: env('ELASTIC_URL', 'http://elastic:9200'),
-  ELASTIC_USERNAME: env('ELASTIC_USERNAME', 'elastic'),
+  ELASTIC_API_KEY:
+    process.env['ELASTIC_API_KEY'] || env('ELASTICSEARCH_API_KEY', ''),
+  ELASTIC_PASSWORD:
+    process.env['ELASTIC_PASSWORD'] ||
+    env('ELASTICSEARCH_PASSWORD', 'changeme'),
+  ELASTIC_REQUIRED_STATUS:
+    process.env['ELASTIC_REQUIRED_STATUS'] ||
+    process.env['ELASTICSEARCH_REQUIRED_STATUS'] ||
+    'green',
+  ELASTIC_URL:
+    process.env['ELASTIC_URL'] ||
+    process.env['ELASTICSEARCH_URL'] ||
+    'http://elastic:9200',
+  ELASTIC_USERNAME:
+    process.env['ELASTIC_USERNAME'] || env('ELASTICSEARCH_USERNAME', 'elastic'),
 };
 
 const dbEnv = {
@@ -34,10 +45,10 @@ const dbEnv = {
 };
 
 const rabbitmqEnv = {
-  RABBITMQ_HOST: env('RABBITMQ_HOST', 'rabbitmq'),
+  RABBITMQ_HOST: process.env['RABBITMQ_HOST'] || 'rabbitmq',
   RABBITMQ_PASSWORD: env('RABBITMQ_PASSWORD', 'guest'),
-  RABBITMQ_PORT: Number(env('RABBITMQ_PORT', 5672)),
-  RABBITMQ_PROTOCOL: env('RABBITMQ_PROTOCOL', 'amqp'),
+  RABBITMQ_PORT: Number(process.env['RABBITMQ_PORT'] || 5672),
+  RABBITMQ_PROTOCOL: process.env['RABBITMQ_PROTOCOL'] || 'amqp',
   RABBITMQ_USERNAME: env('RABBITMQ_USERNAME', 'guest'),
   RABBITMQ_VHOST: env('RABBITMQ_VHOST', '/'),
 };
@@ -78,8 +89,6 @@ module.exports = {
         ...elasticEnv,
 
         DAYS_TO_LIVE: Number(env('DAYS_TO_LIVE', 7)),
-
-        EMAIL_DEV_TEAM: env('EMAIL_DEV_TEAM', 'ezteam-dev@couperin.org'),
 
         FETCHER_BANNED_DOMAINS: env('FETCHER_BANNED_DOMAINS', '[]'),
 
@@ -126,14 +135,15 @@ module.exports = {
         API_URL: env('API_URL', 'http://localhost:8080'),
         EMAIL_ATTEMPTS: env('EMAIL_ATTEMPTS', '5'),
         EMAIL_ATTEMPTS_INTERVAL: env('EMAIL_ATTEMPTS_INTERVAL', '2000'),
-        EMAIL_SENDER: env('EMAIL_SENDER', 'ezteam@couperin.org'),
+        EMAIL_SENDER: env('EMAIL_SENDER', 'ezREEPORT <ezreeport@inist.fr>'),
         EMAIL_SUPPORT_TEAM: env('EMAIL_SUPPORT_TEAM', 'ezteam@couperin.org'),
         HTTP_PORT: Number(env('MAIL_HTTP_PORT', 8380)),
-        SMTP_HOST: env('SMTP_HOST', 'smtp'),
-        SMTP_IGNORE_TLS: env('SMTP_IGNORE_TLS', 'true'),
-        SMTP_PORT: env('SMTP_PORT', '25'),
-        SMTP_REJECT_UNAUTHORIZED: env('SMTP_REJECT_UNAUTHORIZED', 'false'),
-        SMTP_SECURE: env('SMTP_SECURE', 'false'),
+        SMTP_HOST: process.env['SMTP_HOST'] || 'smtp',
+        SMTP_IGNORE_TLS: process.env['SMTP_IGNORE_TLS'] || 'true',
+        SMTP_PORT: process.env['SMTP_PORT'] || '25',
+        SMTP_REJECT_UNAUTHORIZED:
+          process.env['SMTP_REJECT_UNAUTHORIZED'] || 'false',
+        SMTP_SECURE: process.env['SMTP_SECURE'] || 'false',
       },
       increment_var: 'HTTP_PORT',
       instances: env('MAILS_CONCURRENCE', 1),
