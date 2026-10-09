@@ -4,7 +4,7 @@ export default defineConfig({
   copy: ['config', 'assets'],
   entry: 'src/app.ts',
   format: 'cjs',
-  minify: false,
+  minify: true,
   outDir: 'dist/',
   platform: 'node',
   sourcemap: true,
