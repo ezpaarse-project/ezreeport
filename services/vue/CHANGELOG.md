@@ -1,5 +1,11 @@
 # @ezpaarse-project/ezreeport-vue
 
+## 4.0.0-rc.3
+
+### Patch Changes
+
+- 4add6ba: 💬 Fixed typos in translations
+
 ## 4.0.0-rc.2
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # ezreeport-worker
 
+## 1.3.0-rc.3
+
+### Patch Changes
+
+- e36aa7f: 🔧 dropped report.team / EMAIL_DEV_TEAM (please use mailer config)
+
 ## 1.3.0-rc.2
 
 ### Patch Changes
