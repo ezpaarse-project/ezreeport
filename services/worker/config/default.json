@@ -19,8 +19,7 @@
     "url": "https://host.docker.internal:9200",
     "username": "elastic",
     "password": "changeme",
-    "apiKey": "",
-    "requiredStatus": "green"
+    "apiKey": ""
   },
   "rabbitmq": {
     "protocol": "amqp",

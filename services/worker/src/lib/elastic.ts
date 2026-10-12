@@ -21,23 +21,8 @@ const logger = appLogger.child(
   }
 );
 
-const { url, username, password, apiKey, requiredStatus } =
-  config.elasticsearch;
+const { url, username, password, apiKey } = config.elasticsearch;
 
-enum ElasticStatus {
-  red = 0,
-  yellow = 1,
-  green = 2,
-}
-type KeyofElasticStatus = keyof typeof ElasticStatus;
-
-const isElasticStatus = (status: string): status is KeyofElasticStatus =>
-  Object.keys(ElasticStatus).includes(status);
-
-// Parse some env var
-const REQUIRED_STATUS = isElasticStatus(requiredStatus)
-  ? requiredStatus
-  : 'green';
 const ES_AUTH = apiKey ? { apiKey } : { password, username };
 
 const clientConfig: ClientOptions = {
@@ -71,22 +56,6 @@ export function initElasticClient(): Client {
 }
 
 /**
- * Get elastic client once it's ready
- *
- * @returns Elastic client
- */
-export async function elasticReady(): Promise<Client> {
-  const elastic = initElasticClient();
-
-  await elastic.cluster.health<ElasticTypes.ClusterHealthResponse>({
-    timeout: '5s',
-    wait_for_status: REQUIRED_STATUS,
-  });
-
-  return elastic;
-}
-
-/**
  * Ping elastic to check connection
  *
  * @returns If elastic is up
@@ -94,7 +63,7 @@ export async function elasticReady(): Promise<Client> {
 export const elasticPing = async (): Promise<
   Omit<HeartbeatType, 'nextAt' | 'updatedAt'>
 > => {
-  const elastic = await elasticReady();
+  const elastic = initElasticClient();
 
   const { body } =
     await elastic.cluster.stats<ElasticTypes.ClusterStatsResponse>();
@@ -122,13 +91,11 @@ export const elasticPing = async (): Promise<
  *
  * @returns The results of the search
  */
-export const elasticMSearch = async <
-  ResponseType extends Record<string, unknown>,
->(
+export const elasticMSearch = <ResponseType extends Record<string, unknown>>(
   params: RequestParams.Msearch<ElasticTypes.MsearchRequestItem[]>,
   runAs?: string
 ): Promise<ApiResponse<ElasticTypes.MsearchResponse<ResponseType>>> => {
-  const elastic = await elasticReady();
+  const elastic = initElasticClient();
 
   const headers: Record<string, unknown> = {};
   if (runAs) {

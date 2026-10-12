@@ -28,8 +28,7 @@
     "url": "ELASTIC_URL",
     "username": "ELASTIC_USERNAME",
     "password": "ELASTIC_PASSWORD",
-    "apiKey": "ELASTIC_API_KEY",
-    "requiredStatus": "ELASTIC_REQUIRED_STATUS"
+    "apiKey": "ELASTIC_API_KEY"
   },
   "rabbitmq": {
     "protocol": "RABBITMQ_PROTOCOL",
