@@ -38,7 +38,7 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: |
-            ghcr.io/ezpaarse-project/ezreeport-api
+            codeberg.org/readmetrics/ezreeport/api
           tags: |
             type=match,pattern=^ezreeport-report@(.+)$,group=1
             type=raw,value=${{ steps.docker_tags.outputs.tag }}
@@ -46,9 +46,9 @@ jobs:
       - name: Login to GitHub Container Registry 🔑
         uses: docker/login-action@v4
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: codeberg.org
+          username: ${{ secrets.CODEBERG_USER }}
+          password: ${{ secrets.CODEBERG_TOKEN }}
 
       - name: Set up QEMU ⚙️
         uses: docker/setup-qemu-action@v4
@@ -80,7 +80,7 @@ jobs:
       - name: Scan for vulnerability 🔍
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: 'ghcr.io/ezpaarse-project/ezreeport-api:${{ steps.version.outputs.tag }}'
+          image-ref: 'codeberg.org/readmetrics/ezreeport/api:${{ steps.version.outputs.tag }}'
           exit-code: 0
           format: json
           output: trivy-report.json
@@ -98,7 +98,7 @@ jobs:
       - name: Generate vulnerability report 🔍
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: 'ghcr.io/ezpaarse-project/ezreeport-api:${{ steps.version.outputs.tag }}'
+          image-ref: 'codeberg.org/readmetrics/ezreeport/api:${{ steps.version.outputs.tag }}'
           exit-code: 0
           format: template
           template: '@./.trivy/md.tpl'
