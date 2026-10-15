@@ -136,9 +136,9 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           })
         );
         if (!dfns.isSameDay(expectedPeriodEnd, period.end)) {
-          const isoStart = dfns.formatISO(period.start);
-          const isoParsedEnd = dfns.formatISO(period.end);
-          const isoEnd = dfns.formatISO(expectedPeriodEnd);
+          const isoStart = period.start.toISOString();
+          const isoParsedEnd = period.end.toISOString();
+          const isoEnd = expectedPeriodEnd.toISOString();
 
           throw new ConflictError(
             `Custom period "${isoStart} to ${isoParsedEnd}" doesn't match task's recurrence (${task.recurrence}). Should be : "${isoStart} to ${isoEnd}")`

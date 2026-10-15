@@ -1,4 +1,4 @@
-import { formatISO, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 
 import type { ApiResponse } from '~/lib/api';
 import { client } from '~/lib/fetch';
@@ -27,7 +27,7 @@ export async function getPeriodFromRecurrence(
     {
       body: {
         offset,
-        reference: reference && formatISO(reference),
+        reference: reference?.toISOString(),
       },
       method: 'POST',
     }
@@ -54,7 +54,7 @@ export async function getNextDateFromRecurrence(
     {
       body: {
         offset,
-        reference: reference && formatISO(reference),
+        reference: reference?.toISOString(),
       },
       method: 'POST',
     }

@@ -165,7 +165,7 @@
     mdiFilterOff,
     mdiRefresh,
   } from '@mdi/js';
-  import { eachDayOfInterval, formatISO, isValid, max, min } from 'date-fns';
+  import { eachDayOfInterval, isValid, max, min } from 'date-fns';
   import { getAllActivity } from '~sdk/task-activity';
 
   const maxDate = new Date();
@@ -242,13 +242,9 @@
         return;
       }
       const start = min(range);
-      filters.value['createdAt.from'] = formatISO(start, {
-        representation: 'date',
-      });
+      filters.value['createdAt.from'] = start.toISOString();
       const end = max(range);
-      filters.value['createdAt.to'] = formatISO(end, {
-        representation: 'date',
-      });
+      filters.value['createdAt.to'] = end.toISOString();
     },
   });
 
