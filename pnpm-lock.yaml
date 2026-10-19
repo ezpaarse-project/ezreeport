@@ -540,6 +540,9 @@ importers:
       '@ezreeport/heartbeats':
         specifier: workspace:*
         version: link:../../packages/heartbeats
+      '@ezreeport/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
       '@ezreeport/models':
         specifier: workspace:*
         version: link:../../packages/models
