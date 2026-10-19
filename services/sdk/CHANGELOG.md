@@ -1,5 +1,11 @@
 # @ezpaarse-project/ezreeport-sdk-js
 
+## 3.4.0-rc.2
+
+### Patch Changes
+
+- 1499483: 🐛 fixed 409 when generating test report on different timezones
+
 ## 3.4.0-rc.1
 
 ### Minor Changes

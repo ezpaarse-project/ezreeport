@@ -1,5 +1,11 @@
 # @ezpaarse-project/ezreeport-vue
 
+## 4.0.0-rc.4
+
+### Patch Changes
+
+- 1499483: 🐛 fixed 409 when generating test report on different timezones
+
 ## 4.0.0-rc.3
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # ezreeport-worker
 
+## 1.3.0-rc.4
+
+### Patch Changes
+
+- 2f7aaee: 🔧 removed `elasticsearch.requiredStatus` config (alias: `ELASTIC_REQUIRED_STATUS`, `ELASTICSEARCH_REQUIRED_STATUS`)
+
 ## 1.3.0-rc.3
 
 ### Patch Changes

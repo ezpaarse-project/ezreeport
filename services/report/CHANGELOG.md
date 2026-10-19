@@ -1,5 +1,16 @@
 # ezreeport-report
 
+## 3.4.0-rc.3
+
+### Minor Changes
+
+- 9eda3bf: ✨ unsubscribe is available in english
+
+### Patch Changes
+
+- cb38ed1: 🐛 fixed issue with CSP and unsubscribe
+- 1499483: 🐛 fixed 409 when generating test report on different timezones
+
 ## 3.3.1-rc.2
 
 ### Patch Changes
