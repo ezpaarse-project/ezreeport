@@ -36,7 +36,7 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: |
-            ghcr.io/ezpaarse-project/ezreeport-migrate
+            codeberg.org/readmetrics/ezreeport/migrate
           tags: |
             type=match,pattern=^@ezreeport/database@(.+)$,group=1
             type=raw,value=${{ steps.docker_tags.outputs.tag }}
@@ -44,9 +44,9 @@ jobs:
       - name: Login to GitHub Container Registry 🔑
         uses: docker/login-action@v4
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: codeberg.org
+          username: ${{ secrets.CODEBERG_USER }}
+          password: ${{ secrets.CODEBERG_TOKEN }}
 
       - name: Set up QEMU ⚙️
         uses: docker/setup-qemu-action@v4

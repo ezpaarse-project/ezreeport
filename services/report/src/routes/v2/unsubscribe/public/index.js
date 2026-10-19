@@ -32,7 +32,7 @@ export const customAlert = (message, isError = false) => {
   }, 10_000);
 };
 
-export const unsubscribeFromTask = async (taskId, form) => {
+export const unsubscribeFromTask = async (taskId, form, messages) => {
   const obj = {
     taskId,
   };
@@ -57,13 +57,8 @@ export const unsubscribeFromTask = async (taskId, form) => {
       throw new Error(res.error.message);
     }
 
-    customAlert(
-      'Vous avez bien été désinscrit. Vous pouvez fermer cette fenêtre.'
-    );
+    customAlert(messages.success);
   } catch (error) {
-    customAlert(
-      `Une erreur est survenue pendant le traitement:\n\n${error.message}`,
-      true
-    );
+    customAlert(`${messages.error}:\n\n${error.message}`, true);
   }
 };

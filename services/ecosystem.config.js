@@ -25,10 +25,6 @@ const elasticEnv = {
   ELASTIC_PASSWORD:
     process.env['ELASTIC_PASSWORD'] ||
     env('ELASTICSEARCH_PASSWORD', 'changeme'),
-  ELASTIC_REQUIRED_STATUS:
-    process.env['ELASTIC_REQUIRED_STATUS'] ||
-    process.env['ELASTICSEARCH_REQUIRED_STATUS'] ||
-    'green',
   ELASTIC_URL:
     process.env['ELASTIC_URL'] ||
     process.env['ELASTICSEARCH_URL'] ||

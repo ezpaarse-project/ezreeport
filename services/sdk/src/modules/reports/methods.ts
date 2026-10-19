@@ -1,4 +1,4 @@
-import { formatISO, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 
 import type { ApiResponse } from '~/lib/api';
 import { client } from '~/lib/fetch';
@@ -232,8 +232,8 @@ export async function generateReportOfTask(
   let periodDate;
   if (period) {
     periodDate = {
-      end: formatISO(period.end, { representation: 'date' }),
-      start: formatISO(period.start, { representation: 'date' }),
+      end: period.end.toISOString(),
+      start: period.start.toISOString(),
     };
   }
 

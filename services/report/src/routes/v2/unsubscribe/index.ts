@@ -7,6 +7,7 @@ import fastifyStatic from '@fastify/static';
 import { compile as handlebars } from 'handlebars';
 import { StatusCodes } from 'http-status-codes';
 
+import { t } from '@ezreeport/i18n';
 import { b64ToString } from '@ezreeport/models/lib/utils';
 import { z } from '@ezreeport/models/lib/zod';
 
@@ -52,13 +53,16 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Get unsubscribe page',
       tags: ['unsubscribe'],
     },
+    helmet: {
+      enableCSPNonces: true,
+    },
     prefixTrailingSlash: 'slash',
     // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
       const { unsubscribeId } = request.params;
       const [taskId64, to64] = decodeURIComponent(unsubscribeId).split(':');
 
-      const task = await getTask(b64ToString(taskId64));
+      const task = await getTask(b64ToString(taskId64), ['extends.locale']);
       if (!task) {
         throw new NotFoundError('Task not found');
       }
@@ -73,9 +77,53 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         join(__dirname, 'public/index.html'),
         'utf8'
       );
+
       const html = handlebars(htmlTemplate)({
+        cancelActionText: t(
+          'unsubscribe.actions.cancel',
+          task.extends?.locale ?? 'en'
+        ),
+        changesText: t(
+          'unsubscribe.texts.changes',
+          task.extends?.locale ?? 'en'
+        ),
+        confirmActionText: t(
+          'unsubscribe.actions.confirm',
+          task.extends?.locale ?? 'en'
+        ),
+        confirmText: t(
+          'unsubscribe.texts.confirm',
+          task.extends?.locale ?? 'en',
+          {
+            task: task.name,
+            email: emailValidation.data,
+          }
+        ),
         email: emailValidation.data,
+        errorResultText: t(
+          'unsubscribe.results.error',
+          task.extends?.locale ?? 'en'
+        ),
+        mailListAdviceText: t(
+          'unsubscribe.texts.mailList.advice',
+          task.extends?.locale ?? 'en'
+        ),
+        mailListWarningText: t(
+          'unsubscribe.texts.mailList.warning',
+          task.extends?.locale ?? 'en',
+          {
+            email: emailValidation.data,
+          }
+        ),
+        nonce: reply.cspNonce,
+        successResultText: t(
+          'unsubscribe.results.successs',
+          task.extends?.locale ?? 'en'
+        ),
         task,
+        titleText: t('unsubscribe.title', task.extends?.locale ?? 'en', {
+          task: task.name,
+        }),
         unsubscribeId,
       });
 

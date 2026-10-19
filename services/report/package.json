@@ -32,6 +32,7 @@
     "@ezreeport/database": "workspace:*",
     "@ezreeport/dates": "workspace:*",
     "@ezreeport/heartbeats": "workspace:*",
+    "@ezreeport/i18n": "workspace:*",
     "@ezreeport/models": "workspace:*",
     "@ezreeport/rabbitmq": "workspace:*",
     "@ezreeport/rpc": "workspace:*",

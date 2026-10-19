@@ -97,3 +97,7 @@ input[type='submit']:hover {
 .alert-success {
   background-color: #57af5b;
 }
+
+.text-error {
+  color: #f75d5d;
+}
