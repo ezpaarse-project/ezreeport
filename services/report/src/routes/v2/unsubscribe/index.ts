@@ -52,6 +52,9 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       summary: 'Get unsubscribe page',
       tags: ['unsubscribe'],
     },
+    helmet: {
+      enableCSPNonces: true,
+    },
     prefixTrailingSlash: 'slash',
     // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
@@ -75,6 +78,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       );
       const html = handlebars(htmlTemplate)({
         email: emailValidation.data,
+        nonce: reply.cspNonce,
         task,
         unsubscribeId,
       });
