@@ -1,7 +1,7 @@
 # region Common
 
 # Base image for node, enable usage of pnpm and allow to run apps
-FROM node:24.20.0-alpine3.24 AS base
+FROM node:24.22.1-alpine3.24 AS base
 LABEL maintainer="ReadMetrics <ezteam@couperin.org>"
 LABEL org.opencontainers.image.source="https://github.com/ezpaarse-project/ezreeport"
 
