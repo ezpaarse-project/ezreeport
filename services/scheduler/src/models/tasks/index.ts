@@ -15,15 +15,15 @@ import prisma from '~/lib/prisma';
  */
 export async function getTasksToGenerate(day: Date) {
   const tasks = await prisma.task.findMany({
+    include: {
+      extends: true,
+      namespace: true,
+    },
     where: {
+      enabled: true,
       nextRun: {
         lte: endOfDay(day),
       },
-      enabled: true,
-    },
-    include: {
-      namespace: true,
-      extends: true,
     },
   });
 
@@ -48,11 +48,11 @@ export async function editTaskAfterGeneration(
   let nextRun: Date | undefined;
   if (lastRun) {
     const data = await prisma.task.findUniqueOrThrow({
-      where: { id },
       select: {
         recurrence: true,
         recurrenceOffset: true,
       },
+      where: { id },
     });
 
     nextRun = calcNextDateFromRecurrence(
@@ -63,12 +63,12 @@ export async function editTaskAfterGeneration(
   }
 
   const task = await prisma.task.update({
-    where: { id },
     data: {
+      enabled,
       lastRun,
       nextRun,
-      enabled,
     },
+    where: { id },
   });
 
   return ensureSchema(Task, task);

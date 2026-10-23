@@ -9,7 +9,13 @@ import {
  * Validation for a user
  */
 export const User = z.object({
-  username: z.string().min(1).describe('Username'),
+  createdAt: z.date().describe('Creation date'),
+
+  isAdmin: z
+    .boolean()
+    .default(false)
+    .optional()
+    .describe('If user is an admin'),
 
   token: z
     .string()
@@ -18,15 +24,9 @@ export const User = z.object({
       'Token used to authenticate user, generated when user is created'
     ),
 
-  isAdmin: z
-    .boolean()
-    .default(false)
-    .optional()
-    .describe('If user is an admin'),
-
-  createdAt: z.date().describe('Creation date'),
-
   updatedAt: z.date().nullable().describe('Last update date'),
+
+  username: z.string().min(1).describe('Username'),
 });
 
 /**
@@ -54,9 +54,9 @@ export type InputUserType = z.infer<typeof InputUser>;
  * Validation for filters
  */
 export const UserQueryFilters = z.object({
-  query: z.string().optional().describe('Query used for searching'),
-
   isAdmin: z.stringbool().optional().describe('If user is an admin'),
+
+  query: z.string().optional().describe('Query used for searching'),
 });
 
 /**
@@ -68,8 +68,6 @@ export type UserQueryFiltersType = z.infer<typeof UserQueryFilters>;
  * Validation for setting multiple users
  */
 export const BulkUser = z.object({
-  username: z.string().min(1).describe('Username'),
-
   isAdmin: z
     .boolean()
     .default(false)
@@ -80,6 +78,8 @@ export const BulkUser = z.object({
     .array(BulkMembership.omit({ username: true }))
     .optional()
     .describe('Namespaces of the user'),
+
+  username: z.string().min(1).describe('Username'),
 });
 
 /**
@@ -95,11 +95,11 @@ export const BulkUserResult = z.object({
 
   users: z
     .object({
+      created: z.int().min(0).describe('Number of item created'),
+
       deleted: z.int().min(0).describe('Number of item deleted'),
 
       updated: z.int().min(0).describe('Number of item updated'),
-
-      created: z.int().min(0).describe('Number of item created'),
     })
     .describe('Summary of operations on users'),
 });

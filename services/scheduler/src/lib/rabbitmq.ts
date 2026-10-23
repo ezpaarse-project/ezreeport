@@ -1,4 +1,5 @@
-import { setupRabbitMQ, rabbitmq } from '@ezreeport/rabbitmq';
+// oxlint-disable-next-line unicorn/prefer-export-from
+import { rabbitmq, setupRabbitMQ } from '@ezreeport/rabbitmq';
 
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
@@ -7,8 +8,8 @@ const logger = appLogger.child(
   { scope: 'RabbitMQ' },
   {
     redact: {
-      paths: ['config.password'],
       censor: (value) => value && ''.padStart(`${value}`.length, '*'),
+      paths: ['config.password'],
     },
   }
 );
@@ -17,11 +18,11 @@ const { rabbitmq: rmqConfig } = config;
 
 const connectOpts: rabbitmq.Options.Connect = {
   hostname: rmqConfig.host,
+  password: rmqConfig.password,
   port: rmqConfig.port,
-  vhost: rmqConfig.vhost,
   protocol: rmqConfig.protocol,
   username: rmqConfig.username,
-  password: rmqConfig.password,
+  vhost: rmqConfig.vhost,
 };
 
 /**
@@ -38,4 +39,5 @@ export const useRabbitMQ = (
   setup: (connection: rabbitmq.ChannelModel) => Promise<void>
 ): Promise<void> => setupRabbitMQ(connectOpts, setup, logger);
 
+// oxlint-disable-next-line import/no-default-export
 export default rabbitmq;

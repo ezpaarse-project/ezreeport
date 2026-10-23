@@ -58,9 +58,9 @@ export function getFilename(data: MailReportQueueDataType): string {
 export function sendMail(options: MailOptions): Promise<void> {
   const attachments: Mail.Attachment[] = [
     ...images.map((img) => ({
-      path: join(templateDir, 'images', img),
       cid: img,
       filename: img,
+      path: join(templateDir, 'images', img),
     })),
     ...(options.attachments ?? []),
   ];

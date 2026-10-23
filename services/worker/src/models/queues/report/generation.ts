@@ -7,7 +7,6 @@ import { GenerationQueueData } from '@ezreeport/models/queues';
 import { parseJSONMessage } from '@ezreeport/rabbitmq';
 
 import type rabbitmq from '~/lib/rabbitmq';
-import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
 
 import { type GenerationEventMap, generateReport } from '~/models/generation';
@@ -18,7 +17,6 @@ import { sendReport } from './send';
 const generationQueueName = 'ezreeport.report:queues';
 const deadGenerationExchangeName = 'ezreeport.report:queues:dead';
 
-const { team } = config.report;
 const logger = appLogger.child({ queue: generationQueueName, scope: 'queues' });
 
 async function onMessage(
@@ -62,7 +60,7 @@ async function onMessage(
       taskId: data.task.id,
       took: startedAt ? Date.now() - startedAt.getTime() : null,
       updatedAt: new Date(),
-      writeActivity: !!data.writeActivity,
+      writeActivity: Boolean(data.writeActivity),
     });
   events.on('start', (event) => {
     ({ reportId } = event as { reportId: string });
@@ -93,17 +91,17 @@ async function onMessage(
   } catch (error) {
     updateProgress('ERROR');
     logger.error({
+      err: error,
       jobId: data.id,
       msg: 'Error while generating report',
-      error,
     });
     channel.ack(msg);
     return;
   }
 
   // Send result
-  const targets = result.detail.sendingTo || [team];
-  if (targets.length > 0) {
+  const targets = result.detail.sendingTo || [];
+  if (targets.length > 0 || !result.success) {
     sendReport(channel, 'mail', {
       date: result.detail.createdAt,
       filename:

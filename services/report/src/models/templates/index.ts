@@ -9,24 +9,24 @@ import type { PaginationType } from '~/models/pagination/types';
 import { buildPaginatedRequest } from '~/models/pagination';
 
 import {
-  Template,
-  type TemplateType,
   type InputTemplateType,
-  type TemplateTagType,
-  type TemplateQueryFiltersType,
+  Template,
   type TemplateIncludeFieldsType,
+  type TemplateQueryFiltersType,
+  type TemplateTagType,
+  type TemplateType,
 } from './types';
 
 const { defaultTemplate } = config;
 
-const logger = appLogger.child({ scope: 'models', model: 'templates' });
+const logger = appLogger.child({ model: 'templates', scope: 'models' });
 
 function applyFilters(
   filters: TemplateQueryFiltersType
 ): Prisma.TemplateWhereInput {
   const where: Prisma.TemplateWhereInput = {
-    locale: filters.locale,
     hidden: filters.hidden,
+    locale: filters.locale,
   };
 
   if (filters.query) {
@@ -82,7 +82,7 @@ export async function getAllTemplates(
       ensureSchema(
         Template,
         template,
-        (template) => `Failed to parse template ${template.id}`
+        () => `Failed to parse template ${template.id}`
       )
     )
   );
@@ -128,9 +128,9 @@ function createNeededTemplateTags(
   return Promise.all(
     input.map((tag) =>
       tx.templateTag.upsert({
-        where: tag.id ? { id: tag.id } : { name: tag.name },
         create: tag,
         update: {},
+        where: tag.id ? { id: tag.id } : { name: tag.name },
       })
     )
   );
@@ -158,8 +158,8 @@ export async function createTemplate(
   });
 
   logger.debug({
-    id: template.id,
     action: 'Created',
+    id: template.id,
     msg: 'Created',
   });
 
@@ -182,17 +182,17 @@ export async function editTemplate(
     const tags = await createNeededTemplateTags(data.tags, tx);
 
     return tx.template.update({
-      where: { id },
       data: {
         ...data,
         tags: { set: tags },
       },
+      where: { id },
     });
   });
 
   logger.debug({
-    id: template.id,
     action: 'Updated',
+    id: template.id,
     msg: 'Updated',
   });
 
@@ -210,8 +210,8 @@ export async function deleteTemplate(id: string): Promise<TemplateType> {
   const template = await prisma.template.delete({ where: { id } });
 
   logger.debug({
-    id: template.id,
     action: 'Deleted',
+    id: template.id,
     msg: 'Deleted',
   });
 
@@ -252,8 +252,8 @@ export async function countTemplates(
  */
 export async function doesTemplateExist(id: string): Promise<boolean> {
   const count = await prisma.template.count({
-    where: { id },
     select: { id: true },
+    where: { id },
   });
 
   return count.id > 0;

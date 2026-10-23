@@ -1,6 +1,6 @@
 {
   "name": "@ezpaarse-project/ezreeport-sdk-js",
-  "version": "3.3.0",
+  "version": "3.4.0-rc.2",
   "description": "JS SDK to communicate with ezReeport API",
   "homepage": "https://github.com/ezpaarse-project/ezreeport#readme",
   "bugs": {
@@ -118,12 +118,13 @@
     "build:js": "tsdown",
     "dev": "pnpm run --parallel \"/^(watch:docs)|(preview)$/\"",
     "lint": "oxlint",
+    "fmt": "oxfmt",
     "preview:docs": "serve docs",
-    "type-check": "tsc --noEmit --skipLibCheck",
+    "check": "tsc --noEmit --skipLibCheck",
     "watch:docs": "typedoc --watch"
   },
   "dependencies": {
-    "date-fns": "catalog:sdk",
+    "date-fns": "catalog:",
     "nanoid": "catalog:sdk",
     "object-hash": "catalog:sdk",
     "ofetch": "catalog:",
@@ -135,18 +136,9 @@
     "@types/object-hash": "^3.0.6",
     "native-events": "npm:events@^3.3.0",
     "serve": "^14.2.6",
-    "tsdown": "^0.22.8",
+    "tsdown": "catalog:build",
     "typedoc": "^0.28.20",
-    "typescript": "catalog:"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "oxlint --fix",
-      "oxfmt --no-error-on-unmatched-pattern"
-    ],
-    "package.json": [
-      "oxfmt --no-error-on-unmatched-pattern"
-    ]
+    "typescript": "catalog:dev"
   },
   "engines": {
     "node": "^14 || ^16 || ^18 || ^20 || ^22 || ^24"

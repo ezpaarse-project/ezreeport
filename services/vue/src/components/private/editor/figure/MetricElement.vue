@@ -17,7 +17,7 @@
       <template v-if="!readonly">
         <v-btn
           v-tooltip:top="$t('$ezreeport.edit')"
-          icon="mdi-pencil"
+          :icon="mdiPencil"
           color="blue"
           variant="text"
           density="comfortable"
@@ -26,7 +26,7 @@
 
         <v-btn
           v-tooltip:top="$t('$ezreeport.delete')"
-          icon="mdi-delete"
+          :icon="mdiDelete"
           color="red"
           variant="text"
           density="comfortable"
@@ -40,6 +40,7 @@
 
 <script setup lang="ts">
   import type { MetricLabel } from '~sdk/helpers/figures';
+  import { mdiDelete, mdiPencil } from '@mdi/js';
 
   // Components props
   const props = defineProps<{

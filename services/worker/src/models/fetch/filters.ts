@@ -1,7 +1,7 @@
 import type { estypes as ElasticTypes } from '@elastic/elasticsearch';
 
 import type { FilterType } from '@ezreeport/models/templates';
-import { formatISO, type Interval } from '@ezreeport/dates';
+import { type Interval, formatISO } from '@ezreeport/dates';
 import { ensureArray } from '@ezreeport/models/lib/utils';
 
 /**
@@ -33,6 +33,7 @@ function prepareEsFilter(
  * Prepare ElasticSearch query (filters)
  *
  * @param filters The filters to apply
+ * @param period The period data of the report
  * @param period.value The period of the report
  * @param period.dateField The date field of the ES index
  *
@@ -59,9 +60,9 @@ export function prepareEsQuery(
     must.push({
       range: {
         [period.dateField]: {
+          format: 'strict_date_optional_time',
           gte: formatISO(period.value.start),
           lte: formatISO(period.value.end),
-          format: 'strict_date_optional_time',
         },
       },
     });

@@ -1,23 +1,16 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import TaskActivityTable from './TaskActivityTable.vue';
 
 const meta: Meta<typeof TaskActivityTable> = {
-  title: 'Public/Task Activity Table',
   component: TaskActivityTable,
+  title: 'Public/Task Activity Table',
 };
+
+const { defineStory } = useStory(meta);
 
 export default meta;
 
-type Story = StoryObj<typeof TaskActivityTable>;
-
-export const Default: Story = {
-  render: (args: unknown) => ({
-    components: { TaskActivityTable },
-    setup() {
-      return { args };
-    },
-    template: '<TaskActivityTable v-bind="args" />',
-  }),
-  args: {},
-};
+export const Default = defineStory({});

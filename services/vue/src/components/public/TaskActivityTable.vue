@@ -22,7 +22,7 @@
               <v-text-field
                 :model-value="formattedPeriod"
                 :placeholder="$t('$ezreeport.task-activity.period')"
-                append-inner-icon="mdi-calendar-range"
+                :append-inner-icon="mdiCalendarRange"
                 variant="outlined"
                 density="compact"
                 width="300"
@@ -52,7 +52,7 @@
             :loading="loading"
             variant="tonal"
             color="primary"
-            icon="mdi-refresh"
+            :icon="mdiRefresh"
             density="comfortable"
             class="ml-2"
             @click="refresh"
@@ -66,7 +66,7 @@
 
       <v-btn
         v-if="filters.taskId"
-        icon="mdi-filter-off"
+        :icon="mdiFilterOff"
         color="primary"
         size="small"
         variant="text"
@@ -81,7 +81,7 @@
 
       <v-btn
         v-if="filters.namespaceId"
-        icon="mdi-filter-off"
+        :icon="mdiFilterOff"
         color="primary"
         size="small"
         variant="text"
@@ -96,7 +96,7 @@
 
       <v-btn
         v-if="!filters.taskId"
-        icon="mdi-filter"
+        :icon="mdiFilter"
         color="primary"
         size="small"
         variant="text"
@@ -111,7 +111,7 @@
 
       <v-btn
         v-if="!filters.namespaceId && !filters.taskId"
-        icon="mdi-filter"
+        :icon="mdiFilter"
         color="primary"
         size="small"
         variant="text"
@@ -159,7 +159,13 @@
 
 <script setup lang="ts">
   import type { VDataTable } from 'vuetify/components';
-  import { eachDayOfInterval, formatISO, isValid, max, min } from 'date-fns';
+  import {
+    mdiCalendarRange,
+    mdiFilter,
+    mdiFilterOff,
+    mdiRefresh,
+  } from '@mdi/js';
+  import { eachDayOfInterval, isValid, max, min } from 'date-fns';
   import { getAllActivity } from '~sdk/task-activity';
 
   const maxDate = new Date();
@@ -184,7 +190,6 @@
   type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
 
   // Utils composable
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
   const { formatDate } = useDateLocale();
 
@@ -237,11 +242,9 @@
         return;
       }
       const start = min(range);
-      filters.value['createdAt.from'] = formatISO(start, {
-        representation: 'date',
-      });
+      filters.value['createdAt.from'] = start.toISOString();
       const end = max(range);
-      filters.value['createdAt.to'] = formatISO(end, { representation: 'date' });
+      filters.value['createdAt.to'] = end.toISOString();
     },
   });
 

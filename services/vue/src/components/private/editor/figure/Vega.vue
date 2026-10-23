@@ -11,7 +11,7 @@
       <v-alert
         v-if="readonly"
         :title="$t('$ezreeport.readonly')"
-        icon="mdi-lock"
+        :icon="mdiLock"
         density="compact"
         class="mr-2"
       />
@@ -92,7 +92,7 @@
           <v-checkbox
             v-model="invertAxis"
             :label="$t('$ezreeport.editor.figures.vega.bar.invertAxis')"
-            prepend-icon="mdi-rotate-left-variant"
+            :prepend-icon="mdiRotateLeftVariant"
             color="primary"
             hide-details
           />
@@ -110,6 +110,18 @@
 
 <script setup lang="ts">
   import type { VegaFigureHelper } from '~sdk/helpers/figures';
+  import {
+    mdiArrowRightThin,
+    mdiArrowUpThin,
+    mdiChartBarStacked,
+    mdiCircleSlice3,
+    mdiDatabase,
+    mdiFormatListGroup,
+    mdiLabel,
+    mdiLock,
+    mdiRotateLeftVariant,
+    mdiTagText,
+  } from '@mdi/js';
 
   // Components props
   const props = defineProps<{
@@ -126,7 +138,6 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   const tab = ref(0);
@@ -138,24 +149,24 @@
     const { type } = props.modelValue;
 
     const valueTab = {
-      value: 'value',
+      icon: mdiDatabase,
       text: t('$ezreeport.editor.figures.vega._.value'),
-      icon: 'mdi-database',
+      value: 'value',
     };
     const labelTab = {
-      value: 'label',
+      icon: mdiLabel,
       text: t('$ezreeport.editor.figures.vega._.label'),
-      icon: 'mdi-label',
+      value: 'label',
     };
     const colorTab = {
-      value: 'color',
+      icon: mdiFormatListGroup,
       text: t('$ezreeport.editor.figures.vega._.color'),
-      icon: 'mdi-format-list-group',
+      value: 'color',
     };
     const dataLabelTab = {
-      value: 'dataLabel',
+      icon: mdiTagText,
       text: t('$ezreeport.editor.figures.vega._.dataLabel'),
-      icon: 'mdi-tag-text',
+      value: 'dataLabel',
     };
 
     switch (type) {
@@ -164,8 +175,8 @@
           valueTab,
           {
             ...labelTab,
+            icon: mdiCircleSlice3,
             text: t('$ezreeport.editor.figures.vega.arc.label'),
-            icon: 'mdi-circle-slice-3',
           },
           dataLabelTab,
         ];
@@ -177,28 +188,28 @@
           `$ezreeport.editor.figures.vega.bar.${valueAxisKey}`
         );
         const valueAxisIcon = props.modelValue.params.invertAxis
-          ? 'mdi-arrow-right-thin'
-          : 'mdi-arrow-up-thin';
+          ? mdiArrowRightThin
+          : mdiArrowUpThin;
 
         const labelAxisKey = props.modelValue.params.invertAxis
           ? 'value'
           : 'label';
         const labelAxisIcon = props.modelValue.params.invertAxis
-          ? 'mdi-arrow-up-thin'
-          : 'mdi-arrow-right-thin';
+          ? mdiArrowUpThin
+          : mdiArrowRightThin;
         return [
-          { ...valueTab, text: valueAxisText, icon: valueAxisIcon },
+          { ...valueTab, icon: valueAxisIcon, text: valueAxisText },
           {
             ...labelTab,
-            text: t(`$ezreeport.editor.figures.vega.bar.${labelAxisKey}`),
             icon: labelAxisIcon,
+            text: t(`$ezreeport.editor.figures.vega.bar.${labelAxisKey}`),
           },
           {
             ...colorTab,
+            icon: mdiChartBarStacked,
             text: t('$ezreeport.editor.figures.vega.bar.color', {
               axis: valueAxisText,
             }),
-            icon: 'mdi-chart-bar-stacked',
           },
           dataLabelTab,
         ];

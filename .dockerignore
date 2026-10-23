@@ -24,4 +24,7 @@ logs/
 
 # Dev tools
 **/.oxlint*
+README.md
+CHANGELOG*.md
 docker*
+Dockerfile

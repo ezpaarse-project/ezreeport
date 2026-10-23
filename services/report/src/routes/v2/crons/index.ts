@@ -6,16 +6,16 @@ import { z } from '@ezreeport/models/lib/zod';
 
 import { NotFoundError } from '~/models/errors';
 import {
-  getAllCrons,
-  stopCron,
-  startCron,
   forceCron,
+  getAllCrons,
+  startCron,
+  stopCron,
 } from '~/models/rpc/client/crons';
 
 import { authPlugin } from '~/plugins/auth';
 import {
-  describeErrors,
   buildSuccessResponse,
+  describeErrors,
   zSuccessResponse,
 } from '~/routes/v2/responses';
 
@@ -31,8 +31,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/',
     schema: {
-      summary: 'Get all crons',
-      tags: ['crons'],
       response: {
         ...describeErrors([
           StatusCodes.UNAUTHORIZED,
@@ -41,6 +39,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(z.array(Cron)),
       },
+      summary: 'Get all crons',
+      tags: ['crons'],
     },
     config: {
       ezrAuth: {
@@ -59,8 +59,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/:name',
     schema: {
-      summary: 'Get a cron',
-      tags: ['crons'],
       params: SpecificCronParams,
       response: {
         ...describeErrors([
@@ -72,6 +70,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(Cron),
       },
+      summary: 'Get a cron',
+      tags: ['crons'],
     },
     config: {
       ezrAuth: {
@@ -94,12 +94,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'PATCH',
     url: '/:name',
     schema: {
-      summary: 'Update a cron',
-      tags: ['crons'],
-      params: SpecificCronParams,
       body: z.object({
         running: z.boolean().optional(),
       }),
+      params: SpecificCronParams,
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -110,6 +108,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(Cron),
       },
+      summary: 'Update a cron',
+      tags: ['crons'],
     },
     config: {
       ezrAuth: {
@@ -143,8 +143,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'POST',
     url: '/:name',
     schema: {
-      summary: 'Force execution of a cron',
-      tags: ['crons'],
       params: SpecificCronParams,
       response: {
         ...describeErrors([
@@ -155,6 +153,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(Cron),
       },
+      summary: 'Force execution of a cron',
+      tags: ['crons'],
     },
     config: {
       ezrAuth: {
@@ -176,5 +176,5 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
   });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

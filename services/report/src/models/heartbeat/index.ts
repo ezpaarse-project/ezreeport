@@ -1,15 +1,15 @@
 import { hostname } from 'node:os';
 
 import type {
-  HeartbeatSender,
   HeartbeatListener,
+  HeartbeatSender,
   HeartbeatService,
 } from '@ezreeport/heartbeats/types';
 import { isBefore } from '@ezreeport/dates';
 import {
-  setupHeartbeat,
   listenToHeartbeats,
   mandatoryService,
+  setupHeartbeat,
 } from '@ezreeport/heartbeats';
 
 import type rabbitmq from '~/lib/rabbitmq';
@@ -19,24 +19,26 @@ import { appLogger } from '~/lib/logger';
 import { dbPing } from '~/lib/prisma';
 
 import type { HeartbeatType } from './types';
-import { version } from '../../../package.json';
+// oxlint-disable-next-line import/extensions
+import { version } from '../../../package.json' with { type: 'json' };
 
 const { heartbeat: frequency } = config;
 const logger = appLogger.child({ scope: 'heartbeat' });
 
 export const service: HeartbeatService = {
-  name: 'api',
-  version,
-  filesystems: {
-    logs: config.log.dir,
-  },
   connectedServices: {
     database: mandatoryService('database', dbPing),
     elastic: elasticPing,
   },
+  filesystems: {
+    logs: config.log.dir,
+  },
+  name: 'api',
+  version,
 };
 
 let heartbeat: HeartbeatSender | undefined;
+// oxlint-disable-next-line no-underscore-dangle
 let _listener: HeartbeatListener | undefined;
 const services = new Map<string, HeartbeatType>();
 
@@ -59,11 +61,11 @@ export async function initHeartbeat(
       const now = new Date();
 
       onHeartbeat({
-        service: 'rabbitmq',
         hostname: server.cluster_name || 'rabbitmq',
-        version: server.version,
-        updatedAt: now,
         nextAt: new Date(now.getTime() + frequency.self),
+        service: 'rabbitmq',
+        updatedAt: now,
+        version: server.version,
       });
     }
 
@@ -88,10 +90,10 @@ export function getAllServices(): HeartbeatType[] {
   const now = new Date();
 
   return (
-    Array.from(services.values())
+    [...services.values()]
       // Filter out services that haven't given heartbeats in time
-      .filter((service) => {
-        const maxTimestamp = service.nextAt.getTime() + frequency.connected.max;
+      .filter((srv) => {
+        const maxTimestamp = srv.nextAt.getTime() + frequency.connected.max;
 
         return isBefore(now, maxTimestamp);
       })

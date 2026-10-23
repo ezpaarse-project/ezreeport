@@ -55,7 +55,7 @@
         :label="$t('$ezreeport.editor.figures.vega._.dataLabel:showLabel')"
         :disabled="!isEnabled"
         :readonly="readonly"
-        prepend-icon="mdi-label-multiple"
+        :prepend-icon="mdiLabelMultiple"
         color="primary"
         hide-details
       />
@@ -70,7 +70,7 @@
         :label="$t('$ezreeport.editor.figures.vega._.dataLabel:format')"
         :disabled="!isEnabled"
         :readonly="readonly"
-        prepend-icon="mdi-format-paint"
+        :prepend-icon="mdiFormatPaint"
         variant="underlined"
       />
     </v-col>
@@ -92,6 +92,7 @@
 
 <script setup lang="ts">
   import type { VegaDataLabelOptions } from '~sdk/helpers/figures';
+  import { mdiFormatPaint, mdiLabelMultiple } from '@mdi/js';
 
   // Components props
   const props = defineProps<{
@@ -110,7 +111,6 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   /** Backup of the layer, used when enabling/disabling */
@@ -133,18 +133,18 @@
   /** Format options */
   const formatOptions = computed(() => [
     {
-      value: 'numeric',
-      title: t('$ezreeport.editor.figures.vega._.dataLabel:formats.numeric'),
       props: {
         appendIcon: formatIcons.get('number'),
       },
+      title: t('$ezreeport.editor.figures.vega._.dataLabel:formats.numeric'),
+      value: 'numeric',
     },
     {
-      value: 'percent',
-      title: t('$ezreeport.editor.figures.vega._.dataLabel:formats.percent'),
       props: {
         appendIcon: formatIcons.get('percent'),
       },
+      title: t('$ezreeport.editor.figures.vega._.dataLabel:formats.percent'),
+      value: 'percent',
     },
   ]);
   /** Format option */
@@ -161,7 +161,8 @@
   });
   /** Position option */
   const position = computed({
-    get: () => props.modelValue?.position ?? paramsBackup.value.position ?? 'in',
+    get: () =>
+      props.modelValue?.position ?? paramsBackup.value.position ?? 'in',
     set: (value) => {
       if (!props.modelValue) {
         return;

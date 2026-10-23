@@ -14,14 +14,14 @@ const generationQueueName = 'ezreeport.report:queues';
 const deadGenerationExchangeName = 'ezreeport.report:queues:dead';
 const generationEventExchangeName = 'ezreeport.report:event';
 
-const logger = appLogger.child({ scope: 'queues', queue: generationQueueName });
+const logger = appLogger.child({ queue: generationQueueName, scope: 'queues' });
 
 let channel: rabbitmq.Channel | undefined;
 
-async function onDeadGeneration(
+function onDeadGeneration(
   chan: rabbitmq.Channel,
   msg: rabbitmq.ConsumeMessage | null
-): Promise<void> {
+): void {
   if (!msg) {
     return;
   }
@@ -30,9 +30,9 @@ async function onDeadGeneration(
   const { data, raw, parseError } = parseJSONMessage(msg, GenerationQueueData);
   if (!data) {
     logger.error({
-      msg: 'Invalid data',
       data: process.env.NODE_ENV === 'production' ? undefined : raw,
       err: parseError,
+      msg: 'Invalid data',
     });
     chan.nack(msg, undefined, false);
     return;
@@ -40,20 +40,20 @@ async function onDeadGeneration(
 
   try {
     const event: GenerationType = {
-      id: data.id,
-      taskId: data.task.id,
-      status: 'ABORTED',
-      start: data.period.start,
-      end: data.period.end,
-      targets: data.targets,
-      origin: data.origin,
-      writeActivity: !!data.writeActivity,
-      progress: null,
-      took: null,
-      reportId: '',
       createdAt: data.createdAt,
-      updatedAt: new Date(),
+      end: data.period.end,
+      id: data.id,
+      origin: data.origin,
+      progress: null,
+      reportId: '',
+      start: data.period.start,
       startedAt: null,
+      status: 'ABORTED',
+      targets: data.targets,
+      taskId: data.task.id,
+      took: null,
+      updatedAt: new Date(),
+      writeActivity: Boolean(data.writeActivity),
     };
 
     sendJSONMessage<GenerationType>(
@@ -65,14 +65,14 @@ async function onDeadGeneration(
     );
 
     logger.warn({
-      msg: 'Generation aborted',
-      taskId: data.task.id,
-      task: data.task.name,
-      generationId: data.id,
       generation: event,
+      generationId: data.id,
+      msg: 'Generation aborted',
+      task: data.task.name,
+      taskId: data.task.id,
     });
-  } catch (err) {
-    logger.error({ msg: 'Failed to send event', err });
+  } catch (error) {
+    logger.error({ error, msg: 'Failed to send event' });
   }
   chan.ack(msg);
 }
@@ -80,9 +80,9 @@ async function onDeadGeneration(
 export async function initGenerationQueue(
   chan: rabbitmq.Channel
 ): Promise<void> {
-  // queueGeneration will be called while begin unaware of
-  // rabbitmq connection, so we need to store the channel
-  // here
+  // QueueGeneration will be called while begin unaware of
+  // Rabbitmq connection, so we need to store the channel
+  // Here
   channel = chan;
 
   const { exchange: deadLetterExchange } = await chan.assertExchange(
@@ -92,9 +92,9 @@ export async function initGenerationQueue(
   );
 
   const { queue: deadLetterQueue } = await chan.assertQueue('', {
-    exclusive: true,
-    durable: false,
     deadLetterExchange,
+    durable: false,
+    exclusive: true,
   });
   channel.consume(deadLetterQueue, (msg) => onDeadGeneration(chan, msg));
 
@@ -102,16 +102,16 @@ export async function initGenerationQueue(
 
   // Ensure generation queue exists with correct dead letter exchange
   await chan.assertQueue(generationQueueName, {
-    durable: true,
     deadLetterExchange,
+    durable: true,
   });
 
   logger.debug('Generation queue created');
 }
 
-export async function queueGeneration(
+export function queueGeneration(
   params: Omit<GenerationQueueDataType, 'id' | 'createdAt'>
-): Promise<GenerationQueueDataType | null> {
+): GenerationQueueDataType | null {
   const createdAt = new Date();
   let data: GenerationQueueDataType;
   try {
@@ -121,8 +121,8 @@ export async function queueGeneration(
 
     data = {
       ...params,
-      id: randomUUID(),
       createdAt,
+      id: randomUUID(),
     };
 
     const { size } = sendJSONMessage<GenerationQueueDataType>(
@@ -134,10 +134,10 @@ export async function queueGeneration(
       size,
       sizeUnit: 'B',
     });
-  } catch (err) {
+  } catch (error) {
     logger.error({
+      err: error,
       msg: 'Failed to queue report',
-      err,
     });
 
     return null;
@@ -150,24 +150,24 @@ export async function queueGeneration(
         exchange: { name: generationEventExchangeName, routingKey: '' },
       },
       {
-        id: data.id,
-        taskId: data.task.id,
-        status: 'PENDING',
-        start: data.period.start,
-        end: data.period.end,
-        targets: data.targets,
-        origin: data.origin,
-        writeActivity: !!data.writeActivity,
-        progress: null,
-        took: null,
-        reportId: '',
         createdAt,
-        updatedAt: new Date(),
+        end: data.period.end,
+        id: data.id,
+        origin: data.origin,
+        progress: null,
+        reportId: '',
+        start: data.period.start,
         startedAt: null,
+        status: 'PENDING',
+        targets: data.targets,
+        taskId: data.task.id,
+        took: null,
+        updatedAt: new Date(),
+        writeActivity: Boolean(data.writeActivity),
       }
     );
-  } catch (err) {
-    logger.warn({ msg: 'Failed to send event', err });
+  } catch (error) {
+    logger.warn({ error, msg: 'Failed to send event' });
   }
 
   return data;

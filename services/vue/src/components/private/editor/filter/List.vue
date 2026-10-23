@@ -1,7 +1,7 @@
 <template>
   <v-card
     :title="$t('$ezreeport.editor.filters.title', modelValue?.size ?? 0)"
-    prepend-icon="mdi-filter"
+    :prepend-icon="mdiFilter"
     variant="outlined"
   >
     <template v-if="!readonly" #append>
@@ -9,7 +9,7 @@
         <template #activator="{ props: menu }">
           <v-btn
             v-tooltip:top="$t('$ezreeport.editor.filters.title:import')"
-            icon="mdi-import"
+            :icon="mdiImport"
             color="primary"
             density="compact"
             variant="text"
@@ -23,7 +23,7 @@
 
       <v-btn
         v-tooltip:top="$t('$ezreeport.new')"
-        icon="mdi-plus"
+        :icon="mdiPlus"
         color="green"
         density="compact"
         variant="text"
@@ -75,7 +75,8 @@
 </template>
 
 <script setup lang="ts">
-  import type { TemplateFilterMap, TemplateFilter } from '~sdk/helpers/filters';
+  import type { TemplateFilter, TemplateFilterMap } from '~sdk/helpers/filters';
+  import { mdiFilter, mdiImport, mdiPlus } from '@mdi/js';
 
   type FilterWithKey = { key: string; filter: TemplateFilter };
 

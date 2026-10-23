@@ -1,4 +1,4 @@
-import type { TemplateFilter, TemplateBodyFigure } from '~/modules/templates';
+import type { TemplateBodyFigure, TemplateFilter } from '~/modules/templates';
 
 import type { FigureAggregation } from '../aggregations';
 import type { FigureOrder } from './utils';
@@ -38,6 +38,10 @@ export interface VegaDataLabelOptions {
 
 export interface VegaFigureHelper extends FigureHelperWithFilters {
   params: {
+    /**
+     * Should display the figure even if there's no data
+     */
+    displayEmpty?: boolean;
     /**
      * The title of the figure
      */
@@ -81,19 +85,21 @@ export function createVegaFigureHelper(
   invertAxis: boolean = false,
   filters: TemplateFilter[] = [],
   order: FigureOrder = true,
-  slots?: number[]
+  slots?: number[],
+  displayEmpty: boolean = false
 ): VegaFigureHelper {
   return createFigureHelperWithFilters(
     type,
     filters,
     {
-      title,
-      invertAxis,
-      label,
-      value,
       color,
       dataLabel,
+      displayEmpty,
+      invertAxis,
+      label,
       order,
+      title,
+      value,
     },
     slots
   );
@@ -112,7 +118,8 @@ export function createVegaFigureHelperFrom(
     figure.params?.invertAxis ?? false,
     figure.filters ?? [],
     figure.params?.order ?? true,
-    figure.slots
+    figure.slots,
+    figure.params?.displayEmpty ?? false
   );
 }
 
@@ -120,12 +127,13 @@ export function vegaHelperParamsToJSON(
   params: VegaFigureHelper['params']
 ): TemplateBodyFigure['params'] {
   return {
-    title: params.title,
-    invertAxis: params.invertAxis,
-    label: params.label,
-    value: params.value,
     color: params.color,
     dataLabel: params.dataLabel,
+    displayEmpty: params.displayEmpty,
+    invertAxis: params.invertAxis,
+    label: params.label,
     order: params.order,
+    title: params.title,
+    value: params.value,
   };
 }

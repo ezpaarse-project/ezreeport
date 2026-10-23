@@ -1,14 +1,16 @@
+import { levels } from 'pino';
+
 import { setupConfig } from '@ezreeport/config';
-import { logLevels } from '@ezreeport/logger';
 
 import type defaultConfig from '../../config/default.json';
 
+// oxlint-disable-next-line import/no-default-export
 export default setupConfig<typeof defaultConfig>({
   watch: {
     logger: {
+      levels: levels.values,
       log: (message: string): boolean => process.stdout.write(`${message}\n`),
-      levels: logLevels.values,
-      meta: { scope: 'config', name: 'mail' },
+      meta: { name: 'mail', scope: 'config' },
     },
   },
 });

@@ -80,11 +80,11 @@ export const MailErrorQueueData = z.object({
   env: z.string().min(1).describe('Environment name'),
 
   error: z.object({
+    contact: z.email().min(1).describe('Contact to send error log to'),
+
     file: z.string().min(1).describe('File content to store error log'),
 
     filename: z.string().min(1).describe('File name to store error log'),
-
-    contact: z.email().min(1).describe('Contact to send error log to'),
   }),
 });
 

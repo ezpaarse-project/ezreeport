@@ -12,20 +12,20 @@ const { defaultTemplate } = config;
  */
 export async function upsertDefaultTemplate(): Promise<Template> {
   const data: Prisma.TemplateCreateInput = {
-    name: defaultTemplate.name,
-    hidden: true,
-    locale: defaultTemplate.locale,
     body: {
-      version: 2,
       dateField: defaultTemplate.dateField,
       layouts: [],
+      version: 2,
     },
+    hidden: true,
+    locale: defaultTemplate.locale,
+    name: defaultTemplate.name,
   };
 
   const template = await prisma.template.upsert({
-    where: { name: defaultTemplate.name },
-    update: data,
     create: data,
+    update: data,
+    where: { name: defaultTemplate.name },
   });
 
   return template;

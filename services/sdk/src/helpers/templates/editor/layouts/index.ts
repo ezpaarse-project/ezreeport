@@ -1,6 +1,6 @@
 import type { AnyFigureHelper } from '../figures';
 import type { TaskLayoutHelper } from './tasks';
-import { hashLayout, type LayoutHelper } from './templates';
+import { type LayoutHelper, hashLayout } from './templates';
 
 export type AnyLayoutHelper = LayoutHelper | TaskLayoutHelper;
 
@@ -47,7 +47,7 @@ export function updateFigureOfHelper(
   newFigure: AnyFigureHelper
 ): AnyLayoutHelper {
   const index = layout.figures.findIndex((fig) => fig.id === oldFigure.id);
-  if (index < 0) {
+  if (index === -1) {
     throw new Error(`Figure "${oldFigure.id}" not found`);
   }
   const lay = layout;

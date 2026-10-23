@@ -45,8 +45,8 @@ export function registerLocales(options: LocalesOptions): void {
       }
 
       options.i18n.mergeLocaleMessage(locale, { $ezreeport: msg });
-    } catch (err) {
-      handleEzrError('Unable to register locales', err);
+    } catch (error) {
+      handleEzrError('Unable to register locales', error);
     }
   }
 }

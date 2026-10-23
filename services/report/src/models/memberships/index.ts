@@ -8,11 +8,11 @@ import type { PaginationType } from '~/models/pagination/types';
 import { buildPaginatedRequest } from '~/models/pagination';
 
 import {
+  type BulkMembershipResultType,
+  type BulkMembershipType,
+  type InputMembershipType,
   Membership,
   type MembershipType,
-  type InputMembershipType,
-  type BulkMembershipType,
-  type BulkMembershipResultType,
 } from './types';
 
 type FindOneMembership = {
@@ -20,7 +20,7 @@ type FindOneMembership = {
   namespaceId: string;
 };
 
-const logger = appLogger.child({ scope: 'models', model: 'memberships' });
+const logger = appLogger.child({ model: 'memberships', scope: 'models' });
 
 /**
  * Get all memberships
@@ -68,7 +68,7 @@ export async function getMembership({
   namespaceId,
 }: FindOneMembership): Promise<MembershipType | null> {
   const data = await prisma.membership.findUnique({
-    where: { username_namespaceId: { username, namespaceId } },
+    where: { username_namespaceId: { namespaceId, username } },
   });
 
   return data && ensureSchema(Membership, data);
@@ -87,10 +87,10 @@ export async function createMembership(
   const membership = await prisma.membership.create({ data });
 
   logger.debug({
-    namespaceId: membership.namespaceId,
-    username: membership.username,
     action: 'Created',
     msg: 'Created',
+    namespaceId: membership.namespaceId,
+    username: membership.username,
   });
 
   return ensureSchema(Membership, membership);
@@ -109,15 +109,15 @@ export async function editMembership(
   data: InputMembershipType
 ): Promise<MembershipType> {
   const membership = await prisma.membership.update({
-    where: { username_namespaceId: { username, namespaceId } },
     data,
+    where: { username_namespaceId: { namespaceId, username } },
   });
 
   logger.debug({
-    namespaceId: membership.namespaceId,
-    username: membership.username,
     action: 'Updated',
     msg: 'Updated',
+    namespaceId: membership.namespaceId,
+    username: membership.username,
   });
 
   return ensureSchema(Membership, membership);
@@ -135,14 +135,14 @@ export async function deleteMembership({
   namespaceId,
 }: FindOneMembership): Promise<MembershipType> {
   const membership = await prisma.membership.delete({
-    where: { username_namespaceId: { username, namespaceId } },
+    where: { username_namespaceId: { namespaceId, username } },
   });
 
   logger.debug({
-    namespaceId: membership.namespaceId,
-    username: membership.username,
     action: 'Deleted',
     msg: 'Deleted',
+    namespaceId: membership.namespaceId,
+    username: membership.username,
   });
 
   return ensureSchema(Membership, membership);
@@ -160,8 +160,8 @@ export async function countMemberships({
   namespaceId,
 }: Partial<FindOneMembership> = {}): Promise<number> {
   const result = await prisma.membership.count({
-    where: { namespaceId, username },
     select: { username: true },
+    where: { namespaceId, username },
   });
 
   return result.username;
@@ -178,8 +178,8 @@ export async function doesMembershipExist(
   where: FindOneMembership
 ): Promise<boolean> {
   const count = await prisma.membership.count({
-    where,
     select: { username: true },
+    where,
   });
 
   return count.username > 0;
@@ -219,9 +219,9 @@ export async function replaceMemberships(
   const toEdit = current.filter((membership) =>
     dataPerId.has(getMembershipId(membership))
   );
-  // toEdit is made of dataPerId so we can assume it is safe
-  const editData = toEdit.map(
-    (membership) => dataPerId.get(getMembershipId(membership))!
+  // ToEdit is made of dataPerId so we can assume it is safe
+  const editData = toEdit.map((membership) =>
+    dataPerId.get(getMembershipId(membership))!
   );
 
   const toEditIds = new Set(
@@ -230,9 +230,9 @@ export async function replaceMemberships(
   const toCreate = data.filter(
     (membership) => !toEditIds.has(getMembershipId(membership))
   );
-  // toCreate is made of toEdit so we can assume it is safe
-  const createData = toCreate.map(
-    (membership) => dataPerId.get(getMembershipId(membership))!
+  // ToCreate is made of toEdit so we can assume it is safe
+  const createData = toCreate.map((membership) =>
+    dataPerId.get(getMembershipId(membership))!
   );
 
   // Executing operations
@@ -242,8 +242,8 @@ export async function replaceMemberships(
         tx.membership.delete({
           where: {
             username_namespaceId: {
-              username: membership.username,
               namespaceId: membership.namespaceId,
+              username: membership.username,
             },
           },
         })
@@ -253,13 +253,13 @@ export async function replaceMemberships(
     const updateOperations = Promise.all(
       editData.map((newData) =>
         tx.membership.update({
+          data: newData,
           where: {
             username_namespaceId: {
-              username: newData.username,
               namespaceId: newData.namespaceId,
+              username: newData.username,
             },
           },
-          data: newData,
         })
       )
     );
@@ -270,18 +270,18 @@ export async function replaceMemberships(
   });
 
   logger.debug({
-    deleted: deleted.length,
-    updated: updated.length,
-    created: created.count,
     action: 'Replaced',
+    created: created.count,
+    deleted: deleted.length,
     msg: 'Replaced',
+    updated: updated.length,
   });
 
   return {
     memberships: {
+      created: created.count,
       deleted: deleted.length,
       updated: updated.length,
-      created: created.count,
     },
   };
 }

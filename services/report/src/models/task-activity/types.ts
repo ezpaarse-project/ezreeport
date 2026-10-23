@@ -2,8 +2,8 @@ import { ensureArray } from '@ezreeport/models/lib/utils';
 import {
   z,
   zStringOrArray,
-  zStringToStartOfDay,
   zStringToEndOfDay,
+  zStringToStartOfDay,
 } from '@ezreeport/models/lib/zod';
 import { TaskActivity as CommonTaskActivity } from '@ezreeport/models/task-activity';
 
@@ -58,7 +58,13 @@ export type TaskActivityIncludeFieldsType = z.infer<
  * Validation for query filters of a event
  */
 export const TaskActivityQueryFilters = z.object({
-  taskId: z.string().min(1).optional().describe('ID of the task'),
+  'createdAt.from': zStringToStartOfDay
+    .optional()
+    .describe('Minimum date of event'),
+
+  'createdAt.to': zStringToEndOfDay
+    .optional()
+    .describe('Maximum date of event'),
 
   extendedId: z
     .string()
@@ -70,13 +76,7 @@ export const TaskActivityQueryFilters = z.object({
     .optional()
     .describe('Possible namespace ID of the task'),
 
-  'createdAt.from': zStringToStartOfDay
-    .optional()
-    .describe('Minimum date of event'),
-
-  'createdAt.to': zStringToEndOfDay
-    .optional()
-    .describe('Maximum date of event'),
+  taskId: z.string().min(1).optional().describe('ID of the task'),
 });
 
 /**

@@ -57,6 +57,7 @@
       "targets:add": "Add a receiver",
       "targets:count": "{n} receiver|{n} receivers",
       "targets:copy": "Copy mail adresses",
+      "targets:empty": "No receiver is configured for this report. Edit the report to add one or more receivers.",
       "nextRun": "Next delivery",
       "lastRun": "Previous delivery",
       "state": "State",
@@ -321,6 +322,7 @@
           "order": "Sorting data",
           "type": "Type of figure",
           "create": "Create figure",
+          "displayEmpty": "Display even if no data is available",
           "types": {
             "table": "Table",
             "md": "Markdown",

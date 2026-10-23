@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { stringToB64 } from '@ezreeport/models/lib/utils';
 import { z } from '@ezreeport/models/lib/zod';
 
-import { NotFoundError, ArgumentError } from '~/models/errors';
+import { ArgumentError, NotFoundError } from '~/models/errors';
 import { buildPaginatedResponse } from '~/models/pagination';
 import {
   PaginationQuery,
@@ -14,8 +14,8 @@ import * as tasks from '~/models/tasks';
 import { Task } from '~/models/tasks/types';
 
 import {
-  describeErrors,
   buildSuccessResponse,
+  describeErrors,
   zSuccessResponse,
 } from '~/routes/v2/responses';
 
@@ -29,8 +29,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/',
     schema: {
-      summary: 'Get tasks of a target',
-      tags: ['task-targets'],
       params: SpecificEmailParams,
       querystring: PaginationQuery,
       response: {
@@ -40,6 +38,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zPaginationResponse(Task),
       },
+      summary: 'Get tasks of a target',
+      tags: ['task-targets'],
     },
     // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
@@ -49,9 +49,9 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       return buildPaginatedResponse(
         content,
         {
+          count: content.length,
           page: request.query.page,
           total: await tasks.countTasks(filter),
-          count: content.length,
         },
         reply
       );
@@ -62,8 +62,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/:id/_unsubscribe',
     schema: {
-      summary: 'Get unsubscribe id for a task',
-      tags: ['task-targets'],
       params: z.object({
         ...SpecificEmailParams.shape,
         id: z.string().min(1),
@@ -75,6 +73,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(z.object({ id: z.string() })),
       },
+      summary: 'Get unsubscribe id for a task',
+      tags: ['task-targets'],
     },
     // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
@@ -99,5 +99,5 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
   });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

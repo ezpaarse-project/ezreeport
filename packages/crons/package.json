@@ -19,24 +19,17 @@
   },
   "scripts": {
     "lint": "oxlint",
-    "type-check": "tsc --noEmit --skipLibCheck"
+    "fmt": "oxfmt",
+    "check": "tsc --noEmit --skipLibCheck"
   },
-  "dependencies": {
-    "@ezreeport/logger": "workspace:*",
-    "@ezreeport/models": "workspace:*",
-    "cron": "^4.3.1"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "typescript": "catalog:"
+    "@ezreeport/models": "workspace:*",
+    "cron": "^4.4.0",
+    "typescript": "catalog:dev"
   },
-  "lint-staged": {
-    "*.ts": [
-      "oxlint --fix",
-      "oxfmt --no-error-on-unmatched-pattern"
-    ],
-    "package.json": [
-      "oxfmt --no-error-on-unmatched-pattern"
-    ]
+  "peerDependencies": {
+    "pino": "catalog:"
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

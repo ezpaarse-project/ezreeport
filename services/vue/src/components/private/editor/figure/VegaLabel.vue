@@ -16,7 +16,7 @@
         v-model="title"
         :label="$t('$ezreeport.editor.figures.vega._.axisTitle')"
         :readonly="readonly"
-        prepend-icon="mdi-axis-arrow-info"
+        :prepend-icon="mdiAxisArrowInfo"
         variant="underlined"
         hide-details
       />
@@ -40,7 +40,7 @@
         :label="$t('$ezreeport.editor.figures.vega._.legend')"
         :disabled="!legendShow"
         :readonly="readonly"
-        prepend-icon="mdi-image-text"
+        :prepend-icon="mdiImageText"
         variant="underlined"
         hide-details
       />
@@ -50,6 +50,7 @@
 
 <script setup lang="ts">
   import type { VegaLayer } from '~sdk/helpers/figures';
+  import { mdiAxisArrowInfo, mdiImageText } from '@mdi/js';
 
   type VegaLegend = Exclude<VegaLayer['legend'], null | undefined>;
 

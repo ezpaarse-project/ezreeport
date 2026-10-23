@@ -32,7 +32,7 @@
         :label="$t('$ezreeport.editor.figures.vega._.legend')"
         :disabled="!isEnabled"
         :readonly="readonly"
-        prepend-icon="mdi-image-text"
+        :prepend-icon="mdiImageText"
         variant="underlined"
         hide-details
       />
@@ -42,6 +42,7 @@
 
 <script setup lang="ts">
   import type { VegaLayer } from '~sdk/helpers/figures';
+  import { mdiImageText } from '@mdi/js';
 
   // Components props
   const props = defineProps<{
@@ -60,7 +61,6 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t, te } = useI18n();
 
   /** Backup of the layer, used when enabling/disabling */

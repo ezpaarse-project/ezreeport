@@ -1,18 +1,21 @@
-import type { Mark } from 'vega-lite/build/src/mark';
+import type { Mark } from 'vega-lite/types_unstable/mark.js';
 import { merge } from 'lodash';
 
 import type { RecurrenceType } from '@ezreeport/models/recurrence';
 import type { FigureType } from '@ezreeport/models/templates';
+import { t } from '@ezreeport/i18n';
 
 import type { FetchResultItem } from '~/models/fetch/results';
 import type { PDFReport } from '~/models/render/pdf/types';
 import type { Area } from '~/models/render/types';
 
 import RenderError from './errors';
+import { getIconAsset } from './pdf';
 import { addMdToPDF } from './pdf/markdown';
 import { addMetricToPDF } from './pdf/metrics';
 import { addTableToPDF } from './pdf/table';
-import { createVegaLSpec, createVegaView, parseTitle } from './vega';
+import { createVegaView, parseTitle } from './vega';
+import { createVegaLSpec } from './vega/specs';
 
 type RenderFigureFnc = (params: {
   /**
@@ -85,6 +88,7 @@ const renderMarkdown: RenderFigureFnc = async (params) => {
 
   await addMdToPDF(doc, data.toString(), {
     ...figure.params,
+    height: slot.height,
     start: {
       // oxlint-disable-next-line id-length
       x: slot.x,
@@ -92,7 +96,6 @@ const renderMarkdown: RenderFigureFnc = async (params) => {
       y: slot.y,
     },
     width: slot.width,
-    height: slot.height,
   });
 };
 
@@ -101,11 +104,12 @@ const renderMarkdown: RenderFigureFnc = async (params) => {
  *
  * @param params
  */
-const renderMetrics: RenderFigureFnc = async (params) => {
+const renderMetrics: RenderFigureFnc = (params) => {
   const { doc, figure, slot, data } = params;
 
   addMetricToPDF(doc, data, {
     ...figure.params,
+    height: slot.height,
     start: {
       // oxlint-disable-next-line id-length
       x: slot.x,
@@ -113,8 +117,63 @@ const renderMetrics: RenderFigureFnc = async (params) => {
       y: slot.y,
     },
     width: slot.width,
-    height: slot.height,
   });
+
+  return Promise.resolve();
+};
+
+/**
+ * Render a empty vega figure
+ *
+ * @param params
+ */
+const renderEmptyVegaChart: RenderFigureFnc = (params) => {
+  const { doc, slot } = params;
+
+  const center = {
+    x: slot.x + slot.width / 2,
+    y: slot.y + slot.height / 2,
+  };
+
+  const icon = getIconAsset('file-hidden');
+
+  // Keep icon size between 32px and 128px
+  const iconSize = icon ? Math.min(Math.max(slot.height / 4, 32), 128) : 0;
+  // Keep text size between 12pt and 24pt
+  const textSize = Math.min(Math.max(slot.height / 25, 12), 24);
+
+  const cursor = {
+    x: center.x,
+    y: center.y - (iconSize + textSize) / 2,
+  };
+
+  if (icon) {
+    doc.pdf.addImage({
+      height: iconSize,
+      imageData: icon.data,
+      width: iconSize,
+      x: cursor.x - iconSize / 2,
+      y: cursor.y,
+    });
+
+    cursor.y += iconSize;
+  }
+
+  const text = t('report.figures.empty', doc.locale);
+
+  const fontSize = doc.pdf.getFontSize();
+  doc.pdf.setFontSize(textSize);
+
+  const { h: height, w: width } = doc.pdf.getTextDimensions(text, {
+    maxWidth: slot.width,
+  });
+
+  doc.pdf.text(text, cursor.x - width / 2, cursor.y + height, {
+    maxWidth: slot.width,
+  });
+
+  doc.pdf.setFontSize(fontSize);
+  return Promise.resolve();
 };
 
 /**
@@ -150,6 +209,11 @@ const renderVegaChart: RenderFigureFnc = async (params) => {
     slot.height -= 1.25 * height;
   }
 
+  // Render empty figure if no data
+  if (!params.data || params.data.length <= 0) {
+    return renderEmptyVegaChart(params);
+  }
+
   const spec = createVegaLSpec(figure.type as Mark, data, {
     // oxlint-disable-next-line no-explicit-any
     ...(figParams as { label: any; value: any }),
@@ -161,8 +225,8 @@ const renderVegaChart: RenderFigureFnc = async (params) => {
   });
 
   const view = await Promise.resolve(createVegaView(spec)).catch(
-    (err) =>
-      new RenderError(err.message, 'VegaError', {
+    (error) =>
+      new RenderError(error.message, 'VegaError', {
         vegaSpec: { ...spec, datasets: undefined },
       })
   );
@@ -173,7 +237,7 @@ const renderVegaChart: RenderFigureFnc = async (params) => {
 
   doc.pdf.addImage({
     ...slot,
-    // jsPDF only supports PNG, TIFF, JPG, WEBP & BMP meanwhile
+    // JsPDF only supports PNG, TIFF, JPG, WEBP & BMP meanwhile
     // Vega can only export to Canvas (with typings issues), SVG & PNG
     imageData: await view.toImageURL('png', 1.5),
   });
@@ -208,4 +272,5 @@ const renderFigure: RenderFigureFnc = (params) => {
   return render(params);
 };
 
+// oxlint-disable-next-line import/no-default-export
 export default renderFigure;

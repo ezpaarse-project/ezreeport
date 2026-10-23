@@ -22,7 +22,7 @@
             :text="$t('$ezreeport.new')"
             variant="tonal"
             color="green"
-            prepend-icon="mdi-plus"
+            :prepend-icon="mdiPlus"
             class="ml-2"
             @click="openForm()"
           />
@@ -32,7 +32,7 @@
             :loading="loading"
             variant="tonal"
             color="primary"
-            prepend-icon="mdi-refresh"
+            :prepend-icon="mdiRefresh"
             class="ml-2"
             @click="refresh"
           />
@@ -45,7 +45,7 @@
           >
             <v-btn
               :text="$t('$ezreeport.api-filters.button')"
-              prepend-icon="mdi-filter"
+              :prepend-icon="mdiFilter"
               variant="tonal"
               color="primary"
               class="ml-2"
@@ -56,7 +56,7 @@
           <v-text-field
             v-model="filters.query"
             :placeholder="$t('$ezreeport.search')"
-            append-inner-icon="mdi-magnify"
+            :append-inner-icon="mdiMagnify"
             variant="outlined"
             density="compact"
             width="200"
@@ -98,7 +98,9 @@
                       ? $t('$ezreeport.task.enabled')
                       : $t('$ezreeport.task.disabled')
                   "
-                  :disabled="!availableActions.state"
+                  :disabled="
+                    !availableActions.state || task.targets.length <= 0
+                  "
                   :loading="loading"
                   density="comfortable"
                   color="primary"
@@ -112,7 +114,7 @@
                 <v-menu>
                   <template #activator="{ props: menu }">
                     <v-btn
-                      icon="mdi-cog"
+                      :icon="mdiCog"
                       variant="plain"
                       density="comfortable"
                       v-bind="menu"
@@ -123,14 +125,14 @@
                     <v-list-item
                       :title="$t('$ezreeport.task.generate')"
                       :disabled="!availableActions.generate"
-                      prepend-icon="mdi-email-fast"
+                      :prepend-icon="mdiEmailFast"
                       @click="openGeneration(task)"
                     />
 
                     <v-list-item
                       :title="$t('$ezreeport.duplicate')"
                       :disabled="!availableActions.create"
-                      prepend-icon="mdi-content-copy"
+                      :prepend-icon="mdiContentCopy"
                       @click="openCopyForm(task)"
                     />
 
@@ -139,14 +141,14 @@
                     <v-list-item
                       :title="$t('$ezreeport.edit')"
                       :disabled="!availableActions.update"
-                      prepend-icon="mdi-pencil"
+                      :prepend-icon="mdiPencil"
                       @click="openForm(task)"
                     />
 
                     <v-list-item
                       :title="$t('$ezreeport.delete')"
                       :disabled="!availableActions.delete"
-                      prepend-icon="mdi-delete"
+                      :prepend-icon="mdiDelete"
                       @click="deleteItem(task)"
                     />
                   </v-list>
@@ -162,14 +164,14 @@
       <v-empty-state
         :title="$t('$ezreeport.task.noList')"
         :text="$t('$ezreeport.task.noList:desc')"
-        icon="mdi-email-off"
+        :icon="mdiEmailOff"
       >
         <template #actions>
           <v-btn
             v-if="availableActions.create"
             :text="$t('$ezreeport.new')"
             color="green"
-            append-icon="mdi-plus"
+            :append-icon="mdiPlus"
             @click="openForm()"
           />
         </template>
@@ -239,27 +241,39 @@
 
 <script setup lang="ts">
   import type { AdditionalDataForPreset, TaskPreset } from '~sdk/task-presets';
-  import type { TemplateTag } from '~sdk/templates';
+  import type { TemplateTag } from '~sdk/template-tags';
+  import {
+    mdiCog,
+    mdiContentCopy,
+    mdiDelete,
+    mdiEmailFast,
+    mdiEmailOff,
+    mdiFilter,
+    mdiMagnify,
+    mdiPencil,
+    mdiPlus,
+    mdiRefresh,
+  } from '@mdi/js';
   import { generateAndListenReportOfTask } from '~sdk/helpers/generations';
-  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
+  import { hasPermission, refreshPermissions } from '~sdk/helpers/permissions';
   import {
     RECURRENCES,
-    changeTaskEnableState,
-    createTaskHelper,
-    createTaskBodyHelper,
-    createTaskHelperFrom,
-    taskHelperToJSON,
     type TaskHelper,
+    changeTaskEnableState,
+    createTaskBodyHelper,
+    createTaskHelper,
+    createTaskHelperFrom,
     isRecurrence,
+    taskHelperToJSON,
   } from '~sdk/helpers/tasks';
   import {
+    type InputTask,
+    type Task,
+    createTask,
+    deleteTask,
     getAllTasks,
     getTask,
-    createTask,
     upsertTask,
-    deleteTask,
-    type Task,
-    type InputTask,
   } from '~sdk/tasks';
 
   // Components props
@@ -269,7 +283,6 @@
   }>();
 
   // Utils composable
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   const arePermissionsReady = shallowRef(false);
@@ -289,10 +302,10 @@
     filters,
     items: tasks,
   } = useServerSidePagination((params) => getAllTasks(params), {
-    sortBy: 'name',
+    filters: { namespaceId: props.namespaceId },
     include: ['extends.tags', 'extends.locale'],
     itemsPerPage: 0,
-    filters: { namespaceId: props.namespaceId },
+    sortBy: 'name',
   });
 
   const title = computed(
@@ -306,26 +319,26 @@
     }
     return {
       create: hasPermission(createTask),
-      update: hasPermission(upsertTask),
       delete: hasPermission(deleteTask),
-
       generate: hasPermission(generateAndListenReportOfTask),
       state: hasPermission(changeTaskEnableState),
+      update: hasPermission(upsertTask),
     };
   });
 
   const allTags = computed(() => [...tagMap.value.values()]);
 
   const filterCount = computed(
-    () => Object.entries(filters.value).filter(([, val]) => !!val).length - 1
+    () =>
+      Object.entries(filters.value).filter(([, val]) => Boolean(val)).length - 1
   );
 
   const filterTabs = computed(() => [
-    { value: 'all', text: t('$ezreeport.all') },
+    { text: t('$ezreeport.all'), value: 'all' },
     { separator: true },
     ...RECURRENCES.map((value) => ({
-      value,
       text: t(`$ezreeport.task.recurrenceList.${value}`),
+      value,
     })),
     { separator: true },
   ]);
@@ -341,8 +354,8 @@
       updatedTask.value = task && (await getTask(task, ['extends.locale']));
 
       isFormOpen.value = true;
-    } catch (err) {
-      handleEzrError(t('$ezreeport.task.errors.open'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.task.errors.open'), error);
     }
   }
 
@@ -354,13 +367,13 @@
       generatedTask.value = undefined;
       updatedTask.value = {
         ...base,
-        name: `${base.name} (copy)`,
         id: '',
+        name: `${base.name} (copy)`,
       };
 
       isFormOpen.value = true;
-    } catch (err) {
-      handleEzrError(t('$ezreeport.task.errors.open'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.task.errors.open'), error);
     }
   }
 
@@ -371,8 +384,8 @@
       updatedTask.value = undefined;
 
       isFormOpen.value = true;
-    } catch (err) {
-      handleEzrError(t('$ezreeport.task.errors.open'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.task.errors.open'), error);
     }
   }
 
@@ -396,8 +409,8 @@
         const { data, raw } = current.update;
 
         value = createTaskHelperFrom({
-          id: raw.id,
           createdAt: raw.createdAt,
+          id: raw.id,
           ...data,
         });
       } else if (current?.create) {
@@ -431,8 +444,8 @@
 
         isFormOpen.value = true;
       }, 250);
-    } catch (err) {
-      handleEzrError(t('$ezreeport.task.errors.open'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.task.errors.open'), error);
     }
   }
 
@@ -445,8 +458,8 @@
     try {
       await changeTaskEnableState(task, !task.enabled);
       refresh();
-    } catch (err) {
-      handleEzrError(t('$ezreeport.task.errors.edit'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.task.errors.edit'), error);
     }
   }
 
@@ -455,8 +468,8 @@
     try {
       await deleteTask(task);
       refresh();
-    } catch (err) {
-      handleEzrError(t('$ezreeport.task.errors.delete'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.task.errors.delete'), error);
     }
   }
 
@@ -475,11 +488,11 @@
           raw: result,
         },
       });
-    } catch (err) {
+    } catch (error) {
       const msg = task.id
         ? t('$ezreeport.task.errors.edit')
         : t('$ezreeport.task.errors.create');
-      handleEzrError(msg, err);
+      handleEzrError(msg, error);
     }
   }
 

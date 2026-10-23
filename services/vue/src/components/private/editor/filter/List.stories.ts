@@ -1,48 +1,50 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
 import type { TemplateFilterMap } from '~sdk/helpers/filters';
+
+import { useStory } from '~/__mocks__/utils';
 
 import EditorFilter from './List.vue';
 
 const meta: Meta<typeof EditorFilter> = {
-  title: 'Template Editor/Filters/List',
   component: EditorFilter,
+  title: 'Template Editor/Filters/List',
 };
 
-export default meta;
+const { defineStory } = useStory(meta);
 
-type Story = StoryObj<typeof EditorFilter>;
+export default meta;
 
 const mockFilters: TemplateFilterMap = new Map(
   [
     {
-      name: 'rtype is ARTICLE',
       field: 'rtype',
       isNot: false,
+      name: 'rtype is ARTICLE',
       value: 'ARTICLE',
     },
     {
-      name: 'mime is not DOC, etc.',
       field: 'mime',
       isNot: true,
+      name: 'mime is not DOC, etc.',
       value: ['DOC', 'MISC'],
     },
     {
-      name: 'mime exists',
       field: 'mime',
       isNot: true,
+      name: 'mime exists',
     },
     {
+      isNot: false,
       name: 'filter-1',
       raw: {
         query_string: {
           query: '-(host:XXX.XX.XXX.X AND sid:"istex-api-harvester")',
         },
       },
-      isNot: false,
     },
     {
-      name: 'OMEKA',
       field: 'ua',
+      name: 'OMEKA',
       value: [
         'Mozilla/5.0 (compatible; SemrushBot/7~bl; +http://www.semrush.com/bot.html)',
         'Mozilla/5.0 (compatible; BLEXBot/1.0; +http://webmeup-crawler.com/)',
@@ -103,42 +105,15 @@ const mockFilters: TemplateFilterMap = new Map(
   ].map((filter) => [filter.name, filter])
 );
 
-export const NewFilters: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFilter },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFilter v-bind="args" />',
-  }),
-  args: {
-    modelValue: new Map(),
-  },
-};
+export const NewFilters = defineStory({
+  modelValue: new Map(),
+});
 
-export const ExistingFilters: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFilter },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFilter v-bind="args" />',
-  }),
-  args: {
-    modelValue: mockFilters,
-  },
-};
+export const ExistingFilters = defineStory({
+  modelValue: mockFilters,
+});
 
-export const ReadonlyFilters: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFilter },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFilter v-bind="args" />',
-  }),
-  args: {
-    modelValue: mockFilters,
-    readonly: true,
-  },
-};
+export const ReadonlyFilters = defineStory({
+  modelValue: mockFilters,
+  readonly: true,
+});

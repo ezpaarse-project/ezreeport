@@ -9,8 +9,8 @@ import { User } from '~/models/users/types';
 
 import { authPlugin } from '~/plugins/auth';
 import {
-  describeErrors,
   buildSuccessResponse,
+  describeErrors,
   zSuccessResponse,
 } from '~/routes/v2/responses';
 
@@ -27,8 +27,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/me',
     schema: {
-      summary: 'Get current user info',
-      tags: ['auth'],
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -38,6 +36,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(User),
       },
+      summary: 'Get current user info',
+      tags: ['auth'],
     },
     config: {
       ezrAuth: {
@@ -57,8 +57,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/me/namespaces',
     schema: {
-      summary: 'Get current user namespaces',
-      tags: ['auth'],
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -70,6 +68,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           z.array(Namespace.omit({ fetchLogin: true, fetchOptions: true }))
         ),
       },
+      summary: 'Get current user namespaces',
+      tags: ['auth'],
     },
     config: {
       ezrAuth: {
@@ -95,8 +95,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/me/permissions',
     schema: {
-      summary: 'Get current user permissions per route',
-      tags: ['auth'],
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -117,6 +115,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           })
         ),
       },
+      summary: 'Get current user permissions per route',
+      tags: ['auth'],
     },
     config: {
       ezrAuth: {
@@ -140,7 +140,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         {
           general: Object.fromEntries(general),
           namespaces: Object.fromEntries(
-            Array.from(namespaces).map(([id, routes]) => [
+            [...namespaces].map(([id, routes]) => [
               id,
               Object.fromEntries(routes),
             ])
@@ -152,5 +152,5 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
   });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

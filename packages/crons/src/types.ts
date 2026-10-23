@@ -1,4 +1,4 @@
-import type { Logger } from '@ezreeport/logger';
+import type { Logger } from 'pino';
 
 export * from '@ezreeport/models/crons';
 

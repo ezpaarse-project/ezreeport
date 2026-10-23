@@ -2,9 +2,9 @@ import type { Task } from '~/modules/tasks';
 import type { TemplateFilter } from '~/modules/templates';
 
 import {
+  type TaskLayoutHelper,
   createTaskLayoutHelperFrom,
   taskLayoutHelperToJSON,
-  type TaskLayoutHelper,
 } from '../../templates/editor/layouts';
 
 export interface TaskBodyHelper {
@@ -22,11 +22,11 @@ export function createTaskBodyHelper(
   filters: TemplateFilter[] = []
 ): TaskBodyHelper {
   return {
-    version: 2,
     dateField,
-    inserts,
-    filters: new Map(filters?.map((filter) => [filter.name, filter]) ?? []),
+    filters: new Map(filters?.map((filter) => [filter.name, filter])),
     index,
+    inserts,
+    version: 2,
   };
 }
 
@@ -45,11 +45,11 @@ export function taskBodyHelperToJSON(
   template: TaskBodyHelper
 ): Task['template'] {
   return {
-    version: template.version,
+    dateField: template.dateField,
+    filters: [...template.filters.values()],
     index: template.index,
     inserts: template.inserts.map((lay) => taskLayoutHelperToJSON(lay)),
-    dateField: template.dateField,
-    filters: Array.from(template.filters.values()),
+    version: template.version,
   };
 }
 
@@ -79,7 +79,7 @@ export function updateLayoutOfHelper(
   newLayout: TaskLayoutHelper
 ): TaskBodyHelper {
   const index = body.inserts.findIndex((lay) => lay.id === oldLayout.id);
-  if (index < 0) {
+  if (index === -1) {
     throw new Error(`Layout "${oldLayout.id}" not found`);
   }
   const template = body;

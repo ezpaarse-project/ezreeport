@@ -2,26 +2,26 @@ import type { Writable } from 'node:stream';
 
 import { RPCServer, type RPCServerRouter } from '@ezreeport/rpc/server';
 import {
-  RPCStreamServer,
   type RPCStreamRouter,
+  RPCStreamServer,
 } from '@ezreeport/rpc/streams/server';
 
 import type rabbitmq from '~/lib/rabbitmq';
 import { appLogger } from '~/lib/logger';
 
-import { getAllCrons, stopCron, startCron, forceCron } from '~/models/crons';
+import { forceCron, getAllCrons, startCron, stopCron } from '~/models/crons';
 import {
-  getAllReports,
   createReadReportStream,
   createWriteReportStream,
+  getAllReports,
 } from '~/models/reports';
 
 const logger = appLogger.child({ scope: 'rpc.server' });
 
 const buckets: Record<string, RPCStreamRouter> = {
   reports: {
-    createWriteStream: createWriteReportStream,
     createReadStream: createReadReportStream,
+    createWriteStream: createWriteReportStream,
   },
 };
 
@@ -43,25 +43,6 @@ function acquireWriteLock(id: string, stream: Writable) {
 }
 
 const streamRouter: RPCStreamRouter = {
-  createWriteStream: async (
-    bucketName: string,
-    filename: string,
-    // oxlint-disable-next-line no-explicit-any
-    ...params: any[]
-  ) => {
-    const bucket = buckets[bucketName];
-    if (!bucket) {
-      throw new Error(`Bucket ${bucketName} not found`);
-    }
-    if (!bucket.createWriteStream) {
-      throw new Error('Method not found for bucket');
-    }
-
-    const stream = await bucket.createWriteStream(filename, ...params);
-    acquireWriteLock(`${bucket}:${filename}`, stream);
-
-    return stream;
-  },
   createReadStream: async (
     bucketName: string,
     filename: string,
@@ -83,6 +64,25 @@ const streamRouter: RPCStreamRouter = {
 
     return bucket.createReadStream(filename, ...params);
   },
+  createWriteStream: async (
+    bucketName: string,
+    filename: string,
+    // oxlint-disable-next-line no-explicit-any
+    ...params: any[]
+  ) => {
+    const bucket = buckets[bucketName];
+    if (!bucket) {
+      throw new Error(`Bucket ${bucketName} not found`);
+    }
+    if (!bucket.createWriteStream) {
+      throw new Error('Method not found for bucket');
+    }
+
+    const stream = await bucket.createWriteStream(filename, ...params);
+    acquireWriteLock(`${bucket}:${filename}`, stream);
+
+    return stream;
+  },
 };
 
 const filesRouter: RPCServerRouter = {
@@ -90,16 +90,20 @@ const filesRouter: RPCServerRouter = {
 };
 
 const cronRouter: RPCServerRouter = {
-  getAllCrons,
-  stopCron,
-  startCron,
   forceCron,
+  getAllCrons,
+  startCron,
+  stopCron,
 };
 
+// oxlint-disable-next-line no-underscore-dangle
 let _cronServer: RPCServer | undefined;
+// oxlint-disable-next-line no-underscore-dangle
 let _fileServer: RPCServer | undefined;
+// oxlint-disable-next-line no-underscore-dangle
 let _fileStreamServer: RPCStreamServer | undefined;
 
+// oxlint-disable-next-line import/no-default-export
 export default function initRPCServer(channel: rabbitmq.Channel): void {
   const start = process.uptime();
 

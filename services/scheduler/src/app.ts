@@ -5,7 +5,7 @@ import { useRabbitMQ } from '~/lib/rabbitmq';
 
 import { initCrons } from '~/models/crons';
 import { abortDanglingGenerations } from '~/models/generations';
-import { initHeartbeat, getMissingMandatoryServices } from '~/models/heartbeat';
+import { getMissingMandatoryServices, initHeartbeat } from '~/models/heartbeat';
 import initQueues from '~/models/queues';
 import initRPC from '~/models/rpc';
 
@@ -16,15 +16,15 @@ async function init(): Promise<void> {
   try {
     const { id } = await upsertDefaultTemplate();
     appLogger.info({
-      scope: 'init',
       defaultTemplateId: id,
       msg: 'Default template ready',
+      scope: 'init',
     });
   } catch (error) {
     appLogger.error({
-      scope: 'init',
       err: error,
       message: "Couldn't upsert default template",
+      scope: 'init',
     });
   }
 
@@ -32,26 +32,26 @@ async function init(): Promise<void> {
   try {
     const abortedCount = await abortDanglingGenerations();
     appLogger.info({
-      scope: 'init',
-      msg: 'Dangling generations aborted',
       abortedCount,
+      msg: 'Dangling generations aborted',
+      scope: 'init',
     });
   } catch (error) {
     appLogger.error({
-      scope: 'init',
       err: error,
       message: "Couldn't abort dangling generations",
+      scope: 'init',
     });
   }
 }
 
 async function start(): Promise<void> {
   appLogger.info({
-    scope: 'node',
     env: process.env.NODE_ENV,
-    logLevel: config.log.level,
     logDir: config.log.dir,
+    logLevel: config.log.level,
     msg: 'Service starting',
+    scope: 'node',
   });
   try {
     // Initialize health routes
@@ -81,14 +81,14 @@ async function start(): Promise<void> {
     });
 
     appLogger.info({
-      scope: 'init',
+      msg: 'Service ready',
       readyDuration: process.uptime(),
       readyDurationUnit: 's',
-      msg: 'Service ready',
+      scope: 'init',
     });
-  } catch (err) {
-    appLogger.error(err);
-    throw err instanceof Error ? err : new Error(`${err}`);
+  } catch (error) {
+    appLogger.error(error);
+    throw error instanceof Error ? error : new Error(`${error}`);
   }
 }
 

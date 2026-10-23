@@ -1,5 +1,35 @@
 # ezreeport-worker
 
+## 1.3.0-rc.4
+
+### Patch Changes
+
+- 2f7aaee: 🔧 removed `elasticsearch.requiredStatus` config (alias: `ELASTIC_REQUIRED_STATUS`, `ELASTICSEARCH_REQUIRED_STATUS`)
+
+## 1.3.0-rc.3
+
+### Patch Changes
+
+- e36aa7f: 🔧 dropped report.team / EMAIL_DEV_TEAM (please use mailer config)
+
+## 1.3.0-rc.2
+
+### Patch Changes
+
+- 04b3aa7: ♻️ reduced Docker image size by bundling files
+
+## 1.3.0-rc.1
+
+### Minor Changes
+
+- df4feed: ✨ can now render empty figures
+
+## 1.2.1-rc.0
+
+### Patch Changes
+
+- 7806cc2: ⬆️ upgraded dependencies
+
 ## 1.2.0
 
 ### Minor Changes

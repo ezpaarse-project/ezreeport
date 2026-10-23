@@ -19,8 +19,8 @@ import { getTemplate } from '~/models/templates';
 
 import { authPlugin, requireAllowedNamespace } from '~/plugins/auth';
 import {
-  describeErrors,
   buildSuccessResponse,
+  describeErrors,
   zSuccessResponse,
 } from '~/routes/v2/responses';
 
@@ -36,8 +36,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/',
     schema: {
-      summary: 'Get all generations',
-      tags: ['generations'],
       querystring: z.object({
         ...PaginationQuery.shape,
         ...GenerationQueryInclude.shape,
@@ -51,6 +49,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zPaginationResponse(Generation),
       },
+      summary: 'Get all generations',
+      tags: ['generations'],
     },
     config: {
       ezrAuth: {
@@ -63,18 +63,18 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       const { page, count, sort, order, include } = request.query;
 
       const content = await generations.getAllGenerations(include, {
-        page,
         count,
-        sort,
         order,
+        page,
+        sort,
       });
 
       return buildPaginatedResponse(
         content,
         {
+          count: content.length,
           page,
           total: await generations.countGenerations(),
-          count: content.length,
         },
         reply
       );
@@ -85,8 +85,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/:id',
     schema: {
-      summary: 'Get specific generation',
-      tags: ['generations'],
       params: SpecificGenerationParams,
       querystring: GenerationQueryInclude,
       response: {
@@ -99,11 +97,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(Generation),
       },
+      summary: 'Get specific generation',
+      tags: ['generations'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ,
+        requireUser: true,
       },
     },
     preHandler: [
@@ -127,8 +127,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'PUT',
     url: '/:id',
     schema: {
-      summary: 'Restart specific generation',
-      tags: ['generations'],
       params: SpecificGenerationParams,
       response: {
         ...describeErrors([
@@ -146,6 +144,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
             .describe('Info to get progress of generation')
         ),
       },
+      summary: 'Restart specific generation',
+      tags: ['generations'],
     },
     config: {
       ezrAuth: {
@@ -177,16 +177,16 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       }
 
       await queueGeneration({
-        id: generation.id,
-        task,
-        namespace,
-        template,
-        period: { start: generation.start, end: generation.end },
-        targets: generation.targets,
-        origin: request.user?.username ?? generation.origin,
-        writeActivity: generation.writeActivity,
-        printDebug: false,
         createdAt: generation.createdAt,
+        id: generation.id,
+        namespace,
+        origin: request.user?.username ?? generation.origin,
+        period: { end: generation.end, start: generation.start },
+        printDebug: false,
+        targets: generation.targets,
+        task,
+        template,
+        writeActivity: generation.writeActivity,
       });
 
       return buildSuccessResponse({ id: generation.id }, reply);
@@ -194,5 +194,5 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
   });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

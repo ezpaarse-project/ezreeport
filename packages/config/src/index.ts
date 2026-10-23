@@ -11,6 +11,12 @@ type MinimalLogger = {
   meta?: Record<string, unknown>;
 };
 
+const DEFAULT_LEVELS = {
+  debug: 20,
+  info: 30,
+  warn: 40,
+} as const;
+
 /**
  * Setup watcher for a config file
  *
@@ -28,8 +34,8 @@ async function setupConfigWatcher(
   const log = (msg: Record<string, unknown>): void =>
     logger.log(
       JSON.stringify({
-        pid: process.pid,
         hostname: host,
+        pid: process.pid,
         ...logger.meta,
         time: Date.now(),
         ...msg,
@@ -39,27 +45,27 @@ async function setupConfigWatcher(
   try {
     const watcher = watch(path, { persistent: false, signal });
     log({
-      level: logger.levels?.debug ?? 20,
+      level: logger.levels?.debug ?? DEFAULT_LEVELS.debug,
       msg: 'Watching config file',
       path,
     });
 
     for await (const event of watcher) {
       log({
-        level: logger.levels?.info ?? 30,
         event,
+        level: logger.levels?.info ?? DEFAULT_LEVELS.info,
         msg: 'Config changed, exiting...',
         path,
       });
       throw new Error('Config changed, exiting', { cause: ERR_CAUSE });
     }
-  } catch (err) {
-    if (err instanceof Error && err.cause === ERR_CAUSE) {
-      throw err;
+  } catch (error) {
+    if (error instanceof Error && error.cause === ERR_CAUSE) {
+      throw error;
     }
     log({
-      level: logger.levels?.warn ?? 40,
-      err,
+      err: error,
+      level: logger.levels?.warn ?? DEFAULT_LEVELS.warn,
       msg: 'Failed to watch config file',
       path,
     });
@@ -80,12 +86,12 @@ function watchConfigSources(logger: MinimalLogger): void {
       abort();
       logger.log(
         JSON.stringify({
-          pid: process.pid,
           hostname: hostname(),
+          pid: process.pid,
           ...logger.meta,
-          time: Date.now(),
-          level: logger.levels?.debug ?? 20,
+          level: logger.levels?.debug ?? DEFAULT_LEVELS.debug,
           msg: 'Aborting config watcher',
+          time: Date.now(),
         })
       );
     });
@@ -107,6 +113,7 @@ type Options = {
 /**
  * Setup config by making it type ready
  *
+ * @param opts Options to setup config
  * @param opts.watch If provided, watch the config file and exit process on change
  *
  * @returns The parsed and typed config

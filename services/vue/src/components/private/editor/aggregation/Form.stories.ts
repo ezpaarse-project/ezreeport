@@ -1,402 +1,58 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import type { FigureAggregation } from '~sdk/helpers/aggregations';
+import type { Meta } from '@storybook/vue3-vite';
 
+import { useStory } from '~/__mocks__/utils';
+
+import {
+  mockBucketData,
+  mockFiltersData,
+  mockMetricData,
+  mockRawData,
+} from './Form.example';
 import EditorAggregationForm from './Form.vue';
 
 const meta: Meta<typeof EditorAggregationForm> = {
-  title: 'Template Editor/Aggregations/Form',
   component: EditorAggregationForm,
+  title: 'Template Editor/Aggregations/Form',
 };
+
+const { defineStory } = useStory(meta);
 
 export default meta;
 
-type Story = StoryObj<typeof EditorAggregationForm>;
+export const NewMetric = defineStory({
+  type: 'metric',
+});
 
-const mockMetricData: FigureAggregation = {
-  type: 'sum',
-  field: 'Count',
-};
+export const ExistingMetric = defineStory({
+  modelValue: mockMetricData,
+  type: 'metric',
+});
 
-const mockBucketData: FigureAggregation = {
-  type: 'date_histogram',
-  field: 'datetime',
-};
+export const NewBucket = defineStory({
+  type: 'bucket',
+});
 
-const mockRawData: FigureAggregation = {
-  raw: {
-    filters: {
-      filters: {
-        Doctorat: {
-          bool: {
-            must: [],
-            filter: [
-              {
-                bool: {
-                  should: [
-                    {
-                      bool: {
-                        should: [
-                          {
-                            match_phrase: {
-                              'u-niveau': 'Bac-6-B6-',
-                            },
-                          },
-                        ],
-                        minimum_should_match: 1,
-                      },
-                    },
-                  ],
-                  minimum_should_match: 1,
-                },
-              },
-            ],
-            should: [],
-            must_not: [],
-          },
-        },
-        Personnels: {
-          bool: {
-            must: [],
-            filter: [
-              {
-                bool: {
-                  should: [
-                    {
-                      bool: {
-                        filter: [
-                          {
-                            bool: {
-                              should: [
-                                {
-                                  match_phrase: {
-                                    'u-groupe': 'Personnels',
-                                  },
-                                },
-                              ],
-                              minimum_should_match: 1,
-                            },
-                          },
-                          {
-                            bool: {
-                              should: [
-                                {
-                                  match_phrase: {
-                                    'u-niveau': 'empty',
-                                  },
-                                },
-                              ],
-                              minimum_should_match: 1,
-                            },
-                          },
-                        ],
-                      },
-                    },
-                    {
-                      bool: {
-                        filter: [
-                          {
-                            bool: {
-                              should: [
-                                {
-                                  match_phrase: {
-                                    'u-groupe': 'Professeurs',
-                                  },
-                                },
-                              ],
-                              minimum_should_match: 1,
-                            },
-                          },
-                          {
-                            bool: {
-                              should: [
-                                {
-                                  match_phrase: {
-                                    'u-niveau': 'empty',
-                                  },
-                                },
-                              ],
-                              minimum_should_match: 1,
-                            },
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                  minimum_should_match: 1,
-                },
-              },
-            ],
-            should: [],
-            must_not: [],
-          },
-        },
-        'Non renseigné': {
-          bool: {
-            must: [],
-            filter: [
-              {
-                bool: {
-                  filter: [
-                    {
-                      bool: {
-                        should: [
-                          {
-                            match_phrase: {
-                              'u-niveau': 'unknownuser',
-                            },
-                          },
-                        ],
-                        minimum_should_match: 1,
-                      },
-                    },
-                    {
-                      bool: {
-                        should: [
-                          {
-                            match_phrase: {
-                              'u-groupe': 'unknownuser',
-                            },
-                          },
-                        ],
-                        minimum_should_match: 1,
-                      },
-                    },
-                  ],
-                },
-              },
-            ],
-            should: [],
-            must_not: [],
-          },
-        },
-        'Autres lecteurs': {
-          bool: {
-            must: [],
-            filter: [
-              {
-                bool: {
-                  should: [
-                    {
-                      bool: {
-                        filter: [
-                          {
-                            bool: {
-                              should: [
-                                {
-                                  match_phrase: {
-                                    'u-niveau': 'empty',
-                                  },
-                                },
-                              ],
-                              minimum_should_match: 1,
-                            },
-                          },
-                          {
-                            bool: {
-                              should: [
-                                {
-                                  match_phrase: {
-                                    'u-groupe': 'Formation-continue',
-                                  },
-                                },
-                              ],
-                              minimum_should_match: 1,
-                            },
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                  minimum_should_match: 1,
-                },
-              },
-            ],
-            should: [],
-            must_not: [],
-          },
-        },
-        'Autres indications de niveau': {
-          bool: {
-            must: [],
-            filter: [
-              {
-                bool: {
-                  should: [
-                    {
-                      bool: {
-                        should: [
-                          {
-                            match_phrase: {
-                              'u-niveau': 'Avant-Bac-B0-',
-                            },
-                          },
-                        ],
-                        minimum_should_match: 1,
-                      },
-                    },
-                    {
-                      bool: {
-                        should: [
-                          {
-                            match_phrase: {
-                              'u-niveau': 'Bac-1-B1-Bac-2-B2-',
-                            },
-                          },
-                        ],
-                        minimum_should_match: 1,
-                      },
-                    },
-                  ],
-                  minimum_should_match: 1,
-                },
-              },
-            ],
-            should: [],
-            must_not: [],
-          },
-        },
-      },
-    },
-  },
-};
+export const ExistingBucket = defineStory({
+  modelValue: mockBucketData,
+  type: 'bucket',
+});
 
-const mockFiltersData: FigureAggregation = {
-  type: 'filters',
-  values: [
-    {
-      label: 'Doctorat',
-      filters: [
-        {
-          name: 'u-niveau is B6',
-          field: 'u-niveau',
-          value: 'Bac-6-B6-',
-        },
-      ],
-    },
-    {
-      label: 'Personnels',
-      filters: [
-        {
-          name: 'u-group is Personnels',
-          field: 'u-group',
-          value: 'Personnels',
-        },
-        {
-          name: 'u-niveau is empty',
-          field: 'u-niveau',
-          value: 'empty',
-        },
-      ],
-    },
-  ],
-};
+export const ExistingRaw = defineStory({
+  modelValue: mockRawData,
+});
 
-export const NewMetric: Story = {
-  render: (args: unknown) => ({
-    components: { EditorAggregationForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorAggregationForm v-bind="args" />',
-  }),
-  args: {
-    type: 'metric',
-  },
-};
+export const ExistingFilters = defineStory({
+  modelValue: mockFiltersData,
+});
 
-export const ExistingMetric: Story = {
-  render: (args: unknown) => ({
-    components: { EditorAggregationForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorAggregationForm v-bind="args" />',
-  }),
-  args: {
-    modelValue: mockMetricData,
-    type: 'metric',
-  },
-};
+export const Readonly = defineStory({
+  modelValue: mockBucketData,
+  readonly: true,
+  type: 'bucket',
+});
 
-export const NewBucket: Story = {
-  render: (args: unknown) => ({
-    components: { EditorAggregationForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorAggregationForm v-bind="args" />',
-  }),
-  args: {
-    type: 'bucket',
-  },
-};
-
-export const ExistingBucket: Story = {
-  render: (args: unknown) => ({
-    components: { EditorAggregationForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorAggregationForm v-bind="args" />',
-  }),
-  args: {
-    modelValue: mockBucketData,
-    type: 'bucket',
-  },
-};
-
-export const ExistingRaw: Story = {
-  render: (args: unknown) => ({
-    components: { EditorAggregationForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorAggregationForm v-bind="args" />',
-  }),
-  args: {
-    modelValue: mockRawData,
-  },
-};
-
-export const ExistingFilters: Story = {
-  render: (args: unknown) => ({
-    components: { EditorAggregationForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorAggregationForm v-bind="args" />',
-  }),
-  args: {
-    modelValue: mockFiltersData,
-  },
-};
-
-export const Readonly: Story = {
-  render: (args: unknown) => ({
-    components: { EditorAggregationForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorAggregationForm v-bind="args" />',
-  }),
-  args: {
-    modelValue: mockBucketData,
-    readonly: true,
-    type: 'bucket',
-  },
-};
-
-export const Disabled: Story = {
-  render: (args: unknown) => ({
-    components: { EditorAggregationForm },
-    setup() {
-      return { args };
-    },
-    template: '<EditorAggregationForm v-bind="args" />',
-  }),
-  args: {
-    modelValue: mockBucketData,
-    disabled: true,
-    type: 'bucket',
-  },
-};
+export const Disabled = defineStory({
+  disabled: true,
+  modelValue: mockBucketData,
+  type: 'bucket',
+});

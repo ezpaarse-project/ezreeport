@@ -5,8 +5,19 @@
   "plugins": ["node"],
 
   "rules": {
-    "promise/avoid-new": "warn", // Maybe error ?
-    "promise/prefer-await-to-callbacks": "warn", // Maybe error ?
-    "typescript/no-inferrable-types": "warn" // Maybe error ?
+    // Project is using Node
+    "no-nodejs-modules": "off",
+    // Project is using ESM
+    "import/extensions": ["error", "never"],
+    "import/no-commonjs": "error",
+    "import/unambiguous": "error",
+    "unicorn/prefer-module": "error",
+    "typescript/no-require-imports": "error",
+    "typescript/no-var-requires": "error",
+    // Project is using oxfmt sort feature
+    "sort-imports": [
+      "warn",
+      { "ignoreDeclarationSort": true, "allowSeparatedGroups": true }
+    ]
   }
 }

@@ -1,589 +1,564 @@
 // oxlint-disable no-default-export
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
 import {
   createTemplateHelper,
   createTemplateHelperFrom,
 } from '~sdk/helpers/templates';
 
+import { useStory } from '~/__mocks__/utils';
+
 import TemplateForm from './Form.vue';
 
 const meta: Meta<typeof TemplateForm> = {
-  title: 'Template/Form',
   component: TemplateForm,
+  title: 'Template/Form',
 };
+
+const { defineStory } = useStory(meta);
 
 export default meta;
 
-type Story = StoryObj<typeof TemplateForm>;
+export const Empty = defineStory({
+  modelValue: createTemplateHelper(),
+});
 
-export const Empty: Story = {
-  render: (args: unknown) => ({
-    components: { TemplateForm },
-    setup() {
-      return { args };
-    },
-    template: '<TemplateForm v-bind="args" />',
-  }),
-  args: {
-    modelValue: createTemplateHelper(),
-  },
-};
-
-export const ClickAndRead: Story = {
-  render: (args: unknown) => ({
-    components: { TemplateForm },
-    setup() {
-      return { args };
-    },
-    template: '<TemplateForm v-bind="args" />',
-  }),
-  args: {
-    modelValue: createTemplateHelperFrom({
-      id: '10aa85df-ff20-48c8-b07d-0382c9cd3b12',
-      name: 'Click&Read : Suivis multi [ezupw+istex+panist]',
-      locale: 'fr',
-      tags: [
-        { id: '0', name: 'ezPAARSE' },
-        { id: '1', name: 'ezUnpaywall', color: '#00B94C' },
-        { id: '2', name: 'Istex', color: '#BED031' },
-        { id: '3', name: 'Panist', color: '#005F9F' },
+export const ClickAndRead = defineStory({
+  modelValue: createTemplateHelperFrom({
+    body: {
+      dateField: 'datetime',
+      filters: [
+        {
+          field: 'sid',
+          isNot: false,
+          name: 'sid is clickandread',
+          value: 'clickandread',
+        },
       ],
-      body: {
-        version: 2,
-        index: 'ezunpw*,istex*,panist*',
-        dateField: 'datetime',
-        filters: [
-          {
-            name: 'sid is clickandread',
-            field: 'sid',
-            isNot: false,
-            value: 'clickandread',
-          },
-        ],
-        layouts: [
-          {
-            figures: [
-              {
-                type: 'arc',
-                slots: [0, 1, 2, 3],
-                params: {
-                  label: {
-                    legend: null,
-                    aggregation: { type: 'terms', field: 'ua' },
-                  },
-                  title: 'ezunpw : diag circulaire - navigateur',
-                  value: {},
-                  dataLabel: { format: 'percent', showLabel: true },
+      index: 'ezunpw*,istex*,panist*',
+      layouts: [
+        {
+          figures: [
+            {
+              filters: [
+                {
+                  field: '_index',
+                  isNot: false,
+                  name: '_index is ezunpw*',
+                  value: 'ezunpw*',
                 },
-                filters: [
+              ],
+              params: {
+                dataLabel: { format: 'percent', showLabel: true },
+                label: {
+                  aggregation: { field: 'ua', type: 'terms' },
+                  legend: null,
+                },
+                title: 'ezunpw : diag circulaire - navigateur',
+                value: {},
+              },
+              slots: [0, 1, 2, 3],
+              type: 'arc',
+            },
+          ],
+        },
+        {
+          figures: [
+            {
+              filters: [
+                {
+                  field: '_index',
+                  isNot: false,
+                  name: '_index is ezunpw*',
+                  value: 'ezunpw*',
+                },
+              ],
+              params: {
+                labels: [
+                  { format: { type: 'number' }, text: 'Requêtes' },
                   {
-                    name: '_index is ezunpw*',
-                    field: '_index',
-                    isNot: false,
-                    value: 'ezunpw*',
+                    aggregation: { field: 'sid', type: 'cardinality' },
+                    text: 'ApiKey',
+                  },
+                  {
+                    aggregation: { field: 'date', type: 'min' },
+                    format: { type: 'date' },
+                    text: 'De',
+                  },
+                  {
+                    aggregation: { field: 'date', type: 'max' },
+                    format: { type: 'date' },
+                    text: 'à',
+                  },
+                  {
+                    aggregation: { field: 'host', type: 'cardinality' },
+                    format: { type: 'number' },
+                    text: 'Hôtes uniques',
+                  },
+                  {
+                    aggregation: { field: 'doi_count', type: 'sum' },
+                    format: { type: 'number' },
+                    text: 'DOI recherchés',
                   },
                 ],
               },
-            ],
-          },
-          {
-            figures: [
-              {
-                type: 'metric',
-                slots: [0, 1],
-                params: {
-                  labels: [
-                    { text: 'Requêtes', format: { type: 'number' } },
-                    {
-                      text: 'ApiKey',
-                      aggregation: { type: 'cardinality', field: 'sid' },
-                    },
-                    {
-                      text: 'De',
-                      format: { type: 'date' },
-                      aggregation: { type: 'min', field: 'date' },
-                    },
-                    {
-                      text: 'à',
-                      format: { type: 'date' },
-                      aggregation: { type: 'max', field: 'date' },
-                    },
-                    {
-                      text: 'Hôtes uniques',
-                      format: { type: 'number' },
-                      aggregation: { type: 'cardinality', field: 'host' },
-                    },
-                    {
-                      text: 'DOI recherchés',
-                      format: { type: 'number' },
-                      aggregation: { type: 'sum', field: 'doi_count' },
-                    },
-                  ],
+              slots: [0, 1],
+              type: 'metric',
+            },
+            {
+              filters: [
+                {
+                  field: '_index',
+                  isNot: false,
+                  name: '_index is ezunpw*',
+                  value: 'ezunpw*',
                 },
-                filters: [
+              ],
+              params: {
+                dataLabel: { format: 'numeric', showLabel: false },
+                invertAxis: false,
+                label: {
+                  aggregation: {
+                    field: '{{ dateField }}',
+                    type: 'date_histogram',
+                  },
+                  title: 'datetime',
+                },
+                title: 'ezunpw : histo jour requêtes',
+                value: { title: 'Count' },
+              },
+              slots: [2, 3],
+              type: 'bar',
+            },
+          ],
+        },
+        {
+          figures: [
+            {
+              filters: [
+                {
+                  field: '_index',
+                  isNot: false,
+                  name: '_index is istex*',
+                  value: 'istex*',
+                },
+              ],
+              params: {
+                labels: [
+                  { format: { type: 'number' }, text: 'Requêtes' },
                   {
-                    name: '_index is ezunpw*',
-                    field: '_index',
-                    isNot: false,
-                    value: 'ezunpw*',
+                    aggregation: { field: 'sid', type: 'cardinality' },
+                    text: 'sid',
+                  },
+                  {
+                    aggregation: { field: 'date', type: 'min' },
+                    format: { type: 'date' },
+                    text: 'De',
+                  },
+                  {
+                    aggregation: { field: 'date', type: 'max' },
+                    format: { type: 'date' },
+                    text: 'à',
+                  },
+                  {
+                    aggregation: { field: 'host', type: 'cardinality' },
+                    format: { type: 'number' },
+                    text: 'Hôtes uniques',
                   },
                 ],
               },
-              {
-                type: 'bar',
-                slots: [2, 3],
-                params: {
-                  label: {
-                    title: 'datetime',
-                    aggregation: {
-                      type: 'date_histogram',
-                      field: '{{ dateField }}',
-                    },
-                  },
-                  title: 'ezunpw : histo jour requêtes',
-                  value: { title: 'Count' },
-                  dataLabel: { format: 'numeric', showLabel: false },
-                  invertAxis: false,
+              slots: [0, 1],
+              type: 'metric',
+            },
+            {
+              filters: [
+                {
+                  field: '_index',
+                  isNot: false,
+                  name: '_index is istex*',
+                  value: 'istex*',
                 },
-                filters: [
+              ],
+              params: {
+                dataLabel: { format: 'numeric', showLabel: false },
+                invertAxis: false,
+                label: {
+                  aggregation: {
+                    field: '{{ dateField }}',
+                    type: 'date_histogram',
+                  },
+                  title: 'datetime',
+                },
+                title: 'istex : histo jour requêtes',
+                value: { title: 'Count' },
+              },
+              slots: [2, 3],
+              type: 'bar',
+            },
+          ],
+        },
+        {
+          figures: [
+            {
+              filters: [
+                {
+                  field: '_index',
+                  isNot: false,
+                  name: '_index is panist*',
+                  value: 'panist*',
+                },
+              ],
+              params: {
+                labels: [
+                  { format: { type: 'number' }, text: 'Requêtes' },
                   {
-                    name: '_index is ezunpw*',
-                    field: '_index',
-                    isNot: false,
-                    value: 'ezunpw*',
+                    aggregation: { field: 'sid', type: 'cardinality' },
+                    text: 'sid',
+                  },
+                  {
+                    aggregation: { field: 'date', type: 'min' },
+                    format: { type: 'date' },
+                    text: 'De',
+                  },
+                  {
+                    aggregation: { field: 'date', type: 'max' },
+                    format: { type: 'date' },
+                    text: 'à',
+                  },
+                  {
+                    aggregation: { field: 'host', type: 'cardinality' },
+                    format: { type: 'number' },
+                    text: 'Hôtes uniques',
                   },
                 ],
               },
-            ],
-          },
-          {
-            figures: [
-              {
-                type: 'metric',
-                slots: [0, 1],
-                params: {
-                  labels: [
-                    { text: 'Requêtes', format: { type: 'number' } },
-                    {
-                      text: 'sid',
-                      aggregation: { type: 'cardinality', field: 'sid' },
-                    },
-                    {
-                      text: 'De',
-                      format: { type: 'date' },
-                      aggregation: { type: 'min', field: 'date' },
-                    },
-                    {
-                      text: 'à',
-                      format: { type: 'date' },
-                      aggregation: { type: 'max', field: 'date' },
-                    },
-                    {
-                      text: 'Hôtes uniques',
-                      format: { type: 'number' },
-                      aggregation: { type: 'cardinality', field: 'host' },
-                    },
-                  ],
+              slots: [0, 1],
+              type: 'metric',
+            },
+            {
+              filters: [
+                {
+                  field: '_index',
+                  isNot: false,
+                  name: '_index is panist*',
+                  value: 'panist*',
                 },
-                filters: [
-                  {
-                    name: '_index is istex*',
-                    field: '_index',
-                    isNot: false,
-                    value: 'istex*',
+              ],
+              params: {
+                dataLabel: { format: 'numeric', showLabel: false },
+                invertAxis: false,
+                label: {
+                  aggregation: {
+                    field: '{{ dateField }}',
+                    type: 'date_histogram',
                   },
-                ],
-              },
-              {
-                type: 'bar',
-                slots: [2, 3],
-                params: {
-                  label: {
-                    title: 'datetime',
-                    aggregation: {
-                      type: 'date_histogram',
-                      field: '{{ dateField }}',
-                    },
-                  },
-                  title: 'istex : histo jour requêtes',
-                  value: { title: 'Count' },
-                  dataLabel: { format: 'numeric', showLabel: false },
-                  invertAxis: false,
+                  title: 'datetime',
                 },
-                filters: [
-                  {
-                    name: '_index is istex*',
-                    field: '_index',
-                    isNot: false,
-                    value: 'istex*',
-                  },
-                ],
+                title: 'panist : histo jour requêtes',
+                value: { title: 'Count' },
               },
-            ],
-          },
-          {
-            figures: [
-              {
-                type: 'metric',
-                slots: [0, 1],
-                params: {
-                  labels: [
-                    { text: 'Requêtes', format: { type: 'number' } },
-                    {
-                      text: 'sid',
-                      aggregation: { type: 'cardinality', field: 'sid' },
-                    },
-                    {
-                      text: 'De',
-                      format: { type: 'date' },
-                      aggregation: { type: 'min', field: 'date' },
-                    },
-                    {
-                      text: 'à',
-                      format: { type: 'date' },
-                      aggregation: { type: 'max', field: 'date' },
-                    },
-                    {
-                      text: 'Hôtes uniques',
-                      format: { type: 'number' },
-                      aggregation: { type: 'cardinality', field: 'host' },
-                    },
-                  ],
-                },
-                filters: [
-                  {
-                    name: '_index is panist*',
-                    field: '_index',
-                    isNot: false,
-                    value: 'panist*',
-                  },
-                ],
-              },
-              {
-                type: 'bar',
-                slots: [2, 3],
-                params: {
-                  label: {
-                    title: 'datetime',
-                    aggregation: {
-                      type: 'date_histogram',
-                      field: '{{ dateField }}',
-                    },
-                  },
-                  title: 'panist : histo jour requêtes',
-                  value: { title: 'Count' },
-                  dataLabel: { format: 'numeric', showLabel: false },
-                  invertAxis: false,
-                },
-                filters: [
-                  {
-                    name: '_index is panist*',
-                    field: '_index',
-                    isNot: false,
-                    value: 'panist*',
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      createdAt: new Date('2024-10-18T07:40:59.688Z'),
-      updatedAt: new Date('2024-10-24T12:31:40.172Z'),
-    }),
-  },
-};
-
-export const Doranum: Story = {
-  render: (args: unknown) => ({
-    components: { TemplateForm },
-    setup() {
-      return { args };
+              slots: [2, 3],
+              type: 'bar',
+            },
+          ],
+        },
+      ],
+      version: 2,
     },
-    template: '<TemplateForm v-bind="args" />',
+    createdAt: new Date('2024-10-18T07:40:59.688Z'),
+    id: '10aa85df-ff20-48c8-b07d-0382c9cd3b12',
+    locale: 'fr',
+    name: 'Click&Read : Suivis multi [ezupw+istex+panist]',
+    tags: [
+      { id: '0', name: 'ezPAARSE' },
+      { color: '#00B94C', id: '1', name: 'ezUnpaywall' },
+      { color: '#BED031', id: '2', name: 'Istex' },
+      { color: '#005F9F', id: '3', name: 'Panist' },
+    ],
+    updatedAt: new Date('2024-10-24T12:31:40.172Z'),
   }),
-  args: {
-    modelValue: createTemplateHelperFrom({
-      id: '91bf7d4e-83e8-4e1b-be69-6fb0dbe6eee9',
-      name: 'DORANUM',
-      locale: 'fr',
-      tags: [{ id: '0', name: 'ezPAARSE' }],
-      body: {
-        version: 2,
-        index: 'cnrs-doranum*',
-        dateField: 'datetime',
-        filters: [
-          {
-            name: 'ua is not SemrushBot, UptimeRobot, etc.',
-            field: 'ua',
-            isNot: true,
-            value: [
-              'SemrushBot',
-              'UptimeRobot',
-              'MJ12bot',
-              'Neticle Crawler',
-              'Googlebot',
-              'Other',
-              'DotBot',
-              'bingbot',
-              'PetalBot',
-              'AhrefsBot',
-              'BLEXBot',
-              'none',
-              'Applebot',
-              'Qwantify',
-              'Xenu Link Sleuth',
-              'Adsbot',
-              'DataForSeoBot',
-              'YandexBot',
-              'crawler',
-              'TwitterBot',
-              'robot',
-              'SemanticScholarBot',
-              'CCBot',
-              'Apple Mail',
-              'Java',
-              'WordPress',
-              'Riddler',
-              'AcademicBotRTU',
-              'Python Requests',
-              'Outlook',
-              'GmailImageProxy',
-              'Apache-HttpClient',
-              'Thunderbird',
-              'DuckDuckGo-Favicons-Bot',
-              'Bytespider',
-              'AwarioBot',
-              'serpstatbot',
-              'thesis-research-bot',
-              'fidget-spinner-bot',
-              'ClaudeBot',
-              'PhxBot',
-              'Amazonbot',
-              'Timpibot',
-              'FacebookBot',
-              'ImagesiftBot',
-              'fr_bot',
-              'HeadlessChrome',
-              'Nutch',
-              'claudebot',
-              'Mail.RU_Bot',
-              'GPTBot',
-              'FriendlyCrawler',
-              'Server Crawler',
-              'BacklinksExtendedBot',
-              'Sidetrade indexer bot',
-            ],
-          },
-        ],
-        layouts: [
-          {
-            figures: [
-              {
-                data: '![ezMESURE](https://raw.githubusercontent.com/ezpaarse-project/ezpaarse-project.github.io/master/ezmesure/static/images/logo-ezMESURE-350.png)\n![DORANUM](https://ezmesure.couperin.org/api/assets/logos/baf802b8761cc9afb4a9682050ef8817.png)\n\n## Tableau de bord ezPAARSE - ezMESURE\nTableau de bord des usages de la plateforme DoRANum\n\nDoRANum est une plateforme de formation en ligne sur la gestion et le partage des données de la recherche, pour que chercheurs et doctorants puissent se former où ils veulent, quand vous veulent, et selon leurs besoins. L’offre se décline autour de nombreuses ressources pédagogiques numériques réparties dans 9 thématiques générales et plusieurs disciplines.\n\nhttps://doranum.fr/',
-                type: 'md',
-                slots: [0, 1, 2, 3],
-                params: {},
-                filters: [],
-              },
-            ],
-          },
-          {
-            figures: [
-              {
-                type: 'metric',
-                slots: [0, 1],
-                params: {
-                  labels: [
-                    { text: 'Total des accès', format: { type: 'number' } },
-                    {
-                      text: 'Plateformes',
-                      aggregation: { type: 'cardinality', field: 'platform' },
-                    },
-                    {
-                      text: 'Ressources en ligne',
-                      aggregation: {
-                        type: 'cardinality',
-                        field: 'publication_title',
-                      },
-                    },
-                    {
-                      text: 'Période du',
-                      format: { type: 'date' },
-                      aggregation: { type: 'min', field: 'datetime' },
-                    },
-                    {
-                      text: 'au',
-                      format: { type: 'date' },
-                      aggregation: { type: 'max', field: 'datetime' },
-                    },
-                  ],
-                },
-                filters: [],
-              },
-              {
-                type: 'bar',
-                slots: [2, 3],
-                params: {
-                  label: {
-                    aggregation: { type: 'date_histogram', field: 'datetime' },
+});
+
+export const Doranum = defineStory({
+  modelValue: createTemplateHelperFrom({
+    body: {
+      dateField: 'datetime',
+      filters: [
+        {
+          field: 'ua',
+          isNot: true,
+          name: 'ua is not SemrushBot, UptimeRobot, etc.',
+          value: [
+            'SemrushBot',
+            'UptimeRobot',
+            'MJ12bot',
+            'Neticle Crawler',
+            'Googlebot',
+            'Other',
+            'DotBot',
+            'bingbot',
+            'PetalBot',
+            'AhrefsBot',
+            'BLEXBot',
+            'none',
+            'Applebot',
+            'Qwantify',
+            'Xenu Link Sleuth',
+            'Adsbot',
+            'DataForSeoBot',
+            'YandexBot',
+            'crawler',
+            'TwitterBot',
+            'robot',
+            'SemanticScholarBot',
+            'CCBot',
+            'Apple Mail',
+            'Java',
+            'WordPress',
+            'Riddler',
+            'AcademicBotRTU',
+            'Python Requests',
+            'Outlook',
+            'GmailImageProxy',
+            'Apache-HttpClient',
+            'Thunderbird',
+            'DuckDuckGo-Favicons-Bot',
+            'Bytespider',
+            'AwarioBot',
+            'serpstatbot',
+            'thesis-research-bot',
+            'fidget-spinner-bot',
+            'ClaudeBot',
+            'PhxBot',
+            'Amazonbot',
+            'Timpibot',
+            'FacebookBot',
+            'ImagesiftBot',
+            'fr_bot',
+            'HeadlessChrome',
+            'Nutch',
+            'claudebot',
+            'Mail.RU_Bot',
+            'GPTBot',
+            'FriendlyCrawler',
+            'Server Crawler',
+            'BacklinksExtendedBot',
+            'Sidetrade indexer bot',
+          ],
+        },
+      ],
+      index: 'cnrs-doranum*',
+      layouts: [
+        {
+          figures: [
+            {
+              data: '![ezMESURE](https://raw.githubusercontent.com/ezpaarse-project/ezpaarse-project.github.io/master/ezmesure/static/images/logo-ezMESURE-350.png)\n![DORANUM](https://ezmesure.couperin.org/api/assets/logos/baf802b8761cc9afb4a9682050ef8817.png)\n\n## Tableau de bord ezPAARSE - ezMESURE\nTableau de bord des usages de la plateforme DoRANum\n\nDoRANum est une plateforme de formation en ligne sur la gestion et le partage des données de la recherche, pour que chercheurs et doctorants puissent se former où ils veulent, quand vous veulent, et selon leurs besoins. L’offre se décline autour de nombreuses ressources pédagogiques numériques réparties dans 9 thématiques générales et plusieurs disciplines.\n\nhttps://doranum.fr/',
+              filters: [],
+              params: {},
+              slots: [0, 1, 2, 3],
+              type: 'md',
+            },
+          ],
+        },
+        {
+          figures: [
+            {
+              filters: [],
+              params: {
+                labels: [
+                  { format: { type: 'number' }, text: 'Total des accès' },
+                  {
+                    aggregation: { field: 'platform', type: 'cardinality' },
+                    text: 'Plateformes',
                   },
-                  title: 'Histogramme',
-                  value: { title: 'Count' },
-                  dataLabel: { format: 'numeric' },
-                },
-                filters: [],
-              },
-            ],
-          },
-          {
-            figures: [
-              {
-                type: 'arc',
-                slots: [0],
-                params: {
-                  label: {
-                    title: 'rtype',
-                    aggregation: { type: 'terms', field: 'rtype', size: 3 },
+                  {
+                    aggregation: {
+                      field: 'publication_title',
+                      type: 'cardinality',
+                    },
+                    text: 'Ressources en ligne',
                   },
-                  title: 'Type de consultation',
-                  value: {},
-                  dataLabel: { format: 'percent', showLabel: true },
-                },
-                filters: [],
-              },
-              {
-                type: 'arc',
-                slots: [1],
-                params: {
-                  label: {
-                    title: 'mime',
-                    aggregation: { type: 'terms', field: 'mime', size: 3 },
+                  {
+                    aggregation: { field: 'datetime', type: 'min' },
+                    format: { type: 'date' },
+                    text: 'Période du',
                   },
-                  title: 'format',
-                  value: {},
-                  dataLabel: { format: 'percent', showLabel: true },
-                },
-                filters: [],
-              },
-              {
-                type: 'table',
-                slots: [2],
-                params: {
-                  title: 'Total des consultations par type',
-                  columns: [
-                    {
-                      header: 'type de consultation',
-                      metric: false,
-                      aggregation: { type: 'terms', field: 'rtype', size: 2 },
-                    },
-                    {
-                      header: 'Count',
-                      metric: true,
-                      styles: { halign: 'right', valign: 'top' },
-                    },
-                  ],
-                  total: true,
-                },
-                filters: [],
-              },
-              {
-                type: 'table',
-                slots: [3],
-                params: {
-                  title: 'Total des consultations par format',
-                  columns: [
-                    {
-                      header: 'format',
-                      metric: false,
-                      aggregation: { type: 'terms', field: 'mime' },
-                    },
-                    {
-                      header: 'Count',
-                      metric: true,
-                      styles: { halign: 'right', valign: 'top' },
-                    },
-                  ],
-                  total: true,
-                },
-                filters: [],
-              },
-            ],
-          },
-          {
-            figures: [
-              {
-                type: 'arc',
-                slots: [0, 1, 2, 3],
-                params: {
-                  label: {
-                    title: 'navigateur',
-                    aggregation: { type: 'terms', field: 'ua', size: 5 },
+                  {
+                    aggregation: { field: 'datetime', type: 'max' },
+                    format: { type: 'date' },
+                    text: 'au',
                   },
-                  title: 'user-agent navigateur utilisé',
-                  value: {},
-                  dataLabel: { format: 'percent', showLabel: true },
-                },
-                filters: [],
+                ],
               },
-            ],
-          },
-          {
-            figures: [
-              {
-                type: 'table',
-                slots: [0, 1, 2, 3],
-                params: {
-                  title: 'top {{ length }} des ressources consultées',
-                  columns: [
-                    {
-                      header: 'Titre de la ressource',
-                      metric: false,
-                      aggregation: {
-                        type: 'terms',
-                        field: 'publication_title',
-                        size: 20,
-                      },
-                    },
-                    {
-                      header: 'DOI',
-                      metric: false,
-                      aggregation: { type: 'terms', field: 'doi', size: 1 },
-                    },
-                    {
-                      header: 'count',
-                      metric: true,
-                      styles: { halign: 'right', valign: 'top' },
-                    },
-                  ],
-                  total: true,
+              slots: [0, 1],
+              type: 'metric',
+            },
+            {
+              filters: [],
+              params: {
+                dataLabel: { format: 'numeric' },
+                label: {
+                  aggregation: { field: 'datetime', type: 'date_histogram' },
                 },
-                filters: [],
+                title: 'Histogramme',
+                value: { title: 'Count' },
               },
-            ],
-          },
-          {
-            figures: [
-              {
-                type: 'arc',
-                slots: [0, 1, 2, 3],
-                params: {
-                  label: {
-                    title: 'referrer',
-                    aggregation: { type: 'terms', field: 'referrer' },
+              slots: [2, 3],
+              type: 'bar',
+            },
+          ],
+        },
+        {
+          figures: [
+            {
+              filters: [],
+              params: {
+                dataLabel: { format: 'percent', showLabel: true },
+                label: {
+                  aggregation: { field: 'rtype', size: 3, type: 'terms' },
+                  title: 'rtype',
+                },
+                title: 'Type de consultation',
+                value: {},
+              },
+              slots: [0],
+              type: 'arc',
+            },
+            {
+              filters: [],
+              params: {
+                dataLabel: { format: 'percent', showLabel: true },
+                label: {
+                  aggregation: { field: 'mime', size: 3, type: 'terms' },
+                  title: 'mime',
+                },
+                title: 'format',
+                value: {},
+              },
+              slots: [1],
+              type: 'arc',
+            },
+            {
+              filters: [],
+              params: {
+                columns: [
+                  {
+                    aggregation: { field: 'rtype', size: 2, type: 'terms' },
+                    header: 'type de consultation',
+                    metric: false,
                   },
-                  title: 'Provenance des visiteurs (referrer)',
-                  value: {},
-                  dataLabel: { format: 'percent', showLabel: true },
-                },
-                filters: [],
+                  {
+                    header: 'Count',
+                    metric: true,
+                    styles: { halign: 'right', valign: 'top' },
+                  },
+                ],
+                title: 'Total des consultations par type',
+                total: true,
               },
-            ],
-          },
-        ],
-      },
-      createdAt: new Date('2024-07-12T06:47:16.022Z'),
-      updatedAt: new Date('2024-10-15T07:38:40.444Z'),
-    }),
-  },
-};
+              slots: [2],
+              type: 'table',
+            },
+            {
+              filters: [],
+              params: {
+                columns: [
+                  {
+                    aggregation: { field: 'mime', type: 'terms' },
+                    header: 'format',
+                    metric: false,
+                  },
+                  {
+                    header: 'Count',
+                    metric: true,
+                    styles: { halign: 'right', valign: 'top' },
+                  },
+                ],
+                title: 'Total des consultations par format',
+                total: true,
+              },
+              slots: [3],
+              type: 'table',
+            },
+          ],
+        },
+        {
+          figures: [
+            {
+              filters: [],
+              params: {
+                dataLabel: { format: 'percent', showLabel: true },
+                label: {
+                  aggregation: { field: 'ua', size: 5, type: 'terms' },
+                  title: 'navigateur',
+                },
+                title: 'user-agent navigateur utilisé',
+                value: {},
+              },
+              slots: [0, 1, 2, 3],
+              type: 'arc',
+            },
+          ],
+        },
+        {
+          figures: [
+            {
+              filters: [],
+              params: {
+                columns: [
+                  {
+                    aggregation: {
+                      field: 'publication_title',
+                      size: 20,
+                      type: 'terms',
+                    },
+                    header: 'Titre de la ressource',
+                    metric: false,
+                  },
+                  {
+                    aggregation: { field: 'doi', size: 1, type: 'terms' },
+                    header: 'DOI',
+                    metric: false,
+                  },
+                  {
+                    header: 'count',
+                    metric: true,
+                    styles: { halign: 'right', valign: 'top' },
+                  },
+                ],
+                title: 'top {{ length }} des ressources consultées',
+                total: true,
+              },
+              slots: [0, 1, 2, 3],
+              type: 'table',
+            },
+          ],
+        },
+        {
+          figures: [
+            {
+              filters: [],
+              params: {
+                dataLabel: { format: 'percent', showLabel: true },
+                label: {
+                  aggregation: { field: 'referrer', type: 'terms' },
+                  title: 'referrer',
+                },
+                title: 'Provenance des visiteurs (referrer)',
+                value: {},
+              },
+              slots: [0, 1, 2, 3],
+              type: 'arc',
+            },
+          ],
+        },
+      ],
+      version: 2,
+    },
+    createdAt: new Date('2024-07-12T06:47:16.022Z'),
+    id: '91bf7d4e-83e8-4e1b-be69-6fb0dbe6eee9',
+    locale: 'fr',
+    name: 'DORANUM',
+    tags: [{ id: '0', name: 'ezPAARSE' }],
+    updatedAt: new Date('2024-10-15T07:38:40.444Z'),
+  }),
+});

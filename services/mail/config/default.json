@@ -34,7 +34,7 @@
     "team": "ezteam@couperin.org",
     "attempts": 5,
     "interval": 2000,
-    "templateDir": "src/templates"
+    "templateDir": "templates"
   },
   "api": {
     "url": "http://localhost:8080",

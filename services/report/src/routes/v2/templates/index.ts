@@ -14,16 +14,16 @@ import {
 } from '~/models/pagination/types';
 import * as templates from '~/models/templates';
 import {
-  Template,
   InputTemplate,
+  Template,
   TemplateQueryFilters,
   TemplateQueryInclude,
 } from '~/models/templates/types';
 
 import { authPlugin } from '~/plugins/auth';
 import {
-  describeErrors,
   buildSuccessResponse,
+  describeErrors,
   zSuccessResponse,
 } from '~/routes/v2/responses';
 
@@ -39,8 +39,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/',
     schema: {
-      summary: 'Get all templates',
-      tags: ['templates'],
       querystring: z.object({
         ...PaginationQuery.shape,
         ...TemplateQueryFilters.shape,
@@ -58,11 +56,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           z.object({ default: z.string() })
         ),
       },
+      summary: 'Get all templates',
+      tags: ['templates'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ_WRITE,
+        requireUser: true,
       },
     },
     // oxlint-disable-next-line require-await
@@ -71,19 +71,19 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       const { page, count, sort, order, include, ...filters } = request.query;
 
       const content = await templates.getAllTemplates(filters, include, {
-        page,
         count,
-        sort,
         order,
+        page,
+        sort,
       });
 
       return buildPaginatedResponse(
         content,
         {
+          count: content.length,
           default: config.defaultTemplate.id,
           page: request.query.page,
           total: await templates.countTemplates(filters),
-          count: content.length,
         },
         reply
       );
@@ -94,8 +94,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'POST',
     url: '/',
     schema: {
-      summary: 'Create template',
-      tags: ['templates'],
       body: InputTemplate,
       response: {
         ...describeErrors([
@@ -106,6 +104,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.CREATED]: zSuccessResponse(Template),
       },
+      summary: 'Create template',
+      tags: ['templates'],
     },
     config: {
       ezrAuth: {
@@ -125,8 +125,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/:id',
     schema: {
-      summary: 'Get specific template',
-      tags: ['templates'],
       params: SpecificTemplateParams,
       querystring: TemplateQueryInclude,
       response: {
@@ -139,11 +137,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(Template),
       },
+      summary: 'Get specific template',
+      tags: ['templates'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ,
+        requireUser: true,
       },
     },
     // oxlint-disable-next-line require-await
@@ -165,10 +165,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'PUT',
     url: '/:id',
     schema: {
-      summary: 'Upsert specific template',
-      tags: ['templates'],
-      params: SpecificTemplateParams,
       body: InputTemplate,
+      params: SpecificTemplateParams,
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -179,6 +177,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(Template),
       },
+      summary: 'Upsert specific template',
+      tags: ['templates'],
     },
     config: {
       ezrAuth: {
@@ -210,8 +210,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'DELETE',
     url: '/:id',
     schema: {
-      summary: 'Delete specific template',
-      tags: ['templates'],
       params: SpecificTemplateParams,
       response: {
         ...describeErrors([
@@ -222,6 +220,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(z.object({ deleted: z.boolean() })),
       },
+      summary: 'Delete specific template',
+      tags: ['templates'],
     },
     config: {
       ezrAuth: {

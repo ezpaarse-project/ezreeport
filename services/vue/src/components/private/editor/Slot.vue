@@ -8,7 +8,7 @@
     >
       <!-- TODO: -->
       <!-- <template #prepend>
-        <v-icon icon="mdi-drag" class="template-layout-slot--figure-drag" />
+        <v-icon :icon="mdiDrag" class="template-layout-slot--figure-drag" />
       </template> -->
 
       <template #append>
@@ -16,7 +16,7 @@
 
         <v-btn
           :text="$t('$ezreeport.settings')"
-          append-icon="mdi-cog"
+          :append-icon="mdiCog"
           color="primary"
           density="comfortable"
           class="ml-2"
@@ -47,13 +47,28 @@
               :label="$t('$ezreeport.editor.figures._.slots')"
               :items="slotsOptions"
               :readonly="readonly"
-              prepend-icon="mdi-grid-large"
+              :prepend-icon="mdiGridLarge"
               variant="underlined"
               hide-details
               multiple
             />
           </v-col>
         </v-row>
+
+        <v-slide-x-transition>
+          <v-row v-if="modelValue.type !== 'md'">
+            <v-col>
+              <v-switch
+                v-model="modelValue.params.displayEmpty"
+                :label="$t('$ezreeport.editor.figures._.displayEmpty')"
+                :prepend-icon="mdiEyeSettings"
+                :readonly="readonly"
+                color="primary"
+                hide-details
+              />
+            </v-col>
+          </v-row>
+        </v-slide-x-transition>
 
         <slot name="text" />
       </template>
@@ -67,7 +82,7 @@
         >
           <template #append>
             <v-btn
-              icon="mdi-close"
+              :icon="mdiClose"
               variant="text"
               density="comfortable"
               @click="isFormVisible = false"
@@ -77,13 +92,13 @@
             <v-btn
               v-if="readonly"
               :text="$t('$ezreeport.close')"
-              append-icon="mdi-close"
+              :append-icon="mdiClose"
               @click="isFormVisible = false"
             />
             <v-btn
               v-else
               :text="$t('$ezreeport.confirm')"
-              append-icon="mdi-check"
+              :append-icon="mdiCheck"
               color="primary"
               @click="isFormVisible = false"
             />
@@ -98,7 +113,7 @@
         >
           <template #append>
             <v-btn
-              icon="mdi-close"
+              :icon="mdiClose"
               variant="text"
               density="comfortable"
               @click="isFormVisible = false"
@@ -108,13 +123,13 @@
             <v-btn
               v-if="readonly"
               :text="$t('$ezreeport.close')"
-              append-icon="mdi-close"
+              :append-icon="mdiClose"
               @click="isFormVisible = false"
             />
             <v-btn
               v-else
               :text="$t('$ezreeport.confirm')"
-              append-icon="mdi-check"
+              :append-icon="mdiCheck"
               color="primary"
               @click="isFormVisible = false"
             />
@@ -129,7 +144,7 @@
         >
           <template #append>
             <v-btn
-              icon="mdi-close"
+              :icon="mdiClose"
               variant="text"
               density="comfortable"
               @click="isFormVisible = false"
@@ -139,13 +154,13 @@
             <v-btn
               v-if="readonly"
               :text="$t('$ezreeport.close')"
-              append-icon="mdi-close"
+              :append-icon="mdiClose"
               @click="isFormVisible = false"
             />
             <v-btn
               v-else
               :text="$t('$ezreeport.confirm')"
-              append-icon="mdi-check"
+              :append-icon="mdiCheck"
               color="primary"
               @click="isFormVisible = false"
             />
@@ -160,7 +175,7 @@
         >
           <template #append>
             <v-btn
-              icon="mdi-close"
+              :icon="mdiClose"
               variant="text"
               density="comfortable"
               @click="isFormVisible = false"
@@ -170,13 +185,13 @@
             <v-btn
               v-if="readonly"
               :text="$t('$ezreeport.close')"
-              append-icon="mdi-close"
+              :append-icon="mdiClose"
               @click="isFormVisible = false"
             />
             <v-btn
               v-else
               :text="$t('$ezreeport.confirm')"
-              append-icon="mdi-check"
+              :append-icon="mdiCheck"
               color="primary"
               @click="isFormVisible = false"
             />
@@ -191,7 +206,7 @@
       class="template-layout-slot--empty"
       @click="addFigure()"
     >
-      <v-icon icon="mdi-plus" color="green" style="font-size: 3rem" />
+      <v-icon :icon="mdiPlus" color="green" style="font-size: 3rem" />
       <div>{{ $t('$ezreeport.editor.figures._.create') }}</div>
     </v-card>
   </v-col>
@@ -199,22 +214,34 @@
 
 <script setup lang="ts">
   import {
+    mdiCheck,
+    mdiClose,
+    mdiCog,
+    mdiEyeSettings,
+    mdiGridLarge,
+    mdiPanBottomLeft,
+    mdiPanBottomRight,
+    mdiPanTopLeft,
+    mdiPanTopRight,
+    mdiPlus,
+  } from '@mdi/js';
+  import {
+    type AnyFigureHelper,
+    createFigureHelper,
+    createMdFigureHelper,
     isFigureHelperMarkdown,
     isFigureHelperMetric,
     isFigureHelperTable,
-    createFigureHelper,
-    createMdFigureHelper,
-    type AnyFigureHelper,
   } from '~sdk/helpers/figures';
 
   import { figureToGridPosition } from '~/lib/layouts';
 
-  const SLOT_ICONS = new Map([
-    [0, 'mdi-pan-top-left'],
-    [1, 'mdi-pan-top-right'],
-    [2, 'mdi-pan-bottom-left'],
-    [3, 'mdi-pan-bottom-right'],
-  ]);
+  const SLOT_ICONS = [
+    mdiPanTopLeft,
+    mdiPanTopRight,
+    mdiPanBottomLeft,
+    mdiPanBottomRight,
+  ];
 
   // Components props
   const props = defineProps<{
@@ -235,7 +262,6 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
   const { grid } = useTemplateEditor();
 
@@ -249,11 +275,10 @@
     if (props.modelValue && 'title' in props.modelValue.params) {
       return props.modelValue.params.title;
     }
-    return;
   });
   /** The figure slot */
   const slots = computed({
-    get: () => Array.from(props.modelValue?.slots ?? []),
+    get: () => [...(props.modelValue?.slots ?? [])],
     set: (value) => {
       if (!props.modelValue) {
         return;
@@ -269,25 +294,21 @@
   );
   /** Types options */
   const typeOptions = computed(() =>
-    Array.from(figureIcons.keys()).map((figureType) => ({
-      value: figureType,
-      title: t(`$ezreeport.editor.figures._.types.${figureType}`),
+    [...figureIcons.keys()].map((figureType) => ({
       props: {
         appendIcon: figureIcons.get(figureType),
       },
+      title: t(`$ezreeport.editor.figures._.types.${figureType}`),
+      value: figureType,
     }))
   );
   /** Slots options */
   const slotsOptions = computed(() => {
     const length = grid.value.cols * grid.value.rows;
     return Array.from({ length }, (__, index) => index).map((slot) => ({
-      value: slot,
-      title:
-        length === SLOT_ICONS.size
-          ? t(`$ezreeport.editor.figures._.slotsList.${slot}`)
-          : slot,
       props: {
-        appendIcon: length === SLOT_ICONS.size ? SLOT_ICONS.get(slot) : undefined,
+        appendIcon:
+          length === SLOT_ICONS.length ? SLOT_ICONS.at(slot) : undefined,
         disabled:
           // Unused slots provided AND current slot is used
           props.unusedSlots &&
@@ -296,6 +317,11 @@
           (!props.modelValue?.slots.has(slot) ||
             props.modelValue.slots.size === 1),
       },
+      title:
+        length === SLOT_ICONS.length
+          ? t(`$ezreeport.editor.figures._.slotsList.${slot}`)
+          : slot,
+      value: slot,
     }));
   });
   /** Position in CSS grid */
@@ -306,9 +332,9 @@
   /**
    * Update figure type
    *
-   * @param type
+   * @param type - The type of figure
    */
-  function onTypeChange(type: string) {
+  function onTypeChange(type: string): void {
     if (!props.modelValue) {
       return;
     }
@@ -343,7 +369,7 @@
   /**
    * Create a new figure
    */
-  function addFigure() {
+  function addFigure(): void {
     emit(
       'update:modelValue',
       createMdFigureHelper(undefined, [props.defaultSlot ?? 0])

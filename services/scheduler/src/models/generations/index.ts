@@ -3,7 +3,7 @@ import { Generation, type GenerationType } from '@ezreeport/models/generations';
 import { appLogger } from '~/lib/logger';
 import prisma from '~/lib/prisma';
 
-const logger = appLogger.child({ scope: 'models', model: 'generations' });
+const logger = appLogger.child({ model: 'generations', scope: 'models' });
 
 /**
  * Upserts a new generation, throws if constraint is broken
@@ -18,16 +18,16 @@ export async function upsertGeneration(
   data: GenerationType
 ): Promise<GenerationType> {
   const generation = await prisma.generation.upsert({
+    create: data,
+    update: data,
     where: {
       id,
     },
-    create: data,
-    update: data,
   });
 
   logger.debug({
-    id: generation.id,
     action: 'Updated',
+    id: generation.id,
     msg: 'Updated',
   });
 
@@ -41,17 +41,17 @@ export async function upsertGeneration(
  */
 export async function abortDanglingGenerations(): Promise<number> {
   const { count } = await prisma.generation.updateMany({
-    where: {
-      status: { in: ['PENDING', 'PROCESSING'] },
-    },
     data: {
       status: 'ABORTED',
+    },
+    where: {
+      status: { in: ['PENDING', 'PROCESSING'] },
     },
   });
 
   logger.debug({
-    count,
     action: 'Updated',
+    count,
     msg: 'Dangling(s) aborted',
   });
 

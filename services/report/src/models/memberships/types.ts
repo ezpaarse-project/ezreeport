@@ -5,15 +5,15 @@ import { z } from '@ezreeport/models/lib/zod';
  * Validation for membership
  */
 export const Membership = z.object({
-  username: z.string().min(1).describe('Username'),
-
-  namespaceId: z.string().min(1).describe('Namespace ID'),
-
   access: z.enum(Access).describe('Permissions of user on namespace'),
 
   createdAt: z.date().describe('Creation date'),
 
+  namespaceId: z.string().min(1).describe('Namespace ID'),
+
   updatedAt: z.date().nullable().describe('Last update date'),
+
+  username: z.string().min(1).describe('Username'),
 });
 
 /**
@@ -42,11 +42,11 @@ export type InputMembershipType = z.infer<typeof InputMembership>;
  */
 export const BulkMembership = z
   .object({
-    username: z.string().min(1).describe('Username'),
+    access: z.enum(Access).describe('Permissions of user on namespace'),
 
     namespaceId: z.string().min(1).describe('Namespace ID'),
 
-    access: z.enum(Access).describe('Permissions of user on namespace'),
+    username: z.string().min(1).describe('Username'),
   })
   .strict();
 
@@ -61,11 +61,11 @@ export type BulkMembershipType = z.infer<typeof BulkMembership>;
 export const BulkMembershipResult = z.object({
   memberships: z
     .object({
+      created: z.int().min(0).describe('Number of item created'),
+
       deleted: z.int().min(0).describe('Number of item deleted'),
 
       updated: z.int().min(0).describe('Number of item updated'),
-
-      created: z.int().min(0).describe('Number of item created'),
     })
     .describe('Summary of operations on memberships'),
 });

@@ -1,23 +1,16 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import HealthStatus from './HealthStatus.vue';
 
 const meta: Meta<typeof HealthStatus> = {
-  title: 'Public/Health Status',
   component: HealthStatus,
+  title: 'Public/Health Status',
 };
+
+const { defineStory } = useStory(meta);
 
 export default meta;
 
-type Story = StoryObj<typeof HealthStatus>;
-
-export const Default: Story = {
-  render: (args: unknown) => ({
-    components: { HealthStatus },
-    setup() {
-      return { args };
-    },
-    template: '<HealthStatus v-bind="args" />',
-  }),
-  args: {},
-};
+export const Default = defineStory({});

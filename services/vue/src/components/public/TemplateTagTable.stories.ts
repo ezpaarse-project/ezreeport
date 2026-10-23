@@ -1,23 +1,16 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import TemplateTagTable from './TemplateTagTable.vue';
 
 const meta: Meta<typeof TemplateTagTable> = {
-  title: 'Public/Template Tags Table',
   component: TemplateTagTable,
+  title: 'Public/Template Tags Table',
 };
+
+const { defineStory } = useStory(meta);
 
 export default meta;
 
-type Story = StoryObj<typeof TemplateTagTable>;
-
-export const Default: Story = {
-  render: (args: unknown) => ({
-    components: { TemplateTagTable },
-    setup() {
-      return { args };
-    },
-    template: '<TemplateTagTable v-bind="args" />',
-  }),
-  args: {},
-};
+export const Default = defineStory({});

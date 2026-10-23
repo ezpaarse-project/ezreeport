@@ -1,50 +1,43 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import TaskEditionForm from './EditionForm.vue';
 
 const meta: Meta<typeof TaskEditionForm> = {
-  title: 'Task/Edition Form (Simple)',
   component: TaskEditionForm,
+  title: 'Task/Edition Form (Simple)',
 };
+
+const { defineStory } = useStory(meta);
 
 export default meta;
 
-type Story = StoryObj<typeof TaskEditionForm>;
-
-export const Default: Story = {
-  render: (args: unknown) => ({
-    components: { TaskEditionForm },
-    setup() {
-      return { args };
+export const Default = defineStory({
+  modelValue: {
+    createdAt: new Date('2024-06-26T14:49:50.401Z'),
+    description: '',
+    enabled: true,
+    extendedId: 'a538ba09-5c2d-479a-b6f9-0dff77863002',
+    extends: {
+      locale: 'fr',
+      tags: [{ color: '#D3339A', id: '0', name: 'Administration' }],
     },
-    template: '<TaskEditionForm v-bind="args" />',
-  }),
-  args: {
-    modelValue: {
-      id: 'dc1481b1-ff90-4374-a5a9-e3ef4d7cc0fb',
-      name: 'Métriques API',
-      description: '',
-      template: {
-        version: 2,
-        index: '.ezmesure-metrics',
-        dateField: 'datetime',
-        filters: [],
-        inserts: [],
-      },
-      targets: ['ezteam@couperin.org'],
-      recurrence: 'DAILY',
-      recurrenceOffset: {},
-      nextRun: new Date('2024-12-04T06:00:00.240Z'),
-      lastRun: new Date('2024-12-03T06:00:00.240Z'),
-      enabled: true,
-      createdAt: new Date('2024-06-26T14:49:50.401Z'),
-      updatedAt: new Date('2024-12-03T06:00:02.901Z'),
-      extends: {
-        tags: [{ id: '0', name: 'Administration', color: '#D3339A' }],
-        locale: 'fr',
-      },
-      extendedId: 'a538ba09-5c2d-479a-b6f9-0dff77863002',
-      namespaceId: 'clxvxybz801d84qdpy1ekrjwn',
+    id: 'dc1481b1-ff90-4374-a5a9-e3ef4d7cc0fb',
+    lastRun: new Date('2024-12-03T06:00:00.240Z'),
+    name: 'Métriques API',
+    namespaceId: 'clxvxybz801d84qdpy1ekrjwn',
+    nextRun: new Date('2024-12-04T06:00:00.240Z'),
+    recurrence: 'DAILY',
+    recurrenceOffset: {},
+    targets: ['ezteam@couperin.org'],
+    template: {
+      dateField: 'datetime',
+      filters: [],
+      index: '.ezmesure-metrics',
+      inserts: [],
+      version: 2,
     },
+    updatedAt: new Date('2024-12-03T06:00:02.901Z'),
   },
-};
+});

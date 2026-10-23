@@ -13,8 +13,8 @@ import {
 import { createActivity } from '~/models/task-activity';
 import * as tasks from '~/models/tasks';
 import {
-  Task,
   InputTask,
+  Task,
   TaskQueryFilters,
   TaskQueryInclude,
 } from '~/models/tasks/types';
@@ -25,8 +25,8 @@ import {
   restrictNamespaces,
 } from '~/plugins/auth';
 import {
-  describeErrors,
   buildSuccessResponse,
+  describeErrors,
   zSuccessResponse,
 } from '~/routes/v2/responses';
 
@@ -42,8 +42,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/',
     schema: {
-      summary: 'Get all tasks',
-      tags: ['tasks'],
       querystring: z.object({
         ...PaginationQuery.shape,
         ...TaskQueryFilters.shape,
@@ -58,11 +56,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zPaginationResponse(Task.omit({ template: true })),
       },
+      summary: 'Get all tasks',
+      tags: ['tasks'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ,
+        requireUser: true,
       },
     },
     preHandler: [
@@ -80,18 +80,18 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       const { page, count, sort, order, include, ...filters } = request.query;
 
       const content = await tasks.getAllTasks(filters, include, {
-        page,
         count,
-        sort,
         order,
+        page,
+        sort,
       });
 
       return buildPaginatedResponse(
         content,
         {
+          count: content.length,
           page,
           total: await tasks.countTasks(filters),
-          count: content.length,
         },
         reply
       );
@@ -102,8 +102,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'POST',
     url: '/',
     schema: {
-      summary: 'Create task',
-      tags: ['tasks'],
       body: InputTask,
       response: {
         ...describeErrors([
@@ -115,11 +113,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.CREATED]: zSuccessResponse(Task),
       },
+      summary: 'Create task',
+      tags: ['tasks'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ_WRITE,
+        requireUser: true,
       },
     },
     preHandler: [
@@ -151,10 +151,10 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
 
       const { username = 'unknown' } = request.user ?? {};
       await createActivity({
-        type: 'creation',
+        data: { user: username },
         message: `Tâche crée par ${username}`,
         taskId: content.id,
-        data: { user: username },
+        type: 'creation',
       });
 
       reply.status(StatusCodes.CREATED);
@@ -166,8 +166,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/:id',
     schema: {
-      summary: 'Get specific task',
-      tags: ['tasks'],
       params: SpecificTaskParams,
       querystring: TaskQueryInclude,
       response: {
@@ -180,11 +178,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(Task),
       },
+      summary: 'Get specific task',
+      tags: ['tasks'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ,
+        requireUser: true,
       },
     },
     // oxlint-disable-next-line require-await
@@ -206,10 +206,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'PUT',
     url: '/:id',
     schema: {
-      summary: 'Upsert specific task',
-      tags: ['tasks'],
-      params: SpecificTaskParams,
       body: InputTask,
+      params: SpecificTaskParams,
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -220,11 +218,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(Task),
       },
+      summary: 'Upsert specific task',
+      tags: ['tasks'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ_WRITE,
+        requireUser: true,
       },
     },
     preHandler: [
@@ -246,21 +246,21 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       if (doesTaskExists) {
         task = await tasks.editTask(request.params.id, request.body);
         activity = {
-          type: 'edition',
           message: `Tâche modifiée par ${username}`,
+          type: 'edition',
         };
       } else {
         task = await tasks.createTask({
           ...request.body,
           id: request.params.id,
         });
-        activity = { type: 'creation', message: `Tâche crée par ${username}` };
+        activity = { message: `Tâche crée par ${username}`, type: 'creation' };
       }
 
       await createActivity({
         ...activity,
-        taskId: task.id,
         data: { user: username },
+        taskId: task.id,
       });
 
       return buildSuccessResponse(task, reply);
@@ -271,8 +271,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'DELETE',
     url: '/:id',
     schema: {
-      summary: 'Delete specific task',
-      tags: ['tasks'],
       params: SpecificTaskParams,
       response: {
         ...describeErrors([
@@ -283,11 +281,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(z.object({ deleted: z.boolean() })),
       },
+      summary: 'Delete specific task',
+      tags: ['tasks'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ_WRITE,
+        requireUser: true,
       },
     },
     preHandler: [
@@ -303,7 +303,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         await tasks.deleteTask(request.params.id);
       }
 
-      return buildSuccessResponse({ deleted: !!doesTaskExists }, reply);
+      return buildSuccessResponse({ deleted: Boolean(doesTaskExists) }, reply);
     },
   });
 
@@ -311,8 +311,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'DELETE',
     url: '/:id/extended',
     schema: {
-      summary: 'Delete link between task and template',
-      tags: ['tasks'],
       params: SpecificTaskParams,
       response: {
         ...describeErrors([
@@ -324,11 +322,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(Task),
       },
+      summary: 'Delete link between task and template',
+      tags: ['tasks'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ_WRITE,
+        requireUser: true,
       },
     },
     preHandler: [
@@ -346,16 +346,16 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
 
       const { username = 'unknown' } = request.user ?? {};
       const activity = {
-        type: 'edition',
         message: `Tâche déliée par ${username}`,
+        type: 'edition',
       };
 
       const task = await tasks.unlinkTaskFromTemplate(request.params.id);
 
       await createActivity({
         ...activity,
-        taskId: task.id,
         data: { user: username },
+        taskId: task.id,
       });
 
       return buildSuccessResponse(task, reply);
@@ -363,5 +363,5 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
   });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

@@ -1,10 +1,10 @@
 import {
-  apiRequestOptionsToQuery,
+  type ApiDeletedResponse,
+  type ApiRequestOptions,
   type ApiResponse,
   type ApiResponsePaginated,
-  type ApiRequestOptions,
-  type ApiDeletedResponse,
   type SdkPaginated,
+  apiRequestOptionsToQuery,
 } from '~/lib/api';
 import { client } from '~/lib/fetch';
 import { transformCreatedUpdated } from '~/lib/transform';
@@ -41,10 +41,10 @@ export async function getAllTaskPresets(
   });
 
   return {
-    items: content.map(transformCreatedUpdated),
-    total,
     count,
+    items: content.map(transformCreatedUpdated),
     page,
+    total,
   };
 }
 assignPermission(getAllTaskPresets, 'GET /task-presets', true);
@@ -85,8 +85,8 @@ export async function createTaskPreset(
   const { content } = await client.fetch<ApiResponse<RawTaskPreset>>(
     '/task-presets/',
     {
-      method: 'POST',
       body: preset,
+      method: 'POST',
     }
   );
 
@@ -108,8 +108,8 @@ export async function upsertTaskPreset({
   const { content } = await client.fetch<ApiResponse<RawTaskPreset>>(
     `/task-presets/${id}`,
     {
-      method: 'PUT',
       body: preset,
+      method: 'PUT',
     }
   );
 
@@ -163,8 +163,8 @@ export async function createTaskFromPreset(
   const { content } = await client.fetch<ApiResponse<RawTask>>(
     `/task-presets/${id}/tasks`,
     {
-      method: 'POST',
       body: additionalData,
+      method: 'POST',
     }
   );
 

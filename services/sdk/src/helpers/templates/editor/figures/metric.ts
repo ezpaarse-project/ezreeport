@@ -1,4 +1,4 @@
-import type { TemplateFilter, TemplateBodyFigure } from '~/modules/templates';
+import type { TemplateBodyFigure, TemplateFilter } from '~/modules/templates';
 
 import type { FigureAggregation } from '../aggregations';
 import type { FigureOrder } from './utils';
@@ -32,6 +32,7 @@ export interface MetricLabel {
 export interface MetricFigureHelper extends FigureHelperWithFilters {
   readonly type: 'metric';
   params: {
+    displayEmpty?: boolean;
     labels: MetricLabel[];
     order: FigureOrder;
   };
@@ -41,12 +42,14 @@ export function createMetricFigureHelper(
   labels: MetricLabel[] = [],
   filters: TemplateFilter[] = [],
   order: FigureOrder = true,
-  slots?: number[]
+  slots?: number[],
+  displayEmpty: boolean = false
 ): MetricFigureHelper {
   return createFigureHelperWithFilters(
     'metric',
     filters,
     {
+      displayEmpty,
       labels,
       order,
     },
@@ -61,7 +64,8 @@ export function createMetricFigureHelperFrom(
     figure.params?.labels ?? [],
     figure.filters ?? [],
     figure.params?.order ?? true,
-    figure.slots
+    figure.slots,
+    figure.params?.displayEmpty ?? false
   );
 }
 
@@ -69,6 +73,7 @@ export function metricHelperParamsToJSON(
   params: MetricFigureHelper['params']
 ): TemplateBodyFigure['params'] {
   return {
+    displayEmpty: params.displayEmpty,
     labels: params.labels,
     order: params.order,
   };
@@ -118,7 +123,7 @@ export function updateMetricLabelOfHelper(
   const index = figure.params.labels.findIndex(
     (lab) => getMetricLabelKey(lab) === oldKey
   );
-  if (index < 0) {
+  if (index === -1) {
     throw new Error(`Label "${oldElement.text}" not found`);
   }
   const fig = figure;

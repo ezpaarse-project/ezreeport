@@ -74,8 +74,8 @@ export async function closeWS(io: Server | undefined): Promise<void> {
   try {
     await io?.close();
     logger.debug('Service closed');
-  } catch (err) {
-    logger.error({ msg: 'Failed to close service', err });
+  } catch (error) {
+    logger.error({ error, msg: 'Failed to close service' });
   }
 }
 

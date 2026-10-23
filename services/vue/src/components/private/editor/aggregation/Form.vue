@@ -1,7 +1,7 @@
 <template>
   <v-card
     :title="$t('$ezreeport.editor.aggregation.title')"
-    prepend-icon="mdi-group"
+    :prepend-icon="mdiGroup"
     variant="outlined"
   >
     <template #append>
@@ -12,7 +12,7 @@
         :variant="currentForm === 'raw' ? 'flat' : 'text'"
         :disabled="currentForm === 'raw' && !isValid"
         density="comfortable"
-        icon="mdi-tools"
+        :icon="mdiTools"
         @click="currentForm = currentForm === 'raw' ? 'basic' : 'raw'"
       />
 
@@ -52,11 +52,12 @@
 
 <script setup lang="ts">
   import type {
-    FigureAggregation,
     AggregationType,
+    FigureAggregation,
     FigureFilterAggregation,
     FigureRawAggregation,
   } from '~sdk/helpers/aggregations';
+  import { mdiGroup, mdiTools } from '@mdi/js';
 
   import {
     isBaseAggregation,
@@ -86,7 +87,7 @@
   const aggBackups = new Map<AggFormsType, FigureAggregation | undefined>();
 
   /** Ref to VForm + validate on mount */
-  useTemplateVForm('formRef', { immediate: !!modelValue.value });
+  useTemplateVForm('formRef', { immediate: Boolean(modelValue.value) });
 
   /**
    * Change form by setting default values
@@ -96,7 +97,7 @@
    */
   function changeForm(type: AggFormsType, old: AggFormsType): void {
     // Define default value (if creating a new figure)
-    let def: FigureAggregation | undefined;
+    let def: FigureAggregation | undefined = undefined;
     switch (type) {
       case 'filters':
         def = { type: 'filters', values: [] } satisfies FigureFilterAggregation;
@@ -119,6 +120,8 @@
    * Get form type from the aggreation
    *
    * @param agg - The aggregation
+   *
+   * @returns Type of aggregation form
    */
   function getAggFormType(agg: FigureAggregation | undefined): AggFormsType {
     if (isRawAggregation(agg)) {

@@ -72,8 +72,8 @@ export const ErrorResponse = z.object({
   ...BaseResponse.shape,
   error: z
     .object({
-      message: z.string(),
       cause: z.any().optional(),
+      message: z.string(),
       stack: z.array(z.string()).optional(),
     })
     .describe('Error details'),
@@ -86,8 +86,8 @@ export function buildErrorResponse(
   return {
     ...buildResponse(reply),
     error: {
-      message: error.message,
       cause: error.cause,
+      message: error.message,
       stack: error.stack?.split('\n'),
     },
   };

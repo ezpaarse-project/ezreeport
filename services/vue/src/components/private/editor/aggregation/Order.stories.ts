@@ -1,36 +1,20 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import EditorAggregationOrder from './Order.vue';
 
 const meta: Meta<typeof EditorAggregationOrder> = {
-  title: 'Template Editor/Aggregations/Order',
   component: EditorAggregationOrder,
+  title: 'Template Editor/Aggregations/Order',
 };
+
+const { defineStory } = useStory(meta);
 
 export default meta;
 
-type Story = StoryObj<typeof EditorAggregationOrder>;
+export const Basic = defineStory({});
 
-export const Basic: Story = {
-  render: (args: unknown) => ({
-    components: { EditorAggregationOrder },
-    setup() {
-      return { args };
-    },
-    template: '<EditorAggregationOrder v-bind="args" />',
-  }),
-  args: {},
-};
-
-export const Readonly: Story = {
-  render: (args: unknown) => ({
-    components: { EditorAggregationOrder },
-    setup() {
-      return { args };
-    },
-    template: '<EditorAggregationOrder v-bind="args" />',
-  }),
-  args: {
-    readonly: true,
-  },
-};
+export const Readonly = defineStory({
+  readonly: true,
+});

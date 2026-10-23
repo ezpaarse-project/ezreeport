@@ -21,8 +21,8 @@ import { TemplateTag } from '~/models/templates/types';
 
 import { authPlugin } from '~/plugins/auth';
 import {
-  describeErrors,
   buildSuccessResponse,
+  describeErrors,
   zSuccessResponse,
 } from '~/routes/v2/responses';
 
@@ -38,8 +38,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/',
     schema: {
-      summary: 'Get all template tags',
-      tags: ['template-tags'],
       querystring: z.object({
         ...PaginationQuery.shape,
         ...TemplateTagQueryFilters.shape,
@@ -53,11 +51,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zPaginationResponse(TemplateTag),
       },
+      summary: 'Get all template tags',
+      tags: ['template-tags'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ,
+        requireUser: true,
       },
     },
     // oxlint-disable-next-line require-await
@@ -66,19 +66,19 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       const { page, count, sort, order, ...filters } = request.query;
 
       const content = await templateTags.getAllTemplateTags(filters, {
-        page,
         count,
-        sort,
         order,
+        page,
+        sort,
       });
 
       return buildPaginatedResponse(
         content,
         {
+          count: content.length,
           default: config.defaultTemplate.id,
           page: request.query.page,
           total: await templateTags.countTemplateTags(filters),
-          count: content.length,
         },
         reply
       );
@@ -89,8 +89,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'POST',
     url: '/',
     schema: {
-      summary: 'Create template tag',
-      tags: ['template-tags'],
       body: InputTemplateTag,
       response: {
         ...describeErrors([
@@ -101,6 +99,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.CREATED]: zSuccessResponse(TemplateTag),
       },
+      summary: 'Create template tag',
+      tags: ['template-tags'],
     },
     config: {
       ezrAuth: {
@@ -120,8 +120,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/:id',
     schema: {
-      summary: 'Get specific template tag',
-      tags: ['template-tags'],
       params: SpecificTemplateTagParams,
       response: {
         ...describeErrors([
@@ -133,11 +131,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(TemplateTag),
       },
+      summary: 'Get specific template tag',
+      tags: ['template-tags'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ,
+        requireUser: true,
       },
     },
     // oxlint-disable-next-line require-await
@@ -156,10 +156,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'PUT',
     url: '/:id',
     schema: {
-      summary: 'Upsert specific template tag',
-      tags: ['template-tags'],
-      params: SpecificTemplateTagParams,
       body: InputTemplateTag,
+      params: SpecificTemplateTagParams,
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -170,6 +168,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(TemplateTag),
       },
+      summary: 'Upsert specific template tag',
+      tags: ['template-tags'],
     },
     config: {
       ezrAuth: {
@@ -203,8 +203,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'DELETE',
     url: '/:id',
     schema: {
-      summary: 'Delete specific template tag',
-      tags: ['template-tags'],
       params: SpecificTemplateTagParams,
       response: {
         ...describeErrors([
@@ -215,6 +213,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(z.object({ deleted: z.boolean() })),
       },
+      summary: 'Delete specific template tag',
+      tags: ['template-tags'],
     },
     config: {
       ezrAuth: {

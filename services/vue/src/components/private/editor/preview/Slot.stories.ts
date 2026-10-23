@@ -1,51 +1,44 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
 import { createVegaFigureHelper } from '~sdk/helpers/figures';
+
+import { useStory } from '~/__mocks__/utils';
 
 import EditorPreviewSlot from './Slot.vue';
 
 const meta: Meta<typeof EditorPreviewSlot> = {
-  title: 'Template Editor/Preview/Slot',
   component: EditorPreviewSlot,
+  title: 'Template Editor/Preview/Slot',
 };
+
+const { defineStory } = useStory(meta);
 
 export default meta;
 
-type Story = StoryObj<typeof EditorPreviewSlot>;
-
-export const Default: Story = {
-  render: (args: unknown) => ({
-    components: { EditorPreviewSlot },
-    setup() {
-      return { args };
+export const Default = defineStory({
+  modelValue: createVegaFigureHelper(
+    'arc',
+    'Type de Rapport',
+    {
+      aggregation: {
+        field: 'Report_Header.Report_ID',
+        type: 'terms',
+      },
+      legend: null,
     },
-    template: '<EditorPreviewSlot v-bind="args" />',
-  }),
-  args: {
-    modelValue: createVegaFigureHelper(
-      'arc',
-      'Type de Rapport',
-      {
-        legend: null,
-        aggregation: {
-          type: 'terms',
-          field: 'Report_Header.Report_ID',
-        },
+    {
+      aggregation: {
+        field: 'Count',
+        type: 'sum',
       },
-      {
-        aggregation: {
-          type: 'sum',
-          field: 'Count',
-        },
-      },
-      undefined,
-      {
-        format: 'percent',
-        showLabel: true,
-      },
-      undefined,
-      undefined,
-      undefined,
-      [0]
-    ),
-  },
-};
+    },
+    undefined,
+    {
+      format: 'percent',
+      showLabel: true,
+    },
+    undefined,
+    undefined,
+    undefined,
+    [0]
+  ),
+});

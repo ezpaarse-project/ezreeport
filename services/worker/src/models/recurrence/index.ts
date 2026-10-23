@@ -1,4 +1,4 @@
-import type { TimeUnit } from 'vega-lite/build/src/timeunit';
+import type { TimeUnit } from 'vega-lite/types_unstable/timeunit.js';
 
 import type { RecurrenceType } from '@ezreeport/models/recurrence';
 
@@ -47,7 +47,7 @@ export function calcVegaFormatFromRecurrence(recurrence: RecurrenceType): {
       return { timeUnit: 'hours' };
     case 'WEEKLY':
     case 'MONTHLY':
-      return { timeUnit: 'yearmonthdate', format: '%d %b %Y' };
+      return { format: '%d %b %Y', timeUnit: 'yearmonthdate' };
     case 'QUARTERLY':
     case 'BIENNIAL':
     case 'YEARLY':

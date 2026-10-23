@@ -4,12 +4,19 @@
 
 <script setup lang="ts">
   import type { Generation } from '~sdk/generations';
+  import {
+    mdiAlertOctagon,
+    mdiCheck,
+    mdiClock,
+    mdiClose,
+    mdiHelp,
+    mdiPlay,
+  } from '@mdi/js';
 
   const props = defineProps<{
     modelValue: Generation;
   }>();
 
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   const tooltip = computed(() =>
@@ -19,17 +26,17 @@
   const iconProps = computed(() => {
     switch (props.modelValue.status) {
       case 'SUCCESS':
-        return { icon: 'mdi-check', color: 'success' };
+        return { color: 'success', icon: mdiCheck };
       case 'ERROR':
-        return { icon: 'mdi-close', color: 'error' };
+        return { color: 'error', icon: mdiClose };
       case 'PROCESSING':
-        return { icon: 'mdi-play', color: 'primary' };
+        return { color: 'primary', icon: mdiPlay };
       case 'PENDING':
-        return { icon: 'mdi-clock', color: 'secondary' };
+        return { color: 'secondary', icon: mdiClock };
       case 'ABORTED':
-        return { icon: 'mdi-alert-octagon', color: 'error' };
+        return { color: 'error', icon: mdiAlertOctagon };
       default:
-        return { icon: 'mdi-help', color: 'grey' };
+        return { color: 'grey', icon: mdiHelp };
     }
   });
 </script>

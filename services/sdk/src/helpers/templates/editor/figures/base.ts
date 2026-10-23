@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid/non-secure';
 import objectHash from 'object-hash';
 
-import type { TemplateFilter, TemplateBodyFigure } from '~/modules/templates';
+import type { TemplateBodyFigure, TemplateFilter } from '~/modules/templates';
 
 interface FigureHelper {
   readonly id: string;
@@ -14,11 +14,11 @@ interface FigureHelper {
 
 function hashFigure(figure: FigureHelper | TemplateBodyFigure): string {
   return objectHash({
-    type: figure.type,
     data: 'data' in figure ? figure.data : undefined,
     filters: 'filters' in figure ? figure.filters : undefined,
     params: figure.params,
     slots: figure.slots,
+    type: figure.type,
   });
 }
 
@@ -28,11 +28,11 @@ function createFigureHelper<Fig extends FigureHelper = FigureHelper>(
   slots?: number[]
 ): Fig {
   return {
-    id: nanoid(),
-    type,
-    params,
-    slots: new Set(slots ?? []),
     hash: '',
+    id: nanoid(),
+    params,
+    slots: new Set(slots),
+    type,
   } satisfies FigureHelper as Fig;
 }
 
@@ -71,7 +71,7 @@ export function createFigureHelperWithFilters<
 ): Fig {
   const figure = {
     ...createFigureHelper(type, params, slots),
-    filters: new Map(filters?.map((filter) => [filter.name, filter]) ?? []),
+    filters: new Map(filters?.map((filter) => [filter.name, filter])),
     hash: '',
   } satisfies FigureHelperWithFilters;
 

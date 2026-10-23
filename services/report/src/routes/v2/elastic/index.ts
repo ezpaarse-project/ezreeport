@@ -9,8 +9,8 @@ import { Index, Mapping } from '~/models/indices/types';
 
 import { authPlugin, requireAllowedNamespace } from '~/plugins/auth';
 import {
-  describeErrors,
   buildSuccessResponse,
+  describeErrors,
   zSuccessResponse,
 } from '~/routes/v2/responses';
 
@@ -26,8 +26,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/indices',
     schema: {
-      summary: 'List indices (including aliases)',
-      tags: ['elastic'],
       querystring: z.object({
         namespaceId: z
           .string()
@@ -50,11 +48,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(z.array(Index)),
       },
+      summary: 'List indices (including aliases)',
+      tags: ['elastic'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ_WRITE,
+        requireUser: true,
       },
     },
     preHandler: [
@@ -76,8 +76,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/indices/:index',
     schema: {
-      summary: 'Get mapping of an specific index',
-      tags: ['elastic'],
       params: SpecificIndexParams,
       querystring: z.object({
         namespaceId: z
@@ -95,11 +93,13 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(Mapping),
       },
+      summary: 'Get mapping of an specific index',
+      tags: ['elastic'],
     },
     config: {
       ezrAuth: {
-        requireUser: true,
         access: Access.READ_WRITE,
+        requireUser: true,
       },
     },
     preHandler: [
@@ -119,5 +119,5 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
   });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

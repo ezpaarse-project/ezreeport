@@ -1,67 +1,42 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import EditorFigureVegaColor from './VegaColor.vue';
 
 const meta: Meta<typeof EditorFigureVegaColor> = {
-  title: 'Template Editor/Figures/Vega/ Color Layer',
   component: EditorFigureVegaColor,
+  title: 'Template Editor/Figures/Vega/ Color Layer',
 };
+
+const { defineStory } = useStory(meta);
 
 export default meta;
 
-type Story = StoryObj<typeof EditorFigureVegaColor>;
+export const New = defineStory({
+  modelValue: undefined,
+  type: 'line',
+});
 
-export const New: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFigureVegaColor },
-    setup() {
-      return { args };
+export const Existing = defineStory({
+  modelValue: {
+    aggregation: {
+      field: 'owner',
+      type: 'terms',
     },
-    template: '<EditorFigureVegaColor v-bind="args" />',
-  }),
-  args: {
-    modelValue: undefined,
-    type: 'line',
+    title: 'établissements',
   },
-};
+  type: 'arc',
+});
 
-export const Existing: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFigureVegaColor },
-    setup() {
-      return { args };
+export const Readonly = defineStory({
+  modelValue: {
+    aggregation: {
+      field: 'owner',
+      type: 'terms',
     },
-    template: '<EditorFigureVegaColor v-bind="args" />',
-  }),
-  args: {
-    modelValue: {
-      title: 'établissements',
-      aggregation: {
-        type: 'terms',
-        field: 'owner',
-      },
-    },
-    type: 'arc',
+    title: 'établissements',
   },
-};
-
-export const Readonly: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFigureVegaColor },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureVegaColor v-bind="args" />',
-  }),
-  args: {
-    modelValue: {
-      title: 'établissements',
-      aggregation: {
-        type: 'terms',
-        field: 'owner',
-      },
-    },
-    type: 'bar',
-    readonly: true,
-  },
-};
+  readonly: true,
+  type: 'bar',
+});

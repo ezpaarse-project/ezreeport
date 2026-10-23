@@ -5,7 +5,7 @@ import { client } from '~/lib/fetch';
 
 import { assignPermission } from '~/helpers/permissions/decorator';
 
-import type { RawCron, Cron, InputCron } from './types';
+import type { Cron, InputCron, RawCron } from './types';
 
 const transformCron = (cron: RawCron): Cron => ({
   ...cron,
@@ -39,8 +39,8 @@ export async function updateCron(
   const { content } = await client.fetch<ApiResponse<RawCron>>(
     `/crons/${name}`,
     {
-      method: 'PATCH',
       body: data,
+      method: 'PATCH',
     }
   );
 

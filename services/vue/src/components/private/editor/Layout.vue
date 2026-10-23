@@ -1,5 +1,5 @@
 <template>
-  <v-fade-transition tag="v-row" group class="template-layout-elements">
+  <v-fade-transition tag="v-row" group class="template-layout-elements ga-4">
     <EditorSlot
       v-for="(element, index) in elements"
       :key="element.id"
@@ -20,7 +20,7 @@
           <v-col class="d-flex justify-end">
             <v-btn
               :text="$t('$ezreeport.delete')"
-              append-icon="mdi-delete"
+              :append-icon="mdiDelete"
               color="red"
               density="comfortable"
               class="ml-2"
@@ -35,11 +35,12 @@
 
 <script setup lang="ts">
   import type { AnyFigureHelper } from '~sdk/helpers/figures';
+  import { mdiDelete } from '@mdi/js';
   import {
-    addFigureOfHelper,
-    updateFigureOfHelper,
-    removeFigureOfHelper,
     type AnyLayoutHelper,
+    addFigureOfHelper,
+    removeFigureOfHelper,
+    updateFigureOfHelper,
   } from '~sdk/helpers/layouts';
 
   type Element = {
@@ -64,7 +65,6 @@
 
   // Utils composables
   const { grid } = useTemplateEditor();
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   const unusedSlots = computed(() => {
@@ -80,8 +80,8 @@
 
   const elements = computed((): Element[] => {
     const elementList = props.modelValue.figures.map((figure) => ({
-      id: figure.id,
       figure,
+      id: figure.id,
       slot: Math.min(...figure.slots, unusedSlots.value.at(0) ?? 0),
     }));
 
@@ -94,17 +94,14 @@
     return [
       ...elementList,
       ...unusedSlots.value.map((slot) => ({
-        id: `empty-${slot}`,
         figure: undefined,
+        id: `empty-${slot}`,
         slot,
       })),
     ];
   });
 
-  /**
-   *
-   */
-  function editFigure(figure: AnyFigureHelper, element: Element) {
+  function editFigure(figure: AnyFigureHelper, element: Element): void {
     try {
       if (element.figure) {
         updateFigureOfHelper(props.modelValue, element.figure, figure);
@@ -112,19 +109,19 @@
         addFigureOfHelper(props.modelValue, figure);
       }
       emit('update:modelValue', props.modelValue);
-    } catch (err) {
-      handleEzrError(t('$ezreeport.editor.layouts.errors.edit'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.editor.layouts.errors.edit'), error);
     }
   }
 
-  function deleteFigure(element: Element) {
+  function deleteFigure(element: Element): void {
     try {
       if (element.figure) {
         removeFigureOfHelper(props.modelValue, element.figure);
       }
       emit('update:modelValue', props.modelValue);
-    } catch (err) {
-      handleEzrError(t('$ezreeport.editor.layouts.errors.delete'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.editor.layouts.errors.delete'), error);
     }
   }
 </script>

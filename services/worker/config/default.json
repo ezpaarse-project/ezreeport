@@ -19,8 +19,7 @@
     "url": "https://host.docker.internal:9200",
     "username": "elastic",
     "password": "changeme",
-    "apiKey": "",
-    "requiredStatus": "green"
+    "apiKey": ""
   },
   "rabbitmq": {
     "protocol": "amqp",
@@ -35,7 +34,6 @@
       "iterations": 4,
       "days": 7
     },
-    "team": "ezteam-dev@couperin.org",
     "scheme": "tableau20",
     "fontFamily": "Roboto",
     "fonts": [
@@ -62,6 +60,7 @@
     ]
   },
   "pdf": {
+    "iconsDir": "assets/icons/",
     "logos": [
       {
         "path": "assets/logos/ezmesure.png",

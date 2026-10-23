@@ -15,9 +15,9 @@ let client: RPCClient | undefined;
 let streamClient: RPCStreamClient | undefined;
 
 export function initFilesClient(channel: rabbitmq.Channel): void {
-  // schedulerClient will be called while begin unaware of
-  // rabbitmq connection, so we need to store the channel
-  // here
+  // SchedulerClient will be called while begin unaware of
+  // Rabbitmq connection, so we need to store the channel
+  // Here
   client = new RPCClient(channel, 'ezreeport.rpc:files', appLogger);
   streamClient = new RPCStreamClient(
     channel,
@@ -81,7 +81,7 @@ export async function getAllReports(): Promise<
   }
 
   return Object.fromEntries(
-    Array.from(reportsOfTasks).map(([taskId, reports]) => [
+    [...reportsOfTasks].map(([taskId, reports]) => [
       taskId,
       Object.fromEntries(reports),
     ])

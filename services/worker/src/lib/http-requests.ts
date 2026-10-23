@@ -1,6 +1,7 @@
 import { createFetch } from 'ofetch';
 
-import pckg from '../../package.json';
+// oxlint-disable-next-line import/extensions
+import pckg from '../../package.json' with { type: 'json' };
 import config from './config';
 import { appLogger } from './logger';
 
@@ -48,7 +49,7 @@ export const http = createFetch({
   defaults: {
     headers: {
       // Custom User Agent
-      'User-Agent': `Mozilla/5.0 (compatible; ezREEPORT/${pckg.version}; +${pckg.homepage}); ofetch/${pckg.dependencies.ofetch.slice(1)}`,
+      'User-Agent': `Mozilla/5.0 (compatible; ezREEPORT/${pckg.version}; +${pckg.homepage})`,
     },
     // Check if not attempting to request banned domain
     onRequest: ({ request }) => {

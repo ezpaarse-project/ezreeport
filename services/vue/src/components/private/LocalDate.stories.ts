@@ -1,67 +1,33 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import LocaleDate from './LocalDate.vue';
 
 const meta: Meta<typeof LocaleDate> = {
-  title: 'Utils/Local Date',
   component: LocaleDate,
+  title: 'Utils/Local Date',
 };
+
+const { defineStory } = useStory(meta);
 
 export default meta;
 
-type Story = StoryObj<typeof LocaleDate>;
+export const Default = defineStory({
+  modelValue: new Date(),
+});
 
-export const Default: Story = {
-  render: (args: unknown) => ({
-    components: { LocaleDate },
-    setup() {
-      return { args };
-    },
-    template: '<LocaleDate v-bind="args" />',
-  }),
-  args: {
-    modelValue: new Date(),
-  },
-};
+export const FormattedDate = defineStory({
+  format: 'P',
+  modelValue: new Date(),
+});
 
-export const FormattedDate: Story = {
-  render: (args: unknown) => ({
-    components: { LocaleDate },
-    setup() {
-      return { args };
-    },
-    template: '<LocaleDate v-bind="args" />',
-  }),
-  args: {
-    modelValue: new Date(),
-    format: 'P',
-  },
-};
+export const FormattedTime = defineStory({
+  format: 'p',
+  modelValue: new Date(),
+});
 
-export const FormattedTime: Story = {
-  render: (args: unknown) => ({
-    components: { LocaleDate },
-    setup() {
-      return { args };
-    },
-    template: '<LocaleDate v-bind="args" />',
-  }),
-  args: {
-    modelValue: new Date(),
-    format: 'p',
-  },
-};
-
-export const FormattedDateTime: Story = {
-  render: (args: unknown) => ({
-    components: { LocaleDate },
-    setup() {
-      return { args };
-    },
-    template: '<LocaleDate v-bind="args" />',
-  }),
-  args: {
-    modelValue: new Date(),
-    format: 'PPpp',
-  },
-};
+export const FormattedDateTime = defineStory({
+  format: 'PPpp',
+  modelValue: new Date(),
+});

@@ -40,10 +40,6 @@ export type NamespaceQueryFiltersType = z.infer<typeof NamespaceQueryFilters>;
  */
 export const BulkNamespace = z
   .object({
-    id: z.string().min(1).describe('Namespace ID'),
-
-    name: z.string().min(1).describe('Namespace name'),
-
     fetchLogin: z
       .object({
         elastic: z.object({
@@ -63,12 +59,16 @@ export const BulkNamespace = z
       })
       .describe('Additional options for fetchers used for namespace'),
 
+    id: z.string().min(1).describe('Namespace ID'),
+
     logoId: z.string().nullish().describe('Namespace description'),
 
     memberships: z
       .array(BulkMembership.omit({ namespaceId: true }))
       .optional()
       .describe('Members of the namespace'),
+
+    name: z.string().min(1).describe('Namespace name'),
   })
   .strict();
 
@@ -85,11 +85,11 @@ export const BulkNamespaceResult = z.object({
 
   namespaces: z
     .object({
+      created: z.int().min(0).describe('Number of item created'),
+
       deleted: z.int().min(0).describe('Number of item deleted'),
 
       updated: z.int().min(0).describe('Number of item updated'),
-
-      created: z.int().min(0).describe('Number of item created'),
     })
     .describe('Summary of operations on namespace'),
 });

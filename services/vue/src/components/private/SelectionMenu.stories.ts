@@ -1,26 +1,19 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import SelectionMenu from './SelectionMenu.vue';
 
 const meta: Meta<typeof SelectionMenu> = {
-  title: 'Utils/Selection Menu',
   component: SelectionMenu,
+  title: 'Utils/Selection Menu',
 };
+
+const { defineStory } = useStory(meta);
 
 export default meta;
 
-type Story = StoryObj<typeof SelectionMenu>;
-
-export const Default: Story = {
-  render: (args: unknown) => ({
-    components: { SelectionMenu },
-    setup() {
-      return { args };
-    },
-    template: '<SelectionMenu v-bind="args" />',
-  }),
-  args: {
-    modelValue: ['a', 'b', 'c'],
-    text: 'My Selection',
-  },
-};
+export const Default = defineStory({
+  modelValue: ['a', 'b', 'c'],
+  text: 'My Selection',
+});

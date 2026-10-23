@@ -1,5 +1,5 @@
 <template>
-  <v-card :title="$t('$ezreeport.task.title:edit')" prepend-icon="mdi-email">
+  <v-card :title="$t('$ezreeport.task.title:edit')" :prepend-icon="mdiEmail">
     <template #append>
       <TemplateLocaleFlag
         v-if="modelValue.extends?.locale"
@@ -20,7 +20,7 @@
               v-model="task.name"
               :label="$t('$ezreeport.name')"
               :rules="[(val) => !!val || $t('$ezreeport.required')]"
-              prepend-icon="mdi-rename"
+              :prepend-icon="mdiRename"
               variant="underlined"
               required
             />
@@ -32,7 +32,7 @@
             <v-text-field
               :model-value="namespace?.name || task.namespaceId"
               :label="$t('$ezreeport.namespace')"
-              prepend-icon="mdi-folder"
+              :prepend-icon="mdiFolder"
               variant="plain"
               readonly
             />
@@ -51,7 +51,7 @@
                   isEmail(val) || $t('$ezreeport.errors.invalidEmail', i + 1),
               ]"
               :item-placeholder="$t('$ezreeport.task.targets:hint')"
-              prepend-icon="mdi-mailbox"
+              :prepend-icon="mdiMailbox"
               variant="underlined"
               required
               @update:model-value="onTargetUpdated($event)"
@@ -64,7 +64,7 @@
             <v-textarea
               v-model="task.description"
               :label="$t('$ezreeport.task.description')"
-              prepend-icon="mdi-text"
+              :prepend-icon="mdiText"
               variant="underlined"
             />
           </v-col>
@@ -73,7 +73,7 @@
         <v-expansion-panels class="mt-4">
           <v-expansion-panel eager>
             <template #title>
-              <v-icon start icon="mdi-tools" />
+              <v-icon start :icon="mdiTools" />
 
               {{ $t('$ezreeport.advanced') }}
             </template>
@@ -93,8 +93,8 @@
                 v-if="showAdvanced"
                 v-tooltip:top="$t('$ezreeport.superUserMode:tooltip')"
                 :text="$t('$ezreeport.superUserMode')"
-                prepend-icon="mdi-tools"
-                append-icon="mdi-tools"
+                :prepend-icon="mdiTools"
+                :append-icon="mdiTools"
                 color="warning"
                 variant="flat"
                 block
@@ -115,7 +115,7 @@
       <v-btn
         :text="$t('$ezreeport.save')"
         :disabled="!isValid"
-        append-icon="mdi-pencil"
+        :append-icon="mdiPencil"
         color="primary"
         @click="save()"
       />
@@ -125,8 +125,22 @@
 
 <script setup lang="ts">
   import type { Namespace } from '~sdk/namespaces';
+  import {
+    mdiEmail,
+    mdiFolder,
+    mdiMailbox,
+    mdiPencil,
+    mdiRename,
+    mdiText,
+    mdiTools,
+  } from '@mdi/js';
   import { getCurrentNamespaces } from '~sdk/auth';
-  import { upsertTask, createTask, type Task, type InputTask } from '~sdk/tasks';
+  import {
+    type InputTask,
+    type Task,
+    createTask,
+    upsertTask,
+  } from '~sdk/tasks';
 
   import { isEmail } from '~/utils/validate';
 
@@ -149,10 +163,9 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
   const { refreshMapping } = useTemplateEditor({
-    // grid: props.modelValue.template.grid,
+    // Grid: props.modelValue.template.grid,
     index: props.modelValue.template.index,
     dateField: props.modelValue.template.dateField,
     namespaceId: props.modelValue.namespaceId,
@@ -164,26 +177,28 @@
   const loadingNamespaces = shallowRef(false);
   /** Task to create */
   const task = ref<InputTask>({
-    name: props.modelValue.name,
     description: props.modelValue.description,
-    namespaceId: props.modelValue.namespaceId,
+    enabled: props.modelValue.enabled,
     extendedId: props.modelValue.extendedId,
-    template: props.modelValue.template,
     lastExtended: props.modelValue.lastExtended,
-    targets: props.modelValue.targets,
+    name: props.modelValue.name,
+    namespace: props.modelValue.namespace,
+    namespaceId: props.modelValue.namespaceId,
+    nextRun: props.modelValue.nextRun,
     recurrence: props.modelValue.recurrence,
     recurrenceOffset: props.modelValue.recurrenceOffset,
-    nextRun: props.modelValue.nextRun,
-    enabled: props.modelValue.enabled,
-    namespace: props.modelValue.namespace,
+    targets: props.modelValue.targets,
+    template: props.modelValue.template,
   });
 
   /** Filters of task */
   const filters = computed({
     get: () =>
-      new Map((task.value.template.filters ?? []).map((fil) => [fil.name, fil])),
+      new Map(
+        (task.value.template.filters ?? []).map((fil) => [fil.name, fil])
+      ),
     set: (value) => {
-      const values = Array.from(value.values());
+      const values = [...value.values()];
       if (values.length > 0) {
         task.value.template.filters = values;
         return;
@@ -207,8 +222,8 @@
       try {
         const currentNamespaces = await getCurrentNamespaces();
         value = currentNamespaces.find((nsp) => nsp.id === namespaceId.value);
-      } catch (err) {
-        handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), err);
+      } catch (error) {
+        handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), error);
       }
 
       return value;
@@ -229,15 +244,15 @@
     }
 
     // Allow multiple mail addresses, separated by semicolon or comma
-    task.value.targets = Array.from(
-      new Set(
+    task.value.targets = [
+      ...new Set(
         allTargets
           .join(';')
           .replaceAll(/[,]/g, ';')
           .split(';')
           .map((mail) => mail.trim())
-      )
-    );
+      ),
+    ];
   }
 
   async function save(): Promise<void> {
@@ -252,8 +267,8 @@
       }
 
       emit('update:modelValue', result);
-    } catch (err) {
-      handleEzrError(t('$ezreeport.task.errors.edit'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.task.errors.edit'), error);
     }
   }
 </script>

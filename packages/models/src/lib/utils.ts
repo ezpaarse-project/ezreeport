@@ -1,4 +1,4 @@
-import { differenceInMilliseconds, type Interval } from '@ezreeport/dates';
+import { type Interval, differenceInMilliseconds } from '@ezreeport/dates';
 
 type BulkResultType = 'created' | 'updated' | 'deleted';
 
@@ -13,7 +13,7 @@ export enum FormatIntervalTarget {
   Milliseconds = 1,
   Seconds = 100,
   Minutes = 6000,
-  Hours = 360000,
+  Hours = 360_000,
 }
 
 /**
@@ -67,7 +67,7 @@ export const ensureArray = <Type>(value: Type | Type[]): Type[] =>
 
 export function ensureInt(value: string | number | boolean): number {
   if (typeof value === 'string') {
-    return Number.parseInt(value, 10);
+    return Math.trunc(Number(value));
   }
   if (typeof value === 'boolean') {
     return value ? 1 : 0;

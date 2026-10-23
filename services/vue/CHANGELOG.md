@@ -1,5 +1,43 @@
 # @ezpaarse-project/ezreeport-vue
 
+## 4.0.0-rc.4
+
+### Patch Changes
+
+- 1499483: 🐛 fixed 409 when generating test report on different timezones
+
+## 4.0.0-rc.3
+
+### Patch Changes
+
+- 4add6ba: 💬 Fixed typos in translations
+
+## 4.0.0-rc.2
+
+### Minor Changes
+
+- 1f1711f: ✨ show warning when empty task is present
+
+### Patch Changes
+
+- 1c7ddf8: 💬 fixed typo in generation success for french
+
+## 4.0.0-rc.1
+
+### Minor Changes
+
+- 884aad6: ✨ can now set up figures that can be render with empty data
+
+## 4.0.0-rc.0
+
+### Major Changes
+
+- 7806cc2: ⬆️ upgraded dependencies: now using Vuetify4 and with `peerDependencies`.
+
+### Minor Changes
+
+- cf3ce2b: ✨ can now click on index in selector to include it
+
 ## 3.3.0
 
 ### Minor Changes

@@ -1,45 +1,59 @@
-import type { Mark } from 'vega-lite/build/src/mark';
+// oxlint-disable-next-line import/no-namespace
+import type * as vegaModule from 'vega';
+// oxlint-disable-next-line import/no-namespace
+import type * as vegaLiteModule from 'vega-lite';
 import { registerFont } from 'canvas';
+import chroma from 'chroma-js';
 import { compile as handlebars } from 'handlebars';
-import { parse, View, type Locale as VegaLocale } from 'vega';
-import { compile, type TopLevelSpec } from 'vega-lite';
 
 import config from '~/lib/config';
 import { appLogger } from '~/lib/logger';
-import localeFR from '~/lib/vega/locales/fr-FR.json';
-import VegaLogger from '~/lib/vega/logger';
+import { VegaLogger } from '~/lib/vega/logger';
 
 import type { FetchResultItem } from '~/models/fetch/results';
 import TemplateError from '~/models/generation/errors';
 
+import type { Title, VegaParams } from './layers';
 import type { CanvasRegisterableFont } from './types';
-import {
-  createArcSpec,
-  createBarSpec,
-  createLineSpec,
-  createOtherSpec,
-  type VegaParams,
-  type Title,
-} from './layers';
+
+const { fonts, scheme } = config.report;
+
+let vega: typeof vegaModule | null = null;
+let vegaLite: typeof vegaLiteModule | null = null;
+
+const schemes = {
+  colors: { name: scheme, values: [] as string[] },
+  labels: { name: `${scheme}.labels`, values: [] as string[] },
+};
 
 export type InputVegaParams = Omit<VegaParams, 'width' | 'height'> & {
   title: Title;
 };
 
-const { fontFamily, fonts } = config.report;
-
 export const logger = appLogger.child({ scope: 'vega' });
 
-export function initVegaEngine(): void {
+export async function initVegaEngine(): Promise<void> {
   // Register fonts in Vega
   for (const { path, ...font } of fonts as CanvasRegisterableFont[]) {
     registerFont(path, font);
     logger.debug({
-      path,
       font,
       msg: 'Registered font',
+      path,
     });
   }
+
+  // Using dynamic imports to avoid issues with top level awaits
+  vega = await import('vega');
+  vegaLite = await import('vega-lite');
+
+  // Register schemes
+  schemes.colors.values = vega.scheme(schemes.colors.name) as string[];
+  schemes.labels.values = schemes.colors.values.map((color) =>
+    // oxlint-disable-next-line import/no-named-as-default-member
+    chroma.contrast(color, 'black') > 5 ? 'black' : 'white'
+  );
+  vega.scheme(schemes.labels.name, schemes.labels.values);
 }
 
 /**
@@ -75,62 +89,27 @@ export const parseTitle = (
 };
 
 /**
- * Helper to create Vega-lite spec
- *
- * @param type Type of graph
- * @param data The data
- * @param params Graph options
- * @returns
- */
-export const createVegaLSpec = (
-  type: Mark,
-  data: FetchResultItem[],
-  params: VegaParams
-): TopLevelSpec => {
-  let createSpec = createOtherSpec;
-  switch (type) {
-    case 'arc':
-      createSpec = createArcSpec;
-      break;
-    case 'bar':
-      createSpec = createBarSpec;
-      break;
-    case 'line':
-    case 'area':
-      createSpec = createLineSpec;
-      break;
-
-    default:
-      break;
-  }
-
-  const { data: editedData, ...spec } = createSpec(type, data, params);
-
-  return {
-    width: Math.round(params.width),
-    height: Math.round(params.height),
-    background: 'transparent',
-
-    datasets: { default: editedData || data },
-    data: { name: 'default' },
-
-    ...spec,
-
-    config: {
-      locale: localeFR as VegaLocale,
-      customFormatTypes: true,
-      font: fontFamily,
-    },
-  } as TopLevelSpec;
-};
-
-/**
  * Transform a Vega-lite spec into a Vega view. Useful when rendering.
  *
  * @param spec The Vega-lite spec
  * @returns The vega View
  */
-export const createVegaView = (spec: TopLevelSpec): View =>
-  new View(parse(compile(spec).spec), { renderer: 'none' }).logger(
-    new VegaLogger()
-  );
+export const createVegaView = (
+  spec: vegaLiteModule.TopLevelSpec
+): vegaModule.View => {
+  if (!vega || !vegaLite) {
+    throw new Error('Vega Engine not initialised');
+  }
+
+  return new vega.View(vega.parse(vegaLite.compile(spec).spec), {
+    renderer: 'none',
+  }).logger(new VegaLogger());
+};
+
+export const getVegaScheme = (): typeof schemes => {
+  if (!vega) {
+    throw new Error('Vega Engine not initialised');
+  }
+
+  return schemes;
+};

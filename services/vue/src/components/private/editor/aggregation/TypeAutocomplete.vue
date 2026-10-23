@@ -5,7 +5,7 @@
     :items="typeOptions"
     :readonly="readonly"
     :disabled="disabled"
-    prepend-icon="mdi-select-group"
+    :prepend-icon="mdiSelectGroup"
     variant="underlined"
     hide-details
     @update:model-value="$emit('update:modelValue', $event)"
@@ -13,6 +13,7 @@
 </template>
 
 <script setup lang="ts">
+  import { mdiSelectGroup } from '@mdi/js';
   import {
     type AggregationType,
     aggregationTypes,
@@ -39,7 +40,6 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   function aggTypeToListItem(
@@ -50,13 +50,13 @@
       // There's no way to add "headers", "groups" or "children" into a
       // VSelect (and other derivate), so headers are items with custom style
       {
+        props: {
+          disabled: true,
+        },
         title: t(
           `$ezreeport.editor.aggregation.typeGroups.${isCommonlyFound ? 'common' : 'others'}`
         ),
         value: isCommonlyFound,
-        props: {
-          disabled: true,
-        },
       },
     ];
 
@@ -66,13 +66,13 @@
       (!props.allowedType || props.allowedType === 'metric')
     ) {
       items.push({
-        title: t('$ezreeport.editor.aggregation.types._count'),
-        value: '',
         props: {
           style: {
             paddingLeft: '2rem',
           },
         },
+        title: t('$ezreeport.editor.aggregation.types._count'),
+        value: '',
       });
     }
 
@@ -80,14 +80,14 @@
       ...items,
       // Map items
       ...value.map((type) => ({
-        title: t(`$ezreeport.editor.aggregation.types.${type.name}`),
-        value: type.name,
         props: {
-          subtitle: type.name,
           style: {
             paddingLeft: '2rem',
           },
+          subtitle: type.name,
         },
+        title: t(`$ezreeport.editor.aggregation.types.${type.name}`),
+        value: type.name,
       })),
     ];
   }
@@ -104,9 +104,9 @@
       (aggType) => aggType.isCommonlyFound ?? false
     );
     return (
-      Array.from(grouped)
+      [...grouped]
         // Put common in first
-        .sort(([nameA], [nameB]) => Number(nameB) - Number(nameA))
+        .toSorted(([nameA], [nameB]) => Number(nameB) - Number(nameA))
         .flatMap(([isCommonlyFound, value]) =>
           aggTypeToListItem(value, isCommonlyFound)
         )

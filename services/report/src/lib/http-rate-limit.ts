@@ -29,7 +29,7 @@ export class RateLimitStore implements FastifyRateLimitStore {
       result?: { current: number; ttl: number }
     ) => void
   ): Promise<void> {
-    // types are kinda tricky with this lib
+    // Types are kinda tricky with this lib
     const { timeWindow, max } = this.options as {
       timeWindow: number;
       max: number;
@@ -39,8 +39,8 @@ export class RateLimitStore implements FastifyRateLimitStore {
     const ttl = new Date(now + timeWindow);
 
     const source_route = {
-      source: key,
       route: this.route,
+      source: key,
     };
 
     const sendRateLimit = (payload: {
@@ -62,14 +62,14 @@ export class RateLimitStore implements FastifyRateLimitStore {
 
           if ((row.count ?? 0) < max) {
             await tx.rateLimit.update({
-              where: { source_route },
               data: { count: payload.current },
+              where: { source_route },
             });
 
             logger.debug({
               msg: 'Registered rate limit',
-              source_route,
               payload,
+              source_route,
             });
           }
 
@@ -81,25 +81,29 @@ export class RateLimitStore implements FastifyRateLimitStore {
         const payload = { current: 1, ttl: row?.ttl || ttl };
 
         await tx.rateLimit.upsert({
-          where: { source_route },
           create: {
+            count: 1,
             route: source_route.route,
             source: source_route.source,
-            count: 1,
             ttl: payload.ttl,
           },
           update: {
             count: 1,
             ttl,
           },
+          where: { source_route },
         });
 
-        logger.debug({ msg: 'Registered rate limit', source_route, payload });
+        logger.debug({ msg: 'Registered rate limit', payload, source_route });
 
         sendRateLimit(payload);
       });
-    } catch (err) {
-      logger.error({ msg: 'Failed to register rate limit', source_route, err });
+    } catch (error) {
+      logger.error({
+        error,
+        msg: 'Failed to register rate limit',
+        source_route,
+      });
 
       sendRateLimit({ current: 0, ttl: null });
     }
@@ -109,7 +113,7 @@ export class RateLimitStore implements FastifyRateLimitStore {
     routeOptions: RouteOptions & { path: string; prefix: string }
   ): FastifyRateLimitStore {
     const options = { ...this.options, ...routeOptions, global: false };
-    // types are kinda tricky with this lib
+    // Types are kinda tricky with this lib
     const { routeInfo } = routeOptions as unknown as {
       routeInfo: RouteOptions;
     };

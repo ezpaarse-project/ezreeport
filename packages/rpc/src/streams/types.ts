@@ -6,8 +6,8 @@ import { z } from '@ezreeport/models/lib/zod';
 export const RPCStreamChunk = z.object({
   chunk: z
     .object({
-      type: z.literal('Buffer'),
       data: z.array(z.number()),
+      type: z.literal('Buffer'),
     })
     .optional()
     .describe('Stream chunk'),
@@ -26,11 +26,11 @@ export type RPCStreamChunkType = z.infer<typeof RPCStreamChunk>;
  * Validation for a RPC request for a write stream
  */
 export const RPCWriteStreamRequest = z.object({
+  dataQueue: z.string().min(1).describe('Data queue name'),
+
   method: z.literal('createWriteStream'),
 
   params: z.array(z.any()).describe('Stream request parameters'),
-
-  dataQueue: z.string().min(1).describe('Data queue name'),
 });
 
 /**
@@ -56,9 +56,9 @@ export type RPCReadStreamRequestType = z.infer<typeof RPCReadStreamRequest>;
  * Validation for a RPC response
  */
 export const RPCStreamResponse = z.object({
-  result: z.boolean().describe('Is the stream successful'),
-
   error: z.string().min(1).optional().describe('RPC method error'),
+
+  result: z.boolean().describe('Is the stream successful'),
 });
 
 /**

@@ -36,11 +36,11 @@ const logger = appLogger.child({ scope: 'jspdf' });
  * @param data The data
  * @param spec The params given to jspdf-autotable
  */
-export async function addTableToPDF(
+export function addTableToPDF(
   doc: PDFReport,
   data: FetchResultItem[],
   spec: TableParams
-): Promise<void> {
+): void {
   const columns = spec.columns ?? [];
   let startY = spec.startY ?? 0;
 
@@ -49,9 +49,9 @@ export async function addTableToPDF(
   // Calc margin
   const margin = merge(
     {
-      right: doc.margin.right,
-      left: doc.margin.left,
       bottom: doc.offset.bottom,
+      left: doc.margin.left,
+      right: doc.margin.right,
       top: doc.offset.top,
     },
     spec.margin
@@ -85,15 +85,15 @@ export async function addTableToPDF(
   }
 
   if (maxHeight != null && maxHeight > 0) {
-    // default height of a cell is 29
+    // Default height of a cell is 29
     // Removing header & some space
     const maxTableHeight = maxHeight - 2 * 29;
     const maxRows = Math.ceil(maxTableHeight / 29);
     if (tableData.length > maxRows) {
       logger.warn({
+        maxRows,
         msg: "Reducing table length because table won't fit in slot",
         tableDataLength: tableData.length,
-        maxRows,
       });
       tableData = tableData.slice(0, maxRows - (spec.total ? 1 : 0));
     }
@@ -130,22 +130,6 @@ export async function addTableToPDF(
 
   // Print table
   AutoTable.autoTable(doc.pdf, {
-    styles: {
-      overflow: 'ellipsize',
-      minCellWidth: 100,
-    },
-    rowPageBreak: 'avoid',
-    tableWidth: spec.tableWidth,
-    startY,
-    margin,
-
-    columns: columns.map((col) => ({
-      header: {
-        content: col.header.toString(),
-        styles: col.styles,
-      },
-    })),
-
     body: tableData.map(
       (item): AutoTable.RowInput =>
         columns.map((col): AutoTable.CellDef => {
@@ -156,7 +140,20 @@ export async function addTableToPDF(
           return { content: `${value}`, styles: col.styles };
         })
     ),
-
+    columns: columns.map((col) => ({
+      header: {
+        content: col.header.toString(),
+        styles: col.styles,
+      },
+    })),
     foot,
+    margin,
+    rowPageBreak: 'avoid',
+    startY,
+    styles: {
+      minCellWidth: 100,
+      overflow: 'ellipsize',
+    },
+    tableWidth: spec.tableWidth,
   });
 }

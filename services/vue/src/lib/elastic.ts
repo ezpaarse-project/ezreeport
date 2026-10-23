@@ -1,3 +1,18 @@
+import {
+  mdiAlphabetical,
+  mdiCalendarBlank,
+  mdiChartLine,
+  mdiCodeBraces,
+  mdiCodeTags,
+  mdiFormatListBulleted,
+  mdiIpNetwork,
+  mdiMapMarker,
+  mdiNumeric,
+  mdiText,
+  mdiToggleSwitch,
+  mdiVectorLine,
+} from '@mdi/js';
+
 // https://www.elastic.co/guide/en/elasticsearch/reference/7.17/mapping-types.html
 export const elasticTypeAliases = new Map([
   // Common types
@@ -50,16 +65,16 @@ export const elasticTypeAliases = new Map([
 ]);
 
 export const elasticTypeIcons = new Map([
-  ['keyword', 'mdi-alphabetical'],
-  ['number', 'mdi-numeric'],
-  ['date', 'mdi-calendar-blank'],
-  ['text', 'mdi-text'],
-  ['binary', 'mdi-code-tags'],
-  ['boolean', 'mdi-toggle-switch'],
-  ['array', 'mdi-format-list-bulleted'],
-  ['object', 'mdi-code-braces'],
-  ['geo', 'mdi-map-marker'],
-  ['ip', 'mdi-ip-network'],
-  ['rank', 'mdi-chart-line'],
-  ['vector', 'vector-line'],
+  ['keyword', mdiAlphabetical],
+  ['number', mdiNumeric],
+  ['date', mdiCalendarBlank],
+  ['text', mdiText],
+  ['binary', mdiCodeTags],
+  ['boolean', mdiToggleSwitch],
+  ['array', mdiFormatListBulleted],
+  ['object', mdiCodeBraces],
+  ['geo', mdiMapMarker],
+  ['ip', mdiIpNetwork],
+  ['rank', mdiChartLine],
+  ['vector', mdiVectorLine],
 ]);

@@ -11,14 +11,14 @@ import { buildPaginatedRequest } from '~/models/pagination';
 import { Template } from '~/models/templates/types';
 
 import {
-  Task,
-  type TaskType,
   type InputTaskType,
-  type TaskQueryFiltersType,
+  Task,
   type TaskIncludeFieldsType,
+  type TaskQueryFiltersType,
+  type TaskType,
 } from './types';
 
-const logger = appLogger.child({ scope: 'models', model: 'tasks' });
+const logger = appLogger.child({ model: 'tasks', scope: 'models' });
 
 const { id: defaultTemplateId } = config.defaultTemplate;
 
@@ -141,7 +141,7 @@ export async function getAllTasks(
   // Ensure data
   const tasks = await Promise.all(
     data.map((task) =>
-      ensureSchema(Task, task, (task) => `Failed to parse task ${task.id}`)
+      ensureSchema(Task, task, () => `Failed to parse task ${task.id}`)
     )
   );
   return tasks;
@@ -187,18 +187,16 @@ export async function createTask(
 
       extendedId: undefined,
       extends: { connect: { id: data.extendedId } },
-
-      namespaceId: undefined,
-      namespace: { connect: { id: data.namespaceId } },
-
       lastExtended:
         data.lastExtended === null ? Prisma.DbNull : data.lastExtended,
+      namespace: { connect: { id: data.namespaceId } },
+      namespaceId: undefined,
     },
   });
 
   logger.debug({
-    id: task.id,
     action: 'Created',
+    id: task.id,
     msg: 'Created',
   });
 
@@ -218,23 +216,21 @@ export async function editTask(
   data: InputTaskType
 ): Promise<TaskType> {
   const task = await prisma.task.update({
-    where: { id },
     data: {
       ...data,
 
       extendedId: undefined,
       extends: { connect: { id: data.extendedId } },
-
-      namespaceId: undefined,
-      namespace: { connect: { id: data.namespaceId } },
-
       lastExtended: data.lastExtended ?? Prisma.DbNull,
+      namespace: { connect: { id: data.namespaceId } },
+      namespaceId: undefined,
     },
+    where: { id },
   });
 
   logger.debug({
-    id: task.id,
     action: 'Updated',
+    id: task.id,
     msg: 'Updated',
   });
 
@@ -252,8 +248,8 @@ export async function deleteTask(id: string): Promise<TaskType> {
   const task = await prisma.task.delete({ where: { id } });
 
   logger.debug({
-    id: task.id,
     action: 'Deleted',
+    id: task.id,
     msg: 'Deleted',
   });
 
@@ -294,8 +290,8 @@ export async function countTasks(
  */
 export async function doesTaskExist(id: string): Promise<boolean> {
   const count = await prisma.task.count({
-    where: { id },
     select: { id: true },
+    where: { id },
   });
 
   return count.id > 0;
@@ -319,9 +315,9 @@ export async function doesSimilarTaskExist(
 ): Promise<boolean> {
   const data = await prisma.task.findFirst({
     where: {
+      extendedId: templateId,
       namespaceId,
       recurrence,
-      extendedId: templateId,
     },
   });
 
@@ -343,29 +339,29 @@ export async function doesSimilarTaskExist(
 export async function unlinkTaskFromTemplate(id: string): Promise<TaskType> {
   const { extends: rawTemplate, ...rawTask } =
     await prisma.task.findUniqueOrThrow({
-      where: { id },
       include: { extends: true },
+      where: { id },
     });
 
   const task = await ensureSchema(
     Task,
     rawTask,
-    (task) => `Failed to parse task ${task.id}`
+    (tsk) => `Failed to parse task ${tsk.id}`
   );
   const template = await ensureSchema(
     Template,
     rawTemplate,
-    (template) => `Failed to parse template ${template.id}`
+    (tpl) => `Failed to parse template ${tpl.id}`
   );
 
   const tags = await prisma.templateTag.findMany({
-    where: {
-      templates: { every: { id: template.id } },
-    },
     select: {
+      color: true,
       id: true,
       name: true,
-      color: true,
+    },
+    where: {
+      templates: { every: { id: template.id } },
     },
   });
 
@@ -378,24 +374,24 @@ export async function unlinkTaskFromTemplate(id: string): Promise<TaskType> {
   }));
 
   const result = await prisma.task.update({
-    where: { id },
     data: {
-      template: task.template,
       extendedId: defaultTemplateId,
       lastExtended: {
         id: template.id,
         name: template.name,
-        tags: tags,
+        tags,
       },
+      template: task.template,
     },
+    where: { id },
   });
 
   logger.debug({
-    id: task.id,
-    oldId: task.extendedId,
-    newId: config.defaultTemplate.id,
     action: 'Unlinked',
+    id: task.id,
     msg: 'Unlinked',
+    newId: config.defaultTemplate.id,
+    oldId: task.extendedId,
   });
 
   return ensureSchema(Task, result);

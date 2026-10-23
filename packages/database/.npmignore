@@ -1,0 +1,23 @@
+# Env
+.env*
+config/local*.json
+
+# Git files
+.git/
+**/.gitignore
+
+# Tests
+**/__mocks__/*
+**/__tests__/*
+**/*.test.ts
+coverage/
+
+# Dev tools
+.oxlint*
+CHANGELOG*.md
+*.config.ts
+.turbo
+turbo.json
+
+# Prisma config (needed for running migrations)
+!prisma.config.ts

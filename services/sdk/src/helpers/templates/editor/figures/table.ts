@@ -1,4 +1,4 @@
-import type { TemplateFilter, TemplateBodyFigure } from '~/modules/templates';
+import type { TemplateBodyFigure, TemplateFilter } from '~/modules/templates';
 
 import type { FigureAggregation } from '../aggregations';
 import type { FigureOrder } from './utils';
@@ -46,6 +46,7 @@ export interface TableColumn {
 export interface TableFigureHelper extends FigureHelperWithFilters {
   readonly type: 'table';
   params: {
+    displayEmpty?: boolean;
     title: string;
     columns: TableColumn[];
     total?: boolean;
@@ -59,16 +60,18 @@ export function createTableFigureHelper(
   total: boolean = false,
   filters: TemplateFilter[] = [],
   order: FigureOrder = true,
-  slots?: number[]
+  slots?: number[],
+  displayEmpty: boolean = false
 ): TableFigureHelper {
   return createFigureHelperWithFilters(
     'table',
     filters,
     {
-      title,
       columns,
-      total,
+      displayEmpty,
       order,
+      title,
+      total,
     },
     slots
   );
@@ -83,7 +86,8 @@ export function createTableFigureHelperFrom(
     figure.params?.total ?? false,
     figure.filters ?? [],
     figure.params?.order ?? true,
-    figure.slots
+    figure.slots,
+    figure.params?.displayEmpty ?? false
   );
 }
 
@@ -91,10 +95,11 @@ export function tableHelperParamsToJSON(
   params: TableFigureHelper['params']
 ): TemplateBodyFigure['params'] {
   return {
-    title: params.title,
     columns: params.columns,
-    total: params.total,
+    displayEmpty: params.displayEmpty,
     order: params.order,
+    title: params.title,
+    total: params.total,
   };
 }
 
@@ -146,7 +151,7 @@ export function updateTableColumnOfHelper(
   const index = figure.params.columns.findIndex(
     (col) => getTableColumnKey(col) === oldKey
   );
-  if (index < 0) {
+  if (index === -1) {
     throw new Error(`Column "${oldKey}" not found`);
   }
   const fig = figure;

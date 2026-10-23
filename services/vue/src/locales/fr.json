@@ -55,8 +55,9 @@
       "targets": "Destinataires",
       "targets:hint": "Entrez ici l'adresse mail du destinataire",
       "targets:add": "Ajouter un destinataire",
-      "targets:count": "{n} Destinataire|{n} Destinataires",
+      "targets:count": "0 destinataire|{n} destinataire|{n} destinataires",
       "targets:copy": "Copier les adresses mail",
+      "targets:empty": "Aucun destinataire n'est configuré pour ce rapport. Éditez le rapport pour ajouter un ou des destinataires.",
       "nextRun": "Prochain envoi",
       "lastRun": "Envoi précédent",
       "state": "État",
@@ -95,7 +96,7 @@
         },
         "success": {
           "title": "Le rapport a été généré avec succès",
-          "description": "Le rapport PDF sera disponible dans la boîte mail des Destinataires fournies, vous pouvez également le télécharger en utilisant le bouton en haut à droite de cette boîte."
+          "description": "Le rapport PDF sera disponible dans la boîte mail des destinataires fournis, vous pouvez également le télécharger en utilisant le bouton en haut à droite de cette boîte."
         },
         "files": {
           "report": "Rapport PDF",
@@ -321,6 +322,7 @@
           "order": "Tri des données",
           "type": "Type de visualisation",
           "create": "Créer une visualisation",
+          "displayEmpty": "Afficher même si aucune donnée n'est disponible",
           "types": {
             "table": "Tableau",
             "md": "Markdown",

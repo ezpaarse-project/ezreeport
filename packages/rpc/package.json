@@ -23,26 +23,18 @@
   },
   "scripts": {
     "lint": "oxlint",
-    "type-check": "tsc --noEmit --skipLibCheck"
+    "fmt": "oxfmt",
+    "check": "tsc --noEmit --skipLibCheck"
   },
-  "dependencies": {
-    "@ezreeport/logger": "workspace:*",
+  "dependencies": {},
+  "devDependencies": {
     "@ezreeport/models": "workspace:*",
     "@ezreeport/rabbitmq": "workspace:*",
-    "typescript": "catalog:"
+    "@types/node": "catalog:",
+    "typescript": "catalog:dev"
   },
-  "devDependencies": {
-    "@types/amqplib": "^0.10.7",
-    "typescript": "catalog:"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "oxlint --fix",
-      "oxfmt --no-error-on-unmatched-pattern"
-    ],
-    "package.json": [
-      "oxfmt --no-error-on-unmatched-pattern"
-    ]
+  "peerDependencies": {
+    "pino": "catalog:"
   },
   "engines": {
     "node": "^20 || ^22 || ^24"

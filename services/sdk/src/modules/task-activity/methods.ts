@@ -1,8 +1,8 @@
 import {
-  apiRequestOptionsToQuery,
-  type ApiResponsePaginated,
   type ApiRequestOptions,
+  type ApiResponsePaginated,
   type SdkPaginated,
+  apiRequestOptionsToQuery,
 } from '~/lib/api';
 import { client } from '~/lib/fetch';
 import { transformCreated } from '~/lib/transform';
@@ -42,10 +42,10 @@ export async function getAllActivity(
   );
 
   return {
-    items: content.map(transformActivity),
-    total,
     count,
+    items: content.map(transformActivity),
     page,
+    total,
   };
 }
 assignPermission(getAllActivity, 'GET /tasks-activity', true);

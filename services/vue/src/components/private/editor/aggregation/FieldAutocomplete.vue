@@ -7,7 +7,7 @@
     :readonly="readonly"
     :disabled="disabled"
     :return-object="false"
-    prepend-icon="mdi-form-textbox"
+    :prepend-icon="mdiFormTextbox"
     variant="underlined"
     required
     @update:model-value="$emit('update:modelValue', $event)"
@@ -15,6 +15,8 @@
 </template>
 
 <script setup lang="ts">
+  import { mdiFormTextbox } from '@mdi/js';
+
   import {
     type InnerBaseAggregation,
     aggregationFieldTypes,
@@ -39,7 +41,6 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
   const { getOptionsFromMapping } = useTemplateEditor();
 

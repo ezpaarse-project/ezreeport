@@ -1,8 +1,5 @@
 <template>
-  <v-card
-    :title="$t('$ezreeport.task.title:new')"
-    prepend-icon="mdi-email-plus"
-  >
+  <v-card :title="$t('$ezreeport.task.title:new')" :prepend-icon="mdiEmailPlus">
     <template #append>
       <slot name="append" />
     </template>
@@ -20,7 +17,7 @@
               :loading="loadingPresets"
               item-value="id"
               item-title="name"
-              prepend-icon="mdi-file"
+              :prepend-icon="mdiFile"
               variant="underlined"
               hide-details="auto"
               required
@@ -38,7 +35,7 @@
                 />
               </template>
 
-              <template #item="{ item: { raw: item }, props: listItem }">
+              <template #item="{ item, props: listItem }">
                 <v-list-item :title="item.name" lines="two" v-bind="listItem">
                   <template #subtitle>
                     <div class="d-flex align-center ga-1">
@@ -107,7 +104,7 @@
               :loading="loadingNamespaces"
               item-value="id"
               item-title="name"
-              prepend-icon="mdi-folder"
+              :prepend-icon="mdiFolder"
               variant="underlined"
               required
             />
@@ -120,7 +117,7 @@
               v-model="data.name"
               :label="$t('$ezreeport.name')"
               :rules="[(val) => !!val || $t('$ezreeport.required')]"
-              prepend-icon="mdi-rename"
+              :prepend-icon="mdiRename"
               variant="underlined"
               required
             />
@@ -139,7 +136,7 @@
                   isEmail(val) || $t('$ezreeport.errors.invalidEmail', i + 1),
               ]"
               :item-placeholder="$t('$ezreeport.task.targets:hint')"
-              prepend-icon="mdi-mailbox"
+              :prepend-icon="mdiMailbox"
               variant="underlined"
               required
               @update:model-value="onTargetUpdated($event)"
@@ -152,7 +149,7 @@
             <v-textarea
               v-model="data.description"
               :label="$t('$ezreeport.task.description')"
-              prepend-icon="mdi-text"
+              :prepend-icon="mdiText"
               variant="underlined"
             />
           </v-col>
@@ -161,7 +158,7 @@
         <v-expansion-panels class="mt-4">
           <v-expansion-panel eager>
             <template #title>
-              <v-icon start icon="mdi-tools" />
+              <v-icon start :icon="mdiTools" />
 
               {{ $t('$ezreeport.advanced') }}
             </template>
@@ -181,8 +178,8 @@
                 v-if="showAdvanced"
                 v-tooltip:top="$t('$ezreeport.superUserMode:tooltip')"
                 :text="$t('$ezreeport.superUserMode')"
-                prepend-icon="mdi-tools"
-                append-icon="mdi-tools"
+                :prepend-icon="mdiTools"
+                :append-icon="mdiTools"
                 color="warning"
                 variant="flat"
                 block
@@ -203,7 +200,7 @@
       <v-btn
         :text="$t('$ezreeport.new')"
         :disabled="!isValid"
-        append-icon="mdi-plus"
+        :append-icon="mdiPlus"
         color="primary"
         @click="save()"
       />
@@ -214,12 +211,22 @@
 <script setup lang="ts">
   import type { Namespace } from '~sdk/namespaces';
   import type { Task } from '~sdk/tasks';
+  import {
+    mdiEmailPlus,
+    mdiFile,
+    mdiFolder,
+    mdiMailbox,
+    mdiPlus,
+    mdiRename,
+    mdiText,
+    mdiTools,
+  } from '@mdi/js';
   import { getCurrentNamespaces } from '~sdk/auth';
   import {
-    getAllTaskPresets,
-    createTaskFromPreset,
-    type TaskPreset,
     type AdditionalDataForPreset,
+    type TaskPreset,
+    createTaskFromPreset,
+    getAllTaskPresets,
   } from '~sdk/task-presets';
 
   import { isEmail } from '~/utils/validate';
@@ -244,7 +251,6 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
   const { refreshMapping } = useTemplateEditor({
     namespaceId: props.namespaceId,
@@ -254,12 +260,12 @@
   const isValid = shallowRef(false);
   /** Task to create */
   const data = ref<AdditionalDataForPreset>({
-    name: '',
     description: '',
+    filters: undefined,
     index: '',
+    name: '',
     namespaceId: props?.namespaceId ?? '',
     targets: [],
-    filters: undefined,
   });
   /** Is preset list loading */
   const loadingPresets = shallowRef(false);
@@ -286,7 +292,7 @@
         return;
       }
 
-      const values = Array.from(value.values());
+      const values = [...value.values()];
       data.value.filters = values;
     },
   });
@@ -297,18 +303,18 @@
     loadingPresets.value = true;
     try {
       ({ items } = await getAllTaskPresets({
-        pagination: { count: 0, sort: 'name' },
         include: ['template.tags', 'template.locale'],
+        pagination: { count: 0, sort: 'name' },
       }));
-    } catch (err) {
-      handleEzrError(t('$ezreeport.task.errors.fetchPresets'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.task.errors.fetchPresets'), error);
     }
     loadingPresets.value = false;
 
     return items;
   }, []);
   /** Is form namespaced */
-  const isNamespaced = computed(() => !!props.namespaceId);
+  const isNamespaced = computed(() => Boolean(props.namespaceId));
   /** Namespace list */
   const namespaces = computedAsync(async () => {
     let items: Omit<Namespace, 'fetchLogin' | 'fetchOptions'>[] = [];
@@ -323,8 +329,8 @@
       items = currentNamespaces.toSorted((namespaceA, namespaceB) =>
         namespaceA.name.localeCompare(namespaceB.name)
       );
-    } catch (err) {
-      handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), error);
     }
     loadingNamespaces.value = false;
 
@@ -351,15 +357,15 @@
     }
 
     // Allow multiple mail addresses, separated by semicolon or comma
-    data.value.targets = Array.from(
-      new Set(
+    data.value.targets = [
+      ...new Set(
         allTargets
           .join(';')
           .replaceAll(/[,]/g, ';')
           .split(';')
           .map((mail) => mail.trim())
-      )
-    );
+      ),
+    ];
   }
 
   async function save(): Promise<void> {
@@ -368,20 +374,23 @@
     }
 
     try {
-      const result = await createTaskFromPreset(currentPreset.value, data.value);
+      const result = await createTaskFromPreset(
+        currentPreset.value,
+        data.value
+      );
 
       emit('update:modelValue', result);
-    } catch (err) {
+    } catch (error) {
       if (
-        err &&
-        typeof err === 'object' &&
-        'statusCode' in err &&
-        err.statusCode === 409
+        error &&
+        typeof error === 'object' &&
+        'statusCode' in error &&
+        error.statusCode === 409
       ) {
-        handleEzrError(t('$ezreeport.task.errors.create:duplicate'), err);
+        handleEzrError(t('$ezreeport.task.errors.create:duplicate'), error);
         return;
       }
-      handleEzrError(t('$ezreeport.task.errors.create:preset'), err);
+      handleEzrError(t('$ezreeport.task.errors.create:preset'), error);
     }
   }
 </script>

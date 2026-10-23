@@ -23,7 +23,7 @@
             v-tooltip:top="$t('$ezreeport.new')"
             variant="tonal"
             color="green"
-            icon="mdi-plus"
+            :icon="mdiPlus"
             density="comfortable"
             class="ml-2"
             @click="openForm()"
@@ -34,7 +34,7 @@
             :loading="loading"
             variant="tonal"
             color="primary"
-            icon="mdi-refresh"
+            :icon="mdiRefresh"
             density="comfortable"
             class="ml-2"
             @click="refresh"
@@ -43,7 +43,7 @@
           <v-text-field
             v-model="filters.query"
             :placeholder="$t('$ezreeport.search')"
-            append-inner-icon="mdi-magnify"
+            :append-inner-icon="mdiMagnify"
             variant="outlined"
             density="compact"
             width="200"
@@ -69,7 +69,7 @@
     <template #[`item.hidden`]="{ value, item }">
       <v-btn
         v-tooltip="$t('$ezreeport.template.hidden:desc', value ? 1 : 0)"
-        :icon="value ? 'mdi-eye-off' : 'mdi-eye'"
+        :icon="value ? mdiEyeOff : mdiEye"
         :disabled="!availableActions.visibility"
         variant="plain"
         density="compact"
@@ -85,7 +85,7 @@
       <v-menu>
         <template #activator="{ props: menu }">
           <v-btn
-            icon="mdi-cog"
+            :icon="mdiCog"
             variant="plain"
             density="compact"
             v-bind="menu"
@@ -96,7 +96,7 @@
           <v-list-item
             :title="$t('$ezreeport.duplicate')"
             :disabled="!availableActions.create"
-            prepend-icon="mdi-content-copy"
+            :prepend-icon="mdiContentCopy"
             @click="openDuplicateForm(item)"
           />
 
@@ -105,7 +105,7 @@
           <v-list-item
             :title="$t('$ezreeport.edit')"
             :disabled="!availableActions.update"
-            prepend-icon="mdi-pencil"
+            :prepend-icon="mdiPencil"
             @click="openForm(item)"
           />
 
@@ -114,7 +114,7 @@
             :disabled="
               !availableActions.delete || item.id === defaultTemplateId
             "
-            prepend-icon="mdi-delete"
+            :prepend-icon="mdiDelete"
             @click="deleteItem(item)"
           />
         </v-list>
@@ -125,14 +125,14 @@
       <v-empty-state
         :title="$t('$ezreeport.template.noList')"
         :text="$t('$ezreeport.template.noList:desc')"
-        icon="mdi-view-grid-outline"
+        :icon="mdiViewGridOutline"
       >
         <template #actions>
           <v-btn
             v-if="availableActions.create"
             :text="$t('$ezreeport.new')"
             color="green"
-            append-icon="mdi-plus"
+            :append-icon="mdiPlus"
             @click="openForm()"
           />
         </template>
@@ -147,7 +147,7 @@
     <template #actions>
       <v-list-item
         :title="$t('$ezreeport.delete')"
-        prepend-icon="mdi-delete"
+        :prepend-icon="mdiDelete"
         @click="deleteSelected()"
       />
 
@@ -156,7 +156,7 @@
       <v-list-item
         v-if="availableActions.visibility"
         :title="$t('$ezreeport.template.hidden:toggle')"
-        prepend-icon="mdi-eye-off"
+        :prepend-icon="mdiEyeOff"
         @click="toggleSelectedVisibility()"
       />
     </template>
@@ -185,19 +185,31 @@
 <script setup lang="ts">
   import type { VDataTable } from 'vuetify/components';
   import {
+    mdiCog,
+    mdiContentCopy,
+    mdiDelete,
+    mdiEye,
+    mdiEyeOff,
+    mdiMagnify,
+    mdiPencil,
+    mdiPlus,
+    mdiRefresh,
+    mdiViewGridOutline,
+  } from '@mdi/js';
+  import {
+    type TemplateHelper,
     changeTemplateVisibility,
     createTemplateHelper,
     createTemplateHelperFrom,
     templateHelperToJSON,
-    type TemplateHelper,
   } from '~sdk/helpers/templates';
   import {
+    type Template,
+    createTemplate,
+    deleteTemplate,
     getAllTemplates,
     getTemplate,
-    createTemplate,
     upsertTemplate,
-    deleteTemplate,
-    type Template,
   } from '~sdk/templates';
 
   type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
@@ -209,7 +221,6 @@
   }>();
 
   // Utils composable
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   const defaultTemplateId = shallowRef('');
@@ -219,9 +230,8 @@
 
   const { availableActions } = usePermissions({
     create: [createTemplate],
-    update: [upsertTemplate],
     delete: [deleteTemplate],
-
+    update: [upsertTemplate],
     visibility: [changeTemplateVisibility],
   });
 
@@ -236,10 +246,10 @@
         return res;
       },
       {
-        sortBy: 'name',
+        include: ['tags'],
         itemsPerPage,
         itemsPerPageOptions: props.itemsPerPageOptions,
-        include: ['tags'],
+        sortBy: 'name',
       }
     );
 
@@ -252,34 +262,34 @@
   const headers = computed(
     (): VDataTableHeaders => [
       {
+        sortable: true,
         title: t('$ezreeport.name'),
         value: 'name',
-        sortable: true,
       },
       {
+        align: 'center',
         title: t('$ezreeport.template.locale'),
         value: 'locale',
-        align: 'center',
       },
       {
         title: t('$ezreeport.template.tags.title'),
         value: 'tags',
       },
       {
+        sortable: true,
         title: t('$ezreeport.updatedAt'),
         value: 'updatedAt',
-        sortable: true,
       },
       {
+        align: 'center',
+        sortable: true,
         title: t('$ezreeport.template.hidden'),
         value: 'hidden',
-        sortable: true,
-        align: 'center',
       },
       {
+        align: 'center',
         title: t('$ezreeport.actions'),
         value: '_actions',
-        align: 'center',
       },
     ]
   );
@@ -305,8 +315,8 @@
       }
 
       isFormOpen.value = true;
-    } catch (err) {
-      handleEzrError(t('$ezreeport.template.errors.open'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.template.errors.open'), error);
     }
   }
 
@@ -316,13 +326,13 @@
     try {
       updatedTemplate.value = createTemplateHelperFrom({
         ...(await getTemplate(template, ['tags'])),
-        name: `${template.name} (copy)`,
         id: '',
+        name: `${template.name} (copy)`,
       });
 
       isFormOpen.value = true;
-    } catch (err) {
-      handleEzrError(t('$ezreeport.template.errors.open'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.template.errors.open'), error);
     }
   }
 
@@ -336,8 +346,8 @@
     try {
       await deleteTemplate(template);
       refresh();
-    } catch (err) {
-      handleEzrError(t('$ezreeport.template.errors.delete'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.template.errors.delete'), error);
     }
   }
 
@@ -349,8 +359,8 @@
       );
       selectedTemplates.value = [];
       refresh();
-    } catch (err) {
-      handleEzrError(t('$ezreeport.template.errors.delete'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.template.errors.delete'), error);
     }
   }
 
@@ -360,8 +370,8 @@
     try {
       await changeTemplateVisibility(template, !template.hidden);
       refresh();
-    } catch (err) {
-      handleEzrError(t('$ezreeport.template.errors.edit'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.template.errors.edit'), error);
     }
   }
 
@@ -374,8 +384,8 @@
       );
       selectedTemplates.value = [];
       refresh();
-    } catch (err) {
-      handleEzrError(t('$ezreeport.template.errors.edit'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.template.errors.edit'), error);
     }
   }
 
@@ -389,11 +399,11 @@
         result = await createTemplate(data);
       }
       openForm(result);
-    } catch (err) {
+    } catch (error) {
       const msg = template.id
         ? t('$ezreeport.template.errors.edit')
         : t('$ezreeport.template.errors.create');
-      handleEzrError(msg, err);
+      handleEzrError(msg, error);
     }
   }
 </script>

@@ -1,71 +1,46 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
 import type { MetricLabel } from '~sdk/helpers/figures';
+
+import { useStory } from '~/__mocks__/utils';
 
 import EditorFigureMetricElement from './MetricElement.vue';
 
 const meta: Meta<typeof EditorFigureMetricElement> = {
-  title: 'Template Editor/Figures/Metric/ Element',
   component: EditorFigureMetricElement,
+  title: 'Template Editor/Figures/Metric/ Element',
 };
+
+const { defineStory } = useStory(meta);
 
 export default meta;
 
-type Story = StoryObj<typeof EditorFigureMetricElement>;
-
 const mockData: MetricLabel = {
-  text: 'total des accès',
   format: {
     type: 'number',
   },
+  text: 'total des accès',
 };
 
 const mockDataWithAggregation: MetricLabel = {
-  text: 'Plateformes',
+  aggregation: {
+    field: 'platform',
+    type: 'cardinality',
+  },
   format: {
     type: 'number',
   },
-  aggregation: {
-    type: 'cardinality',
-    field: 'platform',
-  },
+  text: 'Plateformes',
 };
 
-export const Simple: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFigureMetricElement },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureMetricElement v-bind="args" />',
-  }),
-  args: {
-    modelValue: mockData,
-  },
-};
+export const Simple = defineStory({
+  modelValue: mockData,
+});
 
-export const WithAggregation: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFigureMetricElement },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureMetricElement v-bind="args" />',
-  }),
-  args: {
-    modelValue: mockDataWithAggregation,
-  },
-};
+export const WithAggregation = defineStory({
+  modelValue: mockDataWithAggregation,
+});
 
-export const Readonly: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFigureMetricElement },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFigureMetricElement v-bind="args" />',
-  }),
-  args: {
-    modelValue: mockData,
-    readonly: true,
-  },
-};
+export const Readonly = defineStory({
+  modelValue: mockData,
+  readonly: true,
+});

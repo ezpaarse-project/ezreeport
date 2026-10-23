@@ -24,7 +24,7 @@ export async function initRenderEngine(): Promise<void> {
   const start = process.uptime();
 
   await initPDFEngine();
-  initVegaEngine();
+  await initVegaEngine();
 
   appLogger.info({
     initDuration: process.uptime() - start,

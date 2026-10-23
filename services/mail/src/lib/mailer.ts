@@ -1,4 +1,4 @@
-import { createTransport, type Transporter } from 'nodemailer';
+import { type Transporter, createTransport } from 'nodemailer';
 
 import type { HeartbeatType } from '@ezreeport/heartbeats/types';
 
@@ -51,7 +51,7 @@ process.on('SIGTERM', () => {
   try {
     transporter.close();
     logger.debug('Connection closed');
-  } catch (err) {
-    logger.error({ msg: 'Failed to close connection', err });
+  } catch (error) {
+    logger.error({ error, msg: 'Failed to close connection' });
   }
 });

@@ -5,12 +5,12 @@
         ? $t('$ezreeport.task.title:edit')
         : $t('$ezreeport.task.title:new')
     "
-    :prepend-icon="isEditing ? 'mdi-email' : 'mdi-email-plus'"
+    :prepend-icon="isEditing ? mdiEmail : mdiEmailPlus"
   >
     <template #append>
       <v-alert
         :title="$t('$ezreeport.superUserMode')"
-        icon="mdi-tools"
+        :icon="mdiTools"
         type="warning"
         variant="tonal"
         density="compact"
@@ -32,7 +32,7 @@
               :loading="loadingTemplates"
               item-value="id"
               item-title="name"
-              prepend-icon="mdi-view-grid"
+              :prepend-icon="mdiViewGrid"
               variant="underlined"
               hide-details="auto"
               required
@@ -46,7 +46,7 @@
                 />
               </template>
 
-              <template #item="{ item: { raw: item }, props: listItem }">
+              <template #item="{ item, props: listItem }">
                 <v-list-item :title="item.name" lines="two" v-bind="listItem">
                   <template #subtitle>
                     <TemplateTagView :model-value="item.tags ?? []" />
@@ -83,7 +83,7 @@
               :loading="loadingNamespaces"
               item-value="id"
               item-title="name"
-              prepend-icon="mdi-folder"
+              :prepend-icon="mdiFolder"
               variant="underlined"
               required
             />
@@ -94,7 +94,7 @@
             <v-text-field
               :model-value="namespace?.name || taskNamespaceId"
               :label="$t('$ezreeport.namespace')"
-              prepend-icon="mdi-folder"
+              :prepend-icon="mdiFolder"
               variant="plain"
               readonly
             />
@@ -110,7 +110,7 @@
               :items="recurrenceOptions"
               :readonly="readonly"
               :return-object="false"
-              prepend-icon="mdi-calendar-refresh"
+              :prepend-icon="mdiCalendarRefresh"
               variant="underlined"
               required
             />
@@ -138,7 +138,7 @@
               :label="$t('$ezreeport.name')"
               :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :readonly="readonly"
-              prepend-icon="mdi-rename"
+              :prepend-icon="mdiRename"
               variant="underlined"
               required
               @update:model-value="hasNameChanged = true"
@@ -158,7 +158,7 @@
                   isEmail(val) || $t('$ezreeport.errors.invalidEmail', i + 1),
               ]"
               :item-placeholder="$t('$ezreeport.task.targets:hint')"
-              prepend-icon="mdi-mailbox"
+              :prepend-icon="mdiMailbox"
               variant="underlined"
               required
             />
@@ -170,7 +170,7 @@
             <v-textarea
               v-model="description"
               :label="$t('$ezreeport.task.description')"
-              prepend-icon="mdi-text"
+              :prepend-icon="mdiText"
               variant="underlined"
             />
           </v-col>
@@ -208,7 +208,7 @@
               :placeholder="extendedTemplate?.body.dateField"
               :persistent-placeholder="!!extendedTemplate?.body.dateField"
               :readonly="readonly"
-              prepend-icon="mdi-calendar-search"
+              :prepend-icon="mdiCalendarSearch"
               variant="underlined"
               required
             />
@@ -230,14 +230,14 @@
             <v-card
               :title="$t('$ezreeport.template.layouts', mergedLayouts.length)"
               :loading="loadingCurrentTemplate && 'primary'"
-              prepend-icon="mdi-grid"
+              :prepend-icon="mdiGrid"
               variant="outlined"
             >
               <template #append>
                 <v-btn
                   v-tooltip:top="$t('$ezreeport.template.editor:open')"
                   :disabled="!isValid"
-                  icon="mdi-arrow-expand"
+                  :icon="mdiArrowExpand"
                   color="primary"
                   density="compact"
                   variant="text"
@@ -262,7 +262,7 @@
                         <span>{{ index + 1 }}</span>
                         <v-icon
                           v-if="layout.readonly"
-                          icon="mdi-lock"
+                          :icon="mdiLock"
                           size="x-small"
                         />
                       </template>
@@ -275,14 +275,14 @@
                     <v-empty-state
                       :title="$t('$ezreeport.template.noTemplate')"
                       :text="$t('$ezreeport.template.noTemplate:desc')"
-                      icon="mdi-grid-off"
+                      :icon="mdiGridOff"
                     >
                       <template #actions>
                         <v-btn
                           :text="$t('$ezreeport.template.editor:open')"
                           :disabled="!isValid"
                           color="primary"
-                          append-icon="mdi-arrow-expand"
+                          :append-icon="mdiArrowExpand"
                           @click="openEditor()"
                         />
                       </template>
@@ -304,7 +304,7 @@
       <v-btn
         v-if="!readonly"
         :text="isEditing ? $t('$ezreeport.save') : $t('$ezreeport.new')"
-        :append-icon="isEditing ? 'mdi-content-save' : 'mdi-plus'"
+        :append-icon="isEditing ? mdiContentSave : mdiPlus"
         :disabled="!isValid || !hasChanged"
         color="primary"
         @click="$emit('update:model-value', modelValue)"
@@ -327,7 +327,7 @@
       >
         <template #append>
           <v-btn
-            icon="mdi-close"
+            :icon="mdiClose"
             variant="text"
             density="comfortable"
             @click="closeEditor()"
@@ -338,13 +338,13 @@
           <v-btn
             v-if="readonly"
             :text="$t('$ezreeport.close')"
-            append-icon="mdi-close"
+            :append-icon="mdiClose"
             @click="closeEditor()"
           />
           <v-btn
             v-else
             :text="$t('$ezreeport.confirm')"
-            append-icon="mdi-check"
+            :append-icon="mdiCheck"
             color="primary"
             @click="closeEditor()"
           />
@@ -356,15 +356,35 @@
 
 <script setup lang="ts">
   import type { Namespace } from '~sdk/namespaces';
+  import {
+    mdiArrowExpand,
+    mdiCalendarRefresh,
+    mdiCalendarSearch,
+    mdiCheck,
+    mdiClose,
+    mdiContentSave,
+    mdiEmail,
+    mdiEmailPlus,
+    mdiFolder,
+    mdiGrid,
+    mdiGridOff,
+    mdiLock,
+    mdiMailbox,
+    mdiPlus,
+    mdiRename,
+    mdiText,
+    mdiTools,
+    mdiViewGrid,
+  } from '@mdi/js';
   import { getCurrentNamespaces } from '~sdk/auth';
   import {
     RECURRENCES,
+    type TaskHelper,
     getLayoutsOfHelpers,
     hasTaskChanged,
-    type TaskHelper,
   } from '~sdk/helpers/tasks';
   import { createTemplateHelperFrom } from '~sdk/helpers/templates';
-  import { getAllTemplates, getTemplate, type Template } from '~sdk/templates';
+  import { type Template, getAllTemplates, getTemplate } from '~sdk/templates';
 
   import { isEmail } from '~/utils/validate';
 
@@ -383,11 +403,10 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
   const { getOptionsFromMapping, refreshMapping, updateDateField } =
     useTemplateEditor({
-      // grid: modelValue.template.grid,
+      // Grid: modelValue.template.grid,
       index: modelValue.template.index,
       dateField: modelValue.template.dateField,
       namespaceId,
@@ -396,11 +415,11 @@
   /** Selected index */
   const selectedIndex = shallowRef(0);
   /** Is task already exists */
-  const isEditing = shallowRef(!!modelValue.id);
+  const isEditing = shallowRef(Boolean(modelValue.id));
   /** Has name manually changed */
-  const hasNameChanged = shallowRef(!!modelValue.name);
+  const hasNameChanged = shallowRef(Boolean(modelValue.name));
   /** Has index manually changed */
-  const hasIndexChanged = shallowRef(!!modelValue.template.index);
+  const hasIndexChanged = shallowRef(Boolean(modelValue.template.index));
   /** Is basic form valid */
   const isFormValid = shallowRef(false);
   /** Is editor visible */
@@ -420,7 +439,9 @@
   /** Mapping options for dateField */
   const dateMapping = computed(() => getOptionsFromMapping('date'));
   /** Has template changed since form is opened */
-  const hasChanged = computed(() => !modelValue.id || hasTaskChanged(modelValue));
+  const hasChanged = computed(
+    () => !modelValue.id || hasTaskChanged(modelValue)
+  );
   /** Name of the template */
   const name = computed({
     get: () => modelValue.name,
@@ -486,15 +507,15 @@
       }
 
       // Allow multiple mail addresses, separated by semicolon or comma
-      params.targets = Array.from(
-        new Set(
+      params.targets = [
+        ...new Set(
           all
             .join(';')
             .replaceAll(/[,]/g, ';')
             .split(';')
             .map((mail) => mail.trim())
-        )
-      );
+        ),
+      ];
     },
   });
   /** Task description */
@@ -533,8 +554,8 @@
     try {
       const res = await getTemplate(extendedId.value, ['tags']);
       template = createTemplateHelperFrom(res);
-    } catch (err) {
-      handleEzrError(t('$ezreeport.template.errors.open'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.template.errors.open'), error);
     }
     loadingCurrentTemplate.value = false;
 
@@ -546,13 +567,16 @@
       return [];
     }
 
-    return getLayoutsOfHelpers(modelValue.template, extendedTemplate.value.body);
+    return getLayoutsOfHelpers(
+      modelValue.template,
+      extendedTemplate.value.body
+    );
   });
   /** Recurrence options */
   const recurrenceOptions = computed(() =>
     RECURRENCES.map((value) => ({
-      value,
       title: t(`$ezreeport.task.recurrenceList.${value}`),
+      value,
     }))
   );
   /** Template list */
@@ -563,21 +587,21 @@
     try {
       let meta;
       ({ items, meta } = await getAllTemplates({
-        pagination: { count: 0, sort: 'name' },
         include: ['tags'],
+        pagination: { count: 0, sort: 'name' },
       }));
       if (!extendedId.value) {
         extendedId.value = meta.default;
       }
-    } catch (err) {
-      handleEzrError(t('$ezreeport.template.errors.fetch'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.template.errors.fetch'), error);
     }
     loadingTemplates.value = false;
 
     return items;
   }, []);
   /** Is form namespaced */
-  const isNamespaced = computed(() => !!namespaceId);
+  const isNamespaced = computed(() => Boolean(namespaceId));
   /** Namespace list */
   const namespaces = computedAsync(async () => {
     let items: Omit<Namespace, 'fetchLogin' | 'fetchOptions'>[] = [];
@@ -592,8 +616,8 @@
       items = currentNamespaces.toSorted((namespaceA, namespaceB) =>
         namespaceA.name.localeCompare(namespaceB.name)
       );
-    } catch (err) {
-      handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.task.errors.fetchNamespaces'), error);
     }
     loadingNamespaces.value = false;
 

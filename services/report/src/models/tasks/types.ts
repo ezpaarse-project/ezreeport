@@ -1,9 +1,9 @@
 import { ensureArray } from '@ezreeport/models/lib/utils';
 import {
   z,
-  zStringToStartOfDay,
-  zStringToEndOfDay,
   zStringOrArray,
+  zStringToEndOfDay,
+  zStringToStartOfDay,
 } from '@ezreeport/models/lib/zod';
 import { Recurrence } from '@ezreeport/models/recurrence';
 import { Task as CommonTask } from '@ezreeport/models/tasks';
@@ -59,16 +59,22 @@ export type TaskType = z.infer<typeof Task>;
 /**
  * Validation for creating/updating a task
  */
-export const InputTask = Task.omit({
-  // Stripping readonly properties
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  // Stripping api reserved properties
-  lastRun: true,
-  // Stripping Includes properties
-  extends: true,
-}).strict();
+export const InputTask = z
+  .object({
+    ...Task.omit({
+      // Stripping readonly properties
+      id: true,
+      createdAt: true,
+      updatedAt: true,
+      // Stripping api reserved properties
+      lastRun: true,
+      // Stripping Includes properties
+      extends: true,
+    }).shape,
+
+    targets: Task.shape.targets.min(1),
+  })
+  .strict();
 
 /**
  * Type for creating/updating a task
@@ -79,31 +85,13 @@ export type InputTaskType = z.infer<typeof InputTask>;
  * Validation for query filters of a task
  */
 export const TaskQueryFilters = z.object({
-  query: z.string().optional().describe('Query used for searching'),
+  enabled: z.stringbool().optional().describe('If task is enabled'),
 
   extendedId: z
     .string()
     .min(1)
     .optional()
     .describe('ID of template extended by the task'),
-
-  namespaceId: zStringOrArray
-    .optional()
-    .describe('Possible namespace ID of the task'),
-
-  targets: zStringOrArray
-    .optional()
-    .describe('Email addresses used by the task'),
-
-  'nextRun.from': zStringToStartOfDay
-    .optional()
-    .describe('Minimum date of next run of the task'),
-
-  'nextRun.to': zStringToEndOfDay
-    .optional()
-    .describe('Maximum date of next run of the task'),
-
-  enabled: z.stringbool().optional().describe('If task is enabled'),
 
   'extends.tags': z
     .string()
@@ -113,7 +101,25 @@ export const TaskQueryFilters = z.object({
     .optional()
     .describe('Possible tags of task'),
 
+  namespaceId: zStringOrArray
+    .optional()
+    .describe('Possible namespace ID of the task'),
+
+  'nextRun.from': zStringToStartOfDay
+    .optional()
+    .describe('Minimum date of next run of the task'),
+
+  'nextRun.to': zStringToEndOfDay
+    .optional()
+    .describe('Maximum date of next run of the task'),
+
+  query: z.string().optional().describe('Query used for searching'),
+
   recurrence: Recurrence.optional().describe('Recurrence of task'),
+
+  targets: zStringOrArray
+    .optional()
+    .describe('Email addresses used by the task'),
 });
 
 /**

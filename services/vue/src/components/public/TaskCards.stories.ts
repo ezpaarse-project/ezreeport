@@ -1,25 +1,18 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import TaskCards from './TaskCards.vue';
 
 const meta: Meta<typeof TaskCards> = {
-  title: 'Public/Tasks Cards',
   component: TaskCards,
+  title: 'Public/Tasks Cards',
 };
+
+const { defineStory } = useStory(meta);
 
 export default meta;
 
-type Story = StoryObj<typeof TaskCards>;
-
-export const Default: Story = {
-  render: (args: unknown) => ({
-    components: { TaskCards },
-    setup() {
-      return { args };
-    },
-    template: '<TaskCards v-bind="args" />',
-  }),
-  args: {
-    namespaceId: 'abba8400-1216-11eb-af77-ff33b5dd411e',
-  },
-};
+export const Default = defineStory({
+  namespaceId: 'abba8400-1216-11eb-af77-ff33b5dd411e',
+});

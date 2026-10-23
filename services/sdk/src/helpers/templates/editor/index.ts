@@ -8,10 +8,10 @@ import type {
 
 import type { TemplateTagMap } from './tags';
 import {
+  type TemplateBodyHelper,
   createTemplateBodyHelper,
   createTemplateBodyHelperFrom,
   templateHelperBodyToJSON,
-  type TemplateBodyHelper,
 } from './body';
 
 export interface TemplateHelper {
@@ -27,9 +27,9 @@ export interface TemplateHelper {
 
 function hashTemplate(template: Template | TemplateHelper): string {
   return objectHash({
-    name: template.name,
-    locale: template.locale,
     body: template.body,
+    locale: template.locale,
+    name: template.name,
     tags: template.tags,
   });
 }
@@ -44,14 +44,14 @@ export function createTemplateHelper(
   updatedAt?: Date
 ): TemplateHelper {
   const template = {
-    id,
-    name,
-    locale,
     body: body ?? createTemplateBodyHelper(),
-    tags,
     createdAt,
-    updatedAt,
     hash: '',
+    id,
+    locale,
+    name,
+    tags,
+    updatedAt,
   };
 
   template.hash = hashTemplate(template);
@@ -64,7 +64,7 @@ export function createTemplateHelperFrom(template: Template): TemplateHelper {
     template.name,
     createTemplateBodyHelperFrom(template.body),
     template.locale,
-    new Map(template.tags?.map((tag) => [tag.id, tag]) ?? []),
+    new Map(template.tags?.map((tag) => [tag.id, tag])),
     template.id,
     template.createdAt,
     template.updatedAt
@@ -73,10 +73,10 @@ export function createTemplateHelperFrom(template: Template): TemplateHelper {
 
 export function templateHelperToJSON(template: TemplateHelper): InputTemplate {
   return {
-    name: template.name,
-    locale: template.locale,
     body: templateHelperBodyToJSON(template.body),
-    tags: Array.from(template.tags.values()),
+    locale: template.locale,
+    name: template.name,
+    tags: [...template.tags.values()],
   };
 }
 

@@ -2,8 +2,8 @@ import { client } from '~/lib/fetch';
 import createEventfulPromise, { type EventfulPromise } from '~/lib/promises';
 
 import type {
-  GenerationStatus,
   Generation,
+  GenerationStatus,
   RawGeneration,
 } from '~/modules/generations/types';
 import type { ReportResult } from '~/modules/reports/types';

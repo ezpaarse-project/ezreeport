@@ -18,13 +18,13 @@
     >
       <template #prepend>
         <span>{{ index + 1 }}</span>
-        <v-icon v-if="layout.readonly" icon="mdi-lock" size="x-small" />
+        <v-icon v-if="layout.readonly" :icon="mdiLock" size="x-small" />
       </template>
 
       <template v-if="!readonly && !layout.readonly" #actions>
         <v-btn
           v-tooltip:right="$t('$ezreeport.duplicate')"
-          icon="mdi-content-duplicate"
+          :icon="mdiContentDuplicate"
           variant="text"
           density="compact"
           size="small"
@@ -32,7 +32,7 @@
         />
         <v-btn
           v-tooltip:right="$t('$ezreeport.delete')"
-          icon="mdi-delete"
+          :icon="mdiDelete"
           variant="text"
           color="red"
           density="compact"
@@ -49,7 +49,7 @@
       class="template-layout-preview--empty"
       @click="$emit('click:create')"
     >
-      <v-icon icon="mdi-plus" size="large" color="green" />
+      <v-icon :icon="mdiPlus" size="large" color="green" />
       <div>{{ $t('$ezreeport.editor.layouts.create') }}</div>
     </v-card>
   </v-slide-x-transition>
@@ -58,6 +58,7 @@
 <script setup lang="ts">
   import type { AnyLayoutHelper } from '~sdk/helpers/layouts';
   import { dragAndDrop } from '@formkit/drag-and-drop/vue';
+  import { mdiContentDuplicate, mdiDelete, mdiLock, mdiPlus } from '@mdi/js';
 
   type DrawerLayout = AnyLayoutHelper & { readonly?: boolean };
 
@@ -110,25 +111,25 @@
   // Make the columns draggable to sort
   if (!props.readonly) {
     dragAndDrop({
-      parent: scrollerRef as unknown as Ref<HTMLElement | undefined>,
-      dragPlaceholderClass: 'template-layout-preview-drawer--dragging',
-      dropZone: false,
       dragImage: () => document.createElement('div'), // Disable drag image
+      dragPlaceholderClass: 'template-layout-preview-drawer--dragging',
       draggable: (el) => {
         // Disable draggable for empty items
         const isEmpty = el.classList.contains('template-layout-preview--empty');
         return !isEmpty;
       },
+      dropZone: false,
+      onDragend: () => {
+        scrollTo(props.modelValue);
+      },
+      onSort: (event) => {
+        emit('update:modelValue', event.position);
+      },
+      parent: scrollerRef as unknown as Ref<HTMLElement | undefined>,
       values: computed({
         get: () => props.items,
         set: (value) => emit('update:items', value),
       }),
-      onSort: (event) => {
-        emit('update:modelValue', event.position);
-      },
-      onDragend: () => {
-        scrollTo(props.modelValue);
-      },
     });
   }
 

@@ -7,16 +7,17 @@ import fastifyStatic from '@fastify/static';
 import { compile as handlebars } from 'handlebars';
 import { StatusCodes } from 'http-status-codes';
 
+import { t } from '@ezreeport/i18n';
 import { b64ToString } from '@ezreeport/models/lib/utils';
 import { z } from '@ezreeport/models/lib/zod';
 
 import { ArgumentError, NotFoundError } from '~/models/errors';
 import { createActivity } from '~/models/task-activity';
-import { getTask, editTask } from '~/models/tasks';
+import { editTask, getTask } from '~/models/tasks';
 
 import {
-  describeErrors,
   buildSuccessResponse,
+  describeErrors,
   zSuccessResponse,
 } from '~/routes/v2/responses';
 
@@ -28,19 +29,18 @@ const UnsubscribeParams = z.object({
 const router: FastifyPluginAsyncZod = async (fastify) => {
   // Register assets
   await fastify.register(fastifyStatic, {
+    allowedPath: (path) => !path.endsWith('.html'),
+    index: false,
+    prefix: '/:unsubscribeId/',
+    // oxlint-disable-next-line unicorn/prefer-module
     root: join(__dirname, 'public'),
     serve: true,
-    prefix: '/:unsubscribeId/',
-    index: false,
-    allowedPath: (path) => !path.endsWith('.html'),
   });
 
   fastify.route({
     method: 'GET',
     url: '/:unsubscribeId/',
     schema: {
-      summary: 'Get unsubscribe page',
-      tags: ['unsubscribe'],
       params: UnsubscribeParams,
       response: {
         ...describeErrors([
@@ -50,6 +50,11 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: z.unknown(),
       },
+      summary: 'Get unsubscribe page',
+      tags: ['unsubscribe'],
+    },
+    helmet: {
+      enableCSPNonces: true,
     },
     prefixTrailingSlash: 'slash',
     // oxlint-disable-next-line require-await
@@ -57,7 +62,7 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       const { unsubscribeId } = request.params;
       const [taskId64, to64] = decodeURIComponent(unsubscribeId).split(':');
 
-      const task = await getTask(b64ToString(taskId64));
+      const task = await getTask(b64ToString(taskId64), ['extends.locale']);
       if (!task) {
         throw new NotFoundError('Task not found');
       }
@@ -68,13 +73,58 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       }
 
       const htmlTemplate = await readFile(
+        // oxlint-disable-next-line unicorn/prefer-module
         join(__dirname, 'public/index.html'),
-        'utf-8'
+        'utf8'
       );
+
       const html = handlebars(htmlTemplate)({
-        unsubscribeId,
-        task,
+        cancelActionText: t(
+          'unsubscribe.actions.cancel',
+          task.extends?.locale ?? 'en'
+        ),
+        changesText: t(
+          'unsubscribe.texts.changes',
+          task.extends?.locale ?? 'en'
+        ),
+        confirmActionText: t(
+          'unsubscribe.actions.confirm',
+          task.extends?.locale ?? 'en'
+        ),
+        confirmText: t(
+          'unsubscribe.texts.confirm',
+          task.extends?.locale ?? 'en',
+          {
+            email: emailValidation.data,
+            task: task.name,
+          }
+        ),
         email: emailValidation.data,
+        errorResultText: t(
+          'unsubscribe.results.error',
+          task.extends?.locale ?? 'en'
+        ),
+        mailListAdviceText: t(
+          'unsubscribe.texts.mailList.advice',
+          task.extends?.locale ?? 'en'
+        ),
+        mailListWarningText: t(
+          'unsubscribe.texts.mailList.warning',
+          task.extends?.locale ?? 'en',
+          {
+            email: emailValidation.data,
+          }
+        ),
+        nonce: reply.cspNonce,
+        successResultText: t(
+          'unsubscribe.results.successs',
+          task.extends?.locale ?? 'en'
+        ),
+        task,
+        titleText: t('unsubscribe.title', task.extends?.locale ?? 'en', {
+          task: task.name,
+        }),
+        unsubscribeId,
       });
 
       reply.header('Content-Type', 'text/html');
@@ -111,16 +161,14 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'POST',
     url: '/:unsubscribeId/',
     schema: {
-      summary: 'Unsubscribe from a task',
-      tags: ['unsubscribe'],
-      params: UnsubscribeParams,
       body: z
         .object({
-          unsubscribeId: UnsubscribeParams.shape.unsubscribeId,
-          taskId: z.string().min(1),
           email: z.email().min(1),
+          taskId: z.string().min(1),
+          unsubscribeId: UnsubscribeParams.shape.unsubscribeId,
         })
         .strict(),
+      params: UnsubscribeParams,
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -129,6 +177,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(z.object({ success: z.boolean() })),
       },
+      summary: 'Unsubscribe from a task',
+      tags: ['unsubscribe'],
     },
     // oxlint-disable-next-line require-await
     handler: async (request, reply) => {
@@ -151,16 +201,16 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       }
 
       const emailIndex = task.targets.findIndex((value) => value === email);
-      if (emailIndex < 0) {
+      if (emailIndex === -1) {
         throw new ArgumentError('Email not found in targets of task');
       }
 
       task.targets.splice(emailIndex, 1);
       await editTask(taskId, task);
       await createActivity({
+        message: `${email} s'est désinscrit de la tâche.`,
         taskId,
         type: 'task:unsubscribe',
-        message: `${email} s'est désinscrit de la tâche.`,
       });
 
       return buildSuccessResponse({ success: true }, reply);
@@ -168,5 +218,5 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
   });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

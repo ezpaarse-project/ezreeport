@@ -5,10 +5,10 @@ import { ensureArray } from '@ezreeport/models/lib/utils';
 
 import type { UserType } from '~/models/users/types';
 import {
-  getUserByToken,
-  getNamespacesOfUser,
-  getNamespacesOfAdmin,
   type Access,
+  getNamespacesOfAdmin,
+  getNamespacesOfUser,
+  getUserByToken,
 } from '~/models/access';
 
 type Next = (err?: ExtendedError) => void;
@@ -27,8 +27,8 @@ async function getSocketUserByToken(
     }
     Object.assign(socket.request, { user });
     next();
-  } catch (err) {
-    next(err instanceof Error ? err : new Error(`${err}`));
+  } catch (error) {
+    next(error instanceof Error ? error : new Error(`${error}`));
   }
 }
 
@@ -100,7 +100,7 @@ export const restrictToOwnedNamespaces =
 
     const rooms = new Set<string>(
       ensureArray(socket.handshake.query.rooms ?? []).filter(
-        (value): value is string => !!value
+        (value): value is string => Boolean(value)
       )
     );
 

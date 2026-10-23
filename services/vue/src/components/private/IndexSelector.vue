@@ -1,6 +1,6 @@
 <template>
   <v-text-field
-    v-model="index"
+    v-model="modelValue"
     ref="indexRef"
     :label="$t('$ezreeport.template.index')"
     :hint="$t('$ezreeport.index.help', { chars: invalidCharsMessage })"
@@ -9,13 +9,17 @@
     :disabled="disabled"
     :required="required"
     :readonly="readonly"
-    prepend-icon="mdi-database"
+    :prepend-icon="mdiDatabase"
     variant="underlined"
   />
-  <v-menu :activator="indexRef?.$el" @update:model-value="$event && refresh()">
+  <v-menu
+    :activator="indexRef?.$el"
+    :close-on-content-click="false"
+    @update:model-value="$event && refresh()"
+  >
     <v-card>
       <template #text>
-        <v-alert v-if="error" :text="error.message" type="error" />
+        <v-alert v-if="errorAlert" :text="errorAlert.message" type="error" />
 
         <v-row>
           <v-col>
@@ -33,11 +37,16 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="item in autocompleteIndices" :key="item">
+                <tr
+                  v-for="item in autocompleteIndices"
+                  :key="item"
+                  class="index-row"
+                  @click="modelValue = item"
+                >
                   <td>
                     <v-icon
                       v-if="resolvedIndices.includes(item)"
-                      icon="mdi-check"
+                      :icon="mdiCheck"
                       color="primary"
                       small
                     />
@@ -54,15 +63,18 @@
 </template>
 
 <script setup lang="ts">
+  import { mdiCheck, mdiDatabase } from '@mdi/js';
   import { getAllIndices } from '~sdk/elastic';
 
   // Constants
+  const ERROR_ALERT_DURATION = 5000;
   const invalidChars = ['\\', '/', '?', '"', '<', '>', '|'];
   const invalidCharsMessage = invalidChars.join(' ');
 
+  const modelValue = defineModel<string>({ default: '' });
+
   // Components props
   const props = defineProps<{
-    modelValue: string | undefined;
     namespaceId?: string;
     rules?: (((val: string) => true | string) | true | string)[];
     required?: boolean;
@@ -73,40 +85,34 @@
 
   // Components events
   const emit = defineEmits<{
-    (event: 'update:model-value', value: string): void;
+    // oxlint-disable-next-line typescript/unified-signatures
     (event: 'index:valid', value: string): void;
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   /* Is the input loading */
-  const loading = ref(false);
+  const loading = shallowRef(false);
   /** The resolved indices */
   const resolvedIndices = ref<string[]>([]);
   /** The available indices */
   const availableIndices = ref<string[]>([]);
   /** The error, if any */
-  const error = ref<Error | undefined>(undefined);
+  const errorAlert = ref<Error | undefined>(undefined);
 
   /** Ref on text field */
   const indexRef = useTemplateRef('indexRef');
 
-  /** Current value of index */
-  const index = computed({
-    get: () => props.modelValue || '',
-    set: (val) => emit('update:model-value', val || ''),
-  });
   /** Indices to show in menu */
   const autocompleteIndices = computed(() => {
     if (resolvedIndices.value.length > 0) {
       return [...resolvedIndices.value];
     }
 
-    if (index.value.length > 0) {
+    if (modelValue.value.length > 0) {
       return availableIndices.value.filter((val) =>
-        val.includes(index.value.trim())
+        val.includes(modelValue.value.trim())
       );
     }
 
@@ -114,13 +120,13 @@
   });
   /** User provided rules + default rules */
   const innerRules = computed(() => {
-    const invalidCharsRegex = new RegExp(`[${invalidChars.join('')}\\s]`, 'i');
+    const invalidCharsRegex = new RegExp(`[${invalidChars.join('')}\\s]`, 'iu');
 
     return [
-      (val: string) =>
+      (val: string): true | string =>
         !invalidCharsRegex.test(val) ||
         t('$ezreeport.index.invalidChars', { message: invalidCharsMessage }),
-      () =>
+      (): true | string =>
         resolvedIndices.value.length > 0 || `${t('$ezreeport.index.required')}`,
       ...(props.rules ?? []),
     ];
@@ -129,15 +135,15 @@
   /**
    * Reload the available indices
    */
-  async function fetchIndices() {
+  async function fetchIndices(): Promise<void> {
     loading.value = true;
     try {
       availableIndices.value = await getAllIndices(props.namespaceId);
-    } catch (err) {
-      error.value = err instanceof Error ? err : new Error(`${err}`);
+    } catch (error) {
+      errorAlert.value = error instanceof Error ? error : new Error(`${error}`);
       setTimeout(() => {
-        error.value = undefined;
-      }, 5000);
+        errorAlert.value = undefined;
+      }, ERROR_ALERT_DURATION);
       availableIndices.value = [];
     }
     loading.value = false;
@@ -146,8 +152,8 @@
   /**
    * Resolve the available indices using current value
    */
-  async function resolveIndex() {
-    if (!index.value) {
+  async function resolveIndex(): Promise<void> {
+    if (!modelValue.value) {
       resolvedIndices.value = [];
       indexRef.value?.validate();
       return;
@@ -155,29 +161,41 @@
 
     loading.value = true;
     try {
-      const indices = await getAllIndices(props.namespaceId, index.value);
+      const indices = await getAllIndices(props.namespaceId, modelValue.value);
       resolvedIndices.value = indices;
       if (resolvedIndices.value.length > 0) {
-        emit('index:valid', index.value);
+        emit('index:valid', modelValue.value);
       }
-    } catch (err) {
-      error.value = err instanceof Error ? err : new Error(`${err}`);
+    } catch (error) {
+      errorAlert.value = error instanceof Error ? error : new Error(`${error}`);
       setTimeout(() => {
-        error.value = undefined;
-      }, 5000);
+        errorAlert.value = undefined;
+      }, ERROR_ALERT_DURATION);
       resolvedIndices.value = [];
     }
     loading.value = false;
     indexRef.value?.validate();
   }
 
-  async function refresh() {
+  async function refresh(): Promise<void> {
     await Promise.all([fetchIndices(), resolveIndex()]);
   }
 
-  watch(index, () => resolveIndex(), { immediate: true });
+  watch(modelValue, () => resolveIndex(), { immediate: true });
   watch(
     () => props.namespaceId,
     () => refresh()
   );
 </script>
+
+<style scoped>
+  .index-row {
+    cursor: pointer;
+    background-color: transparent;
+    transition: background-color 0.15s;
+
+    &:hover {
+      background-color: rgba(var(--v-border-color), var(--v-hover-opacity));
+    }
+  }
+</style>

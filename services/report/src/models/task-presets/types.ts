@@ -71,17 +71,17 @@ export const TaskPreset = z.object({
 
   template: z
     .object({
-      tags: z
-        .array(TemplateTag)
-        .optional()
-        .describe('[Includes] Template tags'),
-
-      locale: TemplateLocale.optional().describe('[Includes] Template locale'),
-
       hidden: z
         .boolean()
         .optional()
         .describe('[Includes] If template is hidden to normal users'),
+
+      locale: TemplateLocale.optional().describe('[Includes] Template locale'),
+
+      tags: z
+        .array(TemplateTag)
+        .optional()
+        .describe('[Includes] Template tags'),
     })
     .optional()
     .describe('[Includes] Template referenced by the preset'),
@@ -113,6 +113,11 @@ export type InputTaskPresetType = z.infer<typeof InputTaskPreset>;
  * Validation for query filters of a task preset
  */
 export const TaskPresetQueryFilters = z.object({
+  hidden: z
+    .stringbool()
+    .optional()
+    .describe('If preset or template is hidden to normal users'),
+
   query: z.string().optional().describe('Query used for searching'),
 
   templateId: z
@@ -120,11 +125,6 @@ export const TaskPresetQueryFilters = z.object({
     .min(1)
     .optional()
     .describe('ID of template referenced by the preset'),
-
-  hidden: z
-    .stringbool()
-    .optional()
-    .describe('If preset or template is hidden to normal users'),
 });
 
 /**
@@ -144,23 +144,23 @@ export const TaskPresetQueryInclude = z.object({
  */
 export const AdditionalDataForPreset = z
   .object({
-    name: z.string().min(1).describe('Task name'),
-
     description: z.string().describe('Task description'),
-
-    namespaceId: z.string().min(1).describe('Namespace ID of the task'),
-
-    index: z.string().min(1).describe('Elastic index to fetch data from'),
-
-    targets: z
-      .array(z.email())
-      .min(1)
-      .describe('Email addresses to send report'),
 
     filters: z
       .array(Filter)
       .optional()
       .describe('Global filters used when fetching data'),
+
+    index: z.string().min(1).describe('Elastic index to fetch data from'),
+
+    name: z.string().min(1).describe('Task name'),
+
+    namespaceId: z.string().min(1).describe('Namespace ID of the task'),
+
+    targets: z
+      .array(z.email())
+      .min(1)
+      .describe('Email addresses to send report'),
   })
   .strict();
 

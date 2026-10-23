@@ -5,6 +5,9 @@
     },
     "footer": {
       "createdAt": "Generated the {{{date}}}"
+    },
+    "figures": {
+      "empty": "No data available"
     }
   },
   "recurrence": {
@@ -64,6 +67,25 @@
         "subject": "ezMESURE Reporting Error [{{{ date }}}]",
         "message": "Unknown error, see attachment"
       }
+    }
+  },
+  "unsubscribe": {
+    "title": "Unsubscribe from « {{{ task }}} »",
+    "texts": {
+      "confirm": "You are currently subscribed to the report <strong>{{{ task }}}</strong> with the email address <strong>{{{ email }}}</strong>, would you like to unsubscribe?",
+      "mailList": {
+        "warning": "Warning! If the address <strong>{{{ email }}}</strong> is a mailing list, this will unsubscribe the <strong>EVERYONE</strong> mailing list!",
+        "advice": "Please contact the person in charge of ezREEPORT/ezMESURE reports at your institution or department to unsubscribe individually."
+      },
+      "changes": "This change will take effect immediately and is irreversible. If you wish to resubscribe, please contact the person responsible for ezREEPORT/ezMESURE reports at your institution or department."
+    },
+    "actions": {
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    },
+    "results": {
+      "successs": "You have been successfully unsubscribed. You can close this window.",
+      "error": "An error occurred during processing:"
     }
   }
 }

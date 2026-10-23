@@ -15,26 +15,26 @@ async function init(): Promise<void> {
     const { id } = await getDefaultTemplate();
     config.defaultTemplate.id = id;
     appLogger.info({
-      scope: 'init',
       defaultTemplateId: id,
       msg: 'Default template ready',
+      scope: 'init',
     });
   } catch (error) {
     appLogger.error({
-      scope: 'init',
       err: error,
       message: "Couldn't get default template",
+      scope: 'init',
     });
   }
 }
 
 async function start(): Promise<void> {
   appLogger.info({
-    scope: 'node',
     env: process.env.NODE_ENV,
-    logLevel: config.log.level,
     logDir: config.log.dir,
+    logLevel: config.log.level,
     msg: 'Service starting',
+    scope: 'node',
   });
 
   try {
@@ -50,14 +50,14 @@ async function start(): Promise<void> {
     });
 
     appLogger.info({
-      scope: 'init',
+      msg: 'Service ready',
       readyDuration: process.uptime(),
       readyDurationUnit: 's',
-      msg: 'Service ready',
+      scope: 'init',
     });
-  } catch (err) {
-    appLogger.error(err);
-    throw err instanceof Error ? err : new Error(`${err}`);
+  } catch (error) {
+    appLogger.error(error);
+    throw error instanceof Error ? error : new Error(`${error}`);
   }
 }
 

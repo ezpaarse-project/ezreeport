@@ -1,6 +1,6 @@
 import http from 'node:http';
 
-import type { Logger } from '@ezreeport/logger';
+import type { Logger } from 'pino';
 
 export type Route = (
   req: http.IncomingMessage,
@@ -43,7 +43,7 @@ export function setupHTTPServer(
         // oxlint-disable-next-line promise/prefer-await-to-callbacks
         server.close((err) => {
           if (err) {
-            logger.error({ msg: 'Failed to close service', err });
+            logger.error({ err, msg: 'Failed to close service' });
             return;
           }
 

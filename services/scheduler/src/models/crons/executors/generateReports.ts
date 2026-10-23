@@ -20,20 +20,20 @@ const generateReports: Executor = async (logger) => {
     if (targets.length <= 0) {
       logger.error({
         msg: "Targets can't be null",
-        taskId: task.id,
         task: task.name,
+        taskId: task.id,
       });
       continue;
     }
 
     // oxlint-disable-next-line no-await-in-loop
     const data = await queueGeneration({
-      task: Task.parse(task),
       namespace: Namespace.parse(namespace),
-      template: Template.parse(template),
+      origin: 'scheduler',
       period: calcPeriodFromRecurrence(today, task.recurrence, -1),
       targets,
-      origin: 'scheduler',
+      task: Task.parse(task),
+      template: Template.parse(template),
       writeActivity: {
         jobAdded: new Date(),
       },
@@ -43,10 +43,10 @@ const generateReports: Executor = async (logger) => {
       logger.debug({
         msg: 'Report queued for generation',
         namespace: namespace.name,
-        templateId: task.extendedId,
-        template: template.name,
-        taskId: task.id,
         task: task.name,
+        taskId: task.id,
+        template: template.name,
+        templateId: task.extendedId,
       });
     }
   }
@@ -57,4 +57,5 @@ const generateReports: Executor = async (logger) => {
   };
 };
 
+// oxlint-disable-next-line import/no-default-export
 export default generateReports;

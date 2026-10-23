@@ -5,6 +5,9 @@
     },
     "footer": {
       "createdAt": "Généré le {{{ date }}}"
+    },
+    "figures": {
+      "empty": "Aucune donnée disponible"
     }
   },
   "recurrence": {
@@ -64,6 +67,25 @@
         "subject": "Erreur de Reporting ezMESURE [{{{ date }}}]",
         "message": "Erreur inconnue, regardez la pièce jointe"
       }
+    }
+  },
+  "unsubscribe": {
+    "title": "Désabonnement de « {{{ task }}} »",
+    "texts": {
+      "confirm": "Vous êtes actuellement abonné au rapport <strong>{{{ task }}}</strong> avec l'adresse <strong>{{{ email }}}</strong>, voulez vous désabonner ?",
+      "mailList": {
+        "warning": "Attention ! Si l'adresse <strong>{{{ email }}}</strong> est une liste de diffusion, cela désabonnera <strong>TOUTE</strong> la liste de diffusion !",
+        "advice": "Veuillez vous rapprochez de la personne responsable des rapports ezREEPORT/ezMESURE dans votre institution ou service pour vous désabonner individuellement."
+      },
+      "changes": "Ce changement sera effectif immédiatement et est irréversible. Si vous voulez vous ré-abonner, rapprochez vous de la personne responsable des rapports ezREEPORT/ezMESURE dans votre institution ou service."
+    },
+    "actions": {
+      "confirm": "Confirmer",
+      "cancel": "Annuler"
+    },
+    "results": {
+      "successs": "Vous avez bien été désinscrit. Vous pouvez fermer cette fenêtre.",
+      "error": "Une erreur est survenue pendant le traitement:"
     }
   }
 }

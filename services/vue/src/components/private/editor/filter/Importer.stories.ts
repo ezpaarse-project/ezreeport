@@ -1,22 +1,16 @@
-import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import type { Meta } from '@storybook/vue3-vite';
+
+import { useStory } from '~/__mocks__/utils';
 
 import EditorFilterImporter from './Importer.vue';
 
 const meta: Meta<typeof EditorFilterImporter> = {
-  title: 'Template Editor/Filters/Importer',
   component: EditorFilterImporter,
+  title: 'Template Editor/Filters/Importer',
 };
+
+const { defineStory } = useStory(meta);
 
 export default meta;
 
-type Story = StoryObj<typeof EditorFilterImporter>;
-
-export const Basic: Story = {
-  render: (args: unknown) => ({
-    components: { EditorFilterImporter },
-    setup() {
-      return { args };
-    },
-    template: '<EditorFilterImporter v-bind="args" />',
-  }),
-};
+export const Basic = defineStory({});

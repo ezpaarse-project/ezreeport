@@ -1,8 +1,9 @@
-import type { Logger } from '@ezreeport/logger';
+import type { Logger } from 'pino';
+
 import type {
-  rabbitmq,
   JSONMessageTransport,
   JSONMessageTransportExchange,
+  rabbitmq,
 } from '@ezreeport/rabbitmq';
 
 export abstract class HeartbeatManager {
@@ -40,9 +41,9 @@ export abstract class HeartbeatManager {
         channel: this.channel,
         exchange: { name: exchange, routingKey: '' },
       };
-    } catch (err) {
-      this.logger.error({ msg: "Couldn't setup heartbeat", err });
-      throw err;
+    } catch (error) {
+      this.logger.error({ err: error, msg: "Couldn't setup heartbeat" });
+      throw error;
     }
   }
 }

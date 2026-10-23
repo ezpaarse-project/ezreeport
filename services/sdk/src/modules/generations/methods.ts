@@ -1,11 +1,11 @@
 import { parseISO } from 'date-fns';
 
 import {
-  apiRequestOptionsToQuery,
   type ApiRequestOptions,
   type ApiResponse,
   type ApiResponsePaginated,
   type SdkPaginated,
+  apiRequestOptionsToQuery,
 } from '~/lib/api';
 import { client } from '~/lib/fetch';
 import { transformCreatedUpdated } from '~/lib/transform';
@@ -17,10 +17,9 @@ import { transformTaskWithoutBody } from '../tasks/methods';
 
 export const transformGeneration = (generation: RawGeneration): Generation => ({
   ...transformCreatedUpdated(generation),
-  start: parseISO(generation.start),
   end: parseISO(generation.end),
+  start: parseISO(generation.start),
   startedAt: generation.startedAt ? parseISO(generation.startedAt) : undefined,
-
   task: generation.task ? transformTaskWithoutBody(generation.task) : undefined,
 });
 
@@ -40,10 +39,10 @@ export async function getAllGenerations(
   });
 
   return {
-    items: content.map(transformGeneration),
-    total,
     count,
+    items: content.map(transformGeneration),
     page,
+    total,
   };
 }
 assignPermission(getAllGenerations, 'GET /generations');

@@ -9,6 +9,13 @@
 
 <script setup lang="ts">
   import type { TaskActivity } from '~sdk/task-activity';
+  import {
+    mdiEmailMinus,
+    mdiFileDocumentCheck,
+    mdiFileDocumentRemove,
+    mdiPencil,
+    mdiPlus,
+  } from '@mdi/js';
 
   // Components props
   const props = defineProps<{
@@ -19,18 +26,18 @@
   const chip = computed(() => {
     switch (props.modelValue.type) {
       case 'creation':
-        return { color: 'green', prependIcon: 'mdi-plus' };
+        return { color: 'green', prependIcon: mdiPlus };
       case 'edition':
-        return { color: 'blue', prependIcon: 'mdi-pencil' };
+        return { color: 'blue', prependIcon: mdiPencil };
       case 'task:unsubscribe':
-        return { color: 'orange', prependIcon: 'mdi-email-minus' };
+        return { color: 'orange', prependIcon: mdiEmailMinus };
       // Legacy
       case 'generation-success':
       case 'generation:success':
-        return { color: 'green', prependIcon: 'mdi-file-document-check' };
+        return { color: 'green', prependIcon: mdiFileDocumentCheck };
       case 'generation-error': // Legacy
       case 'generation:error':
-        return { color: 'red', prependIcon: 'mdi-file-document-remove' };
+        return { color: 'red', prependIcon: mdiFileDocumentRemove };
       default:
         return {};
     }

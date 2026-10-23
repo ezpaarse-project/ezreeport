@@ -7,11 +7,11 @@ import type { PaginationType } from '~/models/pagination/types';
 import { buildPaginatedRequest } from '~/models/pagination';
 
 import {
-  TaskActivity,
-  type TaskActivityType,
-  type TaskActivityQueryFiltersType,
   type InputTaskActivityType,
+  TaskActivity,
   type TaskActivityIncludeFieldsType,
+  type TaskActivityQueryFiltersType,
+  type TaskActivityType,
 } from './types';
 
 function applyFilters(
@@ -105,7 +105,7 @@ export async function getAllActivity(
       ensureSchema(
         TaskActivity,
         log,
-        (activity) => `Failed to parse activity ${activity.id}`
+        () => `Failed to parse activity ${log.id}`
       )
     )
   );
@@ -126,10 +126,9 @@ export async function createActivity(
     data: {
       ...data,
 
-      taskId: undefined,
-      task: { connect: { id: data.taskId } },
-
       data: data.data ?? Prisma.DbNull,
+      task: { connect: { id: data.taskId } },
+      taskId: undefined,
     },
   });
 

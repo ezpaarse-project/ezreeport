@@ -13,11 +13,11 @@ export const PaginationQuery = z.object({
     .default(15)
     .describe('Count of items wanted'),
 
+  order: z.enum(['asc', 'desc']).default('asc').describe('Sort order'),
+
   page: z.coerce.number().int().min(1).default(1).describe('Page number'),
 
   sort: z.string().optional().describe('Sort field'),
-
-  order: z.enum(['asc', 'desc']).default('asc').describe('Sort order'),
 });
 
 /**
@@ -44,10 +44,10 @@ export const zPaginationResponse = <
     z.object({
       ...customMeta?.shape,
 
-      total: z.int().min(0).describe('Total number of items'),
+      count: z.int().min(0).describe('Count of items returned'),
 
       page: z.int().min(1).describe('Page number'),
 
-      count: z.int().min(0).describe('Count of items returned'),
+      total: z.int().min(0).describe('Total number of items'),
     })
   );

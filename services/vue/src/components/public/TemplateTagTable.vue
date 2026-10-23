@@ -23,7 +23,7 @@
             v-tooltip:top="$t('$ezreeport.new')"
             variant="tonal"
             color="green"
-            icon="mdi-plus"
+            :icon="mdiPlus"
             density="comfortable"
             class="ml-2"
             @click="openForm()"
@@ -34,7 +34,7 @@
             :loading="loading"
             variant="tonal"
             color="primary"
-            icon="mdi-refresh"
+            :icon="mdiRefresh"
             density="comfortable"
             class="ml-2"
             @click="refresh"
@@ -43,7 +43,7 @@
           <v-text-field
             v-model="filters.query"
             :placeholder="$t('$ezreeport.search')"
-            append-inner-icon="mdi-magnify"
+            :append-inner-icon="mdiMagnify"
             variant="outlined"
             density="compact"
             width="200"
@@ -62,7 +62,7 @@
       <v-menu>
         <template #activator="{ props: menu }">
           <v-btn
-            icon="mdi-cog"
+            :icon="mdiCog"
             variant="plain"
             density="compact"
             v-bind="menu"
@@ -73,14 +73,14 @@
           <v-list-item
             :title="$t('$ezreeport.edit')"
             :disabled="!availableActions.update"
-            prepend-icon="mdi-pencil"
+            :prepend-icon="mdiPencil"
             @click="openForm(item)"
           />
 
           <v-list-item
             :title="$t('$ezreeport.delete')"
             :disabled="!availableActions.delete"
-            prepend-icon="mdi-delete"
+            :prepend-icon="mdiDelete"
             @click="deleteItem(item)"
           />
         </v-list>
@@ -91,14 +91,14 @@
       <v-empty-state
         :title="$t('$ezreeport.template.tags.noList')"
         :text="$t('$ezreeport.template.tags.noList:desc')"
-        icon="mdi-tag-outline"
+        :icon="mdiTagOutline"
       >
         <template #actions>
           <v-btn
             v-if="availableActions.create"
             :text="$t('$ezreeport.new')"
             color="green"
-            append-icon="mdi-plus"
+            :append-icon="mdiPlus"
             @click="openForm()"
           />
         </template>
@@ -113,7 +113,7 @@
     <template #actions>
       <v-list-item
         :title="$t('$ezreeport.delete')"
-        prepend-icon="mdi-delete"
+        :prepend-icon="mdiDelete"
         @click="deleteSelected()"
       />
     </template>
@@ -140,14 +140,22 @@
 
 <script setup lang="ts">
   import type { VDataTable } from 'vuetify/components';
-  import { refreshPermissions, hasPermission } from '~sdk/helpers/permissions';
   import {
+    mdiCog,
+    mdiDelete,
+    mdiMagnify,
+    mdiPencil,
+    mdiPlus,
+    mdiRefresh,
+    mdiTagOutline,
+  } from '@mdi/js';
+  import {
+    type InputTemplateTag,
+    type TemplateTag,
     createTemplateTag,
     deleteTemplateTag,
     getAllTemplateTags,
     upsertTemplateTag,
-    type InputTemplateTag,
-    type TemplateTag,
   } from '~sdk/template-tags';
 
   type VDataTableHeaders = Exclude<VDataTable['$props']['headers'], undefined>;
@@ -159,22 +167,26 @@
   }>();
 
   // Utils composable
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   const selectedTags = ref<TemplateTag[]>([]);
-  const arePermissionsReady = shallowRef(false);
   const updatedTag = ref<TemplateTag | undefined>();
   const isFormOpen = shallowRef(false);
+
+  const { availableActions } = usePermissions({
+    create: [createTemplateTag],
+    delete: [deleteTemplateTag],
+    update: [upsertTemplateTag],
+  });
 
   /** Items per page */
   const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 });
   /** List of tags */
   const { total, refresh, loading, filters, vDataTableOptions } =
     useServerSidePagination((params) => getAllTemplateTags(params), {
-      sortBy: 'name',
       itemsPerPage,
       itemsPerPageOptions: props.itemsPerPageOptions,
+      sortBy: 'name',
     });
 
   const title = computed(
@@ -186,28 +198,17 @@
   const headers = computed(
     (): VDataTableHeaders => [
       {
+        sortable: true,
         title: t('$ezreeport.name'),
         value: 'name',
-        sortable: true,
       },
       {
+        align: 'center',
         title: t('$ezreeport.actions'),
         value: '_actions',
-        align: 'center',
       },
     ]
   );
-
-  const availableActions = computed(() => {
-    if (!arePermissionsReady.value) {
-      return {};
-    }
-    return {
-      create: hasPermission(createTemplateTag),
-      update: hasPermission(upsertTemplateTag),
-      delete: hasPermission(deleteTemplateTag),
-    };
-  });
 
   const selectedTagIds = computed({
     get: () => selectedTags.value.map((template) => template.id),
@@ -232,8 +233,8 @@
     try {
       await deleteTemplateTag(tag);
       refresh();
-    } catch (err) {
-      handleEzrError(t('$ezreeport.template.tags.errors.delete'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.template.tags.errors.delete'), error);
     }
   }
 
@@ -245,29 +246,25 @@
       );
       selectedTagIds.value = [];
       refresh();
-    } catch (err) {
-      handleEzrError(t('$ezreeport.template.tags.errors.delete'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.template.tags.errors.delete'), error);
     }
   }
   async function onSave(tag: TemplateTag | InputTemplateTag): Promise<void> {
     try {
+      // oxlint-disable-next-line unicorn/prefer-ternary
       if ('id' in tag && tag.id) {
         await upsertTemplateTag(tag);
       } else {
         await createTemplateTag(tag);
       }
       closeForm();
-    } catch (err) {
+    } catch (error) {
       const msg =
         'id' in tag && tag.id
           ? t('$ezreeport.template.tags.errors.edit')
           : t('$ezreeport.template.tags.errors.create');
-      handleEzrError(msg, err);
+      handleEzrError(msg, error);
     }
   }
-
-  // oxlint-disable-next-line promise/catch-or-return, promise/prefer-await-to-then
-  refreshPermissions().then(() => {
-    arePermissionsReady.value = true;
-  });
 </script>

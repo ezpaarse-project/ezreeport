@@ -30,11 +30,19 @@ export type ReportFilesOfTaskType = z.infer<typeof ReportFilesOfTask>;
  */
 export const InputManualReport = z
   .object({
+    debug: z
+      .boolean()
+      .default(false)
+      .optional()
+      .describe(
+        'Enable second level of debug, not available in production environment'
+      ),
+
     period: z
       .object({
-        start: zStringToStartOfDay.describe('Start of the period'),
-
         end: zStringToEndOfDay.describe('End of the period'),
+
+        start: zStringToStartOfDay.describe('Start of the period'),
       })
       .optional()
       .describe(
@@ -46,14 +54,6 @@ export const InputManualReport = z
       .optional()
       .describe(
         'Custom targets to send report to, enable first level of debug if provided'
-      ),
-
-    debug: z
-      .boolean()
-      .default(false)
-      .optional()
-      .describe(
-        'Enable second level of debug, not available in production environment'
       ),
   })
   .strict();

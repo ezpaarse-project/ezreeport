@@ -5,7 +5,7 @@
         ? $t('$ezreeport.task-preset.title:edit')
         : $t('$ezreeport.task-preset.title:new')
     "
-    :prepend-icon="modelValue?.id ? 'mdi-file' : 'mdi-file-plus'"
+    :prepend-icon="modelValue?.id ? mdiFile : mdiFilePlus"
   >
     <template #append>
       <slot name="append" />
@@ -24,7 +24,7 @@
               :loading="loadingTemplates"
               item-value="id"
               item-title="name"
-              prepend-icon="mdi-view-grid"
+              :prepend-icon="mdiViewGrid"
               variant="underlined"
               hide-details
               @update:model-value="onTemplateChange($event)"
@@ -38,7 +38,7 @@
                 />
               </template>
 
-              <template #item="{ item: { raw: item }, props: listItem }">
+              <template #item="{ item, props: listItem }">
                 <v-list-item :title="item.name" lines="two" v-bind="listItem">
                   <template #subtitle>
                     <TemplateTagView :model-value="item.tags ?? []" />
@@ -71,7 +71,7 @@
               :label="$t('$ezreeport.name')"
               :rules="[(val) => !!val || $t('$ezreeport.required')]"
               :readonly="readonly"
-              prepend-icon="mdi-rename"
+              :prepend-icon="mdiRename"
               variant="underlined"
               required
               @update:model-value="hasNameChanged = true"
@@ -86,7 +86,7 @@
               :label="$t('$ezreeport.task.recurrence')"
               :items="recurrences"
               :readonly="readonly"
-              prepend-icon="mdi-calendar-refresh"
+              :prepend-icon="mdiCalendarRefresh"
               variant="underlined"
               required
               @update:model-value="onRecurrenceChange()"
@@ -123,7 +123,7 @@
               :items="dateMapping"
               :readonly="readonly"
               :return-object="false"
-              prepend-icon="mdi-calendar-search"
+              :prepend-icon="mdiCalendarSearch"
               variant="underlined"
               required
             />
@@ -146,7 +146,7 @@
       <v-btn
         v-if="!readonly"
         :text="modelValue?.id ? $t('$ezreeport.save') : $t('$ezreeport.new')"
-        :append-icon="modelValue?.id ? 'mdi-pencil' : 'mdi-plus'"
+        :append-icon="modelValue?.id ? mdiPencil : mdiPlus"
         :disabled="!isValid"
         color="primary"
         @click="save()"
@@ -156,14 +156,24 @@
 </template>
 
 <script setup lang="ts">
+  import {
+    mdiCalendarRefresh,
+    mdiCalendarSearch,
+    mdiFile,
+    mdiFilePlus,
+    mdiPencil,
+    mdiPlus,
+    mdiRename,
+    mdiViewGrid,
+  } from '@mdi/js';
   import { RECURRENCES } from '~sdk/helpers/tasks';
   import {
-    createTaskPreset,
-    upsertTaskPreset,
     type InputTaskPreset,
     type TaskPreset,
+    createTaskPreset,
+    upsertTaskPreset,
   } from '~sdk/task-presets';
-  import { getAllTemplates, getTemplate, type Template } from '~sdk/templates';
+  import { type Template, getAllTemplates, getTemplate } from '~sdk/templates';
 
   const modelValue = defineModel<TaskPreset | undefined>();
 
@@ -173,7 +183,6 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
   const { getOptionsFromMapping, refreshMapping } = useTemplateEditor();
 
@@ -186,17 +195,17 @@
   /** Preset to edit */
   const { cloned: preset } = useCloned<InputTaskPreset>(
     modelValue.value ?? {
+      fetchOptions: {},
+      hidden: false,
       name: '',
       recurrence: 'MONTHLY',
       recurrenceOffset: {},
-      fetchOptions: {},
       templateId: '',
-      hidden: false,
     }
   );
 
   /** Validate on mount */
-  useTemplateVForm('formRef', { immediate: !!modelValue.value?.id });
+  useTemplateVForm('formRef', { immediate: Boolean(modelValue.value?.id) });
 
   /** Mapping options for dateField */
   const dateMapping = computed(() => getOptionsFromMapping('date'));
@@ -217,7 +226,7 @@
         return;
       }
 
-      const values = Array.from(value.values());
+      const values = [...value.values()];
       fetchOptions.value.filters = values;
     },
   });
@@ -229,16 +238,16 @@
     try {
       let meta;
       ({ items, meta } = await getAllTemplates({
-        pagination: { count: 0, sort: 'name' },
         include: ['tags'],
+        pagination: { count: 0, sort: 'name' },
       }));
       templates.value = items;
 
       if (!preset.value.templateId) {
         preset.value.templateId = meta.default;
       }
-    } catch (err) {
-      handleEzrError(t('$ezreeport.templates.errors.fetch'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.templates.errors.fetch'), error);
     }
     loadingTemplates.value = false;
 
@@ -251,8 +260,8 @@
   /** Recurrence options */
   const recurrences = computed(() =>
     RECURRENCES.map((value) => ({
-      value,
       title: t(`$ezreeport.task.recurrenceList.${value}`),
+      value,
     }))
   );
 
@@ -280,8 +289,8 @@
         index: template.body.index || '',
       };
       regenerateName();
-    } catch (err) {
-      handleEzrError(t('$ezreeport.templates.errors.open'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.templates.errors.open'), error);
     }
   }
 
@@ -304,11 +313,11 @@
       } else {
         modelValue.value = await createTaskPreset(body);
       }
-    } catch (err) {
+    } catch (error) {
       const msg = modelValue.value?.id
         ? t('$ezreeport.task-preset.errors.edit')
         : t('$ezreeport.task-preset.errors.create');
-      handleEzrError(msg, err);
+      handleEzrError(msg, error);
     }
   }
 </script>

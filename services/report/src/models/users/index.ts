@@ -11,14 +11,14 @@ import { replaceMemberships } from '~/models/memberships';
 import { buildPaginatedRequest } from '~/models/pagination';
 
 import {
-  User,
-  type UserType,
-  type InputUserType,
-  type UserQueryFiltersType,
   type BulkUserType,
+  type InputUserType,
+  User,
+  type UserQueryFiltersType,
+  type UserType,
 } from './types';
 
-const logger = appLogger.child({ scope: 'models', model: 'users' });
+const logger = appLogger.child({ model: 'users', scope: 'models' });
 
 function applyFilters(filters: UserQueryFiltersType): Prisma.UserWhereInput {
   const where: Prisma.UserWhereInput = {};
@@ -60,11 +60,7 @@ export async function getAllUsers(
   // Ensure data
   const users = await Promise.all(
     data.map((user) =>
-      ensureSchema(
-        User,
-        user,
-        (user) => `Failed to parse user ${user.username}`
-      )
+      ensureSchema(User, user, () => `Failed to parse user ${user.username}`)
     )
   );
   return users;
@@ -101,8 +97,8 @@ export async function createUser(
   });
 
   logger.debug({
-    id: user.username,
     action: 'Created',
+    id: user.username,
     msg: 'Created',
   });
 
@@ -122,15 +118,15 @@ export async function editUser(
   data: InputUserType
 ): Promise<UserType> {
   const user = await prisma.user.update({
+    data,
     where: {
       username,
     },
-    data,
   });
 
   logger.debug({
-    id: user.username,
     action: 'Updated',
+    id: user.username,
     msg: 'Updated',
   });
 
@@ -184,8 +180,8 @@ export async function countUsers(
  */
 export async function doesUserExist(username: string): Promise<boolean> {
   const count = await prisma.user.count({
-    where: { username },
     select: { username: true },
+    where: { username },
   });
 
   return count.username > 0;
@@ -200,10 +196,9 @@ export async function doesUserExist(username: string): Promise<boolean> {
  */
 export async function replaceUsers(data: BulkUserType[]) {
   const memberships: BulkMembershipType[] = data.flatMap((user) =>
-    (user.memberships ?? []).map((membership) => ({
-      ...membership,
-      username: user.username,
-    }))
+    (user.memberships ?? []).map((membership) =>
+      Object.assign(membership, { username: user.username })
+    )
   );
   const willReplaceMemberships = memberships.length > 0;
 
@@ -220,7 +215,7 @@ export async function replaceUsers(data: BulkUserType[]) {
   const editData = toEdit.map(
     (user) =>
       ({
-        // toEdit is made of dataPerUsername so we can assume it is safe
+        // ToEdit is made of dataPerUsername so we can assume it is safe
         ...dataPerUsername.get(user.username)!,
         // Disconnect memberships, as we will replace them later
         memberships: willReplaceMemberships ? { deleteMany: {} } : undefined,
@@ -232,13 +227,9 @@ export async function replaceUsers(data: BulkUserType[]) {
   const createData = await Promise.all(
     toCreate.map(
       async (user) =>
-        ({
-          // toCreate is made of toEdit so we can assume it is safe
-          ...dataPerUsername.get(user.username)!,
-          // Create token for each one
-          token: await generateToken(),
-          // Don't create memberships, as we will replace them later
+        Object.assign(dataPerUsername.get(user.username)!, {
           memberships: undefined,
+          token: await generateToken(),
         }) satisfies Prisma.UserCreateInput
     )
   );
@@ -251,7 +242,7 @@ export async function replaceUsers(data: BulkUserType[]) {
 
     const updateOperations = Promise.all(
       editData.map((newData) =>
-        tx.user.update({ where: { username: newData.username }, data: newData })
+        tx.user.update({ data: newData, where: { username: newData.username } })
       )
     );
 
@@ -261,11 +252,11 @@ export async function replaceUsers(data: BulkUserType[]) {
   });
 
   logger.debug({
-    deleted: deleted.count,
-    updated: updated.length,
-    created: created.count,
     action: 'Replaced',
+    created: created.count,
+    deleted: deleted.count,
     msg: 'Replaced',
+    updated: updated.length,
   });
 
   let membershipResult;
@@ -275,9 +266,9 @@ export async function replaceUsers(data: BulkUserType[]) {
 
   return {
     users: {
+      created: created.count,
       deleted: deleted.count,
       updated: updated.length,
-      created: created.count,
     },
     ...membershipResult,
   };

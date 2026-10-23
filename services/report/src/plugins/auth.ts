@@ -1,8 +1,8 @@
 import type {
-  preValidationHookHandler,
-  FastifyRequest,
-  FastifyPluginAsync,
   FastifyContextConfig,
+  FastifyPluginAsync,
+  FastifyRequest,
+  preValidationHookHandler,
 } from 'fastify';
 import fp from 'fastify-plugin';
 import { StatusCodes } from 'http-status-codes';
@@ -13,11 +13,11 @@ import config from '~/lib/config';
 
 import type { UserType } from '~/models/users/types';
 import {
-  registerRouteWithAccess,
-  registerRoute,
+  type Access,
   getNamespacesOfUser,
   getUserByToken,
-  type Access,
+  registerRoute,
+  registerRouteWithAccess,
 } from '~/models/access';
 import { HTTPError } from '~/models/errors';
 
@@ -31,7 +31,7 @@ const { adminKey } = config;
 const requireUser: preValidationHookHandler = async (request) => {
   // Getting token
   const header = request.headers.authorization ?? '';
-  const regexRes = /Bearer (?<token>.*)/i.exec(header);
+  const regexRes = /Bearer (?<token>.*)/iv.exec(header);
   // If no username given/found
   if (!regexRes?.groups?.token) {
     throw new HTTPError(
@@ -55,6 +55,7 @@ const requireUser: preValidationHookHandler = async (request) => {
  *
  * @param request The fastify Request
  */
+// oxlint-disable-next-line require-await
 const requireAdmin: preValidationHookHandler = async (request) => {
   if (!request.user?.isAdmin) {
     throw new HTTPError('Admin status is required', StatusCodes.FORBIDDEN);
@@ -66,6 +67,7 @@ const requireAdmin: preValidationHookHandler = async (request) => {
  *
  * @param request The fastify Request
  */
+// oxlint-disable-next-line require-await
 const requireAPIKey: preValidationHookHandler = async (request) => {
   // Getting token
   const token = request.headers['x-api-key'] ?? '';
@@ -86,7 +88,8 @@ const requireAPIKey: preValidationHookHandler = async (request) => {
 /**
  * Gets pre-validation hooks to the route if needed
  *
- * @param param0 The route options
+ * @param routeConfig The route options
+ * @param routeConfig.ezrAuth Options about auth
  * @param registerName Name to register the route, if not present it won't be registered
  *
  * @returns The pre-validation hooks to add
@@ -110,6 +113,7 @@ function preparePreValidation(
       }
       return [requireUser, requireAdmin];
 
+    // oxlint-disable-next-line no-implicit-coercion - Type guard
     case !!ezrAuth.access:
       if (registerName) {
         registerRouteWithAccess(registerName, ezrAuth.access);
@@ -132,6 +136,7 @@ function preparePreValidation(
  *
  * @param fastify The fastify instance
  */
+// oxlint-disable-next-line require-await - Needs to be async
 const authBasePlugin: FastifyPluginAsync = async (fastify) => {
   fastify.decorateRequest('user');
 
@@ -142,7 +147,7 @@ const authBasePlugin: FastifyPluginAsync = async (fastify) => {
 
     // Prepare for registration
     const shouldRegister =
-      routeOpts.method !== 'HEAD' && !/^\/v\d+\//i.test(routeOpts.prefix); // Don't register versioned routes
+      routeOpts.method !== 'HEAD' && !/^\/v\d+\//iv.test(routeOpts.prefix); // Don't register versioned routes
     const method = ensureArray(routeOpts.method)[0].toUpperCase();
     const routeName = `${method} ${routeOpts.url}`;
 
@@ -163,8 +168,8 @@ const authBasePlugin: FastifyPluginAsync = async (fastify) => {
 
 // Register plugin
 export const authPlugin = fp(authBasePlugin, {
-  name: 'ezr-auth',
   encapsulate: false,
+  name: 'ezr-auth',
 });
 
 /**
@@ -189,7 +194,7 @@ export async function restrictNamespaces<Request extends FastifyRequest>(
   let ids = namespacesOfUser.map((namespace) => namespace.id);
 
   if (namespacesIds) {
-    const userNamespaceIds = new Set(ids ?? []);
+    const userNamespaceIds = new Set(ids);
     ids = namespacesIds.filter((id) => userNamespaceIds.has(id));
   }
 

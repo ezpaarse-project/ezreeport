@@ -5,7 +5,7 @@
         ? $t('$ezreeport.editor.figures.table.columns.title:edit')
         : $t('$ezreeport.editor.figures.table.columns.title:new')
     "
-    prepend-icon="mdi-playlist-plus"
+    :prepend-icon="mdiPlaylistPlus"
   >
     <template #text>
       <v-form ref="formRef" v-model="isValid">
@@ -18,7 +18,7 @@
                 (val) => !!val || $t('$ezreeport.required'),
                 isUniqueRule,
               ]"
-              prepend-icon="mdi-rename"
+              :prepend-icon="mdiRename"
               variant="underlined"
               required
             />
@@ -41,7 +41,7 @@
                         $t('$ezreeport.editor.figures.table.columns.metric')
                       "
                       :disabled="hasAlreadyMetric"
-                      prepend-icon="mdi-counter"
+                      :prepend-icon="mdiCounter"
                       color="primary"
                       hide-details
                     />
@@ -65,7 +65,7 @@
                 v-tooltip:top="
                   $t('$ezreeport.editor.figures.table.columns.styles.hleft')
                 "
-                icon="mdi-format-align-left"
+                :icon="mdiFormatAlignLeft"
                 value="left"
               />
 
@@ -73,7 +73,7 @@
                 v-tooltip:top="
                   $t('$ezreeport.editor.figures.table.columns.styles.hcenter')
                 "
-                icon="mdi-format-align-center"
+                :icon="mdiFormatAlignCenter"
                 value="center"
               />
 
@@ -81,7 +81,7 @@
                 v-tooltip:top="
                   $t('$ezreeport.editor.figures.table.columns.styles.hright')
                 "
-                icon="mdi-format-align-right"
+                :icon="mdiFormatAlignRight"
                 value="right"
               />
 
@@ -89,7 +89,7 @@
                 v-tooltip:top="
                   $t('$ezreeport.editor.figures.table.columns.styles.hjustify')
                 "
-                icon="mdi-format-align-justify"
+                :icon="mdiFormatAlignJustify"
                 value="justify"
               />
             </v-btn-toggle>
@@ -107,7 +107,7 @@
                 v-tooltip:top="
                   $t('$ezreeport.editor.figures.table.columns.styles.vtop')
                 "
-                icon="mdi-format-align-top"
+                :icon="mdiFormatAlignTop"
                 value="top"
               />
 
@@ -115,7 +115,7 @@
                 v-tooltip:top="
                   $t('$ezreeport.editor.figures.table.columns.styles.vmiddle')
                 "
-                icon="mdi-format-align-middle"
+                :icon="mdiFormatAlignMiddle"
                 value="middle"
               />
 
@@ -123,7 +123,7 @@
                 v-tooltip:top="
                   $t('$ezreeport.editor.figures.table.columns.styles.vbottom')
                 "
-                icon="mdi-format-align-bottom"
+                :icon="mdiFormatAlignBottom"
                 value="bottom"
               />
             </v-btn-toggle>
@@ -141,7 +141,7 @@
                 v-tooltip:top="
                   $t('$ezreeport.editor.figures.table.columns.styles.bold')
                 "
-                icon="mdi-format-bold"
+                :icon="mdiFormatBold"
                 value="bold"
               />
 
@@ -149,7 +149,7 @@
                 v-tooltip:top="
                   $t('$ezreeport.editor.figures.table.columns.styles.italic')
                 "
-                icon="mdi-format-italic"
+                :icon="mdiFormatItalic"
                 value="italic"
               />
             </v-btn-toggle>
@@ -165,7 +165,7 @@
 
       <v-btn
         :text="$t('$ezreeport.confirm')"
-        :append-icon="modelValue ? 'mdi-pencil' : 'mdi-plus'"
+        :append-icon="modelValue ? mdiPencil : mdiPlus"
         :disabled="!isValid || (isBucketNeeded && !column.aggregation)"
         color="primary"
         @click="emit('update:modelValue', column)"
@@ -176,16 +176,35 @@
 
 <script setup lang="ts">
   import {
+    mdiCounter,
+    mdiFormatAlignBottom,
+    mdiFormatAlignCenter,
+    mdiFormatAlignJustify,
+    mdiFormatAlignLeft,
+    mdiFormatAlignMiddle,
+    mdiFormatAlignRight,
+    mdiFormatAlignTop,
+    mdiFormatBold,
+    mdiFormatItalic,
+    mdiPencil,
+    mdiPlaylistPlus,
+    mdiPlus,
+    mdiRename,
+  } from '@mdi/js';
+  import {
+    type FigureAggregation,
     aggregationTypes,
     isRawAggregation,
-    type FigureAggregation,
   } from '~sdk/helpers/aggregations';
-  import { getTableColumnKey, type TableColumn } from '~sdk/helpers/figures';
+  import { type TableColumn, getTableColumnKey } from '~sdk/helpers/figures';
 
   type VAlign = Exclude<Required<TableColumn>['styles']['valign'], undefined>;
   type HAlign = Exclude<Required<TableColumn>['styles']['halign'], undefined>;
   type RawFontStyle = Required<TableColumn>['styles']['fontStyle'];
-  type FontStyles = Exclude<RawFontStyle, undefined | 'bolditalic' | 'normal'>[];
+  type FontStyles = Exclude<
+    RawFontStyle,
+    undefined | 'bolditalic' | 'normal'
+  >[];
 
   // Components props
   const props = defineProps<{
@@ -204,7 +223,6 @@
   }>();
 
   // Util composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   /** Is form valid */
@@ -216,7 +234,7 @@
   );
 
   /** Validate form on mounted */
-  useTemplateVForm('formRef', { immediate: !!props.modelValue });
+  useTemplateVForm('formRef', { immediate: Boolean(props.modelValue) });
 
   /** Is a bucket needed */
   const isBucketNeeded = computed(
@@ -299,7 +317,9 @@
     }
 
     // If it's a base aggregation, guess if it's a metric or not
-    const aggType = aggregationTypes.find((agg) => agg.name === aggregation.type);
+    const aggType = aggregationTypes.find(
+      (agg) => agg.name === aggregation.type
+    );
     column.value.metric = aggType?.type === 'metric';
   }
 </script>

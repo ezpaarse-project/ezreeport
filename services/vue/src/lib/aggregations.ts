@@ -7,29 +7,7 @@ import type {
 
 import { elasticTypeAliases } from './elastic';
 
-export type InnerBaseAggregation = Omit<FigureBaseAggregation, 'type'> & {
-  type: FigureBaseAggregation['type'] | '';
-};
-
-export type InnerAggregation =
-  | FigureRawAggregation
-  | FigureFilterAggregation
-  | InnerBaseAggregation;
-
-export const isRawAggregation = (
-  agg: InnerAggregation | null | undefined
-): agg is FigureRawAggregation => !!agg && 'raw' in agg && agg.raw != null;
-
-export const isBaseAggregation = (
-  agg: InnerAggregation | null | undefined
-): agg is InnerBaseAggregation => !agg || ('type' in agg && agg.type != null);
-
-export const isFiltersAggregation = (
-  agg: InnerAggregation | null | undefined
-): agg is FigureFilterAggregation =>
-  isBaseAggregation(agg) && agg?.type === 'filters';
-
-const typeAliases = Array.from(elasticTypeAliases.entries());
+const typeAliases = [...elasticTypeAliases.entries()];
 const findAliases = (search: string): string[] =>
   typeAliases.filter(([, alias]) => alias === search).map(([key]) => key);
 
@@ -55,3 +33,26 @@ export const aggregationFieldTypes = new Map<AggregationName, string[]>([
   ['top_hits', objectAliases],
   ['variable_width_histogram', numberAliases],
 ]);
+
+export type InnerBaseAggregation = Omit<FigureBaseAggregation, 'type'> & {
+  type: FigureBaseAggregation['type'] | '';
+};
+
+export type InnerAggregation =
+  | FigureRawAggregation
+  | FigureFilterAggregation
+  | InnerBaseAggregation;
+
+export const isRawAggregation = (
+  agg: InnerAggregation | null | undefined
+  // oxlint-disable-next-line no-implicit-coercion
+): agg is FigureRawAggregation => !!agg && 'raw' in agg && agg.raw != null;
+
+export const isBaseAggregation = (
+  agg: InnerAggregation | null | undefined
+): agg is InnerBaseAggregation => !agg || ('type' in agg && agg.type != null);
+
+export const isFiltersAggregation = (
+  agg: InnerAggregation | null | undefined
+): agg is FigureFilterAggregation =>
+  isBaseAggregation(agg) && agg?.type === 'filters';

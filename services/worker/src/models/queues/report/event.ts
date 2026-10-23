@@ -7,8 +7,8 @@ import { appLogger } from '~/lib/logger';
 const eventExchangeName = 'ezreeport.report:event';
 
 const logger = appLogger.child({
-  scope: 'queues',
   exchange: eventExchangeName,
+  scope: 'queues',
 });
 
 export async function getReportEventExchange(
@@ -34,11 +34,11 @@ export function sendEvent(
       size,
       sizeUnit: 'B',
     });
-  } catch (err) {
+  } catch (error) {
     logger.error({
+      err: error,
       jobId: data.id,
       msg: 'Failed to send event sent',
-      err,
     });
   }
 }

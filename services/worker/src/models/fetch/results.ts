@@ -28,7 +28,8 @@ export type FetchResultItem = {
  * @param response The raw ES repsponse
  */
 function checkEsErrors(
-  response: EsResponse
+  response: EsResponse,
+  checkEmpty: boolean
 ): asserts response is ElasticTypes.MsearchMultiSearchItem<
   Record<string, unknown>
 > {
@@ -55,7 +56,9 @@ function checkEsErrors(
   }
 
   // Checks any shard errors
+  // oxlint-disable-next-line no-underscore-dangle
   if (response._shards.failures?.length) {
+    // oxlint-disable-next-line no-underscore-dangle
     const reasons = response._shards.failures
       .map((err) => err.reason.reason)
       .join(' ; ');
@@ -66,18 +69,21 @@ function checkEsErrors(
     );
   }
 
-  // Checks if there's data
-  if (
-    response.hits.total && typeof response.hits.total === 'object'
-      ? response.hits.total.value === 0
-      : response.hits.total === 0
-  ) {
-    throw new FetchError('No data found for given request.', 'NoDataError');
-  }
+  if (checkEmpty) {
+    // Check if there's aggregations
+    if (!('aggregations' in response) || !response.aggregations) {
+      throw new FetchError('No aggregations in response', 'NoDataError');
+    }
 
-  // Check if there's aggregations
-  if (!('aggregations' in response) || !response.aggregations) {
-    throw new FetchError('No aggregations in response', 'NoDataError');
+    // Checks if there's data
+    const total =
+      response.hits.total && typeof response.hits.total === 'object'
+        ? response.hits.total.value
+        : response.hits.total;
+
+    if (total === 0) {
+      throw new FetchError('No data found for given request.', 'NoDataError');
+    }
   }
 }
 
@@ -149,11 +155,12 @@ function flattenEsBuckets<Element extends Record<string, unknown>>(
     );
 
     // Merging current bucket value with cleaned + combinations
-    const bucketCombinations = subBuckets.flatMap((buck) => ({
-      ...buck,
-      key: bucket.key,
-      [getKeyName(current)]: bucket.key,
-    }));
+    const bucketCombinations = subBuckets.flatMap((buck) =>
+      Object.assign(buck, {
+        key: bucket.key,
+        [getKeyName(current)]: bucket.key,
+      })
+    );
 
     data.push(...bucketCombinations);
   }
@@ -278,12 +285,12 @@ const handleOtherEsResults: HandleEsResultsFnc = ({ params }, esData) => {
     color = { ...params.color, type: 'color' };
   }
 
-  let value = { type: 'metric', metric: true };
+  let value = { metric: true, type: 'metric' };
   if (params.value) {
     value = { ...params.value, ...value };
   }
 
-  const elements = [label, color, value].filter((param) => !!param);
+  const elements = [label, color, value].filter((param) => Boolean(param));
 
   // Flatten data
   return flattenEsBuckets(esData, elements, (col) => col.type);
@@ -301,7 +308,7 @@ export function handleEsResponse(
   response: EsResponse,
   figure: FigureType
 ): FetchResultItem[] {
-  checkEsErrors(response);
+  checkEsErrors(response, !figure.params?.displayEmpty);
 
   // Guess the function we'll be using
   let handleResults = handleOtherEsResults;

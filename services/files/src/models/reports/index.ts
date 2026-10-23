@@ -1,6 +1,6 @@
 import type { Readable, Writable } from 'node:stream';
-import { createWriteStream, createReadStream, existsSync } from 'node:fs';
-import { unlink, mkdir } from 'node:fs/promises';
+import { createReadStream, createWriteStream, existsSync } from 'node:fs';
+import { mkdir, unlink } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 
 import config from '~/lib/config';
@@ -25,26 +25,26 @@ export async function createWriteReportStream(
 
   const entry = {
     created_at: new Date(),
-    task_id: taskId,
     destroy_at: new Date(destroyAt),
+    task_id: taskId,
   };
   await knex<DBReportEntry>('reports')
     .insert({ filename, ...entry })
     .onConflict('filename')
     .merge({ ...entry });
 
-  logger.info({ msg: 'File metadata added', filename, entry });
+  logger.info({ entry, filename, msg: 'File metadata added' });
 
   return createWriteStream(path)
     .on('finish', () => {
-      logger.info({ msg: 'File written', filename });
+      logger.info({ filename, msg: 'File written' });
     })
     .on('error', async (writeError) => {
-      logger.error({ msg: 'Error on file write', filename, err: writeError });
+      logger.error({ err: writeError, filename, msg: 'Error on file write' });
       try {
         await unlink(path);
-      } catch (err) {
-        logger.error({ msg: 'Error on file deletion', filename, err });
+      } catch (error) {
+        logger.error({ error, filename, msg: 'Error on file deletion' });
       }
     });
 }
@@ -70,10 +70,10 @@ export async function createReadReportStream(
 
   return createReadStream(path)
     .on('finish', () => {
-      logger.info({ msg: 'File read', filename });
+      logger.info({ filename, msg: 'File read' });
     })
     .on('error', (err) => {
-      logger.error({ msg: 'Error on file read', filename, err });
+      logger.error({ err, filename, msg: 'Error on file read' });
     });
 }
 

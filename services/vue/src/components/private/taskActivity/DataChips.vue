@@ -4,7 +4,7 @@
       v-if="user"
       v-tooltip:top="$t('$ezreeport.task-activity.origin')"
       :text="user"
-      prepend-icon="mdi-account"
+      :prepend-icon="mdiAccount"
       density="comfortable"
       size="small"
     />
@@ -19,8 +19,8 @@
     <v-chip
       v-if="files?.detail"
       :text="$t('$ezreeport.task.generation.files.detail')"
-      prepend-icon="mdi-code-json"
-      append-icon="mdi-download"
+      :prepend-icon="mdiCodeJson"
+      :append-icon="mdiDownload"
       density="comfortable"
       size="small"
       @click="downloadGenerationFile(files.detail)"
@@ -29,8 +29,8 @@
     <v-chip
       v-if="files?.report"
       :text="$t('$ezreeport.task.generation.files.report')"
-      prepend-icon="mdi-file-pdf-box"
-      append-icon="mdi-download"
+      :prepend-icon="mdiFilePdfBox"
+      :append-icon="mdiDownload"
       density="comfortable"
       size="small"
       @click="downloadGenerationFile(files.report)"
@@ -40,6 +40,7 @@
 
 <script setup lang="ts">
   import type { TaskActivity } from '~sdk/task-activity';
+  import { mdiAccount, mdiCodeJson, mdiDownload, mdiFilePdfBox } from '@mdi/js';
   import { isBefore, isValid } from 'date-fns';
   import { getFileAsBlob } from '~sdk/reports';
 
@@ -52,11 +53,10 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   const isObject = (value: unknown): value is object =>
-    !!value && typeof value === 'object' && !Array.isArray(value);
+    Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
   const data = computed(() => {
     if (isObject(props.modelValue.data)) {
@@ -95,15 +95,15 @@
 
     if ('files' in data.value && isObject(data.value.files)) {
       return {
-        report:
-          'report' in data.value.files &&
-          typeof data.value.files.report === 'string'
-            ? data.value.files.report
-            : undefined,
         detail:
           'detail' in data.value.files &&
           typeof data.value.files.detail === 'string'
             ? data.value.files.detail
+            : undefined,
+        report:
+          'report' in data.value.files &&
+          typeof data.value.files.report === 'string'
+            ? data.value.files.report
             : undefined,
       };
     }
@@ -116,8 +116,8 @@
       const filename = path.split('/').pop() ?? 'download';
       const blob = await getFileAsBlob(props.modelValue.taskId, path);
       downloadBlob(blob, filename);
-    } catch (err) {
-      handleEzrError(t('$ezreeport.errors.download', { path }), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.errors.download', { path }), error);
     }
   }
 </script>

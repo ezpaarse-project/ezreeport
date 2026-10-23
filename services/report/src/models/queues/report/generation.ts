@@ -8,14 +8,14 @@ import { appLogger } from '~/lib/logger';
 const generationQueueName = 'ezreeport.report:queues';
 const generationEventExchangeName = 'ezreeport.report:event';
 
-const logger = appLogger.child({ scope: 'queues', queue: generationQueueName });
+const logger = appLogger.child({ queue: generationQueueName, scope: 'queues' });
 
 let channel: rabbitmq.Channel | undefined;
 
 export function initGenerationQueue(chan: rabbitmq.Channel): void {
-  // queueGeneration will be called while begin unaware of
-  // rabbitmq connection, so we need to store the channel
-  // here
+  // QueueGeneration will be called while begin unaware of
+  // Rabbitmq connection, so we need to store the channel
+  // Here
   channel = chan;
 }
 
@@ -26,10 +26,10 @@ type CustomGenerationQueueDataType = Omit<
   createdAt?: Date;
 };
 
-export async function queueGeneration(
+export function queueGeneration(
   data: CustomGenerationQueueDataType,
   ttl?: number
-): Promise<void> {
+): void {
   const createdAt = data.createdAt ?? new Date();
 
   try {
@@ -42,19 +42,19 @@ export async function queueGeneration(
       { ...data, createdAt }
     );
     logger.debug({
-      queue: generationQueueName,
       msg: 'Report queued for generation',
+      queue: generationQueueName,
       size,
       sizeUnit: 'B',
     });
-  } catch (err) {
+  } catch (error) {
     logger.error({
-      queue: generationQueueName,
+      err: error,
       msg: 'Failed to queue report',
-      err,
+      queue: generationQueueName,
     });
 
-    throw err;
+    throw error;
   }
 
   try {
@@ -64,24 +64,24 @@ export async function queueGeneration(
         exchange: { name: generationEventExchangeName, routingKey: '' },
       },
       {
-        id: data.id,
-        taskId: data.task.id,
-        status: 'PENDING',
-        start: data.period.start,
-        end: data.period.end,
-        targets: data.targets,
-        origin: data.origin,
-        writeActivity: !!data.writeActivity,
-        progress: null,
-        took: null,
-        reportId: '',
         createdAt,
-        updatedAt: new Date(),
+        end: data.period.end,
+        id: data.id,
+        origin: data.origin,
+        progress: null,
+        reportId: '',
+        start: data.period.start,
         startedAt: null,
+        status: 'PENDING',
+        targets: data.targets,
+        taskId: data.task.id,
+        took: null,
+        updatedAt: new Date(),
+        writeActivity: Boolean(data.writeActivity),
       },
       { expiration: ttl }
     );
-  } catch (err) {
-    logger.warn({ msg: 'Failed to send event', err });
+  } catch (error) {
+    logger.warn({ error, msg: 'Failed to send event' });
   }
 }

@@ -1,7 +1,7 @@
 <template>
   <v-card
     :title="$t('$ezreeport.editor.title', modelValue.layouts.length)"
-    prepend-icon="mdi-grid"
+    :prepend-icon="mdiGrid"
   >
     <template v-if="$slots.append" #append>
       <slot name="append" />
@@ -43,13 +43,13 @@
           <v-empty-state
             v-if="innerLayouts.length === 0"
             :title="$t('$ezreeport.editor.noLayouts')"
-            icon="mdi-format-page-break"
+            :icon="mdiFormatPageBreak"
           >
             <template #actions>
               <v-btn
                 :text="$t('$ezreeport.editor.createLayout')"
                 color="green"
-                append-icon="mdi-plus"
+                :append-icon="mdiPlus"
                 @click="createNewLayout()"
               />
             </template>
@@ -65,7 +65,7 @@
             v-else
             :title="$t('$ezreeport.editor.noSelected')"
             :text="$t('$ezreeport.editor.noSelected:desc')"
-            icon="mdi-selection"
+            :icon="mdiSelection"
           />
         </v-col>
       </v-row>
@@ -78,17 +78,18 @@
 </template>
 
 <script setup lang="ts">
+  import { mdiFormatPageBreak, mdiGrid, mdiPlus, mdiSelection } from '@mdi/js';
   import {
+    type LayoutHelper,
     createLayoutHelper,
     createLayoutHelperFrom,
     layoutHelperToJSON,
-    type LayoutHelper,
   } from '~sdk/helpers/layouts';
   import {
-    addLayoutOfHelper,
-    updateLayoutOfHelper,
-    removeLayoutOfHelper,
     type TemplateBodyHelper,
+    addLayoutOfHelper,
+    removeLayoutOfHelper,
+    updateLayoutOfHelper,
   } from '~sdk/helpers/templates';
 
   // Components props
@@ -110,7 +111,6 @@
   }>();
 
   // Utils composables
-  // oxlint-disable-next-line id-length
   const { t } = useI18n();
 
   /** Current layout index, a computed around props if provided */
@@ -145,8 +145,8 @@
 
       try {
         updateLayoutOfHelper(props.modelValue, currentLayout.value, value);
-      } catch (err) {
-        handleEzrError(t('$ezreeport.editor.layouts.errors.edit'), err);
+      } catch (error) {
+        handleEzrError(t('$ezreeport.editor.layouts.errors.edit'), error);
       }
     },
   });
@@ -159,8 +159,8 @@
       innerIndex.value = props.modelValue.layouts.length - 1;
       await nextTick();
       drawerRef.value?.scrollDown();
-    } catch (err) {
-      handleEzrError(t('$ezreeport.editor.layouts.errors.create'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.editor.layouts.errors.create'), error);
     }
   }
 
@@ -174,16 +174,16 @@
 
       await nextTick();
       drawerRef.value?.scrollTo(newIndex);
-    } catch (err) {
-      handleEzrError(t('$ezreeport.editor.layouts.errors.clone'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.editor.layouts.errors.clone'), error);
     }
   }
 
   function deleteLayout(layout: LayoutHelper) {
     try {
       removeLayoutOfHelper(props.modelValue, layout);
-    } catch (err) {
-      handleEzrError(t('$ezreeport.editor.layouts.errors.delete'), err);
+    } catch (error) {
+      handleEzrError(t('$ezreeport.editor.layouts.errors.delete'), error);
     }
   }
 

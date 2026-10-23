@@ -1,10 +1,10 @@
 import {
-  apiRequestOptionsToQuery,
+  type ApiDeletedResponse,
+  type ApiRequestOptions,
   type ApiResponse,
   type ApiResponsePaginated,
-  type ApiRequestOptions,
-  type ApiDeletedResponse,
   type SdkPaginated,
+  apiRequestOptionsToQuery,
 } from '~/lib/api';
 import { client } from '~/lib/fetch';
 import { transformCreatedUpdated } from '~/lib/transform';
@@ -35,11 +35,11 @@ export async function getAllTemplates(
   });
 
   return {
-    items: content.map(transformCreatedUpdated),
-    total,
     count,
-    page,
+    items: content.map(transformCreatedUpdated),
     meta,
+    page,
+    total,
   };
 }
 assignPermission(getAllTemplates, 'GET /templates', true);
@@ -84,8 +84,8 @@ export async function createTemplate(
   const { content } = await client.fetch<ApiResponse<RawTemplate>>(
     '/templates',
     {
-      method: 'POST',
       body: template,
+      method: 'POST',
     }
   );
 
@@ -107,8 +107,8 @@ export async function upsertTemplate({
   const { content } = await client.fetch<ApiResponse<RawTemplate>>(
     `/templates/${id}`,
     {
-      method: 'PUT',
       body: template,
+      method: 'PUT',
     }
   );
 

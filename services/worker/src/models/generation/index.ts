@@ -109,7 +109,7 @@ function resolveReportTemplate(
 
   // Merge task's filters if provided
   if (task.template.filters) {
-    template.body.filters = template.body.filters ?? [];
+    template.body.filters ??= [];
     template.body.filters.push(...task.template.filters);
   }
 
@@ -372,7 +372,7 @@ export async function generateReport(
     });
   } catch (error) {
     logger.error({
-      error,
+      err: error,
       msg: 'Unable to write detail',
     });
   }
@@ -390,7 +390,7 @@ export async function generateReport(
     });
   } catch (error) {
     logger.error({
-      error,
+      err: error,
       msg: 'Unable to write debug',
     });
   }

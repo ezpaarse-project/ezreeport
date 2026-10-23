@@ -8,7 +8,7 @@ on:
       # - dev
 
 env:
-  HUSKY: 0
+  LEFTHOOK: 'false'
   TURBO_UI: 'false'
   EZR_PRERELEASE_MODE: ${{ github.ref == 'refs/heads/master' && 'exit' || 'pre' }}
   EZR_PRERELEASE_TAG: ${{ github.ref == 'refs/heads/dev' && 'beta' || 'rc' }}

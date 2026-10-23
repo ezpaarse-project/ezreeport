@@ -1,5 +1,5 @@
 import { assignDependencies } from '~/helpers/permissions/decorator';
-import { getTask, upsertTask, type Task } from '~/modules/tasks';
+import { type Task, getTask, upsertTask } from '~/modules/tasks';
 
 export * from './editor';
 export * from './recurrence';
@@ -19,18 +19,18 @@ export async function changeTaskEnableState(
   const base = await getTask(taskOrId);
 
   const task = await upsertTask({
-    id: base.id,
-    name: base.name,
     description: base.description,
+    enabled,
     extendedId: base.extendedId,
+    id: base.id,
+    lastExtended: base.lastExtended,
+    name: base.name,
     namespaceId: base.namespaceId,
     nextRun: base.nextRun,
     recurrence: base.recurrence,
     recurrenceOffset: base.recurrenceOffset,
     targets: base.targets,
     template: base.template,
-    lastExtended: base.lastExtended,
-    enabled,
   });
 
   return task;

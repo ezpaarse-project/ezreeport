@@ -20,8 +20,8 @@ import {
 
 import { authPlugin } from '~/plugins/auth';
 import {
-  describeErrors,
   buildSuccessResponse,
+  describeErrors,
   zSuccessResponse,
 } from '~/routes/v2/responses';
 
@@ -39,8 +39,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/',
     schema: {
-      summary: 'Get all namespaces',
-      tags: ['namespaces'],
       querystring: z.object({
         ...PaginationQuery.shape,
         ...NamespaceQueryFilters.shape,
@@ -53,6 +51,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zPaginationResponse(Namespace),
       },
+      summary: 'Get all namespaces',
+      tags: ['namespaces'],
     },
     config: {
       ezrAuth: {
@@ -65,18 +65,18 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
       const { page, count, sort, order, ...filters } = request.query;
 
       const content = await namespaces.getAllNamespaces(filters, {
-        page,
         count,
-        sort,
         order,
+        page,
+        sort,
       });
 
       return buildPaginatedResponse(
         content,
         {
+          count: content.length,
           page: request.query.page,
           total: await namespaces.countNamespaces(filters),
-          count: content.length,
         },
         reply
       );
@@ -87,8 +87,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'PUT',
     url: '/',
     schema: {
-      summary: 'Replace all namespaces',
-      tags: ['namespaces'],
       body: z.array(BulkNamespace),
       response: {
         ...describeErrors([
@@ -98,6 +96,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(BulkNamespaceResult),
       },
+      summary: 'Replace all namespaces',
+      tags: ['namespaces'],
     },
     config: {
       ezrAuth: {
@@ -116,8 +116,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'GET',
     url: '/:id',
     schema: {
-      summary: 'Get specific namespace',
-      tags: ['namespaces'],
       params: SpecificNamespaceParams,
       response: {
         ...describeErrors([
@@ -128,6 +126,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(Namespace),
       },
+      summary: 'Get specific namespace',
+      tags: ['namespaces'],
     },
     config: {
       ezrAuth: {
@@ -150,10 +150,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'PUT',
     url: '/:id',
     schema: {
-      summary: 'Upsert specific namespace',
-      tags: ['namespaces'],
-      params: SpecificNamespaceParams,
       body: InputNamespace,
+      params: SpecificNamespaceParams,
       response: {
         ...describeErrors([
           StatusCodes.BAD_REQUEST,
@@ -163,6 +161,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(Namespace),
       },
+      summary: 'Upsert specific namespace',
+      tags: ['namespaces'],
     },
     config: {
       ezrAuth: {
@@ -194,8 +194,6 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
     method: 'DELETE',
     url: '/:id',
     schema: {
-      summary: 'Delete specific namespace',
-      tags: ['namespaces'],
       params: SpecificNamespaceParams,
       response: {
         ...describeErrors([
@@ -206,6 +204,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
         ]),
         [StatusCodes.OK]: zSuccessResponse(z.object({ deleted: z.boolean() })),
       },
+      summary: 'Delete specific namespace',
+      tags: ['namespaces'],
     },
     config: {
       ezrAuth: {
@@ -226,5 +226,5 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
   fastify.register(membershipRoutes, { prefix: '/:namespaceId/memberships' });
 };
 
-// oxlint-disable-next-line no-default-exports
+// oxlint-disable-next-line no-default-export
 export default router;

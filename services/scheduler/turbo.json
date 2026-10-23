@@ -1,0 +1,12 @@
+{
+  "$schema": "https://v2-9-15.turborepo.dev/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "check": {
+      "dependsOn": ["@ezreeport/database#db:generate"]
+    },
+    "build": {
+      "outputs": ["dist"]
+    }
+  }
+}

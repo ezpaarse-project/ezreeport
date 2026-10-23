@@ -4,16 +4,16 @@ import { appLogger } from '~/lib/logger';
 import { useRabbitMQ } from '~/lib/rabbitmq';
 
 import { initCrons } from '~/models/crons';
-import { initHeartbeat, getMissingMandatoryServices } from '~/models/heartbeat';
+import { getMissingMandatoryServices, initHeartbeat } from '~/models/heartbeat';
 import initRPC from '~/models/rpc';
 
 async function start(): Promise<void> {
   appLogger.info({
-    scope: 'node',
     env: process.env.NODE_ENV,
-    logLevel: config.log.level,
     logDir: config.log.dir,
+    logLevel: config.log.level,
     msg: 'Service starting',
+    scope: 'node',
   });
   try {
     // Initialize health routes
@@ -41,14 +41,14 @@ async function start(): Promise<void> {
     });
 
     appLogger.info({
-      scope: 'init',
+      msg: 'Service ready',
       readyDuration: process.uptime(),
       readyDurationUnit: 's',
-      msg: 'Service ready',
+      scope: 'init',
     });
-  } catch (err) {
-    appLogger.error(err);
-    throw err instanceof Error ? err : new Error(`${err}`);
+  } catch (error) {
+    appLogger.error(error);
+    throw error instanceof Error ? error : new Error(`${error}`);
   }
 }
 start();
