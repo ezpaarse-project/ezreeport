@@ -72,12 +72,12 @@
   "unsubscribe": {
     "title": "Désabonnement de « {{{ task }}} »",
     "texts": {
-      "confirm": "Vous êtes actuellement abonné au rapport <strong>« {{{ task }}} »</strong> avec l'adresse <strong>« {{{ email }}} »</strong>, voulez vous désabonner ?",
+      "confirm": "Vous êtes actuellement abonné au rapport <strong>{{{ task }}}</strong> avec l'adresse <strong>{{{ email }}}</strong>, voulez vous désabonner ?",
       "mailList": {
-        "warning": "Attention ! Si l'adresse <strong>« {{{ email }}} »</strong> est une liste de diffusion, cela désabonnera <strong>TOUTE</strong> la liste de diffusion !",
+        "warning": "Attention ! Si l'adresse <strong>{{{ email }}}</strong> est une liste de diffusion, cela désabonnera <strong>TOUTE</strong> la liste de diffusion !",
         "advice": "Veuillez vous rapprochez de la personne responsable des rapports ezREEPORT/ezMESURE dans votre institution ou service pour vous désabonner individuellement."
       },
-      "changes": "Ce changement sera effectif immédiatement (vous ne recevrez plus les prochains rapports) et est irréversible, si vous voulez vous ré-abonner, rapprochez vous de la personne responsable des rapports ezREEPORT/ezMESURE dans votre institution ou service."
+      "changes": "Ce changement sera effectif immédiatement et est irréversible. Si vous voulez vous ré-abonner, rapprochez vous de la personne responsable des rapports ezREEPORT/ezMESURE dans votre institution ou service."
     },
     "actions": {
       "confirm": "Confirmer",

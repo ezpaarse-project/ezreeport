@@ -95,8 +95,8 @@ const router: FastifyPluginAsyncZod = async (fastify) => {
           'unsubscribe.texts.confirm',
           task.extends?.locale ?? 'en',
           {
-            task: task.name,
             email: emailValidation.data,
+            task: task.name,
           }
         ),
         email: emailValidation.data,

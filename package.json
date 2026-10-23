@@ -24,5 +24,12 @@
     "oxlint": "^1.75.0",
     "turbo": "^2.10.7"
   },
-  "packageManager": "pnpm@12.3.4"
+  "packageManager": "pnpm@12.3.4",
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "24.22.1",
+      "onFail": "download"
+    }
+  }
 }
