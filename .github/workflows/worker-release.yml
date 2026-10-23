@@ -74,7 +74,7 @@ jobs:
       - name: Get version of image ⚙️
         id: version
         run: |
-          version=$(echo '${{ github.ref_name }}' | sed -nE 's/^ezreeport-worker@(.+)$/\1/p')
+          version=$(echo '${{ github.ref_name }}' | sed -nE 's|^ezreeport-worker@(.+)$|\1|p')
           echo "tag=${version}" >> $GITHUB_OUTPUT
 
       - name: Scan for vulnerability 🔍
@@ -91,6 +91,9 @@ jobs:
           name: trivy-report
           path: trivy-report.json
           retention-days: 30
+
+      - name: Checkout 🛎️
+        uses: actions/checkout@v7
 
       - name: Generate vulnerability report 🔍
         uses: aquasecurity/trivy-action@v0.36.0
