@@ -1,5 +1,12 @@
 # ezreeport-mail
 
+## 2.1.1
+
+### Patch Changes
+
+- 7806cc2: ⬆️ upgraded dependencies
+- 04b3aa7: ♻️ reduced Docker image size by bundling files
+
 ## 2.1.1-rc.1
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # ezreeport-scheduler
 
+## 1.4.1
+
+### Patch Changes
+
+- 7806cc2: ⬆️ upgraded dependencies
+- 04b3aa7: ♻️ reduced Docker image size by bundling files
+
 ## 1.4.1-rc.2
 
 ### Patch Changes

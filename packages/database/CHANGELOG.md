@@ -1,5 +1,13 @@
 # @ezreeport/database-v1.0.0 (2025-08-08)
 
+## 1.4.1
+
+### Patch Changes
+
+- 7806cc2: ⬆️ upgraded dependencies
+- 04b3aa7: ♻️ reduced Docker image size by bundling files
+- 2d2cdcb: 🚑 added missing datasource URL used for migrations
+
 ## 1.4.1-rc.2
 
 ### Patch Changes

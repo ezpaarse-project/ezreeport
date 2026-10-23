@@ -1,5 +1,19 @@
 # ezreeport-report
 
+## 3.4.0
+
+### Minor Changes
+
+- 9eda3bf: ✨ unsubscribe is available in english
+
+### Patch Changes
+
+- 7806cc2: ⬆️ upgraded dependencies
+- cb38ed1: 🐛 fixed issue with CSP and unsubscribe
+- 04b3aa7: ♻️ reduced Docker image size by bundling files
+- 1499483: 🐛 fixed 409 when generating test report on different timezones
+- adeb47f: 🐛 fixed issue where task with no targets (after target unsubscribe) would lead to 500 errors
+
 ## 3.4.0-rc.3
 
 ### Minor Changes

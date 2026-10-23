@@ -1,5 +1,17 @@
 # @ezpaarse-project/ezreeport-sdk-js
 
+## 3.4.0
+
+### Minor Changes
+
+- 884aad6: ✨ can now set up figures that can be render with empty data
+
+### Patch Changes
+
+- 7806cc2: ⬆️ upgraded dependencies
+- cf3ce2b: 🐛 fixed issue with visiblity toggling
+- 1499483: 🐛 fixed 409 when generating test report on different timezones
+
 ## 3.4.0-rc.2
 
 ### Patch Changes
