@@ -1,14 +1,17 @@
 <template>
   <v-autocomplete
-    :model-value="modelValue"
+    ref="autocomplete"
+    v-model="modelValue"
     :label="$t('$ezreeport.editor.aggregation.type')"
+    :rules="[
+      (val) => allowedType !== 'bucket' || !!val || $t('$ezreeport.required'),
+    ]"
     :items="typeOptions"
     :readonly="readonly"
     :disabled="disabled"
     :prepend-icon="mdiSelectGroup"
     variant="underlined"
-    hide-details
-    @update:model-value="$emit('update:modelValue', $event)"
+    hide-details="auto"
   />
 </template>
 
@@ -21,10 +24,13 @@
 
   import type { InnerBaseAggregation } from '~/lib/aggregations';
 
+  /** Aggregation type to edit */
+  const modelValue = defineModel<InnerBaseAggregation['type']>({
+    required: true,
+  });
+
   // Component props
   const props = defineProps<{
-    /** Aggregation to edit */
-    modelValue: InnerBaseAggregation['type'];
     /** Should be disabled */
     disabled?: boolean;
     /** Should be readonly */
@@ -33,14 +39,10 @@
     allowedType?: AggregationType;
   }>();
 
-  // Component events
-  defineEmits<{
-    /** Aggregation updated */
-    (event: 'update:modelValue', value: InnerBaseAggregation['type']): void;
-  }>();
-
   // Utils composables
   const { t } = useI18n();
+
+  const autocomplete = useTemplateRef('autocomplete');
 
   function aggTypeToListItem(
     value: (typeof aggregationTypes)[number][],
@@ -111,5 +113,9 @@
           aggTypeToListItem(value, isCommonlyFound)
         )
     );
+  });
+
+  onMounted(() => {
+    autocomplete.value?.validate();
   });
 </script>

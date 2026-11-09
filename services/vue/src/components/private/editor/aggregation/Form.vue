@@ -37,7 +37,7 @@
         />
 
         <EditorAggregationFormBasic
-          v-else-if="!modelValue || isBaseAggregation(modelValue)"
+          v-else
           v-model="modelValue"
           :disabled="disabled"
           :readonly="readonly"
@@ -59,11 +59,7 @@
   } from '~sdk/helpers/aggregations';
   import { mdiGroup, mdiTools } from '@mdi/js';
 
-  import {
-    isBaseAggregation,
-    isFiltersAggregation,
-    isRawAggregation,
-  } from '~/lib/aggregations';
+  import { isFiltersAggregation, isRawAggregation } from '~/lib/aggregations';
 
   type AggFormsType = 'basic' | 'filters' | 'raw';
 

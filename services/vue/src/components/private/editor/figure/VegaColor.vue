@@ -13,31 +13,31 @@
     </v-col>
   </v-row>
 
-  <v-row>
-    <v-col>
-      <EditorAggregationForm
-        v-model="aggregation"
-        :disabled="!isEnabled"
-        :readonly="readonly"
-        type="bucket"
-        variant="tonal"
-      />
-    </v-col>
-  </v-row>
+  <v-slide-y-transition>
+    <v-row v-if="isEnabled">
+      <v-col cols="12">
+        <EditorAggregationForm
+          v-model="aggregation"
+          :disabled="!isEnabled"
+          :readonly="readonly"
+          type="bucket"
+          variant="tonal"
+        />
+      </v-col>
 
-  <v-row>
-    <v-col>
-      <v-text-field
-        v-model="title"
-        :label="$t('$ezreeport.editor.figures.vega._.legend')"
-        :disabled="!isEnabled"
-        :readonly="readonly"
-        :prepend-icon="mdiImageText"
-        variant="underlined"
-        hide-details
-      />
-    </v-col>
-  </v-row>
+      <v-col cols="12">
+        <v-text-field
+          v-model="title"
+          :label="$t('$ezreeport.editor.figures.vega._.legend')"
+          :disabled="!isEnabled"
+          :readonly="readonly"
+          :prepend-icon="mdiImageText"
+          variant="underlined"
+          hide-details
+        />
+      </v-col>
+    </v-row>
+  </v-slide-y-transition>
 </template>
 
 <script setup lang="ts">

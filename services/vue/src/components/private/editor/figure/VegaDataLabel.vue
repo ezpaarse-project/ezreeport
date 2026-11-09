@@ -20,74 +20,78 @@
     </v-col>
   </v-row>
 
-  <v-row>
-    <v-col cols="6">
-      <div>
-        <v-label
-          :text="$t('$ezreeport.editor.figures.vega._.dataLabel:position')"
-        />
-      </div>
+  <v-slide-y-transition>
+    <v-row v-if="isEnabled">
+      <v-col cols="6">
+        <div>
+          <v-label
+            :text="$t('$ezreeport.editor.figures.vega._.dataLabel:position')"
+          />
+        </div>
 
-      <v-btn-toggle
-        v-model="position"
-        :disabled="!isEnabled"
-        density="comfortable"
-        color="primary"
-        mandatory
-      >
-        <v-btn
-          :text="$t('$ezreeport.editor.figures.vega._.dataLabel:positions.in')"
+        <v-btn-toggle
+          v-model="position"
+          :disabled="!isEnabled"
+          density="comfortable"
+          color="primary"
+          mandatory
+        >
+          <v-btn
+            :text="
+              $t('$ezreeport.editor.figures.vega._.dataLabel:positions.in')
+            "
+            :readonly="readonly"
+            value="in"
+          />
+
+          <v-btn
+            :text="
+              $t('$ezreeport.editor.figures.vega._.dataLabel:positions.out')
+            "
+            :readonly="readonly"
+            value="out"
+          />
+        </v-btn-toggle>
+      </v-col>
+
+      <v-col cols="6">
+        <v-checkbox
+          v-model="showLabel"
+          :label="$t('$ezreeport.editor.figures.vega._.dataLabel:showLabel')"
+          :disabled="!isEnabled"
           :readonly="readonly"
-          value="in"
+          :prepend-icon="mdiLabelMultiple"
+          color="primary"
+          hide-details
         />
+      </v-col>
 
-        <v-btn
-          :text="$t('$ezreeport.editor.figures.vega._.dataLabel:positions.out')"
+      <v-col cols="6">
+        <v-select
+          v-model="format"
+          :items="formatOptions"
+          :label="$t('$ezreeport.editor.figures.vega._.dataLabel:format')"
+          :disabled="!isEnabled"
           :readonly="readonly"
-          value="out"
+          :prepend-icon="mdiFormatPaint"
+          variant="underlined"
         />
-      </v-btn-toggle>
-    </v-col>
+      </v-col>
 
-    <v-col cols="6">
-      <v-checkbox
-        v-model="showLabel"
-        :label="$t('$ezreeport.editor.figures.vega._.dataLabel:showLabel')"
-        :disabled="!isEnabled"
-        :readonly="readonly"
-        :prepend-icon="mdiLabelMultiple"
-        color="primary"
-        hide-details
-      />
-    </v-col>
-  </v-row>
-
-  <v-row>
-    <v-col cols="6">
-      <v-select
-        v-model="format"
-        :items="formatOptions"
-        :label="$t('$ezreeport.editor.figures.vega._.dataLabel:format')"
-        :disabled="!isEnabled"
-        :readonly="readonly"
-        :prepend-icon="mdiFormatPaint"
-        variant="underlined"
-      />
-    </v-col>
-
-    <v-col cols="6">
-      <v-number-input
-        v-model="minValue"
-        :label="$t('$ezreeport.editor.figures.vega._.dataLabel:minValue')"
-        :append-inner-icon="appendIconMin"
-        :max="format === 'percent' ? 100 : undefined"
-        :min="format === 'percent' ? 0 : undefined"
-        :disabled="!isEnabled"
-        :readonly="readonly"
-        variant="underlined"
-      />
-    </v-col>
-  </v-row>
+      <v-col cols="6">
+        <v-number-input
+          v-model="minValue"
+          :label="$t('$ezreeport.editor.figures.vega._.dataLabel:minValue')"
+          :append-inner-icon="appendIconMin"
+          :max="format === 'percent' ? 100 : undefined"
+          :min="format === 'percent' ? 0 : undefined"
+          :disabled="!isEnabled"
+          :readonly="readonly"
+          variant="underlined"
+        />
+      </v-col>
+    </v-row>
+  </v-slide-y-transition>
 </template>
 
 <script setup lang="ts">

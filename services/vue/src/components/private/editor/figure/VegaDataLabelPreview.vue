@@ -3,8 +3,8 @@
     <v-label :text="$t('$ezreeport.editor.figures.vega._.dataLabel:preview')" />
   </div>
 
-  <div class="datalabel-preview-container">
-    <template v-if="modelValue">
+  <v-slide-x-transition>
+    <div v-if="modelValue" class="datalabel-preview-container">
       <div
         :class="{
           'datalabel-preview': true,
@@ -22,8 +22,8 @@
           <span v-if="modelValue.format === 'percent'">%</span>
         </div>
       </div>
-    </template>
-  </div>
+    </div>
+  </v-slide-x-transition>
 </template>
 
 <script setup lang="ts">
