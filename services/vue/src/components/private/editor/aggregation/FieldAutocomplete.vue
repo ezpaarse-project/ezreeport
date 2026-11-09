@@ -3,7 +3,7 @@
     :model-value="modelValue"
     :label="$t('$ezreeport.editor.aggregation.field')"
     :items="fieldOptions"
-    :rules="[(val) => !!val || t('$ezreeport.required')]"
+    :rules="[(val) => !!val || $t('$ezreeport.required')]"
     :readonly="readonly"
     :disabled="disabled"
     :return-object="false"
@@ -41,7 +41,6 @@
   }>();
 
   // Utils composables
-  const { t } = useI18n();
   const { getOptionsFromMapping } = useTemplateEditor();
 
   /** Type of fields needed for the current aggregation */
