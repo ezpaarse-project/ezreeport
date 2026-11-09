@@ -254,6 +254,7 @@
         "size": "Result count",
         "missing:show": "Show missing values",
         "missing:label": "Label for missing values",
+        "missing:default": "Missing",
         "aggregationTemplate": "{type} of {field}",
         "typeGroups": {
           "common": "Common",

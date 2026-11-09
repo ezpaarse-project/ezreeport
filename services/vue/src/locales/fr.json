@@ -254,6 +254,7 @@
         "size": "Nombre de résultats",
         "missing:show": "Afficher les valeurs manquantes",
         "missing:label": "Etiquette des valeurs manquantes",
+        "missing:default": "Manquant",
         "aggregationTemplate": "{type} de {field}",
         "filters": {
           "title": "Groupes de filtres",

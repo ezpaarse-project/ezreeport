@@ -101,6 +101,9 @@
     allowedType?: AggregationType;
   }>();
 
+  // Utils composables
+  const { t } = useI18n();
+
   const aggType = computed({
     get: () => modelValue.value?.type ?? '',
     set: (type) => {
@@ -139,7 +142,9 @@
         return;
       }
 
-      modelValue.value.missing = value ? 'Missing' : undefined;
+      modelValue.value.missing = value
+        ? t('$ezreeport.editor.aggregation.missing:default')
+        : undefined;
     },
   });
   /** Is the aggregation a metric one */
