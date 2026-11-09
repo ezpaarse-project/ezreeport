@@ -135,11 +135,12 @@
           v-if="showMissing"
           v-model="currentMissing"
           :label="$t('$ezreeport.editor.aggregation.missing:label')"
+          :rules="[(val) => !!val || $t('$ezreeport.required')]"
           :readonly="readonly"
           :disabled="disabled"
           :prepend-icon="mdiTooltipQuestionOutline"
           variant="underlined"
-          hide-details
+          hide-details="auto"
         />
       </v-slide-x-transition>
     </v-col>
@@ -210,9 +211,11 @@
   });
   /** If we should show the missing values */
   const showMissing = computed({
-    get: () => Boolean(currentMissing.value),
+    get: () => currentMissing.value !== undefined,
     set: (value) => {
-      modelValue.value.missing = value ? 'Missing' : undefined;
+      currentMissing.value = value
+        ? t('$ezreeport.editor.aggregation.missing:default')
+        : undefined;
     },
   });
 
