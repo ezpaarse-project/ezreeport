@@ -1,5 +1,16 @@
 # @ezpaarse-project/ezreeport-vue
 
+## 4.1.0-rc.0
+
+### Minor Changes
+
+- 0bd4008: ✨ missing text is using locale for default value
+
+### Patch Changes
+
+- 8722b84: 🐛 fixed aggregation form dissapearing when clearing
+- d70c120: 🐛 fixed clearing missing would deactivate the field
+
 ## 4.0.0
 
 ### Major Changes
