@@ -172,10 +172,12 @@ function mergeExtractedEsBuckets(
 
       // Add order cause it needs to be on the same level as `field`
       if (!('raw' in bucket) && bucket.type !== 'filters' && order !== false) {
+        const orderKey = metric ? 'metric' : '_count';
         merge(aggregation, {
           [name]: {
             [bucket.type]: {
-              order: { _count: order === 'asc' ? 'asc' : 'desc' },
+              // Order: { _count: order === 'asc' ? 'asc' : 'desc' },
+              order: { [orderKey]: order === 'asc' ? 'asc' : 'desc' },
             },
           },
         });
