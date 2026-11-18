@@ -152,6 +152,7 @@ function prepareDataWithDefaultDates(
     (date): FetchResultItem => {
       const key = new Date(date).getTime();
       return {
+        color: '',
         key,
         label: key,
         value: 0,
