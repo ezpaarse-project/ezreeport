@@ -16,7 +16,7 @@
     "bannedDomains": []
   },
   "elasticsearch": {
-    "url": "https://host.docker.internal:9200",
+    "url": "http://host.docker.internal:9200",
     "username": "elastic",
     "password": "changeme",
     "apiKey": ""
